@@ -166,7 +166,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	/**
 	 * Used to interpolate y-values for memory scale
 	 */
-	private final Interpolator newton;
+	private final Interpolator linearInterpolator;
 	
     /**
      * constructs the main model page 
@@ -181,7 +181,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// available system memory
 		final long phySysMem = TLCRuntime.getInstance().getAbsolutePhysicalSystemMemory(1.0d);
 		
-		// 0.) Create Newton with two additional points 0,0 and 1,0 which
+		// 0.) Create LinearInterpolator with two additional points 0,0 and 1,0 which
 		int s = 0;
 		double[] x = new double[6];
 		double[] y = new double[x.length];
@@ -197,28 +197,21 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		x[s] = lowerLimit;
 		y[s++] = 0d;
 		
-		x[s] = lowerLimit * 2d;
-		y[s++] = 1.0d;
-		
-
-		// 2a.) Calculate OS reserve
+		// a.)
 		// Current bloat in software is assumed to grow according to Moore's law => 
 		// 2^((Year-1993)/ 2)+2)
 		// (1993 as base results from a statistic of windows OS memory requirements)
 		final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 		double estimateSoftwareBloatInMBytes = Math.pow(2, ((currentYear - 1993) / 2) + 2);
-		double upperLimit = 1.0d - (estimateSoftwareBloatInMBytes / phySysMem) / 2;
-
-//		// 3.) Optimal value is simply arithmetic mean 
-//		double mean = (upperLimit - lowerLimit) / 2;
-//		x[s] = mean;
-//		y[s++] = 1d;
-
+		
+		// 2.) Optimal range 
+		x[s] = lowerLimit * 2d;
+		y[s++] = 1.0d;
 		x[s] = 1.0d - (estimateSoftwareBloatInMBytes / phySysMem);
 		y[s++] = 1.0d;
 		
-		
-		// 2b.)
+		// 3.) Calculate OS reserve
+		double upperLimit = 1.0d - (estimateSoftwareBloatInMBytes / phySysMem) / 2;
 		x[s] = upperLimit;
 		y[s++] = 0d;
 		
@@ -226,7 +219,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		x[s] = 1d;
 		y[s] = 0d;
 		
-		newton = new Interpolator(x, y);
+		linearInterpolator = new Interpolator(x, y);
 }
 
     /**
@@ -531,7 +524,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// color the scale according to OS and TLC requirements
         int maxHeapSizeValue = maxHeapSize.getSelection();
 		double x = maxHeapSizeValue / 100d;
-		float y = (float) newton.interpolate(x);
+		float y = (float) linearInterpolator.interpolate(x);
 		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(
 				120 * y, 1 - y, 1f)));
         
@@ -1437,7 +1430,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     }
     
     /**
-     * Interpolates based on linear Newton
+     * Interpolates based on LinearInterpolation
      */
     private class Interpolator {
 
