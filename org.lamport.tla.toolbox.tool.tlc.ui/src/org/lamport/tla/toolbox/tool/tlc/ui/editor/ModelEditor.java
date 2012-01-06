@@ -917,7 +917,9 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
     
     public void setActivePage(int index) {
-    	super.setActivePage(index);
+    	if(pages != null) {
+    		super.setActivePage(index);
+    	}
     }
 
     /**
