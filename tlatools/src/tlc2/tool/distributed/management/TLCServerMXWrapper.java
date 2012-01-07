@@ -77,4 +77,11 @@ public class TLCServerMXWrapper extends TLCStandardMBean implements TLCStatistic
 			return -1;
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getWorkerCount()
+	 */
+	public int getWorkerCount() {
+		return tlcServer.getWorkerCount();
+	}
 }

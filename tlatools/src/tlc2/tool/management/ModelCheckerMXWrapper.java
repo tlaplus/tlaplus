@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import javax.management.NotCompliantMBeanException;
 
+import tlc2.TLCGlobals;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.distributed.management.TLCStatisticsMXBean;
 import tlc2.tool.fp.DiskFPSet;
@@ -77,5 +78,12 @@ public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatis
 			e.printStackTrace();
 			return -1;
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getWorkerCount()
+	 */
+	public int getWorkerCount() {
+		return TLCGlobals.getNumWorkers();
 	}
 }
