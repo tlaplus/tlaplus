@@ -2201,7 +2201,7 @@ public class ParseAlgorithm
 
            if (stmt.lbl.equals("")) {
 	           Debug.ReportBug(
-	           "ParseAlgorithmInnerMakeLabeledStmtSeq ound null label starting labeled stmt seq");
+	           "ParseAlgorithmInnerMakeLabeledStmtSeq found null label starting labeled stmt seq");
            }
            
            lstmt.stmts = new Vector() ;

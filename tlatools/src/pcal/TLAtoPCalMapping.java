@@ -965,13 +965,14 @@ public class TLAtoPCalMapping {
               MappingObject inObj = (MappingObject) inLine.elementAt(j); 
               if (inObj.getType() == MappingObject.LEFT_PAREN) {
                 /*
-                 * Bug fix in algorithm.  The positions of the elements of unmatchedLeft
-                 * should be their positions in out, not in mappingVec.  The position
-                 * in out to which the current LeftParen object is going to be added 
-                 * is (i, outLine.size())
+                 * Bug in translating algorithm.  The following statement was
+                 * originally coded as
+                 *   
+                 *   unmatchedLeft.addElement(new PCalLocation(i, j));
+                 *   
+                 * The algorithm clearly indicates it should have been.
                  */
                   unmatchedLeft.addElement(new PCalLocation(i, outLine.size()));
-//                unmatchedLeft.addElement(new PCalLocation(i, j));
               }
               else if (inObj.getType() == MappingObject.RIGHT_PAREN) {
                   PCalLocation lastUnmatchedLeft = null ;
