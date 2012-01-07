@@ -106,7 +106,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		this.trace = new TLCTrace(this.metadir, this.work.getFileName(),
 				this.work);
 		if (TLCGlobals.fpServers == null) {
-			this.fpSet = FPSet.getFPSet(work.getFPBits(), -1);
+			this.fpSet = FPSet.getFPSet(work.getFPBits(), work.getFpMemSize());
 			this.fpSet.init(0, this.metadir, this.work.getFileName());
 			this.fpSetManager = new FPSetManager((FPSetRMI) this.fpSet);
 		} else {
