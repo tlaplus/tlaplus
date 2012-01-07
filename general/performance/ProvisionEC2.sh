@@ -225,7 +225,20 @@ sudo service munin-node restart
 
 # launch tlc model checker on amazon performance spec
 cd ~/git/tla/general/performance
+
+## start non distributed TLC
 #screen -h 99999 /usr/bin/java -Xmx60000m -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=5400 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -cp ~/git/tla/tlatools/dist/tla2tools.jar tlc2.TLC -checkpoint 3 -fpbits 0 -fp 0 -workers 6 -fpmem 0.8 MC > /home/kuppe/run.log 2>&1
+
+## start distributed tlc with distributed fp sets
+## fpset
+#screen -h 99999 /usr/bin/java -Xmx60000m -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=5400 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=`ifconfig eth0 | awk '/inet addr/ {split ($2,A,":"); print A[2]}'` -cp /mnt/kuppe/git/tla/tlatools/dist/tla2tools.jar tlc2.tool.fp.FPSet /mnt/kuppe/fpset > /home/kuppe/runFPSet.log 2>&1
+
+## server
+#screen -h 99999 /usr/bin/java -Xmx60000m -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=5400 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dfp_server=10.13.18.141,10.78.14.132,10.79.65.177,10.218.5.227 -Djava.rmi.server.hostname=`ifconfig eth0 | awk '/inet addr/ {split ($2,A,":"); print A[2]}'` -cp /mnt/kuppe/git/tla/tlatools/dist/tla2tools.jar tlc2.tool.distributed.TLCServer -fpbits 0 -fp 0 -fpmem 0.8 /mnt/kuppe/git/tla/general/performance/MC > /home/kuppe/run.log 2>&1
+
+## worker
+#screen -h 99999 /usr/bin/java -Xmx5000m -Djava.rmi.server.hostname=`ifconfig eth0 | awk '/inet addr/ {split ($2,A,":"); print A[2]}'` -cp /mnt/kuppe/git/tla/tlatools/dist/tla2tools.jar tlc2.tool.distributed.TLCWorker 10.218.65.156
+
 " > /home/kuppe/provisionKuppe.sh
 
 chown -R kuppe:kuppe /home/kuppe/
