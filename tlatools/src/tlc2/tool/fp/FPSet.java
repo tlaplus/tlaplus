@@ -180,21 +180,45 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 
         String metadir = null;
         String fromChkpt = null;
-        int index = 0;
-        while (index < args.length)
-        {
-            if (args[index].charAt(0) == '-')
-            {
-                printErrorMsg("Error: unrecognized option: " + args[index]);
-                System.exit(0);
-            }
-            if (metadir != null)
-            {
-                printErrorMsg("Error: more than one directory for metadata: " + metadir + " and " + args[index]);
-                System.exit(0);
-            }
-            metadir = args[index++] + FileUtil.separator;
-        }
+		int fpBits = 0;
+		
+		int index = 0;
+
+		while (index < args.length) {
+			if (args[index].equals("-fpbits")) {
+				index++;
+				if (index < args.length) {
+					try {
+						fpBits = Integer.parseInt(args[index]);
+
+						// make sure it's in valid range
+						if (!FPSet.isValid(fpBits)) {
+							printErrorMsg("Error: Value in interval [0, 30] for fpbits required. But encountered "
+									+ args[index]);
+							System.exit(0);
+						}
+
+						index++;
+					} catch (Exception e) {
+						printErrorMsg("Error: A number for -fpbits is required. But encountered "
+								+ args[index]);
+						System.exit(0);
+					}
+				} else {
+					printErrorMsg("Error: expect an integer for -workers option.");
+					System.exit(0);
+				}
+			} else if (args[index].charAt(0) == '-') {
+				printErrorMsg("Error: unrecognized option: " + args[index]);
+				System.exit(0);
+			} 
+			if (metadir != null) {
+				printErrorMsg("Error: more than one directory for metadata: "
+						+ metadir + " and " + args[index]);
+				System.exit(0);
+			}
+			metadir = args[index++] + FileUtil.separator;
+		}
 
         String hostname = "Unknown";
         try
@@ -212,9 +236,9 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
                     System.exit(0);
                 }
             }
-            // Start memory-based fingerprint set server.
+			// Start memory-based fingerprint set server.
             // Note: It would be wrong to use the disk-based implementation.
-            FPSet fpSet = new MemFPSet2();
+			FPSet fpSet = FPSet.getFPSet(fpBits, -1);
             fpSet.init(1, metadir, "fpset");
             if (fromChkpt != null)
             {
