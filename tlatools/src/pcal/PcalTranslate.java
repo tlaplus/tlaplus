@@ -712,6 +712,12 @@ public class PcalTranslate {
      return result ;
      }
 
+    /*
+     * Experimentation shows that the following method is called with ast
+     * equal to a LabeledStmt such that the first elementof ast.stmts 
+     * is an AST.While node, and the remaining elements are the unlabeled
+     * statements following the source `while' statement.
+     */
     private static Vector ExplodeWhile(AST.LabeledStmt ast,
                                        String next) throws PcalTranslateException {
         /*******************************************************************
@@ -737,7 +743,7 @@ public class PcalTranslate {
         AST.While w = (AST.While) ast.stmts.elementAt(0);
 
         AST.LabeledStmt newast = new AST.LabeledStmt();
-        /**
+        /*
          * We set the origin of the new LabeledStatement to that of
          * ast, if there is a statement that follows the While.  Otherwise,
          * it goes from the label to the end of the If constructed from the while.
@@ -757,7 +763,12 @@ public class PcalTranslate {
             ((AST) w.unlabDo.elementAt(w.unlabDo.size()-1)).getOrigin().getEnd() :
             w.test.getOrigin().getEnd();
         PCalLocation whileEndLoc = 
-          (w.labDo.size() != 0) ? w.getOrigin().getEnd() : whileEndUnlabDoLoc ;    
+           // The original code contained
+           //
+           //     (w.labDo.size() != 0) ? w.getOrigin().getEnd() : whileEndUnlabDoLoc ; 
+           //
+           // which does not implement the comment above.
+                (ast.stmts.size() != 1) ? ast.getOrigin().getEnd() : whileEndUnlabDoLoc ;
         newast.setOrigin(new Region(newastBeginLoc, whileEndLoc)) ;
         newast.col = ast.col;
         newast.line = ast.line;
@@ -858,7 +869,7 @@ public class PcalTranslate {
         newif.Then = (Vector) explodedThen.elementAt(0);
         newif.Else =  (Vector) explodedElse.elementAt(0);
         newif.setOrigin(ast.getOrigin()) ;
-        /**
+        /*
          * The LabelIf object ast has a labeled statement in its then clause iff
          * ast.labThen or explodedThen.elementAt(1) has non-zero length.
          * It has a labeled statement in its else clause iff

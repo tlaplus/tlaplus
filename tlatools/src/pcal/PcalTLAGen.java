@@ -616,7 +616,32 @@ public class PcalTLAGen
          * output, but it seems safer to maintain the current structure in which
          * each GenX for each statement type X does that.
          */
-        addLeftParen(ast.getOrigin());
+        
+        /*
+         * We set macroBeginLeft to the macroOriginBegin field of the first statement
+         * in ast.stmts with a non-null origin, and macroEndRight to the macroOriginEnd
+         * field of the last statement in ast.stmts with a non-null origin.
+         */
+        PCalLocation macroBeginLeft = null;
+        PCalLocation macroEndRight = null;
+        boolean nonNullNotFound = true;
+        for (int i = 0 ; i < ast.stmts.size(); i++) {
+           AST stmt = (AST) ast.stmts.elementAt(i);
+           if (stmt.getOrigin() != null) {
+               if (nonNullNotFound) {
+                   nonNullNotFound = false;
+                   macroBeginLeft = stmt.macroOriginBegin;
+               }
+               macroEndRight = stmt.macroOriginEnd;
+           }
+        }
+        
+        /*
+         * addLeftParenV used instead of addLeftParen because if the first statement
+         * that came from PlusCal code arose from a macro call, then we want the 
+         * location of the macro call rather than that of the macro's code.
+         */
+        addLeftParenV(ast, macroBeginLeft);
         for (int i = 0; i < ast.stmts.size(); i++)
         {
             GenStmt((AST) ast.stmts.elementAt(i), c, context, sb.toString(), sb.length());
@@ -688,7 +713,13 @@ public class PcalTLAGen
                }
            }
         }
-        addRightParen(ast.getOrigin());
+        /*
+         * We call addRightParenV rather than addRightParen because it the last statement 
+         * that came from the PCal code arose from the expansion of a macro call, then we 
+         * want the RightParen's location to be the end of the call, not the end of the
+         * macro's code.
+         */
+        addRightParenV(ast, macroEndRight);
         addOneLineOfTLA("");
 //        tlacode.addElement("");
     }
@@ -3985,7 +4016,51 @@ public class PcalTLAGen
         }
     }
     
+    /**
+     * Like addLeftParen(ast.getOrigin()), except that it uses
+     * loc the location if it is not null.  It is called by
+     * GenLabeledStmt and ast.getOrigin() should never be null.
+     * However, if it is, then we don't add a Paren; this insures 
+     * that the matching calls of addLeftParenV and addRightParenV
+     * both either do or don't add a Paren.
+     *  
+     * @param ast
+     */
+    private void addLeftParenV(AST ast, PCalLocation loc) {
+        if (ast.getOrigin() == null) {
+            return;
+        }
+        if (loc != null) {
+            mappingVectorNextLine.addElement(
+                    new MappingObject.LeftParen(loc));
+        }
+        else {
+            addLeftParen(ast.getOrigin());
+        }
+    }
 
+    /**
+     * Like addRightParen(ast.getOrigin()), except that it uses
+     * loc as the location if it is not null.  It is called by
+     * GenLabeledStmt and ast.getOrigin() should never be null.
+     * However, if it is, then we don't add a Paren; this insures 
+     * that the matching calls of addLeftParenV and addRightParenV
+     * both either do or don't add a Paren.
+     *  
+     * @param ast
+     */
+    private void addRightParenV(AST ast, PCalLocation loc) {
+        if (ast.getOrigin() == null) {
+            return;
+        }
+        if (loc!= null) {
+            mappingVectorNextLine.addElement(
+                    new MappingObject.RightParen(loc));
+        }
+        else {
+            addRightParen(ast.getOrigin());
+        }
+    }
 /* -------------------------------------------------------------------------- */
     /*
      * The following methods and classes of objects are used in GenSpec().

@@ -2694,13 +2694,26 @@ public class ParseAlgorithm
                                           macroDef.params,
                                           call.line,
                                           call.col ) ;
-      /*********************************************************************
-      * Copy lbl field of call to first statement of expansion.            *
-      *********************************************************************/
+      /*
+       * Copy lbl and lblOrigin fields of call to first statement of expansion.
+       * Set the macroOriginBegin and macroOriginEnd of the first and last
+       * statements.  Note that either (or both) of those fields could already
+       * be set if the statement arose from the expansion of a macro in the
+       * current macro.  However, since the PcalTLAGen.GenLabeledStmt method
+       * wants those fields set from the macro call in the main body of the
+       * PlusCal algorithm, which is the last one expanded in a sequence
+       * of macros calling macros.
+       */
       if (result.size() > 0) 
         { AST first = (AST) result.elementAt(0) ;
           first.lbl = call.lbl ;
           first.lblLocation = call.lblLocation ;
+          Region callOrigin = call.getOrigin();
+          if (callOrigin != null) {
+              first.macroOriginBegin = callOrigin.getBegin();
+              AST last = (AST) result.elementAt(result.size() - 1) ;
+              last.macroOriginEnd = callOrigin.getEnd();
+          }
         } ;
 
       return result ;

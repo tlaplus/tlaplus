@@ -123,6 +123,26 @@ public class AST
       * If the object was not inserted by macro expansion, then macroLine  *
       * equals -1.                                                         *
       *********************************************************************/
+    
+    /**
+     * If this AST is a statement that is the first statement resulting from
+     * expansion of a macro call , then macroOriginBegin is set to the  
+     * origin.begin value of the macro call.  It is set by 
+     * ParseAlgorithm.ExpandMacroCall and is used by PcalTLAGen.GenLabeledStmt 
+     * to set the MappingObject.LeftParen that marks the beginning of the 
+     * labeled statement's translation.
+     * 
+     * macroOriginEnd is similarly set for the last statement resulting from
+     * the expansion of a mapping call and used to set the labeled statement's
+     * translation's MappingObject.RightParen.
+     * 
+     * This is a Kludge to correct a bug in the TLA+ translation to
+     * PlusCal mapping.  These kludges are the result of implementing
+     * that mapping on top of the existing translator, rather than rewriting
+     * the translation. 
+     */
+    public PCalLocation macroOriginBegin = null;
+    public PCalLocation macroOriginEnd = null;
 
     public String lbl = "" ;
       /*********************************************************************
