@@ -286,6 +286,13 @@
             id="org.lamport.tla.toolbox.editor.basic.gotoPCalSource"
             name="Goto PCal Source">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.GotoMatchingParenHandler"
+            description="Goes to matching paren, where left paren is ( [ { &lt;&lt; or (*"
+            id="org.lamport.tla.toolbox.editor.basic.gotoMatchingParen"
+            name="Goto Matching Paren">
+      </command>
 
    </extension>
    <extension
@@ -481,6 +488,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="F10">
       </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.gotoMatchingParen"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+P">
+      </key>
       
    </extension>
    <extension
@@ -580,6 +593,10 @@
               </command>
               <command
                     commandId="org.lamport.tla.toolbox.editor.basic.unboxComment"
+                    style="push">
+              </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.gotoMatchingParen"
                     style="push">
               </command>
            </menuContribution>
