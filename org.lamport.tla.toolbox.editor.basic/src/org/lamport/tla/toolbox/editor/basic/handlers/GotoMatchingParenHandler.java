@@ -3,8 +3,14 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.IColorDecorator;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 
@@ -33,17 +39,27 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
         TLAEditor tlaEditor = EditorUtil.getTLAEditorWithFocus();
         
         //Dummy code that just raises an error message.
-        ErrorMessageEraser listener = new ErrorMessageEraser(tlaEditor);
+        RGB rgb = new RGB(255,0,0);
+        Color color = null; // new Color(null, rgb);
+        ErrorMessageEraser listener = new ErrorMessageEraser(tlaEditor, color);
         tlaEditor.getViewer().getTextWidget().addCaretListener(listener);
         tlaEditor.getEditorSite().getActionBars().getStatusLineManager().setErrorMessage("Error message");
-
+        
+        tlaEditor.getViewer().setTextColor(color, 0, 10, true);
+        ISourceViewer internalSourceViewer = tlaEditor.publicGetSourceViewer();
+        IDocument document = internalSourceViewer.getDocument();
+        internalSourceViewer.setRangeIndication(0, 10, false);
+       
         return null;
     }
 
     private static class ErrorMessageEraser implements CaretListener{
         TLAEditor editor;
-        private ErrorMessageEraser(TLAEditor e) {
+        Color color;
+        
+       private ErrorMessageEraser(TLAEditor e, Color col) {
             editor = e;
+            color = col;
         }
 
        public void caretMoved(CaretEvent event) {
@@ -51,6 +67,11 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
            editor.getEditorSite().getActionBars().getStatusLineManager().setErrorMessage(
                    null);
            editor.getViewer().getTextWidget().removeCaretListener(this);
+             editor.publicGetSourceViewer().removeRangeIndication();
+//           editor.resetHighlightRange();
+//           editor.showHighlightRangeOnly(false);
+//           editor.getViewer().setTextColor(new Color(null, 0,0,0), 0, 10, true);
+//           color.dispose();
 
        } 
     }
