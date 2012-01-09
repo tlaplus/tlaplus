@@ -38,4 +38,9 @@ public interface TLCStatisticsMXBean {
 	 * @return The depth of the state graph
 	 */
 	int getProgress();
+	
+	/**
+	 * @return The number of workers
+	 */
+	int getWorkerCount();
 }
