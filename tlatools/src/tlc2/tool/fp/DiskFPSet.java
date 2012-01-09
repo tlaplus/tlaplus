@@ -68,7 +68,8 @@ public class DiskFPSet extends FPSet {
 	 */
 	private final ReadersWriterLock rwLock;
 	/**
-	 * number of entries on disk
+	 * number of entries on disk. This is equivalent to the current number of fingerprints stored on disk.
+	 * @see @see DiskFPSet#getFileCnt()
 	 */
 	private long fileCnt;
 	/**
@@ -80,9 +81,23 @@ public class DiskFPSet extends FPSet {
 	 */
 	private long[][] tbl;
 	/**
-	 * number of entries in "tbl"
+	 * number of entries in "tbl". This is equivalent to the current number of fingerprints stored in in-memory cache/index.
+	 * @see DiskFPSet#getTblCnt()
 	 */
 	private int tblCnt; 
+
+	/**
+	 * Number of used slots in tbl by a bucket
+	 * @see DiskFPSet#getTblLoad()
+	 */
+	private int tblLoad;
+	
+	/**
+	 * Number of allocated bucket slots across the complete index table. tblCnt will always <= bucketCnt;
+	 * @see DiskFPSet#getBucketCapacity()
+	 */
+	private long bucketsCapacity;
+	
 	/**
 	 * one per worker thread
 	 */
@@ -122,11 +137,11 @@ public class DiskFPSet extends FPSet {
 	 * The load factor and initial capacity for the hashtable.
 	 */
 	private static final int LogMaxLoad = 4;
+	static final int InitialBucketCapacity = (1 << LogMaxLoad);
 	private static final int BucketSizeIncrement = 4;
 
 	// computed constants
 	static final int DefaultMaxTblCnt = (1 << LogDefaultMaxTblCnt);
-	private static final int LongSize = 8; // sizeof(long)
 
 	/* Number of fingerprints per braf buffer. */
 	public static final int NumEntriesPerPage = 8192 / LongSize;
@@ -136,14 +151,17 @@ public class DiskFPSet extends FPSet {
 	 * buffer of new fingerprints can contain up to
 	 * <code>DefaultMaxTblCnt</code> entries. When the buffer fills up, its
 	 * entries are atomically flushed to the FPSet's backing disk file.
+	 * 
+	 * @param maxInMemoryCapacity The number of fingerprints (not memory) this DiskFPSet should maximally store in-memory.
+	 * @throws RemoteException
 	 */
-	public DiskFPSet(final int maxMemoryInBytes) throws RemoteException {
+	protected DiskFPSet(final long maxInMemoryCapacity) throws RemoteException {
 		this.rwLock = new ReadersWriterLock();
 		this.fileCnt = 0;
 		this.flusherChosen = false;
 
 		// default if not specific value given
-		int maxMemCnt = maxMemoryInBytes;
+		long maxMemCnt = maxInMemoryCapacity;
 		if ((maxMemCnt - LogMaxLoad) <= 0) {
 			maxMemCnt = DefaultMaxTblCnt;
 		}
@@ -164,8 +182,13 @@ public class DiskFPSet extends FPSet {
 		// instead of changing maxTblCnd to long and pay an extra price when 
 		// comparing int and long every time put(long) is called, we set it to 
 		// Integer.MAX_VALUE instead. capacity can never grow bigger 
-		// (unless java supports 64bit array sizes)
-		this.maxTblCnt = (logMaxMemCnt >= 31) ? Integer.MAX_VALUE : (1 << logMaxMemCnt);
+		// (unless java starts supporting 64bit array sizes)
+		//
+		// maxTblCnt mathematically has to be an upper limit for the in-memory storage 
+		// so that it a disk flush occurs before an _evenly_ distributed fp distribution fills up 
+		// the collision buckets to a size that exceeds the VM limit (unevenly distributed 
+		// fp distributions can still cause a OutOfMemoryError which this guard).
+		this.maxTblCnt = (logMaxMemCnt >= 31) ? Integer.MAX_VALUE : (1 << logMaxMemCnt); // maxTblCnt := 2^logMaxMemCnt
 
 		// guard against negative maxTblCnt
 		Assert.check(maxTblCnt > capacity && capacity > tblCnt,
@@ -314,6 +337,11 @@ public class DiskFPSet extends FPSet {
 			}
 
 			// test if buffer is full
+			//TODO does not take the bucket load factor into account.
+			// Buckets can grow beyond VM heap size if:
+			// A) the FP distribution causes the index tbl to be unevenly populated.
+			// B) the FP distribution causes reassembles linear fill-up/down which 
+			// causes tblCnt * buckets with initial load factor to be allocated.
 			if (this.tblCnt >= this.maxTblCnt && !this.flusherChosen) {
 				// block until there are no more readers
 				this.flusherChosen = true;
@@ -388,12 +416,19 @@ public class DiskFPSet extends FPSet {
 	 * it and return "false". Precondition: msb(fp) = 0
 	 */
 	final boolean memInsert(long fp) {
+		// calculate hash value (just n least significat bits of fp) which is used as an index address
 		int index = (int) (fp & this.mask);
+		
+		// try finding an existing bucket 
 		long[] bucket = this.tbl[index];
+		
+		// no existing bucket found, create new one
 		if (bucket == null) {
-			bucket = new long[(1 << LogMaxLoad)];
+			bucket = new long[InitialBucketCapacity];
 			bucket[0] = fp;
 			this.tbl[index] = bucket;
+			this.bucketsCapacity += InitialBucketCapacity; 
+			this.tblLoad++;
 		} else {
 			// search for entry in existing bucket
 			int bucketLen = bucket.length;
@@ -419,6 +454,7 @@ public class DiskFPSet extends FPSet {
 					bucket = new long[bucketLen + BucketSizeIncrement];
 					System.arraycopy(oldBucket, 0, bucket, 0, bucketLen);
 					this.tbl[index] = bucket;
+					this.bucketsCapacity += BucketSizeIncrement;
 				}
 				// add to end of bucket
 				bucket[j] = fp;
@@ -618,6 +654,8 @@ public class DiskFPSet extends FPSet {
 			}
 		}
 		this.tblCnt = 0;
+		this.bucketsCapacity = 0;
+		this.tblLoad = 0;
 //		// reset statistic counters
 //		this.memHitCnt = 0;
 //
@@ -1015,29 +1053,65 @@ public class DiskFPSet extends FPSet {
 	private String getFPFilename() {
 		return this.filename + ".fp";
 	}
-
+	
 	/**
-	 * @return the tblCnt
+	 * @return the bucketsCapacity counting all allocated (used and unused) fp slots in the in-memory storage.
 	 */
-	public int getTblCnt() {
-		return tblCnt;
+	public long getBucketCapacity() {
+		return bucketsCapacity;
 	}
-
+	
 	/**
-	 * @return the fileCnt
+	 * @return The allocated (used and unused) array length of the first level in-memory storage.
 	 */
-	public long getFileCnt() {
-		return fileCnt;
+	public int getTblCapacity() {
+		return tbl.length;
 	}
 
 	/**
 	 * @return the index.length
 	 */
-	public int getIndexCnt() {
+	public int getIndexCapacity() {
 		if(index == null) {
 			return 0;
 		}
 		return index.length;
+	}
+
+	/**
+	 * @return {@link DiskFPSet#getBucketCapacity()} + {@link DiskFPSet#getTblCapacity()} + {@link DiskFPSet#getIndexCapacity()}.
+	 */
+	public long getOverallCapacity() {
+		return getBucketCapacity() + getTblCapacity() + getIndexCapacity();
+	}
+	
+	/**
+	 * @return	Number of used slots in tbl by a bucket
+	 * {@link DiskFPSet#getTblLoad()} <= 
+	 */
+	public int getTblLoad() {
+		return tblLoad;
+	}
+	
+	/**
+	 * @return Number of used slots in all buckets. Always equivalent to amount of fps stored in memory (First level tbl isn't used to store fps).
+	 */
+	private long getBucketLoad() {
+		return getTblCnt();
+	}
+	
+	/**
+	 * @return the amount of fingerprints stored in memory. This is less or equal to {@link DiskFPSet#getTblCnt()} depending on if there collision buckets exist. 
+	 */
+	public int getTblCnt() {
+		return tblCnt;
+	}
+	
+	/**
+	 * @return the amount of fingerprints stored on disk
+	 */
+	public long getFileCnt() {
+		return fileCnt;
 	}
 	
 	/**

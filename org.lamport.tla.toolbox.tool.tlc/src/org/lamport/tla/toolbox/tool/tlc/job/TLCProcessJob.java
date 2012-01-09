@@ -23,10 +23,10 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
-import org.lamport.tla.toolbox.tool.tlc.util.TLCRuntime;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.TLC;
+import util.TLCRuntime;
 
 /**
  * A job to launch TLC as a separate process

@@ -53,7 +53,7 @@ public class ModelChecker extends AbstractChecker
      * Modified on 6 Apr 2010 by Yuan Yu to add fpMemSize parameter.
      */
     public ModelChecker(String specFile, String configFile, String dumpFile, boolean deadlock, String fromChkpt,
-            FilenameToStream resolver, SpecObj specObj, long fpMemSize, int fpBits) throws EvalException, IOException
+            FilenameToStream resolver, SpecObj specObj, long fpMemSizeInBytes, int fpBits) throws EvalException, IOException
     {
         // call the abstract constructor
         super(specFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
@@ -62,7 +62,8 @@ public class ModelChecker extends AbstractChecker
         this.theStateQueue = new DiskStateQueue(this.metadir);
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
-		this.theFPSet = FPSet.getFPSet(fpBits, fpMemSize / 20);
+        //TODO why used to div by 20?
+		this.theFPSet = FPSet.getFPSet(fpBits, fpMemSizeInBytes);
 
         // initialize the set
         this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, specFile);

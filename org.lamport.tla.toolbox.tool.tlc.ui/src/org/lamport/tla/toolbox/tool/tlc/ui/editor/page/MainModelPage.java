@@ -64,14 +64,13 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.tool.tlc.util.TLCRuntime;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
-import tlc2.TLC;
 import tlc2.tool.fp.FPSet;
+import util.TLCRuntime;
 
 /**
  * Main model page represents information for most users
@@ -193,7 +192,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// 1.) Minumum TLC requirements 
 		// Use hard-coded minfpmemsize value * 4 * 10 regardless of how big the
 		// model is. *4 because .25 mem is used for FPs
-		double lowerLimit = ( (TLC.MinFpMemSize / 1024 / 1024 * 4d) / phySysMem) / 2;
+		double lowerLimit = ( (TLCRuntime.MinFpMemSize / 1024 / 1024 * 4d) / phySysMem) / 2;
 		x[s] = lowerLimit;
 		y[s++] = 0d;
 		

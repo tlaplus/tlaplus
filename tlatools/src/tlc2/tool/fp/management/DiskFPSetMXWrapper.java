@@ -37,7 +37,7 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	 * @see tlc2.tool.fp.management.DiskFPSetSamplerMXBean#getIndexCnt()
 	 */
 	public int getIndexCnt() {
-		return fpset.getIndexCnt();
+		return fpset.getIndexCapacity();
 	}
 
 	/* (non-Javadoc)

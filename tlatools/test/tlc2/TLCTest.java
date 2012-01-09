@@ -1,5 +1,6 @@
 package tlc2;
 
+import util.TLCRuntime;
 import junit.framework.TestCase;
 
 public class TLCTest extends TestCase {
@@ -25,7 +26,7 @@ public class TLCTest extends TestCase {
 	public void testHandleParametersAllocateLowerBound() {
 		final TLC tlc = new TLC();
 		assertTrue(tlc.handleParameters(new String[] {"-fpmem", "0", "MC"}));
-		assertEquals("Allocating to little should result in min default", TLC.MinFpMemSize, tlc.getFpMemSize());
+		assertEquals("Allocating to little should result in min default", TLCRuntime.MinFpMemSize, tlc.getFpMemSize());
 	}
 	
 	/**

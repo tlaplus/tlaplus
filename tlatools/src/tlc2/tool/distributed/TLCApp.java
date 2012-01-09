@@ -8,7 +8,6 @@ package tlc2.tool.distributed;
 import java.io.File;
 import java.io.IOException;
 
-import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
 import tlc2.tool.StateVec;
@@ -21,6 +20,7 @@ import tlc2.util.FP64;
 import tlc2.value.Value;
 import util.FileUtil;
 import util.FilenameToStream;
+import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -145,29 +145,7 @@ public class TLCApp extends DistApp {
 	 * @return the fpMemSize
 	 */
 	public long getFpMemSize() {
-        // determine amount of memory to be used for fingerprints
-        final long maxMemory = Runtime.getRuntime().maxMemory();
-        // -fpmem is given
-		if (fpMemSize == -1)
-        {
-			// .25 * maxMemory
-            fpMemSize = maxMemory >> 2;
-        }
-		// -fpmemratio is given
-		if (0 <= fpMemSize && fpMemSize <= 1)
-		{
-			fpMemSize = maxMemory * fpMemSize;
-		}
-        if (fpMemSize < TLC.MinFpMemSize) 
-        {
-            fpMemSize = TLC.MinFpMemSize;
-        }
-        if (fpMemSize >= maxMemory) 
-        { 
-			// .75*maxMemory
-            fpMemSize = maxMemory - (maxMemory >> 2);
-        }
-        return (long) fpMemSize;
+		return TLCRuntime.getInstance().getFPMemSize(fpMemSize);
 	}
 
 	/* (non-Javadoc)

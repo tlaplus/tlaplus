@@ -22,6 +22,7 @@ import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
+import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -63,15 +64,9 @@ public class TLC
     // handle to the cancellable instance (MC or Simulator)
     private Cancelable instance;
     /**
-     * fpMemSize is the number of bytes of memory to allocate
-     * to storing fingerprints of found states in memory.  It
-     * defaults to .25 * runtime.maxMemory().
-     * The minimum value of fpMemSize is MinFpMemSize unless
-     * that's bigger than Runtime.getRuntime()).maxMemory(), in
-     * which case it is .75 * (Runtime.getRuntime()).maxMemory().
+     * @see TLCRuntime#getFPMemSize(double)
      */
     private double fpMemSize;
-    public static final long MinFpMemSize = 20 * (1 << 19);
     private int fpBits;
     
     /**
@@ -561,28 +556,7 @@ public class TLC
             }
         }
         
-        // determine amount of memory to be used for fingerprints
-        final long maxMemory = Runtime.getRuntime().maxMemory();
-        // -fpmem is given
-		if (fpMemSize == -1)
-        {
-			// .25 * maxMemory
-            fpMemSize = maxMemory >> 2;
-        }
-		// -fpmemratio is given
-		if (0 <= fpMemSize && fpMemSize <= 1)
-		{
-			fpMemSize = maxMemory * fpMemSize;
-		}
-        if (fpMemSize < MinFpMemSize) 
-        {
-            fpMemSize = MinFpMemSize;
-        }
-        if (fpMemSize >= maxMemory) 
-        { 
-			// .75*maxMemory
-            fpMemSize = maxMemory - (maxMemory >> 2);
-        }
+        fpMemSize = TLCRuntime.getInstance().getFPMemSize(fpMemSize);
         
         if (mainFile == null)
         {

@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import junit.framework.TestCase;
 import tlc2.TLC;
+import util.TLCRuntime;
 
 public abstract class AbstractFPSetTest extends TestCase {
 
@@ -44,28 +45,13 @@ public abstract class AbstractFPSetTest extends TestCase {
 	 * @return A new {@link FPSet} instance
 	 * @throws IOException
 	 */
-	protected abstract FPSet getFPSet(int freeMemory) throws IOException;
+	protected abstract FPSet getFPSet(long freeMemoryInBytes) throws IOException;
 
 	/**
 	 * Implementation based on {@link TLC#handleParameters(String[])}
 	 * @return
 	 */
-	protected int getFreeMemory() {
-		final Runtime runtime = Runtime.getRuntime();
-		final long MinFpMemSize = 20 * (1 << 19);
-		
-		long fpMemSize = 0;
-	
-		if (fpMemSize == -1) {
-			fpMemSize = runtime.maxMemory() >> 2;
-		}
-		if (fpMemSize < MinFpMemSize) {
-			fpMemSize = MinFpMemSize;
-		}
-		if (fpMemSize >= runtime.maxMemory()) {
-			fpMemSize = runtime.maxMemory() - (runtime.maxMemory() >> 2);
-		}
-	
-		return (int) fpMemSize / 20;
+	protected long getFreeMemoryInBytes() {
+		return TLCRuntime.getInstance().getFPMemSize(.9d);
 	}
 }

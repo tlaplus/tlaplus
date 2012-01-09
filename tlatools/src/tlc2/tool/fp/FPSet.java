@@ -34,17 +34,33 @@ import util.FileUtil;
 @SuppressWarnings("serial")
 public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 {
+	/**
+	 * Size of a Java long in bytes
+	 */
+	protected static final int LongSize = 8;
+
+	/**
+	 * @see FPSet#getFPSet(int, long)
+	 * @return
+	 * @throws RemoteException 
+	 */
+	public static FPSet getFPSet() throws RemoteException {
+		return getFPSet(0, -1);
+	}
 	
 	/**
 	 * Creates a new {@link FPSet} depending on what the caller wants.
 	 * @param fpBits if 0, a {@link DiskFPSet} will be returned, a {@link MultiFPSet} otherwise.
-	 * @param fpMemSize
+	 * @param fpMemSizeInBytes
 	 * @return
 	 * @throws RemoteException
 	 */
-	public static FPSet getFPSet(int fpBits, long fpMemSize) throws RemoteException {
+	public static FPSet getFPSet(int fpBits, long fpMemSizeInBytes) throws RemoteException {
+		//TODO verify convertion of physical ram into logical fp amount
+		fpMemSizeInBytes = fpMemSizeInBytes / LongSize;
+		
 		if (fpBits == 0) {
-			final DiskFPSet diskFPSet = new DiskFPSet((int) fpMemSize);
+			final DiskFPSet diskFPSet = new DiskFPSet((int) fpMemSizeInBytes);
 			try {
 				new DiskFPSetMXWrapper(diskFPSet);
 			} catch (NotCompliantMBeanException e) {
@@ -54,7 +70,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 			}
 			return diskFPSet;
 		} else {
-			return new MultiFPSet(fpBits, fpMemSize);
+			return new MultiFPSet(fpBits, fpMemSizeInBytes);
 		}
 	}
 	
