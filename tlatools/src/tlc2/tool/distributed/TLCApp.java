@@ -8,6 +8,7 @@ package tlc2.tool.distributed;
 import java.io.File;
 import java.io.IOException;
 
+import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
 import tlc2.tool.StateVec;
@@ -88,7 +89,6 @@ public class TLCApp extends DistApp {
      * which case it is .75 * (Runtime.getRuntime()).maxMemory().
      */
     private double fpMemSize;
-    public static final long MinFpMemSize = 20 * (1 << 19);
     
 	/**
 	 * Statistics how many states this app computed 
@@ -158,9 +158,9 @@ public class TLCApp extends DistApp {
 		{
 			fpMemSize = maxMemory * fpMemSize;
 		}
-        if (fpMemSize < MinFpMemSize) 
+        if (fpMemSize < TLC.MinFpMemSize) 
         {
-            fpMemSize = MinFpMemSize;
+            fpMemSize = TLC.MinFpMemSize;
         }
         if (fpMemSize >= maxMemory) 
         { 
