@@ -32,11 +32,12 @@ public class TLCApp extends DistApp {
 
 	/* Constructors */
 	public TLCApp(String specFile, String configFile, boolean deadlock,
-			String fromChkpt, int fpBits) throws IOException {
+			String fromChkpt, int fpBits, double fpMemSize) throws IOException {
 		this(specFile, configFile, deadlock, true, null, fpBits);
 
 		this.fromChkpt = fromChkpt;
 		this.metadir = FileUtil.makeMetaDir(this.tool.specDir, fromChkpt);
+		this.fpMemSize = fpMemSize;
 	}
 
 	// TODO too many constructors redefinitions, replace with this(..) calls
@@ -78,6 +79,17 @@ public class TLCApp extends DistApp {
 	private String fromChkpt = null; // recover from this checkpoint
 	private String metadir = null; // the directory pathname for metadata
 	private int fpBits = -1;
+    /**
+     * fpMemSize is the number of bytes of memory to allocate
+     * to storing fingerprints of found states in memory.  It
+     * defaults to .25 * runtime.maxMemory().
+     * The minimum value of fpMemSize is MinFpMemSize unless
+     * that's bigger than Runtime.getRuntime()).maxMemory(), in
+     * which case it is .75 * (Runtime.getRuntime()).maxMemory().
+     */
+    private double fpMemSize;
+    public static final long MinFpMemSize = 20 * (1 << 19);
+    
 	/**
 	 * Statistics how many states this app computed 
 	 */
@@ -127,6 +139,35 @@ public class TLCApp extends DistApp {
 	
 	public final int getFPBits() {
 		return fpBits;
+	}
+
+	/**
+	 * @return the fpMemSize
+	 */
+	public long getFpMemSize() {
+        // determine amount of memory to be used for fingerprints
+        final long maxMemory = Runtime.getRuntime().maxMemory();
+        // -fpmem is given
+		if (fpMemSize == -1)
+        {
+			// .25 * maxMemory
+            fpMemSize = maxMemory >> 2;
+        }
+		// -fpmemratio is given
+		if (0 <= fpMemSize && fpMemSize <= 1)
+		{
+			fpMemSize = maxMemory * fpMemSize;
+		}
+        if (fpMemSize < MinFpMemSize) 
+        {
+            fpMemSize = MinFpMemSize;
+        }
+        if (fpMemSize >= maxMemory) 
+        { 
+			// .75*maxMemory
+            fpMemSize = maxMemory - (maxMemory >> 2);
+        }
+        return (long) fpMemSize;
 	}
 
 	/* (non-Javadoc)
@@ -295,6 +336,7 @@ public class TLCApp extends DistApp {
 		int fpIndex = 0;
 		int fpBits = 1;
 		String fromChkpt = null;
+		double fpmem = -1;
 
 		int index = 0;
 		while (index < args.length) {
@@ -388,6 +430,8 @@ public class TLCApp extends DistApp {
 					printErrorMsg("Error: expect an integer for -workers option.");
 					return null;
 				}
+				
+				
 			} else if (args[index].equals("-fpbits")) {
 				index++;
 				if (index < args.length) {
@@ -410,6 +454,37 @@ public class TLCApp extends DistApp {
 					printErrorMsg("Error: expect an integer for -workers option.");
 					return null;
 				}
+            } else if (args[index].equals("-fpmem"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    try
+                    {
+                    	// -fpmem can be used in two ways:
+                    	// a) to set the relative memory to be used for fingerprints (being machine independent)
+                    	// b) to set the absolute memory to be used for fingerprints
+                    	//
+                    	// In order to set memory relatively, a value in the domain [0.0, 1.0] is interpreted as a fraction.
+                    	// A value in the [2, Double.MaxValue] domain allocates memory absolutely.
+                    	//
+						// Independently of relative or absolute mem allocation,
+						// a user cannot allocate more than JVM heap space
+						// available. Conversely there is the lower hard limit TLC#MinFpMemSize.
+                    	fpmem = Double.parseDouble(args[index]);
+                        if (fpmem < 0) {
+                            printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
+                            return null;
+                        } else if (fpmem > 1) {
+                        	fpmem = (long) fpmem;
+                        }
+                        index++;
+                    } catch (Exception e)
+                    {
+                        printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
+                        return null;
+                    }
+                }
 			} else if (args[index].equals("-metadir")) {
 				index++;
                 if (index < args.length)
@@ -450,7 +525,7 @@ public class TLCApp extends DistApp {
 		}
 		FP64.Init(fpIndex);
 
-		return new TLCApp(specFile, configFile, deadlock, fromChkpt, fpBits);
+		return new TLCApp(specFile, configFile, deadlock, fromChkpt, fpBits, fpmem);
 	}
 
 	private static void printErrorMsg(String msg) {
