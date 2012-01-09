@@ -3,7 +3,7 @@
 package tlc2.tool.management;
 
 import java.io.IOException;
-
+import java.rmi.RemoteException;
 import javax.management.NotCompliantMBeanException;
 
 import tlc2.TLCGlobals;
