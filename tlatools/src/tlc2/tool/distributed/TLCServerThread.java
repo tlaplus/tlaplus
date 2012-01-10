@@ -90,7 +90,7 @@ public class TLCServerThread extends IdThread {
 			this.uri = worker.getURI();
 		} catch (RemoteException e) {
 			// TODO handle more gracefully
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 		}
 		// update thread name
 		setName("TLCServerThread-[" + uri.toASCIIString() + "]");
@@ -272,9 +272,9 @@ public class TLCServerThread extends IdThread {
 			if (barrier != null)
 				barrier.await();
 		} catch (InterruptedException e2) {
-			e2.printStackTrace();
+			MP.printError(EC.GENERAL, e2);
 		} catch (BrokenBarrierException e2) {
-			e2.printStackTrace();
+			MP.printError(EC.GENERAL, e2);
 		}
 	}
 

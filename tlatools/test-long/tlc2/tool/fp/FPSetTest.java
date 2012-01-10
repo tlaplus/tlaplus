@@ -13,7 +13,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 		Random rnd = new Random(System.currentTimeMillis());
 		
 		// amount to ~514 (mb) with 4gb system mem
-		int freeMemory = getFreeMemory();
+		long freeMemory = getFreeMemoryInBytes();
 		final FPSet fpSet = getFPSet(freeMemory);
 		fpSet.init(1, tmpdir, filename);
 	
@@ -41,7 +41,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	public void testMaxFPSetSize() throws IOException {
 	
 		//
-		final FPSet fpSet = getFPSet(getFreeMemory());
+		final FPSet fpSet = getFPSet(getFreeMemoryInBytes());
 		fpSet.init(1, tmpdir, filename);
 	
 		long counter = 0;

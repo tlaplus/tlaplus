@@ -348,7 +348,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			} catch (Throwable e) {
 				// Assert.printStack(e);
 				server.done = true;
-				MP.printMessage(EC.GENERAL, e.getMessage());
+				MP.printError(EC.GENERAL, e.getMessage(), e);
 				if (server.errState != null) {
 					MP.printMessage(EC.TLC_INITIAL_STATE, "While working on the initial state: " + server.errState);
 				}
@@ -358,9 +358,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				try {
 					server.doInit();
 				} catch (Throwable e1) {
-					MP.printMessage(EC.GENERAL, "The error occurred when TLC was evaluating the nested"
+					MP.printError(EC.GENERAL, "The error occurred when TLC was evaluating the nested"
 									+ "\nexpressions at the following positions:\n"
-									+ server.work.printCallStack());
+									+ server.work.printCallStack(), e);
 				}
 			}
 		}
@@ -545,9 +545,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			System.gc();
 			// Assert.printStack(e);
 			if (e instanceof StackOverflowError) {
-				MP.printError(EC.SYSTEM_STACK_OVERFLOW);
+				MP.printError(EC.SYSTEM_STACK_OVERFLOW, e);
 			} else if (e instanceof OutOfMemoryError) {
-				MP.printError(EC.SYSTEM_OUT_OF_MEMORY);
+				MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
 			} else {
 				MP.printError(EC.GENERAL, e);
 			}

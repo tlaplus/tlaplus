@@ -13,8 +13,8 @@ public class Bug242DiskFPSetTest extends AbstractFPSetTest {
 	 * @see tlc2.tool.fp.AbstractFPSetTest#getFPSet(int)
 	 */
 	@Override
-	protected FPSet getFPSet(int freeMemory) throws IOException {
-		final DummyDiskFPSet fpSet = new DummyDiskFPSet(freeMemory);
+	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
+		final DummyDiskFPSet fpSet = new DummyDiskFPSet(freeMemoryInBytes);
 		return fpSet;
 	}
 	

@@ -37,7 +37,7 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	 * @see tlc2.tool.fp.management.DiskFPSetSamplerMXBean#getIndexCnt()
 	 */
 	public int getIndexCnt() {
-		return fpset.getIndexCnt();
+		return fpset.getIndexCapacity();
 	}
 
 	/* (non-Javadoc)
@@ -87,5 +87,33 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	 */
 	public int getCheckPointMark() {
 		return fpset.getCheckPointMark();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getBucketCapacity()
+	 */
+	public long getBucketCapacity() {
+		return fpset.getBucketCapacity();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getTblCapacity()
+	 */
+	public int getTblCapacity() {
+		return fpset.getTblCapacity();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getOverallCapacity()
+	 */
+	public long getOverallCapacity() {
+		return fpset.getOverallCapacity();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getTblLoad()
+	 */
+	public int getTblLoad() {
+		return fpset.getTblLoad();
 	}
 }

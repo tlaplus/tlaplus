@@ -10,8 +10,8 @@ import java.rmi.RemoteException;
 @SuppressWarnings("serial")
 public class DummyDiskFPSet extends DiskFPSet {
 
-	public DummyDiskFPSet(int maxMemCnt) throws RemoteException {
-		super(maxMemCnt);
+	public DummyDiskFPSet(long maxRealMemInBytes) throws RemoteException {
+		super(maxRealMemInBytes / FPSet.LongSize);
 	}
 
 	public void setIndex(long[] anIndex) {

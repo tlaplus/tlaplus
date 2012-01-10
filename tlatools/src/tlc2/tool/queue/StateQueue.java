@@ -153,7 +153,7 @@ public abstract class StateQueue {
 			try {
 				this.wait();
 			} catch (Exception e) {
-				MP.printError(EC.GENERAL, (e.getMessage() == null) ? e.toString() : e.getMessage());
+				MP.printError(EC.GENERAL, (e.getMessage() == null) ? e.toString() : e.getMessage(), e);
 				System.exit(1);
 			}
 			this.numWaiting--;
@@ -194,7 +194,7 @@ public abstract class StateQueue {
 					// is going to wake us up by calling isAvail()
 					this.mu.wait();
 				} catch (Exception e) {
-					MP.printError(EC.GENERAL, (e.getMessage() == null) ? e.toString() : e.getMessage());
+					MP.printError(EC.GENERAL, (e.getMessage() == null) ? e.toString() : e.getMessage(), e);
 					System.exit(1);
 				}
 			}

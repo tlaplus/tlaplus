@@ -8,7 +8,7 @@ public class DiskFPSetTest extends FPSetTest {
 	 * @see tlc2.tool.fp.AbstractFPSetTest#getFPSet(int)
 	 */
 	@Override
-	protected FPSet getFPSet(int freeMemory) throws IOException {
+	protected FPSet getFPSet(long freeMemory) throws IOException {
 		return new DiskFPSet(freeMemory);
 	}
 }
