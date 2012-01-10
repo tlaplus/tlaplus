@@ -1087,17 +1087,10 @@ public class DiskFPSet extends FPSet {
 	
 	/**
 	 * @return	Number of used slots in tbl by a bucket
-	 * {@link DiskFPSet#getTblLoad()} <= 
+	 * {@link DiskFPSet#getTblLoad()} <= {@link DiskFPSet#getTblCnt()}
 	 */
 	public int getTblLoad() {
 		return tblLoad;
-	}
-	
-	/**
-	 * @return Number of used slots in all buckets. Always equivalent to amount of fps stored in memory (First level tbl isn't used to store fps).
-	 */
-	private long getBucketLoad() {
-		return getTblCnt();
 	}
 	
 	/**

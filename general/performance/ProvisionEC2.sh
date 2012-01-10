@@ -215,6 +215,9 @@ sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tl
 sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::memhitcnt
 sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::growdiskmark
 sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::checkpointmark
+sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::bucketcapacity
+sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::tblcapacity
+sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::overallcapacity
 # activate ModelChecker stats
 sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:ModelChecker::distinctstatesgenerated
 sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:ModelChecker::progress
