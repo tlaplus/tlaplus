@@ -807,8 +807,11 @@ public class DiskFPSet extends FPSet {
 					eof = true;
 				}
 			} else {
-				Assert.check(value != buff[i], EC.TLC_FP_VALUE_ALREADY_ON_DISK,
-						String.valueOf(value));
+				// prevent converting every long to String when assertion holds (this is expensive)
+				if(value == buff[i]) {
+					Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
+							String.valueOf(value));
+				}
 				this.writeFP(outRAF, buff[i++]);
 			}
 		}
