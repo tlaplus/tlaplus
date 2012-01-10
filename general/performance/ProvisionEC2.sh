@@ -158,15 +158,6 @@ dpkg -i nxclient_3.5.0-7_amd64.deb
 dpkg -i nxnode_3.5.0-7_amd64.deb
 dpkg -i nxserver_3.5.0-9_amd64.deb
 
-# create vncserver passwd file to start vncserver without user interference
-#mkdir -p /home/ubuntu/.vnc/
-#echo "��rI)" > /home/ubuntu/.vnc/passwd
-#chown -R ubuntu:ubuntu /home/ubuntu/.vnc
-
-# create vncserver passwd file to start vncserver without user interference
-#mkdir -p /root/.vnc/
-#echo "��rI)" > /root/.vnc/passwd
-
 mkdir -p /mnt/kuppe
 chown kuppe:kuppe /mnt/kuppe
 
