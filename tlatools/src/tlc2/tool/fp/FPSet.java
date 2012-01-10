@@ -17,11 +17,13 @@ import java.rmi.server.UnicastRemoteObject;
 import javax.management.NotCompliantMBeanException;
 
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
 import tlc2.tool.distributed.FPSetManager;
 import tlc2.tool.distributed.FPSetRMI;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
+import util.Assert;
 import util.FileUtil;
 
 /**
@@ -57,10 +59,11 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 */
 	public static FPSet getFPSet(int fpBits, long fpMemSizeInBytes) throws RemoteException {
 		//TODO verify convertion of physical ram into logical fp amount
-		fpMemSizeInBytes = fpMemSizeInBytes / LongSize;
+		long fpMemSizeInFPs = fpMemSizeInBytes / LongSize;
+		Assert.check(fpMemSizeInFPs < fpMemSizeInBytes, EC.GENERAL);
 		
 		if (fpBits == 0) {
-			final DiskFPSet diskFPSet = new DiskFPSet((int) fpMemSizeInBytes);
+			final DiskFPSet diskFPSet = new DiskFPSet(fpMemSizeInFPs);
 			try {
 				new DiskFPSetMXWrapper(diskFPSet);
 			} catch (NotCompliantMBeanException e) {
@@ -70,7 +73,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 			}
 			return diskFPSet;
 		} else {
-			return new MultiFPSet(fpBits, fpMemSizeInBytes);
+			return new MultiFPSet(fpBits, fpMemSizeInFPs);
 		}
 	}
 	
