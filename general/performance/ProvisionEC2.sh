@@ -91,6 +91,9 @@ apt-get --no-install-recommends install gnome-core gdm gnome-session-fallback fi
 # remove overlay scrollbar. it messes with eclipse
 apt-get purge overlay-scrollbar liboverlay-scrollbar-0.2-0 liboverlay-scrollbar3-0.2-0 -y
 
+# clear cached packages to save disk space
+apt-get clean
+
 # try saving a few bytes
 P1=/etc/munin/plugins
 P2=/usr/share/munin/plugins
