@@ -123,7 +123,7 @@ public class StatePoolWriter extends Thread {
     }
     catch (Exception e) {
       // Assert.printStack(e);
-        MP.printError(EC.SYSTEM_ERROR_WRITING_POOL, e.getMessage());
+        MP.printError(EC.SYSTEM_ERROR_WRITING_POOL, e.getMessage(), e);
       System.exit(1);
     }
   }

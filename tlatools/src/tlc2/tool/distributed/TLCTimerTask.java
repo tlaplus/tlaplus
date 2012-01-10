@@ -38,7 +38,7 @@ public class TLCTimerTask extends TimerTask {
 				}
 			} catch (MalformedURLException e) {
 				// not expected to happen
-				e.printStackTrace();
+				MP.printError(EC.GENERAL, e);
 			} catch (RemoteException e) {
 				exitWorker();
 			} catch (NotBoundException e) {
@@ -53,7 +53,7 @@ public class TLCTimerTask extends TimerTask {
 			worker.exit();
 		} catch (NoSuchObjectException e) {
 			// not expected to happen
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 		}
 	}
 }

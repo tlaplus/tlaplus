@@ -1085,13 +1085,13 @@ public class MP
      * @param cause
      * @param includeStackTrace boolean flag if the stack-trace should be printed
      */
-    public static void printError(int errorCode, Throwable cause, boolean includeStackTrace)
+    private static void printError(int errorCode, String cause, Throwable throwable, boolean includeStackTrace)
     {
-        printError(errorCode, cause.getMessage());
+        printError(errorCode, cause);
         if (includeStackTrace)
         {
             DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)"); //$NON-NLS-1$
-            cause.printStackTrace(ToolIO.out);
+            throwable.printStackTrace(ToolIO.out);
         }
     }
 
@@ -1100,9 +1100,31 @@ public class MP
      * @param errorCode
      * @param cause
      */
+    public static void printError(int errorCode, String[] cause, Throwable throwable)
+    {
+        printError(errorCode, cause);
+        DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)"); //$NON-NLS-1$
+        throwable.printStackTrace(ToolIO.out);
+    }
+    
+    /**
+     * Prints the error by code and reports the exception message 
+     * @param errorCode
+     * @param cause
+     */
+    public static void printError(int errorCode, String cause, Throwable throwable)
+    {
+        printError(errorCode, cause, throwable, true);
+    }
+    
+    /**
+     * Prints the error by code and reports the exception message 
+     * @param errorCode
+     * @param cause
+     */
     public static void printError(int errorCode, Throwable cause)
     {
-        printError(errorCode, cause, true);
+        printError(errorCode, cause.getMessage(), cause, true);
     }
 
     /**

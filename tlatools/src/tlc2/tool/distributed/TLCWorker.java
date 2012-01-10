@@ -185,19 +185,19 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					"getPort", (Class[]) null);
 			return (Integer) method.invoke(liveRef, (Object[]) null);
 		} catch (SecurityException e) {
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 		} catch (ClassCastException e) {
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 		} catch (NoSuchMethodException e) {
-			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION);
+			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION, e);
 		} catch (IllegalAccessException e) {
-			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION);
+			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION, e);
 		} catch (InvocationTargetException e) {
-			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION);
+			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION, e);
 		} catch (ClassNotFoundException e) {
-			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION);
+			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION, e);
 		}
 		return 0;
 	}
@@ -276,7 +276,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					+ new Date());
 		} catch (Throwable e) {
 			// Assert.printStack(e);
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 			ToolIO.out.println("Error: Failed to start worker "
 					+ " for server " + serverName + ".\n" + e.getMessage());
 		}

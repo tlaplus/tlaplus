@@ -182,7 +182,7 @@ public class StatePoolReader extends Thread {
     catch (Exception e) 
     {
       // Assert.printStack(e);
-      MP.printError(EC.SYSTEM_ERROR_READING_POOL, e.getMessage());
+      MP.printError(EC.SYSTEM_ERROR_READING_POOL, e.getMessage(), e);
       System.exit(1);
     }
   }

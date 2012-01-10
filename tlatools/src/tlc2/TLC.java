@@ -669,7 +669,7 @@ public class TLC
             {
                 // SZ 29.07.2009 
                 // printing the stack trace of the runtime exceptions
-                MP.printError(EC.GENERAL, e, false);
+                MP.printError(EC.GENERAL, e);
                 // e.printStackTrace();
             } else
             {

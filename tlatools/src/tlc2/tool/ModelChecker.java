@@ -604,20 +604,13 @@ public class ModelChecker extends AbstractChecker
                 {
                     if (e instanceof StackOverflowError)
                     {
-                        MP.printError(EC.SYSTEM_STACK_OVERFLOW);
+                        MP.printError(EC.SYSTEM_STACK_OVERFLOW, e);
                     } else if (e instanceof OutOfMemoryError)
                     {
-                        MP.printError(EC.SYSTEM_OUT_OF_MEMORY);
+                        MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
                     } else if (e.getMessage() != null)
                     {
-                        MP.printError(EC.GENERAL, e.getMessage());
-                    } else  
-                    { 
-                    /**
-                     * This case added by LL on 12 Mar 2010 because e.getMessage() = null
-                     * for a NullPointerException.  (How logical!?)
-                     */
-                        MP.printError(EC.GENERAL, e.toString());
+                        MP.printError(EC.GENERAL, e.getMessage() == null ? e.toString() : e.getMessage(), e);
                     }
                     this.trace.printTrace(curState, succState);
                     this.theStateQueue.finishAll();
