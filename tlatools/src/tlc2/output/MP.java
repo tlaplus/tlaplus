@@ -1207,6 +1207,31 @@ public class MP
         }
         DebugPrinter.print("leaving printWarning(int, String[])"); //$NON-NLS-1$
     }
+    
+    /**
+     * Prints a warning (if the global switch is enabled and it is not a duplicate warning)
+     * @param errorCode
+     * @param parameters
+     */
+    public static void printWarning(int errorCode, String parameters, Throwable e)
+    {
+        DebugPrinter.print("entering printWarning(int, String, Exception) with errorCode " + errorCode); //$NON-NLS-1$
+        // only print warnings if the global warning switch was enabled
+        if (TLCGlobals.warn)
+        {
+            // construct the message
+            String message = getMessage(WARNING, errorCode, new String[]{parameters});
+            // if the message has not been printed
+            if (instance.warningHistory.put(message) == null)
+            {
+                // print it
+                ToolIO.out.println(message);
+            }
+            DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)"); //$NON-NLS-1$
+            e.printStackTrace(ToolIO.out);
+        }
+        DebugPrinter.print("leaving printWarning(int, String[])"); //$NON-NLS-1$
+    }
 
     /**
      * Replaces the place holders by parameters 
