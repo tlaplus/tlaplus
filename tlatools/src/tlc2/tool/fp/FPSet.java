@@ -37,6 +37,12 @@ import util.FileUtil;
 public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 {
 	/**
+	 * This is assumed to be the auxiliary storage for a fingerprint that need
+	 * to be respected to not cause an OOM.
+	 */
+	//TODO verify this statement
+	private static final int Auxiliary_Storage_Requirement = 12;
+	/**
 	 * Size of a Java long in bytes
 	 */
 	protected static final int LongSize = 8;
@@ -59,7 +65,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 */
 	public static FPSet getFPSet(int fpBits, long fpMemSizeInBytes) throws RemoteException {
 		//TODO verify convertion of physical ram into logical fp amount
-		long fpMemSizeInFPs = fpMemSizeInBytes / LongSize;
+		long fpMemSizeInFPs = fpMemSizeInBytes / (Auxiliary_Storage_Requirement + LongSize);
 		Assert.check(fpMemSizeInFPs < fpMemSizeInBytes, EC.GENERAL);
 		
 		if (fpBits == 0) {
