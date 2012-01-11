@@ -36,6 +36,7 @@ import util.FileUtil;
 @SuppressWarnings("serial")
 public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 {
+	private static final int ARTIFICIAL_VALUE = 20;
 	/**
 	 * Size of a Java long in bytes
 	 */
@@ -59,7 +60,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 */
 	public static FPSet getFPSet(int fpBits, long fpMemSizeInBytes) throws RemoteException {
 		//TODO verify convertion of physical ram into logical fp amount
-		long fpMemSizeInFPs = fpMemSizeInBytes / LongSize;
+		long fpMemSizeInFPs = fpMemSizeInBytes / ARTIFICIAL_VALUE; //LongSize;
 		Assert.check(fpMemSizeInFPs < fpMemSizeInBytes, EC.GENERAL);
 		
 		if (fpBits == 0) {
