@@ -6,6 +6,7 @@ import javax.management.NotCompliantMBeanException;
 import tlc2.tool.fp.DiskFPSet;
 import tlc2.tool.management.TLCStandardMBean;
 
+//TODO dispose when underlying diskfpset is nulled (otherwise we end up holding a reference and diskfpset is never gced) 
 public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXBean {
 
 	private static int COUNT = 0;

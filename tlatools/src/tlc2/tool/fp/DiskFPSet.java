@@ -61,7 +61,8 @@ public class DiskFPSet extends FPSet {
 	/**
 	 * name of backing file
 	 */
-	private String filename;
+	private String fpFilename;
+	private String tmpFilename;
 
 	/**
 	 * protects following fields
@@ -208,7 +209,11 @@ public class DiskFPSet extends FPSet {
 			throws IOException {
 		this.metadir = metadir;
 		// set the filename
-		this.filename = metadir + FileUtil.separator + filename;
+		// concat here to not do it every time in mergeEntries 
+		filename = metadir + FileUtil.separator + filename;
+		this.tmpFilename = filename + ".tmp";
+		this.fpFilename = filename + ".fp";
+		
 		// allocate array of BufferedRAF objects (+1 for main thread)
 		this.braf = new BufferedRandomAccessFile[numThreads];
 		this.brafPool = new BufferedRandomAccessFile[5];
@@ -217,22 +222,22 @@ public class DiskFPSet extends FPSet {
 		
 		try {
 			// create/truncate backing file:
-			FileOutputStream f = new FileOutputStream(this.getFPFilename());
+			FileOutputStream f = new FileOutputStream(this.fpFilename);
 			f.close();
 
 			// open all "this.braf" and "this.brafPool" objects on currName:
 			for (int i = 0; i < numThreads; i++) {
 				this.braf[i] = new BufferedRandomAccessFile(
-						this.getFPFilename(), "r");
+						this.fpFilename, "r");
 			}
 			for (int i = 0; i < brafPool.length; i++) {
 				this.brafPool[i] = new BufferedRandomAccessFile(
-						this.getFPFilename(), "r");
+						this.fpFilename, "r");
 			}
 		} catch (IOException e) {
 			// fatal error -- print error message and exit
 			String message = MP.getMessage(EC.SYSTEM_UNABLE_TO_OPEN_FILE,
-					new String[] { this.getFPFilename(), e.getMessage() });
+					new String[] { this.fpFilename, e.getMessage() });
 			throw new IOException(message);
 		}
 	}
@@ -290,7 +295,7 @@ public class DiskFPSet extends FPSet {
 			for (int i = 0; i < len; i++) {
 				nraf[i] = this.braf[i];
 			}
-			nraf[len] = new BufferedRandomAccessFile(this.getFPFilename(), "r");
+			nraf[len] = new BufferedRandomAccessFile(this.fpFilename, "r");
 			this.braf = nraf;
 
 			this.rwLock.EndWrite();
@@ -546,7 +551,7 @@ public class DiskFPSet extends FPSet {
 						raf = this.brafPool[this.poolIndex++];
 					} else {
 						raf = new BufferedRandomAccessFile(
-								this.getFPFilename(), "r");
+								this.fpFilename, "r");
 					}
 				}
 			}
@@ -672,7 +677,7 @@ public class DiskFPSet extends FPSet {
 			this.mergeNewEntries(buff);
 		} catch (IOException e) {
 			String msg = "Error: merging entries into file "
-					+ this.getFPFilename() + "  " + e;
+					+ this.fpFilename + "  " + e;
 			throw new IOException(msg);
 		}
 	}
@@ -699,7 +704,7 @@ public class DiskFPSet extends FPSet {
 		}
 
 		// create temporary file
-		File tmpFile = new File(this.filename + ".tmp");
+		File tmpFile = new File(tmpFilename);
 		tmpFile.delete();
 		RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
 		RandomAccessFile raf = this.brafPool[0];
@@ -711,7 +716,7 @@ public class DiskFPSet extends FPSet {
 		// clean up
 		raf.close();
 		tmpRAF.close();
-		String realName = this.getFPFilename();
+		String realName = this.fpFilename;
 		File currFile = new File(realName);
 		currFile.delete();
 		boolean status = tmpFile.renameTo(currFile);
@@ -732,10 +737,10 @@ public class DiskFPSet extends FPSet {
 	private final void mergeNewEntries(long[] buff, int buffLen)
 			throws IOException {
 		// create temporary file
-		File tmpFile = new File(this.filename + ".tmp");
+		File tmpFile = new File(tmpFilename);
 		tmpFile.delete();
 		RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
-		File currFile = new File(this.getFPFilename());
+		File currFile = new File(this.fpFilename);
 		RandomAccessFile currRAF = new BufferedRandomAccessFile(currFile, "r");
 
 		// merge
@@ -802,8 +807,11 @@ public class DiskFPSet extends FPSet {
 					eof = true;
 				}
 			} else {
-				Assert.check(value != buff[i], EC.TLC_FP_VALUE_ALREADY_ON_DISK,
-						String.valueOf(value));
+				// prevent converting every long to String when assertion holds (this is expensive)
+				if(value == buff[i]) {
+					Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
+							String.valueOf(value));
+				}
 				this.writeFP(outRAF, buff[i++]);
 			}
 		}
@@ -868,7 +876,7 @@ public class DiskFPSet extends FPSet {
 	public final double checkFPs() throws IOException {
 		this.flushTable(); // No need for any lock here
 		RandomAccessFile braf = new BufferedRandomAccessFile(
-				this.getFPFilename(), "r");
+				this.fpFilename, "r");
 		long fileLen = braf.length();
 		long dis = Long.MAX_VALUE;
 		if (fileLen > 0) {
@@ -894,7 +902,7 @@ public class DiskFPSet extends FPSet {
 			this.flusherChosen = true;
 			this.rwLock.BeginWrite();
 			this.flushTable();
-			FileUtil.copyFile(this.getFPFilename(),
+			FileUtil.copyFile(this.fpFilename,
 					this.getChkptName(fname, "tmp"));
 			checkPointMark++;
 			this.rwLock.EndWrite();
@@ -921,7 +929,7 @@ public class DiskFPSet extends FPSet {
 		RandomAccessFile chkptRAF = new BufferedRandomAccessFile(
 				this.getChkptName(fname, "chkpt"), "r");
 		RandomAccessFile currRAF = new BufferedRandomAccessFile(
-				this.getFPFilename(), "rw");
+				this.fpFilename, "rw");
 
 		this.fileCnt = chkptRAF.length() / LongSize;
 		int indexLen = (int) ((this.fileCnt - 1) / NumEntriesPerPage) + 2;
@@ -948,7 +956,7 @@ public class DiskFPSet extends FPSet {
 			// Better way would be to provide method BRAF.open
 			// close and reopen
 			this.braf[i].close();
-			this.braf[i] = new BufferedRandomAccessFile(this.getFPFilename(),
+			this.braf[i] = new BufferedRandomAccessFile(this.fpFilename,
 					"r");
 		}
 		for (int i = 0; i < this.brafPool.length; i++) {
@@ -956,7 +964,7 @@ public class DiskFPSet extends FPSet {
 			// close and reopen
 			this.brafPool[i].close();
 			this.brafPool[i] = new BufferedRandomAccessFile(
-					this.getFPFilename(), "r");
+					this.fpFilename, "r");
 		}
 		this.poolIndex = 0;
 	}
@@ -1015,12 +1023,12 @@ public class DiskFPSet extends FPSet {
 
 		// Reopen a BufferedRAF for each thread
 		for (int i = 0; i < this.braf.length; i++) {
-			this.braf[i] = new BufferedRandomAccessFile(this.getFPFilename(),
+			this.braf[i] = new BufferedRandomAccessFile(this.fpFilename,
 					"r");
 		}
 		for (int i = 0; i < this.brafPool.length; i++) {
 			this.brafPool[i] = new BufferedRandomAccessFile(
-					this.getFPFilename(), "r");
+					this.fpFilename, "r");
 		}
 		this.poolIndex = 0;
 	}
@@ -1050,10 +1058,6 @@ public class DiskFPSet extends FPSet {
 		return this.metadir + FileUtil.separator + fname + ".fp." + name;
 	}
 
-	private String getFPFilename() {
-		return this.filename + ".fp";
-	}
-	
 	/**
 	 * @return the bucketsCapacity counting all allocated (used and unused) fp slots in the in-memory storage.
 	 */

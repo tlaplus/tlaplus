@@ -7,6 +7,8 @@ package tlc2.tool.fp;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
@@ -17,11 +19,14 @@ import java.rmi.server.UnicastRemoteObject;
 import javax.management.NotCompliantMBeanException;
 
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.distributed.FPSetManager;
 import tlc2.tool.distributed.FPSetRMI;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
+import util.Assert;
 import util.FileUtil;
 
 /**
@@ -30,10 +35,27 @@ import util.FileUtil;
  * Note: All concrete subclasses of this class are required to
  * guarantee that their methods are thread-safe.
  */
-
+//TODO refactor to separate abstract FPSet and factory 
 @SuppressWarnings("serial")
 public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 {
+	/**
+	 * Allows users to overwrite the internally used {@link FPSet} impl by their
+	 * own. In order to load the class, it:<ul><li> 
+	 * has to appear on the class path</li>
+	 * <li>has to support a two-args (int, long) constructor </li>
+	 * <li>extend {@link FPSet}</li></ul>
+	 * Both is the user's responsibility.
+	 */
+	private static final String USER_FPSET_IMPL_CLASSNAME = System.getProperty(
+			FPSet.class.getName() + ".impl", null);
+	
+	/**
+	 * This is assumed to be the auxiliary storage for a fingerprint that need
+	 * to be respected to not cause an OOM.
+	 */
+	//TODO verify this statement
+	private static final int Auxiliary_Storage_Requirement = 12;
 	/**
 	 * Size of a Java long in bytes
 	 */
@@ -57,21 +79,73 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 */
 	public static FPSet getFPSet(int fpBits, long fpMemSizeInBytes) throws RemoteException {
 		//TODO verify convertion of physical ram into logical fp amount
-		fpMemSizeInBytes = fpMemSizeInBytes / LongSize;
+		long fpMemSizeInFPs = fpMemSizeInBytes / (Auxiliary_Storage_Requirement + LongSize);
+		Assert.check(fpMemSizeInFPs < fpMemSizeInBytes, EC.GENERAL);
 		
-		if (fpBits == 0) {
-			final DiskFPSet diskFPSet = new DiskFPSet((int) fpMemSizeInBytes);
+		FPSet set = null;
+		
+		if (USER_FPSET_IMPL_CLASSNAME != null) {
+			set = loadCustomFactory(USER_FPSET_IMPL_CLASSNAME, fpBits, fpMemSizeInBytes);
+		}
+		
+		if (set == null && fpBits == 0) {
+			set = new DiskFPSet(fpMemSizeInFPs);
 			try {
-				new DiskFPSetMXWrapper(diskFPSet);
+				new DiskFPSetMXWrapper((DiskFPSet) set);
 			} catch (NotCompliantMBeanException e) {
 				// not expected to happen
 				// would cause JMX to be broken, hence just log and continue
-				e.printStackTrace();
+				MP.printWarning(
+						EC.GENERAL,
+						"Failed to create MBean wrapper for DiskFPSet. No statistics/metrics will be avaiable.",
+						e);
 			}
-			return diskFPSet;
-		} else {
-			return new MultiFPSet(fpBits, fpMemSizeInBytes);
+		} else if (set == null) {
+			set = new MultiFPSet(fpBits, fpMemSizeInFPs);
 		}
+		return set;
+	}
+	
+	/**
+	 * This block of code tries to load the given class with the FPSet class
+	 * loader. Thus, the class has to be available to it.
+	 * 
+	 * @param clazz
+	 * @param fpMemSizeInBytes 
+	 * @param fpBits 
+	 * @return
+	 */
+	private static FPSet loadCustomFactory(final String clazz, int fpBits, long fpMemSizeInBytes) {
+		Exception exp = null;
+		try {
+			// poor mans version of modularity, booh!
+			final ClassLoader classLoader = FPSet.class.getClassLoader();
+			final Class<?> factoryClass = classLoader.loadClass(clazz);
+			final Constructor<?> constructor = factoryClass
+					.getConstructor(new Class[] { int.class, long.class });
+			final Object instance = constructor.newInstance(fpBits,
+					fpMemSizeInBytes);
+			// sanity check if given class from string implements FPSet
+			if (instance instanceof FPSet) {
+				return (FPSet) instance;
+			}
+		} catch (ClassNotFoundException e) {
+			exp = e;
+		} catch (InstantiationException e) {
+			exp = e;
+		} catch (IllegalAccessException e) {
+			exp = e;
+		} catch (SecurityException e) {
+			exp = e;
+		} catch (NoSuchMethodException e) {
+			exp = e;
+		} catch (IllegalArgumentException e) {
+			exp = e;
+		} catch (InvocationTargetException e) {
+			exp = e;
+		}
+		MP.printWarning(EC.GENERAL, "Failed to load custom FPSet class: " + clazz, exp);
+		return null;
 	}
 	
 	/**

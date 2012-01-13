@@ -91,44 +91,50 @@ apt-get --no-install-recommends install gnome-core gdm gnome-session-fallback fi
 # remove overlay scrollbar. it messes with eclipse
 apt-get purge overlay-scrollbar liboverlay-scrollbar-0.2-0 liboverlay-scrollbar3-0.2-0 -y
 
+# clear cached packages to save disk space
+apt-get clean
+
+# try saving a few bytes
+P1=/etc/munin/plugins
+P2=/usr/share/munin/plugins
 # activate extra munin stats
-rm /etc/munin/plugins/apache_*
-rm /etc/munin/plugins/munin_*
-rm /etc/munin/plugins/http_*
-rm /etc/munin/plugins/fw_*
+rm $P1/apache_*
+rm $P1/munin_*
+rm $P1/http_*
+rm $P1/fw_*
 # for jmx plugin to work, the vm has to be started with -D properties to listen on port 5400
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_ClassesLoaded
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_ClassesLoadedTotal
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_ClassesUnloaded
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_CompilationTimeTotal
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_GCCount
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_GCTime
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_CurrentThreadCpuTime
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_CurrentThreadUserTime
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryAllocatedHeap
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryAllocatedNonHeap
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryEdenPeak
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryEdenUsage
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryEdenUsagePostGC
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryObjectsPending
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryPermGenPeak
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryPermGenUsage
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryPermGenUsagePostGC
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemorySurvivorPeak
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemorySurvivorUsage
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemorySurvivorUsagePostGC
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryTenuredGenPeak
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryTenuredGenUsage
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemoryTenuredGenUsagePostGC
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemorythresholdPostGCCount
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_MemorythresholdUsageCount
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_ProcessorsAvailable
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_Threads
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_ThreadsDaemon
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_ThreadsDeadlocked
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_ThreadsPeak
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_ThreadsStartedTotal
-ln -s /usr/share/munin/plugins/jmx_ /etc/munin/plugins/jmx_Uptime
+ln -s $P2/jmx_ $P1/jmx_ClassesLoaded
+ln -s $P2/jmx_ $P1/jmx_ClassesLoadedTotal
+ln -s $P2/jmx_ $P1/jmx_ClassesUnloaded
+ln -s $P2/jmx_ $P1/jmx_CompilationTimeTotal
+ln -s $P2/jmx_ $P1/jmx_GCCount
+ln -s $P2/jmx_ $P1/jmx_GCTime
+ln -s $P2/jmx_ $P1/jmx_CurrentThreadCpuTime
+ln -s $P2/jmx_ $P1/jmx_CurrentThreadUserTime
+ln -s $P2/jmx_ $P1/jmx_MemoryAllocatedHeap
+ln -s $P2/jmx_ $P1/jmx_MemoryAllocatedNonHeap
+ln -s $P2/jmx_ $P1/jmx_MemoryEdenPeak
+ln -s $P2/jmx_ $P1/jmx_MemoryEdenUsage
+ln -s $P2/jmx_ $P1/jmx_MemoryEdenUsagePostGC
+ln -s $P2/jmx_ $P1/jmx_MemoryObjectsPending
+ln -s $P2/jmx_ $P1/jmx_MemoryPermGenPeak
+ln -s $P2/jmx_ $P1/jmx_MemoryPermGenUsage
+ln -s $P2/jmx_ $P1/jmx_MemoryPermGenUsagePostGC
+ln -s $P2/jmx_ $P1/jmx_MemorySurvivorPeak
+ln -s $P2/jmx_ $P1/jmx_MemorySurvivorUsage
+ln -s $P2/jmx_ $P1/jmx_MemorySurvivorUsagePostGC
+ln -s $P2/jmx_ $P1/jmx_MemoryTenuredGenPeak
+ln -s $P2/jmx_ $P1/jmx_MemoryTenuredGenUsage
+ln -s $P2/jmx_ $P1/jmx_MemoryTenuredGenUsagePostGC
+ln -s $P2/jmx_ $P1/jmx_MemorythresholdPostGCCount
+ln -s $P2/jmx_ $P1/jmx_MemorythresholdUsageCount
+ln -s $P2/jmx_ $P1/jmx_ProcessorsAvailable
+ln -s $P2/jmx_ $P1/jmx_Threads
+ln -s $P2/jmx_ $P1/jmx_ThreadsDaemon
+ln -s $P2/jmx_ $P1/jmx_ThreadsDeadlocked
+ln -s $P2/jmx_ $P1/jmx_ThreadsPeak
+ln -s $P2/jmx_ $P1/jmx_ThreadsStartedTotal
+ln -s $P2/jmx_ $P1/jmx_Uptime
 # restart munin after config changes
 service munin-node restart
 
@@ -157,6 +163,12 @@ wget http://64.34.161.181/download/3.5.0/Linux/nxclient_3.5.0-7_amd64.deb
 dpkg -i nxclient_3.5.0-7_amd64.deb
 dpkg -i nxnode_3.5.0-7_amd64.deb
 dpkg -i nxserver_3.5.0-9_amd64.deb
+
+# add maven and ant to the path
+echo "export MAVEN_HOME=/opt/apache-maven/
+export ANT_HOME=/opt/apache-ant
+export PATH=$PATH:/opt/apache-maven/bin:/opt/apache-ant/bin/
+" > /etc/profile.d/java.sh
 
 mkdir -p /mnt/kuppe
 chown kuppe:kuppe /mnt/kuppe
