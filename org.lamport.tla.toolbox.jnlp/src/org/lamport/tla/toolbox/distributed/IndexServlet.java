@@ -26,7 +26,7 @@ public class IndexServlet extends URLHttpServlet {
 		
 		// boostrap JRE on Windows systems
 		resp.getWriter().println(
-				"<object codebase=\"http://java.sun.com/update/1.6.0/jinstall-6-windows-i586.cab#Version=6,0,0,0\" classid=\"clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284\" height=0 width=0>" +
+				"<object codebase=\"https://java.sun.com/update/1.6.0/jinstall-6-windows-i586.cab#Version=6,0,0,0\" classid=\"clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284\" height=0 width=0>" +
 						"<param name=\"app\" value=\"" + url + JNLPGeneratorServlet.SERVLET_NAME + "\">" +
 						"<param name=\"back\" value=\"false\">" +
 				"</object>");
