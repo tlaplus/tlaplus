@@ -98,29 +98,7 @@ public class TLAtoPCalMapping {
       }
       return ;
   }
-  /**
-   * Adds a mapping object to mappingVector.
-   * 
-   * NOT YET USED.  IT SEEMS UNLIKELY THAT IT WILL BE USEFUL.
-   * 
-   * @param mobj  The object to add.
-   * @param line  The line of the translation at which the object
-   *              is to be added.  This line is the position relative
-   *              to tlaStartLine of the object's location.
-   */
-//  public void addMappingObject(MappingObject moj, int line) {
-//      int nextLine = mappingVector.size() ;
-//
-//      if (line < nextLine-1) {
-//          PcalDebug.ReportBug("Called addMappingObject with line number too small") ;
-//      }
-//      
-//      while (line >= mappingVector.size()) {
-//          mappingVector.add(new Vector()) ;
-//      }
-//      
-//      ((Vector) mappingVector.elementAt(line)).addElement(moj) ;
-//  }
+
   
   /**
    * Returns the PCal code location to which `mapping' maps the tpregion Region in the
@@ -330,7 +308,7 @@ public class TLAtoPCalMapping {
   
   /**
    * If var is the parenthesis depth of the token at location pos, then
-   * the following macro sets var to the parenthesis depth of the token
+   * the following method sets var to the parenthesis depth of the token
    * at the location past pos if movingForward = TRUE, else the depth at
    * the location before pos if movingForward = FALSE.  This essentially
    * implements the macro of the same name in the algorithm of module
