@@ -78,15 +78,6 @@ ParenDepth(objSeq, pos) ==
                                obj.type = "end"   -> -1 []
                                OTHER              -> 0     )
 
-\*CorrParenDepth(seq, pos) ==
-\*  (*************************************************************************)
-\*  (* Equals ParenDepth(seq, pos) unless seq[pos] is an expression token,   *)
-\*  (* in which case it is one larger.                                       *)
-\*  (*************************************************************************)
-\*  LET dp ParenDepth(seq, pos)
-\*  IN  IF seq[pos].type = "token" /\ seq[pos].inExpr THEN dp +1
-\*               
-\*                                     ELSE dp
 (***************************************************************************)
 (* WellFormed(seq) is true for a TPObject sequence iff it begins and ends  *)
 (* with a parenthesis and all parentheses are properly matching.           *)
@@ -301,10 +292,7 @@ tpRegion_1 == Reg(5,20)
 tpMap_2 == <<L(10), T(1,2), L(11), T(3,4), L(12), T(5,6), L(13), T(7,8), R(14),
              (* 10 *)T(9,10),  R(15), B(1), L(16), T(11,12), L(17), T(13,14), R(18), 
              (* 18 *) R(19), T(15,16), R(20), R(21)>>
-\*        ( lbl : ( (  x[1] := ( 2 + 2 ) ) || y := 3  || ( x[2] := ( 3 ) )  )  )
-\*        10     11 12         13     14 15              16        17 18 19 20 21
-\*        ( lbl == ( x' = [x EXCEPT ( ![1] = ( 2 + 2 ) , ) ^^ ( ![2] = ( 3 ) ) ] ) )
-\*          1-2      3 -----------4   5 ----6  7----8  9-10     11---12  13-14 15-16
+             
 tpRegion1 == Reg(0,16)
 
 tpMap1 == << L(1), L(2), TE(1,2), R(3), L(4), TE(2,3), 
@@ -665,5 +653,5 @@ Termination == <>(pc = "Done")
 \* END TRANSLATION
 =============================================================================
 \* Modification History
-\* Last modified Wed Dec 28 18:40:35 PST 2011 by lamport
+\* Last modified Mon Jan 09 15:51:06 PST 2012 by lamport
 \* Created Thu Dec 01 16:51:23 PST 2011 by lamport

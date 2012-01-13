@@ -156,7 +156,7 @@ VARIABLES in, out, unmatchedLeft, lastMatchedLeft, lastAddedRight, i, pc
 vars == << in, out, unmatchedLeft, lastMatchedLeft, lastAddedRight, i, pc >>
 
 Init == (* Global variables *)
-        /\ in \in ExprOfMaxLen(10)
+        /\ in \in ExprOfMaxLen(9)
         /\ out = << >>
         /\ unmatchedLeft = << >>
         /\ lastMatchedLeft = -1
@@ -189,7 +189,7 @@ Lbl_1 == /\ pc = "Lbl_1"
                                /\ PrintT(<<"out;", Pr(out)>>)
                                /\ PrintT(<<"res:",Pr(Result(in))>>)
                                /\ Assert(FALSE, 
-                                         "Failure of assertion at line 136, column 8.")
+                                         "Failure of assertion at line 147, column 8.")
                           ELSE /\ TRUE
                     /\ pc' = "Done"
                     /\ UNCHANGED << out, unmatchedLeft, lastMatchedLeft, 
