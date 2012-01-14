@@ -647,6 +647,10 @@
             markerType="org.lamport.tla.toolbox.editor.basic.showUse"
             name="org.lamport.tla.toolbox.editor.basic.showUse">
       </type>
+      <type
+            markerType="org.lamport.tla.toolbox.editor.basic.showParenError"
+            name="org.lamport.tla.toolbox.editor.basic.showParenError">
+      </type>
    </extension>
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
@@ -658,6 +662,22 @@
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
             label="Show Use"
+            overviewRulerPreferenceKey="fcsORPK"
+            overviewRulerPreferenceValue="true"
+            textPreferenceKey="fcsTPK"
+            textPreferenceValue="true"
+            textStylePreferenceKey="fcsSPK"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceValue="true">
+      </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.editor.basic.showParenError"
+            colorPreferenceKey="fcsCPK"
+            colorPreferenceValue="255,140,140"
+            highlightPreferenceKey="fcsHPK"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Paren Matching Error"
             overviewRulerPreferenceKey="fcsORPK"
             overviewRulerPreferenceValue="true"
             textPreferenceKey="fcsTPK"
