@@ -207,28 +207,44 @@ cd ~/git/jmx2munin
 sudo cp target/jmx2munin-1.0.jar /usr/share/munin/jmx2munin.jar
 sudo cp contrib/jmx2munin.sh /usr/share/munin/plugins
 sudo chmod +x /usr/share/munin/plugins/jmx2munin.sh
+# try saving a few bytes
+P1=/etc/munin/plugins
+P2=/usr/share/munin/plugins
 # activate DiskFPSet0 stats
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::filecnt
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::tblcnt
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::indexcnt
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::disklookupcnt
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::diskwritecnt
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::diskhitcnt
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::diskseekcnt
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::memhitcnt
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::growdiskmark
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::checkpointmark
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::bucketcapacity
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::tblcapacity
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:fp:DiskFPSet0::overallcapacity
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::filecnt
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::tblcnt
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::indexcnt
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::disklookupcnt
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::diskwritecnt
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::diskhitcnt
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::diskseekcnt
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::memhitcnt
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::growdiskmark
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::checkpointmark
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::bucketcapacity
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::tblcapacity
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:fp:DiskFPSet0::overallcapacity
 # activate ModelChecker stats
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:ModelChecker::distinctstatesgenerated
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:ModelChecker::progress
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:ModelChecker::distinctstatesgeneratedperminute
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:ModelChecker::statequeuesize
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:ModelChecker::statesgenerated
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:ModelChecker::statesgeneratedperminute
-sudo ln -s /usr/share/munin/plugins/jmx2munin.sh /etc/munin/plugins/jmx2munin_tlc2:tool:ModelChecker::workercount
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:ModelChecker::distinctstatesgenerated
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:ModelChecker::progress
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:ModelChecker::distinctstatesgeneratedperminute
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:ModelChecker::statequeuesize
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:ModelChecker::statesgenerated
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:ModelChecker::statesgeneratedperminute
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_tlc2:tool:ModelChecker::workercount
+
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread0::waitedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread0::blockedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread1::waitedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread1::blockedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread2::waitedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread2::blockedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread3::waitedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread3::blockedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread4::waitedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread4::blockedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread5::waitedtime
+sudo ln -s $P2/jmx2munin.sh $P1/jmx2munin_org:vafer:jmx:contention:TLCWorkerThread5::blockedtime
 # restart munin to make the above change take effect
 sudo service munin-node restart
 
