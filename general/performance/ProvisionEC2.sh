@@ -83,7 +83,7 @@ dpkg -i cdh3-repository_1.0_all.deb
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade -y
-apt-get --no-install-recommends install openjdk-7-jdk visualvm juju unzip mc htop sysstat apache2 munin munin-node munin-java-plugins munin-plugins-extra git git-svn sshfs rsync -y
+apt-get --no-install-recommends install openjdk-7-jdk visualvm openjdk-6-jdk juju unzip mc htop sysstat apache2 munin munin-node munin-java-plugins munin-plugins-extra git git-svn sshfs rsync -y
 
 # if UI/X needed
 apt-get --no-install-recommends install gnome-core gdm gnome-session-fallback firefox tightvncserver xorg x2goserver x2goserver-xsession -y
