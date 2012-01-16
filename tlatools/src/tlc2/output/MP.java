@@ -1186,6 +1186,13 @@ public class MP
     }
 
     /**
+     * @see MP#printWarning(int, String[])
+     */
+	public static void printWarning(final int errorCode, final String parameter) {
+		printWarning(errorCode, new String[] {parameter});
+	}
+	
+    /**
      * Prints a warning (if the global switch is enabled and it is not a duplicate warning)
      * @param errorCode
      * @param parameters

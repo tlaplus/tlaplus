@@ -146,6 +146,14 @@ public class DiskFPSet extends FPSet {
 
 	/* Number of fingerprints per braf buffer. */
 	public static final int NumEntriesPerPage = 8192 / LongSize;
+	
+	/**
+	 * This is (assumed to be) the auxiliary storage for a fingerprint that need
+	 * to be respected to not cause an OOM.
+	 * @see DiskFPSet#flushTable()
+	 * @see DiskFPSet#index
+	 */
+	private static final double AuxiliaryStorageRequirement = 2.5;
 
 	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
@@ -161,8 +169,9 @@ public class DiskFPSet extends FPSet {
 		this.fileCnt = 0;
 		this.flusherChosen = false;
 
+		long maxMemCnt = (long) (maxInMemoryCapacity / AuxiliaryStorageRequirement);
+
 		// default if not specific value given
-		long maxMemCnt = maxInMemoryCapacity;
 		if ((maxMemCnt - LogMaxLoad) <= 0) {
 			maxMemCnt = DefaultMaxTblCnt;
 		}
@@ -342,10 +351,10 @@ public class DiskFPSet extends FPSet {
 			}
 
 			// test if buffer is full
-			//TODO does not take the bucket load factor into account.
+			//TODO does not take the bucket load factor into account?
 			// Buckets can grow beyond VM heap size if:
 			// A) the FP distribution causes the index tbl to be unevenly populated.
-			// B) the FP distribution causes reassembles linear fill-up/down which 
+			// B) the FP distribution reassembles linear fill-up/down which 
 			// causes tblCnt * buckets with initial load factor to be allocated.
 			if (this.tblCnt >= this.maxTblCnt && !this.flusherChosen) {
 				// block until there are no more readers
@@ -972,13 +981,21 @@ public class DiskFPSet extends FPSet {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#beginChkpt()
 	 */
-	public final void beginChkpt() throws IOException { /* SKIP */
+	public final void beginChkpt() throws IOException { 
+		// @see tlc2.tool.fp.DiskFPSet.commitChkpt()
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#commitChkpt()
 	 */
-	public final void commitChkpt() throws IOException { /* SKIP */
+	public final void commitChkpt() throws IOException { 
+		/* SKIP */
+		//TODO why are checkpoints skipped here?
+		// + If TLCServer uses an FPSet directly and not via 
+		// the FPSetManager, this method gets called instead 
+		// of commitChkpt(String).
+		// - Flushing DiskFPSet more often than required is a 
+		// huge performance penalty
 	}
 
 	private long[] recoveryBuff = null;
