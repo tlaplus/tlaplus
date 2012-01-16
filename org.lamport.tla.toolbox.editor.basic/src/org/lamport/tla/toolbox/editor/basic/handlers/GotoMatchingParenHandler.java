@@ -81,22 +81,48 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
   
     // The following fields contain information about the regions of the
     // current line.
-    private int currLineNum ;  // We may want to eliminate this and 
-                               // pass the current location as an argument and result.
+    private int currLineNum ;  
       // the number of the line (Java numbering)
+    private int beginCurrRegion;
+    private int endCurrRegion;
+      // These are the beginning and end of the search
+      // region containing currLoc--that is the offset
+      // of the first character in the region and the
+      // offset of the character immediately after the region.
+      // If there are no strings on the line and we are searching
+      // the main region, then these fields equal beginLineLoc
+      // and endlineLoc.
+    private int currRegionNumber;
+      // - If regionType = STRING_REGION, then this is the
+      // number of the string on the line (Java numbering).
+      // That is, leftQuoteLocs[currRegionNumber] and
+      // rightQuoteLocs[currRegionNumber] delimit the
+      // current region.  
+      //
+      // - If regionType = MAIN_REGION, then
+      // the current region lies between string number 
+      // currRegionNumber-1 and string number currRegionNumber.
+      // (If there are no strings, then currRegionNumber = 0,
+      // and if the current region lies to the right of the last 
+      // string on the line, then currRegionNumber equals the
+      // number of strings.
+      //
+      // - If regionType = COMMENT_REGION, then this
+      //   field is not meaningful.
+    
     private int beginLineLoc ;
       // the offset of the beginning of the current line
     private int endLineLoc ;
       // the offset of the end of the current line, which
       // is the same as that of the beginning of the next
-      // line except at the end of the document.
+      // line, except at the end of the document.
     private int lineCommentLoc;
       // if there is an end-of-line comment, this is
       // the offset of the beginning of the "\*";
       // otherwise, it equals endLineLoc
     private int[] leftQuoteLocs = new int[1000];
       // An array whose i-th element is the location of
-      // (the left-side of) the " that begins the i-th string
+      // (immediately to the left of)  the " that begins the i-th string
       // on the line.  Only the first numberOfStrings elements
       // contain data.
     private int[] rightQuoteLocs = new int[1000];;
@@ -150,7 +176,27 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
             }
             
             setLineRegions(lineNumber);
-
+            setRegionInfo();
+            
+            if (selectedParenIdx < PCOUNT) {
+                findMatchingRightParen(selectedParenIdx);
+            } 
+            else {
+                System.out.println("find matching left not implemented");
+            }
+            tlaEditor.selectAndReveal(currLoc, 0);
+            
+//            System.out.println("regionType: " + regionType + ", currRegionNumber: " + currRegionNumber);
+//            try {
+//                System.out.println("region: `" + 
+//                        document.get(beginCurrRegion, endCurrRegion-beginCurrRegion) + "'");
+//                getNextRegion();
+//                System.out.println("Next region: `" + 
+//                        document.get(beginCurrRegion, endCurrRegion-beginCurrRegion) + "'");
+//            } catch (BadLocationException e) {
+//              // TODO Auto-generated catch block
+//              System.out.println("Exception printing line info");
+//          }
 //            try {
 //                System.out.println("Current line: `" + 
 //                   document.get(beginLineLoc, endLineLoc-beginLineLoc)+ "'");
@@ -212,6 +258,47 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
     /****************  The Subroutines *****************/
     
     /**
+     * Assumes that currLoc is just past a left paren with index
+     * parenIdx in PARENS.  It sets currLoc to the location just past
+     * the matching right paren, or throws an exception if there is 
+     * a matching error.
+     * 
+     * @param parenIdx
+     */
+    private void findMatchingRightParen(int parenIdx) throws ParenErrorException {
+        while (true) {
+            currLoc++;
+            int pidx = -1;
+            while (currLoc <= endCurrRegion  && ((pidx = getParenToLeftOf(currLoc)) == -1)) {
+               currLoc++;
+            }
+            if (pidx == -1) {
+                getNextRegion();
+                currLoc = beginCurrRegion;
+            }
+            else {
+                if (pidx < PCOUNT) {
+                    // This is a left paren
+                    findMatchingRightParen(pidx);
+                }
+                else {
+                    // This is a right paren
+                    if ((pidx - parenIdx)%PCOUNT == 0 ) {
+                        return;
+                    }
+                    else {
+                        // Mismatched paren
+                        throw new ParenErrorException(PARENS[parenIdx] + " matched by " + PARENS[pidx] , 
+                           new Region(currLoc - PARENS[pidx].length(), PARENS[pidx].length()) );
+                    }
+                }
+            }
+            
+            
+        }
+    }
+    
+    /**
      * If location is the location in the document just to the right of a paren,
      * returns the index of the paren in PARENS.  Otherwise, it returns -1.
      * It should be called with location > 0; otherwise it always returns -1.
@@ -240,6 +327,8 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
      *    currLineNum, beginLineLoc, endLineLoc, lineCommentLoc, 
      *    leftQuoteLocs, rightQuoteLocs, and numberOfStrings.
      *    
+     * Throws "Unmatched paren" exception if document does not have line lineNumber.
+     * 
      * @param lineNumber
      * @throws ParenErrorException
      */
@@ -278,15 +367,109 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
                 rightQuoteLocs[numberOfStrings - 1] = endLineLoc;
             }
         } catch (BadLocationException e) {
-            throw new ParenErrorException(
-                    "Toolbox bug: BadLocationException in setLineRegions at line "
-                            + lineNumber, null);
+            throw new ParenErrorException("Unmatched paren", null);
+//            throw new ParenErrorException(
+//                    "Toolbox bug: BadLocationException in setLineRegions at line "
+//                            + lineNumber, null);
         }
-
-        boolean inString = false;
-
     }
     
+    /**
+     * Sets regionType, beginCurrRegion, and endCurrRegion.  It assumes that
+     * setLineRegions has been called, and uses that and currLoc to determine
+     * the region type and current region.
+     */
+    private void setRegionInfo() {
+        currRegionNumber = 0;
+        beginCurrRegion = beginLineLoc;
+        endCurrRegion = endLineLoc;
+        regionType = MAIN_REGION;
+        boolean notDone = true ;
+        while (notDone && currRegionNumber < numberOfStrings) {
+            if (currLoc <= leftQuoteLocs[currRegionNumber]) {
+                notDone = false;
+                endCurrRegion = leftQuoteLocs[currRegionNumber];
+            }
+            else if (currLoc <= rightQuoteLocs[currRegionNumber]) {
+                notDone = false;
+                regionType = STRING_REGION;
+                beginCurrRegion = leftQuoteLocs[currRegionNumber] + 1;
+                endCurrRegion = rightQuoteLocs[currRegionNumber];
+            } 
+            else {
+                beginCurrRegion = rightQuoteLocs[currRegionNumber] + 1;
+                currRegionNumber++;
+            }
+        }
+        if (notDone || numberOfStrings == 0) {
+            if (lineCommentLoc < currLoc) {
+                regionType = COMMENT_REGION;
+                beginCurrRegion = lineCommentLoc + 2; 
+                  // Note: 2 must be changed in the unlikely event that we
+                  // either have a 1-character end-of-line comment token
+                  // or we have one with more than 2 tokens that contains a
+                  // paren.
+            } 
+            else {
+                endCurrRegion = lineCommentLoc;
+            }
+        }
+    }
+    
+    /**
+     * Sets beginCurrRegion, endCurrRegion, and (perhaps) currRegionNumber
+     * to indicate the next region of type regionType.  If that region is
+     * on a later line, it will also call setLineLineRegions.  If there
+     * is no next region of this type (because it runs off the end of the
+     * file looking for one), it throws an "Unmatched paren" error.
+     *    
+     * @throws ParenErrorException
+     */
+    private void getNextRegion() throws ParenErrorException {
+        if (regionType == MAIN_REGION) {
+            if (currRegionNumber < numberOfStrings) {
+                beginCurrRegion = rightQuoteLocs[currRegionNumber] + 1;
+                currRegionNumber++;
+                if (currRegionNumber == numberOfStrings) {
+                    endCurrRegion = lineCommentLoc;
+                } else {
+                    endCurrRegion = leftQuoteLocs[currRegionNumber];
+                }
+            } else {
+                setLineRegions(currLineNum + 1);
+                currRegionNumber = 0;
+                beginCurrRegion = beginLineLoc;
+                if (numberOfStrings == 0) {
+                    endCurrRegion = lineCommentLoc;
+                } 
+                else {
+                    endCurrRegion = leftQuoteLocs[0];
+                }
+            }
+        }
+        else if (regionType == STRING_REGION) {
+            if (currRegionNumber < numberOfStrings - 1) {
+                currRegionNumber++;
+            } else {
+                setLineRegions(currLineNum + 1);
+                while (numberOfStrings == 0) {
+                    setLineRegions(currLineNum + 1);
+                }
+                currRegionNumber = 0;
+            }
+            beginCurrRegion = leftQuoteLocs[currRegionNumber] + 1;
+            endCurrRegion = rightQuoteLocs[currRegionNumber];
+        }
+        else {
+         // regionType == COMMENT_REGION
+            setLineRegions(currLineNum + 1);
+            while (lineCommentLoc == endLineLoc) {
+                setLineRegions(currLineNum + 1);
+            }
+            beginCurrRegion = lineCommentLoc + 2;
+            endCurrRegion = endLineLoc;
+        }
+    }
     /**
      * Sets currLoc, and returns the index of the selected paren in PARENS.  
      * If the region has zero length, then it selects the paren to its left and 
@@ -298,17 +481,12 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
     private int getSelectedParen(Region selectedRegion)
             throws ParenErrorException {
         currLoc = selectedRegion.getOffset();
+        int selectedParenIdx;
         if (selectedRegion.getLength() == 0) {
-          int selectedParenIdx = getParenToLeftOf(currLoc);
+          selectedParenIdx = getParenToLeftOf(currLoc);
           if (selectedParenIdx < 0) {
               throw new ParenErrorException("Paren not selected", null);
-          }
-          // Now test if we're between "(" and "*".
-          if (    selectedParenIdx == LEFT_ROUND_PAREN_IDX 
-               && getParenToLeftOf(currLoc+1) == COMMENT_BEGIN_IDX) {
-              throw new ParenErrorException("Selection between  (  and  *", null);
-          }
-          return selectedParenIdx ;
+          }       
         } else {
             String selection = null; // initialization to keep compiler happy.
             try {
@@ -319,7 +497,7 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
                 System.out.println(
                    "BadLocationException in GotoMatchingParenHandler.getSelectedParen");
             }
-            int selectedParenIdx = 0;
+            selectedParenIdx = 0;
             boolean notDone = true ;
             while (notDone && (selectedParenIdx < PARENS.length)) {
                 if (selection.equals(PARENS[selectedParenIdx])) {
@@ -333,8 +511,14 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
                 throw new ParenErrorException("Selection is not a paren", null);
             }
             currLoc = currLoc + selectedRegion.getLength();
-            return selectedParenIdx;
         }
+        
+        // Now test if we're between "(" and "*".
+        if (    selectedParenIdx == LEFT_ROUND_PAREN_IDX
+             && getParenToLeftOf(currLoc + 1) == COMMENT_BEGIN_IDX) {
+            throw new ParenErrorException("Selection between  (  and  *", null);
+        }
+        return selectedParenIdx ;
     }
     
     /**
