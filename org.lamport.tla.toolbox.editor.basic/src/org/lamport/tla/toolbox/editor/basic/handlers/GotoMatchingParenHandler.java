@@ -38,9 +38,11 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
  *    ( )   [ ]   { }   << >>   (* *)  
  * 
  * If the cursor is immediately to the right of a paren, then it moves the cursor to the
- * right of the matching paren, except in case of error.  If there is an error, then the
- * cursor is not moved, an error message is put in the Toolbox's status bar (at the bottom
- * of the window), and if the error is an unmatched paren, the paren is highlighted with
+ * right of the matching paren, except in case of error.  (It also does that if
+ * the cursor is between the two charecters of a two-character paren.) 
+ * If there is an error, then the cursor is not moved, an error message 
+ * is put in the Toolbox's status bar (at the bottom of the window), and if 
+ * the error is an unmatched paren, the paren is highlighted with
  * an Annotation marker.  The error message and highlighting disappear when the cursor
  * is moved (or more precisely, when a CaretListener is called).
  * 
@@ -54,10 +56,17 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
  *  
  *  - The rest of the text.
  *  
- *  Matching considers only parens that appear in the same region as the selected paren.
+ * Matching considers only parens that appear in the same region as the selected paren.
  *  
- *  There is one problematic case: when the cursor is between the '(' and the '*' in
- *  "(*".  In that case, the cursor is considered not to be at a paren.
+ * There is one problematic case: when the cursor is between the '(' and the '*' in
+ * "(*".  In that case, the cursor is considered not to be at a paren.
+ * 
+ * Note that text outside the module is treated the same as if it were in the module.
+ * I don't know anything better to do for matching parens before or after the module.
+ * While it might be better to consider text before or after the module to be
+ * in separate regions than module text, it doesn't seem to be worth the trouble.
+ * The user will see easily enough if a paren outside the module matches one inside 
+ * the module.  
  * 
  * @author lamport
  *
@@ -137,11 +146,16 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
     // The definitions of the parentheses, the left parens are
     // in PARENS[0] .. PARENS[PCOUNT-1], and the right parens
     // are in PARENS[PCOUNT] ... PARENTS[2* PCOUNT -1]
-    private static String[] PARENS  = {"(*", "<<", "(", "[", "{", "*)", ">>", ")", "]", "}"} ;
+    // Left paren PARENS[i] matches PARENS[i + PCOUNT], and parens
+    // with indices i and j are matching iff (i - j) % PCOUNT equals 0.
+    private static String[] PARENS  = 
+              {"(*", "<<", "(", "[", "{", "*)", ">>", ")", "]", "}"} ;
     private static int PCOUNT = 5;
     private static int COMMENT_BEGIN_IDX = 0;
     private static int LEFT_ROUND_PAREN_IDX = 2;
       // The index of "(" in PARENS
+    private static int BEGIN_MULTILINE_COMMENT_IDX = 0;
+      // The index of "(*" in PARENS.
     
     // The three types of regions
     private static int MAIN_REGION = 0;
@@ -182,7 +196,7 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
                 findMatchingRightParen(selectedParenIdx);
             } 
             else {
-                System.out.println("find matching left not implemented");
+                findMatchingLeftParen(selectedParenIdx);
             }
             tlaEditor.selectAndReveal(currLoc, 0);
             
@@ -277,13 +291,24 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
                 currLoc = beginCurrRegion;
             }
             else {
+                /*
+                 * Need to check if we're just past the '(' in "(*".  Because of the
+                 * unlikely event that the '(' is the last character in the file,
+                 * it's easier to check that by calling getParenToLeftOf.
+                 * 
+                 */
+                if (pidx == LEFT_ROUND_PAREN_IDX && 
+                      getParenToLeftOf(currLoc+1) == BEGIN_MULTILINE_COMMENT_IDX) {
+                    currLoc++;
+                    pidx = BEGIN_MULTILINE_COMMENT_IDX;
+                }
                 if (pidx < PCOUNT) {
                     // This is a left paren
                     findMatchingRightParen(pidx);
                 }
                 else {
                     // This is a right paren
-                    if ((pidx - parenIdx)%PCOUNT == 0 ) {
+                    if ((pidx - parenIdx) % PCOUNT == 0 ) {
                         return;
                     }
                     else {
@@ -293,8 +318,63 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
                     }
                 }
             }
-            
-            
+        }
+    }
+    
+    /**
+     * Assumes that currLoc is just past a right paren with index
+     * parenIdx in PARENS.  It sets currLoc to the location just past
+     * the matching left paren, or throws an exception if there is 
+     * a matching error.
+     * 
+     * @param parenIdx
+     */
+    private void findMatchingLeftParen(int parenIdx) throws ParenErrorException {
+        /*
+         * justWentToPrevRegion is true iff the search just moved to the end
+         * of a new region.
+         * 
+         * When control is at the beginning of the while loop and justWentToPrevRegion
+         * is false, there is a paren to the left of currLoc that must be skipped over 
+         * when searching for the mathing left paren.  The paren with index 
+         * lastParenSearched in PARENS is the right paren that either is the paren 
+         * to be skipped over or else the right paren that matches the paren to be 
+         * skipped over. 
+         */
+        int lastParenSearched = parenIdx;
+        boolean justWentToPrevRegion = false;
+        while (true) {
+            if (! justWentToPrevRegion) {
+                currLoc = currLoc - PARENS[lastParenSearched].length();
+            }
+            int pidx = -1;
+            while (currLoc > beginCurrRegion  && ((pidx = getParenToLeftOf(currLoc)) == -1)) {
+               currLoc--;
+            }
+            if (pidx == -1) {
+                getPrevRegion();
+                currLoc = endCurrRegion;
+                justWentToPrevRegion = true;
+            }
+            else {
+                if (pidx >= PCOUNT) {
+                    // This is a right paren
+                    findMatchingLeftParen(pidx);
+                    lastParenSearched = pidx;
+                    justWentToPrevRegion = false;
+                }
+                else {
+                    // This is a left paren
+                    if ((pidx - parenIdx) % PCOUNT == 0 ) {
+                        return;
+                    }
+                    else {
+                        // Mismatched paren
+                        throw new ParenErrorException(PARENS[pidx] + " matches " +  PARENS[parenIdx], 
+                           new Region(currLoc - PARENS[pidx].length(), PARENS[pidx].length()) );
+                    }
+                }
+            }
         }
     }
     
@@ -470,10 +550,68 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
             endCurrRegion = endLineLoc;
         }
     }
+    
+    /**
+     * Sets beginCurrRegion, endCurrRegion, and (perhaps) currRegionNumber
+     * to indicate the previous region of type regionType.  If that region is
+     * on a later line, it will also call setLineLineRegions.  If there
+     * is no previous region of this type (because it runs off the end of the
+     * file looking for one), it throws an "Unmatched paren" error.
+     *    
+     * @throws ParenErrorException
+     */
+    private void getPrevRegion() throws ParenErrorException {
+        if (regionType == MAIN_REGION) {
+            if (currRegionNumber  > 0) {
+                currRegionNumber--;
+                endCurrRegion = leftQuoteLocs[currRegionNumber];
+                
+                if (currRegionNumber == 0) {
+                    beginCurrRegion = beginLineLoc;
+                } else {
+                    beginCurrRegion = rightQuoteLocs[currRegionNumber-1] + 1;
+                }
+            } else {
+                setLineRegions(currLineNum - 1);
+                currRegionNumber = numberOfStrings;
+                endCurrRegion = lineCommentLoc;
+                if (numberOfStrings == 0) {
+                    beginCurrRegion = beginLineLoc;
+                } 
+                else {
+                    beginCurrRegion = rightQuoteLocs[numberOfStrings-1] + 1;
+                }
+            }
+        }
+        else if (regionType == STRING_REGION) {
+            if (currRegionNumber > 0) {
+                currRegionNumber--;
+            } else {
+                setLineRegions(currLineNum - 1);
+                while (numberOfStrings == 0) {
+                    setLineRegions(currLineNum - 1);
+                }
+                currRegionNumber = numberOfStrings - 1;
+            }
+            beginCurrRegion = leftQuoteLocs[currRegionNumber] + 1;
+            endCurrRegion = rightQuoteLocs[currRegionNumber];
+        }
+        else {
+         // regionType == COMMENT_REGION
+            setLineRegions(currLineNum - 1);
+            while (lineCommentLoc == endLineLoc) {
+                setLineRegions(currLineNum - 1);
+            }
+            beginCurrRegion = lineCommentLoc + 2;
+            endCurrRegion = endLineLoc;
+        }
+    }
+    
     /**
      * Sets currLoc, and returns the index of the selected paren in PARENS.  
      * If the region has zero length, then it selects the paren to its left and 
-     * sets currLoc to the selection.  Otherwise, the region has to select a paren, 
+     * sets currLoc to the selection--or the 2-char paren it's in the
+     * middle of.  Otherwise, the region has to select a paren, 
      * and currLoc is set to the position to the right of that paren.
      * 
      * @param selectedRegion
@@ -484,8 +622,13 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
         int selectedParenIdx;
         if (selectedRegion.getLength() == 0) {
           selectedParenIdx = getParenToLeftOf(currLoc);
-          if (selectedParenIdx < 0) {
-              throw new ParenErrorException("Paren not selected", null);
+          if (selectedParenIdx == -1) {
+              int tryNext = getParenToLeftOf(currLoc + 1);
+              if (tryNext == -1 || PARENS[tryNext].length() == 1) {
+                throw new ParenErrorException("Paren not selected", null);
+              }
+              currLoc++;
+              return tryNext;
           }       
         } else {
             String selection = null; // initialization to keep compiler happy.
@@ -516,7 +659,9 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
         // Now test if we're between "(" and "*".
         if (    selectedParenIdx == LEFT_ROUND_PAREN_IDX
              && getParenToLeftOf(currLoc + 1) == COMMENT_BEGIN_IDX) {
-            throw new ParenErrorException("Selection between  (  and  *", null);
+//            throw new ParenErrorException("Selection between  (  and  *", null);
+            currLoc++;
+            return BEGIN_MULTILINE_COMMENT_IDX;
         }
         return selectedParenIdx ;
     }
