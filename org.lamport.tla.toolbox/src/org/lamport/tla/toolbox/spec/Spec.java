@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterManager;
@@ -17,6 +20,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.text.ITextSelection;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
@@ -27,7 +31,6 @@ import org.lamport.tla.toolbox.util.compare.ResourceNameComparator;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import pcal.TLAtoPCalMapping;
-
 import tla2sany.modanalyzer.SpecObj;
 
 /**
@@ -47,67 +50,21 @@ import tla2sany.modanalyzer.SpecObj;
  */
 public class Spec implements IAdaptable
 {
-
+    
     /**
-     * tpMapping[i] is the TLAtoPCalMapping object produced by the
+     * specnames2mappings.get(filename) is the TLAtoPCalMapping object produced by the
      * PlusCal translator for the file named tpMappingNames[i], where the
      * file name is the module name + ".tla".  (Sometimes it's easier to 
      * get the file name, and sometimes the module name, and it's easier to
      * add a ".tla" than to remove it.)  
      * <p>
-     * We use this simple-minded pair of arrays instead of a Hashtable because
-     * there will seldom be more than one and never more than 4 or 5 modules in
-     * a spec that have a PlusCal algorithm.  (We could add a maximum length
-     * of these arrays and throw away the least recently changed one if
-     * necessary, but it hardly seems worth it.)
-     * <p>
      * There are two public procedures for manipulating these fields:
      * 
-     *   setTpMapping(map, filename) adds/sets the mapping map with name filename
-     *   getTpMapping(filename) returns the mapping with name filename if it
-     *     exists, else returns null.
+     * @see Spec#setTpMapping(TLAtoPCalMapping, String)
+     * @see Spec#getTpMapping(String)
      */
-    private TLAtoPCalMapping[] tpMappings = new TLAtoPCalMapping[0] ;
-    private String[] tpMappingNames = new String[0];
-    
-    public TLAtoPCalMapping getTpMapping(String filename) {
-        int i = 0 ;
-        boolean notdone = true;
-        TLAtoPCalMapping result = null ;
-        while (notdone && i < tpMappings.length) {
-            if (filename.equals(tpMappingNames[i])) {
-                result = tpMappings[i];
-                notdone = false;
-            }
-        }
-        return result;
-      }
-    
-    public void setTpMapping(TLAtoPCalMapping map, String filename) {
-        int i = 0 ;
-        boolean notfound = true;
-        TLAtoPCalMapping result = null ;
-        while (notfound && i < tpMappings.length) {
-            if (filename.equals(tpMappingNames[i])) {
-                result = tpMappings[i];
-                notfound = false;
-            }
-        }
-        if (notfound) {
-            TLAtoPCalMapping[] newMaps = new TLAtoPCalMapping[tpMappings.length+1];
-            String[] newMapNames = new String[tpMappings.length+1];
-            System.arraycopy(tpMappings, 0, newMaps, 1, tpMappings.length);
-            newMaps[0] = map;
-            System.arraycopy(tpMappingNames, 0, newMapNames, 1, tpMappings.length);
-            newMapNames[0] = filename;
-            tpMappings = newMaps;
-            tpMappingNames = newMapNames;
-        } 
-        else {
-            tpMappings[i] = map;
-        }
-    }
-    
+    private final Map<String, TLAtoPCalMapping> spec2mappings = new HashMap<String, TLAtoPCalMapping>();
+   
     /**
      *  The following fields are used for remembering the jumping-off
      *  point for a Goto Declaration or ShowDefinitions command, so we can return to it
@@ -327,7 +284,7 @@ public class Spec implements IAdaptable
     /**
      * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
      */
-    public Object getAdapter(Class adapter)
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter)
     {
         // lookup the IAdapterManager service
         IAdapterManager manager = Platform.getAdapterManager();
@@ -471,5 +428,79 @@ public class Spec implements IAdaptable
     {
         return currentSelection;
     }
+    
+    
+	/**
+	 * @param filename
+	 *            The filename of the {@link Spec} for which the
+	 *            {@link TLAtoPCalMapping} is asked for.
+	 * @return A {@link TLAtoPCalMapping} for the given {@link Spec}'s filename
+	 *         or <code>null</code> if no mapping exist.
+	 */
+    public TLAtoPCalMapping getTpMapping(final String filename) {
+		TLAtoPCalMapping mapping = spec2mappings.get(filename);
+		// In-memory cache miss and thus try to read the mapping from its disc
+		// file. If there exists no disk file, we assume there has never existed
+		// a mapping.
+		if (mapping == null) {
+			mapping = ResourceHelper.readTLAtoPCalMapping(project, filename);
+			if (mapping == null) {
+				mapping = new NullTLAtoPCalMapping();
+			}
+			spec2mappings.put(filename, mapping);
+		}
+		
+		// Always return null if the mapping maps to a NullTLAtoPCalMapping as
+		// our consumers expect null to indicate a non-existent mapping.
+		if (mapping instanceof NullTLAtoPCalMapping) {
+			return null;
+		}
+		return mapping;
+    }
+    
+    /**
+     * Associates the specified mapping with the specified filename
+     * (optional operation).  If the {@link Spec} previously contained a mapping for
+     * the filename, the old mapping is replaced by the specified map.
+     *
+     * @param mapping The {@link TLAtoPCalMapping} object for the given <tt>filename</tt>.
+     * @param filename key with which the specified value is to be associated
+     * @param monitor 
+     * @return the previous value associated with <tt>filename</tt>, or
+     *         <tt>null</tt> if there was no mapping for <tt>filename</tt>.
+     *         (A <tt>null</tt> return can also indicate that the map
+     *         previously associated <tt>null</tt> with <tt>filename</tt>.)
+     * @throws NullPointerException if the specified key or value is null
+     *         and this map does not permit null keys or values
+     * @throws IllegalArgumentException if some property of the specified key
+     *         or value prevents it from being stored in this map
+     */
+	public TLAtoPCalMapping setTpMapping(final TLAtoPCalMapping mapping,
+			final String filename, final IProgressMonitor monitor) {
+    	final TLAtoPCalMapping oldMapping = spec2mappings.put(filename, mapping);
 
+		// Check if old and new mapping are identical to avoid disk flush.
+		// This requires proper equals/hashcode in TLAtoPCalMapping and nested. 
+    	if (!mapping.equals(oldMapping)) {
+    		// Use a submonitor to show progress as well as failure
+    		final SubProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
+    		subProgressMonitor.setTaskName("Writing TLA+ to PCal mapping for " + filename);
+    		// Eagerly flush mapping to its persistent disk storage (overwriting
+    		// any previous mapping stored on disk). This is relatively cheap
+    		// compared to how often a mapping is re-generated, but has the
+    		// advantage that the mapping doesn't get lost if the Toolbox decides to
+    		// not shut down gracefully.
+    		try {
+    			Assert.isTrue(ResourceHelper.writeTLAtoPCalMapping(project,
+    					filename, mapping, subProgressMonitor));
+    		} finally {
+    			subProgressMonitor.done();
+    		}
+    	}
+    	
+		return oldMapping;
+    }
+	
+	@SuppressWarnings("serial")
+	private static class NullTLAtoPCalMapping extends TLAtoPCalMapping {}
 }

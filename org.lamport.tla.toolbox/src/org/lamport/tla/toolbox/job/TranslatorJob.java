@@ -127,7 +127,7 @@ public class TranslatorJob extends WorkspaceJob
          * Eventually, 
          */
         Spec currentSpec = Activator.getSpecManager().getSpecLoaded();
-        currentSpec.setTpMapping(mapping, fileToBuild.getName());
+        currentSpec.setTpMapping(mapping, fileToBuild.getName(), monitor);
          
         monitor.worked(1);
         monitor.setTaskName("Analyzing results");
