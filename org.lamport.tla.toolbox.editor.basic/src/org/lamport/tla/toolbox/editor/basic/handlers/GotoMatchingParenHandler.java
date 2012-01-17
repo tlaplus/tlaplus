@@ -42,7 +42,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
  * the cursor is between the two charecters of a two-character paren.) 
  * If there is an error, then the cursor is not moved, an error message 
  * is put in the Toolbox's status bar (at the bottom of the window), and if 
- * the error is an unmatched paren, the paren is highlighted with
+ * the error is unmatched pair of parens, the parens are highlighted with
  * an Annotation marker.  The error message and highlighting disappear when the cursor
  * is moved (or more precisely, when a CaretListener is called).
  * 
@@ -186,7 +186,7 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
               // Note: if the selection covers multiple lines, then 
               // selectParenIdx should have thrown an exception.
             if (lineNumber < 0) {
-                throw new ParenErrorException("Toolbox bug: bad selected line computed", null);
+                throw new ParenErrorException("Toolbox bug: bad selected line computed", null, null);
             }
             
             setLineRegions(lineNumber);
@@ -198,37 +198,8 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
             else {
                 findMatchingLeftParen(selectedParenIdx);
             }
-            tlaEditor.selectAndReveal(currLoc, 0);
-            
-//            System.out.println("regionType: " + regionType + ", currRegionNumber: " + currRegionNumber);
-//            try {
-//                System.out.println("region: `" + 
-//                        document.get(beginCurrRegion, endCurrRegion-beginCurrRegion) + "'");
-//                getNextRegion();
-//                System.out.println("Next region: `" + 
-//                        document.get(beginCurrRegion, endCurrRegion-beginCurrRegion) + "'");
-//            } catch (BadLocationException e) {
-//              // TODO Auto-generated catch block
-//              System.out.println("Exception printing line info");
-//          }
-//            try {
-//                System.out.println("Current line: `" + 
-//                   document.get(beginLineLoc, endLineLoc-beginLineLoc)+ "'");
-//                for (int i = 0; i < numberOfStrings; i++) {
-//                    System.out.println("String " + i +": " +
-//                   document.get(leftQuoteLocs[i], rightQuoteLocs[i]-leftQuoteLocs[i]+1));
-//                }
-//                if (lineCommentLoc != endLineLoc) {
-//                    System.out.println("End comment: `" +
-//                   document.get(lineCommentLoc, endLineLoc - lineCommentLoc) + "'");
-//                }
-//            } catch (BadLocationException e) {
-//                // TODO Auto-generated catch block
-//                System.out.println("Exception printing line info");
-//            }
-            
+            tlaEditor.selectAndReveal(currLoc, 0);            
         } catch (ParenErrorException e) {
-
             /*
              * Report the error.
              */
@@ -237,28 +208,31 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
             ErrorMessageEraser listener = new ErrorMessageEraser(tlaEditor,
                     resource);
             tlaEditor.getViewer().getTextWidget().addCaretListener(listener);
-            tlaEditor.getEditorSite().getActionBars().getStatusLineManager()
-                    .setErrorMessage(e.message);
-            Region region = e.region;
-
-            if (region != null) {
+            tlaEditor.getEditorSite().getActionBars().getStatusLineManager().setErrorMessage(e.message);
+            
+            Region[] regions = e.regions;
+            if (regions[0] != null) {
                 try {
                     // The following code was largely copied from the The
                     // ShowUsesHandler class.
-                    IMarker marker = resource
-                            .createMarker(PAREN_ERROR_MARKER_TYPE);
-                    Map<String, Integer> markerAttributes = 
-                            new HashMap<String, Integer>(2);
-                    markerAttributes.put(IMarker.CHAR_START,
-                            new Integer(region.getOffset()));
-                    markerAttributes.put(IMarker.CHAR_END,
-                                         new Integer(region.getOffset()
-                                                      + region.getLength()));
-                    marker.setAttributes(markerAttributes);
                     Spec spec = ToolboxHandle.getCurrentSpec();
                     spec.setMarkersToShow(null);
-                    IMarker[] markersToShow = new IMarker[1];
-                    markersToShow[0] = marker;
+                    IMarker[] markersToShow = new IMarker[2];
+                    for (int i = 0; i < 2; i++) {
+                        IMarker marker = resource
+                                .createMarker(PAREN_ERROR_MARKER_TYPE);
+                        Map<String, Integer> markerAttributes = new HashMap<String, Integer>(
+                                2);
+                        markerAttributes.put(IMarker.CHAR_START, new Integer(
+                                regions[i].getOffset()));
+                        markerAttributes.put(
+                                IMarker.CHAR_END,
+                                new Integer(regions[i].getOffset()
+                                        + regions[i].getLength()));
+                        marker.setAttributes(markerAttributes);
+
+                        markersToShow[i] = marker;
+                    }
                     spec.setMarkersToShow(markersToShow);
                 } catch (CoreException exc) {
                     System.out
@@ -280,6 +254,7 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
      * @param parenIdx
      */
     private void findMatchingRightParen(int parenIdx) throws ParenErrorException {
+        int savedCurrLoc = currLoc;
         while (true) {
             currLoc++;
             int pidx = -1;
@@ -314,7 +289,8 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
                     else {
                         // Mismatched paren
                         throw new ParenErrorException(PARENS[parenIdx] + " matched by " + PARENS[pidx] , 
-                           new Region(currLoc - PARENS[pidx].length(), PARENS[pidx].length()) );
+                           new Region(currLoc - PARENS[pidx].length(), PARENS[pidx].length()),
+                           new Region(savedCurrLoc - PARENS[parenIdx].length(), PARENS[parenIdx].length()));
                     }
                 }
             }
@@ -330,6 +306,8 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
      * @param parenIdx
      */
     private void findMatchingLeftParen(int parenIdx) throws ParenErrorException {
+        int savedCurrLoc = currLoc;
+        
         /*
          * justWentToPrevRegion is true iff the search just moved to the end
          * of a new region.
@@ -371,7 +349,8 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
                     else {
                         // Mismatched paren
                         throw new ParenErrorException(PARENS[pidx] + " matches " +  PARENS[parenIdx], 
-                           new Region(currLoc - PARENS[pidx].length(), PARENS[pidx].length()) );
+                           new Region(currLoc - PARENS[pidx].length(), PARENS[pidx].length()),
+                           new Region(savedCurrLoc - PARENS[parenIdx].length(), PARENS[parenIdx].length()));
                     }
                 }
             }
@@ -447,7 +426,7 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
                 rightQuoteLocs[numberOfStrings - 1] = endLineLoc;
             }
         } catch (BadLocationException e) {
-            throw new ParenErrorException("Unmatched paren", null);
+            throw new ParenErrorException("Unmatched paren", null, null);
 //            throw new ParenErrorException(
 //                    "Toolbox bug: BadLocationException in setLineRegions at line "
 //                            + lineNumber, null);
@@ -625,7 +604,7 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
           if (selectedParenIdx == -1) {
               int tryNext = getParenToLeftOf(currLoc + 1);
               if (tryNext == -1 || PARENS[tryNext].length() == 1) {
-                throw new ParenErrorException("Paren not selected", null);
+                throw new ParenErrorException("Paren not selected", null, null);
               }
               currLoc++;
               return tryNext;
@@ -651,7 +630,7 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
                 }
             }
             if (notDone) {
-                throw new ParenErrorException("Selection is not a paren", null);
+                throw new ParenErrorException("Selection is not a paren", null, null);
             }
             currLoc = currLoc + selectedRegion.getLength();
         }
@@ -678,11 +657,12 @@ public class GotoMatchingParenHandler extends AbstractHandler implements
         /*
          * The region containing the string to be highlighted, or null if none.
          */
-        Region region;
+        Region[] regions = new Region[2];
         
-        private ParenErrorException(String message, Region region){
+        private ParenErrorException(String message, Region region1, Region region2){
              this.message = message;
-            this.region = region;
+             this.regions[0] = region1;
+             this.regions[1] = region2;
         }
     }
     
