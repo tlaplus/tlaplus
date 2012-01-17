@@ -190,6 +190,12 @@ public class Spec implements IAdaptable
             Activator.logError("A spec did not load correctly, probably because it was modified outside the Toolbox." +
                                "\n Error occurred in toolbox/spec/Spec.initProjectProperties()", null);
         }
+        
+		// Initialize TLAtoPCalMapping here for the root module to have it
+		// available the moment the user needs it the first time. This is just an
+		// optimization because the mapping would be looked up later
+		// automatically, but has the advantage that it is not done on the UI thread.
+        this.getTpMapping(this.rootFile.getName());
     }
 
     /**
