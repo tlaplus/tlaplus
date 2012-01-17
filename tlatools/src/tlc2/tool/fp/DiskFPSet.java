@@ -990,12 +990,8 @@ public class DiskFPSet extends FPSet {
 	 */
 	public final void commitChkpt() throws IOException { 
 		/* SKIP */
-		//TODO why are checkpoints skipped here?
-		// + If TLCServer uses an FPSet directly and not via 
-		// the FPSetManager, this method gets called instead 
-		// of commitChkpt(String).
-		// - Flushing DiskFPSet more often than required is a 
-		// huge performance penalty
+		// DiskFPSet checkpointing is a no-op, because DiskFPSet recreates 
+		// the fingerprints from the TLCTrace file. Not from its own .fp file. 
 	}
 
 	private long[] recoveryBuff = null;
@@ -1050,6 +1046,7 @@ public class DiskFPSet extends FPSet {
 		this.poolIndex = 0;
 	}
 
+	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#recover()
 	 */
