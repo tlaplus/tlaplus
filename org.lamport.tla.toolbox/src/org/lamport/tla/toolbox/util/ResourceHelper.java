@@ -2,6 +2,12 @@ package org.lamport.tla.toolbox.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -50,6 +56,7 @@ import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
+import pcal.TLAtoPCalMapping;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
 import tla2sany.parser.SyntaxTreeNode;
@@ -84,6 +91,10 @@ public class ResourceHelper
 {
 
     /**
+     * Filename suffix for {@link TLAtoPCalMapping} files
+     */
+    private static final String PMAP_SUFFIX = ".pmap";
+	/**
      * 
      */
     private static final String PROJECT_DESCRIPTION_FILE = ".project";
@@ -1617,5 +1628,61 @@ public class ResourceHelper
 		
 		// verify given spec name and parsed spec name are the same
 		return aSpecName.equals(identifier);
+	}
+
+	/**
+	 * @param project
+	 *            The project the mapping belongs to
+	 * @param filename
+	 *            The filename the mapping is for (without the mapping suffix
+	 *            {@link ResourceHelper#PMAP_SUFFIX})
+	 * @return A {@link TLAtoPCalMapping} or <code>null</code> if no mapping
+	 *         exist or de-serialization on the mapping on disk fails.
+	 */
+	public static TLAtoPCalMapping readTLAtoPCalMapping(final IProject project, final String filename) {
+		final IFile file = project.getFile(filename + PMAP_SUFFIX);
+		if (file.exists()) {
+			try {
+				final ObjectInputStream inputStream = new ObjectInputStream(
+						new FileInputStream(file.getLocation().toOSString()));
+				final Object object = inputStream.readObject();
+				if (object instanceof TLAtoPCalMapping) {
+					return (TLAtoPCalMapping) object;
+				}
+			} catch (final FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (final IOException e) {
+				e.printStackTrace();
+			} catch (final ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param project The project the mapping belongs to 
+	 * @param filename The filename the mapping is for
+	 * @param mapping The mapping to be written
+	 * @param monitor  A status monitor that indicates progress
+	 * @return true iff mapping successfully written to disk
+	 */
+	public static boolean writeTLAtoPCalMapping(final IProject project,
+			final String filename, final TLAtoPCalMapping mapping, final IProgressMonitor monitor) {
+		final IFile file = project.getFile(filename + PMAP_SUFFIX);
+		try {
+			final ObjectOutputStream outputStream = new ObjectOutputStream(
+					new FileOutputStream(file.getLocation().toOSString()));
+			outputStream.writeObject(mapping);
+			outputStream.close();
+			monitor.worked(1);
+		} catch (final FileNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		} catch (final IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 }
