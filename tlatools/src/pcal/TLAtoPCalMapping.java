@@ -2,9 +2,9 @@
  */
 package pcal;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Vector;
-
-import pcal.exception.PcalTLAGenException;
 
 /**
  * A TLA+ to PlusCal mapping is a mapping from regions of the TLA+ translation 
@@ -63,7 +63,8 @@ import pcal.exception.PcalTLAGenException;
  * @author lamport
  *
  */
-public class TLAtoPCalMapping {
+@SuppressWarnings("serial")
+public class TLAtoPCalMapping implements Serializable {
   /**
    * The mapping field represents an element of TPMap in the TLAToPCal spec.
    *  
@@ -74,7 +75,7 @@ public class TLAtoPCalMapping {
    * This is a version of {@link TLAtoPCalMapping#mapping} as a vector of vectors.
    * It is used while constructing the mapping field, and is then nulled.
    */
-  public Vector mappingVector = new Vector(50) ;
+//  public Vector mappingVector = new Vector(50) ;
   
   public TLAtoPCalMapping() {
       
@@ -100,7 +101,44 @@ public class TLAtoPCalMapping {
   }
 
   
-  /**
+	  /* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + algColumn;
+		result = prime * result + algLine;
+		result = prime * result + Arrays.hashCode(mapping);
+		result = prime * result + tlaStartLine;
+		return result;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TLAtoPCalMapping other = (TLAtoPCalMapping) obj;
+		if (algColumn != other.algColumn)
+			return false;
+		if (algLine != other.algLine)
+			return false;
+		if (!Arrays.equals(mapping, other.mapping))
+			return false;
+		if (tlaStartLine != other.tlaStartLine)
+			return false;
+		return true;
+	}
+
+/**
    * Returns the PCal code location to which `mapping' maps the tpregion Region in the
    * TLA+ translation, where line numbers in `selection' are relative to tlaStartLine.
    * It returns null if the mapping does not map the selection to any PCal code. 
