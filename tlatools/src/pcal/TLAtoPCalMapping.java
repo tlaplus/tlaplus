@@ -63,8 +63,22 @@ import java.util.Vector;
  * @author lamport
  *
  */
-@SuppressWarnings("serial")
 public class TLAtoPCalMapping implements Serializable {
+	/**
+	 * If {@link TLAtoPCalMapping#mapping} is changed or additional
+	 * (non-transient) fields are added (that are intended for serialization),
+	 * this UID has to change (by e.g. incrementing by 1). This indicates a
+	 * schema change to the serializer.
+	 * <p>
+	 * For more information on Java serialzation read Java(TM) Object
+	 * Serialization Specification.
+	 * 
+	 * @see http
+	 *      ://docs.oracle.com/javase/1.5.0/docs/guide/serialization/spec/version
+	 *      .html#9419
+	 */
+	private static final long serialVersionUID = 4996600307008990835L;
+
   /**
    * The mapping field represents an element of TPMap in the TLAToPCal spec.
    *  
