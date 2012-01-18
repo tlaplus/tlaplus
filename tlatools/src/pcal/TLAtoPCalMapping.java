@@ -69,17 +69,7 @@ public class TLAtoPCalMapping implements Serializable {
    * The mapping field represents an element of TPMap in the TLAToPCal spec.
    *  
    */
-  public MappingObject[][] mapping = new MappingObject[0][] ;
-  
-  /**
-   * This is a version of {@link TLAtoPCalMapping#mapping} as a vector of vectors.
-   * It is used while constructing the mapping field, and is then nulled.
-   */
-//  public Vector mappingVector = new Vector(50) ;
-  
-  public TLAtoPCalMapping() {
-      
-  }
+  private MappingObject[][] mapping = new MappingObject[0][] ;
   
   /**
    * Sets the mapping field to an array version of mapVec, which must be a vector 
@@ -313,7 +303,6 @@ public class TLAtoPCalMapping implements Serializable {
           }
       }
       MappingObject bParen = ObjectAt(i, tpMap);
-      PCalLocation bParenLoc = i;
       
       /*
        * Set eParen to first right paren to the right of rtok that rises
@@ -337,7 +326,6 @@ public class TLAtoPCalMapping implements Serializable {
           }
       }
       MappingObject eParen = ObjectAt(i, tpMap);
-      PCalLocation eParenLoc = i;
       
       /*
        * The algorithm of TLAToPCal now looks for breaks between bParen and eParen to compute the
