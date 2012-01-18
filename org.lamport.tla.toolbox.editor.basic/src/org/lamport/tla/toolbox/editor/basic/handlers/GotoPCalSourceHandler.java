@@ -172,7 +172,7 @@ public class GotoPCalSourceHandler extends AbstractHandler implements IHandler {
         }
         String moduleName = tlaEditor.getModuleName();
        
-       return spec.getTpMapping(moduleName + ".tla") != null; 
+       return spec.getTpMapping(moduleName) != null; 
     }
 
 }
