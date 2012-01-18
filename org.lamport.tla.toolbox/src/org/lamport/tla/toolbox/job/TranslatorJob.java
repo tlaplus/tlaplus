@@ -127,11 +127,7 @@ public class TranslatorJob extends WorkspaceJob
          * Eventually, 
          */
         Spec currentSpec = Activator.getSpecManager().getSpecLoaded();
-        
-        // strip off file extension
-        String filename = fileToBuild.getName().substring(0, fileToBuild.getName().length() - 4);
-        
-		currentSpec.setTpMapping(mapping, filename, monitor);
+        currentSpec.setTpMapping(mapping, fileToBuild.getName(), monitor);
          
         monitor.worked(1);
         monitor.setTaskName("Analyzing results");

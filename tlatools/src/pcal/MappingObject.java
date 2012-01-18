@@ -39,7 +39,12 @@ import java.util.Vector;
  */
 public class MappingObject implements Serializable {
     
-    /*
+    /**
+	 * @see TLAtoPCalMapping#serialVersionUID
+	 */
+	private static final long serialVersionUID = 8620480075506527787L;
+
+	/*
      * The type field tells what subclass the MappingObject belongs to
      */
     private int type ;
@@ -67,7 +72,11 @@ public class MappingObject implements Serializable {
     }
     
     public static class LeftParen extends MappingObject {
-//        private int column ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = 5476753619018204229L;
+		//        private int column ;
         private PCalLocation location ;
         public LeftParen(PCalLocation location) {
            super(LEFT_PAREN) ;
@@ -121,7 +130,11 @@ public class MappingObject implements Serializable {
     }
     
     public static class RightParen extends MappingObject {
-//        private int column ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = 1313886393528667584L;
+		//        private int column ;
         private PCalLocation location ;
         public RightParen(PCalLocation location) {
            super(RIGHT_PAREN) ;
@@ -175,7 +188,11 @@ public class MappingObject implements Serializable {
     }
     
     public static class BeginTLAToken extends MappingObject {
-        private int column ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = 3737867780161818714L;
+		private int column ;
 
         public int getColumn() {
             return column;
@@ -221,7 +238,11 @@ public class MappingObject implements Serializable {
     }
     
     public static class EndTLAToken extends MappingObject {
-        private int column ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = -2173558662370032149L;
+		private int column ;
 
         public int getColumn() {
             return column;
@@ -267,7 +288,11 @@ public class MappingObject implements Serializable {
     }
     
     public static class SourceToken extends MappingObject {
-        private int beginColumn ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = 6438346684127312114L;
+		private int beginColumn ;
         private int endColumn ;
         private Region origin ;
         
@@ -348,7 +373,11 @@ public class MappingObject implements Serializable {
         
     }
     public static class Break extends MappingObject{
-        private int depth ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = 3197403974334483558L;
+		private int depth ;
 
         public int getDepth() {
             return depth;
