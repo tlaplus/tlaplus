@@ -15,6 +15,11 @@ import java.io.Serializable;
  */
 public class PCalLocation implements Serializable {
 	
+    /**
+	 * @see TLAtoPCalMapping#serialVersionUID
+	 */
+	private static final long serialVersionUID = 5224570720345403320L;
+
 	private int line;
 	
 	private int column;
