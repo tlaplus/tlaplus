@@ -672,26 +672,26 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         Composite area = (Composite) advancedSection.getClient();
         area.setLayout(new GridLayout(2, false));
         
-        // label fp
-        FormText fpLabel = toolkit.createFormText(area, true);
-        fpLabel.setText("Fingerprint seed index:", false, false);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        fpLabel.setLayoutData(gd);
-
-        // field fpIndex
-        fpIndexSpinner = new Spinner(area, SWT.NONE);
-        fpIndexSpinner.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
-        fpIndexSpinner.setToolTipText("Index of irreducible polynominal used as a seed for fingerprint hashing (corresponds to \"-fp value-1\")");
-        gd = new GridData();
-        gd.widthHint = 200;
-        fpIndexSpinner.setLayoutData(gd);
-        
-        // validation for fpIndex spinner
-        fpIndexSpinner.setMinimum(1);
-        fpIndexSpinner.setMaximum(64);
-        
-        fpIndexSpinner.addFocusListener(focusListener);
+//        // label fp
+//        FormText fpLabel = toolkit.createFormText(area, true);
+//        fpLabel.setText("Fingerprint seed index:", false, false);
+//        gd = new GridData();
+//        gd.horizontalIndent = 10;
+//        fpLabel.setLayoutData(gd);
+//
+//        // field fpIndex
+//        fpIndexSpinner = new Spinner(area, SWT.NONE);
+//        fpIndexSpinner.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
+//        fpIndexSpinner.setToolTipText("Index of irreducible polynominal used as a seed for fingerprint hashing (corresponds to \"-fp value-1\")");
+//        gd = new GridData();
+//        gd.widthHint = 200;
+//        fpIndexSpinner.setLayoutData(gd);
+//        
+//        // validation for fpIndex spinner
+//        fpIndexSpinner.setMinimum(1);
+//        fpIndexSpinner.setMaximum(64);
+//        
+//        fpIndexSpinner.addFocusListener(focusListener);
         
         // Model checking mode
         mcOption = toolkit.createButton(area, "Model-checking mode", SWT.RADIO);
@@ -779,6 +779,30 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd.widthHint = 200;
         simuArilText.setLayoutData(gd);
         simuArilText.addFocusListener(focusListener);
+        
+        // label fp
+        FormText fpLabel = toolkit.createFormText(area, true);
+        fpLabel.setText("Fingerprint seed index:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        fpLabel.setLayoutData(gd);
+        
+        // field fpIndex
+        fpIndexSpinner = new Spinner(area, SWT.NONE);
+        fpIndexSpinner.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
+        fpIndexSpinner.setToolTipText("Index of irreducible polynominal used as a seed for fingerprint hashing (corresponds to \"-fp value-1\")");
+        gd = new GridData();
+        gd.widthHint = 200;
+        gd.verticalIndent = 20;
+        gd.horizontalIndent = 0;
+        fpIndexSpinner.setLayoutData(gd);
+        
+        // validation for fpIndex spinner
+        fpIndexSpinner.setMinimum(1);
+        fpIndexSpinner.setMaximum(64);
+        
+        fpIndexSpinner.addFocusListener(focusListener);
+        
 
         return advancedSection;
     }
