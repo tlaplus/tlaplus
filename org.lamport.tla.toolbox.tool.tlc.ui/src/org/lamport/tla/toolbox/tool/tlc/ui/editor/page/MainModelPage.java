@@ -1146,9 +1146,23 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         DirtyMarkingListener howToRunListener = new DirtyMarkingListener(howToRunPart, true);
 
+        // label workers
+        FormText workersLabel = toolkit.createFormText(howToRunArea, true);
+        workersLabel.setText("Number of worker threads:", false, false);
+
+        // field workers
+        workers = toolkit.createText(howToRunArea, "1");
+        workers.addModifyListener(howToRunListener);
+        workers.addFocusListener(focusListener);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 40;
+        workers.setLayoutData(gd);
+
+        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
         // max heap size label
         FormText maxHeapLabel = toolkit.createFormText(howToRunArea, true);
-        maxHeapLabel.setText("Fraction of physical memory allocated to model checker:", false, false);
+        maxHeapLabel.setText("Fraction of physical memory allocated to TLC:", false, false);
 
 		// Create a composite inside the right "cell" of the "how to run"
 		// section grid layout to fit the scale and the maxHeapSizeFraction
@@ -1195,7 +1209,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // fpbits
         FormText fpBitsLabel = toolkit.createFormText(howToRunArea, true);
-        fpBitsLabel.setText("2^n amount of disc storage files:", false, false);
+        fpBitsLabel.setText("Log base 2 of number of disk storage files:", false, false);
 
         int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
@@ -1209,20 +1223,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         dm.bindAttribute(LAUNCH_FPBITS, fpBits, howToRunPart);
         
-        // label workers
-        FormText workersLabel = toolkit.createFormText(howToRunArea, true);
-        workersLabel.setText("Number of worker threads:", false, false);
-
-        // field workers
-        workers = toolkit.createText(howToRunArea, "1");
-        workers.addModifyListener(howToRunListener);
-        workers.addFocusListener(focusListener);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 40;
-        workers.setLayoutData(gd);
-
-        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
+//        // label workers
+//        FormText workersLabel = toolkit.createFormText(howToRunArea, true);
+//        workersLabel.setText("Number of worker threads:", false, false);
+//
+//        // field workers
+//        workers = toolkit.createText(howToRunArea, "1");
+//        workers.addModifyListener(howToRunListener);
+//        workers.addFocusListener(focusListener);
+//        gd = new GridData();
+//        gd.horizontalIndent = 10;
+//        gd.widthHint = 40;
+//        workers.setLayoutData(gd);
+//
+//        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
         
         /*
          * run from the checkpoint
