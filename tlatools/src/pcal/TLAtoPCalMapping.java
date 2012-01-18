@@ -131,11 +131,40 @@ public class TLAtoPCalMapping implements Serializable {
 			return false;
 		if (algLine != other.algLine)
 			return false;
-		if (!Arrays.equals(mapping, other.mapping))
-			return false;
 		if (tlaStartLine != other.tlaStartLine)
 			return false;
+		// mapping is an [][] for which Arrays.equals(Object[],Object[]) check
+		// referential equality on its elements. Since the element is an array
+		// itself, object equality has to be checked.
+		if (!equals(mapping, other.mapping))
+			return false;
 		return true;
+	}
+	
+	/**
+	 * @see Arrays#equals(Object[], Object[]) except that elements are checked
+	 *      via object identity instead of referential identity.
+	 */
+	private boolean equals(MappingObject[][] m, MappingObject[][] m2) {
+        if (m==m2)
+            return true;
+        if (m==null || m2==null)
+            return false;
+
+        int length = m.length;
+        if (m2.length != length)
+            return false;
+
+        for (int i=0; i<length; i++) {
+            MappingObject[] o1 = m[i];
+            MappingObject[] o2 = m2[i];
+            // Use object instead of referential identity here
+            if (!(o1==null ? o2==null : Arrays.equals(o1,o2)))
+                return false;
+        }
+
+        return true;
+
 	}
 
 /**
