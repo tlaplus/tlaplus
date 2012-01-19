@@ -8,10 +8,10 @@
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
 
-This is Version 1.4.1 of ?? October 2011 and includes:
+This is Version 1.4.1 of 19 January 2012 and includes:
   - SANY Version 2.1 of 20 July 2011
-  - TLC Version 2.03 of 20 July 2011
-  - PlusCal Version 1.6 of 5 October 2011
+  - TLC Version 2.04 of 19 January 2012
+  - PlusCal Version 1.7 of 19 January 2012
   - TLATeX Version .9 of 19 September 2007
 
 Don&apos;t forget to click on help.  You can learn about features that you never knew about or have forgotten.
