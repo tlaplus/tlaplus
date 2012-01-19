@@ -10,6 +10,7 @@ import org.eclipse.core.commands.IHandler2;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
@@ -32,22 +33,21 @@ public class PCalTranslateModuleHandler extends AbstractHandler implements IHand
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        // Getting progress monitor
-        IWorkbenchWindow window = UIHelper.getActiveWindow();
-        Shell shell = (window != null) ? window.getShell() : null;
-        ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(shell);
-        IProgressMonitor monitor = progressDialog.getProgressMonitor();
-
-        IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
-
+        final IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
         if (activeEditor.isDirty())
         {
-            // editor is not saved
-
-            // just save it
+            // editor is not saved just save it
             // TODO
 
-            activeEditor.doSave(monitor);
+			// Use NullProgressMonitor instead of newly created monitor. The
+			// parent ProgressMonitorDialog would need to be properly
+			// initialized first.
+        	// @see https://bugzilla.tlaplus.net/show_activity.cgi?id=256
+        	//
+			// Generally though, saving a resource involves I/O which should be
+			// decoupled from the UI thread in the first place. Properly doing
+			// this, would be from inside a Job which provides a ProgressMonitor
+            activeEditor.doSave(new NullProgressMonitor());
         }
 
         IEditorInput editorInput = activeEditor.getEditorInput();
@@ -58,6 +58,11 @@ public class PCalTranslateModuleHandler extends AbstractHandler implements IHand
             IRunnableWithProgress translatorOperation = TranslatorJob.getAsRunnableWithProgress(fileToBuild);
             try
             {
+                // Getting progress monitor
+                final IWorkbenchWindow window = UIHelper.getActiveWindow();
+                final Shell shell = (window != null) ? window.getShell() : null;
+                final ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(shell);
+                final IProgressMonitor monitor = progressDialog.getProgressMonitor();
                 progressDialog.run(true, false, translatorOperation);
                 fileToBuild.refreshLocal(IResource.DEPTH_ONE, monitor);
 
