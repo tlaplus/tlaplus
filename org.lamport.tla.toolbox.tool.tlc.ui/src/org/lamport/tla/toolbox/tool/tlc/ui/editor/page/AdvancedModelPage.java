@@ -30,10 +30,12 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableOverridesSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -42,6 +44,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.OpDefNode;
+import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.MultiFPSet;
 
 /**
  * Represent all advanced model elements
@@ -70,6 +74,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      * Offset for the -fp parameter passed to TLC process to select the hash seed 
      */
     private Spinner fpIndexSpinner;
+	/**
+	 * -fpbits parameter designed to select how many fp bits are used for hash
+	 * lookup
+	 */
+    private Spinner fpBits;
     private TableViewer definitionsTable;
 
     /**
@@ -153,6 +162,12 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // fp index
         final int fpIndex = getConfig().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
        	fpIndexSpinner.setSelection(fpIndex);
+       	
+        // fpBits
+        int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+                ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
+        fpBits.setSelection(getConfig().getAttribute(LAUNCH_FPBITS, defaultFPBits));
+
     }
 
     /**
@@ -194,6 +209,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // FP Seed index
         getConfig().setAttribute(LAUNCH_FP_INDEX, fpIndexSpinner.getSelection());
+
+        // fpBits
+        getConfig().setAttribute(LAUNCH_FPBITS, fpBits.getSelection());
 
         // definitions
         List definitions = FormHelper.getSerializedInput(definitionsTable);
@@ -452,6 +470,18 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         mm.setAutoUpdate(true);
 
+        
+        
+        // fpBits
+        if (!FPSet.isValid(fpBits.getSelection()))
+        {
+            modelEditor.addErrorMessage("wrongNumber3", "fpbits must be a positive integer number smaller than 31", this
+                    .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
+                    .getAttributeControl(LAUNCH_FPBITS)));
+            setComplete(false);
+            expandSection(SEC_HOW_TO_RUN);
+        }
+        
         super.validatePage(switchToErrorPage);
     }
 
@@ -638,6 +668,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         simuSeedText.addModifyListener(launchListener);
         simuDepthText.addModifyListener(launchListener);
         fpIndexSpinner.addModifyListener(launchListener);
+        fpBits.addModifyListener(launchListener);
         dfidDepthText.addModifyListener(launchListener);
         simulationOption.addSelectionListener(launchListener);
         dfidOption.addSelectionListener(launchListener);
@@ -780,11 +811,13 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         simuArilText.setLayoutData(gd);
         simuArilText.addFocusListener(focusListener);
         
+        //TODO add horizontal line here
+        
         // label fp
         FormText fpLabel = toolkit.createFormText(area, true);
         fpLabel.setText("Fingerprint seed index:", false, false);
         gd = new GridData();
-        gd.horizontalIndent = 10;
+        gd.horizontalIndent = 0;
         fpLabel.setLayoutData(gd);
         
         // field fpIndex
@@ -803,7 +836,31 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         
         fpIndexSpinner.addFocusListener(focusListener);
         
+        // fpbits label
+        FormText fpBitsLabel = toolkit.createFormText(area, true);
+        fpBitsLabel.setText("Log base 2 of number of disk storage files:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 0;
+        fpBitsLabel.setLayoutData(gd);
 
+        // fpbits spinner
+        fpBits = new Spinner(area, SWT.NONE);
+        fpBits.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
+        fpBits.addFocusListener(focusListener);
+        gd = new GridData();
+        gd.widthHint = 200;
+        gd.verticalIndent = 20;
+        gd.horizontalIndent = 0;
+        fpBits.setLayoutData(gd);
+
+        fpBits.setMinimum(MultiFPSet.MIN_FPBITS);
+        fpBits.setMaximum(MultiFPSet.MAX_FPBITS);
+
+        int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+        		ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
+        fpBits.setSelection(defaultFPBits);
+        
+        
         return advancedSection;
     }
 }
