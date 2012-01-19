@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -435,6 +437,7 @@ public class Spec implements IAdaptable
         return currentSelection;
     }
     
+    private final Lock lock = new ReentrantLock(true);
     
 	/**
 	 * @param filename
@@ -444,24 +447,29 @@ public class Spec implements IAdaptable
 	 *         or <code>null</code> if no mapping exist.
 	 */
     public TLAtoPCalMapping getTpMapping(final String filename) {
-		TLAtoPCalMapping mapping = spec2mappings.get(filename);
-		// In-memory cache miss and thus try to read the mapping from its disc
-		// file. If there exists no disk file, we assume there has never existed
-		// a mapping.
-		if (mapping == null) {
-			mapping = ResourceHelper.readTLAtoPCalMapping(project, filename);
-			if (mapping == null) {
-				mapping = new NullTLAtoPCalMapping();
-			}
-			spec2mappings.put(filename, mapping);
-		}
-		
-		// Always return null if the mapping maps to a NullTLAtoPCalMapping as
-		// our consumers expect null to indicate a non-existent mapping.
-		if (mapping instanceof NullTLAtoPCalMapping) {
-			return null;
-		}
-		return mapping;
+    	lock.lock();
+    	try {
+    		TLAtoPCalMapping mapping = spec2mappings.get(filename);
+    		// In-memory cache miss and thus try to read the mapping from its disc
+    		// file. If there exists no disk file, we assume there has never existed
+    		// a mapping.
+    		if (mapping == null) {
+    			mapping = ResourceHelper.readTLAtoPCalMapping(project, filename);
+    			if (mapping == null) {
+    				mapping = new NullTLAtoPCalMapping();
+    			}
+    			spec2mappings.put(filename, mapping);
+    		}
+    		
+    		// Always return null if the mapping maps to a NullTLAtoPCalMapping as
+    		// our consumers expect null to indicate a non-existent mapping.
+    		if (mapping instanceof NullTLAtoPCalMapping) {
+    			return null;
+    		}
+    		return mapping;
+    	} finally {
+    		lock.unlock();
+    	}
     }
     
     /**
@@ -483,28 +491,33 @@ public class Spec implements IAdaptable
      */
 	public TLAtoPCalMapping setTpMapping(final TLAtoPCalMapping mapping,
 			final String filename, final IProgressMonitor monitor) {
-    	final TLAtoPCalMapping oldMapping = spec2mappings.put(filename, mapping);
-
-		// Check if old and new mapping are identical to avoid disk flush.
-		// This requires proper equals/hashcode in TLAtoPCalMapping and nested. 
-    	if (!mapping.equals(oldMapping)) {
-    		// Use a submonitor to show progress as well as failure
-    		final SubProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
-    		subProgressMonitor.setTaskName("Writing TLA+ to PCal mapping for " + filename);
-    		// Eagerly flush mapping to its persistent disk storage (overwriting
-    		// any previous mapping stored on disk). This is relatively cheap
-    		// compared to how often a mapping is re-generated, but has the
-    		// advantage that the mapping doesn't get lost if the Toolbox decides to
-    		// not shut down gracefully.
-    		try {
-    			Assert.isTrue(ResourceHelper.writeTLAtoPCalMapping(project,
-    					filename, mapping, subProgressMonitor));
-    		} finally {
-    			subProgressMonitor.done();
-    		}
-    	}
-    	
-		return oldMapping;
+		lock.lock();
+		try {
+			final TLAtoPCalMapping oldMapping = spec2mappings.put(filename, mapping);
+			
+			// Check if old and new mapping are identical to avoid disk flush.
+			// This requires proper equals/hashcode in TLAtoPCalMapping and nested. 
+			if (!mapping.equals(oldMapping)) {
+				// Use a submonitor to show progress as well as failure
+				final SubProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
+				subProgressMonitor.setTaskName("Writing TLA+ to PCal mapping for " + filename);
+				// Eagerly flush mapping to its persistent disk storage (overwriting
+				// any previous mapping stored on disk). This is relatively cheap
+				// compared to how often a mapping is re-generated, but has the
+				// advantage that the mapping doesn't get lost if the Toolbox decides to
+				// not shut down gracefully.
+				try {
+					Assert.isTrue(ResourceHelper.writeTLAtoPCalMapping(project,
+							filename, mapping, subProgressMonitor));
+				} finally {
+					subProgressMonitor.done();
+				}
+			}
+			
+			return oldMapping;
+		} finally {
+			lock.unlock();
+		}
     }
 	
 	@SuppressWarnings("serial")
