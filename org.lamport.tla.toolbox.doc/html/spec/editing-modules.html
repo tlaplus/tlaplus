@@ -15,6 +15,7 @@
 Contents
   <a href="#module">Module Editors</a>
   <a href="#finding">Finding Definitions and Declarations and Their Uses</a>
+  <a href="#finding-pcal">Finding PlusCal Source Code</a>
   <a href="#comments">Editing Comments</a>
   <a href="#proofs">Editing and Viewing Proofs</a>
   <a href="#key-bindings">Module Editor Key Bindings</a>
@@ -70,9 +71,11 @@ However, the line must appear exactly as shown, with no spaces before
 the &nbsp;<code>\*</code>&nbsp; and exactly one space after it.
 </p>
 
-<h2><a name="finding">Finding Definitions and Declarations and Their Uses</a></h2>
+<h2><a name="finding">Finding  Definitions,  Declarations, and Their Uses</a></h2>
 <p>
-The module editor provides commands for finding the definition or declaration of a user-defined symbol, 
+The module editor provides commands for finding the PlusCal code that 
+
+finding the definition or declaration of a user-defined symbol, 
 for finding all uses of that definition or declaration, and for finding all symbols defined and declared 
 in the module.&nbsp; 
 
@@ -127,9 +130,10 @@ a link that you can left-click on to jump to the symbol's declaration or definit
 </p>
 
 
-<h3>Return From Goto Declaration (F4)</h3>
+<h3>Return From Goto (F4)</h3>
 
-This command jumps back to the location from which the most recent <em>Goto Declaration</em> command was executed.
+This command jumps back to the location from which the most recent <em>Goto Declaration</em> 
+or <em>Goto PCal Source</em> command was executed.
 
 <h3>Show Declarations (F5)</h3>
 
@@ -172,6 +176,42 @@ Whether or not re-parsing the specification  clears the highlighting is controll
 
 These commands jump to the previous or next (earlier or later in the module) use of the
 symbol selected by the most recent <em>Show Uses</em> command.
+
+<h2><a name="finding-pcal">Finding PlusCal Source Code</a></h2>
+
+<p>
+After you have successfully run the PlusCal translator to translate an algorithm,
+the <em>Goto PCal Source</em> command (F10) allows you to jump from a selected region of
+the TLA+ translation to the PlusCal code that generated it.&nbsp;  Select a
+region of the TLA+ specification, and the command jumps to and highlights approximately
+the smallest syntactic unit of the PlusCal algorithm whose translation contains the
+selected region.&nbsp;  (You can select a single token by putting the cursor in or
+next to it.)&nbsp;  The command does nothing if that smallest syntactic unit is
+the entire algorithm, or if the selected region does not lie within the algorithm's
+translation.  The <em>Return From Goto</em> command (F4) jumps back to the original
+selection.&nbsp; 
+</p>
+
+<p>
+Clicking on parsing error reports, and on error reports and some other 
+fields in a TLC model window, highlights and jumps to a region of the
+TLA+ spec.&nbsp;  If that region of the spec was produced by the PlusCal
+translation, the <em>Goto PCal Source</em> should then take you to the
+appropriate part of the PlusCal source code.&nbsp;  We expect that
+in a future release, you will be able to go directly to the PlusCal source
+with just a click.
+
+</p>
+
+<p>
+The mapping from regions of the TLA+ translation to regions of the PlusCal source 
+is determined at the time of translation.&nbsp;  If the PlusCal source, the
+translation, or any part of the module lying between them is changed, then the
+command may jump to the wrong place.&nbsp;  It's best to put the translation immediately
+after the comment containing the algorithm.&nbsp;  If you omit the 
+<code>BEGIN/END TRANSLATION</code> comments, that is where the translation will be 
+put.
+</p>
 
 <h2><a name="comments">Editing Comments</a></h2>
 
