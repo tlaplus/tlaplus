@@ -472,25 +472,41 @@ public class Spec implements IAdaptable
     	}
     }
     
-    /**
-     * Associates the specified mapping with the specified filename
-     * (optional operation).  If the {@link Spec} previously contained a mapping for
-     * the filename, the old mapping is replaced by the specified map.
-     *
-     * @param mapping The {@link TLAtoPCalMapping} object for the given <tt>filename</tt>.
-     * @param filename key with which the specified value is to be associated
-     * @param monitor 
-     * @return the previous value associated with <tt>filename</tt>, or
-     *         <tt>null</tt> if there was no mapping for <tt>filename</tt>.
-     *         (A <tt>null</tt> return can also indicate that the map
-     *         previously associated <tt>null</tt> with <tt>filename</tt>.)
-     * @throws NullPointerException if the specified key or value is null
-     *         and this map does not permit null keys or values
-     * @throws IllegalArgumentException if some property of the specified key
-     *         or value prevents it from being stored in this map
-     */
+	/**
+	 * Associates the specified mapping with the specified filename (optional
+	 * operation). If the {@link Spec} previously contained a mapping for the
+	 * filename, the old mapping is replaced by the specified map.
+	 * 
+	 * @param mapping
+	 *            The {@link TLAtoPCalMapping} object for the given
+	 *            <tt>filename</tt>. <code>null</code>, will cause an
+	 *            {@link IllegalArgumentException}.
+	 * @param filename
+	 *            key with which the specified value is to be associated.
+	 *            <code>null</code>, will cause an
+	 *            {@link IllegalArgumentException}.
+	 * @param monitor
+	 *            A valid {@link IProgressMonitor}, <code>null</code>, will cause
+	 *            an {@link IllegalArgumentException}.
+	 * @return the previous value associated with <tt>filename</tt>, or
+	 *         <tt>null</tt> if there was no mapping for <tt>filename</tt>. (A
+	 *         <tt>null</tt> return can also indicate that the map previously
+	 *         associated <tt>null</tt> with <tt>filename</tt>.)
+	 * @throws NullPointerException
+	 *             if the specified key or value is null and this map does not
+	 *             permit null keys or values
+	 * @throws IllegalArgumentException
+	 *             if some property of the specified key or value prevents it
+	 *             from being stored in this map
+	 */
 	public TLAtoPCalMapping setTpMapping(final TLAtoPCalMapping mapping,
 			final String filename, final IProgressMonitor monitor) {
+		
+		// Safeguard against inproper use of this API
+		if (mapping == null || filename == null || monitor == null) {
+			throw new IllegalArgumentException();
+		}
+		
 		lock.lock();
 		try {
 			final TLAtoPCalMapping oldMapping = spec2mappings.put(filename, mapping);
