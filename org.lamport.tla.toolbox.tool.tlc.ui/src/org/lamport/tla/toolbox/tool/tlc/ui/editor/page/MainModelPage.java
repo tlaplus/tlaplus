@@ -69,7 +69,6 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
-import tlc2.tool.fp.FPSet;
 import util.TLCRuntime;
 
 /**
@@ -100,7 +99,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private Button checkDeadlockButton;
     private Text workers;
     private Scale maxHeapSize;
-    private Text fpBits;
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
     private TableViewer constantTable;
@@ -262,11 +260,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         final int maxHeapSizeValue = getConfig().getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
         maxHeapSize.setSelection(maxHeapSizeValue);
         
-        // fpBits
-        int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
-        fpBits.setText("" + getConfig().getAttribute(LAUNCH_FPBITS, defaultFPBits));
-
         // check deadlock
         boolean checkDeadlock = getConfig().getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
                 MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
@@ -526,25 +519,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		float y = (float) linearInterpolator.interpolate(x);
 		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(
 				120 * y, 1 - y, 1f)));
-        
-        // fpBits
-        String fpBitsString = fpBits.getText();
-        try {
-            int fpBitsNum = Integer.parseInt(fpBitsString);
-            if (!FPSet.isValid(fpBitsNum))
-            {
-                modelEditor.addErrorMessage("wrongNumber3", "fpbits must be a positive integer number smaller than 31", this
-                        .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
-                        .getAttributeControl(LAUNCH_FPBITS)));
-                setComplete(false);
-                expandSection(SEC_HOW_TO_RUN);
-            }
-        } catch (NumberFormatException e) {
-            modelEditor.addErrorMessage("wrongNumber4", "fpbits must be a positive integer number smaller than 64", this
-                    .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_FPBITS)));
-            setComplete(false);
-            expandSection(SEC_HOW_TO_RUN);
-		}
 
         // fill the checkpoints
         updateCheckpoints();
@@ -794,17 +768,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         maxHeapSizeValue = maxHeapSize.getSelection();
         getConfig().setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSizeValue);
 
-        // fpBits
-        int fpBitsInt = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-        try
-        {
-        	fpBitsInt = Integer.parseInt(fpBits.getText());
-        } catch (NumberFormatException e)
-        { /* does not matter */
-        }
-        getConfig().setAttribute(LAUNCH_FPBITS, fpBitsInt);
-        
         // recover from deadlock
         boolean recover = this.checkpointButton.getSelection();
         getConfig().setAttribute(LAUNCH_RECOVER, recover);
@@ -1207,21 +1170,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			}
 		});
 
-        // fpbits
-        FormText fpBitsLabel = toolkit.createFormText(howToRunArea, true);
-        fpBitsLabel.setText("Log base 2 of number of disk storage files:", false, false);
-
-        int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
-        fpBits = toolkit.createText(howToRunArea, "" + defaultFPBits);
-        fpBits.addModifyListener(howToRunListener);
-        fpBits.addFocusListener(focusListener);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 60;
-        fpBits.setLayoutData(gd);
-
-        dm.bindAttribute(LAUNCH_FPBITS, fpBits, howToRunPart);
         
 //        // label workers
 //        FormText workersLabel = toolkit.createFormText(howToRunArea, true);
