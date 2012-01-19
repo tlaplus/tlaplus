@@ -344,6 +344,14 @@ public class Activator extends AbstractUIPlugin
     }
 
     /**
+     * Writes a string into some debugging place
+     */
+    public static void logDebug(String message, Throwable cause)
+    {
+        getDefault().getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, message, cause));
+    }
+    
+    /**
      * Writes a string into the info category of the log
      * @param string
      */
