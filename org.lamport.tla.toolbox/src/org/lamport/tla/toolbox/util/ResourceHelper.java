@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
@@ -1649,6 +1650,15 @@ public class ResourceHelper
 				if (object instanceof TLAtoPCalMapping) {
 					return (TLAtoPCalMapping) object;
 				}
+			} catch (final InvalidClassException e) {
+				final String error = "The TLA+ to PCal mapping file "
+						+ filename +
+						".pmap has likely been generated with an older version of the TLA+ Toolbox. " +
+						"Please (re)move the old file out of the way and retranslate your PCal algorithm again.\n" +
+						"If you do not retranslate TLA+ to PCal mapping will not work.\n" +
+						"(If moving the file does not fix this error, then please report a bug).";
+				Activator.logInfo(error);
+				Activator.logDebug(error, e);
 			} catch (final FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (final IOException e) {
