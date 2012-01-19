@@ -9,6 +9,11 @@ import java.io.Serializable;
 
 public class Region implements Serializable {
 
+    /**
+	 * @see TLAtoPCalMapping#serialVersionUID
+	 */
+	private static final long serialVersionUID = 5596444966456185518L;
+	
 	private PCalLocation begin ;
 	private PCalLocation end ;
 
