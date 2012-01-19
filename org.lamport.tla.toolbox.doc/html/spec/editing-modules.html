@@ -18,6 +18,7 @@ Contents
   <a href="#finding-pcal">Finding PlusCal Source Code</a>
   <a href="#comments">Editing Comments</a>
   <a href="#proofs">Editing and Viewing Proofs</a>
+  <a href="#misc">Miscellaneous Commands</a>
   <a href="#key-bindings">Module Editor Key Bindings</a>
 
 </pre>
@@ -133,7 +134,9 @@ a link that you can left-click on to jump to the symbol's declaration or definit
 <h3>Return From Goto (F4)</h3>
 
 This command jumps back to the location from which the most recent <em>Goto Declaration</em> 
-or <em>Goto PCal Source</em> command was executed.
+or <em>Goto PCal Source</em> command was executed.&nbsp;  
+The <em>Go back in history</em> command (<samp>Alt+LeftArrow</samp>) has the same effect
+when executed immediately after the <em>Goto</em> command.
 
 <h3>Show Declarations (F5)</h3>
 
@@ -344,11 +347,40 @@ rebox it with the commands described above.
 Editor commands for hierarchically viewing proofs are
 described in <a href="../prover/reading.html">Viewing Structured Proofs</a>.&nbsp;
 
-The module editor will eventually provide commands to aid in writing
+We hope eventually to provide commands to aid in writing
 and editing proofs.&nbsp;  
 
 We would appreciate any suggestions for what commands we should
 implement.&nbsp;
+
+Meanwhile, <a href="#block-selection">block selection mode</a> may be
+useful in copying and indenting parts of a proof.
+
+<h2><a name="misc">Miscellaneous Commands</a></h2>
+
+<h3><a name="paren">Goto Matching Parenthesis (Control+Shift+p)</a></h3>
+
+Placing the cursor just to the right of a parenthesis and executing this
+command cause the cursor to jump to the right of the matching parenthesis.&nbsp;
+The pairs of matching "parentheses" are:
+<pre>
+     (  )    [  ]    {  }    <<  >>    (*  *)
+</pre>
+The cursor does not move and an error message appears at the bottom
+left of the Toolbox window if there is no matching parenthesis or
+there are mismatched parentheses.&nbsp;  Mismatched parentheses are highlighted.&nbsp;
+(Look to the right of the scroll bar to find them if they are off the screen.)&nbsp;
+End-of-line comments (started with <samp>\*</samp>) and strings are treated
+as independent regions for parenthesis matching.
+
+
+<h3><a name="block-selection">Toggle Block Selection Mode (Alt+Shift+a)</a></h3>
+
+This command causes the editor to enter or leave block-selection mode.&nbsp;
+In block-selection mode, you can select a rectangular region (which may have zero width).&nbsp;
+You can delete or copy and paste the region.&nbsp;  Typing into a zero-width region
+has an amusing and possibly useful effect.
+
 
 <h2><a name="key-bindings">Module Editor Key Bindings</a></h2>
 
@@ -392,7 +424,7 @@ Insert, Delete, and Move Text</font></TH>
 
 <TR><TD><CODE>Ctl+A</CODE></TD> <TD> Select all</TD></TR>
 
-
+<TR><TD><CODE>Alt+Shift+A</CODE></TD> <TD><a href="#block-selection">Toggle block selection mode<a></TD></TR>
 
 <TR> <TD colspan=2> <BR> </TD></TR>
 <TR> <TH colspan=2 align=left> <font color=000000>Moving Around</font></TH>
@@ -411,10 +443,15 @@ Insert, Delete, and Move Text</font></TH>
 
 <TR> <TD><CODE>Ctl+LeftArrow</CODE></TD> <TD> Go to beginning of current or previous word</TD></TR>
 
+<TR> <TD><CODE>Alt+RightArrow</CODE></TD> <TD> Go forward in history.</TD></TR>
+
+<TR> <TD><CODE>Alt+LeftArrow</CODE></TD> <TD> Go back in history.</TD></TR>
+
 <TR> <TD><CODE>Ctl+L</CODE></TD> <TD> Go to line [asks for line number]</TD></TR>
 
 <TR> <TD><CODE>Ctl+Q</CODE></TD> <TD> Go to last edit location</TD></TR>
 
+<TR> <TD><CODE>Ctl+Shift+P</CODE></TD> <TD> <a href="#paren">Go to matching parenthesis</a></TD></TR>
 
 <TR> <TD><CODE>Ctl+Up/DownArrow</CODE></TD> <TD> Scroll up/down one line</TD></TR>
 <TR> <TD colspan=2 align=left>The arrow and page-up/down keys behave as usual.</TD>
