@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
@@ -97,7 +98,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     // private SourceViewer fairnessFormulaSource;
     private SourceViewer specSource;
     private Button checkDeadlockButton;
-    private Text workers;
+    private Spinner workers;
     private Scale maxHeapSize;
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
@@ -252,7 +253,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // this.fairnessFormulaSource.setDocument(fairnessDoc);
 
         // number of workers
-        workers.setText("" + getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
+        workers.setSelection(getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
 
         // max JVM heap size
         final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
@@ -478,36 +479,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
 
         // number of workers
-        String numberOfworkers = workers.getText();
-        try
+    	int number = workers.getSelection();
+        if (number > Runtime.getRuntime().availableProcessors())
         {
-            int number = Integer.parseInt(numberOfworkers);
-            if (number <= 0)
-            {
-                modelEditor.addErrorMessage("wrongNumber1", "Number of workers must be a positive integer number", this
-                        .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
-                        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
-                setComplete(false);
-                expandSection(SEC_HOW_TO_RUN);
-            } else
-            {
-                if (number > Runtime.getRuntime().availableProcessors())
-                {
-                    modelEditor.addErrorMessage("strangeNumber1", "Specified number of workers is " + number
-                            + ". The number of CPU Cores available on the system is "
-                            + Runtime.getRuntime().availableProcessors()
-                            + ".\n It is not advisable that the number of workers exceeds the number of CPU Cores.",
-                            this.getId(), IMessageProvider.WARNING, UIHelper.getWidget(dm
-                                    .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
-                    expandSection(SEC_HOW_TO_RUN);
-                }
-            }
-        } catch (NumberFormatException e)
-        {
-            modelEditor.addErrorMessage("wrongNumber2", "Number of workers must be a positive integer number", this
-                    .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
-                    .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
-            setComplete(false);
+            modelEditor.addErrorMessage("strangeNumber1", "Specified number of workers is " + number
+                    + ". The number of processors available on the system is "
+                    + Runtime.getRuntime().availableProcessors()
+                    + ".\n The number of workers should not exceed the number of processors.",
+                    this.getId(), IMessageProvider.WARNING, UIHelper.getWidget(dm
+					        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
             expandSection(SEC_HOW_TO_RUN);
         }
 
@@ -754,14 +734,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
 
         // number of workers
-        int numberOfWorkers = LAUNCH_NUMBER_OF_WORKERS_DEFAULT;
-        try
-        {
-            numberOfWorkers = Integer.parseInt(workers.getText());
-        } catch (NumberFormatException e)
-        { /* does not matter */
-        }
-        getConfig().setAttribute(LAUNCH_NUMBER_OF_WORKERS, numberOfWorkers);
+        getConfig().setAttribute(LAUNCH_NUMBER_OF_WORKERS, workers.getSelection());
 
         int maxHeapSizeValue = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
@@ -1109,20 +1082,34 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         DirtyMarkingListener howToRunListener = new DirtyMarkingListener(howToRunPart, true);
 
+        /*
+         * Workers Spinner
+         */
+        
         // label workers
         FormText workersLabel = toolkit.createFormText(howToRunArea, true);
         workersLabel.setText("Number of worker threads:", false, false);
 
         // field workers
-        workers = toolkit.createText(howToRunArea, "1");
-        workers.addModifyListener(howToRunListener);
+        workers = new Spinner(howToRunArea, SWT.NONE);
+        workers.addSelectionListener(howToRunListener);
         workers.addFocusListener(focusListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
         gd.widthHint = 40;
         workers.setLayoutData(gd);
+        
+        workers.setMinimum(1);
+        workers.setPageIncrement(1);
+        workers.setToolTipText("Determines how many threads will be spawned working on the next state relation.");
+        workers.setSelection(IConfigurationDefaults.LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
 
         dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
+        
+        /*
+         * MapHeap Scale
+         */
+        
         // max heap size label
         FormText maxHeapLabel = toolkit.createFormText(howToRunArea, true);
         maxHeapLabel.setText("Fraction of physical memory allocated to TLC:", false, false);
@@ -1141,7 +1128,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         maxHeapSize.addSelectionListener(howToRunListener);
         maxHeapSize.addFocusListener(focusListener);
         gd = new GridData();
-        gd.horizontalIndent = 10;
+        gd.horizontalIndent = 0;
         gd.widthHint = 250;
         maxHeapSize.setLayoutData(gd);
         maxHeapSize.setMaximum(99);
