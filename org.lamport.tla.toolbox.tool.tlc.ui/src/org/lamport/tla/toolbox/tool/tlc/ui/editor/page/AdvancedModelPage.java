@@ -810,8 +810,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd.widthHint = 200;
         simuArilText.setLayoutData(gd);
         simuArilText.addFocusListener(focusListener);
-        
-        //TODO add horizontal line here
+
+        // add horizontal divider that makes the separation clear
+        toolkit.createSeparator(area, SWT.HORIZONTAL);
+        // add empty composite to make the two column grid layout happy
+        toolkit.createComposite(area);
         
         // label fp
         FormText fpLabel = toolkit.createFormText(area, true);
