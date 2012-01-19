@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -747,8 +748,13 @@ public class UIHelper
         } else if (control instanceof Button)
         {
             return (Control) control;
+        } else if (control instanceof Spinner) {
+        	return (Control) control;
+        } else if (control instanceof Control) {
+        	// why not return the control when object is instanceof control?
+        	return null;
         }
-
+        
         return null;
     }
 
