@@ -74,7 +74,11 @@ public class DiskFPSet extends FPSet {
 	 */
 	private long fileCnt;
 	/**
-	 * has a flusher thread been selected?
+	 * Has a flusher thread been selected? 
+	 * 
+	 * This is necessary because multiple threads can be in the second synchronized block 
+	 * of the put(long) method. The first one is waiting to become the writer at rwLock.BeginWrite(),
+	 * a second has the this.rwLock monitor and possibly inserts a second fp into memory.
 	 */
 	private boolean flusherChosen;
 	/**
@@ -315,6 +319,24 @@ public class DiskFPSet extends FPSet {
 	 * @see tlc2.tool.fp.FPSet#put(long)
 	 * 
      * 0 and {@link Long#MIN_VALUE} always return false
+     * 
+     * Locking is as follows:
+     * 
+     * Acquire mem read lock
+     * Acquire disk read lock
+     * Release mem read lock
+     * 
+     * Acquire mem read lock
+     * Release disk read lock // interleaved 
+     *  insert into mem
+     * Acquire disk write lock (might cause potential writer to wait() which releases mem read lock (monitor))
+     * 	flushToDisk
+     * Release disk write lock
+     * Release mem read lock
+     * 
+     * asserts:
+     * - Exclusive access to disk and memory for a writer
+     * 
 	 */
 	public final boolean put(long fp) throws IOException {
 		// zeros the msb
@@ -326,7 +348,10 @@ public class DiskFPSet extends FPSet {
 				return true;
 			}
 
-			// block if disk is being re-written
+			// blocks => wait() if disk is being re-written 
+			// (means the current thread returns rwLock monitor)
+			//TODO why not return monitor first and then acquire read lock?
+			// => prevent deadlock by acquiring threads in same order? 
 			this.rwLock.BeginRead();
 			this.diskLookupCnt++;
 		}
