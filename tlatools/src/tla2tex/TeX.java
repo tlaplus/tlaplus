@@ -569,7 +569,7 @@ class TeX
    private static String RemovePathPrefix(String str)
     /***********************************************************************
     * Returns str with all any leading path specifiers removed.  For       *
-    * example, calling it on "c:foo\bar\name.txt" or "~/foo/bar/name.txt"  *
+    * example, calling it on "c:frob\bar\name.txt" or "~/frob/bar/name.txt"  *
     * will return "name.txt".                                              *
     ***********************************************************************/
     { String result = str;

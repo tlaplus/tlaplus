@@ -46,7 +46,7 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
     private SpecObj specObj;
     // the names of all operators that have already been overridden.
     // These are the names by which they are known to the root module, such
-    // as "foo!bar!id".
+    // as "frob!bar!id".
     private String[] names;
 
     /**
@@ -56,7 +56,7 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
      * @param specObj the specObject holding the content
      * @param names the names of all operators that have already been overridden.
      *        These are the names by which they are known to the root module, such
-     *        as "foo!bar!id". 
+     *        as "frob!bar!id". 
      */
     public FilteredDefinitionSelectionDialog(Shell shell, boolean multi, SpecObj specObj, String[] names)
     {

@@ -149,7 +149,7 @@ tlatex.TeX writes several files.  The names of these are normally
 determined from the name of the input file.  However, options allow
 you to specify the name of each of these files.  In the following
 description, the root of a file name is the name with any extension or
-path specifier removed; for example, the root of c:\foo\bar.tla is
+path specifier removed; for example, the root of c:\frob\bar.tla is
 bar.  All file names are interpreted relative to the directory in
 which tlatex.TeX is run.
 

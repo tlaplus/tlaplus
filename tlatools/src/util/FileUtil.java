@@ -247,8 +247,8 @@ public class FileUtil
         String sourceModuleName;
         
         
-        // consider name=/foo/bar/somemod.tla
-        // or name=/foo/bar/somemod
+        // consider name=/frob/bar/somemod.tla
+        // or name=/frob/bar/somemod
         
         // Make sure the file name ends with ".tla".
         if (name.toLowerCase().endsWith(".tla")) 
@@ -256,10 +256,10 @@ public class FileUtil
             name = name.substring(0, name.length() - 4);
         }
         
-        // now name=/foo/bar/somemod
+        // now name=/frob/bar/somemod
         
         // filename is a path ending with .tla
-        // sourceFilename=/foo/bar/somemod
+        // sourceFilename=/frob/bar/somemod
         sourceFileName = name + ".tla";
 
         // module name is =somemod

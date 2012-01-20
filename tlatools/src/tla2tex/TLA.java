@@ -33,7 +33,7 @@
 *     around it to handle proof-step numbers.                              *
 *  3. Modified the handling of "!" so it translates to a \bang             *
 *     command that primts a small !.  This looks about the same            *
-*     in an EXCEPT but looks somewhat better in foo!bar.                   *
+*     in an EXCEPT but looks somewhat better in frob!bar.                   *
 *                                                                          *
 * ------------------------------------------------------------------------ *
 *                                                                          *
@@ -676,7 +676,7 @@ public class TLA
     private static String RemovePathPrefix(String str)
     /***********************************************************************
     * Returns str with all any leading path specifiers removed.  For       *
-    * example, calling it on "c:foo\bar\name.txt" or "~/foo/bar/name.txt"  *
+    * example, calling it on "c:frob\bar\name.txt" or "~/frob/bar/name.txt"  *
     * will return "name.txt".                                              *
     ***********************************************************************/
     {

@@ -183,7 +183,7 @@ comments:
    
        \***********************************
        \* To find the latest value of `bar',
-       \* see `^http::/foo/bar^'.
+       \* see `^http::/frob/bar^'.
        \***********************************
 
     But, this is seldom necessary.  TLATeX usually does the right
@@ -282,7 +282,7 @@ runs the separate LaTeX program and possibly a program to produce a
 Postscript or pdf file.  These programs produce additional files.  In
 the following description, the root of a file name is the name with
 any extension or path specifier removed; for example, the root of
-c:\foo\bar.tla is bar.  All file names are interpreted relative to the
+c:\frob\bar.tla is bar.  All file names are interpreted relative to the
 directory in which TLATeX is run.
 
 -out fileName

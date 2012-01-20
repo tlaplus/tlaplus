@@ -42,7 +42,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
             // Set names to an array of names of definitions that have already
             // been overridden. Note that this is the name by which the operator
             // is known in the root module, which may be something like
-            // "foo!bar!Id"
+            // "frob!bar!Id"
             String[] names = null;
             Object input = this.getTableViewer().getInput();
             // I think that input is a Vector of Assignment objects.

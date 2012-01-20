@@ -251,7 +251,7 @@ public class ModelConfig implements ValueConstants, Serializable
                         /* Token tt should be the first token in an expression of the form
                          * id <- ...  or id = ... .  In the current implementation, id is the
                          * token tt.  The following code was modified on 30 July 2009
-                         * to allow id to be something like foo!bar!glitch, fixing Bug44.
+                         * to allow id to be something like frob!bar!glitch, fixing Bug44.
                          */
                         String lhs = tt.image;
                         tt = getNextToken(tmgr);
