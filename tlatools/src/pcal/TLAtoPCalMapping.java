@@ -2,9 +2,9 @@
  */
 package pcal;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Vector;
-
-import pcal.exception.PcalTLAGenException;
 
 /**
  * A TLA+ to PlusCal mapping is a mapping from regions of the TLA+ translation 
@@ -63,22 +63,27 @@ import pcal.exception.PcalTLAGenException;
  * @author lamport
  *
  */
-public class TLAtoPCalMapping {
+public class TLAtoPCalMapping implements Serializable {
+	/**
+	 * If {@link TLAtoPCalMapping#mapping} is changed or additional
+	 * (non-transient) fields are added (that are intended for serialization),
+	 * this UID has to change (by e.g. incrementing by 1). This indicates a
+	 * schema change to the serializer.
+	 * <p>
+	 * For more information on Java serialzation read Java(TM) Object
+	 * Serialization Specification.
+	 * 
+	 * @see http
+	 *      ://docs.oracle.com/javase/1.5.0/docs/guide/serialization/spec/version
+	 *      .html#9419
+	 */
+	private static final long serialVersionUID = 4996600307008990835L;
+
   /**
    * The mapping field represents an element of TPMap in the TLAToPCal spec.
    *  
    */
-  public MappingObject[][] mapping = new MappingObject[0][] ;
-  
-  /**
-   * This is a version of {@link TLAtoPCalMapping#mapping} as a vector of vectors.
-   * It is used while constructing the mapping field, and is then nulled.
-   */
-  public Vector mappingVector = new Vector(50) ;
-  
-  public TLAtoPCalMapping() {
-      
-  }
+  private MappingObject[][] mapping = new MappingObject[0][] ;
   
   /**
    * Sets the mapping field to an array version of mapVec, which must be a vector 
@@ -100,7 +105,73 @@ public class TLAtoPCalMapping {
   }
 
   
-  /**
+	  /* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + algColumn;
+		result = prime * result + algLine;
+		result = prime * result + Arrays.hashCode(mapping);
+		result = prime * result + tlaStartLine;
+		return result;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TLAtoPCalMapping other = (TLAtoPCalMapping) obj;
+		if (algColumn != other.algColumn)
+			return false;
+		if (algLine != other.algLine)
+			return false;
+		if (tlaStartLine != other.tlaStartLine)
+			return false;
+		// mapping is an [][] for which Arrays.equals(Object[],Object[]) check
+		// referential equality on its elements. Since the element is an array
+		// itself, object equality has to be checked.
+		if (!equals(mapping, other.mapping))
+			return false;
+		return true;
+	}
+	
+	/**
+	 * @see Arrays#equals(Object[], Object[]) except that elements are checked
+	 *      via object identity instead of referential identity.
+	 */
+	private boolean equals(MappingObject[][] m, MappingObject[][] m2) {
+        if (m==m2)
+            return true;
+        if (m==null || m2==null)
+            return false;
+
+        int length = m.length;
+        if (m2.length != length)
+            return false;
+
+        for (int i=0; i<length; i++) {
+            MappingObject[] o1 = m[i];
+            MappingObject[] o2 = m2[i];
+            // Use object instead of referential identity here
+            if (!(o1==null ? o2==null : Arrays.equals(o1,o2)))
+                return false;
+        }
+
+        return true;
+
+	}
+
+/**
    * Returns the PCal code location to which `mapping' maps the tpregion Region in the
    * TLA+ translation, where line numbers in `selection' are relative to tlaStartLine.
    * It returns null if the mapping does not map the selection to any PCal code. 
@@ -246,7 +317,6 @@ public class TLAtoPCalMapping {
           }
       }
       MappingObject bParen = ObjectAt(i, tpMap);
-      PCalLocation bParenLoc = i;
       
       /*
        * Set eParen to first right paren to the right of rtok that rises
@@ -270,7 +340,6 @@ public class TLAtoPCalMapping {
           }
       }
       MappingObject eParen = ObjectAt(i, tpMap);
-      PCalLocation eParenLoc = i;
       
       /*
        * The algorithm of TLAToPCal now looks for breaks between bParen and eParen to compute the

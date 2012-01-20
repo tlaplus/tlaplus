@@ -140,18 +140,6 @@ additional ways to run TLC.)
 <h3>TLC Parameters</h3>
 There are two parameters that you can set here:
 
-<h4>Maximum JVM heap size in MB:</h4>
-
-This defines how large a heap TLC will use.&nbsp;  If you make it too small, TLC
-could run out of heap space.&nbsp;  If you make it too large, your machine will not have
-enough memory and TLC will not start.&nbsp;  
-TLC keeps its set of reachable states
-on disk, so the number of reachable states does not affect how much heap space
-TLC uses.&nbsp;  It can run out of heap space only if it takes too much memory to represent the
-set of initial states or the set of successor states of a single state.&nbsp;  This number 
-rarely needs to be larger than a few hundred MB.&nbsp;  If TLC does run out of stack space,
-you can give it more and restart it from a checkpoint.
-
 <h4>Number of worker threads</h4>
 
 TLC's algorithm for computing the set (actually the graph) of reachable states 
@@ -159,6 +147,21 @@ is highly parallelizable, and it can make good use of arbitrarily many processor
 This parameter specifies the number of separate threads that TLC will spawn to
 perform that computation.&nbsp;  You should not set it to be greater than the number of
 separate processors (cores) on your computer; the Toolbox will warn you if you do.
+
+<h4>Fraction of physical memory allocated to TLC</h4>
+
+This determines how large a heap TLC will use.&nbsp;  If you make it too small, TLC
+could run out of heap space and crash.&nbsp;  If you make it too large, your machine will not have
+enough memory and everything will run slowly.&nbsp;  The slider's color warns you if
+you are giving TLC too little or too much memory.&nbsp;
+TLC can keep the set of reachable states it has found
+on disk, so having too many reachable states can't run it out of memory.&nbsp;
+However, it runs much faster when it can keep those states in memory.&nbsp;
+TLC can run out of heap space if it takes too much memory to represent the
+set of initial states or the set of successor states of a single state.&nbsp;  
+If TLC does run out of memory in the middle of a long run,
+you can give it more and restart it from a checkpoint.
+
 
 <A name="checkpoint"></A><h3>Checkpoint Recovery</h3></A>
 
@@ -206,6 +209,9 @@ occupies.&nbsp;
 It also provides a button that you can click to delete the checkpoint.&nbsp;
  </p>
 
+<p>
+Checkpointing does not yet work when TLC is run in distributed mode.
+</p>
 <a name="distributed"></a><h3>Running in Distributed Mode</h3>
 
 <p>

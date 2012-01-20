@@ -44,7 +44,8 @@ the extension <code>.tla</code>) and the specification name.
 You can open an existing spec by choosing it from the  <samp>File/Open
 Spec</samp> menu.&nbsp; 
 
-You can also use the <em>Spec Explorer</em>, which is opened either
+You can also use the 
+<a name="spec-explorer"><em>Spec Explorer</em><a>, which is opened either
 from the <samp>File</samp> menu or by clicking on the <IMG
 SRC="spec-explorer-icon.gif" Align="bottom"/> icon on the left side of
 the Toolbox, near the top.&nbsp;
@@ -96,13 +97,13 @@ command), Forget module <code>Bar</code>, and Open a new spec named
 
 <h3>Finding Your Spec</h3>
 
-It's easy to forget where in your file system a spec's module files are.   
-To find them, open the
-Spec Explorer view, right-click
-on the spec's name, and select <samp>Properties</samp> .&nbsp;   
+It's easy to forget where in your file system a spec's module files are.&nbsp;
+A file's complete path name should appear at the top of the editor window.&nbsp;
+You can also find the root-module file's
+complete path name by opening the
+Spec Explorer view, right-clicking
+on the spec's name, and selecting &nbsp;<samp>Properties</samp>&nbsp;.&nbsp;   
 
-This will bring up a dialog that shows you the root-module file's
-complete path name.&nbsp;  
 
 (The rest of the spec's module files are in the same folder.)
 
@@ -111,7 +112,7 @@ complete path name.&nbsp; 
 
 <P> 
 
-Here is how to move an existing spec named  <samp>SName </samp> to a
+Here is how to move an existing spec named  <samp>SName</samp> to a
 different folder (directory) on the same computer, or to a different
 computer.&nbsp; 
 
@@ -119,11 +120,11 @@ Copy all the spec's module files (the root-module file and its
 imported module files) and the folder (directory) named 
 <samp>SName.toolbox </samp> to the new location.&nbsp;  
 
-If there is already a spec named  <samp>SName </samp> (which will be
+If there is already a spec named  <samp>SName</samp> (which will be
 the case if you're moving the spec to a different place on the same
 computer), have the Toolbox forget or delete it.&nbsp;  
 
-Open a new specification named   <samp>SName </samp> using the new
+Open a new specification named   <samp>SName</samp> using the new
 copy of the root-module file.
  </P>
 
@@ -134,31 +135,31 @@ You may want to run the Toolbox on different machines for the same
 spec.&nbsp;
 
 Once you've created a spec on one machine, copy the spec's module
-files and <samp>.toolbox </samp> directory to the other machine
+files and <samp>.toolbox</samp> directory to the other machine
 and use the instructions above to create a copy of the spec on that
 machine.&nbsp;
 
 When you modify the spec or its models on one machine, just copy the
-module files and <samp>.toolbox </samp> directory to the other
+module files and <samp>.toolbox</samp> directory to the other
 machine.&nbsp;
 
-Strange things might happen if you do that while the spec is open in
-the Toolbox on that other machine.&nbsp;
+Strange things can happen if a spec's files (its modules or
+the files in its <samp>.toolbox</samp> directory) have changed
+since the last time the Toolbox read or wrote them.&nbsp;
 
-It's a good idea to close the spec on that machine before copying the
-files.&nbsp;
+It's therefore a good idea to close the Toolbox before copying a
+new version of a spec from another machine.&nbsp;
 
-If you forget to do that, you will probably need to close and re-open
-the spec to see the new version in the Toolbox.&nbsp;
+If a spec's files do change while the Toolbox is open, it's a good
+idea to right-click on the spec in the <a href="#spec-explorer">Spec Explorer</a> and execute
+the <samp>Refresh</samp> command.&nbsp;
 
-If strange things happen when you do that, try closing and re-opening
-the Toolbox.&nbsp;
+If strangeness still occurs, try closing and re-opening the
+Toolbox.&nbsp;
 
-If that doesn't work, see 
+If that doesn't fix the problem,
+see 
  <a href="../trouble/trouble.html#trouble">Getting Out of Trouble</a>.
-
-
-
 </p>
 
 <hr/> 

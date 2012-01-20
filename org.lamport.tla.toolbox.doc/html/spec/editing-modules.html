@@ -15,8 +15,10 @@
 Contents
   <a href="#module">Module Editors</a>
   <a href="#finding">Finding Definitions and Declarations and Their Uses</a>
+  <a href="#finding-pcal">Finding PlusCal Source Code</a>
   <a href="#comments">Editing Comments</a>
   <a href="#proofs">Editing and Viewing Proofs</a>
+  <a href="#misc">Miscellaneous Commands</a>
   <a href="#key-bindings">Module Editor Key Bindings</a>
 
 </pre>
@@ -70,9 +72,11 @@ However, the line must appear exactly as shown, with no spaces before
 the &nbsp;<code>\*</code>&nbsp; and exactly one space after it.
 </p>
 
-<h2><a name="finding">Finding Definitions and Declarations and Their Uses</a></h2>
+<h2><a name="finding">Finding  Definitions,  Declarations, and Their Uses</a></h2>
 <p>
-The module editor provides commands for finding the definition or declaration of a user-defined symbol, 
+The module editor provides commands for finding the PlusCal code that 
+
+finding the definition or declaration of a user-defined symbol, 
 for finding all uses of that definition or declaration, and for finding all symbols defined and declared 
 in the module.&nbsp; 
 
@@ -127,9 +131,12 @@ a link that you can left-click on to jump to the symbol's declaration or definit
 </p>
 
 
-<h3>Return From Goto Declaration (F4)</h3>
+<h3>Return From Goto (F4)</h3>
 
-This command jumps back to the location from which the most recent <em>Goto Declaration</em> command was executed.
+This command jumps back to the location from which the most recent <em>Goto Declaration</em> 
+or <em>Goto PCal Source</em> command was executed.&nbsp;  
+The <em>Go back in history</em> command (<samp>Alt+LeftArrow</samp>) has the same effect
+when executed immediately after the <em>Goto</em> command.
 
 <h3>Show Declarations (F5)</h3>
 
@@ -172,6 +179,42 @@ Whether or not re-parsing the specification  clears the highlighting is controll
 
 These commands jump to the previous or next (earlier or later in the module) use of the
 symbol selected by the most recent <em>Show Uses</em> command.
+
+<h2><a name="finding-pcal">Finding PlusCal Source Code</a></h2>
+
+<p>
+After you have successfully run the PlusCal translator to translate an algorithm,
+the <em>Goto PCal Source</em> command (F10) allows you to jump from a selected region of
+the TLA+ translation to the PlusCal code that generated it.&nbsp;  Select a
+region of the TLA+ specification, and the command jumps to and highlights approximately
+the smallest syntactic unit of the PlusCal algorithm whose translation contains the
+selected region.&nbsp;  (You can select a single token by putting the cursor in or
+next to it.)&nbsp;  The command does nothing if that smallest syntactic unit is
+the entire algorithm, or if the selected region does not lie within the algorithm's
+translation.  The <em>Return From Goto</em> command (F4) jumps back to the original
+selection.&nbsp; 
+</p>
+
+<p>
+Clicking on parsing error reports, and on error reports and some other 
+fields in a TLC model window, highlights and jumps to a region of the
+TLA+ spec.&nbsp;  If that region of the spec was produced by the PlusCal
+translation, the <em>Goto PCal Source</em> should then take you to the
+appropriate part of the PlusCal source code.&nbsp;  We expect that
+in a future release, you will be able to go directly to the PlusCal source
+with just a click.
+
+</p>
+
+<p>
+The mapping from regions of the TLA+ translation to regions of the PlusCal source 
+is determined at the time of translation.&nbsp;  If the PlusCal source, the
+translation, or any part of the module lying between them is changed, then the
+command may jump to the wrong place.&nbsp;  It's best to put the translation immediately
+after the comment containing the algorithm.&nbsp;  If you omit the 
+<code>BEGIN/END TRANSLATION</code> comments, that is where the translation will be 
+put.
+</p>
 
 <h2><a name="comments">Editing Comments</a></h2>
 
@@ -304,11 +347,40 @@ rebox it with the commands described above.
 Editor commands for hierarchically viewing proofs are
 described in <a href="../prover/reading.html">Viewing Structured Proofs</a>.&nbsp;
 
-The module editor will eventually provide commands to aid in writing
+We hope eventually to provide commands to aid in writing
 and editing proofs.&nbsp;  
 
 We would appreciate any suggestions for what commands we should
 implement.&nbsp;
+
+Meanwhile, <a href="#block-selection">block selection mode</a> may be
+useful in copying and indenting parts of a proof.
+
+<h2><a name="misc">Miscellaneous Commands</a></h2>
+
+<h3><a name="paren">Goto Matching Parenthesis (Control+Shift+p)</a></h3>
+
+Placing the cursor just to the right of a parenthesis and executing this
+command cause the cursor to jump to the right of the matching parenthesis.&nbsp;
+The pairs of matching "parentheses" are:
+<pre>
+     (  )    [  ]    {  }    <<  >>    (*  *)
+</pre>
+The cursor does not move and an error message appears at the bottom
+left of the Toolbox window if there is no matching parenthesis or
+there are mismatched parentheses.&nbsp;  Mismatched parentheses are highlighted.&nbsp;
+(Look to the right of the scroll bar to find them if they are off the screen.)&nbsp;
+End-of-line comments (started with <samp>\*</samp>) and strings are treated
+as independent regions for parenthesis matching.
+
+
+<h3><a name="block-selection">Toggle Block Selection Mode (Alt+Shift+a)</a></h3>
+
+This command causes the editor to enter or leave block-selection mode.&nbsp;
+In block-selection mode, you can select a rectangular region (which may have zero width).&nbsp;
+You can delete or copy and paste the region.&nbsp;  Typing into a zero-width region
+has an amusing and possibly useful effect.
+
 
 <h2><a name="key-bindings">Module Editor Key Bindings</a></h2>
 
@@ -352,7 +424,7 @@ Insert, Delete, and Move Text</font></TH>
 
 <TR><TD><CODE>Ctl+A</CODE></TD> <TD> Select all</TD></TR>
 
-
+<TR><TD><CODE>Alt+Shift+A</CODE></TD> <TD><a href="#block-selection">Toggle block selection mode<a></TD></TR>
 
 <TR> <TD colspan=2> <BR> </TD></TR>
 <TR> <TH colspan=2 align=left> <font color=000000>Moving Around</font></TH>
@@ -371,10 +443,15 @@ Insert, Delete, and Move Text</font></TH>
 
 <TR> <TD><CODE>Ctl+LeftArrow</CODE></TD> <TD> Go to beginning of current or previous word</TD></TR>
 
+<TR> <TD><CODE>Alt+RightArrow</CODE></TD> <TD> Go forward in history.</TD></TR>
+
+<TR> <TD><CODE>Alt+LeftArrow</CODE></TD> <TD> Go back in history.</TD></TR>
+
 <TR> <TD><CODE>Ctl+L</CODE></TD> <TD> Go to line [asks for line number]</TD></TR>
 
 <TR> <TD><CODE>Ctl+Q</CODE></TD> <TD> Go to last edit location</TD></TR>
 
+<TR> <TD><CODE>Ctl+Shift+P</CODE></TD> <TD> <a href="#paren">Go to matching parenthesis</a></TD></TR>
 
 <TR> <TD><CODE>Ctl+Up/DownArrow</CODE></TD> <TD> Scroll up/down one line</TD></TR>
 <TR> <TD colspan=2 align=left>The arrow and page-up/down keys behave as usual.</TD>

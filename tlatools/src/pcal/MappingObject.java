@@ -3,6 +3,7 @@
  */
 package pcal;
 
+import java.io.Serializable;
 import java.util.Vector;
 
 /**
@@ -36,9 +37,14 @@ import java.util.Vector;
  * @author lamport
  *
  */
-public class MappingObject {
+public class MappingObject implements Serializable {
     
-    /*
+    /**
+	 * @see TLAtoPCalMapping#serialVersionUID
+	 */
+	private static final long serialVersionUID = 8620480075506527787L;
+
+	/*
      * The type field tells what subclass the MappingObject belongs to
      */
     private int type ;
@@ -66,7 +72,11 @@ public class MappingObject {
     }
     
     public static class LeftParen extends MappingObject {
-//        private int column ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = 5476753619018204229L;
+		//        private int column ;
         private PCalLocation location ;
         public LeftParen(PCalLocation location) {
            super(LEFT_PAREN) ;
@@ -85,10 +95,46 @@ public class MappingObject {
         public PCalLocation getLocation() {
             return location;
         }
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			result = prime * result
+					+ ((location == null) ? 0 : location.hashCode());
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!super.equals(obj))
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			LeftParen other = (LeftParen) obj;
+			if (location == null) {
+				if (other.location != null)
+					return false;
+			} else if (!location.equals(other.location))
+				return false;
+			return true;
+		}
     }
     
     public static class RightParen extends MappingObject {
-//        private int column ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = 1313886393528667584L;
+		//        private int column ;
         private PCalLocation location ;
         public RightParen(PCalLocation location) {
            super(RIGHT_PAREN) ;
@@ -107,10 +153,46 @@ public class MappingObject {
         public PCalLocation getLocation() {
             return location;
         }
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			result = prime * result
+					+ ((location == null) ? 0 : location.hashCode());
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!super.equals(obj))
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			RightParen other = (RightParen) obj;
+			if (location == null) {
+				if (other.location != null)
+					return false;
+			} else if (!location.equals(other.location))
+				return false;
+			return true;
+		}
     }
     
     public static class BeginTLAToken extends MappingObject {
-        private int column ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = 3737867780161818714L;
+		private int column ;
 
         public int getColumn() {
             return column;
@@ -127,10 +209,40 @@ public class MappingObject {
         public String toString() {
             return "[" + this.column;
         }
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			result = prime * result + column;
+			return result;
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!super.equals(obj))
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			BeginTLAToken other = (BeginTLAToken) obj;
+			if (column != other.column)
+				return false;
+			return true;
+		}
     }
     
     public static class EndTLAToken extends MappingObject {
-        private int column ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = -2173558662370032149L;
+		private int column ;
 
         public int getColumn() {
             return column;
@@ -147,10 +259,40 @@ public class MappingObject {
         public String toString() {
             return this.column + "]";
         }
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			result = prime * result + column;
+			return result;
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!super.equals(obj))
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			EndTLAToken other = (EndTLAToken) obj;
+			if (column != other.column)
+				return false;
+			return true;
+		}
     }
     
     public static class SourceToken extends MappingObject {
-        private int beginColumn ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = 6438346684127312114L;
+		private int beginColumn ;
         private int endColumn ;
         private Region origin ;
         
@@ -190,10 +332,52 @@ public class MappingObject {
                     "[" + this.beginColumn + "--" + this.endColumn + "]" 
                     + this.origin.getEnd().toString() + "-))";
         }
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			result = prime * result + beginColumn;
+			result = prime * result + endColumn;
+			result = prime * result
+					+ ((origin == null) ? 0 : origin.hashCode());
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!super.equals(obj))
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			SourceToken other = (SourceToken) obj;
+			if (beginColumn != other.beginColumn)
+				return false;
+			if (endColumn != other.endColumn)
+				return false;
+			if (origin == null) {
+				if (other.origin != null)
+					return false;
+			} else if (!origin.equals(other.origin))
+				return false;
+			return true;
+		}
         
     }
     public static class Break extends MappingObject{
-        private int depth ;
+        /**
+    	 * @see TLAtoPCalMapping#serialVersionUID
+    	 */
+		private static final long serialVersionUID = 3197403974334483558L;
+		private int depth ;
 
         public int getDepth() {
             return depth;
@@ -203,6 +387,34 @@ public class MappingObject {
             super(BREAK) ;
             this.depth = depth;
         }
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			result = prime * result + depth;
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!super.equals(obj))
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Break other = (Break) obj;
+			if (depth != other.depth)
+				return false;
+			return true;
+		}
 
     }
     
@@ -264,4 +476,32 @@ public class MappingObject {
             System.out.println("");
         }
     }
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + type;
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MappingObject other = (MappingObject) obj;
+		if (type != other.type)
+			return false;
+		return true;
+	}
 }

@@ -7,12 +7,19 @@
  */
 package pcal;
 
+import java.io.Serializable;
+
 /**
  * @author lamport
  *
  */
-public class PCalLocation {
+public class PCalLocation implements Serializable {
 	
+    /**
+	 * @see TLAtoPCalMapping#serialVersionUID
+	 */
+	private static final long serialVersionUID = 5224570720345403320L;
+
 	private int line;
 	
 	private int column;
@@ -33,6 +40,37 @@ public class PCalLocation {
 	public String toString() {
 //		return "[line |-> " + line + ", column |-> " + column + "]" ;
 		return "(" + line + ", " + column +")" ;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + column;
+		result = prime * result + line;
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PCalLocation other = (PCalLocation) obj;
+		if (column != other.column)
+			return false;
+		if (line != other.line)
+			return false;
+		return true;
 	}
 
 }

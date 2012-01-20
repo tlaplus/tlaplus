@@ -78,11 +78,12 @@ Note: org.lamport.tla.toolbox.product.product.product
  The repository/ directory in c:\users\lamport\tla\ contains the content for the update site (p2)
 
 Method 2. Using Maven
+  Run svn update on  pom.xml in ~/tla/newtools/tla2-inria-workspace/tla2-inria. 
   Set the version number in ...product.product/pom.xml.
   (The target platforms to build for are specified in tla2-inria/pom.xml.  This file also specifies
    what version of the Eclipse libraries to build with.)
   In a Cygwin shell, 
-   - cd to ~/tla/newtools/tla2-inria
+   - cd to ~/tla/newtools/tla2-inria-workspace/tla2-inria
    - run:  mvn install
   This runs tests, which could fail.
   To not run the tests, instead run
@@ -90,7 +91,7 @@ Method 2. Using Maven
   To have it do the tests but continue if it fails, run
      mvn install -Dmaven.test.failure.ignore=true
   The .zip files are in
-       C:\Users\lamport\.m2\repository\tlatools\org.lamport.tla.toolbox.product.product\version-number-SNAPSHOT
+       C:\Users\lamport\.m2\repository\tlatoolbox\org.lamport.tla.toolbox.product.product\version-number-SNAPSHOT
   This will keep accumulating new versions.  To delete an old version, delete the
        C:\Users\lamport\.m2\repository\tlatoolbox\
     directory.
@@ -129,8 +130,9 @@ TO GENERATE THE RELEASE:
 Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
-Version 1.4.1 of ???
+Version 1.4.1 of 19 January 2012
     Includes PlusCal Version 1.6 of 5 October 2011
+    Includes TLC version 2.04 of 19 January 2012
 Version 1.4.0 of 16 September 2011
     Includes a method for obtaining new releases from
       inside the Toolbox.

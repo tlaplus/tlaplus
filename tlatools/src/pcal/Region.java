@@ -5,8 +5,15 @@
 
 package pcal;
 
-public class Region {
+import java.io.Serializable;
 
+public class Region implements Serializable {
+
+    /**
+	 * @see TLAtoPCalMapping#serialVersionUID
+	 */
+	private static final long serialVersionUID = 5596444966456185518L;
+	
 	private PCalLocation begin ;
 	private PCalLocation end ;
 
@@ -52,5 +59,42 @@ public class Region {
 	      return "null";
 	  }
 	  return "[" + begin.toString() + "-" + end.toString() + "]";
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((begin == null) ? 0 : begin.hashCode());
+		result = prime * result + ((end == null) ? 0 : end.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Region other = (Region) obj;
+		if (begin == null) {
+			if (other.begin != null)
+				return false;
+		} else if (!begin.equals(other.begin))
+			return false;
+		if (end == null) {
+			if (other.end != null)
+				return false;
+		} else if (!end.equals(other.end))
+			return false;
+		return true;
 	}
 }

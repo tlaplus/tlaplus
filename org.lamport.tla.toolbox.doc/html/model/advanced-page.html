@@ -231,8 +231,34 @@ Specifying Systems</a></em>.
 
 <p>
 <b>Warning:</b> Because of a bug in TLC, checking of liveness properties does not
-work in simulation mode.
+work in simulation mode.  Also, when run in <a href="distributed-mode.html">distributed mode</a>,
+only model-checking mode is used.
 </p>
+
+<h3>Fingerprint seed index</h3>
+<p>
+TLC saves only 64-bit fingerprints (hashes) of the reachable states that it finds, not the
+complete states.&nbsp;  If two different reachable states have the same fingerprint, a situtation
+called a  <em>collision</em>, TLC may not find all reachable states.&nbsp;  
+At the
+end of a run, TLC prints estimates of how likely it was that a collision occurred.&nbsp;
+If you're worried that a collision might have occurred, you can re-run the model with a
+different fingerprint function.&nbsp;  The fingerprint seed index specifies which of 64 fingerprint
+functions TLC should use.&nbsp; If the two runs produce different numbers of reachable
+states, then there was a collision in at least one of the runs.&nbsp;  If not, the probability
+that there was a collision in both is the square of the probability that either one had
+a collision--a probability that is probably very, very small.
+
+<h3>Log base 2 of number of disk storage files</h3>
+
+If your computer has multiple disk drives, setting this parameter to a value greater
+than 0 might make it possible to reduce the time
+TLC spends writing to disk on a model with a very large number of reachable states.&nbsp;
+
+Contact us for more information.
+
+</p>
+
 <!--  I don't know what I'm saving the following for
 <h2><a name="how">How to run?</a></h2>
 <hr> 

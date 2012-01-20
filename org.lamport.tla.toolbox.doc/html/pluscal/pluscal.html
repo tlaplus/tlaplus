@@ -22,14 +22,21 @@ language is provided by the paper
 PlusCal Algorithm Language</a>.  
  </P>
  
- <p>Toolbox support for the PlusCal translator is still fairly primitive.&nbsp;
- You run the translator on the module in the currently selected
+ <p>
+ You run the PlusCal translator on the module in the currently selected
  module editor by clicking 
-  on&nbsp; <samp>File/Translate PlusCal Algorithm</samp>.&nbsp;
+  on&nbsp; <samp>File/Translate PlusCal Algorithm</samp> or typing  <samp>Control+t</samp>&nbsp;
  Translation errors are displayed in  
-    the same&nbsp; <samp>Parsing Error</samp>&nbsp; view where <a href="../spec/parsing.html">TLA+ parsing
+    the same&nbsp; <samp>Parsing Error</samp>&nbsp; view where <a href="../spec/parsing.html">TLA<sup>+</sup> parsing
     errors</a> are displayed.&nbsp;  Some errors in a PlusCal algorithm are not found by the translator, but
     instead produce parsing errors in the TLA<sup>+</sup> module.&nbsp;  Those are displayed as ordinary TLA<sup>+</sup> parsing errors.
+ </p>
+ 
+ <p>
+ The <a href="../spec/editing-modules.html#finding-pcal"><em>Goto PCal Source</em></a> command allows you to jump
+ from a region in the TLA<sup>+</sup> translation to the PlusCal code that generated it.&nbsp;  This makes it
+ easy to find the source in the algorithm of an error found in its translation.
+
  </p>
  
  <p>The current version of Pluscal allows you to specify most translator options in an

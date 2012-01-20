@@ -1,6 +1,6 @@
 ---------------------------- MODULE CarTalkPuzzle ---------------------------
 (***************************************************************************)
-(* Car Talk is a U.S.  radio program about car repair.  Each show includes *)
+(* Car Talk is a U.S. radio program about car repair.  Each show includes  *)
 (* a puzzle, which is often a little mathematical problem.  Usually, those *)
 (* problems are easy for a mathematically sophisticated listener to solve. *)
 (* However, I was not able immediately to see how to solve the puzzle from *)

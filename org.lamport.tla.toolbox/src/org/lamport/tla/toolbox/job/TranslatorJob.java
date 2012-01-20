@@ -122,12 +122,17 @@ public class TranslatorJob extends WorkspaceJob
         Activator.logDebug("Translator invoked with params: '" + buffer.toString() + "'");
 
         TLAtoPCalMapping mapping = translator.runTranslation((String[]) callParams.toArray(new String[callParams.size()]));
-        /*
-         * At this point, fileToBuild.getName() returns the simple name of the file--e.g., "Test.tla".
-         * Eventually, 
-         */
-        Spec currentSpec = Activator.getSpecManager().getSpecLoaded();
-        currentSpec.setTpMapping(mapping, fileToBuild.getName());
+		// If no mapping has been created (e.g. due to a parsing error), the
+		// mapping object will be null. In this case we don't invalidate the old
+		// mapping.
+		if (mapping != null) {
+			/*
+			 * At this point, fileToBuild.getName() returns the simple name of
+			 * the file--e.g., "Test.tla".
+			 */
+			Spec currentSpec = Activator.getSpecManager().getSpecLoaded();
+			currentSpec.setTpMapping(mapping, fileToBuild.getName(), monitor);
+		}
          
         monitor.worked(1);
         monitor.setTaskName("Analyzing results");

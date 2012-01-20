@@ -249,7 +249,7 @@
             categoryId="org.eclipse.ui.category.textEditor"
             defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ReturnFromOpenDeclarationHandler"
             id="org.lamport.tla.toolbox.editor.basic.returnFromOpenDeclaration"
-            name="Return From Goto Declaration">
+            name="Return From Goto">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"

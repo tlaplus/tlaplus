@@ -69,8 +69,9 @@ import util.ToolIO;
 *                 - Permitted previously defined macros to be called       *
 *                   inside a macro definition.                             *
 *                                                                          *
-*   Version 1.7: (December 2011?)                                          *
+*   Version 1.7: (19 January 2012)                                         *
 *                 - Translator adds "BEGIN/END TRANSLATION" if needed.     *
+*                 - Added support for Toolbox Goto PCal Source command.    *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *

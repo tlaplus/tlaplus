@@ -18,7 +18,7 @@ public final class PcalParams
     /**
      * Parameters to be updated on each new release.
      */
-    public static final String modDate = "4 January 2012";
+    public static final String modDate = "19 January 2012";
     public static final String version = "1.7";
     /**
      * SZ Mar 9, 2009:
