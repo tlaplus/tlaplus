@@ -86,7 +86,7 @@ apt-get upgrade -y
 apt-get --no-install-recommends install openjdk-7-jdk visualvm openjdk-6-jdk juju unzip mc htop sysstat apache2 munin munin-node munin-java-plugins munin-plugins-extra git git-svn sshfs rsync -y
 
 # if UI/X needed
-apt-get --no-install-recommends install gnome-core gdm gnome-session-fallback firefox tightvncserver xorg x2goserver x2goserver-xsession -y
+apt-get --no-install-recommends install gnome-core gdm gnome-session-fallback firefox libwebkitgtk-1.0-0 tightvncserver xorg x2goserver x2goserver-xsession -y
 
 # remove overlay scrollbar. it messes with eclipse
 apt-get purge overlay-scrollbar liboverlay-scrollbar-0.2-0 liboverlay-scrollbar3-0.2-0 -y
