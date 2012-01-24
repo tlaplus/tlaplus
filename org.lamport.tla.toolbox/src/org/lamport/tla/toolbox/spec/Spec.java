@@ -489,9 +489,7 @@ public class Spec implements IAdaptable
 	 *            A valid {@link IProgressMonitor}, <code>null</code>, will cause
 	 *            an {@link IllegalArgumentException}.
 	 * @return the previous value associated with <tt>filename</tt>, or
-	 *         <tt>null</tt> if there was no mapping for <tt>filename</tt>. (A
-	 *         <tt>null</tt> return can also indicate that the map previously
-	 *         associated <tt>null</tt> with <tt>filename</tt>.)
+	 *         <tt>null</tt> if there was no mapping for <tt>filename</tt>.
 	 * @throws NullPointerException
 	 *             if the specified key or value is null and this map does not
 	 *             permit null keys or values
