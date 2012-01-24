@@ -291,9 +291,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
 	 */
     public void removeSpec(final Spec spec, final IProgressMonitor aMonitor)
     {
-        this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_DELETE));
-        ResourceHelper.deleteProject(spec.getProject(), aMonitor, true);
-        specStorage.remove(spec.getName());
+    	removeSpec(spec, aMonitor, true);
     }
 
     /**
