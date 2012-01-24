@@ -196,8 +196,7 @@ public class Activator extends AbstractUIPlugin
                         if (Activator.isSpecManagerInstantiated())
                         {
                             delta.accept(moduleFinder);
-                            List modules = moduleFinder.getModules();
-                            if (!modules.isEmpty())
+                            if (!moduleFinder.getModules().isEmpty())
                             {
                                 Spec spec = getSpecManager().getSpecLoaded();
                                 if (spec != null)
@@ -237,12 +236,12 @@ public class Activator extends AbstractUIPlugin
                             // delta.accept calls the visit method of the visitor
                             // on the delta.
                             delta.accept(toolboxDirectoryFinder);
-                            List directories = toolboxDirectoryFinder.getDirectories();
-                            for (Iterator it = directories.iterator(); it.hasNext();)
+                            List<IProject> directories = toolboxDirectoryFinder.getDirectories();
+                            for (Iterator<IProject> it = directories.iterator(); it.hasNext();)
                             {   // Set resource to the IResource representing a project
                                 // for a spec.  This resource is embodied in the file
                                 // system as the spec's .toolbox director.
-                                IProject resource = (IProject) it.next();
+                                IProject resource = it.next();
                                 ResourceHelper.setToolboxDirSize(resource);
                                 
                                 // TO-DO: If this is the currently opened spec, change display of

@@ -47,7 +47,10 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
     }
 
-    protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException
+    /* (non-Javadoc)
+     * @see org.eclipse.core.resources.IncrementalProjectBuilder#build(int, java.util.Map, org.eclipse.core.runtime.IProgressMonitor)
+     */
+    protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException
     {
         Spec spec = Activator.getSpecManager().getSpecLoaded();
         if (spec == null || getProject() != spec.getProject())
@@ -115,7 +118,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                             IProgressMonitor.UNKNOWN));
 
                     // get the modules to rebuild
-                    List modulesToRebuild = Activator.getModuleDependencyStorage().getListOfModulesToReparse(
+                    List<String> modulesToRebuild = Activator.getModuleDependencyStorage().getListOfModulesToReparse(
                             changedModule.getProjectRelativePath().toString());
 
                     // iterate over modules and rebuild them
@@ -208,8 +211,8 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
     public static class OutOfBuildSpecModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
     {
-        Vector modules = new Vector();
-        Hashtable dependancyTable = null;
+        Vector<IResource> modules = new Vector<IResource>();
+        Hashtable<String, String> dependancyTable = null;
         Spec spec = null;
 
         public OutOfBuildSpecModulesGatheringDeltaVisitor()
@@ -224,14 +227,14 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 if (spec != null)
                 {
                     String specRootFileName = spec.getRootFile().getName();
-                    List dependancyList = Activator.getModuleDependencyStorage().getListOfExtendedModules(
+                    List<String> dependancyList = Activator.getModuleDependencyStorage().getListOfExtendedModules(
                             specRootFileName);
-                    dependancyTable = new Hashtable(dependancyList.size());
+                    dependancyTable = new Hashtable<String, String>(dependancyList.size());
                     dependancyTable.put(specRootFileName, specRootFileName);
-                    Iterator iterator = dependancyList.iterator();
+                    Iterator<String> iterator = dependancyList.iterator();
                     while (iterator.hasNext())
                     {
-                        String moduleName = (String) iterator.next();
+                        String moduleName = iterator.next();
                         dependancyTable.put(moduleName, moduleName);
                     }
                 }
@@ -307,7 +310,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
          * 
          * @return a list with found modules
          */
-        public List getModules()
+        public List<IResource> getModules()
         {
             return modules;
         }

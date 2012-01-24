@@ -9,7 +9,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
-import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
  * Visitor for finding changed .toolbox directories.
@@ -19,7 +18,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
  */
 public class ToolboxDirectoryVisitor implements IResourceDeltaVisitor
 {
-    LinkedList iprojects = new LinkedList();
+    List<IProject> iprojects = new LinkedList<IProject>();
     
     /**
      * 
@@ -42,13 +41,13 @@ public class ToolboxDirectoryVisitor implements IResourceDeltaVisitor
     {
         IResource resource = delta.getResource(); 
         if ((resource instanceof IProject) ) {
-            iprojects.add(resource);
+            iprojects.add((IProject) resource);
             return false;
         }
         return true;
     }
     
-    public List getDirectories() {
+    public List<IProject> getDirectories() {
         return iprojects;
     }
 
