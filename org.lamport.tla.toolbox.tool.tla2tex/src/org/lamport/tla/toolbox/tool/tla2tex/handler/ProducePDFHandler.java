@@ -25,6 +25,7 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator;
 import org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants;
+import org.lamport.tla.toolbox.ui.handler.SaveDirtyEditorAbstractHandler;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -38,7 +39,7 @@ import tla2tex.TLA2TexException;
  * @author Daniel Ricketts
  * @version $Id$
  */
-public class ProducePDFHandler extends AbstractHandler
+public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler
 {
 
     private final String TLA2TeX_Output_Extension = "pdf";
@@ -48,23 +49,10 @@ public class ProducePDFHandler extends AbstractHandler
      */
     public Object execute(ExecutionEvent event)
     {
-
-        IEditorPart activeEditor = UIHelper.getActiveEditor();
-
-        if (activeEditor.isDirty())
-        {
-			final Shell shell = HandlerUtil.getActiveShell(event);
-			final String title = activeEditor.getTitle();
-			boolean save = MessageDialog.openQuestion(shell, "Save " + title + " spec?",
-					"The spec " + title + " has not been saved, should the spec be saved prior to PDF generation?");
-			if (save) {
-				// TODO decouple from ui thread
-				activeEditor.doSave(new NullProgressMonitor());
-			} else {
-				return null;
-			}
-        }
-
+    	if (!saveDirtyEditor(event)) {
+    		return null;
+    	}
+    	
         IEditorInput editorInput = activeEditor.getEditorInput();
         if (editorInput instanceof IFileEditorInput)
         {
@@ -298,15 +286,4 @@ public class ProducePDFHandler extends AbstractHandler
         tla2TexJob.setPriority(Job.LONG);
         tla2TexJob.schedule();
     }
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
-	 */
-	@Override
-	public boolean isEnabled() {
-		if (UIHelper.getActiveEditor() == null) {
-			return false;
-		}
-		return super.isEnabled();
-	}
 }
