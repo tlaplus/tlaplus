@@ -564,6 +564,17 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         return null;
     }
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (EditorUtil.getTLAEditorWithFocus() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
+	
     /**
      * TODO: This method has the following minor bug.  When Foo is defined in module
      * M, which is instantiated by  I == INSTANCE M, then when one of the OpApplNodes

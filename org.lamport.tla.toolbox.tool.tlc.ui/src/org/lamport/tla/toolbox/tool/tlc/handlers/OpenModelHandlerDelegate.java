@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -32,7 +33,7 @@ public class OpenModelHandlerDelegate extends AbstractHandler implements IHandle
             Object selected = ((IStructuredSelection) selection).getFirstElement();
             if (selected instanceof ILaunchConfiguration)
             {
-                HashMap parameters = new HashMap();
+                Map<String, String> parameters = new HashMap<String, String>();
 
                 String modelNameUser = ModelHelper.getModelName(((ILaunchConfiguration) selected).getFile());
 

@@ -35,5 +35,15 @@ public class HideAllProofsHandler extends ProofFoldCommandHandler
             }
         }
     }
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (EditorUtil.getTLAEditorWithFocus() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
 
 }

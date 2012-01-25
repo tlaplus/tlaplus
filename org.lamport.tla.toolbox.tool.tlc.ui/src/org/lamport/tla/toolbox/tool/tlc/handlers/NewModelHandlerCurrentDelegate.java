@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -26,7 +27,7 @@ public class NewModelHandlerCurrentDelegate extends AbstractHandler implements I
         Spec current = ToolboxHandle.getCurrentSpec();
         if (current != null)
         {
-            HashMap parameters = new HashMap();
+            Map<String, String> parameters = new HashMap<String, String>();
             // fill the spec name for the handler
             parameters.put(NewModelHandler.PARAM_SPEC_NAME, ((Spec) current).getName());
             // delegate the call to the new model handler
@@ -34,5 +35,16 @@ public class NewModelHandlerCurrentDelegate extends AbstractHandler implements I
         }
         return null;
     }
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (ToolboxHandle.getCurrentSpec() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
+	
 
 }
