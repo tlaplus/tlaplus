@@ -46,6 +46,8 @@ public class SpecLifecycleManager
             {
                 try
                 {
+                	// This causes other OSGi bundles to be started 
+                	// e.g. ProverUI which registers a SpecLifecycleParticipant
                     SpecLifecycleParticipant extension = (SpecLifecycleParticipant) decls[i].createExecutableExtension(CLASS_ATTR_NAME);
                     assert extension != null;
                     specExtensions[i] = extension;
