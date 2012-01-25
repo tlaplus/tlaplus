@@ -46,4 +46,14 @@ public class OpenTLCErrorViewHandler extends AbstractHandler implements IHandler
         return null;
     }
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (UIHelper.getActiveEditor() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
 }
