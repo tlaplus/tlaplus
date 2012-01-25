@@ -22,7 +22,7 @@ public class ModelErrorsTester extends PropertyTester
     {
         if (UIHelper.getActivePage() != null)
         {
-            IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
+            IEditorPart activeEditor = UIHelper.getActiveEditor();
             if (activeEditor != null)
             {
                 if (activeEditor instanceof ModelEditor)

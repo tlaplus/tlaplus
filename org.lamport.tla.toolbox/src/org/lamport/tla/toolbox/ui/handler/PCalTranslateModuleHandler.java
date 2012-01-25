@@ -33,7 +33,7 @@ public class PCalTranslateModuleHandler extends AbstractHandler implements IHand
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
+        final IEditorPart activeEditor = UIHelper.getActiveEditor();
         if (activeEditor.isDirty())
         {
             // editor is not saved just save it

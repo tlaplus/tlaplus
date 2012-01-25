@@ -76,7 +76,7 @@ public class EditorUtil
      */
     public static TLAEditor getTLAEditorWithFocus()
     {
-        IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
+        IEditorPart activeEditor = UIHelper.getActiveEditor();
         // activeEditor.getAdapter(ITexto)
         if (activeEditor instanceof TLAEditorAndPDFViewer)
         {
@@ -102,7 +102,7 @@ public class EditorUtil
      */
     public static TLAEditor getActiveTLAEditor()
     {
-        IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
+        IEditorPart activeEditor = UIHelper.getActiveEditor();
         // activeEditor.getAdapter(ITexto)
         if (activeEditor instanceof TLAEditorAndPDFViewer)
         {

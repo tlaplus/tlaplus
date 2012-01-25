@@ -24,7 +24,7 @@ public class ParseModuleHandler extends AbstractHandler implements IHandler
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
+        IEditorPart activeEditor = UIHelper.getActiveEditor();
 
         // if (activeEditor.isDirty())
         // {

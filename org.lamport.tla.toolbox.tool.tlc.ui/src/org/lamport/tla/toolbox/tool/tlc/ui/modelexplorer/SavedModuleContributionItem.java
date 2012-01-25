@@ -51,7 +51,7 @@ public class SavedModuleContributionItem extends CompoundContributionItem
          * contribution item for each member that has extension .tla and is not
          * TE.tla or MC.tla.
          */
-        IEditorPart editor = UIHelper.getActivePage().getActiveEditor();
+        IEditorPart editor = UIHelper.getActiveEditor();
         if (editor instanceof ModelEditor)
         {
             ModelEditor modelEditor = (ModelEditor) editor;
