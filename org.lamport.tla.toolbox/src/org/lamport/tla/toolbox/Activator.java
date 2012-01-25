@@ -32,6 +32,7 @@ import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -80,7 +81,7 @@ public class Activator extends AbstractUIPlugin
     {
     }
 
-    public void start(BundleContext context) throws Exception
+    public void start(final BundleContext context) throws Exception
     {
         super.start(context);
         plugin = this;
@@ -90,8 +91,8 @@ public class Activator extends AbstractUIPlugin
         
 		// Eagerly initialize the WorkspaceSpecManager to prevent a possible
 		// deadlock among threads (including main) that arises if jobs get
-		// scheduled and try to lazily access the WorkspaceSpecManager which
-		// hasn't been initialized yet but locked by another thread.
+		// scheduled and try to lazily access the WorkspaceSpecManager which -in
+		// turn- hasn't been initialized yet but locked by another thread.
         //
 		// At this point, it can safely be assumed that no build job is running,
         // because we schedule prior to loading the TLAParserBuilder class.
@@ -101,9 +102,8 @@ public class Activator extends AbstractUIPlugin
         //
 		// We do this in a separate thread and not in Activator.start() because
 		// the OSGi contract requires for short-running bundle activation
-		// (start/stop)
-		// methods. Initializing the WorkspaceSpecManager involves I/O though,
-		// which makes it a potentially long-running task.
+		// (start/stop) methods. Initializing the WorkspaceSpecManager involves
+		// I/O though, which makes it a potentially long-running task.
         //
         // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=260
         final Job initializerJob = new WorkspaceJob("Initializing workspace...") {
@@ -112,6 +112,24 @@ public class Activator extends AbstractUIPlugin
 			 */
 			public IStatus runInWorkspace(IProgressMonitor monitor)
 					throws CoreException {
+				
+				// Wait until bundle is done starting up and we can safely
+				// load classes in this thread
+				int state = context.getBundle().getState();
+				while(state != Bundle.ACTIVE && state != Bundle.RESOLVED) {
+					// Do not yield the job because we would potentially give
+					// away the lock to the autobuilder job which would then get
+					// stuck on the latch we are supposed to take down.
+					try {
+						synchronized(getThread()) {
+							getThread().wait(100);
+						}
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					state = context.getBundle().getState();
+				}
+				
 				specManager = new WorkspaceSpecManager();
 				latch.countDown();
 				return Status.OK_STATUS;
