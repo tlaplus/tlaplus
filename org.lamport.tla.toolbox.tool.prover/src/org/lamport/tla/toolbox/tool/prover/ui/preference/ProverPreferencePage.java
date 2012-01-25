@@ -124,7 +124,11 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
     public ProverPreferencePage()
     {
         super(GRID);
-        setPreferenceStore(EditorsUI.getPreferenceStore());
+        // Using somebody's else PreferenceStore is not a good idea!
+        // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        
+        setPreferenceStore(store);
         getPreferenceStore().addPropertyChangeListener(this);
         setDescription("Color Predicates");
     }
@@ -468,7 +472,10 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
             topComposite.setLayoutData(gd);
             topComposite.setLayout(new GridLayout(7, false));
 
-            IPreferenceStore store = EditorsUI.getPreferenceStore();
+            // Using somebody's else PreferenceStore is not a good idea!
+        	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
+            // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
+	        IPreferenceStore store = EditorsUI.getPreferenceStore();
             /*
              * Set up the Text fields and their labels for selecting the colors.
              */
@@ -528,7 +535,10 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
 
         protected void okPressed()
         {
-            IPreferenceStore store = EditorsUI.getPreferenceStore();
+            // Using somebody's else PreferenceStore is not a good idea!
+        	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
+            // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
+	        IPreferenceStore store = EditorsUI.getPreferenceStore();
 
             for (int i = 0; i < 12; i++)
             {
