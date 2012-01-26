@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -18,11 +19,11 @@ public class OpenTLCErrorViewHandler extends AbstractHandler implements IHandler
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        HashMap params = new HashMap();
+        Map<String, String> params = new HashMap<String, String>();
         params.put(OpenViewHandler.PARAM_VIEW_NAME, TLCErrorView.ID);
         UIHelper.runCommand(OpenViewHandler.COMMAND_ID, params);
 
-        IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
+        IEditorPart activeEditor = UIHelper.getActiveEditor();
         if (activeEditor != null)
         {
             if (activeEditor instanceof ModelEditor)

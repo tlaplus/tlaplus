@@ -43,7 +43,7 @@ public class ProducePDFHandler extends AbstractHandler
     public Object execute(ExecutionEvent event)
     {
 
-        IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
+        IEditorPart activeEditor = UIHelper.getActiveEditor();
 
         if (activeEditor.isDirty())
         {

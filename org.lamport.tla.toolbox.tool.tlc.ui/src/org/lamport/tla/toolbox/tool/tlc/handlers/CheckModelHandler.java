@@ -14,7 +14,7 @@ public class CheckModelHandler extends AbstractHandler
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
+        IEditorPart activeEditor = UIHelper.getActiveEditor();
         if (activeEditor != null)
         {
             if (activeEditor instanceof ModelEditor)
