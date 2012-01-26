@@ -2,7 +2,6 @@ package org.lamport.tla.toolbox.ui.handler;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
@@ -10,16 +9,12 @@ import org.eclipse.core.commands.IHandler2;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.job.TranslatorJob;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -29,7 +24,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class PCalTranslateModuleHandler extends AbstractHandler implements IHandler, IHandler2
+public class PCalTranslateModuleHandler extends SaveDirtyEditorAbstractHandler implements IHandler, IHandler2
 {
     public final static String COMMAND_ID = "toolbox.command.module.translate.active";
 
@@ -38,31 +33,10 @@ public class PCalTranslateModuleHandler extends AbstractHandler implements IHand
      */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final IEditorPart activeEditor = UIHelper.getActiveEditor();
-        if (activeEditor.isDirty())
-        {
-			final Shell shell = HandlerUtil.getActiveShell(event);
-			final String title = activeEditor.getTitle();
-			boolean save = MessageDialog.openQuestion(shell, "Save " + title + " spec?",
-					"The spec " + title + " has not been saved, should the spec be saved prior to translation?");
-			if (save) {
-				// TODO decouple from ui thread
-				activeEditor.doSave(new NullProgressMonitor());
-			} else {
-				return null;
-			}
-
-			// Use NullProgressMonitor instead of newly created monitor. The
-			// parent ProgressMonitorDialog would need to be properly
-			// initialized first.
-        	// @see https://bugzilla.tlaplus.net/show_activity.cgi?id=256
-        	//
-			// Generally though, saving a resource involves I/O which should be
-			// decoupled from the UI thread in the first place. Properly doing
-			// this, would be from inside a Job which provides a ProgressMonitor
-            activeEditor.doSave(new NullProgressMonitor());
-        }
-
+    	if (!saveDirtyEditor(event)) {
+    		return null;
+    	}
+    	
         IEditorInput editorInput = activeEditor.getEditorInput();
         if (editorInput instanceof IFileEditorInput)
         {
@@ -116,15 +90,4 @@ public class PCalTranslateModuleHandler extends AbstractHandler implements IHand
         }
         return null;
     }
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
-	 */
-	@Override
-	public boolean isEnabled() {
-		if (UIHelper.getActiveEditor() == null) {
-			return false;
-		}
-		return super.isEnabled();
-	}
 }
