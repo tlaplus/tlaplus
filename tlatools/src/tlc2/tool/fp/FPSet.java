@@ -16,14 +16,11 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import javax.management.NotCompliantMBeanException;
-
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.distributed.FPSetManager;
 import tlc2.tool.distributed.FPSetRMI;
-import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.FileUtil;
@@ -82,16 +79,6 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 		
 		if (set == null && fpBits == 0) {
 			set = new DiskFPSet(fpMemSizeInFPs);
-			try {
-				new DiskFPSetMXWrapper((DiskFPSet) set);
-			} catch (NotCompliantMBeanException e) {
-				// not expected to happen
-				// would cause JMX to be broken, hence just log and continue
-				MP.printWarning(
-						EC.GENERAL,
-						"Failed to create MBean wrapper for DiskFPSet. No statistics/metrics will be avaiable.",
-						e);
-			}
 		} else if (set == null) {
 			set = new MultiFPSet(fpBits, fpMemSizeInFPs);
 		}

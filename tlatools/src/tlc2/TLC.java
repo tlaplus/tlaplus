@@ -5,6 +5,8 @@
 
 package tlc2;
 
+import javax.management.NotCompliantMBeanException;
+
 import tla2sany.modanalyzer.SpecObj;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -15,6 +17,7 @@ import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.management.ModelCheckerMXWrapper;
+import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.FP64;
 import tlc2.util.RandomGenerator;
 import tlc2.value.Value;
@@ -597,7 +600,10 @@ public class TLC
         ToolIO.cleanToolObjects(TLCGlobals.ToolId);
         // UniqueString.initialize();
         
-        // SZ Feb 20, 2009: extracted this method to separate the 
+        // a JMX wrapper that exposes runtime statistics 
+        TLCStandardMBean modelCheckerMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
+        
+		// SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
         try
         {
@@ -644,7 +650,7 @@ public class TLC
                 {
                     mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, (long) fpMemSize, fpBits);
                     TLCGlobals.mainChecker = (ModelChecker) mc;
-                    new ModelCheckerMXWrapper((ModelChecker) mc);
+                    modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc);
                 } else
                 {
                     mc = new DFIDModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
@@ -677,6 +683,7 @@ public class TLC
             }
         } finally 
         {
+       		modelCheckerMXWrapper.unregister();
             MP.printMessage(EC.TLC_FINISHED);
             MP.flush();
         }

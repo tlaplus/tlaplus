@@ -31,6 +31,7 @@ import tlc2.tool.distributed.management.TLCServerMXWrapper;
 import tlc2.tool.distributed.selector.BlockSelectorFactory;
 import tlc2.tool.distributed.selector.IBlockSelector;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.management.TLCStandardMBean;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
@@ -527,6 +528,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 
 	public static void main(String argv[]) {
 		MP.printMessage(EC.GENERAL, "TLC Server " + TLCGlobals.versionOfTLC);
+		TLCStandardMBean tlcServerMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
 		TLCServer server = null;
 		try {
 			final String fpServerProperty = System.getProperty("fp_servers");
@@ -536,7 +538,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 			TLCGlobals.setNumWorkers(0);
 			server = new TLCServer(TLCApp.create(argv));
-			new TLCServerMXWrapper(server);
+			tlcServerMXWrapper = new TLCServerMXWrapper(server);
 			if(server != null) {
 				Runtime.getRuntime().addShutdownHook(new Thread(new WorkerShutdownHook(server)));
 				modelCheck(server);
@@ -558,6 +560,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					e1.printStackTrace();
 				}
 			}
+		} finally {
+			tlcServerMXWrapper.unregister();
 		}
 	}
 
