@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
@@ -18,6 +19,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.job.TranslatorJob;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -31,13 +33,24 @@ public class PCalTranslateModuleHandler extends AbstractHandler implements IHand
 {
     public final static String COMMAND_ID = "toolbox.command.module.translate.active";
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final IEditorPart activeEditor = UIHelper.getActiveEditor();
         if (activeEditor.isDirty())
         {
-            // editor is not saved just save it
-            // TODO
+			final Shell shell = HandlerUtil.getActiveShell(event);
+			final String title = activeEditor.getTitle();
+			boolean save = MessageDialog.openQuestion(shell, "Save " + title + " spec?",
+					"The spec " + title + " has not been saved, should the spec be saved prior to translation?");
+			if (save) {
+				// TODO decouple from ui thread
+				activeEditor.doSave(new NullProgressMonitor());
+			} else {
+				return null;
+			}
 
 			// Use NullProgressMonitor instead of newly created monitor. The
 			// parent ProgressMonitorDialog would need to be properly

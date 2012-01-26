@@ -8,6 +8,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -15,9 +16,11 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator;
@@ -50,8 +53,16 @@ public class ProducePDFHandler extends AbstractHandler
 
         if (activeEditor.isDirty())
         {
-            // editor is not saved
-            // TODO react on this!
+			final Shell shell = HandlerUtil.getActiveShell(event);
+			final String title = activeEditor.getTitle();
+			boolean save = MessageDialog.openQuestion(shell, "Save " + title + " spec?",
+					"The spec " + title + " has not been saved, should the spec be saved prior to PDF generation?");
+			if (save) {
+				// TODO decouple from ui thread
+				activeEditor.doSave(new NullProgressMonitor());
+			} else {
+				return null;
+			}
         }
 
         IEditorInput editorInput = activeEditor.getEditorInput();
