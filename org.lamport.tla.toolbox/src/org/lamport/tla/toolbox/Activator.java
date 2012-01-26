@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IProject;
@@ -10,9 +11,12 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
@@ -42,6 +46,7 @@ public class Activator extends AbstractUIPlugin
     // The shared instance
     private static Activator plugin;
     private static WorkspaceSpecManager specManager;
+    private static final CountDownLatch latch = new CountDownLatch(1);
     private static ParserDependencyStorage parserDependencyStorage;
     private ParseStatusContributionItem parseStatusContributionItem = null;
     private SizeControlContribution sizeControlContribution = null;
@@ -82,6 +87,38 @@ public class Activator extends AbstractUIPlugin
 
         // register the listeners
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        
+		// Eagerly initialize the WorkspaceSpecManager to prevent a possible
+		// deadlock among threads (including main) that arises if jobs get
+		// scheduled and try to lazily access the WorkspaceSpecManager which
+		// hasn't been initialized yet but locked by another thread.
+        //
+		// At this point, it can safely be assumed that no build job is running,
+        // because we schedule prior to loading the TLAParserBuilder class.
+        //
+		// Using a WorkspaceJob instead of a "normal" Job makes sure the
+		// operation is executed atomically.
+        //
+		// We do this in a separate thread and not in Activator.start() because
+		// the OSGi contract requires for short-running bundle activation
+		// (start/stop)
+		// methods. Initializing the WorkspaceSpecManager involves I/O though,
+		// which makes it a potentially long-running task.
+        //
+        // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=260
+        final Job initializerJob = new WorkspaceJob("Initializing workspace...") {
+			/* (non-Javadoc)
+			 * @see org.eclipse.core.resources.WorkspaceJob#runInWorkspace(org.eclipse.core.runtime.IProgressMonitor)
+			 */
+			public IStatus runInWorkspace(IProgressMonitor monitor)
+					throws CoreException {
+				specManager = new WorkspaceSpecManager();
+				latch.countDown();
+				return Status.OK_STATUS;
+			}
+        };
+        initializerJob.setRule(workspace.getRuleFactory().buildRule());
+        initializerJob.schedule();
 
         // activate handler to show the radio buttons in perspective selection
         // UIJob job = new UIJob("InitCommandsWorkaround") {
@@ -292,18 +329,20 @@ public class Activator extends AbstractUIPlugin
         return plugin;
     }
 
-    /**
-     * Retrieves a working spec manager instance
-     */
-    public static synchronized WorkspaceSpecManager getSpecManager()
-    {
-        if (specManager == null)
-        {
-            specManager = new WorkspaceSpecManager();
-        }
-        return specManager;
-    }
-
+	/**
+	 * Retrieves a working spec manager instance
+	 */
+	public static WorkspaceSpecManager getSpecManager() {
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			// shall never happen
+			e.printStackTrace();
+			return null;
+		}
+		return specManager;
+	}
+    
     /**
      * Retrieves a working instance of parser dependency storage
      */
