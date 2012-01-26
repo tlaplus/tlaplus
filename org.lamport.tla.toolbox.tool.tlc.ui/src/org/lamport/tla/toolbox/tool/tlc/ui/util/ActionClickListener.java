@@ -6,149 +6,100 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.widgets.Tree;
+import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.st.Location;
 
 /**
- * A listener that will respond to the user double clicking or selecting
- * an action by opening the module containing that action and highlighting
- * the action. Can jump to the location in a saved module editor if such an editor
+ * A listener that will respond to the user double clicking or selecting an
+ * action by opening the module containing that action and highlighting the
+ * action. Can jump to the location in a saved module editor if such an editor
  * is already open.
  * 
- * Currently, double clicking or selecting something in a viewer with this as
- * a listener will only do something if the selection is an instance
- * of {@link IModuleLocatable}.
+ * Currently, double clicking or selecting something in a viewer with this as a
+ * listener will only do something if the selection is an instance of
+ * {@link IModuleLocatable}.
  * {@link org.lamport.tla.toolbox.tool.tlc.output.data.TLCState} and
  * {@link org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem}
  * implement that interface.
  * 
  * @author Daniel Ricketts
- *
+ * 
  */
-public class ActionClickListener implements IDoubleClickListener, ISelectionChangedListener
-{
+public class ActionClickListener implements ISelectionChangedListener, MouseListener {
 
-    public ActionClickListener()
-    {
-    }
+	private final Viewer viewer;
 
-    public void doubleClick(DoubleClickEvent event)
-    {
-        goToAction(event.getSelection());
-    }
+	public ActionClickListener(final Viewer viewer) {
+		this.viewer = viewer;
+	}
 
-    public void selectionChanged(SelectionChangedEvent event)
-    {
-        goToAction(event.getSelection());
-    }
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.MouseListener#mouseDoubleClick(org.eclipse.swt.events.MouseEvent)
+	 */
+	public void mouseDoubleClick(MouseEvent event) {
+		goToAction(viewer.getSelection(), (event.stateMask & SWT.ALT) != 0);
+	}
 
-    private void goToAction(ISelection selection)
-    {
-        if (selection != null && !selection.isEmpty())
-        {
-            if (selection instanceof StructuredSelection)
-            {
-                StructuredSelection structuredSelection = (StructuredSelection) selection;
-                // on a double click there should not be multiple selections,
-                // so taking the first element of the structured selection
-                // should work
-                Object firstElement = structuredSelection.getFirstElement();
-                if (firstElement instanceof IModuleLocatable)
-                {
-                    IModuleLocatable moduleLocatable = (IModuleLocatable) firstElement;
-                    Location location = moduleLocatable.getModuleLocation();
-                    if (location != null)
-                    {
-                        /*
-                         * jumpToNested will be true if the location could
-                         * be shown in a nested saved module editor. If it is false,
-                         * we jump to the regular TLA editor instead.
-                         */
-                        boolean jumpedToNested = TLCUIHelper.jumpToSavedLocation(location, ModelHelper
-                                .getModelByName(moduleLocatable.getModelName()));
-                        if (!jumpedToNested)
-                        {
-                            UIHelper.jumpToLocation(location);
-                        }
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.MouseListener#mouseDown(org.eclipse.swt.events.MouseEvent)
+	 */
+	public void mouseDown(MouseEvent e) {}
 
-                        /*
-                         * The following code was commented out by DR on May 6, 2010
-                         * because it had been moved to UIHelper.jumpToLocation() and simplified.
-                         * The line of code the precedes these comments accomplishes what this
-                         * commented code accomplishes and is sufficiently general to be used
-                         * elsewhere in the toolbox.
-                         */
-                        // // the source of a location is the module name
-                        // IResource moduleResource = ResourceHelper.getResourceByModuleName(location.source());
-                        // if (moduleResource != null && moduleResource.exists())
-                        // {
-                        // try
-                        // {
-                        // // retrieve the resource
-                        // IDocument document = null;
-                        //
-                        // // since we know that the editor uses file based editor representation
-                        // FileEditorInput fileEditorInput = new FileEditorInput((IFile) moduleResource);
-                        // FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-                        //
-                        // fileDocumentProvider.connect(fileEditorInput);
-                        //
-                        // document = fileDocumentProvider.getDocument(fileEditorInput);
-                        // if (document != null)
-                        // {
-                        // try
-                        // {
-                        // // we now need to convert the four coordinates of the location
-                        // // to a begin character location and a length
-                        //
-                        // // find the two lines in the document
-                        // IRegion beginLineRegion = document.getLineInformation(location.beginLine() - 1);
-                        // IRegion endLineRegion = document.getLineInformation(location.endLine() - 1);
-                        //
-                        // // get the text representation of the lines
-                        // String textBeginLine = document.get(beginLineRegion.getOffset(),
-                        // beginLineRegion.getLength());
-                        // String textEndLine = document.get(endLineRegion.getOffset(), endLineRegion
-                        // .getLength());
-                        //
-                        // // the Math.min is necessary because sometimes the end column
-                        // // is greater than the length of the end line, so if Math.min
-                        // // were not called in such a situation, extra lines would be
-                        // // highlighted
-                        // int actionStartPosition = beginLineRegion.getOffset()
-                        // + Math.min(textBeginLine.length(), location.beginColumn() - 1);
-                        // int length = endLineRegion.getOffset()
-                        // + Math.min(textEndLine.length(), location.endColumn())
-                        // - actionStartPosition;
-                        //
-                        // IEditorPart editor = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR_CURRENT,
-                        // new FileEditorInput((IFile) moduleResource));
-                        //
-                        // if (editor != null && editor instanceof TLAEditorAndPDFViewer)
-                        // {
-                        // TLAEditorAndPDFViewer tlaEditorAndPDFViewer = (TLAEditorAndPDFViewer) editor;
-                        // // the pdf viewing page may currently be the active tab for the multi-page editor
-                        // // we want the tla module editor to be the active tab
-                        // tlaEditorAndPDFViewer.setTLAEditorActive();
-                        // tlaEditorAndPDFViewer.getTLAEditor().selectAndReveal(actionStartPosition,
-                        // length);
-                        // }
-                        // } catch (BadLocationException e)
-                        // {
-                        // TLCUIActivator.logError("Error accessing the specified action location", e);
-                        // }
-                        // }
-                        // } catch (CoreException e1)
-                        // {
-                        // TLCUIActivator.logDebug("Error going to action corresponding to state. This is a bug.");
-                        // }
-                        // }
-                    }
-                }
-            }
-        }
-    }
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.MouseListener#mouseUp(org.eclipse.swt.events.MouseEvent)
+	 */
+	public void mouseUp(MouseEvent e) {}
 
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
+	 */
+	public void selectionChanged(final SelectionChangedEvent event) {
+		goToAction(event.getSelection());
+	}
+	
+	private void goToAction(final ISelection selection) {
+		goToAction(selection, false);
+	}
+
+	private void goToAction(final ISelection selection, boolean jumpToPCal) {
+		if (selection != null && !selection.isEmpty()) {
+			if (selection instanceof StructuredSelection) {
+				final StructuredSelection structuredSelection = (StructuredSelection) selection;
+				// on a double click there should not be multiple selections,
+				// so taking the first element of the structured selection
+				// should work
+				final Object firstElement = structuredSelection.getFirstElement();
+				if (firstElement instanceof IModuleLocatable) {
+					final IModuleLocatable moduleLocatable = (IModuleLocatable) firstElement;
+					final Location location = moduleLocatable.getModuleLocation();
+					if (location != null) {
+						
+						/*
+						 * jumpToNested will be true if the location could be
+						 * shown in a nested saved module editor. If it is
+						 * false, we jump to the regular TLA editor instead.
+						 */
+						final boolean jumpedToNested = TLCUIHelper
+								.jumpToSavedLocation(location, ModelHelper
+										.getModelByName(moduleLocatable
+												.getModelName()));
+						if (!jumpedToNested) {
+							UIHelper.jumpToLocation(location);
+						}
+					}
+				}
+			}
+		}
+	}
 }

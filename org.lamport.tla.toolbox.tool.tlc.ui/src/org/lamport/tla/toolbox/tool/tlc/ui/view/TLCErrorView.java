@@ -445,7 +445,7 @@ public class TLCErrorView extends ViewPart
         variableViewer.setFilters(new ViewerFilter[] { new StateFilter() });
         variableViewer.setLabelProvider(new StateLabelProvider());
 
-        variableViewer.addDoubleClickListener(new ActionClickListener());
+        variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer));
 
         variableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 

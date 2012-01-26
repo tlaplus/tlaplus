@@ -21,7 +21,6 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.UIHelper;
 
-import pcal.MappingObject;
 import pcal.PCalLocation;
 import pcal.TLAtoPCalMapping;
 
@@ -116,7 +115,7 @@ public class GotoPCalSourceHandler extends AbstractHandler implements IHandler {
 
         /*
          * Call TLAtoPCalMapping.ApplyMapping to find the PCal source, using
-         * the region tlaRegion obtained by adjusting the line numberss of the selected 
+         * the region tlaRegion obtained by adjusting the line numbers of the selected 
          * region to be relative to newStartOfTranslation.
          */
         pcal.Region tlaRegion = 
