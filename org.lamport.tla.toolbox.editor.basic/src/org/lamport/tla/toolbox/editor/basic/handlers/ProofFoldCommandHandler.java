@@ -32,5 +32,15 @@ public abstract class ProofFoldCommandHandler extends AbstractHandler
 
         return null;
     }
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (EditorUtil.getTLAEditorWithFocus() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
 
 }

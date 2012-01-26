@@ -48,4 +48,15 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
         return null;
     }
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (Activator.getSpecManager().getSpecLoaded() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
+
 }

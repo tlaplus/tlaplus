@@ -90,6 +90,17 @@ public class CursorMovementHandler extends AbstractHandler implements IHandler
      return null;
     }
     
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (EditorUtil.getTLAEditorWithFocus() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
+	
     private void charRight() {
         if (offset < lineInfo.getOffset()+lineInfo.getLength()) {
             selectionProvider.setSelection(new TextSelection(offset+1,0));

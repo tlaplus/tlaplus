@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.ui.handler;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -129,7 +130,7 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
                 }
 
                 // create parameters for the handler
-                HashMap parameters = new HashMap();
+                Map<String, String> parameters = new HashMap<String, String>();
                 parameters.put(OpenModuleHandler.PARAM_MODULE, ResourceHelper.getModuleNameChecked(module.getName(),
                         false));
 
@@ -140,4 +141,15 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
 
         return null;
     }
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (Activator.getSpecManager().getSpecLoaded() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
 }
