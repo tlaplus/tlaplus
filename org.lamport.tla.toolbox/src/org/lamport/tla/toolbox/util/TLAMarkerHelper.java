@@ -351,7 +351,7 @@ public class TLAMarkerHelper
      * Installs the error markers from the vector of MarkerInformationHolders
      * @param detectedErrors
      */
-    public static void installProblemMarkers(Vector detectedErrors, IProgressMonitor monitor)
+    public static void installProblemMarkers(Vector<TLAMarkerInformationHolder> detectedErrors, IProgressMonitor monitor)
     {
         if (detectedErrors == null || detectedErrors.isEmpty())
         {
