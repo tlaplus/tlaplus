@@ -34,6 +34,9 @@ public class ProverUIActivator extends AbstractUIPlugin
         UIHelper.runUIAsync(new Runnable() {
 			
 			public void run() {
+	            // Using somebody's else PreferenceStore is not a good idea!
+	        	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
+	            // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
 		        IPreferenceStore store = EditorsUI.getPreferenceStore();
 
 		        /*
