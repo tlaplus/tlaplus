@@ -12,6 +12,9 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class CheckModelHandler extends AbstractHandler
 {
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         IEditorPart activeEditor = UIHelper.getActiveEditor();
@@ -31,4 +34,14 @@ public class CheckModelHandler extends AbstractHandler
         return null;
     }
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (UIHelper.getActiveEditor() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
 }

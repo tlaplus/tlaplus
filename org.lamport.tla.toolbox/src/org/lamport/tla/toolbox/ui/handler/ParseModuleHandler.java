@@ -22,6 +22,9 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class ParseModuleHandler extends AbstractHandler implements IHandler
 {
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         IEditorPart activeEditor = UIHelper.getActiveEditor();
@@ -59,4 +62,15 @@ public class ParseModuleHandler extends AbstractHandler implements IHandler
 
         return null;
     }
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (UIHelper.getActiveEditor() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
 }

@@ -103,4 +103,15 @@ public class PCalTranslateModuleHandler extends AbstractHandler implements IHand
         }
         return null;
     }
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (UIHelper.getActiveEditor() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
 }

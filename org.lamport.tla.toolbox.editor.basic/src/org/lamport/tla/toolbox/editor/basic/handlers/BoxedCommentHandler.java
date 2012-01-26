@@ -15,7 +15,6 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Shell;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.StringHelper;
@@ -572,4 +571,14 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 				+ StringHelper.copyString(" ", endSpaces) + " *)";
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (EditorUtil.getTLAEditorWithFocus() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
 }

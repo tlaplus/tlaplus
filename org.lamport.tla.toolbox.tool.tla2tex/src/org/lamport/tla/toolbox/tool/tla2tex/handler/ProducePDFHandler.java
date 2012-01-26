@@ -40,6 +40,9 @@ public class ProducePDFHandler extends AbstractHandler
 
     private final String TLA2TeX_Output_Extension = "pdf";
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     public Object execute(ExecutionEvent event)
     {
 
@@ -284,4 +287,15 @@ public class ProducePDFHandler extends AbstractHandler
         tla2TexJob.setPriority(Job.LONG);
         tla2TexJob.schedule();
     }
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		if (UIHelper.getActiveEditor() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
 }
