@@ -553,8 +553,41 @@ org.eclipse.core.runtime.Platform.getOS().  It returns one of the
 string constants in the Platform class.  That method is used elsewhere
 in the Toolbox.  I cannot remember where off the top of my head, so
 just search for it if you want to look at examples.
-
 -----------------------------------------------------------------------
+HOW TO IMPLEMENT LIBRARY DIRECTORIES
+
+The system property "TLA-Library" specifies an additional list 
+of directories, separated by a path-separator (";" on Windows, ":" on Unix),
+in which SANY looks for modules (besides the spec's directory and the
+standard modules' directory).  The order of search seems to be (i) spec's
+directory, (ii) library directory, (iii) standard modules' directory.
+
+The Toolbox seems to call the parser from one of the multiple parseModule
+methods in ModuleParserLauncher.  It should be possible to add a list
+of library directories by calling System.setProperty before calling
+the Parser.
+
+To add a user-specifiable list of libraries (in particular for a
+TLAPS library), add both a global and a spec-specific preference
+to specify the library folder.   To add a global preference, see the
+"Defining a New Preference" note above.  To add a spec preference, copy
+what's done in SpecPropertyPage for the "PlusCal call arguments" to
+create a field editor with which the user sets the preference named
+
+   IPreferenceConstants.SOME_NAME_FOR_THE_PREFERENCE
+
+To get the spec-specific preference, it looks like one first gets the project
+with
+
+  IProject project = Activator.getSpecManager().getSpecLoaded().getProject()
+
+and then calls
+ 
+   PreferenceStoreHelper.getProjectPreferenceStore(project).
+      getString(IPreferenceConstants.SOME_NAME_FOR_THE_PREFERENCE);  
+
+If this doesn't work, see the TranslatorJob constructor.
+----------------------------------------------------------------------
 HOW TO GET A...
   SpecObj
      From IFile: ResourceHelper.getValidParseResult(iFile).getSpecObj()
