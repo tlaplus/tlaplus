@@ -60,11 +60,13 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 import org.lamport.tla.toolbox.ui.view.ToolboxWelcomeView;
 
+import pcal.TLAtoPCalMapping;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.NonLeafProofNode;
@@ -779,12 +781,19 @@ public class UIHelper
     }
 
     /**
+     * @see UIHelper#jumpToLocation(Location, boolean)
+     */
+    public static void jumpToLocation(final Location location) {
+    	jumpToLocation(location, false);
+    }
+    
+    /**
      * Reveals and highlights the given location in a TLA editor. Opens
      * an editor on the module if an editor is not already open on it.
      * 
      * @param location
      */
-    public static void jumpToLocation(Location location)
+    public static void jumpToLocation(Location location, final boolean jumpToPCal)
     {
         if (location != null)
         {
@@ -814,37 +823,15 @@ public class UIHelper
                     {
                         try
                         {
+                            if (jumpToPCal) {
+								final TLAtoPCalMapping mapping = ToolboxHandle
+										.getCurrentSpec().getTpMapping(
+												location.source() + ".tla");
+								location = AdapterFactory.jumptToPCal(mapping,
+										location, document).toLocation();
+                            }
                             // we now need to convert the four coordinates of the location
                             // to an offset and length
-
-                            /*
-                             * The following was commented out by DR on May 6, 2010. It originally was required
-                             * to compensate for a bug in the reporting of locations by SANY. SANY
-                             * was reporting multiline locations as a bounding box instead of the
-                             * actual begin line, begin column, end line, end column. This has
-                             * been fixed, so the commented out code can be simplified to what follows it.
-                             */
-                            // // find the two lines in the document
-                            // IRegion beginLineRegion = document.getLineInformation(location.beginLine() - 1);
-                            // IRegion endLineRegion = document.getLineInformation(location.endLine() - 1);
-                            //
-                            // // get the text representation of the lines
-                            // String textBeginLine = document.get(beginLineRegion.getOffset(), beginLineRegion
-                            // .getLength());
-                            // String textEndLine = document.get(endLineRegion.getOffset(), endLineRegion.getLength());
-                            //
-                            // // the Math.min is necessary because sometimes the end column
-                            // // is greater than the length of the end line, so if Math.min
-                            // // were not called in such a situation, extra lines would be
-                            // // highlighted
-                            // int offset = beginLineRegion.getOffset()
-                            // + Math.min(textBeginLine.length(), location.beginColumn() - 1);
-                            // int length = endLineRegion.getOffset()
-                            // + Math.min(textEndLine.length(), location.endColumn()) - offset;
-
-                            /*
-                             * This is the new code for converting to an offset and length.
-                             */
                             IRegion region = AdapterFactory.locationToRegion(document, location);
                             int offset = region.getOffset();
                             int length = region.getLength();

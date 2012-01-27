@@ -31,36 +31,8 @@ public class GotoPCalSourceHandler extends AbstractHandler implements IHandler {
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
         
-        // Set mapping to the TLAtoPCalMapping.
-        // To do that, we first get the current spec .
-        Spec spec = ToolboxHandle.getCurrentSpec();
-        if (spec == null)
-        {
-            return null;
-        }
-
-        // We need the module name for looking up the TLAtoPCalMapping.
-        // We get the module name from the current editor.
-        TLAEditor tlaEditor = EditorUtil.getTLAEditorWithFocus();
-        if (tlaEditor == null)
-        {
-            return null;
-        }
-        String moduleName = tlaEditor.getModuleName();
-       
-        TLAtoPCalMapping mapping = spec.getTpMapping(moduleName + ".tla");
-        
-        /*
-         * If mapping is null, then the last translation failed so 
-         * we do nothing. This should be impossible, since the command should
-         * not be enabled.
-         */
-        if (mapping == null) {
-            return null;
-        }
-        
 		try {
-			EditorUtil.mapCurrentTLARegionToPCalRegion(mapping);
+			EditorUtil.selectAndRevealPCalRegionFromCurrentTLARegion();
 		} catch (BadLocationException e) {
 			MessageDialog.openWarning(UIHelper.getShellProvider().getShell(),
 					"Cannot find PCal algorithm",

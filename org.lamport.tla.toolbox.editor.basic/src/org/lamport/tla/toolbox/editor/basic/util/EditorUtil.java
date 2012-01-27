@@ -22,6 +22,7 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -373,7 +374,7 @@ public class EditorUtil
             {
                 endCol++;
             }
-            loc = new Location(null, startLine + 1, startCol, endLine + 1, endCol);
+            loc = new Location(startLine + 1, startCol, endLine + 1, endCol);
         } catch (BadLocationException e)
         {
             return null;
@@ -831,29 +832,23 @@ public class EditorUtil
         }
     }
 
-	public static boolean mapCurrentTLARegionToPCalRegion(final TLAtoPCalMapping mapping) throws BadLocationException {
-        /*
-         * Set newStartOfTranslation to be the best guess of the line number in the
-         * current contents of the editor that corresponds to what was line
-         * mapping.tlaStartLine when the algorithm was translated. 
-         * It is computed by assuming that neither the algorithm nor the translation
-         * have changed, but they both may have been moved down by the same 
-         * number delta of lines (possibly negative).  A more sophisticated approach 
-         * using fingerprints of lines could be used, requiring that the necessary 
-         * fingerprint information be put in TLAtoPCalMapping.
-         */
-		final IDocument document = getCurrentDocument();
-        final int beginAlgorithmLine = DocumentHelper.GetLineOfPCalAlgorithm(document);
-        if (beginAlgorithmLine == -1) {
-        	throw new BadLocationException("The algorithm is no longer in the module.");
-        }       
+	/**
+	 * @param mapping
+	 * @return
+	 * @throws BadLocationException
+	 */
+	public static boolean selectAndRevealPCalRegionFromCurrentTLARegion() throws BadLocationException {
 
-		// Translate editor location to pcal.Region
-		final Location location = EditorUtil.getCurrentLocation();
-        final pcal.Region tlaRegion = location.toRegion();
-		
-        final pcal.Region sourceRegion = mapping.mapTLAtoPCalRegion(tlaRegion,
-				beginAlgorithmLine);
+		final TLAtoPCalMapping mapping = getTLAEditorWithFocus().getTpMapping();
+		if (mapping == null) {
+			// no mapping for module, set status line
+			// TODO set status line
+			return false;
+		}
+
+		final IDocument document = getCurrentDocument();
+		final pcal.Region sourceRegion = AdapterFactory.jumptToPCal(mapping,
+				EditorUtil.getCurrentLocation(), document);
 		if (sourceRegion == null) {
 			// Cannot find a valid mapping for current selection
 			return false;
@@ -865,6 +860,7 @@ public class EditorUtil
 		 */
 		setReturnFromOpenDecl();
 
+		// Reveal the PCal source in the editor
 		getTLAEditorWithFocus().selectAndReveal(sourceRegion);
 		
 		return true;

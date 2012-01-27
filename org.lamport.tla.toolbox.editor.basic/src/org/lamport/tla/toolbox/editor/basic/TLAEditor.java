@@ -75,12 +75,14 @@ import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import pcal.PCalLocation;
+import pcal.TLAtoPCalMapping;
 
 /**
  * Basic editor for TLA+
@@ -780,6 +782,15 @@ public class TLAEditor extends TextEditor
 		final int length = endOffset - startOffset;
 		
 		selectAndReveal(startOffset, length);
+	}
+	
+	/**
+	 * @return The {@link TLAtoPCalMapping} for the current editor's content or
+	 *         <code>null</code> if none
+	 */
+	public TLAtoPCalMapping getTpMapping() {
+        final Spec spec = ToolboxHandle.getCurrentSpec();
+        return spec.getTpMapping(getModuleName() + ".tla");
 	}
 
 	/**

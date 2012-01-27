@@ -1,19 +1,11 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.widgets.Tree;
-import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -35,7 +27,7 @@ import tla2sany.st.Location;
  * @author Daniel Ricketts
  * 
  */
-public class ActionClickListener implements ISelectionChangedListener, MouseListener {
+public class ActionClickListener implements MouseListener {
 
 	private final Viewer viewer;
 
@@ -47,7 +39,7 @@ public class ActionClickListener implements ISelectionChangedListener, MouseList
 	 * @see org.eclipse.swt.events.MouseListener#mouseDoubleClick(org.eclipse.swt.events.MouseEvent)
 	 */
 	public void mouseDoubleClick(MouseEvent event) {
-		goToAction(viewer.getSelection(), (event.stateMask & SWT.ALT) != 0);
+		goToAction(viewer.getSelection(), (event.stateMask & SWT.CTRL) != 0);
 	}
 
 	/* (non-Javadoc)
@@ -60,18 +52,6 @@ public class ActionClickListener implements ISelectionChangedListener, MouseList
 	 */
 	public void mouseUp(MouseEvent e) {}
 
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
-	 */
-	public void selectionChanged(final SelectionChangedEvent event) {
-		goToAction(event.getSelection());
-	}
-	
-	private void goToAction(final ISelection selection) {
-		goToAction(selection, false);
-	}
-
 	private void goToAction(final ISelection selection, boolean jumpToPCal) {
 		if (selection != null && !selection.isEmpty()) {
 			if (selection instanceof StructuredSelection) {
@@ -82,9 +62,9 @@ public class ActionClickListener implements ISelectionChangedListener, MouseList
 				final Object firstElement = structuredSelection.getFirstElement();
 				if (firstElement instanceof IModuleLocatable) {
 					final IModuleLocatable moduleLocatable = (IModuleLocatable) firstElement;
-					final Location location = moduleLocatable.getModuleLocation();
+					Location location = moduleLocatable.getModuleLocation();
 					if (location != null) {
-						
+
 						/*
 						 * jumpToNested will be true if the location could be
 						 * shown in a nested saved module editor. If it is
@@ -95,7 +75,7 @@ public class ActionClickListener implements ISelectionChangedListener, MouseList
 										.getModelByName(moduleLocatable
 												.getModelName()));
 						if (!jumpedToNested) {
-							UIHelper.jumpToLocation(location);
+							UIHelper.jumpToLocation(location, jumpToPCal);
 						}
 					}
 				}

@@ -108,7 +108,11 @@ public final class Location
         eColumn = ec;
     }
 
-    /**
+    public Location(int bl, int bc, int el, int ec) {
+		this(null, bl, bc, el, ec);
+	}
+
+	/**
      * Factory method to create unknown locations in a given module
      * @param moduleName, string representation of the module name
      * @return a location

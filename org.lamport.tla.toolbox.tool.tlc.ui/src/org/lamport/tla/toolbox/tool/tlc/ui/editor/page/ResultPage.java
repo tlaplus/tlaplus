@@ -630,7 +630,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // create the viewer
         this.coverage = new TableViewer(stateTable);
 
-        coverage.addSelectionChangedListener(new ActionClickListener(this.coverage));
+        coverage.getTable().addMouseListener(new ActionClickListener(this.coverage));
 
         // create list-based content provider
         this.coverage.setContentProvider(new IStructuredContentProvider() {

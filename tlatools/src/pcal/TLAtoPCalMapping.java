@@ -92,13 +92,13 @@ public class TLAtoPCalMapping implements Serializable {
    * @param mapVec
    * @return
    */
-  public void  makeMapping(Vector mapVec) {
+  public void  makeMapping(Vector<Vector<MappingObject>> mapVec) {
      this.mapping = new MappingObject[mapVec.size()][] ;
       for (int i = 0 ; i < this.mapping.length; i++) {
-          Vector line = (Vector) mapVec.elementAt(i);
+          Vector<MappingObject> line = mapVec.elementAt(i);
           this.mapping[i] = new MappingObject[line.size()];
           for (int j = 0; j < line.size(); j++) {
-              this.mapping[i][j] = (MappingObject) line.elementAt(j);
+              this.mapping[i][j] = line.elementAt(j);
           }
       }
       return ;
@@ -205,6 +205,31 @@ public class TLAtoPCalMapping implements Serializable {
 
         return true;
 
+	}
+	
+    /**
+     * Returns the line number (zero based) of the line containing the first
+     * "--algorithm" or "--fair algorithm" token(s) that begin(s) a PlusCal algorithm. 
+     * Returns -1 if there is none.
+     */
+	public static int GetLineOfPCalAlgorithm(String moduleAsString) {
+		final int algorithmStringLocation = moduleAsString.indexOf(PcalParams.BeginAlg);
+		final int fairStringLocation = moduleAsString.indexOf(PcalParams.BeginFairAlg);
+		if (fairStringLocation == -1
+				|| ((algorithmStringLocation != -1) && (algorithmStringLocation < fairStringLocation))) {
+			return algorithmStringLocation;
+		}
+		int i = fairStringLocation + PcalParams.BeginFairAlg.length();
+		while (Character.isWhitespace(moduleAsString.charAt(i))) {
+			i++;
+		}
+		if ((i != fairStringLocation + PcalParams.BeginFairAlg.length())
+				&& (moduleAsString.startsWith(PcalParams.BeginFairAlg2, i))
+				&& !Character.isLetterOrDigit(moduleAsString.charAt(i + PcalParams.BeginFairAlg2.length()))) {
+			return fairStringLocation;
+		} else {
+			return algorithmStringLocation;
+		}
 	}
 
 /**
