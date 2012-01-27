@@ -560,7 +560,8 @@ The system property "TLA-Library" specifies an additional list
 of directories, separated by a path-separator (";" on Windows, ":" on Unix),
 in which SANY looks for modules (besides the spec's directory and the
 standard modules' directory).  The order of search seems to be (i) spec's
-directory, (ii) library directory, (iii) standard modules' directory.
+directory, (ii) library directories, in the order listed, (iii) standard modules' 
+directory.
 
 The Toolbox seems to call the parser from one of the multiple parseModule
 methods in ModuleParserLauncher.  It should be possible to add a list
