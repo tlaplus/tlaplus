@@ -11,17 +11,12 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.source.ISourceViewer;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.UIHelper;
 
-import pcal.PCalLocation;
 import pcal.TLAtoPCalMapping;
 
 /**
@@ -64,94 +59,15 @@ public class GotoPCalSourceHandler extends AbstractHandler implements IHandler {
             return null;
         }
         
-        
-        /*
-         * The following code finds the line and column numbers of the beginning and
-         * end of the selected region.  The code for getting that information was
-         * copied from GotoNextUseHandler.
-         */
-        ISourceViewer internalSourceViewer = tlaEditor.publicGetSourceViewer();
-        IDocument document = internalSourceViewer.getDocument();
-        ITextSelection selection = (ITextSelection) tlaEditor.getSelectionProvider().getSelection();
-        int selectionOffset = selection.getOffset();
-        int selectionLength = selection.getLength();
+		try {
+			EditorUtil.mapCurrentTLARegionToPCalRegion(mapping);
+		} catch (BadLocationException e) {
+			MessageDialog.openWarning(UIHelper.getShellProvider().getShell(),
+					"Cannot find PCal algorithm",
+					e.getMessage());
+		}
 
-        int selectionBeginLine;
-        int selectionBeginCol;
-        int selectionEndLine;
-        int selectionEndCol;
-        try
-        {
-            selectionBeginLine = document.getLineOfOffset(selectionOffset);
-            int offsetOfLine = document.getLineOffset(selectionBeginLine);
-            selectionBeginCol = selectionOffset - offsetOfLine;
-            selectionEndLine = document.getLineOfOffset(selectionOffset + selectionLength);
-            offsetOfLine = document.getLineOffset(selectionEndLine);
-            selectionEndCol = selectionOffset + selectionLength - offsetOfLine;
-        } catch (BadLocationException e)
-        {
-            System.out.println("Exception thrown in GotoPCalSourceHandler");
-            return null;
-        }
-        
-        /*
-         * Set newStartOfTranslation to be the best guess of the line number in the
-         * current contents of the editor that corresponds to what was line
-         * mapping.tlaStartLine when the algorithm was translated. 
-         * It is computed by assuming that neither the algorithm nor the translation
-         * have changed, but they both may have been moved down by the same 
-         * number delta of lines (possibly negative).  A more sophisticated approach 
-         * using fingerprints of lines could be used, requiring that the necessary 
-         * fingerprint information be put in TLAtoPCalMapping.
-         */
-        int beginAlgorithmLine = DocumentHelper.GetLineOfPCalAlgorithm(document);
-        if (beginAlgorithmLine == -1) {
-            MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), "Cannot find algorithm",
-                    "The algorithm is no longer in the module.");
-            return null ;
-        }       
-        int delta = beginAlgorithmLine - mapping.algLine ;
-        int newStartOfTranslation = mapping.tlaStartLine + delta;
-
-        /*
-         * Call TLAtoPCalMapping.ApplyMapping to find the PCal source, using
-         * the region tlaRegion obtained by adjusting the line numbers of the selected 
-         * region to be relative to newStartOfTranslation.
-         */
-        pcal.Region tlaRegion = 
-             new pcal.Region(new PCalLocation(selectionBeginLine - newStartOfTranslation,
-                                              selectionBeginCol),
-                             new PCalLocation(selectionEndLine - newStartOfTranslation,
-                                              selectionEndCol));
-
-        pcal.Region sourceRegion = 
-               TLAtoPCalMapping.ApplyMapping(mapping, tlaRegion);
-        if (sourceRegion == null) {
-            return null;
-        }
-        
-        try {
-            int sourceStartLoc = 
-                    document.getLineOffset(sourceRegion.getBegin().getLine() + delta) 
-                      + sourceRegion.getBegin().getColumn();
-            int sourceEndLoc = 
-                    document.getLineOffset(sourceRegion.getEnd().getLine() + delta) 
-                    + sourceRegion.getEnd().getColumn();
-            
-            /*
-             * The following command makes executing ReturnFromOpenDecl (F4) return
-             *  to the selected location.
-             */
-            EditorUtil.setReturnFromOpenDecl();
-            
-            tlaEditor.selectAndReveal(sourceStartLoc, sourceEndLoc - sourceStartLoc);
-                    
-        } catch (BadLocationException e) {
-            System.out.println("Bad Location for source region.");
-            e.printStackTrace();
-            return null;
-        }
-        return null;
+		return null;
     }
 
     /** 

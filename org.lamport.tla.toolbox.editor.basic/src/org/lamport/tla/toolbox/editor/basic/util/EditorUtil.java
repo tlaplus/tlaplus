@@ -25,6 +25,7 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import pcal.TLAtoPCalMapping;
 import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.AssumeProveNode;
@@ -327,20 +328,23 @@ public class EditorUtil
      */
     public static Location getCurrentLocation()
     {
+        ITextSelection selection = getCurrentSelection();
+		return getLocationAt(getCurrentDocument(), selection.getOffset(), selection.getLength());
+    }
+    
+    private static IDocument getCurrentDocument() {
         TLAEditor editor = getTLAEditorWithFocus();
         // editor shouldn't be null, but just in case...
         if (editor == null)
         {
             return null;
         }
-        IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-        ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
-        // selection shouldn't be null, but just in case...
-        if (selection == null)
-        {
-            return null;
-        }
-        return getLocationAt(document, selection.getOffset(), selection.getLength());
+        return editor.getDocumentProvider().getDocument(editor.getEditorInput());
+    }
+    
+    private static ITextSelection getCurrentSelection() {
+        TLAEditor editor = getTLAEditorWithFocus();
+        return (ITextSelection) editor.getSelectionProvider().getSelection();
     }
 
     public static Location getLocationAt(IDocument document, int offset, int length)
@@ -408,7 +412,6 @@ public class EditorUtil
             SymbolNode defaultResult)
     {
         SymbolNode foundSymbol = null;
-        boolean notDone = true;
         if (curNode instanceof ModuleNode)
         {
             foundSymbol = ((ModuleNode) curNode).getContext().getSymbol(name);
@@ -827,4 +830,43 @@ public class EditorUtil
             return "[string |-> " + this.string + ", location |-> " + this.location.toString() + "]";
         }
     }
+
+	public static boolean mapCurrentTLARegionToPCalRegion(final TLAtoPCalMapping mapping) throws BadLocationException {
+        /*
+         * Set newStartOfTranslation to be the best guess of the line number in the
+         * current contents of the editor that corresponds to what was line
+         * mapping.tlaStartLine when the algorithm was translated. 
+         * It is computed by assuming that neither the algorithm nor the translation
+         * have changed, but they both may have been moved down by the same 
+         * number delta of lines (possibly negative).  A more sophisticated approach 
+         * using fingerprints of lines could be used, requiring that the necessary 
+         * fingerprint information be put in TLAtoPCalMapping.
+         */
+		final IDocument document = getCurrentDocument();
+        final int beginAlgorithmLine = DocumentHelper.GetLineOfPCalAlgorithm(document);
+        if (beginAlgorithmLine == -1) {
+        	throw new BadLocationException("The algorithm is no longer in the module.");
+        }       
+
+		// Translate editor location to pcal.Region
+		final Location location = EditorUtil.getCurrentLocation();
+        final pcal.Region tlaRegion = location.toRegion();
+		
+        final pcal.Region sourceRegion = mapping.mapTLAtoPCalRegion(tlaRegion,
+				beginAlgorithmLine);
+		if (sourceRegion == null) {
+			// Cannot find a valid mapping for current selection
+			return false;
+		}
+
+		/*
+		 * The following command makes executing ReturnFromOpenDecl (F4) return
+		 * to the selected location.
+		 */
+		setReturnFromOpenDecl();
+
+		getTLAEditorWithFocus().selectAndReveal(sourceRegion);
+		
+		return true;
+	}
 }

@@ -80,6 +80,8 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import pcal.PCalLocation;
+
 /**
  * Basic editor for TLA+
  *
@@ -759,7 +761,28 @@ public class TLAEditor extends TextEditor
         super.dispose();
     }
 
-    /**
+    /* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.AbstractTextEditor#selectAndReveal(int, int)
+	 */
+	public void selectAndReveal(final pcal.Region aRegion) throws BadLocationException {
+		final IDocument document = getDocumentProvider().getDocument(
+				getEditorInput());
+
+		// Translate pcal.Region coordinates into Java IDocument coordinates
+		final PCalLocation begin = aRegion.getBegin();
+		final int startLineOffset = document.getLineOffset(begin.getLine());
+		final int startOffset = startLineOffset + begin.getColumn();
+		
+		final PCalLocation end = aRegion.getEnd();
+		final int endLineOffset = document.getLineOffset(end.getLine());
+		final int endOffset = endLineOffset + end.getColumn();
+
+		final int length = endOffset - startOffset;
+		
+		selectAndReveal(startOffset, length);
+	}
+
+	/**
      * Gets the module name from the name of the file that
      * this editor is editing.
      *  
