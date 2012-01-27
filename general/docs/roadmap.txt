@@ -588,6 +588,16 @@ and then calls
       getString(IPreferenceConstants.SOME_NAME_FOR_THE_PREFERENCE);  
 
 If this doesn't work, see the TranslatorJob constructor.
+
+Note: The method ...toolbox.spec.Module.isStandardModule is currently used 
+to determine if something is a standard module, and to eliminate it from 
+some things shown to the user if it isn't.  I suspect that many things will 
+break if the Toolbox tries to access any file not in the spec's directory--which
+includes library files.  I think that this will have to be modified
+to return true for a library module.  Figuring out how to do that
+will probably require debugging to see what path names are returned
+by the class's getAbsolutePath method and how they compare with
+the library folder names.
 ----------------------------------------------------------------------
 HOW TO GET A...
   SpecObj
