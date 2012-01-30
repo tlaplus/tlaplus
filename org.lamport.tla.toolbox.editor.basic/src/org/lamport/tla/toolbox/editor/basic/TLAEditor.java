@@ -13,6 +13,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -79,6 +80,7 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
+import org.lamport.tla.toolbox.util.TLAtoPCalMarker;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import pcal.PCalLocation;
@@ -791,6 +793,32 @@ public class TLAEditor extends TextEditor
 	public TLAtoPCalMapping getTpMapping() {
         final Spec spec = ToolboxHandle.getCurrentSpec();
         return spec.getTpMapping(getModuleName() + ".tla");
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#gotoMarker(org.eclipse.core.resources.IMarker)
+	 */
+	public void gotoMarker(final IMarker marker) {
+		// if the given marker happens to be of instance TLAtoPCalMarker, it
+		// indicates that the user wants to go to the PCal equivalent of the
+		// current TLA+ marker
+		if (marker instanceof TLAtoPCalMarker) {
+			final TLAtoPCalMarker tlaToPCalMarker = (TLAtoPCalMarker) marker;
+			try {
+				final pcal.Region region = tlaToPCalMarker.getRegion();
+				if (region != null) {
+					selectAndReveal(region);
+					return;
+				}
+			} catch (BadLocationException e) {
+				// not expected to happen
+				e.printStackTrace();
+			}
+		}
+		
+		// fall back to original marker if the TLAtoPCalMarker didn't work or no
+		// TLAtoPCalMarker
+		super.gotoMarker(marker);
 	}
 
 	/**

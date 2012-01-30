@@ -83,7 +83,7 @@ public class ProblemView extends ViewPart
                     // goto marker on click
                     public void handleEvent(Event event)
                     {
-                        TLAMarkerHelper.gotoMarker(problem);
+                        TLAMarkerHelper.gotoMarker(problem, ((event.stateMask & SWT.CTRL) != 0));
                     }
                 };
 

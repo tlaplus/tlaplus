@@ -304,10 +304,19 @@ public class TLAMarkerHelper
     }
 
     /**
-     * Opens the TLA+ Editor and goes to the marker
-     * @param problem
+     * @see TLAMarkerHelper#gotoMarker(IMarker, boolean)
      */
     public static void gotoMarker(IMarker problem)
+    {
+    	gotoMarker(problem, false);
+    }
+    
+    /**
+     * Opens the TLA+ Editor and goes to the marker
+     * @param problem
+     * @param jumpToPcal 
+     */
+    public static void gotoMarker(IMarker problem, boolean jumpToPcal)
     {
         if (problem.getResource() instanceof IFile)
         {
@@ -323,6 +332,9 @@ public class TLAMarkerHelper
             }
             if (gotoMarker != null)
             {
+            	if (jumpToPcal) {
+            		problem = new TLAtoPCalMarker(problem);
+            	}
                 gotoMarker.gotoMarker(problem);
             }
         } else
