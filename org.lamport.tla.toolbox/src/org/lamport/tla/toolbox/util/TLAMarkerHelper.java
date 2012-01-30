@@ -129,56 +129,70 @@ public class TLAMarkerHelper
                 marker.setAttribute(LOCATION_BEGINCOLUMN, coordinates[1]);
                 marker.setAttribute(LOCATION_ENDLINE, coordinates[2]);
                 marker.setAttribute(LOCATION_ENDCOLUMN, coordinates[3]);
+                
+                final IMarker fMarker = marker;
 
                 // important! either use line numbers (for creation of a single line marker)
                 // or char_start/char_end (to create exact markers, even multi-line)
-                if (coordinates[0] == coordinates[3] || coordinates[3] == -1)
-                {
-                    marker.setAttribute(IMarker.LINE_NUMBER, coordinates[0]);
-                } else
-                {
-                    // retrieve the resource
-                    IDocument document = null;
-
-                    // since we know that the editor uses file based editor representation
-                    FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
-                    FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-                    try
-                    {
-                        fileDocumentProvider.connect(fileEditorInput);
-                        document = fileDocumentProvider.getDocument(fileEditorInput);
-                    } finally
-                    {
-                        /*
-                         * Once the document has been retrieved, the document provider is
-                         * not needed. Always disconnect it to avoid a memory leak.
-                         * 
-                         * Keeping it connected only seems to provide synchronization of
-                         * the document with file changes. That is not necessary in this context.
-                         */
-                        fileDocumentProvider.disconnect(fileEditorInput);
-                    }
-                    if (document != null)
-                    {
-                        try
-                        {
-                            // find the line in the document
-                            IRegion lineRegion = document.getLineInformation(coordinates[0] - 1);
-
-                            // get the text representation of the line
-                            String textLine = document.get(lineRegion.getOffset(), lineRegion.getLength());
-
-                            marker.setAttribute(IMarker.CHAR_START, lineRegion.getOffset()
-                                    + getRealOffset(textLine, coordinates[1] - 1));
-                            marker.setAttribute(IMarker.CHAR_END, lineRegion.getOffset()
-                                    + getRealOffset(textLine, coordinates[3]));
-
-                        } catch (BadLocationException e)
-                        {
-                            Activator.logError("Error accessing the specified error location", e);
-                        }
-                    }
-                }
+                UIHelper.runUISync(new Runnable() {
+					/* (non-Javadoc)
+					 * @see java.lang.Runnable#run()
+					 */
+					public void run() {
+						try {
+							
+							if (coordinates[0] == coordinates[3] || coordinates[3] == -1)
+							{
+								fMarker.setAttribute(IMarker.LINE_NUMBER, coordinates[0]);
+							} else
+							{
+								// retrieve the resource
+								IDocument document = null;
+								
+								// since we know that the editor uses file based editor representation
+								FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
+								FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+								try
+								{
+									fileDocumentProvider.connect(fileEditorInput);
+									document = fileDocumentProvider.getDocument(fileEditorInput);
+								} finally
+								{
+									/*
+									 * Once the document has been retrieved, the document provider is
+									 * not needed. Always disconnect it to avoid a memory leak.
+									 * 
+									 * Keeping it connected only seems to provide synchronization of
+									 * the document with file changes. That is not necessary in this context.
+									 */
+									fileDocumentProvider.disconnect(fileEditorInput);
+								}
+								if (document != null)
+								{
+									try
+									{
+										// find the line in the document
+										IRegion lineRegion = document.getLineInformation(coordinates[0] - 1);
+										
+										// get the text representation of the line
+										String textLine = document.get(lineRegion.getOffset(), lineRegion.getLength());
+										
+										fMarker.setAttribute(IMarker.CHAR_START, lineRegion.getOffset()
+												+ getRealOffset(textLine, coordinates[1] - 1));
+										fMarker.setAttribute(IMarker.CHAR_END, lineRegion.getOffset()
+												+ getRealOffset(textLine, coordinates[3]));
+										
+									} catch (BadLocationException e)
+									{
+										Activator.logError("Error accessing the specified error location", e);
+									}
+								}
+						}
+		                } catch (CoreException e) {
+							Activator.logError("Error accessing the specified error location", e);
+		                }
+					}
+                });
             }
         };
         try

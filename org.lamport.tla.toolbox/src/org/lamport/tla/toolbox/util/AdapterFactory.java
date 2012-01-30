@@ -18,6 +18,7 @@ import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 
+import pcal.TLAtoPCalMapping;
 import tla2sany.st.Location;
 
 /**
@@ -363,13 +364,13 @@ public class AdapterFactory implements IAdapterFactory
      * @return a list of module names (Strings) containing all modules from the <code>userModule</code> argument, 
      *         excluding the module specified by the <code>name</code> argument    
      */
-    public static List adaptModules(String name, List userModules)
+    public static List<String> adaptModules(String name, List<Module> userModules)
     {
-        Vector dependents = new Vector(userModules.size());
+        Vector<String> dependents = new Vector<String>(userModules.size());
         // iterate over all modules
         for (int i = 0; i < userModules.size(); i++)
         {
-            Module module = (Module) userModules.get(i);
+            Module module = userModules.get(i);
             if (!module.getFile().getName().equals(name))
             {
                 // add the module name iff the name is not matching the one provided in the name argument
@@ -377,6 +378,66 @@ public class AdapterFactory implements IAdapterFactory
             }
         }
         return dependents;
+    }
+    
+    public static pcal.Region jumptToPCal(TLAtoPCalMapping mapping, Location location, IDocument document) throws BadLocationException {
+        /*
+         * Get the best guess of the line number in the
+         * current contents of the editor that corresponds to what was line
+         * mapping.tlaStartLine when the algorithm was translated. 
+         * It is computed by assuming that neither the algorithm nor the translation
+         * have changed, but they both may have been moved down by the same 
+         * number delta of lines (possibly negative).  A more sophisticated approach 
+         * using fingerprints of lines could be used, requiring that the necessary 
+         * fingerprint information be put in TLAtoPCalMapping.
+         */
+        int beginAlgorithmLine = AdapterFactory.GetLineOfPCalAlgorithm(document);
+        if (beginAlgorithmLine == -1) {
+        	throw new BadLocationException("The algorithm is no longer in the module.");
+        }
+
+		// Translate editor location to pcal.Region
+        final pcal.Region tlaRegion = location.toRegion();
+		
+        // Do actual mapping
+        return mapping.mapTLAtoPCalRegion(tlaRegion,
+				beginAlgorithmLine);
+    }
+    
+    /**
+     * Returns the line number (in Java coordinates/zero based) of the line containing the first
+     * "--algorithm" or "--fair algorithm" token(s) that begin(s) a PlusCal algorithm. 
+     * Returns -1 if there is none.
+     * 
+     * @param document
+     * @return
+     */
+    public static int GetLineOfPCalAlgorithm(IDocument document) {
+		try {
+			final String moduleAsString = document.get();
+			return LocationToLine(document,
+					TLAtoPCalMapping.GetLineOfPCalAlgorithm(moduleAsString));
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return -1;
+    }
+
+    /** 
+     * If location = -1, then it returns -1.  Else it returns the number of the line with
+     * this location.
+     * @param document
+     * @param location
+     * @return
+     * @throws BadLocationException
+     */
+    private static int LocationToLine(IDocument document, int location) throws BadLocationException {
+        if (location == -1) {
+            return -1;
+        } else {
+            return document.getLineOfOffset(location);
+        }
     }
 
 }

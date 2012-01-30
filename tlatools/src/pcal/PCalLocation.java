@@ -32,9 +32,17 @@ public class PCalLocation implements Serializable {
 	public int getLine() {
 		return line;
 	}
+	
+	public void adjustLineBy(int l) {
+		line -= l;
+	}
 
 	public int getColumn() {
 		return column;
+	}
+	
+	public int getOffset() {
+		return line + column;
 	}
 	
 	public String toString() {

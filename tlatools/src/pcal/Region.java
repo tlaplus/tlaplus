@@ -7,6 +7,8 @@ package pcal;
 
 import java.io.Serializable;
 
+import tla2sany.st.Location;
+
 public class Region implements Serializable {
 
     /**
@@ -96,5 +98,10 @@ public class Region implements Serializable {
 		} else if (!end.equals(other.end))
 			return false;
 		return true;
+	}
+
+	public Location toLocation() {
+		return new Location(begin.getLine() + 1, begin.getColumn() + 1,
+				end.getLine() + 1, end.getColumn() + 1);
 	}
 }
