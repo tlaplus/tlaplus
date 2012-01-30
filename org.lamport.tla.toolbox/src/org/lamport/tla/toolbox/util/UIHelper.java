@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.IconAndMessageDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -26,7 +27,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.IShellProvider;
@@ -44,11 +47,13 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -827,8 +832,13 @@ public class UIHelper
 								final TLAtoPCalMapping mapping = ToolboxHandle
 										.getCurrentSpec().getTpMapping(
 												location.source() + ".tla");
-								location = AdapterFactory.jumptToPCal(mapping,
-										location, document).toLocation();
+								if (mapping != null) {
+									location = AdapterFactory.jumptToPCal(mapping,
+											location, document).toLocation();
+								} else {
+									setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
+									return;
+								}
                             }
                             // we now need to convert the four coordinates of the location
                             // to an offset and length
@@ -1135,5 +1145,60 @@ public class UIHelper
 	 */
 	public static IEditorPart getActiveEditor() {
 		return getActivePage().getActiveEditor();
+	}
+	
+	/**
+	 * Tries to set the given message on the workbench's status line. This is a
+	 * best effort method which fails to set the status line if there is no
+	 * active editor present from where the statuslinemanager can be looked up.
+	 * 
+	 * @param msg
+	 *            The message to be shown on the status line
+	 */
+	public static void setStatusLineMessage(final String msg) {
+		IStatusLineManager statusLineManager = null;
+		ISelectionProvider selectionService = null;
+		
+		// First try to get the StatusLineManager from the IViewPart and only
+		// resort back to the editor if a view isn't active right now.
+		final IWorkbenchPart workbenchPart = getActiveWindow().getActivePage().getActivePart();
+		if (workbenchPart instanceof IViewPart) {
+			final IViewPart viewPart = (IViewPart) workbenchPart;
+			statusLineManager = viewPart.getViewSite().getActionBars().getStatusLineManager();
+			selectionService = viewPart.getViewSite().getSelectionProvider();
+		} else if (getActiveEditor() != null) {
+			final IEditorSite editorSite = getActiveEditor().getEditorSite();
+			statusLineManager = editorSite.getActionBars().getStatusLineManager();
+			selectionService = editorSite.getSelectionProvider();
+		}
+
+		if (statusLineManager != null && selectionService != null) {
+			statusLineManager.setMessage(msg);
+			selectionService.addSelectionChangedListener(new StatusLineMessageEraser(statusLineManager, selectionService));
+		}
+	}
+
+	/**
+	 * An StatusLineMessageEraser is a {@link ISelectionChangedListener} that removes a status line message.
+	 */
+	private static class StatusLineMessageEraser implements ISelectionChangedListener {
+
+		private final IStatusLineManager statusLineManager;
+		private final ISelectionProvider selectionService;
+
+		private StatusLineMessageEraser(final IStatusLineManager statusLineManager, ISelectionProvider ss) {
+			this.statusLineManager = statusLineManager;
+			this.selectionService = ss;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
+		 */
+		public void selectionChanged(SelectionChangedEvent event) {
+			// Ideally we would verify that the current status line is indeed showing the very 
+			// message we are about to remove, but the Eclipse API doesn't allow you do get the current string.
+			statusLineManager.setMessage(null);
+			selectionService.removeSelectionChangedListener(this);
+		}
 	}
 }

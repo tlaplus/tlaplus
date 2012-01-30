@@ -444,6 +444,7 @@ public class TLCErrorView extends ViewPart
         variableViewer.setContentProvider(new StateContentProvider());
         variableViewer.setFilters(new ViewerFilter[] { new StateFilter() });
         variableViewer.setLabelProvider(new StateLabelProvider());
+        getSite().setSelectionProvider(variableViewer);
 
         variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer));
 

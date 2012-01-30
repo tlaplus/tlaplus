@@ -591,6 +591,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         });
 
         this.stateSpace.setLabelProvider(new StateSpaceLabelProvider());
+        getSite().setSelectionProvider(this.stateSpace);
         return statespaceComposite;
     }
 
@@ -653,6 +654,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         });
 
         this.coverage.setLabelProvider(new CoverageLabelProvider());
+        
+        getSite().setSelectionProvider(this.coverage);
+        
         return coverageComposite;
     }
 
