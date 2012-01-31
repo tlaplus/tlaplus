@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.editor.basic;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
@@ -24,7 +25,7 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     /* document to reconciler */
     private IDocument document;
     /* holds the calculated positions */
-    protected final ArrayList positions = new ArrayList();
+    protected final List<Position> positions = new ArrayList<Position>();
     /* editor to be updated */
     private TLAEditor editor;
 
