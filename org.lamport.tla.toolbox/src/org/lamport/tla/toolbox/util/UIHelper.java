@@ -325,7 +325,17 @@ public class UIHelper
 		final IWorkbenchPage activePage = getActivePage();
 		if (activePage != null) {
 			try {
-				return activePage.openEditor(input, editorId);
+
+				final IEditorPart openEditor = activePage.openEditor(input, editorId);
+				
+				// Trigger re-evaluation of the handler enablement state by
+				// cycling the activepage. Cycling the active page causes an
+				// event to be fired inside the selection service.
+				// During this time, there will be no active page!
+				getActiveWindow().setActivePage(null);
+				getActiveWindow().setActivePage(activePage);
+
+				return openEditor;
 			} catch (PartInitException e) {
 				e.printStackTrace();
 			}
