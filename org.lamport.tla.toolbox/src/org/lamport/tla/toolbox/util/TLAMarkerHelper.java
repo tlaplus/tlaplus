@@ -20,7 +20,12 @@ import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
+
+import pcal.TLAtoPCalMapping;
+
+import tla2sany.st.Location;
 
 /**
  * Marker helpers
@@ -49,6 +54,10 @@ public class TLAMarkerHelper
      * Module name (different from the generally use filename)
      */
     public static final String LOCATION_MODULENAME = "toolbox.location.modulename";
+    /**
+     * {@link Location} the {@link IMarker} is a marker for 
+     */
+    public static final String LOCATION = "toolbox.region";
 
     /**
      * Supertype for all problem markers
@@ -129,6 +138,9 @@ public class TLAMarkerHelper
                 marker.setAttribute(LOCATION_BEGINCOLUMN, coordinates[1]);
                 marker.setAttribute(LOCATION_ENDLINE, coordinates[2]);
                 marker.setAttribute(LOCATION_ENDCOLUMN, coordinates[3]);
+                
+                // Create a SANY location from the given location attributes
+				marker.setAttribute(LOCATION, new Location(coordinates));
                 
                 final IMarker fMarker = marker;
 
@@ -333,7 +345,14 @@ public class TLAMarkerHelper
             if (gotoMarker != null)
             {
             	if (jumpToPcal) {
-            		problem = new TLAtoPCalMarker(problem);
+            		final String moduleName = module.getName();
+            		final TLAtoPCalMapping mapping = ToolboxHandle.getCurrentSpec().getTpMapping(moduleName);
+            		if (mapping != null) {
+            			problem = new TLAtoPCalMarker(problem, mapping);
+            		} else {
+            			UIHelper.setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
+            			return;
+            		}
             	}
                 gotoMarker.gotoMarker(problem);
             }

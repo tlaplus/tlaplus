@@ -809,6 +809,8 @@ public class TLAEditor extends TextEditor
 				if (region != null) {
 					selectAndReveal(region);
 					return;
+				} else {
+					UIHelper.setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
 				}
 			} catch (BadLocationException e) {
 				// not expected to happen

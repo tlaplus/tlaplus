@@ -9,15 +9,18 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.texteditor.MarkerUtilities;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.eclipse.jface.action.IAction;
 
 import pcal.TLAtoPCalMapping;
+import tla2sany.st.Location;
 
 /**
  * A {@link TLAtoPCalMarker} wraps the given {@link IMarker} and provides
  * functionality to map from the TLA+ location the {@link IMarker} points to, to
  * its logical equivalent PCal code.
+ * <p>
+ * Additionally it is used by the UI (e.g. an {@link IAction}) to indicate to
+ * lower layers that they should not link to TLA+, but to PCal.
  * 
  * @author Markus Alexander Kuppe
  */
@@ -26,36 +29,32 @@ public class TLAtoPCalMarker implements IMarker {
 	private final IMarker delegate;
 	private final TLAtoPCalMapping mapping;
 
-	public TLAtoPCalMarker(final IMarker delegate) {
+	public TLAtoPCalMarker(final IMarker delegate, TLAtoPCalMapping mapping) {
 		Assert.isLegal(delegate.getResource() instanceof IFile);
 		this.delegate = delegate;
-		
-		final String moduleName = delegate.getResource().getName();
-		this.mapping = ToolboxHandle.getCurrentSpec().getTpMapping(moduleName);
 		Assert.isNotNull(mapping);
+		this.mapping = mapping;
 	}
 
 	/**
-	 * @return The {@link pcal.Region} corresponding to this {@link TLAtoPCalMarker}.
+	 * @return The {@link pcal.Region} corresponding to this
+	 *         {@link TLAtoPCalMarker}. Returns <code>null</code>, if no
+	 *         corresponding PCal code can be found.
 	 */
 	public pcal.Region getRegion() {
-		final pcal.Region region = markerToRegion();
+		pcal.Region region;
+		try {
+			Location location = (Location) delegate.getAttribute(TLAMarkerHelper.LOCATION);
+			region = location.toRegion();
+		} catch (CoreException e) {
+			// may not happen! (return null in this case which client code has
+			// to handle anyway)
+			e.printStackTrace();
+			return null;
+		}
 		final int offset = AdapterFactory.GetLineOfPCalAlgorithm((IFile) delegate.getResource());
 		return mapping.mapTLAtoPCalRegion(region, offset);
 	}
-	
-    /**
-     * @return A {@link pcal.Region} that is the logical equivalent to this TLA+ {@link IMarker} location.
-     */
-    private pcal.Region markerToRegion() {
-		// toolbox.location.* string keys come from plugin.xml files
-		final int charStart = delegate.getAttribute("toolbox.location.begincolumn", 0);
-		final int charEnd = delegate.getAttribute("toolbox.location.endcolumn", 0);
-		final int lineNumber = MarkerUtilities.getLineNumber(delegate);
-
-		// translate from 1-based offset to 0-based one
-		return new pcal.Region(lineNumber - 1, charStart - 1, (charEnd - 1) - (charStart - 1));
-    }
 	
 	/**
 	 * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)

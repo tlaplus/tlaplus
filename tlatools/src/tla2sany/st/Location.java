@@ -2,12 +2,15 @@
 package tla2sany.st;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import pcal.PCalLocation;
 import pcal.Region;
 
+import tlc2.output.EC;
+import util.Assert;
 import util.UniqueString;
 
 /**
@@ -110,6 +113,31 @@ public final class Location
 
     public Location(int bl, int bc, int el, int ec) {
 		this(null, bl, bc, el, ec);
+	}
+
+	
+	/**
+	 * @param coordinates
+	 *            An int array of size 4 with 0-based coordinates: 0=beginLine,
+	 *            1=beginColum, 2=endLine, 3=endColumn. 2 & 3 may be smaller
+	 *            than 1 & 2, in which case they get set to 1 & 2.
+	 */
+	public Location(final int[] coordinates) {
+		Assert.check(coordinates != null && coordinates.length == 4, EC.GENERAL);
+
+        bLine = coordinates[0];
+        bColumn = coordinates[1];
+
+        eLine = coordinates[2];
+		eColumn = coordinates[3];
+		
+		if (eLine < bLine) {
+			eLine = bLine;
+		}
+		
+		if (eColumn < bColumn) {
+			eColumn = bColumn;
+		}
 	}
 
 	/**
@@ -215,7 +243,7 @@ public final class Location
          * The Toolbox does not support generics,
          * so generics cannot be used here.
          */
-        ArrayList locations = new ArrayList();
+        List<Location> locations = new ArrayList<Location>();
         /*
          * For each Pattern defined in this class, we find
          * all matches of the pattern and add this to the list

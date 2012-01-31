@@ -841,8 +841,7 @@ public class EditorUtil
 
 		final TLAtoPCalMapping mapping = getTLAEditorWithFocus().getTpMapping();
 		if (mapping == null) {
-			// no mapping for module, set status line
-			// TODO set status line
+			UIHelper.setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
 			return false;
 		}
 

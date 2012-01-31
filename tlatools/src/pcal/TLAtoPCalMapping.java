@@ -891,9 +891,9 @@ public class TLAtoPCalMapping implements Serializable {
    * @param mappingVec
    * @return
    */
-  public static Vector RemoveRedundantParens(Vector mappingVec) {
-      Vector out = new Vector();            // Vector of Vectors of MappingObjects
-      Vector unmatchedLeft = new Vector();  
+  public static Vector<Vector<MappingObject>> RemoveRedundantParens(Vector<Vector<MappingObject>> mappingVec) {
+      Vector<Vector<MappingObject>> out = new Vector<Vector<MappingObject>>(); // Vector of Vectors of MappingObjects
+      Vector<PCalLocation> unmatchedLeft = new Vector<PCalLocation>();  
          // Vector of PCalLocations in out of unmatched LeftParen objects
       PCalLocation lastMatchedLeft = null;
         // position in out of last LeftParen object that was matched by
@@ -901,12 +901,12 @@ public class TLAtoPCalMapping implements Serializable {
       PCalLocation lastAddedRight = null;
       int i = 0 ;
       while (i < mappingVec.size()) {
-          Vector inLine = (Vector) mappingVec.elementAt(i);
-          Vector outLine = new Vector();
+          Vector<MappingObject> inLine = mappingVec.elementAt(i);
+          Vector<MappingObject> outLine = new Vector<MappingObject>();
           out.addElement(outLine);
           int j = 0 ;
           while (j < inLine.size()) {
-              MappingObject inObj = (MappingObject) inLine.elementAt(j); 
+              MappingObject inObj = inLine.elementAt(j); 
               if (inObj.getType() == MappingObject.LEFT_PAREN) {
                 /*
                  * Bug in translating algorithm.  The following statement was
@@ -922,29 +922,29 @@ public class TLAtoPCalMapping implements Serializable {
                   PCalLocation lastUnmatchedLeft = null ;
                   if (unmatchedLeft.size() != 0) {
                       lastUnmatchedLeft = 
-                        (PCalLocation) unmatchedLeft.elementAt(unmatchedLeft.size()-1);
+                        unmatchedLeft.elementAt(unmatchedLeft.size()-1);
                   }
                   if (   IsNextIn(lastAddedRight, 
                                   new PCalLocation(i, j),
                                   mappingVec)
                       && IsNextIn(lastUnmatchedLeft, lastMatchedLeft,  out)    
                       ) {
-                      ((Vector) out.elementAt(lastMatchedLeft.getLine()))
+                      (out.elementAt(lastMatchedLeft.getLine()))
                           .remove(lastMatchedLeft.getColumn());
                       /*
                        * Set lastLine to the last non-empty line of out, then
                        * delete its last element.
                        */
-                      Vector lastLine = outLine;
+                      Vector<MappingObject> lastLine = outLine;
                       int lastLineNum = out.size()-1;
                       while (lastLine.size() == 0) {
                           lastLineNum--;
-                          lastLine = (Vector) out.elementAt(lastLineNum);
+                          lastLine = out.elementAt(lastLineNum);
                       }
                       lastLine.remove(lastLine.size()-1);
                   }
                   lastMatchedLeft = 
-                     (PCalLocation) unmatchedLeft.remove(unmatchedLeft.size()-1);
+                     unmatchedLeft.remove(unmatchedLeft.size()-1);
                   lastAddedRight = new PCalLocation(i, j);
               }
               
@@ -968,14 +968,14 @@ public class TLAtoPCalMapping implements Serializable {
    * @param vec
    * @return
    */
-  private static boolean IsNextIn(PCalLocation locA, PCalLocation locB, Vector vec) {
+  private static boolean IsNextIn(PCalLocation locA, PCalLocation locB, Vector<Vector<MappingObject>> vec) {
       return     (locA != null)
               && (locB != null)
               && (   (   (locA.getLine() == locB.getLine())
                       && (locA.getColumn()+1 == locB.getColumn())
                      )
                   || (   (locA.getLine() == locB.getLine()-1)
-                      && (locA.getColumn() == ((Vector) vec.elementAt(locA.getLine())).size())
+                      && (locA.getColumn() == vec.elementAt(locA.getLine()).size())
                       && (locB.getColumn() == 0)
                      )
                  );
