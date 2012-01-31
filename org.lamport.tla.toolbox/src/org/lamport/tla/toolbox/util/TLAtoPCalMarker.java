@@ -15,6 +15,10 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import pcal.TLAtoPCalMapping;
 
 /**
+ * A {@link TLAtoPCalMarker} wraps the given {@link IMarker} and provides
+ * functionality to map from the TLA+ location the {@link IMarker} points to, to
+ * its logical equivalent PCal code.
+ * 
  * @author Markus Alexander Kuppe
  */
 public class TLAtoPCalMarker implements IMarker {
@@ -22,30 +26,38 @@ public class TLAtoPCalMarker implements IMarker {
 	private final IMarker delegate;
 	private final TLAtoPCalMapping mapping;
 
-	public TLAtoPCalMarker(IMarker delegate) {
+	public TLAtoPCalMarker(final IMarker delegate) {
 		Assert.isLegal(delegate.getResource() instanceof IFile);
 		this.delegate = delegate;
-		this.mapping = ToolboxHandle.getCurrentSpec().getTpMapping(delegate.getResource().getName());
+		
+		final String moduleName = delegate.getResource().getName();
+		this.mapping = ToolboxHandle.getCurrentSpec().getTpMapping(moduleName);
 		Assert.isNotNull(mapping);
 	}
 
+	/**
+	 * @return The {@link pcal.Region} corresponding to this {@link TLAtoPCalMarker}.
+	 */
 	public pcal.Region getRegion() {
-		final pcal.Region region = markerToRegion(delegate);
+		final pcal.Region region = markerToRegion();
 		final int offset = AdapterFactory.GetLineOfPCalAlgorithm((IFile) delegate.getResource());
 		return mapping.mapTLAtoPCalRegion(region, offset);
 	}
 	
-    private pcal.Region markerToRegion(final IMarker marker) {
-		final int lineNumber = MarkerUtilities.getLineNumber(marker) - 1;
-		// string keys come from plugin.xml files
-		final int charStart = marker.getAttribute("toolbox.location.begincolumn", 0) - 1;
-		final int charEnd = marker.getAttribute("toolbox.location.endcolumn", 0) - 1;
-		return new pcal.Region(lineNumber, charStart, charEnd - charStart);
+    /**
+     * @return A {@link pcal.Region} that is the logical equivalent to this TLA+ {@link IMarker} location.
+     */
+    private pcal.Region markerToRegion() {
+		// toolbox.location.* string keys come from plugin.xml files
+		final int charStart = delegate.getAttribute("toolbox.location.begincolumn", 0);
+		final int charEnd = delegate.getAttribute("toolbox.location.endcolumn", 0);
+		final int lineNumber = MarkerUtilities.getLineNumber(delegate);
+
+		// translate from 1-based offset to 0-based one
+		return new pcal.Region(lineNumber - 1, charStart - 1, (charEnd - 1) - (charStart - 1));
     }
 	
 	/**
-	 * @param adapter
-	 * @return
 	 * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
 	 */
 	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
@@ -53,7 +65,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#delete()
 	 */
 	public void delete() throws CoreException {
@@ -61,8 +72,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param object
-	 * @return
 	 * @see org.eclipse.core.resources.IMarker#equals(java.lang.Object)
 	 */
 	public boolean equals(Object object) {
@@ -70,7 +79,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @return
 	 * @see org.eclipse.core.resources.IMarker#exists()
 	 */
 	public boolean exists() {
@@ -78,9 +86,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param attributeName
-	 * @return
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#getAttribute(java.lang.String)
 	 */
 	public Object getAttribute(String attributeName) throws CoreException {
@@ -88,9 +93,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param attributeName
-	 * @param defaultValue
-	 * @return
 	 * @see org.eclipse.core.resources.IMarker#getAttribute(java.lang.String, int)
 	 */
 	public int getAttribute(String attributeName, int defaultValue) {
@@ -98,9 +100,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param attributeName
-	 * @param defaultValue
-	 * @return
 	 * @see org.eclipse.core.resources.IMarker#getAttribute(java.lang.String, java.lang.String)
 	 */
 	public String getAttribute(String attributeName, String defaultValue) {
@@ -108,9 +107,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param attributeName
-	 * @param defaultValue
-	 * @return
 	 * @see org.eclipse.core.resources.IMarker#getAttribute(java.lang.String, boolean)
 	 */
 	public boolean getAttribute(String attributeName, boolean defaultValue) {
@@ -118,8 +114,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @return
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#getAttributes()
 	 */
 	public Map<String, Object> getAttributes() throws CoreException {
@@ -127,9 +121,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param attributeNames
-	 * @return
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#getAttributes(java.lang.String[])
 	 */
 	public Object[] getAttributes(String[] attributeNames) throws CoreException {
@@ -137,8 +128,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @return
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#getCreationTime()
 	 */
 	public long getCreationTime() throws CoreException {
@@ -146,7 +135,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @return
 	 * @see org.eclipse.core.resources.IMarker#getId()
 	 */
 	public long getId() {
@@ -154,7 +142,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @return
 	 * @see org.eclipse.core.resources.IMarker#getResource()
 	 */
 	public IResource getResource() {
@@ -162,8 +149,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @return
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#getType()
 	 */
 	public String getType() throws CoreException {
@@ -171,9 +156,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param superType
-	 * @return
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#isSubtypeOf(java.lang.String)
 	 */
 	public boolean isSubtypeOf(String superType) throws CoreException {
@@ -181,9 +163,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param attributeName
-	 * @param value
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#setAttribute(java.lang.String, int)
 	 */
 	public void setAttribute(String attributeName, int value)
@@ -192,9 +171,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param attributeName
-	 * @param value
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#setAttribute(java.lang.String, java.lang.Object)
 	 */
 	public void setAttribute(String attributeName, Object value)
@@ -203,9 +179,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param attributeName
-	 * @param value
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#setAttribute(java.lang.String, boolean)
 	 */
 	public void setAttribute(String attributeName, boolean value)
@@ -214,9 +187,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param attributeNames
-	 * @param values
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#setAttributes(java.lang.String[], java.lang.Object[])
 	 */
 	public void setAttributes(String[] attributeNames, Object[] values)
@@ -225,8 +195,6 @@ public class TLAtoPCalMarker implements IMarker {
 	}
 
 	/**
-	 * @param attributes
-	 * @throws CoreException
 	 * @see org.eclipse.core.resources.IMarker#setAttributes(java.util.Map)
 	 */
 	public void setAttributes(Map<String, ? extends Object> attributes)
