@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -18,12 +19,14 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import tlc2.TLC;
 import util.TLCRuntime;
@@ -240,7 +243,12 @@ public class TLCProcessJob extends TLCJob
 	 * @return A list of additional vm arguments
 	 */
 	protected List<String> getAdditionalVMArgs() throws CoreException {
-		return new ArrayList<String>();
+		final List<String> result = new ArrayList<String>(1);
+
+		final IProject project = Activator.getSpecManager().getSpecByName(specName).getProject();
+		result.add(PreferenceStoreHelper.getTLALibraryPathAsVMArg(project));
+		
+		return result;
 	}
 
 	@SuppressWarnings("rawtypes")
