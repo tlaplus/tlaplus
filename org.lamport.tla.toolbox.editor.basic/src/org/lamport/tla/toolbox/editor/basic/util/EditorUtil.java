@@ -22,9 +22,11 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import pcal.TLAtoPCalMapping;
 import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.AssumeProveNode;
@@ -327,20 +329,23 @@ public class EditorUtil
      */
     public static Location getCurrentLocation()
     {
+        ITextSelection selection = getCurrentSelection();
+		return getLocationAt(getCurrentDocument(), selection.getOffset(), selection.getLength());
+    }
+    
+    private static IDocument getCurrentDocument() {
         TLAEditor editor = getTLAEditorWithFocus();
         // editor shouldn't be null, but just in case...
         if (editor == null)
         {
             return null;
         }
-        IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-        ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
-        // selection shouldn't be null, but just in case...
-        if (selection == null)
-        {
-            return null;
-        }
-        return getLocationAt(document, selection.getOffset(), selection.getLength());
+        return editor.getDocumentProvider().getDocument(editor.getEditorInput());
+    }
+    
+    private static ITextSelection getCurrentSelection() {
+        TLAEditor editor = getTLAEditorWithFocus();
+        return (ITextSelection) editor.getSelectionProvider().getSelection();
     }
 
     public static Location getLocationAt(IDocument document, int offset, int length)
@@ -369,7 +374,7 @@ public class EditorUtil
             {
                 endCol++;
             }
-            loc = new Location(null, startLine + 1, startCol, endLine + 1, endCol);
+            loc = new Location(startLine + 1, startCol, endLine + 1, endCol);
         } catch (BadLocationException e)
         {
             return null;
@@ -408,7 +413,6 @@ public class EditorUtil
             SymbolNode defaultResult)
     {
         SymbolNode foundSymbol = null;
-        boolean notDone = true;
         if (curNode instanceof ModuleNode)
         {
             foundSymbol = ((ModuleNode) curNode).getContext().getSymbol(name);
@@ -827,4 +831,37 @@ public class EditorUtil
             return "[string |-> " + this.string + ", location |-> " + this.location.toString() + "]";
         }
     }
+
+	/**
+	 * @param mapping
+	 * @return
+	 * @throws BadLocationException
+	 */
+	public static boolean selectAndRevealPCalRegionFromCurrentTLARegion() throws BadLocationException {
+
+		final TLAtoPCalMapping mapping = getTLAEditorWithFocus().getTpMapping();
+		if (mapping == null) {
+			UIHelper.setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
+			return false;
+		}
+
+		final IDocument document = getCurrentDocument();
+		final pcal.Region sourceRegion = AdapterFactory.jumptToPCal(mapping,
+				EditorUtil.getCurrentLocation(), document);
+		if (sourceRegion == null) {
+			// Cannot find a valid mapping for current selection
+			return false;
+		}
+
+		/*
+		 * The following command makes executing ReturnFromOpenDecl (F4) return
+		 * to the selected location.
+		 */
+		setReturnFromOpenDecl();
+
+		// Reveal the PCal source in the editor
+		getTLAEditorWithFocus().selectAndReveal(sourceRegion);
+		
+		return true;
+	}
 }

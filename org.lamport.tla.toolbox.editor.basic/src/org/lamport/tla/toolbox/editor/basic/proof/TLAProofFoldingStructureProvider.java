@@ -340,7 +340,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         // set previous folds to new folds
         foldPositions = foldsInCurrentTree;
 
-        editor.modifyProjectionAnnotations(deletions, additions, null);
+        editor.modifyProjectionAnnotations(deletions, additions);
 
         // check if foldPositions is sorted by offset
         // it probably is sorted, but in case the order returned by SANY changes,
@@ -629,7 +629,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             }
         }
 
-        editor.modifyProjectionAnnotations(null, null, (Annotation[]) modifiedAnnotations
+        editor.modifyProjectionAnnotations((Annotation[]) modifiedAnnotations
                 .toArray(new ProjectionAnnotation[modifiedAnnotations.size()]));
     }
 
@@ -653,7 +653,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             }
         }
 
-        editor.modifyProjectionAnnotations(null, null, (Annotation[]) modifiedAnnotations
+        editor.modifyProjectionAnnotations((Annotation[]) modifiedAnnotations
                 .toArray(new ProjectionAnnotation[modifiedAnnotations.size()]));
     }
 
@@ -672,7 +672,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             }
         }
 
-        editor.modifyProjectionAnnotations(null, null, (Annotation[]) modifiedAnnotations
+        editor.modifyProjectionAnnotations((Annotation[]) modifiedAnnotations
                 .toArray(new ProjectionAnnotation[modifiedAnnotations.size()]));
     }
 
@@ -727,7 +727,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             }
         }
 
-        editor.modifyProjectionAnnotations(null, null, (Annotation[]) modifiedAnnotations
+        editor.modifyProjectionAnnotations((Annotation[]) modifiedAnnotations
                 .toArray(new ProjectionAnnotation[modifiedAnnotations.size()]));
     }
 
@@ -782,7 +782,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             }
         }
 
-        editor.modifyProjectionAnnotations(null, null, (Annotation[]) modifiedAnnotations
+        editor.modifyProjectionAnnotations((Annotation[]) modifiedAnnotations
                 .toArray(new ProjectionAnnotation[modifiedAnnotations.size()]));
     }
 
@@ -838,7 +838,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             }
         }
 
-        editor.modifyProjectionAnnotations(null, null, (Annotation[]) modifiedAnnotations
+        editor.modifyProjectionAnnotations((Annotation[]) modifiedAnnotations
                 .toArray(new ProjectionAnnotation[modifiedAnnotations.size()]));
     }
 

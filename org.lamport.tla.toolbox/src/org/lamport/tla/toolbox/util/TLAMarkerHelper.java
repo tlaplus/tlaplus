@@ -20,7 +20,12 @@ import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
+
+import pcal.TLAtoPCalMapping;
+
+import tla2sany.st.Location;
 
 /**
  * Marker helpers
@@ -49,6 +54,10 @@ public class TLAMarkerHelper
      * Module name (different from the generally use filename)
      */
     public static final String LOCATION_MODULENAME = "toolbox.location.modulename";
+    /**
+     * {@link Location} the {@link IMarker} is a marker for 
+     */
+    public static final String LOCATION = "toolbox.region";
 
     /**
      * Supertype for all problem markers
@@ -129,56 +138,73 @@ public class TLAMarkerHelper
                 marker.setAttribute(LOCATION_BEGINCOLUMN, coordinates[1]);
                 marker.setAttribute(LOCATION_ENDLINE, coordinates[2]);
                 marker.setAttribute(LOCATION_ENDCOLUMN, coordinates[3]);
+                
+                // Create a SANY location from the given location attributes
+				marker.setAttribute(LOCATION, new Location(coordinates));
+                
+                final IMarker fMarker = marker;
 
                 // important! either use line numbers (for creation of a single line marker)
                 // or char_start/char_end (to create exact markers, even multi-line)
-                if (coordinates[0] == coordinates[3] || coordinates[3] == -1)
-                {
-                    marker.setAttribute(IMarker.LINE_NUMBER, coordinates[0]);
-                } else
-                {
-                    // retrieve the resource
-                    IDocument document = null;
-
-                    // since we know that the editor uses file based editor representation
-                    FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
-                    FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-                    try
-                    {
-                        fileDocumentProvider.connect(fileEditorInput);
-                        document = fileDocumentProvider.getDocument(fileEditorInput);
-                    } finally
-                    {
-                        /*
-                         * Once the document has been retrieved, the document provider is
-                         * not needed. Always disconnect it to avoid a memory leak.
-                         * 
-                         * Keeping it connected only seems to provide synchronization of
-                         * the document with file changes. That is not necessary in this context.
-                         */
-                        fileDocumentProvider.disconnect(fileEditorInput);
-                    }
-                    if (document != null)
-                    {
-                        try
-                        {
-                            // find the line in the document
-                            IRegion lineRegion = document.getLineInformation(coordinates[0] - 1);
-
-                            // get the text representation of the line
-                            String textLine = document.get(lineRegion.getOffset(), lineRegion.getLength());
-
-                            marker.setAttribute(IMarker.CHAR_START, lineRegion.getOffset()
-                                    + getRealOffset(textLine, coordinates[1] - 1));
-                            marker.setAttribute(IMarker.CHAR_END, lineRegion.getOffset()
-                                    + getRealOffset(textLine, coordinates[3]));
-
-                        } catch (BadLocationException e)
-                        {
-                            Activator.logError("Error accessing the specified error location", e);
-                        }
-                    }
-                }
+                UIHelper.runUISync(new Runnable() {
+					/* (non-Javadoc)
+					 * @see java.lang.Runnable#run()
+					 */
+					public void run() {
+						try {
+							
+							if (coordinates[0] == coordinates[3] || coordinates[3] == -1)
+							{
+								fMarker.setAttribute(IMarker.LINE_NUMBER, coordinates[0]);
+							} else
+							{
+								// retrieve the resource
+								IDocument document = null;
+								
+								// since we know that the editor uses file based editor representation
+								FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
+								FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+								try
+								{
+									fileDocumentProvider.connect(fileEditorInput);
+									document = fileDocumentProvider.getDocument(fileEditorInput);
+								} finally
+								{
+									/*
+									 * Once the document has been retrieved, the document provider is
+									 * not needed. Always disconnect it to avoid a memory leak.
+									 * 
+									 * Keeping it connected only seems to provide synchronization of
+									 * the document with file changes. That is not necessary in this context.
+									 */
+									fileDocumentProvider.disconnect(fileEditorInput);
+								}
+								if (document != null)
+								{
+									try
+									{
+										// find the line in the document
+										IRegion lineRegion = document.getLineInformation(coordinates[0] - 1);
+										
+										// get the text representation of the line
+										String textLine = document.get(lineRegion.getOffset(), lineRegion.getLength());
+										
+										fMarker.setAttribute(IMarker.CHAR_START, lineRegion.getOffset()
+												+ getRealOffset(textLine, coordinates[1] - 1));
+										fMarker.setAttribute(IMarker.CHAR_END, lineRegion.getOffset()
+												+ getRealOffset(textLine, coordinates[3]));
+										
+									} catch (BadLocationException e)
+									{
+										Activator.logError("Error accessing the specified error location", e);
+									}
+								}
+						}
+		                } catch (CoreException e) {
+							Activator.logError("Error accessing the specified error location", e);
+		                }
+					}
+                });
             }
         };
         try
@@ -290,10 +316,19 @@ public class TLAMarkerHelper
     }
 
     /**
-     * Opens the TLA+ Editor and goes to the marker
-     * @param problem
+     * @see TLAMarkerHelper#gotoMarker(IMarker, boolean)
      */
     public static void gotoMarker(IMarker problem)
+    {
+    	gotoMarker(problem, false);
+    }
+    
+    /**
+     * Opens the TLA+ Editor and goes to the marker
+     * @param problem
+     * @param jumpToPcal 
+     */
+    public static void gotoMarker(IMarker problem, boolean jumpToPcal)
     {
         if (problem.getResource() instanceof IFile)
         {
@@ -309,6 +344,16 @@ public class TLAMarkerHelper
             }
             if (gotoMarker != null)
             {
+            	if (jumpToPcal) {
+            		final String moduleName = module.getName();
+            		final TLAtoPCalMapping mapping = ToolboxHandle.getCurrentSpec().getTpMapping(moduleName);
+            		if (mapping != null) {
+            			problem = new TLAtoPCalMarker(problem, mapping);
+            		} else {
+            			UIHelper.setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
+            			return;
+            		}
+            	}
                 gotoMarker.gotoMarker(problem);
             }
         } else

@@ -92,18 +92,54 @@ public class TLAtoPCalMapping implements Serializable {
    * @param mapVec
    * @return
    */
-  public void  makeMapping(Vector mapVec) {
+  public void  makeMapping(Vector<Vector<MappingObject>> mapVec) {
      this.mapping = new MappingObject[mapVec.size()][] ;
       for (int i = 0 ; i < this.mapping.length; i++) {
-          Vector line = (Vector) mapVec.elementAt(i);
+          Vector<MappingObject> line = mapVec.elementAt(i);
           this.mapping[i] = new MappingObject[line.size()];
           for (int j = 0; j < line.size(); j++) {
-              this.mapping[i][j] = (MappingObject) line.elementAt(j);
+              this.mapping[i][j] = line.elementAt(j);
           }
       }
       return ;
   }
 
+	/**
+	 * Calls {@link TLAtoPCalMapping#ApplyMapping(TLAtoPCalMapping, Region)} to
+	 * find the PCal {@link Region}, using the {@link Region} tlaRegion obtained
+	 * by adjusting the line numbers of the selected region by
+	 * currentAlgorithmLine.
+	 * 
+	 * @param tlaRegion
+	 *            The TLA {@link Region} for which the PCal {@link Region} is to
+	 *            be returned
+	 * @param currentAlgorithmLine
+	 *            The current line of the "--algorithm" or "--fair" keyword in
+	 *            the module (in Java coordinates)
+	 * @return The {@link Region} of the PCal counterpart
+	 * @see TLAtoPCalMapping#ApplyMapping(TLAtoPCalMapping, Region)
+	 */
+	public Region mapTLAtoPCalRegion(final Region tlaRegion, int currentAlgorithmLine) {
+		final int delta = currentAlgorithmLine - algLine;
+
+		// a) Adjust TLA region with the current line of the algorithm. This is
+		// necessary because the mapping bases its calculation on the original
+		// line of the algorithm which has moved by now.
+		tlaRegion.getBegin().adjustLineBy(tlaStartLine + delta);
+		tlaRegion.getEnd().adjustLineBy(tlaStartLine + delta);
+		
+		// b) Actually map TLA to PCal based on the translation
+		final Region pcalRegion = ApplyMapping(this, tlaRegion);
+		
+		// c) Translate the pcalRegion back to the current algorithm location to reverse
+		// step a) if not null (null means there is no valid mapping)
+		if (pcalRegion != null) {
+			pcalRegion.getBegin().adjustLineBy(delta);
+			pcalRegion.getEnd().adjustLineBy(delta);
+		}
+		
+		return pcalRegion;
+	}
   
 	  /* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -169,6 +205,31 @@ public class TLAtoPCalMapping implements Serializable {
 
         return true;
 
+	}
+	
+    /**
+     * Returns the line number (zero based) of the line containing the first
+     * "--algorithm" or "--fair algorithm" token(s) that begin(s) a PlusCal algorithm. 
+     * Returns -1 if there is none.
+     */
+	public static int GetLineOfPCalAlgorithm(String moduleAsString) {
+		final int algorithmStringLocation = moduleAsString.indexOf(PcalParams.BeginAlg);
+		final int fairStringLocation = moduleAsString.indexOf(PcalParams.BeginFairAlg);
+		if (fairStringLocation == -1
+				|| ((algorithmStringLocation != -1) && (algorithmStringLocation < fairStringLocation))) {
+			return algorithmStringLocation;
+		}
+		int i = fairStringLocation + PcalParams.BeginFairAlg.length();
+		while (Character.isWhitespace(moduleAsString.charAt(i))) {
+			i++;
+		}
+		if ((i != fairStringLocation + PcalParams.BeginFairAlg.length())
+				&& (moduleAsString.startsWith(PcalParams.BeginFairAlg2, i))
+				&& !Character.isLetterOrDigit(moduleAsString.charAt(i + PcalParams.BeginFairAlg2.length()))) {
+			return fairStringLocation;
+		} else {
+			return algorithmStringLocation;
+		}
 	}
 
 /**
@@ -830,9 +891,9 @@ public class TLAtoPCalMapping implements Serializable {
    * @param mappingVec
    * @return
    */
-  public static Vector RemoveRedundantParens(Vector mappingVec) {
-      Vector out = new Vector();            // Vector of Vectors of MappingObjects
-      Vector unmatchedLeft = new Vector();  
+  public static Vector<Vector<MappingObject>> RemoveRedundantParens(Vector<Vector<MappingObject>> mappingVec) {
+      Vector<Vector<MappingObject>> out = new Vector<Vector<MappingObject>>(); // Vector of Vectors of MappingObjects
+      Vector<PCalLocation> unmatchedLeft = new Vector<PCalLocation>();  
          // Vector of PCalLocations in out of unmatched LeftParen objects
       PCalLocation lastMatchedLeft = null;
         // position in out of last LeftParen object that was matched by
@@ -840,12 +901,12 @@ public class TLAtoPCalMapping implements Serializable {
       PCalLocation lastAddedRight = null;
       int i = 0 ;
       while (i < mappingVec.size()) {
-          Vector inLine = (Vector) mappingVec.elementAt(i);
-          Vector outLine = new Vector();
+          Vector<MappingObject> inLine = mappingVec.elementAt(i);
+          Vector<MappingObject> outLine = new Vector<MappingObject>();
           out.addElement(outLine);
           int j = 0 ;
           while (j < inLine.size()) {
-              MappingObject inObj = (MappingObject) inLine.elementAt(j); 
+              MappingObject inObj = inLine.elementAt(j); 
               if (inObj.getType() == MappingObject.LEFT_PAREN) {
                 /*
                  * Bug in translating algorithm.  The following statement was
@@ -861,29 +922,29 @@ public class TLAtoPCalMapping implements Serializable {
                   PCalLocation lastUnmatchedLeft = null ;
                   if (unmatchedLeft.size() != 0) {
                       lastUnmatchedLeft = 
-                        (PCalLocation) unmatchedLeft.elementAt(unmatchedLeft.size()-1);
+                        unmatchedLeft.elementAt(unmatchedLeft.size()-1);
                   }
                   if (   IsNextIn(lastAddedRight, 
                                   new PCalLocation(i, j),
                                   mappingVec)
                       && IsNextIn(lastUnmatchedLeft, lastMatchedLeft,  out)    
                       ) {
-                      ((Vector) out.elementAt(lastMatchedLeft.getLine()))
+                      (out.elementAt(lastMatchedLeft.getLine()))
                           .remove(lastMatchedLeft.getColumn());
                       /*
                        * Set lastLine to the last non-empty line of out, then
                        * delete its last element.
                        */
-                      Vector lastLine = outLine;
+                      Vector<MappingObject> lastLine = outLine;
                       int lastLineNum = out.size()-1;
                       while (lastLine.size() == 0) {
                           lastLineNum--;
-                          lastLine = (Vector) out.elementAt(lastLineNum);
+                          lastLine = out.elementAt(lastLineNum);
                       }
                       lastLine.remove(lastLine.size()-1);
                   }
                   lastMatchedLeft = 
-                     (PCalLocation) unmatchedLeft.remove(unmatchedLeft.size()-1);
+                     unmatchedLeft.remove(unmatchedLeft.size()-1);
                   lastAddedRight = new PCalLocation(i, j);
               }
               
@@ -907,14 +968,14 @@ public class TLAtoPCalMapping implements Serializable {
    * @param vec
    * @return
    */
-  private static boolean IsNextIn(PCalLocation locA, PCalLocation locB, Vector vec) {
+  private static boolean IsNextIn(PCalLocation locA, PCalLocation locB, Vector<Vector<MappingObject>> vec) {
       return     (locA != null)
               && (locB != null)
               && (   (   (locA.getLine() == locB.getLine())
                       && (locA.getColumn()+1 == locB.getColumn())
                      )
                   || (   (locA.getLine() == locB.getLine()-1)
-                      && (locA.getColumn() == ((Vector) vec.elementAt(locA.getLine())).size())
+                      && (locA.getColumn() == vec.elementAt(locA.getLine()).size())
                       && (locB.getColumn() == 0)
                      )
                  );

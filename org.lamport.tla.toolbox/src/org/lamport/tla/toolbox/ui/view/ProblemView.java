@@ -32,9 +32,6 @@ public class ProblemView extends ViewPart
 {
     public static final String ID = "toolbox.view.ProblemView";
     private ExpandBar bar = null;
-    public ProblemView()
-    {
-    }
 
     /**
      * Creates the layout and fill it with data 
@@ -69,7 +66,7 @@ public class ProblemView extends ViewPart
             }
 
             // sort the markers
-            List markersList = new ArrayList(Arrays.asList(markers));
+            List<IMarker> markersList = new ArrayList<IMarker>(Arrays.asList(markers));
             Collections.sort(markersList, new MarkerComparator());
 
             // Bug fix: 2 June 2010.  It takes forever if
@@ -79,14 +76,14 @@ public class ProblemView extends ViewPart
             int iterations = Math.min(markers.length, 20);
             for (int j = 0; j < iterations; j++)
             {
-                final IMarker problem = (IMarker) markersList.get(j);
+                final IMarker problem = markersList.get(j);
 
                 // listener
                 Listener listener = new Listener() {
                     // goto marker on click
                     public void handleEvent(Event event)
                     {
-                        TLAMarkerHelper.gotoMarker(problem);
+                        TLAMarkerHelper.gotoMarker(problem, ((event.stateMask & SWT.CTRL) != 0));
                     }
                 };
 

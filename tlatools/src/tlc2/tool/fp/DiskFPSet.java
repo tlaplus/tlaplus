@@ -10,9 +10,13 @@ import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 
+import javax.management.NotCompliantMBeanException;
+
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.TLCTrace;
+import tlc2.tool.fp.management.DiskFPSetMXWrapper;
+import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.IdThread;
 import tlc2.util.ReadersWriterLock;
@@ -158,6 +162,8 @@ public class DiskFPSet extends FPSet {
 	 * @see DiskFPSet#index
 	 */
 	private static final double AuxiliaryStorageRequirement = 2.5;
+	
+	private TLCStandardMBean diskFPSetMXWrapper;
 
 	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
@@ -213,6 +219,18 @@ public class DiskFPSet extends FPSet {
 		this.index = null;
 		
 		this.tbl = new long[capacity][];
+		
+		try {
+			diskFPSetMXWrapper = new DiskFPSetMXWrapper(this);
+		} catch (NotCompliantMBeanException e) {
+			// not expected to happen
+			// would cause JMX to be broken, hence just log and continue
+			MP.printWarning(
+					EC.GENERAL,
+					"Failed to create MBean wrapper for DiskFPSet. No statistics/metrics will be avaiable.",
+					e);
+			diskFPSetMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -875,6 +893,9 @@ public class DiskFPSet extends FPSet {
 	 * @see tlc2.tool.fp.FPSet#close()
 	 */
 	public final void close() {
+		// close JMX stats
+		diskFPSetMXWrapper.unregister();
+		
 		for (int i = 0; i < this.braf.length; i++) {
 			try {
 				this.braf[i].close();

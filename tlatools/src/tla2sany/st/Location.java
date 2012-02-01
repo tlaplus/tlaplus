@@ -2,9 +2,15 @@
 package tla2sany.st;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import pcal.PCalLocation;
+import pcal.Region;
+
+import tlc2.output.EC;
+import util.Assert;
 import util.UniqueString;
 
 /**
@@ -105,7 +111,36 @@ public final class Location
         eColumn = ec;
     }
 
-    /**
+    public Location(int bl, int bc, int el, int ec) {
+		this(null, bl, bc, el, ec);
+	}
+
+	
+	/**
+	 * @param coordinates
+	 *            An int array of size 4 with 0-based coordinates: 0=beginLine,
+	 *            1=beginColum, 2=endLine, 3=endColumn. 2 & 3 may be smaller
+	 *            than 1 & 2, in which case they get set to 1 & 2.
+	 */
+	public Location(final int[] coordinates) {
+		Assert.check(coordinates != null && coordinates.length == 4, EC.GENERAL);
+
+        bLine = coordinates[0];
+        bColumn = coordinates[1];
+
+        eLine = coordinates[2];
+		eColumn = coordinates[3];
+		
+		if (eLine < bLine) {
+			eLine = bLine;
+		}
+		
+		if (eColumn < bColumn) {
+			eColumn = bColumn;
+		}
+	}
+
+	/**
      * Factory method to create unknown locations in a given module
      * @param moduleName, string representation of the module name
      * @return a location
@@ -208,7 +243,7 @@ public final class Location
          * The Toolbox does not support generics,
          * so generics cannot be used here.
          */
-        ArrayList locations = new ArrayList();
+        List<Location> locations = new ArrayList<Location>();
         /*
          * For each Pattern defined in this class, we find
          * all matches of the pattern and add this to the list
@@ -320,4 +355,15 @@ public final class Location
 
         return false;
     }
+
+	/**
+	 * Translates the {@link Location} into a PCal {@link Region} adjusting the
+	 * 1-based offset to a 0-based one.
+	 * 
+	 * @return a 0-based {@link Region}
+	 */
+	public Region toRegion() {
+		return new pcal.Region(new PCalLocation(bLine - 1, bColumn - 1),
+				new PCalLocation(eLine - 1, eColumn - 1));
+	}
 }

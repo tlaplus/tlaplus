@@ -75,7 +75,8 @@ public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatis
 		try {
 			return modelChecker.trace.getLevelForReporting();
 		} catch (IOException e) {
-			e.printStackTrace();
+			// The modelchecker trace file might be closed already (e.g. it
+			// gets closed at the end of the modelchecker run)
 			return -1;
 		}
 	}

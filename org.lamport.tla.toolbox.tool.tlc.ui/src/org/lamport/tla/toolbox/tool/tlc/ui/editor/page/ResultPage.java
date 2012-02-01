@@ -591,6 +591,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         });
 
         this.stateSpace.setLabelProvider(new StateSpaceLabelProvider());
+        getSite().setSelectionProvider(this.stateSpace);
         return statespaceComposite;
     }
 
@@ -630,7 +631,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // create the viewer
         this.coverage = new TableViewer(stateTable);
 
-        coverage.addSelectionChangedListener(new ActionClickListener());
+        coverage.getTable().addMouseListener(new ActionClickListener(this.coverage));
 
         // create list-based content provider
         this.coverage.setContentProvider(new IStructuredContentProvider() {
@@ -653,6 +654,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         });
 
         this.coverage.setLabelProvider(new CoverageLabelProvider());
+        
+        getSite().setSelectionProvider(this.coverage);
+        
         return coverageComposite;
     }
 

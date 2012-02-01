@@ -2,17 +2,16 @@ package org.lamport.tla.toolbox.editor.basic;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -38,7 +37,6 @@ import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
@@ -66,19 +64,22 @@ import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
-import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.editor.basic.actions.ProofFoldAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
 import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
+import org.lamport.tla.toolbox.editor.basic.proof.TLAProofPosition;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
+import org.lamport.tla.toolbox.util.TLAtoPCalMarker;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import pcal.PCalLocation;
+import pcal.TLAtoPCalMapping;
 
 /**
  * Basic editor for TLA+
@@ -104,11 +105,6 @@ public class TLAEditor extends TextEditor
     private ProjectionAnnotationModel annotationModel;
     // proof structure provider
     private TLAProofFoldingStructureProvider proofStructureProvider;
-    /**
-     * The annotation model for adding visual elements
-     * such as colored annotation.
-     */
-    private IAnnotationModel visualAnnotationModel;
     /**
      * Listener to TLAPM output for adding status
      * coloring to proofs.
@@ -263,8 +259,6 @@ public class TLAEditor extends TextEditor
 
         // model for adding projections (folds)
         this.annotationModel = viewer.getProjectionAnnotationModel();
-        // model for adding other visual annotations, such as coloring.
-        this.visualAnnotationModel = viewer.getAnnotationModel();
 
         // this must be instantiated after annotationModel so that it does
         // not call methods that use annotation model when the model is still null
@@ -332,28 +326,6 @@ public class TLAEditor extends TextEditor
         //a = new ExampleEditorAction(TLAEditorMessages.getResourceBundle(), "Example.", this, getStatusLineManager()); //$NON-NLS-1$
         // a.setActionDefinitionId("org.lamport.tla.toolbox.editor.basic.TestEditorCommand");
         // setAction("ToggleComment", a);
-    }
-
-    /**
-     * Creates a proof folding action for the given commandId (the action will be executed when
-     * that command is called). Its unclear what the purpose of prefix is (for an explanation,
-     * see the explanation of the prefix argument for
-     * {@link ResourceAction#ResourceAction(java.util.ResourceBundle, String)}. Use the examples
-     * in createActions() for what the prefix should be.
-     * 
-     * The actionId should be a String that no other actions in this class use.
-     * 
-     * @param commandId
-     * @param prefix
-     * @param actionId
-     */
-    private void createProofFoldAction(String commandId, String prefix, String actionId)
-    {
-        IAction a = new ProofFoldAction(TLAEditorMessages.getResourceBundle(), prefix, this);
-        a.setActionDefinitionId(commandId);
-        setAction(actionId, a);
-        // markAsStateDependentAction(actionId, true);
-        // markAsSelectionDependentAction(actionId, true);
     }
 
     /**
@@ -512,14 +484,14 @@ public class TLAEditor extends TextEditor
      * @param positions
      * @deprecated
      */
-    public void updateFoldingStructure(ArrayList positions)
+    public void updateFoldingStructure(List<Position> positions)
     {
 
         Annotation[] annotations = new Annotation[positions.size()];
 
         // this will hold the new annotations along
         // with their corresponding positions
-        HashMap newAnnotations = new HashMap();
+        Map<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
 
         for (int i = 0; i < positions.size(); i++)
         {
@@ -540,77 +512,28 @@ public class TLAEditor extends TextEditor
      * Note that in the map additions, the keys should be instances of {@link ProjectionAnnotation} and the values
      * should be instances of the corresponding {@link Position}.
      * 
-     * This method is for changing the projection annotations. For changing other visual annotations, use
-     * {@link TLAEditor#modifyRegularAnnotations(Annotation[], Map, Annotation[])}.
-     * 
      * @param deletions
      * @param additions
-     * @param modifications
      */
-    public void modifyProjectionAnnotations(Annotation[] deletions, Map additions, Annotation[] modifications)
+    public void modifyProjectionAnnotations(Annotation[] deletions, Map<ProjectionAnnotation, TLAProofPosition> additions)
     {
-        this.annotationModel.modifyAnnotations(deletions, additions, modifications);
+        this.annotationModel.modifyAnnotations(deletions, additions, null);
     }
-
+    
     /**
-     * Adds, deletes, and modifies "regular" annotations for this editor. These are
-     * visual annotations, such as proof coloring, that are not projection annotations.
-     * To make changes to the projection annotations, {@link TLAEditor#modifyProjectionAnnotations(Annotation[], Map, Annotation[])}
-     * should be used.
+     * Calls {@link ProjectionAnnotationModel#modifyAnnotations(Annotation[], Map, Annotation[])} with the
+     * arguments.
      * 
-     * @param deletions
-     * @param additions
+     * Note that in the map additions, the keys should be instances of {@link ProjectionAnnotation} and the values
+     * should be instances of the corresponding {@link Position}.
+     * 
      * @param modifications
      */
-    public void modifyRegularAnnotations(Annotation[] deletions, Map additions, Annotation[] modifications)
+    public void modifyProjectionAnnotations(Annotation[] modifications)
     {
-        if (visualAnnotationModel == null)
-        {
-            Activator.logDebug("Visual annotation model is null and annotations are being added. This is a bug.");
-            return;
-        }
-
-        // delete annotations
-        if (deletions != null)
-        {
-            for (int i = 0; i < deletions.length; i++)
-            {
-                visualAnnotationModel.removeAnnotation(deletions[i]);
-            }
-        }
-
-        /*
-         * Modify annotations.
-         * 
-         * For each annotation to be modified:
-         * 
-         * Get the position of the annotation.
-         * Remove the annotation.
-         * Add the annotation again.
-         */
-        if (modifications != null)
-        {
-            for (int i = 0; i < modifications.length; i++)
-            {
-                Position position = visualAnnotationModel.getPosition(modifications[i]);
-                visualAnnotationModel.removeAnnotation(modifications[i]);
-                visualAnnotationModel.addAnnotation(modifications[i], position);
-            }
-        }
-
-        // add new annotations
-        if (additions != null)
-        {
-            for (Iterator it = additions.entrySet().iterator(); it.hasNext();)
-            {
-                Map.Entry entry = (Entry) it.next();
-                Annotation annotation = (Annotation) entry.getKey();
-                Position position = (Position) entry.getValue();
-                visualAnnotationModel.addAnnotation(annotation, position);
-            }
-        }
+        this.annotationModel.modifyAnnotations(null, null, modifications);
     }
-
+    
     /**
      * SaveAs support
      * 
@@ -732,7 +655,7 @@ public class TLAEditor extends TextEditor
         }
     }
 
-    public Object getAdapter(Class required)
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class required)
     {
         /* adapt to projection support */
         if (projectionSupport != null)
@@ -759,25 +682,82 @@ public class TLAEditor extends TextEditor
         super.dispose();
     }
 
-    /**
+    /* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.AbstractTextEditor#selectAndReveal(int, int)
+	 */
+	public void selectAndReveal(final pcal.Region aRegion) throws BadLocationException {
+		final IDocument document = getDocumentProvider().getDocument(
+				getEditorInput());
+
+		// Translate pcal.Region coordinates into Java IDocument coordinates
+		final PCalLocation begin = aRegion.getBegin();
+		final int startLineOffset = document.getLineOffset(begin.getLine());
+		final int startOffset = startLineOffset + begin.getColumn();
+		
+		final PCalLocation end = aRegion.getEnd();
+		final int endLineOffset = document.getLineOffset(end.getLine());
+		final int endOffset = endLineOffset + end.getColumn();
+
+		final int length = endOffset - startOffset;
+		
+		selectAndReveal(startOffset, length);
+	}
+	
+	/**
+	 * @return The {@link TLAtoPCalMapping} for the current editor's content or
+	 *         <code>null</code> if none
+	 */
+	public TLAtoPCalMapping getTpMapping() {
+        final Spec spec = ToolboxHandle.getCurrentSpec();
+        return spec.getTpMapping(getModuleName() + ".tla");
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#gotoMarker(org.eclipse.core.resources.IMarker)
+	 */
+	public void gotoMarker(final IMarker marker) {
+		// if the given marker happens to be of instance TLAtoPCalMarker, it
+		// indicates that the user wants to go to the PCal equivalent of the
+		// current TLA+ marker
+		if (marker instanceof TLAtoPCalMarker) {
+			final TLAtoPCalMarker tlaToPCalMarker = (TLAtoPCalMarker) marker;
+			try {
+				final pcal.Region region = tlaToPCalMarker.getRegion();
+				if (region != null) {
+					selectAndReveal(region);
+					return;
+				} else {
+					UIHelper.setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
+				}
+			} catch (BadLocationException e) {
+				// not expected to happen
+				e.printStackTrace();
+			}
+		}
+		
+		// fall back to original marker if the TLAtoPCalMarker didn't work or no
+		// TLAtoPCalMarker
+		super.gotoMarker(marker);
+	}
+
+	/**
      * Gets the module name from the name of the file that
      * this editor is editing.
      *  
      * @return
      */
-    public String getModuleName() {
-        IFile moduleFile = ((FileEditorInput) this.getEditorInput()).getFile();
-       return ResourceHelper.getModuleName(moduleFile);
-    }
-    public TextViewer getViewer()
-    {
-        return (TextViewer) getSourceViewer();
-    }
+	public String getModuleName() {
+		IFile moduleFile = ((FileEditorInput) this.getEditorInput()).getFile();
+		return ResourceHelper.getModuleName(moduleFile);
+	}
 
-    public void setStatusMessage(String message)
-    {
-        getStatusLineManager().setMessage(message);
-    }
+	public TextViewer getViewer() {
+		return (TextViewer) getSourceViewer();
+	}
+
+	public void setStatusMessage(String message) {
+		getStatusLineManager().setMessage(message);
+	}
 
     /**
      * Runs the fold operation represented by commandId. This

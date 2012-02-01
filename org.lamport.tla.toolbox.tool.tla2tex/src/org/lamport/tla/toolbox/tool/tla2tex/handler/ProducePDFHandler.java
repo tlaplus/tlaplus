@@ -3,12 +3,10 @@ package org.lamport.tla.toolbox.tool.tla2tex.handler;
 import java.io.File;
 import java.util.Vector;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -16,11 +14,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator;
@@ -176,7 +171,7 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler
                 try
                 {
 
-                    Vector tla2texArgs = new Vector();
+                    Vector<String> tla2texArgs = new Vector<String>();
 
                     IPreferenceStore preferenceStore = TLA2TeXActivator.getDefault().getPreferenceStore();
 
