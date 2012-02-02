@@ -196,7 +196,7 @@ public class TLAtoPCalMarker implements IMarker {
 	/**
 	 * @see org.eclipse.core.resources.IMarker#setAttributes(java.util.Map)
 	 */
-	public void setAttributes(Map<String, ? extends Object> attributes)
+	public void setAttributes(@SuppressWarnings("rawtypes") Map attributes)
 			throws CoreException {
 		delegate.setAttributes(attributes);
 	}
