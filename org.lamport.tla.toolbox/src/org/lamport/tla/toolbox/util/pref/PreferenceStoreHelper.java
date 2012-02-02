@@ -1,9 +1,5 @@
 package org.lamport.tla.toolbox.util.pref;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -11,12 +7,9 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.ui.preference.LibraryPathComposite;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
-
-import util.SimpleFilenameToStream;
 
 /**
  * Utils for accessing persistence storage
@@ -174,46 +167,4 @@ System.out.println("footFileName = " + rootFileName);
         }
         return children;
     }
-
-	public static String[] getTLALibraryPath(IProject project) {
-        final Set<String> locationList = new HashSet<String>();
-
-        // Read project specific and general preferences (project take precedence over general ones) 
-        String str = getProjectPreferenceStore(project).getString(LibraryPathComposite.LIBRARY_PATH_LOCATION_PREFIX);
-        if ("".equals(str)) {
-        	str = PreferenceStoreHelper.getInstancePreferenceStore().getString(LibraryPathComposite.LIBRARY_PATH_LOCATION_PREFIX);
-        }
-        
-        // convert UI string into an array
-        final String[] locations = str.split(LibraryPathComposite.ESCAPE_REGEX + LibraryPathComposite.LOCATION_DELIM);
-        for (String location : locations) {
-        	final String[] split = location.split(LibraryPathComposite.ESCAPE_REGEX + LibraryPathComposite.STATE_DELIM);
-			if(Boolean.parseBoolean(split[1])) {
-				locationList.add(split[0]);
-        	}
-		}
-        
-        return locationList.toArray(new String[locationList.size()]);
-	}
-	
-	public static String getTLALibraryPathAsVMArg(IProject project) {
-		final String[] tlaLibraryPath = getTLALibraryPath(project);
-		
-		if (tlaLibraryPath.length > 0) {
-			final StringBuffer buf = new StringBuffer(tlaLibraryPath.length * 2);
-			
-			buf.append("-D" + SimpleFilenameToStream.TLA_LIBRARY + "=");
-			
-			for (final String location : tlaLibraryPath) {
-				buf.append(location);
-				buf.append(File.pathSeparator);
-			}
-			
-			final String vmArg = buf.toString();
-			
-			return vmArg.substring(0, vmArg.length() - 1);
-		} else {
-			return "";
-		}
-	}
 }

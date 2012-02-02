@@ -1,12 +1,15 @@
 package org.lamport.tla.toolbox.spec;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -23,10 +26,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextSelection;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
+import org.lamport.tla.toolbox.ui.preference.LibraryPathComposite;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.compare.ResourceNameComparator;
@@ -34,6 +39,7 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import pcal.TLAtoPCalMapping;
 import tla2sany.modanalyzer.SpecObj;
+import util.SimpleFilenameToStream;
 
 /**
  * Represents a specification handle in the toolbox
@@ -436,6 +442,66 @@ public class Spec implements IAdaptable
     {
         return currentSelection;
     }
+    
+	/**
+	 * @return an Array of {@link String}s each set by the user as additional
+	 *         TLA+ library lookup path locations. Returns and empty array if
+	 *         none set, not <code>null</code>.
+	 */
+	public String[] getTLALibraryPath() {
+        final IPreferenceStore store = PreferenceStoreHelper.getProjectPreferenceStore(getProject());
+        
+        // Read project specific and general preferences (project take precedence over general ones) 
+        String prefStr = store.getString(LibraryPathComposite.LIBRARY_PATH_LOCATION_PREFIX);
+        if ("".equals(prefStr)) {
+        	prefStr = PreferenceStoreHelper.getInstancePreferenceStore().getString(LibraryPathComposite.LIBRARY_PATH_LOCATION_PREFIX);
+        }
+        
+        if (!"".equals(prefStr)) {
+            final Set<String> locationList = new HashSet<String>();
+
+	        // convert UI string into an array
+	        final String[] locations = prefStr.split(LibraryPathComposite.ESCAPE_REGEX + LibraryPathComposite.LOCATION_DELIM);
+	        for (String location : locations) {
+	        	final String[] split = location.split(LibraryPathComposite.ESCAPE_REGEX + LibraryPathComposite.STATE_DELIM);
+				if(Boolean.parseBoolean(split[1])) {
+					locationList.add(split[0]);
+	        	}
+			}
+	        return locationList.toArray(new String[locationList.size()]);
+        }
+        return new String[0];
+	}
+	
+	/**
+	 * @return A {@link String} with all user defined TLA+ library path
+	 *         locations concatenated and as a Java VM {@link System} property.
+	 *         If the user has not set any library path locations, an empty
+	 *         {@link String} is returned, not <code>null</code>.
+	 * @see Spec#getTLALibraryPath()
+	 */
+	public String getTLALibraryPathAsVMArg() {
+		final String[] tlaLibraryPath = getTLALibraryPath();
+		
+		if (tlaLibraryPath.length > 0) {
+			final StringBuffer buf = new StringBuffer(tlaLibraryPath.length * 2);
+			
+			buf.append("-D" + SimpleFilenameToStream.TLA_LIBRARY + "=");
+			
+			for (final String location : tlaLibraryPath) {
+				buf.append(location);
+				buf.append(File.pathSeparator);
+			}
+			
+			final String vmArg = buf.toString();
+			
+			// remove dangling pathSeparator
+			return vmArg.substring(0, vmArg.length() - 1);
+		} else {
+			return "";
+		}
+	}
+    
     
     private final Lock lock = new ReentrantLock(true);
     

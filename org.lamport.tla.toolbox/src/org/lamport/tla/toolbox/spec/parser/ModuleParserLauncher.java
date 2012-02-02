@@ -25,7 +25,6 @@ import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
-import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import tla2sany.drivers.InitException;
 import tla2sany.drivers.SANY;
@@ -131,9 +130,9 @@ public class ModuleParserLauncher
         Errors parseErrors = null;
         Errors semanticErrors = null;
         
-		FilenameToStream resolver = new RCPNameToFileIStream(
-				(String[]) PreferenceStoreHelper
-						.getTLALibraryPath(parseResource.getProject()));
+		final Spec spec = (Spec) parseResource.getProject().getAdapter(Spec.class);
+		final FilenameToStream resolver = new RCPNameToFileIStream(
+				spec.getTLALibraryPath());
 
         // Reset the tool output messages.
         ToolIO.reset();
