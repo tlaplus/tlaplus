@@ -13,7 +13,9 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -40,7 +42,7 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  * @author Simon Zambrovski
  */
 public class WorkspaceSpecManager extends GenericSelectionProvider implements ISpecManager, IResourceChangeListener,
-        IAdaptable
+        IAdaptable, IAdapterFactory
 {
     private Hashtable<String, Spec> specStorage = new Hashtable<String, Spec>(47);
     private Spec loadedSpec = null;
@@ -118,6 +120,8 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         }
 
         ws.addResourceChangeListener(this);
+        
+        Platform.getAdapterManager().registerAdapters(this, IProject.class);
     }
 
     /**
@@ -479,5 +483,26 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
 	 */
 	public boolean isSpecLoaded(final Spec aSpec) {
 		return getSpecLoaded() == aSpec;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.runtime.IAdapterFactory#getAdapter(java.lang.Object, java.lang.Class)
+	 */
+	public Object getAdapter(final Object adaptableObject,
+			@SuppressWarnings("rawtypes") final Class adapterType) {
+		if (adaptableObject instanceof IProject) {
+			final IProject project = (IProject) adaptableObject;
+			final String key = project.getName();
+			return specStorage.get(key);
+		}
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.runtime.IAdapterFactory#getAdapterList()
+	 */
+	@SuppressWarnings("rawtypes")
+	public Class[] getAdapterList() {
+		return new Class[] { Spec.class };
 	}
 }
