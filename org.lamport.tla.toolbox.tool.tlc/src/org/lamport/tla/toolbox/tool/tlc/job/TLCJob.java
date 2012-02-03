@@ -50,7 +50,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     protected int workers = 1;
     protected ILaunch launch;
     protected String modelName;
-    private final String specName;
+    protected final String specName;
 
     protected boolean appendConsole = true;
 

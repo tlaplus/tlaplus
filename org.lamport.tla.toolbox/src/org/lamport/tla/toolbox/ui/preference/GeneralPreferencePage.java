@@ -34,6 +34,7 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
      * the spec that is displayed.
      */
     public static final int MIN_DISPLAYED_SIZE_DEFAULT = 50000;
+	private LibraryPathComposite libraryPathComposite;
     
     public GeneralPreferencePage()
     {
@@ -45,11 +46,13 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
     protected Control createContents(Composite parent)
     {
         Control pageControl = super.createContents(parent);
+        
+        libraryPathComposite = new LibraryPathComposite(this);
+        
         UIHelper.setHelp(pageControl, IHelpConstants.GENERAL_PREFERENCE_PAGE);
         return pageControl;
     }
-
-
+    
     /**
      * Creates the field editors. Field editors are abstractions of
      * the common GUI blocks needed to manipulate various types
@@ -84,4 +87,28 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
     {
     }
 
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.preference.PreferencePage#performOk()
+	 */
+	public boolean performOk() {
+		libraryPathComposite.applyChanges();
+		return super.performOk();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.preference.PreferencePage#performApply()
+	 */
+	protected void performApply() {
+		libraryPathComposite.applyChanges();
+		super.performApply();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.preference.PreferencePage#performDefaults()
+	 */
+	protected void performDefaults() {
+		libraryPathComposite.performInit();
+		super.performDefaults();
+	}
 }

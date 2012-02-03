@@ -30,6 +30,8 @@ import java.net.URL;
 
 public class SimpleFilenameToStream implements FilenameToStream {
 
+	public static final String TLA_LIBRARY = "TLA-Library";
+
 	public static final String STANDARD_MODULES_FOLDER = "StandardModules";
 
 	private static final ClassLoader cl = SimpleFilenameToStream.class.getClassLoader();
@@ -86,7 +88,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
 
   private String[] getLibraryPaths(final String installationBasePath) {
     String[] res;
-    String path = System.getProperty("TLA-Library");
+    String path = System.getProperty(TLA_LIBRARY);
     if (path == null) {
       res = new String[1];
       res[0] = installationBasePath + FileUtil.separator + STANDARD_MODULES_FOLDER + FileUtil.separator;

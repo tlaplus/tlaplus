@@ -1630,6 +1630,17 @@ public class ResourceHelper
 		// verify given spec name and parsed spec name are the same
 		return aSpecName.equals(identifier);
 	}
+	
+
+	public static boolean isValidLibraryLocation(final String location) {
+		if (location != null && location.length() > 0) {
+			IPath path = new Path(location);		
+			File directory = path.toFile();
+			return directory.exists() && directory.isDirectory();
+		}
+		return false;
+	}
+
 
 	/**
 	 * @param project
