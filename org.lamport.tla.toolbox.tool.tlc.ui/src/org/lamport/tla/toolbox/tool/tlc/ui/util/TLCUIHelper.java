@@ -155,7 +155,7 @@ public class TLCUIHelper
                     boolean jumpToSavedModule = jumpToSavedLocation((Location) data, config);
                     if (!jumpToSavedModule)
                     {
-                        UIHelper.jumpToLocation((Location) data);
+                        UIHelper.jumpToLocation((Location) data, (trigger.stateMask & SWT.CTRL) != 0);
                     }
                 }
             }
