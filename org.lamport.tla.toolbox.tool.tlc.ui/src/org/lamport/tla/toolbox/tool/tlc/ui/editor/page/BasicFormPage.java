@@ -330,7 +330,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 	
 		// the control selected on the current page
 		final Control focusControl = getSite().getShell().getDisplay().getFocusControl();
-		combinedFormNav.add(new ControlNavigationLocation(focusControl));
+		if (focusControl != null) {
+			combinedFormNav.add(new ControlNavigationLocation(focusControl));
+		}
 		
 		return combinedFormNav;
 	}
