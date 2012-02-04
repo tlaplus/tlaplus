@@ -101,7 +101,7 @@
 	      </releases>
 	    </pluginRepository>
 
-	    <!-- Private Tycho snapshot repo (remove once 0.13 is stable) -->
+	    <!-- Private Tycho snapshot repo (remove once 0.14 is stable) -->
 	    <!-- Eclispe ini patcher repo (remove when bug TYCHO-595 fixed) -->
 	    <pluginRepository>
 	      <id>tla</id>
