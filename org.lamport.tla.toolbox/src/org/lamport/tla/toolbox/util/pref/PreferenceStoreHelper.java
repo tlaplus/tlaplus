@@ -1,5 +1,9 @@
 package org.lamport.tla.toolbox.util.pref;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -7,9 +11,12 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.ui.preference.LibraryPathComposite;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
+
+import util.SimpleFilenameToStream;
 
 /**
  * Utils for accessing persistence storage
