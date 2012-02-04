@@ -71,6 +71,7 @@ import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 import org.lamport.tla.toolbox.ui.view.ToolboxWelcomeView;
 
+import pcal.Region;
 import pcal.TLAtoPCalMapping;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.LevelNode;
@@ -843,8 +844,14 @@ public class UIHelper
 										.getCurrentSpec().getTpMapping(
 												location.source() + ".tla");
 								if (mapping != null) {
-									location = AdapterFactory.jumptToPCal(mapping,
-											location, document).toLocation();
+									final Region pCalRegion = AdapterFactory.jumptToPCal(mapping,
+											location, document);
+									if (pCalRegion != null) {
+										location = pCalRegion.toLocation();
+									} else {
+										setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
+										return;
+									}
 								} else {
 									setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
 									return;
