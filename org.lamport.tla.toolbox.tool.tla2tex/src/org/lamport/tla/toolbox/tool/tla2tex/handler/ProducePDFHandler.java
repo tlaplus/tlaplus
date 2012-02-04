@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Vector;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -15,6 +16,7 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
@@ -23,6 +25,8 @@ import org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstan
 import org.lamport.tla.toolbox.ui.handler.SaveDirtyEditorAbstractHandler;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import de.vonloesch.pdf4eclipse.editors.PDFEditor;
 
 import tla2tex.TLA;
 import tla2tex.TLA2TexException;
@@ -233,7 +237,11 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler
                             {
                                 monitor.subTask("Opening PDF File");
                                 tlaEditorAndPDFViewer.setActivePage(TLAEditorAndPDFViewer.PDFPage_ID);
-                                tlaEditorAndPDFViewer.getPDFViewingPage().getBrowser().setUrl(outputFileName);
+                                
+                                IResource resourceByName = ResourceHelper.getResourceByName(outputFileName);
+                                PDFEditor openEditor = (PDFEditor) UIHelper.openEditor("de.vonloesch.pdf4eclipse.editors.PDFEditor", (IFile) resourceByName);
+                                openEditor.fitHorizontal();
+                                
                                 monitor.worked(1);
 
                                 if (outputFile.lastModified() < translationStartTime)
