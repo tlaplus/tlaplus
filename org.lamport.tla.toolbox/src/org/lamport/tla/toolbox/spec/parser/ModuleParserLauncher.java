@@ -25,7 +25,6 @@ import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
-import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import tla2sany.drivers.InitException;
 import tla2sany.drivers.SANY;
