@@ -848,9 +848,6 @@ public class UIHelper
 											location, document);
 									if (pCalRegion != null) {
 										location = pCalRegion.toLocation();
-									} else {
-										setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
-										return;
 									}
 								} else {
 									setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
@@ -859,9 +856,16 @@ public class UIHelper
                             }
                             // we now need to convert the four coordinates of the location
                             // to an offset and length
-                            IRegion region = AdapterFactory.locationToRegion(document, location);
-                            int offset = region.getOffset();
+                            final IRegion region = AdapterFactory.locationToRegion(document, location);
+                            final int offset = region.getOffset();
                             int length = region.getLength();
+                            
+							// Hack in locationToRegion(...) which adds 1 to the
+							// length, which has already been accounted for by
+							// the jumpToPCal code, hence subtract.
+                            if (jumpToPCal) {
+                            	length = length - 1;
+                            }
 
                             // The following code sets editor to an existing IEditorPart
                             // (which as of June 2010 is a TLAEditorAndPDFViewer) or,
