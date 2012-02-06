@@ -242,12 +242,15 @@ public class TLCProcessJob extends TLCJob
 	 * @return A list of additional vm arguments
 	 */
 	protected List<String> getAdditionalVMArgs() throws CoreException {
-		final List<String> result = new ArrayList<String>(1);
-
 		final Spec spec = Activator.getSpecManager().getSpecByName(specName);
-		result.add(spec.getTLALibraryPathAsVMArg());
-		
-		return result;
+		final String tlaLibraryPathAsVMArg = spec.getTLALibraryPathAsVMArg();
+		if (!"".equals(tlaLibraryPathAsVMArg)) {
+			final List<String> result = new ArrayList<String>(1);
+			result.add(tlaLibraryPathAsVMArg);
+			return result;
+		} else {
+			return new ArrayList<String>();
+		}
 	}
 
 	@SuppressWarnings("rawtypes")

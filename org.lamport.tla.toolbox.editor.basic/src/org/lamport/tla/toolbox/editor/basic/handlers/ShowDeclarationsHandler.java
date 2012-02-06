@@ -174,7 +174,7 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
         protected void setList()
         {
             // Get the list of SymbolNodes to be displayed. They
-            // come from the module's contant decls, variable decls,
+            // come from the module's constant decls, variable decls,
             // opdef nodes, ThmOrAssumpDefNodes.
 
             String lcFilterPrefix = filterPrefix.toLowerCase();

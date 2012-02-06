@@ -13,7 +13,6 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
-import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
