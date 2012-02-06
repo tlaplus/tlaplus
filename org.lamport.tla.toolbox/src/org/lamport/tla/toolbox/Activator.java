@@ -396,7 +396,7 @@ public class Activator extends AbstractUIPlugin
      */
     public static void logDebug(String message)
     {
-        System.out.println(message);
+    	logInfo(message);
     }
 
     /**
