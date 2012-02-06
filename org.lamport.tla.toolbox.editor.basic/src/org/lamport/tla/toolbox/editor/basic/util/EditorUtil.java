@@ -329,8 +329,13 @@ public class EditorUtil
      */
     public static Location getCurrentLocation()
     {
+		return getCurrentLocation(0);
+    }
+    
+    public static Location getCurrentLocation(int x)
+    {
         ITextSelection selection = getCurrentSelection();
-		return getLocationAt(getCurrentDocument(), selection.getOffset(), selection.getLength());
+		return getLocationAt(getCurrentDocument(), selection.getOffset(), selection.getLength(), x);
     }
     
     private static IDocument getCurrentDocument() {
@@ -349,6 +354,11 @@ public class EditorUtil
     }
 
     public static Location getLocationAt(IDocument document, int offset, int length)
+    {
+    	return getLocationAt(document, offset, length, 0);
+    }
+    
+    public static Location getLocationAt(IDocument document, int offset, int length, int x)
     {
         // I don't think document or selection can be null, but...
         if (document == null)
@@ -374,7 +384,7 @@ public class EditorUtil
             {
                 endCol++;
             }
-            loc = new Location(startLine + 1, startCol, endLine + 1, endCol);
+            loc = new Location(startLine + 1, startCol, endLine + 1, endCol + x);
         } catch (BadLocationException e)
         {
             return null;
@@ -847,7 +857,7 @@ public class EditorUtil
 
 		final IDocument document = getCurrentDocument();
 		final pcal.Region sourceRegion = AdapterFactory.jumptToPCal(mapping,
-				EditorUtil.getCurrentLocation(), document);
+				EditorUtil.getCurrentLocation(1), document);
 		if (sourceRegion == null) {
 			// Cannot find a valid mapping for current selection
 			return false;
