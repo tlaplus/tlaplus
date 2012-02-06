@@ -14,8 +14,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.ui.views,
- org.eclipse.ui.forms,
- de.vonloesch.pdf4Eclipse;bundle-version="1.0.1"
+ org.eclipse.ui.forms
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.ui.forms

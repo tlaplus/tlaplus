@@ -345,6 +345,44 @@ public class UIHelper
     }
 
     /**
+     * Convenience method to reduce client dependencies
+     * @param editorId
+     * @param file
+     * @return
+     * @throws PartInitException 
+     */
+    public static IEditorPart openEditorUnchecked(String editorId, IFile file) throws PartInitException
+    {
+        return openEditorUnchecked(editorId, new FileEditorInput(file));
+    }
+    
+    /**
+     * Opens an editor in current workbench window
+     * 
+     * @param editorId
+     * @param input
+     * @return the created or reopened IEditorPart
+     * @throws PartInitException 
+     */
+    public static IEditorPart openEditorUnchecked(String editorId, IEditorInput input) throws PartInitException
+    {
+		final IWorkbenchPage activePage = getActivePage();
+		if (activePage != null) {
+			final IEditorPart openEditor = activePage.openEditor(input, editorId);
+				
+			// Trigger re-evaluation of the handler enablement state by
+			// cycling the activepage. Cycling the active page causes an
+			// event to be fired inside the selection service.
+			// During this time, there will be no active page!
+			getActiveWindow().setActivePage(null);
+			getActiveWindow().setActivePage(activePage);
+
+			return openEditor;
+		}
+		return null;
+    }
+    
+    /**
      * Retrieves active window
      * 
      * @return
