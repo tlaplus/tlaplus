@@ -44,6 +44,16 @@ The first argument of Assert evaluated to FALSE; the second argument was:
 @!@!@ENDMSG 2154 @!@!@
 @!@!@ENDMSG 1000 @!@!@
 tlc2.tool.EvalException: 
+@!@!@STARTMSG 2154:0 @!@!@
+Attempted to apply the operator overridden by the Java method
+public static tlc2.value.Value tlc2.module.TLC.Assert(tlc2.value.Value,tlc2=
+.value.Value),
+but it produced the following error:
+@!@!@STARTMSG 2132:0 @!@!@
+The first argument of Assert evaluated to FALSE; the second argument was:
+"Failure of assertion."
+@!@!@ENDMSG 2132 @!@!@
+@!@!@ENDMSG 2154 @!@!@
       at tlc2.value.MethodValue.apply(MethodValue.java:62)
       at tlc2.tool.Tool.getNextStatesAppl(Tool.java:849)
       at tlc2.tool.Tool.getNextStates(Tool.java:710)
