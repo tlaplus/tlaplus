@@ -322,7 +322,8 @@ public class Activator extends AbstractUIPlugin
     public void stop(BundleContext context) throws Exception
     {
         // unregister the listeners
-        specManager.terminate();
+    	if (specManager != null)
+    		specManager.terminate();
         
 		// do not null specManager and plugin to let backend jobs finish cleanly
         //
