@@ -610,7 +610,7 @@ public class ModelChecker extends AbstractChecker
                         MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
                     } else if (e.getMessage() != null)
                     {
-                        MP.printError(EC.GENERAL, e.getMessage() == null ? e.toString() : e.getMessage(), e);
+                        MP.printError(EC.GENERAL, e.getMessage() == null ? e.toString() : e.getMessage());
                     }
                     this.trace.printTrace(curState, succState);
                     this.theStateQueue.finishAll();
