@@ -234,7 +234,6 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler
                             public void run()
                             {
                                 monitor.subTask("Opening PDF File");
-                                tlaEditorAndPDFViewer.setActivePage(TLAEditorAndPDFViewer.PDFPage_ID);
 
 								// try opening the built-in PDF editor first and
 								// only fall back if not deployed
@@ -253,6 +252,7 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler
 									// fall back to system browser which
 									// (hopefully) opens the system's PDF viewer
 									// (if installed)
+	                                tlaEditorAndPDFViewer.setActivePage(TLAEditorAndPDFViewer.PDFPage_ID);
 									tlaEditorAndPDFViewer.getPDFViewingPage()
 											.getBrowser()
 											.setUrl(outputFileName);
