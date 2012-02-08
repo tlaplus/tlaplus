@@ -848,6 +848,9 @@ public class UIHelper
 											location, document);
 									if (pCalRegion != null) {
 										location = pCalRegion.toLocation();
+									} else {
+										setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
+										return;
 									}
 								} else {
 									setStatusLineMessage("No valid TLA to PCal mapping found for current selection");
