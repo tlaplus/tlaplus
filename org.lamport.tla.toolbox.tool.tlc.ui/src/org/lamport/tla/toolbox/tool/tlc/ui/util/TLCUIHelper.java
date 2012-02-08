@@ -74,7 +74,7 @@ public class TLCUIHelper
 		}
     }
     
-    protected static List<StyleRange> setTLCLocationHyperlinks(final String text) {
+    protected static List<StyleRange> setTLCLocationHyperlinks(String text) {
     	final List<StyleRange> result = new ArrayList<StyleRange>();
 
     	/*
@@ -101,7 +101,12 @@ public class TLCUIHelper
             matcher = Location.ALL_PATTERNS[i].matcher(text);
             while (matcher.find())
             {
-                String locationString = matcher.group();
+                final String locationString = matcher.group();
+                
+                // "consume" location string to prevent pcal matcher from consuming the same text again
+                // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=269
+                text = text.replace(locationString, "");
+                
                 Location location = Location.parseLocation(locationString);
                 if (location != null && !location.equals(Location.nullLoc)
                         && !location.source().equals(ModelHelper.MC_MODEL_NAME)
