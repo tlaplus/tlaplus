@@ -672,17 +672,17 @@
       </specification>
       <specification
             annotationType="org.lamport.tla.toolbox.editor.basic.showParenError"
-            colorPreferenceKey="fcsCPK"
+            colorPreferenceKey="fcsCPK2"
             colorPreferenceValue="255,140,140"
-            highlightPreferenceKey="fcsHPK"
+            highlightPreferenceKey="fcsHPK2"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
             label="Paren Matching Error"
-            overviewRulerPreferenceKey="fcsORPK"
+            overviewRulerPreferenceKey="fcsORPK2"
             overviewRulerPreferenceValue="true"
-            textPreferenceKey="fcsTPK"
+            textPreferenceKey="fcsTPK2"
             textPreferenceValue="true"
-            textStylePreferenceKey="fcsSPK"
+            textStylePreferenceKey="fcsSPK2"
             textStylePreferenceValue="BOX"
             verticalRulerPreferenceValue="true">
       </specification>"
