@@ -75,6 +75,24 @@ Here are the known bugs in TLATeX:
    Fixing this unlikely problem requires fixing the lexing algorithm
    in TokenizeSpec.java.
 
+3. The input 
+      
+      LET x...
+      IN  x...
+
+produces
+
+      LET x...
+      IN   x...
+
+It looks like the two spaces after the "IN" produce the extra space.
+The input
+
+      LET x...
+      IN x...
+
+produces the correct output.
+
 ----------
   
 
@@ -93,4 +111,4 @@ Version 0.95 of 11 November 2001
     * Modifying TLA.MakePSFile and LaTeXOutput.RunLatex to call 
       ExecuteCommand.
 
-Last modified on Sun Nov 11 11:29:50 PT 2001 by lamport
+Last modified on Wed  8 February 2012 at 13:56:11 PST by lamport
