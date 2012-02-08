@@ -16,8 +16,8 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.PartInitException;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator;
@@ -25,8 +25,6 @@ import org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstan
 import org.lamport.tla.toolbox.ui.handler.SaveDirtyEditorAbstractHandler;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
-
-import de.vonloesch.pdf4eclipse.editors.PDFEditor;
 
 import tla2tex.TLA;
 import tla2tex.TLA2TexException;
@@ -236,11 +234,29 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler
                             public void run()
                             {
                                 monitor.subTask("Opening PDF File");
-                                tlaEditorAndPDFViewer.setActivePage(TLAEditorAndPDFViewer.PDFPage_ID);
-                                
-                                IResource resourceByName = ResourceHelper.getResourceByName(outputFileName);
-                                PDFEditor openEditor = (PDFEditor) UIHelper.openEditor("de.vonloesch.pdf4eclipse.editors.PDFEditor", (IFile) resourceByName);
-                                openEditor.fitHorizontal();
+
+								// try opening the built-in PDF editor first and
+								// only fall back if not deployed
+								final IResource pdfFile = ResourceHelper
+										.getResourceByName(outputFileName);
+								try {
+									UIHelper.openEditorUnchecked(
+											// Referencing de.vonloesch...
+											// creates an _implicit_
+											// dependency which is not made
+											// explicit in the bundle's
+											// Manifest
+											"de.vonloesch.pdf4eclipse.editors.PDFEditor",
+											(IFile) pdfFile);
+								} catch (PartInitException e) {
+									// fall back to system browser which
+									// (hopefully) opens the system's PDF viewer
+									// (if installed)
+	                                tlaEditorAndPDFViewer.setActivePage(TLAEditorAndPDFViewer.PDFPage_ID);
+									tlaEditorAndPDFViewer.getPDFViewingPage()
+											.getBrowser()
+											.setUrl(outputFileName);
+								}
                                 
                                 monitor.worked(1);
 

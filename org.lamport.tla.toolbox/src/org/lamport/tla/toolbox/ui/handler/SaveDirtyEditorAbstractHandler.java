@@ -29,7 +29,8 @@ public abstract class SaveDirtyEditorAbstractHandler extends AbstractHandler {
         {
 			final Shell shell = HandlerUtil.getActiveShell(event);
 			final MessageDialog dialog = new SaveMessageDialog(shell, getDialogTitle(), getDialogMessage());
-			if (dialog.open() == MessageDialog.CONFIRM) {
+			int res = dialog.open();
+			if (res == MessageDialog.OK || res == MessageDialog.CONFIRM) {
 				// TODO decouple from ui thread
 				activeEditor.doSave(new NullProgressMonitor());
 			} else {

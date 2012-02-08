@@ -65,36 +65,36 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
             + ModelWriter.END_TUPLE);
 
     // presenter for the current process
-    private ITLCModelLaunchDataPresenter presenter;
+    protected ITLCModelLaunchDataPresenter presenter;
     // list of errors
-    private List<TLCError> errors;
+    protected List<TLCError> errors;
     // start time
-    private long startTimestamp;
+    protected long startTimestamp;
     // end time
-    private long finishTimestamp;
+    protected long finishTimestamp;
     // last checkpoint time
-    private long lastCheckpointTimeStamp;
+    protected long lastCheckpointTimeStamp;
     // coverage at
-    private String coverageTimestamp;
+    protected String coverageTimestamp;
     // reports current status of model checking
-    private String currentStatus;
+    protected String currentStatus;
     // reports the probability of a fingerprint collision
-    private String fingerprintCollisionProbability;
+    protected String fingerprintCollisionProbability;
     // coverage items
-    private List<CoverageInformationItem> coverageInfo;
+    protected List<CoverageInformationItem> coverageInfo;
     // progress information
-    private List<StateSpaceInformationItem> progressInformation;
+    protected List<StateSpaceInformationItem> progressInformation;
 
     // last detected error
-    private TLCError lastDetectedError;
+    protected TLCError lastDetectedError;
     // flag indicating that the job / file output is finished
-    private boolean isDone;
+    protected boolean isDone;
     // progress output
-    private Document progressOutput;
+    protected Document progressOutput;
     // user output
-    private Document userOutput;
+    protected Document userOutput;
     // calc output
-    private String constantExprEvalOutput;
+    protected String constantExprEvalOutput;
 
     // the model, which is represented by the current launch data provider
     private ILaunchConfiguration config;
@@ -102,7 +102,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     // currently this is used to indicate
     // that tlc output not surrounded by message tags
     // should be put in the user output widget
-    private boolean isTLCStarted = false;
+    protected boolean isTLCStarted = false;
 
     /**
      *  Set to the starting time of the current TLC run.
@@ -110,9 +110,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      *  message is processed.  Thus, there is no guarantee
      *  that this time bears any relation to startTimeStamp.
      */
-    private long startTime = 0;
+    protected long startTime = 0;
 
-	private int numWorkers = 0;
+    protected int numWorkers = 0;
 
     /**
      * @return the startTime
@@ -137,7 +137,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     /**
      * Resets the values to defaults
      */
-    private void initialize()
+    protected void initialize()
     {
         isDone = false;
         isTLCStarted = false;
@@ -164,7 +164,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      * Inform the view, if any
      * @param fieldId
      */
-    private void informPresenter(int fieldId)
+    protected void informPresenter(int fieldId)
     {
         if (presenter != null)
         {
@@ -248,8 +248,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
             case MP.STATE:
                 Assert.isNotNull(this.lastDetectedError,
                         "The state encountered without the error describing the reason for it. This is a bug.");
-                this.lastDetectedError.addState(TLCState.parseState(outputMessage, ModelHelper.getModelName(getConfig()
-                        .getFile())));
+                this.lastDetectedError.addState(TLCState.parseState(outputMessage, getModelName()));
                 break;
             case MP.ERROR:
             case MP.TLCBUG:
@@ -384,8 +383,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     break;
                 case EC.TLC_COVERAGE_VALUE:
                     // Commented out by LL for testing on 25 sep 2010
-                    CoverageInformationItem item = CoverageInformationItem.parse(outputMessage, ModelHelper
-                            .getModelName(getConfig().getFile()));
+                    CoverageInformationItem item = CoverageInformationItem.parse(outputMessage, getModelName());
                     if (!item.getModule().equals(ModelHelper.MC_MODEL_NAME))
                     {
                         // only add coverage of the spec files
@@ -963,4 +961,13 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         }
         return result;
     }
+    
+	/**
+	 * @return The model name
+	 */
+	protected String getModelName() {
+		// defined here so subclasses can override which ain't backed by a real
+		// file (e.g. unit test)
+		return ModelHelper.getModelName(getConfig().getFile());
+	}
 }

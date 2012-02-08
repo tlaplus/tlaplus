@@ -17,8 +17,6 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.UIHelper;
 
-import pcal.TLAtoPCalMapping;
-
 /**
  * @author lamport
  *

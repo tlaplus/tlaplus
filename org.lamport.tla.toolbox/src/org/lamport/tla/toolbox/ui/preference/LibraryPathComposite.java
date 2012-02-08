@@ -17,7 +17,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -42,7 +47,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
+import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.ToolboxJob;
 
 /**
  * A {@link Composite} that can be embedded inside a {@link PreferencePage}. It
@@ -227,18 +237,28 @@ public class LibraryPathComposite {
 			locations.append(LOCATION_DELIM);
 		}
 		
-//		if (hasLocationsChanges(locations.toString())) {
-//			Spec spec = Activator.getSpecManager().getSpecLoaded();
-//			if (spec != null){
-//				if (MessageDialog
-//						.openQuestion(
-//								this.preferencePage.getShell(),
-//								"Locations changed",
-//								"Active API use scan locations have changed. A full build is required for the changes to take effect.\nDo a full build now?")) {
-//					ToolboxHandle.parseModule(spec.getRootFile(), new NullProgressMonitor(), true, true);
-//				}
-//			}
-//		}
+		if (hasLocationsChanges(locations.toString())) {
+			final Spec spec = Activator.getSpecManager().getSpecLoaded();
+			if (spec != null){
+				if (MessageDialog
+						.openQuestion(
+								this.preferencePage.getShell(),
+								"Locations changed",
+								"TLA library path locations have changed. Reparsing is required for the changes to take effect.\nReparse now?")) {
+
+					final Job j = new ToolboxJob("") {
+						protected IStatus run(IProgressMonitor monitor) {
+							ToolboxHandle.parseModule(spec.getRootFile(),
+									monitor, true, true);
+							return Status.OK_STATUS;
+						}
+					};
+					j.schedule();
+				} else {
+                    spec.setStatus(IParseConstants.UNPARSED);
+				}
+			}
+		}
 		
 		this.preferencePage.getPreferenceStore().setValue(LIBRARY_PATH_LOCATION_PREFIX, locations.toString());
 	}
@@ -248,34 +268,34 @@ public class LibraryPathComposite {
 	 * @param newLocations
 	 * @return if there have been changes to the use scan entries
 	 */
-//	private boolean hasLocationsChanges(String newLocations) {
-//		String oldLocations = this.preferencePage.getPreferenceStore().getString(LIBRARY_PATH_LOCATION_PREFIX);
-//		
-//		if (oldLocations != null && oldLocations.equalsIgnoreCase(newLocations)) {
-//			return false;
-//		}
-//		
-//		List<String> oldCheckedElements = new ArrayList<String>();
-//		if (oldLocations != null && oldLocations.length() > 0) {
-//			String[] locations = oldLocations.split(ESCAPE_REGEX + LOCATION_DELIM);
-//			for (int i = 0; i < locations.length; i++) {
-//				String values[] = locations[i].split(ESCAPE_REGEX + STATE_DELIM);
-//				if (Boolean.valueOf(values[1]).booleanValue()) {
-//					oldCheckedElements.add(values[0]);
-//				}
-//			}			
-//		}
-//		Object[] newCheckedLocations = fTableViewer.getCheckedElements();
-//		if (newCheckedLocations.length != oldCheckedElements.size()) {
-//			return true;
-//		}
-//		for (int i = 0; i < newCheckedLocations.length; i++) {
-//			if (!oldCheckedElements.contains(newCheckedLocations[i])) {
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
+	private boolean hasLocationsChanges(String newLocations) {
+		String oldLocations = this.preferencePage.getPreferenceStore().getString(LIBRARY_PATH_LOCATION_PREFIX);
+		
+		if (oldLocations != null && oldLocations.equalsIgnoreCase(newLocations)) {
+			return false;
+		}
+		
+		List<String> oldCheckedElements = new ArrayList<String>();
+		if (oldLocations != null && oldLocations.length() > 0) {
+			String[] locations = oldLocations.split(ESCAPE_REGEX + LOCATION_DELIM);
+			for (int i = 0; i < locations.length; i++) {
+				String values[] = locations[i].split(ESCAPE_REGEX + STATE_DELIM);
+				if (Boolean.valueOf(values[1]).booleanValue()) {
+					oldCheckedElements.add(values[0]);
+				}
+			}			
+		}
+		Object[] newCheckedLocations = fTableViewer.getCheckedElements();
+		if (newCheckedLocations.length != oldCheckedElements.size()) {
+			return true;
+		}
+		for (int i = 0; i < newCheckedLocations.length; i++) {
+			if (!oldCheckedElements.contains(newCheckedLocations[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * Initializes the page

@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,11 +65,19 @@ public class TLCUIHelper
      * 
      * @param styledText
      */
-    public static void setTLCLocationHyperlinks(StyledText styledText)
+    public static void setTLCLocationHyperlinks(final StyledText styledText)
     {
-        String text = styledText.getText();
+        final String text = styledText.getText();
+        final List<StyleRange> list = setTLCLocationHyperlinks(text);
+        for (StyleRange styleRange : list) {
+			styledText.setStyleRange(styleRange);
+		}
+    }
+    
+    protected static List<StyleRange> setTLCLocationHyperlinks(String text) {
+    	final List<StyleRange> result = new ArrayList<StyleRange>();
 
-        /*
+    	/*
          * Will be set to the module name
          * of the last location found in the following for
          * loop. This will be used to set the module
@@ -91,14 +101,19 @@ public class TLCUIHelper
             matcher = Location.ALL_PATTERNS[i].matcher(text);
             while (matcher.find())
             {
-                String locationString = matcher.group();
+                final String locationString = matcher.group();
+                
+                // "consume" location string to prevent pcal matcher from consuming the same text again
+                // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=269
+                text = text.replace(locationString, "");
+                
                 Location location = Location.parseLocation(locationString);
                 if (location != null && !location.equals(Location.nullLoc)
                         && !location.source().equals(ModelHelper.MC_MODEL_NAME)
                         && !location.source().equals(ModelHelper.TE_MODEL_NAME))
                 {
                     pcalModuleName = location.source();
-                    styledText.setStyleRange(getHyperlinkStyleRange(location, matcher.start(), matcher.end()));
+                    result.add(getHyperlinkStyleRange(location, matcher.start(), matcher.end()));
                 }
             }
         }
@@ -119,7 +134,7 @@ public class TLCUIHelper
                 int beginLine = Integer.parseInt(matcher.group(1));
                 int beginColumn = Integer.parseInt(matcher.group(2));
 
-                styledText.setStyleRange(getHyperlinkStyleRange(new Location(UniqueString
+                result.add(getHyperlinkStyleRange(new Location(UniqueString
                         .uniqueStringOf(pcalModuleName), beginLine, beginColumn, beginLine, beginColumn), matcher
                         .start(), matcher.end()));
             } catch (NumberFormatException e)
@@ -127,6 +142,7 @@ public class TLCUIHelper
                 TLCUIActivator.logError("Error parsing PlusCal assertion failed location.", e);
             }
         }
+        return result;
     }
 
     /**

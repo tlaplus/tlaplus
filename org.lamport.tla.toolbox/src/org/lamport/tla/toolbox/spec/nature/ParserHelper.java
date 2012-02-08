@@ -65,15 +65,18 @@ public class ParserHelper
         {
             return;
         }
-        Activator.logDebug("Spec build invoked on " + spec.getName() + " ...");
         IWorkspaceRunnable run = new IWorkspaceRunnable() {
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
+            	Activator.logDebug("Spec build invoked on " + spec.getName() + " ...");
 
                 // markers already removed in the parseSpecification 
                 launcher.parseSpecification(spec, monitor);
-                Activator.logDebug("Resulting status is: " + AdapterFactory.getStatusAsString(spec));
+
+				Activator.logDebug("Resulting status is: "
+						+ AdapterFactory.getStatusAsString(spec)
+						+ "\n... build invocation finished.");
             }
         };
         try
@@ -83,6 +86,5 @@ public class ParserHelper
         {
             Activator.logError("Error parsing a module", e);
         }
-        Activator.logDebug("... build invocation finished.");
     }
 }
