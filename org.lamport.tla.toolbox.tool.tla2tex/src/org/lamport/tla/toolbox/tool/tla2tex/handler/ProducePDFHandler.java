@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.Vector;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -17,7 +17,6 @@ import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.PartInitException;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator;
@@ -53,97 +52,72 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 			return null;
 		}
 
+		boolean useEmbeddedViewer = TLA2TeXActivator.getDefault()
+				.getPreferenceStore()
+				.getBoolean(ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER);
+		
 		IEditorInput editorInput = activeEditor.getEditorInput();
 		if (editorInput instanceof IFileEditorInput) {
 			final IResource fileToTranslate = ((IFileEditorInput) editorInput)
 					.getFile();
 			if (fileToTranslate != null
 					&& ResourceHelper.isModule(fileToTranslate)) {
-				if (activeEditor instanceof TLAEditorAndPDFViewer) {
-					final TLAEditorAndPDFViewer tlaEditorAndPDFViewer = (TLAEditorAndPDFViewer) activeEditor;
+				if (useEmbeddedViewer) {
+					runPDFJob(new EmbeddedPDFViewerRunnable(), fileToTranslate);
+				} else {
+					useStandalonePDFViewer(fileToTranslate);
+				}
+			}
+		}
 
-					final Browser browser = tlaEditorAndPDFViewer
-							.getPDFViewingPage().getBrowser();
+		return null;
+	}
 
-					if (browser != null) {
+	private void useStandalonePDFViewer(final IResource fileToTranslate) {
+		if (activeEditor instanceof TLAEditorAndPDFViewer) {
+			final TLAEditorAndPDFViewer tlaEditorAndPDFViewer = (TLAEditorAndPDFViewer) activeEditor;
 
-						// The browser has been instantiated because the pdf
-						// viewing page
-						// has been set active at some point in the past.
+			final Browser browser = tlaEditorAndPDFViewer
+					.getPDFViewingPage().getBrowser();
+			if (browser != null) {
 
-						// A progress listener is necessary because of the way a
-						// Browser widget works.
-						// When browser.setUrl or browser.setText is called, the
-						// code after that will continue
-						// executing regardless of whether that url or text has
-						// been loaded by the browser.
-						// The page is loaded by the browser asynchronously.
-						// Therefore, in order to ensure that the browser is not
-						// viewing the old pdf file
-						// when tla2tex is run, the code to run tla2tex is
-						// contained in the
-						// progressListener.completed method. This method is
-						// executed when a new url
-						// or string of html text is loaded. For this particular
-						// listener implemented
-						// below, this method will only be called when the html
-						// in
-						// browser.setText("<html><body></body></html>"); is
-						// loaded. As soon as it is loaded, the browser removes
-						// this progress listener
-						// so that it is never called again. Then, tla2tex is
-						// run and the second tab in
-						// the multi page editor is set to the new pdf file.
-						ProgressListener progressListener = new ProgressListener() {
+				// The browser has been instantiated because the pdf
+				// viewing page
+				// has been set active at some point in the past.
 
-							public void changed(ProgressEvent event) {
-								// TODO Auto-generated method stub
+				// A progress listener is necessary because of the way a
+				// Browser widget works.
+				// When browser.setUrl or browser.setText is called, the
+				// code after that will continue
+				// executing regardless of whether that url or text has
+				// been loaded by the browser.
+				// The page is loaded by the browser asynchronously.
+				// Therefore, in order to ensure that the browser is not
+				// viewing the old pdf file
+				// when tla2tex is run, the code to run tla2tex is
+				// contained in the
+				// progressListener.completed method. This method is
+				// executed when a new url
+				// or string of html text is loaded. For this particular
+				// listener implemented
+				// below, this method will only be called when the html
+				// in
+				// browser.setText("<html><body></body></html>"); is
+				// loaded. As soon as it is loaded, the browser removes
+				// this progress listener
+				// so that it is never called again. Then, tla2tex is
+				// run and the second tab in
+				// the multi page editor is set to the new pdf file.
+				ProgressListener progressListener = new ProgressListener() {
 
-							}
+					public void changed(ProgressEvent event) {
+						// TODO Auto-generated method stub
 
-							public void completed(ProgressEvent event) {
+					}
 
-								browser.removeProgressListener(this);
+					public void completed(ProgressEvent event) {
 
-								// The following is performed as a job
-								// because producing running the tla2tex
-								// translation and navigating the browser
-								// to the new pdf can take several seconds.
-								// The job provides a progress monitor
-								// for the user and does not lock the UI thread.
-								// There are UI operations that must be
-								// performed
-								// within the job's run method. These must be
-								// run by calling UIHelper.runUISync.
-								runPDFJob(tlaEditorAndPDFViewer,
-										fileToTranslate);
-
-							}
-						};
-
-						// The browser has already been created, so the pdf to
-						// be
-						// viewed may be loaded already. It is necessary to wait
-						// until a new page has been loaded before modifying
-						// the pdf.
-						browser.addProgressListener(progressListener);
-
-						// It is necessary to navigate to this page in case a
-						// pdf file is already open.
-						// This allows tla2tex to write to that file before it
-						// gets displayed
-						// to the user again.
-						browser.setText("<html><body></body></html>");
-					} else {
-						// The browser has not yet been instantiated because
-						// the pdf viewing page has not been set active
-						// and multi page form editors only create the part
-						// control for a page when it is first set active.
-						// There is not need to worry about the browser being
-						// open on the pdf
-						// file, and the runPDFJob will set the pdf viewing page
-						// to
-						// be active which creates the browser widget.
+						browser.removeProgressListener(this);
 
 						// The following is performed as a job
 						// because producing running the tla2tex
@@ -151,17 +125,53 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 						// to the new pdf can take several seconds.
 						// The job provides a progress monitor
 						// for the user and does not lock the UI thread.
-						// There are UI operations that must be performed
+						// There are UI operations that must be
+						// performed
 						// within the job's run method. These must be
 						// run by calling UIHelper.runUISync.
-						runPDFJob(tlaEditorAndPDFViewer, fileToTranslate);
+						runPDFJob(new StandalonePDFViewerRunnable(tlaEditorAndPDFViewer),
+								fileToTranslate);
+
 					}
+				};
 
-				}
+				// The browser has already been created, so the pdf to
+				// be
+				// viewed may be loaded already. It is necessary to wait
+				// until a new page has been loaded before modifying
+				// the pdf.
+				browser.addProgressListener(progressListener);
+
+				// It is necessary to navigate to this page in case a
+				// pdf file is already open.
+				// This allows tla2tex to write to that file before it
+				// gets displayed
+				// to the user again.
+				browser.setText("<html><body></body></html>");
+			} else {
+				// The browser has not yet been instantiated because
+				// the pdf viewing page has not been set active
+				// and multi page form editors only create the part
+				// control for a page when it is first set active.
+				// There is not need to worry about the browser being
+				// open on the pdf
+				// file, and the runPDFJob will set the pdf viewing page
+				// to
+				// be active which creates the browser widget.
+
+				// The following is performed as a job
+				// because producing running the tla2tex
+				// translation and navigating the browser
+				// to the new pdf can take several seconds.
+				// The job provides a progress monitor
+				// for the user and does not lock the UI thread.
+				// There are UI operations that must be performed
+				// within the job's run method. These must be
+				// run by calling UIHelper.runUISync.
+				runPDFJob(new StandalonePDFViewerRunnable(tlaEditorAndPDFViewer), fileToTranslate);
 			}
-		}
 
-		return null;
+		}
 	}
 
 	/**
@@ -183,11 +193,11 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 	 * @param tlaEditorAndPDFViewer
 	 * @param fileToTranslate
 	 */
-	private void runPDFJob(final TLAEditorAndPDFViewer tlaEditorAndPDFViewer,
+	private void runPDFJob(final AbstractPDFViewerRunnable runnable, 
 			final IResource fileToTranslate) {
-		Job tla2TexJob = new Job("Produce PDF") {
+		Job tla2TexJob = new WorkspaceJob("Produce PDF") {
 
-			protected IStatus run(final IProgressMonitor monitor) {
+			public IStatus runInWorkspace(final IProgressMonitor monitor) {
 
 				try {
 
@@ -249,59 +259,20 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 							+ File.separator
 							+ ResourceHelper.getModuleName(fileToTranslate)
 							+ "." + TLA2TeX_Output_Extension;
-
+					
 					final File outputFile = new File(outputFileName);
 					if (outputFile.exists()) {
-
+						
+						runnable.setFile(outputFileName);
+						runnable.setStartTime(translationStartTime);
+						runnable.setMonitor(monitor);
+						
 						// Open the file if it exists.
 						// If it has not been modified, this is
 						// most likely because it is open in an
 						// external program, so display this information
 						// to the user.
-						UIHelper.runUISync(new Runnable() {
-
-							public void run() {
-								monitor.subTask("Opening PDF File");
-
-								// try opening the built-in PDF editor first and
-								// only fall back if not deployed
-								final IResource pdfFile = ResourceHelper
-										.getResourceByName(outputFileName);
-								try {
-									UIHelper.openEditorUnchecked(
-											// Referencing de.vonloesch...
-											// creates an _implicit_
-											// dependency which is not made
-											// explicit in the bundle's
-											// Manifest
-											"de.vonloesch.pdf4eclipse.editors.PDFEditor",
-											(IFile) pdfFile);
-								} catch (PartInitException e) {
-									// fall back to system browser which
-									// (hopefully) opens the system's PDF viewer
-									// (if installed)
-									tlaEditorAndPDFViewer
-											.setActivePage(TLAEditorAndPDFViewer.PDFPage_ID);
-									tlaEditorAndPDFViewer.getPDFViewingPage()
-											.getBrowser()
-											.setUrl(outputFileName);
-								}
-
-								monitor.worked(1);
-
-								if (outputFile.lastModified() < translationStartTime) {
-									MessageDialog
-											.openWarning(
-													UIHelper.getShellProvider()
-															.getShell(),
-													"PDF File Not Modified",
-													"The pdf file could not be modified. "
-															+ "Make sure that the file "
-															+ outputFileName
-															+ " is not open in any external programs.");
-								}
-							}
-						});
+						UIHelper.runUISync(runnable);
 					} else {
 						UIHelper.runUISync(new Runnable() {
 
