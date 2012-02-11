@@ -27,4 +27,9 @@ public interface ITLA2TeXPreferenceConstants
      * Specify grey level
      */
     public static final String GRAY_LEVEL = "greyLevel";
+
+    /**
+     * True if embedded viewer is to be used
+     */
+    public static final String EMBEDDED_VIEWER = "embeddedViewer";
 }
