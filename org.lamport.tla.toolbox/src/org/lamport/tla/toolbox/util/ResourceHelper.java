@@ -1598,7 +1598,7 @@ public class ResourceHelper
         {
             String element = listOfImportedModules.get(i);
             value[i] = element.substring(0, element.length() - 4);
-            System.out.println("next module: " + value[i]);
+            // System.out.println("next module: " + value[i]);
         }
         value[listOfImportedModules.size()] = rootModuleName;
         Arrays.sort(value);
