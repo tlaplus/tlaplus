@@ -465,6 +465,14 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
             popup.open();
         } else
         {
+            // The original code was bogus, since it's looping through all the
+            // modules in moduleNames, which has length 1 in this else branch.
+            // In particular, if there are no uses of the symbol in the module
+            // containing its definition, then it reported an an error.
+            // To fix the bug with minimal changes, LL added the following statement
+            // on 11 Feb 2012.
+            moduleName = moduleNames[0];
+            
             moduleToShow = moduleName;
 
             spec.setModuleToShow(moduleToShow);

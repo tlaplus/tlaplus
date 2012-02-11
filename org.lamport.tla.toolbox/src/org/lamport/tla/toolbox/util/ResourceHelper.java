@@ -1464,7 +1464,10 @@ public class ResourceHelper
             }
 
             // If defs is non-null, there is a defs clause to be checked.
-            if (defs != null)
+            // Modified by LL on 11 Feb 2012 to add the defs.length != 0
+            // clause, since the LeafProofNode.getDefs method returns a 
+            // zero-length array.
+            if (defs != null && defs.length != 0)
             {
                 // Set stn to the syntax tree of the actual BY, USE or HIDE.
                 // I believe that's equal to node.sty except for a USE or HIDE
