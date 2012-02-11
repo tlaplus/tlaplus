@@ -50,6 +50,7 @@ import org.eclipse.ui.PlatformUI;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.tool.IParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.ToolboxJob;
@@ -248,13 +249,16 @@ public class LibraryPathComposite {
 
 					final Job j = new ToolboxJob("") {
 						protected IStatus run(IProgressMonitor monitor) {
-							ToolboxHandle.parseModule(spec.getRootFile(),
+							final IParseResult parseModule = ToolboxHandle.parseModule(spec.getRootFile(),
 									monitor, true, true);
+							// update the spec parse status
+							spec.setStatus(parseModule.getStatus());
 							return Status.OK_STATUS;
 						}
 					};
 					j.schedule();
 				} else {
+					// if not reparese, the spec status is set to unparsed
                     spec.setStatus(IParseConstants.UNPARSED);
 				}
 			}
