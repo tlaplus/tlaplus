@@ -146,7 +146,7 @@ public class TLAProofPosition extends Position implements IProjectionPosition
             document.addPosition(positionOfStatement);
         } catch (BadLocationException e)
         {
-            Activator.logError("Error installing positions for proof fold at " + this, e);
+            Activator.getDefault().logError("Error installing positions for proof fold at " + this, e);
         }
 
     }

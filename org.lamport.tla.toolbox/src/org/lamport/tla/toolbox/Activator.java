@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.OutOfBuildSpecModulesGatheringDeltaVisitor;
@@ -38,7 +37,7 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin
+public class Activator extends AbstractTLCActivator
 {
 
     // The plug-in ID
@@ -79,6 +78,7 @@ public class Activator extends AbstractUIPlugin
      */
     public Activator()
     {
+    	super(PLUGIN_ID);
     }
 
     public void start(final BundleContext context) throws Exception
@@ -262,7 +262,7 @@ public class Activator extends AbstractUIPlugin
                         }
                     } catch (CoreException e)
                     {
-                        Activator.logError("Error during post save status update", e);
+                        Activator.getDefault().logError("Error during post save status update", e);
                     }
                 }
 
@@ -310,7 +310,7 @@ public class Activator extends AbstractUIPlugin
                         }
                     } catch (CoreException e)
                     {
-                        Activator.logError("Error during post save status update", e);
+                        Activator.getDefault().logError("Error during post save status update", e);
                     }
                 }
 
@@ -383,41 +383,6 @@ public class Activator extends AbstractUIPlugin
     }
 
     /**
-     * Writes a string and a cause into the error category of the log
-     * @param string
-     * @param e
-     */
-    public static void logError(String message, Throwable cause)
-    {
-        getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, message, cause));
-    }
-
-    /**
-     * Writes a string into some debugging place
-     */
-    public static void logDebug(String message)
-    {
-    	logInfo(message);
-    }
-
-    /**
-     * Writes a string into some debugging place
-     */
-    public static void logDebug(String message, Throwable cause)
-    {
-        getDefault().getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, message, cause));
-    }
-    
-    /**
-     * Writes a string into the info category of the log
-     * @param string
-     */
-    public static void logInfo(String message)
-    {
-        getDefault().getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));
-    }
-
-    /**
      * Retrieves the runnable to update the Spec Parse Status Widget
      * @return
      */
@@ -436,5 +401,4 @@ public class Activator extends AbstractUIPlugin
         this.sizeControlContribution = sizeControlContribution; 
         
     }
-
 }

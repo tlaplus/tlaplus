@@ -40,13 +40,13 @@ public class PreferenceStoreHelper
         if (projectPrefs != null)
         {
             String rootFileName = projectPrefs.get(IPreferenceConstants.P_PROJECT_ROOT_FILE, IPreferenceConstants.DEFAULT_NOT_SET);
-System.out.println("footFileName = " + rootFileName);
+            Activator.getDefault().logDebug("footFileName = " + rootFileName);
             if (!IPreferenceConstants.DEFAULT_NOT_SET.equals(rootFileName))
             {
                 return ResourceHelper.getLinkedFile(project, rootFileName);
             }
         } else {
-            Activator.logInfo("projectPrefs is null");
+            Activator.getDefault().logInfo("projectPrefs is null");
         }
         return null;
     }
@@ -81,7 +81,7 @@ System.out.println("footFileName = " + rootFileName);
             preferences.flush();
         } catch (BackingStoreException e)
         {
-            Activator.logError("Error storing the preference node", e);
+            Activator.getDefault().logError("Error storing the preference node", e);
         }
     }
     
@@ -93,7 +93,7 @@ System.out.println("footFileName = " + rootFileName);
             preferenceNode.clear();
         } catch (BackingStoreException e)
         {
-            Activator.logError("Error clearing the preference node", e);
+            Activator.getDefault().logError("Error clearing the preference node", e);
         }
         
     }
@@ -163,7 +163,7 @@ System.out.println("footFileName = " + rootFileName);
             children = opened.childrenNames();
         } catch (BackingStoreException e)
         {
-            Activator.logError("Error reading preferences", e);
+            Activator.getDefault().logError("Error reading preferences", e);
         }
         return children;
     }

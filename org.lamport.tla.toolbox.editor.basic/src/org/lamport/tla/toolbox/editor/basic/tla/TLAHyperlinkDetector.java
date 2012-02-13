@@ -13,6 +13,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.actions.OpenDeclarationAction;
 import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
@@ -137,7 +138,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 }
                 for (int i = 0; i < csNode.getAttachedComments().length; i++)
                 {
-                    System.out.println(csNode.getAttachedComments()[i]);
+                	TLAEditorActivator.getDefault().logDebug(csNode.getAttachedComments()[i]);
                 }
 
                 IResource resource = null;
@@ -148,7 +149,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                     resource = ResourceHelper.getResourceByModuleName(csNode.getFilename());
                 } else
                 {
-                    // System.out.println("A StandardModule '" + csNode.getFilename() + "' is requested...");
+                    // TLAEditorActivator.getDefault().logDebug("A StandardModule '" + csNode.getFilename() + "' is requested...");
                     return null;
                 }
 

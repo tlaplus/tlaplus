@@ -35,13 +35,13 @@ public class ParserHelper
         {
             return;
         }
-        Activator.logDebug("Module build invoked on " + resource.getProjectRelativePath().toString() + " ...");
+        Activator.getDefault().logDebug("Module build invoked on " + resource.getProjectRelativePath().toString() + " ...");
         IWorkspaceRunnable run = new IWorkspaceRunnable() {
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
                 ParseResult result = moduleParser.parseModule(resource, monitor);
-                Activator.logDebug("Resulting status is: " + AdapterFactory.getStatusAsString(result.getStatus()));
+                Activator.getDefault().logDebug("Resulting status is: " + AdapterFactory.getStatusAsString(result.getStatus()));
             }
         };
         try
@@ -49,9 +49,9 @@ public class ParserHelper
             resource.getWorkspace().run(run, monitor);
         } catch (CoreException e)
         {
-            Activator.logError("Error parsing a module", e);
+            Activator.getDefault().logError("Error parsing a module", e);
         }
-        Activator.logDebug("... build invocation finished.");
+        Activator.getDefault().logDebug("... build invocation finished.");
     }
 
     /**
@@ -69,12 +69,12 @@ public class ParserHelper
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
-            	Activator.logDebug("Spec build invoked on " + spec.getName() + " ...");
+            	Activator.getDefault().logDebug("Spec build invoked on " + spec.getName() + " ...");
 
                 // markers already removed in the parseSpecification 
                 launcher.parseSpecification(spec, monitor);
 
-				Activator.logDebug("Resulting status is: "
+				Activator.getDefault().logDebug("Resulting status is: "
 						+ AdapterFactory.getStatusAsString(spec)
 						+ "\n... build invocation finished.");
             }
@@ -84,7 +84,7 @@ public class ParserHelper
             ResourcesPlugin.getWorkspace().run(run, monitor);
         } catch (CoreException e)
         {
-            Activator.logError("Error parsing a module", e);
+            Activator.getDefault().logError("Error parsing a module", e);
         }
     }
 }

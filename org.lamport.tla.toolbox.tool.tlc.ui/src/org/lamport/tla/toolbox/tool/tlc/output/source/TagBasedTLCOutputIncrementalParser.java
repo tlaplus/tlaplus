@@ -251,7 +251,7 @@ public class TagBasedTLCOutputIncrementalParser
                 }
             } catch (BadLocationException e)
             {
-                TLCUIActivator.logError("Error removing text or retrieving text from the parser's document."
+                TLCUIActivator.getDefault().logError("Error removing text or retrieving text from the parser's document."
                         + "This is a bug.", e);
             }
         }

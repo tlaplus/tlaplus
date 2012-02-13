@@ -319,7 +319,7 @@ public class ColorPredicate
         int[] array = new int[3];
         if (3 != NUMBER_OF_PROVERS)
         {
-            Activator.logDebug("Method ColorPredicate.numberToState must be reimplemented"
+            Activator.getDefault().logDebug("Method ColorPredicate.numberToState must be reimplemented"
                     + " when number of provers changes");
         }
         for (int i = 0; i < PROVER_STATUSES[0].length; i++)
@@ -381,7 +381,7 @@ public class ColorPredicate
         int[] array = new int[3];
         if (3 != NUMBER_OF_PROVERS)
         {
-            Activator.logDebug("Method ColorPredicate.numberToState must be reimplemented"
+            Activator.getDefault().logDebug("Method ColorPredicate.numberToState must be reimplemented"
                     + " when number of provers changes");
         }
         for (int i = 0; i < PROVER_STATUSES[0].length; i++)
@@ -418,7 +418,7 @@ public class ColorPredicate
     {
         if (statuses.length != NUMBER_OF_PROVERS)
         {
-            Activator.logDebug("Method ColorPredicate.bitVectorOfStates must be reimplemented"
+            Activator.getDefault().logDebug("Method ColorPredicate.bitVectorOfStates must be reimplemented"
                     + " when number of provers changes");
         }
         long result = 0;
@@ -457,7 +457,7 @@ public class ColorPredicate
      * For debugging.  Prints the list of states represented by a bit vector.
      * @param vector
      */
-    public static final void printBitVectorOfStates(long vector)
+    private static final void printBitVectorOfStates(long vector)
     {
         System.out.println(bitVectorOfStatesToString(vector));
     }
@@ -497,7 +497,7 @@ public class ColorPredicate
         int[] array = new int[3];
         if (3 != NUMBER_OF_PROVERS)
         {
-            Activator.logDebug("Method ColorPredicate.newStateNumber must be reimplemented"
+            Activator.getDefault().logDebug("Method ColorPredicate.newStateNumber must be reimplemented"
                     + " when number of provers changes");
         }
         for (int i = 0; i < PROVER_STATUSES[0].length; i++)

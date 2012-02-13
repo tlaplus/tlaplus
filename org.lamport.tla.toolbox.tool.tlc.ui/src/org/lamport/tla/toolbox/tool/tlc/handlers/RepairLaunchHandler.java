@@ -43,7 +43,7 @@ public class RepairLaunchHandler extends AbstractHandler
                         }
                     } catch (CoreException e)
                     {
-                        TLCUIActivator.logError("Error reparing the model launch", e);
+                        TLCUIActivator.getDefault().logError("Error reparing the model launch", e);
                     }
                 }
             }

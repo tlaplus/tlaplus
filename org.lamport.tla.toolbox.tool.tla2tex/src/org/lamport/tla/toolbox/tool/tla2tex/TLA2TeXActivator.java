@@ -1,12 +1,12 @@
 package org.lamport.tla.toolbox.tool.tla2tex;
 
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lamport.tla.toolbox.AbstractTLCActivator;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class TLA2TeXActivator extends AbstractUIPlugin
+public class TLA2TeXActivator extends AbstractTLCActivator
 {
 
     // The plug-in ID
@@ -20,6 +20,7 @@ public class TLA2TeXActivator extends AbstractUIPlugin
      */
     public TLA2TeXActivator()
     {
+    	super(PLUGIN_ID);
     }
 
     /*
@@ -51,5 +52,4 @@ public class TLA2TeXActivator extends AbstractUIPlugin
     {
         return plugin;
     }
-
 }

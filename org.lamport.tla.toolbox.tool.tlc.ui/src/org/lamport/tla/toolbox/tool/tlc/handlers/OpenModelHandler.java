@@ -28,12 +28,12 @@ public class OpenModelHandler extends AbstractHandler implements IConfigurationC
 		// The non-qualified model name (no spec prefix)
 		// The ModelHelper associates it implicitly with the current spec
 		final String modelName = event.getParameter((String) PARAM_MODEL_NAME);
-		TLCUIActivator.logDebug("Open handler invoked on " + modelName);
+		TLCUIActivator.getDefault().logDebug("Open handler invoked on " + modelName);
 
 		final IFile launchFile = ModelHelper.getModelByName(modelName).getFile();
 		UIHelper.openEditor(EDITOR_ID, launchFile);
 
-		TLCUIActivator.logDebug("Finished open handler");
+		TLCUIActivator.getDefault().logDebug("Finished open handler");
 
 		return null;
 	}

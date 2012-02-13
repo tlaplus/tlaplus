@@ -119,7 +119,7 @@ public class ModelEditorPartListener implements IPartListener2
                 }
             } catch (CoreException e)
             {
-                TLCUIActivator.logError(
+                TLCUIActivator.getDefault().logError(
                         "Error determining if original trace should be shown when model editor is made visible.", e);
             }
 

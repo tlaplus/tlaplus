@@ -189,7 +189,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
             IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
 
-            TLCActivator.logDebug("Writing files to: " + targetFolderPath.toOSString());
+            TLCActivator.getDefault().logDebug("Writing files to: " + targetFolderPath.toOSString());
 
             final IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 
@@ -247,7 +247,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                         // ignore this fact
                                         // FIXME this should be fixed at
                                         // some later point in time
-                                        TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
+                                        TLCActivator.getDefault().logError("Error deleting a file " + members[i].getLocation(), e);
                                     }
                                 }
                             }
@@ -486,7 +486,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
         if (!detectedErrors.isEmpty())
         {
-            TLCActivator.logDebug("Errors in model file found " + rootModule.getLocation());
+            TLCActivator.getDefault().logDebug("Errors in model file found " + rootModule.getLocation());
         }
 
         FileEditorInput fileEditorInput = new FileEditorInput((IFile) rootModule);
@@ -563,7 +563,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             return false;
         } else
         {
-            TLCActivator.logDebug("Final check for the " + mode + " mode. The result of the check is " + status);
+            TLCActivator.getDefault().logDebug("Final check for the " + mode + " mode. The result of the check is " + status);
             return status;
         }
     }
@@ -729,7 +729,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 ModelHelper.setModelRunning(config, false);
             } catch (CoreException e)
             {
-                TLCActivator.logError("Error setting lock and running markers on the model", e);
+                TLCActivator.getDefault().logError("Error setting lock and running markers on the model", e);
             }
         }
     }
@@ -762,7 +762,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                     break;
                 }
             }
-            System.out.println("Job '" + jobName + "' terminated with status: { " + status + " }");
+            TLCActivator.getDefault().logDebug("Job '" + jobName + "' terminated with status: { " + status + " }");
         }
     };
 

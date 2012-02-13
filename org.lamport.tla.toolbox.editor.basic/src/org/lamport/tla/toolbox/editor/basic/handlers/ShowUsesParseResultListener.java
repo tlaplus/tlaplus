@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.editor.basic.handlers;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseResultListener;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
@@ -21,12 +22,6 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
  */
 public class ShowUsesParseResultListener extends SpecLifecycleParticipant implements IParseResultListener
 {
-
-    public ShowUsesParseResultListener()
-    {
-        // TODO Auto-generated constructor stub
-    }
-
     /** 
      * This method is called when the spec is parsed, as well as on other occasions
      * that don't interest us.  It deletes the Show Use markers if the user's preference
@@ -77,9 +72,6 @@ public class ShowUsesParseResultListener extends SpecLifecycleParticipant implem
      */
     public void newParseResult(ParseResult parseResult)
     {
-        System.out.println("newParseResult called with status: " + parseResult.getStatus());
-     
-
+    	TLAEditorActivator.getDefault().logDebug("newParseResult called with status: " + parseResult.getStatus());
     }
-
 }

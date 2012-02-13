@@ -57,9 +57,17 @@ public class TLCActivator extends AbstractUIPlugin {
     public static void logError(String message, Throwable e)
     {
         getDefault().getLog().log(new Status(Status.ERROR, TLCActivator.PLUGIN_ID, message, e));
-        
     }
 
+    /**
+     * Prints a debug message
+     * @param message to print
+     */
+    public static void logInfo(String message)
+    {
+        getDefault().getLog().log(new Status(Status.INFO, TLCActivator.PLUGIN_ID, message));
+    }
+    
     /**
      * Prints a debug message
      * @param message to print

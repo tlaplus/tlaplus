@@ -159,7 +159,7 @@ public class GotoNextUseHandler extends AbstractHandler implements IHandler
                 }
             } catch (CoreException e1)
             {
-                Activator.logDebug("Error going to a module location. This is a bug.");
+                Activator.getDefault().logDebug("Error going to a module location. This is a bug.");
             } finally
             {
                 fileDocumentProvider.disconnect(fileEditorInput);

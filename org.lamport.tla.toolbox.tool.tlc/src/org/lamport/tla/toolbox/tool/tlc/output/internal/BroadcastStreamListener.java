@@ -44,7 +44,7 @@ public class BroadcastStreamListener implements IStreamListener
                     listeners[i].appendText(text);
                 } catch (Exception e)
                 {
-                    TLCActivator.logError("Error broadcasting the message", e);
+                    TLCActivator.getDefault().logError("Error broadcasting the message", e);
                 }
             }
         }
@@ -67,7 +67,7 @@ public class BroadcastStreamListener implements IStreamListener
                 }
             } catch (Exception e)
             {
-                TLCActivator.logError("Error broadcasting the stream closed event", e);
+                TLCActivator.getDefault().logError("Error broadcasting the stream closed event", e);
             }
         }
     }
@@ -91,7 +91,7 @@ public class BroadcastStreamListener implements IStreamListener
                 validExtensions.add(extension);
             } catch (CoreException e)
             {
-                TLCActivator.logError("Error instatiating the IProcessSink extension", e);
+                TLCActivator.getDefault().logError("Error instatiating the IProcessSink extension", e);
             }
         }
         return (IProcessOutputSink[]) validExtensions.toArray(new IProcessOutputSink[validExtensions.size()]);

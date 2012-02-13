@@ -17,7 +17,6 @@ import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
-import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator;
 import org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants;
@@ -286,7 +285,7 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 						});
 					}
 				} catch (final TLA2TexException e) {
-					Activator
+					TLA2TeXActivator.getDefault()
 							.logError(
 									"Error while producing pdf file: "
 											+ e.getMessage(), e);

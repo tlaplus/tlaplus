@@ -55,7 +55,7 @@ public class WarningMessage extends TLAPMMessage
                     message.message = fieldValue;
                 } else
                 {
-                    ProverUIActivator.logDebug("Unknown field name for warning message : " + fieldName + ".");
+                    ProverUIActivator.getDefault().logDebug("Unknown field name for warning message : " + fieldName + ".");
                 }
             }
         }

@@ -506,13 +506,13 @@ public class ProverHelper
             {
                 if (module == null)
                 {
-                    ProverUIActivator.logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
+                    ProverUIActivator.getDefault().logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
                     return;
                 }
 
                 if (proverJob.getLevelNode() == null)
                 {
-                    ProverUIActivator.logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
+                    ProverUIActivator.getDefault().logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
                     return;
                 }
 
@@ -825,7 +825,7 @@ public class ProverHelper
             }
         } catch (CoreException e)
         {
-            ProverUIActivator.logError("Error finding existing SANY marker for location " + location, e);
+            ProverUIActivator.getDefault().logError("Error finding existing SANY marker for location " + location, e);
         }
         return null;
     }
@@ -969,7 +969,7 @@ public class ProverHelper
         {
             if (proverJob.getNoToBeProved())
             {
-                ProverUIActivator.logDebug("First to be proved " + proverJob.getCurRelTime());
+                ProverUIActivator.getDefault().logDebug("First to be proved " + proverJob.getCurRelTime());
                 proverJob.setNoToBeProved(false);
             }
 
@@ -1007,7 +1007,7 @@ public class ProverHelper
              */
             if (proverJob.isToBeProvedOnly())
             {
-            	ProverUIActivator.logDebug("Before obligation marker creation " + proverJob.getCurRelTime());
+            	ProverUIActivator.getDefault().logDebug("Before obligation marker creation " + proverJob.getCurRelTime());
                 IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
                     public void run(IProgressMonitor monitor) throws CoreException
@@ -1028,10 +1028,10 @@ public class ProverHelper
                     proverJob.getModule().getWorkspace().run(runnable, null, IWorkspace.AVOID_UPDATE, null);
                 } catch (CoreException e)
                 {
-                    ProverUIActivator.logError("Error creating marker obligations", e);
+                    ProverUIActivator.getDefault().logError("Error creating marker obligations", e);
                 }
                 proverJob.setToBeProvedOnly(false);
-                ProverUIActivator.logDebug("After obligation marker creation " + proverJob.getCurRelTime());
+                ProverUIActivator.getDefault().logDebug("After obligation marker creation " + proverJob.getCurRelTime());
             }
             /*
              * Update the state of the obligation. The obligation will
@@ -1047,7 +1047,7 @@ public class ProverHelper
              */
             if (obStatus.getParent() == null)
             {
-            	ProverUIActivator.logDebug("Before ob parenting creation " + proverJob.getCurRelTime());
+            	ProverUIActivator.getDefault().logDebug("Before ob parenting creation " + proverJob.getCurRelTime());
                 /*
                  * The following iterates through all non-dummy
                  * obligations. For each obligation, we search through
@@ -1076,7 +1076,7 @@ public class ProverHelper
                     }
                 }
 
-                ProverUIActivator.logDebug("After ob parenting creation " + proverJob.getCurRelTime());
+                ProverUIActivator.getDefault().logDebug("After ob parenting creation " + proverJob.getCurRelTime());
 
             }
 
@@ -1141,7 +1141,7 @@ public class ProverHelper
                 marker.setAttributes(markerAttributes);
 
                 // DEBUG
-                // ProverUIActivator.logDebug("Marker created for obligation from message \n" + message);
+                // ProverUIActivator.getDefault().logDebug("Marker created for obligation from message \n" + message);
                 return marker;
             } catch (CoreException e)
             {
@@ -1215,7 +1215,7 @@ public class ProverHelper
         //
         // if (sanyMarker == null)
         // {
-        // ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
+        // ProverUIActivator.getDefault().logDebug("Existing SANY marker not found for location " + location
         // + ". This is a bug.");
         // }
         //
@@ -1250,7 +1250,7 @@ public class ProverHelper
         // // newCharEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
         // // } else
         // // {
-        // // ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
+        // // ProverUIActivator.getDefault().logDebug("Existing SANY marker not found for location " + location
         // // + ". This is a bug.");
         // // // the region from the tlapm message
         // // IRegion messageRegion = AdapterFactory.locationToRegion(location);
@@ -1288,11 +1288,11 @@ public class ProverHelper
         // //
         // // } catch (CoreException e)
         // // {
-        // // ProverUIActivator.logError("Error creating new status marker.", e);
+        // // ProverUIActivator.getDefault().logError("Error creating new status marker.", e);
         // // }
         // } else
         // {
-        // ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
+        // ProverUIActivator.getDefault().logDebug("A module could not be located for a step status.\n" + "Status : "
         // + status.getStatus() + "\nLocation : " + location);
         // }
         // }
@@ -1310,7 +1310,7 @@ public class ProverHelper
      */
     public static void compareStepStatusComputations(ProverJob proverJob)
     {
-        // ProverUIActivator.logDebug("------------------Comparing TLAPM and Toolbox Step Status------------");
+        // ProverUIActivator.getDefault().logDebug("------------------Comparing TLAPM and Toolbox Step Status------------");
         // Collection stepTuples = proverJob.getStepMap().values();
         // for (Iterator it = stepTuples.iterator(); it.hasNext();)
         // {
@@ -1320,12 +1320,12 @@ public class ProverHelper
         // new Integer(stepLoc.beginLine()));
         // if (stepMessage == null)
         // {
-        // ProverUIActivator.logDebug("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc
+        // ProverUIActivator.getDefault().logDebug("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc
         // + " . The Toolbox thinks the status is "
         // + statusIntToStatusString(stepTuple.getColorPredicateValues()));
         // } else if (!stepMessage.getStatus().equals(statusIntToStatusString(stepTuple.getColorPredicateValues())))
         // {
-        // ProverUIActivator.logDebug("DIFFERENT STATUS BUG : \n Loc : " + stepLoc + "\n TLAPM : "
+        // ProverUIActivator.getDefault().logDebug("DIFFERENT STATUS BUG : \n Loc : " + stepLoc + "\n TLAPM : "
         // + stepMessage.getStatus() + "\n Toolbox : "
         // + statusIntToStatusString(stepTuple.getColorPredicateValues()));
         // }
@@ -1335,11 +1335,11 @@ public class ProverHelper
         // for (Iterator it = remainingMessages.iterator(); it.hasNext();)
         // {
         // StepStatusMessage message = (StepStatusMessage) it.next();
-        // ProverUIActivator.logDebug("NO STATUS BUG :\n No Toolbox step status message found for the step at "
+        // ProverUIActivator.getDefault().logDebug("NO STATUS BUG :\n No Toolbox step status message found for the step at "
         // + message.getLocation() + " . The TLAPM reports the status " + message.getStatus());
         // }
         //
-        // ProverUIActivator.logDebug("------------------Done Comparing TLAPM and Toolbox Step Status------------");
+        // ProverUIActivator.getDefault().logDebug("------------------Done Comparing TLAPM and Toolbox Step Status------------");
     }
 
     /**
@@ -1359,7 +1359,7 @@ public class ProverHelper
     {
         if (sanyMarker == null)
         {
-            ProverUIActivator.logDebug("Null sanyMarker passed to newStepStatusMarker. This is a bug.");
+            ProverUIActivator.getDefault().logDebug("Null sanyMarker passed to newStepStatusMarker. This is a bug.");
             return;
         }
 
@@ -1467,7 +1467,7 @@ public class ProverHelper
 
         } catch (CoreException e)
         {
-            ProverUIActivator.logError("Error creating new status marker.", e);
+            ProverUIActivator.getDefault().logError("Error creating new status marker.", e);
         }
     }
 
@@ -1481,7 +1481,7 @@ public class ProverHelper
             module.deleteMarkers(STEP_STATUS_MARKER, true, IResource.DEPTH_ZERO);
         } catch (CoreException e)
         {
-            ProverUIActivator.logError("Error removing status markers from module " + module, e);
+            ProverUIActivator.getDefault().logError("Error removing status markers from module " + module, e);
         }
     }
 
@@ -1597,10 +1597,10 @@ public class ProverHelper
             }
         } catch (CoreException e)
         {
-            ProverUIActivator.logError("Error removing status markers from tree rooted at " + root, e);
+            ProverUIActivator.getDefault().logError("Error removing status markers from tree rooted at " + root, e);
         } catch (BadLocationException e)
         {
-            ProverUIActivator.logError("Error removing status markers from tree rooted at " + root, e);
+            ProverUIActivator.getDefault().logError("Error removing status markers from tree rooted at " + root, e);
         }
     }
 
@@ -1623,7 +1623,7 @@ public class ProverHelper
                     Thread.sleep(1000);
                 } catch (InterruptedException e)
                 {
-                    ProverUIActivator.logError("Error sleeping thread.", e);
+                    ProverUIActivator.getDefault().logError("Error sleeping thread.", e);
                 }
             }
         }
@@ -1834,7 +1834,7 @@ public class ProverHelper
     public static void stopObligation(IMarker marker)
     {
 
-    	ProverUIActivator.logDebug("Stop obligation " + marker.getAttribute(OBLIGATION_ID, -1));
+    	ProverUIActivator.getDefault().logDebug("Stop obligation " + marker.getAttribute(OBLIGATION_ID, -1));
 
         // a count of running prover jobs for debugging
         // check to see that there is at most 1
@@ -1852,7 +1852,7 @@ public class ProverHelper
 
         if (numProverJobs > 1)
         {
-            ProverUIActivator.logDebug("We found " + numProverJobs + " running when obligation "
+            ProverUIActivator.getDefault().logDebug("We found " + numProverJobs + " running when obligation "
                     + marker.getAttribute(OBLIGATION_ID, -1) + " was stopped. This is a bug.");
         }
 

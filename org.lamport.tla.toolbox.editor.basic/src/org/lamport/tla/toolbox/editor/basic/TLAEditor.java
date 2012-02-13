@@ -465,7 +465,7 @@ public class TLAEditor extends TextEditor
                 }
                 doc.replace(newEntryStart, 0, ResourceHelper.lastModified + (new Date()) + searchString);
             } catch (BadLocationException e)
-            { // System.out.println("Exception.");
+            { // TLAEditorActivator.getDefault().logDebug("Exception.");
 
             }
 
@@ -619,7 +619,7 @@ public class TLAEditor extends TextEditor
                 // new editor input
                 IEditorInput newInput = new FileEditorInput(newResource);
 
-                // System.out.println("TODO: Save " + file.getLocation().toOSString() + " as " + newPath);
+                // TLAEditorActivator.getDefault().logDebug("TODO: Save " + file.getLocation().toOSString() + " as " + newPath);
 
                 // get the document provider
                 IDocumentProvider provider = getDocumentProvider();

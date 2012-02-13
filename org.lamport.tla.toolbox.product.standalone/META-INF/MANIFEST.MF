@@ -16,3 +16,4 @@ Require-Bundle: org.eclipse.ui,
  org.lamport.tla.toolbox;bundle-version="1.0.0",
  org.eclipse.equinox.p2.ui.sdk.scheduler;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.lamport.tla.toolbox.StandaloneActivator

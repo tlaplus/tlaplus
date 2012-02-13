@@ -635,7 +635,7 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
                 return;
             }
 
-            // System.out.println("oldText = " + this.dialog.rgbText[0].getText() + " , newText = `" + newText + "'");
+            // TLCActivator.getDefault().logDebug("oldText = " + this.dialog.rgbText[0].getText() + " , newText = `" + newText + "'");
             int[] rgbVals = new int[3];
 
             for (int i = 0; i < 3; i++)

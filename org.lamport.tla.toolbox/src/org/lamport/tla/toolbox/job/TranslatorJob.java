@@ -47,7 +47,7 @@ public class TranslatorJob extends WorkspaceJob
         this.fileToBuild = fileToBuild;
         this.callParams = new Vector();
 
-        Activator.logDebug("Translating " + fileToBuild.getLocation().toOSString());
+        Activator.getDefault().logDebug("Translating " + fileToBuild.getLocation().toOSString());
 
         boolean hasPcalAlg = false;
         String[] params;
@@ -77,17 +77,17 @@ public class TranslatorJob extends WorkspaceJob
 
         } catch (CoreException e1)
         {
-            Activator.logError("Error reading parameters", e1);
+            Activator.getDefault().logError("Error reading parameters", e1);
             params = new String[0];
         }
 
         if (!hasPcalAlg)
         {
             // no algorithm detected
-            Activator.logDebug("No algorithm found");
+            Activator.getDefault().logDebug("No algorithm found");
         } else
         {
-            Activator.logDebug("Algorithm found");
+            Activator.getDefault().logDebug("Algorithm found");
         }
 
         // add params from the resource setting
@@ -119,7 +119,7 @@ public class TranslatorJob extends WorkspaceJob
         {
             buffer.append(" " + callParams.elementAt(i));
         }
-        Activator.logDebug("Translator invoked with params: '" + buffer.toString() + "'");
+        Activator.getDefault().logDebug("Translator invoked with params: '" + buffer.toString() + "'");
 
         TLAtoPCalMapping mapping = translator.runTranslation((String[]) callParams.toArray(new String[callParams.size()]));
 		// If no mapping has been created (e.g. due to a parsing error), the

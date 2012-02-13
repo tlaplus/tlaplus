@@ -304,7 +304,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                 validExtensions.add(extension);
             } catch (CoreException e)
             {
-                TLCActivator.logError("Error instatiating the IResultPresenter extension", e);
+                TLCActivator.getDefault().logError("Error instatiating the IResultPresenter extension", e);
             }
         }
         return validExtensions.toArray(new IResultPresenter[validExtensions.size()]);

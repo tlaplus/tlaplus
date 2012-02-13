@@ -34,7 +34,7 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
-            Activator.logDebug(
+            Activator.getDefault().logDebug(
              "Exception thrown when setting project LAST_CLOSED time.");
         }
         // close all editors

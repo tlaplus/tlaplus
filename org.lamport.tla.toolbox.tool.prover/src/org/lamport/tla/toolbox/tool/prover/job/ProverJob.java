@@ -309,7 +309,7 @@ public class ProverJob extends Job
     protected IStatus run(IProgressMonitor monitor)
     {
         this.startTime = System.currentTimeMillis();
-        ProverUIActivator.logDebug("Run method called " + getCurRelTime());
+        ProverUIActivator.getDefault().logDebug("Run method called " + getCurRelTime());
 
         /*
          * Create the ColorPredicate objects.
@@ -362,13 +362,13 @@ public class ProverJob extends Job
 
             if (!modulePath.toFile().exists())
             {
-                ProverUIActivator.logDebug("Module file given to ProverJob does not exist.");
+                ProverUIActivator.getDefault().logDebug("Module file given to ProverJob does not exist.");
                 return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID, "Module file does not exist.");
             } else if (Platform.getOS().equals(Platform.OS_WIN32) && cygwinPath != null
                     && !cygwinPath.toFile().exists())
             {
                 // TODO show error message to user
-                ProverUIActivator.logDebug("The given cygwin path does not exist.");
+                ProverUIActivator.getDefault().logDebug("The given cygwin path does not exist.");
                 return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID, "The given cygwin path " + cygwinPath
                         + " does not exist.");
             }
@@ -402,7 +402,7 @@ public class ProverJob extends Job
                 ProverHelper.prepareModuleForProverLaunch(module, this);
             } catch (CoreException e1)
             {
-                ProverUIActivator.logError("Error clearing obligation markers for project of module " + modulePath, e1);
+                ProverUIActivator.getDefault().logError("Error clearing obligation markers for project of module " + modulePath, e1);
             }
             /**************************************************************
              * Finished with preparation work.                            *
@@ -432,7 +432,7 @@ public class ProverJob extends Job
             ProcessBuilder pb = new ProcessBuilder(command);
 
             // log command line
-            ProverUIActivator.logDebug(
+            ProverUIActivator.getDefault().logDebug(
             		"Prover ARGUMENTS: " +
             		Arrays.toString(command));
 
@@ -485,7 +485,7 @@ public class ProverJob extends Job
             /*
              * Start the prover process.
              */
-            ProverUIActivator.logDebug("TLAPM launched " + getCurRelTime());
+            ProverUIActivator.getDefault().logDebug("TLAPM launched " + getCurRelTime());
             Process process = pb.start();
             setUpStreamListening(process, monitor);
 
@@ -510,7 +510,7 @@ public class ProverJob extends Job
                          * steps to shut down.
                          */
                         proverProcess.getStreamsProxy().write("kill\n");
-                        ProverUIActivator.logDebug("Sent kill to tlapm.");
+                        ProverUIActivator.getDefault().logDebug("Sent kill to tlapm.");
 
                         /*
                          * Wait for the process to actually
@@ -520,7 +520,7 @@ public class ProverJob extends Job
                          */
                         while (checkAndSleep())
                         {
-                            // ProverUIActivator.logDebug("Cancel requested. The toolbox still thinks the prover is running.");
+                            // ProverUIActivator.getDefault().logDebug("Cancel requested. The toolbox still thinks the prover is running.");
                         }
 
                         // cancellation termination
@@ -603,7 +603,7 @@ public class ProverJob extends Job
                 proverProcess.getStreamsProxy().getErrorStreamMonitor().removeListener(listener);
                 proverProcess.getStreamsProxy().getOutputStreamMonitor().removeListener(listener);
             }
-            ProverUIActivator.logDebug("Done with proving " + getCurRelTime());
+            ProverUIActivator.getDefault().logDebug("Done with proving " + getCurRelTime());
 
             EditorUtil.setReadOnly(module, false);
 
@@ -618,7 +618,7 @@ public class ProverJob extends Job
                 ProverHelper.removeSANYStepMarkers(module);
             } catch (CoreException e)
             {
-                ProverUIActivator.logError("Error removing SANY step markers after prover finished running.", e);
+                ProverUIActivator.getDefault().logError("Error removing SANY step markers after prover finished running.", e);
             }
         }
     }
@@ -1089,7 +1089,7 @@ public class ProverJob extends Job
                 proverProcess.getStreamsProxy().write("stop " + id + "\n");
             } catch (IOException e)
             {
-                ProverUIActivator.logError("Error sending signal to tlapm to stop obligation " + id, e);
+                ProverUIActivator.getDefault().logError("Error sending signal to tlapm to stop obligation " + id, e);
             }
         }
     }

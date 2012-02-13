@@ -160,10 +160,10 @@ public class TLAPMErrorDialog extends Dialog
                     browser.openURL(new URL(url));
                 } catch (PartInitException e1)
                 {
-                    ProverUIActivator.logError("Error opening browser to url : " + url, e1);
+                    ProverUIActivator.getDefault().logError("Error opening browser to url : " + url, e1);
                 } catch (MalformedURLException e1)
                 {
-                    ProverUIActivator.logError("Malformed URL : " + url, e1);
+                    ProverUIActivator.getDefault().logError("Malformed URL : " + url, e1);
                 }
             }
         });

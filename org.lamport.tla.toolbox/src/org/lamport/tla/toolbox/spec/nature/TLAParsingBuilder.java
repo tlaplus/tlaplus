@@ -35,7 +35,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
     protected void clean(IProgressMonitor monitor) throws CoreException
     {
-        Activator.logDebug("Clean has been invoked");
+        Activator.getDefault().logDebug("Clean has been invoked");
         // clean removes all markers
         Spec spec = Activator.getSpecManager().getSpecLoaded();
         TLAMarkerHelper.removeProblemMarkers(spec.getProject(), monitor);
@@ -137,7 +137,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
                         } else
                         {
-                            Activator.logDebug("There is a root file, but the setting AUTO_BUILD_SPEC is off.");
+                            Activator.getDefault().logDebug("There is a root file, but the setting AUTO_BUILD_SPEC is off.");
                         }
 
                         // this is no longer an option for the user
@@ -203,7 +203,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 monitor.done();
             } else
             {
-                Activator.logDebug("Skipping resource: " + moduleFileName);
+                Activator.getDefault().logDebug("Skipping resource: " + moduleFileName);
             }
         }
 

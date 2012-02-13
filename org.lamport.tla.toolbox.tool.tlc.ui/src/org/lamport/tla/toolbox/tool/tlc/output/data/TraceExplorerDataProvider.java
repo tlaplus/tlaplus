@@ -154,10 +154,10 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error finding trace expression information in TE.tla file.", e);
+            TLCUIActivator.getDefault().logError("Error finding trace expression information in TE.tla file.", e);
         } catch (BadLocationException e)
         {
-            TLCUIActivator.logError("Error finding trace expression information in TE.tla file.", e);
+            TLCUIActivator.getDefault().logError("Error finding trace expression information in TE.tla file.", e);
         } finally
         {
             /*

@@ -54,7 +54,7 @@ public class SpecLifecycleManager
                     specExtensions[i].initialize();
                 } catch (CoreException e)
                 {
-                    Activator.logError("Error retrieving the registered participants", e);
+                    Activator.getDefault().logError("Error retrieving the registered participants", e);
                 }
             }
         }

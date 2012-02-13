@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.semantic.ModuleNode;
@@ -128,8 +129,8 @@ public class ParseResultBroadcaster
         if (!listeners.contains(parseResultListener))
         {
             listeners.add(parseResultListener);
-            System.out.println("Added a parse result listener.");
-            System.out.println("There are now " + listeners.size() + " listeners.");
+			Activator.getDefault().logDebug("Added a parse result listener."
+					+ "There are now " + listeners.size() + " listeners.");
         }
     }
 
@@ -144,8 +145,8 @@ public class ParseResultBroadcaster
         boolean removed = listeners.remove(parseResultListener);
         if (removed)
         {
-            System.out.println("Removed a parse result listener.");
-            System.out.println("There are now " + listeners.size() + " listeners.");
+			Activator.getDefault().logDebug("Removed a parse result listener."
+					+ "There are now " + listeners.size() + " listeners.");
         }
     }
 

@@ -32,12 +32,12 @@ public class GeneralOutputParsingHelper
             try {
             	return sdf.parse(time).getTime();
             } catch(ParseException e) {
-                TLCUIActivator.logDebug("Error parsing TLC Timestamp.");
+                TLCUIActivator.getDefault().logDebug("Error parsing TLC Timestamp.");
                 return new Date().getTime();
             }
         } else
         {
-            TLCUIActivator.logDebug("Error parsing TLC Timestamp.");
+            TLCUIActivator.getDefault().logDebug("Error parsing TLC Timestamp.");
             return new Date().getTime();
         }
     }

@@ -194,7 +194,7 @@ public class Spec implements IAdaptable
         // this statement.
         // 
         if (this.rootFile == null) {
-            Activator.logError("A spec did not load correctly, probably because it was modified outside the Toolbox." +
+            Activator.getDefault().logError("A spec did not load correctly, probably because it was modified outside the Toolbox." +
                                "\n Error occurred in toolbox/spec/Spec.initProjectProperties()", null);
         } else {
         	// Initialize TLAtoPCalMapping here for the root module to have it
@@ -227,7 +227,7 @@ public class Spec implements IAdaptable
             project.touch(new NullProgressMonitor());
         } catch (CoreException e)
         {
-            Activator.logError("Error changing the timestamp of the spec", e);
+            Activator.getDefault().logError("Error changing the timestamp of the spec", e);
         }
     }
 
@@ -326,7 +326,7 @@ public class Spec implements IAdaptable
 
         } catch (CoreException e)
         {
-            Activator.logError("Error retrieving the the spec modules", e);
+            Activator.getDefault().logError("Error retrieving the the spec modules", e);
             modules = new IResource[0];
         }
         return modules;

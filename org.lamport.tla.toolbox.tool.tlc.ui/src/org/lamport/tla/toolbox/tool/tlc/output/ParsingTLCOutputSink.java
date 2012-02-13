@@ -46,7 +46,7 @@ public class ParsingTLCOutputSink implements IProcessOutputSink
 		try {
 			parser.addIncrement(input);
 		} catch (BadLocationException e) {
-            TLCUIActivator.logError("Error parsing the TLC output stream for "
+            TLCUIActivator.getDefault().logError("Error parsing the TLC output stream for "
                     + this.parser.getSource().getTLCOutputName(), e);
 		}
     }

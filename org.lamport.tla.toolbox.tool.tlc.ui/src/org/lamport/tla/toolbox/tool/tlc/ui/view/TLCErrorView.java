@@ -169,7 +169,7 @@ public class TLCErrorView extends ViewPart
                     IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector()));
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error loading trace explorer expressions into table", e);
+            TLCUIActivator.getDefault().logError("Error loading trace explorer expressions into table", e);
         }
 
         // if there are errors
@@ -221,7 +221,7 @@ public class TLCErrorView extends ViewPart
                 TLCUIHelper.setTLCLocationHyperlinks(errorViewer.getTextWidget());
             } catch (BadLocationException e)
             {
-                TLCUIActivator.logError("Error reporting the error " + buffer.toString(), e);
+                TLCUIActivator.getDefault().logError("Error reporting the error " + buffer.toString(), e);
             }
 
             // update the trace information
@@ -638,7 +638,7 @@ public class TLCErrorView extends ViewPart
             }
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error determining if trace explorer expressions should be shown", e);
+            TLCUIActivator.getDefault().logError("Error determining if trace explorer expressions should be shown", e);
         }
 
     }

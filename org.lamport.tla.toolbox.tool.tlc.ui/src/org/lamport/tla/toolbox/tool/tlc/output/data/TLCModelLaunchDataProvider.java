@@ -467,7 +467,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     setDocumentText(this.userOutput, outputMessage, true);
                     informPresenter(ITLCModelLaunchDataPresenter.USER_OUTPUT);
                 }
-                // TLCUIActivator.logDebug("Unknown type detected: " + region.getType() + " message " + outputMessage);
+                // TLCUIActivator.getDefault().logDebug("Unknown type detected: " + region.getType() + " message " + outputMessage);
             } else
             {
                 // SANY output
@@ -688,10 +688,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
                     } catch (BadLocationException e)
                     {
-                        TLCUIActivator.logError("Error parsing the error message", e);
+                        TLCUIActivator.getDefault().logError("Error parsing the error message", e);
                     } catch (CoreException e)
                     {
-                        TLCUIActivator.logError("Error parsing the error message", e);
+                        TLCUIActivator.getDefault().logError("Error parsing the error message", e);
                     } finally
                     {
                         /*

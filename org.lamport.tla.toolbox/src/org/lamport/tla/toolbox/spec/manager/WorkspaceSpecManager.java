@@ -85,7 +85,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
                         // in the code.
                         if (spec.getRootFile() == null)
                         {
-                            Activator.logError("The bad spec is: `" + projects[i].getName() + "'", null);
+                            Activator.getDefault().logError("The bad spec is: `" + projects[i].getName() + "'", null);
                         } else
                         {
                             // This to threw a null pointer exception for Tom, probably causing the abortion
@@ -116,7 +116,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
 
         } catch (CoreException e)
         {
-            Activator.logError("Error initializing specification workspace", e);
+            Activator.getDefault().logError("Error initializing specification workspace", e);
         }
 
         ws.addResourceChangeListener(this);

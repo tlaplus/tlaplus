@@ -123,16 +123,16 @@ public class OpenSavedModuleHandler extends AbstractHandler implements IHandler
                             modelEditor.setActiveEditor(moduleEditor);
                         } catch (PartInitException e)
                         {
-                            TLCUIActivator.logError("Error adding saved module read-only editor for module "
+                            TLCUIActivator.getDefault().logError("Error adding saved module read-only editor for module "
                                     + modulePath + " to model " + config.getName(), e);
                         }
                     } else
                     {
-                        TLCUIActivator.logDebug("Could not open model editor for model " + config.getName());
+                        TLCUIActivator.getDefault().logDebug("Could not open model editor for model " + config.getName());
                     }
                 } else
                 {
-                    TLCUIActivator
+                    TLCUIActivator.getDefault()
                             .logDebug("OpenSavedModuleHandler was passed a module file path that is not part of the currently opened spec."
                                     + "This is a bug. The path is " + modulePath);
                 }

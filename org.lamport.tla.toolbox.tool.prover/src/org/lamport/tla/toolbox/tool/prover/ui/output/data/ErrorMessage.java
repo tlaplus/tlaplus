@@ -68,7 +68,7 @@ public class ErrorMessage extends TLAPMMessage
                     message.url = fieldValue;
                 } else
                 {
-                    ProverUIActivator.logDebug("Unknown field name for warning message : " + fieldName + ".");
+                    ProverUIActivator.getDefault().logDebug("Unknown field name for warning message : " + fieldName + ".");
                 }
             }
         }

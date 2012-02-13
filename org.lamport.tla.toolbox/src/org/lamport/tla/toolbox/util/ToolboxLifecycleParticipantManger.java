@@ -48,7 +48,7 @@ public class ToolboxLifecycleParticipantManger
     public static void initialize(ToolboxLifecycleParticipant[] participants) throws ToolboxLifecycleException
     {
         Assert.isNotNull(participants);
-        // Activator.logDebug("Initializing the tools");
+        // Activator.getDefault().logDebug("Initializing the tools");
         for (int i = 0; i < participants.length; i++)
         {
             participants[i].initialize();
@@ -63,7 +63,7 @@ public class ToolboxLifecycleParticipantManger
     public static void terminate(ToolboxLifecycleParticipant[] participants) throws ToolboxLifecycleException
     {
         Assert.isNotNull(participants);
-        // Activator.logDebug("Terminating the tools");
+        // Activator.getDefault().logDebug("Terminating the tools");
         for (int i = 0; i < participants.length; i++)
         {
             participants[i].terminate();

@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.tla.TokenSpec;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -390,7 +391,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         }
         SymbolNode resolvedSymbol = currentTokenSpec.resolvedSymbol;
 
-        // System.out.println("We found symbol node named " + resolvedSymbol.getName());
+        // TLAEditorActivator.getDefault().logDebug("We found symbol node named " + resolvedSymbol.getName());
 
         // Set tempModuleNames to the sorted array of all user module names.
         String[] tempModuleNames = ResourceHelper.getModuleNames();
@@ -488,7 +489,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
             }
             if (moduleIndex < 0)
             {
-                Activator.logDebug("Could not find module name in array in which it should be.  " + "This is a bug.");
+                Activator.getDefault().logDebug("Could not find module name in array in which it should be.  " + "This is a bug.");
                 return null;
             }
 
@@ -519,7 +520,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         // stn = (SyntaxTreeNode) stn.heirs()[1];
         // break;
         // default:
-        // System.out.println("Found unexpected kind " + stn.getKind() + " for stn node of symbol use.");
+        // TLAEditorActivator.getDefault().logDebug("Found unexpected kind " + stn.getKind() + " for stn node of symbol use.");
         // }
         // locations[i] = stn.getLocation();
         // }
@@ -535,7 +536,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         // IResource resource = ResourceHelper.getResourceByModuleName(spec.getModuleToShow());
         // if (resource == null)
         // {
-        // System.out.println("Why the hell is the resource null?");
+        // TLAEditorActivator.getDefault().logDebug("Why the hell is the resource null?");
         // return null;
         // }
         //
@@ -638,7 +639,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
                 }
                 break;
             default:
-                System.out.println("Found unexpected kind " + stn.getKind() + " for stn node of symbol use.");
+            	TLAEditorActivator.getDefault().logWarning("Found unexpected kind " + stn.getKind() + " for stn node of symbol use.");
             }
             locations[i] = stn.getLocation();
         }
@@ -654,7 +655,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         IResource resource = ResourceHelper.getResourceByModuleName(spec.getModuleToShow());
         if (resource == null)
         {
-            System.out.println("Why is the resource null?");
+        	TLAEditorActivator.getDefault().logWarning("Why is the resource null?");
             return;
         }
 

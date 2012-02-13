@@ -62,7 +62,7 @@ public class TLAPMBroadcastStreamListener implements IStreamListener
                     listeners[i].appendText(text);
                 } catch (Exception e)
                 {
-                    ProverUIActivator.logError("Error broadcasting the message", e);
+                    ProverUIActivator.getDefault().logError("Error broadcasting the message", e);
                 }
             }
         }
@@ -87,7 +87,7 @@ public class TLAPMBroadcastStreamListener implements IStreamListener
                 }
             } catch (Exception e)
             {
-                ProverUIActivator.logError("Error broadcasting the stream closed event", e);
+                ProverUIActivator.getDefault().logError("Error broadcasting the stream closed event", e);
             }
         }
     }

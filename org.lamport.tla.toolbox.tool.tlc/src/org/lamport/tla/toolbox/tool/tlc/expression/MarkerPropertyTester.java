@@ -92,7 +92,7 @@ public class MarkerPropertyTester extends PropertyTester
 
                     } catch (CoreException e)
                     {
-                        TLCActivator.logError("Error testing markers", e);
+                        TLCActivator.getDefault().logError("Error testing markers", e);
                     }
                 }
             }

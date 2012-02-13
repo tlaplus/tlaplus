@@ -189,7 +189,7 @@ public class UIHelper
             }
         } catch (PartInitException e)
         {
-            Activator.logError("Error opening a view " + viewId, e);
+            Activator.getDefault().logError("Error opening a view " + viewId, e);
         }
         return view;
     }
@@ -288,7 +288,7 @@ public class UIHelper
             return page;
         } catch (WorkbenchException e)
         {
-            Activator.logError("Error switching a perspective to " + perspectiveId, e);
+            Activator.getDefault().logError("Error switching a perspective to " + perspectiveId, e);
         }
 
         return null;
@@ -481,7 +481,7 @@ public class UIHelper
 		// command after shutdown has been called on the workbench in which case
 		// either service might be null
 		if (handlerService == null || commandService == null) {
-			Activator
+			Activator.getDefault()
 					.logInfo("No IHandlerService|ICommandService available while trying to execute a command");
 			return null;
 		}
@@ -568,7 +568,7 @@ public class UIHelper
                     }
                 } catch (PartInitException e)
                 {
-                    Activator.logError("Error getting unsaved resources.", e);
+                    Activator.getDefault().logError("Error getting unsaved resources.", e);
                 }
             }
         }
@@ -970,12 +970,12 @@ public class UIHelper
                             }
                         } catch (BadLocationException e)
                         {
-                            Activator.logError("Error accessing the specified module location", e);
+                            Activator.getDefault().logError("Error accessing the specified module location", e);
                         }
                     }
                 } catch (CoreException e1)
                 {
-                    Activator.logDebug("Error going to a module location. This is a bug.");
+                    Activator.getDefault().logDebug("Error going to a module location. This is a bug.");
                 } finally
                 {
                     /*
@@ -1105,7 +1105,7 @@ public class UIHelper
 
         } catch (BadLocationException e)
         {
-            Activator.logError("Error finding step containing caret.", e);
+            Activator.getDefault().logError("Error finding step containing caret.", e);
         }
         return null;
     }

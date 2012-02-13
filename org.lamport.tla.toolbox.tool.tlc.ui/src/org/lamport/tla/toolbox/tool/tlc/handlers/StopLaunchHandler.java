@@ -50,7 +50,7 @@ public class StopLaunchHandler extends AbstractHandler
                         }
                     } catch (CoreException e)
                     {
-                        TLCUIActivator.logError("Error stopping the model launch", e);
+                        TLCUIActivator.getDefault().logError("Error stopping the model launch", e);
                     }
                 }
             }

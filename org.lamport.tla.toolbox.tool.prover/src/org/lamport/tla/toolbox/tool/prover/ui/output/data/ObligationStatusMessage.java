@@ -206,7 +206,7 @@ public class ObligationStatusMessage extends TLAPMMessage
                         message.id = Integer.parseInt(fieldValue.trim());
                     } catch (NumberFormatException e)
                     {
-                        ProverUIActivator.logError("Error parsing obligation id from TLAPM message. ID string : "
+                        ProverUIActivator.getDefault().logError("Error parsing obligation id from TLAPM message. ID string : "
                                 + fieldValue, e);
                     }
                 } else if (fieldName.equals(METH_FIELD))
@@ -222,7 +222,7 @@ public class ObligationStatusMessage extends TLAPMMessage
                     message.reason = fieldValue;
                 } else
                 {
-                    ProverUIActivator.logDebug("Unknown field name for obligation status message : " + fieldName + ".");
+                    ProverUIActivator.getDefault().logDebug("Unknown field name for obligation status message : " + fieldName + ".");
                 }
             }
         }

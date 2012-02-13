@@ -34,7 +34,7 @@ public class ConsoleProcessOutputSink implements IProcessOutputSink
             this.outputStream.write(text.getBytes());
         } catch (IOException e)
         {
-            TLCUIActivator.logError("Error printing a console message: >" + text + "<", e);
+            TLCUIActivator.getDefault().logError("Error printing a console message: >" + text + "<", e);
         }
     }
 

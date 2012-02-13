@@ -212,7 +212,7 @@ public class ModuleParserLauncher
                         semanticErrors.addAbort(aborts[i], false);
                     } catch (AbortException e)
                     {
-                        Activator.logDebug("Abort exception thrown in ModuleParserLauncher."
+                        Activator.getDefault().logDebug("Abort exception thrown in ModuleParserLauncher."
                                 + "This is a bug. There should not be an AbortException thrown here.");
                     }
                 }
@@ -339,7 +339,7 @@ public class ModuleParserLauncher
             }, new NullProgressMonitor());
         } catch (CoreException e)
         {
-            Activator.logError("Error while setting build timestamp on resource.", e);
+            Activator.getDefault().logError("Error while setting build timestamp on resource.", e);
         }
 
         if (!rootModuleFound)
@@ -690,7 +690,7 @@ public class ModuleParserLauncher
             }
         } catch (CoreException e)
         {
-            Activator.logError("Error finding modules", e);
+            Activator.getDefault().logError("Error finding modules", e);
         }
         return nameToFind;
     }

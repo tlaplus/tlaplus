@@ -127,7 +127,7 @@ public class TokenSpec
             currentPos = region.getOffset() - offsetOfLine;
         } catch (BadLocationException e)
         {
-            System.out.println("Exception thrown");
+        	TLAEditorActivator.getDefault().logDebug("Exception thrown", e);
             return null;
         }
 

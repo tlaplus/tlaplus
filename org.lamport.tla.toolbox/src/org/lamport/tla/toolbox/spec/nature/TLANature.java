@@ -71,7 +71,7 @@ public class TLANature implements IProjectNature
         
         desc.setBuildSpec(newCommands);
         project.setDescription(desc, null);
-        Activator.logDebug("Nature added");
+        Activator.getDefault().logDebug("Nature added");
     }
 
     /**
@@ -92,7 +92,7 @@ public class TLANature implements IProjectNature
                 description.setBuildSpec(newCommands);
             } 
         }
-        Activator.logDebug("Nature removed");
+        Activator.getDefault().logDebug("Nature removed");
     }
    
     public IProject getProject()

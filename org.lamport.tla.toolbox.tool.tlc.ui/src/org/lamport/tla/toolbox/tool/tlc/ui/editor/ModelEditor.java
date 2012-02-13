@@ -172,7 +172,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 }
             } catch (CoreException e)
             {
-                TLCUIActivator.logError("Error visiting changed resource", e);
+                TLCUIActivator.getDefault().logError("Error visiting changed resource", e);
                 return;
             }
 
@@ -206,7 +206,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
-        // TLCUIActivator.logDebug("entering ModelEditor#init(IEditorSite site, IEditorInput input)");
+        // TLCUIActivator.getDefault().logDebug("entering ModelEditor#init(IEditorSite site, IEditorInput input)");
         super.init(site, input);
 
         // grab the input
@@ -224,7 +224,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             configurationCopy = configuration.getWorkingCopy();
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Could not load model content for " + finput.getName(), e);
+            TLCUIActivator.getDefault().logError("Could not load model content for " + finput.getName(), e);
             throw new PartInitException(e.getMessage(), e);
         }
 
@@ -286,7 +286,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
         // initial re-validate the pages, which are already loaded
         UIHelper.runUIAsync(validateRunable);
-        // TLCUIActivator.logDebug("leaving ModelEditor#init(IEditorSite site, IEditorInput input)");
+        // TLCUIActivator.getDefault().logDebug("leaving ModelEditor#init(IEditorSite site, IEditorInput input)");
 
         
         // Asynchronously register a PageChangedListener to now cause cyclic part init warnings
@@ -321,12 +321,12 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 	 */
 	public void dispose() {
 		removePageChangedListener(pageChangedListener);
-        // TLCUIActivator.logDebug("entering ModelEditor#dispose()");
+        // TLCUIActivator.getDefault().logDebug("entering ModelEditor#dispose()");
         // remove the listeners
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(workspaceResourceChangeListener);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileChangeListener);
         super.dispose();
-        // TLCUIActivator.logDebug("leaving ModelEditor#dispose()");
+        // TLCUIActivator.getDefault().logDebug("leaving ModelEditor#dispose()");
     }
 
     /**
@@ -435,7 +435,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // });
         // }
         // }
-        // // TLCUIActivator.logDebug("Focusing " + getConfig().getName() +
+        // // TLCUIActivator.getDefault().logDebug("Focusing " + getConfig().getName() +
         // // " editor");
 
         super.setFocus();
@@ -454,7 +454,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     protected void commitPages(IProgressMonitor monitor, boolean onSave)
     {
-        // TLCUIActivator.logDebug("entering ModelEditor#commitPages(IProgressMonitor monitor, boolean onSave)");
+        // TLCUIActivator.getDefault().logDebug("entering ModelEditor#commitPages(IProgressMonitor monitor, boolean onSave)");
         for (int i = 0; i < getPageCount(); i++)
         {
             /*
@@ -472,7 +472,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 }
             }
         }
-        // TLCUIActivator.logDebug("leaving ModelEditor#commitPages(IProgressMonitor monitor, boolean onSave)");
+        // TLCUIActivator.getDefault().logDebug("leaving ModelEditor#commitPages(IProgressMonitor monitor, boolean onSave)");
     }
 
     /*
@@ -480,7 +480,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     protected void addPages()
     {
-        // TLCUIActivator.logDebug("entering ModelEditor#addPages()");
+        // TLCUIActivator.getDefault().logDebug("entering ModelEditor#addPages()");
         try
         {
 
@@ -492,7 +492,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 ((CTabFolder) getContainer()).addCTabFolder2Listener(listener);
             } else
             {
-                TLCUIActivator.logDebug("The model editor container is not a CTabFolder. This is a bug.");
+                TLCUIActivator.getDefault().logDebug("The model editor container is not a CTabFolder. This is a bug.");
             }
 
             for (int i = 0; i < pagesToAdd.length; i++)
@@ -518,7 +518,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
         } catch (PartInitException e)
         {
-            TLCUIActivator.logError("Error initializing editor", e);
+            TLCUIActivator.getDefault().logError("Error initializing editor", e);
         }
 
         ModuleNode rootModule = SemanticHelper.getRootModuleNode();
@@ -528,7 +528,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             showResultPage();
         }
 
-        // TLCUIActivator.logDebug("leaving ModelEditor#addPages()");
+        // TLCUIActivator.getDefault().logDebug("leaving ModelEditor#addPages()");
     }
 
     /* --------------------------------------------------------------------- */
@@ -611,7 +611,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             }
         } else
         {
-            Activator.logDebug("The spec manager has not been instantiated. This is a bug.");
+            Activator.getDefault().logDebug("The spec manager has not been instantiated. This is a bug.");
             return;
         }
         
@@ -718,7 +718,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 }
             } catch (CoreException e)
             {
-                TLCUIActivator.logError("Error launching the configuration " + getConfig().getName(), e);
+                TLCUIActivator.getDefault().logError("Error launching the configuration " + getConfig().getName(), e);
             }
         }
 
@@ -742,7 +742,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             }
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error stopping the model launch", e);
+            TLCUIActivator.getDefault().logError("Error stopping the model launch", e);
         }
 
     }
@@ -792,14 +792,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     public void handleProblemMarkers(boolean switchToErrorPage)
     {
-        // System.out.println("Entering ModelEditor.handleProblemMarkers()");
-
         int errorPageIndex = -1;
         int currentPageIndex = getActivePage();
         try
         {
             IMarker[] modelProblemMarkers = ModelHelper.getModelProblemMarker(getConfig());
-            // System.out.println("Found " + modelProblemMarkers.length + " markers for " + getConfig().getName());
             DataBindingManager dm = getDataBindingManager();
 
             for (int j = 0; j < getPageCount(); j++)
@@ -911,9 +908,8 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error retrieving model error markers", e);
+            TLCUIActivator.getDefault().logError("Error retrieving model error markers", e);
         }
-        // System.out.println("leaving ModelEditor.handleProblemMarkers()");
     }
     
     public void setActivePage(int index) {
@@ -1013,7 +1009,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             return ModelHelper.isModelRunning(getConfig());
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error determining model status", e);
+            TLCUIActivator.getDefault().logError("Error determining model status", e);
             return true;
         }
     }
@@ -1029,7 +1025,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             return ModelHelper.isModelLocked(getConfig());
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error determining model status", e);
+            TLCUIActivator.getDefault().logError("Error determining model status", e);
             return true;
         }
     }
@@ -1045,7 +1041,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             return ModelHelper.isModelStale(getConfig());
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error determining model status", e);
+            TLCUIActivator.getDefault().logError("Error determining model status", e);
             return true;
         }
     }
@@ -1064,7 +1060,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 ((ResultPage) resultPage).loadData();
             } catch (CoreException e)
             {
-                TLCUIActivator.logError("Error refreshing the result page", e);
+                TLCUIActivator.getDefault().logError("Error refreshing the result page", e);
             }
         }
     }

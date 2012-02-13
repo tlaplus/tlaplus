@@ -17,6 +17,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
@@ -206,7 +207,7 @@ public class EditorUtil
 
         if (editor.isDirty())
         {
-            System.out.println("Editor is dirty");
+        	TLAEditorActivator.getDefault().logDebug("Editor is dirty");
             return null;
         }
 
@@ -263,26 +264,26 @@ public class EditorUtil
         // || kind == SyntaxTreeConstants.N_GenPrefixOp || kind == SyntaxTreeConstants.N_GenPostfixOp
         )
         {
-            // System.out.println("Returning concatenation of heirs: " + concatHeirTokens(stn));
+            // TLAEditorActivator.getDefault().logDebug("Returning concatenation of heirs: " + concatHeirTokens(stn));
             return new StringAndLocation(concatHeirTokens(stn), stn.getLocation());
         }
-        // System.out.println("Called on node kind = " + stn.getKind() +
+        // TLAEditorActivator.getDefault().logDebug("Called on node kind = " + stn.getKind() +
         // ", image = `" + stn.getImage() + "'");
         SyntaxTreeNode[] heirs = stn.getHeirs();
         if (heirs.length == 0)
         {
-            // System.out.println("Hit bottom, returning " + stn.getImage());
+            // TLAEditorActivator.getDefault().logDebug("Hit bottom, returning " + stn.getImage());
             return new StringAndLocation(stn.getImage(), stn.getLocation());
         }
         for (int i = 0; i < heirs.length; i++)
         {
             if (locationContainment(location, heirs[i].getLocation()))
             {
-                // System.out.println("Recursing");
+                // TLAEditorActivator.getDefault().logDebug("Recursing");
                 return innerGetCurrentToken(heirs[i], location);
             }
         }
-        // System.out.println("Not found; return null");
+        // TLAEditorActivator.getDefault().logDebug("Not found; return null");
         return null;
     }
 
@@ -702,7 +703,7 @@ public class EditorUtil
             }
         } catch (CoreException e)
         {
-            Activator.logError("Error setting module " + module + " to read only.", e);
+            Activator.getDefault().logError("Error setting module " + module + " to read only.", e);
         }
 
     }
@@ -775,7 +776,7 @@ public class EditorUtil
             }
         } catch (CoreException e)
         {
-            Activator.logError("Error determining if module " + module + " is read only.", e);
+            Activator.getDefault().logError("Error determining if module " + module + " is read only.", e);
         }
         return false;
 
@@ -809,7 +810,7 @@ public class EditorUtil
                 return ((ResourceMarkerAnnotationModel) annotationModel).getMarkerPosition(marker);
             } else
             {
-                Activator.logDebug("Cannot get the annotation model that manages marker positions for the marker on "
+                Activator.getDefault().logDebug("Cannot get the annotation model that manages marker positions for the marker on "
                         + marker.getResource());
             }
         }

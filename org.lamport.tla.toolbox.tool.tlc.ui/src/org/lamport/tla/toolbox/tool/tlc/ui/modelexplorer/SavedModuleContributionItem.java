@@ -98,7 +98,7 @@ public class SavedModuleContributionItem extends CompoundContributionItem
                     return (IContributionItem[]) contributions.toArray(new IContributionItem[contributions.size()]);
                 } catch (CoreException e)
                 {
-                    TLCUIActivator.logError("Error getting members of model folder " + modelFolder, e);
+                    TLCUIActivator.getDefault().logError("Error getting members of model folder " + modelFolder, e);
                 }
             }
         }
