@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.6"?>
 
-<target name="TLA+ Toolbox 3.6" sequenceNumber="35">
+<target name="TLA+ Toolbox 3.6" sequenceNumber="45">
 <locations>
 <location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.draw2d.feature.group" version="3.7.1.v20110830-1143-4607w3122194102254"/>
@@ -32,6 +32,10 @@
 <unit id="org.eclipse.equinox.p2.user.ui.feature.group" version="2.1.2.R37x_v20110815-1155-6-Bj9JXOeQxOURYC-l9BL7rDEQO7"/>
 <unit id="org.eclipse.equinox.p2.sdk.feature.group" version="3.7.1.R37x_v20110907-9N7sHDOGKQr_bhQlOXRnwJn5DsVZ"/>
 <repository location="http://download.eclipse.org/eclipse/updates/3.7/R-3.7.1-201109091335/"/>
+</location>
+<location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
+<repository location="https://tla.msr-inria.inria.fr/pdf4eclipse/"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
