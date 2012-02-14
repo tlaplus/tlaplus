@@ -76,14 +76,14 @@ public class SpecComparator implements Comparator<Spec>
                 // This value may be null if the user has just created
                 // the spec and not yet closed it when he clicks on the Open
                 // Spec menu.  (I'm not sure.)  LL
-                // Activator.logDebug("Null read as LAST_CLOSED_DATE.");
+                // Activator.getDefault().logDebug("Null read as LAST_CLOSED_DATE.");
                 return 0;
             }
             return Long.parseLong(timeAsString);
 
         } catch (CoreException e)
         {
-            Activator.logDebug("Exception thrown when reading project LAST_CLOSED time.");
+            Activator.getDefault().logDebug("Exception thrown when reading project LAST_CLOSED time.");
             return 0;
         }
     }

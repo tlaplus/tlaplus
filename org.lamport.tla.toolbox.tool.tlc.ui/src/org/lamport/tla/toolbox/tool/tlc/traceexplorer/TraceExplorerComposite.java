@@ -453,7 +453,7 @@ public class TraceExplorerComposite
 
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error launching trace explorer.", e);
+            TLCUIActivator.getDefault().logError("Error launching trace explorer.", e);
         }
     }
 
@@ -471,7 +471,7 @@ public class TraceExplorerComposite
             TLCErrorView.updateErrorView(view.getCurrentConfigFileHandle());
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error setting original trace shown flag.", e);
+            TLCUIActivator.getDefault().logError("Error setting original trace shown flag.", e);
         }
     }
 
@@ -584,7 +584,7 @@ public class TraceExplorerComposite
             }
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error saving trace explorer expression.", e);
+            TLCUIActivator.getDefault().logError("Error saving trace explorer expression.", e);
         }
         return null;
     }

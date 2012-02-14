@@ -14,6 +14,7 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Point;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 
 /**
@@ -62,7 +63,7 @@ public class TLACompletionProcessor implements IContentAssistProcessor
                 IRegion wordRegion = DocumentHelper.getRegionExpandedBackwards(document, offset, DocumentHelper
                         .getDefaultWordDetector());
                 String word = document.get(wordRegion.getOffset(), wordRegion.getLength());
-                System.out.println("Content assist for '" + word + "'" + wordRegion );
+                TLAEditorActivator.getDefault().logDebug("Content assist for '" + word + "'" + wordRegion );
                 computeWordProposals(word, offset, propList);
             }
         } catch (BadLocationException e)

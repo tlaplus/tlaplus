@@ -186,7 +186,6 @@ public class TagBasedTLCAnalyzer
                     } else
                     {
                         // NOT SUPPORTED
-                        // System.out.println("JJ");
                         throw new IllegalArgumentException("Bug parsing the regions");
                     }
                 }
@@ -299,9 +298,9 @@ public class TagBasedTLCAnalyzer
             return Integer.parseInt(number);
         } catch (BadLocationException e)
         {
-            TLCUIActivator.logError("Error retrieving the TLC message code", e);
+            TLCUIActivator.getDefault().logError("Error retrieving the TLC message code", e);
         } catch (NumberFormatException e) {
-            TLCUIActivator.logError("Error retrieving the TLC message code", e);
+            TLCUIActivator.getDefault().logError("Error retrieving the TLC message code", e);
         }
         return -1;
     }
@@ -321,7 +320,7 @@ public class TagBasedTLCAnalyzer
             return Integer.parseInt(number);
         } catch (BadLocationException e)
         {
-            TLCUIActivator.logError("Error retrieving the TLC message severity", e);
+            TLCUIActivator.getDefault().logError("Error retrieving the TLC message severity", e);
         }
         return -1;
     }

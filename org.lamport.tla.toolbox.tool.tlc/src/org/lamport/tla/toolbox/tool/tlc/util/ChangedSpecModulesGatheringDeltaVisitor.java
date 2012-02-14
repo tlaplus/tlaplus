@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
@@ -47,14 +48,14 @@ public abstract class ChangedSpecModulesGatheringDeltaVisitor implements IResour
     public boolean visit(IResourceDelta delta) throws CoreException
     {
         final IResource resource = delta.getResource();
-        // System.out.println("resource = " + resource.getFullPath().toString());
+        // TLCActivator.getDefault().logDebug("resource = " + resource.getFullPath().toString());
         if (IResource.FILE == resource.getType())
         {
 
             // add the file only if it's parent is the root file's parent.
             if (ResourceHelper.isModule(resource) && (resource.getParent().equals(rootFileParent)))
             {
-                // System.out.println("module resource added");
+                // TLCActivator.getDefault().logDebug("module resource added");
                 modules.add(resource);
             } else
 
@@ -63,7 +64,7 @@ public abstract class ChangedSpecModulesGatheringDeltaVisitor implements IResour
             // but it doesn't hurt to remove that test and risk unnecessarily removing and resetting markers.
             if (/* delta.getFlags() == IResourceDelta.MARKERS && */(getModel() != null) && getModel().equals(resource))
             {
-                // System.out.println("model set to resource");
+                // TLCActivator.getDefault().logDebug("model set to resource");
 
                 model = resource;
                 return false;

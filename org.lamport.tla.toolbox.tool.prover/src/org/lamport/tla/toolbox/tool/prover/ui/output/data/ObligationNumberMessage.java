@@ -43,7 +43,7 @@ public class ObligationNumberMessage extends TLAPMMessage
                         message.count = Integer.parseInt(fieldValue);
                     } catch (NumberFormatException e)
                     {
-                        ProverUIActivator.logError("Count field in message cannot be parsed to an int."
+                        ProverUIActivator.getDefault().logError("Count field in message cannot be parsed to an int."
                                 + "The message contains the fields " + fieldPairs, e);
                     }
                 }

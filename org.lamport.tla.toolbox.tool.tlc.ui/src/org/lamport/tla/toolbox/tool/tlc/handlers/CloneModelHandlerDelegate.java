@@ -111,7 +111,6 @@ public class CloneModelHandlerDelegate extends AbstractHandler implements IHandl
 
             // construct real name
             String newModelName = specRootModule.getProject().getName() + "___" + modelName;
-            // System.out.println("Clone '" + model.getName() + "' and save under '" + newModelName + "'");
 
             HashMap parameters = null;
 

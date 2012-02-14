@@ -139,7 +139,7 @@ public class TLCUIHelper
                         .start(), matcher.end()));
             } catch (NumberFormatException e)
             {
-                TLCUIActivator.logError("Error parsing PlusCal assertion failed location.", e);
+                TLCUIActivator.getDefault().logError("Error parsing PlusCal assertion failed location.", e);
             }
         }
         return result;
@@ -254,7 +254,7 @@ public class TLCUIHelper
                     return true;
                 } catch (BadLocationException e)
                 {
-                    TLCUIActivator.logError("Error converting location to region in saved module. The location is "
+                    TLCUIActivator.getDefault().logError("Error converting location to region in saved module. The location is "
                             + location, e);
                 }
             }

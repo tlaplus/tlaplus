@@ -91,7 +91,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         if (spec == null)
         {
             // no spec
-            System.out.println("BUG: no spec");
+        	TLCUIActivator.getDefault().logWarning("BUG: no spec");
             return null;
         }
 
@@ -105,7 +105,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         SpecObj specObject = spec.getRootModule();
         if (specObject == null)
         {
-            System.out.println("BUG: no specObject");
+        	TLCUIActivator.getDefault().logWarning("BUG: no specObject");
             return null;
         }
 
@@ -251,7 +251,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                             if (matchRegionx != null)
                             {
                                 checkTermination = true;
-                                Activator.logDebug("Set checkTermination true for " + ifile.getName());
+                                Activator.getDefault().logDebug("Set checkTermination true for " + ifile.getName());
                             } else
                             {
                                 // search for "termination" option in properties added by LL
@@ -262,7 +262,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                                 String paramString = projectPreferenceStore
                                         .getString(IPreferenceConstants.PCAL_CAL_PARAMS);
                                 checkTermination = (paramString.indexOf("-termination") != -1);
-                                System.out.println("checkTermination = " + checkTermination);
+                                TLCUIActivator.getDefault().logDebug("checkTermination = " + checkTermination);
                             }
                         } catch (CoreException e)
                         {
@@ -418,7 +418,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
 
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error creating a model", e);
+            TLCUIActivator.getDefault().logError("Error creating a model", e);
         }
 
         return null;

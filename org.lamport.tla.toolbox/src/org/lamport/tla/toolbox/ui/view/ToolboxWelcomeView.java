@@ -40,7 +40,7 @@ public class ToolboxWelcomeView extends ViewPart
             browser = new Browser(parent, SWT.NONE);
         } catch (SWTError e)
         {
-            Activator.logError("Error instantiating browser widget.", e);
+            Activator.getDefault().logError("Error instantiating browser widget.", e);
         }
         // this code is necessary for opening a local file in the plugin
         Bundle plugin = Activator.getDefault().getBundle();
@@ -53,7 +53,7 @@ public class ToolboxWelcomeView extends ViewPart
             browser.setUrl(pageUrl.toString());
         } catch (IOException e)
         {
-            Activator.logError("Error opening toolbox welcome view file.", e);
+            Activator.getDefault().logError("Error opening toolbox welcome view file.", e);
         }
 
         UIHelper.setHelp(parent, "WelcomeView");

@@ -100,11 +100,11 @@ public class PartitionToolkit
                 messageBuffer.append("OUTPUT:" + location + ": >" + head + "< ...");
             }
 
-            TLCUIActivator.logDebug(messageBuffer.toString());
+            TLCUIActivator.getDefault().logDebug(messageBuffer.toString());
 
         } catch (BadLocationException e)
         {
-            TLCUIActivator.logError("Error printing partition", e);
+            TLCUIActivator.getDefault().logError("Error printing partition", e);
         }
 
     }

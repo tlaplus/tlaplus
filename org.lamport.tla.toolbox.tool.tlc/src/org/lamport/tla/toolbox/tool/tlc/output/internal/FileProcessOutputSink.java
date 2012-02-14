@@ -51,7 +51,7 @@ public class FileProcessOutputSink implements IProcessOutputSink
             // if the console output is active, print to it
         } catch (CoreException e)
         {
-            TLCActivator.logError("Error writing the TLC process output file for " + processName, e);
+            TLCActivator.getDefault().logError("Error writing the TLC process output file for " + processName, e);
         }
 
     }
@@ -88,7 +88,7 @@ public class FileProcessOutputSink implements IProcessOutputSink
                     }, ResourcesPlugin.getWorkspace().getRoot(), IResource.NONE, new NullProgressMonitor());
                 } catch (CoreException e)
                 {
-                    TLCActivator.logError("Error synchronizing the workspace", e);
+                    TLCActivator.getDefault().logError("Error synchronizing the workspace", e);
                 }
         */
     }

@@ -20,6 +20,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.spec.parser.IParseResultListener;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
@@ -175,7 +176,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             {
                 matchingPosition = proofPosition;
                 foldsInCurrentTree.add(matchingPosition);
-                // System.out.println("Existing fold found at " + matchingPosition);
+                // TLAEditorActivator.getDefault().logDebug("Existing fold found at " + matchingPosition);
                 it.remove();
                 break;
             }
@@ -249,15 +250,15 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
 
         String moduleName = ResourceHelper.getModuleName(((FileEditorInput) editor.getEditorInput()).getFile());
 
-        // System.out.println("Proof structure provider for " + moduleName + " recieved a parse result.");
+        // TLAEditorActivator.getDefault().logDebug("Proof structure provider for " + moduleName + " recieved a parse result.");
 
         if (editor == null)
         {
-            Activator.logDebug("Null editor in proof structure provider.");
+            Activator.getDefault().logDebug("Null editor in proof structure provider.");
             return;
         } else if (editor.getEditorInput() == null)
         {
-            Activator.logDebug("Null editor input in proof structure provider.");
+            Activator.getDefault().logDebug("Null editor input in proof structure provider.");
             return;
         }
 
@@ -323,7 +324,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
                 }
             } catch (BadLocationException e)
             {
-                Activator.logError("Error converting theorem location to region in module " + moduleName, e);
+                Activator.getDefault().logError("Error converting theorem location to region in module " + moduleName, e);
             }
         }
 
@@ -428,7 +429,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             }
         } catch (BadLocationException e)
         {
-            Activator.logError("Error computing if selection is in proof step.", e);
+            Activator.getDefault().logError("Error computing if selection is in proof step.", e);
         }
         return false;
     }
@@ -456,7 +457,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             }
         } catch (BadLocationException e)
         {
-            Activator.logError("Error computing if selection is in proof step.", e);
+            Activator.getDefault().logError("Error computing if selection is in proof step.", e);
         }
         return false;
     }
@@ -484,7 +485,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             }
         } catch (BadLocationException e)
         {
-            Activator.logError("Error computing if selection is in proof step.", e);
+            Activator.getDefault().logError("Error computing if selection is in proof step.", e);
         }
         return false;
     }
@@ -625,7 +626,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
                 }
             } catch (BadLocationException e)
             {
-                Activator.logError("Error changing expansion state of proofs.", e);
+                Activator.getDefault().logError("Error changing expansion state of proofs.", e);
             }
         }
 
@@ -723,7 +724,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
                 }
             } catch (BadLocationException e)
             {
-                Activator.logError("Error changing expansion state of proofs.", e);
+                Activator.getDefault().logError("Error changing expansion state of proofs.", e);
             }
         }
 
@@ -778,7 +779,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
                 }
             } catch (BadLocationException e)
             {
-                Activator.logError("Error changing expansion state of proofs.", e);
+                Activator.getDefault().logError("Error changing expansion state of proofs.", e);
             }
         }
 
@@ -834,7 +835,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
                 }
             } catch (BadLocationException e)
             {
-                Activator.logError("Error changing expansion state of proofs.", e);
+                Activator.getDefault().logError("Error changing expansion state of proofs.", e);
             }
         }
 

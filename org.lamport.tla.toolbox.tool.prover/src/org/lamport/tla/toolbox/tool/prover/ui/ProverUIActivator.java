@@ -1,10 +1,7 @@
 package org.lamport.tla.toolbox.tool.prover.ui;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lamport.tla.toolbox.AbstractTLCActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
 import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -13,15 +10,19 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class ProverUIActivator extends AbstractUIPlugin
+public class ProverUIActivator extends AbstractTLCActivator
 {
 
-    // The plug-in ID
+	// The plug-in ID
     public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.prover.ui";
 
     // The shared instance
     private static ProverUIActivator plugin;
 
+    public ProverUIActivator() {
+		super(PLUGIN_ID);
+	}
+    
     /*
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
@@ -37,7 +38,7 @@ public class ProverUIActivator extends AbstractUIPlugin
 	            // Using somebody's else PreferenceStore is not a good idea!
 	        	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
 	            // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
-		        IPreferenceStore store = EditorsUI.getPreferenceStore();
+		        IPreferenceStore store = getDefault().getPreferenceStore();
 
 		        /*
 		         * The following sets the default color predicates for the colors. First argument
@@ -174,19 +175,5 @@ public class ProverUIActivator extends AbstractUIPlugin
     public static ProverUIActivator getDefault()
     {
         return plugin;
-    }
-
-    public static void logError(String message, Throwable e)
-    {
-        getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, message, e));
-    }
-
-    public static void logDebug(String message)
-    {
-    	//getDefault().getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));
-
-    	// why oh why use the log FW when you can dump everything to the console
-    	// and let the user figure out what is important and what not
-        System.out.println(message);
     }
 }

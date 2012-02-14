@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.editors.text.EditorsUI;
+import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -111,7 +112,15 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class ProverPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
 
-    /**
+    public static final String PREDICATE = "predicate";
+
+    public static final String APPLIES_TO_LEAF_ONLY = "appliesToLeafOnly";
+
+    public static final String STEP_STATUS_COLOR = "stepStatusColor";
+
+    public static final String STEP_STATUS_OVERVIEW = "stepStatusOverview";
+
+	/**
      * The number of logical status colors for proof steps.
      */
     public static final int NUM_STATUS_COLORS = 12;
@@ -119,16 +128,18 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
     /**
      * The prefix for the keys used for color preferences.
      */
-    public static final String COLOR_PREF_KEY_PREFIX = "stepStatusColor";
+    public static final String COLOR_PREF_KEY_PREFIX = STEP_STATUS_COLOR;
 
     public ProverPreferencePage()
     {
         super(GRID);
         // Using somebody's else PreferenceStore is not a good idea!
         // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
-        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        final IPreferenceStore[] preferenceStores = new IPreferenceStore[2];
+        preferenceStores[0] = EditorsUI.getPreferenceStore();
+        preferenceStores[1] = ProverUIActivator.getDefault().getPreferenceStore();
         
-        setPreferenceStore(store);
+        setPreferenceStore(new TLCChainedPreferenceStore(preferenceStores));
         getPreferenceStore().addPropertyChangeListener(this);
         setDescription("Color Predicates");
     }
@@ -165,7 +176,7 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
         {
             Button macColorButton = new Button(getFieldEditorParent(), SWT.PUSH);
             macColorButton.setText("Set Colors");
-            macColorButton.addSelectionListener(new MacColorButtonSelectionListener());
+            macColorButton.addSelectionListener(new MacColorButtonSelectionListener(getPreferenceStore()));
             Label warning = new Label(getFieldEditorParent(), SWT.NONE);
             GridData gd = new GridData();
             gd.horizontalSpan = 5;
@@ -263,7 +274,7 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
     public static final String getColorPredPrefName(int colorNum)
     {
 
-        return "stepStatusColor" + colorNum + "predicate";
+        return STEP_STATUS_COLOR + colorNum + PREDICATE;
 
     }
 
@@ -280,7 +291,7 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
     public static final String getLeafSideBarPrefName(int colorNum)
     {
 
-        return "stepStatusOverview" + colorNum + "B";
+        return STEP_STATUS_OVERVIEW + colorNum + "B";
 
     }
 
@@ -294,7 +305,8 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
      */
     public static final String getAppliesToLeafPrefName(int colorNum)
     {
-        return "appliesToLeafOnly" + colorNum;
+        String string = APPLIES_TO_LEAF_ONLY;
+		return string + colorNum;
     }
 
     /**
@@ -385,7 +397,13 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
 
     static class MacColorButtonSelectionListener implements SelectionListener
     {
-        public void widgetDefaultSelected(SelectionEvent e)
+        private final IPreferenceStore preferenceStore2;
+
+		public MacColorButtonSelectionListener(IPreferenceStore preferenceStore) {
+			preferenceStore2 = preferenceStore;
+		}
+
+		public void widgetDefaultSelected(SelectionEvent e)
         {
             /*
              * This never seems to be called.
@@ -395,7 +413,7 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
 
         public void widgetSelected(SelectionEvent e)
         {
-            MacColorSelectionDialog dialog = new MacColorSelectionDialog(UIHelper.getShellProvider());
+            MacColorSelectionDialog dialog = new MacColorSelectionDialog(UIHelper.getShellProvider(), preferenceStore2);
             dialog.open();
         }
 
@@ -457,10 +475,12 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
          */
         public Label[] colorNumber = new Label[12];
         public Color[] color = new Color[12];
+		private final IPreferenceStore store;
 
-        public MacColorSelectionDialog(IShellProvider parentShell)
+        public MacColorSelectionDialog(IShellProvider parentShell, IPreferenceStore preferenceStore2)
         {
             super(parentShell);
+			this.store = preferenceStore2;
             setBlockOnOpen(true);
             // this.page = page;
         }
@@ -472,10 +492,6 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
             topComposite.setLayoutData(gd);
             topComposite.setLayout(new GridLayout(7, false));
 
-            // Using somebody's else PreferenceStore is not a good idea!
-        	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
-            // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
-	        IPreferenceStore store = EditorsUI.getPreferenceStore();
             /*
              * Set up the Text fields and their labels for selecting the colors.
              */
@@ -535,11 +551,6 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
 
         protected void okPressed()
         {
-            // Using somebody's else PreferenceStore is not a good idea!
-        	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
-            // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
-	        IPreferenceStore store = EditorsUI.getPreferenceStore();
-
             for (int i = 0; i < 12; i++)
             {
                 int[] newrgb = new int[3];
@@ -635,7 +646,7 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
                 return;
             }
 
-            // System.out.println("oldText = " + this.dialog.rgbText[0].getText() + " , newText = `" + newText + "'");
+            // TLCActivator.getDefault().logDebug("oldText = " + this.dialog.rgbText[0].getText() + " , newText = `" + newText + "'");
             int[] rgbVals = new int[3];
 
             for (int i = 0; i < 3; i++)

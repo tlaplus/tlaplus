@@ -44,7 +44,7 @@ public class ProverSpecLifecycleParticipant extends SpecLifecycleParticipant
                 ProverHelper.clearObligationMarkers(event.getSpec().getProject());
             } catch (CoreException e)
             {
-                ProverUIActivator.logError("Error removing obligation markers from spec " + event.getSpec().getName()
+                ProverUIActivator.getDefault().logError("Error removing obligation markers from spec " + event.getSpec().getName()
                         + " when it was closed.", e);
             }
         } else if (event.getType() == SpecEvent.TYPE_OPEN)

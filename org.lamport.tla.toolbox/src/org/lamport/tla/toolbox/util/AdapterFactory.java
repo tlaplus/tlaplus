@@ -130,7 +130,7 @@ public class AdapterFactory implements IAdapterFactory
                 return locationToRegion(ResourceHelper.getDocFromFile(module), location);
             } catch (BadLocationException e)
             {
-                Activator.logError("Error converting location to region for location " + location, e);
+                Activator.getDefault().logError("Error converting location to region for location " + location, e);
             }
         }
 

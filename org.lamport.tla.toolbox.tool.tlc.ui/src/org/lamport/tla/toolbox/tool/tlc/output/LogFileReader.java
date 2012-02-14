@@ -55,10 +55,10 @@ public class LogFileReader
             this.parser.done();
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error accessing the TLC log file contents", e);
+            TLCUIActivator.getDefault().logError("Error accessing the TLC log file contents", e);
         } catch (BadLocationException e)
         {
-            TLCUIActivator.logError("Error positioning in the TLC log file", e);
+            TLCUIActivator.getDefault().logError("Error positioning in the TLC log file", e);
         } finally
         {
             /*

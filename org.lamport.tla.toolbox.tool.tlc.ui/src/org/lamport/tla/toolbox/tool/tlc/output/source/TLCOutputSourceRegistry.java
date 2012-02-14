@@ -71,7 +71,7 @@ public class TLCOutputSourceRegistry
     {
         Assert.isNotNull(source);
 
-        // TLCUIActivator.logDebug("adding source " + source.getSourceName() + " " + source.getSourcePrio());
+        // TLCUIActivator.getDefault().logDebug("adding source " + source.getSourceName() + " " + source.getSourcePrio());
 
         ITLCOutputSource existingSource = this.sources.get(source.getTLCOutputName());
 
@@ -169,7 +169,7 @@ public class TLCOutputSourceRegistry
                 // no log file
                 if (DO_DEBUG)
                 {
-                    TLCUIActivator.logDebug("No source for " + processName + " found.");
+                    TLCUIActivator.getDefault().logDebug("No source for " + processName + " found.");
                 }
                 return false;
             }
@@ -271,14 +271,14 @@ public class TLCOutputSourceRegistry
             {
                 type = "trace exploration";
             }
-            TLCUIActivator.logDebug("TLCOutputSourceRegistry for " + type + " maintains " + sources.size()
+            TLCUIActivator.getDefault().logDebug("TLCOutputSourceRegistry for " + type + " maintains " + sources.size()
                     + " sources.");
             Enumeration<String> keys = sources.keys();
             while (keys.hasMoreElements())
             {
                 String sourceName = keys.nextElement();
                 ITLCOutputSource source = sources.get(sourceName);
-                TLCUIActivator.logDebug("The source " + sourceName + " has " + source.getSourcePrio() + " prio and "
+                TLCUIActivator.getDefault().logDebug("The source " + sourceName + " has " + source.getSourcePrio() + " prio and "
                         + source.getListeners().length + " listeners");
 
             }

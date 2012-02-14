@@ -45,7 +45,7 @@ public class TraceExplorerTraceSourceOutputSink extends FileProcessOutputSink
             // // // if the console output is active, print to it
             // // } catch (CoreException e)
             // // {
-            // // TLCActivator.logError("Error clearing the trace explorer trace source file for " + processName, e);
+            // // TLCActivator.getDefault().logError("Error clearing the trace explorer trace source file for " + processName, e);
             // // }
             ModelHelper.createOrClearFiles(new IFile[] { this.outFile }, new NullProgressMonitor());
             clearFile = false;

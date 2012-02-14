@@ -43,7 +43,7 @@ public class TLAMarkerResolutionGenerator implements IMarkerResolutionGenerator
          */
         public void run(IMarker marker)
         {
-            Activator.logDebug("Marker on " + marker.getAttribute(IMarker.LOCATION, "") + " quick fixed.");
+            Activator.getDefault().logDebug("Marker on " + marker.getAttribute(IMarker.LOCATION, "") + " quick fixed.");
         }
         
     }

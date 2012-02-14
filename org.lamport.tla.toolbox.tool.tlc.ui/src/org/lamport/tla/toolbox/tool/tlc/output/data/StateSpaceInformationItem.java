@@ -155,9 +155,9 @@ public class StateSpaceInformationItem
 					distinctStates, leftStates, statesPerMinute,
 					distinctStatesPerMinute);
 		} catch (NumberFormatException e) {
-			TLCUIActivator.logError("Error reading progress information", e);
+			TLCUIActivator.getDefault().logError("Error reading progress information", e);
 		} catch (ParseException e) {
-			TLCUIActivator.logError("Error reading progress information", e);
+			TLCUIActivator.getDefault().logError("Error reading progress information", e);
 		}
 		return null;
 	}
@@ -182,7 +182,7 @@ public class StateSpaceInformationItem
 
 		for (int j = 0; j < i.length; j++) {
 			if (i[j] == -1) {
-				TLCUIActivator.logError("Error reading progress information",
+				TLCUIActivator.getDefault().logError("Error reading progress information",
 						new IllegalArgumentException(outputMessage
 								+ " is in wrong format"));
 				return null;
@@ -200,9 +200,9 @@ public class StateSpaceInformationItem
 					Long.parseLong(outputMessage.substring(
 							i[4] + DISTINCT.length(), i[5])), 0, 0);
 		} catch (NumberFormatException e) {
-			TLCUIActivator.logError("Error reading progress information", e);
+			TLCUIActivator.getDefault().logError("Error reading progress information", e);
 		} catch (ParseException e) {
-			TLCUIActivator.logError("Error reading progress information", e);
+			TLCUIActivator.getDefault().logError("Error reading progress information", e);
 		}
 		return null;
 	}

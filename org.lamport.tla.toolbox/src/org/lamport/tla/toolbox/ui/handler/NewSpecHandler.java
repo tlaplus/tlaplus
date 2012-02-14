@@ -100,7 +100,7 @@ public class NewSpecHandler extends AbstractHandler implements IHandler
 	            	} catch (final CoreException e)
 	            	{
 	            		final String message = "Error creating module " + rootNamePath;
-	            		Activator.logError(message, e);
+	            		Activator.getDefault().logError(message, e);
 	            		// exception, no chance to recover
 	            		return new Status(Status.ERROR, "", message, e);
 	            	}

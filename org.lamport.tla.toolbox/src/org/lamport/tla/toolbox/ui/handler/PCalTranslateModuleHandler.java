@@ -55,13 +55,13 @@ public class PCalTranslateModuleHandler extends SaveDirtyEditorAbstractHandler i
 
             } catch (InvocationTargetException e)
             {
-                Activator.logError("Error during PlusCal Trnaslation", e);
+                Activator.getDefault().logError("Error during PlusCal Trnaslation", e);
             } catch (InterruptedException e)
             {
-                Activator.logError("Error during PlusCal Trnaslation", e);
+                Activator.getDefault().logError("Error during PlusCal Trnaslation", e);
             } catch (CoreException e)
             {
-                Activator.logError("Error during PlusCal Trnaslation", e);
+                Activator.getDefault().logError("Error during PlusCal Trnaslation", e);
             }
 
             /*

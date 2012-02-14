@@ -343,7 +343,7 @@ public class ResourceHelper
 
             } catch (CoreException e)
             {
-                Activator.logError("Error creating the project " + name, e);
+                Activator.getDefault().logError("Error creating the project " + name, e);
             }
         }
 
@@ -378,7 +378,7 @@ public class ResourceHelper
 
                 } catch (CoreException e)
                 {
-                    Activator.logError("Error creating resource link to " + name, e);
+                    Activator.getDefault().logError("Error creating resource link to " + name, e);
                 }
             }
             if (file.exists())
@@ -428,7 +428,7 @@ public class ResourceHelper
                         getLinkedFile(project, newLocation.toOSString(), true);
                         monitor.worked(1);
 
-                        Activator.logDebug("File found " + newLocation.toOSString());
+                        Activator.getDefault().logDebug("File found " + newLocation.toOSString());
                     } else
                     {
                         throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error relocating file "
@@ -444,7 +444,7 @@ public class ResourceHelper
 
         } catch (CoreException e)
         {
-            Activator.logError("Error relocating files in " + project.getName(), e);
+            Activator.getDefault().logError("Error relocating files in " + project.getName(), e);
         } finally
         {
             monitor.done();
@@ -687,7 +687,6 @@ public class ResourceHelper
         ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
         if (file.exists())
         {
-            // System.out.println(buffer.toString());
             file.setContents(stream, IResource.FORCE, monitor);
         } else
         {
@@ -712,7 +711,6 @@ public class ResourceHelper
         ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
         if (file.exists())
         {
-            // System.out.println(buffer.toString());
             file.appendContents(stream, IResource.FORCE, monitor);
         } else
         {
@@ -832,7 +830,7 @@ public class ResourceHelper
             return ResourcesPlugin.getWorkspace().getRoot().getProject(aNewName);
         } catch (CoreException e)
         {
-            Activator.logError("Error renaming a specification", e);
+            Activator.getDefault().logError("Error renaming a specification", e);
         }
         return null;
     }
@@ -841,7 +839,7 @@ public class ResourceHelper
     	try {
 			aProject.refreshLocal(IResource.DEPTH_INFINITE, aMonitor);
 		} catch (CoreException e) {
-            Activator.logError("Error refreshing a specification", e);
+            Activator.getDefault().logError("Error refreshing a specification", e);
 		}
     	return aProject;
     }
@@ -884,7 +882,7 @@ public class ResourceHelper
             
         } catch (CoreException e)
         {
-            Activator.logError("Error deleting a specification", e);
+            Activator.getDefault().logError("Error deleting a specification", e);
         }
     }
 
@@ -1032,7 +1030,7 @@ public class ResourceHelper
             // }
         } catch (BadLocationException e)
         {
-            Activator.logError("Error getting line number of caret.", e);
+            Activator.getDefault().logError("Error getting line number of caret.", e);
         }
         return null;
 
@@ -1250,7 +1248,7 @@ public class ResourceHelper
             return fdp.getDocument(input);
         } catch (CoreException e)
         {
-            Activator.logError("Error getting document for module " + file, e);
+            Activator.getDefault().logError("Error getting document for module " + file, e);
         } finally
         {
             fdp.disconnect(input);
@@ -1374,7 +1372,6 @@ public class ResourceHelper
         // If I write
         // List found = new List(20);
         // Eclipse mysteriously complains that it can't find the second "List".
-        // System.out.println("OUTER CALL AT MODULE " + module.getName());
         innerGetUsesOfSymbol(symbol, module, found);
         SemanticNode[] value = new SemanticNode[found.size()];
         for (int i = 0; i < value.length; i++)
@@ -1484,7 +1481,7 @@ public class ResourceHelper
                         stn = stn.getHeirs()[1];
                     } else
                     {
-                        System.out.println("Bug in ResourceHelper line 1435");
+                        Activator.getDefault().logWarning("Bug in ResourceHelper line 1435");
                     }
                 }
                 for (int i = 0; i < stn.getHeirs().length; i++)
@@ -1520,13 +1517,13 @@ public class ResourceHelper
                             {
                                 // If we get here, it means that there's no syntax
                                 // tree node corresponding to defs[i].
-                                System.out.println("Bug at ResourceHelper line 1471");
+                                Activator.getDefault().logWarning("Bug at ResourceHelper line 1471");
                             }
                         }
                     }
                 } else
                 {
-                    System.out.println("Bug at ResourceHelper line 1477");
+                	Activator.getDefault().logWarning("Bug at ResourceHelper line 1477");
                 }
             }
         }
@@ -1598,7 +1595,6 @@ public class ResourceHelper
         {
             String element = listOfImportedModules.get(i);
             value[i] = element.substring(0, element.length() - 4);
-            // System.out.println("next module: " + value[i]);
         }
         value[listOfImportedModules.size()] = rootModuleName;
         Arrays.sort(value);
@@ -1671,8 +1667,8 @@ public class ResourceHelper
 						"Please (re)move the old file out of the way and retranslate your PCal algorithm again.\n" +
 						"If you do not retranslate TLA+ to PCal mapping will not work.\n" +
 						"(If moving the file does not fix this error, then please report a bug).";
-				Activator.logInfo(error);
-				Activator.logDebug(error, e);
+				Activator.getDefault().logInfo(error);
+				Activator.getDefault().logDebug(error, e);
 			} catch (final FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (final IOException e) {

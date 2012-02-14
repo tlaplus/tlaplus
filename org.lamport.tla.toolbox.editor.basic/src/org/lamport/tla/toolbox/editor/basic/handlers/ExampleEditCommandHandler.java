@@ -383,7 +383,7 @@ public class ExampleEditCommandHandler extends AbstractHandler implements Verify
             int[] array = new int[3];
             if (3 != NUMBER_OF_PROVERS)
             {
-                Activator.logDebug("Method ColorPredicate.numberToState must be reimplemented"
+                Activator.getDefault().logDebug("Method ColorPredicate.numberToState must be reimplemented"
                         + " when number of provers changes");
             }
             for (int i = 0; i < PROVER_STATUSES[0].length; i++)
@@ -420,7 +420,7 @@ public class ExampleEditCommandHandler extends AbstractHandler implements Verify
         {
             if (statuses.length != NUMBER_OF_PROVERS)
             {
-                Activator.logDebug("Method ColorPredicate.bitVectorOfStates must be reimplemented"
+                Activator.getDefault().logDebug("Method ColorPredicate.bitVectorOfStates must be reimplemented"
                         + " when number of provers changes");
             }
             long result = 0;

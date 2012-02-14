@@ -83,7 +83,7 @@ public abstract class TLAPMMessage
      */
     public static TLAPMMessage parseMessage(String proverMessage, String moduleName)
     {
-        // System.out.println("New message to be parsed : \n" + proverMessage);
+        // ProverUIActivator.getDefault().logDebug("New message to be parsed : \n" + proverMessage);
         /*
          * The String proverMessage should be of the form
          * 
@@ -152,9 +152,9 @@ public abstract class TLAPMMessage
                     }
                 } else
                 {
-                    ProverUIActivator
+                    ProverUIActivator.getDefault()
                             .logDebug("Null field name or value when parsing message. This is a bug. Message:");
-                    ProverUIActivator.logDebug(proverMessage);
+                    ProverUIActivator.getDefault().logDebug(proverMessage);
                 }
             }
         }
@@ -189,12 +189,12 @@ public abstract class TLAPMMessage
                 return message;
             } else
             {
-                ProverUIActivator.logDebug("Unsuppported message type " + type);
+                ProverUIActivator.getDefault().logDebug("Unsuppported message type " + type);
             }
         } else
         {
-            ProverUIActivator.logDebug("Type field not found in TLAPM message. The message follows.");
-            ProverUIActivator.logDebug(proverMessage);
+            ProverUIActivator.getDefault().logDebug("Type field not found in TLAPM message. The message follows.");
+            ProverUIActivator.getDefault().logDebug(proverMessage);
         }
         return null;
 
@@ -268,7 +268,7 @@ public abstract class TLAPMMessage
         // .parseInt(coordinates[2]), Integer.parseInt(coordinates[3]));
         // } catch (NumberFormatException e)
         // {
-        // ProverUIActivator.logError("Error parsing location from TLAPM message. Location string : "
+        // ProverUIActivator.getDefault().logError("Error parsing location from TLAPM message. Location string : "
         // + fieldValue, e);
         // }
         // } else if (fieldName.equals(OBL_FIELD))
@@ -279,26 +279,26 @@ public abstract class TLAPMMessage
         // message.status = fieldValue;
         // } else
         // {
-        // ProverUIActivator.logDebug("Unknown field name : " + fieldName + ".");
+        // ProverUIActivator.getDefault().logDebug("Unknown field name : " + fieldName + ".");
         // }
         // } else
         // {
         // ProverUIActivator
         // .logDebug("Null field name or value when parsing message. This is a bug. Message:");
-        // ProverUIActivator.logDebug(proverMessage);
+        // ProverUIActivator.getDefault().logDebug(proverMessage);
         // }
         // }
         // }
         //
         // if (typeFieldFound)
         // {
-        // System.out.println("New message parsed : ");
-        // System.out.println(message.toString());
+        // ProverUIActivator.getDefault().logDebug("New message parsed : ");
+        // ProverUIActivator.getDefault().logDebug(message.toString());
         // return message;
         // } else
         // {
-        // ProverUIActivator.logDebug("Type field not found in TLAPM message. The message follows.");
-        // ProverUIActivator.logDebug(proverMessage);
+        // ProverUIActivator.getDefault().logDebug("Type field not found in TLAPM message. The message follows.");
+        // ProverUIActivator.getDefault().logDebug(proverMessage);
         // }
         //
         // return null;
@@ -338,7 +338,7 @@ public abstract class TLAPMMessage
         // .parseInt(coordinates[2]), Integer.parseInt(coordinates[3]));
         // } catch (NumberFormatException e)
         // {
-        // ProverUIActivator.logError("Error parsing location from TLAPM message. Location string : "
+        // ProverUIActivator.getDefault().logError("Error parsing location from TLAPM message. Location string : "
         // + fieldValue, e);
         // }
         // } else if (fieldName.equals(OBL_FIELD))
@@ -349,12 +349,12 @@ public abstract class TLAPMMessage
         // message.status = fieldValue;
         // } else
         // {
-        // ProverUIActivator.logDebug("Unknown field name : " + fieldName + ".");
+        // ProverUIActivator.getDefault().logDebug("Unknown field name : " + fieldName + ".");
         // }
         // } else
         // {
-        // ProverUIActivator.logDebug("Null field name or value when parsing message. This is a bug. Message:");
-        // ProverUIActivator.logDebug(proverMessage);
+        // ProverUIActivator.getDefault().logDebug("Null field name or value when parsing message. This is a bug. Message:");
+        // ProverUIActivator.getDefault().logDebug(proverMessage);
         // }
         //
         // matcher.region(matcher.end() - TagBasedTLAPMOutputIncrementalParser2.DELIM.length(), matcher.regionEnd());
@@ -362,13 +362,13 @@ public abstract class TLAPMMessage
         //
         // if (typeFieldFound)
         // {
-        // System.out.println("New message parsed : ");
-        // System.out.println(message.toString());
+        // ProverUIActivator.getDefault().logDebug("New message parsed : ");
+        // ProverUIActivator.getDefault().logDebug(message.toString());
         // return message;
         // } else
         // {
-        // ProverUIActivator.logDebug("Type field not found in TLAPM message. The message follows.");
-        // ProverUIActivator.logDebug(proverMessage);
+        // ProverUIActivator.getDefault().logDebug("Type field not found in TLAPM message. The message follows.");
+        // ProverUIActivator.getDefault().logDebug(proverMessage);
         // }
         //
         // return null;
@@ -413,7 +413,7 @@ public abstract class TLAPMMessage
                     .parseInt(coordinates[1]), Integer.parseInt(coordinates[2]), Integer.parseInt(coordinates[3]) - 1);
         } catch (NumberFormatException e)
         {
-            ProverUIActivator.logError("Error parsing location from TLAPM message. Location string : " + locString, e);
+            ProverUIActivator.getDefault().logError("Error parsing location from TLAPM message. Location string : " + locString, e);
         }
         return null;
 

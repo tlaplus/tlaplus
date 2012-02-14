@@ -94,10 +94,6 @@ public class TLAMarkerHelper
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
-                // System.out.println("Installing a marker on " + resource.getProjectRelativePath().toOSString() +
-                // " with error on module "
-                // + moduleName);
-
                 IMarker marker = null;
                 if (!resource.exists())
                 {
@@ -196,12 +192,12 @@ public class TLAMarkerHelper
 										
 									} catch (BadLocationException e)
 									{
-										Activator.logError("Error accessing the specified error location", e);
+										Activator.getDefault().logError("Error accessing the specified error location", e);
 									}
 								}
 						}
 		                } catch (CoreException e) {
-							Activator.logError("Error accessing the specified error location", e);
+							Activator.getDefault().logError("Error accessing the specified error location", e);
 		                }
 					}
                 });
@@ -212,7 +208,7 @@ public class TLAMarkerHelper
             resource.getWorkspace().run(runnable, null, IWorkspace.AVOID_UPDATE, monitor);
         } catch (CoreException e)
         {
-            Activator.logError("Error installing the problem markers", e);
+            Activator.getDefault().logError("Error installing the problem markers", e);
         }
 
     }
@@ -244,7 +240,7 @@ public class TLAMarkerHelper
             resource.getWorkspace().run(runnable, monitor);
         } catch (CoreException e)
         {
-            Activator.logError("Error removing the problem markers", e);
+            Activator.getDefault().logError("Error removing the problem markers", e);
         }
     }
 
@@ -271,7 +267,7 @@ public class TLAMarkerHelper
                     IResource.DEPTH_INFINITE);
         } catch (CoreException e)
         {
-            Activator.logError("Error retrieving the problem markers", e);
+            Activator.getDefault().logError("Error retrieving the problem markers", e);
             problems = new IMarker[0];
         }
         return problems;
@@ -387,7 +383,7 @@ public class TLAMarkerHelper
             return problem.getType();
         } catch (CoreException e)
         {
-            Activator.logError("Error retriving marker type", e);
+            Activator.getDefault().logError("Error retriving marker type", e);
         }
         return null;
     }

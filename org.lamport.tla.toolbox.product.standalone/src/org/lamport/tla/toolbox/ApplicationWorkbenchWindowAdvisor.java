@@ -62,7 +62,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
          */
         if (workbench.getWorkbenchWindowCount() > 1 && WindowUtils.isRootWindow(workbench.getActiveWorkbenchWindow()))
         {
-            // System.out.println("A root shell is about to be closed");
             return workbench.close();
         } else
         {

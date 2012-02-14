@@ -2,6 +2,8 @@ package org.lamport.tla.toolbox.editor.basic.actions;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
@@ -9,6 +11,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -57,8 +60,12 @@ public class OpenDeclarationAction extends Action implements IHyperlink
      */
     public void run()
     {
-        System.out.println("Opening " + label + "(" + resource.getName() + " at " + location + ")");
-
+		TLAEditorActivator
+				.getDefault()
+				.getLog()
+				.log(new Status(IStatus.INFO, TLAEditorActivator.PLUGIN_ID,
+						"Opening " + label + "(" + resource.getName() + " at "
+								+ location + ")"));
         EditorUtil.setReturnFromOpenDecl();
 //        // Find current location and store as a property of the spec for the
 //        // Return from Goto Declaration command.

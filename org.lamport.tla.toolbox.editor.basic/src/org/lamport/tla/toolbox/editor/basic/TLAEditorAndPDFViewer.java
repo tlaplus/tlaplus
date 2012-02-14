@@ -201,7 +201,7 @@ public class TLAEditorAndPDFViewer extends FormEditor implements INavigationLoca
                 // new editor input
                 IEditorInput newInput = new FileEditorInput(newResource);
 
-                // System.out.println("TODO: Save " + file.getLocation().toOSString() + " as " + newPath);
+                //TLAEditorActivator.getDefault().logDebug("TODO: Save " + file.getLocation().toOSString() + " as " + newPath);
 
                 // get the document provider
                 IDocumentProvider provider = tlaEditor.getDocumentProvider();

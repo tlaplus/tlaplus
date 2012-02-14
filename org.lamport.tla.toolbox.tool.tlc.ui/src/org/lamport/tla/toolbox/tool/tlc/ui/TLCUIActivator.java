@@ -1,18 +1,17 @@
 package org.lamport.tla.toolbox.tool.tlc.ui;
 
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lamport.tla.toolbox.AbstractTLCActivator;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class TLCUIActivator extends AbstractUIPlugin
+public class TLCUIActivator extends AbstractTLCActivator
 {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.tlc.ui";
@@ -59,6 +58,7 @@ public class TLCUIActivator extends AbstractUIPlugin
      */
     public TLCUIActivator()
     {
+    	super(PLUGIN_ID);
     }
 
     /*
@@ -169,24 +169,6 @@ public class TLCUIActivator extends AbstractUIPlugin
     }
 
     /**
-     * Logs an error
-     * @param message
-     * @param e 
-     */
-    public static void logError(String message, Throwable e)
-    {
-        getDefault().getLog().log(new Status(Status.ERROR, TLCUIActivator.PLUGIN_ID, message, e));
-    }
-
-    /**
-     * @param string
-     */
-    public static void logDebug(String message)
-    {
-    	getDefault().getLog().log(new Status(Status.INFO, TLCUIActivator.PLUGIN_ID, message));
-    }
-
-    /**
      * @param colorRed
      * @return
      */
@@ -194,5 +176,4 @@ public class TLCUIActivator extends AbstractUIPlugin
     {
         return UIHelper.getShellProvider().getShell().getDisplay().getSystemColor(color);
     }
-
 }

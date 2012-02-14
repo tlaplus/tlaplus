@@ -129,11 +129,11 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 			} else if (cmd.equals(formatCommentId)) {
 				formatComment();
 			} else {
-				Activator.logInfo("Unrecognized boxing command.");
+				Activator.getDefault().logInfo("Unrecognized boxing command.");
 			}
 
 		} catch (org.eclipse.jface.text.BadLocationException e) {
-			Activator.logError("Error executing comment-boxing command", e);
+			Activator.getDefault().logError("Error executing comment-boxing command", e);
 			// just do nothing
 		}
 

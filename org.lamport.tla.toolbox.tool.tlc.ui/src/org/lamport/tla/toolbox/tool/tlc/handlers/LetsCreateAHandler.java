@@ -14,8 +14,6 @@ public class LetsCreateAHandler extends AbstractHandler
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        // System.out.println("Let's create a command class handler blah.");
-       // TODO Auto-generated method stub
         return null;
     }
     
@@ -26,8 +24,6 @@ public class LetsCreateAHandler extends AbstractHandler
 // to the latter behavior.
 //    
     public boolean isEnabled() {
-//        super.setEnabled(this); 
-//        System.out.println("LetsCreateAHandler.isEnabled() called.");
         return false;
     }
 }

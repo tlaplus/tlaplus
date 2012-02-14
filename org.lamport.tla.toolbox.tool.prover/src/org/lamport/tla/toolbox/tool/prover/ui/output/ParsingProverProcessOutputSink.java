@@ -38,7 +38,7 @@ public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
         //
         // } catch (BadLocationException e)
         // {
-        // Activator.logError("Error parsing the TLAPM output stream for " + name, e);
+        // Activator.getDefault().logError("Error parsing the TLAPM output stream for " + name, e);
         // }
     }
 

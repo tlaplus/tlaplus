@@ -106,7 +106,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     ModelHelper.setOriginalTraceShown(getConfig(), true);
                 } catch (CoreException e1)
                 {
-                    TLCUIActivator.logError("Error setting the original trace to be shown.", e1);
+                    TLCUIActivator.getDefault().logError("Error setting the original trace to be shown.", e1);
                 }
                 TLCErrorView.updateErrorView(getConfig());
             }
@@ -196,7 +196,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                         {
                             shells[i].redraw();
                             shells[i].update();
-                            System.out.println("Called redraw/update on shell number" + i);
+                            TLCUIActivator.getDefault().logDebug("Called redraw/update on shell number" + i);
                         }
                     }
                     break;
@@ -269,7 +269,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     private synchronized void reinit()
     {
-        // TLCUIActivator.logDebug("Entering reinit()");
+        // TLCUIActivator.getDefault().logDebug("Entering reinit()");
         this.startTimestampText.setText("");
         this.startTime = 0;
         this.finishTimestampText.setText("");
@@ -280,7 +280,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         this.stateSpace.setInput(new Vector());
         this.progressOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
         this.userOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
-        // TLCUIActivator.logDebug("Exiting reinit()");
+        // TLCUIActivator.getDefault().logDebug("Exiting reinit()");
     }
 
     /**
@@ -970,7 +970,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                         times[0] = 0;
 
                         long startTime = resultPage.startTime;
-                        System.out.println("first reported time - starttime = "
+                        TLCUIActivator.getDefault().logDebug("first reported time - starttime = "
                                 + (ssInfo[0].getTime().getTime() - startTime));
                         if (startTime > ssInfo[0].getTime().getTime() - 1000)
                         {

@@ -95,7 +95,7 @@ public class TraceExplorerHelper
             }
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error writing trace contents to file", e);
+            TLCUIActivator.getDefault().logError("Error writing trace contents to file", e);
         }
     }
 }

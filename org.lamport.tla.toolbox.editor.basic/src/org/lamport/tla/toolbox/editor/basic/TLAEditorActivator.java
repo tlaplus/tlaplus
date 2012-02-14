@@ -2,14 +2,14 @@ package org.lamport.tla.toolbox.editor.basic;
 
 import org.eclipse.jface.text.rules.IPartitionTokenScanner;
 import org.eclipse.jface.text.rules.ITokenScanner;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lamport.tla.toolbox.AbstractTLCActivator;
 import org.lamport.tla.toolbox.editor.basic.tla.TLACodeScanner;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class TLAEditorActivator extends AbstractUIPlugin
+public class TLAEditorActivator extends AbstractTLCActivator
 {
 
     // The plug-in ID
@@ -28,6 +28,7 @@ public class TLAEditorActivator extends AbstractUIPlugin
      */
     public TLAEditorActivator()
     {
+    	super(PLUGIN_ID);
     }
 
     /*

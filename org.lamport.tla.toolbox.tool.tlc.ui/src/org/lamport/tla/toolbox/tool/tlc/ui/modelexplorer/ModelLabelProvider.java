@@ -74,7 +74,7 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
                 }
             } catch (CoreException e)
             {
-                TLCUIActivator.logError("Error creating description for a model", e);
+                TLCUIActivator.getDefault().logError("Error creating description for a model", e);
             }
             return modelName;
         }

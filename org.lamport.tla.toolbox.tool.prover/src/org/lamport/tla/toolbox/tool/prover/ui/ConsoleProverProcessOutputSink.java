@@ -40,7 +40,7 @@ public class ConsoleProverProcessOutputSink implements IProverProcessOutputSink
             this.outputStream.write(text.getBytes());
         } catch (IOException e)
         {
-            ProverUIActivator.logError("Error printing a console message: >" + text + "<", e);
+            ProverUIActivator.getDefault().logError("Error printing a console message: >" + text + "<", e);
         }
     }
 

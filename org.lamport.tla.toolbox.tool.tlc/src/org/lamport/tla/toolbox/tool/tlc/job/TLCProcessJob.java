@@ -87,7 +87,7 @@ public class TLCProcessJob extends TLCJob
             String[] arguments = constructProgramArguments();
 
             // log output
-            org.lamport.tla.toolbox.tool.tlc.TLCActivator.logDebug(
+            org.lamport.tla.toolbox.tool.tlc.TLCActivator.getDefault().logInfo(
             		"TLC ARGUMENTS: " +
             		Arrays.toString(arguments));
 

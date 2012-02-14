@@ -92,15 +92,6 @@ public class UnwantedPreferenceManager extends ToolboxLifecycleParticipant
             {
                 helpNode.remove("org.eclipse.help.ui.contentPreferencePage");
             }
-
-            /*List nodes = pm.getElements(PreferenceManager.PRE_ORDER);
-            Iterator it = nodes.iterator();
-            while (it.hasNext())
-            {
-                IPreferenceNode node = (IPreferenceNode) it.next();
-                System.out.println("Name: " + node.getLabelText());
-                System.out.println("ID: " + node.getId());
-            }*/
         }
     }
 

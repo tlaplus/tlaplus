@@ -258,7 +258,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         cfgFile = project.getFile(targetFolderPath.append(ModelHelper.TE_FILE_CFG));
         outFile = project.getFile(targetFolderPath.append(ModelHelper.TE_FILE_OUT));
 
-        TLCActivator.logDebug("Writing files to: " + targetFolderPath.toOSString());
+        TLCActivator.getDefault().logDebug("Writing files to: " + targetFolderPath.toOSString());
 
         IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 
@@ -321,7 +321,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                                 // ignore this fact
                                 // FIXME this should be fixed at
                                 // some later point in time
-                                TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
+                                TLCActivator.getDefault().logError("Error deleting a file " + members[i].getLocation(), e);
                             }
                         }
                         monitor.done();
@@ -637,7 +637,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException
     {
-        System.out.println("launch called");
+    	TLCActivator.getDefault().logDebug("launch called");
         // check the modes
         if (!MODE_TRACE_EXPLORE.equals(mode))
         {

@@ -54,7 +54,7 @@ public class ModelContentProvider implements ITreeContentProvider
                 }
             } catch (CoreException e)
             {
-                TLCUIActivator.logError("Error fetching the models", e);
+                TLCUIActivator.getDefault().logError("Error fetching the models", e);
             }
 
             // only get models of the current spec

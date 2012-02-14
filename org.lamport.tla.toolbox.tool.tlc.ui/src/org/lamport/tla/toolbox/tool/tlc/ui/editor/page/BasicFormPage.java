@@ -305,7 +305,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             loadData();
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error loading data from the model into the form fields", e);
+            TLCUIActivator.getDefault().logError("Error loading data from the model into the form fields", e);
         }
 
         // check the model is-running state
@@ -935,7 +935,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 ModelHelper.recoverModel(((ModelEditor) getEditor()).getConfig());
             } catch (CoreException e)
             {
-                TLCUIActivator.logError("Error recovering the model", e);
+                TLCUIActivator.getDefault().logError("Error recovering the model", e);
             }
         }
 
@@ -962,7 +962,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 ModelHelper.setModelLocked(getConfig(), false);
             } catch (CoreException e)
             {
-                TLCUIActivator.logError("There was an error unlocking the model.", e);
+                TLCUIActivator.getDefault().logError("There was an error unlocking the model.", e);
             }
         }
 
@@ -1008,7 +1008,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 ModelHelper.setModelLocked(getConfig(), true);
             } catch (CoreException e)
             {
-                TLCUIActivator.logError("There was an error locking the model.", e);
+                TLCUIActivator.getDefault().logError("There was an error locking the model.", e);
             }
         }
 

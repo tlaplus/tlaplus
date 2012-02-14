@@ -696,7 +696,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
 	public void commit(boolean onSave)
     {
-        // TLCUIActivator.logDebug("Main page commit");
+        // TLCUIActivator.getDefault().logDebug("Main page commit");
         // closed formula
         String closedFormula = FormHelper.trimTrailingSpaces(this.specSource.getDocument().get());
         getConfig().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
@@ -790,7 +790,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             checkpoints = ModelHelper.getCheckpoints(getConfig(), false);
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error checking chekpoint data", e);
+            TLCUIActivator.getDefault().logError("Error checking chekpoint data", e);
         }
 
         if (checkpoints != null && checkpoints.length > 0)
