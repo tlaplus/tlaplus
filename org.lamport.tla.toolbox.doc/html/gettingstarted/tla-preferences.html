@@ -1,8 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- This is file org.lamport.tla.toobox.doc/html/gettingstarted/preferences.html -->
+<!-- This is file org.lamport.tla.toobox.doc/html/gettingstarted/tla-preferences.html -->
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
  <LINK href="../style.css" rel="stylesheet" type="text/css">
 
 <title>TLA+ Preferences</title>
@@ -12,7 +12,7 @@
 <body>
 <h1>TLA+ Preferences</h1>
 
-<p>There are two preferences that can be set on this page.</p>
+<p>There are three preferences that can be set on this page.</p>
 
 <h3>Continue Previous Session on Restart</h3>
 
@@ -53,6 +53,23 @@ See <A href="../model/overview-page.html#checkpoint">Checkpoint
 Recovery</A> to learn how you can find out how large a checkpoint
 is and how you can delete a checkpoint.
 </p>
+
+<h3>Library Folders</h3>
+
+This specifies a list of library folders that are for modules that may
+be used in more than one specification.&nbsp; 
+
+When a specification imports a module (with an <code>EXTENDS</code> or
+<code>INSTANCE</code> statement), the parser searches for that module
+first in the root module's folder, then in the sequence of specified
+library folders, then among the standard modules.&nbsp;
+
+The list of library folders specified here can be overridden for a
+particular spec with a different list in the spec's <a
+href="../spec/opening-closing.html#spec-explorer"><em>Spec
+Explorer</em> </a> entry.&nbsp;
+
+
 <hr> 
 <!-- delete rest of line to comment out
 <dl>
