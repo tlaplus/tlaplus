@@ -37,10 +37,6 @@ public final class InternTable implements Serializable
         this.thresh = this.length / 2;
     }
     
-    private boolean isFull() {
-        return this.table.length == this.count;
-    }
-
     private void grow()
     {
         UniqueString[] old = this.table;
