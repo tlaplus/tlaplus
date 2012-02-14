@@ -1,7 +1,6 @@
 package org.lamport.tla.toolbox.tool.prover.ui;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.editors.text.EditorsUI;
 import org.lamport.tla.toolbox.AbstractTLCActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
 import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
@@ -39,7 +38,7 @@ public class ProverUIActivator extends AbstractTLCActivator
 	            // Using somebody's else PreferenceStore is not a good idea!
 	        	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
 	            // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
-		        IPreferenceStore store = EditorsUI.getPreferenceStore();
+		        IPreferenceStore store = getDefault().getPreferenceStore();
 
 		        /*
 		         * The following sets the default color predicates for the colors. First argument

@@ -35,7 +35,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
-import org.eclipse.ui.editors.text.EditorsUI;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
@@ -318,12 +317,8 @@ public class ProverJob extends Job
          */
         colorPredicates = new ColorPredicate[ProverPreferencePage.NUM_STATUS_COLORS];
 
-        // Using somebody's else PreferenceStore is not a good idea!
-    	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
-        // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
-
         // the preference store containing color predicate preferences
-        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        IPreferenceStore store = ProverUIActivator.getDefault().getPreferenceStore();
         for (int i = 1; i <= colorPredicates.length; i++)
         {
             String predicate = store.getString(ProverPreferencePage.getColorPredPrefName(i));
