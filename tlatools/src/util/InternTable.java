@@ -11,17 +11,19 @@ import tlc2.output.EC;
 import tlc2.tool.distributed.InternRMI;
 
 /**
- * Storage for the UniqueStrings. 
+ * Storage for the UniqueStrings.  It stores them in a hash table using
+ * simple linear hashing.
  * @see {@link UniqueString} for more information 
  * @author Yuan Yu, Simon Zambrovski
  */
 public final class InternTable implements Serializable
 {
 
-    private int count;
-    private int length;
-    private int thresh;
-    private UniqueString[] table;
+    private int count;  // The number of entries in the table.
+    private int length; // The length of the table.
+    private int thresh; // The maximum number of entries before the table
+                        // needs to be grown.
+    private UniqueString[] table;  // The array that holds the entries.
 
     // SZ 10.04.2009: removed unused variable
     // made token counter to instance variable, since there is only one instance of the InternTable
@@ -54,9 +56,14 @@ public final class InternTable implements Serializable
 
     private void put(UniqueString var)
     {
-        // The following statement was added on 14 Feb 2012 by M.K.  It
-        // was apparently forgotten by Yuan Yu in the original code and
-        // its absence caused TLC to hang when restarting from a checkpoint
+        // The following statement was added on 14 Feb 2012 by M.K.  
+        // It calls the grow() method to enlarge the hash table storing
+        // UniqueStrings.  This put() method is called both by the 
+        // grow() method, and by the recover() method,
+        // which is used to recreate the hash table when restarting from
+        // a checkpoint.  The second use was apparently forgotten by Yuan Yu 
+        // in the original code, which never called the grow() method,
+        // causing TLC to hang when restarting from a checkpoint
         // for a spec in which the table had grown.  Amazingly, this was
         // never discovered in approximately 10 years of use.
         if (this.count >= this.thresh)

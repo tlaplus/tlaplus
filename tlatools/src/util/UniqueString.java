@@ -19,8 +19,8 @@ import tlc2.util.FP64;
  * 
  * The primary purpose is to use instances of this class as a wrapper or
  * data holder inside of the {@link InternTable}. The latter is organized that way, that it holds an
- * array of UniqueStrings. Each UniqueString that is created is put at most one into the table, and holds 
- * the information of it location in the table. The member variable {@link UniqueString#s} is used to represent 
+ * array of UniqueStrings. Each UniqueString that is created is put at most once into the table, and holds 
+ * the information of its location in the table. The member variable {@link UniqueString#s} is used to represent 
  * the content, the member variable {@link UniqueString#tok} holds the position inside of the {@link InternTable}.
  * The following methods are responsible for access to content and position:
  * <ul>
