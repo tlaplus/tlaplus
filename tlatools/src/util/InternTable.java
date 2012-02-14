@@ -36,6 +36,10 @@ public final class InternTable implements Serializable
         this.length = size;
         this.thresh = this.length / 2;
     }
+    
+    private boolean isFull() {
+        return this.table.length == this.count;
+    }
 
     private void grow()
     {
@@ -54,6 +58,14 @@ public final class InternTable implements Serializable
 
     private void put(UniqueString var)
     {
+        // The following statement was added on 14 Feb 2012 by M.K.  It
+        // was apparently forgotten by Yuan Yu in the original code and
+        // its absence caused TLC to hang when restarting from a checkpoint
+        // for a spec in which the table had grown.  Amazingly, this was
+        // never discovered in approximately 10 years of use.
+        if (this.count >= this.thresh)
+            this.grow();
+        
         int loc = (var.hashCode() & 0x7FFFFFFF) % length;
         while (true)
         {
