@@ -1028,7 +1028,6 @@ public class DiskFPSet extends FPSet {
 	 * @see tlc2.tool.fp.FPSet#beginChkpt()
 	 */
 	public final void beginChkpt() throws IOException {
-		MP.printWarning(EC.GENERAL, "Ignoring call to prepare for checkpoint in DiskFPSet");
 		// @see tlc2.tool.fp.DiskFPSet.commitChkpt()
 	}
 
@@ -1036,7 +1035,6 @@ public class DiskFPSet extends FPSet {
 	 * @see tlc2.tool.fp.FPSet#commitChkpt()
 	 */
 	public final void commitChkpt() throws IOException { 
-		MP.printWarning(EC.GENERAL, "Ignoring call to commit a checkpoint in DiskFPSet");
 		/* SKIP */
 		// DiskFPSet checkpointing is a no-op, because DiskFPSet recreates 
 		// the fingerprints from the TLCTrace file. Not from its own .fp file. 
