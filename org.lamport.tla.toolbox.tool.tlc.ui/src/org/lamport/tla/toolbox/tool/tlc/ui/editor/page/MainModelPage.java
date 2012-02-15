@@ -84,7 +84,6 @@ import util.TLCRuntime;
  * This is the FormPage class for the Model Overview tabbed page of
  * the model editor.
  */
-@SuppressWarnings("unchecked")
 public class MainModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
     public static final String ID = "MainModelPage";
@@ -490,7 +489,27 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 					        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
             expandSection(SEC_HOW_TO_RUN);
         }
-
+        
+		// legacy value?
+		// better handle legacy models
+		try {
+			final int defaultMaxHeapSize = TLCUIActivator
+					.getDefault()
+					.getPreferenceStore()
+					.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+			final int legacyValue = getConfig().getAttribute(
+					LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
+			if (legacyValue >= 100) {
+	            modelEditor.addErrorMessage("strangeNumber1", 
+	            		"Found legacy value for physically memory that needs manual conversion",
+	            		this.getId(), IMessageProvider.WARNING, maxHeapSize);
+				setComplete(false);
+				expandSection(SEC_HOW_TO_RUN);
+			}
+		} catch (CoreException e) {
+			TLCUIActivator.getDefault().logWarning("Faild to read heap value",
+					e);
+		}
         
         // max heap size
 		// color the scale according to OS and TLC requirements
