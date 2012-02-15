@@ -19,6 +19,6 @@ public class TLA2TeXPreferenceInitializer extends AbstractPreferenceInitializer 
 		store.setDefault(ITLA2TeXPreferenceConstants.NUMBER_LINES, false);
 		store.setDefault(ITLA2TeXPreferenceConstants.LATEX_COMMAND, "pdflatex");
 		store.setDefault(ITLA2TeXPreferenceConstants.GRAY_LEVEL, "0.85");
-		store.setDefault(ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER, true);
+		store.setDefault(ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER, false);
 	}
 }
