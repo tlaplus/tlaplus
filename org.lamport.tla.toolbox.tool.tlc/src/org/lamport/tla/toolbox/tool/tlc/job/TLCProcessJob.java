@@ -15,8 +15,8 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
-import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -87,9 +87,8 @@ public class TLCProcessJob extends TLCJob
             String[] arguments = constructProgramArguments();
 
             // log output
-            org.lamport.tla.toolbox.tool.tlc.TLCActivator.getDefault().logInfo(
-            		"TLC ARGUMENTS: " +
-            		Arrays.toString(arguments));
+			TLCActivator
+					.logInfo("TLC ARGUMENTS: " + Arrays.toString(arguments));
 
             final List<String> vmArgs = new ArrayList<String>();
 
@@ -108,9 +107,12 @@ public class TLCProcessJob extends TLCJob
             tlcConfig.setProgramArguments(arguments);
             tlcConfig.setVMArguments((String[]) vmArgs.toArray(new String[vmArgs.size()]));
             tlcConfig.setWorkingDirectory(ResourceHelper.getParentDirName(rootModule));
-
-            // get default VM (the same the toolbox is started with)
-            IVMRunner runner = JavaRuntime.getDefaultVMInstall().getVMRunner(ILaunchManager.RUN_MODE);
+            
+            final IVMInstall vmInstall = getVMInstall();
+            TLCActivator.logInfo("Nested JVM used for model checker is: "
+					+ vmInstall.getInstallLocation());
+            
+			final IVMRunner runner = vmInstall.getVMRunner(ILaunchManager.RUN_MODE);
 
             launch.setAttribute(DebugPlugin.ATTR_CAPTURE_OUTPUT, "true");
 

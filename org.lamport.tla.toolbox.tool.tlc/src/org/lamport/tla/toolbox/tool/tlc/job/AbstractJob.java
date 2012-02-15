@@ -1,6 +1,12 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
+import java.io.File;
+
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.internal.launching.StandardVMType;
+import org.eclipse.jdt.launching.IVMInstall;
+import org.eclipse.jdt.launching.IVMInstallType;
+import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.progress.IProgressConstants;
@@ -55,6 +61,26 @@ public abstract class AbstractJob extends Job
         }
     }
     
+
+	protected IVMInstall getVMInstall() {
+        IVMInstall vmInstall = null;
+
+		// Try using the very same VM the Toolbox is running with (e.g.
+		// this avoids problems when the Toolbox runs with a 64bit VM, but
+		// the nested VM is a 32bit one).
+        final String javaHome = System.getProperty("java.home");
+        if (javaHome != null) {
+            final IVMInstallType installType = new StandardVMType();
+            vmInstall = installType.createVMInstall("TLCModelCheckerNestedVM");
+            vmInstall.setInstallLocation(new File(javaHome));
+            return vmInstall;
+        }
+
+        // get OS default VM (determined by path) not necessarily the same
+		// the toolbox is running with.
+        return JavaRuntime.getDefaultVMInstall();
+	}
+
     protected abstract Action getJobCompletedAction();
 
 }
