@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.4.1.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.4.2" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="splash_small.bmp"/>
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
 
-This is Version 1.4.1 of 19 January 2012 and includes:
+This is Version 1.4.2 of 17 February 2012 and includes:
   - SANY Version 2.1 of 20 July 2011
-  - TLC Version 2.04 of 19 January 2012
+  - TLC Version 2.04 of 14 February 2012
   - PlusCal Version 1.7 of 19 January 2012
   - TLATeX Version .9 of 19 September 2007
 
