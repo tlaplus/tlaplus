@@ -511,7 +511,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 								"strangeNumber1",
 								"Found legacy value for physically memory of ("
 										+ legacyValue
-										+ "mb) that needs manual conversion. 25% is a save setting for most computers.",
+										+ "mb) that needs manual conversion. 25% is a safe setting on most computers.",
 								this.getId(), IMessageProvider.WARNING,
 								maxHeapSize);
 				setComplete(false);
