@@ -61,6 +61,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSecti
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableTableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
+import org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferenceInitializer;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -499,10 +500,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 					.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
 			final int legacyValue = getConfig().getAttribute(
 					LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
-			if (legacyValue >= 100) {
-	            modelEditor.addErrorMessage("strangeNumber1", 
-	            		"Found legacy value for physically memory that needs manual conversion",
-	            		this.getId(), IMessageProvider.WARNING, maxHeapSize);
+			// old default, silently convert to new default
+			if (legacyValue == 500) {
+				getConfig().setAttribute(
+						LAUNCH_MAX_HEAP_SIZE, TLCPreferenceInitializer.MAX_HEAP_SIZE_DEFAULT);
+				maxHeapSize.setSelection(TLCPreferenceInitializer.MAX_HEAP_SIZE_DEFAULT);
+			} else if (legacyValue >= 100) {
+				modelEditor
+						.addErrorMessage(
+								"strangeNumber1",
+								"Found legacy value for physically memory of ("
+										+ legacyValue
+										+ "mb) that needs manual conversion. 25% is a save setting for most computers.",
+								this.getId(), IMessageProvider.WARNING,
+								maxHeapSize);
 				setComplete(false);
 				expandSection(SEC_HOW_TO_RUN);
 			}
