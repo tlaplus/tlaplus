@@ -2,6 +2,8 @@ package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -56,7 +58,7 @@ public class SavedModuleContributionItem extends CompoundContributionItem
         {
             ModelEditor modelEditor = (ModelEditor) editor;
             IFolder modelFolder = ModelHelper.getModelTargetDirectory(modelEditor.getConfig());
-            if (modelFolder.exists())
+            if (modelFolder != null && modelFolder.exists())
             {
                 try
                 {
@@ -65,7 +67,7 @@ public class SavedModuleContributionItem extends CompoundContributionItem
                      * populate the menu and contain the command to be run when
                      * selected.
                      */
-                    ArrayList contributions = new ArrayList();
+                    final List<IContributionItem> contributions = new ArrayList<IContributionItem>();
 
                     // get all resources in the model folder
                     IResource[] members = modelFolder.members();
@@ -84,7 +86,7 @@ public class SavedModuleContributionItem extends CompoundContributionItem
                                 && !members[i].getName().equals(ModelHelper.FILE_TLA)
                                 && !members[i].getName().equals(ModelHelper.TE_FILE_TLA))
                         {
-                            HashMap parameters = new HashMap(1);
+                            Map<String, String> parameters = new HashMap<String, String>(1);
                             parameters.put(OpenSavedModuleHandler.PARAM_MODULE_PATH, members[i].getRawLocation()
                                     .toPortableString());
                             contributions.add(new CommandContributionItem(new CommandContributionItemParameter(UIHelper
