@@ -62,7 +62,7 @@ Please send us reports of problems or suggestions; see http://www.tlaplus.net .
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.http.jetty" autoStart="true" startLevel="3" />
       <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
-      <property name="eclipse.buildId" value="${unqualifiedVersion}.${buildQualifier}" />
+      <property name="eclipse.buildId" value="1.4.2" />
    </configurations>
 
 </product>
