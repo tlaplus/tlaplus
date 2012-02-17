@@ -33,7 +33,8 @@ In org.lamport.tla.toolbox.product.standalone
   standalone.product: 
     As of 24 Jun 2011, standalone.product has moved to:
     org.lamport.tla.toolbox.product.product.product
-     Branding tab: update date and version (This may be used in Help > About.)
+     Branding tab: update date and version (This is be used in Help > About and used to
+        create zip file names.)
      Overview: update version.  (I don't know if this is used anywhere.)
 
 
@@ -101,17 +102,30 @@ Method 3. Using tla.msr-inria.inria.fr
   - login
   - to make a new release: click on the button to the right of
        Release-HEAD-Toolbox.product.standalone  
+       This isn't released publicly until I do the release step, below
   - to get the release zip files, 
        * go to 
-          https://tla.msr-inria.inria.fr/build/job/M-HEAD-Toolbox.product.standalone/os=master/lastSuccessfulBuild/artifact/org.lamport.tla.toolbox.product.product/target/
-       * click on products
-       * copy 6 zip files
-   Alternate way to get to the https://...target/ page:
-    On https://tla.msr-inria.inria.fr/build
-    1. click on Release-HEAD-Toolbox.product.standalone 
-    2. click on Latest product zips
-    to get to the stand-alone TLA tools release zip file, in step 2
-    click on "TLA+ distribution zip".  The release is in tla.zip.
+          https://tla.msr-inria.inria.fr/tlatoolbox/staged
+              /products = toolbox zip files
+              /dist = tools distribution
+          an alternative is:
+               https://tla.msr-inria.inria.fr/build/job/M-HEAD-Toolbox.product.standalone/os=master/lastSuccessfulBuild/artifact/org.lamport.tla.toolbox.product.product/target/
+               * click on products
+       * copy 6 zip files from /products and tla.zip from /dist
+     Another alternate way to get to the https://...target/ page:
+      On https://tla.msr-inria.inria.fr/build
+       1. click on Release-HEAD-Toolbox.product.standalone 
+       2. click on Latest product zips
+      to get to the stand-alone TLA tools release zip file, in step 2
+      click on "TLA+ distribution zip".  The release is in tla.zip.
+  - To release this:
+     Click on Release-HEAD-Toolbox.product.standalone (direct link https://tla.msr-inria.inria.fr/build/job/Release-HEAD-Toolbox.product.standalone/)
+     Click on most recent build in build history.
+     Click on Promotion Status.
+     Click on Approve.
+     
+
+    
 
 TO PREPARE THE STAND-ALONE TLA TOOLS RELEASE ZIP FILE (IN 
 Methods 1 and 2)
