@@ -443,17 +443,23 @@ public class TLC implements ValueConstants
     }
 
     /**
-     * The following added for testing.
+     * Implements TLCEval, which causes TLC to eagerly evaluate the
+     * value.  Useful for preventing inefficiency caused by lazy evaluation
+     * defeating efforts at common subexpression elimination.
      * 
      * @param val
      * @return
      */
-    public static Value TLCEvalSet(Value val) {
+    public static Value TLCEval(Value val) {
         Value evalVal = SetEnumValue.convert(val);
         if (evalVal != null) {
             return evalVal;
         }
-        System.out.println("TLCEvalSet gets no conversion");
+        evalVal = FcnRcdValue.convert(val);
+        if (evalVal != null) {
+            return evalVal;
+        }
+        // System.out.println("TLCEval gets no conversion");
         return val;
     }
     /*

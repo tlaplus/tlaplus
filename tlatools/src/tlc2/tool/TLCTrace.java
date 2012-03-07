@@ -232,6 +232,11 @@ public class TLCTrace {
 	fp = fps.elementAt(i);
 	sinfo = this.tool.getState(fp, sinfo.state);
 	if (sinfo == null) {
+	    /*
+	     * The following error message is misleading, because it's triggered
+	     * when TLC can't find a non-initial state from its fingerprint
+	     * when it's generating an error trace.  LL 7 Mar 2012
+	     */
         MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
         MP.printError(EC.TLC_BUG, "2");
 	  System.exit(1);

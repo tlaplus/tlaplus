@@ -1373,7 +1373,22 @@ public class Tool
                       "form CHOOSE x \\in S: P, but S was not enumerable.\n" + expr);
         }
 
-        inVal.normalize();
+        // To fix Bugzilla Bug 279 : TLC bug caused by TLC's not preserving the semantics of CHOOSE,
+        // the statement 
+        //
+        //    inVal.normalize();
+        //
+        // was replaced by the following by LL on 7 Mar 2012.  This fix has not yet received
+        // the blessing of Yuan Yu, so it should be considered to be provisional.
+        //
+        Value convertedVal = SetEnumValue.convert(inVal);
+        if (convertedVal != null) {
+            inVal = convertedVal;
+        } else {
+            inVal.normalize();
+        }
+        // end of fix.
+        
         ValueEnumeration enumSet = ((Enumerable)inVal).elements();
         FormalParamNode[] bvars = expr.getBdedQuantSymbolLists()[0]; 
         boolean isTuple = expr.isBdedQuantATuple()[0];
