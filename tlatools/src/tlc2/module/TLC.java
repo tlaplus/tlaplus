@@ -442,6 +442,20 @@ public class TLC implements ValueConstants
         return AnySet.ANY();
     }
 
+    /**
+     * The following added for testing.
+     * 
+     * @param val
+     * @return
+     */
+    public static Value TLCEvalSet(Value val) {
+        Value evalVal = SetEnumValue.convert(val);
+        if (evalVal != null) {
+            return evalVal;
+        }
+        System.out.println("TLCEvalSet gets no conversion");
+        return val;
+    }
     /*
     public static Value FApply(Value f, Value op, Value base) {
       FcnRcdValue fcn = FcnRcdValue.convert(f);

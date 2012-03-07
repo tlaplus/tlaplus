@@ -31,4 +31,6 @@ RandomElement(s) == CHOOSE x \in s : TRUE
 Any == CHOOSE x : TRUE
 
 ToString(v) == (CHOOSE x \in [a : v, b : STRING] : TRUE).b
+
+TLCEvalSet(v) == v
 =============================================================================
