@@ -332,6 +332,17 @@ implements Enumerable, Reducible {
 
   /* The string representation */
   public final StringBuffer toString(StringBuffer sb, int offset) {
+    // If this SetEnumValue object is created by a union, at least one of
+    // whose elements is a Cartesian product, then this can be an unnormalized
+    // set with repeated elements.  It would therefore seem like a good idea to
+    // normalize this object here.  Since this toString method is probably
+    // used only for printing the value, it seems that correcting this should
+    // not do any harm.  Therefore, LL added the following if statement
+    // on 5 Mar 2012.
+    if (!this.isNormalized()) {
+        this.normalize();
+    }
+    
     int len = this.elems.size();
     sb = sb.append("{");
     if (len > 0) {

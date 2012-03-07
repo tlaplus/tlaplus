@@ -400,7 +400,11 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   public final Value deepCopy() {
     FcnLambdaValue fcn = new FcnLambdaValue(this);
-    fcn.fcnRcd = (FcnRcdValue)this.fcnRcd.deepCopy();
+    // A bug occured when printing a function whose domain is a Cartesian product because this.fcnRcd 
+    // is null at this point.  On 5 Mar 2012, LL wrapped the following null test around the assignment.
+    if (this.fcnRcd != null) {
+       fcn.fcnRcd = (FcnRcdValue)this.fcnRcd.deepCopy();
+    }
     return fcn;
   }
 
