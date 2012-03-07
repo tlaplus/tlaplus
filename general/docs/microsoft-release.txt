@@ -144,7 +144,9 @@ TO GENERATE THE RELEASE:
 Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
-
+Version 1.4.3 of ??
+  - Includes TLC version 2.04 of 5 Mar 2012, which fixes a couple
+    of minor bugs.
 Version 1.4.2 of 17 February 2012
   - Selecting a location in an error report and control-clicking jumps to its source in PlusCal code.
   - Supports library folders (directories) for modules used in multiple specs.
