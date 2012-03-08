@@ -388,6 +388,34 @@ public class TLCApp extends DistApp {
 			} else if (args[index].equals("-nowarning")) {
 				index++;
 				TLCGlobals.warn = false;
+            } else if (args[index].equals("-maxSetSize"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    try
+                    {
+                        int bound = Integer.parseInt(args[index]);
+                        
+                    	// make sure it's in valid range
+                    	if (!TLCGlobals.isValidSetSize(bound)) {
+                    		int maxValue = Integer.MAX_VALUE;
+                    		printErrorMsg("Error: Value in interval [0, " + maxValue + "] for maxSetSize required. But encountered " + args[index]);
+                    		return null;
+                    	}
+                    	TLCGlobals.setBound = bound;
+
+                    	index++;
+                    } catch (Exception e)
+                    {
+                        printErrorMsg("Error: An integer for maxSetSize required. But encountered " + args[index]);
+                        return null;
+                    }
+                } else
+                {
+                    printErrorMsg("Error: maxSetSize required.");
+                    return null;
+                }
 			} else if (args[index].equals("-fp")) {
 				index++;
 				if (index < args.length) {

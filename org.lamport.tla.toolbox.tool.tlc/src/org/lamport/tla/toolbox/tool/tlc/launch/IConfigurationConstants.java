@@ -82,6 +82,11 @@ public interface IConfigurationConstants
      * Amount of fp bits used for disk storage addressing
      */
     public static final String LAUNCH_FPBITS = "fpBits";
+    
+    /**
+     * The maximum size (upper bound) for a TLA set
+     */
+    public static final String LAUNCH_MAXSETSIZE = "maxSetSize";
 
     /**
      * Length of time in minutes the TLC must run

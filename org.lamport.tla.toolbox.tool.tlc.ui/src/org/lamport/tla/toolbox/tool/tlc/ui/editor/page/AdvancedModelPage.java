@@ -44,6 +44,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.OpDefNode;
+import tlc2.TLCGlobals;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MultiFPSet;
 
@@ -79,6 +80,12 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 	 * lookup
 	 */
     private Spinner fpBits;
+    /**
+     * -maxSetSize input to set the upper bound of the TLA set
+     * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=264
+     */
+    private Spinner maxSetSize;
+    
     private TableViewer definitionsTable;
 
     /**
@@ -168,6 +175,10 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
         fpBits.setSelection(getConfig().getAttribute(LAUNCH_FPBITS, defaultFPBits));
 
+        // maxSetSize
+        int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+                ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
+        maxSetSize.setSelection(getConfig().getAttribute(LAUNCH_MAXSETSIZE, defaultMaxSetSize));
     }
 
     /**
@@ -213,6 +224,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // fpBits
         getConfig().setAttribute(LAUNCH_FPBITS, fpBits.getSelection());
 
+        // fpBits
+        getConfig().setAttribute(LAUNCH_MAXSETSIZE, maxSetSize.getSelection());
+        
         // definitions
         List definitions = FormHelper.getSerializedInput(definitionsTable);
         getConfig().setAttribute(MODEL_PARAMETER_DEFINITIONS, definitions);
@@ -482,6 +496,16 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             expandSection(SEC_HOW_TO_RUN);
         }
         
+        // maxSetSize
+        if (!TLCGlobals.isValidSetSize(maxSetSize.getSelection()))
+        {
+            modelEditor.addErrorMessage("wrongNumber3", "maxSetSize must be a positive integer number", this
+                    .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
+                    .getAttributeControl(LAUNCH_MAXSETSIZE)));
+            setComplete(false);
+            expandSection(SEC_HOW_TO_RUN);
+        }
+        
         super.validatePage(switchToErrorPage);
     }
 
@@ -669,6 +693,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         simuDepthText.addModifyListener(launchListener);
         fpIndexSpinner.addModifyListener(launchListener);
         fpBits.addModifyListener(launchListener);
+        maxSetSize.addModifyListener(launchListener);
         dfidDepthText.addModifyListener(launchListener);
         simulationOption.addSelectionListener(launchListener);
         dfidOption.addSelectionListener(launchListener);
@@ -863,7 +888,30 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         		ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
         fpBits.setSelection(defaultFPBits);
         
+        // maxSetSize label
+        FormText maxSetSizeLabel = toolkit.createFormText(area, true);
+        maxSetSizeLabel.setText("Maximum size (upper bound) of a TLA set:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 0;
+        maxSetSizeLabel.setLayoutData(gd);
         
+        // maxSetSize spinner
+        maxSetSize = new Spinner(area, SWT.NONE);
+        maxSetSize.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
+        maxSetSize.addFocusListener(focusListener);
+        gd = new GridData();
+        gd.widthHint = 200;
+        gd.verticalIndent = 20;
+        gd.horizontalIndent = 0;
+        maxSetSize.setLayoutData(gd);
+
+        maxSetSize.setMinimum(1);
+        maxSetSize.setMaximum(Integer.MAX_VALUE);
+
+        int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+        		ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
+        maxSetSize.setSelection(defaultMaxSetSize);
+    
         return advancedSection;
     }
 }

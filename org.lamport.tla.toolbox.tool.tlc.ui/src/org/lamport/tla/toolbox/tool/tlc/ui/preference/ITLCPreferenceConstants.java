@@ -22,6 +22,8 @@ public interface ITLCPreferenceConstants
     public static final String I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT = "maxHeapSizeDefault";
 
     public static final String I_TLC_FPBITS_DEFAULT = "fpBitsDefault";
+    
+    public static final String I_TLC_MAXSETSIZE_DEFAULT = "maxSetSizeDefault";
     /**
      * Automatically lock model after TLC exceeds given length of time.
      */
