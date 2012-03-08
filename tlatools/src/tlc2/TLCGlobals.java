@@ -102,23 +102,10 @@ public class TLCGlobals
     // format messages easy for parsing
     public static boolean tool = false;
 
-    /**
-     * Method added to support multiple invocation of TLC
-     * SZ Mar 9, 2009: REFACTOR this class will cause problems and should be converted into a dynamic instance
-     */
-    public static void reset()
-    {
-        DFIDMax = -1;
-        coverageInterval = -1;
-        mainChecker = null;
-        numWorkers = 1;
-        setBound = 1000000;
-        enumBound = 2000;
-        fpServers = null;
-        useGZIP = true;
-        useView = false;
-        debug = false;
-        tool = false;
-        chkptDuration = 30 * 60 * 1000;
-    }
+	public static boolean isValidSetSize(final int bound) {
+		if (bound < 1) {
+			return false;
+		}
+		return true;
+	}
 }

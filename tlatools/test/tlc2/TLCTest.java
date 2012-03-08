@@ -58,4 +58,34 @@ public class TLCTest extends TestCase {
         final long maxMemory = (long) (Runtime.getRuntime().maxMemory() * 0.99d);
 		assertEquals("Overallocating should result in max default (99%)", maxMemory, tlc.getFpMemSize());
 	}
+	
+	/**
+	 *  is valid
+	 */
+	public void testHandleParametersMaxSetSize() {
+		final int progDefault = TLCGlobals.setBound;
+		
+		TLC tlc = new TLC();
+		assertFalse(tlc.handleParameters(new String[] {"-maxSetSize", "NaN", "MC"}));
+		
+		tlc = new TLC();
+		assertFalse(tlc.handleParameters(new String[] {"-maxSetSize", "0", "MC"}));
+		tlc = new TLC();
+		assertFalse(tlc.handleParameters(new String[] {"-maxSetSize", "-1", "MC"}));
+		tlc = new TLC();
+		assertFalse(tlc.handleParameters(new String[] {"-maxSetSize", Integer.toString(Integer.MIN_VALUE), "MC"}));
+		
+		tlc = new TLC();
+		assertTrue(tlc.handleParameters(new String[] {"-maxSetSize", "1", "MC"}));
+		assertTrue(TLCGlobals.setBound == 1);
+		
+
+		tlc = new TLC();
+		assertTrue(tlc.handleParameters(new String[] {"-maxSetSize", Integer.toString(progDefault), "MC"}));
+		assertTrue(TLCGlobals.setBound == progDefault);
+		
+		tlc = new TLC();
+		assertTrue(tlc.handleParameters(new String[] {"-maxSetSize", Integer.toString(Integer.MAX_VALUE), "MC"}));
+		assertTrue(TLCGlobals.setBound == Integer.MAX_VALUE);
+	}
 }

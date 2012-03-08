@@ -5,8 +5,6 @@
 
 package tlc2;
 
-import javax.management.NotCompliantMBeanException;
-
 import tla2sany.modanalyzer.SpecObj;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -121,6 +119,9 @@ public class TLC
      *    Defaults to 0 if not specified
      *  o -recover path: recover from the checkpoint at path
      *    Defaults to scratch run if not specified
+     *  o -bound: The upper limit for sets effectively limiting the number of init states
+     *    (@see http://bugzilla.tlaplus.net/show_bug.cgi?id=264)
+     *    Defaults to 1000000 if not specified
      *  o -metadir path: store metadata in the directory at path
      *    Defaults to specdir/states if not specified
      *  o -workers num: the number of TLC worker threads
@@ -378,6 +379,34 @@ public class TLC
                 } else
                 {
                     printErrorMsg("Error: aril required.");
+                    return false;
+                }
+            } else if (args[index].equals("-maxSetSize"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    try
+                    {
+                        int bound = Integer.parseInt(args[index]);
+                        
+                    	// make sure it's in valid range
+                    	if (!TLCGlobals.isValidSetSize(bound)) {
+                    		int maxValue = Integer.MAX_VALUE;
+                    		printErrorMsg("Error: Value in interval [0, " + maxValue + "] for maxSetSize required. But encountered " + args[index]);
+                    		return false;
+                    	}
+                    	TLCGlobals.setBound = bound;
+
+                    	index++;
+                    } catch (Exception e)
+                    {
+                        printErrorMsg("Error: An integer for maxSetSize required. But encountered " + args[index]);
+                        return false;
+                    }
+                } else
+                {
+                    printErrorMsg("Error: maxSetSize required.");
                     return false;
                 }
             } else if (args[index].equals("-recover"))
