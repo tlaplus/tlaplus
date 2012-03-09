@@ -890,7 +890,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         
         // maxSetSize label
         FormText maxSetSizeLabel = toolkit.createFormText(area, true);
-        maxSetSizeLabel.setText("Maximum size (upper bound) of a TLA set:", false, false);
+        maxSetSizeLabel.setText("Cardinality of largest enumerable set:", false, false);
         gd = new GridData();
         gd.horizontalIndent = 0;
         maxSetSizeLabel.setLayoutData(gd);

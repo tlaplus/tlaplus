@@ -25,6 +25,8 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
+import tlc2.TLCGlobals;
+
 /**
  * Abstract TLC job
  * @author Simon Zambrovski
@@ -193,6 +195,15 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         final int fpSeedOffset = launch.getLaunchConfiguration().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
         arguments.add("-fp");
         arguments.add(String.valueOf(fpSeedOffset - 1));
+        
+        // add maxSetSize argument if not equal to the default
+        // code added by LL on 9 Mar 2012
+        final int maxSetSize = launch.getLaunchConfiguration().getAttribute(
+                LAUNCH_MAXSETSIZE, TLCGlobals.setBound);
+        if (maxSetSize != TLCGlobals.setBound) {
+            arguments.add("-maxSetSize");
+            arguments.add(String.valueOf(maxSetSize));
+        }
         
         arguments.add("-config");
         arguments.add(cfgFile.getName()); // configuration file
