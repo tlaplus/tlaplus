@@ -2875,7 +2875,14 @@ public class Tool
 
   /**
    * Converts the constant definitions in the corresponding value for the 
-   * module  
+   * module -- that is, it "converts" (which seems to mean calling deepNormalize)
+   * the values substituted for the declared constants.  On 17 Mar 2012 it was
+   * modified by LL to evaluate the OpDefNode when a defined operator is substituted
+   * for an ordinary declared constant (not a declared operator constant).  Without this
+   * evaluation, the definition gets re-evaluated every time TLC evaluates the declared
+   * constant.  LL also added a check that an operator substituted for the declared
+   * constant also has the correct arity.
+   *   
    * @param mod the module to run on
    */
   private void processConstantDefns(ModuleNode mod) {
@@ -2887,6 +2894,20 @@ public class Tool
           if (val != null && val instanceof Value) {
               ((Value)val).deepNormalize();
               // System.err.println(consts[i].getName() + ": " + val);        
+          } // The following else clause was added by LL on 17 March 2012.
+            else if (val != null && val instanceof OpDefNode) {
+              OpDefNode opDef = (OpDefNode) val;
+              // The following check logically belongs in Spec.processSpec, but it's not there.
+              // So, LL just added it here.  This error cannot occur when running TLC from
+              // the Toolbox.
+              Assert.check(opDef.getArity() == consts[i].getArity(), 
+                           EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS,
+                           new String[] {consts[i].getName().toString(), opDef.getName().toString()});
+              if (opDef.getArity() == 0) {
+                Value defVal = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty);
+                defVal.deepNormalize();
+                consts[i].setToolObject(TLCGlobals.ToolId, defVal);
+              }
           }
       }
 

@@ -495,7 +495,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
      * semantic node types are added, this method will have to be modified.   *
      * Less obviously, if a tool wants to call TLC on a specification that    *
      * was not all created inside a module, then this method may need to be   *
-     * modified so TLC finds thos nodes not part of the module.               *
+     * modified so TLC finds those nodes not part of the module.              *
      *                                                                        *
      * Yuan claims that this is the only method in TLC that has to find all   *
      * the nodes in such a way.                                               *

@@ -146,9 +146,11 @@ Queries to msrcpx or Chuck Needham (chuckne)
 -------------------------------------------------------------
 Version 1.4.3 of ??
   - Adds a "Cardinality of largest enumerable set" TLC parameter.
-  - Includes TLC version 2.05 of 9 Mar 2012, which adds the aforementioned
+  - Fixed the order of definitions and declarations in the MC.tla file.
+  - Includes TLC version 2.05 of 17 Mar 2012, which adds the aforementioned
     parameter, adds the TLCEval operator to the standard TLC module 
-    and fixes a few minor bugs.
+    and fixes a few minor bugs--including the unnecessary repeated re-evaluation of
+    declared constants.
 Version 1.4.2 of 17 February 2012
   - Selecting a location in an error report and control-clicking jumps to its source in PlusCal code.
   - Supports library folders (directories) for modules used in multiple specs.

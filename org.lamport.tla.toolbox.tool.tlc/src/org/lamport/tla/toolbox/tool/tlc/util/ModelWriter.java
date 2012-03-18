@@ -108,7 +108,8 @@ public class ModelWriter
     }
 
     /**
-     * Add file header
+     * Add file header, which consists of the module-beginning ----- MODULE ... ---- line and
+     * the EXTENDS statement.
      * @param moduleFilename
      * @param extendedModuleName
      */
@@ -132,13 +133,24 @@ public class ModelWriter
     }
 
     /**
-     * Add constants declarations
+     * Documentation by SZ: Add constants declarations. 
+     * 
+     * On 17 March 2012, LL split the original addConstants method
+     * into the current one plus the addConstantsBis method.  As explained in Bugzilla Bug 280,
+     * this was to allow the user definitions added on the Advanced Model page to appear between
+     * the CONSTANT declarations for model values and the definitions of the expressions that 
+     * instantiate CONSTANT parameters.  (This allows symbols defined in those user definitions to
+     * appear in the expressions instantiated for CONSTANT parameters.)
+     * 
+     * See the use of these two methods in TLCModelLaunchDelegate.buildForLaunch for a description
+     * of what these methods do.
+     * 
      * @param constants
      * @param modelValues
      */
     public void addConstants(List constants, TypedSet modelValues, String attributeConstants, String attributeMVs)
     {
-        // add model value declarations
+        // add declarations for model values introduced on Advanced Model page.
         addMVTypedSet(modelValues, "MV CONSTANT declarations ", attributeMVs);
 
         Assignment constant;
@@ -188,13 +200,13 @@ public class ModelWriter
                 }
             } else
             {
-                // simple constant value assignment
-                cfgBuffer.append(COMMENT).append("CONSTANT definitions").append(CR);
-
-                tlaBuffer.append(COMMENT).append("CONSTANT definitions ").append(ATTRIBUTE).append(attributeConstants)
-                        .append(INDEX).append(i).append(constant.getLeft()).append(CR);
-                addArrowAssignment(constant, CONSTANT_SCHEME);
-                tlaBuffer.append(SEP).append(CR).append(CR);
+//                // simple constant value assignment
+//                cfgBuffer.append(COMMENT).append("CONSTANT definitions").append(CR);
+//
+//                tlaBuffer.append(COMMENT).append("CONSTANT definitions ").append(ATTRIBUTE).append(attributeConstants)
+//                        .append(INDEX).append(i).append(constant.getLeft()).append(CR);
+//                addArrowAssignment(constant, CONSTANT_SCHEME);
+//                tlaBuffer.append(SEP).append(CR).append(CR);
             }
         }
 
@@ -222,6 +234,94 @@ public class ModelWriter
         }
 
     }
+
+    public void addConstantsBis(List constants, /* TypedSet modelValues, */ String attributeConstants /* , String attributeMVs */)
+    {
+//        // add declarations for model values introduced on Advanced Model page.
+//        addMVTypedSet(modelValues, "MV CONSTANT declarations ", attributeMVs);
+//
+        Assignment constant;
+//        Vector symmetrySets = new Vector();
+//
+//        // first run for all the declarations
+//        for (int i = 0; i < constants.size(); i++)
+//        {
+//            constant = (Assignment) constants.get(i);
+//            if (constant.isModelValue())
+//            {
+//                if (constant.isSetOfModelValues())
+//                {
+//                    // set model values
+//                    TypedSet setOfMVs = TypedSet.parseSet(constant.getRight());
+//                    addMVTypedSet(setOfMVs, "MV CONSTANT declarations", attributeConstants);
+//                }
+//            }
+//        }
+
+        // now all the definitions
+        for (int i = 0; i < constants.size(); i++)
+        {
+            constant = (Assignment) constants.get(i);
+            if (constant.isModelValue())
+            {
+//                if (constant.isSetOfModelValues())
+//                {
+//                    // set model values
+//                    cfgBuffer.append(COMMENT).append("MV CONSTANT definitions").append(CR);
+//                    tlaBuffer.append(COMMENT).append("MV CONSTANT definitions " + constant.getLeft()).append(CR);
+//
+//                    String id = addArrowAssignment(constant, CONSTANT_SCHEME);
+//                    if (constant.isSymmetricalSet())
+//                    {
+//                        symmetrySets.add(id);
+//                    }
+//                    tlaBuffer.append(SEP).append(CR).append(CR);
+//                } else
+//                {
+//                    cfgBuffer.append(COMMENT).append("CONSTANT declarations").append(CR);
+//                    // model value assignment
+//                    // to .cfg : foo = foo
+//                    // to _MC.tla : <nothing>, since the constant is already defined in one of the spec modules
+//                    cfgBuffer.append("CONSTANT").append(SPACE).append(constant.getLabel()).append(EQ).append(
+//                            constant.getRight()).append(CR);
+//                }
+            } else
+            {
+                // simple constant value assignment
+                cfgBuffer.append(COMMENT).append("CONSTANT definitions").append(CR);
+
+                tlaBuffer.append(COMMENT).append("CONSTANT definitions ").append(ATTRIBUTE).append(attributeConstants)
+                        .append(INDEX).append(i).append(constant.getLeft()).append(CR);
+                addArrowAssignment(constant, CONSTANT_SCHEME);
+                tlaBuffer.append(SEP).append(CR).append(CR);
+            }
+        }
+
+        // symmetry
+//        if (!symmetrySets.isEmpty())
+//        {
+//            String label = ModelWriter.getValidIdentifier(SYMMETRY_SCHEME);
+//
+//            tlaBuffer.append(COMMENT).append("SYMMETRY definition").append(CR);
+//            cfgBuffer.append(COMMENT).append("SYMMETRY definition").append(CR);
+//
+//            tlaBuffer.append(label).append(DEFINES).append(CR);
+//            // symmetric model value sets added
+//            for (int i = 0; i < symmetrySets.size(); i++)
+//            {
+//                tlaBuffer.append("Permutations(").append((String) symmetrySets.get(i)).append(")");
+//                if (i != symmetrySets.size() - 1)
+//                {
+//                    tlaBuffer.append(" \\union ");
+//                }
+//            }
+//
+//            tlaBuffer.append(CR).append(SEP).append(CR).append(CR);
+//            cfgBuffer.append("SYMMETRY").append(SPACE).append(label).append(CR);
+//        }
+
+    }
+
 
     /**
      * Add the view definition

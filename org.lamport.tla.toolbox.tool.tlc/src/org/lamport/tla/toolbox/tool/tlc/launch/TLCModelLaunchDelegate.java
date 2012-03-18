@@ -327,27 +327,43 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             monitor.subTask("Creating contents");
 
             ModelWriter writer = new ModelWriter();
-
-            // add extend primer
+       
+            // add the MODULE beginning and EXTENDS statement
             writer.addPrimer(ModelHelper.MC_MODEL_NAME, ResourceHelper.getModuleName(specRootFilename));
 
-            // constants list
+            // Sets constants to a Vector of the substitutions for the CONSTANT substitutions
             List constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
                     new Vector()));
 
-            // the advanced model values
+            // Sets modelValues to a TypedSet object whose value is a String array containing
+            // the names of the model values declared on the Advanced model page.
             TypedSet modelValues = TypedSet.parseSet(config.getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING));
 
-            // add constants and model values
+            // Adds to MC.cfg the CONSTANT declarations for (in order) 
+            //  - The model values declared on the advanced model page.
+            //  - Each CONSTANT parameter instantiated with a model value or set of model values.
+            //  - SYMMETRY declarations.
+            // Adds to MC.tla the CONSTANT declarations for (in order)
+            //  - The model values declared on the advanced model page.
+            //  - The model values introduced when instantiating a CONSTANT parameter with a set of model values.
+            //  - The definitions of each CONSTANT parameter declared as a set of model values in the MC.cfg file.
+            //  - Definitions of symmetry sets for the CONSTANT parameters.
             writer.addConstants(constants, modelValues, MODEL_PARAMETER_CONSTANTS, MODEL_PARAMETER_MODEL_VALUES);
-
-            // new definitions
+            
+            // The additional definitions from the Advanced model page.
             writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING),
                     MODEL_PARAMETER_NEW_DEFINITIONS);
 
-            // definition overrides list
+            // Adds to MC.cfg the CONSTANT declarations for CONSTANT parameters instantiated with ordinary values. 
+            // Adds to MC.tla the definitions for the new symbols introduced for the aforementioned CONSTANT parameters.
+            writer.addConstantsBis(constants, MODEL_PARAMETER_CONSTANTS);
+
+            // Sets overrides to the Vector of definition overrides.
             List overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
                     new Vector()));
+            
+            // For the definition overrides, it adds the definitions to the MC.tla file and the
+            // overriding CONSTANT statements to the MC.cfg file.
             writer.addFormulaList(ModelWriter.createOverridesContent(overrides, ModelWriter.DEFOV_SCHEME), "CONSTANT",
                     MODEL_PARAMETER_DEFINITIONS);
 

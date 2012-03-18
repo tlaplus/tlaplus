@@ -666,6 +666,9 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     /**
      * Writes constants, model values, new definitions, and overrides to the model writer.
      * 
+     * For a more detailed description of what the calls in this method do, see the
+     * corresponding part of TLCModelLaunchDelegate.buildForLaunch.
+     * 
      * @param config
      * @param writer
      * @throws CoreException
@@ -682,10 +685,12 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // add constants and model values
         writer.addConstants(constants, modelValues, MODEL_PARAMETER_CONSTANTS, MODEL_PARAMETER_MODEL_VALUES);
 
-        // new definitions
+        // new definitions from Advanced Model page.
         writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING),
                 MODEL_PARAMETER_NEW_DEFINITIONS);
 
+        // add definitions for CONSTANT parameters instantiated by ordinary values.
+        writer.addConstantsBis(constants, MODEL_PARAMETER_CONSTANTS);
         // definition overrides list
         List overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
                 new Vector()));
