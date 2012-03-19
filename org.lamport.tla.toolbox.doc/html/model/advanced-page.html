@@ -257,6 +257,13 @@ TLC spends writing to disk on a model with a very large number of reachable stat
 
 Contact us for more information.
 
+<h3> Cardinality of largest enumerable set</h3>
+
+If TLC tries to enumerate the elements of a set, it will report an error if the set
+contains more than this number of elements.&nbsp;  TLC enumerates sets when computing
+the set of all initial states.&nbsp;  If you are trying to run a spec with lots of
+initial states, you may have to increase the value of this parameter.
+
 </p>
 
 <!--  I don't know what I'm saving the following for
