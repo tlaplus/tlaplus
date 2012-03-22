@@ -1080,7 +1080,13 @@ public class MP
     }
 
     /**
-     * Prints the error by code and the provided exception
+     * Prints the error by code and the provided exception.  
+     * 
+     * All calls of this method have includeStackTrace true.  This printing of the stack trace
+     * was added in tlc2--probably by SZ.  The stack trace provides no useful information to the
+     * user, so LL changed this on 20 Mar 2012 so the trace is printed only when TLC is called
+     * with the -debug option. 
+     * 
      * @param errorCode 
      * @param cause
      * @param includeStackTrace boolean flag if the stack-trace should be printed
@@ -1089,9 +1095,11 @@ public class MP
     {
         printError(errorCode, cause);
         if (includeStackTrace)
-        {
-            DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)"); //$NON-NLS-1$
-            throwable.printStackTrace(ToolIO.out);
+        {   // Test of TLCGlobals.debug added by LL on 20 Mar 2012
+            if (TLCGlobals.debug) {
+              DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)"); //$NON-NLS-1$
+              throwable.printStackTrace(ToolIO.out);
+        }
         }
     }
 
@@ -1103,8 +1111,11 @@ public class MP
     public static void printError(int errorCode, String[] cause, Throwable throwable)
     {
         printError(errorCode, cause);
-        DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)"); //$NON-NLS-1$
-        throwable.printStackTrace(ToolIO.out);
+        // Test of TLCGlobals.debug added by LL on 20 Mar 2012
+        if (TLCGlobals.debug) {
+            DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)"); //$NON-NLS-1$
+            throwable.printStackTrace(ToolIO.out);
+        }
     }
     
     /**
