@@ -156,6 +156,9 @@ public class TLC
      *  Defaults to 1/4 physical memory.  (Added 6 Apr 2010 by Yuan Yu.)
      *  o -fpbits num: the number of msb used by MultiFPSet to create nested FPSets.
      *  Defaults to 1
+     *  o -maxSetSize num: the size of the largest set TLC will enumerate.
+     *                     default: 1000000
+     *    
      */
     public static void main(String[] args)
     {
