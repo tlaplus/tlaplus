@@ -332,8 +332,10 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
      * <li> Return, which is equivalent to clicking on the selected item.
      * <li> Space, which toggles between showing and hiding instantiated declarations.
      * <li> Arrow keys, which move the selection.
-     * <li> Letters, numbers, "_", and "!", which are added to the prefix used for
-     *      filtering what is shown.
+     * <li> Letters, numbers,  "_", "!", and other characters like "\" and "*" that can
+     *      appear in the names of user-defined operators.  These characters are added 
+     *      to the prefix used for filtering what is shown.
+     *      (Those other characters added by LL on 29 Mar 2012.)
      * <li> Delete/backspace, which deletes one character from the filtering prefix.
      * </ul>
      * Other typed input is ignored.
@@ -392,7 +394,29 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
                 EditorUtil.setReturnFromOpenDecl(popup.editor);
                 UIHelper.jumpToDefOrDecl(node);
                 popup.close();
-            } else if (Character.isLetterOrDigit(keyPressed) || (keyPressed == '_') || (keyPressed == '!'))
+            } else if (Character.isLetterOrDigit(keyPressed) || 
+                    (keyPressed == '_') || 
+                    (keyPressed == '!') ||
+                    // The following added by LL on 29 Mar 2012
+                    (keyPressed == '\\') ||
+                    (keyPressed == '+') ||
+                    (keyPressed == '-') ||
+                    (keyPressed == '%') ||
+                    (keyPressed == '^') ||
+                    (keyPressed == '.') ||
+                    (keyPressed == '<') ||
+                    (keyPressed == '>') ||
+                    (keyPressed == ':') ||
+                    (keyPressed == '&') ||
+                    (keyPressed == '|') ||
+                    (keyPressed == '#') ||
+                    (keyPressed == '$') ||
+                    (keyPressed == '?') ||
+                    (keyPressed == '@') ||
+                    (keyPressed == '*') ||
+                    (keyPressed == '=') ||
+                    (keyPressed == '/')
+                    )
             {
                 popup.filterPrefix = popup.filterPrefix + keyPressed;
                 popup.setList();
