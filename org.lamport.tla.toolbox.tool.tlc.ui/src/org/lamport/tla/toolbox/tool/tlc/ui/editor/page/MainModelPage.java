@@ -1165,7 +1165,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         maxHeapSize.setMinimum(1);
         maxHeapSize.setPageIncrement(5);
         maxHeapSize.setSelection(defaultMaxHeapSize);
-        maxHeapSize.setToolTipText("This translates to the heap size of the nested TLC Java VM");
+        maxHeapSize.setToolTipText("Specifies the heap size of the Java VM that runs TLC.");
 
         dm.bindAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize, howToRunPart);
         
