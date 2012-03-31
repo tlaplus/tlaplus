@@ -18,8 +18,8 @@ public final class PcalParams
     /**
      * Parameters to be updated on each new release.
      */
-    public static final String modDate = "19 January 2012";
-    public static final String version = "1.7";
+    public static final String modDate = "30 March 2012";
+    public static final String version = "1.8";
     /**
      * SZ Mar 9, 2009:
      * Added re-initialization method. Since PcalParams class

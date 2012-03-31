@@ -3209,9 +3209,11 @@ public class PcalTLAGen
     /************************************/
     private void GenTermination()
     {
-        // if we're omitting the pc, then we shouldn't
+        // if we're omitting the pc or omitting the stuttering-when-done
+        // clause of the Next action, then we shouldn't
         // generate the Termination definition.
-        if (ParseAlgorithm.omitPC) {
+        // Check of omitStutteringWhenDone added by LL on 30 Mar 2012.
+        if (ParseAlgorithm.omitPC || ParseAlgorithm.omitStutteringWhenDone) {
             return;
         }
         StringBuffer sb = new StringBuffer();

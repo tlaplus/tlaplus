@@ -72,6 +72,14 @@ import util.ToolIO;
 *   Version 1.7: (19 January 2012)                                         *
 *                 - Translator adds "BEGIN/END TRANSLATION" if needed.     *
 *                 - Added support for Toolbox Goto PCal Source command.    *
+*                                                                          *
+*   Version 1.8: (30 Mar 2012)                                             *
+*                 - Changed translation to remove stuttering-on-           *
+*                   termination disjunction if some process is             *
+*                   "while (TRUE)".                                        *
+*                 - Omitted the Termination definition if the stuttering-  *
+*                   on-termination disjunction is removed, since that      *
+*                   implies Termination is always FALSE.                   *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *

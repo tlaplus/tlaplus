@@ -396,15 +396,27 @@ public class ParseAlgorithm
 // two while loops, which would cause printing of added labels
 // in the correct order, but it doesn't seem to be worth the
 // risk that something I haven't thought of will break.
+           
+           // See the comment to the checkBody method to see
+           // why omitStutteringWhenDoneValue is being set
+           // to the correct value of omitStutteringWhenDone.
+           // (Added by LL on 30 Mar 2012.)
+           boolean omitStutteringWhenDoneValue = false;
            while (i < multiproc.procs.size())
              { AST.Process proc = 
                    (AST.Process) multiproc.procs.elementAt(i);
                ExpandMacrosInStmtSeq(proc.body, multiproc.macros) ;
                AddLabelsToStmtSeq(proc.body) ;
                proc.body = MakeLabeledStmtSeq(proc.body);
+               
+               omitStutteringWhenDone = true;
                checkBody(proc.body);
+               omitStutteringWhenDoneValue = 
+                  omitStutteringWhenDoneValue || omitStutteringWhenDone;
+               
                i = i + 1 ;
              } ;
+           omitStutteringWhenDone = omitStutteringWhenDoneValue;
            i = 0 ;
            while (i < multiproc.prcds.size())
              { AST.Procedure prcd = 
@@ -538,6 +550,18 @@ public class ParseAlgorithm
     * object has a non-empty labDo field, or the unlabDo field contains a 
     * LabelIf or LabelEither. (The pc also cannot be omitted if
     * the body has a procedure call, but that is checked elsewhere.)
+    * 
+    * This method incorrectly sets omitStutteringWhenDone for a multiprocess
+    * algorithm.  The omitStutteringWhenDone flag should be set to true
+    * iff it is impossible for the algorithm to terminate.  This is true
+    * iff there is some process that cannot terminate.  However, since this
+    * method is called for each process (or process set), it causes 
+    * omitStutteringWhenDone to be set false if any process can terminate,
+    * rather than being set false iff all processes can terminate.  
+    * Since this is the right procedure for setting omitPC (since the pc
+    * cannot be omitted if it is needed to represent any process), I decided
+    * not to modify this method, but to work around the problem in the method
+    * that calls it.  Comment added by LL on 30 Mar 2012.
     * 
     * @param body
     */
