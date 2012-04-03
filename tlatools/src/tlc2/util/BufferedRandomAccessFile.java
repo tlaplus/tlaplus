@@ -121,6 +121,10 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     public BufferedRandomAccessFile(String name, String mode)
     throws IOException 
     {
+        // Simon Z. replaced the original:
+        //    super(name, mode);
+        //    this.init();
+        // with this.
         this(new File (name), mode);
     }
     
