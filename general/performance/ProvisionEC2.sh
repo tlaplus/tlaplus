@@ -194,16 +194,16 @@ git config --global user.email \"tlaplus.net@lemmster.de\"
 git config --global user.name \"Markus Alexander Kuppe\"
 
 # build tla with maven
-#/opt/apache-maven-3.0.3/bin/mvn -f /home/kuppe/git/tla/pom.xml install -Dmaven.test.skip=true
+#/opt/apache-maven-3.0.4/bin/mvn -f /home/kuppe/git/tla/pom.xml install -Dmaven.test.skip=true
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 cd ~/git/tla/tlatools/
-/opt/apache-ant-1.8.2/bin/ant -f customBuild.xml dist-mixed-zip -Dtest.skip=true
+/opt/apache-ant-1.8.3/bin/ant -f customBuild.xml dist-mixed-zip -Dtest.skip=true
 
 #
 # build jmx2munin
 #
 cd ~/git/jmx2munin
-/opt/apache-maven-3.0.3/bin/mvn install
+/opt/apache-maven-3.0.4/bin/mvn install
 # add jar and script to munin
 sudo cp target/jmx2munin-1.0.jar /usr/share/munin/jmx2munin.jar
 sudo cp contrib/jmx2munin.sh /usr/share/munin/plugins
