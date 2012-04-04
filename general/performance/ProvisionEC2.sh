@@ -18,10 +18,10 @@ cd /mnt
 (wget -q ftp://mirror.cc.vt.edu/pub/eclipse/technology/epp/downloads/release/indigo/SR1/eclipse-rcp-indigo-SR1-linux-gtk-x86_64.tar.gz && cd /opt && tar xfz /mnt/eclipse-rcp-indigo-SR1-linux-gtk-x86_64.tar.gz) & 
 
 # apache maven 3
-(wget -q http://apache.osuosl.org//maven/binaries/apache-maven-3.0.3-bin.tar.gz && cd /opt && tar xfz /mnt/apache-maven-3.0.3-bin.tar.gz) &
+(wget -q http://apache.osuosl.org/maven/binaries/apache-maven-3.0.4-bin.tar.gz && cd /opt && tar xfz /mnt/apache-maven-3.0.4-bin.tar.gz) &
 
 # aapche ant
-(wget -q http://newverhost.com/pub//ant/binaries/apache-ant-1.8.2-bin.tar.gz && cd /opt && tar xfz /mnt/apache-ant-1.8.2-bin.tar.gz) &
+(wget -q http://apache.osuosl.org/ant/binaries/apache-ant-1.8.3-bin.tar.gz && cd /opt && tar xfz /mnt/apache-ant-1.8.3-bin.tar.gz) &
 
 # create user kuppe and setup public key
 useradd --home /mnt/kuppe -m kuppe -s /bin/bash -G admin,sudo
