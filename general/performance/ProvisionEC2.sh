@@ -28,6 +28,7 @@ useradd --home /mnt/kuppe -m kuppe -s /bin/bash -G admin,sudo
 ln -s /mnt/kuppe /home/kuppe
 mkdir /home/kuppe/.ssh
 # personal one to ssh into the box
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDaFesWicuMjw2s9+4rl36IP781nZ07Vasir5nybvVmmN2wDV1sTcv0iS8VgH54qxmCtV2zQiub0gMq4kHnnTVMKdlMGOyhbvC4X3UVmhJFrD+8UG5bmsbEVXjmgh7Y1oEoldrIf4DlnnHcetdSwuMvV5xqI3iZ+8xg0j9pnN8a9xWj5dUv/rkq2Z5So7AYd+aVCU6uETh8N9fsMZSo/Eu9A+vYvwWhsysY0S8m7wr9zkd71fjc1mTPlAsZGtzACRswrk3S2NLdCd7NNOU1jT5QVffc7poTeCngMFrXjmtUPZZQxOfA6oDq0rSCep+TgjVa2KQAypMDQTjKfkwjaklL markus@kuppe.org" >> /home/kuppe/.ssh/authorized_keys
 echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAy4sKgMk2QS8wKze690bmar4cJXz2/AGJr36uJ8gds6zAhM9cyQ4GEuOgOORAOWcUAg3HZI65GdCqtHE+P4t9P5Qi1bE+d24ZL0Ebg6z5P8f8XvSId7Gd/p7YXgCcOJj4nxRHRr3fmHvLw+s0PLCaCg5uqShOBhyxbD8H8pgh4WqxUhHtAeIV+OhuazgLjCYL9b2DFSUtad6j+c+podcZGOJq+DLhP3NWJI5eiO2u7PuX06sRCTo4UxZlP+bvjhU7tH/VRIg9R7CO9TvmMykJEAwa6G5vf4kCFeh9f0pYA26UUFg8z0P2ki7+Z0zHXD3w7zbDYzZ9snFY9RtajtNkXw== markus@kuppe.org" >> /home/kuppe/.ssh/authorized_keys
 # ec2 keypair to ssh out
 echo "-----BEGIN RSA PRIVATE KEY-----
