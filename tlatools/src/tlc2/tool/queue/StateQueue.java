@@ -212,10 +212,11 @@ public abstract class StateQueue {
 	 * @return
 	 */
 	private boolean needsWaiting() {
-		// no need to wait without workers present
-		if (this.numWaiting < 1) {
-			return false;
-		}
+		//MAK 04/2012: Commented to fix an EOFException when liveness checking is enabled 
+//		// no need to wait without workers present
+//		if (this.numWaiting < 1) {
+//			return false;
+//		}
 		// if all workers wait at once, it indicates that all work is
 		// done and suspending all workers can happen right away without
 		// waiting.
