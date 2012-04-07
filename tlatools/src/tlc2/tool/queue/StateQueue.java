@@ -76,7 +76,8 @@ public abstract class StateQueue {
 	public final synchronized TLCState sDequeue() {
 		if (this.isAvail()) {
 			final TLCState state = this.dequeueInner();
-			Assert.check(state != null, EC.GENERAL);
+			// LL modified error message on 7 April 2012
+			Assert.check(state != null, "Null state found on queue");
 			this.len--;
 			return state;
 		}
@@ -94,7 +95,7 @@ public abstract class StateQueue {
 	 *             if cnt <= 0
 	 */
 	public final synchronized TLCState[] sDequeue(int cnt) {
-		Assert.check(cnt > 0, EC.GENERAL);
+		Assert.check(cnt > 0, "Nonpositive number of states requested.");
 		if (this.isAvail()) {
 			if (cnt > len) {
 				// in this case, casting len to int is safe 
@@ -153,7 +154,7 @@ public abstract class StateQueue {
 			try {
 				this.wait();
 			} catch (Exception e) {
-				MP.printError(EC.GENERAL, (e.getMessage() == null) ? e.toString() : e.getMessage(), e);
+				MP.printError(EC.GENERAL, "making a worker wait for a state from the queue", e);  // LL changed call 7 April 2012
 				System.exit(1);
 			}
 			this.numWaiting--;
@@ -194,7 +195,7 @@ public abstract class StateQueue {
 					// is going to wake us up by calling isAvail()
 					this.mu.wait();
 				} catch (Exception e) {
-					MP.printError(EC.GENERAL, (e.getMessage() == null) ? e.toString() : e.getMessage(), e);
+					MP.printError(EC.GENERAL, "waiting for a worker to wake up", e);  // LL changed call 7 April 2012
 					System.exit(1);
 				}
 			}

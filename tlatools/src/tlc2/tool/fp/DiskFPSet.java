@@ -196,7 +196,8 @@ public class DiskFPSet extends FPSet {
 		}
 
 		// guard against underflow
-		Assert.check(logMaxMemCnt - LogMaxLoad >= 0, EC.GENERAL);
+		// LL modified error message on 7 April 2012
+		Assert.check(logMaxMemCnt - LogMaxLoad >= 0, "Underflow when computing DiskFPSet");
 		int capacity = 1 << (logMaxMemCnt - LogMaxLoad);
 		
 		// instead of changing maxTblCnd to long and pay an extra price when 
@@ -211,8 +212,9 @@ public class DiskFPSet extends FPSet {
 		this.maxTblCnt = (logMaxMemCnt >= 31) ? Integer.MAX_VALUE : (1 << logMaxMemCnt); // maxTblCnt := 2^logMaxMemCnt
 
 		// guard against negative maxTblCnt
+		// LL modified error message on 7 April 2012
 		Assert.check(maxTblCnt > capacity && capacity > tblCnt,
-				EC.GENERAL);
+				"negative maxTblCnt");
 
 		this.tblCnt = 0;
 		this.mask = capacity - 1;
@@ -649,7 +651,9 @@ public class DiskFPSet extends FPSet {
 			}
 		} catch (IOException e) {
 			if(midEntry * LongSize < 0) {
-				MP.printError(EC.GENERAL, new String[]{"MidEntry turned negative (loEntry, midEntry, hiEntry, loVal, hiVal): ",
+			 // LL modified error message on 7 April 2012
+				MP.printError(EC.GENERAL, new String[]{"looking up a fingerprint, and" + 
+			            "\nmidEntry turned negative (loEntry, midEntry, hiEntry, loVal, hiVal): ",
 						Long.toString(loEntry) +" ", Long.toString(midEntry) +" ", Long.toString(hiEntry) +" ", Long.toString(loVal) +" ", Long.toString(hiVal)}, e);
 			}
 			MP.printError(EC.SYSTEM_DISKGRAPH_ACCESS, e);

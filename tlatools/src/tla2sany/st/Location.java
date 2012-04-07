@@ -123,7 +123,8 @@ public final class Location
 	 *            than 1 & 2, in which case they get set to 1 & 2.
 	 */
 	public Location(final int[] coordinates) {
-		Assert.check(coordinates != null && coordinates.length == 4, EC.GENERAL);
+	    // LL modified error message on 7 April 2012
+		Assert.check(coordinates != null && coordinates.length == 4, "Illegal coordinates found.");
 
         bLine = coordinates[0];
         bColumn = coordinates[1];

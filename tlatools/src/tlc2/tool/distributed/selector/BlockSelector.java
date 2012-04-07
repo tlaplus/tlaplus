@@ -19,7 +19,8 @@ public class BlockSelector implements IBlockSelector {
 	 * @param aTLCServer
 	 */
 	BlockSelector(final TLCServer aTLCServer) {
-		Assert.check(aTLCServer != null, EC.GENERAL);
+	    // LL modified error message on 7 April 2012
+		Assert.check(aTLCServer != null, "TLC found a null TLCServer");
 		tlcServer = aTLCServer;
 	}
 	

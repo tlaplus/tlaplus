@@ -806,7 +806,7 @@ public class LiveCheck1 {
         printErrorTrace(node);
     } catch (IOException e) 
     {
-        MP.printError(EC.GENERAL, e.getMessage(), e);
+        MP.printError(EC.GENERAL, "printing an error trace", e);  // LL changed call 7 April 2012
     }
     throw new LiveException("LiveCheck: Found error trace.");
   }

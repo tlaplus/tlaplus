@@ -123,7 +123,8 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 		} catch (InvocationTargetException e) {
 			exp = e;
 		}
-		MP.printWarning(EC.GENERAL, "Failed to load custom FPSet class: " + clazz, exp);
+		// LL modified error message on 7 April 2012
+		MP.printWarning(EC.GENERAL, "unsuccessfully trying to load custom FPSet class: " + clazz, exp);
 		return null;
 	}
 	

@@ -95,7 +95,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @throws NotBoundException
 	 */
 	public TLCServer(TLCApp work) throws IOException, NotBoundException {
-		Assert.check(work != null, EC.GENERAL);
+	    // LL modified error message on 7 April 2012
+		Assert.check(work != null, "TLC server found null work.");
 		this.metadir = work.getMetadir();
 		int end = this.metadir.length();
 		if (this.metadir.endsWith(FileUtil.separator))
@@ -349,7 +350,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			} catch (Throwable e) {
 				// Assert.printStack(e);
 				server.done = true;
-				MP.printError(EC.GENERAL, e.getMessage(), e);
+				// LL modified error message on 7 April 2012
+				MP.printError(EC.GENERAL, "initializing the server", e); // LL changed call 7 April 2012
 				if (server.errState != null) {
 					MP.printMessage(EC.TLC_INITIAL_STATE, "While working on the initial state: " + server.errState);
 				}
@@ -359,7 +361,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				try {
 					server.doInit();
 				} catch (Throwable e1) {
-					MP.printError(EC.GENERAL, "The error occurred when TLC was evaluating the nested"
+					MP.printError(EC.GENERAL, "evaluating the nested"   // LL changed call 7 April 2012
 									+ "\nexpressions at the following positions:\n"
 									+ server.work.printCallStack(), e);
 				}

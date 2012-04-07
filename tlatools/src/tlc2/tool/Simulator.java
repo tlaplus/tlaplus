@@ -139,7 +139,7 @@ public class Simulator implements Cancelable
                     new String[] { (e.getMessage()==null)?e.toString():e.getMessage(), curState.toString() });
         } else
         {
-            MP.printError(EC.GENERAL,(e.getMessage()==null)?e.toString():e.getMessage());
+            MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
         }
         
         this.printSummary();
@@ -261,8 +261,9 @@ public class Simulator implements Cancelable
       {
           this.printSummary();
       } else {
+          // LL modified error message on 7 April 2012
           this.printBehavior(EC.GENERAL, 
-                  new String[]{(e.getMessage()==null)?e.toString():e.getMessage()}, curState, traceIdx);
+                  new String[]{MP.ECGeneralMsg("", e)}, curState, traceIdx);
       }
     }
   }

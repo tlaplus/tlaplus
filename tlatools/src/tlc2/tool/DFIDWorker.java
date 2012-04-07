@@ -208,7 +208,7 @@ public class DFIDWorker extends IdThread implements IWorker {
       this.tlc.setStop(2);
       synchronized(this.tlc) {
 	if (this.tlc.setErrState(curState, null, true)) {
-          MP.printError(EC.GENERAL, e.getMessage());
+          MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
 	}
 	this.tlc.setDone();
 	this.tlc.notifyAll();

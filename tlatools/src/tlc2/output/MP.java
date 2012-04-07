@@ -1119,23 +1119,57 @@ public class MP
     }
     
     /**
-     * Prints the error by code and reports the exception message 
+     * Prints the error by code and reports the exception message
+     * Modified by LL on 7 April 2012 to produce more sensible EC.GENERAL 
+     * error messages.
+      
      * @param errorCode
      * @param cause
      */
     public static void printError(int errorCode, String cause, Throwable throwable)
     {
-        printError(errorCode, cause, throwable, true);
+        if (errorCode == EC.GENERAL) {
+            printError(errorCode, ECGeneralMsg(cause, throwable));
+        } else {
+            printError(errorCode, cause, throwable, true);
+        }
     }
     
     /**
-     * Prints the error by code and reports the exception message 
+     * Returns the error message for printError(EC.GENERAL, cause, throwable)
+     * 
+     * @param cause
+     * @param throwable
+     * @return
+     */
+    public static String ECGeneralMsg(String cause, Throwable throwable) {
+        String msg = "TLC threw the unexpected exception\n  "
+                + throwable.getClass().getName();
+        if (throwable.getMessage() != null) {
+            msg = msg + ": " + throwable.getMessage();
+        }
+        if (cause.equals("")) {
+            msg = msg + "\nSee the TLC Console for clues to what happened.";
+        } else {
+            msg = msg + "\nThe error occurred when TLC was " + cause + ".";
+        }
+        return msg;
+    }
+    /**
+     * Prints the error by code and reports the exception message.
+     * Modified by LL on 7 April 2012 to produce more sensible EC.GENERAL 
+     * error messages.
+     * 
      * @param errorCode
      * @param cause
      */
     public static void printError(int errorCode, Throwable cause)
     {
-        printError(errorCode, cause.getMessage(), cause, true);
+        if (errorCode == EC.GENERAL) {
+            printError(errorCode, "", cause);
+        } else {
+            printError(errorCode, cause.getMessage(), cause, true);
+        }
     }
 
     /**

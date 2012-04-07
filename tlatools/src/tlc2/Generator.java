@@ -176,7 +176,7 @@ public class Generator {
     }
     catch (Exception e) {
       // Assert.printStack(e);
-        MP.printError(EC.GENERAL, (e.getMessage()==null)?e.toString():e.getMessage());
+        MP.printError(EC.GENERAL, "generating traces", e);  // LL changed call 7 April 2012
     }
     //System.exit(0); //SZ: no-op removed
   }

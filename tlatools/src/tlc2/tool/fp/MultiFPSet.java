@@ -48,7 +48,8 @@ public class MultiFPSet extends FPSet {
 	 * @param bits [1,30]
 	 */
 	public MultiFPSet(int bits, long fpMemSize) throws RemoteException {
-		Assert.check(bits > 0 && bits <= MAX_FPBITS, EC.GENERAL);
+	    // LL modified error message on 7 April 2012
+		Assert.check(bits > 0 && bits <= MAX_FPBITS, "Illegal number of PFSets found.");
 		
 		int len = 1 << bits; // len = 2^bits
 		this.sets = new FPSet[len];

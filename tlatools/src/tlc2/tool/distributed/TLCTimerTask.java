@@ -53,7 +53,8 @@ public class TLCTimerTask extends TimerTask {
 			worker.exit();
 		} catch (NoSuchObjectException e) {
 			// not expected to happen
-			MP.printError(EC.GENERAL, e);
+		    // LL modified error message on 7 April 2012
+			MP.printError(EC.GENERAL, "trying to exit a worker", e);
 		}
 	}
 }

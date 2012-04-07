@@ -83,7 +83,7 @@ public class DFIDModelChecker extends AbstractChecker
                 MP.printError(EC.TLC_INITIAL_STATE, new String[] { e.getMessage(), this.errState.toString() });
             } else
             {
-                MP.printError(EC.GENERAL, e.getMessage());
+                MP.printError(EC.GENERAL, "computing initial states", e); // LL changed call 7 April 2012
             }
 
             // Replay the error with the error stack recorded:
@@ -196,7 +196,7 @@ public class DFIDModelChecker extends AbstractChecker
             success = false;
             if (!(e instanceof LiveException))
             {
-                MP.printError(EC.GENERAL, e.getMessage());
+                MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
             }
         } finally
         {
@@ -564,7 +564,9 @@ public class DFIDModelChecker extends AbstractChecker
                     } else
                     {
                         errorCode = EC.GENERAL;
-                        parameters = new String[] { e.getMessage() };
+                        // LL changed error message on 7 April 2012
+                        parameters = new String[] { 
+                                MP.ECGeneralMsg("computing the set of next states", e) }; 
                     }
                     this.printTrace(errorCode, parameters, curState, succState);
                     this.notifyAll();

@@ -618,7 +618,7 @@ public class LiveWorker extends IdThread {
       }
       catch (Exception e) 
       {
-          MP.printError(EC.GENERAL, (e.getMessage()==null)?e.toString():e.getMessage(), e);
+          MP.printError(EC.GENERAL, "checking liveness", e);  // LL changed call 7 April 2012
           // Assert.printStack(e);
           return;
       }

@@ -233,7 +233,7 @@ public class ModelChecker extends AbstractChecker
             report("TLC terminated with error");
             // Assert.printStack(e);
             success = false;
-            MP.printError(EC.GENERAL, (e.getMessage()==null)?e.toString():e.getMessage());
+            MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
         } finally
         {
             this.printSummary(success, startTime);
@@ -610,7 +610,7 @@ public class ModelChecker extends AbstractChecker
                         MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
                     } else if (e.getMessage() != null)
                     {
-                        MP.printError(EC.GENERAL, e.getMessage() == null ? e.toString() : e.getMessage());
+                        MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
                     }
                     this.trace.printTrace(curState, succState);
                     this.theStateQueue.finishAll();

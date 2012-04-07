@@ -185,11 +185,11 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					"getPort", (Class[]) null);
 			return (Integer) method.invoke(liveRef, (Object[]) null);
 		} catch (SecurityException e) {
-			MP.printError(EC.GENERAL, e);
+			MP.printError(EC.GENERAL, "trying to get a port for a worker", e); // LL changed call on 7 April 2012
 		} catch (IllegalArgumentException e) {
-			MP.printError(EC.GENERAL, e);
+			MP.printError(EC.GENERAL, "trying to get a port for a worker",e);  // LL changed call on 7 April 2012
 		} catch (ClassCastException e) {
-			MP.printError(EC.GENERAL, e);
+			MP.printError(EC.GENERAL, "trying to get a port for a worker",e);  // LL changed call on 7 April 2012
 		} catch (NoSuchMethodException e) {
 			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION, e);
 		} catch (IllegalAccessException e) {
