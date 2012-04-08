@@ -1148,6 +1148,7 @@ public class MP
         if (throwable.getMessage() != null) {
             msg = msg + ": " + throwable.getMessage();
         }
+        msg = msg + "\nThis was probably caused by an error in the spec or model.";
         if (cause.equals("")) {
             msg = msg + "\nSee the TLC Console for clues to what happened.";
         } else {
