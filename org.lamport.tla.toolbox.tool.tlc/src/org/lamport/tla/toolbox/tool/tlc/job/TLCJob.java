@@ -41,8 +41,17 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     public static final String AllJobsMatcher = ToolboxJob.FAMILY;
 
     protected static final int STEP = 30;
+    /*
+     * Number of minutes between printing of coverage data.
+     */
     private static final int COVERAGE_INTERVAL = 3;
-    private static final int CHECKPOINT_INTERVAL = 3;
+    
+    /*
+     * Number of minutes between checkpoints.  It was changed from 20 or 30 to 3,
+     * apparently by Simon Z.  Changed to 15 by LL for 10 Apr 2012 release
+     * 
+     */
+    private static final int CHECKPOINT_INTERVAL = 15 ;  
     
     protected long timeout = 1000L;
     protected IFile rootModule;
