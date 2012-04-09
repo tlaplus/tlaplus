@@ -150,7 +150,7 @@ public class TLC
      *  o -debug: debbuging information (non-production use)
      *  o -tool: tool mode (put output codes on console)
      *  o -checkpoint num: interval for check pointing (in minutes)
-     *  Defaults to 30
+     *     Defaults to 30
      *  o -fpmem num: the number of megabytes of memory used to store
      *                the fingerprints of found states.
      *  Defaults to 1/4 physical memory.  (Added 6 Apr 2010 by Yuan Yu.)
