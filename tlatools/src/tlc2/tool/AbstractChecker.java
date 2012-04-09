@@ -69,7 +69,11 @@ public abstract class AbstractChecker implements Cancelable
 
         // moved to file utilities
         this.metadir = FileUtil.makeMetaDir(specDir, fromChkpt);
-
+        
+        // The number of states generated before the first liveness check is
+        // performed.  This value of 1000 sounds low, but since the value is
+        // doubled after each check up to a maximum of 640K (a number embedded
+        // in several places in the code), it probably doesn't much matter.
         this.nextLiveCheck = 1000;
         this.numOfGenStates = 0;
         this.errState = null;
