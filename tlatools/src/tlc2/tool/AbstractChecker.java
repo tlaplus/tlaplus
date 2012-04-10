@@ -163,6 +163,9 @@ public abstract class AbstractChecker implements Cancelable
     public abstract boolean doInit(boolean ignoreCancel) throws Throwable;
 
     /**
+     * I believe this method is called after the initial states are computed
+     * to do all the rest of the model checking.  LL 9 April 2012
+     * 
      * Create the partial state space for given starting state up
      * to the given depth or the number of states.
      */
@@ -183,6 +186,8 @@ public abstract class AbstractChecker implements Cancelable
         IdThread[] workers = startWorkers(this, depth);
 
         // Check progress periodically:
+        // Comment added by LL on 9 April 2012.  The coverage is printed
+        // every `count' times that the progress is printed.
         int count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
 
         // work to be done prior loop entry
@@ -207,6 +212,14 @@ public abstract class AbstractChecker implements Cancelable
             }
         }
 
+        // Comments, written 9 April 2012 by LL.
+        // It looks like the following while loop is responsible for checkpointing,
+        // printing the coverage information, and printing the progress report,
+        // as well as doing the periodic liveness checking.
+        //
+        // The doPeriodicWork() method performs the checkpointing as well as
+        // liveness checking on the current state graph.
+        
         // SZ Feb 23, 2009: exit if canceled
         // added condition to run in the cycle
         // while (true) {
