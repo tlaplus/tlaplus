@@ -797,7 +797,18 @@ public class ModelChecker extends AbstractChecker
     }
 
     /**
-     * Process calculation 
+     * Process calculation.  
+     * 
+     * Comments added 9 April 2012 by LL.  The above was Simon's extensive commenting.  I presume
+     * he really mean "ProGRess calculation", since this seems to be where the coverage
+     * and progress information is written.  The method writes the progress information,
+     * prints the coverage only if count = 0, and then waits until it's time to print
+     * the next progress report before exiting.  (The next progress report is printed
+     * the next time the method is called.)  
+     * 
+     * It looks like this is where the depth-first model checker exits when it has
+     * finished checking the required depth, but I'm not sure.
+     * 
      * @param count
      * @param depth
      * @throws Exception
