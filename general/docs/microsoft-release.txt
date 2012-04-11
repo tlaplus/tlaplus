@@ -124,7 +124,10 @@ Method 3. Using tla.msr-inria.inria.fr
      Click on Promotion Status.
      Click on Approve.
      
-
+  Note: The Toolbox tries to update itself by looking for the files at  lamport.org/tlatoolbox/toolboxUpdate/.
+        This is redirected to the right place by putting in my lamport.org/ top-level directory a file named .htaccess containing
+        the line
+                  Redirect /tlatoolbox http://tla.msr-inria.inria.fr/tlatoolbox
     
 
 TO PREPARE THE STAND-ALONE TLA TOOLS RELEASE ZIP FILE (IN 
@@ -144,7 +147,7 @@ TO GENERATE THE RELEASE:
 Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
-Version 1.4.3 of 3 April 2012
+Version 1.4.3 of 10 April 2012
   - Adds a "Cardinality of largest enumerable set" TLC parameter.
   - Fixed the order of definitions and declarations in the MC.tla file.
   - Includes TLC version 2.05 of 17 Mar 2012, which adds the aforementioned
