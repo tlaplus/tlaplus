@@ -5,6 +5,11 @@ package tlc2.util;
  * is to print the probabilities of collision that TLC prints at the 
  * end of a successful run as something sensible like 3.2E-16 rather than
  * 3.18422349809123312135423252345029E-16.
+ * 
+ * This use was removed by LL on 12 April 2012 and replaced by a call to
+ * ModelChecker.ProbabilityToString because it wasn't working as expected on
+ * some values--probably ones > 10^-4.  This class is now not be used and
+ * can be deleted.
  */
 
 //
@@ -445,6 +450,7 @@ import java.util.Vector;
  *              round up when digit not printed is 5
  *              formatting of -0.0f
  *              round up/down when last digits are 50000...
+ * @deprecated
  */
 public class PrintfFormat
 {
@@ -459,6 +465,7 @@ public class PrintfFormat
      * @exception IllegalArgumentException if the control
      * string is null, zero length, or otherwise
      * malformed.
+     * @deprecated
      */
     public PrintfFormat(String fmtArg) throws IllegalArgumentException
     {
@@ -717,6 +724,7 @@ public class PrintfFormat
      * @exception IllegalArgumentException if the
      *     conversion character is c, C, s, S,
      *     d, d, x, X, or o.
+     * @deprecated
      */
     public String sprintf(double x) throws IllegalArgumentException
     {

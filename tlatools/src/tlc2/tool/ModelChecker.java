@@ -755,13 +755,189 @@ public class ModelChecker extends AbstractChecker
         // shown as 'observed' in Toolbox
         final double actualProb = anFpSet.checkFPs();
         /* The following code added by LL on 3 Aug 2009 to print probabilities
-         * to only one decimal point.
+         * to only one decimal point.  Removed by LL on 17 April 2012 because it
+         * seemed to report probabilities > 10-4 as probability 0.
          */
-        final PrintfFormat fmt = new PrintfFormat("val = %.1G");
-        final String optimisticProbStr = fmt.sprintf(optimisticProb);
-        final String actualProbStr = fmt.sprintf(actualProb);
+         // final PrintfFormat fmt = new PrintfFormat("val = %.1G");
+         // final String optimisticProbStr = fmt.sprintf(optimisticProb);
+         // final String actualProbStr = fmt.sprintf(actualProb);
+        
+        // Following two lines added by LL on 17 April 2012
+        final String optimisticProbStr = "val = " + ProbabilityToString(optimisticProb, 2);
+        final String actualProbStr = "val = " + ProbabilityToString(actualProb, 2);
         MP.printMessage(EC.TLC_SUCCESS, new String[] { optimisticProbStr, actualProbStr });
     }
+    
+    /**
+     * This method added by LL on 17 April 2012 to replace the use of the PrintfFormat
+     * method in reportSuccess.
+     * 
+     * Returns a string representing the decimal representation of a probability to
+     * a given number of significant digits.  If the input is not a probability, or if
+     * some error is found, then it returns the result of applying Double.toString(long)
+     * to the value.
+     * 
+     * Warning: the code makes the following assumption:
+     *  - Double.toString(v) returns a decimal representation of v of the
+     *    form  [d]* ["." [d]+ ["E" [+ | -] [d]+]  where d is a decimal digit and
+     *      [x]   = 0 or 1 instance of x
+     *      [x]*  = any number of instances of x
+     *      [x]+  = any non-zero number of instances of x
+     *      x | y = an x or a y
+     * 
+     * @param val                - the probability represented as a long; must satisfy 0 <= val <= 1.
+     * @param significantDigits  - the number of significant digits to include; must be > 0.
+     * @return
+     */
+    private static final String ProbabilityToString(double val, int significantDigits) {
+        /*
+         * If val = 0 (which shouldn't happen), return "0.0"
+         */
+        if (val == 0) {
+            return "0.0";
+        }
+                
+        String valString = Double.toString(val) ;
+        int valStringLen = valString.length();
+        
+        String result = "";
+        int next = 0; // pointer to the next character in valString to examine.
+        int significantDigitsFound = 0;
+        
+        /*
+         * Skip past leading zeros.
+         */
+        while ((next < valStringLen)  && (valString.charAt(next) == '0')) {
+            next++ ;
+        }
+        
+        /*
+         * Append all the following digits to result, incrementing
+         * significantDigits for each one.  
+         */
+        while ( (next < valStringLen)  && 
+                Character.isDigit(valString.charAt(next))) {
+            result = result + valString.charAt(next);
+            significantDigitsFound++;
+            next++ ;
+         }
+        
+        /*
+         * IF next character is not "." 
+         *   THEN IF at end THEN return result
+         *                  ELSE return valString.
+         */
+        if (next == valStringLen) {
+            return result;
+        } else if (valString.charAt(next) != '.') {
+            return valString;
+        }
+        
+        
+        /*
+         * IF significantDigitsFound >= significantDigits, 
+         *    THEN skip over "." and the following digits.
+         *         (this should not happen)
+         *    ELSE append "." to result ;
+         *         IF significantDigitsFound = 0  
+         *           THEN copy each of the following "0"s of valString to result;
+         *         copy up to significantDigits - significantDigitsFound
+         *            following digits of valString to result;
+         *         IF next char of valString a digit >= "5"
+         *           THEN propagate a carry backwards over the digits of result
+         *                 -- e.g., changing ".019" to ".020";
+         *         Skip over remaining digits of valString;
+         */
+        if (significantDigitsFound >= significantDigits) {
+            next++ ;
+            while ( (next < valStringLen)  && 
+                    Character.isDigit(valString.charAt(next))) {
+                 next++ ;
+             }
+        } else {
+            next++;
+            result = result + ".";
+            if (significantDigitsFound == 0) {
+                while ((next < valStringLen)  && (valString.charAt(next) == '0')) {
+                    next++ ;
+                    result = result + "0";
+                }
+            }
+            while ((next < valStringLen)  && 
+                  Character.isDigit(valString.charAt(next)) &&
+                  significantDigitsFound < significantDigits ) {
+                      result = result + valString.charAt(next);
+                      next++;
+                      significantDigitsFound++;
+             }
+            if ((next < valStringLen)  &&  
+                 Character.isDigit(valString.charAt(next)) &&
+                 Character.digit(valString.charAt(next), 10) >= 5) {
+                int prev = result.length()-1; // the next digit of result to increment
+                boolean done = false;
+                while (!done) {
+                    if (prev < 0) {
+                        result = "1" + result;
+                        done = true;
+                    } else {
+                        char prevChar = result.charAt(prev);
+                        String front = result.substring(0, prev);
+                        String back = result.substring(prev+1);
+                        if (Character.isDigit(prevChar)) {
+                            if (prevChar == '9') {
+                                result = front + '0' + back;
+                            } else {
+                                result = front + Character.forDigit(Character.digit(prevChar, 10)+1, 10) + back;
+                                done = true;
+                            }
+                            
+                        } else {
+                            // prevChar must be '.', so just continue
+                        }
+                    }
+                    prev--;
+                }
+            }
+            while ((next < valStringLen)  &&  
+                    Character.isDigit(valString.charAt(next))) {
+                next++;
+            }
+        }
+        
+        /*
+         * IF next at end of valString or at "E"
+         *   THEN copy remaining chars of valString to result;
+         *        return result
+         *   ELSE return valString
+         */
+        if (next >= valStringLen) {
+            return result;
+        }
+        if (valString.charAt(next)=='E') {
+            next++;
+            result = result + "E";
+            while (next < valStringLen) {
+                result = result + valString.charAt(next);
+                next++;
+            }
+            return result;
+        }
+        return valString;
+    }
+
+// The following method used for testing ProbabilityToString
+//
+//    public static void main(String[] args) {
+//        double[] test = new double[] {.5, .0995, .00000001, 001.000, .0022341, 
+//                                      .0022351, 3.14159E-12, 
+//                                      00.999, .002351111, 22.8E-14, 0.000E-12,
+//                                      37, 0033D, 04.85, -35.3};
+//        int i = 0;
+//        while (i < test.length) {
+//            System.out.println("" + i + ": " + Double.toString(test[i]) + " -> " + ProbabilityToString(test[i],2));
+//            i++;
+//        }    
+//    }
 
     public final void setAllValues(int idx, Value val)
     {
