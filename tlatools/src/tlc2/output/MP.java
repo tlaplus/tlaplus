@@ -1138,21 +1138,28 @@ public class MP
     /**
      * Returns the error message for printError(EC.GENERAL, cause, throwable)
      * 
+     * Created by LL on 7 April 2012.  
+     * Modified by LL on 24 April 2012 because, for some errors,
+     * throwable.getMessage() contains a nested error message, and the Toolbox's
+     * code for parsing TLC output apparently cannot handle a nested error message
+     * containing text before and after it.  So I put all the additional message text
+     * before throwable.getMessage().
      * @param cause
      * @param throwable
      * @return
      */
     public static String ECGeneralMsg(String cause, Throwable throwable) {
-        String msg = "TLC threw the unexpected exception\n  "
-                + throwable.getClass().getName();
-        if (throwable.getMessage() != null) {
-            msg = msg + ": " + throwable.getMessage();
-        }
-        msg = msg + "\nThis was probably caused by an error in the spec or model.";
+        String msg = "TLC threw an unexpected exception.";
+        msg = msg
+                + "\nThis was probably caused by an error in the spec or model.";
         if (cause.equals("")) {
             msg = msg + "\nSee the TLC Console for clues to what happened.";
         } else {
             msg = msg + "\nThe error occurred when TLC was " + cause + ".";
+        }
+        msg = msg + "\nThe exception was a " + throwable.getClass().getName();
+        if (throwable.getMessage() != null) {
+            msg = msg + ": " + throwable.getMessage();
         }
         return msg;
     }
