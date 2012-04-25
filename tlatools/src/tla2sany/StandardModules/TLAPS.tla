@@ -52,7 +52,7 @@ SMTT(X) == TRUE (*{ by (prover:"smt"; timeout:@) }*)
 (**************************************************************************)
 (* Backend pragma: CVC3 SMT solver                                        *)
 (*                                                                        *)
-(* This method translates the proof obligation to Yices native language.  *)
+(* CVC3 is used by default but you can also explicitly call it.           *)
 (**************************************************************************)
 
 THEOREM CVC3 == TRUE (*{ by (cvc3) }*)
