@@ -80,6 +80,10 @@ import util.ToolIO;
 *                 - Omitted the Termination definition if the stuttering-  *
 *                   on-termination disjunction is removed, since that      *
 *                   implies Termination is always FALSE.                   *
+*                (4 May 2012)                                              *
+*                 - Removed the unnecessary CASE in the pc = ... clause of *
+*                   the Init predicate when there is only a single process *
+*                   statement.                                             *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *

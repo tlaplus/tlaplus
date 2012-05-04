@@ -2609,60 +2609,69 @@ public class PcalTLAGen
         if (! ParseAlgorithm.omitPC) {
           if (mp)
           {
-              is.append("/\\ pc = [self \\in ProcSet |-> CASE ");
+              // On 4 May 2012, LL added useCase flag to inhibit adding of CASE for
+              // a single process or process set.
+              boolean useCase = st.processes.size() != 1;
+              if (useCase) {
+                is.append("/\\ pc = [self \\in ProcSet |-> CASE ");
+             } else {
+                 is.append("/\\ pc = [self \\in ProcSet |-> ");
+             }
               int colPC = is.length();
               if (boxUnderCASE)
                   colPC = colPC - 3;
               for (int p = 0; p < st.processes.size(); p++)
               {
                   PcalSymTab.ProcessEntry pe = (PcalSymTab.ProcessEntry) st.processes.elementAt(p);
-                  is.append("self ");
-                  if (pe.isEq)
-                  {
-                      is.append("= ");
-//                      int colExpr = is.length();
-                      addOneTokenToTLA(is.toString());
-                      addLeftParen(pe.id.getOrigin());
-                      addExprToTLA(pe.id);
-                      addRightParen(pe.id.getOrigin());
-                      
-//                      Vector sv = pe.id.toStringVector();
-//                      is.append((String) sv.elementAt(0));
-//                      for (int v = 1; v < sv.size(); v++)
-//                      {
-//                          addOneLineOfTLA(is.toString());
-////                          tlacode.addElement(is.toString());
-//                          is = new StringBuffer(NSpaces(colExpr));
-//                          is.append((String) sv.elementAt(v));
-//                      }
-                  } else
-                  {
-                      is.append("\\in ");
-//                      int colExpr = is.length();
-//                      Vector sv = pe.id.toStringVector();
-//                      is.append((String) sv.elementAt(0));
-//                      for (int v = 1; v < sv.size(); v++)
-//                      {
-//                          tlacode.addElement(is.toString());
-//                          is = new StringBuffer(NSpaces(colExpr));
-//                          is.append((String) sv.elementAt(v));
-//                      } 
-                      addOneTokenToTLA(is.toString());
-                      addLeftParen(pe.id.getOrigin());
-                      addExprToTLA(pe.id);
-                      addRightParen(pe.id.getOrigin());
-                      
-                      
-                  }
-//                  is.append(" -> \"");
-                  is = new StringBuffer(" -> \"");
-                  is.append(pe.iPC);
-                  if (p == st.processes.size() - 1)
-                      is.append("\"]");
-                  else if (!boxUnderCASE)
-                      is.append("\" []");
-                  else
-                      is.append("\"");
+                    if (useCase) {
+                        is.append("self ");
+                        if (pe.isEq) {
+                            is.append("= ");
+                            // int colExpr = is.length();
+                            addOneTokenToTLA(is.toString());
+                            addLeftParen(pe.id.getOrigin());
+                            addExprToTLA(pe.id);
+                            addRightParen(pe.id.getOrigin());
+
+                            // Vector sv = pe.id.toStringVector();
+                            // is.append((String) sv.elementAt(0));
+                            // for (int v = 1; v < sv.size(); v++)
+                            // {
+                            // addOneLineOfTLA(is.toString());
+                            // // tlacode.addElement(is.toString());
+                            // is = new StringBuffer(NSpaces(colExpr));
+                            // is.append((String) sv.elementAt(v));
+                            // }
+                        } else {
+                            is.append("\\in ");
+                            // int colExpr = is.length();
+                            // Vector sv = pe.id.toStringVector();
+                            // is.append((String) sv.elementAt(0));
+                            // for (int v = 1; v < sv.size(); v++)
+                            // {
+                            // tlacode.addElement(is.toString());
+                            // is = new StringBuffer(NSpaces(colExpr));
+                            // is.append((String) sv.elementAt(v));
+                            // }
+                            addOneTokenToTLA(is.toString());
+                            addLeftParen(pe.id.getOrigin());
+                            addExprToTLA(pe.id);
+                            addRightParen(pe.id.getOrigin());
+
+                        }
+                        // is.append(" -> \"");
+                        is = new StringBuffer(" -> \"");
+                        is.append(pe.iPC);
+                        if (p == st.processes.size() - 1)
+                            is.append("\"]");
+                        else if (!boxUnderCASE)
+                            is.append("\" []");
+                        else
+                            is.append("\"");
+                    } // end if (useCase)
+                    else {
+                        is.append("\"" + pe.iPC + "\"]");
+                    }
 //                  tlacode.addElement(is.toString());
                   addOneTokenToTLA(is.toString());
                   endCurrentLineOfTLA();
