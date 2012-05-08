@@ -147,6 +147,9 @@ TO GENERATE THE RELEASE:
 Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
+Version 1.4.4 of ?
+  - Fixed bug in Find Declaration and other commands that caused problems
+    recognizing an identifier containing a "_".
 Version 1.4.3 of 10 April 2012
   - Adds a "Cardinality of largest enumerable set" TLC parameter.
   - Fixed the order of definitions and declarations in the MC.tla file.

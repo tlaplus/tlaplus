@@ -546,7 +546,16 @@ public class TokenSpec
         {
             left--;
         }
-        while (Character.isLetterOrDigit(line.charAt(rt)) || line.charAt(left - 1) == '_')
+        // The following while was
+        //
+        //   while (Character.isLetterOrDigit(line.charAt(rt)) || line.charAt(left - 1) == '_')
+        //
+        // Apparently, the previous while was copied and only half-modified.  As a
+        // result, the Goto Declaration and Show Uses commands wouldn't work if
+        // the cursor was inside an identifier containing a "_" to the left   of the
+        // "_".  This was also a problem with Control+click. 
+        // Fixed by LL on 7 May 2012
+        while (Character.isLetterOrDigit(line.charAt(rt)) || line.charAt(rt) == '_')
 
         {
             rt++;
