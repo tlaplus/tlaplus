@@ -530,7 +530,8 @@ public class TLCChainedPreferenceStore implements IPreferenceStore {
 		// while assuming the texteditor pref is at array pos 0
 		if ((property.toLowerCase().contains("color") && !property
 				.endsWith(ProverPreferencePage.PREDICATE))
-				|| property.contains(ProverPreferencePage.APPLIES_TO_LEAF_ONLY)) {
+				|| property.contains(ProverPreferencePage.APPLIES_TO_LEAF_ONLY)
+				|| property.contains(ProverPreferencePage.STEP_STATUS_OVERVIEW)) {
 			return fPreferenceStores[0];
 		} else {
 			return fPreferenceStores[1];
