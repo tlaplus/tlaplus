@@ -57,10 +57,6 @@ public class ProverUIActivator extends AbstractTLCActivator
 		        store.setDefault(ProverPreferencePage.getColorPredPrefName(10), ColorPredicate.PREDICATE_NONE);
 		        store.setDefault(ProverPreferencePage.getColorPredPrefName(11), ColorPredicate.PREDICATE_NONE);
 		        store.setDefault(ProverPreferencePage.getColorPredPrefName(12), ColorPredicate.PREDICATE_NONE);
-
-		        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(3), true);
-		        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(4), true);
-		        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(5), true);
 			}
 		});
          /*
