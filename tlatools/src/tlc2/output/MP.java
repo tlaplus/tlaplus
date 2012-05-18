@@ -519,7 +519,7 @@ public class MP
             break;
 
         case EC.TLC_UNCHANGED_VARIABLE_CHANGED:
-            b.append("The variable %1% was changed while it  is specified as UNCHANGED at\n%1");
+            b.append("The variable %1% was changed while it is specified as UNCHANGED at\n%2%");
             break;
 
         case EC.TLC_EXCEPT_APPLIED_TO_UNKNOWN_FIELD:
