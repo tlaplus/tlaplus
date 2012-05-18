@@ -831,6 +831,7 @@ public class MP
             break;
         case EC.TLC_CONFIG_ID_HAS_VALUE:
             b.append("The %1% of %2% is equal to %3%");
+            break;
         case EC.TLC_CONFIG_MISSING_INIT:
             b.append("The configuration file did not specify the initial state predicate.");
             break;
