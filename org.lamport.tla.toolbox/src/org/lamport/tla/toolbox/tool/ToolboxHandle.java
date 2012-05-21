@@ -22,6 +22,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.Version;
 
 import tla2sany.modanalyzer.SpecObj;
 
@@ -141,8 +142,19 @@ public class ToolboxHandle
         for (int i = 0; i < bundles.length; i++) {
 			Bundle aBundle = bundles[i];
 			if ("org.lamport.tlatools".equals(aBundle.getSymbolicName())) {
-				bundle = aBundle;
-				break;
+				// OSGi supports multiple bundles with the same symbolic name, but
+				// different versions. This e.g. occurs after a Toolbox update
+				// before the old bundle version gets purged from the
+				// installation directory.
+				// Without this explicitly version check, the Toolbox
+				// might accidentally use an old tla version which leads to
+				// undefined behavior.
+				// @see https://bugzilla.tlaplus.net/show_bug.cgi?id=285
+				Version otherVersion = bundle != null ? bundle.getVersion()
+						: Version.parseVersion("0.0.0");
+				if (aBundle.getVersion().compareTo(otherVersion) > 0) {
+					bundle = aBundle;
+				}
 			}
 		}
         if (bundle == null)
