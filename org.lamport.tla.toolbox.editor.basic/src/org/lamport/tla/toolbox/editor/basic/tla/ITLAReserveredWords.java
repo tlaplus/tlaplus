@@ -41,7 +41,8 @@ public interface ITLAReserveredWords
     public final static String NEW          = "NEW";
     public final static String OBVIOUS      = "OBVIOUS";
     public final static String OMITTED      = "OMITTED";
-    public final static String OTHER 		= "OTHER";
+    public final static String ONLY 		= "ONLY";  // Added 23 May 2012 by LL
+    public final static String OTHER        = "OTHER";
     public final static String PICK         = "PICK";
     public final static String PROOF        = "PROOF";
     public final static String PROPOSITION  = "PROPOSITION";
@@ -103,6 +104,7 @@ public interface ITLAReserveredWords
         NEW,
         OBVIOUS,
         OMITTED,
+        ONLY,
         OTHER,
         PICK,
         PROOF,
