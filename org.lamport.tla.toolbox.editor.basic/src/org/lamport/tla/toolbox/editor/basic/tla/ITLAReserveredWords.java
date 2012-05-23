@@ -38,7 +38,7 @@ public interface ITLAReserveredWords
     public final static String LEMMA        = "LEMMA";
     public final static String LOCAL 		= "LOCAL";
     public final static String MODULE 		= "MODULE";
-    public final static String NEW          = "NEW";
+    public final static String NEW          = "NEW"; 
     public final static String OBVIOUS      = "OBVIOUS";
     public final static String OMITTED      = "OMITTED";
     public final static String ONLY 		= "ONLY";  // Added 23 May 2012 by LL
