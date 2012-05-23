@@ -67,12 +67,12 @@ public class Integers extends UserObj implements ValueConstants
     {
         if (!(x instanceof IntValue))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "<", "\bn integer",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", "<", "integer",
                     Value.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "<", "\bn integer",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", "<", "integer",
                     Value.ppr(y.toString()) });
         }
 
@@ -83,12 +83,12 @@ public class Integers extends UserObj implements ValueConstants
     {
         if (!(x instanceof IntValue))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "<=", "\bn integer",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", "<=", "integer",
                     Value.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "<=", "\bn integer",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", "<=", "integer",
                     Value.ppr(x.toString()) });
         }
 
@@ -99,12 +99,12 @@ public class Integers extends UserObj implements ValueConstants
     {
         if (!(x instanceof IntValue))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", ">", "\bn integer",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", ">", "integer",
                     Value.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", ">", "\bn integer",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", ">", "integer",
                     Value.ppr(x.toString()) });
         }
 
@@ -115,12 +115,12 @@ public class Integers extends UserObj implements ValueConstants
     {
         if (!(x instanceof IntValue))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", ">=", "\bn integer",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", ">=", "integer",
                     Value.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", ">=", "\bn integer",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", ">=", "integer",
                     Value.ppr(x.toString()) });
         }
 

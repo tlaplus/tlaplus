@@ -340,7 +340,7 @@ public class Bags implements ValueConstants
     {
         if (!(f instanceof Applicable))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "BagOfAll", "\bn operator",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", "BagOfAll", "operator",
                     Value.ppr(f.toString()) });
         }
         FcnRcdValue fcn = FcnRcdValue.convert(b);

@@ -538,6 +538,10 @@ public class MP
             b.append("The %1% argument of %2% should be a %3%, but instead it is:\n%4%");
             break;
 
+        case EC.TLC_MODULE_ARGUMENT_ERROR_AN:
+            b.append("The %1% argument of %2% should be an %3%, but instead it is:\n%4%");
+            break;
+
         case EC.TLC_MODULE_ARGUMENT_NOT_IN_DOMAIN:
             b.append("The %1% argument of %2% must be in the domain of its %3% argument:\n%4%\n, but"
                     + " instead it is\n%5%");
