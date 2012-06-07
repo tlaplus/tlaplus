@@ -20,9 +20,6 @@ cd /mnt
 # apache maven 3
 (wget -q http://apache.osuosl.org/maven/binaries/apache-maven-3.0.4-bin.tar.gz && cd /opt && tar xfz /mnt/apache-maven-3.0.4-bin.tar.gz) &
 
-# aapche ant
-(wget -q http://apache.osuosl.org/ant/binaries/apache-ant-1.8.4-bin.tar.gz && cd /opt && tar xfz /mnt/apache-ant-1.8.4-bin.tar.gz) &
-
 # create user kuppe and setup public key
 useradd --home /mnt/kuppe -m kuppe -s /bin/bash -G admin,sudo
 ln -s /mnt/kuppe /home/kuppe
@@ -84,7 +81,7 @@ dpkg -i cdh3-repository_1.0_all.deb
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade -y
-apt-get --no-install-recommends install openjdk-7-jdk visualvm openjdk-6-jdk juju unzip mc htop sysstat apache2 munin munin-node munin-java-plugins munin-plugins-extra git git-svn sshfs rsync -y
+apt-get --no-install-recommends install ant openjdk-7-jdk visualvm openjdk-6-jdk juju unzip mc htop sysstat apache2 munin munin-node munin-java-plugins munin-plugins-extra git git-svn sshfs rsync -y
 
 # if UI/X needed
 apt-get --no-install-recommends install gnome-core gdm gnome-session-fallback firefox libwebkitgtk-1.0-0 tightvncserver xorg x2goserver x2goserver-xsession -y
@@ -167,8 +164,7 @@ dpkg -i nxserver_3.5.0-9_amd64.deb
 
 # add maven and ant to the path
 echo "export MAVEN_HOME=/opt/apache-maven/
-export ANT_HOME=/opt/apache-ant
-export PATH=$PATH:/opt/apache-maven/bin:/opt/apache-ant/bin/
+export PATH=$PATH:/opt/apache-maven/bin
 " > /etc/profile.d/java.sh
 
 mkdir -p /mnt/kuppe
@@ -197,7 +193,7 @@ git config --global user.name \"Markus Alexander Kuppe\"
 #/opt/apache-maven-3.0.4/bin/mvn -f /home/kuppe/git/tla/pom.xml install -Dmaven.test.skip=true
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 cd ~/git/tla/tlatools/
-/opt/apache-ant-1.8.4/bin/ant -f customBuild.xml dist-mixed-zip -Dtest.skip=true
+ant -f customBuild.xml dist-mixed-zip -Dtest.skip=true
 
 #
 # build jmx2munin
