@@ -186,7 +186,7 @@ public class FPSetManager implements Serializable {
 
 	public final long size() {
 		int len = this.fpSets.length;
-		int res = 0;
+		long res = 0;
 		for (int i = 0; i < len; i++) {
 			try {
 				res += this.fpSets[i].size();
