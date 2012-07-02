@@ -15,8 +15,7 @@ cd /mnt
 (wget -q http://www.yourkit.com/download/yjp-10.0.4-linux.tar.bz2  && cd /opt && tar xfj /mnt/yjp-10.0.4-linux.tar.bz2) &
 
 # no package mgmt for yourkit profiler, hence install manually into /opt
-(wget -q ftp://mirror.cc.vt.edu/pub/eclipse/technology/epp/downloads/release/indigo/SR1/eclipse-rcp-indigo-SR1-linux-gtk-x86_64.tar.gz && cd /opt && tar xfz /mnt/eclipse-rcp-indigo-SR1-linux-gtk-x86_64.tar.gz) & 
-
+(wget -q ftp://carroll.aset.psu.edu/pub/eclipse/eclipse/downloads/drops4/R-4.2-201206081400/eclipse-SDK-4.2-linux-gtk-x86_64.tar.gz && cd /opt && tar xfz /mnt/eclipse-SDK-4.2-linux-gtk-x86_64.tar.gz) &
 # apache maven 3
 (wget -q http://apache.osuosl.org/maven/binaries/apache-maven-3.0.4-bin.tar.gz && cd /opt && tar xfz /mnt/apache-maven-3.0.4-bin.tar.gz) &
 
