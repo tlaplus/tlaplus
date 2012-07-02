@@ -73,10 +73,6 @@ echo "lamport ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 # add x2go ubuntu ppa repository to package manager apt
 add-apt-repository ppa:x2go/stable -y
 
-# add cloudera hadoop repository to package manager
-wget http://archive.cloudera.com/one-click-install/maverick/cdh3-repository_1.0_all.deb
-dpkg -i cdh3-repository_1.0_all.deb
-
 # update package index and install basic packages needed
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
@@ -154,13 +150,6 @@ echo "MAILTO=root
 */10 * * * *	kuppe rsync -avz -e ssh /var/cache/munin/ kuppe@tla.msr-inria.inria.fr:~/rrdtool/`hostname`
 */10 * * * *	kuppe rsync -avz -e ssh /home/kuppe/run.log kuppe@tla.msr-inria.inria.fr:~/rrdtool/`hostname`
 " > /etc/cron.d/rrdbackup
-
-wget http://64.34.161.181/download/3.5.0/Linux/FE/nxserver_3.5.0-9_amd64.deb
-wget http://64.34.161.181/download/3.5.0/Linux/nxnode_3.5.0-7_amd64.deb
-wget http://64.34.161.181/download/3.5.0/Linux/nxclient_3.5.0-7_amd64.deb
-dpkg -i nxclient_3.5.0-7_amd64.deb
-dpkg -i nxnode_3.5.0-7_amd64.deb
-dpkg -i nxserver_3.5.0-9_amd64.deb
 
 # add maven and ant to the path
 echo "export MAVEN_HOME=/opt/apache-maven/
