@@ -5,7 +5,7 @@ import junit.framework.TestCase;
 
 public class StateQueueTest extends TestCase {
 
-	protected StateQueue sQueue;
+	protected IStateQueue sQueue;
 
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
@@ -94,7 +94,7 @@ public class StateQueueTest extends TestCase {
 		assertTrue(sQueue.sDequeue(Integer.MAX_VALUE).length == 1);
 	}
 	
-	private void expectRuntimeException(StateQueue aQueue, int size)  {
+	private void expectRuntimeException(IStateQueue aQueue, int size)  {
 		try {
 			aQueue.sDequeue(size);
 		} catch(RuntimeException e) {

@@ -33,7 +33,7 @@ import tlc2.tool.distributed.selector.IBlockSelector;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.tool.queue.DiskStateQueue;
-import tlc2.tool.queue.StateQueue;
+import tlc2.tool.queue.IStateQueue;
 import tlc2.util.FP64;
 import util.Assert;
 import util.FileUtil;
@@ -69,7 +69,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	private long statesPerMinute;
 
 	public final FPSetManager fpSetManager;
-	public final StateQueue stateQueue;
+	public final IStateQueue stateQueue;
 	public final TLCTrace trace;
 
 	private final DistApp work;

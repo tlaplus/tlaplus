@@ -15,7 +15,7 @@ import tlc2.output.MP;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
-import tlc2.tool.queue.StateQueue;
+import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
@@ -37,7 +37,7 @@ import util.UniqueString;
 public class ModelChecker extends AbstractChecker
 {
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
-    public StateQueue theStateQueue; // the state queue
+    public IStateQueue theStateQueue; // the state queue
     public TLCTrace trace; // the trace file
     protected Worker[] workers; // the workers
     // used to calculate the spm metric
