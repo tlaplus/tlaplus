@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.management.NotCompliantMBeanException;
 
@@ -57,7 +61,7 @@ public class DiskFPSet extends FPSet {
 	/**
 	 * mask for computing hash function
 	 */
-	private final int mask;
+	private int mask;
 	/**
 	 * directory name for metadata
 	 */
@@ -164,6 +168,7 @@ public class DiskFPSet extends FPSet {
 	private static final double AuxiliaryStorageRequirement = 2.5;
 	
 	private TLCStandardMBean diskFPSetMXWrapper;
+	private final int capacity;
 
 	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
@@ -198,7 +203,7 @@ public class DiskFPSet extends FPSet {
 		// guard against underflow
 		// LL modified error message on 7 April 2012
 		Assert.check(logMaxMemCnt - LogMaxLoad >= 0, "Underflow when computing DiskFPSet");
-		int capacity = 1 << (logMaxMemCnt - LogMaxLoad);
+		capacity = 1 << (logMaxMemCnt - LogMaxLoad);
 		
 		// instead of changing maxTblCnd to long and pay an extra price when 
 		// comparing int and long every time put(long) is called, we set it to 
@@ -217,7 +222,13 @@ public class DiskFPSet extends FPSet {
 				"negative maxTblCnt");
 
 		this.tblCnt = 0;
-		this.mask = capacity - 1;
+
+		// To pre-sort fingerprints in memory, use the msb fp bits for the
+		// index. however, we cannot use the 31 bit, because it is used to
+		// indicate if a fp has been flushed to disk. Hence we use the first n
+		// bits starting from the second most significant bit.
+		this.mask = getMask(capacity);
+		
 		this.index = null;
 		
 		this.tbl = new long[capacity][];
@@ -370,7 +381,7 @@ public class DiskFPSet extends FPSet {
 
 			// blocks => wait() if disk is being re-written 
 			// (means the current thread returns rwLock monitor)
-			//TODO why not return monitor first and then acquire read lock?
+			// Why not return monitor first and then acquire read lock?
 			// => prevent deadlock by acquiring threads in same order? 
 			this.rwLock.BeginRead();
 			this.diskLookupCnt++;
@@ -396,7 +407,7 @@ public class DiskFPSet extends FPSet {
 			}
 
 			// test if buffer is full
-			//TODO does not take the bucket load factor into account?
+			//TODO Does not take the bucket load factor into account?
 			// Buckets can grow beyond VM heap size if:
 			// A) the FP distribution causes the index tbl to be unevenly populated.
 			// B) the FP distribution reassembles linear fill-up/down which 
@@ -454,20 +465,36 @@ public class DiskFPSet extends FPSet {
 		return diskHit;
 	}
 
+	private int getIndex(long fp) {
+		// calculate hash value (just n most significant bits of fp) which is used as an index address
+		int m = (int) (fp >>> 32) & this.mask;
+		//TODO extract hardcoded 12
+		int index = m >> 12;
+		return index;
+	}
+	
+	private int getMask(int aCapacity) {
+		int aMask = (aCapacity - 1);
+		//TODO extract hardcoded 12
+		aMask = aMask << 12;
+		return aMask;
+	}
+	
 	/**
 	 * @param fp The fingerprint to lookup in memory
 	 * @return true iff "fp" is in the hash table. 
 	 */
 	final boolean memLookup(long fp) {
-		int index = (int) (fp & this.mask);
-		long[] bucket = this.tbl[index];
+		long[] bucket = this.tbl[getIndex(fp)];
 		if (bucket == null)
 			return false;
 
 		int bucketLen = bucket.length;
-		// 0L as an invalid fp
+		// Linearly search the bucket; 0L as an invalid fp
 		for (int i = 0; i < bucketLen && bucket[i] != 0L; i++) {
-			if (fp == (bucket[i] & 0x7FFFFFFFFFFFFFFFL))
+			// zero the long msb (which is 1 if fp has been flushed to disk)
+			long l = bucket[i] & 0x7FFFFFFFFFFFFFFFL;
+			if (fp == l)
 				return true;
 		}
 		return false;
@@ -478,8 +505,7 @@ public class DiskFPSet extends FPSet {
 	 * it and return "false". Precondition: msb(fp) = 0
 	 */
 	final boolean memInsert(long fp) {
-		// calculate hash value (just n least significat bits of fp) which is used as an index address
-		int index = (int) (fp & this.mask);
+		int index = getIndex(fp);
 		
 		// try finding an existing bucket 
 		long[] bucket = this.tbl[index];
@@ -504,7 +530,8 @@ public class DiskFPSet extends FPSet {
 					// found in existing bucket
 					return true;
 				}
-				// fp1 < 0 iff fp1 is on disk
+				// fp1 < 0 iff fp1 is on disk;
+				// In this case, replace fp1 with new fingerprint fp
 				if (i == -1 && fp1 < 0) {
 					i = j;
 				}
@@ -703,22 +730,51 @@ public class DiskFPSet extends FPSet {
 	final void flushTable() throws IOException {
 		if (this.tblCnt == 0)
 			return;
+		
+		System.out.println("Flushing disk");
+		
+		// Why not sort this.tbl in-place rather than doubling memory
+		// requirements by copying to clone array and subsequently sorting it?
+		// - disk written fps are marked disk written by changing msb to 1
+		// - next time such a fp from the in-memory this.tlb is converted on the
+		// fly back and again used to do an in-memory lookup
+		//
+		// - this.tbl bucket assignment (hashing) is done on least significant bits,
+		// which makes in-place sort with overlay index infeasible
+		// - erasing this.tbl means we will loose the in-memory cache completely until it fills up again
+		// - new fps overwrite disk flushed fps in-memory
 
-		// copy table contents into a buffer array buff; erase table
-		long[] buff = new long[this.tblCnt];
-		int idx = 0;
+		//TODO replace numElements with tblCnt assuming they both match after a second disk flush
+		int numElements = 0;
+		
+		// copy table contents into a buffer array buff; do not erase tbl, but 1
+		// msb of each fp to indicate it has been flushed to disk
 		for (int j = 0; j < this.tbl.length; j++) {
 			long[] bucket = this.tbl[j];
 			if (bucket != null) {
 				int blen = bucket.length;
 				// for all bucket positions and non-null values
-				for (int k = 0; k < blen && bucket[k] > 0; k++) {
-					buff[idx++] = bucket[k];
-					// indicate fp has been flushed to disk
-					bucket[k] |= 0x8000000000000000L;
+				int k = 0;
+				for (; k < blen && bucket[k] > 0; k++) {
+					continue;
 				}
+				numElements += k;
+//					 * Postconditions: 
+//						 * - Zero/0 Element(s) remains at the end
+//						 * - Negative elements maintain their position (remain untouched) 
+				Arrays.sort(bucket, 0, k);
+				// TODO move this down into mergeNewEntires(...) where the
+				// fp is actually written and we loop all fps.
+				// Indicate fp has been flushed to disk (by changing the msb to 1)
+				// markDiskWritten(bucket, k);
 			}
 		}
+		
+		// At this point this.tbl should be fully sorted modulo the fps which
+		// had been flush in a previous flush operation and zero/0 (which is invalid anyway).
+		
+		Assert.check(tblCnt == numElements, EC.GENERAL);
+		
 		this.tblCnt = 0;
 		this.bucketsCapacity = 0;
 		this.tblLoad = 0;
@@ -730,12 +786,9 @@ public class DiskFPSet extends FPSet {
 //		this.diskSeekCnt = 0;
 //		this.diskLookupCnt = 0;
 		
-		// sort in-memory entries
-		Sort.LongArray(buff, buff.length);
-
 		// merge array with disk file
 		try {
-			this.mergeNewEntries(buff);
+			this.mergeNewEntries(numElements, this.tbl);
 		} catch (IOException e) {
 			String msg = "Error: merging entries into file "
 					+ this.fpFilename + "  " + e;
@@ -743,13 +796,22 @@ public class DiskFPSet extends FPSet {
 		}
 	}
 
+	private void markDiskWritten(long[] l, int i) {
+		l[i] |= 0x8000000000000000L;
+	}
+	
+//	private long reverseDiskWritten(long[] l, int i) {
+//		return l[i] & 0x7FFFFFFFFFFFFFFFL;
+//	}
+//
 	/**
 	 * Merge the values in "buff" into this FPSet's backing disk file. The
 	 * values in "buff" are required to be in sorted order, and the write lock
 	 * associated with "this.rwLock" must be held, as must the mutex
 	 * "this.rwLock" itself.
 	 */
-	private final void mergeNewEntries(long[] buff) throws IOException {
+	private final void mergeNewEntries(int numElements
+			, long[][] buff) throws IOException {
 		// Implementation Note: Unfortunately, because the RandomAccessFile
 		// class (and hence, the BufferedRandomAccessFile class) does not
 		// provide a way to re-use an existing RandomAccessFile object on
@@ -772,7 +834,7 @@ public class DiskFPSet extends FPSet {
 		raf.seek(0);
 
 		// merge
-		this.mergeNewEntries(buff, buff.length, raf, tmpRAF);
+		this.mergeNewEntries(buff, numElements, raf, tmpRAF);
 
 		// clean up
 		raf.close();
@@ -795,7 +857,7 @@ public class DiskFPSet extends FPSet {
 		this.poolIndex = 0;
 	}
 
-	private final void mergeNewEntries(long[] buff, int buffLen)
+	private final void mergeNewEntries(long[][] buff, int buffLen)
 			throws IOException {
 		// create temporary file
 		File tmpFile = new File(tmpFilename);
@@ -830,10 +892,13 @@ public class DiskFPSet extends FPSet {
 		this.counter--;
 	}
 
-	private final void mergeNewEntries(long[] buff, int buffLen,
+	private final void mergeNewEntries(long[][] buff, int buffLen,
 			RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
+
+		final TLCIterator itr = new TLCIterator(buff);
+		
 		// Precompute the maximum value of the new file
-		long maxVal = buff[buffLen - 1];
+		long maxVal = itr.getLast();
 		if (this.index != null) {
 			maxVal = Math.max(maxVal, this.index[this.index.length - 1]);
 		}
@@ -845,7 +910,6 @@ public class DiskFPSet extends FPSet {
 		this.counter = 0;
 
 		// initialize positions in "buff" and "inRAF"
-		int i = 0;
 		long value = 0L; // initialize only to make compiler happy
 		boolean eof = false;
 		if (this.fileCnt > 0) {
@@ -859,8 +923,9 @@ public class DiskFPSet extends FPSet {
 		}
 
 		// merge while both lists still have elements remaining
-		while (!eof && i < buffLen) {
-			if (value < buff[i]) {
+		while (!eof && itr.hasNext()) {
+			long fp = itr.next();
+			if (value < fp) {
 				this.writeFP(outRAF, value);
 				try {
 					value = inRAF.readLong();
@@ -869,18 +934,18 @@ public class DiskFPSet extends FPSet {
 				}
 			} else {
 				// prevent converting every long to String when assertion holds (this is expensive)
-				if(value == buff[i]) {
+				if(value == fp) {
 					Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
 							String.valueOf(value));
 				}
-				this.writeFP(outRAF, buff[i++]);
+				this.writeFP(outRAF, itr.next());
 			}
 		}
 
 		// write elements of remaining list
 		if (eof) {
-			while (i < buffLen) {
-				this.writeFP(outRAF, buff[i++]);
+			while (itr.hasNext()) {
+				this.writeFP(outRAF, itr.next());
 			}
 		} else {
 			do {
@@ -892,6 +957,8 @@ public class DiskFPSet extends FPSet {
 				}
 			} while (!eof);
 		}
+		Assert.check(itr.reads() == buffLen, EC.GENERAL);
+		
 		Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
 
 		// maintain object invariants
@@ -1049,7 +1116,7 @@ public class DiskFPSet extends FPSet {
 		// the fingerprints from the TLCTrace file. Not from its own .fp file. 
 	}
 
-	private long[] recoveryBuff = null;
+	private Long[] recoveryBuff = null;
 	private int recoveryIdx = -1;
 
 	/* (non-Javadoc)
@@ -1064,7 +1131,7 @@ public class DiskFPSet extends FPSet {
 			this.brafPool[i].close();
 		}
 
-		recoveryBuff = new long[1 << 21];
+		recoveryBuff = new Long[1 << 21];
 		recoveryIdx = 0;
 	}
 
