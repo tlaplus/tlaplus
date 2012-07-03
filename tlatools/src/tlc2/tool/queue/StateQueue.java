@@ -14,7 +14,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Worker;
 import util.Assert;
 
-public abstract class StateQueue {
+public abstract class StateQueue implements IStateQueue {
 	/**
 	 * In model checking, this is the sequence of states waiting to be explored
 	 * further. When the queue is empty, the checking is completed.
@@ -34,14 +34,16 @@ public abstract class StateQueue {
 	private Object mu = new Object();
 
 	/* Enqueues the state. It is not thread-safe. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#enqueue(tlc2.tool.TLCState)
+	 */
 	public final void enqueue(final TLCState state) {
 		this.enqueueInner(state);
 		this.len++;
 	}
 
-	/**
-	 * Returns the first element in the queue. It returns null if the queue is
-	 * empty. It is not thread-safe.
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#dequeue()
 	 */
 	public final TLCState dequeue() {
 		if (isEmpty()) {
@@ -53,6 +55,9 @@ public abstract class StateQueue {
 	}
 
 	/* Enqueues a state. Wake up any waiting thread. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#sEnqueue(tlc2.tool.TLCState)
+	 */
 	public final synchronized void sEnqueue(final TLCState state) {
 		this.enqueueInner(state);
 		this.len++;
@@ -62,6 +67,9 @@ public abstract class StateQueue {
 	}
 
 	/* Enqueues a list of states. Wake up any waiting thread. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#sEnqueue(tlc2.tool.TLCState[])
+	 */
 	public final synchronized void sEnqueue(final TLCState states[]) {
 		for (int i = 0; i < states.length; i++) {
 			this.enqueueInner(states[i]);
@@ -73,6 +81,9 @@ public abstract class StateQueue {
 	}
 
 	/* Return the first element in the queue. Wait if empty. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#sDequeue()
+	 */
 	public final synchronized TLCState sDequeue() {
 		if (this.isAvail()) {
 			final TLCState state = this.dequeueInner();
@@ -84,15 +95,8 @@ public abstract class StateQueue {
 		return null;
 	}
 
-	/**
-	 * Return (up to) the first count elements in the queue. Wait if empty.
-	 * 
-	 * @param cnt
-	 *            Amount of states requested
-	 * @return null iff no states are available && all work is done @see
-	 *         {@link #isAvail()}, states otherwise
-	 * @throws RuntimeException
-	 *             if cnt <= 0
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#sDequeue(int)
 	 */
 	public final synchronized TLCState[] sDequeue(int cnt) {
 		Assert.check(cnt > 0, "Nonpositive number of states requested.");
@@ -165,19 +169,16 @@ public abstract class StateQueue {
 		return true;
 	}
 
-	/**
-	 * Signals all waiting {@link Worker} that all work is done. We can exit now.
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#finishAll()
 	 */
 	public synchronized void finishAll() {
 		this.finish = true;
 		this.notifyAll();
 	}
 
-	/**
-	 * Suspends all access to the {@link StateQueue} for {@link Worker},
-	 * potentially waiting for current accessing {@link Worker} to finish first.
-	 * 
-	 * @return False iff {@link #finish} is true, true otherwise
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#suspendAll()
 	 */
 	public final boolean suspendAll() {
 		boolean needWait = false;
@@ -224,22 +225,16 @@ public abstract class StateQueue {
 		return this.numWaiting < TLCGlobals.getNumWorkers();
 	}
 
-	/**
-	 * Resumes waiting {@link Worker} after a checkpoint
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#resumeAll()
 	 */
 	public final synchronized void resumeAll() {
 		this.stop = false;
 		this.notifyAll();
 	}
 
-	/**
-	 * This is a no-op in regular. The only case is, when a worker is stuck in
-	 * {@link #isAvail()}, {@link #isEmpty}, {@link #stop} is false and
-	 * {@link #numWaiting} > 0. Bottom-line, it is assumed to be side-effect
-	 * free when workers behave correctly except for the single case when a
-	 * remote worker dies unexpectedly.
-	 * 
-	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=175
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#resumeAllStuck()
 	 */
 	public void resumeAllStuck() {
 		// needsWaiting() read might have been incorrect if a TLCWorkerRMI dies
@@ -257,6 +252,9 @@ public abstract class StateQueue {
 	}
 
 	/* This method returns the size of the state queue. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#size()
+	 */
 	public final long size() {
 		return this.len;
 	}
@@ -275,9 +273,18 @@ public abstract class StateQueue {
 	abstract TLCState dequeueInner();
 
 	/* Checkpoint. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#beginChkpt()
+	 */
 	public abstract void beginChkpt() throws IOException;
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#commitChkpt()
+	 */
 	public abstract void commitChkpt() throws IOException;
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#recover()
+	 */
 	public abstract void recover() throws IOException;
 }

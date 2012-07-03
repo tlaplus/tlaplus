@@ -25,6 +25,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateVec;
 import tlc2.tool.WorkerException;
 import tlc2.tool.distributed.selector.IBlockSelector;
+import tlc2.tool.queue.IStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.BitVector;
 import tlc2.util.IdThread;
@@ -108,7 +109,7 @@ public class TLCServerThread extends IdThread {
 		TLCStateVec[] newStates = null;
 		LongVec[] newFps = null;
 
-		final StateQueue stateQueue = this.tlcServer.stateQueue;
+		final IStateQueue stateQueue = this.tlcServer.stateQueue;
 		try {
 			START: while (true) {
 				// blocks until more states available or all work is done
@@ -250,7 +251,7 @@ public class TLCServerThread extends IdThread {
 	 * 
 	 * @param stateQueue
 	 */
-	private void handleRemoteWorkerLost(final StateQueue stateQueue) {
+	private void handleRemoteWorkerLost(final IStateQueue stateQueue) {
 		keepAliveTimer.cancel();
 		tlcServer.removeTLCServerThread(this);
 		stateQueue.sEnqueue(states != null ? states : new TLCState[0]);
