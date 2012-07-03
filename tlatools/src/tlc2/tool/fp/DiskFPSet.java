@@ -731,7 +731,7 @@ public class DiskFPSet extends FPSet {
 		if (this.tblCnt == 0)
 			return;
 		
-		System.out.println("Flushing disk");
+		System.out.println("Flushing disk for the n-time: " + getGrowDiskMark());
 		
 		// Why not sort this.tbl in-place rather than doubling memory
 		// requirements by copying to clone array and subsequently sorting it?
@@ -938,7 +938,7 @@ public class DiskFPSet extends FPSet {
 					Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
 							String.valueOf(value));
 				}
-				this.writeFP(outRAF, itr.next());
+				this.writeFP(outRAF, fp);
 			}
 		}
 
@@ -959,6 +959,7 @@ public class DiskFPSet extends FPSet {
 		}
 		Assert.check(itr.reads() == buffLen, EC.GENERAL);
 		
+		// currIndex is amount of disk writes
 		Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
 
 		// maintain object invariants
