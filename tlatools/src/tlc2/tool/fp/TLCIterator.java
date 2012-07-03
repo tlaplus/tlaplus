@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 import tlc2.output.EC;
 import util.Assert;
 
-
+//TODO skip null buckets
 public class TLCIterator {
 
 	private final long[][] buff;
@@ -17,6 +17,9 @@ public class TLCIterator {
 	 */
 	private long readElements = 0l;
 
+	/**
+	 * @param buff an [][] with null elements on the second level.
+	 */
 	public TLCIterator(long[][] buff) {
 		this.buff = buff;
 	}
@@ -37,7 +40,7 @@ public class TLCIterator {
 				return true;
 			} else if (firstIdx + 1 <= buff.length -1) {
 				bucket = buff[firstIdx + 1];
-				return bucket[0] > 0;
+				return bucket != null && bucket[0] > 0;
 			}
 		}
 		return false;
@@ -77,7 +80,16 @@ public class TLCIterator {
 	}
 
 	public long getLast() {
-		long[] bucket = buff[buff.length - 1];
+		int len = buff.length - 1;
+		long[] bucket = buff[len];
+
+		// find last bucket containing elements, buff elements might be null if
+		// no fingerprint for such an index has been added to the DiskFPSet
+		while (bucket == null) {
+			bucket = buff[--len];
+		}
+		
+		// find last element > 0 in bucket
 		for (int i = bucket.length - 1; i >= 0 ;i--) {
 			if (bucket[i] > 0) {
 				return bucket[i];
