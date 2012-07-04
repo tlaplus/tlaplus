@@ -331,13 +331,32 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testDiskLookupWithZeros() throws IOException {
+		final long fp = 0L;
+
 		final DiskFPSet fpSet = (DiskFPSet) getFPSet(getFreeMemoryInBytes());
-		assertFalse(fpSet.memInsert(0l));
-		assertFalse(fpSet.diskLookup(0l));
+
+		// Add fp to empty fpset
+		//assertFalse(fpSet.memInsert(fp));
+		assertFalse(fpSet.put(fp));
+	
+		// Optionally verify that neither ram nor disk
+		// contain 0L yet (before flush)
+		assertFalse(fpSet.memLookup(fp));
+		assertFalse(fpSet.diskLookup(fp)); 
+		assertFalse(fpSet.contains(fp));
+
+		// explicitly flush to disk which makes 0l "magically" appear in the set
 		fpSet.flushTable();
-		assertTrue(fpSet.diskLookup(0l));
+
+		// mem still doesn't "see" the fp
+		assertFalse(fpSet.memLookup(fp));
+		
+		// it's just on disk
+		assertTrue(fpSet.diskLookup(fp));
+		assertTrue(fpSet.contains(fp));
+		
 		// undefined behavior
-		// assertTrue(fpSet.memLookup(0l));
+		// assertTrue(fpSet.memLookup(fp));
 	}
 	
 	/**
