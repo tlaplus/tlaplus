@@ -168,7 +168,7 @@ public class DiskFPSet extends FPSet {
 	private static final double AuxiliaryStorageRequirement = 2.5;
 	
 	private TLCStandardMBean diskFPSetMXWrapper;
-	private final int capacity;
+	private final int moveBy;
 
 	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
@@ -203,11 +203,11 @@ public class DiskFPSet extends FPSet {
 		// guard against underflow
 		// LL modified error message on 7 April 2012
 		Assert.check(logMaxMemCnt - LogMaxLoad >= 0, "Underflow when computing DiskFPSet");
-		capacity = 1 << (logMaxMemCnt - LogMaxLoad);
-		
-		// instead of changing maxTblCnd to long and pay an extra price when 
-		// comparing int and long every time put(long) is called, we set it to 
-		// Integer.MAX_VALUE instead. capacity can never grow bigger 
+		int capacity = 1 << (logMaxMemCnt - LogMaxLoad);
+
+		// instead of changing maxTblCnd to long and pay an extra price when
+		// comparing int and long every time put(long) is called, we set it to
+		// Integer.MAX_VALUE instead. capacity can never grow bigger
 		// (unless java starts supporting 64bit array sizes)
 		//
 		// maxTblCnt mathematically has to be an upper limit for the in-memory storage 
@@ -223,12 +223,14 @@ public class DiskFPSet extends FPSet {
 
 		this.tblCnt = 0;
 
-		// To pre-sort fingerprints in memory, use the msb fp bits for the
+		// To pre-sort fingerprints in memory, use n MSB fp bits for the
 		// index. however, we cannot use the 31 bit, because it is used to
 		// indicate if a fp has been flushed to disk. Hence we use the first n
 		// bits starting from the second most significant bit.
-		this.mask = getMask(capacity);
-		
+		//TODO take the amount of DiskFPSet instance into account to move the index bits further to the right
+		this.moveBy = 31 - (logMaxMemCnt - LogMaxLoad);
+		this.mask = (capacity - 1) << moveBy;
+
 		this.index = null;
 		
 		this.tbl = new long[capacity][];
@@ -466,20 +468,13 @@ public class DiskFPSet extends FPSet {
 	}
 
 	private int getIndex(long fp) {
-		// calculate hash value (just n most significant bits of fp) which is used as an index address
+		// calculate hash value (just n most significant bits of fp) which is
+		// used as an index address
 		int m = (int) (fp >>> 32) & this.mask;
-		//TODO extract hardcoded 12
-		int index = m >> 12;
+		int index = m >> moveBy;
 		return index;
 	}
-	
-	private int getMask(int aCapacity) {
-		int aMask = (aCapacity - 1);
-		//TODO extract hardcoded 12
-		aMask = aMask << 12;
-		return aMask;
-	}
-	
+
 	/**
 	 * @param fp The fingerprint to lookup in memory
 	 * @return true iff "fp" is in the hash table. 
@@ -490,7 +485,8 @@ public class DiskFPSet extends FPSet {
 			return false;
 
 		int bucketLen = bucket.length;
-		// Linearly search the bucket; 0L as an invalid fp
+		// Linearly search the bucket; 0L is an invalid fp and marks the end of
+		// the allocated bucket
 		for (int i = 0; i < bucketLen && bucket[i] != 0L; i++) {
 			// zero the long msb (which is 1 if fp has been flushed to disk)
 			long l = bucket[i] & 0x7FFFFFFFFFFFFFFFL;
@@ -515,7 +511,7 @@ public class DiskFPSet extends FPSet {
 			bucket = new long[InitialBucketCapacity];
 			bucket[0] = fp;
 			this.tbl[index] = bucket;
-			this.bucketsCapacity += InitialBucketCapacity; 
+			this.bucketsCapacity += InitialBucketCapacity;
 			this.tblLoad++;
 		} else {
 			// search for entry in existing bucket
@@ -595,7 +591,7 @@ public class DiskFPSet extends FPSet {
 			double dlo = (double) loPage;
 			double dhiVal = (double) hiVal;
 			double dloVal = (double) loVal;
-			
+
 			int midPage = (loPage + 1)
 					+ (int) ((dhi - dlo - 1.0) * (dfp - dloVal) / (dhiVal - dloVal));
 			if (midPage == hiPage)
@@ -620,9 +616,9 @@ public class DiskFPSet extends FPSet {
 
 		boolean diskHit = false;
 		long midEntry = -1L;
-		// lower bound for the interval search in 
+		// lower bound for the interval search in
 		long loEntry = ((long) loPage) * NumEntriesPerPage;
-		// upper bound for the interval search in 
+		// upper bound for the interval search in
 		long hiEntry = ((loPage == indexLength - 2) ? this.fileCnt - 1
 				: ((long) hiPage) * NumEntriesPerPage);
 		try {
@@ -641,7 +637,7 @@ public class DiskFPSet extends FPSet {
 					}
 				}
 			}
-			
+
 			// b1) do interpolated binary search on disk page determined by a)
 
 			while (loEntry < hiEntry) {
@@ -682,8 +678,8 @@ public class DiskFPSet extends FPSet {
 				}
 			}
 		} catch (IOException e) {
-			if(midEntry * LongSize < 0) {
-			 // LL modified error message on 7 April 2012
+			if (midEntry * LongSize < 0) {
+				// LL modified error message on 7 April 2012
 				MP.printError(EC.GENERAL, new String[]{"looking up a fingerprint, and" + 
 			            "\nmidEntry turned negative (loEntry, midEntry, hiEntry, loVal, hiVal): ",
 						Long.toString(loEntry) +" ", Long.toString(midEntry) +" ", Long.toString(hiEntry) +" ", Long.toString(loVal) +" ", Long.toString(hiVal)}, e);
@@ -711,10 +707,10 @@ public class DiskFPSet extends FPSet {
 		final double dlo = (double) loEntry;
 		final double dhiVal = (double) hiVal;
 		final double dloVal = (double) loVal;
-		
+
 		long midEntry = loEntry
 				+ (long) ((dhi - dlo) * (dfp - dloVal) / (dhiVal - dloVal));
-		
+
 		if (midEntry == hiEntry) {
 			midEntry--;
 		}
@@ -730,9 +726,9 @@ public class DiskFPSet extends FPSet {
 	final void flushTable() throws IOException {
 		if (this.tblCnt == 0)
 			return;
-		
+
 		System.out.println("Flushing disk for the n-time: " + getGrowDiskMark());
-		
+
 		// Why not sort this.tbl in-place rather than doubling memory
 		// requirements by copying to clone array and subsequently sorting it?
 		// - disk written fps are marked disk written by changing msb to 1
@@ -746,7 +742,7 @@ public class DiskFPSet extends FPSet {
 
 		//TODO replace numElements with tblCnt assuming they both match after a second disk flush
 		int numElements = 0;
-		
+
 		// copy table contents into a buffer array buff; do not erase tbl, but 1
 		// msb of each fp to indicate it has been flushed to disk
 		for (int j = 0; j < this.tbl.length; j++) {
@@ -759,8 +755,8 @@ public class DiskFPSet extends FPSet {
 					continue;
 				}
 				numElements += k;
-//					 * Postconditions: 
-//						 * - Zero/0 Element(s) remains at the end
+				// * Postconditions:
+				// * - Zero/0 Element(s) remains at the end
 //						 * - Negative elements maintain their position (remain untouched) 
 				Arrays.sort(bucket, 0, k);
 				// TODO move this down into mergeNewEntires(...) where the
@@ -769,23 +765,23 @@ public class DiskFPSet extends FPSet {
 				// markDiskWritten(bucket, k);
 			}
 		}
-		
+
 		// At this point this.tbl should be fully sorted modulo the fps which
 		// had been flush in a previous flush operation and zero/0 (which is invalid anyway).
-		
+
 		Assert.check(tblCnt == numElements, EC.GENERAL);
-		
+
 		this.tblCnt = 0;
 		this.bucketsCapacity = 0;
 		this.tblLoad = 0;
-//		// reset statistic counters
-//		this.memHitCnt = 0;
-//
-//		this.diskHitCnt = 0;
-//		this.diskWriteCnt = 0;
-//		this.diskSeekCnt = 0;
-//		this.diskLookupCnt = 0;
-		
+		// // reset statistic counters
+		// this.memHitCnt = 0;
+		//
+		// this.diskHitCnt = 0;
+		// this.diskWriteCnt = 0;
+		// this.diskSeekCnt = 0;
+		// this.diskLookupCnt = 0;
+
 		// merge array with disk file
 		try {
 			this.mergeNewEntries(numElements, this.tbl);
@@ -799,11 +795,11 @@ public class DiskFPSet extends FPSet {
 	private void markDiskWritten(long[] l, int i) {
 		l[i] |= 0x8000000000000000L;
 	}
-	
-//	private long reverseDiskWritten(long[] l, int i) {
-//		return l[i] & 0x7FFFFFFFFFFFFFFFL;
-//	}
-//
+
+	// private long reverseDiskWritten(long[] l, int i) {
+	// return l[i] & 0x7FFFFFFFFFFFFFFFL;
+	// }
+	//
 	/**
 	 * Merge the values in "buff" into this FPSet's backing disk file. The
 	 * values in "buff" are required to be in sorted order, and the write lock
@@ -896,7 +892,7 @@ public class DiskFPSet extends FPSet {
 			RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
 
 		final TLCIterator itr = new TLCIterator(buff);
-		
+
 		// Precompute the maximum value of the new file
 		long maxVal = itr.getLast();
 		if (this.index != null) {
@@ -923,8 +919,8 @@ public class DiskFPSet extends FPSet {
 		}
 
 		// merge while both lists still have elements remaining
+		long fp = itr.next();
 		while (!eof && itr.hasNext()) {
-			long fp = itr.next();
 			if (value < fp) {
 				this.writeFP(outRAF, value);
 				try {
@@ -934,11 +930,12 @@ public class DiskFPSet extends FPSet {
 				}
 			} else {
 				// prevent converting every long to String when assertion holds (this is expensive)
-				if(value == fp) {
+				if (value == fp) {
 					Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
 							String.valueOf(value));
 				}
 				this.writeFP(outRAF, fp);
+				fp = itr.next();
 			}
 		}
 
@@ -958,7 +955,7 @@ public class DiskFPSet extends FPSet {
 			} while (!eof);
 		}
 		Assert.check(itr.reads() == buffLen, EC.GENERAL);
-		
+
 		// currIndex is amount of disk writes
 		Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
 
@@ -972,7 +969,7 @@ public class DiskFPSet extends FPSet {
 	public final void close() {
 		// close JMX stats
 		diskFPSetMXWrapper.unregister();
-		
+
 		for (int i = 0; i < this.braf.length; i++) {
 			try {
 				this.braf[i].close();
@@ -1111,10 +1108,10 @@ public class DiskFPSet extends FPSet {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#commitChkpt()
 	 */
-	public final void commitChkpt() throws IOException { 
+	public final void commitChkpt() throws IOException {
 		/* SKIP */
-		// DiskFPSet checkpointing is a no-op, because DiskFPSet recreates 
-		// the fingerprints from the TLCTrace file. Not from its own .fp file. 
+		// DiskFPSet checkpointing is a no-op, because DiskFPSet recreates
+		// the fingerprints from the TLCTrace file. Not from its own .fp file.
 	}
 
 	private Long[] recoveryBuff = null;
@@ -1201,7 +1198,7 @@ public class DiskFPSet extends FPSet {
 	public long getBucketCapacity() {
 		return bucketsCapacity;
 	}
-	
+
 	/**
 	 * @return The allocated (used and unused) array length of the first level in-memory storage.
 	 */
@@ -1213,7 +1210,7 @@ public class DiskFPSet extends FPSet {
 	 * @return the index.length
 	 */
 	public int getIndexCapacity() {
-		if(index == null) {
+		if (index == null) {
 			return 0;
 		}
 		return index.length;
@@ -1225,29 +1222,29 @@ public class DiskFPSet extends FPSet {
 	public long getOverallCapacity() {
 		return getBucketCapacity() + getTblCapacity() + getIndexCapacity();
 	}
-	
+
 	/**
-	 * @return	Number of used slots in tbl by a bucket
-	 * {@link DiskFPSet#getTblLoad()} <= {@link DiskFPSet#getTblCnt()}
+	 * @return Number of used slots in tbl by a bucket
+	 *         {@link DiskFPSet#getTblLoad()} <= {@link DiskFPSet#getTblCnt()}
 	 */
 	public int getTblLoad() {
 		return tblLoad;
 	}
-	
+
 	/**
 	 * @return the amount of fingerprints stored in memory. This is less or equal to {@link DiskFPSet#getTblCnt()} depending on if there collision buckets exist. 
 	 */
 	public int getTblCnt() {
 		return tblCnt;
 	}
-	
+
 	/**
 	 * @return the amount of fingerprints stored on disk
 	 */
 	public long getFileCnt() {
 		return fileCnt;
 	}
-	
+
 	/**
 	 * @return the diskLookupCnt
 	 */
@@ -1282,21 +1279,20 @@ public class DiskFPSet extends FPSet {
 	public long getDiskSeekCnt() {
 		return diskSeekCnt;
 	}
-	
+
 	/**
 	 * @return the growDiskMark
 	 */
 	public int getGrowDiskMark() {
 		return growDiskMark;
 	}
-	
+
 	/**
 	 * @return the checkPointMark
 	 */
 	public int getCheckPointMark() {
 		return checkPointMark;
 	}
-	
 
 	// /**
 	// *

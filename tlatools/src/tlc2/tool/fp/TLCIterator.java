@@ -32,7 +32,7 @@ public class TLCIterator {
      * @return <tt>true</tt> if the iterator has more elements.
      */
 	public boolean hasNext() {
-		// has next does not move the indices at all!
+		// hasNext does not move the indices at all!
 		
 		if (firstIdx <= buff.length - 1) {
 			long[] bucket = buff[firstIdx];
