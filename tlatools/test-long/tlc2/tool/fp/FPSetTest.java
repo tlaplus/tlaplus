@@ -10,7 +10,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	 * @throws IOException
 	 */
 	public void testMaxFPSetSizeRnd() throws IOException {
-		Random rnd = new Random(System.currentTimeMillis());
+		Random rnd = new Random(15041980L);
 		
 		// amount to ~514 (mb) with 4gb system mem
 		long freeMemory = getFreeMemoryInBytes();
