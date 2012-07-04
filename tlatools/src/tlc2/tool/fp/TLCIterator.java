@@ -34,13 +34,25 @@ public class TLCIterator {
 	public boolean hasNext() {
 		// hasNext does not move the indices at all!
 		
+		// firstIdx within buff[].length
 		if (firstIdx <= buff.length - 1) {
 			long[] bucket = buff[firstIdx];
+			// secondIdx within bucket[].length and with valid elements in current bucket 
 			if (secondIdx <= bucket.length - 1 && bucket[secondIdx] > 0) {
 				return true;
-			} else if (firstIdx + 1 <= buff.length -1) {
+			// at the end of current bucket, skipping to next one 
+			} else if (firstIdx + 1 <= buff.length -1 && buff[firstIdx + 1] != null) {
 				bucket = buff[firstIdx + 1];
-				return bucket != null && bucket[0] > 0;
+				return bucket != null && bucket.length > 0 && bucket[0] > 0;
+			// we might have reached a null range in buff[] -> skip it until
+			// we reach a non-null bucket or we get to the end of buff[]
+			} else {
+				for (int i = firstIdx + 1; i < buff.length; i++) {
+					if (buff[i] != null) {
+						bucket = buff[i];
+						return bucket.length > 0 && bucket[0] > 0;
+					}
+				}
 			}
 		}
 		return false;
@@ -62,12 +74,23 @@ public class TLCIterator {
 				result = bucket[secondIdx];
 				bucket[secondIdx] |= 0x8000000000000000L;
 				secondIdx++;
-			} else {
+			} else if (buff[firstIdx + 1] != null) {
 				firstIdx++;
 				secondIdx = 0;
 				result = buff[firstIdx][secondIdx];
 				buff[firstIdx][secondIdx] |= 0x8000000000000000L;
 				secondIdx++;
+			} else {
+				for (int i = firstIdx + 1; i < buff.length && result == -1L; i++) {
+					if (buff[i] != null) {
+						firstIdx = i;
+						secondIdx = 0;
+						result = buff[firstIdx][secondIdx];
+						buff[firstIdx][secondIdx] |= 0x8000000000000000L;
+						secondIdx++;
+						break;
+					}
+				}
 			}
 		}
 		
