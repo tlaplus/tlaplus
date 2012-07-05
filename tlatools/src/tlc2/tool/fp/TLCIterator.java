@@ -35,13 +35,13 @@ public class TLCIterator {
 		// hasNext does not move the indices at all!
 		
 		// firstIdx within buff[].length
-		if (firstIdx <= buff.length - 1) {
+		if (firstIdx < buff.length) {
 			long[] bucket = buff[firstIdx];
 			// secondIdx within bucket[].length and with valid elements in current bucket 
-			if (secondIdx <= bucket.length - 1 && bucket[secondIdx] > 0) {
+			if (secondIdx < bucket.length && bucket[secondIdx] > 0) {
 				return true;
 			// at the end of current bucket, skipping to next one 
-			} else if (firstIdx + 1 <= buff.length -1 && buff[firstIdx + 1] != null) {
+			} else if (firstIdx + 1 < buff.length && buff[firstIdx + 1] != null) {
 				bucket = buff[firstIdx + 1];
 				return bucket != null && bucket.length > 0 && bucket[0] > 0;
 			// we might have reached a null range in buff[] -> skip it until
@@ -74,7 +74,7 @@ public class TLCIterator {
 				result = bucket[secondIdx];
 				bucket[secondIdx] |= 0x8000000000000000L;
 				secondIdx++;
-			} else if (buff[firstIdx + 1] != null) {
+			} else if (firstIdx + 1 < buff.length && buff[firstIdx + 1] != null) {
 				firstIdx++;
 				secondIdx = 0;
 				result = buff[firstIdx][secondIdx];
@@ -94,7 +94,11 @@ public class TLCIterator {
 			}
 		}
 		
-		Assert.check(previous  < result, EC.GENERAL);
+		if (result == -1L) {
+			throw new NoSuchElementException();
+		}
+		
+		Assert.check(previous < result, EC.GENERAL);
 		previous = result;
 		
 		readElements++;
