@@ -740,9 +740,6 @@ public class DiskFPSet extends FPSet {
 		// - erasing this.tbl means we will loose the in-memory cache completely until it fills up again
 		// - new fps overwrite disk flushed fps in-memory
 
-		//TODO replace numElements with tblCnt assuming they both match after a second disk flush
-		int numElements = 0;
-
 		// copy table contents into a buffer array buff; do not erase tbl, but 1
 		// msb of each fp to indicate it has been flushed to disk
 		for (int j = 0; j < this.tbl.length; j++) {
@@ -754,22 +751,25 @@ public class DiskFPSet extends FPSet {
 				for (; k < blen && bucket[k] > 0; k++) {
 					continue;
 				}
-				numElements += k;
 				// * Postconditions:
 				// * - Zero/0 Element(s) remains at the end
-//						 * - Negative elements maintain their position (remain untouched) 
+				// * - Negative elements maintain their position (remain untouched) 
 				Arrays.sort(bucket, 0, k);
-				// TODO move this down into mergeNewEntires(...) where the
-				// fp is actually written and we loop all fps.
-				// Indicate fp has been flushed to disk (by changing the msb to 1)
-				// markDiskWritten(bucket, k);
 			}
 		}
 
 		// At this point this.tbl should be fully sorted modulo the fps which
 		// had been flush in a previous flush operation and zero/0 (which is invalid anyway).
 
-		Assert.check(tblCnt == numElements, EC.GENERAL);
+
+		// merge array with disk file
+		try {
+			this.mergeNewEntries(this.tblCnt, this.tbl);
+		} catch (IOException e) {
+			String msg = "Error: merging entries into file "
+					+ this.fpFilename + "  " + e;
+			throw new IOException(msg);
+		}
 
 		this.tblCnt = 0;
 		this.bucketsCapacity = 0;
@@ -781,25 +781,8 @@ public class DiskFPSet extends FPSet {
 		// this.diskWriteCnt = 0;
 		// this.diskSeekCnt = 0;
 		// this.diskLookupCnt = 0;
-
-		// merge array with disk file
-		try {
-			this.mergeNewEntries(numElements, this.tbl);
-		} catch (IOException e) {
-			String msg = "Error: merging entries into file "
-					+ this.fpFilename + "  " + e;
-			throw new IOException(msg);
-		}
 	}
 
-	private void markDiskWritten(long[] l, int i) {
-		l[i] |= 0x8000000000000000L;
-	}
-
-	// private long reverseDiskWritten(long[] l, int i) {
-	// return l[i] & 0x7FFFFFFFFFFFFFFFL;
-	// }
-	//
 	/**
 	 * Merge the values in "buff" into this FPSet's backing disk file. The
 	 * values in "buff" are required to be in sorted order, and the write lock
@@ -920,8 +903,8 @@ public class DiskFPSet extends FPSet {
 
 		// merge while both lists still have elements remaining
 		long fp = itr.next();
-		while (!eof && itr.hasNext()) {
-			if (value < fp) {
+		while (!eof) {
+			if (value < fp || !itr.hasNext()) { // check for itr.hasNext() here to write last value when itr is used up.
 				this.writeFP(outRAF, value);
 				try {
 					value = inRAF.readLong();
@@ -935,14 +918,19 @@ public class DiskFPSet extends FPSet {
 							String.valueOf(value));
 				}
 				this.writeFP(outRAF, fp);
+				// we used on fp up, thus move to next one
 				fp = itr.next();
 			}
 		}
 
 		// write elements of remaining list
 		if (eof) {
-			while (itr.hasNext()) {
-				this.writeFP(outRAF, itr.next());
+			while (fp > 0L) {
+				this.writeFP(outRAF, fp);
+				if (!itr.hasNext()) {
+					break;
+				}
+				fp = itr.next();
 			}
 		} else {
 			do {

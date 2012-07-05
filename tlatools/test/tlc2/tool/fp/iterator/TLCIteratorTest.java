@@ -1,12 +1,14 @@
 // Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
 
-package tlc2.tool.fp;
+package tlc2.tool.fp.iterator;
 
 import java.util.NoSuchElementException;
 
+import tlc2.tool.fp.TLCIterator;
+
 import junit.framework.TestCase;
 
-public class TLCIteratorTest extends TestCase {
+public abstract class TLCIteratorTest extends TestCase {
 
 	private TLCIterator itr;
 
@@ -15,21 +17,20 @@ public class TLCIteratorTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-
-		final long[][] buff = new long[8][];
-		buff[0] = getArray(8, 1, 8);
-		buff[1] = getArray(8, 9, 6);
-		buff[2] = null;
-		buff[3] = null;
-		buff[4] = getArray(8, 15, 3);
-		buff[5] = null;
-		buff[6] = getArray(8, 18, 4);
-		buff[7] = null;
-		
-		itr = new TLCIterator(buff);
+		itr = new TLCIterator(getBuffer());
 	}
 	
-	private long[] getArray(int length, long offset, int numOfElements) {
+	protected abstract long[][] getBuffer();
+	
+	protected long getLast() {
+		return 21L;
+	}
+	
+	protected int getLength() {
+		return 21;
+	}
+	
+	protected long[] getArray(int length, long offset, int numOfElements) {
 		long[] l = new long[length];
 		for (int i = 0; i < length && i < numOfElements; i++) {
 			l[i] = i + offset;
@@ -44,7 +45,7 @@ public class TLCIteratorTest extends TestCase {
 		long predecessor = -1l;
 		
 		int i = 0;
-		while (i < 21) {
+		while (i < getLength()) {
 			i++;
 			assertTrue(itr.hasNext());
 
@@ -77,6 +78,6 @@ public class TLCIteratorTest extends TestCase {
 	 * Test method for {@link tlc2.tool.fp.TLCIterator#getLast()}.
 	 */
 	public void testGetLast() {
-		assertEquals(21, itr.getLast());
+		assertEquals(getLast(), itr.getLast());
 	}
 }
