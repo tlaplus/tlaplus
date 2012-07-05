@@ -49,7 +49,7 @@ public class TLCIterator {
 		if (firstIdx < buff.length) {
 			long[] bucket = buff[firstIdx];
 			// secondIdx within bucket[].length and with valid elements in current bucket 
-			if (secondIdx < bucket.length && bucket[secondIdx] > 0) {
+			if (bucket != null && secondIdx < bucket.length && bucket[secondIdx] > 0) {
 				return true;
 			// we might have reached a null or negative range in buff[] -> skip it until
 			// we reach a non-null and non negative bucket or we get to the end of buff[]
@@ -76,7 +76,7 @@ public class TLCIterator {
 		// at least one more element in current bucket
 		if (firstIdx < buff.length) {
 			long[] bucket = buff[firstIdx];
-			if (secondIdx < bucket.length && bucket[secondIdx] > 0) {
+			if (bucket != null && secondIdx < bucket.length && bucket[secondIdx] > 0) {
 				result = bucket[secondIdx];
 				bucket[secondIdx] |= 0x8000000000000000L;
 				secondIdx++;
