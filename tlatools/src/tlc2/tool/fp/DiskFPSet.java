@@ -9,10 +9,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 import javax.management.NotCompliantMBeanException;
 
@@ -61,7 +58,11 @@ public class DiskFPSet extends FPSet {
 	/**
 	 * mask for computing hash function
 	 */
-	private int mask;
+	private final int mask;
+	/**
+	 * Number of bits to right shift bits during index calculation
+	 */
+	private final int moveBy;
 	/**
 	 * directory name for metadata
 	 */
@@ -168,7 +169,6 @@ public class DiskFPSet extends FPSet {
 	private static final double AuxiliaryStorageRequirement = 2.5;
 	
 	private TLCStandardMBean diskFPSetMXWrapper;
-	private final int moveBy;
 
 	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
@@ -487,8 +487,7 @@ public class DiskFPSet extends FPSet {
 		// the allocated bucket
 		for (int i = 0; i < bucketLen && bucket[i] != 0L; i++) {
 			// zero the long msb (which is 1 if fp has been flushed to disk)
-			long l = bucket[i] & 0x7FFFFFFFFFFFFFFFL;
-			if (fp == l)
+			if (fp == (bucket[i] & 0x7FFFFFFFFFFFFFFFL))
 				return true;
 		}
 		return false;
