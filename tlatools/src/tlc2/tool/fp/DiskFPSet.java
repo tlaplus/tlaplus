@@ -467,12 +467,10 @@ public class DiskFPSet extends FPSet {
 		return diskHit;
 	}
 
-	private int getIndex(long fp) {
+	private final int getIndex(long fp) {
 		// calculate hash value (just n most significant bits of fp) which is
 		// used as an index address
-		int m = (int) (fp >>> 32) & this.mask;
-		int index = m >> moveBy;
-		return index;
+		return ((int) (fp >>> 32) & this.mask) >> moveBy;
 	}
 
 	/**
