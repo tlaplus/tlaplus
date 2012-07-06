@@ -111,7 +111,8 @@
 			<fileset dir="${class.dir}" includes="**/*" />
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
-				<attribute name="Built-Tag" value="${env.BUILD_TAG}" />
+				<attribute name="Build-Tag" value="${env.BUILD_TAG}" />
+				<attribute name="Build-Rev" value="${Build-Rev}" />
 				<attribute name="Implementation-Title" value="TLA+ Tools" />
 				<attribute name="Implementation-Version" value="${version} ${TODAY}" />
 				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
@@ -261,6 +262,8 @@
 
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Build-Tag" value="${env.BUILD_TAG}" />
+				<attribute name="Build-Rev" value="${Build-Rev}" />
 				<attribute name="Implementation-Title" value="TLA+ Tools" />
 				<attribute name="Implementation-Version" value="${version} ${TODAY}" />
 				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
