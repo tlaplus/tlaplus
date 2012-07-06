@@ -30,7 +30,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 			
 			predecessor = rnd.nextLong();
 			assertFalse(fpSet.put(predecessor));
-			assertEquals(i, fpSet.size());
+			assertTrue(i == fpSet.size());
 		}
 	
 		// try creating a check point
@@ -65,7 +65,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 			}
 			
 			assertFalse(fpSet.put(value));
-			assertEquals(++counter, fpSet.size());
+			assertTrue(++counter == fpSet.size());
 		}
 	
 		// try creating a check point
