@@ -454,7 +454,10 @@ public class DiskFPSet extends FPSet {
 		return diskHit;
 	}
 
-	/* Return true iff "fp" is in the hash table. */
+	/**
+	 * @param fp The fingerprint to lookup in memory
+	 * @return true iff "fp" is in the hash table. 
+	 */
 	final boolean memLookup(long fp) {
 		int index = (int) (fp & this.mask);
 		long[] bucket = this.tbl[index];
@@ -531,6 +534,8 @@ public class DiskFPSet extends FPSet {
 	/**
 	 * Look on disk for the fingerprint "fp". This method requires that
 	 * "this.rwLock" has been acquired for reading by the caller.
+	 * @param fp The fingerprint to lookup on disk
+	 * @return true iff fp is on disk
 	 */
 	final boolean diskLookup(long fp) throws IOException {
 		if (this.index == null)
