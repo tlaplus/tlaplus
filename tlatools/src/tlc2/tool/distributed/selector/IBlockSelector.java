@@ -3,6 +3,7 @@ package tlc2.tool.distributed.selector;
 import tlc2.tool.TLCState;
 import tlc2.tool.distributed.TLCWorker;
 import tlc2.tool.distributed.TLCWorkerRMI;
+import tlc2.tool.queue.IStateQueue;
 import tlc2.tool.queue.StateQueue;
 
 public interface IBlockSelector {
@@ -19,7 +20,7 @@ public interface IBlockSelector {
 	 * @param worker {@link TLCWorker} requesting work units ({@link TLCState})
 	 * @return The states that will be assigned to the given remote {@link TLCWorker}
 	 */
-	public abstract TLCState[] getBlocks(final StateQueue stateQueue, final TLCWorkerRMI worker);
+	public abstract TLCState[] getBlocks(final IStateQueue stateQueue, final TLCWorkerRMI worker);
 
 	/**
 	 * @param aMaximum

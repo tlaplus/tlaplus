@@ -3,7 +3,7 @@ package tlc2.tool.distributed.selector;
 import tlc2.tool.TLCState;
 import tlc2.tool.distributed.TLCServer;
 import tlc2.tool.distributed.TLCWorkerRMI;
-import tlc2.tool.queue.StateQueue;
+import tlc2.tool.queue.IStateQueue;
 
 public class StaticBlockSelector extends BlockSelector {
 	/**
@@ -22,7 +22,7 @@ public class StaticBlockSelector extends BlockSelector {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.BlockSelector#getBlocks(tlc2.tool.queue.StateQueue, tlc2.tool.distributed.TLCWorkerRMI)
 	 */
-	public TLCState[] getBlocks(StateQueue stateQueue, TLCWorkerRMI worker) {
+	public TLCState[] getBlocks(IStateQueue stateQueue, TLCWorkerRMI worker) {
 		return stateQueue.sDequeue(BlockSize);
 	}
 }
