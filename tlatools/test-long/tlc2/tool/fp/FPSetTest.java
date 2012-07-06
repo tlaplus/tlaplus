@@ -17,12 +17,19 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 		final FPSet fpSet = getFPSet(freeMemory);
 		fpSet.init(1, tmpdir, filename);
 	
+		long predecessor = 0L;
+
 		// fill with max int + 1
 		final long l = Integer.MAX_VALUE + 2L;
 		for (long i = 1; i < l; i++) {
+
+			// make sure set still contains predecessor
+			if (predecessor != 0L) {
+				assertTrue(fpSet.contains(predecessor));
+			}
 			
-			long nextLong = rnd.nextLong();
-			assertFalse(fpSet.put(nextLong));
+			predecessor = rnd.nextLong();
+			assertFalse(fpSet.put(predecessor));
 			assertEquals(i, fpSet.size());
 		}
 	
