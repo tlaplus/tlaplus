@@ -762,7 +762,7 @@ public class DiskFPSet extends FPSet {
 
 		// merge array with disk file
 		try {
-			this.mergeNewEntries(this.tblCnt, this.tbl);
+			this.mergeNewEntries(this.tbl, this.tblCnt);
 		} catch (IOException e) {
 			String msg = "Error: merging entries into file "
 					+ this.fpFilename + "  " + e;
@@ -787,8 +787,8 @@ public class DiskFPSet extends FPSet {
 	 * associated with "this.rwLock" must be held, as must the mutex
 	 * "this.rwLock" itself.
 	 */
-	private final void mergeNewEntries(int numElements
-			, long[][] buff) throws IOException {
+	private final void mergeNewEntries(long[][] buff, int buffLen
+			) throws IOException {
 		// Implementation Note: Unfortunately, because the RandomAccessFile
 		// class (and hence, the BufferedRandomAccessFile class) does not
 		// provide a way to re-use an existing RandomAccessFile object on
@@ -811,7 +811,7 @@ public class DiskFPSet extends FPSet {
 		raf.seek(0);
 
 		// merge
-		this.mergeNewEntries(buff, numElements, raf, tmpRAF);
+		this.mergeNewEntries(buff, buffLen, raf, tmpRAF);
 
 		// clean up
 		raf.close();
@@ -834,7 +834,7 @@ public class DiskFPSet extends FPSet {
 		this.poolIndex = 0;
 	}
 
-	private final void mergeNewEntries(long[][] buff, int buffLen)
+	private final void mergeNewEntries(long[] buff, int buffLen)
 			throws IOException {
 		// create temporary file
 		File tmpFile = new File(tmpFilename);
@@ -1100,7 +1100,7 @@ public class DiskFPSet extends FPSet {
 		// the fingerprints from the TLCTrace file. Not from its own .fp file.
 	}
 
-	private Long[] recoveryBuff = null;
+	private long[] recoveryBuff = null;
 	private int recoveryIdx = -1;
 
 	/* (non-Javadoc)
@@ -1115,7 +1115,7 @@ public class DiskFPSet extends FPSet {
 			this.brafPool[i].close();
 		}
 
-		recoveryBuff = new Long[1 << 21];
+		recoveryBuff = new long[1 << 21];
 		recoveryIdx = 0;
 	}
 
