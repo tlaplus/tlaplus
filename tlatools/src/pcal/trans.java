@@ -27,7 +27,7 @@ import util.ToolIO;
 *                                                                          *
 *  BUGS:                                                                   *
 *     Accepts if (...) {...} ; else {...}                                  *
-*     Generates code as if ";" were not there.                             *
+*     Generates code as if the ";" were not there.                         *
 * -----------------------------------------------------------------        *
 * History:                                                                 *
 *   Version 1.0: Original release.                                         *
