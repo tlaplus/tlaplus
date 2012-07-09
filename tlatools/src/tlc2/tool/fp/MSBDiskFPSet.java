@@ -62,7 +62,7 @@ public class MSBDiskFPSet extends DiskFPSet {
 	 */
 	@Override
 	protected double getAuxiliaryStorageRequirement() {
-		return 1.5;
+		return 1.5d;
 	}
 	
 	/* (non-Javadoc)

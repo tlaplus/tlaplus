@@ -164,7 +164,7 @@ public class DiskFPSet extends FPSet {
 	 * @see DiskFPSet#index
 	 */
 	protected double getAuxiliaryStorageRequirement() {
-		return 2.5;
+		return 2.5d;
 	}
 	
 	private TLCStandardMBean diskFPSetMXWrapper;
