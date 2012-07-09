@@ -4,20 +4,20 @@ package tlc2.tool.fp.iterator;
 
 import java.util.NoSuchElementException;
 
-import tlc2.tool.fp.TLCIterator;
+import tlc2.tool.fp.MSBDiskFPSet;
 
 import junit.framework.TestCase;
 
 public class TLCIteratorTest extends TestCase {
 
-	private TLCIterator itr;
+	private MSBDiskFPSet.TLCIterator itr;
 
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		itr = new TLCIterator(getBuffer());
+		itr = new MSBDiskFPSet.TLCIterator(getBuffer());
 	}
 	
 	protected long[][] getBuffer() {

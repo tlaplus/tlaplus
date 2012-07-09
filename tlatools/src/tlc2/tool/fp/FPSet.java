@@ -46,6 +46,9 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	private static final String USER_FPSET_IMPL_CLASSNAME = System.getProperty(
 			FPSet.class.getName() + ".impl", null);
 	
+	private static final String USE_MSB_DISK_FP_SET = System.getProperty(
+			FPSet.class.getName() + ".msb", null);
+	
 	/**
 	 * Size of a Java long in bytes
 	 */
@@ -77,8 +80,10 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 			set = loadCustomFactory(USER_FPSET_IMPL_CLASSNAME, fpBits, fpMemSizeInBytes);
 		}
 		
-		if (set == null && fpBits == 0) {
+		if (set == null && fpBits == 0 && USE_MSB_DISK_FP_SET == null) {
 			set = new DiskFPSet(fpMemSizeInFPs);
+		} else if (set == null && fpBits == 0 && USE_MSB_DISK_FP_SET != null) {
+				set = new MSBDiskFPSet(fpMemSizeInFPs);
 		} else if (set == null) {
 			set = new MultiFPSet(fpBits, fpMemSizeInFPs);
 		}
