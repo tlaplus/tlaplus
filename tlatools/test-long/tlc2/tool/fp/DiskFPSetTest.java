@@ -9,6 +9,6 @@ public class DiskFPSetTest extends FPSetTest {
 	 */
 	@Override
 	protected FPSet getFPSet(long freeMemory) throws IOException {
-		return new DiskFPSet(freeMemory);
+		return new DiskFPSet(freeMemory / (long) DiskFPSet.LongSize);
 	}
 }
