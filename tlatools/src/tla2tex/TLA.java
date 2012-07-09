@@ -10,12 +10,18 @@
 *                                                                          *
 * Bug: The R and X in                                                      *
 *                                                                          *
-*      ---------------- MODULE foo -------                                 *
+*      ---------------- MODULE frob -------                                *
 *      LET RS                                                              *
 *      IN  X                                                               *
 *      =====================================                               *
 *                                                                          *
 * are not aligned.                                                         *
+*                                                                          *
+* Bug:  A weird extra space added to align the \in with the \succ in       *
+*                                                                          *
+*      LTSet(N, _\succ_, n) == {m \in N : n \succ m}                       *
+*      LeadsToInduction(F(_), N, _\succ_, z) ==                            *
+*                                                                          *
 *                                                                          *
 * TO DO:                                                                   *
 *                                                                          *

@@ -86,7 +86,10 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 				//TODO pass fpBits to MSBDiskFPSet to optimize in memory index
 				set = new MSBDiskFPSet(fpMemSizeInFPs);
 		} else if (set == null) {
-			set = new MultiFPSet(fpBits, fpMemSizeInFPs);
+			// Pass physical memory instead of logical FP count to adhere to the
+			// general FPSet ctor contract.
+			// @see http://bugzilla.tlaplus.net/show_bug.cgi?id=290
+			set = new MultiFPSet(fpBits, fpMemSizeInBytes);
 		}
 		return set;
 	}

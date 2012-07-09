@@ -12,7 +12,7 @@ cd /mnt
 
 # download non pkg mgmt provided tools in background
 # no package mgmt for Eclipse profiler, hence install manually into /opt
-(wget -q http://www.yourkit.com/download/yjp-10.0.4-linux.tar.bz2  && cd /opt && tar xfj /mnt/yjp-10.0.4-linux.tar.bz2) &
+(wget -q http://www.yourkit.com/download/yjp-11.0.5-linux.tar.bz2  && cd /opt && tar xfj /mnt/yjp-11.0.5-linux.tar.bz2) &
 
 # no package mgmt for yourkit profiler, hence install manually into /opt
 (wget -q ftp://carroll.aset.psu.edu/pub/eclipse/eclipse/downloads/drops4/R-4.2-201206081400/eclipse-SDK-4.2-linux-gtk-x86_64.tar.gz && cd /opt && tar xfz /mnt/eclipse-SDK-4.2-linux-gtk-x86_64.tar.gz) &

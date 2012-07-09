@@ -27,7 +27,7 @@
 * grammar, as defined by the operator IsAlgorithm of PlusCal.tla, would    *
 * be quite complicated because it would have to look far ahead before      *
 * deciding what kind of node it is processing.  For example, it might      *
-* have to look far down an "if" statement to deterine is an <If> a         *
+* have to look far down an "if" statement to determine if an <If> is a     *
 * <FinalIf> or a <LabelIf>.  Those distinctions are present in the         *
 * grammar to make sure that labels don't appear where they shouldn't and   *
 * do appear where they should.                                             *
@@ -41,7 +41,7 @@
 *  - It calls the procedure GetStmtSeq to build a very simplified AST      *
 *    based on the simplified grammar in the Appendix of "A +CAL User's     *
 *    Manual".  The nodes of the AST are the obvious ones defined in        *
-*    AST.java, where the AST object represents <Stmt> object.  However,    *
+*    AST.java, where the AST object represents  <Stmt> object.  However,   *
 *    an "if" statement is represented by a LabelIf object with empty       *
 *    labThen and labElse fields (equal to an empty Vector), and an         *
 *    "either" statement is represented by a LabelEither object whose       *
