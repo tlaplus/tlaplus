@@ -32,7 +32,7 @@ public class MultiFPSet extends FPSet {
 	 * Contains all nested {@link FPSet}s 
 	 */
 	private FPSet[] sets;
-	
+
 	/**
 	 * Amount of leftmost bits used to determine nested {@link FPSet}
 	 */
@@ -42,7 +42,7 @@ public class MultiFPSet extends FPSet {
 	public MultiFPSet(int bits) throws RemoteException {
 		this(bits, MEM_DEFAULT);
 	}
-	
+
 	/**
 	 * Create a MultiFPSet with 2^bits FPSets.
 	 * @param bits [1,30]
