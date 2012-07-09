@@ -204,10 +204,10 @@ public class DiskFPSet extends FPSet {
 		// LL modified error message on 7 April 2012
 		Assert.check(logMaxMemCnt - LogMaxLoad >= 0, "Underflow when computing DiskFPSet");
 		int capacity = 1 << (logMaxMemCnt - LogMaxLoad);
-
-		// instead of changing maxTblCnd to long and pay an extra price when
-		// comparing int and long every time put(long) is called, we set it to
-		// Integer.MAX_VALUE instead. capacity can never grow bigger
+		
+		// instead of changing maxTblCnd to long and pay an extra price when 
+		// comparing int and long every time put(long) is called, we set it to 
+		// Integer.MAX_VALUE instead. capacity can never grow bigger 
 		// (unless java starts supporting 64bit array sizes)
 		//
 		// maxTblCnt mathematically has to be an upper limit for the in-memory storage 
@@ -508,7 +508,7 @@ public class DiskFPSet extends FPSet {
 			bucket = new long[InitialBucketCapacity];
 			bucket[0] = fp;
 			this.tbl[index] = bucket;
-			this.bucketsCapacity += InitialBucketCapacity;
+			this.bucketsCapacity += InitialBucketCapacity; 
 			this.tblLoad++;
 		} else {
 			// search for entry in existing bucket
@@ -588,7 +588,7 @@ public class DiskFPSet extends FPSet {
 			double dlo = (double) loPage;
 			double dhiVal = (double) hiVal;
 			double dloVal = (double) loVal;
-
+			
 			int midPage = (loPage + 1)
 					+ (int) ((dhi - dlo - 1.0) * (dfp - dloVal) / (dhiVal - dloVal));
 			if (midPage == hiPage)
@@ -613,9 +613,9 @@ public class DiskFPSet extends FPSet {
 
 		boolean diskHit = false;
 		long midEntry = -1L;
-		// lower bound for the interval search in
+		// lower bound for the interval search in 
 		long loEntry = ((long) loPage) * NumEntriesPerPage;
-		// upper bound for the interval search in
+		// upper bound for the interval search in 
 		long hiEntry = ((loPage == indexLength - 2) ? this.fileCnt - 1
 				: ((long) hiPage) * NumEntriesPerPage);
 		try {
@@ -634,7 +634,7 @@ public class DiskFPSet extends FPSet {
 					}
 				}
 			}
-
+			
 			// b1) do interpolated binary search on disk page determined by a)
 
 			while (loEntry < hiEntry) {
@@ -675,8 +675,8 @@ public class DiskFPSet extends FPSet {
 				}
 			}
 		} catch (IOException e) {
-			if (midEntry * LongSize < 0) {
-				// LL modified error message on 7 April 2012
+			if(midEntry * LongSize < 0) {
+			 // LL modified error message on 7 April 2012
 				MP.printError(EC.GENERAL, new String[]{"looking up a fingerprint, and" + 
 			            "\nmidEntry turned negative (loEntry, midEntry, hiEntry, loVal, hiVal): ",
 						Long.toString(loEntry) +" ", Long.toString(midEntry) +" ", Long.toString(hiEntry) +" ", Long.toString(loVal) +" ", Long.toString(hiVal)}, e);
@@ -704,10 +704,10 @@ public class DiskFPSet extends FPSet {
 		final double dlo = (double) loEntry;
 		final double dhiVal = (double) hiVal;
 		final double dloVal = (double) loVal;
-
+		
 		long midEntry = loEntry
 				+ (long) ((dhi - dlo) * (dfp - dloVal) / (dhiVal - dloVal));
-
+		
 		if (midEntry == hiEntry) {
 			midEntry--;
 		}
@@ -954,7 +954,7 @@ public class DiskFPSet extends FPSet {
 	public final void close() {
 		// close JMX stats
 		diskFPSetMXWrapper.unregister();
-
+		
 		for (int i = 0; i < this.braf.length; i++) {
 			try {
 				this.braf[i].close();
@@ -1093,10 +1093,10 @@ public class DiskFPSet extends FPSet {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#commitChkpt()
 	 */
-	public final void commitChkpt() throws IOException {
+	public final void commitChkpt() throws IOException { 
 		/* SKIP */
-		// DiskFPSet checkpointing is a no-op, because DiskFPSet recreates
-		// the fingerprints from the TLCTrace file. Not from its own .fp file.
+		// DiskFPSet checkpointing is a no-op, because DiskFPSet recreates 
+		// the fingerprints from the TLCTrace file. Not from its own .fp file. 
 	}
 
 	private long[] recoveryBuff = null;
@@ -1183,7 +1183,7 @@ public class DiskFPSet extends FPSet {
 	public long getBucketCapacity() {
 		return bucketsCapacity;
 	}
-
+	
 	/**
 	 * @return The allocated (used and unused) array length of the first level in-memory storage.
 	 */
@@ -1195,7 +1195,7 @@ public class DiskFPSet extends FPSet {
 	 * @return the index.length
 	 */
 	public int getIndexCapacity() {
-		if (index == null) {
+		if(index == null) {
 			return 0;
 		}
 		return index.length;
@@ -1207,29 +1207,29 @@ public class DiskFPSet extends FPSet {
 	public long getOverallCapacity() {
 		return getBucketCapacity() + getTblCapacity() + getIndexCapacity();
 	}
-
+	
 	/**
-	 * @return Number of used slots in tbl by a bucket
-	 *         {@link DiskFPSet#getTblLoad()} <= {@link DiskFPSet#getTblCnt()}
+	 * @return	Number of used slots in tbl by a bucket
+	 * {@link DiskFPSet#getTblLoad()} <= {@link DiskFPSet#getTblCnt()}
 	 */
 	public int getTblLoad() {
 		return tblLoad;
 	}
-
+	
 	/**
 	 * @return the amount of fingerprints stored in memory. This is less or equal to {@link DiskFPSet#getTblCnt()} depending on if there collision buckets exist. 
 	 */
 	public int getTblCnt() {
 		return tblCnt;
 	}
-
+	
 	/**
 	 * @return the amount of fingerprints stored on disk
 	 */
 	public long getFileCnt() {
 		return fileCnt;
 	}
-
+	
 	/**
 	 * @return the diskLookupCnt
 	 */
@@ -1264,20 +1264,21 @@ public class DiskFPSet extends FPSet {
 	public long getDiskSeekCnt() {
 		return diskSeekCnt;
 	}
-
+	
 	/**
 	 * @return the growDiskMark
 	 */
 	public int getGrowDiskMark() {
 		return growDiskMark;
 	}
-
+	
 	/**
 	 * @return the checkPointMark
 	 */
 	public int getCheckPointMark() {
 		return checkPointMark;
 	}
+	
 
 	// /**
 	// *
