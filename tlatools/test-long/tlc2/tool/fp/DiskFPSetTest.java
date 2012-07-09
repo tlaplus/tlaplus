@@ -9,6 +9,8 @@ public class DiskFPSetTest extends FPSetTest {
 	 */
 	@Override
 	protected FPSet getFPSet(long freeMemory) throws IOException {
-		return new DiskFPSet(freeMemory);
+		final DiskFPSet fpSet = new DiskFPSet(freeMemory / (long) DiskFPSet.LongSize);
+        System.out.println("DiskFPSet approx. consumes MiB: " + (fpSet.getMaxTblCnt() * (long) DiskFPSet.LongSize) /1024L/1024L);
+        return fpSet;
 	}
 }
