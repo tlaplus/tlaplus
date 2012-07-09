@@ -52,6 +52,8 @@ public abstract class AbstractFPSetTest extends TestCase {
 	 * @return
 	 */
 	protected long getFreeMemoryInBytes() {
-		return TLCRuntime.getInstance().getFPMemSize(.9d);
+		// Leave room for system GC to work which approximately requires 20% of
+		// memory to do its job.
+		return TLCRuntime.getInstance().getFPMemSize(.75d);
 	}
 }
