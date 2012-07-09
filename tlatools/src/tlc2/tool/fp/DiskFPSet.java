@@ -1189,6 +1189,13 @@ public class DiskFPSet extends FPSet {
 	}
 	
 	/**
+	 * @return the maximal amount of fingerprints stored in memory. 
+	 */
+	public int getMaxTblCnt() {
+		return maxTblCnt;
+	}
+	
+	/**
 	 * @return the amount of fingerprints stored on disk
 	 */
 	public long getFileCnt() {
