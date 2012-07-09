@@ -59,7 +59,7 @@ public class MultiFPSet extends FPSet {
 		}
 
 		for (int i = 0; i < len; i++) {
-			this.sets[i] = FPSet.getFPSet(0, (int) (fpMemSize / len));
+			this.sets[i] = FPSet.getFPSet(0, (fpMemSize / (long) len));
 		}
 		this.fpbits = 64 - bits;
 	}
