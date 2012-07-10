@@ -852,6 +852,7 @@ public class DiskFPSet extends FPSet {
 			maxVal = Math.max(maxVal, this.index[this.index.length - 1]);
 		}
 
+		//TODO this can cause a NegativeArraySizeException if fileCnt becomes sufficiently large
 		int indexLen = (int) ((this.fileCnt + buffLen - 1) / NumEntriesPerPage) + 2;
 		this.index = new long[indexLen];
 		this.index[indexLen - 1] = maxVal;
