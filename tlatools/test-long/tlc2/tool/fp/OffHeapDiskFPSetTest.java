@@ -1,0 +1,28 @@
+// Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
+
+package tlc2.tool.fp;
+
+import java.io.IOException;
+
+public class OffHeapDiskFPSetTest extends FPSetTest {
+	
+	public void testCollisionBucket() throws IOException {
+		long freeMemory = getFreeMemoryInBytes();
+		final FPSet fpSet = getFPSet(freeMemory);
+		fpSet.init(1, tmpdir, filename);
+
+		for (int i = 0; i < DiskFPSet.InitialBucketCapacity + 1; i++) {
+			assertFalse(fpSet.put(i+1L));
+			assertTrue(fpSet.contains(i+1L));
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.AbstractFPSetTest#getFPSet(long)
+	 */
+	@Override
+	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
+		return new OffHeapDiskFPSet(-1L);
+	}
+
+}

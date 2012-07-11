@@ -5,6 +5,22 @@ import java.util.Random;
 
 public abstract class FPSetTest extends AbstractFPSetTest {
 
+	public void testSimpleFill() throws IOException {
+		long freeMemory = getFreeMemoryInBytes();
+		final FPSet fpSet = getFPSet(freeMemory);
+		fpSet.init(1, tmpdir, filename);
+
+		long fp = 1L;
+		assertFalse(fpSet.put(fp));
+		assertTrue(fpSet.contains(fp++));
+		assertFalse(fpSet.put(fp));
+		assertTrue(fpSet.contains(fp++));
+		assertFalse(fpSet.put(fp));
+		assertTrue(fpSet.contains(fp++));
+		assertFalse(fpSet.put(fp));
+		assertTrue(fpSet.contains(fp++));
+	}
+	
 	/**
 	 * Test filling a {@link FPSet} with max int + 1 random
 	 * @throws IOException
