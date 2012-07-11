@@ -51,7 +51,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 			// print stats
 			if (i % 1000000 == 0) {
 				System.out.println("Estimated size of FPSet (MiB): "
-						+ (((DiskFPSet)fpSet).sizeof() >> 20));
+						+ (((FPSetStatistic)fpSet).sizeof() >> 20));
 			}
 	}
 	

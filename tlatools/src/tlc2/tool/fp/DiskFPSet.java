@@ -48,7 +48,7 @@ import util.FileUtil;
  * bit back if using MultiFPSet.
  */
 @SuppressWarnings("serial")
-public class DiskFPSet extends FPSet {
+public class DiskFPSet extends FPSet implements FPSetStatistic {
 	// fields
 	/**
 	 * upper bound on "tblCnt"

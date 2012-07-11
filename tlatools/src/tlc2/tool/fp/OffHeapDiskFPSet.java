@@ -49,7 +49,7 @@ import util.FileUtil;
  * bit back if using MultiFPSet.
  */
 @SuppressWarnings("serial")
-public class OffHeapDiskFPSet extends FPSet {
+public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 	// fields
 	/**
 	 * upper bound on "tblCnt"
@@ -864,7 +864,7 @@ public class OffHeapDiskFPSet extends FPSet {
 		// merge while both lists still have elements remaining
 		long fp = itr.next();
 		while (!eof) {
-			if (value < fp && itr.hasNext()) { // check for itr.hasNext() here to write last value when itr is used up.
+			if (value < fp || !itr.hasNext()) { // check for itr.hasNext() here to write last value when itr is used up.
 				this.writeFP(outRAF, value);
 				try {
 					value = inRAF.readLong();

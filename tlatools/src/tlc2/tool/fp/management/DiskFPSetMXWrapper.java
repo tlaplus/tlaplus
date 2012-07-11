@@ -3,7 +3,7 @@ package tlc2.tool.fp.management;
 
 import javax.management.NotCompliantMBeanException;
 
-import tlc2.tool.fp.DiskFPSet;
+import tlc2.tool.fp.FPSetStatistic;
 import tlc2.tool.management.TLCStandardMBean;
 
 //TODO dispose when underlying diskfpset is nulled (otherwise we end up holding a reference and diskfpset is never gced) 
@@ -11,9 +11,9 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 
 	private static int COUNT = 0;
 	
-	private final DiskFPSet fpset;
+	private final FPSetStatistic fpset;
 	
-	public DiskFPSetMXWrapper(final DiskFPSet diskFPSet) throws NotCompliantMBeanException {
+	public DiskFPSetMXWrapper(final FPSetStatistic diskFPSet) throws NotCompliantMBeanException {
 		super(DiskFPSetMXBean.class);
 		fpset = diskFPSet;
 		
