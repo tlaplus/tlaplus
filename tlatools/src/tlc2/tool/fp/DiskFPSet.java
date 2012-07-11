@@ -707,7 +707,7 @@ public class DiskFPSet extends FPSet {
 		if (this.tblCnt == 0)
 			return;
 
-		// copy table contents into a buffer array buff; erase table
+		// copy table contents into a buffer array buff; do not erase tbl
 		long[] buff = new long[this.tblCnt];
 		int idx = 0;
 		for (int j = 0; j < this.tbl.length; j++) {
