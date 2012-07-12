@@ -11,9 +11,7 @@ import tlc2.tool.fp.MSBDiskFPSet.TLCIterator;
 import util.Assert;
 
 public class ByteBufferIterator {
-	private static final int BUCKET_SIZE_IN_BYTES = DiskFPSet.InitialBucketCapacity * DiskFPSet.LongSize;
 
-	private final ByteBuffer buff;
 	private final LongBuffer lBuf;
 	private final SortedSet<Long> collisionBucket;
 	/**
@@ -42,8 +40,7 @@ public class ByteBufferIterator {
 	private long cache = -1L;
 
 	public ByteBufferIterator(final ByteBuffer aBuffer, SortedSet<Long> collisionBucket, long expectedElements) {
-		this.buff = aBuffer;
-		this.buff.position(0);
+		aBuffer.position(0);
 		
 		this.totalElements = expectedElements;
 		this.lBuf = aBuffer.asLongBuffer();
@@ -84,13 +81,7 @@ public class ByteBufferIterator {
 			throw new NoSuchElementException();
 		}
 		
-		if(result == -9222316700110347590L) {
-			System.out.println();
-		}
 		// hand out strictly monotonic increasing elements
-//		if(previous >= result) {
-//			System.out.println();
-//		}
 		Assert.check(previous < result, EC.GENERAL);
 		previous = result;
 		
@@ -101,23 +92,13 @@ public class ByteBufferIterator {
 	}
 
 	private long getNextFromBuffer() {
-		// sort the current logical bucket if we reach the first slot of the
-		// bucket
 		sortNextBucket();
 		
 		long l = lBuf.get(logicalPosition);
 		if (l > 0L) {
 			lBuf.put(logicalPosition++, l | 0x8000000000000000L);
 			return l;
-		}/* else if (((logicalPosition + DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0) < lBuf.capacity()) {
-			System.out.println("logicalPosition not fully filled: " + logicalPosition);
-			// increment position to next bucket and recursively call self
-			logicalPosition = (logicalPosition + DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0;
-			System.out.println("Advancing to next bucket: " + logicalPosition);
-			return getNextFromBuffer();
-		} else {
-			throw new NoSuchElementException();
-		}*/
+		}
 		
 		while ((l = lBuf.get(logicalPosition)) <= 0L && logicalPosition < lBuf.capacity()) {
 			// increment position to next bucket and recursively call self
@@ -132,9 +113,10 @@ public class ByteBufferIterator {
 		throw new NoSuchElementException();
 	}
 
+	// sort the current logical bucket if we reach the first slot of the
+	// bucket
 	private void sortNextBucket() {
 		if (logicalPosition % DiskFPSet.InitialBucketCapacity == 0) {
-//			System.out.println("Sorting bucket: " + logicalPosition);
 			long[] longBuffer = new long[DiskFPSet.InitialBucketCapacity];
 			int i = 0;
 			for (; i < DiskFPSet.InitialBucketCapacity; i++) {
@@ -199,55 +181,4 @@ public class ByteBufferIterator {
 		}
 		throw new NoSuchElementException();
 	}
-	
-	
-//	/**
-//	 * @return The last element in the iteration.
-//     * @exception NoSuchElementException if iteration is empty.
-//	 */
-//	public long getLast() {		
-//		final int capacity = this.buff.capacity();
-//
-//		// get last bucket, sort and read last slot (max fp)
-//		long[] bucket = getBucket(capacity - BUCKET_SIZE_IN_BYTES);;
-//
-//		// find last bucket containing elements, buff elements might be null if
-//		// no fingerprint for such an index has been added to the DiskFPSet
-//		int j = 2;
-//		while (bucket == null) {
-//			bucket = getBucket(capacity - (BUCKET_SIZE_IN_BYTES * j++));
-//		}
-//		
-//		// find last element > 0 in bucket
-//		for (int i = bucket.length - 1; i >= 0 ;i--) {
-//			if (bucket[i] > 0) {
-//				return bucket[i] >= collisionBucket.last() ? bucket[i] : collisionBucket.last();
-//			}
-//		}
-//		throw new NoSuchElementException();
-//	}
-//	
-//	/**
-//	 * @param offset
-//	 * @return <code>null</code> if the bucket at offset contains only <= 0L
-//	 *         values, a _sorted_ bucket otherwise.
-//	 */
-//	private long[] getBucket(int offset) {
-//		this.buff.position(offset);
-//		
-//		long[] longBuffer = new long[DiskFPSet.InitialBucketCapacity];
-//		for (int i = 0; i < DiskFPSet.InitialBucketCapacity; i++) {
-//			long l = this.buff.getLong();
-//			if (l <= 0L && i == 0) {
-//				return null;
-//			} else if (l <= 0L) {
-//				Arrays.sort(longBuffer, 0, i);
-//				return longBuffer;
-//			} else {
-//				longBuffer[i] = l;
-//			}
-//		}
-//		Arrays.sort(longBuffer);
-//		return longBuffer;
-//	}
 }

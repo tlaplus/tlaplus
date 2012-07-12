@@ -731,9 +731,6 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 //		this.diskSeekCnt = 0;
 //		this.diskLookupCnt = 0;
 		
-		// debug helper
-//		checkTablePreCondition();
-		
 		// merge array with disk file
 		try {
 			this.mergeNewEntries();
@@ -745,58 +742,7 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 		this.tblCnt = 0;
 		this.bucketsCapacity = 0;
 		this.tblLoad = 0;
-		
-		// debug helper
-//		printTable();
-//		checkTablePostCondition();
 	}
-
-	private void printTable() {
-		for (int i = 0; i < this.tblBuffer.capacity(); i++) {
-			long fp = this.tblBuffer.get(i);
-			if(fp == -9222316700110347590L) {
-				System.out.println();
-			}
-			// Print content
-			if (i % DiskFPSet.InitialBucketCapacity == 0) {
-				System.out.println("---BucketEnd " + i + "---");
-			}
-			System.out.println(fp);
-		}
-	}
-//	
-//	private void checkTablePreCondition() {
-//		long count = 0L;
-//		for (int i = 0; i < this.tblBuffer.capacity(); i++) {
-//			long fp = this.tblBuffer.get(i);
-//			
-//			// skip empty slots
-//			if (fp <= 0L) {
-//				continue;
-//			}
-//			count++;
-//		}
-//		Assert.check(count == this.tblCnt - collisionBucket.size(), EC.GENERAL);
-//	}
-//	// post condition only holds for the first disk flush, not afterwards
-//	private void checkTablePostCondition() {
-//		long predecessor = Long.MIN_VALUE;
-//		int failures = 0;
-//		for (int i = 0; i < this.tblBuffer.capacity(); i++) {
-//			long fp = this.tblBuffer.get(i);
-//			// skip empty slots
-//			if (fp == 0L) {
-//				continue;
-//			}
-//			// compare current fp with predecessor to assert that they are
-//			// monotonically increasing.
-//			if(predecessor >= fp) {
-//				failures++;
-//			}
-//			predecessor = fp;
-//		}
-//		Assert.check(failures == 0, EC.GENERAL);
-//	}
 
 	/**
 	 * Merge the values in "buff" into this FPSet's backing disk file. The
