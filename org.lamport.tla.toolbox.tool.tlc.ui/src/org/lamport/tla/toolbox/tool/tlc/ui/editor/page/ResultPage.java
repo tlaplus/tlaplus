@@ -196,7 +196,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                         {
                             shells[i].redraw();
                             shells[i].update();
-                            TLCUIActivator.getDefault().logDebug("Called redraw/update on shell number" + i);
+                            // The following was commented out by LL on 6 Jul 2012 because it was filling
+                            // up the Console log with useless stuff.
+                            // TLCUIActivator.getDefault().logDebug("Called redraw/update on shell number" + i);
                         }
                     }
                     break;
