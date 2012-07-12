@@ -421,7 +421,7 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 			// A) the FP distribution causes the index tbl to be unevenly populated.
 			// B) the FP distribution reassembles linear fill-up/down which 
 			// causes tblCnt * buckets with initial load factor to be allocated.
-			if ((this.tblCnt >= this.maxTblCnt || collisionBucket.size() > 0)&& !this.flusherChosen) {
+			if ((this.tblCnt >= this.maxTblCnt/* || collisionBucket.size() > 0*/)&& !this.flusherChosen) {
 				// block until there are no more readers
 				this.flusherChosen = true;
 				this.rwLock.BeginWrite();
