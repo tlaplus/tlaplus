@@ -68,7 +68,7 @@ public class ByteBufferIterator {
 
 		if (!collisionBucket.isEmpty()) {
 			long first = collisionBucket.first();
-			if (result > first) {
+			if (result > first || result == -1L) {
 				collisionBucket.remove(first);
 				cache = result;
 				result = first;
@@ -167,7 +167,7 @@ public class ByteBufferIterator {
 		logicalPosition = this.lBuf.capacity() - DiskFPSet.InitialBucketCapacity;
 		sortNextBucket();
 
-		// reverese the current bucket to obtain last element
+		// reverse the current bucket to obtain last element
 		long l = 1L;
 		while ((l = lBuf.get(logicalPosition-- + DiskFPSet.InitialBucketCapacity - 1)) <= 0L) {
 			if (((logicalPosition - DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0) == 0) {

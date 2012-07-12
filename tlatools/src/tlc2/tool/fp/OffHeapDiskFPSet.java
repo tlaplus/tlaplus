@@ -421,7 +421,7 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 			// A) the FP distribution causes the index tbl to be unevenly populated.
 			// B) the FP distribution reassembles linear fill-up/down which 
 			// causes tblCnt * buckets with initial load factor to be allocated.
-			if ((this.tblCnt >= this.maxTblCnt /*|| collisionBucket.size() > 0*/)&& !this.flusherChosen) {
+			if ((this.tblCnt >= this.maxTblCnt || collisionBucket.size() > 0)&& !this.flusherChosen) {
 				// block until there are no more readers
 				this.flusherChosen = true;
 				this.rwLock.BeginWrite();
@@ -879,11 +879,7 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 				}
 				this.writeFP(outRAF, fp);
 				// we used one fp up, thus move to next one
-//				if (itr.hasNext())
-					fp = itr.next();
-//				if (fp ==9223346055257602450L) {
-//					System.out.println();
-//				}
+				fp = itr.next();
 			}
 		}
 
@@ -1068,6 +1064,11 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 
 	private long[] recoveryBuff = null;
 	private int recoveryIdx = -1;
+
+	//TODO replace SortedSet with cheaper/faster long[]?!
+	/**
+	 * A bucket containing collision elements
+	 */
 	private SortedSet<Long> collisionBucket;
 
 	/* (non-Javadoc)
