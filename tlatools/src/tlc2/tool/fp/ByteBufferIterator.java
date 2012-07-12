@@ -16,16 +16,19 @@ public class ByteBufferIterator {
 	private final ByteBuffer buff;
 	private final LongBuffer lBuf;
 	private final SortedSet<Long> collisionBucket;
-	private final long expectedElements;
 	/**
-	 * Index pointing to the current bucket in the first level
+	 * Number of elements in the buffer
 	 */
-	private int firstIdx = 0;
+	private long bufferElements;
 	/**
-	 * Index pointing to the current element in the current bucket which is the
-	 * second level
+	 * Total amount of elements in both the buffer as well as the collisionBucket. 
 	 */
-	private int secondIdx = 0;
+	private final long totalElements;
+	/**
+	 * The logical position is the position inside the {@link LongBuffer} and
+	 * thus reflects a fingerprints
+	 */
+	private int logicalPosition = 0;
 	/**
 	 * Used to verify that the elements we hand out are strictly monotonic
 	 * increasing.
@@ -37,16 +40,16 @@ public class ByteBufferIterator {
 	private long readElements = 0L;
 
 	private long cache = -1L;
-	private CacheEntry ce = new CacheEntry();
-
 
 	public ByteBufferIterator(final ByteBuffer aBuffer, SortedSet<Long> collisionBucket, long expectedElements) {
 		this.buff = aBuffer;
 		this.buff.position(0);
-		this.expectedElements = expectedElements;
-		lBuf = aBuffer.asLongBuffer();
+		
+		this.totalElements = expectedElements;
+		this.lBuf = aBuffer.asLongBuffer();
+		
 		this.collisionBucket = collisionBucket;
-		System.out.println(this.collisionBucket.size());
+		this.bufferElements = expectedElements - this.collisionBucket.size();
 	}
 
     /**
@@ -58,13 +61,14 @@ public class ByteBufferIterator {
 	public long next() {
 		long result = -1l;
 
-		if (cache < 0L) {
+		if (cache < 0L && bufferElements > 0) {
 			result = getNextFromBuffer();
+			bufferElements--;
 		} else {
 			result = cache;
 			cache = -1L;
 		}
-		
+
 		if (!collisionBucket.isEmpty()) {
 			long first = collisionBucket.first();
 			if (result > first) {
@@ -80,7 +84,13 @@ public class ByteBufferIterator {
 			throw new NoSuchElementException();
 		}
 		
+		if(result == -9222316700110347590L) {
+			System.out.println();
+		}
 		// hand out strictly monotonic increasing elements
+//		if(previous >= result) {
+//			System.out.println();
+//		}
 		Assert.check(previous < result, EC.GENERAL);
 		previous = result;
 		
@@ -91,29 +101,55 @@ public class ByteBufferIterator {
 	}
 
 	private long getNextFromBuffer() {
-		long result = -1l;
-		// at least one more element in current bucket
-		if (firstIdx < buff.capacity()) {
-			long[] bucket = getBucketCached(firstIdx);
-			if (bucket != null && secondIdx < bucket.length && bucket[secondIdx] > 0) {
-				result = bucket[secondIdx];
-				bucket[secondIdx] |= 0x8000000000000000L;
-				secondIdx++;
-			} else {
-				for (int i = firstIdx + BUCKET_SIZE_IN_BYTES; i < buff.capacity() && result == -1L; i += BUCKET_SIZE_IN_BYTES) {
-					bucket = getBucketCached(i);
-					if (bucket != null && bucket.length > 0 && bucket[0] > 0) {
-						firstIdx = i;
-						secondIdx = 0;
-						result = bucket[secondIdx];
-						bucket[secondIdx] |= 0x8000000000000000L;
-						secondIdx++;
-						break; // redundant to "result == -1L" in for loop
-					}
+		// sort the current logical bucket if we reach the first slot of the
+		// bucket
+		sortNextBucket();
+		
+		long l = lBuf.get(logicalPosition);
+		if (l > 0L) {
+			lBuf.put(logicalPosition++, l | 0x8000000000000000L);
+			return l;
+		}/* else if (((logicalPosition + DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0) < lBuf.capacity()) {
+			System.out.println("logicalPosition not fully filled: " + logicalPosition);
+			// increment position to next bucket and recursively call self
+			logicalPosition = (logicalPosition + DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0;
+			System.out.println("Advancing to next bucket: " + logicalPosition);
+			return getNextFromBuffer();
+		} else {
+			throw new NoSuchElementException();
+		}*/
+		
+		while ((l = lBuf.get(logicalPosition)) <= 0L && logicalPosition < lBuf.capacity()) {
+			// increment position to next bucket and recursively call self
+			logicalPosition = (logicalPosition + DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0;
+			sortNextBucket();
+		}
+		
+		if (l > 0L) {
+			lBuf.put(logicalPosition++, l | 0x8000000000000000L);
+			return l;
+		}
+		throw new NoSuchElementException();
+	}
+
+	private void sortNextBucket() {
+		if (logicalPosition % DiskFPSet.InitialBucketCapacity == 0) {
+//			System.out.println("Sorting bucket: " + logicalPosition);
+			long[] longBuffer = new long[DiskFPSet.InitialBucketCapacity];
+			int i = 0;
+			for (; i < DiskFPSet.InitialBucketCapacity; i++) {
+				long l = lBuf.get(logicalPosition + i);
+				if (l <= 0L) {
+					break;
+				} else {
+					longBuffer[i] = l;
 				}
 			}
+			Arrays.sort(longBuffer, 0, i);
+			for (int j = 0; j < i; j++) {
+				lBuf.put(logicalPosition + j, longBuffer[j]);
+			}
 		}
-		return result;
 	}
 
     /**
@@ -125,59 +161,13 @@ public class ByteBufferIterator {
      */
 	public boolean hasNext() {
 		// hasNext does not move the indices at all!
-		
-		if (firstIdx < buff.capacity()) {
-			long[] bucket = getBucket(firstIdx);
-			// secondIdx within bucket[].length and with valid elements in current bucket 
-			if (bucket != null && secondIdx < bucket.length && bucket[secondIdx] > 0) {
-				return true;
-			// we might have reached a null or negative range in buff[] -> skip it until
-			// we reach a non-null and non negative bucket or we get to the end of buff[]
-			} else {
-				for (int i = firstIdx + BUCKET_SIZE_IN_BYTES; i < buff.capacity(); i += BUCKET_SIZE_IN_BYTES) {
-					bucket = getBucket(i);
-					if (bucket != null && bucket.length > 0 && bucket[0] > 0) {
-						return true;
-					}
-				}
-			}
-		}
-		
-		boolean empty = collisionBucket.isEmpty();
-		if (empty) {
-//			Assert.check(readElements == expectedElements ,EC.GENERAL);
-			return false;
-		} else {
+		boolean allRead = readElements < totalElements;
+		if (allRead) {
 			return true;
 		}
+		return false;
 	}
 
-	/**
-	 * @return The last element in the iteration.
-     * @exception NoSuchElementException if iteration is empty.
-	 */
-	public long getLast() {		
-		final int capacity = this.buff.capacity();
-
-		// get last bucket, sort and read last slot (max fp)
-		long[] bucket = getBucket(capacity - BUCKET_SIZE_IN_BYTES);;
-
-		// find last bucket containing elements, buff elements might be null if
-		// no fingerprint for such an index has been added to the DiskFPSet
-		int j = 2;
-		while (bucket == null) {
-			bucket = getBucket(capacity - (BUCKET_SIZE_IN_BYTES * j++));
-		}
-		
-		// find last element > 0 in bucket
-		for (int i = bucket.length - 1; i >= 0 ;i--) {
-			if (bucket[i] > 0) {
-				return bucket[i] >= collisionBucket.last() ? bucket[i] : collisionBucket.last();
-			}
-		}
-		throw new NoSuchElementException();
-	}
-	
 	/**
 	 * @return The number of element read with {@link TLCIterator#next()} since
 	 *         the creation of this instance.
@@ -186,58 +176,78 @@ public class ByteBufferIterator {
 		return readElements;
 	}
 	
-	public void close() {
-		if (ce.key >= 0 && ce.value != null) {
-			lBuf.position(ce.key / DiskFPSet.LongSize);
-			lBuf.put(ce.value);
-		}
-	}
-	
 	/**
-	 * @param offset
-	 * @return <code>null</code> if the bucket at offset contains only <= 0L
-	 *         values, a _sorted_ bucket otherwise.
+	 * @return The last element in the iteration.
+     * @exception NoSuchElementException if iteration is empty.
 	 */
-	private long[] getBucket(int offset) {
-		this.buff.position(offset);
-		
-		long[] longBuffer = new long[DiskFPSet.InitialBucketCapacity];
-		for (int i = 0; i < DiskFPSet.InitialBucketCapacity; i++) {
-			long l = this.buff.getLong();
-			if (l <= 0L && i == 0) {
-				return null;
-			} else if (l <= 0L) {
-				Arrays.sort(longBuffer, 0, i);
-				return longBuffer;
-			} else {
-				longBuffer[i] = l;
+	public long getLast() {
+		int tmpLogicalPosition = logicalPosition;
+		logicalPosition = this.lBuf.capacity() - DiskFPSet.InitialBucketCapacity;
+		sortNextBucket();
+
+		// reverese the current bucket to obtain last element
+		long l = 1L;
+		while ((l = lBuf.get(logicalPosition-- + DiskFPSet.InitialBucketCapacity - 1)) <= 0L) {
+			if (((logicalPosition - DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0) == 0) {
+				sortNextBucket();
 			}
 		}
-		Arrays.sort(longBuffer);
-		return longBuffer;
-	}
-	
-	/**
-	 * @param offset
-	 * @return <code>null</code> if the bucket at offset contains only <= 0L
-	 *         values, a _sorted_ bucket otherwise.
-	 */
-	private long[] getBucketCached(int offset) {
-		if (offset == ce.key) {
-			return ce.value;
-		} else if (ce.key >= 0 && offset > ce.key && ce.value != null) {
-			lBuf.position(ce.key / DiskFPSet.LongSize);
-			lBuf.put(ce.value);
+		
+		if (l > 0L) {
+			logicalPosition = tmpLogicalPosition;
+			return l;
 		}
-
-		long[] bucket = getBucket(offset);
-		ce.key = offset;
-		ce.value = bucket;
-		return bucket;
+		throw new NoSuchElementException();
 	}
 	
-	private static class CacheEntry {
-		public long[] value;
-		public int key = -1;
-	}
+	
+//	/**
+//	 * @return The last element in the iteration.
+//     * @exception NoSuchElementException if iteration is empty.
+//	 */
+//	public long getLast() {		
+//		final int capacity = this.buff.capacity();
+//
+//		// get last bucket, sort and read last slot (max fp)
+//		long[] bucket = getBucket(capacity - BUCKET_SIZE_IN_BYTES);;
+//
+//		// find last bucket containing elements, buff elements might be null if
+//		// no fingerprint for such an index has been added to the DiskFPSet
+//		int j = 2;
+//		while (bucket == null) {
+//			bucket = getBucket(capacity - (BUCKET_SIZE_IN_BYTES * j++));
+//		}
+//		
+//		// find last element > 0 in bucket
+//		for (int i = bucket.length - 1; i >= 0 ;i--) {
+//			if (bucket[i] > 0) {
+//				return bucket[i] >= collisionBucket.last() ? bucket[i] : collisionBucket.last();
+//			}
+//		}
+//		throw new NoSuchElementException();
+//	}
+//	
+//	/**
+//	 * @param offset
+//	 * @return <code>null</code> if the bucket at offset contains only <= 0L
+//	 *         values, a _sorted_ bucket otherwise.
+//	 */
+//	private long[] getBucket(int offset) {
+//		this.buff.position(offset);
+//		
+//		long[] longBuffer = new long[DiskFPSet.InitialBucketCapacity];
+//		for (int i = 0; i < DiskFPSet.InitialBucketCapacity; i++) {
+//			long l = this.buff.getLong();
+//			if (l <= 0L && i == 0) {
+//				return null;
+//			} else if (l <= 0L) {
+//				Arrays.sort(longBuffer, 0, i);
+//				return longBuffer;
+//			} else {
+//				longBuffer[i] = l;
+//			}
+//		}
+//		Arrays.sort(longBuffer);
+//		return longBuffer;
+//	}
 }

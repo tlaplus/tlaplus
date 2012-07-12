@@ -14,9 +14,12 @@ import java.rmi.RemoteException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.management.NotCompliantMBeanException;
+
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.TLCTrace;
+import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.IdThread;
@@ -92,6 +95,7 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 	 * in-memory buffer of new entries
 	 */
 	protected ByteBuffer tbl;
+	protected LongBuffer tblBuffer;
 	/**
 	 * number of entries in "tbl". This is equivalent to the current number of fingerprints stored in in-memory cache/index.
 	 * @see OffHeapDiskFPSet#getTblCnt()
@@ -239,20 +243,20 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 		Assert.check(ca > 0, EC.GENERAL);
 		this.tbl = ByteBuffer.allocateDirect(ca);
 		Assert.check(this.tbl.capacity() > maxTblCnt, EC.GENERAL);
+		this.tblBuffer = this.tbl.asLongBuffer();
 		this.collisionBucket = new TreeSet<Long>();
 		
-		//TODO add interface for JMX
-//		try {
-//			diskFPSetMXWrapper = new DiskFPSetMXWrapper(this);
-//		} catch (NotCompliantMBeanException e) {
-//			// not expected to happen
-//			// would cause JMX to be broken, hence just log and continue
-//			MP.printWarning(
-//					EC.GENERAL,
-//					"Failed to create MBean wrapper for DiskFPSet. No statistics/metrics will be avaiable.",
-//					e);
-//			diskFPSetMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
-//		}
+		try {
+			diskFPSetMXWrapper = new DiskFPSetMXWrapper(this);
+		} catch (NotCompliantMBeanException e) {
+			// not expected to happen
+			// would cause JMX to be broken, hence just log and continue
+			MP.printWarning(
+					EC.GENERAL,
+					"Failed to create MBean wrapper for DiskFPSet. No statistics/metrics will be avaiable.",
+					e);
+			diskFPSetMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -417,7 +421,7 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 			// A) the FP distribution causes the index tbl to be unevenly populated.
 			// B) the FP distribution reassembles linear fill-up/down which 
 			// causes tblCnt * buckets with initial load factor to be allocated.
-			if (this.tblCnt >= this.maxTblCnt && !this.flusherChosen) {
+			if ((this.tblCnt >= this.maxTblCnt /*|| collisionBucket.size() > 0*/)&& !this.flusherChosen) {
 				// block until there are no more readers
 				this.flusherChosen = true;
 				this.rwLock.BeginWrite();
@@ -475,10 +479,15 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 	 * @param fp
 	 * @return
 	 */
-	protected int getIndex(long fp) {
+	protected int getLogicalPosition(long fp) {
 		// calculate hash value (just n most significant bits of fp) which is
 		// used as an index address
-		return ((int) (fp >>> 32) & this.mask) >> moveBy;
+		long l = fp >>> 32;
+		long l2 = l & this.mask;
+		int index = (int) l2 >> moveBy;
+		int position = index * InitialBucketCapacity;
+		Assert.check(position < tblBuffer.capacity(), EC.GENERAL);
+		return position;
 	}
 
 	/**
@@ -486,16 +495,13 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 	 * @return true iff "fp" is in the hash table. 
 	 */
 	final boolean memLookup(long fp) {
-		final int index = getIndex(fp);
-		final int position = index * (InitialBucketCapacity * LongSize);
-		this.tbl.position(position);
+		final int position = getLogicalPosition(fp);
 		
 		// Linearly search the logical bucket; 0L is an invalid fp and marks the
 		// end of the allocated bucket
 		long l = -1L;
-		final LongBuffer longBuffer = this.tbl.asLongBuffer();
 		for (int i = 0; i < InitialBucketCapacity && l != 0L; i++) {
-			l = longBuffer.get();
+			l = tblBuffer.get(position + i);
 			// zero the long msb (which is 1 if fp has been flushed to disk)
 			if (fp == (l & 0x7FFFFFFFFFFFFFFFL)) {
 				return true;
@@ -503,51 +509,45 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 		}
 		return collisionBucket.contains(fp);
 	}
-
+	
 	/**
 	 * Return "true" if "fp" is contained in the hash table; otherwise, insert
 	 * it and return "false". Precondition: msb(fp) = 0
 	 */
 	final boolean memInsert(long fp) {
-		final int index = getIndex(fp);
-		final int position = index * (InitialBucketCapacity * LongSize);
-		this.tbl.position(position);
+		final int position = getLogicalPosition(fp);
 
 		long l = -1;
-		int pos = -1;
-		final LongBuffer longBuffer = this.tbl.asLongBuffer();
+		int freePosition = -1;
 		for (int i = 0; i < InitialBucketCapacity && l != 0L; i++) {
-			l = longBuffer.get(i);
+			l = tblBuffer.get(position + i);
 			// zero the long msb (which is 1 if fp has been flushed to disk)
 			if (fp == (l & 0x7FFFFFFFFFFFFFFFL)) {
 				return true;
-			} else if (l == 0L) {
+			} else if (l == 0L && freePosition == -1) {
 				// empty or disk written slot found, simply insert at _current_ position
-				longBuffer.position(i);
-				longBuffer.put(fp);
+				tblBuffer.put(position + i, fp);
 				this.tblCnt++;
 				return false;
-			} else if (l < 0L && pos == -1) {
+			} else if (l < 0L && freePosition == -1) {
 				// record free (disk written fp) slot
-				pos = i;
+				freePosition = position + i;
 			}
 		}
 		
 		// index slot overflow, thus add to collisionBucket
-		if (collisionBucket.contains(fp)) {
-			return true;
-		} else if (pos > -1) {
-			longBuffer.put(pos, fp);
-			this.tblCnt++;
-			return false;
-		} else {
-			if (collisionBucket.add(fp)) {
+		if (!collisionBucket.contains(fp)) {
+			if (freePosition > -1) {
+				tblBuffer.put(freePosition, fp);
 				this.tblCnt++;
 				return false;
 			} else {
-				return true;
+				collisionBucket.add(fp);
+				this.tblCnt++;
+				return false;
 			}
 		}
+		return true;
 	}
 
 	/**
@@ -731,6 +731,9 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 //		this.diskSeekCnt = 0;
 //		this.diskLookupCnt = 0;
 		
+		// debug helper
+//		checkTablePreCondition();
+		
 		// merge array with disk file
 		try {
 			this.mergeNewEntries();
@@ -742,7 +745,58 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 		this.tblCnt = 0;
 		this.bucketsCapacity = 0;
 		this.tblLoad = 0;
+		
+		// debug helper
+//		printTable();
+//		checkTablePostCondition();
 	}
+
+	private void printTable() {
+		for (int i = 0; i < this.tblBuffer.capacity(); i++) {
+			long fp = this.tblBuffer.get(i);
+			if(fp == -9222316700110347590L) {
+				System.out.println();
+			}
+			// Print content
+			if (i % DiskFPSet.InitialBucketCapacity == 0) {
+				System.out.println("---BucketEnd " + i + "---");
+			}
+			System.out.println(fp);
+		}
+	}
+//	
+//	private void checkTablePreCondition() {
+//		long count = 0L;
+//		for (int i = 0; i < this.tblBuffer.capacity(); i++) {
+//			long fp = this.tblBuffer.get(i);
+//			
+//			// skip empty slots
+//			if (fp <= 0L) {
+//				continue;
+//			}
+//			count++;
+//		}
+//		Assert.check(count == this.tblCnt - collisionBucket.size(), EC.GENERAL);
+//	}
+//	// post condition only holds for the first disk flush, not afterwards
+//	private void checkTablePostCondition() {
+//		long predecessor = Long.MIN_VALUE;
+//		int failures = 0;
+//		for (int i = 0; i < this.tblBuffer.capacity(); i++) {
+//			long fp = this.tblBuffer.get(i);
+//			// skip empty slots
+//			if (fp == 0L) {
+//				continue;
+//			}
+//			// compare current fp with predecessor to assert that they are
+//			// monotonically increasing.
+//			if(predecessor >= fp) {
+//				failures++;
+//			}
+//			predecessor = fp;
+//		}
+//		Assert.check(failures == 0, EC.GENERAL);
+//	}
 
 	/**
 	 * Merge the values in "buff" into this FPSet's backing disk file. The
@@ -878,8 +932,12 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 							String.valueOf(value));
 				}
 				this.writeFP(outRAF, fp);
-				// we used on fp up, thus move to next one
-				fp = itr.next();
+				// we used one fp up, thus move to next one
+//				if (itr.hasNext())
+					fp = itr.next();
+//				if (fp ==9223346055257602450L) {
+//					System.out.println();
+//				}
 			}
 		}
 
@@ -888,7 +946,6 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 			while (fp > 0L) {
 				this.writeFP(outRAF, fp);
 				if (!itr.hasNext()) {
-					itr.close();
 					break;
 				}
 				fp = itr.next();
