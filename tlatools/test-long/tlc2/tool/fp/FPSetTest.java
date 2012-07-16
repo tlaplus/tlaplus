@@ -1,9 +1,15 @@
 package tlc2.tool.fp;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Random;
 
 public abstract class FPSetTest extends AbstractFPSetTest {
+
+	private long previousTimestamp;
+	private long previousSize;
+	
+	private final DecimalFormat df = new DecimalFormat("###,###.###");
 
 	public void testSimpleFill() throws IOException {
 		long freeMemory = getFreeMemoryInBytes();
@@ -46,14 +52,11 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 			
 			predecessor = rnd.nextLong();
 			assertFalse(fpSet.put(predecessor));
-			assertTrue(i == fpSet.size());
+			long currentSize = fpSet.size();
+			assertTrue(i == currentSize);
 
-			// print stats
-			if (i % 1000000 == 0) {
-				System.out.println("Estimated size of FPSet (MiB): "
-						+ (((FPSetStatistic)fpSet).sizeof() >> 20));
-			}
-	}
+			printInsertionSpeed(currentSize);
+		}
 	
 		// try creating a check point
 		fpSet.beginChkpt();
@@ -61,6 +64,18 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 		
 		//
 		assertEquals(l, fpSet.size());
+	}
+	
+	// insertion speed
+	private void printInsertionSpeed(final long currentSize) {
+		long currentTimestamp = System.currentTimeMillis();
+		// print every minute
+		if (currentTimestamp - previousTimestamp >= (60 * 1000d)) {
+			long insertions = (long) (currentSize - previousSize);
+			System.out.println(df.format(insertions) + " insertions/min");
+			previousTimestamp = currentTimestamp;
+			previousSize = currentSize;
+		}
 	}
 
 	/**
@@ -87,7 +102,10 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 			}
 			
 			assertFalse(fpSet.put(value));
-			assertTrue(++counter == fpSet.size());
+			long currentSize = fpSet.size();
+			assertTrue(++counter == currentSize);
+			
+			printInsertionSpeed(currentSize);
 		}
 	
 		// try creating a check point
