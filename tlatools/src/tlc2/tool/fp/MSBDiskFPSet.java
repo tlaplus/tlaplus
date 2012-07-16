@@ -83,8 +83,6 @@ public class MSBDiskFPSet extends DiskFPSet {
 		if (this.tblCnt == 0)
 			return;
 
-		System.out.println("Flushing disk for the n-time: " + getGrowDiskMark());
-
 		// Why not sort this.tbl in-place rather than doubling memory
 		// requirements by copying to clone array and subsequently sorting it?
 		// - disk written fps are marked disk written by changing msb to 1

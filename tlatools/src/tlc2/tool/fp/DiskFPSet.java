@@ -416,9 +416,13 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 
 				// statistics
 				growDiskMark++;
+				long timestamp = System.currentTimeMillis();
 				
 				// flush memory entries to disk
 				this.flushTable();
+
+				System.out.println("Flushing disk " + getGrowDiskMark() + " time, in "
+						+ ((System.currentTimeMillis() - timestamp) / 1000) + " sec");
 
 				// finish writing
 				this.rwLock.EndWrite();
