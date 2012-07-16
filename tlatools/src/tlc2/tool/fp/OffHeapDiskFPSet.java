@@ -311,8 +311,9 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 	public final long sizeof() {
 		synchronized (this.rwLock) {
 			long size = 44; // approx size of this DiskFPSet object
-			size += this.tbl.capacity();
+			size += this.tbl.capacity() * LongSize;
 			size += getIndexCapacity() * 4;
+			size += collisionBucket.size() * LongSize; // ignoring the internal TreeSet overhead here
 			return size;
 		}
 	}
@@ -421,7 +422,7 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 			// A) the FP distribution causes the index tbl to be unevenly populated.
 			// B) the FP distribution reassembles linear fill-up/down which 
 			// causes tblCnt * buckets with initial load factor to be allocated.
-			if ((this.tblCnt >= this.maxTblCnt/* || collisionBucket.size() > 0*/)&& !this.flusherChosen) {
+			if ((this.tblCnt >= this.maxTblCnt || sizeOfCollisionBucketExceeds(.05d)) && !this.flusherChosen) {
 				// block until there are no more readers
 				this.flusherChosen = true;
 				this.rwLock.BeginWrite();
@@ -438,6 +439,18 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 			}
 			return false;
 		}
+	}
+	
+	/**
+	 * @param limit A limit the collsionBucket is not allowed to exceed
+	 * @return The proportional size of the collision bucket compared to the
+	 *         size of the set.
+	 */
+	private boolean sizeOfCollisionBucketExceeds(final double limit) {
+		// the fraction of collisionBucket size compared to the tbl size 
+		final double dSize = (double) collisionBucket.size();
+		final double dTblcnt = (double) tblCnt;
+		return dSize / dTblcnt >= limit;
 	}
 
 	/* (non-Javadoc)
@@ -722,6 +735,11 @@ public class OffHeapDiskFPSet extends FPSet implements FPSetStatistic {
 	void flushTable() throws IOException {
 		if (this.tblCnt == 0)
 			return;
+		
+		System.out.println("Flushing FPSet for the " + growDiskMark + " time...");
+		if (sizeOfCollisionBucketExceeds(.05d)) {
+			System.out.println("...due to collisionBucket size limit");
+		}
 
 //		// reset statistic counters
 //		this.memHitCnt = 0;

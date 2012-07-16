@@ -143,11 +143,7 @@ public class ByteBufferIterator {
      */
 	public boolean hasNext() {
 		// hasNext does not move the indices at all!
-		boolean allRead = readElements < totalElements;
-		if (allRead) {
-			return true;
-		}
-		return false;
+		return readElements < totalElements;
 	}
 
 	/**
