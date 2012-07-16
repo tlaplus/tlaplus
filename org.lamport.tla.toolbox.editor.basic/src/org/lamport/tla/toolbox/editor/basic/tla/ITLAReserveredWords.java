@@ -20,6 +20,7 @@ public interface ITLAReserveredWords
     public final static String CHOOSE 		= "CHOOSE";
     public final static String CONSTANT		= "CONSTANT";
     public final static String CONSTANTS	= "CONSTANTS";
+    public final static String COROLLARY    = "COROLLARY";  // Added 16 July 2012 by LL
     public final static String DEF          = "DEF";
     public final static String DEFINE       = "DEFINE";
     public final static String DEFS         = "DEFS";
@@ -83,6 +84,7 @@ public interface ITLAReserveredWords
         CHOOSE,
         CONSTANT,
         CONSTANTS,
+        COROLLARY,
         DEF,
         DEFINE,
         DEFS,
