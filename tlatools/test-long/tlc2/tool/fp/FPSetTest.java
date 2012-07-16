@@ -39,6 +39,11 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 		final FPSet fpSet = getFPSet(freeMemory);
 		fpSet.init(1, tmpdir, filename);
 	
+		if (fpSet instanceof FPSetStatistic) {
+			FPSetStatistic fpSetStats = (FPSetStatistic) fpSet;
+			System.out.println("Maximum FPSet bucket count is: " + fpSetStats.getMaxTblCnt());
+		}
+
 		long predecessor = 0L;
 
 		// fill with max int + 1
