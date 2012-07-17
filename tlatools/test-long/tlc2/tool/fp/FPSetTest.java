@@ -100,7 +100,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 		// print every minute
 		final double factor = (currentTimestamp - previousTimestamp) / 60000d;
 		if (factor >= 1d) {
-			double insertions = (currentSize - previousSize) * factor;
+			long insertions = (long) ((currentSize - previousSize) * factor);
 			System.out.println(df.format(insertions) + " insertions/min");
 			previousTimestamp = currentTimestamp;
 			previousSize = currentSize;
