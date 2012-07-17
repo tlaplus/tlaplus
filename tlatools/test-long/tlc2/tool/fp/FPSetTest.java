@@ -2,6 +2,7 @@ package tlc2.tool.fp;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.Random;
 
 public abstract class FPSetTest extends AbstractFPSetTest {
@@ -11,6 +12,28 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	
 	private final DecimalFormat df = new DecimalFormat("###,###.###");
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.AbstractFPSetTest#setUp()
+	 */
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		System.out.println("Test started at " + new Date());
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.AbstractFPSetTest#tearDown()
+	 */
+	@Override
+	public void tearDown() {
+		super.tearDown();
+		System.out.println("Test finished at " + new Date());
+	}
+
+	/**
+	 * Test filling a {@link FPSet} with four linearly incrementing values
+	 * @throws IOException
+	 */
 	public void testSimpleFill() throws IOException {
 		long freeMemory = getFreeMemoryInBytes();
 		final FPSet fpSet = getFPSet(freeMemory);
@@ -41,7 +64,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	
 		if (fpSet instanceof FPSetStatistic) {
 			FPSetStatistic fpSetStats = (FPSetStatistic) fpSet;
-			System.out.println("Maximum FPSet bucket count is: " + fpSetStats.getMaxTblCnt());
+			System.out.println("Maximum FPSet bucket count is: " + df.format(fpSetStats.getMaxTblCnt()));
 		}
 
 		long predecessor = 0L;
@@ -68,7 +91,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 		fpSet.commitChkpt();
 		
 		//
-		assertEquals(l, fpSet.size());
+		assertEquals(l - 1, fpSet.size());
 	}
 	
 	// insertion speed
