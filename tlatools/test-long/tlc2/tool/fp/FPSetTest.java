@@ -66,6 +66,8 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 			FPSetStatistic fpSetStats = (FPSetStatistic) fpSet;
 			System.out.println("Maximum FPSet bucket count is: " + df.format(fpSetStats.getMaxTblCnt()));
 		}
+		
+		System.out.println("Testing " + fpSet.getClass().getCanonicalName());
 
 		long predecessor = 0L;
 
