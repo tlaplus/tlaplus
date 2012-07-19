@@ -288,7 +288,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		}
 	}
 
-	public final long sizeof() {
+	public long sizeof() {
 		synchronized (this.rwLock) {
 			long size = 44; // approx size of this DiskFPSet object
 			size += 16 + (this.tbl.length * 4); // for this.tbl
@@ -409,7 +409,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			// A) the FP distribution causes the index tbl to be unevenly populated.
 			// B) the FP distribution reassembles linear fill-up/down which 
 			// causes tblCnt * buckets with initial load factor to be allocated.
-			if (this.tblCnt >= this.maxTblCnt && !this.flusherChosen) {
+			if (needsDiskFlush() && !this.flusherChosen) {
 				// block until there are no more readers
 				this.flusherChosen = true;
 				this.rwLock.BeginWrite();
@@ -430,6 +430,14 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			}
 			return false;
 		}
+	}
+
+	/**
+	 * @return true iff the current in-memory buffer has to be flushed to disk
+	 *         to make room.
+	 */
+	protected boolean needsDiskFlush() {
+		return this.tblCnt >= this.maxTblCnt;
 	}
 
 	/* (non-Javadoc)
@@ -498,7 +506,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @param fp The fingerprint to lookup in memory
 	 * @return true iff "fp" is in the hash table. 
 	 */
-	final boolean memLookup(long fp) {
+	boolean memLookup(long fp) {
 		long[] bucket = this.tbl[getIndex(fp)];
 		if (bucket == null)
 			return false;
@@ -518,7 +526,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * Return "true" if "fp" is contained in the hash table; otherwise, insert
 	 * it and return "false". Precondition: msb(fp) = 0
 	 */
-	final boolean memInsert(long fp) {
+	boolean memInsert(long fp) {
 		int index = getIndex(fp);
 		
 		// try finding an existing bucket 
@@ -879,8 +887,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			maxVal = Math.max(maxVal, this.index[this.index.length - 1]);
 		}
 
-		//TODO this can cause a NegativeArraySizeException if fileCnt becomes sufficiently large
-		int indexLen = (int) ((this.fileCnt + buffLen - 1) / NumEntriesPerPage) + 2;
+		int indexLen = calculateIndexLen(buffLen);
 		this.index = new long[indexLen];
 		this.index[indexLen - 1] = maxVal;
 		this.currIndex = 0;
@@ -938,6 +945,11 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 
 		// maintain object invariants
 		this.fileCnt += buffLen;
+	}
+
+	protected int calculateIndexLen(final int buffLen) {
+		//TODO this can cause a NegativeArraySizeException if fileCnt becomes sufficiently large
+		return (int) ((this.fileCnt + buffLen - 1) / NumEntriesPerPage) + 2;
 	}
 
 	/* (non-Javadoc)

@@ -118,7 +118,7 @@ public class MSBDiskFPSet extends DiskFPSet {
 
 		// merge array with disk file
 		try {
-			this.mergeNewEntries(this.tbl, this.tblCnt);
+			this.mergeNewEntries();
 		} catch (IOException e) {
 			String msg = "Error: merging entries into file "
 					+ this.fpFilename + "  " + e;
@@ -145,8 +145,7 @@ public class MSBDiskFPSet extends DiskFPSet {
 	 * and the nested tlc2.tool.fp.MSBDiskFPSet.mergeNewEntries(long[][], int,
 	 * RandomAccessFile, RandomAccessFile) call.
 	 */
-	private final void mergeNewEntries(long[][] buff, int buffLen
-			) throws IOException {
+	protected void mergeNewEntries() throws IOException {
 		// Implementation Note: Unfortunately, because the RandomAccessFile
 		// class (and hence, the BufferedRandomAccessFile class) does not
 		// provide a way to re-use an existing RandomAccessFile object on
@@ -169,7 +168,7 @@ public class MSBDiskFPSet extends DiskFPSet {
 		raf.seek(0);
 
 		// merge
-		this.mergeNewEntries(buff, buffLen, raf, tmpRAF);
+		this.mergeNewEntries(raf, tmpRAF);
 
 		// clean up
 		raf.close();
@@ -195,10 +194,8 @@ public class MSBDiskFPSet extends DiskFPSet {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#mergeNewEntries(long[], int, java.io.RandomAccessFile, java.io.RandomAccessFile)
 	 */
-	private final void mergeNewEntries(long[][] buff, int buffLen,
-			RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
-
-		final TLCIterator itr = new TLCIterator(buff);
+	protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
+		final TLCIterator itr = new TLCIterator(this.tbl);
 
 		// Precompute the maximum value of the new file
 		long maxVal = itr.getLast();
@@ -206,7 +203,7 @@ public class MSBDiskFPSet extends DiskFPSet {
 			maxVal = Math.max(maxVal, this.index[this.index.length - 1]);
 		}
 
-		int indexLen = (int) ((this.fileCnt + buffLen - 1) / NumEntriesPerPage) + 2;
+		int indexLen = calculateIndexLen(this.tblCnt);
 		this.index = new long[indexLen];
 		this.index[indexLen - 1] = maxVal;
 		this.currIndex = 0;
@@ -266,13 +263,13 @@ public class MSBDiskFPSet extends DiskFPSet {
 				}
 			} while (!eof);
 		}
-		Assert.check(itr.reads() == buffLen, EC.GENERAL);
+		Assert.check(itr.reads() == this.tblCnt, EC.GENERAL);
 
 		// currIndex is amount of disk writes
 		Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
 
 		// maintain object invariants
-		this.fileCnt += buffLen;
+		this.fileCnt += this.tblCnt;
 	}
 	
 	/**
