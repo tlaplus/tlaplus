@@ -404,11 +404,6 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			}
 
 			// test if buffer is full
-			//TODO does not take the bucket load factor into account?
-			// Buckets can grow beyond VM heap size if:
-			// A) the FP distribution causes the index tbl to be unevenly populated.
-			// B) the FP distribution reassembles linear fill-up/down which 
-			// causes tblCnt * buckets with initial load factor to be allocated.
 			if (needsDiskFlush() && !this.flusherChosen) {
 				// block until there are no more readers
 				this.flusherChosen = true;
@@ -437,6 +432,11 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 *         to make room.
 	 */
 	protected boolean needsDiskFlush() {
+		//TODO does not take the bucket load factor into account?
+		// Buckets can grow beyond VM heap size if:
+		// A) the FP distribution causes the index tbl to be unevenly populated.
+		// B) the FP distribution reassembles linear fill-up/down which 
+		// causes tblCnt * buckets with initial load factor to be allocated.
 		return this.tblCnt >= this.maxTblCnt;
 	}
 
