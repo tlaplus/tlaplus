@@ -1,34 +1,9 @@
 package tlc2.tool.fp;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.Date;
 import java.util.Random;
 
 public abstract class FPSetTest extends AbstractFPSetTest {
-
-	private long previousTimestamp = System.currentTimeMillis();
-	private long previousSize;
-	
-	private final DecimalFormat df = new DecimalFormat("###,###.###");
-
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.AbstractFPSetTest#setUp()
-	 */
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		System.out.println("Test started at " + new Date());
-	}
-
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.AbstractFPSetTest#tearDown()
-	 */
-	@Override
-	public void tearDown() {
-		super.tearDown();
-		System.out.println("Test finished at " + new Date());
-	}
 
 	/**
 	 * Test filling a {@link FPSet} with four linearly incrementing values
@@ -57,17 +32,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	public void testMaxFPSetSizeRnd() throws IOException {
 		Random rnd = new Random(15041980L);
 		
-		// amount to ~514 (mb) with 4gb system mem
-		long freeMemory = getFreeMemoryInBytes();
-		final FPSet fpSet = getFPSet(freeMemory);
-		fpSet.init(1, tmpdir, filename);
-	
-		if (fpSet instanceof FPSetStatistic) {
-			FPSetStatistic fpSetStats = (FPSetStatistic) fpSet;
-			System.out.println("Maximum FPSet bucket count is: " + df.format(fpSetStats.getMaxTblCnt()));
-		}
-		
-		System.out.println("Testing " + fpSet.getClass().getCanonicalName());
+		final FPSet fpSet = getFPSetInitialized();
 
 		long predecessor = 0L;
 
@@ -94,19 +59,6 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 		
 		//
 		assertEquals(l - 1, fpSet.size());
-	}
-	
-	// insertion speed
-	private void printInsertionSpeed(final long currentSize) {
-		final long currentTimestamp = System.currentTimeMillis();
-		// print every minute
-		final double factor = (currentTimestamp - previousTimestamp) / 60000d;
-		if (factor >= 1d) {
-			long insertions = (long) ((currentSize - previousSize) * factor);
-			System.out.println(df.format(insertions) + " insertions/min");
-			previousTimestamp = currentTimestamp;
-			previousSize = currentSize;
-		}
 	}
 
 	/**
