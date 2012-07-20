@@ -265,15 +265,15 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		this.fileCnt += buffLen;
 	}
 
-	/**
-	 * @return The allocated (used and unused) array length of the first level in-memory storage.
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#getTblCapacity()
 	 */
 	public int getTblCapacity() {
 		return tbl.capacity();
 	}
 
-	/**
-	 * @return The amount of elements in the {@link OffHeapDiskFPSet#collisionBucket}
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#getCollisionBucketCnt()
 	 */
 	public long getCollisionBucketCnt() {
 		return collisionBucket.size();
