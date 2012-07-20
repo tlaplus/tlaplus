@@ -61,9 +61,9 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	public long sizeof() {
 		synchronized (this.rwLock) {
 			long size = 44; // approx size of this DiskFPSet object
-			size += this.tbl.capacity() * LongSize;
+			size += this.tbl.capacity() * (long) LongSize;
 			size += getIndexCapacity() * 4;
-			size += collisionBucket.size() * LongSize; // ignoring the internal TreeSet overhead here
+			size += collisionBucket.size() * (long) LongSize; // ignoring the internal TreeSet overhead here
 			return size;
 		}
 	}
