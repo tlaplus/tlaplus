@@ -955,7 +955,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		this.fileCnt += buffLen;
 	}
 
-	protected int calculateIndexLen(final int buffLen) {
+	protected int calculateIndexLen(final long buffLen) {
 		//TODO this can cause a NegativeArraySizeException if fileCnt becomes sufficiently large
 		return (int) ((this.fileCnt + buffLen - 1) / NumEntriesPerPage) + 2;
 	}
