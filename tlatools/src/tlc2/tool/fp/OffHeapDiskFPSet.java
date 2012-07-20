@@ -89,17 +89,11 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 
 
 	/**
-	 * calculate hash value (just n least significat bits of fp) which is used as an index address
 	 * @param fp
-	 * @return
+	 * @return The logical position in the {@link ByteBuffer} for the given fingerprint.
 	 */
-	protected int getLogicalPosition(long fp) {
-		// calculate hash value (just n most significant bits of fp) which is
-		// used as an index address
-		long l = fp >>> 32;
-		long l2 = l & this.mask;
-		int index = (int) l2 >> moveBy;
-		int position = index * InitialBucketCapacity;
+	protected int getLogicalPosition(final long fp) {
+		final int position = ((int) (fp >>> 32 & this.mask) >> moveBy) * InitialBucketCapacity;
 		Assert.check(position < tblBuffer.capacity(), EC.GENERAL);
 		return position;
 	}
