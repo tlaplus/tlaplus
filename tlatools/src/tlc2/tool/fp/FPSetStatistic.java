@@ -80,5 +80,23 @@ public interface FPSetStatistic {
 	 */
 	public int getCheckPointMark();
 	
+	/**
+	 * @return The memory size of the {@link DiskFPSet}
+	 */
 	public long sizeof();
+	
+	/**
+	 * @return Accumulated time it has taken to flush {@link FPSet} to disk
+	 */
+	public long getFlushTime();
+	
+	/**
+	 * @see DiskFPSet#getReaderWriterCnt()
+	 */
+	public int getReaderWriterCnt();
+	
+	/**
+	 * @return DiskFPSet#getCollisionBucketCnt()
+	 */
+	public long getCollisionBucketCnt();
 }

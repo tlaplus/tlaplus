@@ -277,6 +277,13 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	public int getTblCapacity() {
 		return tbl.capacity();
 	}
+
+	/**
+	 * @return The amount of elements in the {@link OffHeapDiskFPSet#collisionBucket}
+	 */
+	public long getCollisionBucketCnt() {
+		return collisionBucket.size();
+	}
 	
 	public class ByteBufferIterator {
 

@@ -167,7 +167,13 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		return 2.5d;
 	}
 	
-	private TLCStandardMBean diskFPSetMXWrapper;
+	protected TLCStandardMBean diskFPSetMXWrapper;
+	
+	/**
+	 * Accumulated wall clock time it has taken to flush this {@link FPSet} to
+	 * disk
+	 */
+	private long flushTime = 0L;
 
 	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
@@ -416,8 +422,10 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 				// flush memory entries to disk
 				this.flushTable();
 
+				long l = System.currentTimeMillis() - timestamp;
+				flushTime += l;
 				System.out.println("Flushing disk " + getGrowDiskMark() + " time, in "
-						+ ((System.currentTimeMillis() - timestamp) / 1000) + " sec");
+						+ (l / 1000) + " sec");
 
 				// finish writing
 				this.rwLock.EndWrite();
@@ -1291,6 +1299,28 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		return checkPointMark;
 	}
 	
+	/**
+	 * @see DiskFPSet#flushTime
+	 */
+	public long getFlushTime() {
+		return flushTime;
+	}
+	
+	/**
+	 * @return The technical maximum of readers/writers this {@link DiskFPSet}
+	 *         can handle. It doesn't show the actual numbers of active clients.
+	 */
+	public int getReaderWriterCnt() {
+		return this.braf.length;
+	}
+	
+	/**
+	 * @return The amount of elements in the {@link DiskFPSet#collisionBucket}
+	 *         if the {@link DiskFPSet} has a collisionBucket. -1L otherwise.
+	 */
+	public long getCollisionBucketCnt() {
+		return -1L;
+	}
 
 	// /**
 	// *

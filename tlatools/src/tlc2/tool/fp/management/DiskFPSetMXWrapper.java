@@ -11,7 +11,7 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 
 	private static int COUNT = 0;
 	
-	private final FPSetStatistic fpset;
+	protected final FPSetStatistic fpset;
 	
 	public DiskFPSetMXWrapper(final FPSetStatistic diskFPSet) throws NotCompliantMBeanException {
 		super(DiskFPSetMXBean.class);
@@ -116,5 +116,26 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	 */
 	public int getTblLoad() {
 		return fpset.getTblLoad();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#sizeof()
+	 */
+	public long getSizeOf() {
+		return fpset.sizeof();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getFlushTime()
+	 */
+	public long getFlushTime() {
+		return fpset.getFlushTime();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getReaderWriterCnt()
+	 */
+	public int getReaderWriterCnt() {
+		return fpset.getReaderWriterCnt();
 	}
 }

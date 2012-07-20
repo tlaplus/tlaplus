@@ -2,6 +2,7 @@
 package tlc2.tool.fp.management;
 
 import tlc2.tool.fp.DiskFPSet;
+import tlc2.tool.fp.FPSet;
 
 public interface DiskFPSetMXBean {
 
@@ -67,4 +68,19 @@ public interface DiskFPSetMXBean {
 	 * @see DiskFPSet#getCheckPointMark()
 	 */
 	int getCheckPointMark();
+	
+	/**
+	 * @return
+	 */
+	long getSizeOf();
+	
+	/**
+	 * @return Accumulated time it has taken to flush {@link FPSet} to disk
+	 */
+	long getFlushTime();
+	
+	/**
+	 * @see DiskFPSet#getReaderWriterCnt()
+	 */
+	int getReaderWriterCnt();
 }
