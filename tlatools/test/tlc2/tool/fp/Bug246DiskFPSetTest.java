@@ -27,7 +27,7 @@ public class Bug246DiskFPSetTest extends TestCase {
 
 		long bucketCapacity = 0;
 
-		int tblCapacity = 0;
+		long tblCapacity = 0;
 		int tblLoad = 0;
 		int tblCnt = 0;
 		
