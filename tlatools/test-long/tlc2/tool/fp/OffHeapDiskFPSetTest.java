@@ -4,6 +4,8 @@ package tlc2.tool.fp;
 
 import java.io.IOException;
 
+import util.TLCRuntime;
+
 public class OffHeapDiskFPSetTest extends FPSetTest {
 	
 	public void testCollisionBucket() throws IOException {
@@ -36,7 +38,7 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 	 */
 	@Override
 	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
-		return new OffHeapDiskFPSet(-1L);
+		long freeMemoryInFPs = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / 8L;
+		return new OffHeapDiskFPSet(freeMemoryInFPs);
 	}
-
 }

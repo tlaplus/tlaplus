@@ -4,6 +4,7 @@ package tlc2.tool.fp;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.rmi.RemoteException;
@@ -12,23 +13,45 @@ import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import sun.misc.Unsafe;
 import tlc2.output.EC;
 import util.Assert;
 
-@SuppressWarnings("serial")
+@SuppressWarnings({ "serial", "restriction" })
 public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
+	
+	private static sun.misc.Unsafe getUnsafe() {
+		try {
+			Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+			f.setAccessible(true);
+			return (sun.misc.Unsafe) f.get(null);
+		} catch (Exception e) {
+			//TODO handle if non-sun vm
+			return null;
+		}
+	}
+	
 	/**
-	 * in-memory buffer of new entries
+	 * 
 	 */
-	protected ByteBuffer tbl;
+	private final Unsafe u;
+	
 	/**
-	 * A long viewer on the underlying tbl {@link ByteBuffer}
+	 * 
 	 */
-	protected LongBuffer tblBuffer;
+	private final long baseAddress;
+	
+	/**
+	 * 
+	 */
+	private final long maxInMemoryCapacity;
+
 	/**
 	 * A bucket containing collision elements
 	 */
 	private SortedSet<Long> collisionBucket; //TODO replace SortedSet with cheaper/faster long[]?!
+
+	private final long addressSize;
 
 	protected OffHeapDiskFPSet(long maxInMemoryCapacity) throws RemoteException {
 		this(maxInMemoryCapacity, 0);
@@ -36,6 +59,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	
 	protected OffHeapDiskFPSet(final long maxInMemoryCapacity, int preBits) throws RemoteException {
 		super(maxInMemoryCapacity);
+		this.maxInMemoryCapacity = maxInMemoryCapacity;
 
 		// Hack to free the buffer allocated by the super class!
 		// We cheat in that we are no real subclass of DiskFPSet, but
@@ -47,11 +71,15 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		//TODO impl preBits
 		Assert.check(preBits == 0, EC.GENERAL); // not yet implemented!!!
 		
-		int ca = capacity * InitialBucketCapacity * LongSize;
-		Assert.check(ca > 0, EC.GENERAL);
-		this.tbl = ByteBuffer.allocateDirect(ca);
-		Assert.check(this.tbl.capacity() > maxTblCnt, EC.GENERAL);
-		this.tblBuffer = this.tbl.asLongBuffer();
+		u = getUnsafe();
+		addressSize = u.addressSize();
+		baseAddress = u.allocateMemory(maxInMemoryCapacity * addressSize);
+		
+		// null memory
+		for (long i = 0; i < maxInMemoryCapacity; i++) {
+			u.putAddress(log2phy(i), 0L);
+		}
+
 		this.collisionBucket = new TreeSet<Long>();
 	}
 
@@ -61,7 +89,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	public long sizeof() {
 		synchronized (this.rwLock) {
 			long size = 44; // approx size of this DiskFPSet object
-			size += this.tbl.capacity() * (long) LongSize;
+			size += maxInMemoryCapacity * (long) LongSize;
 			size += getIndexCapacity() * 4;
 			size += collisionBucket.size() * (long) LongSize; // ignoring the internal TreeSet overhead here
 			return size;
@@ -92,9 +120,12 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	 * @param fp
 	 * @return The logical position in the {@link ByteBuffer} for the given fingerprint.
 	 */
-	protected int getLogicalPosition(final long fp) {
-		final int position = ((int) (fp >>> 32 & this.mask) >> moveBy) * InitialBucketCapacity;
-		Assert.check(position < tblBuffer.capacity(), EC.GENERAL);
+	protected long getLogicalPosition(final long fp) {
+		long m = fp >>> 32;
+		long l = m & this.mask;
+		int i = (int) l >> moveBy;
+		long position = i * (long) InitialBucketCapacity;
+		Assert.check(0 <= position && position < maxInMemoryCapacity * addressSize, EC.GENERAL);
 		return position;
 	}
 
@@ -102,13 +133,13 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#memLookup(long)
 	 */
 	boolean memLookup(long fp) {
-		final int position = getLogicalPosition(fp);
+		final long position = getLogicalPosition(fp);
 		
 		// Linearly search the logical bucket; 0L is an invalid fp and marks the
 		// end of the allocated bucket
 		long l = -1L;
 		for (int i = 0; i < InitialBucketCapacity && l != 0L; i++) {
-			l = tblBuffer.get(position + i);
+			l = u.getAddress(log2phy(position, i));
 			// zero the long msb (which is 1 if fp has been flushed to disk)
 			if (fp == (l & 0x7FFFFFFFFFFFFFFFL)) {
 				return true;
@@ -121,30 +152,30 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#memInsert(long)
 	 */
 	boolean memInsert(long fp) {
-		final int position = getLogicalPosition(fp);
+		final long position = getLogicalPosition(fp);
 
 		long l = -1;
-		int freePosition = -1;
+		long freePosition = -1L;
 		for (int i = 0; i < InitialBucketCapacity && l != 0L; i++) {
-			l = tblBuffer.get(position + i);
+			l = u.getAddress(log2phy(position, i));
 			// zero the long msb (which is 1 if fp has been flushed to disk)
 			if (fp == (l & 0x7FFFFFFFFFFFFFFFL)) {
 				return true;
 			} else if (l == 0L && freePosition == -1) {
 				// empty or disk written slot found, simply insert at _current_ position
-				tblBuffer.put(position + i, fp);
+				u.putAddress(log2phy(position, i), fp);
 				this.tblCnt++;
 				return false;
 			} else if (l < 0L && freePosition == -1) {
 				// record free (disk written fp) slot
-				freePosition = position + i;
+				freePosition = log2phy(position, i);
 			}
 		}
 		
 		// index slot overflow, thus add to collisionBucket
 		if (!collisionBucket.contains(fp)) {
 			if (freePosition > -1) {
-				tblBuffer.put(freePosition, fp);
+				u.putAddress(freePosition, fp);
 				this.tblCnt++;
 				return false;
 			} else {
@@ -155,6 +186,22 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		}
 		return true;
 	}
+	
+	/**
+	 * Converts from logical bucket index numbers and in-bucket position to a
+	 * physical memory address.
+	 * 
+	 * @param bucketNumber
+	 * @param inBucketPosition
+	 * @return The physical address of the fp slot
+	 */
+	private long log2phy(long bucketNumber, int inBucketPosition) {
+		return baseAddress + (bucketNumber * addressSize) + (inBucketPosition * addressSize);
+	}
+	
+	private long log2phy(long logicalAddress) {
+		return log2phy(logicalAddress, 0);
+	}
 
 	/**
 	 * Flush the contents of in-memory "this.tbl" to the backing disk file, and update
@@ -164,6 +211,12 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	void flushTable() throws IOException {
 		if (this.tblCnt == 0)
 			return;
+		
+//		System.out.println("=======");
+//		for (int i = 0; i < maxInMemoryCapacity; i++) {
+//			System.out.println(u.getLong(baseAddress + (i * addressSize)));
+//		}
+//
 		
 		System.out.println("Flushing FPSet for the " + getGrowDiskMark() + " time...");
 		if (sizeOfCollisionBucketExceeds(.05d)) {
@@ -188,7 +241,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	 */
 	protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
 		final long buffLen = this.tblCnt;
-		ByteBufferIterator itr = new ByteBufferIterator(this.tbl, collisionBucket, buffLen);
+		ByteBufferIterator itr = new ByteBufferIterator(this.u, this.baseAddress, collisionBucket, buffLen);
 		
 		// Precompute the maximum value of the new file
 		long maxVal = itr.getLast();
@@ -268,8 +321,8 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#getTblCapacity()
 	 */
-	public int getTblCapacity() {
-		return tbl.capacity();
+	public long getTblCapacity() {
+		return maxInMemoryCapacity;
 	}
 
 	/* (non-Javadoc)
@@ -281,7 +334,6 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	
 	public class ByteBufferIterator {
 
-		private final LongBuffer lBuf;
 		private final SortedSet<Long> collisionBucket;
 		/**
 		 * Number of elements in the buffer
@@ -295,7 +347,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		 * The logical position is the position inside the {@link LongBuffer} and
 		 * thus reflects a fingerprints
 		 */
-		private int logicalPosition = 0;
+		private long logicalPosition = 0;
 		/**
 		 * Used to verify that the elements we hand out are strictly monotonic
 		 * increasing.
@@ -307,12 +359,12 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		private long readElements = 0L;
 
 		private long cache = -1L;
+		private final Unsafe unsafe;
 
-		public ByteBufferIterator(final ByteBuffer aBuffer, SortedSet<Long> collisionBucket, long expectedElements) {
-			aBuffer.position(0);
-			
+		public ByteBufferIterator(Unsafe u, long baseAddress, SortedSet<Long> collisionBucket, long expectedElements) {
+			this.unsafe = u;
+			this.logicalPosition = 0L;
 			this.totalElements = expectedElements;
-			this.lBuf = aBuffer.asLongBuffer();
 			
 			this.collisionBucket = collisionBucket;
 			this.bufferElements = expectedElements - this.collisionBucket.size();
@@ -363,20 +415,20 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		private long getNextFromBuffer() {
 			sortNextBucket();
 			
-			long l = lBuf.get(logicalPosition);
+			long l = unsafe.getAddress(log2phy(logicalPosition));
 			if (l > 0L) {
-				lBuf.put(logicalPosition++, l | 0x8000000000000000L);
+				unsafe.putAddress(log2phy(logicalPosition++), l | 0x8000000000000000L);
 				return l;
 			}
 			
-			while ((l = lBuf.get(logicalPosition)) <= 0L && logicalPosition < lBuf.capacity()) {
+			while ((l = unsafe.getAddress(log2phy(logicalPosition))) <= 0L && logicalPosition < maxInMemoryCapacity) {
 				// increment position to next bucket and recursively call self
 				logicalPosition = (logicalPosition + DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0;
 				sortNextBucket();
 			}
 			
 			if (l > 0L) {
-				lBuf.put(logicalPosition++, l | 0x8000000000000000L);
+				unsafe.putAddress(log2phy(logicalPosition++), l | 0x8000000000000000L);
 				return l;
 			}
 			throw new NoSuchElementException();
@@ -389,7 +441,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 				long[] longBuffer = new long[DiskFPSet.InitialBucketCapacity];
 				int i = 0;
 				for (; i < DiskFPSet.InitialBucketCapacity; i++) {
-					long l = lBuf.get(logicalPosition + i);
+					long l = unsafe.getAddress(log2phy(logicalPosition + i));
 					if (l <= 0L) {
 						break;
 					} else {
@@ -398,7 +450,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 				}
 				Arrays.sort(longBuffer, 0, i);
 				for (int j = 0; j < i; j++) {
-					lBuf.put(logicalPosition + j, longBuffer[j]);
+					unsafe.putAddress(log2phy(logicalPosition, j), longBuffer[j]);
 				}
 			}
 		}
@@ -428,13 +480,13 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	     * @exception NoSuchElementException if iteration is empty.
 		 */
 		public long getLast() {
-			int tmpLogicalPosition = logicalPosition;
-			logicalPosition = this.lBuf.capacity() - DiskFPSet.InitialBucketCapacity;
+			long tmpLogicalPosition = logicalPosition;
+			logicalPosition = maxInMemoryCapacity - DiskFPSet.InitialBucketCapacity;
 			sortNextBucket();
 
 			// reverse the current bucket to obtain last element
 			long l = 1L;
-			while ((l = lBuf.get(logicalPosition-- + DiskFPSet.InitialBucketCapacity - 1)) <= 0L) {
+			while ((l = unsafe.getAddress(log2phy(logicalPosition-- + DiskFPSet.InitialBucketCapacity - 1))) <= 0L) {
 				if (((logicalPosition - DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0) == 0) {
 					sortNextBucket();
 				}

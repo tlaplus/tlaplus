@@ -4,7 +4,9 @@ package util;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import tlc2.tool.fp.FPSet;
 
@@ -68,6 +70,39 @@ public class TLCRuntime {
 		}
 		final double d = physicalSystemMemory * fraction;
 		return (long) (d / 1024d / 1024d);
+	}
+	
+	/**
+	 * @return The non-heap memory JVM memory set with -XX:MaxDirectMemorySize in Bytes
+	 */
+	public long getNonHeapPhysicalMemory() {
+		long l = 0L;
+		
+		final RuntimeMXBean RuntimemxBean = ManagementFactory.getRuntimeMXBean();
+		final List<String> arguments = RuntimemxBean.getInputArguments();
+		for (String arg : arguments) {
+			if (arg.toLowerCase().startsWith("-xx:maxdirectmemorysize")) {
+				String[] strings = arg.split("=");
+				String mem = strings[1].toLowerCase();
+				if (mem.endsWith("g")) {
+					l = Long.parseLong(mem.substring(0, mem.length() -1));
+					l = l << 30;
+					break;
+				} else if (mem.endsWith("m")) {
+					l = Long.parseLong(mem.substring(0, mem.length() -1));
+					l = l << 20;
+					break;
+				} else if (mem.endsWith("k")) {
+					l = Long.parseLong(mem.substring(0, mem.length() -1));
+					l = l << 10;
+					break;
+				} else {
+					l = Long.parseLong(mem.substring(0, mem.length()));
+					break;
+				}
+			}
+		}
+		return l;
 	}
 
 	/**
