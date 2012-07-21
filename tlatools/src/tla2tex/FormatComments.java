@@ -9,7 +9,7 @@
 * WriteComment(writer, vec, commentType, indentOrWidth, tlaMode)           *
 *    Writes the comment, which is represented as a vector vec of the       *
 *    strings that form the lines of the comment.  The tlaMode argument     *
-*    detemines if the comments are to be formatted (true), or treated      *
+*    determines if the comments are to be formatted (true), or treated     *
 *    as raw LaTeX input (false).                                           *
 *                                                                          *
 * Initialize                                                               *
@@ -47,7 +47,7 @@
 *     be better to type them in Roman, since they could be part            *
 *     of a title.                                                          *
 *                                                                          *
-*   * IN should proably have extra space after it in a TLA expression      *
+*   * IN should probably have extra space after it in a TLA expression     *
 *     only if it begins the line.                                          *
 *                                                                          *
 *   At the moment, this doesn't seem worth bothering with.                 *
@@ -485,7 +485,7 @@ public final class FormatComments
   private static boolean 
       PossibleAlignment(CToken[][] com, int line, int itemNo)
     /***********************************************************************
-    * True iff the token at com[line][item] is a candiate for an           *
+    * True iff the token at com[line][item] is a candidate for an          *
     * word-alignment position.                                             *
     *                                                                      *
     *   Precondition: 0 < itemNo                                           *
