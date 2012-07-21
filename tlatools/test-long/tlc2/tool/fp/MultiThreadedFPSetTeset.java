@@ -112,7 +112,7 @@ public abstract class MultiThreadedFPSetTeset extends AbstractFPSetTest {
 		 * @return the collisions
 		 */
 		public long getCollisions() {
-			return collisions;
+			return collisions == 0 ? 1 : collisions;
 		}
 	}
 }
