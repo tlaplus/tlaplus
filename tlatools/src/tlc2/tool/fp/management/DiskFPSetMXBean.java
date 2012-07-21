@@ -49,7 +49,7 @@ public interface DiskFPSetMXBean {
 	/**
 	 * @see DiskFPSet#getTblCapacity()
 	 */
-	public int getTblCapacity();
+	public long getTblCapacity();
 	/**
 	 * @see DiskFPSet#getOverallCapacity()
 	 */

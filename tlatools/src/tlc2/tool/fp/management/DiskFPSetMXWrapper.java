@@ -100,7 +100,7 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getTblCapacity()
 	 */
-	public int getTblCapacity() {
+	public long getTblCapacity() {
 		return fpset.getTblCapacity();
 	}
 

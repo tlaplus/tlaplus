@@ -1208,7 +1208,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * @return The allocated (used and unused) array length of the first level in-memory storage.
 	 */
-	public int getTblCapacity() {
+	public long getTblCapacity() {
 		return tbl.length;
 	}
 
