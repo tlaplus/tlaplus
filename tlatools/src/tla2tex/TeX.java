@@ -105,7 +105,7 @@ class TeX
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Wed 19 Sep 2007 at  7:08:49 PST by lamport";
+    "last modified on Wed 21 Jul 2012 at 16:08:49 PST by lamport";
 
   static String modDate = lastModified.substring(21, 33) ;
     /***********************************************************************

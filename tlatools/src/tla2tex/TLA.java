@@ -15,14 +15,22 @@
 *      IN  X                                                               *
 *      =====================================                               *
 *                                                                          *
-* are not aligned.                                                         *
+*      are not aligned.                                                    *
+*      CORRECTED 21 Jul 2012.                                              *
 *                                                                          *
 * Bug:  A weird extra space added to align the \in with the \succ in       *
 *                                                                          *
 *      LTSet(N, _\succ_, n) == {m \in N : n \succ m}                       *
 *      LeadsToInduction(F(_), N, _\succ_, z) ==                            *
 *                                                                          *
+*      This results from \succ and \in belonging to the same alignment     *
+*      class, which is necessary if we want them to both align with = .    *
+*      So, this is probably not worth fixing.                              *
 *                                                                          *
+* Bug: Does not handle hex characters with digits > 9, as in               *
+*      \Habc .  The problem is in the tokenizing algorithm in              *
+*      TokenizeSpec.Tokenize.  The processing of the BS state in the       *
+*      spec needs to handle the "H" or "h" case specially.                 *
 * TO DO:                                                                   *
 *                                                                          *
 *    Try to kludge something so this                                       *
@@ -32,6 +40,7 @@
 *        [] c -> C                                                         *
 *                                                                          *
 *    does something reasonable.                                            *
+*    THE FIX OF 21 Jul 2012 MADE IT DO SOMETHING REASONABLE.               *          
 *                                                                          *
 * Modified on 19 Sep 2007 as follows for TLA+2:                            *
 *  1. Added the new keywords.                                              *
@@ -39,7 +48,7 @@
 *     around it to handle proof-step numbers.                              *
 *  3. Modified the handling of "!" so it translates to a \bang             *
 *     command that primts a small !.  This looks about the same            *
-*     in an EXCEPT but looks somewhat better in frob!bar.                   *
+*     in an EXCEPT but looks somewhat better in frob!bar.                  *
 *                                                                          *
 * ------------------------------------------------------------------------ *
 *                                                                          *
@@ -123,7 +132,7 @@ public class TLA
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Wed 19 Sep 2007 at  7:06:38 PST by lamport";
+    "last modified on Wed 21 Jul 2012 at 16:06:38 PST by lamport";
 
     static String modDate = lastModified.substring(21, 33);
     /***********************************************************************

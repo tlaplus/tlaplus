@@ -127,7 +127,10 @@ public final class BuiltInSymbols
         add("ASSUMPTION", "{\\ASSUMPTION}",  Symbol.KEYWORD, 0);
         add("AXIOM",      "{\\AXIOM}",       Symbol.KEYWORD, 0);
         add("BOOLEAN",    "{\\BOOLEAN}",     Symbol.KEYWORD, 0);
-        add("CASE",       "{\\CASE}",        Symbol.KEYWORD, 0);
+        add("CASE",       "{\\CASE}",        Symbol.INFIX, 60); 
+             // Changed to INFIX from KEYWORD by LL on 21 July 2012 to allow 
+             // left-aligning with [].  It produces something reasonable when
+             // the [] is right-aligned with [] as well.
         add("CONSTANT",   "{\\CONSTANT}",    Symbol.KEYWORD, 0);
         add("CONSTANTS",  "{\\CONSTANTS}",   Symbol.KEYWORD, 0);
         add("EXCEPT",     "{\\EXCEPT}",      Symbol.KEYWORD, 0);
@@ -320,11 +323,11 @@ public final class BuiltInSymbols
         add("<-",           "\\.{\\leftarrow}",  Symbol.INFIX, 56);
         add("==",           "\\.{\\defeq}",      Symbol.INFIX, 57);
 
-        add("ELSE",         "\\.{\\ELSE}",       Symbol.PREFIX, 58);
-        add("THEN",         "\\.{\\THEN}",       Symbol.PREFIX, 58);
-        add("LET",          "\\.{\\LET}",        Symbol.PREFIX, 59);
-        add("IN",          "\\.{\\IN}",          Symbol.PREFIX, 59);
-        add("[]",          "{\\Box}",            Symbol.PREFIX, 60);
+        add("ELSE",         "\\.{\\ELSE}",       Symbol.PREFIX, 58); 
+        add("THEN",         "\\.{\\THEN}",       Symbol.PREFIX, 58); 
+        add("LET",          "\\.{\\LET}",        Symbol.INFIX, 59); // Changed by LL  on 21 Jul 22
+        add("IN",          "\\.{\\IN}",          Symbol.INFIX, 59); //    from PREFIX to fix alignment bug
+        add("[]",          "{\\Box}",            Symbol.INFIX, 60); // Changed from PREFIX to left-align with CASE
         add("::",          "{\\coloncolon}",     Symbol.INFIX,  61);
         add("ASSUME",      "{\\ASSUME}",         Symbol.KEYWORD, 62);
         add("PROVE",       "{\\PROVE}",          Symbol.KEYWORD, 62);

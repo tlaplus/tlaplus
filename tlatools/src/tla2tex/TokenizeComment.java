@@ -3,7 +3,7 @@
 /***************************************************************************
 * CLASS TokenizeComment                                                    *
 *                                                                          *
-* This class contains a a singe method, Tokenize, that takes as argument   *
+* This class contains a a single method, Tokenize, that takes as argument  *
 * a multiline comment represented as a Vector whose elements are strings.  *
 * Its result is an array of arrays of CTokens obtained by tokenizing the   *
 * comment.  Each element of the vector produces one row of the array.      *
