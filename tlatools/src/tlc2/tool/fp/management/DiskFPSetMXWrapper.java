@@ -23,7 +23,7 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.management.DiskFPSetSamplerMXBean#getTblCnt()
 	 */
-	public int getTblCnt() {
+	public long getTblCnt() {
 		return fpset.getTblCnt();
 	}
 
@@ -37,7 +37,7 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.management.DiskFPSetSamplerMXBean#getIndexCnt()
 	 */
-	public int getIndexCnt() {
+	public long getIndexCnt() {
 		return fpset.getIndexCapacity();
 	}
 
@@ -114,7 +114,7 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getTblLoad()
 	 */
-	public int getTblLoad() {
+	public long getTblLoad() {
 		return fpset.getTblLoad();
 	}
 

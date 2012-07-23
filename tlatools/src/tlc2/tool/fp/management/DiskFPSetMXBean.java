@@ -35,30 +35,30 @@ public interface DiskFPSetMXBean {
 	/**
 	 * @see DiskFPSet#getIndexCapacity()
 	 */
-	int getIndexCnt();
+	long getIndexCnt();
 
 	/**
 	 * ~ getMemWriteCnt()
 	 */
-	int getTblCnt();
+	long getTblCnt();
 	
 	/**
 	 * @see DiskFPSet#getBucketCapacity()
 	 */
-	public long getBucketCapacity();
+	long getBucketCapacity();
 	/**
 	 * @see DiskFPSet#getTblCapacity()
 	 */
-	public long getTblCapacity();
+	long getTblCapacity();
 	/**
 	 * @see DiskFPSet#getOverallCapacity()
 	 */
-	public long getOverallCapacity();
+	long getOverallCapacity();
 
 	/**
 	 * @see DiskFPSet#getTblLoad()
 	 */
-	public int getTblLoad();
+	long getTblLoad();
 	
 	/**
 	 * @see DiskFPSet#getGrowDiskMark()

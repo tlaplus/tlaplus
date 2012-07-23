@@ -53,7 +53,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * upper bound on "tblCnt"
 	 */
-	protected final int maxTblCnt;
+	protected final long maxTblCnt;
 	/**
 	 * mask for computing hash function
 	 */
@@ -95,13 +95,13 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * number of entries in "tbl". This is equivalent to the current number of fingerprints stored in in-memory cache/index.
 	 * @see DiskFPSet#getTblCnt()
 	 */
-	protected int tblCnt; 
+	protected long tblCnt; 
 
 	/**
 	 * Number of used slots in tbl by a bucket
 	 * @see DiskFPSet#getTblLoad()
 	 */
-	protected int tblLoad;
+	protected long tblLoad;
 	
 	/**
 	 * Number of allocated bucket slots across the complete index table. tblCnt will always <= bucketCnt;
@@ -762,7 +762,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			return;
 
 		// copy table contents into a buffer array buff; do not erase tbl
-		long[] buff = new long[this.tblCnt];
+		long[] buff = new long[(int)this.tblCnt];
 		int idx = 0;
 		for (int j = 0; j < this.tbl.length; j++) {
 			long[] bucket = this.tbl[j];
@@ -1215,7 +1215,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * @return the index.length
 	 */
-	public int getIndexCapacity() {
+	public long getIndexCapacity() {
 		if(index == null) {
 			return 0;
 		}
@@ -1233,21 +1233,21 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @return	Number of used slots in tbl by a bucket
 	 * {@link DiskFPSet#getTblLoad()} <= {@link DiskFPSet#getTblCnt()}
 	 */
-	public int getTblLoad() {
+	public long getTblLoad() {
 		return tblLoad;
 	}
 	
 	/**
 	 * @return the amount of fingerprints stored in memory. This is less or equal to {@link DiskFPSet#getTblCnt()} depending on if there collision buckets exist. 
 	 */
-	public int getTblCnt() {
+	public long getTblCnt() {
 		return tblCnt;
 	}
 	
 	/**
 	 * @return the maximal amount of fingerprints stored in memory. 
 	 */
-	public int getMaxTblCnt() {
+	public long getMaxTblCnt() {
 		return maxTblCnt;
 	}
 	

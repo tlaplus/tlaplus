@@ -17,7 +17,7 @@ public interface FPSetStatistic {
 	/**
 	 * @return the index.length
 	 */
-	public int getIndexCapacity();
+	public long getIndexCapacity();
 
 	/**
 	 * @return {@link DiskFPSet#getBucketCapacity()} + {@link DiskFPSet#getTblCapacity()} + {@link DiskFPSet#getIndexCapacity()}.
@@ -28,17 +28,17 @@ public interface FPSetStatistic {
 	 * @return	Number of used slots in tbl by a bucket
 	 * {@link DiskFPSet#getTblLoad()} <= {@link DiskFPSet#getTblCnt()}
 	 */
-	public int getTblLoad();
+	public long getTblLoad();
 	
 	/**
 	 * @return the amount of fingerprints stored in memory. This is less or equal to {@link DiskFPSet#getTblCnt()} depending on if there collision buckets exist. 
 	 */
-	public int getTblCnt();
+	public long getTblCnt();
 	
 	/**
 	 * @return the maximal amount of fingerprints stored in memory. 
 	 */
-	public int getMaxTblCnt();
+	public long getMaxTblCnt();
 	
 	/**
 	 * @return the amount of fingerprints stored on disk
