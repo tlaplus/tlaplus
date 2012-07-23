@@ -20,6 +20,7 @@ import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.IdThread;
 import tlc2.util.ReadersWriterLock;
+import tlc2.util.SingleThreadedReadersWriterLock;
 import tlc2.util.Sort;
 import util.Assert;
 import util.FileUtil;
@@ -73,7 +74,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * protects following fields
 	 */
-	protected final ReadersWriterLock rwLock;
+	protected ReadersWriterLock rwLock;
 	/**
 	 * number of entries on disk. This is equivalent to the current number of fingerprints stored on disk.
 	 * @see @see DiskFPSet#getFileCnt()
@@ -250,6 +251,14 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 */
 	public final void init(int numThreads, String metadir, String filename)
 			throws IOException {
+		// If consumers only use a single thread, do not waste cycles on
+		// locking. Keep in mind though, that the current implementation does
+		// not allow one to convert a single threaded lock into a multithreaded
+		// one.
+		if (numThreads == 1) {
+			rwLock = new SingleThreadedReadersWriterLock();
+		}
+		
 		this.metadir = metadir;
 		// set the filename
 		// concat here to not do it every time in mergeEntries 
@@ -333,6 +342,10 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#addThread()
 	 */
 	public final void addThread() throws IOException {
+		if (this.rwLock instanceof SingleThreadedReadersWriterLock) {
+			throw new RuntimeException(
+					"Cannot add threads to SingleThreadedReadersWriterLock");
+		}
 		synchronized (this.rwLock) {
 			this.rwLock.BeginWrite();
 
