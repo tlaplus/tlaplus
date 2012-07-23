@@ -120,7 +120,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	}
 	
 	private boolean primaryLoadFactorExceeds(final double limit) {
-		return (tblLoad / (maxInMemoryCapacity / DiskFPSet.InitialBucketCapacity)) >= limit;
+		return (tblLoad / (double) (maxInMemoryCapacity / DiskFPSet.InitialBucketCapacity)) >= limit;
 	}
 
 	/**
