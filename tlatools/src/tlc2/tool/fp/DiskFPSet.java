@@ -519,6 +519,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			// - Raise warning (a 0L fp causes all subsequent states to be
 			// explored twice, unless cycle)
 			// - Map to a unused fp value
+			// - use a dedicated boolean class member to hold 0L
 		}
 		return fp;
 	}
