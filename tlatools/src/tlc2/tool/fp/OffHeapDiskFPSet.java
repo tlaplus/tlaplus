@@ -47,7 +47,12 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	private final long maxInMemoryCapacity;
 
 	/**
-	 * A bucket containing collision elements
+	 * A bucket containing collision elements.
+	 * 
+	 * Open addressing is not an option for this implementation, because it does
+	 * not support the invariant of monotonic increasing buckets. This invariant
+	 * means that only the elements in a bucket have to be sorted, but they
+	 * don't change buckets during sort.
 	 */
 	private SortedSet<Long> collisionBucket; //TODO replace SortedSet with cheaper/faster long[]?!
 
@@ -107,7 +112,15 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#needsDiskFlush()
 	 */
 	protected boolean needsDiskFlush() {
-		return this.tblCnt >= this.maxTblCnt || sizeOfCollisionBucketExceeds(.05d);
+		return secondaryLoadExceeds() || primaryLoadFactorExceeds(.66d) || sizeOfCollisionBucketExceeds(.01d);
+	}
+
+	private boolean secondaryLoadExceeds() {
+		return this.tblCnt >= this.maxTblCnt;
+	}
+	
+	private boolean primaryLoadFactorExceeds(final double limit) {
+		return (tblLoad / (maxInMemoryCapacity / DiskFPSet.InitialBucketCapacity)) >= limit;
 	}
 
 	/**
@@ -165,6 +178,9 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 			if (fp == (l & 0x7FFFFFFFFFFFFFFFL)) {
 				return true;
 			} else if (l == 0L && freePosition == -1) {
+				if (i == 0) {
+					tblLoad++;
+				}
 				// empty or disk written slot found, simply insert at _current_ position
 				u.putAddress(log2phy(position, i), fp);
 				this.tblCnt++;
@@ -222,7 +238,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		if (this.tblCnt == 0)
 			return;
 		
-		if (sizeOfCollisionBucketExceeds(.05d)) {
+		if (sizeOfCollisionBucketExceeds(.01d)) {
 			System.out.println("...due to collisionBucket size limit");
 		}
 		
