@@ -20,7 +20,7 @@ public interface TLCServerRMI extends Remote {
 
 	public Boolean getPreprocess() throws RemoteException;
 
-	public FPSetManager getFPSetManager() throws RemoteException;
+	public IFPSetManager getFPSetManager() throws RemoteException;
 
 	public long getIrredPolyForFP() throws RemoteException;
 	

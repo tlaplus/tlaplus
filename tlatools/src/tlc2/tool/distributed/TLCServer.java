@@ -68,7 +68,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 */
 	private long statesPerMinute;
 
-	public final FPSetManager fpSetManager;
+	public final IFPSetManager fpSetManager;
 	public final IStateQueue stateQueue;
 	public final TLCTrace trace;
 
@@ -135,7 +135,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCServerRMI#getFPSetManager()
 	 */
-	public final FPSetManager getFPSetManager() {
+	public final IFPSetManager getFPSetManager() {
 		return this.fpSetManager;
 	}
 

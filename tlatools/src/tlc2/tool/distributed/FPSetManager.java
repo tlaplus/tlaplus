@@ -13,7 +13,6 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
-import tlc2.tool.fp.FPSet;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.ToolIO;
@@ -22,11 +21,8 @@ import util.ToolIO;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class FPSetManager implements Serializable {
+public class FPSetManager implements Serializable, IFPSetManager {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4199808120164272026L;
 	private String[] hosts; // The names of fpset servers
 	private FPSetRMI[] fpSets; // the list of fpset servers
@@ -55,6 +51,10 @@ public class FPSetManager implements Serializable {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.IFPSetManager#numOfServers()
+	 */
+	@Override
 	public final int numOfServers() {
 		return this.fpSets.length;
 	}
@@ -76,6 +76,10 @@ public class FPSetManager implements Serializable {
 		return -1;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.IFPSetManager#close(boolean)
+	 */
+	@Override
 	public final void close(boolean cleanup) throws IOException {
 		FPSetRMI curr = null;
 		int len = this.fpSets.length;
@@ -124,6 +128,10 @@ public class FPSetManager implements Serializable {
 		return hostname;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.IFPSetManager#put(long)
+	 */
+	@Override
 	public final boolean put(long fp) {
 		int fpIdx = (int) ((fp & 0x7FFFFFFFFFFFFFFFL) % this.fpSets.length);
 		while (true) {
@@ -142,6 +150,10 @@ public class FPSetManager implements Serializable {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.IFPSetManager#putBlock(tlc2.util.LongVec[])
+	 */
+	@Override
 	public final BitVector[] putBlock(LongVec[] fps) {
 		int len = this.fpSets.length;
 		BitVector[] res = new BitVector[len];
@@ -163,6 +175,10 @@ public class FPSetManager implements Serializable {
 		return res;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.IFPSetManager#containsBlock(tlc2.util.LongVec[])
+	 */
+	@Override
 	public final BitVector[] containsBlock(LongVec[] fps) {
 		int len = this.fpSets.length;
 		BitVector[] res = new BitVector[len];
@@ -184,6 +200,10 @@ public class FPSetManager implements Serializable {
 		return res;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.IFPSetManager#size()
+	 */
+	@Override
 	public final long size() {
 		int len = this.fpSets.length;
 		long res = 0;
@@ -203,10 +223,10 @@ public class FPSetManager implements Serializable {
 		return res;
 	}
 	
-	/**
-	 * @return The amount of states seen by all {@link FPSet}. This amounts to
-	 *         the states computed by all {@link TLCWorker}
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.IFPSetManager#getStatesSeen()
 	 */
+	@Override
 	public final long getStatesSeen() {
 		int len = this.fpSets.length;
 		long res = 1; // the initial state
@@ -266,10 +286,18 @@ public class FPSetManager implements Serializable {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.IFPSetManager#checkpoint(java.lang.String)
+	 */
+	@Override
 	public final void checkpoint(String fname) throws InterruptedException {
 		chkptInner(fname, true);
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.IFPSetManager#recover(java.lang.String)
+	 */
+	@Override
 	public final void recover(String fname) throws InterruptedException {
 		chkptInner(fname, false);
 	}

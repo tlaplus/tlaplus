@@ -40,11 +40,11 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private static RMIFilenameToStreamResolver fts;
 	
 	private DistApp work;
-	private FPSetManager fpSetManager;
+	private IFPSetManager fpSetManager;
 	private final URI uri;
 	private long lastInvocation;
 
-	public TLCWorker(DistApp work, FPSetManager fpSetManager, String aHostname)
+	public TLCWorker(DistApp work, IFPSetManager fpSetManager, String aHostname)
 			throws RemoteException {
 		this.work = work;
 		this.fpSetManager = fpSetManager;
@@ -264,7 +264,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					server.getConfigFileName(), server.getCheckDeadlock(),
 					server.getPreprocess(), fts, 0);
 
-			FPSetManager fpSetManager = server.getFPSetManager();
+			IFPSetManager fpSetManager = server.getFPSetManager();
 			worker = new TLCWorker(work, fpSetManager, InetAddress.getLocalHost().getCanonicalHostName());
 			server.registerWorker(worker);
 
