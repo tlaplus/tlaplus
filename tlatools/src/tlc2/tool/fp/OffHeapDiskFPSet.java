@@ -72,10 +72,17 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		Assert.check(preBits == 0, EC.GENERAL); // not yet implemented!!!
 		
 		u = getUnsafe();
+		
+		// Determine base address which varies depending on machine architecture.
 		addressSize = u.addressSize();
+		
+		// Allocate non-heap memory for maxInMemoryCapacity fingerprints
 		baseAddress = u.allocateMemory(maxInMemoryCapacity * addressSize);
 		
-		// null memory
+		// Null memory (could be done in parallel on segments when bottleneck).
+		// This is essential as allocateMemory returns uninitialized memory and
+		// memInsert/memLockup utilize 0L as a mark for an unused fingerprint slot.
+		// Otherwise memory garbage wouldn't be distinguishable from a true fp. 
 		for (long i = 0; i < maxInMemoryCapacity; i++) {
 			u.putAddress(log2phy(i), 0L);
 		}
@@ -115,17 +122,13 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		return dSize / dTblcnt >= limit;
 	}
 
-
 	/**
 	 * @param fp
 	 * @return The logical position in the {@link ByteBuffer} for the given fingerprint.
 	 */
 	protected long getLogicalPosition(final long fp) {
-		long m = fp >>> 32;
-		long l = m & this.mask;
-		int i = (int) l >> moveBy;
-		long position = i * (long) InitialBucketCapacity;
-		Assert.check(0 <= position && position < maxInMemoryCapacity * addressSize, EC.GENERAL);
+		long position = ((int) (fp >>> 32 & this.mask) >> moveBy) * (long) InitialBucketCapacity;
+		//Assert.check(0 <= position && position < maxInMemoryCapacity * addressSize, EC.GENERAL);
 		return position;
 	}
 
@@ -195,12 +198,19 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	 * @param inBucketPosition
 	 * @return The physical address of the fp slot
 	 */
-	private long log2phy(long bucketNumber, int inBucketPosition) {
-		return baseAddress + (bucketNumber * addressSize) + (inBucketPosition * addressSize);
+	private long log2phy(long bucketNumber, long inBucketPosition) {
+		return log2phy(bucketNumber + inBucketPosition);
 	}
 	
+	/**
+	 * Converts from logical addresses to 
+	 * physical memory addresses.
+	 * 
+	 * @param logicalAddress
+	 * @return The physical address of the fp slot
+	 */
 	private long log2phy(long logicalAddress) {
-		return log2phy(logicalAddress, 0);
+		return baseAddress + (logicalAddress * addressSize);
 	}
 
 	/**
@@ -212,13 +222,6 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		if (this.tblCnt == 0)
 			return;
 		
-//		System.out.println("=======");
-//		for (int i = 0; i < maxInMemoryCapacity; i++) {
-//			System.out.println(u.getLong(baseAddress + (i * addressSize)));
-//		}
-//
-		
-		System.out.println("Flushing FPSet for the " + getGrowDiskMark() + " time...");
 		if (sizeOfCollisionBucketExceeds(.05d)) {
 			System.out.println("...due to collisionBucket size limit");
 		}
@@ -422,8 +425,8 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 			}
 			
 			while ((l = unsafe.getAddress(log2phy(logicalPosition))) <= 0L && logicalPosition < maxInMemoryCapacity) {
-				// increment position to next bucket and recursively call self
-				logicalPosition = (logicalPosition + DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0;
+				// increment position to next bucket
+				logicalPosition = logicalPosition + DiskFPSet.InitialBucketCapacity & 0xFFFFFFFFFFFFFFF0L;
 				sortNextBucket();
 			}
 			
@@ -448,9 +451,12 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 						longBuffer[i] = l;
 					}
 				}
-				Arrays.sort(longBuffer, 0, i);
-				for (int j = 0; j < i; j++) {
-					unsafe.putAddress(log2phy(logicalPosition, j), longBuffer[j]);
+				if (i > 0) {
+					Arrays.sort(longBuffer, 0, i);
+					for (int j = 0; j < i; j++) {
+						unsafe.putAddress(log2phy(logicalPosition, j),
+								longBuffer[j]);
+					}
 				}
 			}
 		}
@@ -487,7 +493,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 			// reverse the current bucket to obtain last element
 			long l = 1L;
 			while ((l = unsafe.getAddress(log2phy(logicalPosition-- + DiskFPSet.InitialBucketCapacity - 1))) <= 0L) {
-				if (((logicalPosition - DiskFPSet.InitialBucketCapacity) & 0x7FFFFFF0) == 0) {
+				if (((logicalPosition - DiskFPSet.InitialBucketCapacity) & 0xFFFFFFFFFFFFFFF0L) == 0) {
 					sortNextBucket();
 				}
 			}
@@ -497,6 +503,14 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 				return l;
 			}
 			throw new NoSuchElementException();
+		}
+		
+		// prevent synthetic methods
+		private long log2phy(long logicalAddress) {
+			return OffHeapDiskFPSet.this.log2phy(logicalAddress);
+		}
+		private long log2phy(long bucketAddress, long inBucketAddress) {
+			return OffHeapDiskFPSet.this.log2phy(bucketAddress, inBucketAddress);
 		}
 	}
 }
