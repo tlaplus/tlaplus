@@ -145,7 +145,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	public void exit() throws NoSuchObjectException {
 		ToolIO.out.println(uri.getHost() + ", work completed at: " + new Date() + " Computed: "
 				+ this.work.getStatesComputed()
-				+ (this.cache == null ? "" : " and a cache hit ratio of " + this.cache.getHitRatioAsString())
+				+ " and a cache hit ratio of " + this.cache.getHitRatioAsString()
 				+ ", Thank you!");
 		
 		UnicastRemoteObject.unexportObject(TLCWorker.this, true);
