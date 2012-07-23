@@ -24,8 +24,10 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateVec;
 import tlc2.tool.WorkerException;
 import tlc2.util.BitVector;
+import tlc2.util.Cache;
 import tlc2.util.FP64;
 import tlc2.util.LongVec;
+import tlc2.util.SimpleCache;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -43,12 +45,16 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private IFPSetManager fpSetManager;
 	private final URI uri;
 	private long lastInvocation;
+	
+	private final Cache cache;
 
 	public TLCWorker(DistApp work, IFPSetManager fpSetManager, String aHostname)
 			throws RemoteException {
 		this.work = work;
 		this.fpSetManager = fpSetManager;
 		uri = URI.create("rmi://" + aHostname + ":" + getPort());
+		
+		this.cache = new SimpleCache();
 	}
 
 	/* (non-Javadoc)
@@ -82,10 +88,12 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				// add all succ states/fps to the array designated for the corresponding fp server
 				for (int j = 0; j < nstates.length; j++) {
 					long fp = nstates[j].fingerPrint();
-					int fpIndex = (int) ((fp & 0x7FFFFFFFFFFFFFFFL) % fpServerCnt);
-					pvv[fpIndex].addElement(state1);
-					nvv[fpIndex].addElement(nstates[j]);
-					fpvv[fpIndex].addElement(fp);
+					if (!cache.hit(fp)) {
+						int fpIndex = (int) ((fp & 0x7FFFFFFFFFFFFFFFL) % fpServerCnt);
+						pvv[fpIndex].addElement(state1);
+						nvv[fpIndex].addElement(nstates[j]);
+						fpvv[fpIndex].addElement(fp);
+					}
 				}
 			}
 
@@ -135,8 +143,10 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#exit()
 	 */
 	public void exit() throws NoSuchObjectException {
-		ToolIO.out.println(uri.getHost() + ", work completed at: " + new Date()
-				+ " Computed: " + this.work.getStatesComputed() +  " Thank you!");
+		ToolIO.out.println(uri.getHost() + ", work completed at: " + new Date() + " Computed: "
+				+ this.work.getStatesComputed()
+				+ (this.cache == null ? "" : " and a cache hit ratio of " + this.cache.getHitRatioAsString())
+				+ ", Thank you!");
 		
 		UnicastRemoteObject.unexportObject(TLCWorker.this, true);
 	}
