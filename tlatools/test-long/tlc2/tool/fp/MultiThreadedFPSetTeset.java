@@ -26,7 +26,7 @@ public abstract class MultiThreadedFPSetTeset extends AbstractFPSetTest {
 
 		long seed = 15041980L;
 		final FingerPrintGenerator[] fpgs = new FingerPrintGenerator[NUM_THREADS];
-		for (int i = 0; i <= NUM_THREADS; i++) {
+		for (int i = 0; i < fpgs.length; i++) {
 			fpgs[i] = new FingerPrintGenerator(i, fpSet, latch, seed++, INSERTIONS);
 			Thread thread = new Thread(fpgs[i], "Producer#" + i);
 			thread.start();
