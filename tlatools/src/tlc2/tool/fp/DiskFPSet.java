@@ -78,6 +78,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * protects following fields
 	 */
 	final Striped<ReadWriteLock> rwLock;
+	protected final int lockMask;
 	/**
 	 * number of entries on disk. This is equivalent to the current number of fingerprints stored on disk.
 	 * @see @see DiskFPSet#getFileCnt()
@@ -189,7 +190,9 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @throws RemoteException
 	 */
 	protected DiskFPSet(final long maxInMemoryCapacity) throws RemoteException {
-		this.rwLock = Striped.readWriteLock(1024); //TODO come up with a more dynamic value for stripes
+		this.rwLock = Striped.readWriteLock(1 << 10); //TODO come up with a more dynamic value for stripes
+		this.lockMask = (1 << 10) - 1;
+		
 		this.fileCnt = 0;
 		this.flusherChosen = false;
 
@@ -374,82 +377,81 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		// zeros the msb
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
 		
-			
-			final Lock r = rwLock.get(fp).readLock();
-			r.lock();
-			// First, look in in-memory buffer
-			if (this.memLookup(fp0)) {
-				r.unlock();
-				this.memHitCnt.getAndIncrement();
-				return true;
-			}
-			
-			// blocks => wait() if disk is being re-written 
-			// (means the current thread returns rwLock monitor)
-			// Why not return monitor first and then acquire read lock?
-			// => prevent deadlock by acquiring threads in same order? 
-			this.diskLookupCnt.getAndIncrement();
-			
-			// next, look on disk
-			boolean diskHit = this.diskLookup(fp0);
-			
-			// In event of disk hit, return
-			if (diskHit) {
-				r.unlock();
-				this.diskHitCnt.getAndIncrement();
-				return true;
-			}
-			
-			r.unlock();
-			
-			// Another writer could write the same fingerprint here if it gets
-			// interleaved. This is no problem though, because memInsert again
-			// checks existence for fp to be inserted
-			
-			final Lock w = rwLock.get(fp).writeLock();
-			w.lock();
-			
-			// if disk lookup failed, add to memory buffer
-			if (this.memInsert(fp0)) {
-				w.unlock();
-				this.memHitCnt.getAndIncrement();
-				return true;
-			}
-			
-			// test if buffer is full
-			if (needsDiskFlush() && !this.flusherChosen) {
-				// block until there are no more readers
-				this.flusherChosen = true;
-				
-				
-				// statistics
-				growDiskMark++;
-				long timestamp = System.currentTimeMillis();
-				
-				// acquire _all_ write locks
-				int size = this.rwLock.size();
-				for (int i = 0; i < size; i++) {
-					this.rwLock.getAt(i).writeLock().lock();
-				}
-				// flush memory entries to disk
-				this.flushTable();
-				
-				// release _all_ write locks
-				for (int i = size - 1; i >= 0; i--) {
-					this.rwLock.getAt(i).writeLock().lock();
-				}
-				
-				long l = System.currentTimeMillis() - timestamp;
-				flushTime += l;
-				System.out.println("Flushing disk " + getGrowDiskMark() + " time, in "
-						+ (l / 1000) + " sec");
-				
-				
-				// finish writing
-				this.flusherChosen = false;
-			}
+		final Lock readLock = rwLock.getAt(getLockIndex(fp)).readLock();
+		readLock.lock();
+		// First, look in in-memory buffer
+		if (this.memLookup(fp0)) {
+			readLock.unlock();
+			this.memHitCnt.getAndIncrement();
+			return true;
+		}
+		
+		// blocks => wait() if disk is being re-written 
+		// (means the current thread returns rwLock monitor)
+		// Why not return monitor first and then acquire read lock?
+		// => prevent deadlock by acquiring threads in same order? 
+		this.diskLookupCnt.getAndIncrement();
+		
+		// next, look on disk
+		boolean diskHit = this.diskLookup(fp0);
+		
+		// In event of disk hit, return
+		if (diskHit) {
+			readLock.unlock();
+			this.diskHitCnt.getAndIncrement();
+			return true;
+		}
+		
+		readLock.unlock();
+		
+		// Another writer could write the same fingerprint here if it gets
+		// interleaved. This is no problem though, because memInsert again
+		// checks existence for fp to be inserted
+		
+		final Lock w = rwLock.getAt(getLockIndex(fp)).writeLock();
+		w.lock();
+		
+		// if disk lookup failed, add to memory buffer
+		if (this.memInsert(fp0)) {
 			w.unlock();
-			return false;
+			this.memHitCnt.getAndIncrement();
+			return true;
+		}
+		
+		// test if buffer is full
+		if (needsDiskFlush() && !this.flusherChosen) {
+			// block until there are no more readers
+			this.flusherChosen = true;
+			
+			
+			// statistics
+			growDiskMark++;
+			long timestamp = System.currentTimeMillis();
+			
+			// acquire _all_ write locks
+			int size = this.rwLock.size();
+			for (int i = 0; i < size; i++) {
+				this.rwLock.getAt(i).writeLock().lock();
+			}
+			// flush memory entries to disk
+			this.flushTable();
+			
+			// release _all_ write locks
+			for (int i = size - 1; i >= 0; i--) {
+				this.rwLock.getAt(i).writeLock().lock();
+			}
+			
+			long l = System.currentTimeMillis() - timestamp;
+			flushTime += l;
+			System.out.println("Flushing disk " + getGrowDiskMark() + " time, in "
+					+ (l / 1000) + " sec");
+			
+			
+			// finish writing
+			this.flusherChosen = false;
+		}
+		w.unlock();
+		return false;
 	}
 
 	/**
@@ -474,7 +476,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		fp = checkValid(fp);
 		// zeros the msb
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
-		final Lock readLock = this.rwLock.get(fp).readLock();
+		final Lock readLock = this.rwLock.getAt(getLockIndex(fp)).readLock();
 		readLock.lock();
 		// First, look in in-memory buffer
 		if (this.memLookup(fp0)) {
@@ -505,6 +507,10 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 */
 	protected int getIndex(long fp) {
 		return (int) (fp & this.mask);
+	}
+
+	protected int getLockIndex(long fp) {
+		return (int) (fp & this.lockMask);
 	}
 
 	/**
