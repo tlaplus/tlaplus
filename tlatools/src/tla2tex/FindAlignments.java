@@ -118,7 +118,7 @@
 *           alt == the token at position lt.aboveAlign                     *
 *           at  == the token to the right of alt                           *
 *       IN  /\ t is not the first token on the line                        *
-*           /\ lt is InnerAligned with token lt above it                   *
+*           /\ lt is InnerAligned with token alt above it                  *
 *           /\ alt is not the last token on its line.                      *
 *           /\ at is the covering token of t                               *
 *           /\ t.column = at.column                                        *

@@ -438,7 +438,7 @@ public class TokenizeComment
                 { case CToken.BUILTIN :
                     if (FormatComments.isAmbiguous(token))
                       { /***************************************************
-                        * We set the isAmbiguous flag for an amibuous      *
+                        * We set the isAmbiguous flag for an ambiguous     *
                         * token only if that token actually appears in     *
                         * the spec.  This may be overly pessimistic,       *
                         * since it causes TLATeX to mess up the            *
