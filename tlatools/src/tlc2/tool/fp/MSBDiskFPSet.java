@@ -74,6 +74,15 @@ public class MSBDiskFPSet extends DiskFPSet {
 		// used as an index address
 		return ((int) (fp >>> 32) & this.mask) >> moveBy;
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#getLockIndex(long)
+	 */
+	protected int getLockIndex(long fp) {
+		// calculate hash value (just n most significant bits of fp) which is
+		// used as an index address
+		return ((int) (fp >>> 32) & this.lockMask) >> moveBy;
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#flushTable()
