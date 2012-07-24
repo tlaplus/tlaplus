@@ -21,7 +21,7 @@ public abstract class MultiThreadedFPSetTeset extends AbstractFPSetTest {
 	 * @throws InterruptedException
 	 */
 	public void testMaxFPSetSizeRnd() throws IOException, InterruptedException {
-		final FPSet fpSet = getFPSetInitialized();
+		final FPSet fpSet = getFPSetInitialized(NUM_THREADS);
 		final CountDownLatch latch = new CountDownLatch(NUM_THREADS);
 
 		long seed = 15041980L;
