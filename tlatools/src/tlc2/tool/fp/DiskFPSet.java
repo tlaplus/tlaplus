@@ -1331,9 +1331,11 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * @return The technical maximum of readers/writers this {@link DiskFPSet}
 	 *         can handle. It doesn't show the actual numbers of active clients.
+	 *         This value is equivalent to the amount of
+	 *         {@link BufferedRandomAccessFile} instances.
 	 */
 	public int getReaderWriterCnt() {
-		return this.braf.length;
+		return this.braf.length + this.brafPool.length;
 	}
 	
 	/**
