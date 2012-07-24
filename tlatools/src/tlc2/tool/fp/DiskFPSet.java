@@ -438,7 +438,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			
 			// release _all_ write locks
 			for (int i = size - 1; i >= 0; i--) {
-				this.rwLock.getAt(i).writeLock().lock();
+				this.rwLock.getAt(i).writeLock().unlock();
 			}
 			
 			long l = System.currentTimeMillis() - timestamp;
