@@ -506,11 +506,15 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @return
 	 */
 	protected int getIndex(long fp) {
-		return (int) (fp & this.mask);
+		return index(fp, this.mask);
 	}
 
 	protected int getLockIndex(long fp) {
-		return (int) (fp & this.lockMask);
+		return index(fp, this.lockMask);
+	}
+	
+	protected int index(long fp, int aMask) {
+		return (int) (fp & aMask);
 	}
 
 	/**
