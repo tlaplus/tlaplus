@@ -10,6 +10,7 @@ import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.management.NotCompliantMBeanException;
@@ -74,7 +75,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * protects following fields
 	 */
-	final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+	final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 	/**
 	 * number of entries on disk. This is equivalent to the current number of fingerprints stored on disk.
 	 * @see @see DiskFPSet#getFileCnt()
@@ -96,13 +97,13 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * number of entries in "tbl". This is equivalent to the current number of fingerprints stored in in-memory cache/index.
 	 * @see DiskFPSet#getTblCnt()
 	 */
-	protected AtomicLong tblCnt = new AtomicLong(0); 
+	protected long tblCnt; 
 
 	/**
 	 * Number of used slots in tbl by a bucket
 	 * @see DiskFPSet#getTblLoad()
 	 */
-	protected AtomicLong tblLoad = new AtomicLong(0);
+	protected long tblLoad;
 	
 	/**
 	 * Number of allocated bucket slots across the complete index table. tblCnt will always <= bucketCnt;
@@ -223,7 +224,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 
 		// guard against negative maxTblCnt
 		// LL modified error message on 7 April 2012
-		Assert.check(maxTblCnt > capacity && capacity > tblCnt.get(),
+		Assert.check(maxTblCnt > capacity && capacity > tblCnt,
 				"negative maxTblCnt");
 
 		this.mask = capacity - 1;
@@ -289,7 +290,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#size()
 	 */
 	public final long size() {
-		return this.tblCnt.get() + this.fileCnt;
+		return this.tblCnt + this.fileCnt;
 	}
 
 	public long sizeof() {
@@ -445,7 +446,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		// A) the FP distribution causes the index tbl to be unevenly populated.
 		// B) the FP distribution reassembles linear fill-up/down which 
 		// causes tblCnt * buckets with initial load factor to be allocated.
-		return this.tblCnt.get() >= this.maxTblCnt;
+		return this.tblCnt >= this.maxTblCnt;
 	}
 
 	/* (non-Javadoc)
@@ -544,7 +545,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			bucket[0] = fp;
 			this.tbl[index] = bucket;
 			this.bucketsCapacity += InitialBucketCapacity; 
-			this.tblLoad.getAndIncrement();
+			this.tblLoad++;
 		} else {
 			// search for entry in existing bucket
 			int bucketLen = bucket.length;
@@ -582,7 +583,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 				bucket[i] = fp;
 			}
 		}
-		this.tblCnt.getAndIncrement();
+		this.tblCnt++;
 		return false;
 	}
 
@@ -756,11 +757,11 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * for writing by the caller, and that the mutex "this.rwLock" is also held.
 	 */
 	void flushTable() throws IOException {
-		if (this.tblCnt.get() == 0)
+		if (this.tblCnt == 0)
 			return;
 
 		// copy table contents into a buffer array buff; do not erase tbl
-		long[] buff = new long[(int)this.tblCnt.get()];
+		long[] buff = new long[(int)this.tblCnt];
 		int idx = 0;
 		for (int j = 0; j < this.tbl.length; j++) {
 			long[] bucket = this.tbl[j];
@@ -774,9 +775,9 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 				}
 			}
 		}
-		this.tblCnt.set(0);
+		this.tblCnt = 0;
 		this.bucketsCapacity = 0;
-		this.tblLoad.set(0);
+		this.tblLoad = 0;
 //		// reset statistic counters
 //		this.memHitCnt = 0;
 //
@@ -1232,14 +1233,14 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * {@link DiskFPSet#getTblLoad()} <= {@link DiskFPSet#getTblCnt()}
 	 */
 	public long getTblLoad() {
-		return tblLoad.get();
+		return tblLoad;
 	}
 	
 	/**
 	 * @return the amount of fingerprints stored in memory. This is less or equal to {@link DiskFPSet#getTblCnt()} depending on if there collision buckets exist. 
 	 */
 	public long getTblCnt() {
-		return tblCnt.get();
+		return tblCnt;
 	}
 	
 	/**

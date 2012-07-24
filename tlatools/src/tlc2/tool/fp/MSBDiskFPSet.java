@@ -80,7 +80,7 @@ public class MSBDiskFPSet extends DiskFPSet {
 	 */
 	@Override
 	void flushTable() throws IOException {
-		if (this.tblCnt.get() == 0)
+		if (this.tblCnt == 0)
 			return;
 
 		// Why not sort this.tbl in-place rather than doubling memory
@@ -125,9 +125,9 @@ public class MSBDiskFPSet extends DiskFPSet {
 			throw new IOException(msg);
 		}
 
-		this.tblCnt.set(0);
+		this.tblCnt = 0;
 		this.bucketsCapacity = 0;
-		this.tblLoad.set(0);
+		this.tblLoad = 0;
 		// // reset statistic counters
 		// this.memHitCnt = 0;
 		//
@@ -203,7 +203,7 @@ public class MSBDiskFPSet extends DiskFPSet {
 			maxVal = Math.max(maxVal, this.index[this.index.length - 1]);
 		}
 
-		int indexLen = calculateIndexLen(this.tblCnt.get());
+		int indexLen = calculateIndexLen(this.tblCnt);
 		this.index = new long[indexLen];
 		this.index[indexLen - 1] = maxVal;
 		this.currIndex = 0;
@@ -263,13 +263,13 @@ public class MSBDiskFPSet extends DiskFPSet {
 				}
 			} while (!eof);
 		}
-		Assert.check(itr.reads() == this.tblCnt.get(), EC.GENERAL);
+		Assert.check(itr.reads() == this.tblCnt, EC.GENERAL);
 
 		// currIndex is amount of disk writes
 		Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
 
 		// maintain object invariants
-		this.fileCnt += this.tblCnt.get();
+		this.fileCnt += this.tblCnt;
 	}
 	
 	/**

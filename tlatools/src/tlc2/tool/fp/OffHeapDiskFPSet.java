@@ -116,11 +116,11 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	}
 
 	private boolean secondaryLoadExceeds() {
-		return this.tblCnt.get() >= this.maxTblCnt;
+		return this.tblCnt >= this.maxTblCnt;
 	}
 	
 	private boolean primaryLoadFactorExceeds(final double limit) {
-		return (tblLoad.get() / (double) (maxInMemoryCapacity / DiskFPSet.InitialBucketCapacity)) >= limit;
+		return (tblLoad / (double) (maxInMemoryCapacity / DiskFPSet.InitialBucketCapacity)) >= limit;
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	private boolean sizeOfCollisionBucketExceeds(final double limit) {
 		// the fraction of collisionBucket size compared to the tbl size 
 		final double dSize = (double) collisionBucket.size();
-		final double dTblcnt = (double) tblCnt.get();
+		final double dTblcnt = (double) tblCnt;
 		return dSize / dTblcnt >= limit;
 	}
 
@@ -179,11 +179,11 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 				return true;
 			} else if (l == 0L && freePosition == -1) {
 				if (i == 0) {
-					tblLoad.getAndIncrement();
+					tblLoad++;
 				}
 				// empty or disk written slot found, simply insert at _current_ position
 				u.putAddress(log2phy(position, i), fp);
-				this.tblCnt.getAndIncrement();
+				this.tblCnt++;
 				return false;
 			} else if (l < 0L && freePosition == -1) {
 				// record free (disk written fp) slot
@@ -195,11 +195,11 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		if (!collisionBucket.contains(fp)) {
 			if (freePosition > -1) {
 				u.putAddress(freePosition, fp);
-				this.tblCnt.getAndIncrement();
+				this.tblCnt++;
 				return false;
 			} else {
 				collisionBucket.add(fp);
-				this.tblCnt.getAndIncrement();
+				this.tblCnt++;
 				return false;
 			}
 		}
@@ -235,7 +235,7 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	 * for writing by the caller, and that the mutex "this.rwLock" is also held.
 	 */
 	void flushTable() throws IOException {
-		if (this.tblCnt.get() == 0)
+		if (this.tblCnt == 0)
 			return;
 		
 		if (sizeOfCollisionBucketExceeds(.01d)) {
@@ -250,16 +250,16 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 					+ this.fpFilename + "  " + e;
 			throw new IOException(msg);
 		}
-		this.tblCnt.set(0);
+		this.tblCnt = 0;
 		this.bucketsCapacity = 0;
-		this.tblLoad.set(0);
+		this.tblLoad = 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.MSBDiskFPSet#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
 	 */
 	protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
-		final long buffLen = this.tblCnt.get();
+		final long buffLen = this.tblCnt;
 		ByteBufferIterator itr = new ByteBufferIterator(this.u, this.baseAddress, collisionBucket, buffLen);
 		
 		// Precompute the maximum value of the new file
