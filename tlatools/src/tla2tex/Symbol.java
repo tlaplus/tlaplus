@@ -23,7 +23,7 @@ public class Symbol
       /*********************************************************************
       * The TLA representation of the symbol.  There is a different        *
       * Symbol object for each way of writing the same symbol--for         *
-      * exampl,e there are separate symbol objects for "#" and "/=".       *
+      * example, there are separate symbol objects for "#" and "/=".       *
       *********************************************************************/
 
     public String TeXString;
