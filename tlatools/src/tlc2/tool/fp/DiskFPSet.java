@@ -10,8 +10,8 @@ import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.management.NotCompliantMBeanException;
 
@@ -25,6 +25,8 @@ import tlc2.util.IdThread;
 import tlc2.util.Sort;
 import util.Assert;
 import util.FileUtil;
+
+import com.google.common.util.concurrent.Striped;
 
 /**
  * A <code>DiskFPSet</code> is a subtype of <code>FPSet</code> that uses a
@@ -75,7 +77,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * protects following fields
 	 */
-	final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+	final Striped<ReadWriteLock> rwLock;
 	/**
 	 * number of entries on disk. This is equivalent to the current number of fingerprints stored on disk.
 	 * @see @see DiskFPSet#getFileCnt()
@@ -88,7 +90,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * of the put(long) method. The first one is waiting to become the writer at rwLock.BeginWrite(),
 	 * a second has the this.rwLock monitor and possibly inserts a second fp into memory.
 	 */
-	protected boolean flusherChosen;
+	protected volatile boolean flusherChosen;
 	/**
 	 * in-memory buffer of new entries
 	 */
@@ -97,7 +99,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * number of entries in "tbl". This is equivalent to the current number of fingerprints stored in in-memory cache/index.
 	 * @see DiskFPSet#getTblCnt()
 	 */
-	protected long tblCnt; 
+	protected AtomicLong tblCnt = new AtomicLong(0); 
 
 	/**
 	 * Number of used slots in tbl by a bucket
@@ -187,6 +189,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @throws RemoteException
 	 */
 	protected DiskFPSet(final long maxInMemoryCapacity) throws RemoteException {
+		this.rwLock = Striped.readWriteLock(1024); //TODO come up with a more dynamic value for stripes
 		this.fileCnt = 0;
 		this.flusherChosen = false;
 
@@ -224,7 +227,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 
 		// guard against negative maxTblCnt
 		// LL modified error message on 7 April 2012
-		Assert.check(maxTblCnt > capacity && capacity > tblCnt,
+		Assert.check(maxTblCnt > capacity && capacity > tblCnt.get(),
 				"negative maxTblCnt");
 
 		this.mask = capacity - 1;
@@ -290,11 +293,11 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#size()
 	 */
 	public final long size() {
-		return this.tblCnt + this.fileCnt;
+		return this.tblCnt.get() + this.fileCnt;
 	}
 
 	public long sizeof() {
-		this.rwLock.readLock().lock();
+//		this.rwLock.readLock().lock();
 		long size = 44; // approx size of this DiskFPSet object
 		size += 16 + (this.tbl.length * 4); // for this.tbl
 		for (int i = 0; i < this.tbl.length; i++) {
@@ -305,7 +308,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		}
 		// size of index array if non-null
 		size += getIndexCapacity() * 4;
-		this.rwLock.readLock().unlock();
+//		this.rwLock.readLock().unlock();
 		return size;
 	}
 
@@ -332,17 +335,15 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#addThread()
 	 */
 	public final void addThread() throws IOException {
-		this.rwLock.writeLock().lock();
-
-		int len = this.braf.length;
-		RandomAccessFile[] nraf = new BufferedRandomAccessFile[len + 1];
-		for (int i = 0; i < len; i++) {
-			nraf[i] = this.braf[i];
+		synchronized (this.braf) {
+			int len = this.braf.length;
+			RandomAccessFile[] nraf = new BufferedRandomAccessFile[len + 1];
+			for (int i = 0; i < len; i++) {
+				nraf[i] = this.braf[i];
+			}
+			nraf[len] = new BufferedRandomAccessFile(this.fpFilename, "r");
+			this.braf = nraf;
 		}
-		nraf[len] = new BufferedRandomAccessFile(this.fpFilename, "r");
-		this.braf = nraf;
-		
-		this.rwLock.writeLock().unlock();
 	}
 
 	/* (non-Javadoc)
@@ -373,67 +374,82 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		// zeros the msb
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
 		
-		rwLock.readLock().lock();
-		// First, look in in-memory buffer
-		if (this.memLookup(fp0)) {
-			rwLock.readLock().unlock();
-			this.memHitCnt.getAndIncrement();
-			return true;
-		}
-
-		// blocks => wait() if disk is being re-written 
-		// (means the current thread returns rwLock monitor)
-		// Why not return monitor first and then acquire read lock?
-		// => prevent deadlock by acquiring threads in same order? 
-		this.diskLookupCnt.getAndIncrement();
-
-		// next, look on disk
-		boolean diskHit = this.diskLookup(fp0);
-
-		// In event of disk hit, return
-		if (diskHit) {
-			rwLock.readLock().unlock();
-			this.diskHitCnt.getAndIncrement();
-			return true;
-		}
-		
-		rwLock.readLock().unlock();
-		
-		// Another writer could write the same fingerprint here if it gets
-		// interleaved. This is no problem though, because memInsert again
-		// checks existence for fp to be inserted
-		
-		rwLock.writeLock().lock();
-		
-		// if disk lookup failed, add to memory buffer
-		if (this.memInsert(fp0)) {
-			rwLock.writeLock().unlock();
-			this.memHitCnt.getAndIncrement();
-			return true;
-		}
-
-		// test if buffer is full
-		if (needsDiskFlush() && !this.flusherChosen) {
-			// block until there are no more readers
-			this.flusherChosen = true;
-
-			// statistics
-			growDiskMark++;
-			long timestamp = System.currentTimeMillis();
 			
-			// flush memory entries to disk
-			this.flushTable();
-
-			long l = System.currentTimeMillis() - timestamp;
-			flushTime += l;
-			System.out.println("Flushing disk " + getGrowDiskMark() + " time, in "
-					+ (l / 1000) + " sec");
-
-			// finish writing
-			this.flusherChosen = false;
-		}
-		rwLock.writeLock().unlock();
-		return false;
+			final Lock r = rwLock.get(fp).readLock();
+			r.lock();
+			// First, look in in-memory buffer
+			if (this.memLookup(fp0)) {
+				r.unlock();
+				this.memHitCnt.getAndIncrement();
+				return true;
+			}
+			
+			// blocks => wait() if disk is being re-written 
+			// (means the current thread returns rwLock monitor)
+			// Why not return monitor first and then acquire read lock?
+			// => prevent deadlock by acquiring threads in same order? 
+			this.diskLookupCnt.getAndIncrement();
+			
+			// next, look on disk
+			boolean diskHit = this.diskLookup(fp0);
+			
+			// In event of disk hit, return
+			if (diskHit) {
+				r.unlock();
+				this.diskHitCnt.getAndIncrement();
+				return true;
+			}
+			
+			r.unlock();
+			
+			// Another writer could write the same fingerprint here if it gets
+			// interleaved. This is no problem though, because memInsert again
+			// checks existence for fp to be inserted
+			
+			final Lock w = rwLock.get(fp).writeLock();
+			w.lock();
+			
+			// if disk lookup failed, add to memory buffer
+			if (this.memInsert(fp0)) {
+				w.unlock();
+				this.memHitCnt.getAndIncrement();
+				return true;
+			}
+			
+			// test if buffer is full
+			if (needsDiskFlush() && !this.flusherChosen) {
+				// block until there are no more readers
+				this.flusherChosen = true;
+				
+				
+				// statistics
+				growDiskMark++;
+				long timestamp = System.currentTimeMillis();
+				
+				// acquire _all_ write locks
+				int size = this.rwLock.size();
+				for (int i = 0; i < size; i++) {
+					this.rwLock.getAt(i).writeLock().lock();
+				}
+				// flush memory entries to disk
+				this.flushTable();
+				
+				// release _all_ write locks
+				for (int i = size - 1; i >= 0; i--) {
+					this.rwLock.getAt(i).writeLock().lock();
+				}
+				
+				long l = System.currentTimeMillis() - timestamp;
+				flushTime += l;
+				System.out.println("Flushing disk " + getGrowDiskMark() + " time, in "
+						+ (l / 1000) + " sec");
+				
+				
+				// finish writing
+				this.flusherChosen = false;
+			}
+			w.unlock();
+			return false;
 	}
 
 	/**
@@ -446,7 +462,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		// A) the FP distribution causes the index tbl to be unevenly populated.
 		// B) the FP distribution reassembles linear fill-up/down which 
 		// causes tblCnt * buckets with initial load factor to be allocated.
-		return this.tblCnt >= this.maxTblCnt;
+		return this.tblCnt.get() >= this.maxTblCnt;
 	}
 
 	/* (non-Javadoc)
@@ -458,10 +474,11 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		fp = checkValid(fp);
 		// zeros the msb
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
-		this.rwLock.readLock().lock();
+		final Lock readLock = this.rwLock.get(fp).readLock();
+		readLock.lock();
 		// First, look in in-memory buffer
 		if (this.memLookup(fp0)) {
-			this.rwLock.readLock().unlock();
+			readLock.unlock();
 			this.memHitCnt.getAndIncrement();
 			return true;
 		}
@@ -477,7 +494,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		}
 
 		// end read; add to memory buffer if necessary
-		this.rwLock.readLock().unlock();
+		readLock.unlock();
 		return diskHit;
 	}
 
@@ -583,7 +600,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 				bucket[i] = fp;
 			}
 		}
-		this.tblCnt++;
+		this.tblCnt.getAndIncrement();
 		return false;
 	}
 
@@ -757,11 +774,11 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * for writing by the caller, and that the mutex "this.rwLock" is also held.
 	 */
 	void flushTable() throws IOException {
-		if (this.tblCnt == 0)
+		if (this.tblCnt.get() == 0)
 			return;
 
 		// copy table contents into a buffer array buff; do not erase tbl
-		long[] buff = new long[(int)this.tblCnt];
+		long[] buff = new long[(int)this.tblCnt.get()];
 		int idx = 0;
 		for (int j = 0; j < this.tbl.length; j++) {
 			long[] bucket = this.tbl[j];
@@ -775,7 +792,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 				}
 			}
 		}
-		this.tblCnt = 0;
+		this.tblCnt.set(0);
 		this.bucketsCapacity = 0;
 		this.tblLoad = 0;
 //		// reset statistic counters
@@ -1031,16 +1048,17 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#beginChkpt(java.lang.String)
 	 */
 	public final void beginChkpt(String fname) throws IOException {
-			this.flusherChosen = true;
-			
-			this.rwLock.writeLock().lock();
-			
-			this.flushTable();
-			FileUtil.copyFile(this.fpFilename,
-					this.getChkptName(fname, "tmp"));
-			checkPointMark++;
-			this.rwLock.writeLock().unlock();
-			this.flusherChosen = false;
+		throw new UnsupportedOperationException("Not yet implemented");
+//			this.flusherChosen = true;
+//			
+//			this.rwLock.writeLock().lock();
+//			
+//			this.flushTable();
+//			FileUtil.copyFile(this.fpFilename,
+//					this.getChkptName(fname, "tmp"));
+//			checkPointMark++;
+//			this.rwLock.writeLock().unlock();
+//			this.flusherChosen = false;
 	}
 
 	/* (non-Javadoc)
@@ -1240,7 +1258,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @return the amount of fingerprints stored in memory. This is less or equal to {@link DiskFPSet#getTblCnt()} depending on if there collision buckets exist. 
 	 */
 	public long getTblCnt() {
-		return tblCnt;
+		return tblCnt.get();
 	}
 	
 	/**

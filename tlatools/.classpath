@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
+	<classpathentry exported="true" kind="lib" path="lib/guava-13.0-rc2.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://docs.guava-libraries.googlecode.com/git/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry excluding="tlc2/tool/distributed/TLCServerMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/TLCServerMonitorAspect.aj" kind="src" path="src-aj"/>
