@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -91,7 +92,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * of the put(long) method. The first one is waiting to become the writer at rwLock.BeginWrite(),
 	 * a second has the this.rwLock monitor and possibly inserts a second fp into memory.
 	 */
-	protected volatile boolean flusherChosen;
+	protected AtomicBoolean flusherChosen;
 	/**
 	 * in-memory buffer of new entries
 	 */
@@ -100,7 +101,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * number of entries in "tbl". This is equivalent to the current number of fingerprints stored in in-memory cache/index.
 	 * @see DiskFPSet#getTblCnt()
 	 */
-	protected AtomicLong tblCnt = new AtomicLong(0); 
+	protected AtomicLong tblCnt; 
 
 	/**
 	 * Number of used slots in tbl by a bucket
@@ -194,7 +195,8 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		this.lockMask = (1 << 10) - 1;
 		
 		this.fileCnt = 0;
-		this.flusherChosen = false;
+		this.tblCnt = new AtomicLong(0);
+		this.flusherChosen = new AtomicBoolean(false);
 
 		long maxMemCnt = (long) (maxInMemoryCapacity / getAuxiliaryStorageRequirement());
 
@@ -418,17 +420,15 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			return true;
 		}
 		
-		// test if buffer is full
-		if (needsDiskFlush() && !this.flusherChosen) {
-			// block until there are no more readers
-			this.flusherChosen = true;
-			
+		// test if buffer is full && block until there are no more readers 
+		if (needsDiskFlush() && this.flusherChosen.compareAndSet(false, true)) {
 			
 			// statistics
 			growDiskMark++;
 			long timestamp = System.currentTimeMillis();
 			
 			// acquire _all_ write locks
+			//TODO find way to do this more efficiently
 			int size = this.rwLock.size();
 			for (int i = 0; i < size; i++) {
 				this.rwLock.getAt(i).writeLock().lock();
@@ -441,14 +441,13 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 				this.rwLock.getAt(i).writeLock().unlock();
 			}
 			
+			// finish writing
+			this.flusherChosen.set(false);
+
 			long l = System.currentTimeMillis() - timestamp;
 			flushTime += l;
 			System.out.println("Flushing disk " + getGrowDiskMark() + " time, in "
 					+ (l / 1000) + " sec");
-			
-			
-			// finish writing
-			this.flusherChosen = false;
 		}
 		w.unlock();
 		return false;
