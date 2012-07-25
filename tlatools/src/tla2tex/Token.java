@@ -27,7 +27,7 @@
 * The methods are                                                          *
 *                                                                          *
 *   getWidth() : returns width of token in input.                          *
-*   toString() : for debuggin                                              *
+*   toString() : for debugging                                             *
 *                                                                          *
 * Every token of type COMMENT should belong to the subclass CommentToken.  *
 ***************************************************************************/
@@ -113,6 +113,12 @@ public class Token
          * This is a proof-step number, such as "<42>" or "<37>2a.".       *
          * It shouldn't make any difference, but the definitions of        *
          * PF_STEP in Token and CToken are made the same just in case.     *
+         ******************************************************************/
+
+       public static final int PCAL_LABEL = 13;
+         /******************************************************************
+         * This is a  label.  The string contains the label, the following *
+         * ":" and perhaps a following "+" or "-".                         *
          ******************************************************************/
 
     /***********************************************************************
