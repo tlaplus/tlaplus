@@ -56,6 +56,12 @@ public final class BuiltInSymbols
       * token.                                                             *
       *********************************************************************/
 
+    private static Hashtable canPrecedeLabelTable = new Hashtable(15);
+      /*********************************************************************
+      * A table of all the tokens (strings) that can precede a labeled     *
+      * statement.                                                         *
+      *********************************************************************/
+
     private static String nullString = "" ;
       /*********************************************************************
       * Some hash tables are used only to remember the keys; there is no   *
@@ -67,17 +73,47 @@ public final class BuiltInSymbols
       { buildHashTable(); 
         buildPrefixHashTable(); 
         buildStringCharTable();
+        buildCanPrecedeLabelTable();
       } ;
 
     public static boolean IsBuiltInSymbol(String str) 
       { return (null != GetBuiltInSymbol(str)) ;
       } ;
 
+    /**
+     * Returns true iff str is a built-in symbol--either a TLA+ or
+     * PlusCal symbol if pcalMode = true, or just a TLA+ symbol if
+     * pcalMode = false.
+     * 
+     * @param str : The symbols ascii string.
+     * @param pcalMode : true if looking for pcal symbols as well as TLA+ symbols.
+     * @return
+     */
+    public static boolean IsBuiltInSymbol(String str, boolean pcalMode) 
+      { return null != GetBuiltInSymbol(str, pcalMode)  ;
+      } ;
+    
+      /**
+       * Returns the built-in symbol with string str.  If pcalMode = false,
+       * just return a TLA+ symbol; if pcalMode = true, return either a TLA+
+       * or a PlusCal symbol.
+       * @param str
+       * @param pcalMode
+       * @return
+       */
+    public static Symbol GetBuiltInSymbol(String str, boolean pcalMode)
+      { Symbol sym = (Symbol) builtInHashTable.get(str);
+        if (sym == null || (sym.pcal && ! pcalMode)) {
+            return null ;
+        }
+        return sym;
+      } ;
+
     public static Symbol GetBuiltInSymbol(String str)
       { return (Symbol) builtInHashTable.get(str);
       } ;
 
-    public static boolean IsBuiltInPrefix(String str)
+      public static boolean IsBuiltInPrefix(String str)
       { return prefixHashTable.containsKey(str) ;
       } ;
 
@@ -85,6 +121,10 @@ public final class BuiltInSymbols
       { return stringCharTable.containsKey("" + ch) ;
       } ;
 
+    public static boolean CanPrecedeLabel(String str) {
+        return canPrecedeLabelTable.containsKey(str) ;
+    }
+      
     private static void buildStringCharTable() 
       { String legalChars = 
                  /**********************************************************
@@ -102,11 +142,25 @@ public final class BuiltInSymbols
           }
       } ;
 
+    private static void buildCanPrecedeLabelTable() {
+        String[] canPrecedeLabel = 
+           {";", ")", "{",  "begin", "do", "either", "or", "then", "else", "elsif"};
+        for (int i = 0; i < canPrecedeLabel.length; i++) {
+            canPrecedeLabelTable.put(canPrecedeLabel[i], nullString);
+        }
+    }
     private static void add(String tla, String tex, int stype, int atype)
       /*********************************************************************
-      * Adds an entry to the builtInHashTable.                             *
+      * Adds a non-PlusCal entry to the builtInHashTable.                 *
       *********************************************************************/
       { builtInHashTable.put(tla, new Symbol(tla, tex, stype, atype) ) ; } ;
+
+
+    private static void pcaladd(String tla, String tex, int stype, int atype)
+      /*********************************************************************
+      * Adds a PlusCal entry to the builtInHashTable.                      *
+      *********************************************************************/
+      { builtInHashTable.put(tla, new Symbol(tla, tex, stype, atype, true) ) ; } ;
 
 
     private static void buildHashTable() 
@@ -357,7 +411,37 @@ public final class BuiltInSymbols
 
         add("-.",  "\\.{-\\!.\\,}",    Symbol.MISC, 0);
         add("@",  "@",      Symbol.MISC, 0);
+        
+        // The following are added for PlusCal
+        pcaladd(";",          "\\,;",            Symbol.PUNCTUATION, 63);
+        pcaladd("assert}",    "{\\passert}",     Symbol.KEYWORD,     0);
+        pcaladd("begin}",     "{\\pbegin}",      Symbol.KEYWORD,     0);
+        pcaladd("end}",       "{\\pend}",        Symbol.KEYWORD,     0);
+        pcaladd("call}",      "{\\pcall}",       Symbol.KEYWORD,     0);
+        pcaladd("do}",        "{\\pdo}",         Symbol.KEYWORD,     0);
+        pcaladd("either}",    "{\\peither}",     Symbol.INFIX,       64); // not sure
+        pcaladd("or}",        "{\\por}",         Symbol.INFIX,       64); // not sure
+        pcaladd("goto}",      "{\\pgoto}",       Symbol.KEYWORD,     0);
+        pcaladd("if}",        "{\\pif}",         Symbol.KEYWORD,     0);
+        pcaladd("then}",      "{\\pthen}",       Symbol.INFIX,       65); // not sure
+        pcaladd("else}",      "{\\pelse}",       Symbol.INFIX,       65); // not sure
+        pcaladd("elsif}",     "{\\pelsif}",      Symbol.INFIX,       65); // not sure
+        pcaladd("macro}",     "{\\pmacro}",      Symbol.KEYWORD,     0);
+        pcaladd("print}",     "{\\pprint}",      Symbol.KEYWORD,     0);
+        pcaladd("procedure",  "{\\pprocedure}",  Symbol.KEYWORD,     0);
+        pcaladd("process}",   "{\\pprocess}",    Symbol.KEYWORD,     0);
+        pcaladd("return}",    "{\\preturn}",     Symbol.KEYWORD,     0);
+        pcaladd("skip}",      "{\\pskip}",       Symbol.KEYWORD,     0);
+        pcaladd("variable",   "{\\pvariable}",   Symbol.KEYWORD,     0);
+        pcaladd("variables",  "{\\pvariables}",  Symbol.KEYWORD,     0);
+        pcaladd("while}",     "{\\pwhile}",      Symbol.KEYWORD,     0);
+        pcaladd("with}",      "{\\pwith}",       Symbol.KEYWORD,     0);
 
+        // We may want to add symbols for the following characters so 
+        // they can be printed differently when they are PlusCal delimiters
+        // than when TLA+ parentheses:
+        //
+        //       "{"  "}"  "("  ")"
       } ;      
 
 

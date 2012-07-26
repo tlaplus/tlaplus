@@ -245,7 +245,6 @@ public class TokenizeComment
       * by the Tokenize method.                                            *
       *********************************************************************/
       
-
     /***********************************************************************
     * The following private class variables are used in the                *
     * implementation of the Tokenize method.  They are made class          *

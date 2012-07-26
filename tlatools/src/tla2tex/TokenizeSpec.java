@@ -18,11 +18,15 @@
 *                                                                          *
 * The Tokenize method can be called in one of two modes:                   *
 *                                                                          *
-*   TLA mode    : It assumes that the input is any arbitrary portion       *
-*                 of a TLA+ spec.                                          *
-*   MODULE mode : It assumes that the input consists of arbitrary          *
-*                 text, followed by a complete module, followed            *
-*                 by arbitrary text.                                       *
+*   TLA mode     : It assumes that the input is any arbitrary portion      *
+*                  of a TLA+ spec. (Called by tlatex.TeX for a tla         *
+*                  environment.)                                           *
+*   MODULE mode  : It assumes that the input consists of arbitrary         *
+*                  text, followed by a complete module, followed           *
+*                  by arbitrary text.                                      *
+*   PLUSCAL mode : It assumes that the input consists of all or part of    *
+*                  a PlusCal algorithm.  (Called by tlatex.TeX for a pcal  *
+*                  environment.)                                           *
 *                                                                          *
 * The result returned by Tokenize is an an array of arrays spec of Token   *
 * objects, where spec[i][j] is token number j on line number i of the      *
@@ -207,7 +211,9 @@
 *   [OTHER]   while (token \notin BuiltIn)                                 *
 *               {move last char in token back                              *
 *                to the CharReader};                                       *
-*             TokenOut(BUILTIN)                    --> START               *
+*             saved := CanPrecedeLabel(token)                              * MODIFIED
+*             TokenOut(BUILTIN)                                            * MODIFIED
+*             canBeLabel := saved                  --> START               * MODIFIED
 *                                                                          *
 * DASH1:                                                                   *
 *   ("-")   + --> DASH2                                                    *
@@ -381,10 +387,33 @@ public class TokenizeSpec
       * use.                                                               *
       *********************************************************************/
       
-    public static final int MODULE = 1 ;
-    public static final int TLA =    2 ;
+    // The modes
+    public static final int MODULE  = 1 ;
+    public static final int TLA     = 2 ;
+    public static final int PLUSCAL = 3 ;
 
-
+    /*
+     * The following public fields are set by the Tokenize method to 
+     * indicate the presence, location, and type of any PlusCal code
+     * found in the input. 
+     * 
+     *   hasPcal : True iff there is a PlusCal algorithm.  Set true
+     *             in PLUSCAL mode.
+     *             
+     *   isCSyntax : If hasPCal is true, then this is true unless we are
+     *               not in PLUSCAL mode and the --algorithm or --fair
+     *               token has been found and it begins a P-Syntax
+     *               PlusCal algorithm.
+     *               
+     *   pcalStart
+     *   pcalEnd   : The Positions of the first and last token of PlusCal
+     *               code.  They will be set to null if there is no PlusCal code.
+     */
+    public static boolean hasPcal ;
+    public static boolean isCSyntax ;
+    public static Position pcalStart ;
+    public static Position pcalEnd ;
+    
     /***********************************************************************
     * The following private class variables are used in the                *
     * implementation of the Tokenize method.  They are made class          *
@@ -394,6 +423,20 @@ public class TokenizeSpec
     * Note: This use of static fields makes the class totally threads      *
     * unsafe.                                                              *
     ***********************************************************************/
+    private static boolean inPcal ;
+      // True iff we are inside a PlusCal algorithm.
+    
+    private static boolean canBeLabel ;
+      // Set true when outputting a PlusCal token that can be followed
+      // by a statement label.  Set false when outputting any other non-comment
+      // PlusCal token.  The tokens that can be followed by a label are:
+      //
+      //    ";"  ")"  "{"   "begin"  "do"  "either" "or"  "then"  "else"
+      //    "elsif" 
+      //
+      // It is set false by the TokenOut method and left unchanged
+      // by the CommentTokenOut method (which is used to output a comment token).
+    
     private static Vector vspec = null ;
           /*****************************************************************
           * vspec is a vector of vectors in which the TokenizedSpec is     *
@@ -448,8 +491,8 @@ public class TokenizeSpec
     private static CharReader reader ;
       /*********************************************************************
       * This is the "exposed" version of the CharReader argument to the    *
-      * TokenizedSpec constructor, exposed so it can be used by the        *
-      * following procedures.                                              *
+      * TokenizedSpec constructor, exposed so it can be used by procedures *
+      * called by Tokenize without having to be passed as an argument.     *
       *********************************************************************/
 
     /***********************************************************************
@@ -529,9 +572,11 @@ public class TokenizeSpec
         col = ncol ;
       }
 
+    
     private static void TokenOut(int type)
       /*********************************************************************
       * Add the token to linev and reset token to the empty string.        *
+      * Reset canBeLabel.                                                  *
       *********************************************************************/
       { if (   (! token.equals(""))
             || (type == Token.STRING))
@@ -555,6 +600,7 @@ public class TokenizeSpec
             }
          };
         token = "" ;
+        canBeLabel = false ;
       } ;
 
     private static void CommentTokenOut(int subtype)
@@ -618,9 +664,24 @@ public class TokenizeSpec
           * Initialize nextChar.                                           *
           *****************************************************************/
 
+        // Initialize PlusCal processing variables.
+        hasPcal = false ;
+        isCSyntax = true ;
+        pcalStart = null ;
+        pcalEnd = null;
+        inPcal = false;
+        canBeLabel = false;
+        
         switch (mode)
-          { case MODULE : state = PROLOG ; break ;
-            case TLA    : state = START  ; break ;
+          { 
+            case MODULE  : state = PROLOG ; break ;
+            case TLA     : state = START  ; break ;
+            case PLUSCAL : state = START ;
+                           hasPcal = true ;
+                           pcalStart = new Position(0, 0) ;
+                           inPcal = true ;
+                           canBeLabel = true ;
+                           break ;
             default     : Debug.ReportBug(
                            "TokenizeSpec.Tokenize called with illegal mode") ;
           } ;

@@ -177,6 +177,12 @@ public class TLA
         Finished("TokenizeSpec.Tokenize");
         // Debug.print2DArray(spec, "tok");
 
+        /*
+         *  Need to add code to find which parentheses and braces in 
+         *  PlusCal code should be typeset as syntactic PlusCal delimiters.
+         *  Also, set all goto labels to tokens of type PCAL_LABEL 
+         */
+
         /*********************************************************************
         * Process the comment tokens.                                        *
         *********************************************************************/
