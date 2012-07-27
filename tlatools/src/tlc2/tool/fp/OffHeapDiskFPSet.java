@@ -20,8 +20,6 @@ import util.Assert;
 @SuppressWarnings({ "serial", "restriction" })
 public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
-	private static final long BucketBaseIdx = 0xFFFFFFFFFFFFFFFFL - (InitialBucketCapacity - 1);
-
 	private static sun.misc.Unsafe getUnsafe() {
 		try {
 			Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
@@ -33,13 +31,15 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		}
 	}
 	
+	protected static final long BucketBaseIdx = 0xFFFFFFFFFFFFFFFFL - (InitialBucketCapacity - 1);
+
 	/**
 	 * 
 	 */
 	private final Unsafe u;
 	
 	/**
-	 * 
+	 * The base address allocated for fingerprints
 	 */
 	private final long baseAddress;
 	
@@ -57,14 +57,11 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * don't change buckets during sort.
 	 */
 	private final SortedSet<Long> collisionBucket; //TODO replace SortedSet with cheaper/faster long[]?!
-
-	/**
-	 * Number of bits to right shift bits during index calculation
-	 * @see MSBDiskFPSet#moveBy
-	 */
-	protected int moveBy;
 	
-	protected final int lockMoveBy;
+	/**
+	 * The indexer maps a fingerprint to a in-memory bucket and the associated lock
+	 */
+	private Indexer indexer;
 
 	protected OffHeapDiskFPSet(long maxInMemoryCapacity) throws RemoteException {
 		this(maxInMemoryCapacity, 0);
@@ -72,18 +69,6 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
 	protected OffHeapDiskFPSet(final long maxInMemoryCapacity, final int prefixBits) throws RemoteException {
 		super(maxInMemoryCapacity);
-
-		// move n as many times to the right to calculate moveBy. moveBy is the
-		// number of bits the (fp & mask) has to be right shifted to make the
-		// logical bucket index.
-		long n = (Long.MAX_VALUE >>> prefixBits) - (maxInMemoryCapacity - 1);
-		while (n >= maxInMemoryCapacity) {
-			moveBy++;
-			n = n >>> 1; // == (n/2)
-		}
-		
-		// same for lockCnt
-		lockMoveBy = 63 - prefixBits - LogLockCnt;
 		
 		// Determine base address which varies depending on machine architecture.
 		u = getUnsafe();
@@ -103,6 +88,21 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		this.collisionBucket = new TreeSet<Long>();
 		
 		this.flusher = new OffHeapMSBFlusher();
+		
+		
+		// Calculate Hamming weight of maxInMemoryCapacity
+		final int bitCount = Long.bitCount(maxInMemoryCapacity);
+		
+		// If Hamming weight is 1, the logical index address can be calculated
+		// significantly faster by bit-shifting. However, with large memory
+		// sizes, only supporting increments of 2^n sizes would waste memory
+		// (e.g. either 32GiB or 64Gib). Hence we check if the bitCount allows
+		// us to use bit-shifting and fall back to less efficient modulo otherwise.
+		if (bitCount == 1) {
+			this.indexer = new BitshiftingIndexer(maxInMemoryCapacity, prefixBits);
+		} else {
+			this.indexer = new Indexer(prefixBits);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -149,29 +149,14 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 */
 	@Override
 	protected int getLockIndex(long fp) {
-		// calculate hash value (just n most significant bits of fp) which is
-		// used as an index address
-		final long idx = fp >> lockMoveBy;
-		//Assert.check(0 <= idx && idx < lockCnt, EC.GENERAL);
-		return (int) idx;
-	}
-
-	/**
-	 * @param fp
-	 * @return The logical bucket position in the table for the given fingerprint.
-	 */
-	protected long getLogicalPosition(final long fp) {
-		// push MSBs for moveBy positions to the right and align with a bucket address
-		long position = (fp >> moveBy) & BucketBaseIdx; 
-		//Assert.check(0 <= position && position < maxInMemoryCapacity, EC.GENERAL);
-		return position;
+		return this.indexer.getLockIndex(fp);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memLookup(long)
 	 */
 	boolean memLookup(long fp) {
-		final long position = getLogicalPosition(fp);
+		final long position = indexer.getLogicalPosition(fp);
 		
 		// Linearly search the logical bucket; 0L is an invalid fp and marks the
 		// end of the allocated bucket
@@ -190,7 +175,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#memInsert(long)
 	 */
 	boolean memInsert(long fp) {
-		final long position = getLogicalPosition(fp);
+		final long position = indexer.getLogicalPosition(fp);
 
 		long l = -1;
 		long freePosition = -1L;
@@ -261,6 +246,71 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 */
 	public long getCollisionBucketCnt() {
 		return collisionBucket.size();
+	}
+	
+	public class Indexer {
+		protected final int lockMoveBy;
+
+		public Indexer(final int prefixBits) {
+			// same for lockCnt
+			lockMoveBy = 63 - prefixBits - LogLockCnt;
+		}
+		
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.DiskFPSet#getLockIndex(long)
+		 */
+		protected int getLockIndex(long fp) {
+			// calculate hash value (just n most significant bits of fp) which is
+			// used as an index address
+			final long idx = fp >> lockMoveBy;
+			//Assert.check(0 <= idx && idx < lockCnt, EC.GENERAL);
+			return (int) idx;
+		}
+
+		/**
+		 * @param fp
+		 * @return The logical bucket position in the table for the given fingerprint.
+		 */
+		protected long getLogicalPosition(final long fp) {
+			// push MSBs for moveBy positions to the right and align with a bucket address
+			long position = (fp % maxTblCnt) & BucketBaseIdx; 
+			//Assert.check(0 <= position && position < maxInMemoryCapacity, EC.GENERAL);
+			return position;
+		}
+	}
+	
+	public class BitshiftingIndexer extends Indexer {
+		/**
+		 * Number of bits to right shift bits during index calculation
+		 * @see MSBDiskFPSet#moveBy
+		 */
+		protected final int moveBy;
+		
+		public BitshiftingIndexer(long maxInMemoryCapacity, final int prefixBits) throws RemoteException {
+			super(prefixBits);
+			
+			// move n as many times to the right to calculate moveBy. moveBy is the
+			// number of bits the (fp & mask) has to be right shifted to make the
+			// logical bucket index.
+			long n = (Long.MAX_VALUE >>> prefixBits) - (maxInMemoryCapacity - 1);
+			int i = 0;
+			while (n >= maxInMemoryCapacity) {
+				i++;
+				n = n >>> 1; // == (n/2)
+			}
+			moveBy = i;
+		}
+		
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.Indexer#getLogicalPosition(long)
+		 */
+		@Override
+		protected long getLogicalPosition(final long fp) {
+			// push MSBs for moveBy positions to the right and align with a bucket address
+			long position = (fp >> moveBy) & BucketBaseIdx; 
+			//Assert.check(0 <= position && position < maxInMemoryCapacity, EC.GENERAL);
+			return position;
+		}
 	}
 	
 	public class OffHeapMSBFlusher extends Flusher {
