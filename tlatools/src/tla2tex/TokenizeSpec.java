@@ -183,7 +183,25 @@
 *   ("(")                 -  --> LEFT_PAREN                                *
 *   ("\"")                -  --> STRING                                    *
 *   ("\n")                -  --> START                                     *
-*   (BuiltInPrefix)       +  --> BUILT_IN                                  *
+*   (BuiltInPrefix)                                                        * MODIFIED
+*     +                                                                    * MODIFIED
+*       IF ~(inPcal /\ mode = Module)                                      * MODIFIED   
+*         THEN                                              --> BUILT_IN   * MODIFIED
+*         ELSEIF token = "*" /\ nextChar = ")"                             * MODIFIED
+*           THEN +  pcalEnd := getNextTokenPosition();                     * MODIFIED
+*                   inPcal := false                         --> START      * MODIFIED
+*         ELSEIF isCSyntax                                                 * MODIFIED
+*           THEN IF token = "{"                                            * MODIFIED
+*                  THEN TokenOut(BUILT_IN) ;                               * MODIFIED
+*                       braceDepth := braceDepth + 1        --> START      * MODIFIED
+*           ELSEIF token = "}"                                             * MODIFIED
+*             THEN TokenOut(BUILT_IN) ;                                    * MODIFIED
+*                  braceDepth := braceDepth - 1                            * MODIFIED
+*                  IF braceDepth # 0                                       * MODIFIED
+*                    THEN                                   --> START      * MODIFIED
+*                    ELSE inPcal := false ;                                * MODIFIED
+*                         pcalEnd := getNextTokenPosition() ;              * MODIFIED
+*                         pseudoCom := true                 --> COMMENT    * MODIFIED
 *   [("\t") /\ TLA mode]     --> DONE                                      *
 *   [OTHER]                  --> ERROR                                     *
 *                                                                          *
@@ -192,7 +210,12 @@
 *   (Letter or Digit)         +                     --> ID                 *
 *   [token = "MODULE"]        TokenOut(BUILTIN);                           *
 *                             mdepth := mdepth + 1  --> START              *
-*   [token \in BuiltIns]      TokenOut(BUILTIN)     --> START              *
+*   [token \in BuiltIns]                                                   * MODIFIED
+*      IF inPcal /\ token = "algorithm" /\ ~isCsyntax /\ mode = MODULE     * MODIFIED
+*        THEN TokenOut(BUILTIN) ;                                          * MODIFIED
+*             pcalEnd := getNextTokenPosition()                            * MODIFIED
+*             pseudoCom := true              --> COMMENT                   * MODIFIED
+*        ELSE TokenOut(BUILTIN)              --> START                     * MODIFIED
 *   [OTHER /\ inPcal /\ canBeLabel]                                        * MODIFIED
 *                             token1 := token       --> ID_OR_PCAL_LABEL   * MODIFIED
 *   [OTHER]                   TokenOut(IDENT)       --> START              * MODIFIED
@@ -219,9 +242,9 @@
 *   ("*")                             - ; token := ""  --> LINE_COMMENT    *
 *   [OTHER]                                            --> BUILT_IN        *
 *                                                                          *
-* NUM_OR_BI                                                                *
-*   (Digit)   --> NUM                                                      *
-*   [OTHER]   --> BSBUILT_IN                                               *
+* NUM_OR_BI:  Needs to be fixed to handle something like \H4b2             * BUG
+*   (Digit)   --> NUM                                                      * BUG
+*   [OTHER]   --> BSBUILT_IN                                               * BUG
 *                                                                          *
 * NUM:                                                                     *
 *   (Digit)  +                      --> NUM                                *
@@ -320,7 +343,7 @@
 *   ("("}    -                                --> COMMENT_PAREN            *
 *   ("\n")   TokenOut(COMMENT, BEGIN_OR) ; -  --> OR_COMMENT               *
 *   ("\t")                                    --> ERROR                    *
-*   [("-") /\ cdepth = 1 /\  mode = MODULE /\ ~hasPcal]                    * MODIFIED
+*   [("-") /\ cdepth = 1 /\ mode = MODULE /\ ~hasPcal]                     * MODIFIED
 *                        token1 := token;  col1 := col                     * MODIFIED
 *                        token := "";  col := ncol (?)                     * MODIFIED
 *                        ORCom := false ;                                  * MODIFIED
@@ -343,11 +366,46 @@
 *              col := col1               +  --> COMMENT                    * MODIFIED
 *                                                                          * MODIFIED
 * C_DASH_DASH:                                                             * 
-*   (Letter)    + --> C_DASH_DASH
-*   [OTHER]   IF token \in {"--fair", "--algorithm"}
-*               THEN 
-*               ELSE token := token1 \o token        --> COMMENT
+*   (Letter)    + --> C_DASH_DASH                                          * MODIFIED
+*   [OTHER]   IF token \in {"--fair", "--algorithm"}                       * MODIFIED
+*               THEN IF token1 # all spaces                                * MODIFIED
+*                      THEN pseudoCom := true;                             * MODIFIED
+*                           token2 := token; col2 := col;                  * MODIFIED
+*                           token := token1; col := col1;                  * MODIFIED
+*                           TokenOut(COMMENT, IF ORCom THEN END_OVERRUN    * MODIFIED
+*                                                      ELSE NORMAL )       * MODIFIED
+*                           token := token2; col := col2;                  * MODIFIED
+*                    FI;                                                   * MODIFIED
+*                    inPcal := true;                                       * MODIFIED
+*                    hasPcal := true;                                      * MODIFIED
+*                    pcalStart := getNextTokenPosition();                  * MODIFIED
+*                    isFair := (token = "--fair");                         * MODIFIED
+*                    TokenOut(BUILT_IN);                                   * MODIFIED
+*                    SkipSpacesAndNewLines();                              * MODIFIED
+*                    IF isFair THEN                  --> GET_ALG_TOKEN     * MODIFIED
+*                              ELSE                  --> GET_ALG_NAME      * MODIFIED
+*               ELSE token := token1 \o token        --> COMMENT           * MODIFIED
 *                                                                          *
+* GET_ALG_TOKEN:                                                           * MODIFIED
+*   (Letter)  +    --> GET_ALG_TOKEN                                       * MODIFIED
+*   (Digit)   +    --> GET_ALG_TOKEN                                       * MODIFIED
+*   [OTHER]  IF token = "algorithm"                                        * MODIFIED
+*              THEN TokenOut(BUILT_IN) ;                                   * MODIFIED
+*                   SkipSpacesAndNewLines() --> GET_ALG_NAME               * MODIFIED
+*              ELSE \* Bad input; interpret everything else as comment     * MODIFIED
+*                   pseudoCom := true       --> COMMENT                    * MODIFIED
+*                                                                          * 
+* GET_ALG_NAME:                                                            * MODIFIED
+*   (Letter)  +    --> GET_ALG_NAME                                        * MODIFIED
+*   (Digit)   +    --> GET_ALG_NAM                                         * MODIFIED
+*   [OTHER]   IF token # "" /\ contains a letter                           * MODIFIED
+*               THEN TokenOut(IDENT);                                      * MODIFIED
+*                    SkipSpacesAndNewLines();                              * MODIFIED
+*                    isCSyntax := (nextChar = "{");                        * MODIFIED
+*                    + TokenOut(BUILT_IN);                                 * MODIFIED
+*                    braceDepth := 1                 --> START             * MODIFIED
+*               ELSE pseudoCom := true               --> COMMENT           * MODIFIED
+*                                                                          * 
 * COMMENT_PAREN:                                                           *
 *   ("*")    - ; cdepth := cdepth + 1                --> COMMENT           *
 *   [OTHER]  IF cdepth = 1 THEN token := token + "("                       *
@@ -386,6 +444,10 @@ package tla2tex;
 import java.util.Hashtable;
 import java.util.Vector;
 
+/**
+ * @author lamport
+ *
+ */
 public class TokenizeSpec
   { private static Hashtable identHashTable  = new Hashtable(1000);
       /*********************************************************************
@@ -457,8 +519,14 @@ public class TokenizeSpec
      *               begins a C-Syntax PlusCal algorithm.
      *               
      *   pcalStart
-     *   pcalEnd   : The Positions of the first and last token of PlusCal
-     *               code.  They will be set to null if there is no PlusCal code.
+     *   pcalEnd   : The Positions of the first token of PlusCal code and the
+     *               position immediately after the last token of the PlusCal
+     *               code.  More precisely, pcalEnd is set to a position that 
+     *               is > the position of the last token of the PlusCal code
+     *               and =< the position of the first token after the PlusCal
+     *               code.  If the last PlusCal token has Position (i, j), then
+     *               pcalEnd is probably (i, j+1), even if the last token on
+     *               line i has position j.
      */
     public static boolean hasPcal ;
     public static boolean isCSyntax ;
@@ -488,6 +556,16 @@ public class TokenizeSpec
       //
       // It is set false by the TokenOut method and left unchanged
       // by the CommentTokenOut method (which is used to output a comment token).
+    
+    private static boolean pseudoCom ;
+      // Set true iff the next Comment token to be output did not have
+      // two of its delimiter characters because it immediately preceded or
+      // followed a PlusCal algorithm.  Set false by CommentTokenOut
+    
+    private static boolean ORCom ;
+      // Set true when looking for the start of a Pluscal algorithm when
+      // processing a comment--true if processing an OR (overrun) comment,
+      // false if processing a normal comment.  
     
     private static Vector vspec = null ;
           /*****************************************************************
@@ -659,7 +737,8 @@ public class TokenizeSpec
       /*********************************************************************
       * Add the token to linev and reset token to the empty string.        *
       *********************************************************************/
-      { linev.addElement(new CommentToken(token, col, subtype )); 
+      { linev.addElement(new CommentToken(token, col, subtype, pseudoCom)); 
+        pseudoCom = false;
         token = "" ;
       } ;
 
@@ -673,6 +752,15 @@ public class TokenizeSpec
         col = 0 ;
       } ;
 
+    /**
+     * Returns the Position in the final output of the next
+     * token to be output.
+     * 
+     * @return
+     */
+    private static Position getNextTokenPosition() {
+        return new Position(vspec.size(), linev.size());
+    }
     private static void TokenizingError(String msg) 
       { Debug.ReportError(
            msg + " `" + token + "' found at\n" + 
@@ -723,6 +811,8 @@ public class TokenizeSpec
         pcalEnd = null;
         inPcal = false;
         canBeLabel = false;
+        pseudoCom = false;
+        ORCom = false;
         
         switch (mode)
           { 

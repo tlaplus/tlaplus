@@ -97,10 +97,13 @@ public class CommentToken extends Token
      * the string.  It is 4 for a "(* ... *)" comment, etc.                *
      **********************************************************************/
      
-   public CommentToken(String str, int col, int sub)
+   public CommentToken(String str, int col, int sub, boolean pseudo)
      /**********************************************************************
      * The constructor for this class.  The third argument specifies the   *
-     * rsubtype.                                                           *
+     * rsubtype.  The fourth argument is true iff this comment is ended    *
+     * by the beginning of a PlusCal algorithm or begun by the end of a    *
+     * PlusCal algorithm.  In either case, two delimiter characters that   *
+     * normally would have been deleted weren't.                           *
      **********************************************************************/
      { type    = Token.COMMENT; 
        column = col ;
@@ -108,11 +111,11 @@ public class CommentToken extends Token
        rsubtype = sub;
        subtype = 0 ;
        switch (rsubtype)
-         { case NORMAL :         delimiters = 4;
+         { case NORMAL :         delimiters = pseudo?2:4;
                                  break;
            case LINE :
            case BEGIN_OVERRUN :
-           case END_OVERRUN :    delimiters = 2;
+           case END_OVERRUN :    delimiters = pseudo?0:2;
                                  break ;
 
            case OVERRUN :        break ;
