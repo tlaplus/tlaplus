@@ -20,6 +20,8 @@ import util.Assert;
 @SuppressWarnings({ "serial", "restriction" })
 public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
+	private static final long BucketBaseIdx = 0xFFFFFFFFFFFFFFFFL - (InitialBucketCapacity - 1);
+
 	private static sun.misc.Unsafe getUnsafe() {
 		try {
 			Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
@@ -47,11 +49,6 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	private final long addressSize;
 
 	/**
-	 * 
-	 */
-	private final long maxInMemoryCapacity;
-
-	/**
 	 * A bucket containing collision elements.
 	 * 
 	 * Open addressing is not an option for this implementation, because it does
@@ -75,10 +72,6 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
 	protected OffHeapDiskFPSet(final long maxInMemoryCapacity, final int prefixBits) throws RemoteException {
 		super(maxInMemoryCapacity);
-		
-		//TODO replace maxInMemoryCapacity with maxTblCnt
-		this.maxInMemoryCapacity = maxInMemoryCapacity;
-		this.maxTblCnt = maxInMemoryCapacity;
 
 		// move n as many times to the right to calculate moveBy. moveBy is the
 		// number of bits the (fp & mask) has to be right shifted to make the
@@ -118,7 +111,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	public long sizeof() {
 		//TODO needs locking?
 		long size = 44; // approx size of this DiskFPSet object
-		size += maxInMemoryCapacity * (long) LongSize;
+		size += maxTblCnt * (long) LongSize;
 		size += getIndexCapacity() * 4;
 		size += collisionBucket.size() * (long) LongSize; // ignoring the internal TreeSet overhead here
 		return size;
@@ -136,7 +129,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	}
 	
 	private boolean primaryLoadFactorExceeds(final double limit) {
-		return (tblLoad / (double) (maxInMemoryCapacity / DiskFPSet.InitialBucketCapacity)) >= limit;
+		return (tblLoad / (double) (maxTblCnt / DiskFPSet.InitialBucketCapacity)) >= limit;
 	}
 
 	/**
@@ -169,7 +162,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 */
 	protected long getLogicalPosition(final long fp) {
 		// push MSBs for moveBy positions to the right and align with a bucket address
-		long position = (fp >> moveBy) & 0xFFFFFFFFFFFFFFF0L; 
+		long position = (fp >> moveBy) & BucketBaseIdx; 
 		//Assert.check(0 <= position && position < maxInMemoryCapacity, EC.GENERAL);
 		return position;
 	}
@@ -260,7 +253,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#getTblCapacity()
 	 */
 	public long getTblCapacity() {
-		return maxInMemoryCapacity;
+		return maxTblCnt;
 	}
 
 	/* (non-Javadoc)
@@ -445,9 +438,9 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 				return l;
 			}
 			
-			while ((l = unsafe.getAddress(log2phy(logicalPosition))) <= 0L && logicalPosition < maxInMemoryCapacity) {
+			while ((l = unsafe.getAddress(log2phy(logicalPosition))) <= 0L && logicalPosition < maxTblCnt) {
 				// increment position to next bucket
-				logicalPosition = logicalPosition + DiskFPSet.InitialBucketCapacity & 0xFFFFFFFFFFFFFFF0L;
+				logicalPosition = logicalPosition + DiskFPSet.InitialBucketCapacity & BucketBaseIdx;
 				sortNextBucket();
 			}
 			
@@ -508,13 +501,13 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		 */
 		public long getLast() {
 			long tmpLogicalPosition = logicalPosition;
-			logicalPosition = maxInMemoryCapacity - DiskFPSet.InitialBucketCapacity;
+			logicalPosition = maxTblCnt - DiskFPSet.InitialBucketCapacity;
 			sortNextBucket();
 
 			// reverse the current bucket to obtain last element
 			long l = 1L;
 			while ((l = unsafe.getAddress(log2phy(logicalPosition-- + DiskFPSet.InitialBucketCapacity - 1))) <= 0L) {
-				if (((logicalPosition - DiskFPSet.InitialBucketCapacity) & 0xFFFFFFFFFFFFFFF0L) == 0) {
+				if (((logicalPosition - DiskFPSet.InitialBucketCapacity) & BucketBaseIdx) == 0) {
 					sortNextBucket();
 				}
 			}

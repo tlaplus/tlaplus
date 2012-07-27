@@ -181,6 +181,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		this.lockCnt = 1 << LogLockCnt; //TODO come up with a more dynamic value for stripes that takes tblCapacity into account
 		this.rwLock = Striped.readWriteLock(lockCnt);
 		
+		this.maxTblCnt = maxInMemoryCapacity;
 		this.fileCnt = 0;
 		this.tblCnt = new AtomicLong(0);
 		this.flusherChosen = new AtomicBoolean(false);
