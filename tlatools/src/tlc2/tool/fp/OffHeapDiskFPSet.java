@@ -46,7 +46,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	/**
 	 * Address size (either 4 or 8 bytes) depending on current architecture
 	 */
-	private final long addressSize;
+	private final int logAddressSize;
 
 	/**
 	 * A bucket containing collision elements.
@@ -72,10 +72,17 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		
 		// Determine base address which varies depending on machine architecture.
 		u = getUnsafe();
-		addressSize = u.addressSize();
-		
+		int addressSize = u.addressSize();
+		int cnt = -1;
+		while (addressSize > 0) {
+			cnt++;
+			addressSize = addressSize >>> 1; // == (n/2)
+		}
+		logAddressSize = cnt;
+
 		// Allocate non-heap memory for maxInMemoryCapacity fingerprints
-		baseAddress = u.allocateMemory(maxInMemoryCapacity * addressSize);
+		long bytes = maxInMemoryCapacity << logAddressSize;
+		baseAddress = u.allocateMemory(bytes);
 		
 		// Null memory (could be done in parallel on segments when bottleneck).
 		// This is essential as allocateMemory returns uninitialized memory and
@@ -121,7 +128,9 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#needsDiskFlush()
 	 */
 	protected boolean needsDiskFlush() {
-		return secondaryLoadExceeds() || primaryLoadFactorExceeds(.66d) || sizeOfCollisionBucketExceeds(.01d);
+		return secondaryLoadExceeds() 
+				|| primaryLoadFactorExceeds(.85d)
+				|| sizeOfCollisionBucketExceeds(.01d);
 	}
 
 	private boolean secondaryLoadExceeds() {
@@ -129,7 +138,8 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	}
 	
 	private boolean primaryLoadFactorExceeds(final double limit) {
-		return (tblLoad / (double) (maxTblCnt / DiskFPSet.InitialBucketCapacity)) >= limit;
+		final double d = (double) tblLoad / (double) (maxTblCnt / DiskFPSet.InitialBucketCapacity);
+		return d >= limit;
 	}
 
 	/**
@@ -139,9 +149,8 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 */
 	private boolean sizeOfCollisionBucketExceeds(final double limit) {
 		// the fraction of collisionBucket size compared to the tbl size 
-		final double dSize = (double) collisionBucket.size();
-		final double dTblcnt = (double) tblCnt.get();
-		return dSize / dTblcnt >= limit;
+		final double d = (double) collisionBucket.size() / (double) tblCnt.get();
+		return d >= limit;
 	}
 	
 	/* (non-Javadoc)
@@ -231,7 +240,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @return The physical address of the fp slot
 	 */
 	private long log2phy(long logicalAddress) {
-		return baseAddress + (logicalAddress * addressSize);
+		return baseAddress + (logicalAddress << logAddressSize);
 	}
 
 	/* (non-Javadoc)
@@ -550,6 +559,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	     * @exception NoSuchElementException if iteration is empty.
 		 */
 		public long getLast() {
+			//TODO biggest element could be in collisionBucket
 			long tmpLogicalPosition = logicalPosition;
 			logicalPosition = maxTblCnt - DiskFPSet.InitialBucketCapacity;
 			sortNextBucket();
