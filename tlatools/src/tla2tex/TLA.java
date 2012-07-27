@@ -189,7 +189,7 @@ public class TLA
         Starting("CommentToken.ProcessComments");
         CommentToken.ProcessComments(spec);
         Finished("CommentToken.ProcessComments");
-        // Debug.print2DArray(spec, "tok");
+        // Debug.print2DArray(spec, "com");
 
         /*********************************************************************
         * Initialize class FormatComments.                                   *

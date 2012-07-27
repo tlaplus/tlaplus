@@ -413,6 +413,10 @@ public final class BuiltInSymbols
         add("@",  "@",      Symbol.MISC, 0);
         
         // The following are added for PlusCal
+        pcaladd("fair}",      "{\\pfair}",       Symbol.KEYWORD,     0);
+        pcaladd("algorithm}", "{\\palgorithm}",  Symbol.KEYWORD,     0);
+        pcaladd("--fair}",    "{\\pmmfair}",     Symbol.KEYWORD,     0);
+        pcaladd("--algorithm}", "{\\pmmalgorithm}",  Symbol.KEYWORD,     0);
         pcaladd(";",          "\\,;",            Symbol.PUNCTUATION, 63);
         pcaladd("assert}",    "{\\passert}",     Symbol.KEYWORD,     0);
         pcaladd("begin}",     "{\\pbegin}",      Symbol.KEYWORD,     0);

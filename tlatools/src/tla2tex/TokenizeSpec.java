@@ -25,8 +25,12 @@
 *                  text, followed by a complete module, followed           *
 *                  by arbitrary text.                                      *
 *   PLUSCAL mode : It assumes that the input consists of all or part of    *
-*                  a PlusCal algorithm.  (Called by tlatex.TeX for a pcal  *
-*                  environment.)                                           *
+*                  a C-Syntax PlusCal algorithm.  (Called by tlatex.TeX    *
+*                  for a pcal environment.)                                *
+*                                                                          *
+*   P_PLUSCAL mode : It assumes that the input consists of all or part of  *
+*                    a C-Syntax PlusCal algorithm.  (Called by tlatex.TeX  *
+*                    for a ppcal environment.)                             *
 *                                                                          *
 * The result returned by Tokenize is an an array of arrays spec of Token   *
 * objects, where spec[i][j] is token number j on line number i of the      *
@@ -88,6 +92,17 @@
 *                                                                          *
 *    mdepth :   The module nesting level.  (Determined by counting         *
 *               "MODULE" keywords and "===="'s.                            *
+*                                                                          *
+*    pseudoCom : A boolean that equals true iff the next comment token to  * MODIFIED
+*                be output either does not end with "*)" (because it was   * MODIFIED
+*                terminated by the start of a PlusCal algorithm) or does   * MODIFIED
+*                not begin with a "(*" (because it immediately followed    * MODIFIED
+*                the end of a PlusCal algorithm).                          * MODIFIED
+*                                                                          *
+*    ORCom : A boolean set when looking for the start of a PlusCal         * MODIFIED
+*            algorithm when processing a comment.  It equals true if       * MODIFIED
+*            processing an OR (OverRun) comment, and false if processing a * MODIFIED
+*            normal comment.                                               * MODIFIED
 *                                                                          *
 * A <Precondition> has the form [exp], where exp is an ordinary            *
 * expression, except the following conventions are used in it:             *
@@ -178,8 +193,21 @@
 *   [token = "MODULE"]        TokenOut(BUILTIN);                           *
 *                             mdepth := mdepth + 1  --> START              *
 *   [token \in BuiltIns]      TokenOut(BUILTIN)     --> START              *
-*   [OTHER]                   TokenOut(IDENT)       --> START              *
+*   [OTHER /\ inPcal /\ canBeLabel]                                        * MODIFIED
+*                             token1 := token       --> ID_OR_PCAL_LABEL   * MODIFIED
+*   [OTHER]                   TokenOut(IDENT)       --> START              * MODIFIED
 *                                                                          *
+* ID_OR_PCAL_LABEL:                                                        * MODIFIED
+*   \* Note: token1 contains id                                            * MODIFIED
+*   (Space_Char)    +                     --> ID_OR_PCAL_LABEL             * MODIFIED
+*   (":")           +   token1 := token   --> PCAL_LABEL                   * MODIFIED
+*                                                                          *
+* PCAL_LABEL:                                                              * MODIFIED
+*   (Space_Char)    +                        --> PCAL_LABEL                * MODIFIED
+*   ("+" or "-")    +  TokenOut(PCAL_LABEL)  --> START                     * MODIFIED
+*   [OTHER]         token := token1;                                       * MODIFIED
+*                   TokenOut(PCAL_LABEL)     --> START                     * MODIFIED
+*                                                                          *                                        
 * NUM_OR_ID:                                                               *
 *   (Digit)   +                 --> NUM_OR_ID                              *
 *   (Letter)  +                 --> ID                                     *
@@ -292,26 +320,48 @@
 *   ("("}    -                                --> COMMENT_PAREN            *
 *   ("\n")   TokenOut(COMMENT, BEGIN_OR) ; -  --> OR_COMMENT               *
 *   ("\t")                                    --> ERROR                    *
+*   [("-") /\ cdepth = 1 /\  mode = MODULE /\ ~hasPcal]                    * MODIFIED
+*                        token1 := token;  col1 := col                     * MODIFIED
+*                        token := "";  col := ncol (?)                     * MODIFIED
+*                        ORCom := false ;                                  * MODIFIED
+*                        +                              --> C_DASH         * MODIFIED
 *   [OTHER]  IF cdepth = 1 THEN + ELSE -      --> COMMENT                  *
 *                                                                          *
 *                                                                          *
 * COMMENT_STAR:                                                            *
 *   [(")") /\ cdepth = 1] - c; depth := cdepth - 1                         *
+*                            inPcal := false                               * MODIFIED      
 *                          ; TokenOut(COMMENT, NORMAL)  --> START          *
 *   (")")                - ; cdepth := cdepth - 1       --> COMMENT        *
 *   [OTHER]              IF cdepth = 1                                     *
 *                          THEN token := token + "*"                       *
 *                          ELSE                       --> COMMENT          *
 *                                                                          *
+* C_DASH:                                                                  * MODIFIED
+*   ("-")      +                            --> C_DASH_DASH                * MODIFIED
+*   [OTHER]    token := token1 \o token; 
+*              col := col1               +  --> COMMENT                    * MODIFIED
+*                                                                          * MODIFIED
+* C_DASH_DASH:                                                             * 
+*   (Letter)    + --> C_DASH_DASH
+*   [OTHER]   IF token \in {"--fair", "--algorithm"}
+*               THEN 
+*               ELSE token := token1 \o token        --> COMMENT
+*                                                                          *
 * COMMENT_PAREN:                                                           *
 *   ("*")    - ; cdepth := cdepth + 1                --> COMMENT           *
 *   [OTHER]  IF cdepth = 1 THEN token := token + "("                       *
 *                          ELSE                       --> COMMENT          *
 *                                                                          *
-* OR_COMMENT:                                                              *
+* OR_COMMENT:    (OR = OverRun)                                            *
 *   ("*")    -                               --> OR_COMMENT_STAR           *
 *   ("("}    -                               --> OR_COMMENT_PAREN          *
 *   ("\n")   TokenOut(COMMENT, OVERRUN) ; -  --> OR_COMMENT                *
+*   [("-") /\ cdepth = 1 /\  mode = MODULE /\ ~hasPcal]                    * MODIFIED
+*                        token1 := token;  col1 := col                     * MODIFIED
+*                        token := "";  col := ncol (?)                     * MODIFIED
+*                        ORCom := true ;                                   * MODIFIED
+*                        +                              --> C_DASH         * MODIFIED
 *   ("\t")                                   --> ERROR                     *
 *   [OTHER]  IF cdepth = 1 THEN + ELSE -      --> OR_COMMENT               *
 *                                                                          *
@@ -388,22 +438,23 @@ public class TokenizeSpec
       *********************************************************************/
       
     // The modes
-    public static final int MODULE  = 1 ;
-    public static final int TLA     = 2 ;
-    public static final int PLUSCAL = 3 ;
+    public static final int MODULE    = 1 ;
+    public static final int TLA       = 2 ;
+    public static final int PLUSCAL   = 3 ;
+    public static final int P_PLUSCAL = 4 ;
 
     /*
      * The following public fields are set by the Tokenize method to 
      * indicate the presence, location, and type of any PlusCal code
      * found in the input. 
      * 
-     *   hasPcal : True iff there is a PlusCal algorithm.  Set true
-     *             in PLUSCAL mode.
+     *   hasPcal : True iff in PLUSCAL mode or a PlucCal algorithm has
+     *             been discovered.
      *             
-     *   isCSyntax : If hasPCal is true, then this is true unless we are
-     *               not in PLUSCAL mode and the --algorithm or --fair
-     *               token has been found and it begins a P-Syntax
-     *               PlusCal algorithm.
+     *   isCSyntax : If hasPCal is true, then this is true iff we are
+     *               in PLUSCAL mode or we are in MODULE mode and 
+     *               the --algorithm or --fair token has been found and it 
+     *               begins a C-Syntax PlusCal algorithm.
      *               
      *   pcalStart
      *   pcalEnd   : The Positions of the first and last token of PlusCal
@@ -424,7 +475,8 @@ public class TokenizeSpec
     * unsafe.                                                              *
     ***********************************************************************/
     private static boolean inPcal ;
-      // True iff we are inside a PlusCal algorithm.
+      // True iff we are inside a PlusCal algorithm.  inPcal => hasPcal
+      // is an invariant.
     
     private static boolean canBeLabel ;
       // Set true when outputting a PlusCal token that can be followed
@@ -666,7 +718,7 @@ public class TokenizeSpec
 
         // Initialize PlusCal processing variables.
         hasPcal = false ;
-        isCSyntax = true ;
+        isCSyntax = false ;
         pcalStart = null ;
         pcalEnd = null;
         inPcal = false;
@@ -674,16 +726,23 @@ public class TokenizeSpec
         
         switch (mode)
           { 
-            case MODULE  : state = PROLOG ; break ;
-            case TLA     : state = START  ; break ;
-            case PLUSCAL : state = START ;
-                           hasPcal = true ;
-                           pcalStart = new Position(0, 0) ;
-                           inPcal = true ;
-                           canBeLabel = true ;
-                           break ;
-            default     : Debug.ReportBug(
-                           "TokenizeSpec.Tokenize called with illegal mode") ;
+            case MODULE    : state = PROLOG ; break ;
+            case TLA       : state = START  ; break ;
+            case PLUSCAL   : state = START ;
+                             hasPcal = true ;
+                             pcalStart = new Position(0, 0) ;
+                             inPcal = true ;
+                             canBeLabel = true ;
+                             isCSyntax = true ;
+                             break ;
+            case P_PLUSCAL : state = START ;
+                             hasPcal = true ;
+                             pcalStart = new Position(0, 0) ;
+                             inPcal = true ;
+                             canBeLabel = true ;
+                             break ;
+            default       : Debug.ReportBug(
+                             "TokenizeSpec.Tokenize called with illegal mode") ;
           } ;
         while (state != DONE)
           { /***************************************************************
