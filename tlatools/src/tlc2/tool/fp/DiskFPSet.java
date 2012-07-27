@@ -191,8 +191,9 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @throws RemoteException
 	 */
 	protected DiskFPSet(final long maxInMemoryCapacity) throws RemoteException {
-		this.rwLock = Striped.readWriteLock(1 << 10); //TODO come up with a more dynamic value for stripes
-		this.lockMask = (1 << 10) - 1;
+		int lockCnt = 1 << 10; //TODO come up with a more dynamic value for stripes that takes tblCapacity into account
+		this.rwLock = Striped.readWriteLock(lockCnt);
+		this.lockMask = lockCnt - 1;
 		
 		this.fileCnt = 0;
 		this.tblCnt = new AtomicLong(0);
