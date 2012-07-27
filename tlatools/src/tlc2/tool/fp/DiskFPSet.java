@@ -54,15 +54,12 @@ import com.google.common.util.concurrent.Striped;
  */
 @SuppressWarnings("serial")
 public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
+
 	// fields
 	/**
 	 * upper bound on "tblCnt"
 	 */
 	protected long maxTblCnt;
-	/**
-	 * mask for computing hash function
-	 */
-	protected long mask;
 
 	/**
 	 * directory name for metadata
@@ -74,11 +71,12 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	protected String fpFilename;
 	protected String tmpFilename;
 
+	protected static final int LogLockCnt = 10;
 	/**
-	 * protects following fields
+	 * protects n memory buckets
 	 */
-	final Striped<ReadWriteLock> rwLock;
-	protected final int lockMask;
+	protected final Striped<ReadWriteLock> rwLock;
+	protected final int lockCnt;
 	/**
 	 * number of entries on disk. This is equivalent to the current number of fingerprints stored on disk.
 	 * @see @see DiskFPSet#getFileCnt()
@@ -180,9 +178,8 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @throws RemoteException
 	 */
 	protected DiskFPSet(final long maxInMemoryCapacity) throws RemoteException {
-		int lockCnt = 1 << 10; //TODO come up with a more dynamic value for stripes that takes tblCapacity into account
+		this.lockCnt = 1 << LogLockCnt; //TODO come up with a more dynamic value for stripes that takes tblCapacity into account
 		this.rwLock = Striped.readWriteLock(lockCnt);
-		this.lockMask = lockCnt - 1;
 		
 		this.fileCnt = 0;
 		this.tblCnt = new AtomicLong(0);
@@ -314,7 +311,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		// zeros the msb
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
 		
-		final Lock readLock = rwLock.getAt(getLockIndex(fp)).readLock();
+		final Lock readLock = rwLock.getAt(getLockIndex(fp0)).readLock();
 		readLock.lock();
 		// First, look in in-memory buffer
 		if (this.memLookup(fp0)) {
@@ -345,7 +342,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		// interleaved. This is no problem though, because memInsert again
 		// checks existence for fp to be inserted
 		
-		final Lock w = rwLock.getAt(getLockIndex(fp)).writeLock();
+		final Lock w = rwLock.getAt(getLockIndex(fp0)).writeLock();
 		w.lock();
 		
 		// if disk lookup failed, add to memory buffer
@@ -420,7 +417,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		fp = checkValid(fp);
 		// zeros the msb
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
-		final Lock readLock = this.rwLock.getAt(getLockIndex(fp)).readLock();
+		final Lock readLock = this.rwLock.getAt(getLockIndex(fp0)).readLock();
 		readLock.lock();
 		// First, look in in-memory buffer
 		if (this.memLookup(fp0)) {
@@ -444,15 +441,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		return diskHit;
 	}
 
-	protected int getLockIndex(long fp) {
-		// In case of overflow, a NegativeArrayOffset will be thrown
-		// subsequently.
-		return (int) index(fp, this.lockMask);
-	}
-	
-	protected long index(long fp, long aMask) {
-		return fp & aMask;
-	}
+	protected abstract int getLockIndex(long fp);
 
 	/**
 	 * Checks if the given fingerprint has a value that can be correctly stored

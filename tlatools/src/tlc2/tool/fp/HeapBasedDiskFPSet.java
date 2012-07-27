@@ -8,10 +8,16 @@ import util.Assert;
 
 @SuppressWarnings("serial")
 public abstract class HeapBasedDiskFPSet extends DiskFPSet {
+	protected final int lockMask;
 	/**
 	 * in-memory buffer of new entries
 	 */
 	protected long[][] tbl;
+	
+	/**
+	 * mask for computing hash function
+	 */
+	protected long mask;
 	
 	/**
 	 * The calculated capacity of tbl
@@ -72,6 +78,9 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 				"negative maxTblCnt");
 
 		this.mask = capacity - 1;
+		
+		this.lockMask = lockCnt - 1;
+
 		this.tbl = new long[capacity][];
 	}
 
@@ -108,7 +117,19 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 	 */
 	protected int getIndex(long fp) {
 		return (int) index(fp, this.mask);
+		
+	}	
+	
+	protected int getLockIndex(long fp) {
+		// In case of overflow, a NegativeArrayOffset will be thrown
+		// subsequently.
+		return (int) index(fp, this.lockMask);
 	}
+	
+	protected long index(long fp, long aMask) {
+		return fp & aMask;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memLookup(long)

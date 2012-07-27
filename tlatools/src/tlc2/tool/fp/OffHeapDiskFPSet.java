@@ -66,6 +66,8 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see MSBDiskFPSet#moveBy
 	 */
 	protected int moveBy;
+	
+	protected final int lockMoveBy;
 
 	protected OffHeapDiskFPSet(long maxInMemoryCapacity) throws RemoteException {
 		this(maxInMemoryCapacity, 0);
@@ -86,7 +88,9 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			moveBy++;
 			n = n >>> 1; // == (n/2)
 		}
-		mask = (maxInMemoryCapacity - 1);
+		
+		// same for lockCnt
+		lockMoveBy = 63 - prefixBits - LogLockCnt;
 		
 		// Determine base address which varies depending on machine architecture.
 		u = getUnsafe();
@@ -148,13 +152,15 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	}
 	
 	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.DiskFPSet#index(long, int)
+	 * @see tlc2.tool.fp.DiskFPSet#getLockIndex(long)
 	 */
 	@Override
-	protected long index(long fp, long aMask) {
+	protected int getLockIndex(long fp) {
 		// calculate hash value (just n most significant bits of fp) which is
 		// used as an index address
-		return (fp >> moveBy) & aMask;
+		final long idx = fp >> lockMoveBy;
+		//Assert.check(0 <= idx && idx < lockCnt, EC.GENERAL);
+		return (int) idx;
 	}
 
 	/**
@@ -162,10 +168,9 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @return The logical bucket position in the table for the given fingerprint.
 	 */
 	protected long getLogicalPosition(final long fp) {
-		long m = fp >> moveBy; // push MSBs for moveBy positions to the right 
-//		long l = m & this.mask; // Strip off any unused bits (really necessary?)
-		long position = m & 0xFFFFFFFFFFFFFFF0L; // alight with a bucket address 
-		Assert.check(0 <= position && position < maxInMemoryCapacity, EC.GENERAL);
+		// push MSBs for moveBy positions to the right and align with a bucket address
+		long position = (fp >> moveBy) & 0xFFFFFFFFFFFFFFF0L; 
+		//Assert.check(0 <= position && position < maxInMemoryCapacity, EC.GENERAL);
 		return position;
 	}
 
