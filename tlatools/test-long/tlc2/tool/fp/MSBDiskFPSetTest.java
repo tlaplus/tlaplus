@@ -11,7 +11,8 @@ public class MSBDiskFPSetTest extends FPSetTest {
 	 */
 	@Override
 	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
-		return new MSBDiskFPSet(freeMemoryInBytes / (long) DiskFPSet.LongSize);
+		long maxInMemoryCapacity = freeMemoryInBytes / (long) DiskFPSet.LongSize;
+		return new MSBDiskFPSet(maxInMemoryCapacity >> 10);
 	}
 
 }

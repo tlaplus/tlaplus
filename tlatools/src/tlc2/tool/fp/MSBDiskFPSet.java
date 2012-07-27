@@ -3,7 +3,6 @@
 package tlc2.tool.fp;
 
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
@@ -11,11 +10,10 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 import tlc2.output.EC;
-import tlc2.util.BufferedRandomAccessFile;
 import util.Assert;
 
 @SuppressWarnings("serial")
-public class MSBDiskFPSet extends DiskFPSet {
+public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 
 	/**
 	 * Number of bits to right shift bits during index calculation
@@ -49,11 +47,13 @@ public class MSBDiskFPSet extends DiskFPSet {
 		super(maxInMemoryCapacity);
 
 		// To pre-sort fingerprints in memory, use n MSB fp bits for the
-		// index. However, we cannot use the 31 bit, because it is used to
+		// index. However, we cannot use the 32st bit, because it is used to
 		// indicate if a fp has been flushed to disk. Hence we use the first n
 		// bits starting from the second most significant bit.
 		this.moveBy = (31 - preBits) - (logMaxMemCnt - LogMaxLoad);
 		this.mask = (capacity - 1) << moveBy;
+		
+		this.flusher = new MSBFlusher();
 	}
 
 
@@ -69,209 +69,134 @@ public class MSBDiskFPSet extends DiskFPSet {
 	 * @see tlc2.tool.fp.DiskFPSet#index(long, int)
 	 */
 	@Override
-	protected int index(long fp, int aMask) {
+	protected long index(long fp, long aMask) {
 		// calculate hash value (just n most significant bits of fp) which is
 		// used as an index address
 		return ((int) (fp >>> 32) & aMask) >> moveBy;
 	}
+	
+	public class MSBFlusher extends Flusher {
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.DiskFPSet#flushTable()
-	 */
-	@Override
-	void flushTable() throws IOException {
-		if (this.tblCnt.get() == 0)
-			return;
-
-		// Why not sort this.tbl in-place rather than doubling memory
-		// requirements by copying to clone array and subsequently sorting it?
-		// - disk written fps are marked disk written by changing msb to 1
-		// - next time such a fp from the in-memory this.tlb is converted on the
-		// fly back and again used to do an in-memory lookup
-		//
-		// - this.tbl bucket assignment (hashing) is done on least significant bits,
-		// which makes in-place sort with overlay index infeasible
-		// - erasing this.tbl means we will loose the in-memory cache completely until it fills up again
-		// - new fps overwrite disk flushed fps in-memory
-
-		// copy table contents into a buffer array buff; do not erase tbl, but 1
-		// msb of each fp to indicate it has been flushed to disk
-		for (int j = 0; j < this.tbl.length; j++) {
-			long[] bucket = this.tbl[j];
-			if (bucket != null) {
-				int blen = bucket.length;
-				// for all bucket positions and non-null values
-				int k = 0;
-				for (; k < blen && bucket[k] > 0; k++) {
-					continue;
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.DiskFPSet.Flusher#preFlushTable()
+		 */
+		protected void prepareTable() {
+			
+			// Why not sort this.tbl in-place rather than doubling memory
+			// requirements by copying to clone array and subsequently sorting it?
+			// - disk written fps are marked disk written by changing msb to 1
+			// - next time such a fp from the in-memory this.tlb is converted on the
+			// fly back and again used to do an in-memory lookup
+			//
+			// - this.tbl bucket assignment (hashing) is done on least significant bits,
+			// which makes in-place sort with overlay index infeasible
+			// - erasing this.tbl means we will loose the in-memory cache completely until it fills up again
+			// - new fps overwrite disk flushed fps in-memory
+	
+			// copy table contents into a buffer array buff; do not erase tbl, but 1
+			// msb of each fp to indicate it has been flushed to disk
+			for (int j = 0; j < tbl.length; j++) {
+				long[] bucket = tbl[j];
+				if (bucket != null) {
+					int blen = bucket.length;
+					// for all bucket positions and non-null values
+					int k = 0;
+					for (; k < blen && bucket[k] > 0; k++) {
+						continue;
+					}
+					// * Postconditions:
+					// * - Zero/0 Element(s) remains at the end
+					// * - Negative elements maintain their position (remain untouched) 
+					Arrays.sort(bucket, 0, k);
 				}
-				// * Postconditions:
-				// * - Zero/0 Element(s) remains at the end
-				// * - Negative elements maintain their position (remain untouched) 
-				Arrays.sort(bucket, 0, k);
 			}
-		}
-
-		// At this point this.tbl should be fully sorted modulo the fps which
-		// had been flush in a previous flush operation and zero/0 (which is invalid anyway).
-
-
-		// merge array with disk file
-		try {
-			this.mergeNewEntries();
-		} catch (IOException e) {
-			String msg = "Error: merging entries into file "
-					+ this.fpFilename + "  " + e;
-			throw new IOException(msg);
-		}
-
-		this.tblCnt.set(0);
-		this.bucketsCapacity = 0;
-		this.tblLoad = 0;
-		// // reset statistic counters
-		// this.memHitCnt = 0;
-		//
-		// this.diskHitCnt = 0;
-		// this.diskWriteCnt = 0;
-		// this.diskSeekCnt = 0;
-		// this.diskLookupCnt = 0;
-	}
 	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.DiskFPSet#mergeNewEntries(long[])
-	 * 
-	 * NOTE: This is (supposed to be) an almost exact clone of
-	 * tlc2.tool.fp.DiskFPSet.mergeNewEntries(long[]) except for the in params
-	 * and the nested tlc2.tool.fp.MSBDiskFPSet.mergeNewEntries(long[][], int,
-	 * RandomAccessFile, RandomAccessFile) call.
-	 */
-	protected void mergeNewEntries() throws IOException {
-		// Implementation Note: Unfortunately, because the RandomAccessFile
-		// class (and hence, the BufferedRandomAccessFile class) does not
-		// provide a way to re-use an existing RandomAccessFile object on
-		// a different file, this implementation must close all existing
-		// files and re-allocate new BufferedRandomAccessFile objects.
-
-		// close existing files (except brafPool[0])
-		for (int i = 0; i < this.braf.length; i++) {
-			this.braf[i].close();
+			// At this point this.tbl should be fully sorted modulo the fps which
+			// had been flush in a previous flush operation and zero/0 (which is invalid anyway).
 		}
-		for (int i = 1; i < this.brafPool.length; i++) {
-			this.brafPool[i].close();
-		}
-
-		// create temporary file
-		File tmpFile = new File(tmpFilename);
-		tmpFile.delete();
-		RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
-		RandomAccessFile raf = this.brafPool[0];
-		raf.seek(0);
-
-		// merge
-		this.mergeNewEntries(raf, tmpRAF);
-
-		// clean up
-		raf.close();
-		tmpRAF.close();
-		String realName = this.fpFilename;
-		File currFile = new File(realName);
-		currFile.delete();
-		boolean status = tmpFile.renameTo(currFile);
-		Assert.check(status, EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
-
-		// reopen a BufferedRAF for each thread
-		for (int i = 0; i < this.braf.length; i++) {
-			// Better way would be to provide method BRAF.open
-			this.braf[i] = new BufferedRandomAccessFile(realName, "r");
-		}
-		for (int i = 0; i < this.brafPool.length; i++) {
-			// Better way would be to provide method BRAF.open
-			this.brafPool[i] = new BufferedRandomAccessFile(realName, "r");
-		}
-		this.poolIndex = 0;
-	}
+		
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.DiskFPSet#mergeNewEntries(long[], int, java.io.RandomAccessFile, java.io.RandomAccessFile)
+		 */
+		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
+			final TLCIterator itr = new TLCIterator(tbl);
 	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.DiskFPSet#mergeNewEntries(long[], int, java.io.RandomAccessFile, java.io.RandomAccessFile)
-	 */
-	protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
-		final TLCIterator itr = new TLCIterator(this.tbl);
-
-		// Precompute the maximum value of the new file
-		long maxVal = itr.getLast();
-		if (this.index != null) {
-			maxVal = Math.max(maxVal, this.index[this.index.length - 1]);
-		}
-
-		int indexLen = calculateIndexLen(this.tblCnt.get());
-		this.index = new long[indexLen];
-		this.index[indexLen - 1] = maxVal;
-		this.currIndex = 0;
-		this.counter = 0;
-
-		// initialize positions in "buff" and "inRAF"
-		long value = 0L; // initialize only to make compiler happy
-		boolean eof = false;
-		if (this.fileCnt > 0) {
-			try {
-				value = inRAF.readLong();
-			} catch (EOFException e) {
-				eof = true;
+			// Precompute the maximum value of the new file
+			long maxVal = itr.getLast();
+			if (index != null) {
+				maxVal = Math.max(maxVal, index[index.length - 1]);
 			}
-		} else {
-			eof = true;
-		}
-
-		// merge while both lists still have elements remaining
-		long fp = itr.next();
-		while (!eof) {
-			if (value < fp || !itr.hasNext()) { // check for itr.hasNext() here to write last value when itr is used up.
-				this.writeFP(outRAF, value);
+	
+			int indexLen = calculateIndexLen(tblCnt.get());
+			index = new long[indexLen];
+			index[indexLen - 1] = maxVal;
+			currIndex = 0;
+			counter = 0;
+	
+			// initialize positions in "buff" and "inRAF"
+			long value = 0L; // initialize only to make compiler happy
+			boolean eof = false;
+			if (fileCnt > 0) {
 				try {
 					value = inRAF.readLong();
 				} catch (EOFException e) {
 					eof = true;
 				}
 			} else {
-				// prevent converting every long to String when assertion holds (this is expensive)
-				if (value == fp) {
-					Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
-							String.valueOf(value));
-				}
-				this.writeFP(outRAF, fp);
-				// we used on fp up, thus move to next one
-				fp = itr.next();
+				eof = true;
 			}
-		}
-
-		// write elements of remaining list
-		if (eof) {
-			while (fp > 0L) {
-				this.writeFP(outRAF, fp);
-				if (!itr.hasNext()) {
-					break;
-				}
-				fp = itr.next();
-			}
-		} else {
-			do {
-				this.writeFP(outRAF, value);
-				try {
-					value = inRAF.readLong();
-				} catch (EOFException e) {
-					eof = true;
-				}
-			} while (!eof);
-		}
-		Assert.check(itr.reads() == this.tblCnt.get(), EC.GENERAL);
-
-		// currIndex is amount of disk writes
-		Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
-
-		// maintain object invariants
-		this.fileCnt += this.tblCnt.get();
-	}
 	
+			// merge while both lists still have elements remaining
+			long fp = itr.next();
+			while (!eof) {
+				if (value < fp || !itr.hasNext()) { // check for itr.hasNext() here to write last value when itr is used up.
+					writeFP(outRAF, value);
+					try {
+						value = inRAF.readLong();
+					} catch (EOFException e) {
+						eof = true;
+					}
+				} else {
+					// prevent converting every long to String when assertion holds (this is expensive)
+					if (value == fp) {
+						Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
+								String.valueOf(value));
+					}
+					writeFP(outRAF, fp);
+					// we used on fp up, thus move to next one
+					fp = itr.next();
+				}
+			}
+	
+			// write elements of remaining list
+			if (eof) {
+				while (fp > 0L) {
+					writeFP(outRAF, fp);
+					if (!itr.hasNext()) {
+						break;
+					}
+					fp = itr.next();
+				}
+			} else {
+				do {
+					writeFP(outRAF, value);
+					try {
+						value = inRAF.readLong();
+					} catch (EOFException e) {
+						eof = true;
+					}
+				} while (!eof);
+			}
+			Assert.check(itr.reads() == tblCnt.get(), EC.GENERAL);
+	
+			// currIndex is amount of disk writes
+			Assert.check(currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
+	
+			// maintain object invariants
+			fileCnt += tblCnt.get();
+		}
+	}
+
 	/**
 	 *
 	 */

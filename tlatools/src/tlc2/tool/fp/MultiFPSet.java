@@ -55,7 +55,7 @@ public class MultiFPSet extends FPSet {
 		this.sets = new FPSet[len];
 		
 		if (fpMemSize == MEM_DEFAULT) {
-			fpMemSize = DiskFPSet.DefaultMaxTblCnt / 20;
+			fpMemSize = HeapBasedDiskFPSet.DefaultMaxTblCnt / 20;
 		}
 
 		for (int i = 0; i < len; i++) {

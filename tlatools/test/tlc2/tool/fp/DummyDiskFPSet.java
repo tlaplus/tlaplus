@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
  * {@link DiskFPSet}#index for uni tests
  */
 @SuppressWarnings("serial")
-public class DummyDiskFPSet extends DiskFPSet {
+public class DummyDiskFPSet extends HeapBasedDiskFPSet {
 
 	public DummyDiskFPSet(long maxRealMemInBytes) throws RemoteException {
 		super(maxRealMemInBytes / FPSet.LongSize);

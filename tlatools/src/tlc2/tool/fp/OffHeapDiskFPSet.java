@@ -5,7 +5,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
-import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.rmi.RemoteException;
 import java.util.Arrays;
@@ -15,10 +14,11 @@ import java.util.TreeSet;
 
 import sun.misc.Unsafe;
 import tlc2.output.EC;
+import tlc2.tool.fp.MSBDiskFPSet.TLCIterator;
 import util.Assert;
 
 @SuppressWarnings({ "serial", "restriction" })
-public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
+public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
 	private static sun.misc.Unsafe getUnsafe() {
 		try {
@@ -42,6 +42,11 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	private final long baseAddress;
 	
 	/**
+	 * Address size (either 4 or 8 bytes) depending on current architecture
+	 */
+	private final long addressSize;
+
+	/**
 	 * 
 	 */
 	private final long maxInMemoryCapacity;
@@ -54,31 +59,37 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	 * means that only the elements in a bucket have to be sorted, but they
 	 * don't change buckets during sort.
 	 */
-	private SortedSet<Long> collisionBucket; //TODO replace SortedSet with cheaper/faster long[]?!
+	private final SortedSet<Long> collisionBucket; //TODO replace SortedSet with cheaper/faster long[]?!
 
-	private final long addressSize;
+	/**
+	 * Number of bits to right shift bits during index calculation
+	 * @see MSBDiskFPSet#moveBy
+	 */
+	protected int moveBy;
 
 	protected OffHeapDiskFPSet(long maxInMemoryCapacity) throws RemoteException {
 		this(maxInMemoryCapacity, 0);
 	}
 	
-	protected OffHeapDiskFPSet(final long maxInMemoryCapacity, int preBits) throws RemoteException {
+	protected OffHeapDiskFPSet(final long maxInMemoryCapacity, final int prefixBits) throws RemoteException {
 		super(maxInMemoryCapacity);
-		this.maxInMemoryCapacity = maxInMemoryCapacity;
-
-		// Hack to free the buffer allocated by the super class!
-		// We cheat in that we are no real subclass of DiskFPSet, but
-		// refactoring seemed abstract base class seemed too much work at the
-		// time.
-		super.tbl = null;
-		System.gc();
-
-		//TODO impl preBits
-		Assert.check(preBits == 0, EC.GENERAL); // not yet implemented!!!
 		
-		u = getUnsafe();
+		//TODO replace maxInMemoryCapacity with maxTblCnt
+		this.maxInMemoryCapacity = maxInMemoryCapacity;
+		this.maxTblCnt = maxInMemoryCapacity;
+
+		// move n as many times to the right to calculate moveBy. moveBy is the
+		// number of bits the (fp & mask) has to be right shifted to make the
+		// logical bucket index.
+		long n = (Long.MAX_VALUE >>> prefixBits) - (maxInMemoryCapacity - 1);
+		while (n >= maxInMemoryCapacity) {
+			moveBy++;
+			n = n >>> 1; // == (n/2)
+		}
+		mask = (maxInMemoryCapacity - 1);
 		
 		// Determine base address which varies depending on machine architecture.
+		u = getUnsafe();
 		addressSize = u.addressSize();
 		
 		// Allocate non-heap memory for maxInMemoryCapacity fingerprints
@@ -93,19 +104,20 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		}
 
 		this.collisionBucket = new TreeSet<Long>();
+		
+		this.flusher = new OffHeapMSBFlusher();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#sizeof()
 	 */
 	public long sizeof() {
-		synchronized (this.rwLock) {
-			long size = 44; // approx size of this DiskFPSet object
-			size += maxInMemoryCapacity * (long) LongSize;
-			size += getIndexCapacity() * 4;
-			size += collisionBucket.size() * (long) LongSize; // ignoring the internal TreeSet overhead here
-			return size;
-		}
+		//TODO needs locking?
+		long size = 44; // approx size of this DiskFPSet object
+		size += maxInMemoryCapacity * (long) LongSize;
+		size += getIndexCapacity() * 4;
+		size += collisionBucket.size() * (long) LongSize; // ignoring the internal TreeSet overhead here
+		return size;
 	}
 
 	/* (non-Javadoc)
@@ -134,14 +146,26 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		final double dTblcnt = (double) tblCnt.get();
 		return dSize / dTblcnt >= limit;
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#index(long, int)
+	 */
+	@Override
+	protected long index(long fp, long aMask) {
+		// calculate hash value (just n most significant bits of fp) which is
+		// used as an index address
+		return (fp >> moveBy) & aMask;
+	}
 
 	/**
 	 * @param fp
-	 * @return The logical position in the {@link ByteBuffer} for the given fingerprint.
+	 * @return The logical bucket position in the table for the given fingerprint.
 	 */
 	protected long getLogicalPosition(final long fp) {
-		long position = ((int) (fp >>> 32 & this.mask) >> moveBy) * (long) InitialBucketCapacity;
-		//Assert.check(0 <= position && position < maxInMemoryCapacity * addressSize, EC.GENERAL);
+		long m = fp >> moveBy; // push MSBs for moveBy positions to the right 
+//		long l = m & this.mask; // Strip off any unused bits (really necessary?)
+		long position = m & 0xFFFFFFFFFFFFFFF0L; // alight with a bucket address 
+		Assert.check(0 <= position && position < maxInMemoryCapacity, EC.GENERAL);
 		return position;
 	}
 
@@ -195,13 +219,11 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		if (!collisionBucket.contains(fp)) {
 			if (freePosition > -1) {
 				u.putAddress(freePosition, fp);
-				this.tblCnt.getAndIncrement();
-				return false;
 			} else {
 				collisionBucket.add(fp);
-				this.tblCnt.getAndIncrement();
-				return false;
 			}
+			this.tblCnt.getAndIncrement();
+			return false;
 		}
 		return true;
 	}
@@ -229,114 +251,6 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 		return baseAddress + (logicalAddress * addressSize);
 	}
 
-	/**
-	 * Flush the contents of in-memory "this.tbl" to the backing disk file, and update
-	 * "this.index". This method requires that "this.rwLock" has been acquired
-	 * for writing by the caller, and that the mutex "this.rwLock" is also held.
-	 */
-	void flushTable() throws IOException {
-		if (this.tblCnt.get() == 0)
-			return;
-		
-		if (sizeOfCollisionBucketExceeds(.01d)) {
-			System.out.println("...due to collisionBucket size limit");
-		}
-		
-		// merge array with disk file
-		try {
-			this.mergeNewEntries();
-		} catch (IOException e) {
-			String msg = "Error: merging entries into file "
-					+ this.fpFilename + "  " + e;
-			throw new IOException(msg);
-		}
-		this.tblCnt.set(0);
-		this.bucketsCapacity = 0;
-		this.tblLoad = 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.MSBDiskFPSet#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
-	 */
-	protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
-		final long buffLen = this.tblCnt.get();
-		ByteBufferIterator itr = new ByteBufferIterator(this.u, this.baseAddress, collisionBucket, buffLen);
-		
-		// Precompute the maximum value of the new file
-		long maxVal = itr.getLast();
-		if (this.index != null) {
-			maxVal = Math.max(maxVal, this.index[this.index.length - 1]);
-		}
-
-		int indexLen = calculateIndexLen(buffLen);
-		this.index = new long[indexLen];
-		this.index[indexLen - 1] = maxVal;
-		this.currIndex = 0;
-		this.counter = 0;
-
-		// initialize positions in "buff" and "inRAF"
-		long value = 0L; // initialize only to make compiler happy
-		boolean eof = false;
-		if (this.fileCnt > 0) {
-			try {
-				value = inRAF.readLong();
-			} catch (EOFException e) {
-				eof = true;
-			}
-		} else {
-			eof = true;
-		}
-
-		// merge while both lists still have elements remaining
-		long fp = itr.next();
-		while (!eof) {
-			if (value < fp || !itr.hasNext()) { // check for itr.hasNext() here to write last value when itr is used up.
-				this.writeFP(outRAF, value);
-				try {
-					value = inRAF.readLong();
-				} catch (EOFException e) {
-					eof = true;
-				}
-			} else {
-				// prevent converting every long to String when assertion holds (this is expensive)
-				if (value == fp) {
-					Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
-							String.valueOf(value));
-				}
-				this.writeFP(outRAF, fp);
-				// we used one fp up, thus move to next one
-				fp = itr.next();
-			}
-		}
-
-		// write elements of remaining list
-		if (eof) {
-			while (fp > 0L) {
-				this.writeFP(outRAF, fp);
-				if (!itr.hasNext()) {
-					break;
-				}
-				fp = itr.next();
-			}
-		} else {
-			do {
-				this.writeFP(outRAF, value);
-				try {
-					value = inRAF.readLong();
-				} catch (EOFException e) {
-					eof = true;
-				}
-			} while (!eof);
-		}
-		Assert.check(itr.reads() == buffLen, EC.GENERAL);
-
-		// currIndex is amount of disk writes
-		Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
-
-		// maintain object invariants
-		this.fileCnt += buffLen;
-	}
-
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#getTblCapacity()
 	 */
@@ -349,6 +263,92 @@ public class OffHeapDiskFPSet extends MSBDiskFPSet implements FPSetStatistic {
 	 */
 	public long getCollisionBucketCnt() {
 		return collisionBucket.size();
+	}
+	
+	public class OffHeapMSBFlusher extends Flusher {
+		
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.MSBDiskFPSet#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
+		 */
+		@Override
+		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
+			final long buffLen = tblCnt.get();
+			ByteBufferIterator itr = new ByteBufferIterator(u, baseAddress, collisionBucket, buffLen);
+			
+			// Precompute the maximum value of the new file
+			long maxVal = itr.getLast();
+			if (index != null) {
+				maxVal = Math.max(maxVal, index[index.length - 1]);
+			}
+
+			int indexLen = calculateIndexLen(buffLen);
+			index = new long[indexLen];
+			index[indexLen - 1] = maxVal;
+			currIndex = 0;
+			counter = 0;
+
+			// initialize positions in "buff" and "inRAF"
+			long value = 0L; // initialize only to make compiler happy
+			boolean eof = false;
+			if (fileCnt > 0) {
+				try {
+					value = inRAF.readLong();
+				} catch (EOFException e) {
+					eof = true;
+				}
+			} else {
+				eof = true;
+			}
+
+			// merge while both lists still have elements remaining
+			long fp = itr.next();
+			while (!eof) {
+				if (value < fp || !itr.hasNext()) { // check for itr.hasNext() here to write last value when itr is used up.
+					writeFP(outRAF, value);
+					try {
+						value = inRAF.readLong();
+					} catch (EOFException e) {
+						eof = true;
+					}
+				} else {
+					// prevent converting every long to String when assertion holds (this is expensive)
+					if (value == fp) {
+						Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
+								String.valueOf(value));
+					}
+					writeFP(outRAF, fp);
+					// we used one fp up, thus move to next one
+					fp = itr.next();
+				}
+			}
+
+			// write elements of remaining list
+			if (eof) {
+				while (fp > 0L) {
+					writeFP(outRAF, fp);
+					if (!itr.hasNext()) {
+						break;
+					}
+					fp = itr.next();
+				}
+			} else {
+				do {
+					writeFP(outRAF, value);
+					try {
+						value = inRAF.readLong();
+					} catch (EOFException e) {
+						eof = true;
+					}
+				} while (!eof);
+			}
+			Assert.check(itr.reads() == buffLen, EC.GENERAL);
+
+			// currIndex is amount of disk writes
+			Assert.check(currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
+
+			// maintain object invariants
+			fileCnt += buffLen;
+		}
 	}
 	
 	public class ByteBufferIterator {

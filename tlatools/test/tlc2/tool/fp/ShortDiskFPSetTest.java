@@ -346,7 +346,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 		assertFalse(fpSet.contains(fp));
 
 		// explicitly flush to disk which makes 0l "magically" appear in the set
-		fpSet.flushTable();
+		fpSet.flusher.flushTable();
 
 		// mem still doesn't "see" the fp
 		assertFalse(fpSet.memLookup(fp));
@@ -368,7 +368,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 		final DiskFPSet fpSet = (DiskFPSet) getFPSet(getFreeMemoryInBytes());
 		assertFalse(fpSet.memInsert(Long.MIN_VALUE & 0x7FFFFFFFFFFFFFFFL));
 		assertFalse(fpSet.diskLookup(Long.MIN_VALUE & 0x7FFFFFFFFFFFFFFFL));
-		fpSet.flushTable();
+		fpSet.flusher.flushTable();
 		assertTrue(fpSet.diskLookup(Long.MIN_VALUE & 0x7FFFFFFFFFFFFFFFL));
 		// undefined behavior
 		// assertTrue(fpSet.memLookup(Long.MIN_VALUE & 0x7FFFFFFFFFFFFFFFL));
@@ -383,7 +383,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 		final DiskFPSet fpSet = (DiskFPSet) getFPSet(getFreeMemoryInBytes());
 		assertFalse(fpSet.memInsert(Long.MAX_VALUE));
 		assertFalse(fpSet.diskLookup(Long.MAX_VALUE));
-		fpSet.flushTable();
+		fpSet.flusher.flushTable();
 		assertTrue(fpSet.diskLookup(Long.MAX_VALUE));
 		assertTrue(fpSet.memLookup(Long.MAX_VALUE));
 	}

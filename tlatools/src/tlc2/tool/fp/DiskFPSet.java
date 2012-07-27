@@ -53,18 +53,17 @@ import com.google.common.util.concurrent.Striped;
  * bit back if using MultiFPSet.
  */
 @SuppressWarnings("serial")
-public class DiskFPSet extends FPSet implements FPSetStatistic {
+public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	// fields
 	/**
 	 * upper bound on "tblCnt"
 	 */
-	protected final long maxTblCnt;
+	protected long maxTblCnt;
 	/**
 	 * mask for computing hash function
 	 */
-	protected int mask;
-	protected int logMaxMemCnt;
-	protected final int capacity;
+	protected long mask;
+
 	/**
 	 * directory name for metadata
 	 */
@@ -93,10 +92,6 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * a second has the this.rwLock monitor and possibly inserts a second fp into memory.
 	 */
 	protected AtomicBoolean flusherChosen;
-	/**
-	 * in-memory buffer of new entries
-	 */
-	protected long[][] tbl;
 	/**
 	 * number of entries in "tbl". This is equivalent to the current number of fingerprints stored in in-memory cache/index.
 	 * @see DiskFPSet#getTblCnt()
@@ -143,22 +138,11 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	private int checkPointMark;
 	private int growDiskMark;
 
-
-	/**
-	 * Log (base 2) of default number of new entries allowed to accumulate in
-	 * memory before those entries are flushed to disk.
-	 */
-	protected static final int LogDefaultMaxTblCnt = 19;
-
 	/**
 	 * The load factor and initial capacity for the hashtable.
 	 */
 	protected static final int LogMaxLoad = 4;
 	static final int InitialBucketCapacity = (1 << LogMaxLoad);
-	protected static final int BucketSizeIncrement = 4;
-
-	// computed constants
-	static final int DefaultMaxTblCnt = (1 << LogDefaultMaxTblCnt);
 
 	/* Number of fingerprints per braf buffer. */
 	public static final int NumEntriesPerPage = 8192 / LongSize;
@@ -170,7 +154,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see DiskFPSet#index
 	 */
 	protected double getAuxiliaryStorageRequirement() {
-		return 2.5d;
+		return 1.0d;
 	}
 	
 	protected TLCStandardMBean diskFPSetMXWrapper;
@@ -180,6 +164,11 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * disk
 	 */
 	private long flushTime = 0L;
+	
+	/**
+	 * 
+	 */
+	protected Flusher flusher;
 
 	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
@@ -198,48 +187,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		this.fileCnt = 0;
 		this.tblCnt = new AtomicLong(0);
 		this.flusherChosen = new AtomicBoolean(false);
-
-		long maxMemCnt = (long) (maxInMemoryCapacity / getAuxiliaryStorageRequirement());
-
-		// default if not specific value given
-		if ((maxMemCnt - LogMaxLoad) <= 0) {
-			maxMemCnt = DefaultMaxTblCnt;
-		}
-		
-		// half maxMemCnt until it hits 1
-		// to approximate 2^n ~= maxMemCnt
-		this.logMaxMemCnt = 1;
-		maxMemCnt--;
-		while (maxMemCnt > 1) {
-			maxMemCnt = maxMemCnt / 2;
-			logMaxMemCnt++;
-		}
-
-		// guard against underflow
-		// LL modified error message on 7 April 2012
-		Assert.check(logMaxMemCnt - LogMaxLoad >= 0, "Underflow when computing DiskFPSet");
-		this.capacity = 1 << (logMaxMemCnt - LogMaxLoad);
-		
-		// instead of changing maxTblCnd to long and pay an extra price when 
-		// comparing int and long every time put(long) is called, we set it to 
-		// Integer.MAX_VALUE instead. capacity can never grow bigger 
-		// (unless java starts supporting 64bit array sizes)
-		//
-		// maxTblCnt mathematically has to be an upper limit for the in-memory storage 
-		// so that it a disk flush occurs before an _evenly_ distributed fp distribution fills up 
-		// the collision buckets to a size that exceeds the VM limit (unevenly distributed 
-		// fp distributions can still cause a OutOfMemoryError which this guard).
-		this.maxTblCnt = (logMaxMemCnt >= 31) ? Integer.MAX_VALUE : (1 << logMaxMemCnt); // maxTblCnt := 2^logMaxMemCnt
-
-		// guard against negative maxTblCnt
-		// LL modified error message on 7 April 2012
-		Assert.check(maxTblCnt > capacity && capacity > tblCnt.get(),
-				"negative maxTblCnt");
-
-		this.mask = capacity - 1;
 		this.index = null;
-		
-		this.tbl = new long[capacity][];
 		
 		try {
 			diskFPSetMXWrapper = new DiskFPSetMXWrapper(this);
@@ -302,22 +250,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		return this.tblCnt.get() + this.fileCnt;
 	}
 
-	public long sizeof() {
-		//TODO Locking for sizeof() (if at all necessary)
-//		this.rwLock.readLock().lock();
-		long size = 44; // approx size of this DiskFPSet object
-		size += 16 + (this.tbl.length * 4); // for this.tbl
-		for (int i = 0; i < this.tbl.length; i++) {
-			if (this.tbl[i] != null) {
-				// 16 bytes overhead for each row in tbl!
-				size += 16 + (this.tbl[i].length * (long) LongSize);
-			}
-		}
-		// size of index array if non-null
-		size += getIndexCapacity() * 4;
-//		this.rwLock.readLock().unlock();
-		return size;
-	}
+	public abstract long sizeof();
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#finalize()
@@ -433,7 +366,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			acquireAllLocks();
 			
 			// flush memory entries to disk
-			this.flushTable();
+			flusher.flushTable();
 			
 			// release _all_ write locks
 			releaseAllLocks();
@@ -450,14 +383,14 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		return false;
 	}
 
-	private void releaseAllLocks() {
+	protected void releaseAllLocks() {
 		int size = this.rwLock.size();
 		for (int i = size - 1; i >= 0; i--) {
 			this.rwLock.getAt(i).writeLock().unlock();
 		}
 	}
 
-	private void acquireAllLocks() {
+	protected void acquireAllLocks() {
 		//TODO find way to do this more efficiently
 		int size = this.rwLock.size();
 		for (int i = 0; i < size; i++) {
@@ -511,21 +444,14 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		return diskHit;
 	}
 
-	/**
-	 * calculate hash value (just n least significat bits of fp) which is used as an index address
-	 * @param fp
-	 * @return
-	 */
-	protected int getIndex(long fp) {
-		return index(fp, this.mask);
-	}
-
 	protected int getLockIndex(long fp) {
-		return index(fp, this.lockMask);
+		// In case of overflow, a NegativeArrayOffset will be thrown
+		// subsequently.
+		return (int) index(fp, this.lockMask);
 	}
 	
-	protected int index(long fp, int aMask) {
-		return (int) (fp & aMask);
+	protected long index(long fp, long aMask) {
+		return fp & aMask;
 	}
 
 	/**
@@ -551,79 +477,13 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @param fp The fingerprint to lookup in memory
 	 * @return true iff "fp" is in the hash table. 
 	 */
-	boolean memLookup(long fp) {
-		long[] bucket = this.tbl[getIndex(fp)];
-		if (bucket == null)
-			return false;
-
-		int bucketLen = bucket.length;
-		// Linearly search the bucket; 0L is an invalid fp and marks the end of
-		// the allocated bucket
-		for (int i = 0; i < bucketLen && bucket[i] != 0L; i++) {
-			// zero the long msb (which is 1 if fp has been flushed to disk)
-			if (fp == (bucket[i] & 0x7FFFFFFFFFFFFFFFL))
-				return true;
-		}
-		return false;
-	}
+	abstract boolean memLookup(long fp);
 
 	/**
 	 * Return "true" if "fp" is contained in the hash table; otherwise, insert
 	 * it and return "false". Precondition: msb(fp) = 0
 	 */
-	boolean memInsert(long fp) {
-		int index = getIndex(fp);
-		
-		// try finding an existing bucket 
-		long[] bucket = this.tbl[index];
-		
-		// no existing bucket found, create new one
-		if (bucket == null) {
-			bucket = new long[InitialBucketCapacity];
-			bucket[0] = fp;
-			this.tbl[index] = bucket;
-			this.bucketsCapacity += InitialBucketCapacity; 
-			this.tblLoad++;
-		} else {
-			// search for entry in existing bucket
-			int bucketLen = bucket.length;
-			int i = -1;
-			int j = 0;
-			for (; j < bucketLen && bucket[j] != 0L; j++) {
-				long fp1 = bucket[j];
-				// zero the long msb
-				long l = fp1 & 0x7FFFFFFFFFFFFFFFL;
-				if (fp == l) {
-					// found in existing bucket
-					return true;
-				}
-				// fp1 < 0 iff fp1 is on disk;
-				// In this case, keep fp1 idx for new fingerprint fp
-				if (i == -1 && fp1 < 0) {
-					i = j;
-				}
-			}
-			if (i == -1) {
-				if (j == bucketLen) {
-					// bucket is full; grow the bucket by BucketSizeIncrement
-					long[] oldBucket = bucket;
-					bucket = new long[bucketLen + BucketSizeIncrement];
-					System.arraycopy(oldBucket, 0, bucket, 0, bucketLen);
-					this.tbl[index] = bucket;
-					this.bucketsCapacity += BucketSizeIncrement;
-				}
-				// add to end of bucket
-				bucket[j] = fp;
-			} else {
-				if (j != bucketLen) {
-					bucket[j] = bucket[i];
-				}
-				bucket[i] = fp;
-			}
-		}
-		this.tblCnt.getAndIncrement();
-		return false;
-	}
+	abstract boolean memInsert(long fp);
 
 	/**
 	 * Look on disk for the fingerprint "fp". This method requires that
@@ -789,126 +649,6 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		return midEntry;
 	}
 
-	/**
-	 * Flush the contents of in-memory "this.tbl" to the backing disk file, and update
-	 * "this.index". This method requires that "this.rwLock" has been acquired
-	 * for writing by the caller, and that the mutex "this.rwLock" is also held.
-	 */
-	void flushTable() throws IOException {
-		if (this.tblCnt.get() == 0)
-			return;
-
-		// copy table contents into a buffer array buff; do not erase tbl
-		long[] buff = new long[(int)this.tblCnt.get()];
-		int idx = 0;
-		for (int j = 0; j < this.tbl.length; j++) {
-			long[] bucket = this.tbl[j];
-			if (bucket != null) {
-				int blen = bucket.length;
-				// for all bucket positions and non-null values
-				for (int k = 0; k < blen && bucket[k] > 0; k++) {
-					buff[idx++] = bucket[k];
-					// indicate fp has been flushed to disk
-					bucket[k] |= 0x8000000000000000L;
-				}
-			}
-		}
-		this.tblCnt.set(0);
-		this.bucketsCapacity = 0;
-		this.tblLoad = 0;
-//		// reset statistic counters
-//		this.memHitCnt = 0;
-//
-//		this.diskHitCnt = 0;
-//		this.diskWriteCnt = 0;
-//		this.diskSeekCnt = 0;
-//		this.diskLookupCnt = 0;
-		
-		// sort in-memory entries
-		Sort.LongArray(buff, buff.length);
-
-		// merge array with disk file
-		try {
-			this.mergeNewEntries(buff);
-		} catch (IOException e) {
-			String msg = "Error: merging entries into file "
-					+ this.fpFilename + "  " + e;
-			throw new IOException(msg);
-		}
-	}
-
-	/**
-	 * Merge the values in "buff" into this FPSet's backing disk file. The
-	 * values in "buff" are required to be in sorted order, and the write lock
-	 * associated with "this.rwLock" must be held, as must the mutex
-	 * "this.rwLock" itself.
-	 */
-	private final void mergeNewEntries(long[] buff) throws IOException {
-		// Implementation Note: Unfortunately, because the RandomAccessFile
-		// class (and hence, the BufferedRandomAccessFile class) does not
-		// provide a way to re-use an existing RandomAccessFile object on
-		// a different file, this implementation must close all existing
-		// files and re-allocate new BufferedRandomAccessFile objects.
-
-		// close existing files (except brafPool[0])
-		for (int i = 0; i < this.braf.length; i++) {
-			this.braf[i].close();
-		}
-		for (int i = 1; i < this.brafPool.length; i++) {
-			this.brafPool[i].close();
-		}
-
-		// create temporary file
-		File tmpFile = new File(tmpFilename);
-		tmpFile.delete();
-		RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
-		RandomAccessFile raf = this.brafPool[0];
-		raf.seek(0);
-
-		// merge
-		this.mergeNewEntries(buff, buff.length, raf, tmpRAF);
-
-		// clean up
-		raf.close();
-		tmpRAF.close();
-		String realName = this.fpFilename;
-		File currFile = new File(realName);
-		currFile.delete();
-		boolean status = tmpFile.renameTo(currFile);
-		Assert.check(status, EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
-
-		// reopen a BufferedRAF for each thread
-		for (int i = 0; i < this.braf.length; i++) {
-			// Better way would be to provide method BRAF.open
-			this.braf[i] = new BufferedRandomAccessFile(realName, "r");
-		}
-		for (int i = 0; i < this.brafPool.length; i++) {
-			// Better way would be to provide method BRAF.open
-			this.brafPool[i] = new BufferedRandomAccessFile(realName, "r");
-		}
-		this.poolIndex = 0;
-	}
-
-	private final void mergeNewEntries(long[] buff, int buffLen)
-			throws IOException {
-		// create temporary file
-		File tmpFile = new File(tmpFilename);
-		tmpFile.delete();
-		RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
-		File currFile = new File(this.fpFilename);
-		RandomAccessFile currRAF = new BufferedRandomAccessFile(currFile, "r");
-
-		// merge
-		this.mergeNewEntries(buff, buffLen, currRAF, tmpRAF);
-
-		// clean up
-		currRAF.close();
-		tmpRAF.close();
-		currFile.delete();
-		boolean status = tmpFile.renameTo(currFile);
-		Assert.check(status, EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
-	}
-
 	protected int currIndex;
 	protected int counter;
 
@@ -922,74 +662,6 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			this.counter = NumEntriesPerPage;
 		}
 		this.counter--;
-	}
-
-	private final void mergeNewEntries(long[] buff, int buffLen,
-			RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
-		// Precompute the maximum value of the new file
-		long maxVal = buff[buffLen - 1];
-		if (this.index != null) {
-			maxVal = Math.max(maxVal, this.index[this.index.length - 1]);
-		}
-
-		int indexLen = calculateIndexLen(buffLen);
-		this.index = new long[indexLen];
-		this.index[indexLen - 1] = maxVal;
-		this.currIndex = 0;
-		this.counter = 0;
-
-		// initialize positions in "buff" and "inRAF"
-		int i = 0;
-		long value = 0L; // initialize only to make compiler happy
-		boolean eof = false;
-		if (this.fileCnt > 0) {
-			try {
-				value = inRAF.readLong();
-			} catch (EOFException e) {
-				eof = true;
-			}
-		} else {
-			eof = true;
-		}
-
-		// merge while both lists still have elements remaining
-		while (!eof && i < buffLen) {
-			if (value < buff[i]) {
-				this.writeFP(outRAF, value);
-				try {
-					value = inRAF.readLong();
-				} catch (EOFException e) {
-					eof = true;
-				}
-			} else {
-				// prevent converting every long to String when assertion holds (this is expensive)
-				if(value == buff[i]) {
-					Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
-							String.valueOf(value));
-				}
-				this.writeFP(outRAF, buff[i++]);
-			}
-		}
-
-		// write elements of remaining list
-		if (eof) {
-			while (i < buffLen) {
-				this.writeFP(outRAF, buff[i++]);
-			}
-		} else {
-			do {
-				this.writeFP(outRAF, value);
-				try {
-					value = inRAF.readLong();
-				} catch (EOFException e) {
-					eof = true;
-				}
-			} while (!eof);
-		}
-		Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
-
-		// maintain object invariants
-		this.fileCnt += buffLen;
 	}
 
 	/**
@@ -1045,7 +717,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#checkFPs()
 	 */
 	public final double checkFPs() throws IOException {
-		this.flushTable(); // No need for any lock here
+		flusher.flushTable(); // No need for any lock here
 		RandomAccessFile braf = new BufferedRandomAccessFile(
 				this.fpFilename, "r");
 		long fileLen = braf.length();
@@ -1073,7 +745,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		this.flusherChosen.set(true);
 		acquireAllLocks();
 		
-		this.flushTable();
+		flusher.flushTable();
 		FileUtil.copyFile(this.fpFilename,
 				this.getChkptName(fname, "tmp"));
 		checkPointMark++;
@@ -1183,7 +855,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		recoveryBuff[recoveryIdx++] = (fp & 0x7FFFFFFFFFFFFFFFL);
 		if (recoveryIdx == recoveryBuff.length) {
 			Sort.LongArray(recoveryBuff, recoveryIdx);
-			this.mergeNewEntries(recoveryBuff, recoveryIdx);
+			flusher.mergeNewEntries(recoveryBuff, recoveryIdx);
 			recoveryIdx = 0;
 		}
 	}
@@ -1193,7 +865,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 */
 	public final void completeRecovery() throws IOException {
 		Sort.LongArray(recoveryBuff, recoveryIdx);
-		this.mergeNewEntries(recoveryBuff, recoveryIdx);
+		flusher.mergeNewEntries(recoveryBuff, recoveryIdx);
 		recoveryBuff = null;
 		recoveryIdx = -1;
 
@@ -1247,7 +919,7 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @return The allocated (used and unused) array length of the first level in-memory storage.
 	 */
 	public long getTblCapacity() {
-		return tbl.length;
+		return -1L;
 	}
 
 	/**
@@ -1416,4 +1088,118 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	// tmpFile.renameTo(fpFile);
 	// }
 
+	public abstract class Flusher {
+		
+		protected void prepareTable() {
+			// no-op
+			// subclasses may override
+		}
+
+		/**
+		 * Flush the contents of in-memory "this.tbl" to the backing disk file, and update
+		 * "this.index". This method requires that "this.rwLock" has been acquired
+		 * for writing by the caller, and that the mutex "this.rwLock" is also held.
+		 */
+		void flushTable() throws IOException {
+			if (tblCnt.get() == 0)
+				return;
+			
+			prepareTable();
+			
+//			// reset statistic counters
+//			this.memHitCnt = 0;
+//
+//			this.diskHitCnt = 0;
+//			this.diskWriteCnt = 0;
+//			this.diskSeekCnt = 0;
+//			this.diskLookupCnt = 0;
+
+			// merge array with disk file
+			try {
+				this.mergeNewEntries();
+			} catch (IOException e) {
+				String msg = "Error: merging entries into file "
+						+ fpFilename + "  " + e;
+				throw new IOException(msg);
+			}
+
+			tblCnt.set(0);
+			bucketsCapacity = 0;
+			tblLoad = 0;
+		}
+
+		/**
+		 * Merge the values in "buff" into this FPSet's backing disk file. The
+		 * values in "buff" are required to be in sorted order, and the write lock
+		 * associated with "this.rwLock" must be held, as must the mutex
+		 * "this.rwLock" itself.
+		 */
+		private final void mergeNewEntries() throws IOException {
+			// Implementation Note: Unfortunately, because the RandomAccessFile
+			// class (and hence, the BufferedRandomAccessFile class) does not
+			// provide a way to re-use an existing RandomAccessFile object on
+			// a different file, this implementation must close all existing
+			// files and re-allocate new BufferedRandomAccessFile objects.
+
+			// close existing files (except brafPool[0])
+			for (int i = 0; i < braf.length; i++) {
+				braf[i].close();
+			}
+			for (int i = 1; i < brafPool.length; i++) {
+				brafPool[i].close();
+			}
+
+			// create temporary file
+			File tmpFile = new File(tmpFilename);
+			tmpFile.delete();
+			RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
+			RandomAccessFile raf = brafPool[0];
+			raf.seek(0);
+
+			// merge
+			mergeNewEntries(raf, tmpRAF);
+
+			// clean up
+			raf.close();
+			tmpRAF.close();
+			String realName = fpFilename;
+			File currFile = new File(realName);
+			currFile.delete();
+			boolean status = tmpFile.renameTo(currFile);
+			Assert.check(status, EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
+
+			// reopen a BufferedRAF for each thread
+			for (int i = 0; i < braf.length; i++) {
+				// Better way would be to provide method BRAF.open
+				braf[i] = new BufferedRandomAccessFile(realName, "r");
+			}
+			for (int i = 0; i < brafPool.length; i++) {
+				// Better way would be to provide method BRAF.open
+				brafPool[i] = new BufferedRandomAccessFile(realName, "r");
+			}
+			poolIndex = 0;
+		}
+
+		public final void mergeNewEntries(long[] buff, int buffLen)
+				throws IOException {
+			// create temporary file
+			File tmpFile = new File(tmpFilename);
+			tmpFile.delete();
+			RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
+			File currFile = new File(fpFilename);
+			RandomAccessFile currRAF = new BufferedRandomAccessFile(currFile, "r");
+
+			// merge
+			this.mergeNewEntries(currRAF, tmpRAF);
+
+			// clean up
+			currRAF.close();
+			tmpRAF.close();
+			currFile.delete();
+			boolean status = tmpFile.renameTo(currFile);
+			Assert.check(status, EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
+		}
+		
+		protected abstract void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException;
+	}
 }
