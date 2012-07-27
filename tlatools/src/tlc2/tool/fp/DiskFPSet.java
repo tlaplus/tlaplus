@@ -428,18 +428,13 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 			long timestamp = System.currentTimeMillis();
 			
 			// acquire _all_ write locks
-			//TODO find way to do this more efficiently
-			int size = this.rwLock.size();
-			for (int i = 0; i < size; i++) {
-				this.rwLock.getAt(i).writeLock().lock();
-			}
+			acquireAllLocks();
+			
 			// flush memory entries to disk
 			this.flushTable();
 			
 			// release _all_ write locks
-			for (int i = size - 1; i >= 0; i--) {
-				this.rwLock.getAt(i).writeLock().unlock();
-			}
+			releaseAllLocks();
 			
 			// finish writing
 			this.flusherChosen.set(false);
@@ -451,6 +446,21 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 		}
 		w.unlock();
 		return false;
+	}
+
+	private void releaseAllLocks() {
+		int size = this.rwLock.size();
+		for (int i = size - 1; i >= 0; i--) {
+			this.rwLock.getAt(i).writeLock().unlock();
+		}
+	}
+
+	private void acquireAllLocks() {
+		//TODO find way to do this more efficiently
+		int size = this.rwLock.size();
+		for (int i = 0; i < size; i++) {
+			this.rwLock.getAt(i).writeLock().lock();
+		}
 	}
 
 	/**
@@ -1057,17 +1067,17 @@ public class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#beginChkpt(java.lang.String)
 	 */
 	public final void beginChkpt(String fname) throws IOException {
-		throw new UnsupportedOperationException("Not yet implemented");
-//			this.flusherChosen = true;
-//			
-//			this.rwLock.writeLock().lock();
-//			
-//			this.flushTable();
-//			FileUtil.copyFile(this.fpFilename,
-//					this.getChkptName(fname, "tmp"));
-//			checkPointMark++;
-//			this.rwLock.writeLock().unlock();
-//			this.flusherChosen = false;
+		
+		this.flusherChosen.set(true);
+		acquireAllLocks();
+		
+		this.flushTable();
+		FileUtil.copyFile(this.fpFilename,
+				this.getChkptName(fname, "tmp"));
+		checkPointMark++;
+
+		releaseAllLocks();
+		this.flusherChosen.set(false);
 	}
 
 	/* (non-Javadoc)
