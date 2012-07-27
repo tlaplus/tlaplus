@@ -9,7 +9,6 @@ import java.nio.LongBuffer;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 import sun.misc.Unsafe;
@@ -56,7 +55,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * means that only the elements in a bucket have to be sorted, but they
 	 * don't change buckets during sort.
 	 */
-	private final SortedSet<Long> collisionBucket; //TODO replace SortedSet with cheaper/faster long[]?!
+	protected CollisionBucket collisionBucket;
 	
 	/**
 	 * The indexer maps a fingerprint to a in-memory bucket and the associated lock
@@ -92,7 +91,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			u.putAddress(log2phy(i), 0L);
 		}
 
-		this.collisionBucket = new TreeSet<Long>();
+		this.collisionBucket = new CollisionBucket();
 		
 		this.flusher = new OffHeapMSBFlusher();
 		
@@ -410,7 +409,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
 	public class ByteBufferIterator {
 
-		private final SortedSet<Long> collisionBucket;
+		private final CollisionBucket collisionBucket;
 		/**
 		 * Number of elements in the buffer
 		 */
@@ -437,12 +436,13 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		private long cache = -1L;
 		private final Unsafe unsafe;
 
-		public ByteBufferIterator(Unsafe u, long baseAddress, SortedSet<Long> collisionBucket, long expectedElements) {
+		public ByteBufferIterator(Unsafe u, long baseAddress, CollisionBucket collisionBucket, long expectedElements) {
 			this.unsafe = u;
 			this.logicalPosition = 0L;
 			this.totalElements = expectedElements;
 			
 			this.collisionBucket = collisionBucket;
+			this.collisionBucket.prepareForFlush();
 			this.bufferElements = expectedElements - this.collisionBucket.size();
 		}
 
@@ -586,5 +586,70 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		private long log2phy(long bucketAddress, long inBucketAddress) {
 			return OffHeapDiskFPSet.this.log2phy(bucketAddress, inBucketAddress);
 		}
+	}
+	
+	public class CollisionBucket {
+		private final TreeSet<Long> bucket;
+
+		public CollisionBucket() {
+			this.bucket = new TreeSet<Long>();
+		}
+
+		public void prepareForFlush() {
+			// no-op
+		}
+
+		public void remove(long first) {
+			bucket.remove(first);
+		}
+
+		public long first() {
+			return bucket.first();
+		}
+
+		public boolean isEmpty() {
+			return bucket.isEmpty();
+		}
+
+		public void add(long fp) {
+			bucket.add(fp);
+		}
+
+		public boolean contains(long fp) {
+			return bucket.contains(fp);
+		}
+
+		public long size() {
+			return bucket.size();
+		}
+	}
+	
+	public class PrettyPrinter {
+		/**
+		 * Print the current in-memory hash table to System.out with increments
+		 */
+		public void printDistribution(final int increments) {
+			final int mask = increments - 1;
+			int cnt = 0;
+			int min = Integer.MAX_VALUE;
+			int max = 0;
+			for (long i = maxTblCnt - 1; i >= 0; i--) {
+				if ((i & mask) == 0) {
+					if (cnt > max) {
+						max = cnt;
+					}
+					if (cnt < min) {
+						min = cnt;
+					}
+					System.out.println(i + " " + cnt);
+					cnt = 0;
+				}
+				if (u.getAddress(log2phy(i)) > 0L) {
+					cnt++;
+				}
+			}
+			System.out.println("max: " + max + " min: " + min + " avg:" + (tblLoad / tblCnt.doubleValue()));
+		}
+
 	}
 }
