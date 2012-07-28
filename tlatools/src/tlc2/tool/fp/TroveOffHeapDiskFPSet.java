@@ -79,8 +79,8 @@ public class TroveOffHeapDiskFPSet extends OffHeapDiskFPSet implements FPSetStat
 		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#add(long)
 		 */
 		@Override
-		public void add(long fp) {
-			set.add(fp);
+		public boolean add(long fp) {
+			return set.add(fp);
 		}
 
 		/* (non-Javadoc)

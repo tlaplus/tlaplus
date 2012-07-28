@@ -10,6 +10,8 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import sun.misc.Unsafe;
 import tlc2.output.EC;
@@ -67,7 +69,9 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	/**
 	 * The indexer maps a fingerprint to a in-memory bucket and the associated lock
 	 */
-	private Indexer indexer;
+	private final Indexer indexer;
+	
+	private final ReadWriteLock csRWLock = new ReentrantReadWriteLock();
 
 	protected OffHeapDiskFPSet(long maxInMemoryCapacity) throws RemoteException {
 		this(maxInMemoryCapacity, 0);
@@ -178,9 +182,24 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 				return true;
 			}
 		}
-		return collisionBucket.contains(fp);
+		
+		return csLookup(fp);
 	}
 	
+	/**
+	 * Probes {@link OffHeapDiskFPSet#collisionBucket} for the given fingerprint.
+	 * @param fp
+	 * @return true iff fp is in the collision bucket
+	 */
+	protected boolean csLookup(long fp) {
+		try {
+			csRWLock.readLock().lock();
+			return collisionBucket.contains(fp);
+		} finally {
+			csRWLock.readLock().unlock();
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memInsert(long)
 	 */
@@ -207,20 +226,36 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 				freePosition = log2phy(position, i);
 			}
 		}
-		
-		// index slot overflow, thus add to collisionBucket
-		if (!collisionBucket.contains(fp)) {
-			if (freePosition > -1) {
-				u.putAddress(freePosition, fp);
-			} else {
-				collisionBucket.add(fp);
-			}
+
+		// index slot overflow, thus add to collisionBucket of write to free
+		// position.
+		if (freePosition > -1 && !csLookup(fp)) {
+			u.putAddress(freePosition, fp);
 			this.tblCnt.getAndIncrement();
 			return false;
+		} else {
+			boolean success = csInsert(fp);
+			if (success) {
+				this.tblCnt.getAndIncrement();
+			}
+			return !success;
 		}
-		return true;
 	}
 	
+	/**
+	 * Inserts the given fingerprint into the {@link OffHeapDiskFPSet#collisionBucket}.
+	 * @param fp
+	 * @return true iff fp is in the collision bucket
+	 */
+	protected boolean csInsert(long fp) {
+		try {
+			csRWLock.writeLock().lock();
+			return !collisionBucket.add(fp);
+		} finally {
+			csRWLock.writeLock().unlock();
+		}
+	}
+
 	/**
 	 * Converts from logical bucket index numbers and in-bucket position to a
 	 * physical memory address.
@@ -634,8 +669,13 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			return set.isEmpty();
 		}
 
-		public void add(long fp) {
-			set.add(fp);
+		/**
+		 * @param fp
+	     * @return {@code true} if this set did not already contain the specified
+	     *         fingerprint
+		 */
+		public boolean add(long fp) {
+			return set.add(fp);
 		}
 
 		public boolean contains(long fp) {
