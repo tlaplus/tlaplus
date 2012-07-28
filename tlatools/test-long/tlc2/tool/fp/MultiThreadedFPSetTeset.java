@@ -18,6 +18,7 @@ public abstract class MultiThreadedFPSetTeset extends AbstractFPSetTest {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		System.out.println("Insertions: " + INSERTIONS);
 		System.out.println("Thread count: " + NUM_THREADS);
 	}
 	
