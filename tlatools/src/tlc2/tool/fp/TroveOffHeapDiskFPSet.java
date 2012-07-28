@@ -16,7 +16,7 @@ public class TroveOffHeapDiskFPSet extends OffHeapDiskFPSet implements FPSetStat
 	}
 	
 	protected TroveOffHeapDiskFPSet(final long maxInMemoryCapacity, int preBits) throws RemoteException {
-		super(maxInMemoryCapacity);
+		super(maxInMemoryCapacity, preBits);
 		this.collisionBucket = new TLongCollisionBucket();
 	}
 	
@@ -37,9 +37,10 @@ public class TroveOffHeapDiskFPSet extends OffHeapDiskFPSet implements FPSetStat
 		 */
 		@Override
 		public void prepareForFlush() {
-			array = set.toArray();
-			set.clear(); // might want to call System.gc() here
-			Sort.LongArray(array, array.length);
+			this.idx = 0; // Reset idx every time flush is called
+			this.array = this.set.toArray();
+			this.set.clear(); // might want to call System.gc() here
+			Sort.LongArray(this.array, this.array.length);
 		}
 
 		/* (non-Javadoc)
@@ -47,7 +48,7 @@ public class TroveOffHeapDiskFPSet extends OffHeapDiskFPSet implements FPSetStat
 		 */
 		@Override
 		public void remove(long fp) {
-			this.idx++;
+			this.array[idx++] = -1L;
 		}
 
 		/* (non-Javadoc)
@@ -57,13 +58,21 @@ public class TroveOffHeapDiskFPSet extends OffHeapDiskFPSet implements FPSetStat
 		public long first() {
 			return this.array[idx];
 		}
+		
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#last()
+		 */
+		@Override
+		public long last() {
+			return this.array[array.length - 1];
+		}
 
 		/* (non-Javadoc)
 		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#isEmpty()
 		 */
 		@Override
 		public boolean isEmpty() {
-			return idx <= array.length;
+			return !(idx <= array.length - 1);
 		}
 
 		/* (non-Javadoc)

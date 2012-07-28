@@ -48,12 +48,19 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	private final int logAddressSize;
 
 	/**
-	 * A bucket containing collision elements.
+	 * A bucket containing collision elements which is used as a fall-back if a
+	 * bucket is fully used up. Buckets cannot grow as the whole in-memory
+	 * data-structure is static and not designed to be resized.
 	 * 
-	 * Open addressing is not an option for this implementation, because it does
-	 * not support the invariant of monotonic increasing buckets. This invariant
-	 * means that only the elements in a bucket have to be sorted, but they
-	 * don't change buckets during sort.
+	 * <p>
+	 * Open addressing - contrary to separate chaining - is not an option for an
+	 * {@link OffHeapDiskFPSet}, because it does not support the invariant of
+	 * monotonic increasing buckets required by the {@link Indexer}. Adhering to
+	 * this invariant has the benefit, that only the elements in a bucket have
+	 * to be sorted, but they don't change buckets during sort. Thus, a
+	 * temporary sort array as in {@link LSBDiskFPSet.LSBFlusher#prepareTable()} is
+	 * obsolete halving the memory footprint.
+	 * </p>
 	 */
 	protected CollisionBucket collisionBucket;
 	
@@ -407,9 +414,12 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		}
 	}
 	
+	/**
+	 * A non-thread safe Iterator 
+	 */
 	public class ByteBufferIterator {
 
-		private final CollisionBucket collisionBucket;
+		private final CollisionBucket cs;
 		/**
 		 * Number of elements in the buffer
 		 */
@@ -441,9 +451,9 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			this.logicalPosition = 0L;
 			this.totalElements = expectedElements;
 			
-			this.collisionBucket = collisionBucket;
-			this.collisionBucket.prepareForFlush();
-			this.bufferElements = expectedElements - this.collisionBucket.size();
+			this.cs = collisionBucket;
+			this.cs.prepareForFlush();
+			this.bufferElements = expectedElements - this.cs.size();
 		}
 
 	    /**
@@ -463,10 +473,10 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 				cache = -1L;
 			}
 
-			if (!collisionBucket.isEmpty()) {
-				long first = collisionBucket.first();
+			if (!cs.isEmpty()) {
+				long first = cs.first();
 				if (result > first || result == -1L) {
-					collisionBucket.remove(first);
+					cs.remove(first);
 					cache = result;
 					result = first;
 				}
@@ -559,12 +569,16 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	     * @exception NoSuchElementException if iteration is empty.
 		 */
 		public long getLast() {
-			//TODO biggest element could be in collisionBucket
-			long tmpLogicalPosition = logicalPosition;
+			// Remember current position
+			final long tmpLogicalPosition = logicalPosition;
+
+			// Calculate last bucket position and have it sorted 
 			logicalPosition = maxTblCnt - DiskFPSet.InitialBucketCapacity;
 			sortNextBucket();
 
-			// reverse the current bucket to obtain last element
+			// Reverse the current bucket to obtain last element (More elegantly
+			// this could be achieved recursively, but this can cause a
+			// stack overflow).
 			long l = 1L;
 			while ((l = unsafe.getAddress(log2phy(logicalPosition-- + DiskFPSet.InitialBucketCapacity - 1))) <= 0L) {
 				if (((logicalPosition - DiskFPSet.InitialBucketCapacity) & BucketBaseIdx) == 0) {
@@ -572,8 +586,18 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 				}
 			}
 			
+			// Done searching in-memory storage backwards, reset position to
+			// original value.
+			logicalPosition = tmpLogicalPosition;
+			
+			// Compare max element found in main in-memory buffer to man
+			// element in collisionBucket. Return max of the two.
+			if (!cs.isEmpty()) {
+				l = Math.max(cs.last(), l);
+			}
+			
+			// Either return the maximum element or fail fast.
 			if (l > 0L) {
-				logicalPosition = tmpLogicalPosition;
 				return l;
 			}
 			throw new NoSuchElementException();
@@ -589,10 +613,10 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	}
 	
 	public class CollisionBucket {
-		private final TreeSet<Long> bucket;
+		private final TreeSet<Long> set;
 
 		public CollisionBucket() {
-			this.bucket = new TreeSet<Long>();
+			this.set = new TreeSet<Long>();
 		}
 
 		public void prepareForFlush() {
@@ -600,27 +624,31 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		}
 
 		public void remove(long first) {
-			bucket.remove(first);
+			set.remove(first);
 		}
 
 		public long first() {
-			return bucket.first();
+			return set.first();
+		}
+		
+		public long last() {
+			return set.last();
 		}
 
 		public boolean isEmpty() {
-			return bucket.isEmpty();
+			return set.isEmpty();
 		}
 
 		public void add(long fp) {
-			bucket.add(fp);
+			set.add(fp);
 		}
 
 		public boolean contains(long fp) {
-			return bucket.contains(fp);
+			return set.contains(fp);
 		}
 
 		public long size() {
-			return bucket.size();
+			return set.size();
 		}
 	}
 	
