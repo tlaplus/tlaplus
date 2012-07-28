@@ -43,7 +43,7 @@ public abstract class MultiThreadedFPSetTeset extends AbstractFPSetTest {
 		// wait for runnables/fpg to tear down the latch
 		latch.await();
 
-		long overAllPuts = 0L;
+		long overallPuts = 0L;
 		
 		// print stats
 		for (int i = 0; i < fpgs.length; i++) {
@@ -51,11 +51,16 @@ public abstract class MultiThreadedFPSetTeset extends AbstractFPSetTest {
 			long puts = fpg.getPuts();
 			System.out.println("Producer: " + fpg.getId() + " puts: " + puts);
 			System.out.println("puts/collisions: " + (double) (puts / fpg.getCollisions()));
-			overAllPuts += puts;
+			overallPuts += puts;
 		}
 		
-		assertEquals(overAllPuts, fpSet.size());
-		assertEquals(INSERTIONS - 1, fpSet.size());
+		// Do not compare fpSet.size() to insertions as several FPGs might race
+		// with the FPG that inserts the INSERTIONS element. Hence we count the
+		// overallPuts externally and compare it to the size of the fpSet.
+		// Additionally we assert that the fpset has at least the seen
+		// INSERTIONS elements.
+		assertEquals(overallPuts, fpSet.size());
+		assertTrue(fpSet.size() >= INSERTIONS);
 	}
 
 	public class FingerPrintGenerator implements Runnable {
