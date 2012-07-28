@@ -13,6 +13,14 @@ public abstract class MultiThreadedFPSetTeset extends AbstractFPSetTest {
 	private static final long INSERTIONS = Long.getLong(MultiThreadedFPSetTeset.class.getName() + ".insertions",
 			Integer.MAX_VALUE + 2L);
 
+	/* (non-Javadoc)
+	 * @see junit.framework.TestCase#setUp()
+	 */
+	protected void setUp() throws Exception {
+		super.setUp();
+		System.out.println("Thread count: " + NUM_THREADS);
+	}
+	
 	/**
 	 * Test filling a {@link FPSet} with max int + 2L random using multiple
 	 * threads
