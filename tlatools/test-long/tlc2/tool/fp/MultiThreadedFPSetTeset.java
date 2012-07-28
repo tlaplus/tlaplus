@@ -57,10 +57,12 @@ public abstract class MultiThreadedFPSetTeset extends AbstractFPSetTest {
 		// Do not compare fpSet.size() to insertions as several FPGs might race
 		// with the FPG that inserts the INSERTIONS element. Hence we count the
 		// overallPuts externally and compare it to the size of the fpSet.
-		// Additionally we assert that the fpset has at least the seen
-		// INSERTIONS elements.
+		// Additionally we assert that the fpSet has at least the seen
+		// INSERTIONS elements and that maximally NUM_THREADS extra elements are
+		// in the fpSet.
 		assertEquals(overallPuts, fpSet.size());
 		assertTrue(fpSet.size() >= INSERTIONS);
+		assertTrue(fpSet.size() <= INSERTIONS + NUM_THREADS);
 	}
 
 	public class FingerPrintGenerator implements Runnable {
