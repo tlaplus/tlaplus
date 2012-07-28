@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/high-scale-lib.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/trove-3.0.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/guava-13.0-rc2.jar">
 		<attributes>
