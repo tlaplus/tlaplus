@@ -244,7 +244,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#size()
 	 */
-	public final long size() {
+	public long size() {
 		return this.tblCnt.get() + this.fileCnt;
 	}
 

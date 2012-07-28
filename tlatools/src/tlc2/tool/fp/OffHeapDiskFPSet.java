@@ -121,6 +121,13 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			this.indexer = new Indexer(prefixBits);
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.FPSet#size()
+	 */
+	public final long size() {
+		return super.size() + collisionBucket.size();
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#sizeof()

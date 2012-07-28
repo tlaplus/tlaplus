@@ -43,13 +43,18 @@ public abstract class MultiThreadedFPSetTeset extends AbstractFPSetTest {
 		// wait for runnables/fpg to tear down the latch
 		latch.await();
 
+		long overAllPuts = 0L;
+		
 		// print stats
 		for (int i = 0; i < fpgs.length; i++) {
 			final FingerPrintGenerator fpg = fpgs[i];
-			System.out.println("Producer: " + fpg.getId() + " puts: " + fpg.getPuts());
-			System.out.println("puts/collisions: " + (double) (fpg.getPuts() / fpg.getCollisions()));
+			long puts = fpg.getPuts();
+			System.out.println("Producer: " + fpg.getId() + " puts: " + puts);
+			System.out.println("puts/collisions: " + (double) (puts / fpg.getCollisions()));
+			overAllPuts += puts;
 		}
 		
+		assertEquals(overAllPuts, fpSet.size());
 		assertEquals(INSERTIONS - 1, fpSet.size());
 	}
 
