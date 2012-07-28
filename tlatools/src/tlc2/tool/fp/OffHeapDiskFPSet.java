@@ -134,17 +134,12 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#needsDiskFlush()
 	 */
 	protected boolean needsDiskFlush() {
-		return secondaryLoadExceeds() 
-				|| primaryLoadFactorExceeds(.85d)
+		return loadFactorExceeds(.85d)
 				|| sizeOfCollisionBucketExceeds(.01d);
 	}
-
-	private boolean secondaryLoadExceeds() {
-		return this.tblCnt.get() >= this.maxTblCnt;
-	}
 	
-	private boolean primaryLoadFactorExceeds(final double limit) {
-		final double d = (double) tblLoad / (double) (maxTblCnt / DiskFPSet.InitialBucketCapacity);
+	private boolean loadFactorExceeds(final double limit) {
+		final double d = this.tblCnt.doubleValue() / (double) this.maxTblCnt;
 		return d >= limit;
 	}
 
@@ -155,7 +150,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 */
 	private boolean sizeOfCollisionBucketExceeds(final double limit) {
 		// the fraction of collisionBucket size compared to the tbl size 
-		final double d = (double) collisionBucket.size() / (double) tblCnt.get();
+		final double d = (double) collisionBucket.size() / tblCnt.doubleValue();
 		return d >= limit;
 	}
 	
