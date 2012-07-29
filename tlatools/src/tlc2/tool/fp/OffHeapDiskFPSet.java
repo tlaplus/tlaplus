@@ -23,19 +23,25 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
 	private static sun.misc.Unsafe getUnsafe() {
 		try {
-			Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+			final Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
 			f.setAccessible(true);
 			return (sun.misc.Unsafe) f.get(null);
 		} catch (Exception e) {
-			//TODO handle if non-sun vm
-			return null;
+			throw new RuntimeException(
+					"Trying to use Sun VM specific sun.misc.Unsafe implementation but no Sun based VM detected.",
+					e);
 		}
 	}
 	
 	protected static final long BucketBaseIdx = 0xFFFFFFFFFFFFFFFFL - (InitialBucketCapacity - 1);
 
 	/**
-	 * 
+	 * This implementation uses sun.misc.Unsafe instead of a wrapping
+	 * java.nio.ByteBuffer due to the fact that the former's allocateMemory
+	 * takes a long argument, while the latter is restricted to
+	 * Integer.MAX_VALUE as its capacity.<br>
+	 * In 2012 this poses a too hard limit on the usable memory, hence we trade
+	 * generality for performance.
 	 */
 	private final Unsafe u;
 	
@@ -326,6 +332,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		 * @return The logical bucket position in the table for the given fingerprint.
 		 */
 		protected long getLogicalPosition(final long fp) {
+			//TODO this crashes with a div by zero occasionally
 			// push MSBs for moveBy positions to the right and align with a bucket address
 			long position = (fp % maxTblCnt) & BucketBaseIdx; 
 			//Assert.check(0 <= position && position < maxInMemoryCapacity, EC.GENERAL);
