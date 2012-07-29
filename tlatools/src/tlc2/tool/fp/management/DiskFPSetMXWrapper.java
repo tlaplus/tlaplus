@@ -145,6 +145,13 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	public long getCollisionBucketCnt() {
 		return fpset.getCollisionBucketCnt();
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getCollisionRatio()
+	 */
+	public double getCollisionRatio() {
+		return fpset.getCollisionRatio();
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getLoadFactor()
@@ -152,4 +159,5 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	public double getLoadFactor() {
 		return fpset.getLoadFactor();
 	}
+
 }

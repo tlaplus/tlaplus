@@ -99,6 +99,11 @@ public interface FPSetStatistic {
 	 * @return DiskFPSet#getCollisionBucketCnt()
 	 */
 	public long getCollisionBucketCnt();
+
+	/**
+	 * @return DiskFPSet#getCollisionRatio()
+	 */
+	public double getCollisionRatio();
 	
 	/**
 	 * @return DiskFPSet#getLoadFactor();

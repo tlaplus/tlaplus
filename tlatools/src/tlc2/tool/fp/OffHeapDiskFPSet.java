@@ -144,8 +144,8 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#needsDiskFlush()
 	 */
 	protected boolean needsDiskFlush() {
-		return loadFactorExceeds(.85d)
-				|| sizeOfCollisionBucketExceeds(.01d);
+		return loadFactorExceeds(.75d)
+				|| collisionRatioExceeds(.025d);
 	}
 	
 	/**
@@ -167,9 +167,8 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @return The proportional size of the collision bucket compared to the
 	 *         size of the set.
 	 */
-	private boolean sizeOfCollisionBucketExceeds(final double limit) {
-		// the fraction of collisionBucket size compared to the tbl size 
-		final double d = (double) collisionBucket.size() / tblCnt.doubleValue();
+	private boolean collisionRatioExceeds(final double limit) {
+		final double d = getCollisionRatio();
 		return d >= limit;
 	}
 	
@@ -307,7 +306,14 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	public long getCollisionBucketCnt() {
 		return collisionBucket.size();
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#getCollisionRatio()
+	 */
+	public double getCollisionRatio() {
+		return (double) collisionBucket.size() / tblCnt.doubleValue();
+	}
+
 	public class Indexer {
 		protected final int lockMoveBy;
 
