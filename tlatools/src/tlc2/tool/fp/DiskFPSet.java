@@ -898,6 +898,32 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		return this.metadir + FileUtil.separator + fname + ".fp." + name;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.FPSet#checkInvariant()
+	 */
+	public boolean checkInvariant() throws IOException {
+		flusher.flushTable(); // No need for any lock here
+		final RandomAccessFile braf = new BufferedRandomAccessFile(
+				this.fpFilename, "r");
+		try {
+			final long fileLen = braf.length();
+			long predecessor = Long.MIN_VALUE;
+			if (fileLen > 0) {
+				while (braf.getFilePointer() < fileLen) {
+					long l = braf.readLong();
+					if (predecessor >= l) {
+						return false;
+					}
+					predecessor = l;
+				}
+			}
+			return true;
+		} finally {
+			braf.close();
+		}
+		
+	}
+	
 	/**
 	 * @return the bucketsCapacity counting all allocated (used and unused) fp slots in the in-memory storage.
 	 */

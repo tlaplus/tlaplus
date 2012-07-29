@@ -194,6 +194,10 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
     public abstract void commitChkpt(String filename) throws IOException;
 
     public abstract void recover(String filename) throws IOException;
+    
+	public boolean checkInvariant() throws IOException {
+		return true;
+	}
 
     public final BitVector putBlock(LongVec fpv) throws IOException
     {
@@ -340,5 +344,4 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
         System.out.println(msg);
         System.out.println("Usage: java tlc2.tool.FPSet [-option] metadir");
     }
-
 }

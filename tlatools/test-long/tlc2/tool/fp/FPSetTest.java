@@ -56,6 +56,8 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 		// try creating a check point
 		fpSet.beginChkpt();
 		fpSet.commitChkpt();
+
+		assertTrue(fpSet.checkInvariant());
 		
 		//
 		assertEquals(l - 1, fpSet.size());
