@@ -10,7 +10,7 @@ public class DiskFPSetTest extends FPSetTest {
 	@Override
 	protected FPSet getFPSet(long freeMemory) throws IOException {
 		long maxInMemoryCapacity = freeMemory / (long) DiskFPSet.LongSize;
-		final DiskFPSet fpSet = new LSBDiskFPSet(maxInMemoryCapacity >> 10);
+		final DiskFPSet fpSet = new LSBDiskFPSet(maxInMemoryCapacity);
 		System.out.println("DiskFPSet approx. consumes MiB: "
 				+ ((fpSet.getMaxTblCnt() * (long) DiskFPSet.LongSize) >> 20));
     	return fpSet;
