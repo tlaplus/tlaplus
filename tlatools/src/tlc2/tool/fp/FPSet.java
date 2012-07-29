@@ -46,9 +46,6 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	private static final String USER_FPSET_IMPL_CLASSNAME = System.getProperty(
 			FPSet.class.getName() + ".impl", null);
 	
-	private static final String USE_MSB_DISK_FP_SET = System.getProperty(
-			FPSet.class.getName() + ".msb", null);
-	
 	/**
 	 * Size of a Java long in bytes
 	 */
@@ -80,11 +77,8 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 			set = loadCustomFactory(USER_FPSET_IMPL_CLASSNAME, fpBits, fpMemSizeInBytes);
 		}
 		
-		if (set == null && fpBits == 0 && USE_MSB_DISK_FP_SET == null) {
+		if (set == null && fpBits == 0) {
 			set = new LSBDiskFPSet(fpMemSizeInFPs);
-		} else if (set == null && fpBits == 0 && USE_MSB_DISK_FP_SET != null) {
-				//TODO pass fpBits to MSBDiskFPSet to optimize in memory index
-				set = new MSBDiskFPSet(fpMemSizeInFPs);
 		} else if (set == null) {
 			// Pass physical memory instead of logical FP count to adhere to the
 			// general FPSet ctor contract.
@@ -110,9 +104,9 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 			final ClassLoader classLoader = FPSet.class.getClassLoader();
 			final Class<?> factoryClass = classLoader.loadClass(clazz);
 			final Constructor<?> constructor = factoryClass
-					.getConstructor(new Class[] { int.class, long.class });
-			final Object instance = constructor.newInstance(fpBits,
-					fpMemSizeInBytes);
+					.getDeclaredConstructor(new Class[] { long.class, int.class });
+			final Object instance = constructor.newInstance(
+					fpMemSizeInBytes, fpBits);
 			// sanity check if given class from string implements FPSet
 			if (instance instanceof FPSet) {
 				return (FPSet) instance;
