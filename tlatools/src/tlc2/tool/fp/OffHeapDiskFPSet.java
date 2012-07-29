@@ -144,8 +144,8 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#needsDiskFlush()
 	 */
 	protected boolean needsDiskFlush() {
-		return loadFactorExceeds(.75d)
-				|| collisionRatioExceeds(.025d);
+		return collisionRatioExceeds(.025d)
+				|| loadFactorExceeds(1d);
 	}
 	
 	/**
