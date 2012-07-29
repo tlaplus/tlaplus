@@ -6,11 +6,11 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
-public abstract class MultiThreadedFPSetTeset extends AbstractFPSetTest {
+public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 
-	private static final int NUM_THREADS = Integer.getInteger(MultiThreadedFPSetTeset.class.getName() + ".numThreads",
+	private static final int NUM_THREADS = Integer.getInteger(MultiThreadedFPSetTest.class.getName() + ".numThreads",
 			2);
-	private static final long INSERTIONS = Long.getLong(MultiThreadedFPSetTeset.class.getName() + ".insertions",
+	private static final long INSERTIONS = Long.getLong(MultiThreadedFPSetTest.class.getName() + ".insertions",
 			Integer.MAX_VALUE + 2L);
 
 	/* (non-Javadoc)
