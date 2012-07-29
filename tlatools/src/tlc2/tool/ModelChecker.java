@@ -19,7 +19,6 @@ import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
-import tlc2.util.PrintfFormat;
 import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
