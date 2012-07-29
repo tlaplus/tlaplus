@@ -61,6 +61,11 @@
 		<javac srcdir="${src.dir}" destdir="${class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
 			<!-- compilerarg value="-Xlint:deprecation"/-->
 			<classpath refid="project.classpath" />
+			<classpath>
+			    <pathelement location="lib/guava-13.0-rc2.jar" />
+			    <pathelement location="lib/high-scale-lib.jar" />
+			    <pathelement location="lib/trove-3.0.3.jar" />
+			</classpath>
 		</javac>
 
 		<!-- copy the resource files -->
