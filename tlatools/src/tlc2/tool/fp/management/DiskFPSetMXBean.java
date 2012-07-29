@@ -83,4 +83,14 @@ public interface DiskFPSetMXBean {
 	 * @see DiskFPSet#getReaderWriterCnt()
 	 */
 	int getReaderWriterCnt();
+	
+	/**
+	 * @see DiskFPSet#getCollisionBucketCnt()
+	 */
+	long getCollisionBucketCnt();
+	
+	/**
+	 * @see DiskFPSet#getLoadFactor()
+	 */
+	double getLoadFactor();
 }

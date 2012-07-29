@@ -142,8 +142,17 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 				|| sizeOfCollisionBucketExceeds(.01d);
 	}
 	
+	/**
+	 * This limits the (primary) in-memory hash table to grow beyond the given
+	 * limit.
+	 * 
+	 * @param limit
+	 *            A limit in the domain [0, 1] which restricts the hash table
+	 *            from growing past it.
+	 * @return true iff the current hash table load exceeds the given limit
+	 */
 	private boolean loadFactorExceeds(final double limit) {
-		final double d = this.tblCnt.doubleValue() / (double) this.maxTblCnt;
+		final double d = getLoadFactor();
 		return d >= limit;
 	}
 

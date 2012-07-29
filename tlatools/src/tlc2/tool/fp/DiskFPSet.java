@@ -1031,6 +1031,18 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	public long getCollisionBucketCnt() {
 		return -1L;
 	}
+	
+	/**
+	 * The load factor is a measure of how full the (primary) in-memory hash
+	 * table is.
+	 * 
+	 * @return The primary in-memory table's current load factor in the domain
+	 *         [0, 1]. If the {@link DiskFPSet} implementation doesn't support a
+	 *         load factor, <code>-1d</code> is returned.
+	 */
+	public double getLoadFactor() {
+		return this.tblCnt.doubleValue() / (double) this.maxTblCnt;
+	}
 
 	// /**
 	// *
