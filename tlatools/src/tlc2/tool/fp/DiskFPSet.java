@@ -902,6 +902,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#checkInvariant()
 	 */
 	public boolean checkInvariant() throws IOException {
+		acquireAllLocks();
 		flusher.flushTable(); // No need for any lock here
 		final RandomAccessFile braf = new BufferedRandomAccessFile(
 				this.fpFilename, "r");
@@ -917,11 +918,11 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 					predecessor = l;
 				}
 			}
-			return true;
 		} finally {
 			braf.close();
 		}
-		
+		releaseAllLocks();
+		return true;
 	}
 	
 	/**
