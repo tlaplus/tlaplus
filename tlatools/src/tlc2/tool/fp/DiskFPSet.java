@@ -71,15 +71,26 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	protected String fpFilename;
 	protected String tmpFilename;
 
+	/**
+	 * Number of locks in the striped lock (#StripeLocks = 2^LogLockCnt).<br>
+	 * Theoretically best performance should be seen with on lock per bucket in
+	 * the primary hash table. An some point though (not yet measured), this
+	 * performance benefit is probably eaten up by the memory consumption of the
+	 * striped lock {@link DiskFPSet#rwLock} itself, which reduces the memory
+	 * available to the hash set.
+	 */
 	protected static final int LogLockCnt = Integer.getInteger(DiskFPSet.class.getName() + ".logLockCnt", 10);
 	/**
 	 * protects n memory buckets
 	 */
 	protected final Striped<ReadWriteLock> rwLock;
+	/**
+	 * Is (1 << LogLockCnt) and exposed here for subclasses
+	 */
 	protected final int lockCnt;
 	/**
-	 * number of entries on disk. This is equivalent to the current number of fingerprints stored on disk.
-	 * @see @see DiskFPSet#getFileCnt()
+	 * Number of entries on disk. This is equivalent to the current number of fingerprints stored on disk.
+	 * @see DiskFPSet#getFileCnt()
 	 */
 	protected long fileCnt;
 	/**
