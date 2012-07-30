@@ -123,5 +123,14 @@ public class WaitFreeOffHeapDiskFPSet extends OffHeapDiskFPSet {
 		public long size() {
 			return this.set.size();
 		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#clear()
+		 */
+		@Override
+		public void clear() {
+			this.set.clear();
+			this.sortedSet.clear();
+		}
 	}
 }

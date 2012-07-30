@@ -548,6 +548,9 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 
 			// maintain object invariants
 			fileCnt += buffLen;
+			
+			// garbage old values in collision bucket
+			collisionBucket.clear();
 		}
 	}
 	
@@ -752,6 +755,10 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 
 		public CollisionBucket() {
 			this.set = new TreeSet<Long>();
+		}
+
+		public void clear() {
+			set.clear();
 		}
 
 		public void prepareForFlush() {

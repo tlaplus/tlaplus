@@ -98,5 +98,14 @@ public class TroveOffHeapDiskFPSet extends OffHeapDiskFPSet implements FPSetStat
 		public long size() {
 			return set.size();
 		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#clear()
+		 */
+		@Override
+		public void clear() {
+			array = null;
+			set.clear();
+		}
 	}
 }
