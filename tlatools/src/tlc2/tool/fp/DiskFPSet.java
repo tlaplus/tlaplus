@@ -931,8 +931,8 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			}
 		} finally {
 			braf.close();
+			releaseAllLocks();
 		}
-		releaseAllLocks();
 		return true;
 	}
 	
