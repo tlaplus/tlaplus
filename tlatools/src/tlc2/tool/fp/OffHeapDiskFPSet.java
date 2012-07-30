@@ -583,6 +583,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		// sort the current logical bucket if we reach the first slot of the
 		// bucket
 		private void sortNextBucket() {
+			//TODO replace mod with mask here?
 			if (logicalPosition % DiskFPSet.InitialBucketCapacity == 0) {
 				long[] longBuffer = new long[DiskFPSet.InitialBucketCapacity];
 				int i = 0;
@@ -743,6 +744,22 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			}
 			System.out.println("max: " + max + " min: " + min + " avg:" + (tblLoad / tblCnt.doubleValue()));
 		}
-
+		
+		public void printBuckets() {
+			printBuckets(0, maxTblCnt);
+		}
+		
+		/**
+		 * @param from inclusive lower bound
+		 * @param to exclusive upper bound
+		 */
+		public void printBuckets(int from, long to) {
+			for (long i = from; i < maxTblCnt && i < to; i++) {
+				if (i % InitialBucketCapacity == 0) {
+					System.out.println("Bucket idx: " + i);
+				}
+				System.out.println(u.getAddress(log2phy(i)));
+			}
+		}
 	}
 }
