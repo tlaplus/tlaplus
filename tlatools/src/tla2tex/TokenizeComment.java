@@ -8,6 +8,11 @@
 * Its result is an array of arrays of CTokens obtained by tokenizing the   *
 * comment.  Each element of the vector produces one row of the array.      *
 *                                                                          *
+* Note: in formatting comments, we don't treat PlusCal built-in tokens     *
+* specially because they are mostly strings like "if", "with", and "while" *
+* that are very common English words.  As a result, we don't try to format *
+* PlusCal code as such in comments.                                        *
+*                                                                          *
 * The tokenizing algorithm is described below.  The description has the    *
 * following BNF syntax:                                                    *
 *                                                                          *
@@ -673,7 +678,8 @@ public class TokenizeComment
                     { addNextChar();
                       // state = ID ;
                     }  
-                  else if (BuiltInSymbols.IsBuiltInSymbol(token))
+                  else if (BuiltInSymbols.IsBuiltInSymbol(token, false))
+                            // don't want to handle PCal tokens specially
                     { CTokenOut(CToken.BUILTIN) ;
                       gotoStart();
                     }
@@ -749,6 +755,7 @@ public class TokenizeComment
                       state = BSBUILT_IN;
                     }
                   else if (BuiltInSymbols.IsBuiltInSymbol(token))
+                            // "\" built-in never a PCal symbol
                     { CTokenOut(CToken.BUILTIN) ;
                       gotoStart();
                     }
@@ -765,9 +772,11 @@ public class TokenizeComment
                     }
                   else 
                     { 
-                     if (! BuiltInSymbols.IsBuiltInSymbol(token))
+                     if (! BuiltInSymbols.IsBuiltInSymbol(token, false))
+                         // don't want to handle PCal tokens specially
                       { 
-                        while (! BuiltInSymbols.IsBuiltInSymbol(token))
+                        while (! BuiltInSymbols.IsBuiltInSymbol(token, false))
+                            // don't want to handle PCal tokens specially
                         { Backspace(1);
                           if (token.length() == 0)
                             { Debug.ReportBug(

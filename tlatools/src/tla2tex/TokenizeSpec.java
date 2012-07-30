@@ -93,16 +93,16 @@
 *    mdepth :   The module nesting level.  (Determined by counting         *
 *               "MODULE" keywords and "===="'s.                            *
 *                                                                          *
-*    pseudoCom : A boolean that equals true iff the next comment token to  * MODIFIED
-*                be output either does not end with "*)" (because it was   * MODIFIED
-*                terminated by the start of a PlusCal algorithm) or does   * MODIFIED
-*                not begin with a "(*" (because it immediately followed    * MODIFIED
-*                the end of a PlusCal algorithm).                          * MODIFIED
+*    pseudoCom : A boolean that equals true iff the next comment token to  * ADDED FOR PLUSCAL
+*                be output either does not end with "*)" (because it was   * ADDED FOR PLUSCAL
+*                terminated by the start of a PlusCal algorithm) or does   * ADDED FOR PLUSCAL
+*                not begin with a "(*" (because it immediately followed    * ADDED FOR PLUSCAL
+*                the end of a PlusCal algorithm).                          * ADDED FOR PLUSCAL
 *                                                                          *
-*    ORCom : A boolean set when looking for the start of a PlusCal         * MODIFIED
-*            algorithm when processing a comment.  It equals true if       * MODIFIED
-*            processing an OR (OverRun) comment, and false if processing a * MODIFIED
-*            normal comment.                                               * MODIFIED
+*    ORCom : A boolean set when looking for the start of a PlusCal         * ADDED FOR PLUSCAL
+*            algorithm when processing a comment.  It equals true if       * ADDED FOR PLUSCAL
+*            processing an OR (OverRun) comment, and false if processing a * ADDED FOR PLUSCAL
+*            normal comment.                                               * ADDED FOR PLUSCAL
 *                                                                          *
 * A <Precondition> has the form [exp], where exp is an ordinary            *
 * expression, except the following conventions are used in it:             *
@@ -183,25 +183,26 @@
 *   ("(")                 -  --> LEFT_PAREN                                *
 *   ("\"")                -  --> STRING                                    *
 *   ("\n")                -  --> START                                     *
-*   (BuiltInPrefix)                                                        * MODIFIED
-*     +                                                                    * MODIFIED
-*       IF ~(inPcal /\ mode = Module)                                      * MODIFIED   
-*         THEN                                              --> BUILT_IN   * MODIFIED
-*         ELSEIF token = "*" /\ nextChar = ")"                             * MODIFIED
-*           THEN +  pcalEnd := getNextTokenPosition();                     * MODIFIED
-*                   inPcal := false                         --> START      * MODIFIED
-*         ELSEIF isCSyntax                                                 * MODIFIED
-*           THEN IF token = "{"                                            * MODIFIED
-*                  THEN TokenOut(BUILT_IN) ;                               * MODIFIED
-*                       braceDepth := braceDepth + 1        --> START      * MODIFIED
-*           ELSEIF token = "}"                                             * MODIFIED
-*             THEN TokenOut(BUILT_IN) ;                                    * MODIFIED
-*                  braceDepth := braceDepth - 1                            * MODIFIED
-*                  IF braceDepth # 0                                       * MODIFIED
-*                    THEN                                   --> START      * MODIFIED
-*                    ELSE inPcal := false ;                                * MODIFIED
-*                         pcalEnd := getNextTokenPosition() ;              * MODIFIED
-*                         pseudoCom := true                 --> COMMENT    * MODIFIED
+*   (BuiltInPrefix)                                                        * MODIFIED for PlusCal
+*     +                                                                    * MODIFIED for PlusCal
+*       IF ~(inPcal /\ mode = Module)                                      * MODIFIED for PlusCal   
+*         THEN                                              --> BUILT_IN   * MODIFIED for PlusCal
+*         ELSEIF token = "*" /\ nextChar = ")"                             * MODIFIED for PlusCal
+*           THEN +  pcalEnd := getNextTokenPosition();                     * MODIFIED for PlusCal
+*                   inPcal := false                         --> START      * MODIFIED for PlusCal
+*         ELSEIF isCSyntax                                                 * MODIFIED for PlusCal
+*           THEN IF token = "{"                                            * MODIFIED for PlusCal
+*                  THEN TokenOut(BUILT_IN) ;                               * MODIFIED for PlusCal
+*                       braceDepth := braceDepth + 1        --> START      * MODIFIED for PlusCal
+*           ELSEIF token = "}"                                             * MODIFIED for PlusCal
+*             THEN TokenOut(BUILT_IN) ;                                    * MODIFIED for PlusCal
+*                  braceDepth := braceDepth - 1                            * MODIFIED for PlusCal
+*                  IF braceDepth # 0                                       * MODIFIED for PlusCal
+*                    THEN                                   --> START      * MODIFIED for PlusCal
+*                    ELSE inPcal := false ;                                * MODIFIED for PlusCal
+*                         pcalEnd := getNextTokenPosition() ;              * MODIFIED for PlusCal
+*                         pseudoCom := true                 --> COMMENT    * MODIFIED for PlusCal
+*             ELSE                                          --> BUILT_IN   * MODIFIED for PlusCal
 *   [("\t") /\ TLA mode]     --> DONE                                      *
 *   [OTHER]                  --> ERROR                                     *
 *                                                                          *
@@ -210,20 +211,23 @@
 *   (Letter or Digit)         +                     --> ID                 *
 *   [token = "MODULE"]        TokenOut(BUILTIN);                           *
 *                             mdepth := mdepth + 1  --> START              *
-*   [token \in BuiltIns]                                                   * MODIFIED
-*      IF inPcal /\ token = "algorithm" /\ ~isCsyntax /\ mode = MODULE     * MODIFIED
-*        THEN TokenOut(BUILTIN) ;                                          * MODIFIED
-*             pcalEnd := getNextTokenPosition()                            * MODIFIED
-*             pseudoCom := true              --> COMMENT                   * MODIFIED
-*        ELSE TokenOut(BUILTIN)              --> START                     * MODIFIED
-*   [OTHER /\ inPcal /\ canBeLabel]                                        * MODIFIED
-*                             token1 := token       --> ID_OR_PCAL_LABEL   * MODIFIED
-*   [OTHER]                   TokenOut(IDENT)       --> START              * MODIFIED
+*   [token \in BuiltIns]                                                   * MODIFIED for PlusCal
+*      IF inPcal /\ token = "algorithm" /\ ~isCsyntax /\ mode = MODULE     * MODIFIED for PlusCal
+*        THEN TokenOut(BUILTIN) ;                                          * MODIFIED for PlusCal
+*             pcalEnd := getNextTokenPosition() ;                          * MODIFIED for PlusCal
+*             inPcal := false ;                                            * MODIFIED for PlusCal
+*             pseudoCom := true              --> COMMENT                   * MODIFIED for PlusCal
+*        ELSE TokenOut(BUILTIN)              --> START                     * MODIFIED for PlusCal
+*   [OTHER /\ inPcal /\ canBeLabel]                                        * MODIFIED for PlusCal
+*                             token1 := token       --> ID_OR_PCAL_LABEL   * MODIFIED for PlusCal
+*   [OTHER]                   TokenOut(IDENT)       --> START              * MODIFIED for PlusCal
 *                                                                          *
 * ID_OR_PCAL_LABEL:                                                        * MODIFIED
 *   \* Note: token1 contains id                                            * MODIFIED
 *   (Space_Char)    +                     --> ID_OR_PCAL_LABEL             * MODIFIED
 *   (":")           +   token1 := token   --> PCAL_LABEL                   * MODIFIED
+*   [OTHER]             token := token1;                                   * MODIFIED
+*                       TokenOut(IDENT)   --> START                        * MODIFIED
 *                                                                          *
 * PCAL_LABEL:                                                              * MODIFIED
 *   (Space_Char)    +                        --> PCAL_LABEL                * MODIFIED
@@ -663,6 +667,12 @@ public class TokenizeSpec
       private static final int OR_COMMENT_STAR    = 33 ;
       private static final int EPILOG             = 34 ;
       private static final int DONE               = 35 ;
+      private static final int ID_OR_PCAL_LABEL   = 36 ;
+      private static final int PCAL_LABEL         = 37 ;
+      private static final int C_DASH             = 38 ;
+      private static final int C_DASH_DASH        = 39 ;
+      private static final int GET_ALG_TOKEN      = 40 ;
+      private static final int GET_ALG_NAME       = 41 ;
       
     private static int state = 0 ;
       /*********************************************************************
@@ -814,6 +824,12 @@ public class TokenizeSpec
         pseudoCom = false;
         ORCom = false;
         
+        /*
+         * braceDepth is the current { } brace nesting depth while processing
+         * a C-Syntax PlusCal algorithm.
+         */
+        int braceDepth = 0 ;
+        
         switch (mode)
           { 
             case MODULE    : state = PROLOG ; break ;
@@ -884,7 +900,39 @@ public class TokenizeSpec
                     }
                   else if (BuiltInSymbols.IsBuiltInPrefix("" + nextChar))
                     { addNextChar();
-                      state = BUILT_IN ;
+                      if (!(inPcal && (mode == MODULE))) {
+                        state = BUILT_IN ;
+                      }
+                      else if (token.equals("*") && (nextChar == ')')){
+                          pcalEnd = getNextTokenPosition() ;
+                          inPcal = false ;
+                          gotoStart() ;
+                      }
+                      else if (isCSyntax) {
+                          if (token.equals("{")) {
+                              TokenOut(BUILT_IN);
+                              braceDepth++ ;
+                              gotoStart() ;
+                          }
+                          else if (token.equals("}")) {
+                              TokenOut(BUILT_IN);
+                              braceDepth-- ;
+                              if (braceDepth != 0) {
+                                  gotoStart() ;
+                              }
+                              else {
+                                  inPcal = false ;
+                                  pcalEnd = getNextTokenPosition() ;
+                                  pseudoCom = true ;
+                                  state = COMMENT ;
+                              }
+                          }
+                      }
+                      else {
+                          state = BUILT_IN ;
+                      }
+                      // old: addNextChar();
+                      // old: state = BUILT_IN ;
                     }
                   else if (nextChar == '\t')
                     { if (mode == MODULE) 
@@ -909,13 +957,28 @@ public class TokenizeSpec
                     { addNextChar();
                       // state = ID ;
                     }  
-                  else if (BuiltInSymbols.IsBuiltInSymbol(token))
+                  else if (BuiltInSymbols.IsBuiltInSymbol(token, inPcal))
                     { if (token.equals("MODULE")) 
                         { mdepth = mdepth + 1; 
                         }
-                      TokenOut(Token.BUILTIN) ;
-                      gotoStart();
+                      else if (inPcal && token.equals("algorithm") 
+                                && !isCSyntax && (mode == MODULE)) {
+                          TokenOut(Token.BUILTIN) ;
+                          pcalEnd = getNextTokenPosition() ;
+                          inPcal = false ;
+                          pseudoCom = true ;
+                          state = COMMENT ;
+                      }
+                      else {
+                          TokenOut(Token.BUILTIN) ;
+                          gotoStart();
+                      }
                     }
+                  else if (inPcal && canBeLabel) {
+                      token1 = token ;
+                      col1   = col ;   // This should be unnecessary
+                      state = ID_OR_PCAL_LABEL ;
+                  }
                   else 
                     { TokenOut(Token.IDENT) ;
                       gotoStart();
@@ -997,6 +1060,7 @@ public class TokenizeSpec
                       state = BSBUILT_IN;
                     }
                   else if (BuiltInSymbols.IsBuiltInSymbol(token))
+                           // "\" symbols are never PCal symbols 
                     { TokenOut(Token.BUILTIN) ;
                       gotoStart();
                     }
@@ -1012,10 +1076,10 @@ public class TokenizeSpec
                     }
                   else 
                     { 
-                     if (! BuiltInSymbols.IsBuiltInSymbol(token))
+                     if (! BuiltInSymbols.IsBuiltInSymbol(token, inPcal))
                       { 
                         reader.backspace();
-                        while (! BuiltInSymbols.IsBuiltInSymbol(token))
+                        while (! BuiltInSymbols.IsBuiltInSymbol(token, inPcal))
                         { reader.backspace();
                           if (token.length() == 0)
                             { TokenizingError("Illegal lexeme");
