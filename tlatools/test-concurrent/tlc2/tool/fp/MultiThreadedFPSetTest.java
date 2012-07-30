@@ -3,6 +3,7 @@
 package tlc2.tool.fp;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
@@ -44,6 +45,8 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		// wait for runnables/fpg to tear down the latch
 		latch.await();
 
+		endTimeStamp = new Date();
+		
 		long overallPuts = 0L;
 		
 		// print stats

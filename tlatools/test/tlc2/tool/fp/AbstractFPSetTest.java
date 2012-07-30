@@ -20,6 +20,7 @@ public abstract class AbstractFPSetTest extends TestCase {
 
 	protected long previousTimestamp;
 	protected long previousSize;
+	protected Date endTimeStamp;
 
 	private File dir;
 	
@@ -44,7 +45,10 @@ public abstract class AbstractFPSetTest extends TestCase {
 	 * @see junit.framework.TestCase#tearDown()
 	 */
 	public void tearDown() {
-		System.out.println("Test finished at " + new Date());
+		if (endTimeStamp == null) {
+			endTimeStamp = new Date();
+		}
+		System.out.println("Test finished at " + endTimeStamp);
 		
 		// delete all nested files
 		final File[] listFiles = dir.listFiles();

@@ -1,6 +1,7 @@
 package tlc2.tool.fp;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Random;
 
 public abstract class FPSetTest extends AbstractFPSetTest {
@@ -57,6 +58,8 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 		fpSet.beginChkpt();
 		fpSet.commitChkpt();
 
+		endTimeStamp = new Date();
+		
 		assertTrue(fpSet.checkInvariant());
 		
 		//
