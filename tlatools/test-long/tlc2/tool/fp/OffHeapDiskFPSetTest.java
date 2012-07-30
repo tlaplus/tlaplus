@@ -38,7 +38,7 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 	 */
 	@Override
 	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
-		long freeMemoryInFPs = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) DiskFPSet.LongSize;
+		long freeMemoryInFPs = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) FPSet.LongSize;
 		return new OffHeapDiskFPSet(freeMemoryInFPs);
 	}
 }

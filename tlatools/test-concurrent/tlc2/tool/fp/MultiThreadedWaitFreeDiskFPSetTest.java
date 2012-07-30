@@ -13,7 +13,7 @@ public class MultiThreadedWaitFreeDiskFPSetTest extends MultiThreadedFPSetTest {
 	 */
 	@Override
 	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
-		long freeMemoryInFPs = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) DiskFPSet.LongSize;
+		long freeMemoryInFPs = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) FPSet.LongSize;
 		return new WaitFreeOffHeapDiskFPSet(freeMemoryInFPs);
 	}
 }
