@@ -136,7 +136,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		long size = 44; // approx size of this DiskFPSet object
 		size += maxTblCnt * (long) LongSize;
 		size += getIndexCapacity() * 4;
-		size += collisionBucket.size() * (long) LongSize; // ignoring the internal TreeSet overhead here
+		size += getCollisionBucketCnt() * (long) LongSize; // ignoring the internal TreeSet overhead here
 		return size;
 	}
 
@@ -168,7 +168,10 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 *         size of the set.
 	 */
 	private boolean collisionRatioExceeds(final double limit) {
-		final double d = getCollisionRatio();
+		// Do not use the thread safe getCollisionRatio here to avoid
+		// unnecessary locking. put() calls us holding a memory write locking
+		// which also blocks writers to collisionBucket.
+		final double d = (double) collisionBucket.size() / tblCnt.doubleValue();
 		return d >= limit;
 	}
 	
@@ -304,14 +307,19 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#getCollisionBucketCnt()
 	 */
 	public long getCollisionBucketCnt() {
-		return collisionBucket.size();
+		try {
+			this.csRWLock.readLock().lock();
+			return collisionBucket.size();
+		} finally {
+			this.csRWLock.readLock().unlock();
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#getCollisionRatio()
 	 */
 	public double getCollisionRatio() {
-		return (double) collisionBucket.size() / tblCnt.doubleValue();
+		return (double) getCollisionBucketCnt() / tblCnt.doubleValue();
 	}
 
 	public class Indexer {

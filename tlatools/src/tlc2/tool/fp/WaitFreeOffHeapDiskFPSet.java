@@ -36,6 +36,15 @@ public class WaitFreeOffHeapDiskFPSet extends OffHeapDiskFPSet {
 	protected boolean csInsert(long fp) {
 		return this.collisionBucket.add(fp);
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.OffHeapDiskFPSet#getCollisionBucketCnt()
+	 */
+	@Override
+	public long getCollisionBucketCnt() {
+		// WaitFree impl does not need locks like super class 
+		return collisionBucket.size();
+	}
 
 	public class WaitFreeCollisionBucket extends CollisionBucket {
 		private final NonBlockingHashSet<Long> set;
