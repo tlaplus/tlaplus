@@ -64,6 +64,10 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		assertEquals(overallPuts, fpSet.size());
 		assertTrue(fpSet.size() >= INSERTIONS);
 		assertTrue(fpSet.size() <= INSERTIONS + NUM_THREADS);
+		
+		// Check a DiskFPSet's invariant that after flush all fingerprints in
+		// the file are a) monotonically increasing and b) there are no duplicates.
+		assertTrue(fpSet.checkInvariant());
 	}
 
 	public class FingerPrintGenerator implements Runnable {
