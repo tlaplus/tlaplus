@@ -24,6 +24,7 @@ import tlc2.tool.distributed.FPSetRMI;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.FileUtil;
+import util.TLCRuntime;
 
 /**
  * An <code>FPSet</code> is a set of 64-bit fingerprints.
@@ -74,7 +75,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 		FPSet set = null;
 		
 		if (USER_FPSET_IMPL_CLASSNAME != null) {
-			set = loadCustomFactory(USER_FPSET_IMPL_CLASSNAME, fpBits, fpMemSizeInBytes);
+			set = loadCustomFactory(USER_FPSET_IMPL_CLASSNAME, fpBits, fpMemSizeInFPs);
 		}
 		
 		if (set == null && fpBits == 0) {
@@ -97,16 +98,23 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 * @param fpBits 
 	 * @return
 	 */
-	private static FPSet loadCustomFactory(final String clazz, int fpBits, long fpMemSizeInBytes) {
+	private static FPSet loadCustomFactory(final String clazz, int fpBits, long fpMemSizeInFPs) {
 		Exception exp = null;
 		try {
 			// poor mans version of modularity, booh!
 			final ClassLoader classLoader = FPSet.class.getClassLoader();
 			final Class<?> factoryClass = classLoader.loadClass(clazz);
+			
+			// HACK class loading to pass _non heap_ memory into subclasses of
+			// OffHeapFPSet.
+			if (OffHeapDiskFPSet.class.isAssignableFrom(factoryClass)) {
+				fpMemSizeInFPs = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) LongSize;
+			}
+
 			final Constructor<?> constructor = factoryClass
 					.getDeclaredConstructor(new Class[] { long.class, int.class });
 			final Object instance = constructor.newInstance(
-					fpMemSizeInBytes, fpBits);
+					fpMemSizeInFPs, fpBits);
 			// sanity check if given class from string implements FPSet
 			if (instance instanceof FPSet) {
 				return (FPSet) instance;
