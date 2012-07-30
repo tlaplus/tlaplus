@@ -71,7 +71,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	protected String fpFilename;
 	protected String tmpFilename;
 
-	protected static final int LogLockCnt = 10;
+	protected static final int LogLockCnt = Integer.getInteger(DiskFPSet.class.getName() + ".logLockCnt", 10);
 	/**
 	 * protects n memory buckets
 	 */
