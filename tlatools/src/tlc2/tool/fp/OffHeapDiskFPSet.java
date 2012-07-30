@@ -33,7 +33,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		}
 	}
 	
-	protected static final long BucketBaseIdx = 0xFFFFFFFFFFFFFFFFL - (InitialBucketCapacity - 1);
+	protected final int bucketCapacity;
 
 	/**
 	 * This implementation uses sun.misc.Unsafe instead of a wrapping
@@ -112,19 +112,51 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		
 		this.flusher = new OffHeapMSBFlusher();
 		
+		// Move n as many times to the right to calculate moveBy. moveBy is the
+		// number of bits the (fp & mask) has to be right shifted to make the
+		// logical bucket index.
+		long n = (Long.MAX_VALUE >>> prefixBits) - (maxInMemoryCapacity - 1);
+		int moveBy = 0;
+		while (n >= maxInMemoryCapacity) {
+			moveBy++;
+			n = n >>> 1; // == (n/2)
+		}
 		
-		// Calculate Hamming weight of maxInMemoryCapacity
+		// Calculate Hamming weight of maxTblCnt
 		final int bitCount = Long.bitCount(maxInMemoryCapacity);
 		
 		// If Hamming weight is 1, the logical index address can be calculated
 		// significantly faster by bit-shifting. However, with large memory
 		// sizes, only supporting increments of 2^n sizes would waste memory
-		// (e.g. either 32GiB or 64Gib). Hence we check if the bitCount allows
-		// us to use bit-shifting and fall back to less efficient modulo otherwise.
+		// (e.g. either 32GiB or 64Gib). Hence, we check if the bitCount allows
+		// us to use bit-shifting. If not, we fall back to less efficient
+		// calculations. Additionally we increase the bucket capacity to make
+		// use of extra memory. The down side is, that larger buckets mean
+		// increased linear search. But linear search on maximally 31 elements
+		// still outperforms disk I/0.
 		if (bitCount == 1) {
-			this.indexer = new BitshiftingIndexer(maxInMemoryCapacity, prefixBits);
+			bucketCapacity = InitialBucketCapacity;
+			this.indexer = new BitshiftingIndexer(moveBy, prefixBits);
 		} else {
-			this.indexer = new Indexer(prefixBits);
+			// Round maxInMemoryCapacity to next lower 2^n power
+			cnt = -1;
+			while (bytes > 0) {
+				cnt++;
+				bytes = bytes >>> 1;
+			}
+			
+			// Extra memory that cannot be addressed by BitshiftingIndexer
+			final long extraMem = (maxInMemoryCapacity * LongSize) - (long) Math.pow(2, cnt);
+			
+			// Divide extra memory across addressable buckets
+			int x = (int) (extraMem / ((n + 1) / InitialBucketCapacity));
+			bucketCapacity = InitialBucketCapacity + (x / LongSize) ;
+			// Twice InitialBucketCapacity would mean we could have used one
+			// more bit for addressing.
+			Assert.check(bucketCapacity < (2 * InitialBucketCapacity), EC.GENERAL);
+
+			// non 2^n buckets cannot use a bit shifting indexer
+			this.indexer = new Indexer(moveBy, prefixBits);
 		}
 	}
 
@@ -132,7 +164,6 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#sizeof()
 	 */
 	public long sizeof() {
-		//TODO needs locking?
 		long size = 44; // approx size of this DiskFPSet object
 		size += maxTblCnt * (long) LongSize;
 		size += getIndexCapacity() * 4;
@@ -192,7 +223,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		// Linearly search the logical bucket; 0L is an invalid fp and marks the
 		// end of the allocated bucket
 		long l = -1L;
-		for (int i = 0; i < InitialBucketCapacity && l != 0L; i++) {
+		for (int i = 0; i < bucketCapacity && l != 0L; i++) {
 			l = u.getAddress(log2phy(position, i));
 			// zero the long msb (which is 1 if fp has been flushed to disk)
 			if (fp == (l & 0x7FFFFFFFFFFFFFFFL)) {
@@ -225,7 +256,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 
 		long l = -1;
 		long freePosition = -1L;
-		for (int i = 0; i < InitialBucketCapacity && l != 0L; i++) {
+		for (int i = 0; i < bucketCapacity && l != 0L; i++) {
 			l = u.getAddress(log2phy(position, i));
 			// zero the long msb (which is 1 if fp has been flushed to disk)
 			if (fp == (l & 0x7FFFFFFFFFFFFFFFL)) {
@@ -323,11 +354,21 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	}
 
 	public class Indexer {
+		/**
+		 * Number of bits to right shift bits during index calculation
+		 * @see MSBDiskFPSet#moveBy
+		 */
+		protected final int moveBy;
+		/**
+		 * Number of bits to right shift bits during index calculation of
+		 * striped lock.
+		 */
 		protected final int lockMoveBy;
 
-		public Indexer(final int prefixBits) {
+		public Indexer(final int moveBy, int prefixBits) {
 			// same for lockCnt
-			lockMoveBy = 63 - prefixBits - LogLockCnt;
+			this.moveBy = moveBy;
+			this.lockMoveBy = 63 - prefixBits - LogLockCnt;
 		}
 		
 		/* (non-Javadoc)
@@ -346,34 +387,54 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		 * @return The logical bucket position in the table for the given fingerprint.
 		 */
 		protected long getLogicalPosition(final long fp) {
-			//TODO this crashes with a div by zero occasionally
 			// push MSBs for moveBy positions to the right and align with a bucket address
-			long position = (fp % maxTblCnt) & BucketBaseIdx; 
-			//Assert.check(0 <= position && position < maxInMemoryCapacity, EC.GENERAL);
+			long position = fp >> moveBy;
+			position = floorToBucket(position);
+			//Assert.check(0 <= position && position < maxTblCnt, EC.GENERAL);
 			return position;
+		}
+
+		public long getNextBucketBasePosition(long logicalPosition) {
+			return floorToBucket(logicalPosition + bucketCapacity);
+		}
+		
+		/**
+		 * Returns the largest position that
+		 * is less than or equal to the argument and is equal to bucket base address.
+		 * 
+		 * @param logicalPosition
+		 * @return
+		 */
+		private long floorToBucket(long logicalPosition) {
+			long d = (long) Math.floor(logicalPosition / bucketCapacity);
+			return bucketCapacity * d;
+		}
+
+		/**
+		 * @param logicalPosition
+		 * @return true iff logicalPosition is a multiple of bucketCapacity
+		 */
+		public boolean isBucketBasePosition(long logicalPosition) {
+			return logicalPosition % bucketCapacity == 0;
 		}
 	}
 	
+	/**
+	 * A {@link BitshiftingIndexer} uses the more efficient AND operation
+	 * compared to MODULO and DIV used by {@link Indexer}. Since indexing is
+	 * executed on every {@link FPSet#put(long)} or {@link FPSet#contains(long)}
+	 * , it is worthwhile to minimize is execution overhead.
+	 */
 	public class BitshiftingIndexer extends Indexer {
-		/**
-		 * Number of bits to right shift bits during index calculation
-		 * @see MSBDiskFPSet#moveBy
-		 */
-		protected final int moveBy;
 		
-		public BitshiftingIndexer(long maxInMemoryCapacity, final int prefixBits) throws RemoteException {
-			super(prefixBits);
-			
-			// move n as many times to the right to calculate moveBy. moveBy is the
-			// number of bits the (fp & mask) has to be right shifted to make the
-			// logical bucket index.
-			long n = (Long.MAX_VALUE >>> prefixBits) - (maxInMemoryCapacity - 1);
-			int i = 0;
-			while (n >= maxInMemoryCapacity) {
-				i++;
-				n = n >>> 1; // == (n/2)
-			}
-			moveBy = i;
+		/**
+		 * Mask used to round of to a bucket address which is a power of 2.
+		 */
+		protected final long bucketBaseIdx;
+
+		public BitshiftingIndexer(final int moveBy, final int prefixBits) throws RemoteException {
+			super(moveBy, prefixBits);
+			this.bucketBaseIdx = 0x7FFFFFFFFFFFFFFFL - (bucketCapacity - 1);
 		}
 		
 		/* (non-Javadoc)
@@ -382,9 +443,25 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		@Override
 		protected long getLogicalPosition(final long fp) {
 			// push MSBs for moveBy positions to the right and align with a bucket address
-			long position = (fp >> moveBy) & BucketBaseIdx; 
-			//Assert.check(0 <= position && position < maxInMemoryCapacity, EC.GENERAL);
+			long position = (fp >> moveBy) & bucketBaseIdx; 
+			//Assert.check(0 <= position && position < maxTblCnt, EC.GENERAL);
 			return position;
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.Indexer#getNextBucketPosition(long)
+		 */
+		@Override
+		public long getNextBucketBasePosition(long logicalPosition) {
+			return (logicalPosition + bucketCapacity) & bucketBaseIdx;
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.Indexer#isBucketBase(long)
+		 */
+		@Override
+		public boolean isBucketBasePosition(long logicalPosition) {
+			return (logicalPosition & (InitialBucketCapacity - 1)) == 0;
 		}
 	}
 	
@@ -569,7 +646,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			
 			while ((l = unsafe.getAddress(log2phy(logicalPosition))) <= 0L && logicalPosition < maxTblCnt) {
 				// increment position to next bucket
-				logicalPosition = logicalPosition + DiskFPSet.InitialBucketCapacity & BucketBaseIdx;
+				logicalPosition = indexer.getNextBucketBasePosition(logicalPosition);
 				sortNextBucket();
 			}
 			
@@ -583,11 +660,10 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		// sort the current logical bucket if we reach the first slot of the
 		// bucket
 		private void sortNextBucket() {
-			//TODO replace mod with mask here?
-			if (logicalPosition % DiskFPSet.InitialBucketCapacity == 0) {
-				long[] longBuffer = new long[DiskFPSet.InitialBucketCapacity];
+			if (indexer.isBucketBasePosition(logicalPosition)) {
+				long[] longBuffer = new long[bucketCapacity];
 				int i = 0;
-				for (; i < DiskFPSet.InitialBucketCapacity; i++) {
+				for (; i < bucketCapacity; i++) {
 					long l = unsafe.getAddress(log2phy(logicalPosition + i));
 					if (l <= 0L) {
 						break;
@@ -634,17 +710,15 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			final long tmpLogicalPosition = logicalPosition;
 
 			// Calculate last bucket position and have it sorted 
-			logicalPosition = maxTblCnt - DiskFPSet.InitialBucketCapacity;
+			logicalPosition = maxTblCnt - bucketCapacity;
 			sortNextBucket();
 
 			// Reverse the current bucket to obtain last element (More elegantly
 			// this could be achieved recursively, but this can cause a
 			// stack overflow).
 			long l = 1L;
-			while ((l = unsafe.getAddress(log2phy(logicalPosition-- + DiskFPSet.InitialBucketCapacity - 1))) <= 0L) {
-				if (((logicalPosition - DiskFPSet.InitialBucketCapacity) & BucketBaseIdx) == 0) {
-					sortNextBucket();
-				}
+			while ((l = unsafe.getAddress(log2phy(logicalPosition-- + bucketCapacity - 1))) <= 0L) {
+				sortNextBucket();
 			}
 			
 			// Done searching in-memory storage backwards, reset position to
@@ -755,7 +829,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		 */
 		public void printBuckets(int from, long to) {
 			for (long i = from; i < maxTblCnt && i < to; i++) {
-				if (i % InitialBucketCapacity == 0) {
+				if (i % bucketCapacity == 0) {
 					System.out.println("Bucket idx: " + i);
 				}
 				System.out.println(u.getAddress(log2phy(i)));
