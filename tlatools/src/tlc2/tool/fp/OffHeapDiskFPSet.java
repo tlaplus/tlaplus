@@ -178,7 +178,10 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#needsDiskFlush()
 	 */
 	protected boolean needsDiskFlush() {
-		return collisionRatioExceeds(COLLISION_BUCKET_RATIO)
+		// Only flush due to collision ratio when primary hash table is at least
+		// 25% full. Otherwise a second flush potentially immediately follows a
+		// first one, when both values for tblCnt and collision size can be small.
+		return (collisionRatioExceeds(COLLISION_BUCKET_RATIO) && loadFactorExceeds(.25d)) 
 				|| loadFactorExceeds(1d);
 	}
 	
