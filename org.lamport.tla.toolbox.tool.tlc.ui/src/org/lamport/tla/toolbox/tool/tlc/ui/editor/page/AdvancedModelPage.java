@@ -14,6 +14,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Spinner;
@@ -85,6 +86,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=264
      */
     private Spinner maxSetSize;
+    
+    private Combo fpSetImpl;
     
     private TableViewer definitionsTable;
 
@@ -179,6 +182,18 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
         maxSetSize.setSelection(getConfig().getAttribute(LAUNCH_MAXSETSIZE, defaultMaxSetSize));
+        
+        // fpSetImpl
+		final String defaultImpl = TLCUIActivator.getDefault().getPreferenceStore()
+				.getString(ITLCPreferenceConstants.I_TLC_FPSETIMPL_DEFAULT);
+		final String impl = getConfig().getAttribute(LAUNCH_FPSET_IMPL, defaultImpl);
+		for (int i = 0; i < fpSetImpl.getItemCount(); i++) {
+			String item = fpSetImpl.getItem(i);
+			if (item.equals(impl)) {
+				fpSetImpl.select(i);
+				break;
+			}
+		}
     }
 
     /**
@@ -226,6 +241,10 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // fpBits
         getConfig().setAttribute(LAUNCH_MAXSETSIZE, maxSetSize.getSelection());
+        
+		// FPSetImpl
+		final String item = fpSetImpl.getItem(fpSetImpl.getSelectionIndex());
+		getConfig().setAttribute(LAUNCH_FPSET_IMPL, item);
         
         // definitions
         List definitions = FormHelper.getSerializedInput(definitionsTable);
@@ -686,7 +705,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         managedForm.addPart(launchPart);
         DirtyMarkingListener launchListener = new DirtyMarkingListener(launchPart, true);
         dm.bindAttribute(MODEL_PARAMETER_VIEW, viewSource, launchPart);
-
+        
         // dirty listeners
         simuArilText.addModifyListener(launchListener);
         simuSeedText.addModifyListener(launchListener);
@@ -694,6 +713,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         fpIndexSpinner.addModifyListener(launchListener);
         fpBits.addModifyListener(launchListener);
         maxSetSize.addModifyListener(launchListener);
+        fpSetImpl.addModifyListener(launchListener);
         dfidDepthText.addModifyListener(launchListener);
         simulationOption.addSelectionListener(launchListener);
         dfidOption.addSelectionListener(launchListener);
@@ -911,6 +931,27 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
         		ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
         maxSetSize.setSelection(defaultMaxSetSize);
+        
+        // add drop down list for alternative FPSet implementations (added by MAK 07/31/2012)
+
+        // label
+        FormText fpSetImplLabel = toolkit.createFormText(area, true);
+        fpSetImplLabel.setText("FPSet implementation:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 0;
+        fpSetImplLabel.setLayoutData(gd);
+        
+        // combo (right of label)
+        fpSetImpl = new Combo(area, SWT.NONE);
+        gd = new GridData();
+        gd.widthHint = 225;
+        gd.verticalIndent = 20;
+        gd.horizontalIndent = 0;
+        fpSetImpl.setLayoutData(gd);
+        fpSetImpl.setToolTipText(""); //TODO add meaningful explanation
+        
+        // test input data
+        fpSetImpl.setItems(FPSet.getImplementations());
     
         return advancedSection;
     }

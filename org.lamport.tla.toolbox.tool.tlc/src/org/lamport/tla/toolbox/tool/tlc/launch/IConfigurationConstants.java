@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
+import tlc2.tool.fp.FPSet;
+
 /**
  * Constants for the configuration
  * @author Simon Zambrovski
@@ -87,6 +89,11 @@ public interface IConfigurationConstants
      * The maximum size (upper bound) for a TLA set
      */
     public static final String LAUNCH_MAXSETSIZE = "maxSetSize";
+    
+    /**
+     * {@link FPSet} implementation to use during model checking
+     */
+    public static final String LAUNCH_FPSET_IMPL = "fpSetImpl";
 
     /**
      * Length of time in minutes the TLC must run

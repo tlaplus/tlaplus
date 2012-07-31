@@ -15,6 +15,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -107,7 +109,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 			
 			// HACK class loading to pass _non heap_ memory into subclasses of
 			// OffHeapFPSet.
-			if (OffHeapDiskFPSet.class.isAssignableFrom(factoryClass)) {
+			if (!allocatesOnHeap(clazz)) {
 				fpMemSizeInFPs = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) LongSize;
 			}
 
@@ -352,4 +354,46 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
         System.out.println(msg);
         System.out.println("Usage: java tlc2.tool.FPSet [-option] metadir");
     }
+
+	/**
+	 * @return A list of classes implementing {@link FPSet}. Eventually this
+	 *         list should be constructed dynamically during runtime.
+	 */
+	public static String[] getImplementations() {
+		final List<String> l = new ArrayList<String>();
+		
+		l.add(LSBDiskFPSet.class.getName());
+		l.add(MSBDiskFPSet.class.getName());
+
+		l.add(MemFPSet.class.getName());
+		l.add(MemFPSet1.class.getName());
+		l.add(MemFPSet2.class.getName());
+		
+		l.add(OffHeapDiskFPSet.class.getName());
+		l.add(TroveOffHeapDiskFPSet.class.getName());
+		l.add(WaitFreeOffHeapDiskFPSet.class.getName());
+
+		return l.toArray(new String[l.size()]);
+	}
+	
+	/**
+	 * @return The default for {@link FPSet#getImplementations()}
+	 */
+	public static String getImplementationDefault() {
+		return LSBDiskFPSet.class.getName();
+	}
+
+	public static boolean allocatesOnHeap(final Class clazz) {
+		return !OffHeapDiskFPSet.class.isAssignableFrom(clazz);
+	}
+	
+	public static boolean allocatesOnHeap(final String clazz) {
+		try {
+			final ClassLoader classLoader = FPSet.class.getClassLoader();
+			Class<?> cls = classLoader.loadClass(clazz);
+			return allocatesOnHeap(cls);
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+	}
 }

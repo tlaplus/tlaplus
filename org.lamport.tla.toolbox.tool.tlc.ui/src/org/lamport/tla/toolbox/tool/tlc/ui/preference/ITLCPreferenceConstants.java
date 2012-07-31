@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.preference;
 
+import tlc2.tool.fp.FPSet;
+
 /**
  * TLC preferences
  * @author Simon Zambrovski
@@ -37,5 +39,9 @@ public interface ITLCPreferenceConstants
      * It is put there by registering an extension to the extension point org.eclipse.ui.themes
      */
     public static final String I_TLC_OUTPUT_FONT = "org.lamport.tla.toolbox.tool.tlc.ui.tlcOutputFont";
+	/**
+	 * Implementation of {@link FPSet} to use during model checking
+	 */
+	public static final String I_TLC_FPSETIMPL_DEFAULT = "fpSetImpl";
 
 }

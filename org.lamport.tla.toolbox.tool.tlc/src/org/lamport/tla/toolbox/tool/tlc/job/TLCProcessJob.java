@@ -28,6 +28,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.TLC;
+import tlc2.tool.fp.FPSet;
 import util.TLCRuntime;
 
 /**
@@ -78,10 +79,13 @@ public class TLCProcessJob extends TLCJob
 
             // classpath
             final String runtimeClasspath = ToolboxHandle.getTLAToolsClasspath().toOSString();
+			// Add 3rd party libraries to classpath. Star acts as wildcard
+			// picking up all .jar files (added by MAK on 07/31/2012)
+			final String libClasspath = runtimeClasspath + File.separator + "lib" + File.separator + "*";
 			// classpath during toolbox development within Eclipse (will simply not
 			// exist in packaged toolbox)
 			final String devClasspath = runtimeClasspath + File.separator + "class";
-			String[] classPath = new String[] { runtimeClasspath, devClasspath };
+			String[] classPath = new String[] { runtimeClasspath, libClasspath, devClasspath };
 
             // arguments
             String[] arguments = constructProgramArguments();
@@ -96,10 +100,21 @@ public class TLCProcessJob extends TLCJob
             final double maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, 50) / 100d;
 			final TLCRuntime instance = TLCRuntime.getInstance();
 			final long absolutePhysicalSystemMemory = instance.getAbsolutePhysicalSystemMemory(maxHeapSize);
-			vmArgs.add("-Xmx" + absolutePhysicalSystemMemory + "m");
 
+			// Set class name of FPSet (added by MAK on 07/31/2012)
+			final String clazz = launch.getLaunchConfiguration().getAttribute(LAUNCH_FPSET_IMPL,
+					FPSet.getImplementationDefault());
+			vmArgs.add("-Dtlc2.tool.fp.FPSet.impl=" + clazz);
+
+			if (FPSet.allocatesOnHeap(clazz)) {
+				vmArgs.add("-Xmx" + absolutePhysicalSystemMemory + "m");
+			} else {
+				vmArgs.add("-XX:MaxDirectMemorySize=" + absolutePhysicalSystemMemory + "m");
+			}
+			
             // add remaining VM args
             vmArgs.addAll(getAdditionalVMArgs());
+
 
             // assemble the config
             VMRunnerConfiguration tlcConfig = new VMRunnerConfiguration(getMainClass().getName(), classPath);
