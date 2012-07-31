@@ -21,6 +21,8 @@ import util.Assert;
 @SuppressWarnings({ "serial", "restriction" })
 public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
+	protected static final double COLLISION_BUCKET_RATIO = .025d;
+
 	private static sun.misc.Unsafe getUnsafe() {
 		try {
 			final Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
@@ -108,7 +110,8 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			u.putAddress(log2phy(i), 0L);
 		}
 
-		this.collisionBucket = new CollisionBucket();
+		final int csCapacity = (int) (maxTblCnt * COLLISION_BUCKET_RATIO);
+		this.collisionBucket = new TreeSetCollisionBucket(csCapacity);
 		
 		this.flusher = new OffHeapMSBFlusher();
 		
@@ -175,7 +178,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#needsDiskFlush()
 	 */
 	protected boolean needsDiskFlush() {
-		return collisionRatioExceeds(.025d)
+		return collisionRatioExceeds(COLLISION_BUCKET_RATIO)
 				|| loadFactorExceeds(1d);
 	}
 	
@@ -750,50 +753,97 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		}
 	}
 	
-	public class CollisionBucket {
-		private final TreeSet<Long> set;
+	public interface CollisionBucket {
+		void clear();
 
-		public CollisionBucket() {
-			this.set = new TreeSet<Long>();
-		}
+		void prepareForFlush();
 
-		public void clear() {
-			set.clear();
-		}
+		void remove(long first);
 
-		public void prepareForFlush() {
-			// no-op
-		}
-
-		public void remove(long first) {
-			set.remove(first);
-		}
-
-		public long first() {
-			return set.first();
-		}
+		long first();
 		
-		public long last() {
-			return set.last();
-		}
+		long last();
 
-		public boolean isEmpty() {
-			return set.isEmpty();
-		}
+		boolean isEmpty();
 
 		/**
 		 * @param fp
 	     * @return {@code true} if this set did not already contain the specified
 	     *         fingerprint
 		 */
+		boolean add(long fp);
+
+		boolean contains(long fp);
+
+		long size();
+	}
+	
+	public class TreeSetCollisionBucket implements CollisionBucket {
+		private final TreeSet<Long> set;
+
+		public TreeSetCollisionBucket(int initialCapacity) {
+			this.set = new TreeSet<Long>();
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#clear()
+		 */
+		public void clear() {
+			set.clear();
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#prepareForFlush()
+		 */
+		public void prepareForFlush() {
+			// no-op
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#remove(long)
+		 */
+		public void remove(long first) {
+			set.remove(first);
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#first()
+		 */
+		public long first() {
+			return set.first();
+		}
+		
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#last()
+		 */
+		public long last() {
+			return set.last();
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#isEmpty()
+		 */
+		public boolean isEmpty() {
+			return set.isEmpty();
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#add(long)
+		 */
 		public boolean add(long fp) {
 			return set.add(fp);
 		}
 
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#contains(long)
+		 */
 		public boolean contains(long fp) {
 			return set.contains(fp);
 		}
 
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#size()
+		 */
 		public long size() {
 			return set.size();
 		}

@@ -46,7 +46,7 @@ public class WaitFreeOffHeapDiskFPSet extends OffHeapDiskFPSet {
 		return collisionBucket.size();
 	}
 
-	public class WaitFreeCollisionBucket extends CollisionBucket {
+	public class WaitFreeCollisionBucket implements CollisionBucket {
 		private final NonBlockingHashSet<Long> set;
 		private final SortedSet<Long> sortedSet;
 

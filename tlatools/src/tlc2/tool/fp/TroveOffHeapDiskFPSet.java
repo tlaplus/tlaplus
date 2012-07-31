@@ -17,10 +17,11 @@ public class TroveOffHeapDiskFPSet extends OffHeapDiskFPSet implements FPSetStat
 	
 	protected TroveOffHeapDiskFPSet(final long maxInMemoryCapacity, int preBits) throws RemoteException {
 		super(maxInMemoryCapacity, preBits);
-		this.collisionBucket = new TLongCollisionBucket();
+		final int capacity = (int) (maxTblCnt * COLLISION_BUCKET_RATIO);
+		this.collisionBucket = new TLongCollisionBucket(capacity);
 	}
 	
-	public class TLongCollisionBucket extends CollisionBucket {
+	public class TLongCollisionBucket implements CollisionBucket {
 		/**
 		 * A bucket containing collision elements
 		 */
@@ -28,8 +29,8 @@ public class TroveOffHeapDiskFPSet extends OffHeapDiskFPSet implements FPSetStat
 		private long[] array;
 		private int idx = 0;
 		
-		public TLongCollisionBucket() {
-			this.set = new TLongHashSet();
+		public TLongCollisionBucket(int capacity) {
+			this.set = new TLongHashSet(capacity);
 		}
 		
 		/* (non-Javadoc)
