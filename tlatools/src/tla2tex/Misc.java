@@ -314,6 +314,19 @@ public final class Misc
                  || ( ('A' <= c ) && (c <= 'Z') )
                  || ( c == '_' ) ;} ;
 
+                 
+    public static boolean hasLetter(String str) {
+       boolean notFound = true ;
+       int i = 0 ;
+       while (notFound && (i < str.length())) {
+          if (IsLetter(str.charAt(i))) {
+              notFound = false ;
+          }
+          i++ ;
+       }
+       return ! notFound ;
+    }
+    
     public static boolean IsDigit(char c) 
       /*********************************************************************
       * True iff c is a digit.                                             *

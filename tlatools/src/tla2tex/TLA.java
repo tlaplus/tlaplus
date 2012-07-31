@@ -175,8 +175,8 @@ public class TLA
         *********************************************************************/
         Token.FindPfStepTokens(spec);
         Finished("TokenizeSpec.Tokenize");
-        // Debug.print2DArray(spec, "tok");
-
+        Debug.print2DArray(spec, "tok");
+        System.exit(0) ;
         /*
          *  Need to add code to find which parentheses and braces in 
          *  PlusCal code should be typeset as syntactic PlusCal delimiters.

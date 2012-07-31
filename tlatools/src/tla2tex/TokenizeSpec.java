@@ -188,21 +188,26 @@
 *       IF ~(inPcal /\ mode = Module)                                      * MODIFIED for PlusCal   
 *         THEN                                              --> BUILT_IN   * MODIFIED for PlusCal
 *         ELSEIF token = "*" /\ nextChar = ")"                             * MODIFIED for PlusCal
-*           THEN +  pcalEnd := getNextTokenPosition();                     * MODIFIED for PlusCal
-*                   inPcal := false                         --> START      * MODIFIED for PlusCal
+*           THEN    pcalEnd := getNextTokenPosition();                     * MODIFIED for PlusCal
+*                   // cdepth should equal 0 here                          * MODIFIED for PlusCal
+*                   inPcal := false                                        * MODIFIED for PlusCal
+*                   token = "" ;                            --> START      * MODIFIED for PlusCal
 *         ELSEIF isCSyntax                                                 * MODIFIED for PlusCal
 *           THEN IF token = "{"                                            * MODIFIED for PlusCal
-*                  THEN TokenOut(BUILT_IN) ;                               * MODIFIED for PlusCal
+*                  THEN TokenOut(BUILTIN) ;                                * MODIFIED for PlusCal
 *                       braceDepth := braceDepth + 1        --> START      * MODIFIED for PlusCal
-*           ELSEIF token = "}"                                             * MODIFIED for PlusCal
-*             THEN TokenOut(BUILT_IN) ;                                    * MODIFIED for PlusCal
-*                  braceDepth := braceDepth - 1                            * MODIFIED for PlusCal
-*                  IF braceDepth # 0                                       * MODIFIED for PlusCal
-*                    THEN                                   --> START      * MODIFIED for PlusCal
-*                    ELSE inPcal := false ;                                * MODIFIED for PlusCal
-*                         pcalEnd := getNextTokenPosition() ;              * MODIFIED for PlusCal
-*                         pseudoCom := true                 --> COMMENT    * MODIFIED for PlusCal
-*             ELSE                                          --> BUILT_IN   * MODIFIED for PlusCal
+*                  ELSEIF token = "}"                                      * MODIFIED for PlusCal
+*                    THEN TokenOut(BUILTIN) ;                              * MODIFIED for PlusCal
+*                         braceDepth := braceDepth - 1                     * MODIFIED for PlusCal
+*                         IF braceDepth # 0                                * MODIFIED for PlusCal
+*                          THEN                             --> START      * MODIFIED for PlusCal
+*                          ELSE col = ncol ;                               * MODIFIED for PlusCal
+*                               inPcal := false ;                          * MODIFIED for PlusCal
+*                               cdepth := 1 ;                              * MODIFIED for PlusCal
+*                               pcalEnd := getNextTokenPosition() ;        * MODIFIED for PlusCal
+*                               pseudoCom := true          --> COMMENT     * MODIFIED for PlusCal
+*                    ELSE                                  --> BUILT_IN    * MODIFIED for PlusCal
+*           ELSE                                           --> BUILT_IN    * MODIFIED for PlusCal
 *   [("\t") /\ TLA mode]     --> DONE                                      *
 *   [OTHER]                  --> ERROR                                     *
 *                                                                          *
@@ -214,7 +219,9 @@
 *   [token \in BuiltIns]                                                   * MODIFIED for PlusCal
 *      IF inPcal /\ token = "algorithm" /\ ~isCsyntax /\ mode = MODULE     * MODIFIED for PlusCal
 *        THEN TokenOut(BUILTIN) ;                                          * MODIFIED for PlusCal
+*             col := ncol ;                                                * MODIFIED for PlusCal
 *             pcalEnd := getNextTokenPosition() ;                          * MODIFIED for PlusCal
+*             cdepth := 1 ;                                                * MODIFIED for PlusCal
 *             inPcal := false ;                                            * MODIFIED for PlusCal
 *             pseudoCom := true              --> COMMENT                   * MODIFIED for PlusCal
 *        ELSE TokenOut(BUILTIN)              --> START                     * MODIFIED for PlusCal
@@ -222,18 +229,18 @@
 *                             token1 := token       --> ID_OR_PCAL_LABEL   * MODIFIED for PlusCal
 *   [OTHER]                   TokenOut(IDENT)       --> START              * MODIFIED for PlusCal
 *                                                                          *
-* ID_OR_PCAL_LABEL:                                                        * MODIFIED
-*   \* Note: token1 contains id                                            * MODIFIED
-*   (Space_Char)    +                     --> ID_OR_PCAL_LABEL             * MODIFIED
-*   (":")           +   token1 := token   --> PCAL_LABEL                   * MODIFIED
-*   [OTHER]             token := token1;                                   * MODIFIED
-*                       TokenOut(IDENT)   --> START                        * MODIFIED
+* ID_OR_PCAL_LABEL:                                                        * MODIFIED for PlusCal
+*   \* Note: token1 contains id                                            * MODIFIED for PlusCal
+*   (Space_Char)    +                     --> ID_OR_PCAL_LABEL             * MODIFIED for PlusCal
+*   (":")           +   token1 := token   --> PCAL_LABEL                   * MODIFIED for PlusCal
+*   [OTHER]             token := token1;                                   * MODIFIED for PlusCal
+*                       TokenOut(IDENT)   --> START                        * MODIFIED for PlusCal
 *                                                                          *
-* PCAL_LABEL:                                                              * MODIFIED
-*   (Space_Char)    +                        --> PCAL_LABEL                * MODIFIED
-*   ("+" or "-")    +  TokenOut(PCAL_LABEL)  --> START                     * MODIFIED
-*   [OTHER]         token := token1;                                       * MODIFIED
-*                   TokenOut(PCAL_LABEL)     --> START                     * MODIFIED
+* PCAL_LABEL:                                                              * MODIFIED for PlusCal
+*   (Space_Char)    +                        --> PCAL_LABEL                * MODIFIED for PlusCal
+*   ("+" or "-")    +  TokenOut(PCAL_LABEL)  --> START                     * MODIFIED for PlusCal
+*   [OTHER]         token := token1;                                       * MODIFIED for PlusCal
+*                   TokenOut(PCAL_LABEL)     --> START                     * MODIFIED for PlusCal
 *                                                                          *                                        
 * NUM_OR_ID:                                                               *
 *   (Digit)   +                 --> NUM_OR_ID                              *
@@ -266,9 +273,9 @@
 *   [OTHER]   while (token \notin BuiltIn)                                 *
 *               {move last char in token back                              *
 *                to the CharReader};                                       *
-*             saved := CanPrecedeLabel(token)                              * MODIFIED
-*             TokenOut(BUILTIN)                                            * MODIFIED
-*             canBeLabel := saved                  --> START               * MODIFIED
+*             saved := CanPrecedeLabel(token)                              * MODIFIED for PlusCal
+*             TokenOut(BUILTIN)                                            * MODIFIED for PlusCal
+*             canBeLabel := saved                  --> START               * MODIFIED for PlusCal
 *                                                                          *
 * DASH1:                                                                   *
 *   ("-")   + --> DASH2                                                    *
@@ -347,68 +354,72 @@
 *   ("("}    -                                --> COMMENT_PAREN            *
 *   ("\n")   TokenOut(COMMENT, BEGIN_OR) ; -  --> OR_COMMENT               *
 *   ("\t")                                    --> ERROR                    *
-*   [("-") /\ cdepth = 1 /\ mode = MODULE /\ ~hasPcal]                     * MODIFIED
-*                        token1 := token;  col1 := col                     * MODIFIED
-*                        token := "";  col := ncol (?)                     * MODIFIED
-*                        ORCom := false ;                                  * MODIFIED
-*                        +                              --> C_DASH         * MODIFIED
+*   [("-") /\ cdepth = 1 /\ mode = MODULE /\ ~hasPcal]                     * MODIFIED for PlusCal
+*                        token1 := token;  col1 := col                     * MODIFIED for PlusCal
+*                        token := "";  col := ncol (?)                     * MODIFIED for PlusCal
+*                        ORCom := false ;                                  * MODIFIED for PlusCal
+*                        +                              --> C_DASH         * MODIFIED for PlusCal
 *   [OTHER]  IF cdepth = 1 THEN + ELSE -      --> COMMENT                  *
 *                                                                          *
 *                                                                          *
 * COMMENT_STAR:                                                            *
-*   [(")") /\ cdepth = 1] - c; depth := cdepth - 1                         *
-*                            inPcal := false                               * MODIFIED      
-*                          ; TokenOut(COMMENT, NORMAL)  --> START          *
-*   (")")                - ; cdepth := cdepth - 1       --> COMMENT        *
+*   [(")") /\ cdepth = 1] - ; depth := cdepth - 1                          *    
+*                           ; TokenOut(COMMENT, NORMAL)  --> START         *
+*   (")")                 - ; cdepth := cdepth - 1       --> COMMENT       *
 *   [OTHER]              IF cdepth = 1                                     *
 *                          THEN token := token + "*"                       *
 *                          ELSE                       --> COMMENT          *
 *                                                                          *
-* C_DASH:                                                                  * MODIFIED
-*   ("-")      +                            --> C_DASH_DASH                * MODIFIED
-*   [OTHER]    token := token1 \o token; 
-*              col := col1               +  --> COMMENT                    * MODIFIED
-*                                                                          * MODIFIED
-* C_DASH_DASH:                                                             * 
-*   (Letter)    + --> C_DASH_DASH                                          * MODIFIED
-*   [OTHER]   IF token \in {"--fair", "--algorithm"}                       * MODIFIED
-*               THEN IF token1 # all spaces                                * MODIFIED
-*                      THEN pseudoCom := true;                             * MODIFIED
-*                           token2 := token; col2 := col;                  * MODIFIED
-*                           token := token1; col := col1;                  * MODIFIED
-*                           TokenOut(COMMENT, IF ORCom THEN END_OVERRUN    * MODIFIED
-*                                                      ELSE NORMAL )       * MODIFIED
-*                           token := token2; col := col2;                  * MODIFIED
-*                    FI;                                                   * MODIFIED
-*                    inPcal := true;                                       * MODIFIED
-*                    hasPcal := true;                                      * MODIFIED
-*                    pcalStart := getNextTokenPosition();                  * MODIFIED
-*                    isFair := (token = "--fair");                         * MODIFIED
-*                    TokenOut(BUILT_IN);                                   * MODIFIED
-*                    SkipSpacesAndNewLines();                              * MODIFIED
-*                    IF isFair THEN                  --> GET_ALG_TOKEN     * MODIFIED
-*                              ELSE                  --> GET_ALG_NAME      * MODIFIED
-*               ELSE token := token1 \o token        --> COMMENT           * MODIFIED
+* C_DASH:                                                                  * ADDED for PlusCal
+*   \* token1, col1 represents the comment on the current line preceding   * ADDED for PlusCal
+*   \* the "-"; token, col is the "-"                                      * ADDED for PlusCal
+*   ("-")      +                            --> C_DASH_DASH                * ADDED for PlusCal
+*   [OTHER]    token := token1 \o token;                                   * ADDED for PlusCal
+*              col := col1               +  --> COMMENT                    * ADDED for PlusCal
 *                                                                          *
-* GET_ALG_TOKEN:                                                           * MODIFIED
-*   (Letter)  +    --> GET_ALG_TOKEN                                       * MODIFIED
-*   (Digit)   +    --> GET_ALG_TOKEN                                       * MODIFIED
-*   [OTHER]  IF token = "algorithm"                                        * MODIFIED
-*              THEN TokenOut(BUILT_IN) ;                                   * MODIFIED
-*                   SkipSpacesAndNewLines() --> GET_ALG_NAME               * MODIFIED
-*              ELSE \* Bad input; interpret everything else as comment     * MODIFIED
-*                   pseudoCom := true       --> COMMENT                    * MODIFIED
+* C_DASH_DASH:                                                             * ADDED for PlusCal 
+*   (Letter)    + --> C_DASH_DASH                                          * ADDED for PlusCal
+*   [OTHER]   IF token \in {"--fair", "--algorithm"}                       * ADDED for PlusCal
+*               THEN IF token1 # all spaces                                * ADDED for PlusCal
+*                      THEN pseudoCom := true;                             * ADDED for PlusCal
+*                           token2 := token; col2 := col;                  * ADDED for PlusCal
+*                           token := token1; col := col1;                  * ADDED for PlusCal
+*                           TokenOut(COMMENT, IF ORCom THEN END_OVERRUN    * ADDED for PlusCal
+*                                                      ELSE NORMAL )       * ADDED for PlusCal
+*                           token := token2; col := col2;                  * ADDED for PlusCal
+*                    FI;                                                   * ADDED for PlusCal
+*                    hasPcal := true;                                      * ADDED for PlusCal
+*                    pcalStart := getNextTokenPosition();                  * ADDED for PlusCal
+*                    isAlgorithm := (token = "--algorithm");               * ADDED for PlusCal
+*                    TokenOut(BUILTIN);                                    * ADDED for PlusCal
+*                    SkipSpacesAndNewlines();                              * ADDED for PlusCal
+*                    IF isAlgorithm THEN             --> GET_ALG_NAME      * ADDED for PlusCal
+*                                   ELSE             --> GET_ALG_TOKEN     * ADDED for PlusCal
+*               ELSE token := token1 \o token                              * ADDED for PlusCal     
+*                    col := col1                     --> COMMENT           * ADDED for PlusCal
+*                                                                          *
+* GET_ALG_TOKEN:                                                           * ADDED for PlusCal
+*   (Letter)  +    --> GET_ALG_TOKEN                                       * ADDED for PlusCal
+*   [OTHER]  IF token = "algorithm"                                        * ADDED for PlusCal
+*              THEN TokenOut(BUILTIN) ;                                    * ADDED for PlusCal
+*                   SkipSpacesAndNewlines() --> GET_ALG_NAME               * ADDED for PlusCal
+*              ELSE \* Bad input; interpret everything else as comment     * ADDED for PlusCal
+*                   pcalEnd := getNextTokenPosition();                     * ADDED for PlusCal
+*                   pseudoCom := true       --> COMMENT                    * ADDED for PlusCal
 *                                                                          * 
-* GET_ALG_NAME:                                                            * MODIFIED
-*   (Letter)  +    --> GET_ALG_NAME                                        * MODIFIED
-*   (Digit)   +    --> GET_ALG_NAM                                         * MODIFIED
-*   [OTHER]   IF token # "" /\ contains a letter                           * MODIFIED
-*               THEN TokenOut(IDENT);                                      * MODIFIED
-*                    SkipSpacesAndNewLines();                              * MODIFIED
-*                    isCSyntax := (nextChar = "{");                        * MODIFIED
-*                    + TokenOut(BUILT_IN);                                 * MODIFIED
-*                    braceDepth := 1                 --> START             * MODIFIED
-*               ELSE pseudoCom := true               --> COMMENT           * MODIFIED
+* GET_ALG_NAME:                                                            * ADDED for PlusCal
+*   (Letter)  +    --> GET_ALG_NAME                                        * ADDED for PlusCal
+*   (Digit)   +    --> GET_ALG_NAME                                        * ADDED for PlusCal
+*   [OTHER]   IF token # "" /\ contains a letter                           * ADDED for PlusCal
+*               THEN TokenOut(IDENT);                                      * ADDED for PlusCal
+*                    SkipSpacesAndNewlines();                              * ADDED for PlusCal
+*                    isCSyntax := (nextChar = "{");                        * ADDED for PlusCal
+*                    + TokenOut(BUILTIN);                                  * ADDED for PlusCal
+*                    cdepth := 0 ;                                         * ADDED for PlusCal
+*                    inPcal := true;                                       * ADDED for PlusCal
+*                    braceDepth := 0                 --> START             * ADDED for PlusCal
+*               ELSE pcalEnd := getNextTokenPosition();                    * ADDED for PlusCal
+*                    pseudoCom := true               --> COMMENT           * ADDED for PlusCal
 *                                                                          * 
 * COMMENT_PAREN:                                                           *
 *   ("*")    - ; cdepth := cdepth + 1                --> COMMENT           *
@@ -419,11 +430,11 @@
 *   ("*")    -                               --> OR_COMMENT_STAR           *
 *   ("("}    -                               --> OR_COMMENT_PAREN          *
 *   ("\n")   TokenOut(COMMENT, OVERRUN) ; -  --> OR_COMMENT                *
-*   [("-") /\ cdepth = 1 /\  mode = MODULE /\ ~hasPcal]                    * MODIFIED
-*                        token1 := token;  col1 := col                     * MODIFIED
-*                        token := "";  col := ncol (?)                     * MODIFIED
-*                        ORCom := true ;                                   * MODIFIED
-*                        +                              --> C_DASH         * MODIFIED
+*   [("-") /\ cdepth = 1 /\  mode = MODULE /\ ~hasPcal]                    * ADDED for PlusCal
+*                        token1 := token;  col1 := col                     * ADDED for PlusCal
+*                        token := "";  col := ncol (?)                     * ADDED for PlusCal
+*                        ORCom := true ;                                   * ADDED for PlusCal
+*                        +                              --> C_DASH         * ADDED for PlusCal
 *   ("\t")                                   --> ERROR                     *
 *   [OTHER]  IF cdepth = 1 THEN + ELSE -      --> OR_COMMENT               *
 *                                                                          *
@@ -672,7 +683,7 @@ public class TokenizeSpec
       private static final int C_DASH             = 38 ;
       private static final int C_DASH_DASH        = 39 ;
       private static final int GET_ALG_TOKEN      = 40 ;
-      private static final int GET_ALG_NAME       = 41 ;
+      private static final int GET_ALG_NAME       = 41 ;      
       
     private static int state = 0 ;
       /*********************************************************************
@@ -762,6 +773,24 @@ public class TokenizeSpec
         col = 0 ;
       } ;
 
+    private static void SkipSpaceAndNewlines() {
+        boolean notDone = true ;
+        while (notDone) {
+            while (Misc.IsSpace(nextChar)) {
+                skipNextChar() ;
+            }
+            if (nextChar == '\n') {
+                skipNextChar() ;
+                startNewLine() ;
+            }
+            else {
+                notDone = false ;
+            }
+            col = ncol;
+            token = "" ;
+        }
+       
+    }
     /**
      * Returns the Position in the final output of the next
      * token to be output.
@@ -906,26 +935,32 @@ public class TokenizeSpec
                       else if (token.equals("*") && (nextChar == ')')){
                           pcalEnd = getNextTokenPosition() ;
                           inPcal = false ;
+                          token = "" ;
                           gotoStart() ;
                       }
                       else if (isCSyntax) {
                           if (token.equals("{")) {
-                              TokenOut(BUILT_IN);
+                              TokenOut(Token.BUILTIN);
                               braceDepth++ ;
                               gotoStart() ;
                           }
                           else if (token.equals("}")) {
-                              TokenOut(BUILT_IN);
+                              TokenOut(Token.BUILTIN);
                               braceDepth-- ;
                               if (braceDepth != 0) {
                                   gotoStart() ;
                               }
                               else {
+                                  col = ncol ;
                                   inPcal = false ;
+                                  cdepth = 1 ;
                                   pcalEnd = getNextTokenPosition() ;
                                   pseudoCom = true ;
                                   state = COMMENT ;
                               }
+                          }
+                          else {
+                              state = BUILT_IN ;
                           }
                       }
                       else {
@@ -964,7 +999,9 @@ public class TokenizeSpec
                       else if (inPcal && token.equals("algorithm") 
                                 && !isCSyntax && (mode == MODULE)) {
                           TokenOut(Token.BUILTIN) ;
+                          col = ncol; 
                           pcalEnd = getNextTokenPosition() ;
+                          cdepth = 1 ;
                           inPcal = false ;
                           pseudoCom = true ;
                           state = COMMENT ;
@@ -984,7 +1021,37 @@ public class TokenizeSpec
                       gotoStart();
                     };
                   break;          
-
+                case ID_OR_PCAL_LABEL :
+                    while (Misc.IsSpace(nextChar)) {
+                        addNextChar();
+                    }
+                    if (nextChar == ':') {
+                        addNextChar();
+                        token1 = token ;
+                        state = PCAL_LABEL ;
+                    } 
+                    else {
+                        token = token1 ;
+                        TokenOut(Token.IDENT) ;
+                        gotoStart() ;
+                    }
+                  break;
+                  
+                case PCAL_LABEL :
+                    while (Misc.IsSpace(nextChar)) {
+                        addNextChar();
+                    }
+                    if ((nextChar == '+') || (nextChar == '-')) {
+                        TokenOut(Token.PCAL_LABEL) ;
+                        gotoStart() ;
+                    }
+                    else {
+                        token = token1 ;
+                        TokenOut(Token.PCAL_LABEL) ;
+                        gotoStart() ;
+                    }
+                    break;
+                  
                 case NUM_OR_ID :
                   if (Misc.IsDigit(nextChar))
                     { addNextChar();
@@ -1088,7 +1155,9 @@ public class TokenizeSpec
                         } ;
                         nextChar = reader.getNextChar();
                       } ;
+                      boolean saved = BuiltInSymbols.CanPrecedeLabel(token) ;
                       TokenOut(Token.BUILTIN) ;
+                      canBeLabel = saved ;
                       gotoStart();
                     }
                    break;
@@ -1302,15 +1371,24 @@ public class TokenizeSpec
                     { Debug.ReportError(
                          "Input ended in the middle of a comment");
                     }
+                  else if ((nextChar == '-') && (cdepth == 1)
+                             && (mode == MODULE) && !hasPcal) {
+                      token1 = token;
+                      col1 = col;
+                      token = "" ;
+                      col = ncol ;
+                      ORCom = false;
+                      addNextChar() ;
+                      state = C_DASH ;
+                    }
                   else
                     { if (cdepth == 1) {addNextChar();}
                         else {skipNextChar();};
                       // state = COMMENT ;
                     }
-
                   break;
 
-                case COMMENT_STAR :       // (
+                case COMMENT_STAR :      
                   if (nextChar == ')')
                     { skipNextChar();
                       cdepth = cdepth - 1;
@@ -1328,6 +1406,91 @@ public class TokenizeSpec
                     }
                   break;
 
+                case C_DASH : 
+                    // token1, col1 describes the comment preceding the "-"
+                    if (nextChar == '-') {
+                        addNextChar() ;
+                        state = C_DASH_DASH ;
+                    }
+                    else {
+                        token = token1 + token ;
+                        col = col1;
+                        addNextChar();
+                        state = COMMENT;
+                    }
+                  break ;
+                  
+                case C_DASH_DASH :
+                  while (Misc.IsLetter(nextChar)) {
+                      addNextChar() ;
+                  }
+                  boolean isAlgorithm = token.equals("--algorithm") ;
+                  if (isAlgorithm || token.equals("--fair")) {
+                      if (! Misc.isBlank(token1)) {
+                          pseudoCom = true;
+                          token2 = token;
+                          col2 = col;
+                          token = token1;
+                          col = col1;
+                          CommentTokenOut(ORCom?CommentToken.END_OVERRUN:CommentToken.NORMAL) ;
+                          token = token2;
+                          col = col2;
+                      }
+                      hasPcal = true;
+                      pcalStart = getNextTokenPosition();
+                      TokenOut(Token.BUILTIN);
+                      SkipSpaceAndNewlines();
+                      if (isAlgorithm) {
+                          state = GET_ALG_NAME ;
+                      }
+                      else {
+                          state = GET_ALG_TOKEN ;
+                      }                      
+                  }
+                  else {
+                      token = token1 + token ;
+                      col = col1 ;
+                      state = COMMENT ;
+                  }
+                  break ;
+                  
+                case GET_ALG_TOKEN :
+                  while (Misc.IsLetter(nextChar)) {
+                      addNextChar();
+                  }
+                  if (token.equals("algorithm")) {
+                      TokenOut(Token.BUILTIN) ;
+                      SkipSpaceAndNewlines() ;
+                      state = GET_ALG_NAME ;
+                  }
+                  else {
+                      pcalEnd = getNextTokenPosition() ;
+                      pseudoCom = true ;
+                      state = COMMENT ;
+                  }
+                  break ;
+                  
+                case GET_ALG_NAME :
+                  while (Misc.IsLetter(nextChar) || Misc.IsDigit(nextChar)) {
+                      addNextChar() ;                      
+                  }
+                  if (Misc.hasLetter(token)) {
+                      TokenOut(Token.IDENT) ;
+                      SkipSpaceAndNewlines() ;
+                      isCSyntax = (nextChar == '{') ;
+                      cdepth = 0 ;
+                      inPcal = true ;
+                      braceDepth = 0 ;
+                      gotoStart() ;
+                  } 
+                  else {
+                      pcalEnd = getNextTokenPosition() ;
+                      pseudoCom = true ;
+                      state = COMMENT ;
+                      
+                  }
+                  break ;
+                
                 case COMMENT_PAREN :
                   if (nextChar == '*')
                     { skipNextChar();
@@ -1355,6 +1518,16 @@ public class TokenizeSpec
                       startNewLine();
                       state = OR_COMMENT;
                     }
+                  else if ((nextChar == '-') && (cdepth == 1) 
+                              && (mode == MODULE) && ! hasPcal) {
+                      token1 = token ;
+                      col1 = col ;
+                      token = "" ;
+                      col = ncol ;
+                      ORCom = true ;
+                      addNextChar() ;
+                      state = C_DASH ;
+                  }
                   else if (nextChar == '\t')
                     { Debug.ReportError(
                          "Input ended in the middle of a multi-line comment");

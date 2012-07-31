@@ -392,7 +392,8 @@ public class CommentToken extends Token
           } ;
         return Misc.BreakLine( mostOfString() + 
                           ",\t subtype |-> " + stypeName + 
-                          ",\t rsubtype |-> " + rstypeName + "]");
+                          ",\t rsubtype |-> " + rstypeName + 
+                          ",\t delim |-> " + delimiters + "]");
       };  
 
   }
