@@ -413,33 +413,33 @@ public final class BuiltInSymbols
         add("@",  "@",      Symbol.MISC, 0);
         
         // The following are added for PlusCal
-        pcaladd("fair}",      "{\\pfair}",       Symbol.KEYWORD,     0);
-        pcaladd("algorithm}", "{\\palgorithm}",  Symbol.KEYWORD,     0);
-        pcaladd("--fair}",    "{\\pmmfair}",     Symbol.KEYWORD,     0);
-        pcaladd("--algorithm}", "{\\pmmalgorithm}",  Symbol.KEYWORD,     0);
+        pcaladd("fair",      "{\\pfair}",       Symbol.KEYWORD,     0);
+        pcaladd("algorithm", "{\\palgorithm}",  Symbol.KEYWORD,     0);
+        pcaladd("--fair",    "{\\pmmfair}",     Symbol.KEYWORD,     0);
+        pcaladd("--algorithm", "{\\pmmalgorithm}",  Symbol.KEYWORD,     0);
         pcaladd(";",          "\\,;",            Symbol.PUNCTUATION, 63);
-        pcaladd("assert}",    "{\\passert}",     Symbol.KEYWORD,     0);
-        pcaladd("begin}",     "{\\pbegin}",      Symbol.KEYWORD,     0);
-        pcaladd("end}",       "{\\pend}",        Symbol.KEYWORD,     0);
-        pcaladd("call}",      "{\\pcall}",       Symbol.KEYWORD,     0);
-        pcaladd("do}",        "{\\pdo}",         Symbol.KEYWORD,     0);
-        pcaladd("either}",    "{\\peither}",     Symbol.INFIX,       64); // not sure
-        pcaladd("or}",        "{\\por}",         Symbol.INFIX,       64); // not sure
-        pcaladd("goto}",      "{\\pgoto}",       Symbol.KEYWORD,     0);
-        pcaladd("if}",        "{\\pif}",         Symbol.KEYWORD,     0);
-        pcaladd("then}",      "{\\pthen}",       Symbol.INFIX,       65); // not sure
-        pcaladd("else}",      "{\\pelse}",       Symbol.INFIX,       65); // not sure
-        pcaladd("elsif}",     "{\\pelsif}",      Symbol.INFIX,       65); // not sure
-        pcaladd("macro}",     "{\\pmacro}",      Symbol.KEYWORD,     0);
-        pcaladd("print}",     "{\\pprint}",      Symbol.KEYWORD,     0);
+        pcaladd("assert",     "{\\passert}",     Symbol.KEYWORD,     0);
+        pcaladd("begin",      "{\\pbegin}",      Symbol.KEYWORD,     0);
+        pcaladd("end",        "{\\pend}",        Symbol.KEYWORD,     0);
+        pcaladd("call",       "{\\pcall}",       Symbol.KEYWORD,     0);
+        pcaladd("do",         "{\\pdo}",         Symbol.KEYWORD,     0);
+        pcaladd("either",     "{\\peither}",     Symbol.INFIX,       64); // not sure
+        pcaladd("or",         "{\\por}",         Symbol.INFIX,       64); // not sure
+        pcaladd("goto",       "{\\pgoto}",       Symbol.KEYWORD,     0);
+        pcaladd("if",         "{\\pif}",         Symbol.KEYWORD,     0);
+        pcaladd("then",       "{\\pthen}",       Symbol.INFIX,       65); // not sure
+        pcaladd("else",       "{\\pelse}",       Symbol.INFIX,       65); // not sure
+        pcaladd("elsif",      "{\\pelsif}",      Symbol.INFIX,       65); // not sure
+        pcaladd("macro",      "{\\pmacro}",      Symbol.KEYWORD,     0);
+        pcaladd("print",      "{\\pprint}",      Symbol.KEYWORD,     0);
         pcaladd("procedure",  "{\\pprocedure}",  Symbol.KEYWORD,     0);
-        pcaladd("process}",   "{\\pprocess}",    Symbol.KEYWORD,     0);
-        pcaladd("return}",    "{\\preturn}",     Symbol.KEYWORD,     0);
-        pcaladd("skip}",      "{\\pskip}",       Symbol.KEYWORD,     0);
+        pcaladd("process",    "{\\pprocess}",    Symbol.KEYWORD,     0);
+        pcaladd("return",     "{\\preturn}",     Symbol.KEYWORD,     0);
+        pcaladd("skip",       "{\\pskip}",       Symbol.KEYWORD,     0);
         pcaladd("variable",   "{\\pvariable}",   Symbol.KEYWORD,     0);
         pcaladd("variables",  "{\\pvariables}",  Symbol.KEYWORD,     0);
-        pcaladd("while}",     "{\\pwhile}",      Symbol.KEYWORD,     0);
-        pcaladd("with}",      "{\\pwith}",       Symbol.KEYWORD,     0);
+        pcaladd("while",      "{\\pwhile}",      Symbol.KEYWORD,     0);
+        pcaladd("with",       "{\\pwith}",       Symbol.KEYWORD,     0);
 
         // We may want to add symbols for the following characters so 
         // they can be printed differently when they are PlusCal delimiters
