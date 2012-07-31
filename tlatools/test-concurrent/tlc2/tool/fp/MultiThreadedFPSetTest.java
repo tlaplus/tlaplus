@@ -19,7 +19,8 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		System.out.println("Insertions: " + df.format(INSERTIONS));
+		System.out.println("Insertions: " + df.format(INSERTIONS)
+				+ " (approx: " + df.format(INSERTIONS * FPSet.LongSize >> 20) + " GiB)");
 		System.out.println("Thread count: " + NUM_THREADS);
 	}
 	

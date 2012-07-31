@@ -77,7 +77,10 @@ public abstract class AbstractFPSetTest extends TestCase {
 
 		if (fpSet instanceof FPSetStatistic) {
 			FPSetStatistic fpSetStats = (FPSetStatistic) fpSet;
-			System.out.println("Maximum FPSet bucket count is: " + df.format(fpSetStats.getMaxTblCnt()));
+			long maxTblCnt = fpSetStats.getMaxTblCnt();
+			System.out.println("Maximum FPSet bucket count is: "
+					+ df.format(maxTblCnt) + " (approx: "
+					+ df.format(maxTblCnt * FPSet.LongSize >> 20) + " GiB)");
 		}
 
 		System.out.println("Testing " + fpSet.getClass().getCanonicalName());
