@@ -78,6 +78,14 @@
 				<exclude name="**/*##*" />
 			</fileset>
 		</copy>
+		<!-- These jare are requried for by fpset implementations -->
+		<copy todir="${class.dir}/lib">
+			<fileset dir="lib/">
+				<include name="guava-13.0-rc2.jar" />
+				<include name="high-scale-lib.jar" />
+				<include name="trove-3.0.3.jar" />
+			</fileset>
+		</copy>
 
 	</target>
 
