@@ -13,7 +13,7 @@ const_132504183737118000 ==
 
 \* CONSTANT definitions @modelParameterConstants:2N
 const_132504183738119000 == 
-33
+16
 ----
 
 \* INIT definition @modelBehaviorInit:0

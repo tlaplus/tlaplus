@@ -32,6 +32,7 @@
 		<echo message="Ant Version  : ${ant.version}" />
 		<echo message="Java Version : ${ant.java.version}" />
 		<echo message="Skipping Tests : ${test.skip}" />
+		<echo message="With AspectJ: ${withaj}" />
 	</target>
 
 	<target name="default" depends="info" description="Default">
