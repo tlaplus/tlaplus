@@ -119,15 +119,19 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 		 * @see tlc2.tool.fp.DiskFPSet#mergeNewEntries(long[], int, java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
 		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
+			final long buffLen = tblCnt.get();
 			final TLCIterator itr = new TLCIterator(tbl);
 	
+			//!!! This code below is identical to OffHeapDiskFPSet#OffHeapMSBFlusher#mergeNewEntries 
+			
+			
 			// Precompute the maximum value of the new file
 			long maxVal = itr.getLast();
 			if (index != null) {
 				maxVal = Math.max(maxVal, index[index.length - 1]);
 			}
 	
-			int indexLen = calculateIndexLen(tblCnt.get());
+			int indexLen = calculateIndexLen(buffLen);
 			index = new long[indexLen];
 			index[indexLen - 1] = maxVal;
 			currIndex = 0;
@@ -163,7 +167,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 								String.valueOf(value));
 					}
 					writeFP(outRAF, fp);
-					// we used on fp up, thus move to next one
+					// we used one fp up, thus move to next one
 					fp = itr.next();
 				}
 			}
@@ -187,13 +191,13 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 					}
 				} while (!eof);
 			}
-			Assert.check(itr.reads() == tblCnt.get(), EC.GENERAL);
+			Assert.check(itr.reads() == buffLen, EC.GENERAL);
 	
 			// currIndex is amount of disk writes
 			Assert.check(currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
 	
 			// maintain object invariants
-			fileCnt += tblCnt.get();
+			fileCnt += buffLen;
 		}
 	}
 

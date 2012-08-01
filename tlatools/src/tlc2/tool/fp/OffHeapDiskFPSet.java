@@ -474,12 +474,26 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	public class OffHeapMSBFlusher extends Flusher {
 		
 		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.DiskFPSet.Flusher#flushTable()
+		 */
+		@Override
+		void flushTable() throws IOException {
+			super.flushTable();
+			
+			// garbage old values in collision bucket
+			collisionBucket.clear();
+		}
+		
+		/* (non-Javadoc)
 		 * @see tlc2.tool.fp.MSBDiskFPSet#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
 		@Override
 		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
 			final long buffLen = tblCnt.get();
 			ByteBufferIterator itr = new ByteBufferIterator(u, baseAddress, collisionBucket, buffLen);
+
+			//!!! This code below is identical to MSBDiskFPSet#MSBFlusher#mergeNewEntries 
+
 			
 			// Precompute the maximum value of the new file
 			long maxVal = itr.getLast();
@@ -554,9 +568,6 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 
 			// maintain object invariants
 			fileCnt += buffLen;
-			
-			// garbage old values in collision bucket
-			collisionBucket.clear();
 		}
 	}
 	
