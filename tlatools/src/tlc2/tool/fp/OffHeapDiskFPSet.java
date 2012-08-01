@@ -207,7 +207,10 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		// Do not use the thread safe getCollisionRatio here to avoid
 		// unnecessary locking. put() calls us holding a memory write locking
 		// which also blocks writers to collisionBucket.
-		final double d = (double) collisionBucket.size() / tblCnt.doubleValue();
+		final long size = collisionBucket.size();
+		// Subtract size from overall tblCnt as it includes the cs size
+		// @see put(long)
+		final double d = (double) size / (tblCnt.doubleValue() - size);
 		return d >= limit;
 	}
 	
