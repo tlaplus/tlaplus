@@ -15,7 +15,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import sun.misc.Unsafe;
 import tlc2.output.EC;
-import tlc2.tool.fp.MSBDiskFPSet.TLCIterator;
 import util.Assert;
 
 @SuppressWarnings({ "serial", "restriction" })
@@ -492,9 +491,6 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			final long buffLen = tblCnt.get();
 			ByteBufferIterator itr = new ByteBufferIterator(u, baseAddress, collisionBucket, buffLen);
 
-			//!!! This code below is identical to MSBDiskFPSet#MSBFlusher#mergeNewEntries 
-
-			
 			// Precompute the maximum value of the new file
 			long maxVal = itr.getLast();
 			if (index != null) {
@@ -521,9 +517,10 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			}
 
 			// merge while both lists still have elements remaining
+			boolean eol = false;
 			long fp = itr.next();
-			while (!eof) {
-				if (value < fp || !itr.hasNext()) { // check for itr.hasNext() here to write last value when itr is used up.
+			while (!eof || !eol) {
+				if ((value < fp || eol) && !eof) {
 					writeFP(outRAF, value);
 					try {
 						value = inRAF.readLong();
@@ -538,30 +535,18 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 					}
 					writeFP(outRAF, fp);
 					// we used one fp up, thus move to next one
-					fp = itr.next();
-				}
-			}
-
-			// write elements of remaining list
-			if (eof) {
-				while (fp > 0L) {
-					writeFP(outRAF, fp);
-					if (!itr.hasNext()) {
-						break;
-					}
-					fp = itr.next();
-				}
-			} else {
-				do {
-					writeFP(outRAF, value);
 					try {
-						value = inRAF.readLong();
-					} catch (EOFException e) {
-						eof = true;
+						fp = itr.next();
+					} catch (NoSuchElementException e) {
+						// has read all elements?
+						Assert.check(!itr.hasNext(), EC.GENERAL);
+						eol = true;
 					}
-				} while (!eof);
+				}
 			}
-			Assert.check(itr.reads() == buffLen, EC.GENERAL);
+			
+			// both sets used up completely
+			Assert.check(eof && eol, EC.GENERAL);
 
 			// currIndex is amount of disk writes
 			Assert.check(currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
@@ -711,14 +696,6 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		public boolean hasNext() {
 			// hasNext does not move the indices at all!
 			return readElements < totalElements;
-		}
-
-		/**
-		 * @return The number of element read with {@link TLCIterator#next()} since
-		 *         the creation of this instance.
-		 */
-		public long reads() {
-			return readElements;
 		}
 		
 		/**
