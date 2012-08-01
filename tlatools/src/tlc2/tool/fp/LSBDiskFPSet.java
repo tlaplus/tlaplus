@@ -19,6 +19,12 @@ public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 		this.flusher = new LSBFlusher();
 	}
 	
+	protected LSBDiskFPSet(long maxInMemoryCapacity, int prefixBit) throws RemoteException {
+		this(maxInMemoryCapacity);
+		// ignore prefixBits, LSB works on least significant bits and not most
+		// ones.
+	}
+	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#getAuxiliaryStorageRequirement()
 	 */
