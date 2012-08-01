@@ -36,18 +36,30 @@ import java.util.Hashtable;
 public final class BuiltInSymbols
   { 
     /***********************************************************************
-    * The following three hash tables are built by the Initialize method.  *
+    * The following six hash tables are built by the Initialize method.  *
     ***********************************************************************/
     private static Hashtable builtInHashTable = new Hashtable(200);
       /*********************************************************************
       * Maps built-in symbols (which are strings) to their Symbol          *
-      * objects.                                                           *
+      * objects.  Does not contain PlusCal symbols.                        *
       *********************************************************************/
 
     private static Hashtable prefixHashTable  = new Hashtable(700);
       /*********************************************************************
-      * A table containing the prefixes of all built-in symbols.  (It      *
-      * holds only their keys.)                                            *
+      * A table containing the prefixes of all built-in symbols in         *
+      * builtInHashTable.  (It holds only their keys.)                     *
+      *********************************************************************/
+
+    private static Hashtable pcalBuiltInHashTable = new Hashtable(200);
+      /*********************************************************************
+      * Maps built-in symbols (which are strings) to their Symbol          *
+      * objects.  It includes the PlusCal symbols.                         *
+      *********************************************************************/
+
+    private static Hashtable pcalPrefixHashTable  = new Hashtable(700);
+      /*********************************************************************
+      * A table containing the prefixes of all built-in symbols in         *
+      * pcalBuiltInHashTable.  (It holds only their keys.)                 *
       *********************************************************************/
 
     private static Hashtable stringCharTable  = new Hashtable(100);
@@ -102,19 +114,34 @@ public final class BuiltInSymbols
        * @return
        */
     public static Symbol GetBuiltInSymbol(String str, boolean pcalMode)
-      { Symbol sym = (Symbol) builtInHashTable.get(str);
+      { Symbol sym ;
+        if (pcalMode) { 
+            sym = (Symbol) pcalBuiltInHashTable.get(str);
+        }
+        else {
+            sym = (Symbol) builtInHashTable.get(str); 
+        }
+       
         if (sym == null || (sym.pcal && ! pcalMode)) {
             return null ;
         }
         return sym;
       } ;
 
+
     public static Symbol GetBuiltInSymbol(String str)
       { return (Symbol) builtInHashTable.get(str);
       } ;
 
-      public static boolean IsBuiltInPrefix(String str)
+    public static boolean IsBuiltInPrefix(String str)
       { return prefixHashTable.containsKey(str) ;
+      } ;
+
+    public static boolean IsBuiltInPrefix(String str, boolean pcal)
+      { if (pcal) {
+          return pcalPrefixHashTable.containsKey(str);
+      }
+        return prefixHashTable.containsKey(str) ;
       } ;
 
     public static boolean IsStringChar(char ch)
@@ -151,21 +178,24 @@ public final class BuiltInSymbols
     }
     private static void add(String tla, String tex, int stype, int atype)
       /*********************************************************************
-      * Adds a non-PlusCal entry to the builtInHashTable.                 *
+      * Adds a non-PlusCal entry to the builtInHashTable and               *
+      * pcalBuiltInHashTable.                                              *
       *********************************************************************/
-      { builtInHashTable.put(tla, new Symbol(tla, tex, stype, atype) ) ; } ;
+      { builtInHashTable.put(tla, new Symbol(tla, tex, stype, atype) ) ; 
+        pcalBuiltInHashTable.put(tla, new Symbol(tla, tex, stype, atype) ) ;   } ;
 
 
     private static void pcaladd(String tla, String tex, int stype, int atype)
       /*********************************************************************
-      * Adds a PlusCal entry to the builtInHashTable.                      *
+      * Adds a PlusCal entry to the pcalBuiltInHashTable.                  *
       *********************************************************************/
-      { builtInHashTable.put(tla, new Symbol(tla, tex, stype, atype, true) ) ; } ;
+      { pcalBuiltInHashTable.put(tla, new Symbol(tla, tex, stype, atype, true) ) ; } ;
 
 
     private static void buildHashTable() 
       /*********************************************************************
-      * Initializes builtInHashTable.  This code actually defines the      *
+      * Initializes builtInHashTable and pcalBuiltInHashTable.  This code  *
+      * actually defines the                                               *
       * symbol and alignment types and the LaTeX input for each built-in   *
       * symbol.  It is required that, if two symbols have the same         *
       * alignment type, then their typeset versions have the same width.   *
@@ -451,8 +481,8 @@ public final class BuiltInSymbols
 
     private static void buildPrefixHashTable() 
       /*********************************************************************
-      * Initializes prefixHashTable, assuming that builtInHashTable is     *
-      * already initialized.                                               *
+      * Initializes prefixHashTable and pcalPrefixHashTable, assuming that *
+      * builtInHashTable and pcalBuiltInHashTable are already initialize   *
       *********************************************************************/
       { Enumeration builtInEnum = builtInHashTable.keys();
         while (builtInEnum.hasMoreElements())
@@ -472,6 +502,28 @@ public final class BuiltInSymbols
                 ***********************************************************/
                 while (symbol.length() > 0)                              
                  { prefixHashTable.put(symbol, nullString);             
+                   symbol = symbol.substring(0, symbol.length() - 1);   
+                 } ;                                                    
+              } ;
+          }
+        builtInEnum = pcalBuiltInHashTable.keys();
+        while (builtInEnum.hasMoreElements())
+          { String symbol = (String) builtInEnum.nextElement();
+            if (    Misc.IsLetter(symbol.charAt(0))
+                 ||    (symbol.length() > 1)
+                    && (symbol.charAt(0) == '\\')
+                    && Misc.IsLetter(symbol.charAt(1)))
+              { /***********************************************************
+                * Should not put prefixes of this symbol in                *
+                * prefixHashTable.                                         *
+                ***********************************************************/
+              }
+            else
+              { /***********************************************************
+                * Put symbol and all its prefixes in prefixHashTable.      *
+                ***********************************************************/
+                while (symbol.length() > 0)                              
+                 { pcalPrefixHashTable.put(symbol, nullString);             
                    symbol = symbol.substring(0, symbol.length() - 1);   
                  } ;                                                    
               } ;

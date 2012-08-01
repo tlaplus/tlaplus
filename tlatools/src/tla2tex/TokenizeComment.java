@@ -678,7 +678,7 @@ public class TokenizeComment
                     { addNextChar();
                       // state = ID ;
                     }  
-                  else if (BuiltInSymbols.IsBuiltInSymbol(token, false))
+                  else if (BuiltInSymbols.IsBuiltInSymbol(token))
                             // don't want to handle PCal tokens specially
                     { CTokenOut(CToken.BUILTIN) ;
                       gotoStart();
@@ -772,10 +772,10 @@ public class TokenizeComment
                     }
                   else 
                     { 
-                     if (! BuiltInSymbols.IsBuiltInSymbol(token, false))
+                     if (! BuiltInSymbols.IsBuiltInSymbol(token))
                          // don't want to handle PCal tokens specially
                       { 
-                        while (! BuiltInSymbols.IsBuiltInSymbol(token, false))
+                        while (! BuiltInSymbols.IsBuiltInSymbol(token))
                             // don't want to handle PCal tokens specially
                         { Backspace(1);
                           if (token.length() == 0)

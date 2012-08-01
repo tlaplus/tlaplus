@@ -772,7 +772,7 @@ public final class FormatComments
           { tok.isTLA = true; } ;
 
          if (   (tok.type == CToken.BUILTIN)
-             && (BuiltInSymbols.GetBuiltInSymbol(tok.string).symbolType
+             && (BuiltInSymbols.GetBuiltInSymbol(tok.string, true).symbolType
                    == Symbol.LEFT_PAREN)
              && (   (parenLevel > 0)
                  || tok.isTLA))
@@ -780,7 +780,7 @@ public final class FormatComments
 
          else
           { if (   (tok.type == CToken.BUILTIN)
-                && (  (BuiltInSymbols.GetBuiltInSymbol(tok.string).symbolType
+                && (  (BuiltInSymbols.GetBuiltInSymbol(tok.string, true).symbolType
                          == Symbol.RIGHT_PAREN)
                     || tok.string.equals("]_"))
                 && (parenLevel > 0) )
@@ -824,7 +824,7 @@ public final class FormatComments
                  {
                    if (ptok.type == CToken.BUILTIN)
                     {int stype = 
-                      BuiltInSymbols.GetBuiltInSymbol(ptok.string).symbolType;
+                      BuiltInSymbols.GetBuiltInSymbol(ptok.string, true).symbolType;
                       if (   (   (stype == Symbol.INFIX)
                               || (stype == Symbol.PREFIX))
                           && ( ptok.isTLA || ptok.isAmbiguous))
@@ -835,7 +835,7 @@ public final class FormatComments
                   } ;
                 if (ntok.type == CToken.BUILTIN)
                  {int stype = 
-                   BuiltInSymbols.GetBuiltInSymbol(ntok.string).symbolType;
+                   BuiltInSymbols.GetBuiltInSymbol(ntok.string, true).symbolType;
                    if (   (   (stype == Symbol.INFIX)
                            || (stype == Symbol.POSTFIX))
                        && ( ntok.isTLA || ntok.isAmbiguous))
@@ -846,7 +846,7 @@ public final class FormatComments
                 break;
               case CToken.BUILTIN  :
                 int stype = 
-                     BuiltInSymbols.GetBuiltInSymbol(tok.string).symbolType;
+                     BuiltInSymbols.GetBuiltInSymbol(tok.string, true).symbolType;
                 if (   (   (stype == Symbol.PREFIX)
                         || (stype == Symbol.INFIX) )
                     && ( ntok.isTLA || ntok.isAmbiguous))
@@ -1866,15 +1866,15 @@ public final class FormatComments
                   if(   (tok.isTLA) && (ptok.isTLA)
                      && (   (tok.type  != CToken.BUILTIN)
                          || (BuiltInSymbols.GetBuiltInSymbol(
-                              tok.string).symbolType == Symbol.PREFIX)
+                              tok.string, true).symbolType == Symbol.PREFIX)
                          || (BuiltInSymbols.GetBuiltInSymbol(
-                              tok.string).symbolType == Symbol.KEYWORD))
+                              tok.string, true).symbolType == Symbol.KEYWORD))
                      && (tok.type  != CToken.RIGHT_DQUOTE)
                      && (   (ptok.type != CToken.BUILTIN)
                          || (BuiltInSymbols.GetBuiltInSymbol(
-                              ptok.string).symbolType == Symbol.POSTFIX)
+                              ptok.string, true).symbolType == Symbol.POSTFIX)
                          || (BuiltInSymbols.GetBuiltInSymbol(
-                              ptok.string).symbolType == Symbol.KEYWORD))
+                              ptok.string, true).symbolType == Symbol.KEYWORD))
                      && (ptok.type != CToken.LEFT_DQUOTE))
                    { curOutput = curOutput + "} \\ensuremath{"; 
                    }
@@ -1898,7 +1898,7 @@ public final class FormatComments
                case CToken.BUILTIN :
                  if (tok.isTLA)
                   { curOutput = curOutput + 
-                     BuiltInSymbols.GetBuiltInSymbol(tok.string).TeXString;
+                     BuiltInSymbols.GetBuiltInSymbol(tok.string, true).TeXString;
                    /********************************************************
                    * For subscripted BUILINs like WF_, we don't do         *
                    * subscripting in comments, so we must print the "_".   *

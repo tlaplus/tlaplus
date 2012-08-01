@@ -172,7 +172,7 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
           switch (tok.type)
            { case Token.BUILTIN :
                int symType = BuiltInSymbols.GetBuiltInSymbol(
-                                       spec[line][item].string).symbolType ;
+                                       spec[line][item].string, true).symbolType ;
                  /**********************************************************
                  * Check if we should start a sub/superscript.             *
                  **********************************************************/
@@ -196,7 +196,7 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                        ****************************************************/
                        outLine = outLine + " " +  
                           BuiltInSymbols.GetBuiltInSymbol(
-                                                   tok.string).TeXString
+                                                   tok.string, true).TeXString
                           + "_{";
                      }    
                     else
@@ -214,12 +214,13 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                     * mode.                                                *
                     *******************************************************/
                     outLine = outLine + " " +  
-                     BuiltInSymbols.GetBuiltInSymbol(tok.string).TeXString;
+                     BuiltInSymbols.GetBuiltInSymbol(tok.string, true).TeXString;
                   }; // END else OF if if (   (! inSub) ... )
                break ;
 
              case Token.NUMBER :
              case Token.IDENT :
+             case Token.PCAL_LABEL :
                outLine = outLine + " " + Misc.TeXify(tok.string) ; 
                  /**********************************************************
                  * We TeXify the string to typeset a "\" from a number or  *
@@ -1052,7 +1053,7 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
            { // BEGIN switch (tok.type)
              case Token.BUILTIN :
                int symType = BuiltInSymbols.GetBuiltInSymbol(
-                                       spec[line][item].string).symbolType ;
+                                       spec[line][item].string, true).symbolType ;
                  if (   (! inSub)
                      && (   (symType == Symbol.SUBSCRIPTED)
                          || tok.string.equals("^"))
@@ -1068,7 +1069,7 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
                        ****************************************************/
                        outLine = outLine + " " +  
                           BuiltInSymbols.GetBuiltInSymbol(
-                                                   tok.string).TeXString
+                                                   tok.string, true).TeXString
                           + "_{";
                      }    
                     else
@@ -1080,7 +1081,7 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
                   } // END then OF if (   (! inSub) ... )
                  else
                   { outLine = outLine + " " +  
-                     BuiltInSymbols.GetBuiltInSymbol(tok.string).TeXString;
+                     BuiltInSymbols.GetBuiltInSymbol(tok.string, true).TeXString;
                   }; // END else OF if (   (! inSub) ... )
                break ;
   
@@ -1093,6 +1094,7 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
                break ;
   
              case Token.IDENT :
+             case Token.PCAL_LABEL :
                outLine = outLine + " " + Misc.TeXifyIdent(tok.string) ; 
                break ;
   

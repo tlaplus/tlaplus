@@ -263,10 +263,10 @@ public class Token
                  if (   (i < input.length - numOfToks)
                      && (input[i + numOfToks].type == BUILTIN)
                      && (   (BuiltInSymbols.GetBuiltInSymbol(
-                                 input[i + numOfToks].string).symbolType
+                                 input[i + numOfToks].string, true).symbolType
                               == Symbol.INFIX)
                          ||  (BuiltInSymbols.GetBuiltInSymbol(
-                                 input[i + numOfToks].string).symbolType
+                                 input[i + numOfToks].string, true).symbolType
                               == Symbol.PUNCTUATION)))
                    { needsSpace = false ; } ;
                  outputVec.addElement(new Token.PfStepToken
@@ -311,6 +311,7 @@ public class Token
             case END_MODULE : typeName = "END_MODULE" ; break ;
             case PROLOG     : typeName = "PROLOG"     ; break ;
             case EPILOG     : typeName = "EPILOG"     ; break ;
+            case PCAL_LABEL : typeName = "PCAL_LABEL" ; break ;
           } ;
         String str = "\"" + string + "\"" ;
         if (string == null) {str = "null";};

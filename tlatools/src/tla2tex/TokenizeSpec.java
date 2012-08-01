@@ -195,6 +195,7 @@
 *         ELSEIF isCSyntax                                                 * MODIFIED for PlusCal
 *           THEN IF token = "{"                                            * MODIFIED for PlusCal
 *                  THEN TokenOut(BUILTIN) ;                                * MODIFIED for PlusCal
+*                       canBeLabel := true ;                               * MODIFIED for PlusCal
 *                       braceDepth := braceDepth + 1        --> START      * MODIFIED for PlusCal
 *                  ELSEIF token = "}"                                      * MODIFIED for PlusCal
 *                    THEN TokenOut(BUILTIN) ;                              * MODIFIED for PlusCal
@@ -223,24 +224,29 @@
 *             pcalEnd := getNextTokenPosition() ;                          * MODIFIED for PlusCal
 *             cdepth := 1 ;                                                * MODIFIED for PlusCal
 *             inPcal := false ;                                            * MODIFIED for PlusCal
-*             pseudoCom := true              --> COMMENT                   * MODIFIED for PlusCal
-*        ELSE TokenOut(BUILTIN)              --> START                     * MODIFIED for PlusCal
+*             cbl := inPcal /\ CanPrecedeLabel(token)                      * MODIFIED for PlusCal
+*             TokenOut(BUILTIN);                                           * MODIFIED for PlusCal
+*             canBeLabel := cbl             --> START                      * MODIFIED for PlusCal
 *   [OTHER /\ inPcal /\ canBeLabel]                                        * MODIFIED for PlusCal
 *                             token1 := token       --> ID_OR_PCAL_LABEL   * MODIFIED for PlusCal
 *   [OTHER]                   TokenOut(IDENT)       --> START              * MODIFIED for PlusCal
 *                                                                          *
-* ID_OR_PCAL_LABEL:                                                        * MODIFIED for PlusCal
-*   \* Note: token1 contains id                                            * MODIFIED for PlusCal
-*   (Space_Char)    +                     --> ID_OR_PCAL_LABEL             * MODIFIED for PlusCal
-*   (":")           +   token1 := token   --> PCAL_LABEL                   * MODIFIED for PlusCal
-*   [OTHER]             token := token1;                                   * MODIFIED for PlusCal
-*                       TokenOut(IDENT)   --> START                        * MODIFIED for PlusCal
+* ID_OR_PCAL_LABEL:                                                        * ADDED for PlusCal
+*   \* Note: token1 contains id                                            * ADDED for PlusCal
+*   (Space_Char)    +                     --> ID_OR_PCAL_LABEL             * ADDED for PlusCal
+*   (":")           +  IF nextChar # "=" or ":"                            * ADDED for PlusCal
+*                        THEN  token1 := token   --> PCAL_LABEL            * ADDED for PlusCal
+*                        ELSE  backspace so nextChar = ":" ;               * ADDED for PlusCal
+*                              token := token1;                            * ADDED for PlusCal
+*                              TokenOut(IDENT)   --> START                 * ADDED for PlusCal
+*   [OTHER]             token := token1;                                   * ADDED for PlusCal
+*                       TokenOut(IDENT)   --> START                        * ADDED for PlusCal
 *                                                                          *
-* PCAL_LABEL:                                                              * MODIFIED for PlusCal
-*   (Space_Char)    +                        --> PCAL_LABEL                * MODIFIED for PlusCal
-*   ("+" or "-")    +  TokenOut(PCAL_LABEL)  --> START                     * MODIFIED for PlusCal
-*   [OTHER]         token := token1;                                       * MODIFIED for PlusCal
-*                   TokenOut(PCAL_LABEL)     --> START                     * MODIFIED for PlusCal
+* PCAL_LABEL:                                                              * ADDED for PlusCal
+*   (Space_Char)    +                        --> PCAL_LABEL                * ADDED for PlusCal
+*   ("+" or "-")    +  TokenOut(PCAL_LABEL)  --> START                     * ADDED for PlusCal
+*   [OTHER]         token := token1;                                       * ADDED for PlusCal
+*                   TokenOut(PCAL_LABEL)     --> START                     * ADDED for PlusCal
 *                                                                          *                                        
 * NUM_OR_ID:                                                               *
 *   (Digit)   +                 --> NUM_OR_ID                              *
@@ -927,7 +933,7 @@ public class TokenizeSpec
                       startNewLine() ;
                       gotoStart(); 
                     }
-                  else if (BuiltInSymbols.IsBuiltInPrefix("" + nextChar))
+                  else if (BuiltInSymbols.IsBuiltInPrefix("" + nextChar, inPcal))
                     { addNextChar();
                       if (!(inPcal && (mode == MODULE))) {
                         state = BUILT_IN ;
@@ -941,6 +947,7 @@ public class TokenizeSpec
                       else if (isCSyntax) {
                           if (token.equals("{")) {
                               TokenOut(Token.BUILTIN);
+                              canBeLabel = true ;
                               braceDepth++ ;
                               gotoStart() ;
                           }
@@ -1007,7 +1014,9 @@ public class TokenizeSpec
                           state = COMMENT ;
                       }
                       else {
+                          boolean cbl = inPcal && BuiltInSymbols.CanPrecedeLabel(token) ;
                           TokenOut(Token.BUILTIN) ;
+                          canBeLabel = cbl ;
                           gotoStart();
                       }
                     }
@@ -1027,8 +1036,18 @@ public class TokenizeSpec
                     }
                     if (nextChar == ':') {
                         addNextChar();
-                        token1 = token ;
-                        state = PCAL_LABEL ;
+                        if ((nextChar != '=') && (nextChar != ':')) {
+                            token1 = token ;
+                            state = PCAL_LABEL ;
+                        }
+                        else {
+                            reader.backspace() ;
+                            ncol--;
+                            nextChar = ':' ;
+                            token = token1 ;
+                            TokenOut(Token.IDENT) ;
+                            gotoStart() ;
+                        }  
                     } 
                     else {
                         token = token1 ;
@@ -1042,6 +1061,7 @@ public class TokenizeSpec
                         addNextChar();
                     }
                     if ((nextChar == '+') || (nextChar == '-')) {
+                        addNextChar() ;
                         TokenOut(Token.PCAL_LABEL) ;
                         gotoStart() ;
                     }
@@ -1137,7 +1157,7 @@ public class TokenizeSpec
                    break;
 
                 case BUILT_IN :
-                  if (BuiltInSymbols.IsBuiltInPrefix(token + nextChar))
+                  if (BuiltInSymbols.IsBuiltInPrefix(token + nextChar, inPcal))
                     { addNextChar();
                       // state = BUILT_IN;
                     }

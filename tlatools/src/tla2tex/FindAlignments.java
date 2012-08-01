@@ -376,12 +376,12 @@ public class FindAlignments
                           if (token.type == Token.BUILTIN)
                            { alignClass = 
                                 BuiltInSymbols.GetBuiltInSymbol(
-                                   token.string).alignmentType ; } ;
+                                   token.string, true).alignmentType ; } ;
                           if (   (ctoken != null)
                               && (ctoken.type == Token.BUILTIN))
                            { calignClass = 
                                 BuiltInSymbols.GetBuiltInSymbol(
-                                   ctoken.string).alignmentType ; } ;
+                                   ctoken.string, true).alignmentType ; } ;
                           if (   (ctoken != null)
                               && (token.column == ctoken.column)
                               && (alignClass != 0)
@@ -407,7 +407,7 @@ public class FindAlignments
                                                Token.COMMENT)))
                                  && (spec[line][item-1].type == Token.BUILTIN)
                                  && (BuiltInSymbols.GetBuiltInSymbol(
-                                       spec[line][item-1].string).symbolType
+                                       spec[line][item-1].string, true).symbolType
                                       == Symbol.INFIX)
                                  /******************************************
                                  * Correction made 7 Nov 2001.             *
@@ -725,7 +725,7 @@ public class FindAlignments
                ************************************************************/
                if (   (tok.type == Token.BUILTIN)
                    && (   (BuiltInSymbols.GetBuiltInSymbol(
-                                                    tok.string).symbolType 
+                                                    tok.string, true).symbolType 
                             == Symbol.SUBSCRIPTED)
                        || (tok.string.equals("^"))))
                 { 
@@ -749,7 +749,7 @@ public class FindAlignments
                if (tok.type == Token.BUILTIN)
                  { symType = 
                       BuiltInSymbols.GetBuiltInSymbol(
-                         tok.string).symbolType ;
+                         tok.string, true).symbolType ;
                  };
 
                if (   (   (nestingDepth == 0) 
