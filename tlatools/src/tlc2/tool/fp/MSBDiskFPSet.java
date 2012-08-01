@@ -122,9 +122,6 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 			final long buffLen = tblCnt.get();
 			final TLCIterator itr = new TLCIterator(tbl);
 	
-			//!!! This code below is identical to OffHeapDiskFPSet#OffHeapMSBFlusher#mergeNewEntries 
-			
-			
 			// Precompute the maximum value of the new file
 			long maxVal = itr.getLast();
 			if (index != null) {
@@ -151,9 +148,9 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 			}
 	
 			// merge while both lists still have elements remaining
-			long fp = itr.next();
-			while (!eof) {
-				if (value < fp || !itr.hasNext()) { // check for itr.hasNext() here to write last value when itr is used up.
+			long fp = -1L;
+			while (!eof && ((fp = itr.peek()) > 0L)) {
+				if (value < fp) {
 					writeFP(outRAF, value);
 					try {
 						value = inRAF.readLong();
@@ -166,20 +163,14 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 						Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
 								String.valueOf(value));
 					}
-					writeFP(outRAF, fp);
-					// we used one fp up, thus move to next one
-					fp = itr.next();
+					writeFP(outRAF, itr.next());
 				}
 			}
 	
 			// write elements of remaining list
 			if (eof) {
-				while (fp > 0L) {
-					writeFP(outRAF, fp);
-					if (!itr.hasNext()) {
-						break;
-					}
-					fp = itr.next();
+				while (itr.hasNext()) {
+					writeFP(outRAF, itr.next());
 				}
 			} else {
 				do {
@@ -236,7 +227,28 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 			this.buff = buff;
 		}
 
-	    /**
+	    public long peek() {
+	    	// peek does not move indices at all!
+			// firstIdx within buff[].length
+			if (firstIdx < buff.length) {
+				long[] bucket = buff[firstIdx];
+				// secondIdx within bucket[].length and with valid elements in current bucket 
+				if (bucket != null && secondIdx < bucket.length && bucket[secondIdx] > 0) {
+					return bucket[secondIdx];
+				// we might have reached a null or negative range in buff[] -> skip it until
+				// we reach a non-null and non negative bucket or we get to the end of buff[]
+				} else {
+					for (int i = firstIdx + 1; i < buff.length; i++) {
+						if (buff[i] != null && buff[i].length > 0 && buff[i][0] > 0) {
+							return buff[i][0];
+						}
+					}
+				}
+			}
+			return -1L;
+		}
+
+		/**
 	     * Returns <tt>true</tt> if the iteration has more elements. (In other
 	     * words, returns <tt>true</tt> if <tt>next</tt> would return an element
 	     * rather than throwing an exception.)
@@ -244,25 +256,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 	     * @return <tt>true</tt> if the iterator has more elements.
 	     */
 		public boolean hasNext() {
-			// hasNext does not move the indices at all!
-			
-			// firstIdx within buff[].length
-			if (firstIdx < buff.length) {
-				long[] bucket = buff[firstIdx];
-				// secondIdx within bucket[].length and with valid elements in current bucket 
-				if (bucket != null && secondIdx < bucket.length && bucket[secondIdx] > 0) {
-					return true;
-				// we might have reached a null or negative range in buff[] -> skip it until
-				// we reach a non-null and non negative bucket or we get to the end of buff[]
-				} else {
-					for (int i = firstIdx + 1; i < buff.length; i++) {
-						if (buff[i] != null && buff[i].length > 0 && buff[i][0] > 0) {
-							return true;
-						}
-					}
-				}
-			}
-			return false;
+			return peek() > 0L ? true : false; 
 		}
 
 	    /**
