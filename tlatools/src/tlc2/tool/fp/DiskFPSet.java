@@ -182,7 +182,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * JMX force flush
 	 */
-	private volatile boolean forceFlush = false;
+	protected volatile boolean forceFlush = false;
 
 	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory

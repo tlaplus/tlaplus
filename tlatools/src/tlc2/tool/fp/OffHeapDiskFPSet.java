@@ -181,7 +181,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		// 25% full. Otherwise a second flush potentially immediately follows a
 		// first one, when both values for tblCnt and collision size can be small.
 		return (collisionRatioExceeds(COLLISION_BUCKET_RATIO) && loadFactorExceeds(.25d)) 
-				|| loadFactorExceeds(1d);
+				|| loadFactorExceeds(1d) || forceFlush;
 	}
 	
 	/**
