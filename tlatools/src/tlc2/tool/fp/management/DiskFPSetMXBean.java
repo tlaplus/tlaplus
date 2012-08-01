@@ -98,4 +98,9 @@ public interface DiskFPSetMXBean {
 	 * @see DiskFPSet#getLoadFactor()
 	 */
 	double getLoadFactor();
+	
+	/**
+	 * @see DiskFPSet#forceFlush()
+	 */
+	void forceFlush();
 }

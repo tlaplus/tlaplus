@@ -180,6 +180,11 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	protected Flusher flusher;
 
 	/**
+	 * JMX force flush
+	 */
+	private volatile boolean forceFlush = false;
+
+	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
 	 * buffer of new fingerprints can contain up to
 	 * <code>DefaultMaxTblCnt</code> entries. When the buffer fills up, its
@@ -380,6 +385,9 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			// release _all_ write locks
 			releaseAllLocks();
 			
+			// reset forceFlush to false
+			forceFlush = false;
+			
 			// finish writing
 			this.flusherChosen.set(false);
 
@@ -417,7 +425,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		// A) the FP distribution causes the index tbl to be unevenly populated.
 		// B) the FP distribution reassembles linear fill-up/down which 
 		// causes tblCnt * buckets with initial load factor to be allocated.
-		return this.tblCnt.get() >= this.maxTblCnt;
+		return (this.tblCnt.get() >= this.maxTblCnt) || forceFlush ;
 	}
 
 	/* (non-Javadoc)
@@ -1050,6 +1058,10 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 */
 	public long getFlushTime() {
 		return flushTime;
+	}
+	
+	public void forceFlush() {
+		forceFlush = true;
 	}
 	
 	/**
