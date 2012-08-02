@@ -220,12 +220,15 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
 
              case Token.NUMBER :
              case Token.IDENT :
-             case Token.PCAL_LABEL :
                outLine = outLine + " " + Misc.TeXify(tok.string) ; 
                  /**********************************************************
                  * We TeXify the string to typeset a "\" from a number or  *
                  * a "_" from an identifier.                               *
                  **********************************************************/
+               break ;
+               
+             case Token.PCAL_LABEL :
+               outLine = outLine + " " + Misc.TeXifyPcalLabel(tok.string) ;
                break ;
 
              case Token.STRING :
@@ -558,14 +561,25 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
    * Compute preSpace fields for tokens in the order they appear in the    *
    * posCols array.                                                        *
    ************************************************************************/
+   /*
+    * On 1 Aug 2012, LL made the following observation and change.  The
+    * code ignored tok.belowAlign if tok.aboveAlign was specified.  It was
+    * possible for both to be specified, so this caused a mis-alignment in
+    * rare cases--in particular, if the above alignment didn't move the
+    * token far enough to the right to be above or to the right of the token
+    * below it that was aligning itself with it.  Therefore, I changed the code 
+    * to set preSpace to the maximum of the values computed for an aboveAlignment 
+    * and a belowAlignment.
+    */
    int nextPos = 0 ;
    while (nextPos < posCols.length)
     { PosAndCol pc = posCols[nextPos] ;
       Token tok = pc.toToken(spec) ;
       Debug.Assert(tok.preSpace == 0,
            "preSpace already computed when it shouldn't have been");
-      if (tok.aboveAlign.line == -1)
-       { if (tok.belowAlign.line != -1)
+//      if (tok.aboveAlign.line == -1)
+//       { 
+      if (tok.belowAlign.line != -1)
            { /**************************************************************
              * tok begins an inner-alignment.                              *
              **************************************************************/
@@ -623,7 +637,7 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
 
 
            }  // END then OF if (tok.belowAlign != -1)
-         else
+      if (tok.aboveAlign.line == -1)
            { /**************************************************************
              * tok not aligned.                                            *
              **************************************************************/
@@ -656,25 +670,26 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                    }
                }
 
-           } ; // END else OF if (tok.belowAlign != -1)
-
-       } // END then OF if (tok.aboveAlign == -1)
-      else
+           }  // END  OF if (tok.belowAlign == -1)
+       else
        { /******************************************************************
          * tok aligned with a previous token.                              *
          ******************************************************************/
+         float savedPreSpace = tok.preSpace;
          tok.preSpace =  
                 TotalIndent(spec, tok.aboveAlign)
               - TotalIndent(spec, pc)
               + Parameters.LaTeXLeftSpace(
                  tok.column - tok.aboveAlign.toToken(spec).column) ;
 
+         if (tok.preSpace < savedPreSpace) {
+             tok.preSpace = savedPreSpace ;
+         }
          /**************************************************************
          * If prespace is negative, then something funny has           *
          * happened.  So, we set it to zero.                           *
          **************************************************************/
-         if (tok.preSpace < 0) { tok.preSpace = 0;};
-                          
+         if (tok.preSpace < 0) { tok.preSpace = 0;};                  
 
        } // END else OF if (tok.aboveAlign == -1)
       nextPos = nextPos + 1;
@@ -1094,10 +1109,13 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
                break ;
   
              case Token.IDENT :
-             case Token.PCAL_LABEL :
                outLine = outLine + " " + Misc.TeXifyIdent(tok.string) ; 
                break ;
-  
+
+             case Token.PCAL_LABEL :
+               outLine = outLine + " " + Misc.TeXifyPcalLabel(tok.string) ;
+               break ;
+               
              case Token.STRING :
                outLine = outLine + Parameters.LaTeXStringCommand + "{"  
                           + FixString(tok.string) + "}";

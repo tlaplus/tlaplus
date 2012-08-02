@@ -19,6 +19,8 @@
 *    Alignment Type         Tokens so aligned                              *
 *    --------------         -----------------                              *
 *    FirstNonLeftComment   foo, x, + , /\ , y/comment r, u/comment k       *
+*                                           ^^^^^^^^^^^                    *
+*                                I think this should be +/comment r        *
 *    LeftComment           comments j                                      *
 *    CommentInner          comments p                                      *
 *    InfixInner            ==, => , >                                      *
@@ -141,6 +143,31 @@
 *                                                                          *
 *   Note: The large number of conditions are an attempt to rule            *
 *   out spurious alignments.                                               *
+* ----------------------------------------------------------------------   *
+*  Handling of PlusCal Labels                                              *
+*  --------------------------                                              *
+*  In Aug 2012, the FindAlignments method was modified to handle PlusCal   *
+*  labels.  Labels are aligned just like ordinary symbols.  However, the   *
+*  tokens following them are handled as if the labels were INFIX symbols,  *
+*  so those tokens get InfixArg aligned.  However, InfixArg alignment has  *
+*  the property that in                                                    *
+*                                                                          *
+*    token     a                                                           *
+*            + b                                                           *
+*                                                                          *
+*  the a and b are InfixArg aligned  iff token is an INFIX operator.  This *
+*  restriction was eliminated.  Moreover, there was a bug in InfixArg      *
+*  alignment in which the above alignment worked only if the "token" was   *
+*  at least as wide as the "+".  I don't know if I should fix it or leave  *
+*  sleeping bugs lie.                                                      *
+*                                                                          *
+*  For the case of labels, InfixArg alignment was extended to align all    *
+*  the "a"s in the following with the "b":                                 *
+*                                                                          *
+*  [token]    a                                                            *
+*             a                                                            *
+*             a                                                            *
+*          L: b                                                            *
 *                                                                          *
 * ----------------------------------------------------------------------   *
 *                                                                          *
@@ -405,24 +432,26 @@ public class FindAlignments
                                      || (   (item == 2)
                                          && (spec[line][0].type == 
                                                Token.COMMENT)))
-                                 && (spec[line][item-1].type == Token.BUILTIN)
-                                 && (BuiltInSymbols.GetBuiltInSymbol(
-                                       spec[line][item-1].string, true).symbolType
-                                      == Symbol.INFIX)
-                                 /******************************************
-                                 * Correction made 7 Nov 2001.             *
-                                 * The conjunct above replaced the         *
-                                 * following.                              *
-                                 *                                         *
-                                 * && (BuiltInSymbols.GetBuiltInSymbol(    *
-                                 *       spec[line][item-1].string         *
-                                 *        ).alignmentType != 0)            *
-                                 *                                         *
-                                 * It seems reasonable that this           *
-                                 * alignment should be performed only      *
-                                 * when the token to the left is an infix  *
-                                 * operator.                               *
-                                 ******************************************/
+                                 && (   (   (spec[line][item-1].type == Token.BUILTIN)
+                                         && (BuiltInSymbols.GetBuiltInSymbol(
+                                               spec[line][item-1].string, true).symbolType
+                                                  == Symbol.INFIX))
+                                        /******************************************
+                                        * Correction made 7 Nov 2001.             *  
+                                        * The conjunct above replaced the         *
+                                        * following.                              *
+                                        *                                         *
+                                        * && (BuiltInSymbols.GetBuiltInSymbol(    *
+                                        *      spec[line][item-1].string          *
+                                        *       ).alignmentType != 0)             *
+                                        *                                         *
+                                        * It seems reasonable that this           *
+                                        * alignment should be performed only      *
+                                        * when the token to the left is an infix  *
+                                        * operator.                               *
+                                        ******************************************/
+                                     || (spec[line][item-1].type == Token.PCAL_LABEL)
+                                    )
                                  && (ctoken != null) 
                                  && (token.column == ctoken.column)
                                  && (spec[line][item-1].aboveAlign.line
@@ -431,19 +460,19 @@ public class FindAlignments
                               { /*******************************************
                                 * Possible InfixArg alignment.             *
                                 *******************************************/
-
                              // This can happen and seems harmless.
                              //   Debug.Assert(ctoken.belowAlign.line == -1,
                              //       "Trying to InfixArg align with token "
                              //   + "that is not aligned with token below it");
 
-                                Token lTok = spec[line][item-1] ;
+                                 Token lTok = spec[line][item-1] ;
                                    /****************************************
                                    * The token to the left of the current  *
                                    * token.                                *
                                    ****************************************/
-                                Position alPos = lTok.aboveAlign ;
-                                Token alTok = alPos.toToken(spec);
+                                 boolean isLabel = (lTok.type == Token.PCAL_LABEL) ;
+                                 Position alPos = lTok.aboveAlign ;
+                                 Token alTok = alPos.toToken(spec);
                                   /*****************************************
                                   * The token with which lTok is aligned   *
                                   * above.                                 *
@@ -459,7 +488,14 @@ public class FindAlignments
                                    *          |                            *
                                    *        + b                            *
                                    ****************************************/
-                                   token.aboveAlign = cpos;           
+                                   token.aboveAlign = cpos; 
+                                   // following fixes the mis-alignment that occurs if
+                                   // the "x == " occupies less space than the "+".
+                                   // However, for safety, I'm only fixing it for the
+                                   // case of labels, which should be more common.
+                                   if (isLabel) {
+                                       ctoken.belowAlign = pos ;
+                                   }
                                  } 
                                else
                                  { if (   (cpos.item == 0)
@@ -483,11 +519,36 @@ public class FindAlignments
                                       *****************************************/
                                       token.aboveAlign = cpos;           
                                       ctoken.belowAlign = pos ;
+                                      // The following code, executed only when the
+                                      // token to the left is a label, causes all 
+                                      // the S's to be aligned in
+                                      //
+                                      //        S
+                                      //        S
+                                      //        S
+                                      //     l: S
+                                      //
+                                      // the upward search for alignments stopping at
+                                      // an S that is either not the first token on the
+                                      // or is not left-aligned with the current S.
+                                      boolean notDone = isLabel ;
+                                      while (   notDone
+                                             && (ctoken.aboveAlign.line != -1)
+                                             && (cpos.item == 0)) {
+                                         pos = cpos ;
+                                         int column = ctoken.column ;
+                                         cpos = ctoken.aboveAlign ;
+                                         ctoken = cpos.toToken(spec) ;
+                                         if (ctoken.column == column) {
+                                             ctoken.belowAlign = pos ;
+                                         }
+                                         else {
+                                             notDone = false ;
+                                         }
+                                      }
                                     } ;
                                  }
-
                               };
-                             
                            };// END else OF if ((token.column == ...))
                         }; // END else of if (isLeftComment(spec, pos))
                     }; // END else OF if (   ((item == 0) && ... ))

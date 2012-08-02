@@ -205,7 +205,7 @@ public class TLA
         Starting("FindAlignments.FindAlignments");
         FindAlignments.FindAlignments(spec);
         Finished("FindAlignments.FindAlignments");
-        // Debug.print2DArray(spec, "");
+        // Debug.print2DArray(spec, "align");
 
         /*********************************************************************
         * Write out the tla file with deleted comments removed, if the       *
@@ -234,7 +234,7 @@ public class TLA
         Starting("LaTeXOutput.SetDimensions");
         LaTeXOutput.SetDimensions(spec);
         Finished("LaTeXOutput.SetDimensions");
-        // Debug.print2DArray(spec, "");
+        Debug.print2DArray(spec, "");
 
         /*********************************************************************
         * Write the final LaTeX output and run it through LaTeX.             *

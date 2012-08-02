@@ -273,6 +273,56 @@ public final class Misc
       return out ;
     }
 
+  /**
+   * The LaTeX output for producing a label.  As a first attempt, here is
+   * the algorithm:
+   * 
+   *    - typeset the Ident part of the label as in TeXifyIdent.
+   *    - add \@s{.5} or \@s{2.5} depending on whether or not there
+   *      is one or more spaces before the ":"
+   *    - put the ":", ":+", or ":-" in a \textrm command, eliminating
+   *      any spaces.
+   *    - add \@s{3} or @s{4} depending on whether there are spaces before
+   *      the ":"
+   * @param str
+   * @return
+   */
+  public static String TeXifyPcalLabel(String str) {
+      String out = "";
+      int next = 0 ;
+      while (    (next < str.length())
+              && (   IsLetter(str.charAt(next))) 
+                  || IsDigit(str.charAt(next))) {
+          char nextChar = str.charAt(next) ;
+          next++ ;
+          if (nextChar == '_') {
+              out = out + "\\" ;
+          } 
+          out = out + nextChar ;
+      }
+      int numberOfSpaces = 0 ;
+      while (next < str.length() && IsSpace(str.charAt(next))) {
+          numberOfSpaces++ ;
+          next++ ;
+      }
+      if (numberOfSpaces == 0) {
+          out = out + "\\@s{.5}" ;
+      }
+      else {
+          out = out + "\\@s{2.5}" ;
+      }
+      out = out + "\\textrm{" ;
+      while (next < str.length()) {
+          char nextChar = str.charAt(next) ;
+          next++ ;
+          if (! IsSpace(nextChar)) {
+              out = out + nextChar ;
+          }
+      }
+      out = out + ((numberOfSpaces == 0) ? "}\\@s{3}" : "}\\@s{4}") ;
+      return out;
+  }
+
   private static final int MAXLEN = 48;
     /***********************************************************************
     * The maximum output line length for the BreakLine method.             *
