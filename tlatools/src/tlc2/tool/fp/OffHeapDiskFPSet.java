@@ -598,9 +598,11 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			this.logicalPosition = 0L;
 			this.totalElements = expectedElements;
 			
+			// Do calculation before prepareForFlush() potentially empties the cs causing size() to return 0 
+			this.bufferElements = expectedElements - collisionBucket.size();
+			
 			this.cs = collisionBucket;
 			this.cs.prepareForFlush();
-			this.bufferElements = expectedElements - this.cs.size();
 		}
 
 	    /**
