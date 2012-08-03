@@ -136,6 +136,7 @@
 \newcommand{\bang}{\@s{1}\mbox{\small !}\@s{1}}
 %% PlusCal keywords
 \newcommand{\pfair}{\textbf{fair }}
+\newcommand{\psemicolon}{\textbf{\,;}}
 \newcommand{\palgorithm}{\textbf{algorithm }}
 \newcommand{\pmmfair}{\textbf{-{}-fair }}
 \newcommand{\pmmalgorithm}{\textbf{-{}-algorithm }}
@@ -394,6 +395,122 @@
                                  \shadebox{\usebox{\tempsbox}}\par}{}%
   }
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THE ppar ENVIRONMENT                                                       %
+% ^^^^^^^^^^^^^^^^^^^^                                                       %
+% The environment                                                            %
+%                                                                            %
+%   \begin{ppar} ... \end{ppar}                                              %
+%                                                                            %
+% is equivalent to                                                           %
+%                                                                            %
+%   \begin{cpar}{0}{F}{F}{0}{0}{} ... \end{cpar}                             %
+%                                                                            %
+% The environment is put around each line of the output for a PlusCal        %
+% algorithm.                                                                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newenvironment{ppar}{%
+  \ifthenelse{\boolean{shading}}{\par\begin{lrbox}{\tempsbox}%
+                                 \begin{minipage}[t]{\linewidth}}{}%
+  \begin{list}{}{%
+     \edef\temp{\thegmargin}
+        \setlength{\leftmargin}{0pt}%
+        \addtolength{\leftmargin}{\temp}%
+        \setlength{\itemindent}{0pt}%
+      \setlength{\labelwidth}{0pt}%
+      \setlength{\labelsep}{0pt}%
+      \setlength{\itemindent}{-\leftmargin}%
+      \setlength{\topsep}{0pt}%
+      \setlength{\parsep}{0pt}%
+      \setlength{\partopsep}{0pt}%
+      \setlength{\parskip}{0pt}%
+      \setlength{\itemsep}{0pt}
+      \setlength{\itemindent}{0pt}%
+      \addtolength{\itemindent}{-\leftmargin}}%
+      \item[\tstrut\hspace{\temp}]}%
+ {\hspace{-\the\lastskip}\tstrut
+ \end{list}%
+  \ifthenelse{\boolean{shading}}{\end{minipage}  
+                                 \end{lrbox}%
+                                 \shadebox{\usebox{\tempsbox}}\par}{}%
+  }
+
+ %%% TESTING
+ \newcommand{\xtest}[1]{\par
+ \makebox[0pt][l]{\shadebox{\xtstrut\hspace*{\textwidth}\hspace*{-.33em}}}%
+ \mbox{$\mbox{}#1\mbox{}$}} 
+
+% \newcommand{\xxtest}[1]{\par
+% \makebox[0pt][l]{\shadebox{\xtstrut{#1}\hspace*{\textwidth}}}%
+% \mbox{$\mbox{}#1\mbox{}$}} 
+
+\newlength{\pcalvspace}
+\setlength{\pcalvspace}{0pt}
+\newlength{\xxtestlen}
+\setlength{\xxtestlen}{0pt}
+\newcommand\xtstrut%
+  {\setlength{\xxtestlen}{1.15em}%
+   \addtolength{\xxtestlen}{\pcalvspace}%
+    \raisebox{\vshadelen}{\raisebox{-.25em}{\rule{0pt}{\xxtestlen}}}%
+   \global\setlength{\vshadelen}{0pt}%
+   \global\setlength{\pcalvspace}{0pt}}
+   
+   %%%% TESTING
+   
+   %% The xcpar environment
+   %%  Note: overloaded use of \pcalvspace for testing.
+   %%
+   \newlength{\lcomindent}%
+   \newlength{\xcparht}%
+   \newlength{\xcpardp}%
+   
+   \newenvironment{xcpar}[6]{%
+  \addtocounter{pardepth}{-#1}%
+  \ifthenelse{\boolean{shading}}{\par\begin{lrbox}{\tempsbox}%
+                                 \begin{minipage}[t]{\linewidth}}{}%
+  \begin{list}{}{%
+     \edef\temp{\thegmargin}%
+     \ifthenelse{\equal{#3}{T}}%
+       {\settowidth{\leftmargin}{\hspace{\temp}\footnotesize #6\hspace{#5pt}}%
+        \addtolength{\leftmargin}{#4pt}}%
+       {\setlength{\leftmargin}{#4pt}%
+        \addtolength{\leftmargin}{#5pt}%
+        \addtolength{\leftmargin}{\temp}%
+        \setlength{\itemindent}{-#5pt}}%
+      \ifthenelse{\equal{#2}{T}}{\addtocounter{pardepth}{1}%
+                                 \setgmargin{\the\leftmargin}}{}%
+      \setlength{\labelwidth}{0pt}%
+      \setlength{\labelsep}{0pt}%
+      \setlength{\itemindent}{-\leftmargin}%
+      \setlength{\topsep}{0pt}%
+      \setlength{\parsep}{0pt}%
+      \setlength{\partopsep}{0pt}%
+      \setlength{\parskip}{0pt}%
+      \setlength{\itemsep}{0pt}%
+      \setlength{\itemindent}{#4pt}%
+      \addtolength{\itemindent}{-\leftmargin}}%
+   \ifthenelse{\equal{#3}{T}}%
+      {\item[\xtstrut\footnotesize \hspace{\temp}{#6}\hspace{#5pt}]%
+        }%
+      {\item[\xtstrut\hspace{\temp}]%
+         }%
+   \footnotesize}
+ {\hspace{-\the\lastskip}\tstrut
+ \end{list}%
+  \ifthenelse{\boolean{shading}}{\end{minipage}  
+                                 \end{lrbox}%
+                                 \setlength{\xcparht}{\ht\tempsbox}%
+                                 \setlength{\xcpardp}{\dp\tempsbox}%
+                                 \addtolength{\xcparht}{.15em}%
+                                 \addtolength{\xcpardp}{.2em}%
+                                 \addtolength{\xcparht}{\xcpardp}%
+                                 \hspace*{-\lcomindent}%
+                                 \makebox[0pt][l]{\raisebox{-\xcpardp}[0pt][0pt]{%
+                                      \shadebox{\rule{0pt}{\xcparht}\hspace*{\textwidth}}}}%
+                                 \hspace*{\lcomindent}\usebox{\tempsbox}%
+                                 \par}{}%
+  }
+   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % THE lcom ENVIRONMENT                                                       %
 % ^^^^^^^^^^^^^^^^^^^^                                                       %

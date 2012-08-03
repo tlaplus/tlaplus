@@ -191,6 +191,15 @@ public final class BuiltInSymbols
       *********************************************************************/
       { pcalBuiltInHashTable.put(tla, new Symbol(tla, tex, stype, atype, true) ) ; } ;
 
+    /*
+     * The following special 1-character strings are for defining dummy
+     * strings to represent special versions of the symbols "(", ")", "{"
+     * and "}" that get printed differently from their normal versions.
+     */
+      private static String pcalLeftParen  = "" + '\0' ;
+      private static String pcalRightParen = "" + '\1' ;
+      private static String pcalLeftBrace  = "" + '\2' ;
+      private static String pcalRightBrace = "" + '\3' ;
 
     private static void buildHashTable() 
       /*********************************************************************
@@ -447,7 +456,7 @@ public final class BuiltInSymbols
         pcaladd("algorithm", "{\\palgorithm}",  Symbol.KEYWORD,     0);
         pcaladd("--fair",    "{\\pmmfair}",     Symbol.KEYWORD,     0);
         pcaladd("--algorithm", "{\\pmmalgorithm}",  Symbol.KEYWORD,     0);
-        pcaladd(";",          "\\,;",            Symbol.PUNCTUATION, 63);
+        pcaladd(";",          "{\\psemicolon}",  Symbol.PUNCTUATION, 63);
         pcaladd("assert",     "{\\passert}",     Symbol.KEYWORD,     0);
         pcaladd("begin",      "{\\pbegin}",      Symbol.KEYWORD,     0);
         pcaladd("end",        "{\\pend}",        Symbol.KEYWORD,     0);

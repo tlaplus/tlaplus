@@ -635,12 +635,12 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                       { tok.preSpace = tok.preSpace + 
                            Parameters.LaTeXLeftSpace(extraSpace) ; };
 
-
            }  // END then OF if (tok.belowAlign != -1)
       if (tok.aboveAlign.line == -1)
            { /**************************************************************
              * tok not aligned.                                            *
              **************************************************************/
+             float savedPreSpace = tok.preSpace;
              if (pc.item == 0)
                { /**********************************************************
                  * Left-most token on the line.                            *
@@ -669,7 +669,9 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                            Parameters.LaTeXLeftSpace(extraSpace) ; };
                    }
                }
-
+              if (tok.preSpace < savedPreSpace) {
+                 tok.preSpace = savedPreSpace ;
+              }
            }  // END  OF if (tok.belowAlign == -1)
        else
        { /******************************************************************
@@ -895,14 +897,26 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
     /***********************************************************************
     * True while putting out sub/superscript tokens.                       *
     ***********************************************************************/
-    
+ 
+  boolean hasPcal = TokenizeSpec.hasPcal ;
+  int pcalStartLine ;
+  int pcalEndLine ;
+  if (TokenizeSpec.hasPcal) {
+    pcalStartLine = TokenizeSpec.pcalStart.line;
+    pcalEndLine   = TokenizeSpec.pcalEnd.line;
+  }
+  else {
+      pcalStartLine = Integer.MAX_VALUE ;
+      pcalEndLine   = Integer.MAX_VALUE - 1;
+  }
   /***********************************************************************
   * Write out the body and epilog of the specification.                  *
   ***********************************************************************/
   while (line < spec.length)
    { // BEGIN while (line < spec.length)
 
-
+    boolean pcalLine = false;
+    boolean pcalLine2 = ( pcalStartLine <= line && line <= pcalEndLine) ;
     if (spec[line].length == 0)
      {                   //  BEGIN then OF if (spec[line].length == 0)
        /********************************************************************
@@ -914,16 +928,31 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
          { blankLines = blankLines + 1;
            line = line + 1;
          }
+       if (pcalLine) {
+           writer.putLine("\\begin{ppar}%") ;
+       }
        writer.putLine(
-           "\\par\\vspace{" 
+         (pcalLine2 ? "\\setlength{\\pcalvspace}{" :
+           "\\par\\vspace{" )
          + Misc.floatToString(Parameters.LaTeXVSpace(blankLines), 2) 
          + "pt}%" );
+       if (pcalLine) {
+           writer.putLine("\\end{ppar}%") ;
+       }
+
 
      }                   //  END then OF if (spec[line].length == 0)
        
     else
      {                   //  BEGIN else OF if (spec[line].length == 0)
 
+      /*
+       * Write "\begin{ppar}%" if this is a PlusCal Line.
+       */
+      if (pcalLine) {
+          writer.putLine("\\begin{ppar}%") ;
+      }
+      
       /********************************************************************
       * Write out the current line.                                       *
       ********************************************************************/
@@ -1015,6 +1044,9 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
         * Start the output line with a LaTeXStartLine command.               *
         *********************************************************************/
         outLine = Parameters.LaTeXStartLine + "{" ; 
+        if (pcalLine2) {
+            outLine = "\\xtest{" ;
+        }
         openLine = true ;
 
         /*******************************************************************
@@ -1461,6 +1493,14 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
        ******************************************************************/
        { Misc.BreakStringOut(writer, outLine + "}%");
        } ;
+      
+       /*
+        * Write "\end{ppar}%" if this is a PlusCal Line.
+        */
+       if (pcalLine) {
+           writer.putLine("\\end{ppar}%") ;
+       }
+
       outLine = "" ;
       item = 0 ;
       line = line + 1;
