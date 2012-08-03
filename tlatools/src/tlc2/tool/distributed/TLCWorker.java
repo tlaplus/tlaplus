@@ -23,6 +23,7 @@ import tlc2.output.MP;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateVec;
 import tlc2.tool.WorkerException;
+import tlc2.tool.distributed.fp.IFPSetManager;
 import tlc2.util.BitVector;
 import tlc2.util.FP64;
 import tlc2.util.LongVec;
@@ -40,14 +41,16 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private static RMIFilenameToStreamResolver fts;
 	
 	private DistApp work;
-	private FPSetManager fpSetManager;
+	private IFPSetManager fpSetManager;
 	private final URI uri;
 	private long lastInvocation;
+	private final long mask;
 
-	public TLCWorker(DistApp work, FPSetManager fpSetManager, String aHostname)
+	public TLCWorker(DistApp work, IFPSetManager fpSetManager, String aHostname)
 			throws RemoteException {
 		this.work = work;
 		this.fpSetManager = fpSetManager;
+		this.mask = fpSetManager.getMask();
 		uri = URI.create("rmi://" + aHostname + ":" + getPort());
 	}
 
@@ -82,7 +85,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				// add all succ states/fps to the array designated for the corresponding fp server
 				for (int j = 0; j < nstates.length; j++) {
 					long fp = nstates[j].fingerPrint();
-					int fpIndex = (int) ((fp & 0x7FFFFFFFFFFFFFFFL) % fpServerCnt);
+					int fpIndex = (int) ((fp & mask) % fpServerCnt);
 					pvv[fpIndex].addElement(state1);
 					nvv[fpIndex].addElement(nstates[j]);
 					fpvv[fpIndex].addElement(fp);
@@ -264,7 +267,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					server.getConfigFileName(), server.getCheckDeadlock(),
 					server.getPreprocess(), fts, 0);
 
-			FPSetManager fpSetManager = server.getFPSetManager();
+			IFPSetManager fpSetManager = server.getFPSetManager();
 			worker = new TLCWorker(work, fpSetManager, InetAddress.getLocalHost().getCanonicalHostName());
 			server.registerWorker(worker);
 
