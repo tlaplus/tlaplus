@@ -4,6 +4,16 @@
    <extension
          point="org.eclipse.equinox.http.registry.servlets">
       <servlet
+            alias="/fpset.jnlp"
+            class="org.lamport.tla.toolbox.distributed.FPSetJNLPGeneratorServlet"
+            load-on-startup="true">
+      </servlet>
+      <servlet
+            alias="/combined.jnlp"
+            class="org.lamport.tla.toolbox.distributed.CombinedJNLPGeneratorServlet"
+            load-on-startup="true">
+      </servlet>
+      <servlet
             alias="/worker.jnlp"
             class="org.lamport.tla.toolbox.distributed.JNLPGeneratorServlet"
             load-on-startup="true">

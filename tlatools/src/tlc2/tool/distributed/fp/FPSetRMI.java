@@ -3,7 +3,7 @@
 // Last modified on Mon 30 Apr 2007 at 13:13:35 PST by lamport
 //      modified on Fri Dec 15 15:24:57 PST 2000 by yuanyu
 
-package tlc2.tool.distributed;
+package tlc2.tool.distributed.fp;
 
 import java.io.IOException;
 import java.rmi.Remote;
@@ -18,27 +18,28 @@ import tlc2.util.LongVec;
  */
 public interface FPSetRMI extends Remote {
 
-	public boolean put(long fp) throws IOException;
+	boolean put(long fp) throws IOException;
 
-	public boolean contains(long fp) throws IOException;
+	boolean contains(long fp) throws IOException;
 
-	public BitVector putBlock(LongVec fpv) throws IOException;
+	BitVector putBlock(LongVec fpv) throws IOException;
 
-	public BitVector containsBlock(LongVec fpv) throws IOException;
+	BitVector containsBlock(LongVec fpv) throws IOException;
 
-	public long size() throws IOException;
+	long size() throws IOException;
 
-	public void exit(boolean cleanup) throws IOException;
+	void exit(boolean cleanup) throws IOException;
 
-	public void beginChkpt(String filename) throws IOException;
+	void beginChkpt(String filename) throws IOException;
 
-	public void commitChkpt(String filename) throws IOException;
+	void commitChkpt(String filename) throws IOException;
 
-	public void recover(String filename) throws IOException;
+	void recover(String filename) throws IOException;
 
 	/**
 	 * @return The amount of states seen by this FPSet (not distinct states!)
 	 */
-	public long getStatesSeen() throws RemoteException;
+	long getStatesSeen() throws RemoteException;
 
+	double checkFPs() throws IOException;
 }

@@ -23,6 +23,7 @@ import tlc2.output.MP;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateVec;
 import tlc2.tool.WorkerException;
+import tlc2.tool.distributed.fp.IFPSetManager;
 import tlc2.util.BitVector;
 import tlc2.util.Cache;
 import tlc2.util.FP64;
@@ -47,11 +48,13 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private long lastInvocation;
 	
 	private final Cache cache;
+	private final long mask;
 
 	public TLCWorker(DistApp work, IFPSetManager fpSetManager, String aHostname)
 			throws RemoteException {
 		this.work = work;
 		this.fpSetManager = fpSetManager;
+		this.mask = fpSetManager.getMask();
 		uri = URI.create("rmi://" + aHostname + ":" + getPort());
 		
 		this.cache = new SimpleCache();
@@ -89,7 +92,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				for (int j = 0; j < nstates.length; j++) {
 					long fp = nstates[j].fingerPrint();
 					if (!cache.hit(fp)) {
-						int fpIndex = (int) ((fp & 0x7FFFFFFFFFFFFFFFL) % fpServerCnt);
+						int fpIndex = (int) ((fp & mask) % fpServerCnt);
 						pvv[fpIndex].addElement(state1);
 						nvv[fpIndex].addElement(nstates[j]);
 						fpvv[fpIndex].addElement(fp);

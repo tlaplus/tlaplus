@@ -9,12 +9,17 @@ import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import tlc2.tool.distributed.fp.FPSetRMI;
+import tlc2.tool.distributed.fp.IFPSetManager;
+
 /**
  * @version $Id$
  */
 public interface TLCServerRMI extends Remote {
 	public void registerWorker(TLCWorkerRMI worker)
 			throws IOException;
+	
+	public void registerFPSet(FPSetRMI fpSet, String hostname) throws RemoteException;
 
 	public Boolean getCheckDeadlock() throws RemoteException;
 

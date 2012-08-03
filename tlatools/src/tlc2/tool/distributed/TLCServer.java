@@ -18,6 +18,10 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
 import tlc2.TLCGlobals;
@@ -27,6 +31,10 @@ import tlc2.tool.ModelChecker;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
+import tlc2.tool.distributed.fp.DynamicFPSetManager;
+import tlc2.tool.distributed.fp.FPSetRMI;
+import tlc2.tool.distributed.fp.IFPSetManager;
+import tlc2.tool.distributed.fp.StaticFPSetManager;
 import tlc2.tool.distributed.management.TLCServerMXWrapper;
 import tlc2.tool.distributed.selector.BlockSelectorFactory;
 import tlc2.tool.distributed.selector.IBlockSelector;
@@ -87,7 +95,14 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	
 	private final CyclicBarrier barrier;
 	private final IBlockSelector blockSelector;
-	static final int expectedWorkerCount = Integer.getInteger("tlc2.tool.distributed.TLCServer.expectedWorkerCount", 1);
+
+
+	static final int expectedWorkerCount = Integer.getInteger(TLCServer.class.getName() + ".expectedWorkerCount", 1);
+	/**
+	 * 
+	 */
+	private final CountDownLatch latch;
+	static final int expectedFPSetCount = Integer.getInteger(TLCServer.class.getName() + ".expectedFPSetCount", 0);
 	
 	/**
 	 * @param work
@@ -107,14 +122,17 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		this.stateQueue = new DiskStateQueue(this.metadir);
 		this.trace = new TLCTrace(this.metadir, this.work.getFileName(),
 				this.work);
-		if (TLCGlobals.fpServers == null) {
+		if (TLCGlobals.fpServers == null && expectedFPSetCount <= 0) {
 			this.fpSet = FPSet.getFPSet(work.getFPBits(), work.getFpMemSize());
 			this.fpSet.init(0, this.metadir, this.work.getFileName());
-			this.fpSetManager = new FPSetManager((FPSetRMI) this.fpSet);
+			this.fpSetManager = new StaticFPSetManager((FPSetRMI) this.fpSet);
+		} else if (expectedFPSetCount > 0) {
+			this.fpSetManager = new DynamicFPSetManager(expectedFPSetCount);
 		} else {
-			this.fpSetManager = new FPSetManager(TLCGlobals.fpServers);
+			this.fpSetManager = new StaticFPSetManager(TLCGlobals.fpServers);
 		}
 		barrier = new CyclicBarrier(expectedWorkerCount);
+		latch = new CountDownLatch(expectedFPSetCount);
 		blockSelector = BlockSelectorFactory.getBlockSelector(this);
 	}
 
@@ -136,6 +154,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @see tlc2.tool.distributed.TLCServerRMI#getFPSetManager()
 	 */
 	public final IFPSetManager getFPSetManager() {
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		return this.fpSetManager;
 	}
 
@@ -169,12 +192,17 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// create new server thread for given worker
 		final TLCServerThread thread = new TLCServerThread(this.thId++, worker, this, barrier, blockSelector);
 		threadsToWorkers.put(thread, worker);
-		if (TLCGlobals.fpServers == null) {
+		if (TLCGlobals.fpServers == null && expectedFPSetCount <= 0) {
 			this.fpSet.addThread();
 		}
 		thread.start();
 
 		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_REGISTERED, worker.getURI().toString());
+	}
+
+	public void registerFPSet(FPSetRMI fpSet, String hostname) throws RemoteException {
+		this.fpSetManager.register(fpSet, hostname);
+		latch.countDown();
 	}
 
 	/**
@@ -277,7 +305,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	/**
 	 * @throws Exception
 	 */
-	private final void doInit() throws Exception {
+	private final Set<Long> doInit() throws Exception {
+		final SortedSet<Long> set = new TreeSet<Long>();
 		TLCState curState = null;
 		try {
 			TLCState[] initStates = work.getInitStates();
@@ -287,7 +316,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				boolean seen = false;
 				if (inConstraints) {
 					long fp = curState.fingerPrint();
-					seen = this.fpSetManager.put(fp);
+					seen = !set.add(fp);
 					if (!seen) {
 						initStates[i].uid = trace.writeState(fp);
 						stateQueue.enqueue(initStates[i]);
@@ -307,6 +336,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			this.done = true;
 			throw e;
 		}
+		return set;
 	}
 
 	/**
@@ -340,11 +370,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
                     String.valueOf(server.stateQueue.size())});
 			recovered = true;
 		}
+		Set<Long> initFPs = new TreeSet<Long>();
 		if (!recovered) {
 			// Initialize with the initial states:
 			try {
                 MP.printMessage(EC.TLC_COMPUTING_INIT);
-				server.doInit();
+                initFPs = server.doInit();
 				MP.printMessage(EC.TLC_INIT_GENERATED1,
 						new String[] { String.valueOf(server.stateQueue.size()), "(s)" });
 			} catch (Throwable e) {
@@ -359,7 +390,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				// stack.
 				server.work.setCallStack();
 				try {
-					server.doInit();
+					initFPs = server.doInit();
 				} catch (Throwable e1) {
 					MP.printError(EC.GENERAL, "evaluating the nested"   // LL changed call 7 April 2012
 									+ "\nexpressions at the following positions:\n"
@@ -377,6 +408,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		Registry rg = LocateRegistry.createRegistry(Port);
 		rg.rebind("TLCServer", server);
 		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_RUNNING, hostname);
+		
+		// First register TLCSERVER with RMI and only then wait for all FPSets to become registered
+		server.latch.await();
+		for (Long fp : initFPs) {
+			server.fpSetManager.put(fp);
+		}
 
 		// Wait for completion, but print out progress report and checkpoint
 		// periodically.
@@ -442,9 +479,13 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		
 		// Postprocessing:
 		boolean success = (server.errState == null);
-		if (success) {
+		if (success && server.fpSet != null) {
 			// We get here because the checking has succeeded.
 			ModelChecker.reportSuccess(server.fpSet, server.fpSetManager.size());
+		} else if (success && server.fpSet == null) {
+	        final long d = server.fpSetManager.size();
+	        final double actualProb = server.fpSetManager.checkFPs();
+			ModelChecker.reportSuccess(d, actualProb, server.fpSetManager.getStatesSeen());
 		} else if (server.keepCallStack) {
 			// We redo the work on the error state, recording the call stack.
 			server.work.setCallStack();
@@ -463,7 +504,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		
 		// dispose RMI leftovers
 		rg.unbind("TLCServer");
-		server.fpSet.unexportObject(false);
+		if (server.fpSet != null) {
+			server.fpSet.unexportObject(false);
+		}
 		UnicastRemoteObject.unexportObject(server, false);
 		
         MP.printMessage(EC.TLC_FINISHED);

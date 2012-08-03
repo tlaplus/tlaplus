@@ -1,0 +1,56 @@
+// Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
+package tlc2.tool.distributed.fp;
+
+import java.io.IOException;
+
+import tlc2.tool.distributed.TLCWorker;
+import tlc2.tool.fp.FPSet;
+import tlc2.util.BitVector;
+import tlc2.util.LongVec;
+
+public interface IFPSetManager {
+
+	int numOfServers();
+
+	/**
+	 * @see FPSet#close()
+	 */
+	void close(boolean cleanup) throws IOException;
+
+	/**
+	 * @see FPSet#put(long)
+	 */
+	boolean put(long fp);
+
+	/**
+	 * @see FPSet#putBlock(LongVec)
+	 */
+	BitVector[] putBlock(LongVec[] fps);
+
+	/**
+	 * @see FPSet#containsBlock(LongVec);
+	 */
+	BitVector[] containsBlock(LongVec[] fps);
+
+	/**
+	 * @see FPSet#size()
+	 */
+	long size();
+
+	/**
+	 * @return The amount of states seen by all {@link FPSet}. This amounts to
+	 *         the states computed by all {@link TLCWorker}
+	 */
+	long getStatesSeen();
+
+	void checkpoint(String fname) throws InterruptedException;
+
+	void recover(String fname) throws InterruptedException;
+
+	int register(FPSetRMI fpSet, String hostname);
+
+	long getMask();
+
+	double checkFPs();
+
+}
