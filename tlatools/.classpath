@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/guava-13.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/high-scale-lib.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/trove-3.0.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/guava-13.0-rc2.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://docs.guava-libraries.googlecode.com/git/javadoc/"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>

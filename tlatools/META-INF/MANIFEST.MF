@@ -38,7 +38,7 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Eclipse-BundleShape: dir
 Require-Bundle: org.aspectj.runtime;bundle-version="1.6.0";resolution:=optional;x-installation:=greedy,
  org.junit;bundle-version="3.8.0";resolution:=optional;x-installation:=greedy
-Bundle-ClassPath: lib/guava-13.0-rc2.jar,
+Bundle-ClassPath: lib/guava-13.0.jar,
  lib/trove-3.0.3.jar,
  lib/high-scale-lib.jar,
  .
