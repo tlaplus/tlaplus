@@ -169,8 +169,8 @@ public class TLA
         Starting("TokenizeSpec.Tokenize");
         Token[][] spec = TokenizeSpec.Tokenize(testlr, TokenizeSpec.MODULE);
 
-        System.out.println("pcalStart = " + TokenizeSpec.pcalStart.toString());
-        System.out.println("pcalEnd = " + TokenizeSpec.pcalEnd.toString());
+//        System.out.println("pcalStart = " + TokenizeSpec.pcalStart.toString());
+//        System.out.println("pcalEnd = " + TokenizeSpec.pcalEnd.toString());
         /*********************************************************************
         * Finish the tokenization by converting sequences of tokens that     *
         * represent proof-step numbers to PF_STEP tokens.                    *
@@ -236,7 +236,7 @@ public class TLA
         Starting("LaTeXOutput.SetDimensions");
         LaTeXOutput.SetDimensions(spec);
         Finished("LaTeXOutput.SetDimensions");
-        // Debug.print2DArray(spec, "");
+        Debug.print2DArray(spec, "");
 
         /*********************************************************************
         * Write the final LaTeX output and run it through LaTeX.             *

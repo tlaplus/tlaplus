@@ -589,6 +589,11 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
              * all tokens in the alignment.                                *
              **************************************************************/
              float tokIndent = 
+                  // LL stopped here on 3 Aug 2011
+                  // The plan is to replace these uses of TotalIndent
+                  // with TotalIndenWithSpace, since tokens aligned below
+                  // have not yet had their preSpace fields computed
+                  // yet.
                   TotalIndent(spec, new Position(pc.line, pc.item));
              float maxIndent = tokIndent ;
              Position alPos = tok.belowAlign ;
@@ -740,6 +745,25 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
       return val + pos.toToken(spec).distFromMargin;
     }
 
+  /**
+   * Equals TotalIndent(spec, pos) plus the extra space added because of
+   * spaces to the left of the token at pos
+   * 
+   * @param spec
+   * @param pos
+   * @return
+   */
+  private static float TotalIndentWithSpace(Token[][] spec, Position pos) {
+      int posOfFirstSpaceToLeft = 0;
+      if (pos.item > 0) {
+          Token tokToLeft = spec[pos.line][pos.item-1] ;
+          posOfFirstSpaceToLeft = tokToLeft.column + tokToLeft.getWidth();          
+      }
+      float spaceToLeft = Parameters.LaTeXLeftSpace(
+                           pos.toToken(spec).column - posOfFirstSpaceToLeft - 1) ;
+      return spaceToLeft + TotalIndent(spec, pos) ;
+  }
+  
   private static String FixString(String inputStr)
     /***********************************************************************
     * Result is Misc.TeXify(str) with spaces replaced by "\ " and "-"      *
@@ -912,11 +936,25 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
   /***********************************************************************
   * Write out the body and epilog of the specification.                  *
   ***********************************************************************/
+  /*
+   * pcalLine equals true during the processing of each line of the
+   * PlusCalCode iff we are shading comments and hence PlusCal code.
+   */
+  boolean pcalLine = false;
   while (line < spec.length)
    { // BEGIN while (line < spec.length)
 
-    boolean pcalLine = false;
-    boolean pcalLine2 = ( pcalStartLine <= line && line <= pcalEndLine) ;
+    if (tlaMode && Parameters.CommentShading) {
+      boolean pcalLineNext = ( pcalStartLine <= line && line <= pcalEndLine) ;
+      if (pcalLineNext && !pcalLine) {
+          writer.putLine("\\pcalshadingtrue") ;
+      }
+      if (pcalLine && !pcalLineNext) {
+          writer.putLine("\\pcalshadingfalse") ;
+      }
+      pcalLine = pcalLineNext ;
+    }
+        
     if (spec[line].length == 0)
      {                   //  BEGIN then OF if (spec[line].length == 0)
        /********************************************************************
@@ -928,17 +966,18 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
          { blankLines = blankLines + 1;
            line = line + 1;
          }
-       if (pcalLine) {
-           writer.putLine("\\begin{ppar}%") ;
-       }
+//       if (pcalLine) {
+//           writer.putLine("\\begin{ppar}%") ;
+//       }
        writer.putLine(
-         (pcalLine2 ? "\\setlength{\\pcalvspace}{" :
-           "\\par\\vspace{" )
+         //(  pcalLine2 ? "\\setlength{\\pcalvspace}{" :
+        // "\\par\\vspace{" )
+         "\\@pvspace{"
          + Misc.floatToString(Parameters.LaTeXVSpace(blankLines), 2) 
          + "pt}%" );
-       if (pcalLine) {
-           writer.putLine("\\end{ppar}%") ;
-       }
+//       if (pcalLine) {
+//           writer.putLine("\\end{ppar}%") ;
+//       }
 
 
      }                   //  END then OF if (spec[line].length == 0)
@@ -949,9 +988,9 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
       /*
        * Write "\begin{ppar}%" if this is a PlusCal Line.
        */
-      if (pcalLine) {
-          writer.putLine("\\begin{ppar}%") ;
-      }
+//      if (pcalLine) {
+//          writer.putLine("\\begin{ppar}%") ;
+//      }
       
       /********************************************************************
       * Write out the current line.                                       *
@@ -1044,9 +1083,9 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
         * Start the output line with a LaTeXStartLine command.               *
         *********************************************************************/
         outLine = Parameters.LaTeXStartLine + "{" ; 
-        if (pcalLine2) {
-            outLine = "\\xtest{" ;
-        }
+//        if (pcalLine2) {
+//            outLine = "\\xtest{" ;
+//        }
         openLine = true ;
 
         /*******************************************************************
@@ -1497,9 +1536,9 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
        /*
         * Write "\end{ppar}%" if this is a PlusCal Line.
         */
-       if (pcalLine) {
-           writer.putLine("\\end{ppar}%") ;
-       }
+//       if (pcalLine) {
+//           writer.putLine("\\end{ppar}%") ;
+//       }
 
       outLine = "" ;
       item = 0 ;

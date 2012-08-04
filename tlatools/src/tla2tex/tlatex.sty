@@ -226,6 +226,40 @@
 % FORMATING COMMANDS                                                        %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PLUSCAL SHADING                                                           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The TeX pcalshading switch is set on to cause PlusCal shading to be
+% performed.  This changes the behavior of the following commands and
+% environments to cause full-width shading to be performed on all lines.
+% 
+%   \tstrut \@x cpar mcom \@pvspace
+% 
+\newif\ifpcalshading
+\pcalshadingfalse
+
+% The \@pvspace command makes a vertical space.  It uses \vspace
+% except with \ifpcalshading, in which case it sets \pvcalvspace
+% and the space is added by a following \@x command.
+%
+\newlength{\pcalvspace}\setlength{\pcalvspace}{0pt}%
+\newcommand{\@pvspace}[1]{%
+  \ifpcalshading
+     \par\global\setlength{\pcalvspace}{#1}%
+  \else
+     \par\vspace{#1}%
+  \fi
+}
+
+% The lcom environment was changed to set \lcomindent equal to
+% the indentation it produces.  This length is used by the
+% cpar environment to make shading extend for the full width
+% of the line.  This assumes that lcom environments are not
+% nested.  I hope TLATeX does not nest them.
+%
+\newlength{\lcomindent}%
+\setlength{\lcomindent}{0pt}%
 
 %\tstrut: A strut to produce inter-paragraph space in a comment.
 %\rstrut: A strut to extend the bottom of a one-line comment so
@@ -247,7 +281,19 @@
 
 % \@x{txt} starts a specification line in the beginning with txt
 % in the final LaTeX source.
-\newcommand{\@x}[1]{\par\mbox{$\mbox{}#1\mbox{}$}}  
+\newlength{\@xlen}
+\newcommand\xtstrut%
+  {\setlength{\@xlen}{1.15em}%
+   \addtolength{\@xlen}{\pcalvspace}%
+    \raisebox{\vshadelen}{\raisebox{-.25em}{\rule{0pt}{\@xlen}}}%
+   \global\setlength{\vshadelen}{0pt}%
+   \global\setlength{\pcalvspace}{0pt}}
+
+\newcommand{\@x}[1]{\par
+  \ifpcalshading
+  \makebox[0pt][l]{\shadebox{\xtstrut\hspace*{\textwidth}}}%
+  \fi
+  \mbox{$\mbox{}#1\mbox{}$}}  
 
 % \@xx{txt} continues a specification line with the text txt.
 \newcommand{\@xx}[1]{\mbox{$\mbox{}#1\mbox{}$}}  
@@ -357,6 +403,8 @@
 
 \newsavebox{\tempsbox}
 
+\newlength{\@cparht}
+\newlength{\@cpardp}
 \newenvironment{cpar}[6]{%
   \addtocounter{pardepth}{-#1}%
   \ifthenelse{\boolean{shading}}{\par\begin{lrbox}{\tempsbox}%
@@ -390,9 +438,36 @@
    \footnotesize}
  {\hspace{-\the\lastskip}\tstrut
  \end{list}%
-  \ifthenelse{\boolean{shading}}{\end{minipage}  
-                                 \end{lrbox}%
-                                 \shadebox{\usebox{\tempsbox}}\par}{}%
+  \ifthenelse{\boolean{shading}}%
+          {\end{minipage}%
+           \end{lrbox}%
+           \ifpcalshading
+             \setlength{\@cparht}{\ht\tempsbox}%
+             \setlength{\@cpardp}{\dp\tempsbox}%
+             \addtolength{\@cparht}{.15em}%
+             \addtolength{\@cpardp}{.2em}%
+             \addtolength{\@cparht}{\@cpardp}%
+            % I don't know what's going on here.  I want to add a
+            % \pcalvspace high shaded line, but I don't know how to
+            % do it.  A little trial and error shows that the following
+            % does a reasonable job approximating that, eliminating
+            % the line if \pcalvspace is small.
+            \addtolength{\@cparht}{\pcalvspace}%
+             \ifdim \pcalvspace > .8em
+               \addtolength{\pcalvspace}{-.2em}%
+               \hspace*{-\lcomindent}%
+               \shadebox{\rule{0pt}{\pcalvspace}\hspace*{\textwidth}}\par
+               \global\setlength{\pcalvspace}{0pt}%
+               \fi
+             \hspace*{-\lcomindent}%
+             \makebox[0pt][l]{\raisebox{-\@cpardp}[0pt][0pt]{%
+                 \shadebox{\rule{0pt}{\@cparht}\hspace*{\textwidth}}}}%
+             \hspace*{\lcomindent}\usebox{\tempsbox}%
+             \par
+           \else
+             \shadebox{\usebox{\tempsbox}}\par
+           \fi}%
+           {}%
   }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -409,107 +484,133 @@
 % The environment is put around each line of the output for a PlusCal        %
 % algorithm.                                                                 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newenvironment{ppar}{%
-  \ifthenelse{\boolean{shading}}{\par\begin{lrbox}{\tempsbox}%
-                                 \begin{minipage}[t]{\linewidth}}{}%
-  \begin{list}{}{%
-     \edef\temp{\thegmargin}
-        \setlength{\leftmargin}{0pt}%
-        \addtolength{\leftmargin}{\temp}%
-        \setlength{\itemindent}{0pt}%
-      \setlength{\labelwidth}{0pt}%
-      \setlength{\labelsep}{0pt}%
-      \setlength{\itemindent}{-\leftmargin}%
-      \setlength{\topsep}{0pt}%
-      \setlength{\parsep}{0pt}%
-      \setlength{\partopsep}{0pt}%
-      \setlength{\parskip}{0pt}%
-      \setlength{\itemsep}{0pt}
-      \setlength{\itemindent}{0pt}%
-      \addtolength{\itemindent}{-\leftmargin}}%
-      \item[\tstrut\hspace{\temp}]}%
- {\hspace{-\the\lastskip}\tstrut
- \end{list}%
-  \ifthenelse{\boolean{shading}}{\end{minipage}  
-                                 \end{lrbox}%
-                                 \shadebox{\usebox{\tempsbox}}\par}{}%
-  }
+%\newenvironment{ppar}{%
+%  \ifthenelse{\boolean{shading}}{\par\begin{lrbox}{\tempsbox}%
+%                                 \begin{minipage}[t]{\linewidth}}{}%
+%  \begin{list}{}{%
+%     \edef\temp{\thegmargin}
+%        \setlength{\leftmargin}{0pt}%
+%        \addtolength{\leftmargin}{\temp}%
+%        \setlength{\itemindent}{0pt}%
+%      \setlength{\labelwidth}{0pt}%
+%      \setlength{\labelsep}{0pt}%
+%      \setlength{\itemindent}{-\leftmargin}%
+%      \setlength{\topsep}{0pt}%
+%      \setlength{\parsep}{0pt}%
+%      \setlength{\partopsep}{0pt}%
+%      \setlength{\parskip}{0pt}%
+%      \setlength{\itemsep}{0pt}
+%      \setlength{\itemindent}{0pt}%
+%      \addtolength{\itemindent}{-\leftmargin}}%
+%      \item[\tstrut\hspace{\temp}]}%
+% {\hspace{-\the\lastskip}\tstrut
+% \end{list}%
+%  \ifthenelse{\boolean{shading}}{\end{minipage}  
+%                                 \end{lrbox}%
+%                                 \shadebox{\usebox{\tempsbox}}\par}{}%
+%  }
 
  %%% TESTING
  \newcommand{\xtest}[1]{\par
- \makebox[0pt][l]{\shadebox{\xtstrut\hspace*{\textwidth}\hspace*{-.33em}}}%
+ \makebox[0pt][l]{\shadebox{\xtstrut\hspace*{\textwidth}}}%
  \mbox{$\mbox{}#1\mbox{}$}} 
 
 % \newcommand{\xxtest}[1]{\par
 % \makebox[0pt][l]{\shadebox{\xtstrut{#1}\hspace*{\textwidth}}}%
 % \mbox{$\mbox{}#1\mbox{}$}} 
 
-\newlength{\pcalvspace}
-\setlength{\pcalvspace}{0pt}
-\newlength{\xxtestlen}
-\setlength{\xxtestlen}{0pt}
-\newcommand\xtstrut%
-  {\setlength{\xxtestlen}{1.15em}%
-   \addtolength{\xxtestlen}{\pcalvspace}%
-    \raisebox{\vshadelen}{\raisebox{-.25em}{\rule{0pt}{\xxtestlen}}}%
-   \global\setlength{\vshadelen}{0pt}%
-   \global\setlength{\pcalvspace}{0pt}}
+%\newlength{\pcalvspace}
+%\setlength{\pcalvspace}{0pt}
+% \newlength{\xxtestlen}
+% \setlength{\xxtestlen}{0pt}
+% \newcommand\xtstrut%
+%   {\setlength{\xxtestlen}{1.15em}%
+%    \addtolength{\xxtestlen}{\pcalvspace}%
+%     \raisebox{\vshadelen}{\raisebox{-.25em}{\rule{0pt}{\xxtestlen}}}%
+%    \global\setlength{\vshadelen}{0pt}%
+%    \global\setlength{\pcalvspace}{0pt}}
    
    %%%% TESTING
    
    %% The xcpar environment
    %%  Note: overloaded use of \pcalvspace for testing.
    %%
-   \newlength{\lcomindent}%
-   \newlength{\xcparht}%
-   \newlength{\xcpardp}%
+%   \newlength{\xcparht}%
+%   \newlength{\xcpardp}%
    
-   \newenvironment{xcpar}[6]{%
-  \addtocounter{pardepth}{-#1}%
-  \ifthenelse{\boolean{shading}}{\par\begin{lrbox}{\tempsbox}%
-                                 \begin{minipage}[t]{\linewidth}}{}%
-  \begin{list}{}{%
-     \edef\temp{\thegmargin}%
-     \ifthenelse{\equal{#3}{T}}%
-       {\settowidth{\leftmargin}{\hspace{\temp}\footnotesize #6\hspace{#5pt}}%
-        \addtolength{\leftmargin}{#4pt}}%
-       {\setlength{\leftmargin}{#4pt}%
-        \addtolength{\leftmargin}{#5pt}%
-        \addtolength{\leftmargin}{\temp}%
-        \setlength{\itemindent}{-#5pt}}%
-      \ifthenelse{\equal{#2}{T}}{\addtocounter{pardepth}{1}%
-                                 \setgmargin{\the\leftmargin}}{}%
-      \setlength{\labelwidth}{0pt}%
-      \setlength{\labelsep}{0pt}%
-      \setlength{\itemindent}{-\leftmargin}%
-      \setlength{\topsep}{0pt}%
-      \setlength{\parsep}{0pt}%
-      \setlength{\partopsep}{0pt}%
-      \setlength{\parskip}{0pt}%
-      \setlength{\itemsep}{0pt}%
-      \setlength{\itemindent}{#4pt}%
-      \addtolength{\itemindent}{-\leftmargin}}%
-   \ifthenelse{\equal{#3}{T}}%
-      {\item[\xtstrut\footnotesize \hspace{\temp}{#6}\hspace{#5pt}]%
-        }%
-      {\item[\xtstrut\hspace{\temp}]%
-         }%
-   \footnotesize}
- {\hspace{-\the\lastskip}\tstrut
- \end{list}%
-  \ifthenelse{\boolean{shading}}{\end{minipage}  
-                                 \end{lrbox}%
-                                 \setlength{\xcparht}{\ht\tempsbox}%
-                                 \setlength{\xcpardp}{\dp\tempsbox}%
-                                 \addtolength{\xcparht}{.15em}%
-                                 \addtolength{\xcpardp}{.2em}%
-                                 \addtolength{\xcparht}{\xcpardp}%
-                                 \hspace*{-\lcomindent}%
-                                 \makebox[0pt][l]{\raisebox{-\xcpardp}[0pt][0pt]{%
-                                      \shadebox{\rule{0pt}{\xcparht}\hspace*{\textwidth}}}}%
-                                 \hspace*{\lcomindent}\usebox{\tempsbox}%
-                                 \par}{}%
-  }
+%   \newenvironment{xcpar}[6]{%
+%  \addtocounter{pardepth}{-#1}%
+%  \ifthenelse{\boolean{shading}}{\par\begin{lrbox}{\tempsbox}%
+%                                 \begin{minipage}[t]{\linewidth}}{}%
+%  \begin{list}{}{%
+%     \edef\temp{\thegmargin}%
+%     \ifthenelse{\equal{#3}{T}}%
+%       {\settowidth{\leftmargin}{\hspace{\temp}\footnotesize #6\hspace{#5pt}}%
+%        \addtolength{\leftmargin}{#4pt}}%
+%       {\setlength{\leftmargin}{#4pt}%
+%        \addtolength{\leftmargin}{#5pt}%
+%        \addtolength{\leftmargin}{\temp}%
+%        \setlength{\itemindent}{-#5pt}}%
+%      \ifthenelse{\equal{#2}{T}}{\addtocounter{pardepth}{1}%
+%                                 \setgmargin{\the\leftmargin}}{}%
+%      \setlength{\labelwidth}{0pt}%
+%      \setlength{\labelsep}{0pt}%
+%      \setlength{\itemindent}{-\leftmargin}%
+%      \setlength{\topsep}{0pt}%
+%      \setlength{\parsep}{0pt}%
+%      \setlength{\partopsep}{0pt}%
+%      \setlength{\parskip}{0pt}%
+%      \setlength{\itemsep}{0pt}%
+%      \setlength{\itemindent}{#4pt}%
+%      \addtolength{\itemindent}{-\leftmargin}}%
+%   \ifthenelse{\equal{#3}{T}}%
+%      {\item[\xtstrut\footnotesize \hspace{\temp}{#6}\hspace{#5pt}]%
+%        }%
+%      {\item[\xtstrut\hspace{\temp}]%
+%         }%
+%   \footnotesize}
+% {\hspace{-\the\lastskip}\tstrut
+% \end{list}%
+%  \ifthenelse{\boolean{shading}}{\end{minipage}  
+%                                 \end{lrbox}%
+%                                 \setlength{\xcparht}{\ht\tempsbox}%
+%                                 \setlength{\xcpardp}{\dp\tempsbox}%
+%                                 \addtolength{\xcparht}{.15em}%
+%                                 \addtolength{\xcpardp}{.2em}%
+%                                 \addtolength{\xcparht}{\xcpardp}%
+%                                 \hspace*{-\lcomindent}%
+%                                 \makebox[0pt][l]{\raisebox{-\xcpardp}[0pt][0pt]{%
+%                                      \shadebox{\rule{0pt}{\xcparht}\hspace*{\textwidth}}}}%
+%                                 \hspace*{\lcomindent}\usebox{\tempsbox}%
+%                                 \par}{}%
+%  }
+%  
+% \newlength{\xmcomlen}
+%\newenvironment{xmcom}[1]{%
+%  \setcounter{pardepth}{0}%
+%  \hspace{.65em}%
+%  \begin{lrbox}{\alignbox}\sloppypar%
+%      \setboolean{shading}{false}%
+%      \setlength{\boxwidth}{#1pt}%
+%      \addtolength{\boxwidth}{-.65em}%
+%      \begin{minipage}[t]{\boxwidth}\footnotesize
+%      \parskip=0pt\relax}%
+%       {\end{minipage}\end{lrbox}%
+%       \setlength{\xmcomlen}{\textwidth}%
+%       \addtolength{\xmcomlen}{-\wd\alignbox}%
+%       \settodepth{\alignwidth}{\usebox{\alignbox}}%
+%       \global\setlength{\multicommentdepth}{\alignwidth}%
+%       \setlength{\boxwidth}{\alignwidth}%
+%       \global\addtolength{\alignwidth}{-\maxdepth}%
+%       \addtolength{\boxwidth}{.1em}%
+%       \raisebox{0pt}[0pt][0pt]{%
+%        \ifthenelse{\boolean{shading}}%
+%          {\hspace*{-\xmcomlen}\shadebox{\rule[-\boxwidth]{0pt}{0pt}%
+%                                 \hspace*{\xmcomlen}\usebox{\alignbox}}}%
+%          {\usebox{\alignbox}}}%
+%       \vspace*{\alignwidth}\pagebreak[0]\vspace{-\alignwidth}\par}
+% % a multi-line comment, whose first argument is its width in points.
+%  
    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % THE lcom ENVIRONMENT                                                       %
@@ -520,6 +621,7 @@
 % inside cpar environments.                                                  % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newenvironment{lcom}[1]{%
+  \setlength{\lcomindent}{#1pt} % Added for PlusCal handling.
   \par\vspace{.2em}%
   \sloppypar
   \setcounter{pardepth}{0}%
@@ -534,7 +636,7 @@
     \setlength{\partopsep}{0pt}%
     \setlength{\parskip}{0pt}}
     \item[]}%
-  {\end{list}\vspace{.3em}%
+  {\end{list}\vspace{.3em}\setlength{\lcomindent}{0pt}%
  }
 
 
@@ -566,6 +668,7 @@
 % This puts the comment into a single box (so no page breaks can occur      %
 % within it).  The entire box is shaded iff the shading flag is true.       %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newlength{\xmcomlen}%
 \newenvironment{mcom}[1]{%
   \setcounter{pardepth}{0}%
   \hspace{.65em}%
@@ -576,12 +679,23 @@
       \begin{minipage}[t]{\boxwidth}\footnotesize
       \parskip=0pt\relax}%
        {\end{minipage}\end{lrbox}%
+       \setlength{\xmcomlen}{\textwidth}%       % For PlusCal shading
+       \addtolength{\xmcomlen}{-\wd\alignbox}%  % For PlusCal shading
        \settodepth{\alignwidth}{\usebox{\alignbox}}%
-      \global\setlength{\multicommentdepth}{\alignwidth}%
-      \global\addtolength{\alignwidth}{-\maxdepth}%
+       \global\setlength{\multicommentdepth}{\alignwidth}%
+       \setlength{\boxwidth}{\alignwidth}%      % For PlusCal shading
+       \global\addtolength{\alignwidth}{-\maxdepth}%
+       \addtolength{\boxwidth}{.1em}%           % For PlusCal shading
       \raisebox{0pt}[0pt][0pt]{%
         \ifthenelse{\boolean{shading}}%
-          {\shadebox{\usebox{\alignbox}}}%
+          {\ifpcalshading
+             \hspace*{-\xmcomlen}%
+             \shadebox{\rule[-\boxwidth]{0pt}{0pt}\hspace*{\xmcomlen}%
+                          \usebox{\alignbox}}%
+           \else
+             \shadebox{\usebox{\alignbox}}
+           \fi
+          }%
           {\usebox{\alignbox}}}%
        \vspace*{\alignwidth}\pagebreak[0]\vspace{-\alignwidth}\par}
  % a multi-line comment, whose first argument is its width in points.
@@ -784,5 +898,5 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%% end of tlatex.sty file %%%%%%%%%%%%%%%%%%%%%%% 
-% last modified on Fri 22 October 2010 at  7:52:11 PST by lamport
+% last modified on Fri  3 August 2012 at 14:23:49 PST by lamport
 
