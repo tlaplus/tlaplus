@@ -83,11 +83,16 @@
 		<!-- Essentially, this creates on big tla2tools.jar with all its dependencies included, -->
 		<!-- which makes it easier for consumer to run TLC (no classpath woes). -->
 		<!-- (as a technical side note: Limiting to *.class might miss required resources in the future -->
-		<copy todir="${class.dir}">
-			<zipfileset src="lib/guava-13.0.jar" includes="**/*.class"/>
-			<zipfileset src="lib/trove-3.0.3.jar" includes="**/*.class"/>
-			<zipfileset src="lib/high-scale-lib.jar" includes="**/*.class"/>
-		</copy>
+		<unzip dest="${class.dir}">
+		   <patternset>
+		        <include name="**/*.class"/>
+		    </patternset>
+			<fileset dir="lib">
+				<include name="guava-13.0.jar"/>
+				<include name="trove-3.0.3.jar"/>
+				<include name="high-scale-lib.jar"/>
+			</fileset>
+		</unzip>
 	</target>
 
 	<target name="compile-aj" depends="compile" if="withaj">
@@ -132,14 +137,6 @@
 				<attribute name="Implementation-Version" value="${version} ${TODAY}" />
 				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
 			</manifest>
-			<!-- These jare are requried for by fpset implementations -->
-			<!-- Thus, extract to class.dir to have dist step/target pick them up an zip them into tla2tools.jar -->
-			<!-- Essentially, this creates on big tla2tools.jar with all its dependencies included, -->
-			<!-- which makes it easier for consumer to run TLC (no classpath woes). -->
-			<!-- (as a technical side note: Limiting to *.class might miss required resources in the future -->
-			<zipfileset src="lib/guava-13.0.jar" includes="**/*.class"/>
-			<zipfileset src="lib/trove-3.0.3.jar" includes="**/*.class"/>
-			<zipfileset src="lib/high-scale-lib.jar" includes="**/*.class"/>
 		</jar>
 	</target>
 
