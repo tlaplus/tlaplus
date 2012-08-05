@@ -453,6 +453,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					break;
 			}
 		}
+		long workerOverallCacheRate = 0L;
 		// Wait for all the server threads to die.
 		for (final Entry<TLCServerThread, TLCWorkerRMI> entry : server.threadsToWorkers.entrySet()) {
 			final TLCServerThread thread = entry.getKey();
@@ -468,11 +469,14 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 
 			final TLCWorkerRMI worker = entry.getValue();
 			try {
+				workerOverallCacheRate = worker.getCacheRate();
 				worker.exit();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+		// clear remote refs as all workers have existed at this point
+		server.threadsToWorkers.clear();
 		
 		server.statesPerMinute = 0;
 		server.distinctStatesPerMinute = 0;
@@ -498,7 +502,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 		}
 
-		server.printSummary(success);
+		server.printSummary(success, workerOverallCacheRate);
 
 		server.close(success);
 		
@@ -534,15 +538,29 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	}
 
 	// use fingerprint server to determine how many states have been calculated
-    public long getStatesComputed() throws RemoteException {
-    	return fpSetManager.getStatesSeen();
+    public synchronized long getStatesComputed() throws RemoteException {
+    	long statesSeen = 0L;
+    	
+		// Workers cache fingerprints locally to reduce network round-trips. This
+		// makes the result of fpSetManager.getStatesSeen() miss the cache hits
+		// on the worker side. Thus, query each worker for its cache hit rate
+		// and add it to the overall states seen.
+    	for (TLCWorkerRMI worker : threadsToWorkers.values()) {
+			statesSeen += worker.getCacheRate();
+		}
+    	
+    	return getStatesComputed(statesSeen);
 	}
-
+    
+    public synchronized long getStatesComputed(long overallCacheRate) throws RemoteException {
+    	return fpSetManager.getStatesSeen() + overallCacheRate;
+    }
+    	
 	// query each worker for how many states computed (workers might disconnect)
 //    private long getStatesComputed() throws RemoteException {
 //    	long res = 0L;
-//		for (int i = 0; i < workerCnt; i++) {
-//			res += workers[i].getStatesComputed();
+//		for (TLCWorkerRMI worker : threadsToWorkers.values()) {
+//			res += worker.getStatesComputed();
 //		}
 //		return res;
 //	}
@@ -551,10 +569,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
      * This allows the toolbox to easily display the last set
      * of state space statistics by putting them in the same
      * form as all other progress statistics.
+     * @param workerOverallCacheRate 
      */
-    public final void printSummary(boolean success) throws IOException
+    public final void printSummary(boolean success, long workerOverallCacheRate) throws IOException
     {
-        long statesGenerated = this.getStatesComputed();
+        long statesGenerated = this.getStatesComputed(workerOverallCacheRate);
 		long distinctStates = this.fpSetManager.size();
 		long statesLeftInQueue = this.getNewStates();
 		int level = this.trace.getLevelForReporting();

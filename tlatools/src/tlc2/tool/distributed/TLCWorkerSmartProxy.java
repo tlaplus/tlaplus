@@ -88,4 +88,11 @@ public class TLCWorkerSmartProxy implements TLCWorkerRMI {
 	public boolean isAlive() throws RemoteException {
 		return worker.isAlive();
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCWorkerRMI#getCacheRate()
+	 */
+	public long getCacheRate() throws RemoteException {
+		return worker.getCacheRate();
+	}
 }

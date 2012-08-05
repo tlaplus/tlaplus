@@ -20,4 +20,8 @@ public interface Cache {
 	 * @return A pretty printed version of {@link Cache#getHitRatio()}
 	 */
 	String getHitRatioAsString();
+	/**
+	 * @return Absolute value for cache hits
+	 */
+	long getHitRate();
 }

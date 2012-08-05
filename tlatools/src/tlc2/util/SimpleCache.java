@@ -6,8 +6,8 @@ import java.text.DecimalFormat;
 
 public class SimpleCache implements Cache {
 
-	private long cacheHit = 1L;
-	private long cacheMiss = 1L;
+	private volatile long cacheHit = 1L;
+	private volatile long cacheMiss = 1L;
 	
 	private final long mask;
 	private final long[] cache;
@@ -58,5 +58,12 @@ public class SimpleCache implements Cache {
 	public String getHitRatioAsString() {
 		DecimalFormat df = new DecimalFormat("###,###.###");
 		return df.format(getHitRatio());
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.Cache#getHitRate()
+	 */
+	public long getHitRate() {
+		return cacheHit;
 	}
 }

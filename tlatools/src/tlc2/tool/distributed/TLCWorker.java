@@ -162,6 +162,13 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	}
 	
 	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCWorkerRMI#getCacheRate()
+	 */
+	public long getCacheRate() throws RemoteException {
+		return this.cache.getHitRate();
+	}
+	
+	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#isAlive()
 	 */
 	public boolean isAlive() {
