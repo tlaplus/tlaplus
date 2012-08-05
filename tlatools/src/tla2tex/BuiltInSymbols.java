@@ -196,10 +196,10 @@ public final class BuiltInSymbols
      * strings to represent special versions of the symbols "(", ")", "{"
      * and "}" that get printed differently from their normal versions.
      */
-      private static String pcalLeftParen  = "" + '\0' ;
-      private static String pcalRightParen = "" + '\1' ;
-      private static String pcalLeftBrace  = "" + '\2' ;
-      private static String pcalRightBrace = "" + '\3' ;
+      public static String pcalLeftParen  = "" + '\0' ;
+      public static String pcalRightParen = "" + '\1' ;
+      public static String pcalLeftBrace  = "" + '\2' ;
+      public static String pcalRightBrace = "" + '\3' ;
 
     private static void buildHashTable() 
       /*********************************************************************
@@ -223,7 +223,7 @@ public final class BuiltInSymbols
         add("CASE",       "{\\CASE}",        Symbol.INFIX, 60); 
              // Changed to INFIX from KEYWORD by LL on 21 July 2012 to allow 
              // left-aligning with [].  It produces something reasonable when
-             // the [] is right-aligned with [] as well.
+             // a bunch of [] symbols are right-aligned with CASE as well.
         add("CONSTANT",   "{\\CONSTANT}",    Symbol.KEYWORD, 0);
         add("CONSTANTS",  "{\\CONSTANTS}",   Symbol.KEYWORD, 0);
         add("EXCEPT",     "{\\EXCEPT}",      Symbol.KEYWORD, 0);
@@ -321,7 +321,10 @@ public final class BuiltInSymbols
         add("\\gg",         "\\.{\\gg}",         Symbol.INFIX, 8);
           /*****************************************************************
           * \ll and \gg not aligned with = and < because they are wider,   *
-          * and they're not used enough to bother accomodating.            *
+          * and they're not used enough to bother accommodating aligned    *
+          * infix symbols of different widths.  However, this might now    * 
+          * work because of changes made to handle PlusCal labels          *
+          * essentially as infix operators.                                *
           *****************************************************************/
           
         add("\\",           "\\.{\\,\\backslash\\,}",  Symbol.INFIX, 9);
@@ -458,9 +461,11 @@ public final class BuiltInSymbols
         pcaladd("--algorithm", "{\\pmmalgorithm}",  Symbol.KEYWORD,     0);
         pcaladd(";",          "{\\psemicolon}",  Symbol.PUNCTUATION, 63);
         pcaladd("assert",     "{\\passert}",     Symbol.KEYWORD,     0);
+        pcaladd("await",      "{\\pawait}",      Symbol.KEYWORD,     0);
         pcaladd("begin",      "{\\pbegin}",      Symbol.KEYWORD,     0);
         pcaladd("end",        "{\\pend}",        Symbol.KEYWORD,     0);
         pcaladd("call",       "{\\pcall}",       Symbol.KEYWORD,     0);
+        pcaladd("define",     "{\\pdefine}",     Symbol.KEYWORD,     0);
         pcaladd("do",         "{\\pdo}",         Symbol.KEYWORD,     0);
         pcaladd("either",     "{\\peither}",     Symbol.INFIX,       64); // not sure
         pcaladd("or",         "{\\por}",         Symbol.INFIX,       64); // not sure
@@ -479,12 +484,15 @@ public final class BuiltInSymbols
         pcaladd("variables",  "{\\pvariables}",  Symbol.KEYWORD,     0);
         pcaladd("while",      "{\\pwhile}",      Symbol.KEYWORD,     0);
         pcaladd("with",       "{\\pwith}",       Symbol.KEYWORD,     0);
+        pcaladd("when",       "{\\pwhen}",       Symbol.KEYWORD,     0);
 
-        // We may want to add symbols for the following characters so 
-        // they can be printed differently when they are PlusCal delimiters
-        // than when TLA+ parentheses:
-        //
-        //       "{"  "}"  "("  ")"
+        // The following are the symbols for the PlusCal delimiters:
+        //       "("  ")"  "{"  "}"  
+        pcaladd(pcalLeftParen,  "{\\plparen}",   Symbol.LEFT_PAREN,  0);
+        pcaladd(pcalRightParen, "{\\prparen}",   Symbol.RIGHT_PAREN, 0);
+        pcaladd(pcalLeftBrace,  "{\\plbrace}",   Symbol.LEFT_PAREN,  0);
+        pcaladd(pcalRightBrace, "{\\prbrace}",  Symbol.RIGHT_PAREN, 0);
+
       } ;      
 
 

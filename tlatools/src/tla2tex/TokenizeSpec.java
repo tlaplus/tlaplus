@@ -465,6 +465,9 @@ package tla2tex;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import pcal.MappingObject.EndTLAToken;
+import pcal.PCalLocation;
+
 /**
  * @author lamport
  *
@@ -1716,12 +1719,179 @@ public class TokenizeSpec
               } ;  // ends switch
          } ; // ends while
 
+        /*
+         * Prevent null pointer exception in PlusCal algorithm that was
+         * not ended.
+         */
+        if (hasPcal) {
+            if (pcalEnd == null) {
+                pcalEnd = new Position(Integer.MAX_VALUE, 0) ;
+            }
+        }
         /*******************************************************************
         * Return the contents of vspec, as an array.                       *
         *******************************************************************/
         return vspecToArray();
       }
-  
- }
+    
+    /**
+     * The argument spec is the current tokenized specification, generated
+     * by the Tokenize method.  If that spec has a C-Syntax PlusCal algorithm,
+     * this method turns "(", ")", "{", and "}" tokens that are PlusCal
+     * delimiters (rather than parts of an expression) into the corresponding
+     * tokens that produce the appropriate TeX output.  
+     * 
+     * A PlusCal "(" can follow the following:
+     *   "macro" + IDENT
+     *   "procedure" + an IDENT 
+     *   "process" | "if" | "while" | "with"
+     * 
+     * A PlusCal "{" other than the initial one can follow the following:
+     *   a PlusCal "{"
+     *   a PlusCal ")"
+     *   "else" | "either" | "or" | "define"
+     *   "variable[s]" [<expression> [, | ;]]^+ 
+     *   ";"  
+     *   PCAL_LABEL
+     * 
+     * @param spec
+     */
+    public static void FixPlusCal(Token[][] spec) {
+        if ((!hasPcal) || (!isCSyntax)) {
+            return ;
+        }
+        // Since we're at the beginning of the algorithm, the first
+        // "{" that's not a comment is the first PlusCal "{".
+        Position pos = pcalStart ;
+        while (   (pos != null) 
+               && (   (pos.toToken(spec).type != Token.BUILTIN)
+                   || (! pos.toToken(spec).string.equals("{")))) {            
+          pos = nextTokenPos(pos, spec) ;
+        }
+
+        // pos should not be null, but...
+        if (pos != null) {
+            ProcessPcalBrace(pos, spec) ;
+        }
+    }
+    
+    /**
+     * This assumes that it is called with pos the position of a 
+     * left brace ("{") token in spec that is a PlusCal delimiter.  It converts 
+     * all PlusCal delimiters from (and including) that left brace through
+     * the matching right brace to the appropriate tokens, and returns the
+     * position of the next token past the matching right brace.  If
+     * there is no matching right brace, it returns  null.
+     *   
+     * Here's a spec for this:
+     * 
+     * CAN_BE_LBRACE:
+     *   ("{")   ProcessPcalBrace(pos, spec) --> NOT_LBRACE
+     *   (COMMENT) + -->  CAN_BE_LBRACE
+     *   [OTHER]     --> NOT_LBRACE
+     * 
+     * NOT_LBRACE:
+     *   (PCAL_LABEL)                           + --> CAN_BE_LBRACE
+     *   (";", "else", "either","or", "define") + --> CAN_BE_LBRACE
+     *   (BUILT_IN & LEFT_PAREN) + skipToUnmatchedEnd(pos, spec, false)
+     *                           + ---> NOT_LBRACE
+     *   (BUILT_IN & "variable[s]") + ---> SEEKING_PUNCT_LPAREN
+     *   (BUILT_IN & "process" | "if" | "while" | "with") + --> SEEKING_LPAREN
+     *   (BUILT_IN & "procedure" | "macro") + ---> SEEKING_INDENT_LPAREN
+     * 
+     * @param pos
+     * @param spec
+     * @return
+     */
+    public static Position ProcessPcalBrace(Position pos, Token[][] spec) {
+        Token tok = pos.toToken(spec) ;
+        tok.string = BuiltInSymbols.pcalLeftBrace ;
+        Position curPos = nextTokenPos(pos, spec) ;
+        boolean nextLBPcal = true ;
+           // true iff if curPos marks a "{", then it should be a pcalLeftBrace
+        while (curPos != null) {
+            tok = curPos.toToken(spec) ;
+            if (tok.type == Token.BUILTIN) {
+    
+             // everything that signals a 
+                
+            }
+            else if (tok.type == Token.PCAL_LABEL) {
+                nextLBPcal = true ;
+            }
+            else if (tok.type != Token.COMMENT) {
+                nextLBPcal = false ;
+            }
+            curPos = nextTokenPos(curPos, spec);
+        }
+        return curPos;
+    }
+    /**
+     * Returns the position of the next token after position pos in
+     * specification spec if that token exists and is in the PlusCal
+     * algorithm; otherwise, it returns null.  For convenience it returns
+     * null if called with a null pos argument.
+     * 
+     * @param pos
+     * @param spec
+     * @return
+     */
+   private static Position nextTokenPos(Position pos, Token[][] spec) {
+      if (pos == null) {
+          return null ;
+      }
+      int nextItem = pos.item + 1;
+      if (   (nextItem < spec[pos.line].length)
+          && (   (pos.line < pcalEnd.line)
+              || (nextItem < pcalEnd.item))) {
+          return new Position(pos.line, nextItem) ;
+      }
+      int nextLine = pos.line + 1 ;
+      while ((nextLine < spec.length) && (spec[nextLine].length == 0)) {
+          nextLine++;
+      }
+      if (   (nextLine < spec.length)
+          && (   (nextLine < pcalEnd.line)
+              || (   (nextLine == pcalEnd.line)
+                  && (0 < pcalEnd.item)))) {
+          return new Position(nextLine, 0) ;
+      }
+      return null;
+  }
+   
+   /**
+    * Starting from position pos, it skips to an ending token, leaving 
+    * pos pointing to it.  It returns null if there is no such token.
+    * An ending token is an unmatched RIGHT_PAREN or, if punct is true,
+    * a "," or ";"
+    * 
+    * @param pos    The position of the token.
+    * @param spec   The specification.
+    * @param punct  True if stopping at comma or semicolon.
+    * @return
+    */
+   public static Position skipToUnmatchedEnd(
+                             Position pos, Token[][] spec, boolean punct) {
+       Position nextPos = pos ;
+       while (nextPos != null) {
+           Token tok = nextPos.toToken(spec) ;
+           if (tok.type == Token.BUILTIN) {
+               int symType = BuiltInSymbols.GetBuiltInSymbol(
+                                 tok.string, true).symbolType ;
+               if (   (symType == Symbol.RIGHT_PAREN)
+                   || (   punct
+                       && (   tok.string.equals(";") 
+                           || tok.string.equals(",")))) {
+                   return nextPos;
+               }
+               if (symType == Symbol.LEFT_PAREN) {
+                   nextPos = skipToUnmatchedEnd(nextPos, spec, false);
+               }
+           }           
+           nextPos = nextTokenPos(nextPos, spec);
+       }       
+       return null ;
+   }
+  }
 
 /* last modified on Thu 18 Aug 2005 at 22:13:38 UT by lamport */

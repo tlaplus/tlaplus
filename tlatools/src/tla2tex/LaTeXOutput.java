@@ -613,9 +613,17 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
              * Add extra space according to the minimum of the number of   *
              * extra spaces between each token in the alignment and the    *
              * non-left-comment token to its left (if there is one).       *
+             * 
+               Why is this minimum and not maximum??
+               I suspect it's because TotalIndent was set to the maximum
+               indent without taking into account the blank columns to
+               the left of the token.  Therefore, the token with maximum 
+               TotalIndent should have the minimum number of spaces to
+               its left--in most cases.
+               
              **************************************************************/
              Token ltok = null ;
-             int extraSpace = 0;
+             int extraSpace = Integer.MAX_VALUE;
 
              if (   (pc.item > 1)
                  || (   (pc.item == 1)
@@ -635,6 +643,9 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                   };
                 alPos = alPos.toToken(spec).belowAlign ;
               } ;
+             if (extraSpace == Integer.MAX_VALUE) {
+                 extraSpace = 0 ;
+             }
              extraSpace = extraSpace - 1 ;
                      if (extraSpace > 0)
                       { tok.preSpace = tok.preSpace + 
@@ -683,6 +694,7 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
          * tok aligned with a previous token.                              *
          ******************************************************************/
          float savedPreSpace = tok.preSpace;
+               tok.preSpace = 0;  // needed to keep TotalIndent from getting confused
          tok.preSpace =  
                 TotalIndent(spec, tok.aboveAlign)
               - TotalIndent(spec, pc)

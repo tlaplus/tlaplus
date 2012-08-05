@@ -236,7 +236,7 @@ public class TLA
         Starting("LaTeXOutput.SetDimensions");
         LaTeXOutput.SetDimensions(spec);
         Finished("LaTeXOutput.SetDimensions");
-        Debug.print2DArray(spec, "");
+        // Debug.print2DArray(spec, "");
 
         /*********************************************************************
         * Write the final LaTeX output and run it through LaTeX.             *
