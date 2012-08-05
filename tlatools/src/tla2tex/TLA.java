@@ -146,6 +146,9 @@ public class TLA
         runTranslation(args);
     }
 
+    /**
+     * @param args
+     */
     public static void runTranslation(String[] args)
     {  
         /*********************************************************************
@@ -169,6 +172,10 @@ public class TLA
         Starting("TokenizeSpec.Tokenize");
         Token[][] spec = TokenizeSpec.Tokenize(testlr, TokenizeSpec.MODULE);
 
+//System.out.println(TokenizeSpec.skipToUnmatchedEnd(new Position(5, 1), 
+//                 spec, false).toString()) ;
+//System.out.println(TokenizeSpec.skipToUnmatchedEnd(new Position(5, 1), 
+//        spec, true).toString()) ;
 //        System.out.println("pcalStart = " + TokenizeSpec.pcalStart.toString());
 //        System.out.println("pcalEnd = " + TokenizeSpec.pcalEnd.toString());
         /*********************************************************************
@@ -179,12 +186,14 @@ public class TLA
         Finished("TokenizeSpec.Tokenize");
         // Debug.print2DArray(spec, "tok");
         
-        /*
-         * Need to add code to find which parentheses and braces in 
-         * PlusCal code should be typeset as syntactic PlusCal delimiters.
-         * Perhaps also set all goto labels to tokens of type PCAL_LABEL or
-         * something else if they need special typesetting.
-         */
+        /*********************************************************************
+        * Really finish the tokenization by parentheses and braces that are  *
+        * part of the PlusCal C-syntax to tokens that are printed            *
+        * appropriately.                                                     *
+        *********************************************************************/
+        Starting("TokenizeSpec.FixPlusCal");
+        TokenizeSpec.FixPlusCal(spec) ;
+        Finished("TokenizeSpec.FixPlusCal");
 
         /*********************************************************************
         * Process the comment tokens.                                        *

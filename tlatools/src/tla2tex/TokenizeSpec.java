@@ -1776,53 +1776,209 @@ public class TokenizeSpec
     }
     
     /**
-     * This assumes that it is called with pos the position of a 
-     * left brace ("{") token in spec that is a PlusCal delimiter.  It converts 
+     * ProcessPcalBrace(Position pos, Token[][] spec)
+     * ----------------------------------------------
+     * 
+     * This assumes that it is called with pos the position of a left brace 
+     * token in spec that is a PlusCal delimiter.  It converts 
      * all PlusCal delimiters from (and including) that left brace through
      * the matching right brace to the appropriate tokens, and returns the
      * position of the next token past the matching right brace.  If
      * there is no matching right brace, it returns  null.
      *   
-     * Here's a spec for this:
+     * Here's a spec for this, in a style similar to that for Tokenize.
+     * Here,  ++ means go to next non-comment token.
      * 
+     * START:
+     *   make current token pcalLBrace ++ --> CAN_BE_LBRACE
+     *   
      * CAN_BE_LBRACE:
-     *   ("{")   ProcessPcalBrace(pos, spec) --> NOT_LBRACE
-     *   (COMMENT) + -->  CAN_BE_LBRACE
+     *   (BUILT_IN "{")   ProcessPcalBrace(pos, spec) --> NOT_LBRACE
      *   [OTHER]     --> NOT_LBRACE
      * 
      * NOT_LBRACE:
-     *   (PCAL_LABEL)                           + --> CAN_BE_LBRACE
-     *   (";", "else", "either","or", "define") + --> CAN_BE_LBRACE
-     *   (BUILT_IN & LEFT_PAREN) + skipToUnmatchedEnd(pos, spec, false)
-     *                           + ---> NOT_LBRACE
-     *   (BUILT_IN & "variable[s]") + ---> SEEKING_PUNCT_LPAREN
-     *   (BUILT_IN & "process" | "if" | "while" | "with") + --> SEEKING_LPAREN
-     *   (BUILT_IN & "procedure" | "macro") + ---> SEEKING_INDENT_LPAREN
-     * 
+     *   (PCAL_LABEL)                           ++ --> CAN_BE_LBRACE
+     *   (BUILT_IN & ";", "else", "either","or", "define") ++ --> CAN_BE_LBRACE
+     *   (BUILT_IN & "}") make current token pcalRBrace    ++ return current position
+     *   (BUILT_IN & LEFT_PAREN) ++ skipToUnmatchedEnd(pos, spec, false)
+     *                           ++ ---> NOT_LBRACE
+     *   (BUILT_IN & "variable[s]") ++ ---> AFTER_VAR_DECL
+     *   (BUILT_IN & "process" | "if" | "while" | "with") ++ --> SEEKING_LPAREN
+     *   (BUILT_IN & "procedure" | "macro") ++ ---> SEEKING_IDENT_LPAREN
+     *   [OTHER] ++ ---> NOT_LBRACE
+     *   
+     * SEEKING_LPAREN:
+     *   (BUILT_IN & "(") fix current token
+     *         skipToUnmatchedEnd(pos, spec, false)
+     *         IF current token = ")" THEN fix it
+     *                                ELSE bad PlusCal code
+     *         ++ ---> CAN_BE_LBRACE
+     *         
+     *   [OTHER] bad PlusCal code
+     *           ++ ---> NOT_LBRACE 
+     *           
+     * SEEKING_IDENT_LPAREN:
+     *   (IDENT) ++ ---> SEEKING_LPAREN
+     *   [OTHER]  bad PlusCal code
+     *            ++ ---> NOT_LBRACE 
+     *            
+     * AFTER_VAR_DECL:
+     *   (BUILT_IN & "," | ";") ++ ---> AFTER_COMMA
+     *   (BUILT_IN & LEFT_PAREN) ++ skipToUnmatchedEnd(pos, spec, false)
+     *                           ++ ---> AFTER_VAR_DECL
+     *   [OTHER] ++ ---> AFTER_VAR_DECL
+     *   
+     * AFTER_COMMA:
+     *   (BUILT_IN & "{") ProcessPcalBrace(pos, spec) --> NOT_LBRACE
+     *   (BUILT_IN & "define" | "macro" | "procedure" | "fair" | "process")
+     *      ---> NOT_LBRACE
+     *   [OTHER] ---> AFTER_VAR_DECL
+     *   
      * @param pos
      * @param spec
      * @return
      */
+    private static final int CAN_BE_LBRACE         = 1 ;
+    private static final int NOT_LBRACE            = 2 ;
+    private static final int SEEKING_LPAREN        = 3 ;
+    private static final int SEEKING_IDENT_LPAREN  = 4 ;
+    private static final int AFTER_VAR_DECL        = 5 ;
+    private static final int AFTER_COMMA           = 6 ;
+    
     public static Position ProcessPcalBrace(Position pos, Token[][] spec) {
         Token tok = pos.toToken(spec) ;
         tok.string = BuiltInSymbols.pcalLeftBrace ;
-        Position curPos = nextTokenPos(pos, spec) ;
-        boolean nextLBPcal = true ;
-           // true iff if curPos marks a "{", then it should be a pcalLeftBrace
+        int pstate = CAN_BE_LBRACE ;        
+        Position curPos = nextNonComment(pos, spec) ;
+        
         while (curPos != null) {
             tok = curPos.toToken(spec) ;
-            if (tok.type == Token.BUILTIN) {
-    
-             // everything that signals a 
+            switch (pstate) {
+            case CAN_BE_LBRACE :
+                if ((tok.type == Token.BUILTIN) && tok.string.equals("{")) {
+                 curPos = ProcessPcalBrace(curPos, spec) ;   
+                }
+                else {
+                    pstate = NOT_LBRACE ;
+                }
+                break ;
+
+            case NOT_LBRACE :
+                if (tok.type == Token.PCAL_LABEL) {
+                    pstate = CAN_BE_LBRACE ;
+                }
+                else if (tok.type == Token.BUILTIN) {
+                         if ( (tok.string.equals(";"))
+                         || (tok.string.equals("else"))
+                         || (tok.string.equals("either"))
+                         || (tok.string.equals("or"))
+                         || (tok.string.equals("define"))
+                        ) {
+                            pstate = CAN_BE_LBRACE ;
+                          }
+                          else if (tok.string.equals("}")) {
+                              tok.string = BuiltInSymbols.pcalRightBrace ;
+                              return nextNonComment(curPos, spec);
+                          }
+                          else if (BuiltInSymbols.GetBuiltInSymbol(
+                                     tok.string, true).symbolType == Symbol.LEFT_PAREN) {
+                              curPos = skipToUnmatchedEnd(nextNonComment(curPos, spec), 
+                                                          spec, false) ;
+                          }
+                          else if (   tok.string.equals("variable")
+                                   || tok.string.equals("variables")) {
+                            pstate = AFTER_VAR_DECL ;  
+                          }
+                          else if (   tok.string.equals("if")
+                                   || tok.string.equals("while")
+                                   || tok.string.equals("with")
+                                   || tok.string.equals("process")
+                                  ) {
+                            pstate = SEEKING_LPAREN ;  
+                          }
+                          else if (   tok.string.equals("procedure")
+                                  || tok.string.equals("macro")
+                                 ) {
+                           pstate = SEEKING_IDENT_LPAREN ;  
+                         }
+                }
+                curPos = nextNonComment(curPos, spec);
+                break ;
+
+            case SEEKING_LPAREN :
+                if ((tok.type == Token.BUILTIN) && tok.string.equals("(")) {
+                    tok.string = BuiltInSymbols.pcalLeftParen ;
+                    curPos = skipToUnmatchedEnd(nextNonComment(curPos, spec), spec, false) ;
+                    if (curPos != null) {
+                        tok = curPos.toToken(spec) ;
+                        if ((tok.type == Token.BUILTIN) && tok.string.equals(")")) {
+                            tok.string = BuiltInSymbols.pcalRightParen ;
+                        }
+                        else {
+                            // The PlusCal code is bad.  We ignore it.
+System.out.println("Error SEEKING_LPAREN at " + curPos.toString());
+                        }
+                    }
+                    pstate = CAN_BE_LBRACE ;
+                }
+                else {
+                    // Bad PlusCal code. Ignore it.
+System.out.println("Error SEEKING_LPAREN(2) at " + curPos.toString());
+                    pstate = NOT_LBRACE ;
+                }
+                curPos = nextNonComment(curPos, spec);
+                break ;
+
+            case SEEKING_IDENT_LPAREN :
+                if (tok.type == Token.IDENT) {
+                    pstate = SEEKING_LPAREN ;
+                } 
+                else {
+                    // The PlusCal code is bad.  We ignore it.
+System.out.println("Error SEEKING_IDENT_LPAREN at " + curPos.toString());
+                    pstate = NOT_LBRACE ;
+                }
+                curPos = nextNonComment(curPos, spec); 
+                break ;
+
+            case AFTER_VAR_DECL :
+                if (   (tok.type == Token.BUILTIN) 
+                    && (   tok.string.equals(",")
+                        || tok.string.equals(";"))) {
+                    pstate = AFTER_COMMA ;
+                }
+                else if (     (tok.type == Token.BUILTIN) 
+                           && (BuiltInSymbols.GetBuiltInSymbol(
+                                     tok.string, true).symbolType == Symbol.LEFT_PAREN)) {
+                    curPos = skipToUnmatchedEnd(nextNonComment(curPos, spec), 
+                                                spec, false) ;
+                }    
+                curPos = nextNonComment(curPos, spec); 
+                break ;
+
+            case AFTER_COMMA :
+                if ((tok.type == Token.BUILTIN) && tok.string.equals("{")) {
+                    curPos = ProcessPcalBrace(curPos, spec) ;   
+                    pstate = NOT_LBRACE ;
+                   }
+                else if (   (tok.type == Token.BUILTIN) 
+                         && (   tok.string.equals("define")
+                             || tok.string.equals("macro")
+                             || tok.string.equals("procedure")
+                             || tok.string.equals("fair")
+                             || tok.string.equals("process")
+                            )) {
+                            pstate = NOT_LBRACE ;
+                        }
+                else {
+                    pstate = AFTER_VAR_DECL ;
+                }
+                break ;
                 
+            default :
+                Debug.ReportBug("Impossible case in TokenizeSpec.ProcessPcalBrace") ;
             }
-            else if (tok.type == Token.PCAL_LABEL) {
-                nextLBPcal = true ;
-            }
-            else if (tok.type != Token.COMMENT) {
-                nextLBPcal = false ;
-            }
-            curPos = nextTokenPos(curPos, spec);
+
         }
         return curPos;
     }
@@ -1858,6 +2014,26 @@ public class TokenizeSpec
       }
       return null;
   }
+
+   /**
+    * Returns the position of the next token after position pos in
+    * specification spec that is not a comment, if that token exists and is 
+    * in the PlusCal algorithm; otherwise, it returns null.  
+    * For convenience it returns null if called with a null pos argument.
+    * 
+    * @param pos
+    * @param spec
+    * @return
+    */
+   
+   private static Position nextNonComment(Position pos, Token[][] spec) {
+       Position nextPos = nextTokenPos(pos, spec) ;
+       while (  (nextPos != null)
+               && (nextPos.toToken(spec).type == Token.COMMENT)) {
+           nextPos = nextTokenPos(nextPos, spec);
+       }
+       return nextPos ;
+   }
    
    /**
     * Starting from position pos, it skips to an ending token, leaving 
@@ -1885,10 +2061,11 @@ public class TokenizeSpec
                    return nextPos;
                }
                if (symType == Symbol.LEFT_PAREN) {
+                   nextPos = nextNonComment(nextPos, spec) ;
                    nextPos = skipToUnmatchedEnd(nextPos, spec, false);
                }
            }           
-           nextPos = nextTokenPos(nextPos, spec);
+           nextPos = nextNonComment(nextPos, spec);
        }       
        return null ;
    }
