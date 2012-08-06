@@ -138,7 +138,9 @@ public class TLCStatistics {
 			String host = threads[i].getUri().getHost();
 			hosts.add(host);
 		}
-		writer.write(Integer.toString(server.getWorkerCount() / hosts.size()));
+		int size = hosts.size();
+		writer.write(Integer.toString(server.getWorkerCount() / size == 0 ? 1
+				: size)); // guard against div by zero
 		writer.write(",");
 		
 		writer.write(processStartTime.toString());
