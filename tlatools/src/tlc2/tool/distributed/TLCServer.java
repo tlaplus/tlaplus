@@ -643,6 +643,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		return threadsToWorkers.keySet().toArray(new TLCServerThread[threadsToWorkers.size()]);
 	}
 	
+	public boolean isRunning() {
+		return !done;
+	}
+	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCServerRMI#isDone()
 	 */

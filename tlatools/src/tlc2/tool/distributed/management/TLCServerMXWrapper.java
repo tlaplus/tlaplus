@@ -8,6 +8,7 @@ import java.rmi.RemoteException;
 import javax.management.NotCompliantMBeanException;
 
 import tlc2.tool.distributed.TLCServer;
+import tlc2.tool.distributed.fp.IFPSetManager;
 import tlc2.tool.management.TLCStandardMBean;
 
 /**
@@ -30,19 +31,27 @@ public class TLCServerMXWrapper extends TLCStandardMBean implements TLCStatistic
 	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getStatesGenerated()
 	 */
 	public long getStatesGenerated() {
-		try {
-			return tlcServer.getStatesComputed();
-		} catch (RemoteException e) {
-			e.printStackTrace();
-			return -1;
+		if (tlcServer.isRunning()) {
+			try {
+					return tlcServer.getStatesComputed();
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
+		return -1;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getDistinctStatesGenerated()
 	 */
 	public long getDistinctStatesGenerated() {
-		return tlcServer.getFPSetManager().size();
+		if (tlcServer.isRunning()) {
+			final IFPSetManager fpSetManager = tlcServer.getFPSetManager();
+			if (fpSetManager != null) {
+				return fpSetManager.size();
+			}
+		}
+		return -1;
 	}
 
 	/* (non-Javadoc)
@@ -70,12 +79,14 @@ public class TLCServerMXWrapper extends TLCStandardMBean implements TLCStatistic
 	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getProgress()
 	 */
 	public int getProgress() {
-		try {
-			return tlcServer.trace.getLevelForReporting();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return -1;
+		if (tlcServer.isRunning()) {
+			try {
+					return tlcServer.trace.getLevelForReporting();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
+		return -1;
 	}
 
 	/* (non-Javadoc)
