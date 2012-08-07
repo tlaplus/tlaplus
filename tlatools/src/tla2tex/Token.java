@@ -287,7 +287,7 @@ public class Token
             }
         } // for k
       } 
-
+    
     /***********************************************************************
     * The following defines a toString() method for printing a Token for   *
     * debugging.  To do a decent job, it splits it into reasonably-sized   *

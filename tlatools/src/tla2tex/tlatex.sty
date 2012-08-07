@@ -134,9 +134,16 @@
 \newcommand{\OMITTED}{\textsc{omitted }}        %% added by LL on 31 Oct 2009
 \newcommand{\@pfstepnum}[2]{\ensuremath{\langle#1\rangle}\textrm{#2}}
 \newcommand{\bang}{\@s{1}\mbox{\small !}\@s{1}}
+%% We should format || differently in PlusCal code than in TLA+ formulas.
+%% This should really be done in TLATeX.  However, as a hack, we just
+%% format it differently if it's in shaded PlusCal code.  It's better
+%% than nothing.
+\newcommand{\pbarbar}{\ifpcalshading 
+   \,\,\rule[-.25em]{.075em}{1em}\hspace*{.2em}\rule[-.25em]{.075em}{1em}\,\,%
+   \else \,||\,\fi}
 %% PlusCal keywords
 \newcommand{\pfair}{\textbf{fair }}
-\newcommand{\psemicolon}{\textbf{\,;}}
+\newcommand{\psemicolon}{\textbf{\,; }}
 \newcommand{\palgorithm}{\textbf{algorithm }}
 \newcommand{\pmmfair}{\textbf{-{}-fair }}
 \newcommand{\pmmalgorithm}{\textbf{-{}-algorithm }}
@@ -151,9 +158,9 @@
 \newcommand{\por}{\textbf{or }}
 \newcommand{\pgoto}{\textbf{goto }}
 \newcommand{\pif}{\textbf{if }}
-\newcommand{\pthen}{\textbf{then }}
-\newcommand{\pelse}{\textbf{else }}
-\newcommand{\pelsif}{\textbf{elsif }}
+\newcommand{\pthen}{\,\,\textbf{then }}
+\newcommand{\pelse}{\,\,\textbf{else }}
+\newcommand{\pelsif}{\,\,\textbf{elsif }}
 \newcommand{\pmacro}{\textbf{macro }}
 \newcommand{\pprint}{\textbf{print }}
 \newcommand{\pprocedure}{\textbf{procedure }}

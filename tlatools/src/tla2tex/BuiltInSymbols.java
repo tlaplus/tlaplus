@@ -343,7 +343,7 @@ public final class BuiltInSymbols
         add("/",            "\\.{/}",            Symbol.INFIX, 21);
         add("^",            "\\.{\\ct}",         Symbol.INFIX, 22);
         add("|",            "\\.{\\,|\\,}",      Symbol.INFIX, 23);
-        add("||",           "\\.{\\,||\\,}",     Symbol.INFIX, 24);
+        add("||",           "\\.{\\pbarbar}",    Symbol.INFIX, 24);
         add("&",            "\\.{\\,\\&\\,}",    Symbol.INFIX, 25);
         add("&&",           "\\.{\\,\\&\\&\\,}", Symbol.INFIX, 26);
         add("++",           "\\.{\\pp}",         Symbol.INFIX, 27);
@@ -471,9 +471,16 @@ public final class BuiltInSymbols
         pcaladd("or",         "{\\por}",         Symbol.INFIX,       64); // not sure
         pcaladd("goto",       "{\\pgoto}",       Symbol.KEYWORD,     0);
         pcaladd("if",         "{\\pif}",         Symbol.KEYWORD,     0);
-        pcaladd("then",       "{\\pthen}",       Symbol.INFIX,       65); // not sure
-        pcaladd("else",       "{\\pelse}",       Symbol.INFIX,       65); // not sure
-        pcaladd("elsif",      "{\\pelsif}",      Symbol.INFIX,       65); // not sure
+        pcaladd("then",       "{\\pthen}",       Symbol.INFIX,       65); 
+        pcaladd("else",       "{\\pelse}",       Symbol.INFIX,       65); 
+        pcaladd("elsif",      "{\\pelsif}",      Symbol.INFIX,       65); 
+          // I tried making "then", "else", and "elsif" KEYWORDS that all
+          // had the same width when printed.  This didn't work because
+          // of the extra letter in "elsif", so if the statements that follow
+          // them are aligned, then TLATeX adds extra space after an "else" or
+          // "then" because of the extra space between it and what follows.
+          // Making them INFIX with the same alignment value produces some
+          // bogus alignments, but it seems to be the lesser evil.
         pcaladd("macro",      "{\\pmacro}",      Symbol.KEYWORD,     0);
         pcaladd("print",      "{\\pprint}",      Symbol.KEYWORD,     0);
         pcaladd("procedure",  "{\\pprocedure}",  Symbol.KEYWORD,     0);

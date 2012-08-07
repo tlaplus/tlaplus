@@ -577,8 +577,6 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
       Token tok = pc.toToken(spec) ;
       Debug.Assert(tok.preSpace == 0,
            "preSpace already computed when it shouldn't have been");
-//      if (tok.aboveAlign.line == -1)
-//       { 
       if (tok.belowAlign.line != -1)
            { /**************************************************************
              * tok begins an inner-alignment.                              *
@@ -589,11 +587,6 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
              * all tokens in the alignment.                                *
              **************************************************************/
              float tokIndent = 
-                  // LL stopped here on 3 Aug 2011
-                  // The plan is to replace these uses of TotalIndent
-                  // with TotalIndenWithSpace, since tokens aligned below
-                  // have not yet had their preSpace fields computed
-                  // yet.
                   TotalIndent(spec, new Position(pc.line, pc.item));
              float maxIndent = tokIndent ;
              Position alPos = tok.belowAlign ;

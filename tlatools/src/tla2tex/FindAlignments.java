@@ -1,4 +1,11 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
+//
+// This is the version of FindAlignments modified to be consistent
+// with the versions of TokenizeSpec, BuiltInSymbols, etc. that have
+// been modified to handle PlusCal, but with no special PlusCal alignments
+// added.  It is also being modified to add a special rule for 
+// aligning labels -- or more precisely, aligning tokens that
+// follow labels with other tokens.
 
 /***************************************************************************
 * CLASS FindAlignments                                                     *
@@ -144,30 +151,65 @@
 *   Note: The large number of conditions are an attempt to rule            *
 *   out spurious alignments.                                               *
 * ----------------------------------------------------------------------   *
-*  Handling of PlusCal Labels                                              *
-*  --------------------------                                              *
-*  In Aug 2012, the FindAlignments method was modified to handle PlusCal   *
-*  labels.  Labels are aligned just like ordinary symbols.  However, the   *
-*  tokens following them are handled as if the labels were INFIX symbols,  *
-*  so those tokens get InfixArg aligned.  However, InfixArg alignment has  *
-*  the property that in                                                    *
 *                                                                          *
-*    token     a                                                           *
-*            + b                                                           *
+* PlusCal Alignment                                                        *
+* -----------------                                                        *
 *                                                                          *
-*  the a and b are InfixArg aligned  iff token is an INFIX operator.  This *
-*  restriction was eliminated.  Moreover, there was a bug in InfixArg      *
-*  alignment in which the above alignment worked only if the "token" was   *
-*  at least as wide as the "+".  I don't know if I should fix it or leave  *
-*  sleeping bugs lie.                                                      *
+* The following rule is added for PlusCal.                                 *
 *                                                                          *
-*  For the case of labels, InfixArg alignment was extended to align all    *
-*  the "a"s in the following with the "b":                                 *
+* Define a token t to be a FIRST NON-LABEL if either                       *
+*     (a) it is the first token on the line, or                            *
+*     (b) it is the 2nd token on its line and the first token on           *
+*         the line is a label.                                             *
 *                                                                          *
-*  [token]    a                                                            *
-*             a                                                            *
-*             a                                                            *
-*          L: b                                                            *
+* AfterLabel:                                                              *
+*   A token t is AfterLabel aligned with a token ta iff:                   *
+*     /\ t is a first non-label that is the 2nd token on its line          *
+*     /\ t and ta are left-aligned                                         *
+*     /\ there is no line between t and ta containing any token            *
+*        to the left of t other than a label that is the line's            *
+*        first token.                                                      *
+*     /\ \/ ta is a first non-label                                        *
+*        \/ /\ ta is above t                                               *
+*           /\ \/ ta is the first token on the line                        *
+*              \/ the token to the left of ta is a label or                *
+*                 a PlusCal symbol                                         *
+*                                                                          *
+* Here's an example of AfterLabel alignment.  Token b and all the x        *
+* tokens are AfterLabel aligned with token A. Tokens A and B and all the   *
+* other x tokens are also AfterLabel aligned with the first and last x     *
+* tokens.                                                                  *
+*                                                                          *
+*            { B                                                           *
+*          l:  x                                                           *
+*          m:    z                                                         *
+*              x                                                           *
+*          l:  A                                                           *
+*                z                                                         *
+*              x                                                           *
+*        l:    x                                                           *
+*            } z                                                           *
+*                                                                          *
+* Note that B is the only token whose alignment is due to the second       *
+* disjunction of the last conjunction.  That disjunct is designed to try   *
+* to rule out bogus alignments such as the alignment of the y's with the   *
+* 0 in                                                                     *
+*                                                                          *
+*     if (x = 0) {                                                         *
+*       lab:  y := 1;                                                      *
+*       lab:  y := 2  }                                                    *
+*                                                                          *
+* while aligning the the y's in                                            *
+*                                                                          *
+*      if (x = 0) {     y := 0;                                            *
+*                  lab: y := 1;                                            *
+*                  lab: y := 2  }                                          *
+*                                                                          *           
+* and in                                                                   *
+*                                                                          *
+*      if (x = 0) { y := 0;                                                *
+*   lab:            y := 1;                                                *
+*   lab:            y := 2  }                                              *
 *                                                                          *
 * ----------------------------------------------------------------------   *
 *                                                                          *
@@ -432,26 +474,24 @@ public class FindAlignments
                                      || (   (item == 2)
                                          && (spec[line][0].type == 
                                                Token.COMMENT)))
-                                 && (   (   (spec[line][item-1].type == Token.BUILTIN)
-                                         && (BuiltInSymbols.GetBuiltInSymbol(
-                                               spec[line][item-1].string, true).symbolType
-                                                  == Symbol.INFIX))
-                                        /******************************************
-                                        * Correction made 7 Nov 2001.             *  
-                                        * The conjunct above replaced the         *
-                                        * following.                              *
-                                        *                                         *
-                                        * && (BuiltInSymbols.GetBuiltInSymbol(    *
-                                        *      spec[line][item-1].string          *
-                                        *       ).alignmentType != 0)             *
-                                        *                                         *
-                                        * It seems reasonable that this           *
-                                        * alignment should be performed only      *
-                                        * when the token to the left is an infix  *
-                                        * operator.                               *
-                                        ******************************************/
-                                     || (spec[line][item-1].type == Token.PCAL_LABEL)
-                                    )
+                                 && (spec[line][item-1].type == Token.BUILTIN)
+                                 && (BuiltInSymbols.GetBuiltInSymbol(
+                                       spec[line][item-1].string, true).symbolType
+                                      == Symbol.INFIX)
+                                 /******************************************
+                                 * Correction made 7 Nov 2001.             *
+                                 * The conjunct above replaced the         *
+                                 * following.                              *
+                                 *                                         *
+                                 * && (BuiltInSymbols.GetBuiltInSymbol(    *
+                                 *       spec[line][item-1].string         *
+                                 *        ).alignmentType != 0)            *
+                                 *                                         *
+                                 * It seems reasonable that this           *
+                                 * alignment should be performed only      *
+                                 * when the token to the left is an infix  *
+                                 * operator.                               *
+                                 ******************************************/
                                  && (ctoken != null) 
                                  && (token.column == ctoken.column)
                                  && (spec[line][item-1].aboveAlign.line
@@ -470,9 +510,8 @@ public class FindAlignments
                                    * The token to the left of the current  *
                                    * token.                                *
                                    ****************************************/
-                                 boolean isLabel = (lTok.type == Token.PCAL_LABEL) ;
-                                 Position alPos = lTok.aboveAlign ;
-                                 Token alTok = alPos.toToken(spec);
+                                Position alPos = lTok.aboveAlign ;
+                                Token alTok = alPos.toToken(spec);
                                   /*****************************************
                                   * The token with which lTok is aligned   *
                                   * above.                                 *
@@ -493,9 +532,11 @@ public class FindAlignments
                                    // the "x == " occupies less space than the "+".
                                    // However, for safety, I'm only fixing it for the
                                    // case of labels, which should be more common.
-                                   if (isLabel) {
-                                       ctoken.belowAlign = pos ;
-                                   }
+                                   // However, I'm not doing it until I find
+                                   // some example of the bug for fear that it
+                                   // might break something else.
+                                   //
+                                   //    ctoken.belowAlign = pos ;
                                  } 
                                else
                                  { if (   (cpos.item == 0)
@@ -519,33 +560,6 @@ public class FindAlignments
                                       *****************************************/
                                       token.aboveAlign = cpos;           
                                       ctoken.belowAlign = pos ;
-                                      // The following code, executed only when the
-                                      // token to the left is a label, causes all 
-                                      // the S's to be aligned in
-                                      //
-                                      //        S
-                                      //        S
-                                      //        S
-                                      //     l: S
-                                      //
-                                      // the upward search for alignments stopping at
-                                      // an S that is either not the first token on the
-                                      // or is not left-aligned with the current S.
-                                      boolean notDone = isLabel ;
-                                      while (   notDone
-                                             && (ctoken.aboveAlign.line != -1)
-                                             && (cpos.item == 0)) {
-                                         pos = cpos ;
-                                         int column = ctoken.column ;
-                                         cpos = ctoken.aboveAlign ;
-                                         ctoken = cpos.toToken(spec) ;
-                                         if (ctoken.column == column) {
-                                             ctoken.belowAlign = pos ;
-                                         }
-                                         else {
-                                             notDone = false ;
-                                         }
-                                      }
                                     } ;
                                  }
                               };
@@ -575,7 +589,10 @@ public class FindAlignments
            { line = spec.length ;} ;
        }; // END while (line < spec.length)
 
-      /*********************************************************************
+       // Add the AfterLabel alignments.
+       FindLabelAlignments(spec) ;
+
+       /*********************************************************************
       * Set isAlignmentPoint flags.  For simplicity, it is set true for    *
       * any token that is not the first on the line and is either the      *
       * source or target of a belowAlign pointer                           *
@@ -614,9 +631,232 @@ public class FindAlignments
 
          line = line + 1;
        }; // END while (line < spec.length)
-
     } ;
 
+  /**
+   * Adds AfterLabel alignments to spec.  More precisely, for something like
+   * 
+   *  if (x) { stmt
+   *    label: stmt
+   *           stmt
+   *    label: stmt
+   *           stmt
+   *           stmt
+   *        }
+   * 
+   * it makes the belowAlign field of all stmts but the last one point to the
+   * stmt below it, and the aboveAlign field of all but the first stmt point to
+   * the one above it.  In this case
+   * 
+   *    while x
+   *           stmt
+   *    label: stmt
+   * 
+   * the first stmt's aboveAlign field should point to x by the FirstNonLeftComment
+   * alignment rule.  For
+   * 
+   *    while x
+   *    label: stmt
+   *    label: stmt
+   * 
+   * the method sets the first stmt's aboveAlign field
+   *  
+   * @param spec
+   */
+  public static void FindLabelAlignments(Token[][] spec) {
+      /*
+       * Do nothing if there is no PlusCal algorithm.
+       */
+      if (!TokenizeSpec.hasPcal) {
+          return ;
+      }
+      
+      /*
+       * We get the first and last line that may begin with a label or a 
+       * PlusCal statement.  Since the algorithm begins with --algorithm
+       * or --fair, we skip the algorithm's first line.
+       */
+      int pcalStartLine = TokenizeSpec.pcalStart.line + 1 ;
+      int pcalEndLine   = TokenizeSpec.pcalEnd.line ;
+      
+      /*
+       * The algorithm works by repeatedly searching for the next line beginning
+       * with a label followed by a token tok.  It then performs the following
+       * two steps
+       * 
+       * 1. Searche downward for tokens AfterLabel aligned with tok, setting
+       *    aboveAlign/belowAlign fields as it finds them. It stops when it reaches a 
+       *    line in which tok is not not aligned with the first token on the
+       *    line.  If there's a token etok on that line that is AfterLabel
+       *    aligned with tok, so it must follow a label, then the aboveAlign
+       *    field of etok is set to point to the AfterLabel aligned token above
+       *    it, whose belowAlign field points to etok.
+       *    
+       * 2. IF tok's aboveAlign field points to a token whose belowAlign field
+       *       points to a field whose belowAlign field points to tok
+       *     THEN do nothing.  I think this is possible only if those fields were set
+       *          by step 1 for a previous label.  If I'm wrong and there's some weird
+       *          situation that caused this alignment (which I think can only be
+       *          the case if tok is a comment), then not stopping will probably
+       *          do more harm than good.
+       *     ELSE search upwards to set aboveAlign/belowAlign fields of tokens 
+       *          AfterLabel aligned with tok. As indicated above, if there
+       *          are no tokens above tok that are AfterLabel aligned with it,
+       *          then tok's aboveAlign field must be set to point to its
+       *          covering token.   
+       */
+      int curLabelLine = pcalStartLine ;
+      
+      while (   (curLabelLine <= pcalEndLine)
+             && (curLabelLine < spec.length) ) {
+          /* 
+           * set curLabelLine to the first line at or below its current
+           * position that begins with a label.
+           */
+          if (   (spec[curLabelLine].length > 1)
+              && (spec[curLabelLine][0].type == Token.PCAL_LABEL) ) {
+              
+              Token tok = spec[curLabelLine][1] ;
+              int alignCol = tok.column ;
+
+              // Perform step 1 for token tok
+              int curLine = curLabelLine + 1 ;
+              
+              // spec[alignLine][alignItem] is the token to which the
+              // next token to be aligned is aligned with.
+              int alignLine = curLabelLine ;
+              int alignItem = 1 ;
+              boolean notDone = true ;
+              while (notDone) {
+                  int curItem = 0 ;
+                     // If spec[alignLine][alignItem] is to be aligned with a token
+                     // on this line, then the token is spec[curLine][nextItem] 
+                     // 
+                  boolean shouldSkip = false ;
+                  if (spec[curLine].length != 0) {
+                      if (spec[curLine][0].type == Token.PCAL_LABEL) {
+                          // line begins with label
+                          if (spec[curLine].length > 1) {
+                              curItem = 1 ;
+                          }
+                          else {
+                              // The label is the only token on the line.  Stop
+                              // iff the label is to the left of the alignment
+                              // column.
+                              notDone = (spec[curLine][0].column >= alignCol) ;
+                              shouldSkip = true ;
+                          }
+                      }
+                      else {
+                          // line doesn't begin with label
+                      }
+                      if (!shouldSkip) {
+                          if (spec[curLine][curItem].column < alignCol) {
+                              notDone = false ;
+                          }
+                          else if (spec[curLine][curItem].column == alignCol) {
+                              spec[alignLine][alignItem].belowAlign = 
+                                      new Position(curLine, curItem) ;
+                              spec[curLine][curItem].aboveAlign =
+                                      new Position(alignLine, alignItem) ;
+                              alignLine = curLine ;
+                              alignItem = curItem ;
+                          }
+                      }
+                  }
+                  curLine++ ;
+                  if (   (curLine > pcalEndLine)
+                      || (curLine >= spec.length)) {
+                      notDone = false ;
+                  }
+              }
+              
+              // Perform step 2 for token tok
+              
+              if (    (tok.aboveAlign.line != -1)
+                   && (tok.aboveAlign.toToken(spec).belowAlign.equals(new Position(curLabelLine, 1)))) {
+                  // already aligned with above tokens so do nothing
+              }
+              else {
+                  curLine = curLabelLine - 1 ;
+                  alignLine = curLabelLine ;
+                  alignItem = 1 ;
+                  notDone = true ;
+                  while (notDone) {
+                     if (   (spec[curLine].length > 0 )
+                         && (spec[curLine][0].column <= alignCol)
+                         && (   (spec[curLine][0].type != Token.PCAL_LABEL)
+                             || (   (spec[curLine].length > 1)
+                                  && (spec[curLine][1].column <= alignCol) ) )
+                            // the conjunct above causes the line to be skipped
+                            // if the only token to the left of tok on this
+                            // line is an initial label followed by a token
+                            // to the right of tok.
+                        ) {
+                         if (spec[curLine][0].column == alignCol) {
+                             //  spec[curLine][0] is to be aligned with 
+                             //  spec[alignLine][alignItem] 
+                             spec[alignLine][alignItem].aboveAlign = 
+                                     new Position(curLine, 0) ;
+                             spec[curLine][0].belowAlign =
+                                     new Position(alignLine, alignItem) ;
+                             alignLine = curLine ;
+                             alignItem = 0 ; 
+                         }
+                         else if (spec[alignLine][alignItem].aboveAlign.line == -1) {        
+                             // we need to align spec[alignLine][alignItem] with the
+                             // right-most token on line curLine with column \leq alignCol
+                             int item = 0 ;
+                             while (   (item < spec[curLine].length)
+                                    && (spec[curLine][item].column <= alignCol)) {
+                                 item++;
+                             }
+                             // item is now either off the line or pointing to a token
+                             // to the right of the alignment token ;
+                             item-- ;
+                             
+                             // We  set the aboveAlign pointer of 
+                             // to point to spec[curLine][item] if the latter token is either
+                             // the first one on its line, or else the token to its left is
+                             // either a label or a PlusCal token.  
+                             // If that's the case, we also set the belowAlign pointer of 
+                             // spec[curLine][item] if that token is in the same column
+                             // as spec[alignLine][alignItem].
+                             // 
+                             Token altok = null ;
+                             if (item > 0) {
+                                 altok = spec[curLine][item-1] ;
+                             }
+                             if (   (altok != null)
+                                 && (   (altok.type == Token.PCAL_LABEL)
+                                     || (   (altok.type == Token.BUILTIN)
+                                         && BuiltInSymbols.IsBuiltInSymbol(altok.string, true)
+                                         && ! BuiltInSymbols.IsBuiltInSymbol(altok.string, false)
+                                        )
+                                    )
+                                ) {
+                                 spec[alignLine][alignItem].aboveAlign = 
+                                            new Position(curLine, item) ;
+                                
+                                 if (spec[curLine][item].column == alignCol) {
+                                     spec[curLine][item].belowAlign =
+                                             new Position(alignLine, alignItem) ;
+                               }
+                             }
+                             // This ends step 2
+                             notDone = false ;
+                         }
+                     }
+                     curLine-- ;
+                     if (curLine < pcalStartLine) {
+                         notDone = false ;
+                     }
+                  }
+              }     
+          }
+          curLabelLine++ ;
+      }       
+  }
   /*************************************************************************
   * The following are functions used in FindAlignments.                    *
   *************************************************************************/
@@ -849,7 +1089,9 @@ public class FindAlignments
          line = line + 1;
        } // END while (line < spec.length)
       
-    } ;    
+    } ;
+    
+    
 }
 
-/* last modified on Tue 18 Sep 2007 at  6:46:44 PST by lamport */
+/* last modified on Sun  5 August 2012 at 17:07:48 PST by lamport */
