@@ -841,9 +841,12 @@ public class FindAlignments
                                  if (spec[curLine][item].column == alignCol) {
                                      spec[curLine][item].belowAlign =
                                              new Position(alignLine, alignItem) ;
-                               }
+                                 }
                              }
                              // This ends step 2
+                             notDone = false ;
+                         }
+                         else {
                              notDone = false ;
                          }
                      }

@@ -949,13 +949,19 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
   while (line < spec.length)
    { // BEGIN while (line < spec.length)
 
-    if (tlaMode && Parameters.CommentShading) {
+    if (tlaMode && TokenizeSpec.hasPcal) {
       boolean pcalLineNext = ( pcalStartLine <= line && line <= pcalEndLine) ;
       if (pcalLineNext && !pcalLine) {
-          writer.putLine("\\pcalshadingtrue") ;
+          writer.putLine("\\pcalsymbolstrue") ;
+          if (Parameters.CommentShading) {
+              writer.putLine("\\pcalshadingtrue") ;
+          }
+          if (TokenizeSpec.isCSyntax) {
+              writer.putLine("\\csyntaxtrue") ;
+          }
       }
       if (pcalLine && !pcalLineNext) {
-          writer.putLine("\\pcalshadingfalse") ;
+          writer.putLine("\\pcalshadingfalse \\pcalsymbolsfalse") ;
       }
       pcalLine = pcalLineNext ;
     }

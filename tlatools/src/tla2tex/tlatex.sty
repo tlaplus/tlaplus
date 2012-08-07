@@ -135,10 +135,7 @@
 \newcommand{\@pfstepnum}[2]{\ensuremath{\langle#1\rangle}\textrm{#2}}
 \newcommand{\bang}{\@s{1}\mbox{\small !}\@s{1}}
 %% We should format || differently in PlusCal code than in TLA+ formulas.
-%% This should really be done in TLATeX.  However, as a hack, we just
-%% format it differently if it's in shaded PlusCal code.  It's better
-%% than nothing.
-\newcommand{\pbarbar}{\ifpcalshading 
+\newcommand{\pbarbar}{\ifpcalsymbols
    \,\,\rule[-.25em]{.075em}{1em}\hspace*{.2em}\rule[-.25em]{.075em}{1em}\,\,%
    \else \,||\,\fi}
 %% PlusCal keywords
@@ -159,7 +156,7 @@
 \newcommand{\pgoto}{\textbf{goto }}
 \newcommand{\pif}{\textbf{if }}
 \newcommand{\pthen}{\,\,\textbf{then }}
-\newcommand{\pelse}{\,\,\textbf{else }}
+\newcommand{\pelse}{\ifcsyntax \textbf{else } \else \,\,\textbf{else }\fi}
 \newcommand{\pelsif}{\,\,\textbf{elsif }}
 \newcommand{\pmacro}{\textbf{macro }}
 \newcommand{\pprint}{\textbf{print }}
@@ -250,8 +247,19 @@
 % 
 %   \tstrut \@x cpar mcom \@pvspace
 % 
-\newif\ifpcalshading
-\pcalshadingfalse
+% The TeX pcalsymbols switch is turned on when typesetting a PlusCal algorithm,
+% whether or not shading is being performed.  It causes symbols (other than
+% parentheses and braces and PlusCal-only keywords) that should be typeset
+% differently depending on whether they are in an algorithm to be typeset
+% appropriately.  Currently, the only such symbol is "||".
+%
+% The TeX csyntax switch is turned on when typesetting a PlusCal algorithm in
+% c-syntax.  This allows symbols to be format differently in the two syntaxes.
+% The "else" keyword is the only one that is.
+
+\newif\ifpcalshading \pcalshadingfalse
+\newif\ifpcalsymbols \pcalsymbolsfalse
+\newif\ifcsyntax     \csyntaxfalse
 
 % The \@pvspace command makes a vertical space.  It uses \vspace
 % except with \ifpcalshading, in which case it sets \pvcalvspace
