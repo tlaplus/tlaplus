@@ -157,11 +157,11 @@ Version 1.4.4 of ?
   - Fixed bug in Find Declaration and other commands that caused problems
     recognizing an identifier containing a "_".
   - Fixed a couple of minor bugs in TLC error messages in Version 2.05 of 18 May
-  - Added ONLY and COROLLARY as editor keywords.
+  - Added ONLY and COROLLARY as an editor keyword.
   - Markus fixed bug in Toolbox update that caused the new version of the Toolbox
     to call the old version of the tools.
-  - Minor fixes to tlatex.  Be sure to modify version info to include new
-    tlatex version.
+  - New version of TLATeX that pretty-prints PlusCal algorithms properly.
+  
 Version 1.4.3 of 10 April 2012
   - Adds a "Cardinality of largest enumerable set" TLC parameter.
   - Fixed the order of definitions and declarations in the MC.tla file.
