@@ -132,14 +132,14 @@ public class TLA
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Wed 21 Jul 2012 at 16:06:38 PST by lamport";
+    "last modified on Wed  7 Aug 2012 at 16:06:38 PST by lamport";
 
     static String modDate = lastModified.substring(21, 33);
     /***********************************************************************
     * The modification date.                                               *
     ***********************************************************************/
 
-    static String version = "tla2tex.TLA Version .9 created " + modDate;
+    static String version = "tla2tex.TLA Version 1.0 created " + modDate;
 
     public static void main(String[] args)
     {
