@@ -80,6 +80,7 @@ public static void WriteTeXAlignmentFile(Token[][] spec,
   if (linewidth >= 0)
    { writer.putLine("\\setlength{\\textwidth}{" 
                      + Misc.floatToString(linewidth, 2) + "pt}");
+     writer.putLine("\\makeatletter") ;   // added by LL on 7 Aug 2012
    } ;
   writer.putLine("\\begin{document}");
 
@@ -958,6 +959,9 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
           }
           if (TokenizeSpec.isCSyntax) {
               writer.putLine("\\csyntaxtrue") ;
+          }
+          else {
+              writer.putLine("\\csyntaxfalse") ; 
           }
       }
       if (pcalLine && !pcalLineNext) {
