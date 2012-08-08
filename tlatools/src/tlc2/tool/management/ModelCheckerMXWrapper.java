@@ -87,4 +87,11 @@ public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatis
 	public int getWorkerCount() {
 		return TLCGlobals.getNumWorkers();
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#checkpoint()
+	 */
+	public void checkpoint() {
+		TLCGlobals.forceChkpt();
+	}
 }

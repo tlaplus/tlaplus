@@ -417,17 +417,14 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 
 		// Wait for completion, but print out progress report and checkpoint
 		// periodically.
-		long lastChkpt = System.currentTimeMillis();
 		synchronized (server) {
 			server.wait(REPORT_INTERVAL);
 		}
 		long oldNumOfGenStates = 0;
         long oldFPSetSize = 0;
 		while (true) {
-			long now = System.currentTimeMillis();
-			if (now - lastChkpt >= TLCGlobals.chkptDuration) {
+			if (TLCGlobals.doCheckPoint()) {
 				server.checkpoint();
-				lastChkpt = now;
 			}
 			synchronized (server) {
 				if (!server.done) {
