@@ -36,7 +36,6 @@ public abstract class AbstractChecker implements Cancelable
     public Action[] impliedActions;
     public Action[] impliedInits;
     public Action[] actions;
-    protected long lastChkpt;
     protected StateWriter allStateWriter;
     protected boolean cancellationFlag;
 
@@ -88,7 +87,6 @@ public abstract class AbstractChecker implements Cancelable
         {
             this.allStateWriter = new StateWriter(dumpFile);
         }
-        this.lastChkpt = System.currentTimeMillis();
 
         this.impliedInits = this.tool.getImpliedInits(); // implied-inits to be checked
         this.invariants = this.tool.getInvariants(); // invariants to be checked
@@ -225,14 +223,12 @@ public abstract class AbstractChecker implements Cancelable
         // while (true) {
         while (!this.cancellationFlag)
         {
-            long now = System.currentTimeMillis();
-            if (now - this.lastChkpt >= TLCGlobals.chkptDuration)
+            if (TLCGlobals.doCheckPoint())
             {
                 if (!this.doPeriodicWork())
                 {
                     return false;
                 }
-                this.lastChkpt = now;
             }
             synchronized (this)
             {

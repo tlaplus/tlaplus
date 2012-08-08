@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 
 import javax.management.NotCompliantMBeanException;
 
+import tlc2.TLCGlobals;
 import tlc2.tool.distributed.TLCServer;
 import tlc2.tool.distributed.fp.IFPSetManager;
 import tlc2.tool.management.TLCStandardMBean;
@@ -94,5 +95,12 @@ public class TLCServerMXWrapper extends TLCStandardMBean implements TLCStatistic
 	 */
 	public int getWorkerCount() {
 		return tlcServer.getWorkerCount();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#checkpoint()
+	 */
+	public void checkpoint() {
+		TLCGlobals.forceChkpt();
 	}
 }
