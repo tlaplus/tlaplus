@@ -343,7 +343,7 @@ public final class BuiltInSymbols
         add("/",            "\\.{/}",            Symbol.INFIX, 21);
         add("^",            "\\.{\\ct}",         Symbol.INFIX, 22);
         add("|",            "\\.{\\,|\\,}",      Symbol.INFIX, 23);
-        add("||",           "\\.{\\pbarbar}",    Symbol.INFIX, 24);
+        add("||",           "\\.{\\p@barbar}",   Symbol.INFIX, 24); // modified for PlusCal
         add("&",            "\\.{\\,\\&\\,}",    Symbol.INFIX, 25);
         add("&&",           "\\.{\\,\\&\\&\\,}", Symbol.INFIX, 26);
         add("++",           "\\.{\\pp}",         Symbol.INFIX, 27);
@@ -455,25 +455,25 @@ public final class BuiltInSymbols
         add("@",  "@",      Symbol.MISC, 0);
         
         // The following are added for PlusCal
-        pcaladd("fair",      "{\\pfair}",       Symbol.KEYWORD,     0);
-        pcaladd("algorithm", "{\\palgorithm}",  Symbol.KEYWORD,     0);
-        pcaladd("--fair",    "{\\pmmfair}",     Symbol.KEYWORD,     0);
-        pcaladd("--algorithm", "{\\pmmalgorithm}",  Symbol.KEYWORD,     0);
-        pcaladd(";",          "{\\psemicolon}",  Symbol.PUNCTUATION, 63);
-        pcaladd("assert",     "{\\passert}",     Symbol.KEYWORD,     0);
-        pcaladd("await",      "{\\pawait}",      Symbol.KEYWORD,     0);
-        pcaladd("begin",      "{\\pbegin}",      Symbol.KEYWORD,     0);
-        pcaladd("end",        "{\\pend}",        Symbol.KEYWORD,     0);
-        pcaladd("call",       "{\\pcall}",       Symbol.KEYWORD,     0);
-        pcaladd("define",     "{\\pdefine}",     Symbol.KEYWORD,     0);
-        pcaladd("do",         "{\\pdo}",         Symbol.KEYWORD,     0);
-        pcaladd("either",     "{\\peither}",     Symbol.INFIX,       64); // not sure
-        pcaladd("or",         "{\\por}",         Symbol.INFIX,       64); // not sure
-        pcaladd("goto",       "{\\pgoto}",       Symbol.KEYWORD,     0);
-        pcaladd("if",         "{\\pif}",         Symbol.KEYWORD,     0);
-        pcaladd("then",       "{\\pthen}",       Symbol.INFIX,       65); 
-        pcaladd("else",       "{\\pelse}",       Symbol.INFIX,       65); 
-        pcaladd("elsif",      "{\\pelsif}",      Symbol.INFIX,       65); 
+        pcaladd("fair",      "{\\p@fair}",       Symbol.KEYWORD,     0);
+        pcaladd("algorithm", "{\\p@algorithm}",  Symbol.KEYWORD,     0);
+        pcaladd("--fair",    "{\\p@mmfair}",     Symbol.KEYWORD,     0);
+        pcaladd("--algorithm", "{\\p@mmalgorithm}",  Symbol.KEYWORD,     0);
+        pcaladd(";",          "{\\p@semicolon}",  Symbol.PUNCTUATION, 63);
+        pcaladd("assert",     "{\\p@assert}",     Symbol.KEYWORD,     0);
+        pcaladd("await",      "{\\p@await}",      Symbol.KEYWORD,     0);
+        pcaladd("begin",      "{\\p@begin}",      Symbol.KEYWORD,     0);
+        pcaladd("end",        "{\\p@end}",        Symbol.KEYWORD,     0);
+        pcaladd("call",       "{\\p@call}",       Symbol.KEYWORD,     0);
+        pcaladd("define",     "{\\p@define}",     Symbol.KEYWORD,     0);
+        pcaladd("do",         "{\\p@do}",         Symbol.KEYWORD,     0);
+        pcaladd("either",     "{\\p@either}",     Symbol.INFIX,       64); // not sure
+        pcaladd("or",         "{\\p@or}",         Symbol.INFIX,       64); // not sure
+        pcaladd("goto",       "{\\p@goto}",       Symbol.KEYWORD,     0);
+        pcaladd("if",         "{\\p@if}",         Symbol.KEYWORD,     0);
+        pcaladd("then",       "{\\p@then}",       Symbol.INFIX,       65); 
+        pcaladd("else",       "{\\p@else}",       Symbol.INFIX,       65); 
+        pcaladd("elsif",      "{\\p@elsif}",      Symbol.INFIX,       65); 
           // I tried making "then", "else", and "elsif" KEYWORDS that all
           // had the same width when printed.  This didn't work because
           // of the extra letter in "elsif", so if the statements that follow
@@ -481,24 +481,24 @@ public final class BuiltInSymbols
           // "then" because of the extra space between it and what follows.
           // Making them INFIX with the same alignment value produces some
           // bogus alignments, but it seems to be the lesser evil.
-        pcaladd("macro",      "{\\pmacro}",      Symbol.KEYWORD,     0);
-        pcaladd("print",      "{\\pprint}",      Symbol.KEYWORD,     0);
-        pcaladd("procedure",  "{\\pprocedure}",  Symbol.KEYWORD,     0);
-        pcaladd("process",    "{\\pprocess}",    Symbol.KEYWORD,     0);
-        pcaladd("return",     "{\\preturn}",     Symbol.KEYWORD,     0);
-        pcaladd("skip",       "{\\pskip}",       Symbol.KEYWORD,     0);
-        pcaladd("variable",   "{\\pvariable}",   Symbol.KEYWORD,     0);
-        pcaladd("variables",  "{\\pvariables}",  Symbol.KEYWORD,     0);
-        pcaladd("while",      "{\\pwhile}",      Symbol.KEYWORD,     0);
-        pcaladd("with",       "{\\pwith}",       Symbol.KEYWORD,     0);
-        pcaladd("when",       "{\\pwhen}",       Symbol.KEYWORD,     0);
+        pcaladd("macro",      "{\\p@macro}",      Symbol.KEYWORD,     0);
+        pcaladd("print",      "{\\p@print}",      Symbol.KEYWORD,     0);
+        pcaladd("procedure",  "{\\p@procedure}",  Symbol.KEYWORD,     0);
+        pcaladd("process",    "{\\p@process}",    Symbol.KEYWORD,     0);
+        pcaladd("return",     "{\\p@return}",     Symbol.KEYWORD,     0);
+        pcaladd("skip",       "{\\p@skip}",       Symbol.KEYWORD,     0);
+        pcaladd("variable",   "{\\p@variable}",   Symbol.KEYWORD,     0);
+        pcaladd("variables",  "{\\p@variables}",  Symbol.KEYWORD,     0);
+        pcaladd("while",      "{\\p@while}",      Symbol.KEYWORD,     0);
+        pcaladd("with",       "{\\p@with}",       Symbol.KEYWORD,     0);
+        pcaladd("when",       "{\\p@when}",       Symbol.KEYWORD,     0);
 
         // The following are the symbols for the PlusCal delimiters:
         //       "("  ")"  "{"  "}"  
-        pcaladd(pcalLeftParen,  "{\\plparen}",   Symbol.LEFT_PAREN,  0);
-        pcaladd(pcalRightParen, "{\\prparen}",   Symbol.RIGHT_PAREN, 0);
-        pcaladd(pcalLeftBrace,  "{\\plbrace}",   Symbol.LEFT_PAREN,  0);
-        pcaladd(pcalRightBrace, "{\\prbrace}",  Symbol.RIGHT_PAREN, 0);
+        pcaladd(pcalLeftParen,  "{\\p@lparen}",   Symbol.LEFT_PAREN,  0);
+        pcaladd(pcalRightParen, "{\\p@rparen}",   Symbol.RIGHT_PAREN, 0);
+        pcaladd(pcalLeftBrace,  "{\\p@lbrace}",   Symbol.LEFT_PAREN,  0);
+        pcaladd(pcalRightBrace, "{\\p@rbrace}",  Symbol.RIGHT_PAREN, 0);
 
       } ;      
 
