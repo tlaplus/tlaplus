@@ -1754,10 +1754,103 @@ public class TokenizeSpec
      *   ";"  
      *   PCAL_LABEL
      * 
+     * This method also removes an extra gray bar that can appear after
+     * the algorithm when using the -shade and -noPcalShade options.
+     * 
      * @param spec
      */
     public static void FixPlusCal(Token[][] spec) {
-        if ((!hasPcal) || (!isCSyntax)) {
+//        if ((!hasPcal) || (!isCSyntax)) {
+//            return ;
+//        }
+       
+        if (!hasPcal) {
+            return ;
+        }
+        
+        // Fix the problem of an extra gray bar caused by an empty
+        // comment token following the algorithm by removing that
+        // comment if it exists.
+        if (    Parameters.CommentShading
+            && Parameters.NoPlusCalShading
+            && (pcalEnd.line < spec.length)
+            && (pcalEnd.item < spec[pcalEnd.line].length)) {
+            Token tok = pcalEnd.toToken(spec) ;
+            if (tok.type == Token.COMMENT) {
+                CommentToken ctok = (CommentToken) tok ;
+                if (ctok.string.trim().equals("") ) {
+                  int rsubtype = ctok.rsubtype ;
+                  
+                  // Set newline to spec[pcalEnd.line] with element pcalEnd.item 
+                  // removed.
+                  Token[] newline = new Token[spec[pcalEnd.line].length - 1] ;
+                  int j = 0 ;
+                  for (int i = 0 ; i < spec[pcalEnd.line].length ; i++) {
+                     if (i != pcalEnd.item) {
+                         newline[j] = spec[pcalEnd.line][i] ;
+                         j++ ;
+                     }
+                  }                  
+                  if (rsubtype == CommentToken.NORMAL) {
+                     spec[pcalEnd.line] = newline ;
+                  }
+                  else {
+                      if (rsubtype == CommentToken.BEGIN_OVERRUN) {
+                          // The following lines of the spec should consist
+                          // of a (possibly empty) sequence of 1-token lines
+                          // containing comment tokens of rsubtype OVERRUN followed
+                          // by a line beginning with a comment token of rsubtype
+                          // END_OVERRUN.  If all those comment tokens have only
+                          // blank strings, then we want to delete all of them.
+                          //
+                          // We begin by setting nextLine to the first line following
+                          // pcalEnd.line that does not contain an OVERRUN token with
+                          // a blank string and we set next to the first token on that
+                          // line--or null if for some strange reason that line has
+                          // no tokens.
+                          Token next = spec[pcalEnd.line + 1][0] ;
+                          int nextLine = pcalEnd.line + 1;
+                          while (   (next != null)
+                                 && (next.type == CommentToken.COMMENT)
+                                 && (((CommentToken) next).rsubtype == CommentToken.OVERRUN)
+                                 && (next.string.trim().equals(""))
+                                  ) {
+                              nextLine++ ;
+                              if (spec[nextLine+1].length > 0) {
+                                  next = spec[nextLine][0];
+                              } 
+                              else {
+                                  next = null ;
+                              }
+                          }
+                          if (   (next != null)
+                              && (next.type == CommentToken.COMMENT)
+                              && (next.string.trim().equals(""))
+                              && (((CommentToken) next).rsubtype == CommentToken.END_OVERRUN)
+                              ) {
+                              
+                              // We have an empty comment that we should remove .
+                              // First, we remove the first comment token, 
+                              spec[pcalEnd.line] = newline ;
+                              
+                              // next we remove all the OVERRUN tokens.
+                              for (int i = pcalEnd.line + 1 ; i < nextLine ; i++) {
+                                  spec[i] = new Token[0] ;
+                              }
+                                  
+                              // next we remove the END_OVERRUN token
+                              newline = new Token[spec[nextLine].length-1]  ;                                  
+                              System.arraycopy(spec[nextLine], 1, newline, 
+                                                      0, spec[nextLine].length - 1) ;
+                              spec[nextLine] = newline ;
+                          } 
+                      }
+                  }
+                }
+            }
+        }
+              
+        if (!isCSyntax) {
             return ;
         }
         // Since we're at the beginning of the algorithm, the first
