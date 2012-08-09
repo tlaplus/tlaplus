@@ -219,10 +219,29 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#init(int, java.lang.String, java.lang.String)
 	 */
-	public final void init(int numThreads, String metadir, String filename)
+	public final void init(int numThreads, String aMetadir, String filename)
 			throws IOException {
 		
-		this.metadir = metadir;
+		// Make it possible to pass in alternative location for the .fp and
+		// .fp.tmp files. Per default they end up in the same location with the
+		// trace and disk based state queue. This is sub-optimal if node has > 1
+		// disk.
+		// This has to be an absolute path. 
+		final String propMetaDirPrefix = System.getProperty(DiskFPSet.class.getName() + ".metadirPrefix");
+		if (propMetaDirPrefix == null) {
+			this.metadir = aMetadir;
+		} else {
+			// If aMetadir is an absolute path name, we strip off the last part and append it to the prefix.
+			File file = new File(aMetadir);
+			if (file.isAbsolute()) {
+				aMetadir = file.getName();
+			}
+			final String folder = propMetaDirPrefix + File.separator
+					+ aMetadir;
+			new File(folder).mkdirs();
+			this.metadir = folder;
+		}
+		
 		// set the filename
 		// concat here to not do it every time in mergeEntries 
 		filename = metadir + FileUtil.separator + filename;
