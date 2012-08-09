@@ -213,6 +213,11 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 					}
 
 					if (preferenceStore
+                            .getBoolean(ITLA2TeXPreferenceConstants.NO_PCAL_SHADE)) {
+                        tla2texArgs.add("-noPcalShade");  
+                    }
+
+					if (preferenceStore
 							.getBoolean(ITLA2TeXPreferenceConstants.NUMBER_LINES)) {
 						tla2texArgs.add("-number");
 					}

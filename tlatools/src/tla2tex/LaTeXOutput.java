@@ -954,7 +954,7 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
       boolean pcalLineNext = ( pcalStartLine <= line && line <= pcalEndLine) ;
       if (pcalLineNext && !pcalLine) {
           writer.putLine("\\pcalsymbolstrue") ;
-          if (Parameters.CommentShading) {
+          if (Parameters.CommentShading && ! Parameters.NoPlusCalShading) {
               writer.putLine("\\pcalshadingtrue") ;
           }
           if (TokenizeSpec.isCSyntax) {

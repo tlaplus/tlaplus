@@ -16,7 +16,8 @@ public class TLA2TeXPreferenceInitializer extends AbstractPreferenceInitializer 
 		IPreferenceStore store = TLA2TeXActivator.getDefault()
 				.getPreferenceStore();
 		store.setDefault(ITLA2TeXPreferenceConstants.SHADE_COMMENTS, true);
-		store.setDefault(ITLA2TeXPreferenceConstants.NUMBER_LINES, false);
+		store.setDefault(ITLA2TeXPreferenceConstants.NO_PCAL_SHADE, false);
+        store.setDefault(ITLA2TeXPreferenceConstants.NUMBER_LINES, false);
 		store.setDefault(ITLA2TeXPreferenceConstants.LATEX_COMMAND, "pdflatex");
 		store.setDefault(ITLA2TeXPreferenceConstants.GRAY_LEVEL, "0.85");
 		store.setDefault(ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER, false);
