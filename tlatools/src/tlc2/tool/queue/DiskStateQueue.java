@@ -22,7 +22,8 @@ import util.FileUtil;
  */
 public class DiskStateQueue extends StateQueue {
 	//TODO dynamic bufsize based on current VM parameters?
-  private final static int BufSize = 8192;  // 4096;
+	private final static int BufSize = Integer.getInteger(
+			DiskStateQueue.class.getName() + ".BufSize", 8192);;
 
   /* Invariants:
      I1. Entries in deqBuf are in the indices:
