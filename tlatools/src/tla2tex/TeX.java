@@ -105,7 +105,7 @@ class TeX
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Wed 21 Jul 2012 at 16:08:49 PST by lamport";
+    "last modified on Wed 9 Aug 2012 at 16:08:49 PST by lamport";
 
   static String modDate = lastModified.substring(21, 33) ;
     /***********************************************************************
@@ -113,7 +113,7 @@ class TeX
     ***********************************************************************/
 
   static String version = 
-    "tla2tex.TeX Version .9 created " + modDate ;
+    "tla2tex.TeX Version 1.0 created " + modDate ;
 
     public static void main(String[] args) 
     { /*********************************************************************

@@ -42,16 +42,6 @@
 *    does something reasonable.                                            *
 *    THE FIX OF 21 Jul 2012 MADE IT DO SOMETHING REASONABLE.               *          
 *                                                                          *
-* TO DO:                                                                   *
-*   With options -shade -noPcalShade, in the normal case where the         *
-*   algorithm has nothing other than perhaps a "*)" following it on its    *
-*   last line, there's an annoying little gray rectangle.  This is caused  *
-*   by either a ONE_LINE or BEGIN_MULTI comment token at position pcalEnd  *
-*   whose string contains nothing but spaces.  That token should be        *
-*   deleted and, if its a BEGIN_MULTI, the subtype of the token beginning  *
-*   the next line should be modified accordingly.  (The code to do this is *
-*   perhaps best put at the beginning of TokenizeSpec.FixPlusCal.          *
-*                                                                          *
 * Modified on 19 Sep 2007 as follows for TLA+2:                            *
 *  1. Added the new keywords.                                              *
 *  2. Added a new PF_STEP token type and various kludges                   *
@@ -145,7 +135,7 @@ public class TLA
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Wed  8 Aug 2012 at 16:06:38 PST by lamport";
+    "last modified on Wed  9 Aug 2012 at 16:06:38 PST by lamport";
 
     static String modDate = lastModified.substring(21, 33);
     /***********************************************************************
