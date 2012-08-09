@@ -364,6 +364,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	}
 
 	public class Indexer {
+		protected final long prefixMask;
 		/**
 		 * Number of bits to right shift bits during index calculation
 		 * @see MSBDiskFPSet#moveBy
@@ -377,6 +378,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 
 		public Indexer(final int moveBy, int prefixBits) {
 			// same for lockCnt
+			this.prefixMask = 0x7FFFFFFFFFFFFFFFL >>> prefixBits;
 			this.moveBy = moveBy;
 			this.lockMoveBy = 63 - prefixBits - LogLockCnt;
 		}
@@ -387,8 +389,8 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		protected int getLockIndex(long fp) {
 			// calculate hash value (just n most significant bits of fp) which is
 			// used as an index address
-			final long idx = fp >> lockMoveBy;
-			//Assert.check(0 <= idx && idx < lockCnt, EC.GENERAL);
+			final long idx = (fp & prefixMask) >> lockMoveBy;
+			Assert.check(0 <= idx && idx < lockCnt, EC.GENERAL);
 			return (int) idx;
 		}
 
@@ -398,9 +400,9 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		 */
 		protected long getLogicalPosition(final long fp) {
 			// push MSBs for moveBy positions to the right and align with a bucket address
-			long position = fp >> moveBy;
+			long position = (fp & prefixMask) >> moveBy;
 			position = floorToBucket(position);
-			//Assert.check(0 <= position && position < maxTblCnt, EC.GENERAL);
+			Assert.check(0 <= position && position < maxTblCnt, EC.GENERAL);
 			return position;
 		}
 
@@ -453,7 +455,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		@Override
 		protected long getLogicalPosition(final long fp) {
 			// push MSBs for moveBy positions to the right and align with a bucket address
-			long position = (fp >> moveBy) & bucketBaseIdx; 
+			long position = ((fp & prefixMask) >> moveBy)  & bucketBaseIdx; 
 			//Assert.check(0 <= position && position < maxTblCnt, EC.GENERAL);
 			return position;
 		}

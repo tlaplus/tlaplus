@@ -31,12 +31,12 @@ public class MultiFPSet extends FPSet {
 	/**
 	 * Contains all nested {@link FPSet}s 
 	 */
-	private FPSet[] sets;
+	protected FPSet[] sets;
 
 	/**
 	 * Amount of leftmost bits used to determine nested {@link FPSet}
 	 */
-	private int fpbits;
+	protected int fpbits;
 
 	/* Create a MultiFPSet with 2^bits FPSets. */
 	public MultiFPSet(int bits) throws RemoteException {
@@ -58,10 +58,16 @@ public class MultiFPSet extends FPSet {
 			fpMemSize = HeapBasedDiskFPSet.DefaultMaxTblCnt / 20;
 		}
 
-		for (int i = 0; i < len; i++) {
-			this.sets[i] = FPSet.getFPSet(0, (fpMemSize / (long) len));
-		}
+		this.sets = getNestedFPSets(bits, fpMemSize, len);
 		this.fpbits = 64 - bits;
+	}
+
+	protected FPSet[] getNestedFPSets(int bits, long fpMemSize, int len) throws RemoteException {
+		final FPSet[] s = new FPSet[len];
+		for (int i = 0; i < len; i++) {
+			s[i] = FPSet.getFPSet(0, (fpMemSize / (long) len), false);
+		}
+		return s;
 	}
 
 	/* (non-Javadoc)
@@ -89,7 +95,7 @@ public class MultiFPSet extends FPSet {
 	 * @param fp
 	 * @return Partition given fp into the {@link FPSet} space 
 	 */
-	private FPSet getFPSet(long fp) {
+	protected FPSet getFPSet(long fp) {
 		// determine corresponding fpset (using unsigned right shift)
 		// shifts a zero into the leftmost (msb) position of the first operand for right operand times
 		// and cast it to int loosing the leftmost 32 bit

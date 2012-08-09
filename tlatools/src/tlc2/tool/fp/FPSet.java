@@ -71,12 +71,17 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 * @throws RemoteException
 	 */
 	public static FPSet getFPSet(int fpBits, long fpMemSizeInBytes) throws RemoteException {
+		return getFPSet(fpBits, fpMemSizeInBytes, true);
+	}
+	
+	static FPSet getFPSet(int fpBits, long fpMemSizeInBytes, boolean multiFPSet) throws RemoteException {
 		// convert from physical mem into logical amount of fingerprints
 		long fpMemSizeInFPs = fpMemSizeInBytes / LongSize;
 		
 		FPSet set = null;
 		
-		if (USER_FPSET_IMPL_CLASSNAME != null) {
+		//TODO handle case where fpbits > 0 and custom factory set which does not take fpbits into account
+		if (loadCustomFactory() && multiFPSet == false) {
 			set = loadCustomFactory(USER_FPSET_IMPL_CLASSNAME, fpBits, fpMemSizeInFPs);
 		}
 		
@@ -86,9 +91,34 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 			// Pass physical memory instead of logical FP count to adhere to the
 			// general FPSet ctor contract.
 			// @see http://bugzilla.tlaplus.net/show_bug.cgi?id=290
-			set = new MultiFPSet(fpBits, fpMemSizeInBytes);
+			if (loadCustomFactory() && msbBasedFPSet(USER_FPSET_IMPL_CLASSNAME)) {
+				set = new MSBMultiFPSet(fpBits, fpMemSizeInBytes);
+			} else {
+				set = new MultiFPSet(fpBits, fpMemSizeInBytes);
+			}
 		}
 		return set;
+	}
+
+	/**
+	 * @param userFpsetImplClassname
+	 * @return true iff the given class uses the MSB to pre-sort its fingerprints
+	 */
+	private static boolean msbBasedFPSet(String userFpsetImplClassname) {
+		if (!allocatesOnHeap(userFpsetImplClassname)) {
+			return true;
+		}
+		if (userFpsetImplClassname.equals(MSBDiskFPSet.class.getName())) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @return true iff a custom factory should be loaded
+	 */
+	private static boolean loadCustomFactory() {
+		return USER_FPSET_IMPL_CLASSNAME != null;
 	}
 	
 	/**
@@ -110,7 +140,9 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 			// HACK class loading to pass _non heap_ memory into subclasses of
 			// OffHeapFPSet.
 			if (!allocatesOnHeap(clazz)) {
-				fpMemSizeInFPs = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) LongSize;
+				long l = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) LongSize;
+				// divide l among all FPSet instances
+				fpMemSizeInFPs = l >> fpBits; 
 			}
 
 			final Constructor<?> constructor = factoryClass
