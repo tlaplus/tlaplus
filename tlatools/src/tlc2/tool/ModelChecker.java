@@ -19,7 +19,6 @@ import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
-import tlc2.util.PrintfFormat;
 import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
@@ -750,10 +749,14 @@ public class ModelChecker extends AbstractChecker
     public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException
     {
         final long d = anFpSet.size();
+        final double actualProb = anFpSet.checkFPs();
+        reportSuccess(d,  actualProb, numOfGenStates);
+    }
+    
+    public static final void reportSuccess(final long d, final double actualProb, final long numOfGenStates) throws IOException
+    {
         // shown as 'calculated' in Toolbox
         final double optimisticProb = d * ((numOfGenStates - d) / Math.pow(2, 64));
-        // shown as 'observed' in Toolbox
-        final double actualProb = anFpSet.checkFPs();
         /* The following code added by LL on 3 Aug 2009 to print probabilities
          * to only one decimal point.  Removed by LL on 17 April 2012 because it
          * seemed to report probabilities > 10-4 as probability 0.
@@ -764,6 +767,7 @@ public class ModelChecker extends AbstractChecker
         
         // Following two lines added by LL on 17 April 2012
         final String optimisticProbStr = "val = " + ProbabilityToString(optimisticProb, 2);
+        // shown as 'observed' in Toolbox
         final String actualProbStr = "val = " + ProbabilityToString(actualProb, 2);
         MP.printMessage(EC.TLC_SUCCESS, new String[] { optimisticProbStr, actualProbStr });
     }

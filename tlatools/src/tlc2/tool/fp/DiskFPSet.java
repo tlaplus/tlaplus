@@ -290,9 +290,12 @@ public class DiskFPSet extends FPSet {
 			size += 16 + (this.tbl.length * 4); // for this.tbl
 			for (int i = 0; i < this.tbl.length; i++) {
 				if (this.tbl[i] != null) {
+					// 16 bytes overhead for each row in tbl!
 					size += 16 + (this.tbl[i].length * LongSize);
 				}
 			}
+			// size of index array if non-null
+			size += getIndexCapacity() * 4;
 			return size;
 		}
 	}
@@ -359,6 +362,7 @@ public class DiskFPSet extends FPSet {
      * 
 	 */
 	public final boolean put(long fp) throws IOException {
+		fp = checkValid(fp);
 		// zeros the msb
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
 		synchronized (this.rwLock) {
@@ -426,6 +430,7 @@ public class DiskFPSet extends FPSet {
      * 0 and {@link Long#MIN_VALUE} always return false
 	 */
 	public final boolean contains(long fp) throws IOException {
+		fp = checkValid(fp);
 		// zeros the msb
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
 		synchronized (this.rwLock) {
@@ -452,6 +457,24 @@ public class DiskFPSet extends FPSet {
 			this.rwLock.EndRead();
 		}
 		return diskHit;
+	}
+
+	/**
+	 * Checks if the given fingerprint has a value that can be correctly stored
+	 * by this FPSet
+	 * 
+	 * @param fp The fingerprint to check validity for.
+	 * @return An alternative fingerprint value to map the invalid to.
+	 */
+	protected long checkValid(long fp) {
+		if (fp == 0L) {
+			//TODO Decide on strategy:
+			// - Throw exception
+			// - Raise warning (a 0L fp causes all subsequent states to be
+			// explored twice, unless cycle)
+			// - Map to a unused fp value
+		}
+		return fp;
 	}
 
 	/**
@@ -704,7 +727,7 @@ public class DiskFPSet extends FPSet {
 		if (this.tblCnt == 0)
 			return;
 
-		// copy table contents into a buffer array buff; erase table
+		// copy table contents into a buffer array buff; do not erase tbl
 		long[] buff = new long[this.tblCnt];
 		int idx = 0;
 		for (int j = 0; j < this.tbl.length; j++) {
@@ -838,6 +861,7 @@ public class DiskFPSet extends FPSet {
 			maxVal = Math.max(maxVal, this.index[this.index.length - 1]);
 		}
 
+		//TODO this can cause a NegativeArraySizeException if fileCnt becomes sufficiently large
 		int indexLen = (int) ((this.fileCnt + buffLen - 1) / NumEntriesPerPage) + 2;
 		this.index = new long[indexLen];
 		this.index[indexLen - 1] = maxVal;
@@ -1171,6 +1195,13 @@ public class DiskFPSet extends FPSet {
 	 */
 	public int getTblCnt() {
 		return tblCnt;
+	}
+	
+	/**
+	 * @return the maximal amount of fingerprints stored in memory. 
+	 */
+	public int getMaxTblCnt() {
+		return maxTblCnt;
 	}
 	
 	/**

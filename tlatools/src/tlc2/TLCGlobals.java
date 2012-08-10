@@ -79,6 +79,41 @@ public class TLCGlobals
 
     // The time interval to checkpoint. (in milliseconds)
     public static long chkptDuration = 30 * 60 * 1000;
+    
+	// MAK 08.2012: centralized checkpoint code and added disabling and
+	// externally forced checkpoints
+    private static boolean forceChkpt = false;
+    public static void forceChkpt() {
+    	forceChkpt = true;
+    }
+    private static long lastChkpt = System.currentTimeMillis();
+    
+	/**
+	 * IMPORTANT NOTE: The method is unsynchronized. It is the caller's
+	 * responsibility to ensure that only a single thread calls this method.
+	 * 
+	 * @return true iff a checkpoint should be created next time possible
+	 */
+    public static boolean doCheckPoint() {
+    	// 1. checkpoint forced externally (e.g. JMX)
+    	if (forceChkpt) {
+    		forceChkpt = false;
+    		return true;
+    	}
+    	
+    	// 2. user has disabled checkpoints
+    	if (chkptDuration == 0) {
+    		return false;
+    	}
+    	
+    	// 3. time between checkpoints is up?
+        long now = System.currentTimeMillis();
+        if (now - lastChkpt >= TLCGlobals.chkptDuration) {
+        	lastChkpt = now;
+        	return true;
+        }
+        return false;
+    }
 
     // The meta data root.
     public static final String metaRoot = "states";
