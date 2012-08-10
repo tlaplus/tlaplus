@@ -17,7 +17,6 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
-import tlc2.tool.queue.MemStateQueue2;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
@@ -60,7 +59,7 @@ public class ModelChecker extends AbstractChecker
         super(specFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
 
         // SZ Feb 20, 2009: this is a selected alternative
-        this.theStateQueue = new MemStateQueue2();
+        this.theStateQueue = new DiskStateQueue(this.metadir);
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
         //TODO why used to div by 20?
