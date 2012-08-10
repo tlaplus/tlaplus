@@ -84,7 +84,7 @@ public class MultiFPSet extends FPSet {
 	 */
 	public final long size() {
 		/* Returns the number of fingerprints in this set. */
-		int sum = 0;
+		long sum = 0;
 		for (int i = 0; i < this.sets.length; i++) {
 			sum += this.sets[i].size();
 		}
