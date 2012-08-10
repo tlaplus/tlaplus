@@ -64,6 +64,7 @@ public class TLCTrace {
    */
   private final synchronized long writeState(long predecessorLoc, long fp)
   throws IOException {
+	//TODO Remove synchronization as all threads content for this lock
     this.lastPtr = this.raf.getFilePointer();
     this.raf.writeLongNat(predecessorLoc);
     this.raf.writeLong(fp);
