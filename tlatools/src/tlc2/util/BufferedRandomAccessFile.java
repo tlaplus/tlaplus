@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
+	//TODO increase buffer to match modern day hardware? 
     static final int LogBuffSz = 13; // 8K buffer
     public static final int BuffSz = (1 << LogBuffSz);
     static final int BuffMask = ~(BuffSz - 1);
