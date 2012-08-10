@@ -10,13 +10,27 @@
 *                                                                          *
 * Bug: The R and X in                                                      *
 *                                                                          *
-*      ---------------- MODULE foo -------                                 *
+*      ---------------- MODULE frob -------                                *
 *      LET RS                                                              *
 *      IN  X                                                               *
 *      =====================================                               *
 *                                                                          *
-* are not aligned.                                                         *
+*      are not aligned.                                                    *
+*      CORRECTED 21 Jul 2012.                                              *
 *                                                                          *
+* Bug:  A weird extra space added to align the \in with the \succ in       *
+*                                                                          *
+*      LTSet(N, _\succ_, n) == {m \in N : n \succ m}                       *
+*      LeadsToInduction(F(_), N, _\succ_, z) ==                            *
+*                                                                          *
+*      This results from \succ and \in belonging to the same alignment     *
+*      class, which is necessary if we want them to both align with = .    *
+*      So, this is probably not worth fixing.                              *
+*                                                                          *
+* Bug: Does not handle hex characters with digits > 9, as in               *
+*      \Habc .  The problem is in the tokenizing algorithm in              *
+*      TokenizeSpec.Tokenize.  The processing of the BS state in the       *
+*      spec needs to handle the "H" or "h" case specially.                 *
 * TO DO:                                                                   *
 *                                                                          *
 *    Try to kludge something so this                                       *
@@ -26,6 +40,7 @@
 *        [] c -> C                                                         *
 *                                                                          *
 *    does something reasonable.                                            *
+*    THE FIX OF 21 Jul 2012 MADE IT DO SOMETHING REASONABLE.               *          
 *                                                                          *
 * Modified on 19 Sep 2007 as follows for TLA+2:                            *
 *  1. Added the new keywords.                                              *
@@ -33,8 +48,11 @@
 *     around it to handle proof-step numbers.                              *
 *  3. Modified the handling of "!" so it translates to a \bang             *
 *     command that primts a small !.  This looks about the same            *
-*     in an EXCEPT but looks somewhat better in frob!bar.                   *
+*     in an EXCEPT but looks somewhat better in frob!bar.                  *
 *                                                                          *
+* Modified on 8 Aug 2012 to handle PlusCal algorithms and add              *
+* -noPcalShade option.                                                     *
+*                                                                          *                   
 * ------------------------------------------------------------------------ *
 *                                                                          *
 * The `main' method is the TLATeX program.  It calls other methods to do   *
@@ -117,22 +135,25 @@ public class TLA
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Wed 19 Sep 2007 at  7:06:38 PST by lamport";
+    "last modified on Wed  9 Aug 2012 at 16:06:38 PST by lamport";
 
     static String modDate = lastModified.substring(21, 33);
     /***********************************************************************
     * The modification date.                                               *
     ***********************************************************************/
 
-    static String version = "tla2tex.TLA Version .9 created " + modDate;
+    static String version = "tla2tex.TLA Version 1.0 created " + modDate;
 
     public static void main(String[] args)
     {
         runTranslation(args);
     }
 
+    /**
+     * @param args
+     */
     public static void runTranslation(String[] args)
-    {
+    {  
         /*********************************************************************
         * Get the command-line arguments.                                    *
         *********************************************************************/
@@ -154,6 +175,12 @@ public class TLA
         Starting("TokenizeSpec.Tokenize");
         Token[][] spec = TokenizeSpec.Tokenize(testlr, TokenizeSpec.MODULE);
 
+//System.out.println(TokenizeSpec.skipToUnmatchedEnd(new Position(5, 1), 
+//                 spec, false).toString()) ;
+//System.out.println(TokenizeSpec.skipToUnmatchedEnd(new Position(5, 1), 
+//        spec, true).toString()) ;
+//        System.out.println("pcalStart = " + TokenizeSpec.pcalStart.toString());
+//        System.out.println("pcalEnd = " + TokenizeSpec.pcalEnd.toString());
         /*********************************************************************
         * Finish the tokenization by converting sequences of tokens that     *
         * represent proof-step numbers to PF_STEP tokens.                    *
@@ -161,6 +188,15 @@ public class TLA
         Token.FindPfStepTokens(spec);
         Finished("TokenizeSpec.Tokenize");
         // Debug.print2DArray(spec, "tok");
+        
+        /*********************************************************************
+        * Really finish the tokenization by parentheses and braces that are  *
+        * part of the PlusCal C-syntax to tokens that are printed            *
+        * appropriately.                                                     *
+        *********************************************************************/
+        Starting("TokenizeSpec.FixPlusCal");
+        TokenizeSpec.FixPlusCal(spec) ;
+        Finished("TokenizeSpec.FixPlusCal");
 
         /*********************************************************************
         * Process the comment tokens.                                        *
@@ -168,7 +204,7 @@ public class TLA
         Starting("CommentToken.ProcessComments");
         CommentToken.ProcessComments(spec);
         Finished("CommentToken.ProcessComments");
-        // Debug.print2DArray(spec, "tok");
+        // Debug.print2DArray(spec, "com");
 
         /*********************************************************************
         * Initialize class FormatComments.                                   *
@@ -183,7 +219,7 @@ public class TLA
         Starting("FindAlignments.FindAlignments");
         FindAlignments.FindAlignments(spec);
         Finished("FindAlignments.FindAlignments");
-        // Debug.print2DArray(spec, "");
+        // Debug.print2DArray(spec, "align");
 
         /*********************************************************************
         * Write out the tla file with deleted comments removed, if the       *
@@ -453,7 +489,10 @@ public class TLA
             else if (option.equals("-shade"))
             {
                 Parameters.CommentShading = true;
-            } else if (option.equals("-noProlog"))
+            } else if (option.equals("-noPcalShade"))
+            {
+                Parameters.NoPlusCalShading = true;
+            }else if (option.equals("-noProlog"))
             {
                 Parameters.PrintProlog = false;
             } else if (option.equals("-noEpilog"))

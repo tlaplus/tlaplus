@@ -32,7 +32,7 @@ public class MultiFPSet extends FPSet {
 	 * Contains all nested {@link FPSet}s 
 	 */
 	private FPSet[] sets;
-	
+
 	/**
 	 * Amount of leftmost bits used to determine nested {@link FPSet}
 	 */
@@ -42,7 +42,7 @@ public class MultiFPSet extends FPSet {
 	public MultiFPSet(int bits) throws RemoteException {
 		this(bits, MEM_DEFAULT);
 	}
-	
+
 	/**
 	 * Create a MultiFPSet with 2^bits FPSets.
 	 * @param bits [1,30]
@@ -59,7 +59,7 @@ public class MultiFPSet extends FPSet {
 		}
 
 		for (int i = 0; i < len; i++) {
-			this.sets[i] = FPSet.getFPSet(0, (int) (fpMemSize / len));
+			this.sets[i] = FPSet.getFPSet(0, (fpMemSize / (long) len));
 		}
 		this.fpbits = 64 - bits;
 	}
@@ -78,7 +78,7 @@ public class MultiFPSet extends FPSet {
 	 */
 	public final long size() {
 		/* Returns the number of fingerprints in this set. */
-		int sum = 0;
+		long sum = 0;
 		for (int i = 0; i < this.sets.length; i++) {
 			sum += this.sets[i].size();
 		}

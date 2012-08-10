@@ -19,8 +19,8 @@ import java.rmi.server.UnicastRemoteObject;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
-import tlc2.tool.distributed.FPSetManager;
-import tlc2.tool.distributed.FPSetRMI;
+import tlc2.tool.distributed.fp.FPSetManager;
+import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.FileUtil;
@@ -80,7 +80,10 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 		if (set == null && fpBits == 0) {
 			set = new DiskFPSet(fpMemSizeInFPs);
 		} else if (set == null) {
-			set = new MultiFPSet(fpBits, fpMemSizeInFPs);
+			// Pass physical memory instead of logical FP count to adhere to the
+			// general FPSet ctor contract.
+			// @see http://bugzilla.tlaplus.net/show_bug.cgi?id=290
+			set = new MultiFPSet(fpBits, fpMemSizeInBytes);
 		}
 		return set;
 	}
@@ -131,6 +134,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	/**
 	 * Counts the amount of states passed to the containsBlock method
 	 */
+	//TODO need AtomicLong here to prevent dirty writes to statesSeen?
 	private long statesSeen = 0L;
 	
     protected FPSet() throws RemoteException

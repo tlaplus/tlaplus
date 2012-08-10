@@ -3,10 +3,15 @@
 /***************************************************************************
 * CLASS TokenizeComment                                                    *
 *                                                                          *
-* This class contains a a singe method, Tokenize, that takes as argument   *
+* This class contains a a single method, Tokenize, that takes as argument  *
 * a multiline comment represented as a Vector whose elements are strings.  *
 * Its result is an array of arrays of CTokens obtained by tokenizing the   *
 * comment.  Each element of the vector produces one row of the array.      *
+*                                                                          *
+* Note: in formatting comments, we don't treat PlusCal built-in tokens     *
+* specially because they are mostly strings like "if", "with", and "while" *
+* that are very common English words.  As a result, we don't try to format *
+* PlusCal code as such in comments.                                        *
 *                                                                          *
 * The tokenizing algorithm is described below.  The description has the    *
 * following BNF syntax:                                                    *
@@ -245,7 +250,6 @@ public class TokenizeComment
       * by the Tokenize method.                                            *
       *********************************************************************/
       
-
     /***********************************************************************
     * The following private class variables are used in the                *
     * implementation of the Tokenize method.  They are made class          *
@@ -438,7 +442,7 @@ public class TokenizeComment
                 { case CToken.BUILTIN :
                     if (FormatComments.isAmbiguous(token))
                       { /***************************************************
-                        * We set the isAmbiguous flag for an amibuous      *
+                        * We set the isAmbiguous flag for an ambiguous     *
                         * token only if that token actually appears in     *
                         * the spec.  This may be overly pessimistic,       *
                         * since it causes TLATeX to mess up the            *
@@ -675,6 +679,7 @@ public class TokenizeComment
                       // state = ID ;
                     }  
                   else if (BuiltInSymbols.IsBuiltInSymbol(token))
+                            // don't want to handle PCal tokens specially
                     { CTokenOut(CToken.BUILTIN) ;
                       gotoStart();
                     }
@@ -750,6 +755,7 @@ public class TokenizeComment
                       state = BSBUILT_IN;
                     }
                   else if (BuiltInSymbols.IsBuiltInSymbol(token))
+                            // "\" built-in never a PCal symbol
                     { CTokenOut(CToken.BUILTIN) ;
                       gotoStart();
                     }
@@ -767,8 +773,10 @@ public class TokenizeComment
                   else 
                     { 
                      if (! BuiltInSymbols.IsBuiltInSymbol(token))
+                         // don't want to handle PCal tokens specially
                       { 
                         while (! BuiltInSymbols.IsBuiltInSymbol(token))
+                            // don't want to handle PCal tokens specially
                         { Backspace(1);
                           if (token.length() == 0)
                             { Debug.ReportBug(

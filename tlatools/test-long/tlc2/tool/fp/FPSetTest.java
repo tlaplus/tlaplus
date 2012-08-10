@@ -31,7 +31,13 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 			predecessor = rnd.nextLong();
 			assertFalse(fpSet.put(predecessor));
 			assertTrue(i == fpSet.size());
-		}
+
+			// print stats
+			if (i % 1000000 == 0) {
+				System.out.println("Estimated size of FPSet (MiB): "
+						+ (((DiskFPSet)fpSet).sizeof() >> 20));
+			}
+	}
 	
 		// try creating a check point
 		fpSet.beginChkpt();

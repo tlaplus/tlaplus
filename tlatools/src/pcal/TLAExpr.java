@@ -659,6 +659,29 @@ public class TLAExpr
      * @param parenthesize
      * @throws TLAExprException
      */
+    /*
+     * This method is incorrect.  It first does the substitutions for the 
+     * first macro parameter, then it does the substitutions for the second
+     * macro parameter, etc.  This means that, when called to perform the 
+     * substitutions to expand the macro definition
+     * 
+     *    macro Foo(a, b) { a + b }
+     *    
+     * for the call
+     * 
+     *    Foo(F(b), G)
+     *    
+     * it produces
+     * 
+     *    F(G) + G
+     *    
+     * instead of
+     * 
+     *    F(b) + G
+     *    
+     * There may be other uses that produce similar errors.
+     * LL 9 August 2012
+     */
     public void substituteForAll( Vector exprs , // of TLAExpr
                                   Vector strs ,  // of String
                                   boolean parenthesize

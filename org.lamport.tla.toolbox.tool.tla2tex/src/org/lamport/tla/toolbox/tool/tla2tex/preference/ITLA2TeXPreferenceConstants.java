@@ -14,6 +14,11 @@ public interface ITLA2TeXPreferenceConstants
     public static final String SHADE_COMMENTS = "shadeComments";
 
     /**
+     * Do not shade PlusCal algorithm in tla2tex output file
+     */
+    public static final String NO_PCAL_SHADE = "noPcalShade";
+
+    /**
      * Number lines in tla2tex output file
      */
     public static final String NUMBER_LINES = "numberLines";

@@ -44,6 +44,11 @@ public class Position
         return spec[line][item];
       };
 
+    public boolean equals(Position pos) {
+          return (this.line == pos.line) && (this.item == pos.item) ; 
+      }
+
+
     public String toString()     
       /*********************************************************************
       * Represents a Position as a (line, item) pair.                      *

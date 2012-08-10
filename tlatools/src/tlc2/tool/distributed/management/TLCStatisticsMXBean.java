@@ -5,6 +5,10 @@ package tlc2.tool.distributed.management;
 /**
  * @author Markus Alexander Kuppe
  */
+/**
+ * @author markus
+ *
+ */
 public interface TLCStatisticsMXBean {
 
 	/**
@@ -43,4 +47,10 @@ public interface TLCStatisticsMXBean {
 	 * @return The number of workers
 	 */
 	int getWorkerCount();
+	
+	
+	/**
+	 * Creates a checkpoint next time possible
+	 */
+	void checkpoint();
 }

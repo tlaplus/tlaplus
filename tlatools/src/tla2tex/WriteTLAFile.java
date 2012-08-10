@@ -56,6 +56,7 @@ public class WriteTLAFile
            {case Token.BUILTIN    : 
             case Token.NUMBER     : 
             case Token.IDENT      : 
+            case Token.PCAL_LABEL :
             case Token.DASHES     : 
             case Token.END_MODULE : 
             case Token.PROLOG     : 

@@ -80,6 +80,7 @@ public static void WriteTeXAlignmentFile(Token[][] spec,
   if (linewidth >= 0)
    { writer.putLine("\\setlength{\\textwidth}{" 
                      + Misc.floatToString(linewidth, 2) + "pt}");
+     writer.putLine("\\makeatletter") ;   // added by LL on 7 Aug 2012
    } ;
   writer.putLine("\\begin{document}");
 
@@ -172,7 +173,7 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
           switch (tok.type)
            { case Token.BUILTIN :
                int symType = BuiltInSymbols.GetBuiltInSymbol(
-                                       spec[line][item].string).symbolType ;
+                                       spec[line][item].string, true).symbolType ;
                  /**********************************************************
                  * Check if we should start a sub/superscript.             *
                  **********************************************************/
@@ -196,7 +197,7 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                        ****************************************************/
                        outLine = outLine + " " +  
                           BuiltInSymbols.GetBuiltInSymbol(
-                                                   tok.string).TeXString
+                                                   tok.string, true).TeXString
                           + "_{";
                      }    
                     else
@@ -214,7 +215,7 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                     * mode.                                                *
                     *******************************************************/
                     outLine = outLine + " " +  
-                     BuiltInSymbols.GetBuiltInSymbol(tok.string).TeXString;
+                     BuiltInSymbols.GetBuiltInSymbol(tok.string, true).TeXString;
                   }; // END else OF if if (   (! inSub) ... )
                break ;
 
@@ -225,6 +226,10 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                  * We TeXify the string to typeset a "\" from a number or  *
                  * a "_" from an identifier.                               *
                  **********************************************************/
+               break ;
+               
+             case Token.PCAL_LABEL :
+               outLine = outLine + " " + Misc.TeXifyPcalLabel(tok.string) ;
                break ;
 
              case Token.STRING :
@@ -557,14 +562,23 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
    * Compute preSpace fields for tokens in the order they appear in the    *
    * posCols array.                                                        *
    ************************************************************************/
+   /*
+    * On 1 Aug 2012, LL made the following observation and change.  The
+    * code ignored tok.belowAlign if tok.aboveAlign was specified.  It was
+    * possible for both to be specified, so this caused a mis-alignment in
+    * rare cases--in particular, if the above alignment didn't move the
+    * token far enough to the right to be above or to the right of the token
+    * below it that was aligning itself with it.  Therefore, I changed the code 
+    * to set preSpace to the maximum of the values computed for an aboveAlignment 
+    * and a belowAlignment.
+    */
    int nextPos = 0 ;
    while (nextPos < posCols.length)
     { PosAndCol pc = posCols[nextPos] ;
       Token tok = pc.toToken(spec) ;
       Debug.Assert(tok.preSpace == 0,
            "preSpace already computed when it shouldn't have been");
-      if (tok.aboveAlign.line == -1)
-       { if (tok.belowAlign.line != -1)
+      if (tok.belowAlign.line != -1)
            { /**************************************************************
              * tok begins an inner-alignment.                              *
              **************************************************************/
@@ -593,9 +607,17 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
              * Add extra space according to the minimum of the number of   *
              * extra spaces between each token in the alignment and the    *
              * non-left-comment token to its left (if there is one).       *
+             * 
+               Why is this minimum and not maximum??
+               I suspect it's because TotalIndent was set to the maximum
+               indent without taking into account the blank columns to
+               the left of the token.  Therefore, the token with maximum 
+               TotalIndent should have the minimum number of spaces to
+               its left--in most cases.
+               
              **************************************************************/
              Token ltok = null ;
-             int extraSpace = 0;
+             int extraSpace = Integer.MAX_VALUE;
 
              if (   (pc.item > 1)
                  || (   (pc.item == 1)
@@ -615,17 +637,20 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                   };
                 alPos = alPos.toToken(spec).belowAlign ;
               } ;
+             if (extraSpace == Integer.MAX_VALUE) {
+                 extraSpace = 0 ;
+             }
              extraSpace = extraSpace - 1 ;
                      if (extraSpace > 0)
                       { tok.preSpace = tok.preSpace + 
                            Parameters.LaTeXLeftSpace(extraSpace) ; };
 
-
            }  // END then OF if (tok.belowAlign != -1)
-         else
+      if (tok.aboveAlign.line == -1)
            { /**************************************************************
              * tok not aligned.                                            *
              **************************************************************/
+             float savedPreSpace = tok.preSpace;
              if (pc.item == 0)
                { /**********************************************************
                  * Left-most token on the line.                            *
@@ -654,26 +679,30 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
                            Parameters.LaTeXLeftSpace(extraSpace) ; };
                    }
                }
-
-           } ; // END else OF if (tok.belowAlign != -1)
-
-       } // END then OF if (tok.aboveAlign == -1)
-      else
+              if (tok.preSpace < savedPreSpace) {
+                 tok.preSpace = savedPreSpace ;
+              }
+           }  // END  OF if (tok.belowAlign == -1)
+       else
        { /******************************************************************
          * tok aligned with a previous token.                              *
          ******************************************************************/
+         float savedPreSpace = tok.preSpace;
+               tok.preSpace = 0;  // needed to keep TotalIndent from getting confused
          tok.preSpace =  
                 TotalIndent(spec, tok.aboveAlign)
               - TotalIndent(spec, pc)
               + Parameters.LaTeXLeftSpace(
                  tok.column - tok.aboveAlign.toToken(spec).column) ;
 
+         if (tok.preSpace < savedPreSpace) {
+             tok.preSpace = savedPreSpace ;
+         }
          /**************************************************************
          * If prespace is negative, then something funny has           *
          * happened.  So, we set it to zero.                           *
          **************************************************************/
-         if (tok.preSpace < 0) { tok.preSpace = 0;};
-                          
+         if (tok.preSpace < 0) { tok.preSpace = 0;};                  
 
        } // END else OF if (tok.aboveAlign == -1)
       nextPos = nextPos + 1;
@@ -722,6 +751,25 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
       return val + pos.toToken(spec).distFromMargin;
     }
 
+  /**
+   * Equals TotalIndent(spec, pos) plus the extra space added because of
+   * spaces to the left of the token at pos
+   * 
+   * @param spec
+   * @param pos
+   * @return
+   */
+  private static float TotalIndentWithSpace(Token[][] spec, Position pos) {
+      int posOfFirstSpaceToLeft = 0;
+      if (pos.item > 0) {
+          Token tokToLeft = spec[pos.line][pos.item-1] ;
+          posOfFirstSpaceToLeft = tokToLeft.column + tokToLeft.getWidth();          
+      }
+      float spaceToLeft = Parameters.LaTeXLeftSpace(
+                           pos.toToken(spec).column - posOfFirstSpaceToLeft - 1) ;
+      return spaceToLeft + TotalIndent(spec, pos) ;
+  }
+  
   private static String FixString(String inputStr)
     /***********************************************************************
     * Result is Misc.TeXify(str) with spaces replaced by "\ " and "-"      *
@@ -879,14 +927,49 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
     /***********************************************************************
     * True while putting out sub/superscript tokens.                       *
     ***********************************************************************/
-    
+ 
+  boolean hasPcal = TokenizeSpec.hasPcal ;
+  int pcalStartLine ;
+  int pcalEndLine ;
+  if (TokenizeSpec.hasPcal) {
+    pcalStartLine = TokenizeSpec.pcalStart.line;
+    pcalEndLine   = TokenizeSpec.pcalEnd.line;
+  }
+  else {
+      pcalStartLine = Integer.MAX_VALUE ;
+      pcalEndLine   = Integer.MAX_VALUE - 1;
+  }
   /***********************************************************************
   * Write out the body and epilog of the specification.                  *
   ***********************************************************************/
+  /*
+   * pcalLine equals true during the processing of each line of the
+   * PlusCalCode iff we are shading comments and hence PlusCal code.
+   */
+  boolean pcalLine = false;
   while (line < spec.length)
    { // BEGIN while (line < spec.length)
 
-
+    if (tlaMode && TokenizeSpec.hasPcal) {
+      boolean pcalLineNext = ( pcalStartLine <= line && line <= pcalEndLine) ;
+      if (pcalLineNext && !pcalLine) {
+          writer.putLine("\\pcalsymbolstrue") ;
+          if (Parameters.CommentShading && ! Parameters.NoPlusCalShading) {
+              writer.putLine("\\pcalshadingtrue") ;
+          }
+          if (TokenizeSpec.isCSyntax) {
+              writer.putLine("\\csyntaxtrue") ;
+          }
+          else {
+              writer.putLine("\\csyntaxfalse") ; 
+          }
+      }
+      if (pcalLine && !pcalLineNext) {
+          writer.putLine("\\pcalshadingfalse \\pcalsymbolsfalse") ;
+      }
+      pcalLine = pcalLineNext ;
+    }
+        
     if (spec[line].length == 0)
      {                   //  BEGIN then OF if (spec[line].length == 0)
        /********************************************************************
@@ -898,16 +981,32 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
          { blankLines = blankLines + 1;
            line = line + 1;
          }
+//       if (pcalLine) {
+//           writer.putLine("\\begin{ppar}%") ;
+//       }
        writer.putLine(
-           "\\par\\vspace{" 
+         //(  pcalLine2 ? "\\setlength{\\pcalvspace}{" :
+        // "\\par\\vspace{" )
+         "\\@pvspace{"
          + Misc.floatToString(Parameters.LaTeXVSpace(blankLines), 2) 
          + "pt}%" );
+//       if (pcalLine) {
+//           writer.putLine("\\end{ppar}%") ;
+//       }
+
 
      }                   //  END then OF if (spec[line].length == 0)
        
     else
      {                   //  BEGIN else OF if (spec[line].length == 0)
 
+      /*
+       * Write "\begin{ppar}%" if this is a PlusCal Line.
+       */
+//      if (pcalLine) {
+//          writer.putLine("\\begin{ppar}%") ;
+//      }
+      
       /********************************************************************
       * Write out the current line.                                       *
       ********************************************************************/
@@ -999,6 +1098,9 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
         * Start the output line with a LaTeXStartLine command.               *
         *********************************************************************/
         outLine = Parameters.LaTeXStartLine + "{" ; 
+//        if (pcalLine2) {
+//            outLine = "\\xtest{" ;
+//        }
         openLine = true ;
 
         /*******************************************************************
@@ -1052,7 +1154,7 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
            { // BEGIN switch (tok.type)
              case Token.BUILTIN :
                int symType = BuiltInSymbols.GetBuiltInSymbol(
-                                       spec[line][item].string).symbolType ;
+                                       spec[line][item].string, true).symbolType ;
                  if (   (! inSub)
                      && (   (symType == Symbol.SUBSCRIPTED)
                          || tok.string.equals("^"))
@@ -1068,7 +1170,7 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
                        ****************************************************/
                        outLine = outLine + " " +  
                           BuiltInSymbols.GetBuiltInSymbol(
-                                                   tok.string).TeXString
+                                                   tok.string, true).TeXString
                           + "_{";
                      }    
                     else
@@ -1080,7 +1182,7 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
                   } // END then OF if (   (! inSub) ... )
                  else
                   { outLine = outLine + " " +  
-                     BuiltInSymbols.GetBuiltInSymbol(tok.string).TeXString;
+                     BuiltInSymbols.GetBuiltInSymbol(tok.string, true).TeXString;
                   }; // END else OF if (   (! inSub) ... )
                break ;
   
@@ -1095,7 +1197,11 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
              case Token.IDENT :
                outLine = outLine + " " + Misc.TeXifyIdent(tok.string) ; 
                break ;
-  
+
+             case Token.PCAL_LABEL :
+               outLine = outLine + " " + Misc.TeXifyPcalLabel(tok.string) ;
+               break ;
+               
              case Token.STRING :
                outLine = outLine + Parameters.LaTeXStringCommand + "{"  
                           + FixString(tok.string) + "}";
@@ -1441,6 +1547,14 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
        ******************************************************************/
        { Misc.BreakStringOut(writer, outLine + "}%");
        } ;
+      
+       /*
+        * Write "\end{ppar}%" if this is a PlusCal Line.
+        */
+//       if (pcalLine) {
+//           writer.putLine("\\end{ppar}%") ;
+//       }
+
       outLine = "" ;
       item = 0 ;
       line = line + 1;

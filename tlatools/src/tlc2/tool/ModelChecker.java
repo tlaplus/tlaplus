@@ -6,6 +6,7 @@
 package tlc2.tool;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
@@ -16,10 +17,10 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
+import tlc2.tool.queue.MemStateQueue2;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
-import tlc2.util.PrintfFormat;
 import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
@@ -59,7 +60,7 @@ public class ModelChecker extends AbstractChecker
         super(specFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
 
         // SZ Feb 20, 2009: this is a selected alternative
-        this.theStateQueue = new DiskStateQueue(this.metadir);
+        this.theStateQueue = new MemStateQueue2();
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
         //TODO why used to div by 20?
@@ -150,7 +151,7 @@ public class ModelChecker extends AbstractChecker
                 this.tool.setCallStack();
                 try
                 {
-                    this.numOfGenStates = 0;
+                    this.numOfGenStates = new AtomicLong(0);
                     // SZ Feb 23, 2009: ignore cancel on error reporting
                     this.doInit(true);
                 } catch (Throwable e1)
@@ -164,9 +165,9 @@ public class ModelChecker extends AbstractChecker
                 return;
             }
 
-            if (this.numOfGenStates == this.theFPSet.size())
+            if (this.numOfGenStates.get() == this.theFPSet.size())
             {
-                String plural = (this.numOfGenStates == 1) ? "" : "s";
+                String plural = (this.numOfGenStates.get() == 1) ? "" : "s";
                 MP.printMessage(EC.TLC_INIT_GENERATED1, new String[] { String.valueOf(this.numOfGenStates), plural });
             } else
             {
@@ -179,7 +180,7 @@ public class ModelChecker extends AbstractChecker
         // Finished if there is no next state predicate:
         if (this.actions.length == 0)
         {
-            reportSuccess(this.theFPSet, this.numOfGenStates);
+            reportSuccess(this.theFPSet, this.numOfGenStates.get());
             this.printSummary(true, startTime);
             this.cleanup(true);
             report("exiting with actions.length == 0");
@@ -214,7 +215,7 @@ public class ModelChecker extends AbstractChecker
 
                 // We get here because the checking has been completed.
                 success = true;
-                reportSuccess(this.theFPSet, this.numOfGenStates);
+                reportSuccess(this.theFPSet, this.numOfGenStates.get());
             } else if (this.keepCallStack)
             {
                 // Replay the error with the error stack recorded:
@@ -289,7 +290,7 @@ public class ModelChecker extends AbstractChecker
         {
             // Generate the initial states:
             StateVec theInitStates = this.tool.getInitStates();
-            this.numOfGenStates = theInitStates.size();
+            this.numOfGenStates.set(theInitStates.size());
             for (int i = 0; i < theInitStates.size(); i++)
             {
                 curState = theInitStates.elementAt(i);
@@ -686,7 +687,7 @@ public class ModelChecker extends AbstractChecker
             MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, new String[] { String.valueOf(this.theFPSet.size()),
                     String.valueOf(this.theStateQueue.size()) });
             recovered = true;
-            this.numOfGenStates = this.theFPSet.size();
+            this.numOfGenStates.set(this.theFPSet.size());
         }
         return recovered;
     }
@@ -737,8 +738,9 @@ public class ModelChecker extends AbstractChecker
         	oldFPSetSize = 0;
         	factor = (System.currentTimeMillis() - startTime) / 60000d;
         }
-		statesPerMinute = (long) ((numOfGenStates - oldNumOfGenStates) / factor);
-        oldNumOfGenStates = numOfGenStates;
+		long l = numOfGenStates.get();
+		statesPerMinute = (long) ((l - oldNumOfGenStates) / factor);
+        oldNumOfGenStates = l;
         distinctStatesPerMinute = (long) ((fpSetSize - oldFPSetSize) / factor);
         oldFPSetSize = fpSetSize;
         
@@ -750,10 +752,14 @@ public class ModelChecker extends AbstractChecker
     public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException
     {
         final long d = anFpSet.size();
+        final double actualProb = anFpSet.checkFPs();
+        reportSuccess(d,  actualProb, numOfGenStates);
+    }
+    
+    public static final void reportSuccess(final long d, final double actualProb, final long numOfGenStates) throws IOException
+    {
         // shown as 'calculated' in Toolbox
         final double optimisticProb = d * ((numOfGenStates - d) / Math.pow(2, 64));
-        // shown as 'observed' in Toolbox
-        final double actualProb = anFpSet.checkFPs();
         /* The following code added by LL on 3 Aug 2009 to print probabilities
          * to only one decimal point.  Removed by LL on 17 April 2012 because it
          * seemed to report probabilities > 10-4 as probability 0.
@@ -764,6 +770,7 @@ public class ModelChecker extends AbstractChecker
         
         // Following two lines added by LL on 17 April 2012
         final String optimisticProbStr = "val = " + ProbabilityToString(optimisticProb, 2);
+        // shown as 'observed' in Toolbox
         final String actualProbStr = "val = " + ProbabilityToString(actualProb, 2);
         MP.printMessage(EC.TLC_SUCCESS, new String[] { optimisticProbStr, actualProbStr });
     }
@@ -1038,6 +1045,6 @@ public class ModelChecker extends AbstractChecker
     }
 
     public long getStatesGenerated() {
-    	return numOfGenStates;
+    	return numOfGenStates.get();
     }
 }

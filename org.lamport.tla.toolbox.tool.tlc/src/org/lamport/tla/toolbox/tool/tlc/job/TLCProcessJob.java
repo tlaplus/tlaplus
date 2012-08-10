@@ -107,7 +107,8 @@ public class TLCProcessJob extends TLCJob
             tlcConfig.setProgramArguments(arguments);
             tlcConfig.setVMArguments((String[]) vmArgs.toArray(new String[vmArgs.size()]));
             tlcConfig.setWorkingDirectory(ResourceHelper.getParentDirName(rootModule));
-            
+            // Following added for testing by LL on 6 Jul 2012
+            TLCActivator.logInfo("JAVA VM ARGUMENTS: " + Arrays.toString(tlcConfig.getVMArguments()));             
             final IVMInstall vmInstall = getVMInstall();
             TLCActivator.logInfo("Nested JVM used for model checker is: "
 					+ vmInstall.getInstallLocation());
