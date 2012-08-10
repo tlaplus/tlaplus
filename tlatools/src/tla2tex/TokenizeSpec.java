@@ -18,11 +18,19 @@
 *                                                                          *
 * The Tokenize method can be called in one of two modes:                   *
 *                                                                          *
-*   TLA mode    : It assumes that the input is any arbitrary portion       *
-*                 of a TLA+ spec.                                          *
-*   MODULE mode : It assumes that the input consists of arbitrary          *
-*                 text, followed by a complete module, followed            *
-*                 by arbitrary text.                                       *
+*   TLA mode     : It assumes that the input is any arbitrary portion      *
+*                  of a TLA+ spec. (Called by tlatex.TeX for a tla         *
+*                  environment.)                                           *
+*   MODULE mode  : It assumes that the input consists of arbitrary         *
+*                  text, followed by a complete module, followed           *
+*                  by arbitrary text.                                      *
+*   PLUSCAL mode : It assumes that the input consists of all or part of    *
+*                  a C-Syntax PlusCal algorithm.  (Called by tlatex.TeX    *
+*                  for a pcal environment.)                                *
+*                                                                          *
+*   P_PLUSCAL mode : It assumes that the input consists of all or part of  *
+*                    a C-Syntax PlusCal algorithm.  (Called by tlatex.TeX  *
+*                    for a ppcal environment.)                             *
 *                                                                          *
 * The result returned by Tokenize is an an array of arrays spec of Token   *
 * objects, where spec[i][j] is token number j on line number i of the      *
@@ -84,6 +92,17 @@
 *                                                                          *
 *    mdepth :   The module nesting level.  (Determined by counting         *
 *               "MODULE" keywords and "===="'s.                            *
+*                                                                          *
+*    pseudoCom : A boolean that equals true iff the next comment token to  * ADDED FOR PLUSCAL
+*                be output either does not end with "*)" (because it was   * ADDED FOR PLUSCAL
+*                terminated by the start of a PlusCal algorithm) or does   * ADDED FOR PLUSCAL
+*                not begin with a "(*" (because it immediately followed    * ADDED FOR PLUSCAL
+*                the end of a PlusCal algorithm).                          * ADDED FOR PLUSCAL
+*                                                                          *
+*    ORCom : A boolean set when looking for the start of a PlusCal         * ADDED FOR PLUSCAL
+*            algorithm when processing a comment.  It equals true if       * ADDED FOR PLUSCAL
+*            processing an OR (OverRun) comment, and false if processing a * ADDED FOR PLUSCAL
+*            normal comment.                                               * ADDED FOR PLUSCAL
 *                                                                          *
 * A <Precondition> has the form [exp], where exp is an ordinary            *
 * expression, except the following conventions are used in it:             *
@@ -164,7 +183,32 @@
 *   ("(")                 -  --> LEFT_PAREN                                *
 *   ("\"")                -  --> STRING                                    *
 *   ("\n")                -  --> START                                     *
-*   (BuiltInPrefix)       +  --> BUILT_IN                                  *
+*   (BuiltInPrefix)                                                        * MODIFIED for PlusCal
+*     +                                                                    * MODIFIED for PlusCal
+*       IF ~(inPcal /\ mode = Module)                                      * MODIFIED for PlusCal   
+*         THEN                                              --> BUILT_IN   * MODIFIED for PlusCal
+*         ELSEIF token = "*" /\ nextChar = ")"                             * MODIFIED for PlusCal
+*           THEN    pcalEnd := getNextTokenPosition();                     * MODIFIED for PlusCal
+*                   // cdepth should equal 0 here                          * MODIFIED for PlusCal
+*                   inPcal := false                                        * MODIFIED for PlusCal
+*                   token = "" ;                            --> START      * MODIFIED for PlusCal
+*         ELSEIF isCSyntax                                                 * MODIFIED for PlusCal
+*           THEN IF token = "{"                                            * MODIFIED for PlusCal
+*                  THEN TokenOut(BUILTIN) ;                                * MODIFIED for PlusCal
+*                       canBeLabel := true ;                               * MODIFIED for PlusCal
+*                       braceDepth := braceDepth + 1        --> START      * MODIFIED for PlusCal
+*                  ELSEIF token = "}"                                      * MODIFIED for PlusCal
+*                    THEN TokenOut(BUILTIN) ;                              * MODIFIED for PlusCal
+*                         braceDepth := braceDepth - 1                     * MODIFIED for PlusCal
+*                         IF braceDepth # 0                                * MODIFIED for PlusCal
+*                          THEN                             --> START      * MODIFIED for PlusCal
+*                          ELSE col = ncol ;                               * MODIFIED for PlusCal
+*                               inPcal := false ;                          * MODIFIED for PlusCal
+*                               cdepth := 1 ;                              * MODIFIED for PlusCal
+*                               pcalEnd := getNextTokenPosition() ;        * MODIFIED for PlusCal
+*                               pseudoCom := true          --> COMMENT     * MODIFIED for PlusCal
+*                    ELSE                                  --> BUILT_IN    * MODIFIED for PlusCal
+*           ELSE                                           --> BUILT_IN    * MODIFIED for PlusCal
 *   [("\t") /\ TLA mode]     --> DONE                                      *
 *   [OTHER]                  --> ERROR                                     *
 *                                                                          *
@@ -173,9 +217,37 @@
 *   (Letter or Digit)         +                     --> ID                 *
 *   [token = "MODULE"]        TokenOut(BUILTIN);                           *
 *                             mdepth := mdepth + 1  --> START              *
-*   [token \in BuiltIns]      TokenOut(BUILTIN)     --> START              *
-*   [OTHER]                   TokenOut(IDENT)       --> START              *
+*   [token \in BuiltIns]                                                   * MODIFIED for PlusCal
+*      IF inPcal /\ token = "algorithm" /\ ~isCsyntax /\ mode = MODULE     * MODIFIED for PlusCal
+*        THEN TokenOut(BUILTIN) ;                                          * MODIFIED for PlusCal
+*             col := ncol ;                                                * MODIFIED for PlusCal
+*             pcalEnd := getNextTokenPosition() ;                          * MODIFIED for PlusCal
+*             cdepth := 1 ;                                                * MODIFIED for PlusCal
+*             inPcal := false ;                                            * MODIFIED for PlusCal
+*             cbl := inPcal /\ CanPrecedeLabel(token)                      * MODIFIED for PlusCal
+*             TokenOut(BUILTIN);                                           * MODIFIED for PlusCal
+*             canBeLabel := cbl             --> START                      * MODIFIED for PlusCal
+*   [OTHER /\ inPcal /\ canBeLabel]                                        * MODIFIED for PlusCal
+*                             token1 := token       --> ID_OR_PCAL_LABEL   * MODIFIED for PlusCal
+*   [OTHER]                   TokenOut(IDENT)       --> START              * MODIFIED for PlusCal
 *                                                                          *
+* ID_OR_PCAL_LABEL:                                                        * ADDED for PlusCal
+*   \* Note: token1 contains id                                            * ADDED for PlusCal
+*   (Space_Char)    +                     --> ID_OR_PCAL_LABEL             * ADDED for PlusCal
+*   (":")           +  IF nextChar # "=" or ":"                            * ADDED for PlusCal
+*                        THEN  token1 := token   --> PCAL_LABEL            * ADDED for PlusCal
+*                        ELSE  backspace so nextChar = ":" ;               * ADDED for PlusCal
+*                              token := token1;                            * ADDED for PlusCal
+*                              TokenOut(IDENT)   --> START                 * ADDED for PlusCal
+*   [OTHER]             token := token1;                                   * ADDED for PlusCal
+*                       TokenOut(IDENT)   --> START                        * ADDED for PlusCal
+*                                                                          *
+* PCAL_LABEL:                                                              * ADDED for PlusCal
+*   (Space_Char)    +                        --> PCAL_LABEL                * ADDED for PlusCal
+*   ("+" or "-")    +  TokenOut(PCAL_LABEL)  --> START                     * ADDED for PlusCal
+*   [OTHER]         token := token1;                                       * ADDED for PlusCal
+*                   TokenOut(PCAL_LABEL)     --> START                     * ADDED for PlusCal
+*                                                                          *                                        
 * NUM_OR_ID:                                                               *
 *   (Digit)   +                 --> NUM_OR_ID                              *
 *   (Letter)  +                 --> ID                                     *
@@ -187,9 +259,9 @@
 *   ("*")                             - ; token := ""  --> LINE_COMMENT    *
 *   [OTHER]                                            --> BUILT_IN        *
 *                                                                          *
-* NUM_OR_BI                                                                *
-*   (Digit)   --> NUM                                                      *
-*   [OTHER]   --> BSBUILT_IN                                               *
+* NUM_OR_BI:  Needs to be fixed to handle something like \H4b2             * BUG
+*   (Digit)   --> NUM                                                      * BUG
+*   [OTHER]   --> BSBUILT_IN                                               * BUG
 *                                                                          *
 * NUM:                                                                     *
 *   (Digit)  +                      --> NUM                                *
@@ -207,7 +279,9 @@
 *   [OTHER]   while (token \notin BuiltIn)                                 *
 *               {move last char in token back                              *
 *                to the CharReader};                                       *
-*             TokenOut(BUILTIN)                    --> START               *
+*             saved := CanPrecedeLabel(token)                              * MODIFIED for PlusCal
+*             TokenOut(BUILTIN)                                            * MODIFIED for PlusCal
+*             canBeLabel := saved                  --> START               * MODIFIED for PlusCal
 *                                                                          *
 * DASH1:                                                                   *
 *   ("-")   + --> DASH2                                                    *
@@ -286,26 +360,87 @@
 *   ("("}    -                                --> COMMENT_PAREN            *
 *   ("\n")   TokenOut(COMMENT, BEGIN_OR) ; -  --> OR_COMMENT               *
 *   ("\t")                                    --> ERROR                    *
+*   [("-") /\ cdepth = 1 /\ mode = MODULE /\ ~hasPcal]                     * MODIFIED for PlusCal
+*                        token1 := token;  col1 := col                     * MODIFIED for PlusCal
+*                        token := "";  col := ncol (?)                     * MODIFIED for PlusCal
+*                        ORCom := false ;                                  * MODIFIED for PlusCal
+*                        +                              --> C_DASH         * MODIFIED for PlusCal
 *   [OTHER]  IF cdepth = 1 THEN + ELSE -      --> COMMENT                  *
 *                                                                          *
 *                                                                          *
 * COMMENT_STAR:                                                            *
-*   [(")") /\ cdepth = 1] - c; depth := cdepth - 1                         *
-*                          ; TokenOut(COMMENT, NORMAL)  --> START          *
-*   (")")                - ; cdepth := cdepth - 1       --> COMMENT        *
+*   [(")") /\ cdepth = 1] - ; depth := cdepth - 1                          *    
+*                           ; TokenOut(COMMENT, NORMAL)  --> START         *
+*   (")")                 - ; cdepth := cdepth - 1       --> COMMENT       *
 *   [OTHER]              IF cdepth = 1                                     *
 *                          THEN token := token + "*"                       *
 *                          ELSE                       --> COMMENT          *
 *                                                                          *
+* C_DASH:                                                                  * ADDED for PlusCal
+*   \* token1, col1 represents the comment on the current line preceding   * ADDED for PlusCal
+*   \* the "-"; token, col is the "-"                                      * ADDED for PlusCal
+*   ("-")      +                            --> C_DASH_DASH                * ADDED for PlusCal
+*   [OTHER]    token := token1 \o token;                                   * ADDED for PlusCal
+*              col := col1               +  --> COMMENT                    * ADDED for PlusCal
+*                                                                          *
+* C_DASH_DASH:                                                             * ADDED for PlusCal 
+*   (Letter)    + --> C_DASH_DASH                                          * ADDED for PlusCal
+*   [OTHER]   IF token \in {"--fair", "--algorithm"}                       * ADDED for PlusCal
+*               THEN IF token1 # all spaces                                * ADDED for PlusCal
+*                      THEN pseudoCom := true;                             * ADDED for PlusCal
+*                           token2 := token; col2 := col;                  * ADDED for PlusCal
+*                           token := token1; col := col1;                  * ADDED for PlusCal
+*                           TokenOut(COMMENT, IF ORCom THEN END_OVERRUN    * ADDED for PlusCal
+*                                                      ELSE NORMAL )       * ADDED for PlusCal
+*                           token := token2; col := col2;                  * ADDED for PlusCal
+*                    FI;                                                   * ADDED for PlusCal
+*                    hasPcal := true;                                      * ADDED for PlusCal
+*                    pcalStart := getNextTokenPosition();                  * ADDED for PlusCal
+*                    isAlgorithm := (token = "--algorithm");               * ADDED for PlusCal
+*                    TokenOut(BUILTIN);                                    * ADDED for PlusCal
+*                    SkipSpacesAndNewlines();                              * ADDED for PlusCal
+*                    IF isAlgorithm THEN             --> GET_ALG_NAME      * ADDED for PlusCal
+*                                   ELSE             --> GET_ALG_TOKEN     * ADDED for PlusCal
+*               ELSE token := token1 \o token                              * ADDED for PlusCal     
+*                    col := col1                     --> COMMENT           * ADDED for PlusCal
+*                                                                          *
+* GET_ALG_TOKEN:                                                           * ADDED for PlusCal
+*   (Letter)  +    --> GET_ALG_TOKEN                                       * ADDED for PlusCal
+*   [OTHER]  IF token = "algorithm"                                        * ADDED for PlusCal
+*              THEN TokenOut(BUILTIN) ;                                    * ADDED for PlusCal
+*                   SkipSpacesAndNewlines() --> GET_ALG_NAME               * ADDED for PlusCal
+*              ELSE \* Bad input; interpret everything else as comment     * ADDED for PlusCal
+*                   pcalEnd := getNextTokenPosition();                     * ADDED for PlusCal
+*                   pseudoCom := true       --> COMMENT                    * ADDED for PlusCal
+*                                                                          * 
+* GET_ALG_NAME:                                                            * ADDED for PlusCal
+*   (Letter)  +    --> GET_ALG_NAME                                        * ADDED for PlusCal
+*   (Digit)   +    --> GET_ALG_NAME                                        * ADDED for PlusCal
+*   [OTHER]   IF token # "" /\ contains a letter                           * ADDED for PlusCal
+*               THEN TokenOut(IDENT);                                      * ADDED for PlusCal
+*                    SkipSpacesAndNewlines();                              * ADDED for PlusCal
+*                    isCSyntax := (nextChar = "{");                        * ADDED for PlusCal
+*                    + TokenOut(BUILTIN);                                  * ADDED for PlusCal
+*                    cdepth := 0 ;                                         * ADDED for PlusCal
+*                    inPcal := true;                                       * ADDED for PlusCal
+*                    braceDepth := 0                 --> START             * ADDED for PlusCal
+*               ELSE pcalEnd := getNextTokenPosition();                    * ADDED for PlusCal
+*                    pseudoCom := true               --> COMMENT           * ADDED for PlusCal
+*                                                                          * 
 * COMMENT_PAREN:                                                           *
 *   ("*")    - ; cdepth := cdepth + 1                --> COMMENT           *
 *   [OTHER]  IF cdepth = 1 THEN token := token + "("                       *
 *                          ELSE                       --> COMMENT          *
 *                                                                          *
-* OR_COMMENT:                                                              *
+* OR_COMMENT:    (OR = OverRun)                                            *
 *   ("*")    -                               --> OR_COMMENT_STAR           *
 *   ("("}    -                               --> OR_COMMENT_PAREN          *
 *   ("\n")   TokenOut(COMMENT, OVERRUN) ; -  --> OR_COMMENT                *
+*   [("-") /\ cdepth = 1 /\  mode = MODULE /\ ~hasPcal]                    * ADDED for PlusCal
+*                        token1 := token;  col1 := col                     * ADDED for PlusCal
+*                        token := "";  col := ncol (?)                     * ADDED for PlusCal
+*                        ORCom := true ;                                   * ADDED for PlusCal
+*                        +                              --> C_DASH         * ADDED for PlusCal
 *   ("\t")                                   --> ERROR                     *
 *   [OTHER]  IF cdepth = 1 THEN + ELSE -      --> OR_COMMENT               *
 *                                                                          *
@@ -330,6 +465,13 @@ package tla2tex;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import pcal.MappingObject.EndTLAToken;
+import pcal.PCalLocation;
+
+/**
+ * @author lamport
+ *
+ */
 public class TokenizeSpec
   { private static Hashtable identHashTable  = new Hashtable(1000);
       /*********************************************************************
@@ -381,10 +523,40 @@ public class TokenizeSpec
       * use.                                                               *
       *********************************************************************/
       
-    public static final int MODULE = 1 ;
-    public static final int TLA =    2 ;
+    // The modes
+    public static final int MODULE    = 1 ;
+    public static final int TLA       = 2 ;
+    public static final int PLUSCAL   = 3 ;
+    public static final int P_PLUSCAL = 4 ;
 
-
+    /*
+     * The following public fields are set by the Tokenize method to 
+     * indicate the presence, location, and type of any PlusCal code
+     * found in the input. 
+     * 
+     *   hasPcal : True iff in PLUSCAL mode or a PlucCal algorithm has
+     *             been discovered.
+     *             
+     *   isCSyntax : If hasPCal is true, then this is true iff we are
+     *               in PLUSCAL mode or we are in MODULE mode and 
+     *               the --algorithm or --fair token has been found and it 
+     *               begins a C-Syntax PlusCal algorithm.
+     *               
+     *   pcalStart
+     *   pcalEnd   : The Positions of the first token of PlusCal code and the
+     *               position immediately after the last token of the PlusCal
+     *               code.  More precisely, pcalEnd is set to a position that 
+     *               is > the position of the last token of the PlusCal code
+     *               and =< the position of the first token after the PlusCal
+     *               code.  If the last PlusCal token has Position (i, j), then
+     *               pcalEnd is probably (i, j+1), even if the last token on
+     *               line i has position j.
+     */
+    public static boolean hasPcal ;
+    public static boolean isCSyntax ;
+    public static Position pcalStart ;
+    public static Position pcalEnd ;
+    
     /***********************************************************************
     * The following private class variables are used in the                *
     * implementation of the Tokenize method.  They are made class          *
@@ -394,6 +566,31 @@ public class TokenizeSpec
     * Note: This use of static fields makes the class totally threads      *
     * unsafe.                                                              *
     ***********************************************************************/
+    private static boolean inPcal ;
+      // True iff we are inside a PlusCal algorithm.  inPcal => hasPcal
+      // is an invariant.
+    
+    private static boolean canBeLabel ;
+      // Set true when outputting a PlusCal token that can be followed
+      // by a statement label.  Set false when outputting any other non-comment
+      // PlusCal token.  The tokens that can be followed by a label are:
+      //
+      //    ";"  ")"  "{"   "begin"  "do"  "either" "or"  "then"  "else"
+      //    "elsif" 
+      //
+      // It is set false by the TokenOut method and left unchanged
+      // by the CommentTokenOut method (which is used to output a comment token).
+    
+    private static boolean pseudoCom ;
+      // Set true iff the next Comment token to be output did not have
+      // two of its delimiter characters because it immediately preceded or
+      // followed a PlusCal algorithm.  Set false by CommentTokenOut
+    
+    private static boolean ORCom ;
+      // Set true when looking for the start of a Pluscal algorithm when
+      // processing a comment--true if processing an OR (overrun) comment,
+      // false if processing a normal comment.  
+    
     private static Vector vspec = null ;
           /*****************************************************************
           * vspec is a vector of vectors in which the TokenizedSpec is     *
@@ -448,8 +645,8 @@ public class TokenizeSpec
     private static CharReader reader ;
       /*********************************************************************
       * This is the "exposed" version of the CharReader argument to the    *
-      * TokenizedSpec constructor, exposed so it can be used by the        *
-      * following procedures.                                              *
+      * TokenizedSpec constructor, exposed so it can be used by procedures *
+      * called by Tokenize without having to be passed as an argument.     *
       *********************************************************************/
 
     /***********************************************************************
@@ -490,6 +687,12 @@ public class TokenizeSpec
       private static final int OR_COMMENT_STAR    = 33 ;
       private static final int EPILOG             = 34 ;
       private static final int DONE               = 35 ;
+      private static final int ID_OR_PCAL_LABEL   = 36 ;
+      private static final int PCAL_LABEL         = 37 ;
+      private static final int C_DASH             = 38 ;
+      private static final int C_DASH_DASH        = 39 ;
+      private static final int GET_ALG_TOKEN      = 40 ;
+      private static final int GET_ALG_NAME       = 41 ;      
       
     private static int state = 0 ;
       /*********************************************************************
@@ -529,9 +732,11 @@ public class TokenizeSpec
         col = ncol ;
       }
 
+    
     private static void TokenOut(int type)
       /*********************************************************************
       * Add the token to linev and reset token to the empty string.        *
+      * Reset canBeLabel.                                                  *
       *********************************************************************/
       { if (   (! token.equals(""))
             || (type == Token.STRING))
@@ -555,13 +760,15 @@ public class TokenizeSpec
             }
          };
         token = "" ;
+        canBeLabel = false ;
       } ;
 
     private static void CommentTokenOut(int subtype)
       /*********************************************************************
       * Add the token to linev and reset token to the empty string.        *
       *********************************************************************/
-      { linev.addElement(new CommentToken(token, col, subtype )); 
+      { linev.addElement(new CommentToken(token, col, subtype, pseudoCom)); 
+        pseudoCom = false;
         token = "" ;
       } ;
 
@@ -575,6 +782,33 @@ public class TokenizeSpec
         col = 0 ;
       } ;
 
+    private static void SkipSpaceAndNewlines() {
+        boolean notDone = true ;
+        while (notDone) {
+            while (Misc.IsSpace(nextChar)) {
+                skipNextChar() ;
+            }
+            if (nextChar == '\n') {
+                skipNextChar() ;
+                startNewLine() ;
+            }
+            else {
+                notDone = false ;
+            }
+            col = ncol;
+            token = "" ;
+        }
+       
+    }
+    /**
+     * Returns the Position in the final output of the next
+     * token to be output.
+     * 
+     * @return
+     */
+    private static Position getNextTokenPosition() {
+        return new Position(vspec.size(), linev.size());
+    }
     private static void TokenizingError(String msg) 
       { Debug.ReportError(
            msg + " `" + token + "' found at\n" + 
@@ -618,11 +852,41 @@ public class TokenizeSpec
           * Initialize nextChar.                                           *
           *****************************************************************/
 
+        // Initialize PlusCal processing variables.
+        hasPcal = false ;
+        isCSyntax = false ;
+        pcalStart = null ;
+        pcalEnd = null;
+        inPcal = false;
+        canBeLabel = false;
+        pseudoCom = false;
+        ORCom = false;
+        
+        /*
+         * braceDepth is the current { } brace nesting depth while processing
+         * a C-Syntax PlusCal algorithm.
+         */
+        int braceDepth = 0 ;
+        
         switch (mode)
-          { case MODULE : state = PROLOG ; break ;
-            case TLA    : state = START  ; break ;
-            default     : Debug.ReportBug(
-                           "TokenizeSpec.Tokenize called with illegal mode") ;
+          { 
+            case MODULE    : state = PROLOG ; break ;
+            case TLA       : state = START  ; break ;
+            case PLUSCAL   : state = START ;
+                             hasPcal = true ;
+                             pcalStart = new Position(0, 0) ;
+                             inPcal = true ;
+                             canBeLabel = true ;
+                             isCSyntax = true ;
+                             break ;
+            case P_PLUSCAL : state = START ;
+                             hasPcal = true ;
+                             pcalStart = new Position(0, 0) ;
+                             inPcal = true ;
+                             canBeLabel = true ;
+                             break ;
+            default       : Debug.ReportBug(
+                             "TokenizeSpec.Tokenize called with illegal mode") ;
           } ;
         while (state != DONE)
           { /***************************************************************
@@ -672,9 +936,48 @@ public class TokenizeSpec
                       startNewLine() ;
                       gotoStart(); 
                     }
-                  else if (BuiltInSymbols.IsBuiltInPrefix("" + nextChar))
+                  else if (BuiltInSymbols.IsBuiltInPrefix("" + nextChar, inPcal))
                     { addNextChar();
-                      state = BUILT_IN ;
+                      if (!(inPcal && (mode == MODULE))) {
+                        state = BUILT_IN ;
+                      }
+                      else if (token.equals("*") && (nextChar == ')')){
+                          pcalEnd = getNextTokenPosition() ;
+                          inPcal = false ;
+                          token = "" ;
+                          gotoStart() ;
+                      }
+                      else if (isCSyntax) {
+                          if (token.equals("{")) {
+                              TokenOut(Token.BUILTIN);
+                              canBeLabel = true ;
+                              braceDepth++ ;
+                              gotoStart() ;
+                          }
+                          else if (token.equals("}")) {
+                              TokenOut(Token.BUILTIN);
+                              braceDepth-- ;
+                              if (braceDepth != 0) {
+                                  gotoStart() ;
+                              }
+                              else {
+                                  col = ncol ;
+                                  inPcal = false ;
+                                  cdepth = 1 ;
+                                  pcalEnd = getNextTokenPosition() ;
+                                  pseudoCom = true ;
+                                  state = COMMENT ;
+                              }
+                          }
+                          else {
+                              state = BUILT_IN ;
+                          }
+                      }
+                      else {
+                          state = BUILT_IN ;
+                      }
+                      // old: addNextChar();
+                      // old: state = BUILT_IN ;
                     }
                   else if (nextChar == '\t')
                     { if (mode == MODULE) 
@@ -699,19 +1002,79 @@ public class TokenizeSpec
                     { addNextChar();
                       // state = ID ;
                     }  
-                  else if (BuiltInSymbols.IsBuiltInSymbol(token))
+                  else if (BuiltInSymbols.IsBuiltInSymbol(token, inPcal))
                     { if (token.equals("MODULE")) 
                         { mdepth = mdepth + 1; 
                         }
-                      TokenOut(Token.BUILTIN) ;
-                      gotoStart();
+                      else if (inPcal && token.equals("algorithm") 
+                                && !isCSyntax && (mode == MODULE)) {
+                          TokenOut(Token.BUILTIN) ;
+                          col = ncol; 
+                          pcalEnd = getNextTokenPosition() ;
+                          cdepth = 1 ;
+                          inPcal = false ;
+                          pseudoCom = true ;
+                          state = COMMENT ;
+                      }
+                      else {
+                          boolean cbl = inPcal && BuiltInSymbols.CanPrecedeLabel(token) ;
+                          TokenOut(Token.BUILTIN) ;
+                          canBeLabel = cbl ;
+                          gotoStart();
+                      }
                     }
+                  else if (inPcal && canBeLabel) {
+                      token1 = token ;
+                      col1   = col ;   // This should be unnecessary
+                      state = ID_OR_PCAL_LABEL ;
+                  }
                   else 
                     { TokenOut(Token.IDENT) ;
                       gotoStart();
                     };
                   break;          
-
+                case ID_OR_PCAL_LABEL :
+                    while (Misc.IsSpace(nextChar)) {
+                        addNextChar();
+                    }
+                    if (nextChar == ':') {
+                        addNextChar();
+                        if ((nextChar != '=') && (nextChar != ':')) {
+                            token1 = token ;
+                            state = PCAL_LABEL ;
+                        }
+                        else {
+                            reader.backspace() ;
+                            ncol--;
+                            nextChar = ':' ;
+                            token = token1 ;
+                            TokenOut(Token.IDENT) ;
+                            gotoStart() ;
+                        }  
+                    } 
+                    else {
+                        token = token1 ;
+                        TokenOut(Token.IDENT) ;
+                        gotoStart() ;
+                    }
+                  break;
+                  
+                case PCAL_LABEL :
+                    while (Misc.IsSpace(nextChar)) {
+                        addNextChar();
+                    }
+                    if ((nextChar == '+') || (nextChar == '-')) {
+                        addNextChar() ;
+                        TokenOut(Token.PCAL_LABEL) ;
+                        gotoStart() ;
+                    }
+                    else {
+                        token = token1 ;
+                        TokenOut(Token.PCAL_LABEL) ;
+                        gotoStart() ;
+                    }
+                    break;
+                  
                 case NUM_OR_ID :
                   if (Misc.IsDigit(nextChar))
                     { addNextChar();
@@ -787,6 +1150,7 @@ public class TokenizeSpec
                       state = BSBUILT_IN;
                     }
                   else if (BuiltInSymbols.IsBuiltInSymbol(token))
+                           // "\" symbols are never PCal symbols 
                     { TokenOut(Token.BUILTIN) ;
                       gotoStart();
                     }
@@ -796,16 +1160,16 @@ public class TokenizeSpec
                    break;
 
                 case BUILT_IN :
-                  if (BuiltInSymbols.IsBuiltInPrefix(token + nextChar))
+                  if (BuiltInSymbols.IsBuiltInPrefix(token + nextChar, inPcal))
                     { addNextChar();
                       // state = BUILT_IN;
                     }
                   else 
                     { 
-                     if (! BuiltInSymbols.IsBuiltInSymbol(token))
+                     if (! BuiltInSymbols.IsBuiltInSymbol(token, inPcal))
                       { 
                         reader.backspace();
-                        while (! BuiltInSymbols.IsBuiltInSymbol(token))
+                        while (! BuiltInSymbols.IsBuiltInSymbol(token, inPcal))
                         { reader.backspace();
                           if (token.length() == 0)
                             { TokenizingError("Illegal lexeme");
@@ -814,7 +1178,9 @@ public class TokenizeSpec
                         } ;
                         nextChar = reader.getNextChar();
                       } ;
+                      boolean saved = BuiltInSymbols.CanPrecedeLabel(token) ;
                       TokenOut(Token.BUILTIN) ;
+                      canBeLabel = saved ;
                       gotoStart();
                     }
                    break;
@@ -1028,15 +1394,24 @@ public class TokenizeSpec
                     { Debug.ReportError(
                          "Input ended in the middle of a comment");
                     }
+                  else if ((nextChar == '-') && (cdepth == 1)
+                             && (mode == MODULE) && !hasPcal) {
+                      token1 = token;
+                      col1 = col;
+                      token = "" ;
+                      col = ncol ;
+                      ORCom = false;
+                      addNextChar() ;
+                      state = C_DASH ;
+                    }
                   else
                     { if (cdepth == 1) {addNextChar();}
                         else {skipNextChar();};
                       // state = COMMENT ;
                     }
-
                   break;
 
-                case COMMENT_STAR :       // (
+                case COMMENT_STAR :      
                   if (nextChar == ')')
                     { skipNextChar();
                       cdepth = cdepth - 1;
@@ -1054,6 +1429,91 @@ public class TokenizeSpec
                     }
                   break;
 
+                case C_DASH : 
+                    // token1, col1 describes the comment preceding the "-"
+                    if (nextChar == '-') {
+                        addNextChar() ;
+                        state = C_DASH_DASH ;
+                    }
+                    else {
+                        token = token1 + token ;
+                        col = col1;
+                        addNextChar();
+                        state = COMMENT;
+                    }
+                  break ;
+                  
+                case C_DASH_DASH :
+                  while (Misc.IsLetter(nextChar)) {
+                      addNextChar() ;
+                  }
+                  boolean isAlgorithm = token.equals("--algorithm") ;
+                  if (isAlgorithm || token.equals("--fair")) {
+                      if (! Misc.isBlank(token1)) {
+                          pseudoCom = true;
+                          token2 = token;
+                          col2 = col;
+                          token = token1;
+                          col = col1;
+                          CommentTokenOut(ORCom?CommentToken.END_OVERRUN:CommentToken.NORMAL) ;
+                          token = token2;
+                          col = col2;
+                      }
+                      hasPcal = true;
+                      pcalStart = getNextTokenPosition();
+                      TokenOut(Token.BUILTIN);
+                      SkipSpaceAndNewlines();
+                      if (isAlgorithm) {
+                          state = GET_ALG_NAME ;
+                      }
+                      else {
+                          state = GET_ALG_TOKEN ;
+                      }                      
+                  }
+                  else {
+                      token = token1 + token ;
+                      col = col1 ;
+                      state = COMMENT ;
+                  }
+                  break ;
+                  
+                case GET_ALG_TOKEN :
+                  while (Misc.IsLetter(nextChar)) {
+                      addNextChar();
+                  }
+                  if (token.equals("algorithm")) {
+                      TokenOut(Token.BUILTIN) ;
+                      SkipSpaceAndNewlines() ;
+                      state = GET_ALG_NAME ;
+                  }
+                  else {
+                      pcalEnd = getNextTokenPosition() ;
+                      pseudoCom = true ;
+                      state = COMMENT ;
+                  }
+                  break ;
+                  
+                case GET_ALG_NAME :
+                  while (Misc.IsLetter(nextChar) || Misc.IsDigit(nextChar)) {
+                      addNextChar() ;                      
+                  }
+                  if (Misc.hasLetter(token)) {
+                      TokenOut(Token.IDENT) ;
+                      SkipSpaceAndNewlines() ;
+                      isCSyntax = (nextChar == '{') ;
+                      cdepth = 0 ;
+                      inPcal = true ;
+                      braceDepth = 0 ;
+                      gotoStart() ;
+                  } 
+                  else {
+                      pcalEnd = getNextTokenPosition() ;
+                      pseudoCom = true ;
+                      state = COMMENT ;
+                      
+                  }
+                  break ;
+                
                 case COMMENT_PAREN :
                   if (nextChar == '*')
                     { skipNextChar();
@@ -1081,6 +1541,16 @@ public class TokenizeSpec
                       startNewLine();
                       state = OR_COMMENT;
                     }
+                  else if ((nextChar == '-') && (cdepth == 1) 
+                              && (mode == MODULE) && ! hasPcal) {
+                      token1 = token ;
+                      col1 = col ;
+                      token = "" ;
+                      col = ncol ;
+                      ORCom = true ;
+                      addNextChar() ;
+                      state = C_DASH ;
+                  }
                   else if (nextChar == '\t')
                     { Debug.ReportError(
                          "Input ended in the middle of a multi-line comment");
@@ -1249,12 +1719,449 @@ public class TokenizeSpec
               } ;  // ends switch
          } ; // ends while
 
+        /*
+         * Prevent null pointer exception in PlusCal algorithm that was
+         * not ended.
+         */
+        if (hasPcal) {
+            if (pcalEnd == null) {
+                pcalEnd = new Position(Integer.MAX_VALUE, 0) ;
+            }
+        }
         /*******************************************************************
         * Return the contents of vspec, as an array.                       *
         *******************************************************************/
         return vspecToArray();
       }
-  
- }
+    
+    /**
+     * The argument spec is the current tokenized specification, generated
+     * by the Tokenize method.  If that spec has a C-Syntax PlusCal algorithm,
+     * this method turns "(", ")", "{", and "}" tokens that are PlusCal
+     * delimiters (rather than parts of an expression) into the corresponding
+     * tokens that produce the appropriate TeX output.  
+     * 
+     * A PlusCal "(" can follow the following:
+     *   "macro" + IDENT
+     *   "procedure" + an IDENT 
+     *   "process" | "if" | "while" | "with"
+     * 
+     * A PlusCal "{" other than the initial one can follow the following:
+     *   a PlusCal "{"
+     *   a PlusCal ")"
+     *   "else" | "either" | "or" | "define"
+     *   "variable[s]" [<expression> [, | ;]]^+ 
+     *   ";"  
+     *   PCAL_LABEL
+     * 
+     * This method also removes an extra gray bar that can appear after
+     * the algorithm when using the -shade and -noPcalShade options.
+     * 
+     * @param spec
+     */
+    public static void FixPlusCal(Token[][] spec) {
+//        if ((!hasPcal) || (!isCSyntax)) {
+//            return ;
+//        }
+       
+        if (!hasPcal) {
+            return ;
+        }
+        
+        // Fix the problem of an extra gray bar caused by an empty
+        // comment token following the algorithm by removing that
+        // comment if it exists.
+        if (    Parameters.CommentShading
+            && Parameters.NoPlusCalShading
+            && (pcalEnd.line < spec.length)
+            && (pcalEnd.item < spec[pcalEnd.line].length)) {
+            Token tok = pcalEnd.toToken(spec) ;
+            if (tok.type == Token.COMMENT) {
+                CommentToken ctok = (CommentToken) tok ;
+                if (ctok.string.trim().equals("") ) {
+                  int rsubtype = ctok.rsubtype ;
+                  
+                  // Set newline to spec[pcalEnd.line] with element pcalEnd.item 
+                  // removed.
+                  Token[] newline = new Token[spec[pcalEnd.line].length - 1] ;
+                  int j = 0 ;
+                  for (int i = 0 ; i < spec[pcalEnd.line].length ; i++) {
+                     if (i != pcalEnd.item) {
+                         newline[j] = spec[pcalEnd.line][i] ;
+                         j++ ;
+                     }
+                  }                  
+                  if (rsubtype == CommentToken.NORMAL) {
+                     spec[pcalEnd.line] = newline ;
+                  }
+                  else {
+                      if (rsubtype == CommentToken.BEGIN_OVERRUN) {
+                          // The following lines of the spec should consist
+                          // of a (possibly empty) sequence of 1-token lines
+                          // containing comment tokens of rsubtype OVERRUN followed
+                          // by a line beginning with a comment token of rsubtype
+                          // END_OVERRUN.  If all those comment tokens have only
+                          // blank strings, then we want to delete all of them.
+                          //
+                          // We begin by setting nextLine to the first line following
+                          // pcalEnd.line that does not contain an OVERRUN token with
+                          // a blank string and we set next to the first token on that
+                          // line--or null if for some strange reason that line has
+                          // no tokens.
+                          Token next = spec[pcalEnd.line + 1][0] ;
+                          int nextLine = pcalEnd.line + 1;
+                          while (   (next != null)
+                                 && (next.type == CommentToken.COMMENT)
+                                 && (((CommentToken) next).rsubtype == CommentToken.OVERRUN)
+                                 && (next.string.trim().equals(""))
+                                  ) {
+                              nextLine++ ;
+                              if (spec[nextLine+1].length > 0) {
+                                  next = spec[nextLine][0];
+                              } 
+                              else {
+                                  next = null ;
+                              }
+                          }
+                          if (   (next != null)
+                              && (next.type == CommentToken.COMMENT)
+                              && (next.string.trim().equals(""))
+                              && (((CommentToken) next).rsubtype == CommentToken.END_OVERRUN)
+                              ) {
+                              
+                              // We have an empty comment that we should remove .
+                              // First, we remove the first comment token, 
+                              spec[pcalEnd.line] = newline ;
+                              
+                              // next we remove all the OVERRUN tokens.
+                              for (int i = pcalEnd.line + 1 ; i < nextLine ; i++) {
+                                  spec[i] = new Token[0] ;
+                              }
+                                  
+                              // next we remove the END_OVERRUN token
+                              newline = new Token[spec[nextLine].length-1]  ;                                  
+                              System.arraycopy(spec[nextLine], 1, newline, 
+                                                      0, spec[nextLine].length - 1) ;
+                              spec[nextLine] = newline ;
+                          } 
+                      }
+                  }
+                }
+            }
+        }
+              
+        if (!isCSyntax) {
+            return ;
+        }
+        // Since we're at the beginning of the algorithm, the first
+        // "{" that's not a comment is the first PlusCal "{".
+        Position pos = pcalStart ;
+        while (   (pos != null) 
+               && (   (pos.toToken(spec).type != Token.BUILTIN)
+                   || (! pos.toToken(spec).string.equals("{")))) {            
+          pos = nextTokenPos(pos, spec) ;
+        }
+
+        // pos should not be null, but...
+        if (pos != null) {
+            ProcessPcalBrace(pos, spec) ;
+        }
+    }
+    
+    /**
+     * ProcessPcalBrace(Position pos, Token[][] spec)
+     * ----------------------------------------------
+     * 
+     * This assumes that it is called with pos the position of a left brace 
+     * token in spec that is a PlusCal delimiter.  It converts 
+     * all PlusCal delimiters from (and including) that left brace through
+     * the matching right brace to the appropriate tokens, and returns the
+     * position of the next token past the matching right brace.  If
+     * there is no matching right brace, it returns  null.
+     *   
+     * Here's a spec for this, in a style similar to that for Tokenize.
+     * Here,  ++ means go to next non-comment token.
+     * 
+     * START:
+     *   make current token pcalLBrace ++ --> CAN_BE_LBRACE
+     *   
+     * CAN_BE_LBRACE:
+     *   (BUILT_IN "{")   ProcessPcalBrace(pos, spec) --> NOT_LBRACE
+     *   [OTHER]     --> NOT_LBRACE
+     * 
+     * NOT_LBRACE:
+     *   (PCAL_LABEL)                           ++ --> CAN_BE_LBRACE
+     *   (BUILT_IN & ";", "else", "either","or", "define") ++ --> CAN_BE_LBRACE
+     *   (BUILT_IN & "}") make current token pcalRBrace    ++ return current position
+     *   (BUILT_IN & LEFT_PAREN) ++ skipToUnmatchedEnd(pos, spec, false)
+     *                           ++ ---> NOT_LBRACE
+     *   (BUILT_IN & "variable[s]") ++ ---> AFTER_VAR_DECL
+     *   (BUILT_IN & "process" | "if" | "while" | "with") ++ --> SEEKING_LPAREN
+     *   (BUILT_IN & "procedure" | "macro") ++ ---> SEEKING_IDENT_LPAREN
+     *   [OTHER] ++ ---> NOT_LBRACE
+     *   
+     * SEEKING_LPAREN:
+     *   (BUILT_IN & "(") fix current token
+     *         skipToUnmatchedEnd(pos, spec, false)
+     *         IF current token = ")" THEN fix it
+     *                                ELSE bad PlusCal code
+     *         ++ ---> CAN_BE_LBRACE
+     *         
+     *   [OTHER] bad PlusCal code
+     *           ++ ---> NOT_LBRACE 
+     *           
+     * SEEKING_IDENT_LPAREN:
+     *   (IDENT) ++ ---> SEEKING_LPAREN
+     *   [OTHER]  bad PlusCal code
+     *            ++ ---> NOT_LBRACE 
+     *            
+     * AFTER_VAR_DECL:
+     *   (BUILT_IN & "," | ";") ++ ---> AFTER_COMMA
+     *   (BUILT_IN & LEFT_PAREN) ++ skipToUnmatchedEnd(pos, spec, false)
+     *                           ++ ---> AFTER_VAR_DECL
+     *   [OTHER] ++ ---> AFTER_VAR_DECL
+     *   
+     * AFTER_COMMA:
+     *   (BUILT_IN & "{") ProcessPcalBrace(pos, spec) --> NOT_LBRACE
+     *   (BUILT_IN & "define" | "macro" | "procedure" | "fair" | "process")
+     *      ---> NOT_LBRACE
+     *   [OTHER] ---> AFTER_VAR_DECL
+     *   
+     * @param pos
+     * @param spec
+     * @return
+     */
+    private static final int CAN_BE_LBRACE         = 1 ;
+    private static final int NOT_LBRACE            = 2 ;
+    private static final int SEEKING_LPAREN        = 3 ;
+    private static final int SEEKING_IDENT_LPAREN  = 4 ;
+    private static final int AFTER_VAR_DECL        = 5 ;
+    private static final int AFTER_COMMA           = 6 ;
+    
+    public static Position ProcessPcalBrace(Position pos, Token[][] spec) {
+        Token tok = pos.toToken(spec) ;
+        tok.string = BuiltInSymbols.pcalLeftBrace ;
+        int pstate = CAN_BE_LBRACE ;        
+        Position curPos = nextNonComment(pos, spec) ;
+        
+        while (curPos != null) {
+            tok = curPos.toToken(spec) ;
+            switch (pstate) {
+            case CAN_BE_LBRACE :
+                if ((tok.type == Token.BUILTIN) && tok.string.equals("{")) {
+                 curPos = ProcessPcalBrace(curPos, spec) ;   
+                }
+                else {
+                    pstate = NOT_LBRACE ;
+                }
+                break ;
+
+            case NOT_LBRACE :
+                if (tok.type == Token.PCAL_LABEL) {
+                    pstate = CAN_BE_LBRACE ;
+                }
+                else if (tok.type == Token.BUILTIN) {
+                         if ( (tok.string.equals(";"))
+                         || (tok.string.equals("else"))
+                         || (tok.string.equals("either"))
+                         || (tok.string.equals("or"))
+                         || (tok.string.equals("define"))
+                        ) {
+                            pstate = CAN_BE_LBRACE ;
+                          }
+                          else if (tok.string.equals("}")) {
+                              tok.string = BuiltInSymbols.pcalRightBrace ;
+                              return nextNonComment(curPos, spec);
+                          }
+                          else if (BuiltInSymbols.GetBuiltInSymbol(
+                                     tok.string, true).symbolType == Symbol.LEFT_PAREN) {
+                              curPos = skipToUnmatchedEnd(nextNonComment(curPos, spec), 
+                                                          spec, false) ;
+                          }
+                          else if (   tok.string.equals("variable")
+                                   || tok.string.equals("variables")) {
+                            pstate = AFTER_VAR_DECL ;  
+                          }
+                          else if (   tok.string.equals("if")
+                                   || tok.string.equals("while")
+                                   || tok.string.equals("with")
+                                   || tok.string.equals("process")
+                                  ) {
+                            pstate = SEEKING_LPAREN ;  
+                          }
+                          else if (   tok.string.equals("procedure")
+                                  || tok.string.equals("macro")
+                                 ) {
+                           pstate = SEEKING_IDENT_LPAREN ;  
+                         }
+                }
+                curPos = nextNonComment(curPos, spec);
+                break ;
+
+            case SEEKING_LPAREN :
+                if ((tok.type == Token.BUILTIN) && tok.string.equals("(")) {
+                    tok.string = BuiltInSymbols.pcalLeftParen ;
+                    curPos = skipToUnmatchedEnd(nextNonComment(curPos, spec), spec, false) ;
+                    if (curPos != null) {
+                        tok = curPos.toToken(spec) ;
+                        if ((tok.type == Token.BUILTIN) && tok.string.equals(")")) {
+                            tok.string = BuiltInSymbols.pcalRightParen ;
+                        }
+                        else {
+                            // The PlusCal code is bad.  We ignore it.
+System.out.println("Error SEEKING_LPAREN at " + curPos.toString());
+                        }
+                    }
+                    pstate = CAN_BE_LBRACE ;
+                }
+                else {
+                    // Bad PlusCal code. Ignore it.
+System.out.println("Error SEEKING_LPAREN(2) at " + curPos.toString());
+                    pstate = NOT_LBRACE ;
+                }
+                curPos = nextNonComment(curPos, spec);
+                break ;
+
+            case SEEKING_IDENT_LPAREN :
+                if (tok.type == Token.IDENT) {
+                    pstate = SEEKING_LPAREN ;
+                } 
+                else {
+                    // The PlusCal code is bad.  We ignore it.
+System.out.println("Error SEEKING_IDENT_LPAREN at " + curPos.toString());
+                    pstate = NOT_LBRACE ;
+                }
+                curPos = nextNonComment(curPos, spec); 
+                break ;
+
+            case AFTER_VAR_DECL :
+                if (   (tok.type == Token.BUILTIN) 
+                    && (   tok.string.equals(",")
+                        || tok.string.equals(";"))) {
+                    pstate = AFTER_COMMA ;
+                }
+                else if (     (tok.type == Token.BUILTIN) 
+                           && (BuiltInSymbols.GetBuiltInSymbol(
+                                     tok.string, true).symbolType == Symbol.LEFT_PAREN)) {
+                    curPos = skipToUnmatchedEnd(nextNonComment(curPos, spec), 
+                                                spec, false) ;
+                }    
+                curPos = nextNonComment(curPos, spec); 
+                break ;
+
+            case AFTER_COMMA :
+                if ((tok.type == Token.BUILTIN) && tok.string.equals("{")) {
+                    curPos = ProcessPcalBrace(curPos, spec) ;   
+                    pstate = NOT_LBRACE ;
+                   }
+                else if (   (tok.type == Token.BUILTIN) 
+                         && (   tok.string.equals("define")
+                             || tok.string.equals("macro")
+                             || tok.string.equals("procedure")
+                             || tok.string.equals("fair")
+                             || tok.string.equals("process")
+                            )) {
+                            pstate = NOT_LBRACE ;
+                        }
+                else {
+                    pstate = AFTER_VAR_DECL ;
+                }
+                break ;
+                
+            default :
+                Debug.ReportBug("Impossible case in TokenizeSpec.ProcessPcalBrace") ;
+            }
+
+        }
+        return curPos;
+    }
+    /**
+     * Returns the position of the next token after position pos in
+     * specification spec if that token exists and is in the PlusCal
+     * algorithm; otherwise, it returns null.  For convenience it returns
+     * null if called with a null pos argument.
+     * 
+     * @param pos
+     * @param spec
+     * @return
+     */
+   private static Position nextTokenPos(Position pos, Token[][] spec) {
+      if (pos == null) {
+          return null ;
+      }
+      int nextItem = pos.item + 1;
+      if (   (nextItem < spec[pos.line].length)
+          && (   (pos.line < pcalEnd.line)
+              || (nextItem < pcalEnd.item))) {
+          return new Position(pos.line, nextItem) ;
+      }
+      int nextLine = pos.line + 1 ;
+      while ((nextLine < spec.length) && (spec[nextLine].length == 0)) {
+          nextLine++;
+      }
+      if (   (nextLine < spec.length)
+          && (   (nextLine < pcalEnd.line)
+              || (   (nextLine == pcalEnd.line)
+                  && (0 < pcalEnd.item)))) {
+          return new Position(nextLine, 0) ;
+      }
+      return null;
+  }
+
+   /**
+    * Returns the position of the next token after position pos in
+    * specification spec that is not a comment, if that token exists and is 
+    * in the PlusCal algorithm; otherwise, it returns null.  
+    * For convenience it returns null if called with a null pos argument.
+    * 
+    * @param pos
+    * @param spec
+    * @return
+    */
+   
+   private static Position nextNonComment(Position pos, Token[][] spec) {
+       Position nextPos = nextTokenPos(pos, spec) ;
+       while (  (nextPos != null)
+               && (nextPos.toToken(spec).type == Token.COMMENT)) {
+           nextPos = nextTokenPos(nextPos, spec);
+       }
+       return nextPos ;
+   }
+   
+   /**
+    * Starting from position pos, it skips to an ending token, leaving 
+    * pos pointing to it.  It returns null if there is no such token.
+    * An ending token is an unmatched RIGHT_PAREN or, if punct is true,
+    * a "," or ";"
+    * 
+    * @param pos    The position of the token.
+    * @param spec   The specification.
+    * @param punct  True if stopping at comma or semicolon.
+    * @return
+    */
+   public static Position skipToUnmatchedEnd(
+                             Position pos, Token[][] spec, boolean punct) {
+       Position nextPos = pos ;
+       while (nextPos != null) {
+           Token tok = nextPos.toToken(spec) ;
+           if (tok.type == Token.BUILTIN) {
+               int symType = BuiltInSymbols.GetBuiltInSymbol(
+                                 tok.string, true).symbolType ;
+               if (   (symType == Symbol.RIGHT_PAREN)
+                   || (   punct
+                       && (   tok.string.equals(";") 
+                           || tok.string.equals(",")))) {
+                   return nextPos;
+               }
+               if (symType == Symbol.LEFT_PAREN) {
+                   nextPos = nextNonComment(nextPos, spec) ;
+                   nextPos = skipToUnmatchedEnd(nextPos, spec, false);
+               }
+           }           
+           nextPos = nextNonComment(nextPos, spec);
+       }       
+       return null ;
+   }
+  }
 
 /* last modified on Thu 18 Aug 2005 at 22:13:38 UT by lamport */

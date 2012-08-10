@@ -42,6 +42,9 @@ public class TLA2TeXPreferencePage extends FieldEditorPreferencePage implements
 		addField(new BooleanFieldEditor(
 				ITLA2TeXPreferenceConstants.SHADE_COMMENTS, "&Shade comments",
 				getFieldEditorParent()));
+        addField(new BooleanFieldEditor(
+                ITLA2TeXPreferenceConstants.NO_PCAL_SHADE, "&Do not shade PlusCal code",
+                getFieldEditorParent()));
 		addField(new BooleanFieldEditor(
 				ITLA2TeXPreferenceConstants.NUMBER_LINES, "&Number lines",
 				getFieldEditorParent()));

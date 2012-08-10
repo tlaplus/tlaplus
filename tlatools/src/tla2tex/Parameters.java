@@ -39,10 +39,16 @@ public final class Parameters
     ***********************************************************************/
     
   public static boolean CommentShading = false ;
-    /***********************************************************************
-    * True if comments are to be shaded in the output.                     *
-    ***********************************************************************/
-    
+  /***********************************************************************
+  * True if comments are to be shaded in the output.                     *
+  ***********************************************************************/
+  
+  public static boolean NoPlusCalShading = false ;
+  /***********************************************************************
+  * True if PlusCal code should not be shaded when CommentShading is     *
+  * true; meaningless otherwise.                                         *
+  ***********************************************************************/
+  
   public static boolean PrintProlog = true ;
     /***********************************************************************
     * True unless the -noProlog option is specified.  It determines        *

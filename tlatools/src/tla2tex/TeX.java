@@ -105,7 +105,7 @@ class TeX
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Wed 19 Sep 2007 at  7:08:49 PST by lamport";
+    "last modified on Wed 9 Aug 2012 at 16:08:49 PST by lamport";
 
   static String modDate = lastModified.substring(21, 33) ;
     /***********************************************************************
@@ -113,7 +113,7 @@ class TeX
     ***********************************************************************/
 
   static String version = 
-    "tla2tex.TeX Version .9 created " + modDate ;
+    "tla2tex.TeX Version 1.0 created " + modDate ;
 
     public static void main(String[] args) 
     { /*********************************************************************
@@ -214,32 +214,54 @@ class TeX
        { line = infile.readLine();
          int envNum = 0 ;
            /****************************************************************
-           * The number of tla environments processed so far.              *
+           * The number of tla, pcal, or ppcal environments processed so   *
+           * far.                                                          *
            ****************************************************************/
 
          while (line != null)
           {                                   // BEGIN while (line != null)
            lineNum = lineNum + 1 ;
            outfile.putLine(line) ;
-           if (line.indexOf("\\begin{tla}") != -1)
-            {        // BEGIN then OF if (line.indexOf("\\begin{tla}") != -1)
+           
+           /*
+            * If this line begins a tla, pcal, or ppcal environment, set
+            * mode to the correct mode for calling TokenizeSpec and set
+            * envName to "tla", "pcal", or "ppcal"
+            */
+           int mode = -1 ;
+           String envName = "" ;
+           if (line.indexOf("\\begin{tla}") != -1) {
+               mode = TokenizeSpec.TLA ;
+               envName = "tla" ;
+           }
+           else if (line.indexOf("\\begin{pcal}") != -1) {
+               mode = TokenizeSpec.PLUSCAL ;
+               envName = "pcal" ;
+           }
+           else if (line.indexOf("\\begin{ppcal}") != -1) {
+               mode = TokenizeSpec.P_PLUSCAL ;
+               envName = "ppcal" ;
+           }       
+           if (mode != -1)
+            {        // BEGIN then OF if (mode != -1)
              /**************************************************************
-             * Process the tla environment and set line to the line        *
-             * immediately after it or the following tlatex environment.   *
+             * Process the tla/pcal/ppcal environment and set line to the  *
+             * line immediately after it or the following tlatex           *
+             * environment.                                                *
              *                                                             *
              * Start by copying the environment and also putting it in     *
              * the vector tla.                                             *
              *                                                             *
              * Note: Nothing on the same line may follow a \begin{tla} or  *
-             * precede an \end{tla}.                                       *
+             * precede an \end{tla}, and similarly for pcal and ppcal.     *
              **************************************************************/
-             Starting("tla environment number " + (envNum + 1) 
+             Starting(envName + " environment number " + (envNum + 1) 
                          + " on line " + (lineNum + 1));
              Vector tla = new Vector(100);
              int tlaLineNum = lineNum ;
              line = infile.readLine();
              while (   (line != null) 
-                    && (line.indexOf("\\end{tla}") == -1))
+                    && (line.indexOf("\\end{" + envName + "}") == -1))
               { lineNum = lineNum + 1 ;
                 outfile.putLine(line) ;
                 tla.addElement(line);
@@ -247,7 +269,7 @@ class TeX
               }
 
              if (line == null)
-              { Debug.ReportError( "Unmatched \\begin{tla} on line " 
+              { Debug.ReportError( "Unmatched \\begin{" + envName + "} on line " 
                                     + (tlaLineNum + 1)); 
               }
              lineNum = lineNum + 1 ;
@@ -289,14 +311,21 @@ class TeX
             * Tokenize the spec.                                           *
             ***************************************************************/
             CharReader tlaRdr = new VectorCharReader(tla, tlaLineNum);
-            Token[][] spec = TokenizeSpec.Tokenize(tlaRdr, TokenizeSpec.TLA);
+            Token[][] spec = TokenizeSpec.Tokenize(tlaRdr, mode);
 
             /***************************************************************
             * Finish the tokenization by converting sequences of tokens    *
             * that represent proof-step numbers to PF_STEP tokens.         *
             ***************************************************************/
             Token.FindPfStepTokens(spec) ;
-
+            
+            /*********************************************************************
+            * Really finish the tokenization by parentheses and braces that are  *
+            * part of the PlusCal C-syntax to tokens that are printed            *
+            * appropriately.                                                     *
+            *********************************************************************/
+            TokenizeSpec.FixPlusCal(spec) ;
+             
             /***************************************************************
             * Process the comment tokens.                                  *
             ***************************************************************/
@@ -309,7 +338,7 @@ class TeX
             // Debug.print2DArray(spec, "spec"); 
 
             /***************************************************************
-            * Find the linewidth for this tla environment.                 *
+            * Find the linewidth for this tla/pcal/ppcal environment.      *
             ***************************************************************/
             float linewidth = -1 ;
             if (envNum < lineWidths.length)
@@ -318,7 +347,7 @@ class TeX
             else
              { if (envNum == lineWidths.length)
                  { ToolIO.out.println(
-                      "More tla environments than the last time file\n"
+                      "More tla/pcal/ppcal environments than the last time file\n"
                     + "    run through LaTeX");
                  }
              }
@@ -340,24 +369,25 @@ class TeX
             LaTeXOutput.RunLaTeX(Parameters.LaTeXAlignmentFile);
             Finished("LaTeXing alignment file");
             LaTeXOutput.SetDimensions(spec) ;
+            // Debug.print2DArray(spec, "");
 
             /***************************************************************
             * Write the tlatex environment.                                *
             ***************************************************************/
             LaTeXOutput.WriteTLATeXEnvironment(spec, outfile) ;
-            Finished("tla environment number " + (envNum + 1));
+            Finished("tla/pcal/ppcal environment number " + (envNum + 1));
             envNum = envNum + 1;
-            }  // END then OF if (line.indexOf("\\begin{tla}") != -1)
+            }  // END then OF if (mode != -1)
            else
             {/**************************************************************
-             * This line did not begin a tla environment.                  *
+             * This line did not begin a tla, pcal, or ppcal environment.  *
              **************************************************************/
              line = infile.readLine();
             }
           }                                  // END while (line != null)
         if (envNum < lineWidths.length)
            { ToolIO.out.println(
-               "Fewer tla environments than the last time file\n"
+               "Fewer tla/pcal/ppcal environments than the last time file\n"
                     + "    run through LaTeX");
            };
         /*******************************************************************

@@ -27,7 +27,7 @@
 * The methods are                                                          *
 *                                                                          *
 *   getWidth() : returns width of token in input.                          *
-*   toString() : for debuggin                                              *
+*   toString() : for debugging                                             *
 *                                                                          *
 * Every token of type COMMENT should belong to the subclass CommentToken.  *
 ***************************************************************************/
@@ -113,6 +113,12 @@ public class Token
          * This is a proof-step number, such as "<42>" or "<37>2a.".       *
          * It shouldn't make any difference, but the definitions of        *
          * PF_STEP in Token and CToken are made the same just in case.     *
+         ******************************************************************/
+
+       public static final int PCAL_LABEL = 13;
+         /******************************************************************
+         * This is a  label.  The string contains the label, the following *
+         * ":" and perhaps a following "+" or "-".                         *
          ******************************************************************/
 
     /***********************************************************************
@@ -257,10 +263,10 @@ public class Token
                  if (   (i < input.length - numOfToks)
                      && (input[i + numOfToks].type == BUILTIN)
                      && (   (BuiltInSymbols.GetBuiltInSymbol(
-                                 input[i + numOfToks].string).symbolType
+                                 input[i + numOfToks].string, true).symbolType
                               == Symbol.INFIX)
                          ||  (BuiltInSymbols.GetBuiltInSymbol(
-                                 input[i + numOfToks].string).symbolType
+                                 input[i + numOfToks].string, true).symbolType
                               == Symbol.PUNCTUATION)))
                    { needsSpace = false ; } ;
                  outputVec.addElement(new Token.PfStepToken
@@ -281,7 +287,7 @@ public class Token
             }
         } // for k
       } 
-
+    
     /***********************************************************************
     * The following defines a toString() method for printing a Token for   *
     * debugging.  To do a decent job, it splits it into reasonably-sized   *
@@ -305,6 +311,7 @@ public class Token
             case END_MODULE : typeName = "END_MODULE" ; break ;
             case PROLOG     : typeName = "PROLOG"     ; break ;
             case EPILOG     : typeName = "EPILOG"     ; break ;
+            case PCAL_LABEL : typeName = "PCAL_LABEL" ; break ;
           } ;
         String str = "\"" + string + "\"" ;
         if (string == null) {str = "null";};

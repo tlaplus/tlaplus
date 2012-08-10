@@ -1,5 +1,5 @@
 /***************************************************************************
-ABSTRACT CLASS PcalCharReader
+* CLASS PcalCharReader                                                     *
 *                                                                          *
 * A PcalCharReader is an input stream that can be read one character at a  *
 * time.  The class's constructor produces such a stream from a vector of   *

@@ -104,14 +104,20 @@ Method 3. Using tla.msr-inria.inria.fr
        Release-HEAD-Toolbox.product.standalone  
        This isn't released publicly until I do the release step, below
   - to get the release zip files, 
-       * go to 
-          https://tla.msr-inria.inria.fr/tlatoolbox/staged
+       * To get the last promoted (publicly available) release, go to: 
+            - goto https://tla.msr-inria.inria.fr/build
+            - click on Release-HEAD-Toolbox.product.standalone 
+            - click on "Latest product zips" to get the Toolbox zips
+              click on "TLA+ distribution zip" to get to the stand-alone 
+                TLA tools release zip file, which is in tla.zip.
+       * To get the last created (but not necessarily promoted) release, go to:
+            https://tla.msr-inria.inria.fr/tlatoolbox/staged
               /products = toolbox zip files
               /dist = tools distribution
-          an alternative is:
+         an alternative is:
                https://tla.msr-inria.inria.fr/build/job/M-HEAD-Toolbox.product.standalone/os=master/lastSuccessfulBuild/artifact/org.lamport.tla.toolbox.product.product/target/
                * click on products
-       * copy 6 zip files from /products and tla.zip from /dist
+               * you can get the 6 Toolbox zip files from /products and tla.zip from /dist
      Another alternate way to get to the https://...target/ page:
       On https://tla.msr-inria.inria.fr/build
        1. click on Release-HEAD-Toolbox.product.standalone 
@@ -151,7 +157,11 @@ Version 1.4.4 of ?
   - Fixed bug in Find Declaration and other commands that caused problems
     recognizing an identifier containing a "_".
   - Fixed a couple of minor bugs in TLC error messages in Version 2.05 of 18 May
-  - Added ONLY as an editor keyword.
+  - Added ONLY and COROLLARY as an editor keyword.
+  - Markus fixed bug in Toolbox update that caused the new version of the Toolbox
+    to call the old version of the tools.
+  - New version of TLATeX that pretty-prints PlusCal algorithms properly.
+  
 Version 1.4.3 of 10 April 2012
   - Adds a "Cardinality of largest enumerable set" TLC parameter.
   - Fixed the order of definitions and declarations in the MC.tla file.
