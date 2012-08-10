@@ -3,6 +3,7 @@
 package tlc2.tool;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
@@ -90,7 +91,7 @@ public class DFIDModelChecker extends AbstractChecker
             this.tool.setCallStack();
             try
             {
-                this.numOfGenStates = 0;
+                this.numOfGenStates = new AtomicLong(0);
                 this.doInit(true);
             } catch (Throwable e1)
             {
@@ -240,11 +241,13 @@ public class DFIDModelChecker extends AbstractChecker
         {
             // Generate the initial states:
             StateVec states = this.tool.getInitStates();
-            this.numOfGenStates = states.size();
-            this.theInitStates = new TLCState[(int) this.numOfGenStates];
-            this.theInitFPs = new long[(int) this.numOfGenStates];
+            this.numOfGenStates.set(states.size());
+            final long l = this.numOfGenStates.get();
+            //TODO casting to int is potentially dangerous
+            this.theInitStates = new TLCState[(int) l];
+            this.theInitFPs = new long[(int) l];
             int idx = 0;
-            for (int i = 0; i < this.numOfGenStates; i++)
+            for (int i = 0; i < l; i++)
             {
                 curState = states.elementAt(i);
                 // Check if the state is a legal state
@@ -305,7 +308,7 @@ public class DFIDModelChecker extends AbstractChecker
             }
 
             // Set up the initial pairs correctly:
-            if (idx < this.numOfGenStates)
+            if (idx < this.numOfGenStates.get())
             {
                 TLCState[] stateTemp = new TLCState[idx];
                 long[] fpTemp = new long[idx];
@@ -669,7 +672,7 @@ public class DFIDModelChecker extends AbstractChecker
             }
             MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END_DFID, String.valueOf(this.theFPSet.size()));
             recovered = true;
-            this.numOfGenStates = this.theFPSet.size();
+            this.numOfGenStates.set(this.theFPSet.size());
         }
         return recovered;
     }
@@ -708,7 +711,7 @@ public class DFIDModelChecker extends AbstractChecker
     public final void reportSuccess() throws IOException
     {
         long d = this.theFPSet.size();
-        double prob1 = (d * (this.numOfGenStates - d)) / Math.pow(2, 64);
+        double prob1 = (d * (this.numOfGenStates.get() - d)) / Math.pow(2, 64);
         double prob2 = this.theFPSet.checkFPs();
 
         MP.printMessage(EC.TLC_SUCCESS, new String[] { String.valueOf(prob1), String.valueOf(prob2) });
