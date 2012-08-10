@@ -360,7 +360,6 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		// (means the current thread returns rwLock monitor)
 		// Why not return monitor first and then acquire read lock?
 		// => prevent deadlock by acquiring threads in same order? 
-		this.diskLookupCnt.getAndIncrement();
 		
 		// next, look on disk
 		boolean diskHit = this.diskLookup(fp0);
@@ -466,8 +465,6 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		}
 
 		// block if disk is being re-written
-		this.diskLookupCnt.getAndIncrement();
-
 		// next, look on disk
 		boolean diskHit = this.diskLookup(fp0);
 		// increment while still locked
@@ -522,6 +519,10 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	final boolean diskLookup(long fp) throws IOException {
 		if (this.index == null)
 			return false;
+		
+		// Increment disk lookup counter
+		this.diskLookupCnt.getAndIncrement();
+		
 		// search in index for position to seek to
 		// do interpolated binary search
 		final int indexLength = this.index.length;
