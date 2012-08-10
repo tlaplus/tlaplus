@@ -5,10 +5,12 @@
 
 package tlc2.tool.distributed;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NoSuchObjectException;
@@ -39,7 +41,6 @@ import util.UniqueString;
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 	private static Timer keepAliveTimer;
-	private static TLCWorker worker;
 	private static RMIFilenameToStreamResolver fts;
 	
 	private DistApp work;
@@ -284,13 +285,20 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					server.getConfigFileName(), server.getCheckDeadlock(),
 					server.getPreprocess(), fts, 0);
 
-			IFPSetManager fpSetManager = server.getFPSetManager();
-			worker = new TLCWorker(work, fpSetManager, InetAddress.getLocalHost().getCanonicalHostName());
-			server.registerWorker(worker);
-
+			final IFPSetManager fpSetManager = server.getFPSetManager();
+			
+			// spawn as many worker threads as we have cores
+			final int numCores = Runtime.getRuntime().availableProcessors();
+			final TLCWorkerRunnable[] runnables = new TLCWorkerRunnable[numCores];
+			for (int j = 0; j < numCores; j++) {
+				runnables[j] = new TLCWorkerRunnable(server, fpSetManager, work);
+				Thread t = new Thread(runnables[j], "TLCWorkerRunnable#" + j);
+				t.start();
+			}
+			
 			// schedule a timer to periodically (60s) check server aliveness 
 			keepAliveTimer = new Timer("TLCWorker KeepAlive Timer", true);
-			keepAliveTimer.schedule(new TLCTimerTask(worker, url), 10000, 60000);
+			keepAliveTimer.schedule(new TLCTimerTask(runnables, url), 10000, 60000);
 			
 			ToolIO.out.println("TLC worker ready at: "
 					+ new Date());
@@ -314,7 +322,36 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		fts  = aFTS;
 	}
 
-	public static TLCWorker getTLCWorker() {
-		return worker;
+	public static class TLCWorkerRunnable implements Runnable {
+		private final TLCServerRMI aServer;
+		private final IFPSetManager anFpSetManager;
+		private final DistApp aWork;
+		private TLCWorker worker;
+
+		public TLCWorkerRunnable(TLCServerRMI aServer, IFPSetManager anFpSetManager, DistApp aWork) {
+			this.aServer = aServer;
+			this.anFpSetManager = anFpSetManager;
+			this.aWork = aWork;
+		}
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
+		public void run() {
+			try {
+				worker = new TLCWorker(aWork, anFpSetManager, InetAddress.getLocalHost().getCanonicalHostName());
+				aServer.registerWorker(worker);
+			} catch (RemoteException e) {
+				throw new RuntimeException(e);
+			} catch (UnknownHostException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public TLCWorker getTLCWorker() {
+			return worker;
+		}
 	}
 }

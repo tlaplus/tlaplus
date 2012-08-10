@@ -10,6 +10,7 @@ import java.util.TimerTask;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.distributed.TLCWorker.TLCWorkerRunnable;
 
 /**
  * Periodically checks if the server is still alive and exists the worker otherwise
@@ -17,10 +18,10 @@ import tlc2.output.MP;
 public class TLCTimerTask extends TimerTask {
 
 	private final String serverUrl;
-	private final TLCWorker worker;
+	private final TLCWorkerRunnable[] runnables;
 
-	public TLCTimerTask(final TLCWorker aWorker, final String anUrl) {
-		worker = aWorker;
+	public TLCTimerTask(final TLCWorkerRunnable[] runnables, final String anUrl) {
+		this.runnables = runnables;
 		serverUrl = anUrl;
 	}
 
@@ -28,7 +29,8 @@ public class TLCTimerTask extends TimerTask {
 	 * @see java.util.TimerTask#run()
 	 */
 	public void run() {
-		long lastInvocation = worker.getLastInvocation();
+		
+		long lastInvocation = getMostRecentInvocation();
 		long now = new Date().getTime();
 		if(lastInvocation == 0 || (now - lastInvocation) > 60000) {
 			try {
@@ -47,10 +49,23 @@ public class TLCTimerTask extends TimerTask {
 		}
 	}
 
+	private long getMostRecentInvocation() {
+		long minInvocation = 0L;
+		for (int i = 0; i < runnables.length; i++) {
+			TLCWorkerRunnable runnable = runnables[i];
+			long lastInvocation = runnable.getTLCWorker().getLastInvocation();
+			minInvocation = Math.max(minInvocation, lastInvocation);
+		}
+		return minInvocation;
+	}
+
 	private void exitWorker() {
 		MP.printError(EC.TLC_DISTRIBUTED_SERVER_NOT_RUNNING);
 		try {
-			worker.exit();
+			for (int i = 0; i < runnables.length; i++) {
+				TLCWorkerRunnable runnable = runnables[i];
+				runnable.getTLCWorker().exit();
+			}
 		} catch (NoSuchObjectException e) {
 			// not expected to happen
 		    // LL modified error message on 7 April 2012
