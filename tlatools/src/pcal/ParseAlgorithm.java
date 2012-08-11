@@ -1703,12 +1703,6 @@ public class ParseAlgorithm
      return result ;
    }
    
-   /*
-    * This method expands the macro call incorrectly.  The bug seems to be 
-    * due to its call of substituteForAll on line 684 of TLAExpr.java.  The
-    * bug is explained in the comments preceding that call.
-    * LL 9 August 2012
-    */
    public static AST.MacroCall GetMacroCall() throws ParseAlgorithmException 
      { AST.MacroCall result = new AST.MacroCall() ;
        result.name = GetAlgToken() ;
