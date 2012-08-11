@@ -161,6 +161,7 @@ Version 1.4.4 of ?
   - Markus fixed bug in Toolbox update that caused the new version of the Toolbox
     to call the old version of the tools.
   - New version of TLATeX that pretty-prints PlusCal algorithms properly.
+  - Fixed minor PlusCal bug.
   
 Version 1.4.3 of 10 April 2012
   - Adds a "Cardinality of largest enumerable set" TLC parameter.
