@@ -89,7 +89,7 @@ The following stuff needs to be done for each release.
   3. Hit on Eclipse Product Export Wizard
      (export to windows, linux stk/x86, macosx cocoa/x86)
 -----------------------------------------------------------------------------
-How to put a new version up on the MSR-INRIA Web site.
+How to put a new version up on the MSR-INRIA Web site.  (This is also obsolete.)
 
 1. Go to the web site's project page.
 2. Login
@@ -599,6 +599,43 @@ will probably require debugging to see what path names are returned
 by the class's getAbsolutePath method and how they compare with
 the library folder names.
 ----------------------------------------------------------------------
+SYNTAX COLORING (KEYWORDS, COMMENTS, ETC.)
+
+Setting the Colors.
+------------------
+See TLASourceViewerConfiguration and TLAColorProvider.
+
+Partitioning the Document.
+------------------------
+Done by the following TLAPartitionScanner methods called by
+org.eclipse....FastPartitioner:
+
+   nextToken
+   getTokenOffSet
+   getTokenLength
+   setPartialRange(
+      document, 
+      offset: in document for starting parse,
+      length: of region of document to parse. In the one call in 
+              FastPartitioner, the region extends to the end of the 
+              document.
+      contentType: "at the given offset".  
+                   If partitionOffset = -1, then this seems to be the
+                   content type of the previous partition???
+      partitionOffset: 
+         "at which the partition of the given offset starts".  
+         I think that it either equals -1, meaning that the offset 
+         parameter is at the beginning of a partition, or else it is
+         the beginning of a partition for which `offset' is in the
+         the middle.
+         
+   setRange
+     Called only for the initial partitioning of the document.
+
+See org.eclipse...ITokenScanner
+and org.eclipse...IPartitionTokenScanner
+
+-------------------------------------------------------------------------
 HOW TO GET A...
   SpecObj
      From IFile: ResourceHelper.getValidParseResult(iFile).getSpecObj()
