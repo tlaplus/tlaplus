@@ -18,6 +18,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.Timer;
+import java.util.TreeSet;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -31,6 +32,7 @@ import tlc2.util.Cache;
 import tlc2.util.FP64;
 import tlc2.util.LongVec;
 import tlc2.util.SimpleCache;
+import util.Assert;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -70,21 +72,9 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		// statistics
 		lastInvocation = System.currentTimeMillis();
 		
-		// create containers for each fingerprint _server_
 		TLCState state1 = null, state2 = null;
-		int fpServerCnt = this.fpSetManager.numOfServers();
-		// previous state
-		TLCStateVec[] pvv = new TLCStateVec[fpServerCnt];
-		// container for all succ states
-		TLCStateVec[] nvv = new TLCStateVec[fpServerCnt];
-		// container for all succ state fingerprints
-		final LongVec[] fpvv = new LongVec[fpServerCnt];
-		for (int i = 0; i < fpServerCnt; i++) {
-			pvv[i] = new TLCStateVec();
-			nvv[i] = new TLCStateVec();
-			fpvv[i] = new LongVec();
-		}
 		try {
+			final TreeSet<Holder> treeSet = new TreeSet<Holder>();
 			// Compute all of the next states of this block of states.
 			for (int i = 0; i < states.length; i++) {
 				state1 = states[i];
@@ -93,12 +83,44 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				for (int j = 0; j < nstates.length; j++) {
 					long fp = nstates[j].fingerPrint();
 					if (!cache.hit(fp)) {
-						int fpIndex = (int) ((fp & mask) % fpServerCnt);
-						pvv[fpIndex].addElement(state1);
-						nvv[fpIndex].addElement(nstates[j]);
-						fpvv[fpIndex].addElement(fp);
+						treeSet.add(new Holder(fp, nstates[j], state1));
 					}
 				}
+			}
+			
+			// create containers for each fingerprint _server_
+			int fpServerCnt = this.fpSetManager.numOfServers();
+			// previous state
+			TLCStateVec[] pvv = new TLCStateVec[fpServerCnt];
+			// container for all succ states
+			TLCStateVec[] nvv = new TLCStateVec[fpServerCnt];
+			// container for all succ state fingerprints
+			final LongVec[] fpvv = new LongVec[fpServerCnt];
+			for (int i = 0; i < fpServerCnt; i++) {
+				pvv[i] = new TLCStateVec();
+				nvv[i] = new TLCStateVec();
+				fpvv[i] = new LongVec();
+			}
+			
+			// Add elements of treeSet in sorted order to pvv, nvv, fpvv.
+			// This is done hoping (not yet measured) that it will cause less
+			// disk seeks at the fingerprint server since fingerprints are
+			// ordered and thus two...n consecutive fingerprints reside on the
+			// same disk page.
+			//
+			// Additionally we later might wanna optimize lock acquisition based
+			// on the invariant of sorted fingerprints.
+			long last = Long.MIN_VALUE;
+			for (final Holder holder : treeSet) {
+				// make sure invariant is followed
+				long fp = holder.getFp();
+				Assert.check(last < fp, EC.GENERAL);
+				last = fp;
+
+				int fpIndex = (int) ((fp & mask) % fpServerCnt);
+				pvv[fpIndex].addElement(holder.getParentState());
+				nvv[fpIndex].addElement(holder.getNewState());
+				fpvv[fpIndex].addElement(fp);
 			}
 
 			BitVector[] visited = this.fpSetManager.containsBlock(fpvv);
@@ -352,6 +374,47 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		
 		public TLCWorker getTLCWorker() {
 			return worker;
+		}
+	}
+	
+	public static class Holder implements Comparable<Holder> {
+
+		private final long fp;
+		private final TLCState successor;
+		private final TLCState predecessor;
+
+		public Holder(long fp, TLCState successor, TLCState predecessor) {
+			this.fp = fp;
+			this.successor = successor;
+			this.predecessor = predecessor;
+		}
+
+		/**
+		 * @return the fp
+		 */
+		public long getFp() {
+			return fp;
+		}
+
+		/**
+		 * @return the successor
+		 */
+		public TLCState getNewState() {
+			return successor;
+		}
+
+		/**
+		 * @return the predecessor
+		 */
+		public TLCState getParentState() {
+			return predecessor;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Comparable#compareTo(java.lang.Object)
+		 */
+		public int compareTo(Holder o) {
+			return Long.compare(fp, o.fp);
 		}
 	}
 }
