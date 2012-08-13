@@ -2,6 +2,7 @@
 package tlc2.tool.distributed.fp;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 import tlc2.tool.distributed.TLCWorker;
 import tlc2.tool.fp.FPSet;
@@ -31,6 +32,16 @@ public interface IFPSetManager {
 	 * @see FPSet#containsBlock(LongVec);
 	 */
 	BitVector[] containsBlock(LongVec[] fps);
+
+	/**
+	 * @see FPSet#putBlock(LongVec)
+	 */
+	BitVector[] putBlock(LongVec[] fps, ExecutorService executorService);
+	
+	/**
+	 * @see FPSet#containsBlock(LongVec);
+	 */
+	BitVector[] containsBlock(LongVec[] fps, ExecutorService executorService);
 
 	/**
 	 * @see FPSet#size()

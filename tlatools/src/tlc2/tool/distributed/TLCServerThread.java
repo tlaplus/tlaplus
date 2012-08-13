@@ -16,6 +16,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import tlc2.TLCGlobals;
@@ -109,6 +111,8 @@ public class TLCServerThread extends IdThread {
 		TLCStateVec[] newStates = null;
 		LongVec[] newFps = null;
 
+		ExecutorService es = Executors.newCachedThreadPool();
+		
 		final IStateQueue stateQueue = this.tlcServer.stateQueue;
 		try {
 			START: while (true) {
@@ -180,7 +184,7 @@ public class TLCServerThread extends IdThread {
 				// fp set would be inconsistent => making it an "atomic"
 				// operation)
 				BitVector[] visited = this.tlcServer.fpSetManager
-						.putBlock(newFps);
+						.putBlock(newFps, es);
 
 				// recreate newly computed states and add them to queue
 				for (int i = 0; i < visited.length; i++) {
@@ -220,6 +224,7 @@ public class TLCServerThread extends IdThread {
 		} finally {
 			keepAliveTimer.cancel();
 			states = new TLCState[0];
+			es.shutdown();
 			// not calling TLCGlobals#decNumWorkers here because at this point
 			// TLCServer is shutting down anyway
 		}

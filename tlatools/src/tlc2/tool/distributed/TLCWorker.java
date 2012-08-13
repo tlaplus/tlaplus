@@ -19,6 +19,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -52,6 +54,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	
 	private final Cache cache;
 	private final long mask;
+	
+	private ExecutorService executorService;
 
 	public TLCWorker(DistApp work, IFPSetManager fpSetManager, String aHostname)
 			throws RemoteException {
@@ -61,6 +65,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		uri = URI.create("rmi://" + aHostname + ":" + getPort());
 		
 		this.cache = new SimpleCache();
+		
+		this.executorService = Executors.newCachedThreadPool();
 	}
 
 	/* (non-Javadoc)
@@ -123,7 +129,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				fpvv[fpIndex].addElement(fp);
 			}
 
-			BitVector[] visited = this.fpSetManager.containsBlock(fpvv);
+			BitVector[] visited = this.fpSetManager.containsBlock(fpvv, executorService);
 
 			// Remove the states that have already been seen, check if the
 			// remaining new states are valid and inModel.
@@ -173,6 +179,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				+ this.work.getStatesComputed()
 				+ " and a cache hit ratio of " + this.cache.getHitRatioAsString()
 				+ ", Thank you!");
+		
+		executorService.shutdown();
 		
 		UnicastRemoteObject.unexportObject(TLCWorker.this, true);
 	}
