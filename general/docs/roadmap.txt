@@ -632,6 +632,9 @@ org.eclipse....FastPartitioner:
    setRange
      Called only for the initial partitioning of the document.
 
+The "supported content types" that are supported as far as FastPartitioner
+is concerned are specified by TLAPartitionScanner.TLA_PARTITION_TYPES.
+
 See org.eclipse...ITokenScanner
 and org.eclipse...IPartitionTokenScanner
 
