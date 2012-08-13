@@ -224,6 +224,35 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
         }
         this.curr = pos;
     }
+    
+    /* extends this.seek(long) by return if a page has been read (used for statistics) */
+    //TODO come up with better name for seeek %)
+    public boolean seeek(long pos) throws IOException {
+		boolean pageReadNeeded = true;
+		// Assert.check(!this.closed);
+		if (pos >= this.hi || pos < this.lo) {
+			// seeking outside of current buffer -- flush and read
+			this.flushBuffer();
+			this.lo = pos & BuffMask; // start at BuffSz boundary
+			this.maxHi = this.lo + this.buff.length;
+			if (this.diskPos != this.lo) {
+				super.seek(this.lo);
+				this.diskPos = this.lo;
+			}
+			int n = this.fillBuffer();
+			this.hi = this.lo + n;
+		} else {
+			// seeking inside current buffer -- no read required
+			if (pos < this.curr) {
+				// if seeking backwards, we must flush to maintain V4
+				this.flushBuffer();
+			} else {
+				pageReadNeeded = false;
+			}
+		}
+		this.curr = pos;
+		return pageReadNeeded;
+	}
 
     /* overrides RandomAccessFile.getFilePointer() */
     public long getFilePointer() {
