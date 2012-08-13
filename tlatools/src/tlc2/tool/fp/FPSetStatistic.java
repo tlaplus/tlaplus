@@ -71,6 +71,11 @@ public interface FPSetStatistic {
 	public long getDiskSeekCnt();
 	
 	/**
+	 * @return the diskSeekCache
+	 */
+	public long getDiskSeekCache();
+	
+	/**
 	 * @return the growDiskMark
 	 */
 	public int getGrowDiskMark();

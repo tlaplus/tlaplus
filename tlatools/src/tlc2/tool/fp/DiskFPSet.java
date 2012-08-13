@@ -122,11 +122,11 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * one per worker thread
 	 */
-	protected RandomAccessFile[] braf;
+	protected BufferedRandomAccessFile[] braf;
 	/**
 	 * a pool of available brafs
 	 */
-	protected RandomAccessFile[] brafPool;
+	protected BufferedRandomAccessFile[] brafPool;
 	protected int poolIndex;
 
 	/**
@@ -142,6 +142,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	private AtomicLong diskHitCnt = new AtomicLong(0);
 	private AtomicLong diskWriteCnt = new AtomicLong(0);
 	private AtomicLong diskSeekCnt = new AtomicLong(0);
+	private AtomicLong diskSeekCache = new AtomicLong(0);
 	
 	// indicate how many cp or disk grow in put(long) has occurred
 	private int checkPointMark;
@@ -310,7 +311,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	public final void addThread() throws IOException {
 		synchronized (this.braf) {
 			int len = this.braf.length;
-			RandomAccessFile[] nraf = new BufferedRandomAccessFile[len + 1];
+			BufferedRandomAccessFile[] nraf = new BufferedRandomAccessFile[len + 1];
 			for (int i = 0; i < len; i++) {
 				nraf[i] = this.braf[i];
 			}
@@ -583,7 +584,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 				: ((long) hiPage) * NumEntriesPerPage);
 		try {
 			// b0) open file for reading that is associated with current thread
-			RandomAccessFile raf;
+			BufferedRandomAccessFile raf;
 			int id = IdThread.GetId(this.braf.length);
 			if (id < this.braf.length) {
 				raf = this.braf[id];
@@ -612,8 +613,11 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 						EC.SYSTEM_INDEX_ERROR);
 				// midEntry calculation done on logical indices,
 				// addressing done on bytes, thus convert to long-addressing (* LongSize)
-				raf.seek(midEntry * LongSize);
-				diskSeekCnt.getAndIncrement();
+				if (raf.seeek(midEntry * LongSize)) {
+					diskSeekCnt.getAndIncrement();
+				} else {
+					diskSeekCache.getAndIncrement();
+				}
 				long v = raf.readLong();
 
 				if (fp < v) {
@@ -1059,6 +1063,13 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		return diskSeekCnt.get();
 	}
 	
+	/**
+	 * @return the diskSeekCache
+	 */
+	public long getDiskSeekCache() {
+		return diskSeekCache.get();
+	}
+
 	/**
 	 * @return the growDiskMark
 	 */
