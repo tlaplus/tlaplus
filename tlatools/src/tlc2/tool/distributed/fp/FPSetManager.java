@@ -12,12 +12,15 @@ import java.rmi.RemoteException;
 import java.rmi.UnmarshalException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import tlc2.tool.distributed.fp.callable.ContainsBlockCallable;
+import tlc2.tool.distributed.fp.callable.CheckFPsCallable;
+import tlc2.tool.distributed.fp.callable.PutBlockCallable;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.ToolIO;
@@ -60,7 +63,7 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 		return this.fpSets.size();
 	}
 
-	private final int reassign(int i) {
+	public final int reassign(int i) {
 		int next = (i + 1) % this.fpSets.size();
 		while (next != i) {
 			FPSets fpSet = this.fpSets.get(next);
@@ -120,7 +123,7 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 		}
 	}
 
-	private final String getHostName() {
+	public final String getHostName() {
 		String hostname = "Unknown";
 		try {
 			hostname = InetAddress.getLocalHost().getHostName();
@@ -192,31 +195,28 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 		
 		final List<Future<BitVector>> futures = new ArrayList<Future<BitVector>>();
 		for (int i = 0; i < len; i++) {
-			futures.add(executorService.submit(new PutBlockCallable(cdl, fpSets.get(i), fps, i)));
+			futures.add(executorService.submit(new PutBlockCallable(this, cdl, fpSets.get(i), fps, i)));
 		}
 		
-		// Wait for all threads to finish
 		try {
+			// Wait for all threads to finish
 			cdl.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			// not expected to happen
-		}
 		
-		// Convert and return result
-		final BitVector[] res = new BitVector[len];
-		for (int i = 0; i < res.length; i++) {
-			try {
-				res[i] = futures.get(i).get();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-				// not expected to happen
-			} catch (ExecutionException e) {
-				e.printStackTrace();
-				// not expected to happen
+			// Convert and return result
+			final BitVector[] res = new BitVector[len];
+			for (int i = 0; i < res.length; i++) {
+					res[i] = futures.get(i).get();
 			}
+			return res;
+		} catch (InterruptedException e) {
+			// not expected to happen, fail fast for the moment.
+			e.printStackTrace();
+			return null;
+		} catch (ExecutionException e) {
+			// not expected to happen, fail fast for the moment.
+			e.printStackTrace();
+			return null;
 		}
-		return res;
 	}
 
 	/* (non-Javadoc)
@@ -255,31 +255,28 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 		
 		final List<Future<BitVector>> futures = new ArrayList<Future<BitVector>>();
 		for (int i = 0; i < len; i++) {
-			futures.add(executorService.submit(new ContainsBlockCallable(cdl, fpSets.get(i), fps, i)));
+			futures.add(executorService.submit(new ContainsBlockCallable(this, cdl, fpSets.get(i), fps, i)));
 		}
 		
-		// Wait for all threads to finish
 		try {
+			// Wait for all threads to finish
 			cdl.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			// not expected to happen
-		}
-		
-		// Convert and return result
-		final BitVector[] res = new BitVector[len];
-		for (int i = 0; i < res.length; i++) {
-			try {
+			
+			// Convert and return result
+			final BitVector[] res = new BitVector[len];
+			for (int i = 0; i < res.length; i++) {
 				res[i] = futures.get(i).get();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-				// not expected to happen
-			} catch (ExecutionException e) {
-				e.printStackTrace();
-				// not expected to happen
 			}
+			return res;
+		} catch (InterruptedException e) {
+			// not expected to happen, fail fast for the moment.
+			e.printStackTrace();
+			return null;
+		} catch (ExecutionException e) {
+			// not expected to happen, fail fast for the moment.
+			e.printStackTrace();
+			return null;
 		}
-		return res;
 	}
 
 	/* (non-Javadoc)
@@ -290,59 +287,38 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 		
 		// Synchronize this and nested threads
 		final CountDownLatch cdl = new CountDownLatch(len);
-
-		// Start checkFP on all FPSets concurrently
-		// (checkFPs scans the full set sequentially!)
-		FPCheckerRunnable[] runnables = new FPCheckerRunnable[len];
-		for (int i = 0; i < len; i++) {
-			final FPSetRMI fpSetRMI = this.fpSets.get(i).getFpset();
-			runnables[i] = new FPCheckerRunnable(fpSetRMI, cdl);
-			final Thread t = new Thread(runnables[i]);
-			t.start();
-		}
-
-		// Wait for all threads to finish
+		
+		// Instantiation of a thread pool here is fine, as long as checkFPs is only called seldomly.
+		final ExecutorService executorService = Executors.newFixedThreadPool(len);
 		try {
-			cdl.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			// not expected to happen
-		}
-		
-		// Return minimum value
-		double res = Double.MAX_VALUE;
-		for (int i = 0; i < runnables.length; i++) {
-			FPCheckerRunnable fpCheckerRunnable = runnables[i];
-			res = Math.min(res, fpCheckerRunnable.getResult());
-		}
-		return res;
-	}
-	
-	public class FPCheckerRunnable implements Runnable {
-		private final FPSetRMI fpSetRMI;
-		private final CountDownLatch cdl;
-		private double distance;
-		
-		public FPCheckerRunnable(FPSetRMI fpSetRMI, CountDownLatch cdl) {
-			this.fpSetRMI = fpSetRMI;
-			this.cdl = cdl;
-		}
-
-		/* (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run() {
-			try {
-				distance = fpSetRMI.checkFPs();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				cdl.countDown();
+			// Start checkFP on all FPSets concurrently
+			// (checkFPs scans the full set sequentially!)
+			final List<Future<Double>> futures = new ArrayList<Future<Double>>();
+			for (int i = 0; i < len; i++) {
+				futures.add(executorService.submit(new CheckFPsCallable(cdl, fpSets.get(i).getFpset())));
 			}
-		}
-		
-		public double getResult() {
-			return distance;
+
+			// Wait for all threads to finish
+			cdl.await();
+			
+			// Return minimum value
+			double res = Double.MAX_VALUE;
+			for (Future<Double> future : futures) {
+				res = Math.min(res, future.get());
+			}
+			return res;
+		} catch (InterruptedException e) {
+			// not expected to happen, could return an approximation
+			// if happens (but fail fast for the moment).
+			e.printStackTrace();
+			return -1;
+		} catch (ExecutionException e) {
+			// not expected to happen, could return an approximation
+			// if happens (but fail fast for the moment).
+			e.printStackTrace();
+			return -1;
+		} finally {
+			executorService.shutdown();
 		}
 	}
 
@@ -532,63 +508,6 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 
 		public FPSetRMI getFpset() {
 			return fpset;
-		}
-	}
-	
-	public abstract class FPSetManagerCallable implements Callable<BitVector> {
-		protected final FPSets fpset;
-		protected final LongVec[] fps;
-		protected final int index;
-		protected final CountDownLatch cdl;
-		public FPSetManagerCallable(CountDownLatch cdl, FPSets fpset, LongVec[] fps, int index) {
-			this.cdl = cdl;
-			this.fpset = fpset;
-			this.fps = fps;
-			this.index = index;
-		}
-		
-		//TODO Does this behave correctly if multiple threads execute it concurrently?
-		protected BitVector reassign(Exception e) {
-			System.out.println("Warning: Failed to connect from "
-					+ getHostName() + " to the fp server at "
-					+ fpset.getHostname() + ".\n" + e.getMessage());
-			if (FPSetManager.this.reassign(index) == -1) {
-				System.out
-				.println("Warning: there is no fp server available.");
-			}
-			BitVector bitVector = new BitVector(fps[index].size());
-			bitVector.set(0, fps[index].size() - 1);
-			return bitVector;
-		}
-	}
-	
-	public class PutBlockCallable extends FPSetManagerCallable {
-		public PutBlockCallable(CountDownLatch cdl, FPSets fpset, LongVec[] fps, int index) {
-			super(cdl, fpset, fps, index);
-		}
-		public BitVector call() throws Exception {
-			try {
-				return fpset.putBlock(fps[index]);
-			} catch (Exception e) {
-				return reassign(e);
-			} finally {
-				cdl.countDown();
-			}
-		}
-	}
-	
-	public class ContainsBlockCallable extends FPSetManagerCallable {
-		public ContainsBlockCallable(CountDownLatch cdl, FPSets fpset, LongVec[] fps, int index) {
-			super(cdl, fpset, fps, index);
-		}
-		public BitVector call() throws Exception {
-			try {
-				return fpset.containsBlock(fps[index]);
-			} catch (Exception e) {
-				return reassign(e);
-			} finally {
-				cdl.countDown();
-			}
 		}
 	}
 }
