@@ -370,6 +370,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
                     String.valueOf(server.stateQueue.size())});
 			recovered = true;
 		}
+		//TODO if init states is huge, this might go OOM
 		Set<Long> initFPs = new TreeSet<Long>();
 		if (!recovered) {
 			// Initialize with the initial states:
