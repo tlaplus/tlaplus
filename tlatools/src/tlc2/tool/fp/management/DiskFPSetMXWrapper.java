@@ -84,6 +84,15 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	}
 	
 	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getDiskSeekRate()
+	 */
+	public double getDiskSeekRate() {
+		final long diskSeekCnt = getDiskSeekCnt();
+		final long diskSeekCache = getDiskSeekCache();
+		return diskSeekCache / (double) (diskSeekCache + diskSeekCnt);
+	}
+	
+	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.management.DiskFPSetSamplerMXBean#getCheckPointMark()
 	 */
 	public int getGrowDiskMark() {

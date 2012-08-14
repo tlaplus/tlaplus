@@ -23,6 +23,10 @@ public interface DiskFPSetMXBean {
 	 */
 	long getDiskSeekCache();
 	/**
+	 * @see DiskFPSet#getDiskSeekRate()
+	 */
+	double getDiskSeekRate();
+	/**
 	 *@see DiskFPSet#getDiskWriteCnt()
 	 */
 	long getDiskWriteCnt();
