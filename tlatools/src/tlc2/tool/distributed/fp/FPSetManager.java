@@ -146,6 +146,7 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 				System.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(fpIdx).getHostname() + ".\n" + e.getMessage());
+				e.printStackTrace();
 				if (this.reassign(fpIdx) == -1) {
 					System.out
 							.println("Warning: there is no fp server available.");
@@ -168,6 +169,7 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 				System.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(i).getHostname() + ".\n" + e.getMessage());
+				e.printStackTrace();
 				if (this.reassign(i) == -1) {
 					System.out
 							.println("Warning: there is no fp server available.");
@@ -230,6 +232,7 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 				System.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(i).getHostname() + ".\n" + e.getMessage());
+				e.printStackTrace();
 				if (this.reassign(i) == -1) {
 					System.out
 							.println("Warning: there is no fp server available.");
@@ -356,6 +359,7 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 				System.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(i).getHostname() + ".\n" + e.getMessage());
+				e.printStackTrace();
 				if (this.reassign(i) == -1) {
 					System.out
 							.println("Warning: there is no fp server available.");
@@ -378,6 +382,7 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 				System.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(i).getHostname() + ".\n" + e.getMessage());
+				e.printStackTrace();
 				if (this.reassign(i) == -1) {
 					System.out
 							.println("Warning: there is no fp server available.");
