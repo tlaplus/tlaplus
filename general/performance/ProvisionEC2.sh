@@ -4,7 +4,7 @@
 # Afterwards the following command will create a new instance and execute this script right after system startup. 
 # It should be good for TLC development afterwards.
 #
-# ec2-run-instances -m --key markus@kuppe.org --instance-type m2.4xlarge --user-data-file /path/to/ProvisionEC2.sh ami-c162a9a8
+# ec2-run-instances -m --key markus@kuppe.org --instance-type m2.4xlarge --user-data-file /path/to/ProvisionEC2.sh ami-3c994355
 #
 
 # switch to mount to use the instance ephemeral storage rather than ESB
@@ -12,7 +12,7 @@ cd /mnt
 
 # download non pkg mgmt provided tools in background
 # no package mgmt for Eclipse profiler, hence install manually into /opt
-(wget -q http://www.yourkit.com/download/yjp-11.0.5-linux.tar.bz2  && cd /opt && tar xfj /mnt/yjp-11.0.5-linux.tar.bz2) &
+(wget -q http://www.yourkit.com/download/yjp-11.0.8-linux.tar.bz2  && cd /opt && tar xfj /mnt/yjp-11.0.8-linux.tar.bz2) &
 
 # no package mgmt for yourkit profiler, hence install manually into /opt
 (wget -q ftp://carroll.aset.psu.edu/pub/eclipse/eclipse/downloads/drops4/R-4.2-201206081400/eclipse-SDK-4.2-linux-gtk-x86_64.tar.gz && cd /opt && tar xfz /mnt/eclipse-SDK-4.2-linux-gtk-x86_64.tar.gz) &
@@ -61,13 +61,6 @@ chmod 600 /home/kuppe/.ssh/id_rsa
 # fix permission because steps are executed by root
 chown -R kuppe:kuppe /home/kuppe
 echo "kuppe ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
-# create user lamport
-useradd -m lamport -s /bin/bash -G admin,sudo
-mkdir /home/lamport/.ssh
-echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAodOzPQlOIq+8ZDb75L0FR6VeMV/B+COXvkXPiwI4kEXkiadiEkynv7GIwVx3AfryvRtG2gYBUDccNuATVmz7HfhxKGlGOCLY4aZw3qIsMTTfe3nlQ0cRbU4q4npDwiPEQW8MUZe9zfBpPUL1eakZkTSpZaAOTLgYqRgOobLpSKk= lamport@SVC-LAPORT-1" > /home/lamport/.ssh/authorized_keys
-chown -R lamport:lamport /home/lamport
-echo "lamport ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 # add x2go ubuntu ppa repository to package manager apt
 add-apt-repository ppa:x2go/stable -y
