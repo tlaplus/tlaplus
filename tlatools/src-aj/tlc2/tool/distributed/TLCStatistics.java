@@ -159,7 +159,8 @@ public class TLCStatistics {
 				- computationStart.getTime()) / 1000;
 		writer.write(Long.toString(elapsed));
 		writer.write(",");
-		writer.write(Long.toString(server.fpSetManager.size()));
+		// NumberDistinctStates
+		writer.write(Long.toString(TLCServer.finalNumberOfDistinctStates));
 		writer.write(",");
 
 		// write number of invocations

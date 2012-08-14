@@ -32,6 +32,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
 import tlc2.tool.distributed.fp.DynamicFPSetManager;
+import tlc2.tool.distributed.fp.FPSetManager;
 import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.tool.distributed.fp.IFPSetManager;
 import tlc2.tool.distributed.fp.StaticFPSetManager;
@@ -51,6 +52,11 @@ import util.UniqueString;
 public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		InternRMI {
 
+	/**
+	 * Used by TLCStatistics which are collected after the {@link FPSet} or {@link FPSetManager} shut down.
+	 */
+	static long finalNumberOfDistinctStates = -1L;
+	
 	/**
 	 * the port # for tlc server
 	 */
@@ -472,22 +478,23 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			// Clear remote refs as all workers have existed at this point.
+			// Otherwise getNewStates() and getStatesSeen() fail.
+			entry.setValue(null);
 		}
-		// clear remote refs as all workers have existed at this point
-		server.threadsToWorkers.clear();
 		
 		server.statesPerMinute = 0;
 		server.distinctStatesPerMinute = 0;
 		
 		// Postprocessing:
+		finalNumberOfDistinctStates = server.fpSetManager.size();
 		boolean success = (server.errState == null);
 		if (success && server.fpSet != null) {
 			// We get here because the checking has succeeded.
-			ModelChecker.reportSuccess(server.fpSet, server.fpSetManager.size());
+			ModelChecker.reportSuccess(server.fpSet, finalNumberOfDistinctStates);
 		} else if (success && server.fpSet == null) {
-	        final long d = server.fpSetManager.size();
 	        final double actualProb = server.fpSetManager.checkFPs();
-			ModelChecker.reportSuccess(d, actualProb, server.fpSetManager.getStatesSeen());
+			ModelChecker.reportSuccess(finalNumberOfDistinctStates, actualProb, server.fpSetManager.getStatesSeen());
 		} else if (server.keepCallStack) {
 			// We redo the work on the error state, recording the call stack.
 			server.work.setCallStack();
@@ -500,7 +507,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 		}
 
-		server.printSummary(success, workerOverallCacheRate);
+		server.printSummary(finalNumberOfDistinctStates, success, workerOverallCacheRate);
 
 		server.close(success);
 		
@@ -544,7 +551,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// on the worker side. Thus, query each worker for its cache hit rate
 		// and add it to the overall states seen.
     	for (TLCWorkerRMI worker : threadsToWorkers.values()) {
-			statesSeen += worker.getCacheRate();
+			// worker is null when model checking is over, but we cling to the
+			// refs to collect statistics.
+    		if (worker != null) {
+    			statesSeen += worker.getCacheRate();
+    		}
 		}
     	
     	return getStatesComputed(statesSeen);
@@ -569,10 +580,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
      * form as all other progress statistics.
      * @param workerOverallCacheRate 
      */
-    public final void printSummary(boolean success, long workerOverallCacheRate) throws IOException
+    public final void printSummary(long distinctStates, boolean success, long workerOverallCacheRate) throws IOException
     {
         long statesGenerated = this.getStatesComputed(workerOverallCacheRate);
-		long distinctStates = this.fpSetManager.size();
 		long statesLeftInQueue = this.getNewStates();
 		int level = this.trace.getLevelForReporting();
 		if (TLCGlobals.tool) {
