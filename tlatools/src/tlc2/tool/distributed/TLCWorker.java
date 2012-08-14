@@ -182,6 +182,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		
 		executorService.shutdown();
 		
+		keepAliveTimer.cancel();
+		
 		UnicastRemoteObject.unexportObject(TLCWorker.this, true);
 	}
 
