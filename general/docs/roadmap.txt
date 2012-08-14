@@ -638,6 +638,28 @@ is concerned are specified by TLAPartitionScanner.TLA_PARTITION_TYPES.
 See org.eclipse...ITokenScanner
 and org.eclipse...IPartitionTokenScanner
 
+To add PlusCal syntax coloring, we need to modify the TLAPartitionScanner 
+class to add a new token type for PlusCal code.   We also need to modify
+TLAFastPartitioner so that it is aware of where the PlusCal code starts
+and ends.  The easiest way for the TLAPartitionScanner class to 
+provide the information to the TLAFastPartitioner method is by adding
+two additional token types: one that represents a MultiLineToken that precedes 
+the algorithm, and the other that represents the MultiLineComment
+that immediately follows the algorithm--a comment whose text is probably
+just the "*)".  If the first PlusCal token is modified, its text and all other
+text through the MultiLineComment that follows the algorithm might have to become 
+part of the preceding MultiLineComment that precedes the algorithm.  Thus,
+TLAFastPartitioner needs to start reparsing (calling nextToken()) at the 
+preceding MultiLineComment if the first PlusCal token is changed.
+
+To implement the coloring for PlusCal, we need to create a new PCalCodeScanner
+class similar to the TLACodeScanner class and attach it to PlusCal code tokens
+the same way the TLACodeScanner object is attached to the TLA code regions,
+which have type IDocument.DEFAULT_CONTENT_TYPE.  
+
+ 
+
+
 -------------------------------------------------------------------------
 HOW TO GET A...
   SpecObj

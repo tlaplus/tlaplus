@@ -51,6 +51,7 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
 
     private final BufferedDocumentScanner fScanner = new BufferedDocumentScanner(1000); // faster implementation
 
+    // The offset and length of the token currently under construction.
     private int fTokenOffset;
     private int fTokenLength;
 
@@ -58,12 +59,20 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
     private int fLast;
     private int fState;
 
+    // fEmulate is always false, which implies in turn that
+    // fTLAOffset and fTLALength are never used.  This stuff
+    // was probably used by Simon for testing.
     private boolean fEmulate = false;
     private int fTLAOffset;
     private int fTLALength;
 
     private int fCommentDepth;
-
+    
+    /**
+     * The following added for PlusCal.
+     */
+    IDocument fDocument ;
+    
     /**
      * Constructor
      */
@@ -355,6 +364,14 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
     }
 
     /* (non-Javadoc)
+     * The setRange method is called when initializing the tokenizing for a document that has just been 
+     * loaded into an editor.  It is called with document a zero-length document and offset and length both 0.
+     * After this call, TLAFastPartitioner (originally FastPartitioner) then calls nextToken on the zero-length
+     * document, reading from fScanner yields only an EOF token (value = -1).  It then calls setPartialRange
+     * with the actual document followed by calls to nextToken--presumably calling nextToken until nextToken
+     * returns the EOF token.  Since the Eclipse infrastructure seems to enjoy doing the same thing multiple
+     * times, this sequence of calling setRange followed by setPartialRange can be performed more than once. 
+     * 
      * @see org.eclipse.jface.text.rules.ITokenScanner#setRange(org.eclipse.jface.text.IDocument, int, int)
      */
     public void setRange(IDocument document, int offset, int length)
@@ -367,6 +384,7 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
         fLast = NONE;
         fState = TLA;
 
+        fDocument = document ;
         // emulate TLAPartitionScanner
         if (fEmulate)
         {
@@ -387,7 +405,8 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
         fPrefixLength = offset - partitionOffset;
         
         fLast = NONE;
-
+        fDocument = document ;
+        
         if (offset == partitionOffset)
         {
             // restart at beginning of partition

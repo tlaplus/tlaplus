@@ -11,6 +11,99 @@
  *
  *    Contributors:
  *        IBM Corporation - initial API and implementation
+ *        
+ * This class tokenizes an IDocument that represents a TLA+ spec that is being
+ * edited in a module editor.  Tokenizing means partitioning the document by
+ * adding to the IDocument object a collection of TypedPosition objects,
+ * each describing a region of the document and a type, which is a string.  
+ * Regions that lie between the regions specified by the TypedPosition
+ * objects are considered to be regions of type IDocument.DEFAULT_CONTENT_TYPE.
+ * The type is used to determine how text in that region should be colored.
+ * 
+ * The tokenization is performed by the TLAFastPartitioner object's methods calling
+ * the appropriate methods of a TLAPartitionScanner object.  The key method is
+ * the documentChanged method, which calls documentChanged2 to do the actual
+ * work of re-tokenizing the document when it has changed.  That method in
+ * turn calls TLAPartitionScanner.setPartialRange to set things up and then
+ * issues a sequence of calls to TLAPartitionScanner.nextToken, which returns
+ * the type of the region, each followed by calls to TLAPartitionScanner.getTokenLength
+ * and TLAPartitionScanner.getTokenOffset to get the region's location (except
+ * for regions of TLA code, which are represented by default regions with no
+ * corresponding TypedPosition in the IDocument). 
+ * 
+ * This class also calls TLAPartitionScanner.setRange
+ * 
+ * That documentChanged2 method's argument is a DocumentEvent, which describes 
+ * the change to the document as the replacement of a region of the original 
+ * document with new text.  By examining the document's TypePosition objects 
+ * for its old contents, the method tries to limit the amount of tokenization
+ * that must be done using TLAPartitionScanner.  The way the method in the
+ * original FastPartitioner class limits re-tokenization is based on the
+ * assumption that the coloring of regions is done as in Java, where there is
+ * a default region type (Java code) and other region types (comments and
+ * strings) are completely independent of one another.    
+ * 
+ * To implement PlusCal shading with minimal changes to code I don't understand,
+ * I added the following fields to this class.  (The value of all these fields 
+ * is -1 if there is no PlusCal algorithm.)
+ * 
+ *    pcalStartCommentOffset 
+ *       The offset of the partition for the MultiLineComment in which the
+ *       PlusCal code is embedded.
+ *       
+ *    pcalStartOffset
+ *       The offset of the partition containing the beginning of the PlusCal
+ *       code.
+ *       
+ *    pcalStartLength 
+ *       The length of the partition containing the beginning of the PlusCal
+ *       code.
+ *       
+ *    pcalEndCommentOffset
+ *       The offset of the MultiLineComment partition that follows the
+ *       PlusCal algorithm.  (The text of that comment should be "*)".)
+ *       Equals Integer.MAX_VALUE if the PlusCal code does not end.
+ *       
+ *    pcalEndCommentLength
+ *       The length of the MultiLineComment partition that follows the
+ *       PlusCal algorithm.  This should equal 2, but we add it as a
+ *       separate field in case we decide to try to be more intelligent
+ *       at finding the end of the algorithm and not use the comment-ending
+ *       "*)".  Equals -1 if the PlusCal code does not end.
+ *       
+ * These are the values that these fields are set to after tokenization, so
+ * the offsets are the ones for the old version of the document when
+ * documentChanged2 is called.  Note that this allows only a single PlusCal
+ * algorithm in a document.  It wouldn't be hard to change the code to 
+ * allow multiple algorithms in a module, but since the translator looks
+ * only at the first algorithm in the document, it seems best to color
+ * only that one as a PlusCal algorithm.
+ * 
+ * TLAPartitionScanner.nextToken has been changed to return two additional
+ * token types: PCalStartMultilineComment and PCalEndMultlineComment, which
+ * represent the beginning and end of the multiline comment that contains
+ * the algorithm.  (These tokens are converted to partitions of type
+ * ordinary MultilineComment.)  All TLA tokens that TLAPartitionScanner.nextToken 
+ * returns between those two tokens are converted to partiions of type PlusCal.
+ * To allow nextToken to handle PlusCal algorithms, 
+ * TLAPartitionScanner.setPartialRange has been changed to have an additional
+ * argument that has three possible values:
+ * 
+ *   BEFORE_PCAL
+ *      Means that scanning starts before any PlusCal algorithm (if there
+ *      is any) in the document.  The scanner should therefore be looking for
+ *      a MultiLineComment that contains "--fair" or "--algorithm".
+ *      
+ *   IN_PCAL
+ *      It means that any part of the document not in a comment or string is
+ *      PlusCal code--unless it is an unmatched "*)", which is a PlusCal ending
+ *      comment.
+ *      
+ *   AFTER_PCAL
+ *      It means that scanning is starting after the end of the PlusCal-ending
+ *      MultiLineComment.  This means that the scanner should ignore any
+ *      "--fair" or "--algorithm" in a MultiLineComment.
+ *
  *******************************************************************************/
 package org.lamport.tla.toolbox.editor.basic;
 
@@ -44,6 +137,8 @@ import org.eclipse.jface.text.rules.IToken;
 
 
 /**
+ * HERE IS THE DESCRIPTION OF THE ORIGINAL FastPartitioner CLASS:
+ * 
  * A standard implementation of a document partitioner. It uses an
  * {@link IPartitionTokenScanner} to scan the document and to determine the
  * document's partitioning. The tokens returned by the scanner must return the
@@ -77,24 +172,38 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
     protected int fPreviousDocumentLength;
     /** The position updater used to for the default updating of partitions */
     protected final DefaultPositionUpdater fPositionUpdater;
+    
     /** The offset at which the first changed partition starts */
     protected int fStartOffset;
     /** The offset at which the last changed partition ends */
     protected int fEndOffset;
-    /**The offset at which a partition has been deleted */
+    /**The offset at which a partition has been deleted
+     * Added by LL on 14 Aug 2012:  This is the offset of the last partition examined
+     * by documentChanged2 that was marked deleted by the call to 
+     * fPositionUpdater.update(e) -- and hence I believe is the largest offset
+     * of all such partitions.  Given this, I don't understand the definition how this 
+     * value is used by createRegion, which computes the IRegion returned by documentChanged2.
+     * 
+     *  */
     protected int fDeleteOffset;
+    
     /**
      * The position category this partitioner uses to store the document's partitioning information.
+     * That is, it is a unique id generated when the TLAFastPartitioner object is created
+     * under which this partitioner stores the information in the IDocument.
      */
     private final String fPositionCategory;
+    
     /**
      * The active document rewrite session.
      */
     private DocumentRewriteSession fActiveRewriteSession;
+    
     /**
      * Flag indicating whether this partitioner has been initialized.
      */
     private boolean fIsInitialized= false;
+    
     /**
      * The cached positions from our document, so we don't create a new array every time
      * someone requests partition information.
@@ -102,6 +211,15 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
     private Position[] fCachedPositions= null;
     /** Debug option for cache consistency checking. */
     private static final boolean CHECK_CACHE_CONSISTENCY= "true".equalsIgnoreCase(Platform.getDebugOption("org.eclipse.jface.text/debug/FastPartitioner/PositionCache"));  //$NON-NLS-1$//$NON-NLS-2$;
+
+    /*
+     * The following four fields are described in the comments at the beginning
+     * of this file.
+     */
+    private int pcalStartCommentOffset = -1 ;
+    private int pcalStartOffset = -1 ;
+    private int pcalEndCommentOffset = -1 ;
+    private int pcalEndCommentLength = -1 ;
 
     /**
      * Creates a new partitioner that uses the given scanner and may return
@@ -269,7 +387,13 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
 
     /**
      * Creates the minimal region containing all partition changes using the
-     * remembered offset, end offset, and deletion offset.
+     * remembered offset, end offset, and deletion offset.  This is the value
+     * returned by documentChanged2.
+     * 
+     * Added by LL on 14 Aug 2012:  Given what the value of fDeleteOffset
+     * equals, I don't understand its use in this method.  It seems that
+     * one should remember both the largest and smallest offsets of 
+     * deleted partitions and use them in the obvious way.
      *
      * @return the minimal region containing all the partition changes
      */
@@ -308,6 +432,8 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
             String contentType= null;
             int newLength= e.getText() == null ? 0 : e.getText().length();
 
+            // Set first to the index of the Position in the array `category' at which
+            // the partitioner is to be called.
             int first= fDocument.computeIndexInCategory(fPositionCategory, reparseStart);
             if (first > 0)  {
                 TypedPosition partition= (TypedPosition) category[first - 1];
@@ -327,6 +453,13 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                     contentType= IDocument.DEFAULT_CONTENT_TYPE;
                 }
             }
+            
+// At this point, we have to check if first is pointing to the first PlusCal token. If so,
+// then it must be decremented to point to the preceding MultiLineComment token, we must
+// set reparseStart to the beginning of that token, and remember that we had a PlusCal
+// algorithm--so that if we don't find a PlusCal algorithm in the second token returned,
+// then we have to continue parsing tokens until we get to the end--and we must remove 
+// the old Positions somehow.
 
             fPositionUpdater.update(e);
             for (int i= first; i < category.length; i++) {
@@ -359,7 +492,8 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                 behindLastScannedPosition= start + length;
                 int lastScannedPosition= behindLastScannedPosition - 1;
 
-                // remove all affected positions
+                // remove all affected positions.  If we're removing the
+                // 
                 while (first < category.length) {
                     TypedPosition p= (TypedPosition) category[first];
                     if (lastScannedPosition >= p.offset + p.length ||
@@ -383,6 +517,9 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                          * It appears that commenting out the following return does nothing
                          * except make the tokenizer do extra work.  Thus, it seems to be safe
                          * to add some kind of test to see if it's really OK to stop tokenizing.
+                         * 
+                         * So, we modify the if test to be false if we're in the middle of tokenizing
+                         * a newly created First PlusCal token.
                          */
                         return createRegion();
                     ++ first;
@@ -797,9 +934,11 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
     }
 
     /**
-     * Returns the partitioners positions.
+     * Returns the partitioner's positions.   Apparently, this is an array of Position objects
+     * that partitions the document, ordered from start to end.  These Position objects mark
+     * all the non-TLA+ portions of the document--that is, everything but comments and strings.
      *
-     * @return the partitioners positions
+     * @return the partitioner's positions
      * @throws BadPositionCategoryException if getting the positions from the
      *         document fails
      */
