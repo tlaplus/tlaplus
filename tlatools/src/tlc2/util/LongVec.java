@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 
 import util.FileUtil;
 /**
@@ -33,6 +34,11 @@ public class LongVec implements Cloneable, Serializable {
     }
     this.elementData[this.elementCount++] = x;
   }
+  
+  public final void setElement(int index, long x) {
+	  this.elementData[index] = x;
+	  this.elementCount = ++elementCount % elementData.length + 1;
+	  }
 
   public final long elementAt(int index) {
     return this.elementData[index];
@@ -44,6 +50,10 @@ public class LongVec implements Cloneable, Serializable {
   }
   
   public final int size() { return this.elementCount; }
+  
+  public final void sort() {
+	  Arrays.sort(elementData);
+  }
 
   public final void ensureCapacity(int minCapacity) { 
     if (elementData.length < minCapacity) {

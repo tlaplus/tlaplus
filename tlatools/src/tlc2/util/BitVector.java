@@ -114,6 +114,23 @@ public class BitVector implements Serializable {
       }
     }
   }
+  
+	/**
+	 * @return The number of bits set true
+	 */
+	public int trueCnt() {
+		int res = 0;
+		for (int i = 0; i < this.word.length * 64; i++) {
+			// addr in long[]
+			int wd = i / 64;
+			// addr in long[x]
+			int bit = i % 64;
+			if ((this.word[wd] & (1L << bit)) != 0L) {
+				res++;
+			}
+		}
+		return res;
+	}
     
   /** Set the bit at index <code>i</code> to <code>false</code>. */
   public void reset(int i) {

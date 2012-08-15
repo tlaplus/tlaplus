@@ -16,7 +16,7 @@ public abstract class AbstractFPSetTest extends TestCase {
 	protected static final String tmpdir = System.getProperty("java.io.tmpdir") + File.separator + "FPSetTest"
 					+ System.currentTimeMillis();
 	protected static final String filename = "FPSetTestTest";
-	protected final DecimalFormat df = new DecimalFormat("###,###.###");
+	protected static final DecimalFormat df = new DecimalFormat("###,###.###");
 
 	protected long previousTimestamp;
 	protected long previousSize;
@@ -98,7 +98,7 @@ public abstract class AbstractFPSetTest extends TestCase {
 	}
 	
 	// insertion speed
-	protected void printInsertionSpeed(final long currentSize) {
+	public void printInsertionSpeed(final long currentSize) {
 		final long currentTimestamp = System.currentTimeMillis();
 		// print every minute
 		final double factor = (currentTimestamp - previousTimestamp) / 60000d;

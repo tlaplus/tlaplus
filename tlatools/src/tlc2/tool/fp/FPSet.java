@@ -177,7 +177,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 * Counts the amount of states passed to the containsBlock method
 	 */
 	//TODO need AtomicLong here to prevent dirty writes to statesSeen?
-	private long statesSeen = 0L;
+	protected long statesSeen = 0L;
 	
     protected FPSet() throws RemoteException
     { /*SKIP*/
@@ -242,9 +242,10 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 		return true;
 	}
 
-    public final BitVector putBlock(LongVec fpv) throws IOException
+    public BitVector putBlock(LongVec fpv) throws IOException
     {
-        BitVector bv = new BitVector(fpv.size());
+        int size = fpv.size();
+		BitVector bv = new BitVector(size);
         for (int i = 0; i < fpv.size(); i++)
         {
             if (!this.put(fpv.elementAt(i)))
@@ -255,7 +256,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
         return bv;
     }
 
-    public final BitVector containsBlock(LongVec fpv) throws IOException
+    public BitVector containsBlock(LongVec fpv) throws IOException
     {
     	statesSeen += fpv.size();
         BitVector bv = new BitVector(fpv.size());
