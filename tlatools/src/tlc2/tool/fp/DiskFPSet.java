@@ -816,9 +816,13 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 
 		long fp = 0L;
 		try {
+			long predecessor = Long.MIN_VALUE;
 			while (true) {
 				fp = chkptRAF.readLong();
 				this.writeFP(currRAF, fp);
+				// check invariant
+				Assert.check(predecessor < fp, EC.SYSTEM_INDEX_ERROR);
+				predecessor = fp;
 			}
 		} catch (EOFException e) {
 			Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
