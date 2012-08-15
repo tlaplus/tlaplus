@@ -412,8 +412,8 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 
 			long l = System.currentTimeMillis() - timestamp;
 			flushTime += l;
-			System.out.println("Flushing disk " + getGrowDiskMark() + " time, in "
-					+ (l / 1000) + " sec");
+			System.out.println("Flushed disk " + ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName() + " "
+					+ getGrowDiskMark() + ". time, in " + (l / 1000) + " sec");
 		}
 		w.unlock();
 		return false;

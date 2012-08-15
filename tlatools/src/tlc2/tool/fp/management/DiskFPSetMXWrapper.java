@@ -12,12 +12,19 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	private static int COUNT = 0;
 	
 	protected final FPSetStatistic fpset;
+
+	private final String objectName;
 	
 	public DiskFPSetMXWrapper(final FPSetStatistic diskFPSet) throws NotCompliantMBeanException {
 		super(DiskFPSetMXBean.class);
 		fpset = diskFPSet;
 		
-		registerMBean("tlc2.tool.fp:type=DiskFPSet" + COUNT++);
+		objectName = "DiskFPSet" + COUNT++;
+		registerMBean("tlc2.tool.fp:type=" + objectName);
+	}
+	
+	public String getObjectName() {
+		return objectName;
 	}
 
 	/* (non-Javadoc)
