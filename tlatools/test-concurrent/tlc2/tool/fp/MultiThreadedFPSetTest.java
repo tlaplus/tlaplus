@@ -71,7 +71,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		final Constructor<?> constructor = fpgClass
 				.getConstructor(new Class[] { MultiThreadedFPSetTest.class, int.class, FPSet.class, CountDownLatch.class, long.class, long.class });
 		
-		long seed = 15041980L;
+		long seed = RNG_SEED;
 		final FingerPrintGenerator[] fpgs = new FingerPrintGenerator[NUM_THREADS];
 		for (int i = 0; i < fpgs.length; i++) {
 			fpgs[i] = (FingerPrintGenerator) constructor.newInstance(

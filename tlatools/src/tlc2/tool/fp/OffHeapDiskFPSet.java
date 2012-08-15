@@ -303,12 +303,12 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	/**
 	 * Inserts the given fingerprint into the {@link OffHeapDiskFPSet#collisionBucket}.
 	 * @param fp
-	 * @return true iff fp is in the collision bucket
+	 * @return true iff fp has been added to the collision bucket
 	 */
 	protected boolean csInsert(long fp) {
 		try {
 			csRWLock.writeLock().lock();
-			return !collisionBucket.add(fp);
+			return collisionBucket.add(fp);
 		} finally {
 			csRWLock.writeLock().unlock();
 		}
@@ -829,6 +829,9 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 
 		/* (non-Javadoc)
 		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#add(long)
+		 * 
+		 * If this set already contains the element, the call leaves the set
+		 * unchanged and returns false.
 		 */
 		public boolean add(long fp) {
 			return set.add(fp);

@@ -13,6 +13,8 @@ import util.TLCRuntime;
 
 public abstract class AbstractFPSetTest extends TestCase {
 
+	protected static final long RNG_SEED = 15041980L;
+
 	protected static final String tmpdir = System.getProperty("java.io.tmpdir") + File.separator + "FPSetTest"
 					+ System.currentTimeMillis();
 	protected static final String filename = "FPSetTestTest";

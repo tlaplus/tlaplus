@@ -31,7 +31,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	 * @throws IOException
 	 */
 	public void testMaxFPSetSizeRnd() throws IOException {
-		Random rnd = new Random(15041980L);
+		Random rnd = new Random(RNG_SEED);
 		
 		final FPSet fpSet = getFPSetInitialized();
 
