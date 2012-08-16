@@ -49,7 +49,7 @@ public class MultiFPSet extends FPSet {
 	 */
 	public MultiFPSet(int bits, long fpMemSize) throws RemoteException {
 	    // LL modified error message on 7 April 2012
-		Assert.check(bits > 0 && bits <= MAX_FPBITS, "Illegal number of PFSets found.");
+		Assert.check(bits > 0 && bits <= MAX_FPBITS, "Illegal number of FPSets found.");
 		
 		int len = 1 << bits; // len = 2^bits
 		this.sets = new FPSet[len];
@@ -253,5 +253,9 @@ public class MultiFPSet extends FPSet {
 		for (int i = 0; i < this.sets.length; i++) {
 			this.sets[i].recover(filename);
 		}
+	}
+
+	public FPSet[] getNestedFPSets() {
+		return sets;
 	}
 }
