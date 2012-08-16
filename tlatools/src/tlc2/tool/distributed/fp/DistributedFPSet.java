@@ -50,7 +50,7 @@ public class DistributedFPSet  {
 			
 			// Initialize this FPSet with n-prefix bits and m mask bits
 			final long fpMemSize = TLCRuntime.getInstance().getFPMemSize(1.);
-			final FPSet fpSet = FPSet.getFPSet(prefixBits , fpMemSize / 8);
+			final FPSet fpSet = FPSet.getFPSet(1 + prefixBits , fpMemSize / 8);
 			final String filename = "FPSet" + System.currentTimeMillis();
 			fpSet.init(0,metadir,filename);
 			
