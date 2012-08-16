@@ -324,7 +324,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			final TLCWorkerRunnable[] runnables = new TLCWorkerRunnable[numCores];
 			for (int j = 0; j < numCores; j++) {
 				runnables[j] = new TLCWorkerRunnable(server, fpSetManager, work);
-				Thread t = new Thread(runnables[j], "TLCWorkerRunnable#" + j);
+				Thread t = new Thread(runnables[j], TLCServer.THREAD_NAME_PREFIX + j);
 				t.start();
 			}
 			

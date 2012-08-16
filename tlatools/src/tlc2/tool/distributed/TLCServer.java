@@ -53,6 +53,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		InternRMI {
 
 	/**
+	 * Prefix master and worker heavy workload threads with this prefix and an incrementing counter to
+	 * make the threads identifiable in jmx2munin statistics, which uses simple string matching.  
+	 */
+	public static final String THREAD_NAME_PREFIX = "TLCWorkerThread-";
+	/**
 	 * Used by TLCStatistics which are collected after the {@link FPSet} or {@link FPSetManager} shut down.
 	 */
 	static long finalNumberOfDistinctStates = -1L;

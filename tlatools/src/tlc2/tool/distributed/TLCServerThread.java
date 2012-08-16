@@ -34,6 +34,7 @@ import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 
 public class TLCServerThread extends IdThread {
+	private static int COUNT = 0;
 	/**
 	 * Identifies the worker
 	 */
@@ -96,7 +97,7 @@ public class TLCServerThread extends IdThread {
 			MP.printError(EC.GENERAL, e);
 		}
 		// update thread name
-		setName("TLCServerThread-[" + uri.toASCIIString() + "]");
+		setName(TLCServer.THREAD_NAME_PREFIX + COUNT++ + "-[" + uri.toASCIIString() + "]");
 	}
 
 	/**
