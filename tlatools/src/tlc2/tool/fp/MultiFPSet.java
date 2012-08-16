@@ -255,7 +255,7 @@ public class MultiFPSet extends FPSet {
 		}
 	}
 
-	public FPSet[] getNestedFPSets() {
+	public FPSet[] getFPSets() {
 		return sets;
 	}
 }

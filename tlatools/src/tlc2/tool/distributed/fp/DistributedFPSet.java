@@ -58,10 +58,10 @@ public class DistributedFPSet  {
 			System.err.println("FPSet instance type is: " + fpSet.getClass().getName());
 			if (fpSet instanceof MultiFPSet) {
 				final MultiFPSet multiFPSet = (MultiFPSet) fpSet;
-				final FPSet[] fpSets = multiFPSet.getNestedFPSets();
+				final FPSet[] fpSets = multiFPSet.getFPSets();
 				for (int i = 0; i < fpSets.length; i++) {
 					System.err.println("...with nested instance type: " + fpSets[i].getClass().getName());
-				}		
+				}
 			}
 
 			// Register this with the FPSetManager
