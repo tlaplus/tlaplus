@@ -16,6 +16,7 @@ import tlc2.output.MP;
 import tlc2.tool.distributed.TLCServer;
 import tlc2.tool.distributed.TLCServerRMI;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.MultiFPSet;
 import util.TLCRuntime;
 import util.ToolIO;
 
@@ -49,9 +50,19 @@ public class DistributedFPSet  {
 			
 			// Initialize this FPSet with n-prefix bits and m mask bits
 			final long fpMemSize = TLCRuntime.getInstance().getFPMemSize(1.);
-			final FPSet fpSet = FPSet.getFPSet(prefixBits , fpMemSize / 8);
+			final FPSet fpSet = FPSet.getFPSet(1 + prefixBits , fpMemSize / 8);
 			final String filename = "FPSet" + System.currentTimeMillis();
 			fpSet.init(0,metadir,filename);
+			
+			// Print out fpset type and nested FPSets when MultiFPSet
+			System.err.println("FPSet instance type is: " + fpSet.getClass().getName());
+			if (fpSet instanceof MultiFPSet) {
+				final MultiFPSet multiFPSet = (MultiFPSet) fpSet;
+				final FPSet[] fpSets = multiFPSet.getFPSets();
+				for (int i = 0; i < fpSets.length; i++) {
+					System.err.println("...with nested instance type: " + fpSets[i].getClass().getName());
+				}
+			}
 
 			// Register this with the FPSetManager
 			final String hostname = InetAddress.getLocalHost().getHostName();
