@@ -36,6 +36,10 @@ import tlc2.util.LongVec;
 public class TLCServerThread extends IdThread {
 	private static int COUNT = 0;
 	/**
+	 * A thread pool used to execute tasks
+	 */
+	private static final ExecutorService es = Executors.newCachedThreadPool();
+	/**
 	 * Identifies the worker
 	 */
 	private int receivedStates, sentStates;
@@ -112,8 +116,6 @@ public class TLCServerThread extends IdThread {
 		TLCStateVec[] newStates = null;
 		LongVec[] newFps = null;
 
-		ExecutorService es = Executors.newCachedThreadPool();
-		
 		final IStateQueue stateQueue = this.tlcServer.stateQueue;
 		try {
 			START: while (true) {

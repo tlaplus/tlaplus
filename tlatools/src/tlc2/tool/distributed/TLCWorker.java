@@ -46,6 +46,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 	private static Timer keepAliveTimer;
 	private static RMIFilenameToStreamResolver fts;
+	private static final ExecutorService executorService = Executors.newCachedThreadPool();
 	
 	private DistApp work;
 	private IFPSetManager fpSetManager;
@@ -55,7 +56,6 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private final Cache cache;
 	private final long mask;
 	
-	private ExecutorService executorService;
 
 	public TLCWorker(DistApp work, IFPSetManager fpSetManager, String aHostname)
 			throws RemoteException {
@@ -65,8 +65,6 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		uri = URI.create("rmi://" + aHostname + ":" + getPort());
 		
 		this.cache = new SimpleCache();
-		
-		this.executorService = Executors.newCachedThreadPool();
 	}
 
 	/* (non-Javadoc)
