@@ -43,6 +43,7 @@ public class TLCServerThread extends IdThread {
 	 * Identifies the worker
 	 */
 	private int receivedStates, sentStates;
+	private double cacheRateRatio;
 	private final CyclicBarrier barrier;
 	private final IBlockSelector selector;
 	private final Timer keepAliveTimer;
@@ -204,6 +205,8 @@ public class TLCServerThread extends IdThread {
 						stateQueue.sEnqueue(state);
 					}
 				}
+				
+				cacheRateRatio = this.worker.getCacheRateRatio();
 			}
 		} catch (Throwable e) {
 			TLCState state1 = null, state2 = null;
@@ -315,6 +318,13 @@ public class TLCServerThread extends IdThread {
 	 */
 	public int getSentStates() {
 		return sentStates;
+	}
+
+	/**
+	 * @return The worker local cache hit ratio 
+	 */
+	public double getCacheRateRatio() {
+		return cacheRateRatio;
 	}
 
 	// ************************************//

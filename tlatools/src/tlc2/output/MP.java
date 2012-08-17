@@ -680,7 +680,7 @@ public class MP
             break;
         case EC.TLC_DISTRIBUTED_WORKER_STATS:
         	//new Date() + " Worker: " + name + " Sent: " + sentStates + " Rcvd: " + receivedStates
-            b.append("Worker: %1% Sent: %2% Rcvd: %3% (").append(SDF.format(new Date())).append(")");
+			b.append("Worker: %1% Sent: %2% Rcvd: %3% CacheRatio: %4% (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_DISTRIBUTED_SERVER_NOT_RUNNING:
             b.append("TLCServer is gone, exiting worker... (").append(SDF.format(new Date())).append(")");

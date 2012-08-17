@@ -54,4 +54,8 @@ public interface TLCWorkerRMI extends Remote {
 	 * @return The number of cache hits during state calculation
 	 */
 	public long getCacheRate() throws RemoteException;
+	/**
+	 * @return The ratio between cache hits and misses during state calculation
+	 */
+	public double getCacheRateRatio() throws RemoteException;
 }
