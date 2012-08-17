@@ -60,17 +60,21 @@ public class RecoveredOffHeapDiskFPSetTest extends AbstractFPSetTest {
 		final Random rnd = new Random(RNG_SEED);
 		final FPSet fpSet = getFPSetInitialized();
 		
+		System.out.println("Testing n fingerprints: " + fpSet.size());
+		
 		// FPSet has to contain fpset.size fingerprints
 		for (int i = 0; i < fpSet.size(); i++) {
 			long fp = rnd.nextLong();
-			assertTrue(fpSet.contains(fp));
+			assertTrue("Failed to lookup fingerprint (" + fp + ") #" + i + "/"
+					+ fpSet.size(), fpSet.contains(fp));
 		}
 		
 		// The remaining fps coming out of the RNG must not be in fpset. We
 		// limit it to 10.000 though.
 		for (int i = 0; i < 10000; i++) {
 			long fp = rnd.nextLong();
-			assertFalse(fpSet.contains(fp));
+			assertFalse("Unexpectedly succeeded to lookup fingerprint (" + fp
+					+ ")", fpSet.contains(fp));
 		}
 	}
 }
