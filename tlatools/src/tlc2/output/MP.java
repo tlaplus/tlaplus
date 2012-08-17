@@ -1,5 +1,6 @@
 package tlc2.output;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -122,6 +123,7 @@ public class MP
     private Set warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$ 
+	private static final DecimalFormat df = new DecimalFormat("###,###.###");
 
     /**
      * The internal instance
@@ -764,8 +766,9 @@ public class MP
             b.append("The number of states generated: %1%\nSimulation using seed %2% and aril %3%");
             break;
         case EC.TLC_PROGRESS_STATS:
-            b.append("Progress(%1%) at " + SDF.format(new Date())
-                    + ": %2% states generated (%5% s/min), %3% distinct states found (%6% ds/min), %4% states left on queue.");
+			b.append("Progress(%1%) at " + SDF.format(new Date()) + ": %2% states generated ("
+					+ df.format(Long.valueOf(parameters[4])) + " s/min), %3% distinct states found ("
+					+ df.format(Long.valueOf(parameters[5])) + " ds/min), %4% states left on queue.");
             break;
         case EC.TLC_PROGRESS_START_STATS_DFID:
             b.append("Starting level %1%: %2% states generated, %3% distinct states found.");
