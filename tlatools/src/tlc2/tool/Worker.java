@@ -33,7 +33,7 @@ public class Worker extends IdThread implements IWorker {
 		this.squeue = this.tlc.theStateQueue;
 		this.astCounts = new ObjLongTable(10);
 		this.localValues = new Value[4];
-		this.setName("TLCWorkerThread" + id);
+		this.setName("TLCWorkerThread-" + String.format("%03d", id));
 	}
 
   public final ObjLongTable getCounts() { return this.astCounts; }
