@@ -101,7 +101,8 @@ public class TLCServerThread extends IdThread {
 			MP.printError(EC.GENERAL, e);
 		}
 		// update thread name
-		setName(TLCServer.THREAD_NAME_PREFIX + COUNT++ + "-[" + uri.toASCIIString() + "]");
+		final String i = String.format("%03d", COUNT++);
+		setName(TLCServer.THREAD_NAME_PREFIX + i + "-[" + uri.toASCIIString() + "]");
 	}
 
 	/**
