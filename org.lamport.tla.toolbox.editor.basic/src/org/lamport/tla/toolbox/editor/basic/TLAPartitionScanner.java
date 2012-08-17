@@ -23,6 +23,9 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
     public final static String TLA_SINGLE_LINE_COMMENT = "__tla_singleline_comment"; //$NON-NLS-1$
     public final static String TLA_PCAL = "__tla_pcal"; //$NON-NLS-1$
     public final static String TLA_STRING = "__tla_string"; //$NON-NLS-1$
+    public final static String TLA_START_PCAL_COMMENT = "__tla_start_pcal_comment"; //$NON-NLS-1$ // Added for PlusCal
+    public final static String TLA_END_PCAL_COMMENT = "__tla_end_pcal_comment"; //$NON-NLS-1$     //  "
+
     /**
      * supported partition types
      */
@@ -35,9 +38,12 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
     private static final int MULTI_LINE_COMMENT = 2;
     private static final int PCAL = 3;
     private static final int STRING = 4;
-
+    private static final int START_PCAL_COMMENT = 5 ;  // Added for PlusCal
+    private static final int END_PCAL_COMMENT = 6 ;    //  "
+    
     private final IToken[] fTokens = new IToken[] { new Token(null), new Token(TLA_SINGLE_LINE_COMMENT),
-            new Token(TLA_MULTI_LINE_COMMENT), new Token(TLA_PCAL), new Token(TLA_STRING) };
+            new Token(TLA_MULTI_LINE_COMMENT), new Token(TLA_PCAL), new Token(TLA_STRING),
+            new Token(TLA_START_PCAL_COMMENT), new Token (TLA_END_PCAL_COMMENT)};  // Added for PlusCal
 
     // pre-fixes and post-fixes
     private static final int NONE = 0;
@@ -48,7 +54,9 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
     private static final int CARRIAGE_RETURN = 5;
     private static final int C_BRACKET_STAR = 6;
     private static final int O_BRACKET_STAR = 7;
-
+    private static final int MINUS = 8;
+    private static final int MINUS_MINUS = 9;
+    
     private final BufferedDocumentScanner fScanner = new BufferedDocumentScanner(1000); // faster implementation
 
     // The offset and length of the token currently under construction.
@@ -68,10 +76,23 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
 
     private int fCommentDepth;
     
-    /**
+    /*
      * The following added for PlusCal.
      */
-    IDocument fDocument ;
+    private IDocument fDocument ;  // This may not be used.
+    /**
+     * Holds the pcalMode argument with which setPartialRegion is called.
+     */
+    private int fpcalMode ;
+    
+    /**
+     * After nextToken reads the "*)" that ends a PlusCal algorithm, it must return
+     * the preceding PCAL token and the END_PCAL_COMMENT token before reading
+     * any further characters.  To implement this, the outputEndPcalComment
+     * flag is set to true when the PCAL token is returned; on the next call,
+     * the END_PCAL_COMMENT token is returned immediately.
+     */
+    private boolean outputEndPcalComment = false ;
     
     /**
      * Constructor
@@ -85,6 +106,15 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
      */
     public IToken nextToken()
     {
+        // Added for PlusCal to put out the END_PCAL_COMMENT token.
+        // I have a hunch that it should decrement fTokenLength before calling
+        // postFix, but the timing of the incrementing of fTokenLength in the
+        // original code written by Simon Z is incomprehensible to me.
+        if (outputEndPcalComment) {
+            outputEndPcalComment = false ;
+            return postFix(END_PCAL_COMMENT) ;
+        }
+        
         // emulate TLAPartitionScanner
         if (fEmulate) {
             if (fTLAOffset != -1 && fTokenOffset + fTokenLength != fTLAOffset + fTLALength) {
@@ -96,7 +126,6 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
             }
         }
 
-        
         fTokenOffset += fTokenLength;
         fTokenLength = fPrefixLength;
 
@@ -288,6 +317,20 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
                         break;
                     }
 
+                // The following case added for PlusCal
+                case ')' :
+                    if ((fpcalMode == TLAFastPartitioner.IN_PCAL) && (fLast == STAR)) {
+                        if (fTokenLength - getLastLength() > 0) {
+                            outputEndPcalComment = true ;  
+                            return preFix(TLA, TLA, NONE, 2) ;
+                               // the next state and last value are what they should be
+                               // after the next call of getNext returns the END_PCAL_COMMENT
+                               // token.
+                        }
+                        else {
+                            return postFix(END_PCAL_COMMENT) ;
+                        }
+                    }
                 default:
                     consume();
                     break;
@@ -333,7 +376,16 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
                     fLast = O_BRACKET;
                     fTokenLength++;
                     break;
-
+                    
+                // The following case added for PlusCal testing
+                case '-':
+                    if ((fpcalMode == TLAFastPartitioner.BEFORE_PCAL) && (fLast == MINUS)) {
+                        fpcalMode = TLAFastPartitioner.IN_PCAL ;
+                        return preFix(START_PCAL_COMMENT, TLA, NONE, 2) ;
+                    }
+                    fLast = MINUS ;
+                    fTokenLength++;
+                    break;
                 default:
                     consume();
                     break;
@@ -384,7 +436,10 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
         fLast = NONE;
         fState = TLA;
 
-        fDocument = document ;
+        fDocument = document ;                         // added for PlusCal, probably unnecessary
+        fpcalMode = TLAFastPartitioner.BEFORE_PCAL ;   //  "
+        outputEndPcalComment = false ;                 //  "
+        
         // emulate TLAPartitionScanner
         if (fEmulate)
         {
@@ -395,9 +450,21 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
     }
 
     /* (non-Javadoc)
+     * This method is needed to implement the IPartitionTokenScanner interface, but it should
+     * never be called.  TLAFastPartitioner uses the following method instead.
+     * 
      * @see org.eclipse.jface.text.rules.IPartitionTokenScanner#setPartialRange(org.eclipse.jface.text.IDocument, int, int, java.lang.String, int)
      */
-    public void setPartialRange(IDocument document, int offset, int length, String contentType, int partitionOffset)
+    public void setPartialRange(IDocument document, int offset, int length, 
+            String contentType, int partitionOffset) {
+        
+    }
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.rules.IPartitionTokenScanner#setPartialRange(org.eclipse.jface.text.IDocument, int, int, java.lang.String, int)
+     */
+    public void setPartialRange(IDocument document, int offset, int length, 
+                                String contentType, int partitionOffset, int pcalMode)
     {
         fScanner.setRange(document, offset, length);
         fTokenOffset = partitionOffset;
@@ -405,7 +472,17 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
         fPrefixLength = offset - partitionOffset;
         
         fLast = NONE;
+        
         fDocument = document ;
+        fpcalMode = pcalMode ;
+        if (   (pcalMode != TLAFastPartitioner.IN_PCAL)
+            && (contentType != null)
+            && contentType.equals(TLA_PCAL)) {
+            // ERROR
+            System.out.println(
+               "TLAPartitionScanner.setPartialRange called with contentType/pcalMode mismatch.") ;
+        }
+        outputEndPcalComment = false ;
         
         if (offset == partitionOffset)
         {
@@ -470,7 +547,10 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
     }
 
     /**
-     * Map content types to internal states 
+     * Map content types to internal states.  
+     * This is called only to interpret a contentType sent by TLAFastPartitioner
+     * in a call of setPartialRange.  Thus, it only contains states of "real"
+     * partition types, not START_PCAL_COMMENT or END_PCAL_COMMENT.  
      * @param contentType
      * @return
      */
@@ -483,7 +563,11 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
         else if (contentType.equals(TLA_SINGLE_LINE_COMMENT))
             return SINGLE_LINE_COMMENT;
         else if (contentType.equals(TLA_PCAL))
-            return PCAL;
+            // Methods of this class don't distinguish between TLA
+            // and PCAL tokens.  When setPartialRange is called
+            // with this contentType, its pcalMode argument should
+            // equal true.
+            return TLA;                             
         else if (contentType.equals(TLA_STRING))
             return STRING;
         else
@@ -564,6 +648,7 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
             return 1;
         case C_BRACKET_STAR:
         case O_BRACKET_STAR:
+        case MINUS_MINUS:      // Added for PlusCal
             return 2;
         }
     }

@@ -104,6 +104,12 @@
  *      MultiLineComment.  This means that the scanner should ignore any
  *      "--fair" or "--algorithm" in a MultiLineComment.
  *
+ * In addition to this class and TLAPartitionScanner, the following classes 
+ * have been modified to handle PlusCal algorithms:
+ * 
+ *    TLAReconcilingStrategy
+ *    TLASourceViewerConfiguration
+ *    TLAColorProvider  (just temporarily for testing)
  *******************************************************************************/
 package org.lamport.tla.toolbox.editor.basic;
 
@@ -163,7 +169,7 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
      */
     private static final String CONTENT_TYPES_CATEGORY= "__content_types_category"; //$NON-NLS-1$
     /** The partitioner's scanner */
-    protected final IPartitionTokenScanner fScanner;
+    protected final TLAPartitionScanner fScanner;
     /** The legal content types of this partitioner */
     protected final String[] fLegalContentTypes;
     /** The partitioner's document */
@@ -213,13 +219,26 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
     private static final boolean CHECK_CACHE_CONSISTENCY= "true".equalsIgnoreCase(Platform.getDebugOption("org.eclipse.jface.text/debug/FastPartitioner/PositionCache"));  //$NON-NLS-1$//$NON-NLS-2$;
 
     /*
-     * The following four fields are described in the comments at the beginning
+     * The following five fields are described in the comments at the beginning
      * of this file.
      */
     private int pcalStartCommentOffset = -1 ;
     private int pcalStartOffset = -1 ;
+    private int pcalStartLength = -1 ;
     private int pcalEndCommentOffset = -1 ;
     private int pcalEndCommentLength = -1 ;
+
+    // Possible modes with which TLAPartitionScanner.setPartialRange can be called
+    public static final int BEFORE_PCAL = 0 ;
+    public static final int IN_PCAL     = 1 ;
+    public static final int AFTER_PCAL  = 2 ;
+    
+    // The following are states used in deciding what to do with tokens
+    // returned by calls to TLAPartitionScanner.nextToken.
+    private static final int SEEK_ALGORITHM  = 0 ;
+    private static final int START_ALGORITHM = 1 ;
+    private static final int IN_ALGORITHM    = 2 ;
+    private static final int AFTER_ALGORITHM = 3 ;
 
     /**
      * Creates a new partitioner that uses the given scanner and may return
@@ -229,7 +248,7 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
      * @param legalContentTypes the legal content types of this partitioner
      */
     public TLAFastPartitioner(IPartitionTokenScanner scanner, String[] legalContentTypes) {
-        fScanner= scanner;
+        fScanner= (TLAPartitionScanner) scanner;
         fLegalContentTypes= TextUtilities.copy(legalContentTypes);
         fPositionCategory= CONTENT_TYPES_CATEGORY + hashCode();
         fPositionUpdater= new DefaultPositionUpdater(fPositionCategory);
@@ -276,7 +295,11 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
     }
 
     /**
-     * Performs the initial partitioning of the partitioner's document.
+     * Performs the initial partitioning of the partitioner's document.  It seems to be called
+     * the first time a document is loaded during a Toolbox session.  It seems to get called 2-4 times,
+     * each for a different TLAFastPartitioner object.  Fortunately, the documentChanged method
+     * is called only once for each change.
+     * 
      * <p>
      * May be extended by subclasses.
      * </p>
@@ -425,15 +448,87 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
         try {
             Assert.isTrue(e.getDocument() == fDocument);
 
+            // Set category to the array of all TypedPosition tokens
+            // representing non-TLA partitions of the document.
             Position[] category= getPositions();
+            
+            // `reparseStart'  will be set to the location in the document
+            // at which TLAPartitionScanner.nextToken will begin scanning.
+            // We first set it to the beginning of the line in which
+            // deletion/insertion begins.
+            //
             IRegion line= fDocument.getLineInformationOfOffset(e.getOffset());
             int reparseStart= line.getOffset();
-            int partitionStart= -1;
-            String contentType= null;
+     
+            // If `reparseStart' lies between the start of the MultilineComment 
+            // that contains the PlusCal algorithm and the end of the PlusCal
+            // partition containing the "--algorithm" or "--fair", then we set
+            // it to the location at the beginning of that comment.
+            //
+            // If `reparseStart' lies between the start and end of the MultiLineComment
+            // partition that ends the PlusCal algorithm, then we set it to the
+            // start of that partition.
+            //
+
+            if (   (pcalStartOffset != -1) 
+                && (reparseStart < pcalStartOffset + pcalStartLength)
+                && (pcalStartCommentOffset < reparseStart)) {
+              reparseStart = pcalStartCommentOffset ;
+            }
+            else if (   (pcalEndCommentOffset != -1) 
+                     && (reparseStart < pcalEndCommentOffset + pcalEndCommentLength)
+                     && (pcalEndCommentOffset < reparseStart)) {
+              reparseStart = pcalEndCommentOffset ;              
+            }
+
             int newLength= e.getText() == null ? 0 : e.getText().length();
 
-            // Set first to the index of the Position in the array `category' at which
-            // the partitioner is to be called.
+            // We now set: 
+            //
+            //   - `reparseStart', `contentType', and `partitionOffset' to 
+            //     the offset, token type, and partitionOffset arguments with 
+            //     which TLAPartitionScanner.setPartialRange will be called.
+            //
+            //   - `first' to the index of the first partition in the array `category'
+            //     corresponding to a partition in the old version of the document
+            //     that will be retokenized.
+            //
+            // The following invariant is maintained:
+            //
+            //   /\ reparseStart \leq e.offset
+            //   /\ \/ reparseStart is at the beginning of a line
+            //      \/ reparseStart is at the beginning of a non-default partition
+            //
+            // This invariant ensures that reparseStart is never pointing at a position
+            // in a MultiLineComment just to the right of something like "--algo".
+            // 
+            // IF first > 0 
+            //   THEN position := position at index first-1
+            //        IF position contains reparsestart 
+            //          THEN partitionStart := position.offset
+            //               contentType := position.type
+            //               IF e.offset is the location just past partition
+            //                 THEN (* This means that reparseStart < e.offset and  *)
+            //                      (* is in the middle of a partition that could   *)
+            //                      (* be extended by e.text                        *)
+            //                      reparseStart := partition.offset
+            //               first := first - 1;
+            //        ELSIF reparseStart = e.offset = location just past partition
+            //          THEN (* e.text could be a continuation of partition *)
+            //               partitionStart := position.offset
+            //               reparseStart    := position.offset
+            //               contentType    := position.type
+            //               first := first - 1
+            //        ELSE   (* rparseStart is in the middle of a TLA/PlusCal region  *)
+            //               (* and e.text will be inserted either into or at the end *)
+            //               (* of this region, or else in the region produced by the *)
+            //               (* token returned by nextToken() after it returns the    *)
+            //               (* token for this TLA/PlusCal region.                    *)
+            //               partitionStart := location just past partition
+            //               contentType    := IDocument.DEFAULT_CONTENT_TYPE
+            //               
+            int partitionStart= -1;
+            String contentType= null;
             int first= fDocument.computeIndexInCategory(fPositionCategory, reparseStart);
             if (first > 0)  {
                 TypedPosition partition= (TypedPosition) category[first - 1];
@@ -454,12 +549,36 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                 }
             }
             
-// At this point, we have to check if first is pointing to the first PlusCal token. If so,
-// then it must be decremented to point to the preceding MultiLineComment token, we must
-// set reparseStart to the beginning of that token, and remember that we had a PlusCal
-// algorithm--so that if we don't find a PlusCal algorithm in the second token returned,
-// then we have to continue parsing tokens until we get to the end--and we must remove 
-// the old Positions somehow.
+            // We now set pcalMode to the mode argument with which 
+            // TLAPartitionScanner.setPartialRange is called to initialize the mode
+            // in which scanning is begun.  We set it to
+            //
+            //    BEFORE_PCAL if there is no PlusCal algorithm or reparseStart is before
+            //                the partition beginning with "--algorithm" or "--fair".
+            //
+            //    IN_PCAL     if reparseStart is between the partition beginning with
+            //                "--algorithm" or "--fair" and the MultiLineComment token
+            //                containing the "*)" that end the algorithm (if there is one).
+            //
+            //    AFTER_PCAL  If reparseStart is after the end of the algorithm.
+            //
+            // Remember that reparseStart \leq e.offset, so it represents the same location
+            // in both the old and new versions of the document.
+            //
+            // We also set inPcal to be true iff pcalMode = IN_PCAL.  It will be true when
+            // the next token of type TLA returned by TLAPartitionScanner.nextToken
+            // is is actually a PlusCal token.
+            //
+            int pcalMode = BEFORE_PCAL ;
+            if (   ((pcalStartOffset != -1) && (pcalStartOffset <= reparseStart))
+                && (   (pcalEndCommentOffset == -1) 
+                    || (reparseStart < pcalEndCommentOffset + pcalEndCommentLength))) {
+                pcalMode = IN_PCAL ;
+            }
+            else if (   (pcalEndCommentOffset != -1) 
+                     && (pcalEndCommentOffset + pcalEndCommentLength <= reparseStart)) {
+                pcalMode = AFTER_PCAL ;
+            }
 
             fPositionUpdater.update(e);
             for (int i= first; i < category.length; i++) {
@@ -469,21 +588,214 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                     break;
                 }
             }
+            
+            // We now set category to the array of TypedPosition objects obtained from 
+            // the ones for the old contents of the Document by modifying the positions
+            // appropriately for ones that still correspond to regions in the new document,
+            // and marking as deleted those corresponding to regions in the old document
+            // that have been deleted.  
             clearPositionCache();
             category= getPositions();
 
-            fScanner.setPartialRange(fDocument, reparseStart, fDocument.getLength() - reparseStart, contentType, partitionStart);
+            fScanner.setPartialRange(fDocument, reparseStart, fDocument.getLength() - reparseStart, 
+                                     contentType, partitionStart, pcalMode);
 
             int behindLastScannedPosition= reparseStart;
             IToken token= fScanner.nextToken();
 
+            /**
+            * Delta is the amount by which locations in the old version of the
+            * document lying past the changed region are moved to the
+            * right in the new version.
+            */
+            int Delta = newLength - e.getLength() ;
+
+            /**
+            * prevPcal is true iff the old version of the document
+            * had a PlusCal algorithm
+            */
+            boolean prevPcal = (pcalStartCommentOffset != -1) ;
+
+            /***************************************************************
+            * Set prevAfterPcal to the offset in the current version of    *
+            * the document so that all offsets \geq prevAfterPcal lie in   *
+            * regions that do not contain any part of a PlusCal algorithm  *
+            * or its begin/end comments.                                   *
+            *                                                              *
+            * prevAfterPcal := IF prevPcal                                 
+            *                    THEN IF pcalEndCommentOffset = -1         
+            *                           THEN Infinity                      
+            *                           ELSE LET tmp == pcalEndCommentOffset  
+            *                                                + pcalEndCommentLength 
+            *                                IN  IF e.offset \leq tmp THEN tmp + Delta 
+            *                                                         ELSE tmp
+            *                    ELSE 0                                 
+            *                                                              *
+            * Note that it's possible for some text after the location     *
+            * prevAfterPcal to contain newly inserted text.  However,      *
+            * that's not a problem because prevAfterPcal is used as a      *
+            * minimum offset at which re-partitioning can stop in case     *
+            * the original algorithm would stop before that point.  The    *
+            * original algorithm should guarantee that repartitioning      *
+            * does not stop until all the newly inserted text has been     *
+            * partitioned.                                                 *
+            ***************************************************************/
+            int prevAfterPcal = 0 ;
+            if (prevPcal) {
+              if (pcalEndCommentOffset == -1) {
+                  prevAfterPcal = Integer.MAX_VALUE ;
+              }
+              else {
+                  int tmp = pcalEndCommentOffset + pcalEndCommentLength ;
+                  if (e.getOffset() <= tmp) {
+                      prevAfterPcal = tmp + Delta ;
+                  }
+                  else {
+                      prevAfterPcal = tmp ;
+                  }
+              }
+            }
+
+            /***************************************************************
+            * convert pcalStartCommentOffset, pcalStartOffset,             *
+            * pcalEndCommentOffset to locations in the new document or -1  *
+            * by calling convertOffset.  See the description of that       *
+            * method                                                       *
+            ***************************************************************/
+            pcalStartCommentOffset = convertOffset(pcalStartCommentOffset, 
+                                                   pcalStartOffset - pcalStartCommentOffset, 
+                                                   e.getOffset(), e.getLength(), newLength) ;
+            pcalStartOffset = convertOffset(pcalStartOffset, pcalStartLength,
+                                            e.getOffset(), e.getLength(), newLength) ;
+            pcalEndCommentOffset = convertOffset(pcalEndCommentOffset, pcalEndCommentLength,
+                                   e.getOffset(), e.getLength(), newLength) ;
+
+            /***************************************************************
+            * The partioning is described in terms of states and           *
+            * transitions, in which a token is obtained by calling         *
+            * TLAPartitionScanner.nextToken and the action performed       *
+            * depends on the type of token and the current state.  The     *
+            * original algorithm from FastPartitioner stopped the          *
+            * procedure when it had partitioned enough of the new version  *
+            * of the document so that the later partitions that were       *
+            * obtained by partitioning the previous version are still      *
+            * valid.  To handle PlusCal, we have to sometimes keep         *
+            * calling the nextToken routine longer than that.  The         *
+            * variable canStop is true iff PlusCal processing does NOT     *
+            * require extra calls of nextToken.                            *
+            *                                                              *
+            * Here is the initialization of the state and of canStop:      *
+            *                                                              *
+            * CASE pcalMode = BEFORE_PCAL                                  *
+            *    canStop := \/ (~prevPCal)                                 *
+            *               \/ /\ pcalStartCommentOffset # -1              *
+            *                  /\ pcalStartOffset # -1                     *
+            *               \/ current offSet \geq prevAfterPcal           *
+            *    ---> SEEK_ALGORITHM                                       *
+            *                                                              *
+            * CASE pcalMode = AFTER_PCAL                                   *
+            *    canStop := TRUE                                           *
+            *    ---> AFTER_ALGORITHM                                      *
+            *                                                              *
+            * CASE pcalMode = IN_PCAL                                      *
+            *    canStop := pcalEndCommentOffset # -1                      *
+            *    --> IN_ALGORITHM                                          *
+            *                                                              *
+            ***************************************************************/
+            int state ;
+            boolean canStop ;
+            if (pcalMode == BEFORE_PCAL) {
+                canStop =    (! prevPcal)
+                          || (   (pcalStartCommentOffset != -1)
+                              && (pcalStartOffset != -1) )
+                          || (reparseStart >= prevAfterPcal) ;
+                state = SEEK_ALGORITHM ;   
+            }
+            else if (pcalMode == AFTER_PCAL) {
+                canStop = true ;
+                state = AFTER_ALGORITHM ;
+            }
+            else {
+                canStop = (pcalEndCommentOffset != -1) ;
+                state = IN_ALGORITHM ;
+                
+            }
+            
+            /***************************************************************
+            * Here is the algorithm for handling tokens returned by        *
+            * calling TLAPartitionScanner.nextToken.                       *
+            *                                                              *
+            * SEEK_ALGORITHM:                                              *
+            *    Invariant: canStop = \/ (~prevPCal)                       *
+            *                         \/ /\ pcalStartCommentOffset # -1    *
+            *                            /\ pcalStartOffset # -1           *
+            *                         \/ current offSet \geq prevAfterPcal *
+            *     (PCalStartMultilineComment)                              *
+            *        set pcalStartCommentOffset, pcalStartOffset           *
+            *        convert token type to MultilineComment                *
+            *        --> START_ALGORITHM                                   *
+            *                                                              *
+            *     (PCalEndMultilineComment) ERROR                          *
+            *                                                              *
+            *     (EOF) set pcalStartCommentOffset, pcalStartOffset,       *
+            *               and pcalEndCommentOffset to -1                 *
+            *     (OTHER)                                                  *
+            *        canStop := \/ canStop                                 *
+            *                   \/ current offSet \geq prevAfterPcal       *
+            *        --> SEEK_ALGORITHM                                    *
+            *                                                              *
+            * START_ALGORITHM:                                             *
+            *                                                              *
+            *    (TLA)  set PcalStartLength                                *
+            *           convert token type to PCal                         *
+            *           canStop := pcalEndCommentOffset # -1               *
+            *           --> IN_ALGORITHM                                   *
+            *                                                              *
+            *    (OTHER) ERROR                                             *
+            *                                                              *
+            * IN_ALGORITHM:                                                *
+            *   Invariant: canStop = pcalEndCommentOffset # -1             *
+            *                                                              *
+            *   (PCalEndMultilineComment)                                  *
+            *       canStop := \/ canStop                                  *
+            *                  \/ current offSet \geq prevAfterPcal        *
+            *       set pcalEndCommentOffset, pcalEndCommentLength         *
+            *       convert token type to MultiLineComment                 *
+            *       inPCal := false                                        *
+            *       ---> AFTER__ALGORITHM                                  *
+            *                                                              *
+            *   (PCalStartMultilineComment)  ERROR                         *
+            *                                                              *
+            *   (EOF)  pcalEndCommentOffset := -1                          *
+            *          DONE                                                *
+            *                                                              *
+            *   (OTHER) --> IN_ALGORITHM                                   *
+            *                                                              *
+            * AFTER_ALGORITHM:                                             *
+            *   Invariant: ~ canStop => current offSet < prevAfterPcal     *
+            *                                                              *
+            *   (PCalEndMultilineComment or PCalStartMultilineComment)     *
+            *      ERROR                                                   *
+            *                                                              *
+            *   (EOF) DONE                                                 *
+            *                                                              *
+            *   (OTHER) canStop := \/ canStop                              *
+            *                      \/ current offSet \geq prevAfterPcal    *
+            *          --> AFTER_ALGORITHM                                 *
+            ***************************************************************/
             while (!token.isEOF()) {
 
-                contentType= getTokenContentType(token);
+                contentType = getTokenContentType(token);
 
-                if (!isSupportedContentType(contentType)) {
+                if (!isSupportedContentType(contentType)) { 
+                     if (   (state == IN_ALGORITHM)                    // Added for PlusCal 
+                         || (state == START_ALGORITHM)) {              //  "
+                         contentType = TLAPartitionScanner.TLA_PCAL ;  //  "
+                     }                                                 //  "
+                     else {                                            //  "
                     token= fScanner.nextToken();
                     continue;
+                         }                                             //  "
                 }
 
                 int start= fScanner.getTokenOffset();
@@ -491,8 +803,68 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
 
                 behindLastScannedPosition= start + length;
                 int lastScannedPosition= behindLastScannedPosition - 1;
+                
+                // Execute the algorithm described above, except for converting
+                // TLA tokens to PlusCal tokens which is done above, and for
+                // actions taken upon the return of the EOF token, which are
+                // done after the end of the enclosing while loop.
+                //
+                switch (state) {
+                case SEEK_ALGORITHM:
+                    if (contentType.equals(TLAPartitionScanner.TLA_START_PCAL_COMMENT)) {
+                        pcalStartCommentOffset = start ;
+                        pcalStartLength = behindLastScannedPosition ;
+                        contentType = TLAPartitionScanner.TLA_MULTI_LINE_COMMENT ;
+                        state = START_ALGORITHM ;
+                    }
+                    else if (contentType.equals(TLAPartitionScanner.TLA_END_PCAL_COMMENT)) {
+                        //ERROR
+                        System.out.println("Error in TLAFastPartioner.documentChanged2: line 818") ;
+                    }
+                    else {
+                        canStop = canStop || (behindLastScannedPosition >= prevAfterPcal);
+                    }
+                    break;
+                case START_ALGORITHM:
+                    pcalStartLength = length ;
+                    canStop = (pcalEndCommentOffset != -1) ;
+                    state = IN_ALGORITHM ;
+                    if (pcalStartOffset != start) {
+                        //ERROR
+                        System.out.println("Error in TLAFastPartioner.documentChanged2: line 830") ;
+                    }
+                    if (! contentType.equals(TLAPartitionScanner.TLA_PCAL)) {
+                        //ERROR
+                        System.out.println("Error in TLAFastPartioner.documentChanged2: line 834") ;
+                    }
+                    break;
+                case IN_ALGORITHM:
+                    if (contentType.equals(TLAPartitionScanner.TLA_END_PCAL_COMMENT)) {
+                        canStop = canStop || (behindLastScannedPosition >= prevAfterPcal);
+                        pcalEndCommentOffset = start ;
+                        pcalEndCommentLength = length ;
+                        contentType = TLAPartitionScanner.TLA_MULTI_LINE_COMMENT ;
+                        state = AFTER_ALGORITHM ;
+                    }
+                    else if (contentType.equals(TLAPartitionScanner.TLA_START_PCAL_COMMENT)) {
+                        //ERROR
+                        System.out.println("Error in TLAFastPartioner.documentChanged2: line 847") ;
+                    }
+                    break;
+                case AFTER_ALGORITHM:
+                    if (contentType.equals(TLAPartitionScanner.TLA_START_PCAL_COMMENT)
+                        || contentType.equals(TLAPartitionScanner.TLA_END_PCAL_COMMENT)) {
+                        //ERROR
+                        System.out.println("Error in TLAFastPartioner.documentChanged2: line 854") ;
+                    }
+                    canStop = canStop || (behindLastScannedPosition >= prevAfterPcal) ;
+                    break;
+                default:
+                    // ERROR
+                    System.out.println("Error in TLAFastPartioner.documentChanged2: line 860") ;
+                }
 
-                // remove all affected positions.  If we're removing the
+                // remove all affected positions.
                 // 
                 while (first < category.length) {
                     TypedPosition p= (TypedPosition) category[first];
@@ -512,7 +884,8 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                 // if position already exists and we have scanned at least the
                 // area covered by the event, we are done
                 if (fDocument.containsPosition(fPositionCategory, start, length)) {
-                    if (lastScannedPosition >= e.getOffset() + newLength)
+                    if (   (lastScannedPosition >= e.getOffset() + newLength)
+                        && canStop)                                                     // Added for PlusCal
                         /*
                          * It appears that commenting out the following return does nothing
                          * except make the tokenizer do extra work.  Thus, it seems to be safe
@@ -536,6 +909,23 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                 token= fScanner.nextToken();
             }
 
+            // Actions for PlusCal processing done upon obtaining of an EOF token
+            // from TLAPartitionScanner.nextToken
+            switch (state) {
+            case SEEK_ALGORITHM :
+                pcalStartCommentOffset = -1 ;
+                pcalStartOffset = -1 ;
+                pcalEndCommentOffset = -1 ;
+                break ;
+            case START_ALGORITHM :
+                System.out.println("Error in TLAFastPartioner.documentChanged2: line 917") ;
+                break ;
+            case IN_ALGORITHM :
+                pcalEndCommentOffset = -1 ;
+                break ;
+            // nothing to do for the case AFTER_ALGORITHM.
+            }
+            
             first= fDocument.computeIndexInCategory(fPositionCategory, behindLastScannedPosition);
 
             clearPositionCache();
@@ -663,6 +1053,31 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
         return new TypedRegion(0, fDocument.getLength(), IDocument.DEFAULT_CONTENT_TYPE);
     }
 
+    /**
+     * Computes the offset in the new document corresponding to the offset of a region in the
+     * old document starting at `offset' and having length `length'.   It is assumed that the 
+     * new document is obtained from the old one by replacing text of length oldLength by 
+     * text of length newLength at offset changeOffset.  However, if the specified region has been
+     * changed, then the value returned is -1.
+     * 
+     * @param offset - the offset to be converted.
+     * @param length - the length of the region starting at offset.
+     * @param changeOffset - the offset of the changed region.
+     * @param oldLength - the original length of the changed region.
+     * @param newLength - the new length of the changed region.
+     * @return
+     */
+    private final int convertOffset(int offset, int length, int changeOffset, int oldLength, int newLength) {
+        if (offset + length <= changeOffset) {
+            return offset ;
+        }
+        else if (changeOffset + oldLength <= offset) {
+            return offset + newLength - oldLength ;
+        }
+        else {
+            return -1 ;
+        }
+    }
     /*
      * @see IDocumentPartitioner#computePartitioning(int, int)
      */
@@ -934,9 +1349,9 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
     }
 
     /**
-     * Returns the partitioner's positions.   Apparently, this is an array of Position objects
-     * that partitions the document, ordered from start to end.  These Position objects mark
-     * all the non-TLA+ portions of the document--that is, everything but comments and strings.
+     * Returns the partitioner's positions.   Apparently, this is an array of TypedPosition objects
+     * that partitions the document, ordered from start to end.  These TypedPosition objects mark
+     * all the non-TLA+ portions of the document--that is, comments, strings, and PlusCal tokens.
      *
      * @return the partitioner's positions
      * @throws BadPositionCategoryException if getting the positions from the

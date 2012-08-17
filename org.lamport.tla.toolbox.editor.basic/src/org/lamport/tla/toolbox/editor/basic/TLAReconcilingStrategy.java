@@ -116,8 +116,13 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 IRegion lineOnPartitionStart = document.getLineInformationOfOffset(partitions[i].getOffset());
 
                 // if the multi-line comment contains multiple lines
-                if (partitions[i].getType().equals(TLAPartitionScanner.TLA_MULTI_LINE_COMMENT)
-                        && partitions[i].getLength() > lineOnPartitionStart.getLength())
+                // Added by LL on 16 Aug 2012:  I have no idea what this does.  However, the PCAL
+                // partitioins added for PlusCal can also contain multiple lines.  I am therefore guessing
+                // that whatever is done for MULTI_LINE_COMMENT partitions should also be done for
+                // PCAL partitions.
+                if (   (   partitions[i].getType().equals(TLAPartitionScanner.TLA_MULTI_LINE_COMMENT)
+                        || partitions[i].getType().equals(TLAPartitionScanner.TLA_PCAL))   // This disjunct added for PlusCal
+                    && partitions[i].getLength() > lineOnPartitionStart.getLength())
                 {
                     positions.add(new Position(partitions[i].getOffset(), partitions[i].getLength()));
                 }
