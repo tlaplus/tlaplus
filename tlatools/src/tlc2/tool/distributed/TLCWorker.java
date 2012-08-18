@@ -17,6 +17,8 @@ import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
@@ -44,6 +46,8 @@ import util.UniqueString;
 @SuppressWarnings("serial")
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
+	private static final boolean unsorted = Boolean.getBoolean(TLCWorker.class.getName() + ".unsorted");
+	
 	private static Timer keepAliveTimer;
 	private static RMIFilenameToStreamResolver fts;
 	private static final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -66,6 +70,15 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		
 		this.cache = new SimpleCache();
 	}
+	
+	//TODO Remove once performance tests show superiority of TreeSet
+	private Set<Holder> getSet() {
+		if (unsorted) {
+			return new HashSet<Holder>();
+		} else {
+			return new TreeSet<Holder>();
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#getNextStates(tlc2.tool.TLCState[])
@@ -78,7 +91,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		
 		TLCState state1 = null, state2 = null;
 		try {
-			final TreeSet<Holder> treeSet = new TreeSet<Holder>();
+			final Set<Holder> treeSet = getSet();
 			// Compute all of the next states of this block of states.
 			for (int i = 0; i < states.length; i++) {
 				state1 = states[i];
