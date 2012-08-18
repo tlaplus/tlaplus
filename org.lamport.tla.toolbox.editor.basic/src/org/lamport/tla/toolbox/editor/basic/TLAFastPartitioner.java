@@ -109,7 +109,12 @@
  * 
  *    TLAReconcilingStrategy
  *    TLASourceViewerConfiguration
- *    TLAColorProvider  (just temporarily for testing)
+ *    TLAColorProvider  
+ *    TLAEditorActivator
+ *    TLAReconcilingStrategy
+ *    TLASourceViewerConfiguration
+ *    ITLAReserveredWords
+ *    PCALCodeScanner (modified clone of TLACodeScanner)
  *******************************************************************************/
 package org.lamport.tla.toolbox.editor.basic;
 
@@ -444,7 +449,7 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
 
         if (!fIsInitialized)
             return null;
-
+        // debugPrint("Entering documentChanged2");
         try {
             Assert.isTrue(e.getDocument() == fDocument);
 
@@ -756,9 +761,11 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
             * IN_ALGORITHM:                                                *
             *   Invariant: canStop = pcalEndCommentOffset # -1             *
             *                                                              *
+            *   (TLA) convert token type to PCAL                           *
+            *         --> IN_ALGORITHM                                     *
+            *                                                              *
             *   (PCalEndMultilineComment)                                  *
-            *       canStop := \/ canStop                                  *
-            *                  \/ current offSet \geq prevAfterPcal        *
+            *       canStop := offSet \geq prevAfterPcal                   *
             *       set pcalEndCommentOffset, pcalEndCommentLength         *
             *       convert token type to MultiLineComment                 *
             *       inPCal := false                                        *
@@ -813,7 +820,7 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                 case SEEK_ALGORITHM:
                     if (contentType.equals(TLAPartitionScanner.TLA_START_PCAL_COMMENT)) {
                         pcalStartCommentOffset = start ;
-                        pcalStartLength = behindLastScannedPosition ;
+                        pcalStartOffset = behindLastScannedPosition ;
                         contentType = TLAPartitionScanner.TLA_MULTI_LINE_COMMENT ;
                         state = START_ALGORITHM ;
                     }
@@ -840,7 +847,7 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                     break;
                 case IN_ALGORITHM:
                     if (contentType.equals(TLAPartitionScanner.TLA_END_PCAL_COMMENT)) {
-                        canStop = canStop || (behindLastScannedPosition >= prevAfterPcal);
+                        canStop = (behindLastScannedPosition >= prevAfterPcal);
                         pcalEndCommentOffset = start ;
                         pcalEndCommentLength = length ;
                         contentType = TLAPartitionScanner.TLA_MULTI_LINE_COMMENT ;
@@ -885,16 +892,10 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                 // area covered by the event, we are done
                 if (fDocument.containsPosition(fPositionCategory, start, length)) {
                     if (   (lastScannedPosition >= e.getOffset() + newLength)
-                        && canStop)                                                     // Added for PlusCal
-                        /*
-                         * It appears that commenting out the following return does nothing
-                         * except make the tokenizer do extra work.  Thus, it seems to be safe
-                         * to add some kind of test to see if it's really OK to stop tokenizing.
-                         * 
-                         * So, we modify the if test to be false if we're in the middle of tokenizing
-                         * a newly created First PlusCal token.
-                         */
+                        && canStop)  {                                                  // Added for PlusCal
+                        // debugPrint("exit before EOF") ;
                         return createRegion();
+                    }
                     ++ first;
                 } else {
                     // insert the new type position
@@ -943,7 +944,7 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
         } finally {
             clearPositionCache();
         }
-
+        // debugPrint("exit after EOF") ;
         return createRegion();
     }
 
@@ -952,7 +953,7 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
      * close to the given offset. This is, the position has either an offset which
      * is the same as the given offset or an offset which is smaller than the given
      * offset. This method profits from the knowledge that a partitioning is
-     * a ordered set of disjoint position.
+     * an ordered set of disjoint position.
      * <p>
      * May be extended or replaced by subclasses.
      * </p>
@@ -1373,6 +1374,47 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                 System.err.println("FastPartitioner.getPositions(): stale position in cache: " + toString(fCachedPositions[i])); //$NON-NLS-1$
         }
         return fCachedPositions;
+    }
+    
+    /**
+     * For printing out debugging information
+     *   (TypedPosition)
+     * @param msg
+     */
+    public void debugPrint(String msg) {
+        System.out.println("Debug print " + msg);
+        System.out.println("Start comment offset: " + pcalStartCommentOffset
+                + ";  Start: (" + pcalStartOffset + ", " + pcalStartLength + 
+                ");  End comment: (" + pcalEndCommentOffset + ", "
+                + pcalEndCommentLength + ")") ;
+        Position[] positions = null;
+        try {
+            positions = fDocument.getPositions(fPositionCategory);
+        } catch (BadPositionCategoryException e1) {
+            System.out.println("Can't get positions") ;
+            e1.printStackTrace();
+            return ;
+        }
+        for (int i = 0; i < positions.length; i++) {
+           try {
+              TypedPosition position = (TypedPosition) positions[i] ;
+              System.out.println("Position " + i + ": (" + position.getOffset()
+                      + ", " + position.getLength() + ")  type: "
+                      + position.getType() + (position.isDeleted?" DELETED":""));
+              System.out.println("  `" + 
+                      fDocument.get(position.getOffset(), position.getLength()) + "'") ;
+        
+           } catch (Exception e) {
+                System.out.println("Item " + i + " Exception: " + e.getMessage()) ;
+             }
+        }
+        IRegion result = createRegion();
+        if (result == null) {
+            System.out.println("Returned null");
+        } else {
+            System.out.println("Returned (" + result.getOffset() + ", " 
+                + result.getLength() + ")") ;
+        }
     }
 
     /**

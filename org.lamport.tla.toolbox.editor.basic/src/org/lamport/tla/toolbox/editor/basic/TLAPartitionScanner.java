@@ -10,6 +10,7 @@ import org.lamport.tla.toolbox.editor.basic.util.BufferedDocumentScanner;
 
 /**
  * Partition token scanner
+ * Modified 17 Aug 2012 by LL for PlusCal algorithm coloring
  *  
  * @author Simon Zambrovski
  * @version $Id$
@@ -30,7 +31,8 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
      * supported partition types
      */
     public static final String[] TLA_PARTITION_TYPES = new String[] { TLA_MULTI_LINE_COMMENT, TLA_SINGLE_LINE_COMMENT,
-            TLA_STRING };
+            TLA_STRING,
+            TLA_START_PCAL_COMMENT, TLA_END_PCAL_COMMENT};  // Added for PlusCal
 
     // states
     private static final int TLA = 0;
@@ -106,14 +108,6 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
      */
     public IToken nextToken()
     {
-        // Added for PlusCal to put out the END_PCAL_COMMENT token.
-        // I have a hunch that it should decrement fTokenLength before calling
-        // postFix, but the timing of the incrementing of fTokenLength in the
-        // original code written by Simon Z is incomprehensible to me.
-        if (outputEndPcalComment) {
-            outputEndPcalComment = false ;
-            return postFix(END_PCAL_COMMENT) ;
-        }
         
         // emulate TLAPartitionScanner
         if (fEmulate) {
@@ -128,6 +122,16 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
 
         fTokenOffset += fTokenLength;
         fTokenLength = fPrefixLength;
+
+        // Added for PlusCal to put out the END_PCAL_COMMENT token.
+        // I have a hunch that it should decrement fTokenLength before calling
+        // postFix, but the timing of the incrementing of fTokenLength in the
+        // original code written by Simon Z is incomprehensible to me.
+        if (outputEndPcalComment) {
+            outputEndPcalComment = false ;
+            fPrefixLength = 0;
+            return fTokens[END_PCAL_COMMENT];
+        }
 
         while (true)
         {
@@ -320,6 +324,7 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
                 // The following case added for PlusCal
                 case ')' :
                     if ((fpcalMode == TLAFastPartitioner.IN_PCAL) && (fLast == STAR)) {
+                        fpcalMode = TLAFastPartitioner.AFTER_PCAL ;
                         if (fTokenLength - getLastLength() > 0) {
                             outputEndPcalComment = true ;  
                             return preFix(TLA, TLA, NONE, 2) ;
@@ -379,9 +384,22 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
                     
                 // The following case added for PlusCal testing
                 case '-':
-                    if ((fpcalMode == TLAFastPartitioner.BEFORE_PCAL) && (fLast == MINUS)) {
-                        fpcalMode = TLAFastPartitioner.IN_PCAL ;
-                        return preFix(START_PCAL_COMMENT, TLA, NONE, 2) ;
+                    if (    (fCommentDepth == 1)
+                         && (fpcalMode == TLAFastPartitioner.BEFORE_PCAL) 
+                         && (fLast == MINUS)) {
+                        int nxtPos = fTokenLength + fTokenOffset + 1;
+                        try {
+                            if (   (   (fDocument.getLength() >= nxtPos + 4)
+                                    && (fDocument.get(nxtPos, 4).equals("fair")))
+                                || (   (fDocument.getLength() >= nxtPos + 9)
+                                    && (fDocument.get(nxtPos, 9).equals("algorithm")))) {
+                              fCommentDepth = 0 ;
+                              fpcalMode = TLAFastPartitioner.IN_PCAL ;
+                              return preFix(START_PCAL_COMMENT, TLA, MINUS_MINUS, 2) ;
+                            }
+                        } catch (BadLocationException e) {
+                            // This shouldn't happen
+                        }
                     }
                     fLast = MINUS ;
                     fTokenLength++;
@@ -645,6 +663,7 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
         case STAR:
         case C_BRACKET:
         case O_BRACKET:
+        case MINUS:
             return 1;
         case C_BRACKET_STAR:
         case O_BRACKET_STAR:

@@ -19,9 +19,8 @@ public class TLAColorProvider
     public static final RGB TLA_MULTI_LINE_COMMENT = new RGB(64, 64, 255);
     public static final RGB TLA_SINGLE_LINE_COMMENT = new RGB(0, 128, 64);
     
-    // Added by LL on 16 Aug 2012: Specifies color for PCAL partitions for
-    // testing in which entire partition has a single color.
-    public static final RGB TLA_PCAL = new RGB(200, 0, 0);
+    // Added for PlusCal
+    public static final RGB PCAL_KEYWORD = new RGB(175, 40, 10);
 
 
     public static final RGB TLA_KEYWORD = new RGB(128, 0, 128); 

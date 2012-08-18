@@ -75,14 +75,8 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
         reconciler.setDamager(dr, TLAPartitionScanner.TLA_STRING);
         reconciler.setRepairer(dr, TLAPartitionScanner.TLA_STRING);
 
-        // The following was added by LL on 16 Aug 2012 for testing, where TLA_PCAL
-        // tokens are colored with a single color.  Later, it will have to be modified
-        // by copying the code for IDocument.DEFAULT_CONTENT_TYPE that is used to
-        // color TLA partitions.  However, there is something that needs to be done
-        // to register TLAColorProvider.TLA_PCAL that I've been unable to figure out.
-        // So I'm just trying to color it with the single-line-comment color.
-        dr = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(provider
-                .getColor(TLAColorProvider.TLA_SINGLE_LINE_COMMENT)))); // should be TLA_PCAL
+        // The following added for PlusCal
+        dr = new DefaultDamagerRepairer(TLAEditorActivator.getDefault().getPCALCodeScanner());
         reconciler.setDamager(dr, TLAPartitionScanner.TLA_PCAL);
         reconciler.setRepairer(dr, TLAPartitionScanner.TLA_PCAL);
 

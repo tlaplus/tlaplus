@@ -70,8 +70,65 @@ public interface ITLAReserveredWords
     public final static String TRUE         = "TRUE";
     public final static String FALSE        = "FALSE";
     
+    // Added for PlusCal
+    public final static String FAIR       = "fair";
+    public final static String ALGORITHM  = "algorithm";
+    public final static String ASSERT = "assert" ;
+    public final static String AWAIT = "await" ;
+    public final static String BEGIN = "begin" ;
+    public final static String END = "end" ;
+    public final static String CALL = "call" ;
+    public final static String PDEFINE = "define" ;
+    public final static String DO = "do" ;
+    public final static String EITHER = "either" ;
+    public final static String OR = "or" ;
+    public final static String GOTO = "goto" ;
+    public final static String PIF = "if" ;
+    public final static String PTHEN = "then" ;
+    public final static String PELSE = "else" ;
+    public final static String ELSIF = "elsif" ;
+    public final static String MACRO = "macro" ;
+    public final static String PRINT = "print" ;
+    public final static String PROCEDURE = "procedure" ;
+    public final static String PROCESS = "process" ;
+    public final static String RETURN = "return" ;
+    public final static String SKIP = "skip" ;
+    public final static String PVARIABLE = "variable" ;
+    public final static String PVARIABLES = "variables" ;
+    public final static String WHILE = "while" ;
+    public final static String PWITH = "with" ;
+    public final static String WHEN = "when" ;
     
-    
+    public final static String[] PCAL_WORDS_ARRAY = new String[] 
+    {
+        ASSERT,
+        AWAIT,
+        BEGIN,
+        END,
+        CALL,
+        PDEFINE,
+        DO,
+        EITHER,
+        OR,
+        GOTO,
+        PIF,
+        PTHEN,
+        PELSE,
+        ELSIF,
+        MACRO,
+        PRINT,
+        PROCEDURE,
+        PROCESS,
+        RETURN,
+        SKIP,
+        PVARIABLE,
+        PVARIABLES,
+        WHILE,
+        PWITH,
+        WHEN,
+        FAIR,
+        ALGORITHM 
+    } ;
     
     public final static String[] ALL_WORDS_ARRAY = new String[]
     {

@@ -117,7 +117,7 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
                 // if the multi-line comment contains multiple lines
                 // Added by LL on 16 Aug 2012:  I have no idea what this does.  However, the PCAL
-                // partitioins added for PlusCal can also contain multiple lines.  I am therefore guessing
+                // partitions added for PlusCal can also contain multiple lines.  I am therefore guessing
                 // that whatever is done for MULTI_LINE_COMMENT partitions should also be done for
                 // PCAL partitions.
                 if (   (   partitions[i].getType().equals(TLAPartitionScanner.TLA_MULTI_LINE_COMMENT)

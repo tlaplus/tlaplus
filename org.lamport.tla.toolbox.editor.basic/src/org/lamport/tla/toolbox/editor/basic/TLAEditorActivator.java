@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.editor.basic;
 import org.eclipse.jface.text.rules.IPartitionTokenScanner;
 import org.eclipse.jface.text.rules.ITokenScanner;
 import org.lamport.tla.toolbox.AbstractTLCActivator;
+import org.lamport.tla.toolbox.editor.basic.tla.PCALCodeScanner;
 import org.lamport.tla.toolbox.editor.basic.tla.TLACodeScanner;
 import org.osgi.framework.BundleContext;
 
@@ -22,6 +23,7 @@ public class TLAEditorActivator extends AbstractTLCActivator
     private TLAPartitionScanner partitionTokenScanner;
     private TLAColorProvider colorProvider;
     private TLACodeScanner tlaCodeScanner;
+    private PCALCodeScanner pcalCodeScanner;  // Added for PlusCal
 
     /**
      * The constructor
@@ -95,5 +97,15 @@ public class TLAEditorActivator extends AbstractTLCActivator
             tlaCodeScanner = new TLACodeScanner();
         }
         return tlaCodeScanner; 
+    }
+    
+    // Added for PlusCal
+    public ITokenScanner getPCALCodeScanner()
+    {
+        if (pcalCodeScanner== null) 
+        {
+            pcalCodeScanner = new PCALCodeScanner();
+        }
+        return pcalCodeScanner; 
     }
 }
