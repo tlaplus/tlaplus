@@ -603,62 +603,14 @@ SYNTAX COLORING (KEYWORDS, COMMENTS, ETC.)
 
 Setting the Colors.
 ------------------
-See TLASourceViewerConfiguration and TLAColorProvider.
+See TLASourceViewerConfiguration and TLAColorProvider.  It should be easy
+to make the colors settable by preferences, but probably only if you have to
+restart the Toolbox to change the preferences.
 
-Partitioning the Document.
+Partitioning a TLA+ Document.
 ------------------------
-Done by the following TLAPartitionScanner methods called by
-org.eclipse....FastPartitioner:
-
-   nextToken
-   getTokenOffSet
-   getTokenLength
-   setPartialRange(
-      document, 
-      offset: in document for starting parse,
-      length: of region of document to parse. In the one call in 
-              FastPartitioner, the region extends to the end of the 
-              document.
-      contentType: "at the given offset".  
-                   If partitionOffset = -1, then this seems to be the
-                   content type of the previous partition???
-      partitionOffset: 
-         "at which the partition of the given offset starts".  
-         I think that it either equals -1, meaning that the offset 
-         parameter is at the beginning of a partition, or else it is
-         the beginning of a partition for which `offset' is in the
-         the middle.
-         
-   setRange
-     Called only for the initial partitioning of the document.
-
-The "supported content types" that are supported as far as FastPartitioner
-is concerned are specified by TLAPartitionScanner.TLA_PARTITION_TYPES.
-
-See org.eclipse...ITokenScanner
-and org.eclipse...IPartitionTokenScanner
-
-To add PlusCal syntax coloring, we need to modify the TLAPartitionScanner 
-class to add a new token type for PlusCal code.   We also need to modify
-TLAFastPartitioner so that it is aware of where the PlusCal code starts
-and ends.  The easiest way for the TLAPartitionScanner class to 
-provide the information to the TLAFastPartitioner method is by adding
-two additional token types: one that represents a MultiLineToken that precedes 
-the algorithm, and the other that represents the MultiLineComment
-that immediately follows the algorithm--a comment whose text is probably
-just the "*)".  If the first PlusCal token is modified, its text and all other
-text through the MultiLineComment that follows the algorithm might have to become 
-part of the preceding MultiLineComment that precedes the algorithm.  Thus,
-TLAFastPartitioner needs to start reparsing (calling nextToken()) at the 
-preceding MultiLineComment if the first PlusCal token is changed.
-
-To implement the coloring for PlusCal, we need to create a new PCalCodeScanner
-class similar to the TLACodeScanner class and attach it to PlusCal code tokens
-the same way the TLACodeScanner object is attached to the TLA code regions,
-which have type IDocument.DEFAULT_CONTENT_TYPE.  
-
- 
-
+Done by the TLAFastPartitioner calling TLAPartitionScanner methods.
+See comments in TLAFastPartitioner.
 
 -------------------------------------------------------------------------
 HOW TO GET A...
