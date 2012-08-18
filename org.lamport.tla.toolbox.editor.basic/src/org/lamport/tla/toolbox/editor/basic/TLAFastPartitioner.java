@@ -111,7 +111,8 @@
  *    TLASourceViewerConfiguration
  *    TLAColorProvider  
  *    TLAEditorActivator
- *    TLAReconcilingStrategy
+ *    TLAReconcilingStrategy (Actually, not changed, but might need to be. 
+ *                            See comment inside its calculatePositions method.)
  *    TLASourceViewerConfiguration
  *    ITLAReserveredWords
  *    PCALCodeScanner (modified clone of TLACodeScanner)
@@ -773,8 +774,7 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
             *                                                              *
             *   (PCalStartMultilineComment)  ERROR                         *
             *                                                              *
-            *   (EOF)  pcalEndCommentOffset := -1                          *
-            *          DONE                                                *
+            *   (EOF)  DONE                                                *
             *                                                              *
             *   (OTHER) --> IN_ALGORITHM                                   *
             *                                                              *
@@ -892,7 +892,10 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                 // area covered by the event, we are done
                 if (fDocument.containsPosition(fPositionCategory, start, length)) {
                     if (   (lastScannedPosition >= e.getOffset() + newLength)
-                        && canStop)  {                                                  // Added for PlusCal
+                        && canStop)  {      // Added for PlusCal
+                          // Must call finishScan upon completion of calls of 
+                          // TLAPartitionScanner.nextToken
+                          finishScan(state) ;
                         // debugPrint("exit before EOF") ;
                         return createRegion();
                     }
@@ -910,22 +913,8 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
                 token= fScanner.nextToken();
             }
 
-            // Actions for PlusCal processing done upon obtaining of an EOF token
-            // from TLAPartitionScanner.nextToken
-            switch (state) {
-            case SEEK_ALGORITHM :
-                pcalStartCommentOffset = -1 ;
-                pcalStartOffset = -1 ;
-                pcalEndCommentOffset = -1 ;
-                break ;
-            case START_ALGORITHM :
-                System.out.println("Error in TLAFastPartioner.documentChanged2: line 917") ;
-                break ;
-            case IN_ALGORITHM :
-                pcalEndCommentOffset = -1 ;
-                break ;
-            // nothing to do for the case AFTER_ALGORITHM.
-            }
+            // Must call finishScan upon completion of calls of TLAPartitionScanner.nextToken
+            finishScan(state) ;
             
             first= fDocument.computeIndexInCategory(fPositionCategory, behindLastScannedPosition);
 
@@ -948,6 +937,32 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
         return createRegion();
     }
 
+    /**
+     * Called by documentChanged2, when it has finished calling the scanner, to
+     * set the information about the existence and location of a PlusCal partition.
+     * 
+     * @param state The state (SEEK_ALGORITHM, START_ALGORITHM, or IN_ALGORITHM)
+     *              in which scanning stopped.
+     */
+    private void finishScan(int state) {
+        switch (state) {
+        case SEEK_ALGORITHM :
+            pcalStartCommentOffset = -1 ;
+            pcalStartOffset = -1 ;
+            pcalEndCommentOffset = -1 ;
+            break ;
+        case START_ALGORITHM :
+            System.out.println("Error in TLAFastPartioner.documentChanged2: line 917") ;
+            break ;
+        case IN_ALGORITHM :
+           // I originally had the following, but I believe it was incorrect.  
+           // pcalEndCommentOffset = -1 ;
+            break ;
+        // nothing to do for the case AFTER_ALGORITHM.
+        }
+
+    }
+    
     /**
      * Returns the position in the partitoner's position category which is
      * close to the given offset. This is, the position has either an offset which
@@ -1233,7 +1248,13 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
         } catch (RuntimeException ex) {
             // Make sure we clear the cache
             clearPositionCache();
-            throw ex;
+            // Comment added by LL on 18 Aug 2012:  
+            // Throwing the following exception produces an error that causes
+            // the editor to fail to display the document.  Not throwing
+            // seems to allow the file to be opened, but with possibly
+            // bad syntax coloring.  The exception should probably therefore
+            // be replaced by code to log the problem.
+            throw ex;   
         }
 
         TypedRegion[] result= new TypedRegion[list.size()];
