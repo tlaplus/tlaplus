@@ -1,5 +1,8 @@
 package tlc2.output;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -1168,9 +1171,19 @@ public class MP
         msg = msg + "\nThe exception was a " + throwable.getClass().getName();
         if (throwable.getMessage() != null) {
             msg = msg + ": " + throwable.getMessage();
+        } else {
+        	msg += throwableToString(throwable);
         }
         return msg;
     }
+    
+	private static String throwableToString(final Throwable e) {
+		final Writer result = new StringWriter();
+		final PrintWriter printWriter = new PrintWriter(result);
+		e.printStackTrace(printWriter);
+		return result.toString();
+	}
+
     /**
      * Prints the error by code and reports the exception message.
      * Modified by LL on 7 April 2012 to produce more sensible EC.GENERAL 
