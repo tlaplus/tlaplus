@@ -1,11 +1,11 @@
-              tlatex.TeX Version 0.95 of 10 November 2001
+              tla2tex.TeX Version 1.0 of 18 August 2012
 
 CONTENTS
 --------
   INTRODUCTION
   COMMENT SHADING
-  HOW tlatex.TeX TYPESETS TLA+ FORMULAS
-  HOW tlatex.TeX TYPESETS COMMENTS
+  HOW tla2tex.TeX TYPESETS TLA+ FORMULAS
+  HOW tla2tex.TeX TYPESETS COMMENTS
   OUTPUT FILES
   TROUBLESHOOTING
 
@@ -13,17 +13,24 @@ CONTENTS
 INTRODUCTION 
 ------------ 
 
-tlatex.TeX is a version of the TLATeX Java program for use in putting
+tla2tex.TeX is a version of the TLATeX Java program for use in putting
 TLA+ formulas into LaTeX documents.  It was written by Leslie Lamport,
 based on ideas by Dmitri Samborski.
 
-tlatex.TeX takes as input a LaTeX source file.  It interprets any
+tla2tex.TeX takes as input a LaTeX source file.  It interprets any
 `tla' environment to be TLA+ "code".  It modifies the LaTeX source
 file by writing, after each `tla' environment, a `tlatex' environment
 containing LaTeX commands for typesetting the contents of the `tla'
 environment--first deleting any `tlatex' environment that follows the
 `tla' environment.  (It renames the old version of the input file to
 have the extension "old".)
+
+tla2tex.TeX handles `pcal' and `ppcal' environments the same way as
+it handles `tla' environments, except that it interprets the text
+in a `pcal' environment to be PlusCal code written with the C syntax,
+and text in a `ppcal' environment to be PlusCal code written with
+the P syntax.  Except as noted, everything said below about
+`tla' environments applies to `pcal' and `ppcal' environments.
 
 The LaTeX source file must contain a
 
@@ -39,7 +46,7 @@ if you run LaTeX on your system by typing something other than
 
 You will probably run TLATeX by typing 
 
-   java tlatex.TLA [options] fileName
+   java tla2tex.TLA [options] fileName
 
 where [options] is an optional list of options, and fileName is the
 name of the input file.  (If fileName does not contain an extension,
@@ -48,13 +55,14 @@ option produces a list of all options.  Running it with the -info
 option produces what you are now reading.  (The fileName can be
 omitted when using the -help or -info option.)
 
-The running time of tlatex.TeX is roughly proportional to the number
+The running time of tla2tex.TeX is roughly proportional to the number
 of separate `tla' environments.  You can speed things up by not
-having tlatex.TeX reprocess `tla' environments that haven't changed
+having tla2tex.TeX reprocess `tla' environments that haven't changed
 since the last time it was run.  To do this, just change those
-`tla' environments to `notla' environments.
+`tla' environments to `notla' environments.  Similarly, you can change
+`pcal' and `ppcal' to `nopcal' or `noppcal' environments.
 
-The only other thing you probably need to know about using tlatex.TeX
+The only other thing you probably need to know about using tla2tex.TeX
 is how to shade comments, which is explained in the next section.
 
 
@@ -72,9 +80,9 @@ where <shade-value> is a number between 0 and 1, smaller numbers producing
 darker shading.  The value .85 seems to work pretty well.
 
 
-HOW tlatex.TeX TYPESETS A tla ENVIRONMENT
+HOW tla2tex.TeX TYPESETS A tla ENVIRONMENT
 -----------------------------------------
-The `tlatex' environment produced by tlatex.TeX from a `tla'
+The `tlatex' environment produced by tla2tex.TeX from a `tla'
 environment should do what would want it to.  It preserves most of the
 meaningful alignments in the TLA+ "code".  For example, it will
 typeset
@@ -88,18 +96,22 @@ input will be reflected in the output.  However, TLATeX treats 0 and 1
 space between symbols the same, so "x+y" and "x + y" produce the same
 output, but "x  +  y" produces extra space around the "+".
 
+In `pcal' and `ppcal' environments, tla2tex.TeX tries to align the
+PlusCal code as well as the TLA+ expressions that appear in the code.
+
 The `tla' environment can appear anywhere in the LaTeX file at which a
 complete paragraph could appear.  The \begin{tla} and \end{tla}
 commands must each appear on a line by itself.
 
-tlatex.TeX does not check that the TLA+ "code" is syntactically
+tla2tex.TeX does not check that the TLA+ "code" is syntactically
 correct TLA+.  However, it will report an error if it encounters an
-illegal lexeme, such as ";".
+illegal lexeme, such as ";".  (Of course, ";" is illegal only in a
+`tla' environment, not in a `pcal' or `ppcal' environment.)
 
 
-HOW tlatex.TeX TYPESETS COMMENTS
+HOW tla2tex.TeX TYPESETS COMMENTS
 --------------------------------
-tlatex.TeX distinguishes between one-line and multi-line comments.  A
+tla2tex.TeX distinguishes between one-line and multi-line comments.  A
 one-line comment is any comment that is not a multi-line comment.
 Multi-line comments can be typed in any of the following three ways:
 
@@ -122,7 +134,7 @@ the first way, nothing may appear to the right of the
 comment--otherwise, the input is considered to be a sequence of
 separate one-line comments.  
 
-tlatex.TeX typesets a single-line comment in LR-mode, just as if it
+tla2tex.TeX typesets a single-line comment in LR-mode, just as if it
 were the argument of an \hbox command.  It typesets a multi-line
 comment in paragraph mode, as if it were inside a `minipage'
 environment.  Any special formatting of a comment that you want must
@@ -145,17 +157,17 @@ not come out looking as good as usual.
 
 OUTPUT FILES
 ------------
-tlatex.TeX writes several files.  The names of these are normally
+tla2tex.TeX writes several files.  The names of these are normally
 determined from the name of the input file.  However, options allow
 you to specify the name of each of these files.  In the following
 description, the root of a file name is the name with any extension or
 path specifier removed; for example, the root of c:\frob\bar.tla is
 bar.  All file names are interpreted relative to the directory in
-which tlatex.TeX is run.
+which tla2tex.TeX is run.
 
 -out fileName
    If f is the root of fileName, then f.tex is the name of the 
-   ouput produced by tlatex.TeX.
+   ouput produced by tla2tex.TeX.
 
 -alignOut fileName
    This specifies the root name of the LaTeX alignment file written by
@@ -168,17 +180,17 @@ which tlatex.TeX is run.
 
 TROUBLE-SHOOTING
 ----------------
-The error messages should be self-explanatory.  tlatex.TeX reads the
+The error messages should be self-explanatory.  tla2tex.TeX reads the
 log file produced by LaTeX the last time it processed the input file.
 It uses this information to determine the value of LaTeX's \linewidth
 parameter for each of the `tla' environments.  (That value depends on
 the context in which the `tla' environment occurs.)  It issues a
 warning if the number of `tla' environments in the file has changed
 since LaTeX was run on the file, so the \linewidth information is not
-current.  The output produced by tlatex.TeX usually doesn't depend on
+current.  The output produced by tla2tex.TeX usually doesn't depend on
 the \linewidth values, so the results will be fine even if the wrong
 values were used.  To be safe, you should run LaTeX on the input
-file before running tlatex.TeX.
+file before running tla2tex.TeX.
 
 
 

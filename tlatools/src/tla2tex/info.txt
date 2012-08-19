@@ -1,4 +1,4 @@
-              TLATeX Version 0.91 of 6 December 2000
+              TLATeX Version 1.0 of 18 August 2012
 
 CONTENTS
 --------
@@ -27,7 +27,7 @@ something other than "latex".
 
 You will probably run TLATeX by typing 
 
-   java tlatex.TLA [options] fileName
+   java tla2tex.TLA [options] fileName
 
 where [options] is an optional list of options, and fileName is the
 name of the input file.  (If fileName does not contain an extension,
@@ -67,6 +67,11 @@ comments.
 
 Here are all the options relevant to shading.
 
+-noPcalShade
+   When the -shade option is chosen, this option causes a
+   PlusCal algorithm (which appear in a comment) not to
+   be shaded.  (The algorithm's comments will be shaded.)
+   
 -grayLevel num
    Determines the darkness of the shading.  It is a number between 0 and
    1, where 0 means completely black and 1 means white.  The default
@@ -123,6 +128,14 @@ contains an illegal lexeme, such as ";".
 
 HOW TLATeX TYPESETS COMMENTS
 ----------------------------
+
+TLATeX now formats a PlusCal algorithm that appears inside a
+specification.  A PlusCal algorithm appears inside a comment
+that is delimited by `(*' and `*)'.   Everthing in the comment
+outside the PlusCal code is formatted like a comment.  Comments
+inside the PlusCal code are formatted like ordinary comments in
+the specification. 
+
  ---------------------------------------------------------------
 | WARNING: A left single-quote (`) has special meaning to       |
 | TLATeX.  Enclosing a word in single-quotes like `foo' is      |
