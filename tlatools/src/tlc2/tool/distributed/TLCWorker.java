@@ -17,6 +17,8 @@ import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
@@ -44,8 +46,11 @@ import util.UniqueString;
 @SuppressWarnings("serial")
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
+	private static final boolean unsorted = Boolean.getBoolean(TLCWorker.class.getName() + ".unsorted");
+	
 	private static Timer keepAliveTimer;
 	private static RMIFilenameToStreamResolver fts;
+	private static final ExecutorService executorService = Executors.newCachedThreadPool();
 	
 	private DistApp work;
 	private IFPSetManager fpSetManager;
@@ -55,7 +60,6 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private final Cache cache;
 	private final long mask;
 	
-	private ExecutorService executorService;
 
 	public TLCWorker(DistApp work, IFPSetManager fpSetManager, String aHostname)
 			throws RemoteException {
@@ -65,8 +69,15 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		uri = URI.create("rmi://" + aHostname + ":" + getPort());
 		
 		this.cache = new SimpleCache();
-		
-		this.executorService = Executors.newCachedThreadPool();
+	}
+	
+	//TODO Remove once performance tests show superiority of TreeSet
+	private Set<Holder> getSet() {
+		if (unsorted) {
+			return new HashSet<Holder>();
+		} else {
+			return new TreeSet<Holder>();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -80,7 +91,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		
 		TLCState state1 = null, state2 = null;
 		try {
-			final TreeSet<Holder> treeSet = new TreeSet<Holder>();
+			final Set<Holder> treeSet = getSet();
 			// Compute all of the next states of this block of states.
 			for (int i = 0; i < states.length; i++) {
 				state1 = states[i];
@@ -199,6 +210,13 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 */
 	public long getCacheRate() throws RemoteException {
 		return this.cache.getHitRate();
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCWorkerRMI#getCacheRateRatio()
+	 */
+	public double getCacheRateRatio() throws RemoteException {
+		return this.cache.getHitRatio();
 	}
 	
 	/* (non-Javadoc)
@@ -324,7 +342,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			final TLCWorkerRunnable[] runnables = new TLCWorkerRunnable[numCores];
 			for (int j = 0; j < numCores; j++) {
 				runnables[j] = new TLCWorkerRunnable(server, fpSetManager, work);
-				Thread t = new Thread(runnables[j], TLCServer.THREAD_NAME_PREFIX + j);
+				Thread t = new Thread(runnables[j], TLCServer.THREAD_NAME_PREFIX + String.format("%03d", j));
 				t.start();
 			}
 			

@@ -36,9 +36,14 @@ import tlc2.util.LongVec;
 public class TLCServerThread extends IdThread {
 	private static int COUNT = 0;
 	/**
+	 * A thread pool used to execute tasks
+	 */
+	private static final ExecutorService es = Executors.newCachedThreadPool();
+	/**
 	 * Identifies the worker
 	 */
 	private int receivedStates, sentStates;
+	private double cacheRateRatio;
 	private final CyclicBarrier barrier;
 	private final IBlockSelector selector;
 	private final Timer keepAliveTimer;
@@ -97,7 +102,8 @@ public class TLCServerThread extends IdThread {
 			MP.printError(EC.GENERAL, e);
 		}
 		// update thread name
-		setName(TLCServer.THREAD_NAME_PREFIX + COUNT++ + "-[" + uri.toASCIIString() + "]");
+		final String i = String.format("%03d", COUNT++);
+		setName(TLCServer.THREAD_NAME_PREFIX + i + "-[" + uri.toASCIIString() + "]");
 	}
 
 	/**
@@ -112,8 +118,6 @@ public class TLCServerThread extends IdThread {
 		TLCStateVec[] newStates = null;
 		LongVec[] newFps = null;
 
-		ExecutorService es = Executors.newCachedThreadPool();
-		
 		final IStateQueue stateQueue = this.tlcServer.stateQueue;
 		try {
 			START: while (true) {
@@ -201,6 +205,8 @@ public class TLCServerThread extends IdThread {
 						stateQueue.sEnqueue(state);
 					}
 				}
+				
+				cacheRateRatio = this.worker.getCacheRateRatio();
 			}
 		} catch (Throwable e) {
 			TLCState state1 = null, state2 = null;
@@ -312,6 +318,13 @@ public class TLCServerThread extends IdThread {
 	 */
 	public int getSentStates() {
 		return sentStates;
+	}
+
+	/**
+	 * @return The worker local cache hit ratio 
+	 */
+	public double getCacheRateRatio() {
+		return cacheRateRatio;
 	}
 
 	// ************************************//
