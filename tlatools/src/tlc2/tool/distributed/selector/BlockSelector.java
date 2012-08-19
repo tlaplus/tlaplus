@@ -10,6 +10,10 @@ import util.Assert;
 
 public class BlockSelector implements IBlockSelector {
 	/**
+	 * A (lossy!) average block size statistic. Better not use for anything else than statistics! 
+	 */
+	protected volatile long averageBlockCnt = 0L;
+	/**
 	 * A reference to {@link TLCServer} for which this {@link IBlockSelector} selects blocks
 	 */
 	protected final TLCServer tlcServer;
@@ -50,7 +54,10 @@ public class BlockSelector implements IBlockSelector {
 		// can only read Integer.MAX_VALUE at max
 		blockSize = Math.min(Integer.MAX_VALUE, blockSize);
 		// synchronized removal from the state queue
-		return stateQueue.sDequeue((int)blockSize);
+		final TLCState[] sDequeue = stateQueue.sDequeue((int)blockSize);
+		// maintain statistics with what we really got from the state queue.
+		setAverageBlockCnt(sDequeue.length);
+		return sDequeue;
 	}
 
 	/**
@@ -68,5 +75,21 @@ public class BlockSelector implements IBlockSelector {
 	 */
 	public void setMaxTXSize(int aMaximum) {
 		// nop
+	}
+	
+	protected void setAverageBlockCnt(long blockCnt) {
+		// Get meaningful results right from the start
+		if (averageBlockCnt > 0L) {
+			averageBlockCnt = (blockCnt + averageBlockCnt) / 2L;
+		} else {
+			averageBlockCnt = blockCnt;
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.selector.IBlockSelector#getAverageBlockCnt()
+	 */
+	public long getAverageBlockCnt() {
+		return averageBlockCnt;
 	}
 }

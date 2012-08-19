@@ -537,6 +537,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		return distinctStatesPerMinute;
 	}
 
+	public long getAverageBlockCnt() {
+		return blockSelector.getAverageBlockCnt();
+	}
 
 	/**
 	 * @return

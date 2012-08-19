@@ -28,6 +28,7 @@ public class TLCWorkerSmartProxy implements TLCWorkerRMI {
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#getNextStates(tlc2.tool.TLCState[])
 	 */
 	public Object[] getNextStates(final TLCState[] states) throws RemoteException, WorkerException {
+		// Prefer currentTimeMillis over nanoTime as it uses less CPU cycles to read
 		final long start = System.currentTimeMillis();
 		
 		// do actual remote call

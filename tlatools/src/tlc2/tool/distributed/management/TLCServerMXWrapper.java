@@ -103,4 +103,11 @@ public class TLCServerMXWrapper extends TLCStandardMBean implements TLCStatistic
 	public void checkpoint() {
 		TLCGlobals.forceChkpt();
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getAverageBlockCnt()
+	 */
+	public long getAverageBlockCnt() {
+		return tlcServer.getAverageBlockCnt();
+	}
 }

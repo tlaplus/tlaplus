@@ -28,5 +28,10 @@ public interface IBlockSelector {
 	 *            network. The {@link BlockSelector} must not exceed this value.
 	 */
 	public abstract void setMaxTXSize(int aMaximum);
-
+	
+	/**
+	 * Statistical value intended for performance/scalability measures.
+	 * @return The average block size handed out to workers
+	 */
+	public abstract long getAverageBlockCnt();
 }

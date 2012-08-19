@@ -94,4 +94,12 @@ public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatis
 	public void checkpoint() {
 		TLCGlobals.forceChkpt();
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getAverageBlockCnt()
+	 */
+	public long getAverageBlockCnt() {
+		//TODO adapt once Workers can support units of work greater than 1 
+		return 1;
+	}
 }

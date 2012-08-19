@@ -48,6 +48,10 @@ public interface TLCStatisticsMXBean {
 	 */
 	int getWorkerCount();
 	
+	/**
+	 * @return Average block count handed out to workers as units of work
+	 */
+	long getAverageBlockCnt();
 	
 	/**
 	 * Creates a checkpoint next time possible
