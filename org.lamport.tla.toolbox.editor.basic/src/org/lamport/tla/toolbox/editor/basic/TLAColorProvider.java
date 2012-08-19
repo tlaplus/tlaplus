@@ -18,6 +18,10 @@ public class TLAColorProvider
 
     public static final RGB TLA_MULTI_LINE_COMMENT = new RGB(64, 64, 255);
     public static final RGB TLA_SINGLE_LINE_COMMENT = new RGB(0, 128, 64);
+    
+    // Added for PlusCal
+    public static final RGB PCAL_KEYWORD = new RGB(175, 40, 10);
+
 
     public static final RGB TLA_KEYWORD = new RGB(128, 0, 128); 
     public static final RGB TLA_VALUE = new RGB(0, 0, 255); 

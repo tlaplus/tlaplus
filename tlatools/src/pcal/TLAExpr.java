@@ -638,12 +638,10 @@ public class TLAExpr
         return result ;
       }      
 
-    public void substituteForAll( Vector exprs , // of TLAExpr
-                                  Vector strs    // of String
-                                ) throws TLAExprException
-      { substituteForAll(exprs, strs, true); }
-
     /**
+     * Substitutes clones of the expressions in exprs for the corresponding
+     * strings of strs in the current expression.
+     * 
      * This is called with parenthesize = true only during the initial parsing 
      * phase (the execution of ParseAlgorithm.getAlgorithm).  It is called with 
      * parenthesize = false by:
@@ -654,54 +652,152 @@ public class TLAExpr
      *   PcalTLAGen.AddSubscriptsToExpr: adds the primes and "[self]" subscripts
      *     to variables when needed.
      *  
+     *  This method was modified by LL on 10 August 2012 to do the substitutions
+     *  "simultaneously" rather than one after the other.  The original code 
+     *  first did all the substitutions for the first string, then all the
+     *  substitutions for the second string, etc.  This yielded a bug if the
+     *  expression substituted for the first string contained the second
+     *  string.  For example, the substitutions
+     *  
+     *     a <- F(b), b <- c
+     *     
+     *  in  a + b  produced  F(c) + c  instead of the correct  F(b) + c .
+     *  
+
+     * @param exprs  A vector of TLAExpr objects
+     * @param strs   A vector of strings
+     * @param parenthesize  A boolean that is true iff 
+     * @throws TLAExprException
+     */
+    public void substituteForAll( Vector exprs , // of TLAExpr
+                                  Vector strs    // of String
+                                ) throws TLAExprException
+      { substituteForAll(exprs, strs, true); }
+
+    /**
+     * 
      * @param exprs
      * @param strs
      * @param parenthesize
      * @throws TLAExprException
      */
-    /*
-     * This method is incorrect.  It first does the substitutions for the 
-     * first macro parameter, then it does the substitutions for the second
-     * macro parameter, etc.  This means that, when called to perform the 
-     * substitutions to expand the macro definition
-     * 
-     *    macro Foo(a, b) { a + b }
-     *    
-     * for the call
-     * 
-     *    Foo(F(b), G)
-     *    
-     * it produces
-     * 
-     *    F(G) + G
-     *    
-     * instead of
-     * 
-     *    F(b) + G
-     *    
-     * There may be other uses that produce similar errors.
-     * LL 9 August 2012
-     */
     public void substituteForAll( Vector exprs , // of TLAExpr
                                   Vector strs ,  // of String
                                   boolean parenthesize
-                                ) throws TLAExprException
-      /*********************************************************************
-      * Substitute each of the expressions in exprs for the corresponding  *
-      * string in strs.  (The vectors must have the same lengths.)         *
-      * If parenthesize = true, then parentheses are put around the        *
-      * substituted string unless it or the current expression consists    *
-      * of just one token.                                                 *
-      *********************************************************************/
-      { int i = 0 ;
-        while (i < exprs.size())
-          { TLAExpr exp = (TLAExpr) exprs.elementAt(i) ;
-            String  st  = (String)  strs.elementAt(i) ;
-            substituteFor(exp, st, parenthesize) ;
-            i = i + 1;
-          };
-        return;
-      }      
+                                ) throws TLAExprException {
+        TLAExpr[] expArray  = new TLAExpr[exprs.size()] ;
+        String[]  strArray  = new String[strs.size()] ;
+        IntPair[] nextArray = new IntPair[expArray.length] ;
+        
+        // Set expArray and strArray to array versions of exprs and strs.
+        // Initialize nextArray with the  positions of the first
+        // instances of all the strings in strs.
+        for (int i = 0; i < nextArray.length; i++) {
+            expArray[i] = (TLAExpr) exprs.elementAt(i) ;
+            strArray[i] = (String) strs.elementAt(i) ;
+            nextArray[i] = findNextInstanceIn(strArray[i], new IntPair(0, 0)) ;
+        }
+        
+        boolean notDone = true ;
+        while (notDone) {
+            IntPair nextPos = null ;
+            int nextIdx = -1 ;
+            
+            // Set nextPos to the smallest non-null IntPair in nextArray, and
+            // nextIdx to its index in nextArray.  The value of nextPos
+            // is set to null if all the elements of nextArray are null;
+            for (int i = 0; i < nextArray.length; i++) {
+                IntPair pos = nextArray[i] ;
+                if (pos != null) {
+                    if (nextPos == null) {
+                        nextPos = pos ;
+                        nextIdx = i ;
+                    }
+                    else if (   (pos.one < nextPos.one)
+                             || (   (pos.one == nextPos.one)
+                                 && (pos.two < nextPos.two))) {
+                        nextPos = pos ;
+                        nextIdx = i ;
+                    }  
+                }
+            }
+            
+            if (nextPos == null) {
+                notDone = false ;
+            }
+            else {
+                IntPair afterNextPos = stepCoord(nextPos, 1) ;
+                   // This is the next token after nextPos, which will
+
+                IntPair newPos = substituteAt(expArray[nextIdx], nextPos, parenthesize) ;
+                
+                
+                nextArray[nextIdx] =  (newPos == null) ?
+                                         null :
+                                         findNextInstanceIn(strArray[nextIdx], newPos) ;
+                
+                // The values of nextArray[i] for all i # nextIdx need to be adjusted
+                // if the substitution replaced parameter number nextIdx by an
+                // expression consisting of more than a single token-- which is the
+                // case iff newPos # afterNextPos.  We now move those positions
+                // accordingly.  Note that if newPos is null, then there are no tokens
+                // in any position after the replaced token, so nextArray[i] should
+                // be null for all i.
+                for (int i = 0; i < nextArray.length; i++) {
+                    if ((i != nextIdx) && (nextArray[i] != null)) {
+                        Debug.Assert(newPos != null , "Doing substitutions in wrong order.") ;
+                                                
+                        if (afterNextPos.one == newPos.one) {
+                            // The substituted expression occupies a single line.
+                            // Must move nextArray[i] to the right iff it is on the
+                            // same line as nextPos
+                            if (nextArray[i].one == nextPos.one) {
+                                nextArray[i].two = nextArray[i].two + (newPos.two - afterNextPos.two) ; 
+                                Debug.Assert(nextArray[i].two > nextPos.two, "Wrong substitution order.") ; 
+                            }
+                        }
+                        else {
+                            // The substituted expression occupies more than one line.  We have
+                            // to increment the line number, but do it separately in the
+                            // following two cases.
+                            //
+                            // Have to change nextArray[i] iff it was pointing at the same line as nextPos
+                            if (nextArray[i].one == nextPos.one) {
+                                nextArray[i].one = nextArray[i].one + (newPos.one - afterNextPos.one) ;
+                                Debug.Assert(nextArray[i].two > nextPos.two, "Wrong substitution order.") ; 
+                                nextArray[i].two = nextArray[i].two + (newPos.two - afterNextPos.two) ; 
+                                   // Note: nextArray[i] comes after nextPos implies that, since they
+                                   // are on the same line, nextArray[i].two should be >= afterNextPos.two,
+                                   // so this sets nextArray[i].two to a non-negative number 
+                            }
+                            else {
+                                nextArray[i].one = nextArray[i].one + (newPos.one - afterNextPos.one) ;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return ;
+    }                              
+                                
+//      /*********************************************************************
+//      * Substitute each of the expressions in exprs for the corresponding  *
+//      * string in strs.  (The vectors must have the same lengths.)         *
+//      * If parenthesize = true, then parentheses are put around the        *
+//      * substituted string unless it or the current expression consists    *
+//      * of just one token.                                                 *
+//      *********************************************************************/
+//      { 
+//        int i = 0 ;
+//        while (i < exprs.size())
+//          { TLAExpr exp = (TLAExpr) exprs.elementAt(i) ;
+//            String  st  = (String)  strs.elementAt(i) ;
+//            substituteFor(exp, st, parenthesize) ;
+//            i = i + 1;
+//          };
+//        return;
+//      }      
 
      public void substituteFor(TLAExpr expr, String id, boolean parenthesize) throws TLAExprException
       /*********************************************************************

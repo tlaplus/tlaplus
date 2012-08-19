@@ -89,7 +89,7 @@ The following stuff needs to be done for each release.
   3. Hit on Eclipse Product Export Wizard
      (export to windows, linux stk/x86, macosx cocoa/x86)
 -----------------------------------------------------------------------------
-How to put a new version up on the MSR-INRIA Web site.
+How to put a new version up on the MSR-INRIA Web site.  (This is also obsolete.)
 
 1. Go to the web site's project page.
 2. Login
@@ -599,6 +599,20 @@ will probably require debugging to see what path names are returned
 by the class's getAbsolutePath method and how they compare with
 the library folder names.
 ----------------------------------------------------------------------
+SYNTAX COLORING (KEYWORDS, COMMENTS, ETC.)
+
+Setting the Colors.
+------------------
+See TLASourceViewerConfiguration and TLAColorProvider.  It should be easy
+to make the colors settable by preferences, but probably only if you have to
+restart the Toolbox to change the preferences.
+
+Partitioning a TLA+ Document.
+------------------------
+Done by the TLAFastPartitioner calling TLAPartitionScanner methods.
+See comments in TLAFastPartitioner.
+
+-------------------------------------------------------------------------
 HOW TO GET A...
   SpecObj
      From IFile: ResourceHelper.getValidParseResult(iFile).getSpecObj()

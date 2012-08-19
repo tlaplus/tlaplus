@@ -1757,9 +1757,13 @@ public class TokenizeSpec
      * This method also removes an extra gray bar that can appear after
      * the algorithm when using the -shade and -noPcalShade options.
      * 
+     * The isTeX argument is true if this is called for tla2tex.TeX, in 
+     * which case the spec can start anywhere inside a PlusCal algorithm.
+     * 
      * @param spec
+     * @param isTeX  true for tla2tex.TeX, false for tla2tex.TLA
      */
-    public static void FixPlusCal(Token[][] spec) {
+    public static void FixPlusCal(Token[][] spec, boolean isTeX) {
 //        if ((!hasPcal) || (!isCSyntax)) {
 //            return ;
 //        }
@@ -1853,34 +1857,41 @@ public class TokenizeSpec
         if (!isCSyntax) {
             return ;
         }
-        // Since we're at the beginning of the algorithm, the first
-        // "{" that's not a comment is the first PlusCal "{".
+        // If isTeX is false, then we're at the beginning of the algorithm, 
+        // and the first "{" that's not a comment is the first PlusCal "{".
         Position pos = pcalStart ;
-        while (   (pos != null) 
-               && (   (pos.toToken(spec).type != Token.BUILTIN)
-                   || (! pos.toToken(spec).string.equals("{")))) {            
-          pos = nextTokenPos(pos, spec) ;
+        if (! isTeX) {
+           while (   (pos != null) 
+                  && (   (pos.toToken(spec).type != Token.BUILTIN)
+                      || (! pos.toToken(spec).string.equals("{")))) {            
+              pos = nextTokenPos(pos, spec) ;
+           }
         }
 
         // pos should not be null, but...
         if (pos != null) {
-            ProcessPcalBrace(pos, spec) ;
+            ProcessPcalBrace(pos, spec, isTeX) ;
         }
     }
     
     /**
-     * ProcessPcalBrace(Position pos, Token[][] spec)
+     * ProcessPcalBrace(Position pos, Token[][] spec, boolean isTeX)
      * ----------------------------------------------
      * 
-     * This assumes that it is called with pos the position of a left brace 
-     * token in spec that is a PlusCal delimiter.  It converts 
+     * If isTeX is false, then assumes that it is called with pos the position 
+     * of a left brace token in spec that is a PlusCal delimiter.  It converts 
      * all PlusCal delimiters from (and including) that left brace through
      * the matching right brace to the appropriate tokens, and returns the
      * position of the next token past the matching right brace.  If
      * there is no matching right brace, it returns  null.
      *   
+     * If isTeX is true, then it processes all tokens in spec, returning
+     * null.  If the first character is a left brace,
+     * it assumes it's a PlusCal left brace.  
+     * 
      * Here's a spec for this, in a style similar to that for Tokenize.
-     * Here,  ++ means go to next non-comment token.
+     * Here,  ++ means go to next non-comment token.  It starts in
+     * state START if isTeX is false, and in NOT_LBRACE if it's true.
      * 
      * START:
      *   make current token pcalLBrace ++ --> CAN_BE_LBRACE
@@ -1938,18 +1949,21 @@ public class TokenizeSpec
     private static final int AFTER_VAR_DECL        = 5 ;
     private static final int AFTER_COMMA           = 6 ;
     
-    public static Position ProcessPcalBrace(Position pos, Token[][] spec) {
+    public static Position ProcessPcalBrace(Position pos, Token[][] spec, boolean isTeX) {
         Token tok = pos.toToken(spec) ;
-        tok.string = BuiltInSymbols.pcalLeftBrace ;
-        int pstate = CAN_BE_LBRACE ;        
-        Position curPos = nextNonComment(pos, spec) ;
+        Position curPos = pos ;
+        if (!isTeX) {
+            tok.string = BuiltInSymbols.pcalLeftBrace ;
+            curPos = nextNonComment(pos, spec) ;
+        }
+        int pstate = CAN_BE_LBRACE ;  
         
         while (curPos != null) {
             tok = curPos.toToken(spec) ;
             switch (pstate) {
             case CAN_BE_LBRACE :
                 if ((tok.type == Token.BUILTIN) && tok.string.equals("{")) {
-                 curPos = ProcessPcalBrace(curPos, spec) ;   
+                 curPos = ProcessPcalBrace(curPos, spec, false) ;   
                 }
                 else {
                     pstate = NOT_LBRACE ;
@@ -2051,7 +2065,7 @@ System.out.println("Error SEEKING_IDENT_LPAREN at " + curPos.toString());
 
             case AFTER_COMMA :
                 if ((tok.type == Token.BUILTIN) && tok.string.equals("{")) {
-                    curPos = ProcessPcalBrace(curPos, spec) ;   
+                    curPos = ProcessPcalBrace(curPos, spec, false) ;   
                     pstate = NOT_LBRACE ;
                    }
                 else if (   (tok.type == Token.BUILTIN) 

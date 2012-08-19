@@ -116,8 +116,22 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 IRegion lineOnPartitionStart = document.getLineInformationOfOffset(partitions[i].getOffset());
 
                 // if the multi-line comment contains multiple lines
-                if (partitions[i].getType().equals(TLAPartitionScanner.TLA_MULTI_LINE_COMMENT)
-                        && partitions[i].getLength() > lineOnPartitionStart.getLength())
+                // Added by LL on 16 Aug 2012:  I have no idea what this does.  Since the TLA_PCAL
+                // partitions added for PlusCal can also contain multiple lines,  I guessed that
+                // whatever is done for TLA_MULTI_LINE_COMMENT partitions should also be done for
+                // TLA_PCAL partitions.   However, I discovered that my original implementation
+                // added bogus foldings in the PlusCal algorithm.  Not adding the TLA_PCAL partitions
+                // solved this problem (except for a harmless folding of the starting comment if it occupies
+                // an entire line).  I have no idea if this is used for anything else, so it's
+                // possible that not adding them will break something else.   However, this method
+                // is called only by initialReconcile, which also calls TLAEditor.updateFoldingStructure.
+                // The latter method has a comment saying it's only used for comment folding (and it's
+                // incorrect).  So, there's a good chance that everything is OK.
+                // 
+                if (   (   partitions[i].getType().equals(TLAPartitionScanner.TLA_MULTI_LINE_COMMENT)
+                //   || partitions[i].getType().equals(TLAPartitionScanner.TLA_PCAL))   // This disjunct was added for PlusCal
+                   )
+                    && partitions[i].getLength() > lineOnPartitionStart.getLength())
                 {
                     positions.add(new Position(partitions[i].getOffset(), partitions[i].getLength()));
                 }

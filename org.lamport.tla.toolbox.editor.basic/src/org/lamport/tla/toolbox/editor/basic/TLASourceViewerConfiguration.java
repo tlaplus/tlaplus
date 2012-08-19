@@ -75,6 +75,11 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
         reconciler.setDamager(dr, TLAPartitionScanner.TLA_STRING);
         reconciler.setRepairer(dr, TLAPartitionScanner.TLA_STRING);
 
+        // The following added for PlusCal
+        dr = new DefaultDamagerRepairer(TLAEditorActivator.getDefault().getPCALCodeScanner());
+        reconciler.setDamager(dr, TLAPartitionScanner.TLA_PCAL);
+        reconciler.setRepairer(dr, TLAPartitionScanner.TLA_PCAL);
+
         return reconciler;
     }
 
@@ -92,7 +97,10 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)
     {
         return new String[] { IDocument.DEFAULT_CONTENT_TYPE, TLAPartitionScanner.TLA_MULTI_LINE_COMMENT,
-                TLAPartitionScanner.TLA_SINGLE_LINE_COMMENT, TLAPartitionScanner.TLA_STRING };
+                TLAPartitionScanner.TLA_SINGLE_LINE_COMMENT, TLAPartitionScanner.TLA_STRING,
+                // Added by LL on 16 Aug 2012:  I don't know what this is all about, but
+                // I presume we need to register the TLA_PCAL partition type here.
+                TLAPartitionScanner.TLA_PCAL};  // Added for PlusCal
     }
 
     /**

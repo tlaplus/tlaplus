@@ -105,7 +105,7 @@ class TeX
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Wed 9 Aug 2012 at 16:08:49 PST by lamport";
+    "last modified on Wed 18 Aug 2012 at 16:08:49 PST by lamport";
 
   static String modDate = lastModified.substring(21, 33) ;
     /***********************************************************************
@@ -324,7 +324,7 @@ class TeX
             * part of the PlusCal C-syntax to tokens that are printed            *
             * appropriately.                                                     *
             *********************************************************************/
-            TokenizeSpec.FixPlusCal(spec) ;
+            TokenizeSpec.FixPlusCal(spec, true) ;
              
             /***************************************************************
             * Process the comment tokens.                                  *
