@@ -56,7 +56,7 @@ public class BlockSelector implements IBlockSelector {
 		// synchronized removal from the state queue
 		final TLCState[] sDequeue = stateQueue.sDequeue((int)blockSize);
 		// maintain statistics with what we really got from the state queue.
-		setAverageBlockCnt(sDequeue.length);
+		setAverageBlockCnt(sDequeue != null ? sDequeue.length : 0);
 		return sDequeue;
 	}
 
