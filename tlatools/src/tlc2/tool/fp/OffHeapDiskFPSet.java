@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import sun.misc.Unsafe;
 import tlc2.output.EC;
+import tlc2.output.MP;
 import util.Assert;
 
 @SuppressWarnings({ "serial", "restriction" })
@@ -537,8 +538,11 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 				} else {
 					// prevent converting every long to String when assertion holds (this is expensive)
 					if (value == fp) {
-						Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
-								String.valueOf(value));
+						//MAK: Commented cause a duplicate does not pose a risk for correctness.
+						// It merely indicates a bug somewhere.
+						//Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
+						//		String.valueOf(value));
+						MP.printWarning(EC.TLC_FP_VALUE_ALREADY_ON_DISK, String.valueOf(value));
 					}
 					writeFP(outRAF, fp);
 					// we used one fp up, thus move to next one
