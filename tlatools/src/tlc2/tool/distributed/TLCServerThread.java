@@ -38,7 +38,7 @@ public class TLCServerThread extends IdThread {
 	/**
 	 * A thread pool used to execute tasks
 	 */
-	private static final ExecutorService es = Executors.newCachedThreadPool();
+	static final ExecutorService es = Executors.newCachedThreadPool();
 	/**
 	 * Identifies the worker
 	 */
@@ -231,7 +231,6 @@ public class TLCServerThread extends IdThread {
 		} finally {
 			keepAliveTimer.cancel();
 			states = new TLCState[0];
-			es.shutdown();
 			// not calling TLCGlobals#decNumWorkers here because at this point
 			// TLCServer is shutting down anyway
 		}

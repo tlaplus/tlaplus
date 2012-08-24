@@ -489,6 +489,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			// Otherwise getNewStates() and getStatesSeen() fail.
 			entry.setValue(null);
 		}
+		// Only shutdown the thread pool if we exit gracefully
+		TLCServerThread.es.shutdown();
 		
 		server.statesPerMinute = 0;
 		server.distinctStatesPerMinute = 0;
