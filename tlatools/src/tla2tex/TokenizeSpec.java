@@ -1871,7 +1871,7 @@ public class TokenizeSpec
         // pos should not be null, but...
         if (pos != null) {
          pos = ProcessPcalBrace(pos, spec, isTeX) ;
-         System.out.println("pos = " + pos.toString()) ;
+         // System.out.println("pos = " + pos.toString()) ;
         }
         
         // For tla2tex.TeX, we want to keep going until we
