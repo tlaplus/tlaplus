@@ -337,4 +337,38 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			return worker;
 		}
 	}
+	
+	private static class TLCWorkerRunnable implements Runnable {
+		private final TLCServerRMI aServer;
+		private final IFPSetManager anFpSetManager;
+		private final DistApp aWork;
+
+		public TLCWorkerRunnable(TLCServerRMI aServer, IFPSetManager anFpSetManager, DistApp aWork) {
+			this.aServer = aServer;
+			this.anFpSetManager = anFpSetManager;
+			this.aWork = aWork;
+		}
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
+		@Override
+		public void run() {
+			TLCWorker w;
+			try {
+				w = new TLCWorker(aWork, anFpSetManager, InetAddress.getLocalHost().getCanonicalHostName());
+				aServer.registerWorker(w);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
 }

@@ -134,6 +134,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	/**
 	 * Counts the amount of states passed to the containsBlock method
 	 */
+	//TODO need AtomicLong here to prevent dirty writes to statesSeen?
 	private long statesSeen = 0L;
 	
     protected FPSet() throws RemoteException
