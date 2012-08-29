@@ -40,6 +40,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 	private static Timer keepAliveTimer;
 	private static RMIFilenameToStreamResolver fts;
+	private static TLCWorkerRunnable[] runnables;
 	
 	private DistApp work;
 	private IFPSetManager fpSetManager;
@@ -272,7 +273,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			
 			// spawn as many worker threads as we have cores
 			final int numCores = Runtime.getRuntime().availableProcessors();
-			final TLCWorkerRunnable[] runnables = new TLCWorkerRunnable[numCores];
+			runnables = new TLCWorkerRunnable[numCores];
 			for (int j = 0; j < numCores; j++) {
 				runnables[j] = new TLCWorkerRunnable(server, fpSetManager, work);
 				Thread t = new Thread(runnables[j], "TLCWorkerRunnable#" + j);
@@ -303,6 +304,14 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 	public static void setFilenameToStreamResolver(RMIFilenameToStreamResolver aFTS) {
 		fts  = aFTS;
+	}
+
+	public static TLCWorker[] getTLCWorker() {
+		TLCWorker[] workers = new TLCWorker[runnables.length];
+		for (int i = 0; i < runnables.length; i++) {
+			workers[i] = runnables[i].getTLCWorker();
+		}
+		return workers;
 	}
 
 	public static class TLCWorkerRunnable implements Runnable {
