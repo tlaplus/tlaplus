@@ -558,7 +558,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		if (TLCGlobals.tool) {
             MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(level),
                     String.valueOf(statesGenerated), String.valueOf(distinctStates),
-                    String.valueOf(statesLeftInQueue) });
+                    String.valueOf(statesLeftInQueue), "0", "0" });
         }
 
         MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(statesGenerated),

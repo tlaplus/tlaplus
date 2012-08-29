@@ -141,12 +141,12 @@ public class StateSpaceInformationItem
 			final long foundStates = Long.parseLong(outputMessage.substring(
 					i[2] + COLON.length(), i[3]));
 			final long statesPerMinute = Long.parseLong(outputMessage
-					.substring(i[3] + GENERATED.length(), i[4]));
+					.substring(i[3] + GENERATED.length(), i[4]).replace(",", ""));
 
 			final long distinctStates = Long.parseLong(outputMessage.substring(
 					i[4] + SPM.length(), i[5]));
 			final long distinctStatesPerMinute = Long.parseLong(outputMessage
-					.substring(i[5] + DISTINCT.length(), i[6]));
+					.substring(i[5] + DISTINCT.length(), i[6]).replace(",", ""));
 
 			final long leftStates = Long.parseLong(outputMessage.substring(i[6]
 					+ DISTINCT_SPM.length(), i[7]));
