@@ -52,6 +52,7 @@ public class TLCTrace {
    * @throws IOException
    */
   public final synchronized long writeState(final TLCState predecessor, final long aFingerprint)
+  //TODO Remove synchronization as all threads content for this lock 
   throws IOException {
 	  return writeState(predecessor.uid, aFingerprint);
   }
