@@ -10,7 +10,7 @@ import tlc2.tool.distributed.TLCWorker;
 
 public class TLCWorkerWrapper implements ITLCWorker {
 
-	private TLCWorker tlcWorker;
+	private TLCWorker[] tlcWorker;
 
 	/* (non-Javadoc)
 	 * @see tlc2.ITLCWorker#connect(java.net.URI)
@@ -33,7 +33,9 @@ public class TLCWorkerWrapper implements ITLCWorker {
 	 */
 	public boolean disconnect() {
 		try {
-			tlcWorker.exit();
+			for (TLCWorker w : tlcWorker) {
+				w.exit();
+			}
 		} catch (NoSuchObjectException e) {
 			e.printStackTrace();
 			return false;
