@@ -1,6 +1,7 @@
 package tlc2.tool;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.SemanticNode;
@@ -22,7 +23,7 @@ public abstract class AbstractChecker implements Cancelable
 {
     // SZ Mar 9, 2009: static modifier removed
     protected long nextLiveCheck;
-    protected long numOfGenStates;
+    protected AtomicLong numOfGenStates;
     protected TLCState predErrState;
     protected TLCState errState;
     protected boolean done;
@@ -74,7 +75,7 @@ public abstract class AbstractChecker implements Cancelable
         // doubled after each check up to a maximum of 640K (a number embedded
         // in several places in the code), it probably doesn't much matter.
         this.nextLiveCheck = 1000;
-        this.numOfGenStates = 0;
+        this.numOfGenStates = new AtomicLong(0);
         this.errState = null;
         this.predErrState = null;
         this.done = false;
@@ -100,9 +101,9 @@ public abstract class AbstractChecker implements Cancelable
         this.done = true;
     }
 
-    protected final synchronized void incNumOfGenStates(int n)
+    protected final void incNumOfGenStates(int n)
     {
-        this.numOfGenStates += n;
+        this.numOfGenStates.getAndAdd(n);
     }
 
     /**
