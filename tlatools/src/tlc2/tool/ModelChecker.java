@@ -750,15 +750,15 @@ public class ModelChecker extends AbstractChecker
 
     public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException
     {
-        final long d = anFpSet.size();
+        final long fpSetSize = anFpSet.size();
         final double actualProb = anFpSet.checkFPs();
-        reportSuccess(d,  actualProb, numOfGenStates);
+        reportSuccess(fpSetSize,  actualProb, numOfGenStates);
     }
     
-    public static final void reportSuccess(final long d, final double actualProb, final long numOfGenStates) throws IOException
+    public static final void reportSuccess(final long numOfDistinctStates, final double actualProb, final long numOfGenStates) throws IOException
     {
         // shown as 'calculated' in Toolbox
-        final double optimisticProb = d * ((numOfGenStates - d) / Math.pow(2, 64));
+        final double optimisticProb = numOfDistinctStates * ((numOfGenStates - numOfDistinctStates) / Math.pow(2, 64));
         /* The following code added by LL on 3 Aug 2009 to print probabilities
          * to only one decimal point.  Removed by LL on 17 April 2012 because it
          * seemed to report probabilities > 10-4 as probability 0.
