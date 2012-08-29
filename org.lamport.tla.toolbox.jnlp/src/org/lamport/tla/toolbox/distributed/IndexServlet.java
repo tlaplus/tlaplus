@@ -19,6 +19,8 @@ public class IndexServlet extends URLHttpServlet {
 		super.doGet(req, resp);
 		
 		resp.setContentType("text/html");
+		
+		resp.getWriter().println("<!DOCTYPE html>");
 
 		resp.getWriter().println(
 				"<html><head>\n" + 
@@ -27,9 +29,9 @@ public class IndexServlet extends URLHttpServlet {
 		
 		// boostrap JRE on Windows systems
 		resp.getWriter().println(
-				"<object codebase=\"https://java.sun.com/update/1.6.0/jinstall-6-windows-i586.cab#Version=6,0,0,0\" classid=\"clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284\" height=0 width=0>" +
-						"<param name=\"app\" value=\"" + url + "\">" +
-						"<param name=\"back\" value=\"false\">" +
+				"<object codebase=\"https://java.sun.com/update/1.6.0/jinstall-6-windows-i586.cab#Version=6,0,0,0\" classid=\"clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284\" height='0' width='0'>" +
+						"<param name=\"app\" value=\"" + url + "\"/>" +
+						"<param name=\"back\" value=\"false\"/>" +
 				"</object>");
 		
 		// first table
@@ -54,30 +56,30 @@ public class IndexServlet extends URLHttpServlet {
 			
 		// a) fpset direct link
 		resp.getWriter().println(
-				"<li><p>\n" + 
-						"<a href=\"" + jnlpName + "\" id=\"jnlp-link\"><img alt=\"launch FPSet\" src=\"/files/webstart.gif\" /> Launch "
-								+ name + " from browser</a>\n" + 
-				"</p></li>");
+				"<li>\n" + 
+						"<p><a href=\"" + jnlpName + "\" id=\"jnlp-link\"><img alt=\"launch FPSet\" src=\"/files/webstart.gif\" /> Launch "
+								+ name + " from browser</a></p>\n" + 
+				"</li>");
 		
 		// b) command line
 		resp.getWriter().println(
-				"<li><p>\n" + 
+				"<li>\n" + 
 					"Run from slave command line:</p>\n" + 
-					"<pre>\n" + 
+					"<p><pre>" + 
 						"javaws " + url + jnlpName +
-					"</pre>\n" + 
-				"</p></li>");
+					"</pre></p>\n" + 
+				"</li>");
 		
 		// c) headless
 		resp.getWriter().println(
-				"<li><p>\n" + 
-					"Or if the slave is headless:</p>\n" + 
+				"<li>\n" + 
+					"<p>Or if the slave is headless:</p>\n" + 
 					"<pre>\n" + 
 						"wget " + addr + "/files/" + TLA2TOOLS_JAR + "\n" + 
 						"java -cp <a href=\"/files/" + TLA2TOOLS_JAR + "\">" + TLA2TOOLS_JAR + "</a> " + mainClass
 						+ " " + url.getHost() +
 					"</pre>\n" + 
-				"</p></li>");
+				"</li>");
 		
 		resp.getWriter().println(
 				"</ul>\n" + 
