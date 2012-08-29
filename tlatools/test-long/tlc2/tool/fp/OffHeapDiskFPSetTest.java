@@ -56,7 +56,7 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 			for (long i = 1; i < freeMemoryInFPs; i++) {
 				assertFalse(fpSet.put(rnd.nextLong()));
 			}
-			fpSet.checkInvariant(freeMemoryInFPs);
+			assertTrue(fpSet.checkInvariant(freeMemoryInFPs));
 		}
 	}
 
