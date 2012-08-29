@@ -972,6 +972,14 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		return true;
 	}
 	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.FPSet#checkInvariant(long)
+	 */
+	public boolean checkInvariant(long expectedFPCnt) throws IOException {
+		return checkInvariant() && size() == expectedFPCnt;
+	}
+
+	
 	/**
 	 * @return the bucketsCapacity counting all allocated (used and unused) fp slots in the in-memory storage.
 	 */

@@ -238,7 +238,23 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 
     public abstract void recover(String filename) throws IOException;
     
+	/**
+	 * @return true iff no invaritant is violated.
+	 * @throws IOException
+	 */
 	public boolean checkInvariant() throws IOException {
+		return true;
+	}
+	
+	/**
+	 * @param expectFPs
+	 *            The expected amount of fingerprints stored in this
+	 *            {@link FPSet}
+	 * @return true iff no invaritant is violated and the FPSet contains the
+	 *         expected amount of fingerprints.
+	 * @throws IOException
+	 */
+	public boolean checkInvariant(long expectFPs) throws IOException {
 		return true;
 	}
 
