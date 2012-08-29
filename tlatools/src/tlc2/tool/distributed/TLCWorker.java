@@ -5,12 +5,10 @@
 
 package tlc2.tool.distributed;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NoSuchObjectException;
@@ -336,39 +334,5 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		public TLCWorker getTLCWorker() {
 			return worker;
 		}
-	}
-	
-	private static class TLCWorkerRunnable implements Runnable {
-		private final TLCServerRMI aServer;
-		private final IFPSetManager anFpSetManager;
-		private final DistApp aWork;
-
-		public TLCWorkerRunnable(TLCServerRMI aServer, IFPSetManager anFpSetManager, DistApp aWork) {
-			this.aServer = aServer;
-			this.anFpSetManager = anFpSetManager;
-			this.aWork = aWork;
-		}
-		
-		/* (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
-		@Override
-		public void run() {
-			TLCWorker w;
-			try {
-				w = new TLCWorker(aWork, anFpSetManager, InetAddress.getLocalHost().getCanonicalHostName());
-				aServer.registerWorker(w);
-			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
 	}
 }
