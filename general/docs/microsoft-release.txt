@@ -10,10 +10,12 @@ TO START SVC-LAMPORT-7 AS A TESTBED
 
 TO PREPARE THE ZIP FILES FOR THE TOOLBOX RELEASE
 
-Notes: 1. To get tlatools.jar file copied to the right place for the distributed version of TLC, 
+Notes: 0. Run Ant on tlatools/src/customBuild.xml
+
+       1. To get tlatools.jar file copied to the right place for the distributed version of TLC, 
           after running Ant, run "mvn install" in the directory
       
-            C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox.jnlp
+            C:\lamport\tla\newtools\tla2-inria-workspace\tla2-inria\org.lamport.tla.toolbox.jnlp
             
        2. If maven doesn't produce a good build, try running `mvn clean' before
           running `mvn install'

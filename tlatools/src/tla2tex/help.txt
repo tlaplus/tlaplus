@@ -18,6 +18,11 @@ Options:
    -shade
      Causes comments to be shaded in Postscript file.
 
+   -noPcalShade
+     When the -shade option is chosen, this option causes a
+     PlusCal algorithm (which appear in a comment) not to
+     be shaded.  (The algorithm's comments will be shaded.)
+   
    -grayLevel num
      Determines darkness of comment shading, where 
      0 = black, 1 = white.  Default is .85.
