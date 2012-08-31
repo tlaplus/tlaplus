@@ -203,28 +203,6 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 			}
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.IFPSetManager#contains(long)
-	 */
-	public final boolean contains(long fp) {
-		int fpIdx = getIndex(fp);
-		while (true) {
-			try {
-				return this.fpSets.get(fpIdx).contains(fp);
-			} catch (Exception e) {
-				System.out.println("Warning: Failed to connect from "
-						+ this.getHostName() + " to the fp server at "
-						+ this.fpSets.get(fpIdx).getHostname() + ".\n" + e.getMessage());
-				e.printStackTrace();
-				if (this.reassign(fpIdx) == -1) {
-					System.out
-							.println("Warning: there is no fp server available.");
-					return false;
-				}
-			}
-		}
-	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.IFPSetManager#putBlock(tlc2.util.LongVec[])
