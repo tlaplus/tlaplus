@@ -20,9 +20,22 @@ public class DynamicFPSetManager extends FPSetManager implements Serializable {
 
 	public DynamicFPSetManager(int expectedNumOfServers) throws RemoteException {
 		super();
-		// zero upper 32 bit
-		//TODO calc mask based on expectedNumOfServers
-		this.mask = 0x00000000FFFFFFFFL;
+		
+		// Guard against invalid values
+		if (expectedNumOfServers <= 0) {
+			throw new IllegalArgumentException();
+		}
+		
+		// Round expectedNumOfServers to power of 2
+		int log = 0;
+		while (expectedNumOfServers > 0) {
+			expectedNumOfServers = expectedNumOfServers / 2;
+			log++;
+		}
+		
+		// Zero upper bits of mask which won't be used when addressing the
+		// fingerprint servers anyway.
+		this.mask = (1L << log) - 1L;
 	}
 
 

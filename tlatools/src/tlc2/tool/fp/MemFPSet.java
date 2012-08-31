@@ -94,7 +94,7 @@ public class MemFPSet extends FPSet {
    in this set; <code>false</code> otherwise.
    * <p>
    */
-  public final synchronized boolean put(long fp) {
+  public synchronized boolean put(long fp) {
     int index = (int)(fp & this.mask);
     long[] list = this.table[index];
 
@@ -125,7 +125,7 @@ public class MemFPSet extends FPSet {
     return false;
   }
 
-  public final synchronized boolean contains(long fp) {
+  public synchronized boolean contains(long fp) {
     int index = (int)(fp & this.mask);
     long[] list = this.table[index];
 

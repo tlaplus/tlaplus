@@ -24,6 +24,11 @@ public interface IFPSetManager {
 	boolean put(long fp);
 
 	/**
+	 * @see FPSet#contains(long)
+	 */
+	boolean contains(long fp);
+	
+	/**
 	 * @see FPSet#putBlock(LongVec)
 	 */
 	BitVector[] putBlock(LongVec[] fps);
