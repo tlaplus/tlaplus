@@ -7,12 +7,12 @@ import java.rmi.RemoteException;
 import tlc2.tool.fp.MemFPSet;
 
 @SuppressWarnings("serial")
-public class TestFPSet extends MemFPSet implements FPSetRMI {
+public class FaultyFPSet extends MemFPSet implements FPSetRMI {
 
 	private int putInvocations = 0;
 	private int containsInvocations = 0;
 
-	protected TestFPSet() throws RemoteException {
+	protected FaultyFPSet() throws RemoteException {
 		super();
 	}
 

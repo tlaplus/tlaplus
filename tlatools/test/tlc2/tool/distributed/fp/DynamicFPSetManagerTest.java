@@ -266,7 +266,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	public void testFailoverPut() throws RemoteException {
 		int expectedNumOfServers = 2;
 		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
-		dfm.register(new TestFPSet(), "TestFPSet");
+		dfm.register(new FaultyFPSet(), "TestFPSet");
 		dfm.register(new MemFPSet(), "RegularFPSet");
 		
 		final long fp = 2L;
