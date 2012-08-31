@@ -18,8 +18,12 @@ import tlc2.tool.distributed.TLCWorker;
 @SuppressWarnings("serial")
 public class DynamicFPSetManager extends FPSetManager implements Serializable {
 
+	private int expectedNumOfServers;
+
+
 	public DynamicFPSetManager(int expectedNumOfServers) throws RemoteException {
 		super();
+		this.expectedNumOfServers = expectedNumOfServers;
 		
 		// Guard against invalid values
 		if (expectedNumOfServers <= 0) {
@@ -42,9 +46,19 @@ public class DynamicFPSetManager extends FPSetManager implements Serializable {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.IFPSetManager#register(tlc2.tool.distributed.FPSetRMI)
 	 */
-	public synchronized int register(FPSetRMI aFPSet, String hostname) {
-		fpSets.add(new FPSets(aFPSet, hostname));
-		// not used right now
-		return 0;
+	public synchronized void register(FPSetRMI aFPSet, String hostname) throws FPSetManagerException {
+		// Only accept additional FPSets as long as we haven't reached the
+		// expected number of FPSets. Adding more FPSets to the set than
+		// expected, would screw up the fail over code in reassign() as workers
+		// potentially see an inconsistent list of FPSets.
+		// This is due to the fact that workers immediately retrieve the
+		// FPSetManager once the expected number of FPSets have registered.
+		if (fpSets.size() < expectedNumOfServers) {
+		        fpSets.add(new FPSets(aFPSet, hostname));
+		} else {
+		        throw new FPSetManagerException(
+		                        "Limit for FPset servers reached (" + expectedNumOfServers
+		                                        + "). Cannot handle additional servers");
+		}
 	}
 }

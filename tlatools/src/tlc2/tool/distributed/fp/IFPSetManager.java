@@ -52,7 +52,7 @@ public interface IFPSetManager {
 
 	void recover(String fname) throws InterruptedException;
 
-	int register(FPSetRMI fpSet, String hostname);
+	void register(FPSetRMI fpSet, String hostname) throws FPSetManagerException;
 
 	long getMask();
 

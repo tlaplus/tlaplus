@@ -55,7 +55,16 @@ public class DistributedFPSet  {
 
 			// Register this with the FPSetManager
 			final String hostname = InetAddress.getLocalHost().getHostName();
-			tlcServer.registerFPSet(fpSet, hostname);
+			try {
+				tlcServer.registerFPSet(fpSet, hostname);
+			} catch (FPSetManagerException e) {
+				// Registration as an FPSet has failed, un-export local FPSet and
+				// exit main thread. Do not System.exit(int) as worker thread might 
+				// run in this VM instance.
+				fpSet.unexportObject(false);
+				System.out.println(e.getMessage());
+				return;
+			}
 
 			// Show FPset is ready accepting fingerprints
             System.out.println("Fingerprint set server at " + hostname + " is ready.");
@@ -71,7 +80,7 @@ public class DistributedFPSet  {
 		} catch (Throwable e) {
 			// Assert.printStack(e);
 			MP.printError(EC.GENERAL, e);
-			ToolIO.out.println("Error: Failed to start worker "
+			ToolIO.out.println("Error: Failed to start FPSet "
 					+ " for server " + serverName + ".\n" + e.getMessage());
 		}
 	
