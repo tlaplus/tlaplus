@@ -56,18 +56,40 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 		return this.fpSets.size();
 	}
 
-	private final int reassign(int i) {
-		int next = (i + 1) % this.fpSets.size();
-		while (next != i) {
-			FPSets fpSet = this.fpSets.get(next);
-			if (fpSet != null) {
-				for (int j = i; j < next; j++) {
-					this.fpSets.add(j, fpSet);
+	/**
+	 * Replace the FPSet at the given index from the list of FPSets with the
+	 * next available successor in the list.
+	 * 
+	 * @param index Corresponds to the FPSet to be replaced
+	 * @return The index of the replacement or <code>-1</code> if no functional FPSet left.
+	 */
+	public synchronized final int reassign(final int index) {
+		// Guard against invalid indices
+		if (index < 0 || index >= this.fpSets.size()) {
+			throw new IllegalArgumentException("index not within bounds");
+		}
+		
+		// The broken FPSet
+		final FPSets broken = this.fpSets.get(index);
+		broken.setUnavailable();
+
+		// Calculate the index of the successor
+		int next = (index + 1) % this.fpSets.size();
+		
+		// Loop until we wrap around which would indicate that no functional
+		// FPsets are left
+		while (next != index) {
+			final FPSets replacement = this.fpSets.get(next);
+			if (replacement.isAvailable()) {
+				for (int j = index; j < next; j++) {
+					this.fpSets.set(j, replacement);
 				}
 				return next;
 			}
 			next = (next + 1) % this.fpSets.size();
 		}
+		
+		// No FPSets left that can be used
 		return -1;
 	}
 
@@ -127,7 +149,8 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 	}
 
 	protected int getIndex(long fp) {
-		return (int) ((fp & mask) % this.fpSets.size());
+		long l = fp & mask;
+		return (int) (l % this.fpSets.size());
 	}
 
 	/* (non-Javadoc)
@@ -142,6 +165,28 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 				System.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(fpIdx).getHostname() + ".\n" + e.getMessage());
+				if (this.reassign(fpIdx) == -1) {
+					System.out
+							.println("Warning: there is no fp server available.");
+					return false;
+				}
+			}
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.IFPSetManager#contains(long)
+	 */
+	public final boolean contains(long fp) {
+		int fpIdx = getIndex(fp);
+		while (true) {
+			try {
+				return this.fpSets.get(fpIdx).contains(fp);
+			} catch (Exception e) {
+				System.out.println("Warning: Failed to connect from "
+						+ this.getHostName() + " to the fp server at "
+						+ this.fpSets.get(fpIdx).getHostname() + ".\n" + e.getMessage());
+				e.printStackTrace();
 				if (this.reassign(fpIdx) == -1) {
 					System.out
 							.println("Warning: there is no fp server available.");
@@ -398,10 +443,23 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 	public static class FPSets implements Serializable {
 		private final String hostname;
 		private final FPSetRMI fpset;
+		/**
+		 * Indicates that this FPSetRMI is unavailable (e.g. the node crashed)
+		 * and cannot be used anymore.
+		 */
+		private boolean isAvailable = true;
 
 		public FPSets(FPSetRMI fpset, String hostname) {
 			this.fpset = fpset;
 			this.hostname = hostname;
+		}
+
+		public void setUnavailable() {
+			isAvailable = false;
+		}
+		
+		public boolean isAvailable() {
+			return isAvailable;
 		}
 
 		public void exit(boolean cleanup) throws IOException {
@@ -440,6 +498,10 @@ public abstract class FPSetManager implements Serializable, IFPSetManager {
 			return fpset.put(fp);
 		}
 
+		public boolean contains(long fp) throws IOException {
+			return fpset.contains(fp);
+		}
+		
 		public String getHostname() {
 			return hostname;
 		}
