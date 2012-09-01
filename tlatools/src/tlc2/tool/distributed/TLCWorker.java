@@ -18,6 +18,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.Timer;
+import java.util.concurrent.CountDownLatch;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -41,6 +42,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private static Timer keepAliveTimer;
 	private static RMIFilenameToStreamResolver fts;
 	private static TLCWorkerRunnable[] runnables;
+	private static final CountDownLatch latch = new CountDownLatch(1);
 	
 	private DistApp work;
 	private IFPSetManager fpSetManager;
@@ -286,6 +288,9 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			
 			ToolIO.out.println("TLC worker ready at: "
 					+ new Date());
+			
+			// Mark to be fully initialized
+			latch.countDown();
 		} catch (Throwable e) {
 			// Assert.printStack(e);
 			MP.printError(EC.GENERAL, e);
@@ -307,7 +312,16 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	}
 
 	public static TLCWorker[] getTLCWorker() {
-		TLCWorker[] workers = new TLCWorker[runnables.length];
+		// Prevent consumer from receiving null workers due to a race with
+		// main()
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			// not expected to happen
+			e.printStackTrace();
+		}
+		
+		final TLCWorker[] workers = new TLCWorker[runnables.length];
 		for (int i = 0; i < runnables.length; i++) {
 			workers[i] = runnables[i].getTLCWorker();
 		}
