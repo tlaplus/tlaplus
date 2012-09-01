@@ -49,6 +49,10 @@
 		<module>org.lamport.tla.toolbox.tool.tla2tex.uitest</module>
 		<module>org.lamport.tla.toolbox.tool.tlc.ui.uitest</module>
 
+		<!-- OSGi based multi invocation worker (model check > 1 spec in a single runtime -->
+		<module>org.lamport.tlatools.api</module>
+		<module>org.lamport.tlatools.impl.distributed</module>
+
 		<!-- features -->
 		<module>org.lamport.tla.toolbox.feature.base</module>
 		<module>org.lamport.tla.toolbox.feature.editor</module>
