@@ -2,9 +2,6 @@
 package org.lamport.tla.distributed.consumer;
 
 import java.net.URI;
-import java.util.Random;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import tlc2.ITLCWorker;
 
@@ -18,14 +15,7 @@ import tlc2.ITLCWorker;
  *  </ul>
  * </p>
  */
-public class TLCWorkerConsumer {
-	
-	/**
-	 * The upper bound for the sleep period between TLCServer connects and
-	 * disconnects in seconds.
-	 */
-	private final int sleepUpperBound = Integer.getInteger(
-			TLCWorkerConsumer.class.getName() + ".sleep", 180);
+public class TLCWorkerConsumer extends FaultyConsumer {
 
 	/**
 	 * TLCServer address to connect to.
@@ -43,11 +33,8 @@ public class TLCWorkerConsumer {
 	 *            passed by OSGi Declarative Services
 	 */
 	public void setITLCWorker(final ITLCWorker anITLCWorker) {
-		final Executor executor = Executors.newSingleThreadExecutor();
-		
+		// Fork out to a separate thread to not block the DeclarativeService forever
 		executor.execute(new Runnable() {
-
-			private final Random rnd = new Random();
 
 			/* (non-Javadoc)
 			 * @see java.lang.Runnable#run()
@@ -61,25 +48,10 @@ public class TLCWorkerConsumer {
 					long seconds = sleep();
 					
 					// disconnect from server and sleep before reconnecting again 
-					System.err.println("Forcefully disconnecting from TLCServer after " + seconds + "s" + "\n\n");
+					System.err.println("Forcefully disconnecting TLCWorkers from TLCServer after " + seconds + "s" + "\n\n");
 					anITLCWorker.disconnect();
 					sleep();
 				}
-			}
-
-			/**
-			 * @param upperBound The upper bound for the thread to sleep
-			 * @return The actual sleep time in seconds
-			 */
-			private long sleep() {
-				long seconds = rnd.nextInt(sleepUpperBound);
-				try {
-					// add least 1 second
-					Thread.sleep((seconds + 1) * 1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				return seconds;
 			}
 		});
 	}

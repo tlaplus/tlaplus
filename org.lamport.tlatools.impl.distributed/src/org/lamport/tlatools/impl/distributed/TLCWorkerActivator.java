@@ -7,10 +7,13 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.osgi.service.urlconversion.URLConverter;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Filter;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.util.tracker.ServiceTracker;
 
 public class TLCWorkerActivator implements BundleActivator {
 
@@ -58,16 +61,42 @@ public class TLCWorkerActivator implements BundleActivator {
 		// The TLA bundle contains the standard modules in the standard_modules_folder
 		final Enumeration<URL> entries = bundle.findEntries(path, pattern, true);
 		
+		
 		// convert the OSGi specific path to a generic path that can be
 		// understood by the superclass
 		final List<String> paths = new ArrayList<String>();
 		while (entries.hasMoreElements()) {
 			final URL library = entries.nextElement();
 			if (library != null) {
+				// Get the OSGi URLConverter
+				URLConverter urlConverter = getURLConverter(library);
 				// add external (resolved) URL
-				paths.add(FileLocator.resolve(library).getPath());
+				paths.add(urlConverter.resolve(library).getPath());
 			}
 		}
 		return paths.toArray(new String[paths.size()]);
+	}
+	
+	/*
+	 * Return the URL Converter for the given URL. Return null if we can't
+	 * find one.
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static URLConverter getURLConverter(URL url) {
+		// get the right service based on the protocol
+		String FILTER_PREFIX = "(&(objectClass=" + URLConverter.class.getName() + ")(protocol=";
+		String FILTER_POSTFIX = "))";
+		Filter filter = null;
+		try {
+			filter = getContext().createFilter(FILTER_PREFIX + url.getProtocol() + FILTER_POSTFIX);
+		} catch (InvalidSyntaxException e) {
+			// may not happen
+			e.printStackTrace();
+			return null;
+		}
+		
+		ServiceTracker tracker = new ServiceTracker(getContext(), filter, null);
+		tracker.open();
+		return (URLConverter) tracker.getService();
 	}
 }

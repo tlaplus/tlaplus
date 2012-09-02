@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,10 +39,6 @@ import tlc2.util.SimpleCache;
 import util.Assert;
 import util.ToolIO;
 import util.UniqueString;
-
-/**
- * @version $Id$
- */
 @SuppressWarnings("serial")
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
@@ -53,7 +48,6 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private static RMIFilenameToStreamResolver fts;
 	private static final ExecutorService executorService = Executors.newCachedThreadPool();
 	private static TLCWorkerRunnable[] runnables;
-	private static final CountDownLatch latch = new CountDownLatch(1);
 	
 	private DistApp work;
 	private IFPSetManager fpSetManager;
@@ -342,6 +336,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			
 			// spawn as many worker threads as we have cores
 			final int numCores = Runtime.getRuntime().availableProcessors();
+
 			runnables = new TLCWorkerRunnable[numCores];
 			for (int j = 0; j < numCores; j++) {
 				runnables[j] = new TLCWorkerRunnable(server, fpSetManager, work);
@@ -355,9 +350,6 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			
 			ToolIO.out.println("TLC worker ready at: "
 					+ new Date());
-			
-			// Mark to be fully initialized
-			latch.countDown();
 		} catch (Throwable e) {
 			// Assert.printStack(e);
 			MP.printError(EC.GENERAL, e);
@@ -378,21 +370,20 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		fts  = aFTS;
 	}
 
-	public static TLCWorker[] getTLCWorker() {
-		// Prevent consumer from receiving null workers due to a race with
-		// main()
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			// not expected to happen
-			e.printStackTrace();
-		}
+	/**
+	 * Terminates all {@link TLCWorker}s currently running concurrently by
+	 * gracefully unregistering with RMI. Additionally it terminates each
+	 * keep-alive timer.
+	 */
+	public static void shutdown() throws NoSuchObjectException {
+		// Exit the keepAliveTimer
+		keepAliveTimer.cancel();
 		
-		final TLCWorker[] workers = new TLCWorker[runnables.length];
+		// Exit and unregister all worker threads
 		for (int i = 0; i < runnables.length; i++) {
-			workers[i] = runnables[i].getTLCWorker();
+			TLCWorker worker = runnables[i].getTLCWorker();
+			worker.exit();
 		}
-		return workers;
 	}
 
 	public static class TLCWorkerRunnable implements Runnable {

@@ -168,10 +168,9 @@ public class TLCServerThread extends IdThread {
 							selector.setMaxTXSize(states.length / 2);
 							// go back to beginning
 							continue START;
-						} else { // non recoverable errors
-							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_LOST,
-									throwableToString(e));
-							handleRemoteWorkerLost(stateQueue);
+						} else { 
+							// non recoverable errors, exit...
+							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
 							return;
 						}
 					} catch (NullPointerException e) {
