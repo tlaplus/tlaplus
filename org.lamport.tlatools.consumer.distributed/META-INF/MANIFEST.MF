@@ -1,8 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Consumer
-Bundle-SymbolicName: org.lamport.tla.distributed.consumer
+Bundle-SymbolicName: org.lamport.tlatools.consumer.distributed
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.lamport.tlatools.api;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
-Service-Component: OSGi-INF/component.xml
+Service-Component: OSGi-INF/workerConsumer.xml,
+ OSGi-INF/fpsetConsumer.xml

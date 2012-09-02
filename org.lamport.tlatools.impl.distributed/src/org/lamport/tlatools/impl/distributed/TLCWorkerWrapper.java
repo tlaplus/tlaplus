@@ -6,12 +6,13 @@ import java.net.URI;
 import tlc2.ITLCWorker;
 import tlc2.tool.distributed.TLCWorker;
 
-public class TLCWorkerWrapper implements ITLCWorker {
+public class TLCWorkerWrapper extends TLCWrapper implements ITLCWorker {
 
 	/* (non-Javadoc)
 	 * @see tlc2.ITLCWorker#connect(java.net.URI)
 	 */
 	public boolean connect(final URI uri) {
+		super.connect("TLCWorker");
 		try {
 			// Running TLC in an OSGi runtime requires the OSGi resolver which
 			// translates OSGi specific resource location to generic ones

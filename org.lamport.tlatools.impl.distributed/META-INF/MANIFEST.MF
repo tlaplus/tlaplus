@@ -8,7 +8,8 @@ Require-Bundle: org.lamport.tlatools;bundle-version="1.0.0",
  org.lamport.tlatools.api;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
-Service-Component: OSGI-INF/component.xml
+Service-Component: OSGI-INF/worker.xml,
+ OSGI-INF/fpset.xml
 Bundle-Vendor: Leslie Lamport, Markus Alexander Kuppe
 Import-Package: org.eclipse.osgi.service.urlconversion;version="1.0.0",
  org.osgi.framework;version="1.5.0",
