@@ -1,6 +1,5 @@
 package tlc2.tool.distributed.selector;
 
-import tlc2.output.EC;
 import tlc2.tool.TLCState;
 import tlc2.tool.distributed.TLCServer;
 import tlc2.tool.distributed.TLCWorker;

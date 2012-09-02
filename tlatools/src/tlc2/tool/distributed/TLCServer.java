@@ -200,7 +200,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_REGISTERED, worker.getURI().toString());
 	}
 
-	public void registerFPSet(FPSetRMI fpSet, String hostname) throws RemoteException {
+	public synchronized void registerFPSet(FPSetRMI fpSet, String hostname) throws RemoteException {
 		this.fpSetManager.register(fpSet, hostname);
 		latch.countDown();
 	}

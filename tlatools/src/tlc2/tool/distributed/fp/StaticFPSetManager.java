@@ -38,7 +38,7 @@ public class StaticFPSetManager extends FPSetManager {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.fp.IFPSetManager#register(tlc2.tool.distributed.fp.FPSetRMI, java.lang.String)
 	 */
-	public int register(FPSetRMI fpset, String hostname) {
+	public void register(FPSetRMI fpset, String hostname) {
 		throw new UnsupportedOperationException("Not applicable for static FPSetManager");
 	}
 }

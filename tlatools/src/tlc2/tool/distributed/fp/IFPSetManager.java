@@ -23,6 +23,11 @@ public interface IFPSetManager {
 	boolean put(long fp);
 
 	/**
+	 * @see FPSet#contains(long)
+	 */
+	boolean contains(long fp);
+	
+	/**
 	 * @see FPSet#putBlock(LongVec)
 	 */
 	BitVector[] putBlock(LongVec[] fps);
@@ -47,7 +52,7 @@ public interface IFPSetManager {
 
 	void recover(String fname) throws InterruptedException;
 
-	int register(FPSetRMI fpSet, String hostname);
+	void register(FPSetRMI fpSet, String hostname) throws FPSetManagerException;
 
 	long getMask();
 

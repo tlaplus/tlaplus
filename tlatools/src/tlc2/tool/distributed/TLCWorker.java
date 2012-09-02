@@ -306,12 +306,20 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		fts  = aFTS;
 	}
 
-	public static TLCWorker[] getTLCWorker() {
-		TLCWorker[] workers = new TLCWorker[runnables.length];
+	/**
+	 * Terminates all {@link TLCWorker}s currently running concurrently by
+	 * gracefully unregistering with RMI. Additionally it terminates each
+	 * keep-alive timer.
+	 */
+	public static void shutdown() throws NoSuchObjectException {
+		// Exit the keepAliveTimer
+		keepAliveTimer.cancel();
+		
+		// Exit and unregister all worker threads
 		for (int i = 0; i < runnables.length; i++) {
-			workers[i] = runnables[i].getTLCWorker();
+			TLCWorker worker = runnables[i].getTLCWorker();
+			worker.exit();
 		}
-		return workers;
 	}
 
 	public static class TLCWorkerRunnable implements Runnable {

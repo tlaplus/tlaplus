@@ -2,26 +2,26 @@
 package org.lamport.tlatools.impl.distributed;
 
 import java.net.URI;
-import java.rmi.NoSuchObjectException;
 
 import tlc2.ITLCWorker;
-import tlc2.tool.distributed.RMIFilenameToStreamResolver;
 import tlc2.tool.distributed.TLCWorker;
 
-public class TLCWorkerWrapper implements ITLCWorker {
-
-	private TLCWorker[] tlcWorker;
+public class TLCWorkerWrapper extends TLCWrapper implements ITLCWorker {
 
 	/* (non-Javadoc)
 	 * @see tlc2.ITLCWorker#connect(java.net.URI)
 	 */
-	public boolean connect(URI uri) {
+	public boolean connect(final URI uri) {
+		super.connect("TLCWorker");
 		try {
-			final RMIFilenameToStreamResolver aFTS = new OSGiNameToFileIStream();
-			TLCWorker.setFilenameToStreamResolver(aFTS);
+			// Running TLC in an OSGi runtime requires the OSGi resolver which
+			// translates OSGi specific resource location to generic ones
+			// understandable by TLC.
+			TLCWorker.setFilenameToStreamResolver(new OSGiNameToFileIStream());
+			
 			TLCWorker.main(new String[] { uri.getHost() });
-			tlcWorker = TLCWorker.getTLCWorker();
 		} catch(Exception e) {
+			// not expected to happen
 			e.printStackTrace();
 			return false;
 		}
@@ -33,13 +33,9 @@ public class TLCWorkerWrapper implements ITLCWorker {
 	 */
 	public boolean disconnect() {
 		try {
-			for (TLCWorker w : tlcWorker) {
-				w.exit();
-			}
-		} catch (NoSuchObjectException e) {
-			e.printStackTrace();
-			return false;
-		} catch (NullPointerException e) {
+			TLCWorker.shutdown();
+		} catch (Exception e) {
+			// not expected to happen
 			e.printStackTrace();
 			return false;
 		}

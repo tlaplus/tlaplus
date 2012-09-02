@@ -1,5 +1,4 @@
 // Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
-
 package tlc2.tool.distributed.fp;
 
 import java.io.File;
@@ -21,8 +20,10 @@ import util.ToolIO;
 
 public class DistributedFPSet  {
 
+	private static volatile boolean running = true;
+
 	public static void main(String[] args) {
-        System.out.println("TLC Distributed FP Server " + TLCGlobals.versionOfTLC);
+		ToolIO.out.println("TLC Distributed FP Server " + TLCGlobals.versionOfTLC);
 
         // Must have exactly one arg: a hostname (spec is read from the server
 		// connecting to).
@@ -55,27 +56,48 @@ public class DistributedFPSet  {
 
 			// Register this with the FPSetManager
 			final String hostname = InetAddress.getLocalHost().getHostName();
-			tlcServer.registerFPSet(fpSet, hostname);
+			try {
+				tlcServer.registerFPSet(fpSet, hostname);
+			} catch (FPSetManagerException e) {
+				// Registration as an FPSet has failed, un-export local FPSet and
+				// exit main thread. Do not System.exit(int) as worker thread might 
+				// run in this VM instance.
+				fpSet.unexportObject(false);
+				ToolIO.out.println(e.getMessage());
+				return;
+			}
 
 			// Show FPset is ready accepting fingerprints
             System.out.println("Fingerprint set server at " + hostname + " is ready.");
 			
 			// Periodically report status (every 5 minutes)
 			synchronized (fpSet) {
-				while (true) {
-					System.out.println("Progress: The number of fingerprints stored at " + hostname + " is "
+				while (running) {
+					ToolIO.out.println("Progress: The number of fingerprints stored at " + hostname + " is "
 							+ fpSet.size() + ".");
 					fpSet.wait(300000);
 				}
+				
+				// exit if signal received
+				fpSet.unexportObject(false);
+				ToolIO.out.println("Exiting TLC Distributed FP Server");
 			}
 		} catch (Throwable e) {
 			// Assert.printStack(e);
 			MP.printError(EC.GENERAL, e);
-			ToolIO.out.println("Error: Failed to start worker "
+			ToolIO.out.println("Error: Failed to start FPSet "
 					+ " for server " + serverName + ".\n" + e.getMessage());
 		}
 	
 		ToolIO.out.flush();
+	}
+
+	/**
+	 * Signal the {@link DistributedFPSet} to shutdown which results in a RMI
+	 * de-registration by un-exporting the nested {@link FPSet}.
+	 */
+	public static void shutdown() {
+		running = false;
 	}
 	
 	private static TLCServerRMI lookupTLCServer(final String serverName) throws MalformedURLException, RemoteException, NotBoundException, InterruptedException {
