@@ -40,7 +40,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 	private static Timer keepAliveTimer;
 	private static RMIFilenameToStreamResolver fts;
-	private static TLCWorkerRunnable[] runnables;
+	private static TLCWorkerRunnable[] runnables = new TLCWorkerRunnable[0];
 	
 	private DistApp work;
 	private IFPSetManager fpSetManager;
@@ -313,13 +313,18 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 */
 	public static void shutdown() throws NoSuchObjectException {
 		// Exit the keepAliveTimer
-		keepAliveTimer.cancel();
+		if (keepAliveTimer != null) {
+			keepAliveTimer.cancel();
+		}
 		
 		// Exit and unregister all worker threads
 		for (int i = 0; i < runnables.length; i++) {
 			TLCWorker worker = runnables[i].getTLCWorker();
 			worker.exit();
 		}
+		
+		fts = null;
+		runnables = new TLCWorkerRunnable[0];
 	}
 
 	public static class TLCWorkerRunnable implements Runnable {
