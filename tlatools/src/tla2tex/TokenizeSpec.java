@@ -1005,6 +1005,8 @@ public class TokenizeSpec
                   else if (BuiltInSymbols.IsBuiltInSymbol(token, inPcal))
                     { if (token.equals("MODULE")) 
                         { mdepth = mdepth + 1; 
+                          TokenOut(Token.BUILTIN) ;
+                          gotoStart();
                         }
                       else if (inPcal && token.equals("algorithm") 
                                 && !isCSyntax && (mode == MODULE)) {

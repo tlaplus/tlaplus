@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.lamport.tlatools.feature"
+      label="TLA+ Tools Feature"
+      version="1.0.0.qualifier"
+      provider-name="Leslie Lamport, Markus Alexander Kuppe"
+      license-feature="org.lamport.tla.toolbox.feature.standalone"
+      license-feature-version="1.0.0.qualifier">
+
+   <description>
+      This feature defines the set of plug-ins that are required to run the OSGi-based TLCWorker.
+   </description>
+
+   <plugin
+         id="org.lamport.tlatools.api"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.lamport.tlatools"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.lamport.tlatools.consumer.distributed"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.lamport.tlatools.impl.distributed"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

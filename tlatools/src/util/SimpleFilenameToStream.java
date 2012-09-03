@@ -242,6 +242,8 @@ public class SimpleFilenameToStream implements FilenameToStream {
       return locate(sourceFileName);
   }
 
-  
+	public File resolve(String name) {
+		return resolve(name, false);
+	}
 
 } // end class
