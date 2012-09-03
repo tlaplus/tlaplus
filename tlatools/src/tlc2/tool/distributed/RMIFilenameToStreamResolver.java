@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import util.FilenameToStream;
-import util.SimpleFilenameToStream;
 
 /**
  * This class extends the SimpleFilenameToStream class in the way that it first
@@ -25,7 +24,7 @@ import util.SimpleFilenameToStream;
  * the full file in memory. This constraint is acceptable for TLA specifications
  * and configurations as they are usually small enough to fit into memory "easily".
  */
-public class RMIFilenameToStreamResolver extends SimpleFilenameToStream {
+public class RMIFilenameToStreamResolver implements FilenameToStream {
 
 	private static final String javaTempDir = System.getProperty("java.io.tmpdir") + File.separator;
 
@@ -35,12 +34,10 @@ public class RMIFilenameToStreamResolver extends SimpleFilenameToStream {
 	private final String rndPrefix;
 	
 	public RMIFilenameToStreamResolver() {
-		super();
 		rndPrefix = getRandomStoragePrefix();
 	}
 
 	public RMIFilenameToStreamResolver(final String[] libraryPaths) {
-		super(libraryPaths);
 		rndPrefix = getRandomStoragePrefix();
 	}
 
@@ -51,35 +48,31 @@ public class RMIFilenameToStreamResolver extends SimpleFilenameToStream {
 	/* (non-Javadoc)
 	 * @see util.FilenameToStream#resolve(java.lang.String, boolean)
 	 */
-	@Override
 	public File resolve(final String filename, final boolean isModule) {
-		// try to resolve locally first
-		File file = super.resolve(filename, isModule);
 		
-		// read the file from the server if local resolution has failed
-		if(!file.exists()) {
-			// strip off path
-			final String name = new File(filename).getName();
+		// read the file from the server
+		// strip off path
+		final String name = new File(filename).getName();
+		
+		File tempFile = fileCache.get(name);
+		
+		File file = null;
+		// not in cache
+		if (tempFile == null) {
 			
-			File tempFile = fileCache.get(name);
-			
-			// not in cache
-			if (tempFile == null) {
-				
-				// read bytes from server
-				byte[] bs = new byte[0];
-				try {
-					bs = server.getFile(name);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-
-				// write into temp file
-				file = writeToNewTempFile(name, bs);
-				
-				// add to local file cache
-				fileCache.put(name, file);
+			// read bytes from server
+			byte[] bs = new byte[0];
+			try {
+				bs = server.getFile(name);
+			} catch (RemoteException e) {
+				e.printStackTrace();
 			}
+
+			// write into temp file
+			file  = writeToNewTempFile(name, bs);
+			
+			// add to local file cache
+			fileCache.put(name, file);
 		}
 		
 		return file;
