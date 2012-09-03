@@ -251,13 +251,32 @@ public class TLCServerThread extends IdThread {
 	 * @param stateQueue
 	 */
 	private void handleRemoteWorkerLost(final IStateQueue stateQueue) {
+		// Cancel the keepAliveTimer which might still be running if an
+		// exception in the this run() method has caused handleRemoteWorkerLost
+		// to be called.
 		keepAliveTimer.cancel();
-		tlcServer.removeTLCServerThread(this);
-		stateQueue.sEnqueue(states != null ? states : new TLCState[0]);
 
+		// De-register TLCServerThread at the main server
+		tlcServer.removeTLCServerThread(this);
+		
+		// Return the undone worklist (if any)
+		stateQueue.sEnqueue(states != null ? states : new TLCState[0]);
+		
 		// This call has to be idempotent, otherwise we see bugs as in 
 		// https://bugzilla.tlaplus.net/show_bug.cgi?id=234
 		if (cleanupGlobals.compareAndSet(true, false)) {
+			// Before decrementing the worker count, notify all waiters on
+			// stateQueue to re-evaluate the while loop in isAvail(). The demise
+			// of this worker (who potentially was the lock owner) might causes
+			// another consumer to leave the while loop (become a consumer).
+			//
+			// This is to work around a design bug in
+			// tlc2.tool.queue.StateQueue's impl. Other IStateQueue impls should
+			// hopefully not be affected by calling notifyAll on them though.
+			synchronized (stateQueue) {
+				stateQueue.notifyAll();
+			}
+			
 			TLCGlobals.decNumWorkers();
 		}
 	}
