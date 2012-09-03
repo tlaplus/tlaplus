@@ -46,6 +46,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	
 	private static Timer keepAliveTimer;
 	private static RMIFilenameToStreamResolver fts;
+	private static final ExecutorService executorService = Executors.newCachedThreadPool();
 	private static TLCWorkerRunnable[] runnables = new TLCWorkerRunnable[0];
 	
 	private DistApp work;
