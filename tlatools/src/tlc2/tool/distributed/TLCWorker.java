@@ -39,10 +39,6 @@ import tlc2.util.SimpleCache;
 import util.Assert;
 import util.ToolIO;
 import util.UniqueString;
-
-/**
- * @version $Id$
- */
 @SuppressWarnings("serial")
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
