@@ -55,6 +55,7 @@
 		<module>org.lamport.tlatools.consumer.distributed</module>
 
 		<!-- features -->
+		<module>org.lamport.tlatools.feature</module>
 		<module>org.lamport.tla.toolbox.feature.base</module>
 		<module>org.lamport.tla.toolbox.feature.editor</module>
 		<module>org.lamport.tla.toolbox.feature.jnlp</module>

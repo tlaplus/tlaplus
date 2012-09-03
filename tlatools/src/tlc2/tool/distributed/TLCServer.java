@@ -46,6 +46,7 @@ import tlc2.tool.queue.IStateQueue;
 import tlc2.util.FP64;
 import util.Assert;
 import util.FileUtil;
+import util.SimpleFilenameToStream;
 import util.UniqueString;
 
 @SuppressWarnings("serial")
@@ -696,7 +697,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// to make sure to not load files outside of spec dir
 		String name = new File(file).getName();
 		
-		File f = new File(work.getSpecDir() + File.separator + name);
+		// Resolve all 
+		File f = new SimpleFilenameToStream().resolve(name);
 		return read(f);
 	}
 	
