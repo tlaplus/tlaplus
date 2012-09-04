@@ -53,10 +53,10 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 		// For n flushes, insert freeMemoryInFPs into the fp and check the
 		// invariant afterwards.
 		for (int flushes = 0; flushes < FLUSHES; flushes++) {
-			for (long i = 1; i < freeMemoryInFPs; i++) {
+			for (long i = 0; i < freeMemoryInFPs; i++) {
 				assertFalse(fpSet.put(rnd.nextLong()));
 			}
-			assertTrue(fpSet.checkInvariant(freeMemoryInFPs));
+			assertTrue(fpSet.checkInvariant((flushes + 1) * freeMemoryInFPs));
 		}
 	}
 
