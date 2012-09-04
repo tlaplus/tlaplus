@@ -345,7 +345,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			
 			// schedule a timer to periodically (60s) check server aliveness 
 			keepAliveTimer = new Timer("TLCWorker KeepAlive Timer", true);
-			keepAliveTimer.schedule(new TLCTimerTask(runnables, url), 10000, 60000);
+			keepAliveTimer.schedule(new TLCTimerTask(keepAliveTimer, runnables, url), 10000, 60000);
 			
 			ToolIO.out.println("TLC worker ready at: "
 					+ new Date());

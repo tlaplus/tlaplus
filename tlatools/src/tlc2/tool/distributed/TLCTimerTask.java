@@ -6,6 +6,7 @@ import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Date;
+import java.util.Timer;
 import java.util.TimerTask;
 
 import tlc2.output.EC;
@@ -19,10 +20,12 @@ public class TLCTimerTask extends TimerTask {
 
 	private final String serverUrl;
 	private final TLCWorkerRunnable[] runnables;
+	private final Timer timer;
 
-	public TLCTimerTask(final TLCWorkerRunnable[] runnables, final String anUrl) {
+	public TLCTimerTask(final Timer keepAliveTimer, final TLCWorkerRunnable[] runnables, final String anUrl) {
+		this.timer = keepAliveTimer;
 		this.runnables = runnables;
-		serverUrl = anUrl;
+		this.serverUrl = anUrl;
 	}
 
 	/* (non-Javadoc)
@@ -61,15 +64,16 @@ public class TLCTimerTask extends TimerTask {
 
 	private void exitWorker() {
 		MP.printError(EC.TLC_DISTRIBUTED_SERVER_NOT_RUNNING);
-		try {
-			for (int i = 0; i < runnables.length; i++) {
+		for (int i = 0; i < runnables.length; i++) {
+			try {
 				TLCWorkerRunnable runnable = runnables[i];
 				runnable.getTLCWorker().exit();
+			} catch (NoSuchObjectException e) {
+				// not expected to happen
 			}
-		} catch (NoSuchObjectException e) {
-			// not expected to happen
-		    // LL modified error message on 7 April 2012
-			MP.printError(EC.GENERAL, "trying to exit a worker", e);
 		}
+		// Cancel this time after having exited the worker. Otherwise we keep on
+		// going forever.
+		this.timer.cancel();
 	}
 }
