@@ -51,6 +51,9 @@
 	        <artifactId>tycho-compiler-plugin</artifactId>
 	        <version>${tycho-version}</version>
 	        <configuration>
+				<!-- Ignore compiler errors due to forbidden sun.misc.Unsafe imports -->
+				<!-- https://bugs.eclipse.org/369187 -->
+				<compilerArgument>-err:-forbidden</compilerArgument>
 	          <excludeResources>
 	            <exludeResource>**/*.aj</exludeResource>
 	          </excludeResources>
