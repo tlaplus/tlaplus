@@ -61,15 +61,13 @@ public class TLCTimerTask extends TimerTask {
 
 	private void exitWorker() {
 		MP.printError(EC.TLC_DISTRIBUTED_SERVER_NOT_RUNNING);
-		try {
-			for (int i = 0; i < runnables.length; i++) {
+		for (int i = 0; i < runnables.length; i++) {
+			try {
 				TLCWorkerRunnable runnable = runnables[i];
 				runnable.getTLCWorker().exit();
+			} catch (NoSuchObjectException e) {
+				// not expected to happen
 			}
-		} catch (NoSuchObjectException e) {
-			// not expected to happen
-		    // LL modified error message on 7 April 2012
-			MP.printError(EC.GENERAL, "trying to exit a worker", e);
 		}
 	}
 }
