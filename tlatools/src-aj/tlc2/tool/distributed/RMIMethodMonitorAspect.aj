@@ -7,8 +7,7 @@ public aspect RMIMethodMonitorAspect {
 		   execution(* tlc2.tool.distributed.InternRMI.*(..))
 		|| execution(* tlc2.tool.distributed.TLCServerRMI.*(..))
 		|| execution(* tlc2.tool.distributed.TLCWorkerRMI.*(..))
-		|| execution(* tlc2.tool.distributed.FPSetRMI.*(..))
-		|| execution(* tlc2.tool.distributed.FPIntSetRMI.*(..));
+		|| execution(* tlc2.tool.distributed.fp.FPSetRMI.*(..))
 	
 	before(): (callToRemoteMethod()) {
 		RMIMethodMonitor.entering(thisJoinPoint);
