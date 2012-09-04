@@ -138,7 +138,7 @@
 	        	<artifactId>tycho-compiler-plugin</artifactId>
 	        	<version>${tycho-version}</version>
 			    <configuration>
-			    	<source>1.6</source>
+			    	<source>1.5</source>
 			    	<target>1.5</target>
 					<encoding>UTF-8</encoding>
 			    </configuration>
