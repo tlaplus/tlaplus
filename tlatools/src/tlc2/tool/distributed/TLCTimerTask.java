@@ -6,6 +6,7 @@ import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Date;
+import java.util.Timer;
 import java.util.TimerTask;
 
 import tlc2.output.EC;
@@ -19,10 +20,12 @@ public class TLCTimerTask extends TimerTask {
 
 	private final String serverUrl;
 	private final TLCWorkerRunnable[] runnables;
+	private final Timer timer;
 
-	public TLCTimerTask(final TLCWorkerRunnable[] runnables, final String anUrl) {
+	public TLCTimerTask(final Timer keepAliveTimer, final TLCWorkerRunnable[] runnables, final String anUrl) {
+		this.timer = keepAliveTimer;
 		this.runnables = runnables;
-		serverUrl = anUrl;
+		this.serverUrl = anUrl;
 	}
 
 	/* (non-Javadoc)
@@ -71,6 +74,6 @@ public class TLCTimerTask extends TimerTask {
 		}
 		// Cancel this time after having exited the worker. Otherwise we keep on
 		// going forever.
-		this.cancel();
+		this.timer.cancel();
 	}
 }
