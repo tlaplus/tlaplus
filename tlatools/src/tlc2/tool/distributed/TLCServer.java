@@ -35,7 +35,6 @@ import tlc2.tool.distributed.fp.DynamicFPSetManager;
 import tlc2.tool.distributed.fp.FPSetManager;
 import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.tool.distributed.fp.IFPSetManager;
-import tlc2.tool.distributed.fp.StaticFPSetManager;
 import tlc2.tool.distributed.management.TLCServerMXWrapper;
 import tlc2.tool.distributed.selector.BlockSelectorFactory;
 import tlc2.tool.distributed.selector.IBlockSelector;
@@ -128,14 +127,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		this.stateQueue = new DiskStateQueue(this.metadir);
 		this.trace = new TLCTrace(this.metadir, this.work.getFileName(),
 				this.work);
-		if (TLCGlobals.fpServers == null && expectedFPSetCount <= 0) {
+		if (expectedFPSetCount <= 0) {
 			FPSet fpSet = FPSet.getFPSet(work.getFPBits(), work.getFpMemSize());
 			fpSet.init(0, this.metadir, this.work.getFileName());
 			this.fpSetManager = new NonDistributedFPSetManager((FPSetRMI) fpSet, InetAddress.getLocalHost().getCanonicalHostName());
-		} else if (expectedFPSetCount > 0) {
-			this.fpSetManager = new DynamicFPSetManager(expectedFPSetCount);
 		} else {
-			this.fpSetManager = new StaticFPSetManager(TLCGlobals.fpServers);
+			this.fpSetManager = new DynamicFPSetManager(expectedFPSetCount);
 		}
 		latch = new CountDownLatch(expectedFPSetCount);
 		blockSelector = BlockSelectorFactory.getBlockSelector(this);
@@ -634,11 +631,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		TLCStandardMBean tlcServerMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
 		TLCServer server = null;
 		try {
-			final String fpServerProperty = System.getProperty("fp_servers");
-			if(fpServerProperty != null) {
-				String[] fpServers = fpServerProperty.split(",");
-				TLCGlobals.fpServers = fpServers;
-			}
 			TLCGlobals.setNumWorkers(0);
 			server = new TLCServer(TLCApp.create(argv));
 			tlcServerMXWrapper = new TLCServerMXWrapper(server);

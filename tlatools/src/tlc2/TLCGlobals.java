@@ -125,9 +125,6 @@ public class TLCGlobals
     // The flag to control if gzip is applied to Value input/output stream.
     public static boolean useGZIP = true;
 
-    // The list of fingerprint servers.
-    public static String[] fpServers = null;
-
     // The tool id number for TLC2.
     public static int ToolId = FrontEnd.getToolId();
 

@@ -10,8 +10,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import tlc2.TLCGlobals;
-
 public class TLCStatistics {
 	
 	/**
@@ -122,11 +120,7 @@ public class TLCStatistics {
 		writer.write(",");
 		writer.write(server.getConfigFileName());
 		writer.write(",");
-		if (TLCGlobals.fpServers == null) {
-			writer.write("1");
-		} else {
-			writer.write(TLCGlobals.fpServers.length);
-		}
+		writer.write(server.getFPSetManager().numOfServers());
 		writer.write(",");
 		writer.write(Integer.toString(server.getWorkerCount()));
 		writer.write(",");
