@@ -40,7 +40,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 	private static Timer keepAliveTimer;
 	private static RMIFilenameToStreamResolver fts;
-	private static TLCWorkerRunnable[] runnables;
+	private static TLCWorkerRunnable[] runnables = new TLCWorkerRunnable[0];
 	
 	private DistApp work;
 	private IFPSetManager fpSetManager;
@@ -282,7 +282,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			
 			// schedule a timer to periodically (60s) check server aliveness 
 			keepAliveTimer = new Timer("TLCWorker KeepAlive Timer", true);
-			keepAliveTimer.schedule(new TLCTimerTask(runnables, url), 10000, 60000);
+			keepAliveTimer.schedule(new TLCTimerTask(keepAliveTimer, runnables, url), 10000, 60000);
 			
 			ToolIO.out.println("TLC worker ready at: "
 					+ new Date());
@@ -311,15 +311,24 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 * gracefully unregistering with RMI. Additionally it terminates each
 	 * keep-alive timer.
 	 */
-	public static void shutdown() throws NoSuchObjectException {
+	public static void shutdown() {
 		// Exit the keepAliveTimer
-		keepAliveTimer.cancel();
+		if (keepAliveTimer != null) {
+			keepAliveTimer.cancel();
+		}
 		
 		// Exit and unregister all worker threads
 		for (int i = 0; i < runnables.length; i++) {
 			TLCWorker worker = runnables[i].getTLCWorker();
-			worker.exit();
+			try {
+				worker.exit();
+			} catch (NoSuchObjectException e) {
+				// may happen, ignore
+			}
 		}
+		
+		fts = null;
+		runnables = new TLCWorkerRunnable[0];
 	}
 
 	public static class TLCWorkerRunnable implements Runnable {
