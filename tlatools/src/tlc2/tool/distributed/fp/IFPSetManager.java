@@ -2,6 +2,7 @@
 package tlc2.tool.distributed.fp;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 
 import tlc2.tool.distributed.TLCWorker;
@@ -9,7 +10,7 @@ import tlc2.tool.fp.FPSet;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
-public interface IFPSetManager {
+public interface IFPSetManager extends Serializable {
 
 	int numOfServers();
 
@@ -59,14 +60,18 @@ public interface IFPSetManager {
 	 */
 	long getStatesSeen();
 
-	void checkpoint(String fname) throws InterruptedException;
+	void checkpoint(String fname) throws InterruptedException, IOException;
 
-	void recover(String fname) throws InterruptedException;
+	void recover(String fname) throws InterruptedException, IOException;
 
 	void register(FPSetRMI fpSet, String hostname) throws FPSetManagerException;
 
 	long getMask();
 
 	double checkFPs();
+
+	void addThread() throws IOException;
+
+	void commitChkpt() throws IOException;
 
 }

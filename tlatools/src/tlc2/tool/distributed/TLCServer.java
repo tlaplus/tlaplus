@@ -97,8 +97,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	private final String metadir;
 	private final String filename;
 
-	public FPSet fpSet;
-
 	private TLCState errState = null;
 	private boolean done = false;
 	private boolean keepCallStack = false;
@@ -136,9 +134,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		this.trace = new TLCTrace(this.metadir, this.work.getFileName(),
 				this.work);
 		if (TLCGlobals.fpServers == null && expectedFPSetCount <= 0) {
-			this.fpSet = FPSet.getFPSet(work.getFPBits(), work.getFpMemSize());
-			this.fpSet.init(0, this.metadir, this.work.getFileName());
-			this.fpSetManager = new StaticFPSetManager((FPSetRMI) this.fpSet);
+			FPSet fpSet = FPSet.getFPSet(work.getFPBits(), work.getFpMemSize());
+			fpSet.init(0, this.metadir, this.work.getFileName());
+			this.fpSetManager = new NonDistributedFPSetManager((FPSetRMI) fpSet, InetAddress.getLocalHost().getCanonicalHostName());
 		} else if (expectedFPSetCount > 0) {
 			this.fpSetManager = new DynamicFPSetManager(expectedFPSetCount);
 		} else {
@@ -166,7 +164,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCServerRMI#getFPSetManager()
 	 */
-	public final IFPSetManager getFPSetManager() {
+	public IFPSetManager getFPSetManager() {
 		try {
 			latch.await();
 		} catch (InterruptedException e) {
@@ -205,14 +203,15 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// create new server thread for given worker
 		final TLCServerThread thread = new TLCServerThread(this.thId++, worker, this, barrier, blockSelector);
 		threadsToWorkers.put(thread, worker);
-		if (TLCGlobals.fpServers == null && expectedFPSetCount <= 0) {
-			this.fpSet.addThread();
-		}
+		fpSetManager.addThread();
 		thread.start();
 
 		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_REGISTERED, worker.getURI().toString());
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServerRMI#registerFPSet(tlc2.tool.distributed.fp.FPSetRMI, java.lang.String)
+	 */
 	public synchronized void registerFPSet(FPSetRMI fpSet, String hostname) throws RemoteException {
 		this.fpSetManager.register(fpSet, hostname);
 		latch.countDown();
@@ -253,8 +252,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @return
 	 */
 	public synchronized final boolean setErrState(TLCState s, boolean keep) {
-		if (this.done)
+		if (this.done) {
 			return false;
+		}
 		this.done = true;
 		this.errState = s;
 		this.keepCallStack = keep;
@@ -282,20 +282,14 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			// start checkpointing:
 			this.stateQueue.beginChkpt();
 			this.trace.beginChkpt();
-			if (isDistributedFPSet()) {
-				this.fpSetManager.checkpoint(this.filename);
-			} else {
-				this.fpSet.beginChkpt();
-			}
+			this.fpSetManager.checkpoint(this.filename);
 			this.stateQueue.resumeAll();
 			UniqueString.internTbl.beginChkpt(this.metadir);
 			// commit:
 			this.stateQueue.commitChkpt();
 			this.trace.commitChkpt();
 			UniqueString.internTbl.commitChkpt(this.metadir);
-			if (!isDistributedFPSet()) {
-				this.fpSet.commitChkpt();
-			}
+			this.fpSetManager.commitChkpt();
 			MP.printMessage(EC.TLC_CHECKPOINT_END, "eted.");
 		}
 	}
@@ -308,11 +302,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	public final void recover() throws IOException, InterruptedException {
 		this.trace.recover();
 		this.stateQueue.recover();
-		if (isDistributedFPSet()) {
-			this.fpSetManager.recover(this.filename);
-		} else {
-			this.fpSet.recover();
-		}
+		this.fpSetManager.recover(this.filename);
 	}
 
 	/**
@@ -358,11 +348,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 */
 	public final void close(boolean cleanup) throws IOException {
 		this.trace.close();
-		if (isDistributedFPSet()) {
-			this.fpSetManager.close(cleanup);
-		} else {
-			this.fpSet.close();
-		}
+		this.fpSetManager.close(cleanup);
 		if (cleanup && !VETO_CLEANUP) {
 			FileUtil.deleteDir(new File(this.metadir), true);
 		}
@@ -383,7 +369,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		if (server.work.canRecover()) {
             MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_START, server.metadir);
 			server.recover();
-			MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, new String[] { String.valueOf(server.fpSet.size()),
+			long fps = server.fpSetManager.size();
+			MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, new String[] { String.valueOf(fps),
                     String.valueOf(server.stateQueue.size())});
 			recovered = true;
 		}
@@ -543,15 +530,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// Postprocessing:
 		if (server.hasNoErrors()) {
 			// We get here because the checking has succeeded.
-			double actualProb = 0L;
-			long statesSeen = 0L;
-			if (server.isDistributedFPSet()) {
-				actualProb = server.fpSetManager.checkFPs();
-				statesSeen = server.fpSetManager.getStatesSeen();
-			} else {
-				actualProb = server.fpSet.checkFPs();
-				statesSeen = server.fpSet.size();
-			}
+			final double actualProb = server.fpSetManager.checkFPs();
+			final long statesSeen = server.fpSetManager.getStatesSeen();
 			ModelChecker.reportSuccess(finalNumberOfDistinctStates, actualProb, statesSeen);
 		} else if (server.keepCallStack) {
 			// We redo the work on the error state, recording the call stack.
@@ -563,9 +543,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		
 		// dispose RMI leftovers
 		rg.unbind("TLCServer");
-		if (!server.isDistributedFPSet()) {
-			server.fpSet.unexportObject(false);
-		}
 		UnicastRemoteObject.unexportObject(server, false);
 
 		// Finally print the results
@@ -588,19 +565,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	}
 	
 	/**
-	 * @return true iff model checking uses distributed FPSet servers
-	 */
-	private boolean isDistributedFPSet() {
-		return this.fpSet == null;
-	}
-	
-	/**
 	 * @return true iff model checking has not found an error state
 	 */
 	private boolean hasNoErrors() {
 		return errState == null;
 	}
-			
 
 	/**
 	 * @return
