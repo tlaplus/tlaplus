@@ -311,7 +311,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 * gracefully unregistering with RMI. Additionally it terminates each
 	 * keep-alive timer.
 	 */
-	public static void shutdown() throws NoSuchObjectException {
+	public static void shutdown() {
 		// Exit the keepAliveTimer
 		if (keepAliveTimer != null) {
 			keepAliveTimer.cancel();
@@ -320,7 +320,11 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		// Exit and unregister all worker threads
 		for (int i = 0; i < runnables.length; i++) {
 			TLCWorker worker = runnables[i].getTLCWorker();
-			worker.exit();
+			try {
+				worker.exit();
+			} catch (NoSuchObjectException e) {
+				// may happen, ignore
+			}
 		}
 		
 		fts = null;
