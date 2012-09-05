@@ -256,7 +256,7 @@ public class TLCServerThread extends IdThread {
 		// to be called.
 		keepAliveTimer.cancel();
 
-		// De-register TLCServerThread at the main server
+		// De-register TLCServerThread at the main server thread locally
 		tlcServer.removeTLCServerThread(this);
 		
 		// Return the undone worklist (if any)
@@ -269,6 +269,10 @@ public class TLCServerThread extends IdThread {
 			// stateQueue to re-evaluate the while loop in isAvail(). The demise
 			// of this worker (who potentially was the lock owner) might causes
 			// another consumer to leave the while loop (become a consumer).
+			//
+			// This has to happen _prior_ to calling decNumWorkers. Otherwise
+			// we decrement the total number and the active count by one
+			// simultaneously, leaving isAvail without effect.
 			//
 			// This is to work around a design bug in
 			// tlc2.tool.queue.StateQueue's impl. Other IStateQueue impls should
