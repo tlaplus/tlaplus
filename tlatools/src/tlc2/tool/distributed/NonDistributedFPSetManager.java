@@ -7,21 +7,19 @@ import java.util.concurrent.ExecutorService;
 import tlc2.tool.distributed.fp.FPSetManagerException;
 import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.tool.distributed.fp.IFPSetManager;
-import tlc2.tool.fp.FPSet;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
 @SuppressWarnings("serial")
 public class NonDistributedFPSetManager implements IFPSetManager {
 
-	private final FPSet fpSet;
+	private final FPSetRMI fpSet;
 	private final String hostname;
 
-	public NonDistributedFPSetManager(final TLCApp work, final String metadir,
+	public NonDistributedFPSetManager(final FPSetRMI fpSet,
 			final String hostname) throws IOException {
+		this.fpSet = fpSet;
 		this.hostname = hostname;
-		fpSet = FPSet.getFPSet(work.getFPBits(), work.getFpMemSize());
-		fpSet.init(0, metadir, work.getFileName());
 	}
 
 	/* (non-Javadoc)
@@ -140,14 +138,26 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	 * @see tlc2.tool.distributed.fp.FPSetManager#size()
 	 */
 	public long size() {
-		return this.fpSet.size();
+		try {
+			return this.fpSet.size();
+		} catch (IOException e) {
+			// not supposed to happen
+			e.printStackTrace();
+			return -1;
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.fp.FPSetManager#getStatesSeen()
 	 */
 	public long getStatesSeen() {
-		return this.fpSet.size();
+		try {
+			return this.fpSet.size();
+		} catch (IOException e) {
+			// not supposed to happen
+			e.printStackTrace();
+			return -1;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -190,8 +200,8 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	 */
 	public void close(boolean cleanup) throws IOException {
 		this.fpSet.close();
-		
-		// Deregister nested FPSet RMI object from registry
-		this.fpSet.unexportObject(false);
+		// Correspond with the existing impl in FPSetManager#exit(boolean) and
+		// exit the FPSet
+		this.fpSet.exit(cleanup);
 	}
 }
