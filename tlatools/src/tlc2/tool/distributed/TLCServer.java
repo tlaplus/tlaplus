@@ -282,7 +282,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			// start checkpointing:
 			this.stateQueue.beginChkpt();
 			this.trace.beginChkpt();
-			if (this.fpSet == null) {
+			if (isDistributedFPSet()) {
 				this.fpSetManager.checkpoint(this.filename);
 			} else {
 				this.fpSet.beginChkpt();
@@ -293,7 +293,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			this.stateQueue.commitChkpt();
 			this.trace.commitChkpt();
 			UniqueString.internTbl.commitChkpt(this.metadir);
-			if (this.fpSet != null) {
+			if (!isDistributedFPSet()) {
 				this.fpSet.commitChkpt();
 			}
 			MP.printMessage(EC.TLC_CHECKPOINT_END, "eted.");
@@ -308,7 +308,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	public final void recover() throws IOException, InterruptedException {
 		this.trace.recover();
 		this.stateQueue.recover();
-		if (this.fpSet == null) {
+		if (isDistributedFPSet()) {
 			this.fpSetManager.recover(this.filename);
 		} else {
 			this.fpSet.recover();
@@ -358,7 +358,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 */
 	public final void close(boolean cleanup) throws IOException {
 		this.trace.close();
-		if (this.fpSet == null) {
+		if (isDistributedFPSet()) {
 			this.fpSetManager.close(cleanup);
 		} else {
 			this.fpSet.close();
@@ -491,12 +491,13 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				}
 			}
 		}
-		long workerOverallCacheRate = 0L;
 		
 		/*
 		 * From this point on forward, we expect model checking to be done. What
 		 * is left open, is to collect results and clean up
 		 */
+		
+		long workerOverallCacheRate = 0L;
 		
 		// Wait for all the server threads to die.
 		for (final Entry<TLCServerThread, TLCWorkerRMI> entry : server.threadsToWorkers.entrySet()) {
@@ -525,46 +526,52 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			// Otherwise getNewStates() and getStatesSeen() fail.
 			entry.setValue(null);
 		}
+		
 		// Only shutdown the thread pool if we exit gracefully
 		TLCServerThread.es.shutdown();
 		
+		// Collect model checking results before exiting remote workers
+		finalNumberOfDistinctStates = server.fpSetManager.size();
+		final long statesGenerated = server.getStatesComputed(workerOverallCacheRate);
+		final long statesLeftInQueue = server.getNewStates();
+		
+		final int level = server.trace.getLevelForReporting();
+		
 		server.statesPerMinute = 0;
 		server.distinctStatesPerMinute = 0;
-		
+
 		// Postprocessing:
-		finalNumberOfDistinctStates = server.fpSetManager.size();
-		boolean success = (server.errState == null);
-		if (success && server.fpSet != null) {
+		if (server.hasNoErrors()) {
 			// We get here because the checking has succeeded.
-			ModelChecker.reportSuccess(server.fpSet, finalNumberOfDistinctStates);
-		} else if (success && server.fpSet == null) {
-	        final double actualProb = server.fpSetManager.checkFPs();
-			ModelChecker.reportSuccess(finalNumberOfDistinctStates, actualProb, server.fpSetManager.getStatesSeen());
+			double actualProb = 0L;
+			long statesSeen = 0L;
+			if (server.isDistributedFPSet()) {
+				actualProb = server.fpSetManager.checkFPs();
+				statesSeen = server.fpSetManager.getStatesSeen();
+			} else {
+				actualProb = server.fpSet.checkFPs();
+				statesSeen = server.fpSet.size();
+			}
+			ModelChecker.reportSuccess(finalNumberOfDistinctStates, actualProb, statesSeen);
 		} else if (server.keepCallStack) {
 			// We redo the work on the error state, recording the call stack.
 			server.work.setCallStack();
-			try {
-				// server.doNext();
-			} catch (Exception e) {
-				MP.printMessage(EC.TLC_NESTED_EXPRESSION, "The error occurred when TLC was evaluating the nested"
-								+ "\nexpressions at the following positions:");
-				server.work.printCallStack();
-			}
 		}
 
-		server.printSummary(finalNumberOfDistinctStates, success, workerOverallCacheRate);
-
 		// Close trace and (distributed) _FPSet_ servers!
-		server.close(success);
+		server.close(server.hasNoErrors());
 		
 		// dispose RMI leftovers
 		rg.unbind("TLCServer");
-		if (server.fpSet != null) {
+		if (!server.isDistributedFPSet()) {
 			server.fpSet.unexportObject(false);
 		}
 		UnicastRemoteObject.unexportObject(server, false);
-		
-        MP.printMessage(EC.TLC_FINISHED);
+
+		// Finally print the results
+		printSummary(level, statesGenerated, statesLeftInQueue, finalNumberOfDistinctStates, server.hasNoErrors(), workerOverallCacheRate);
+        
+		MP.printMessage(EC.TLC_FINISHED);
 		MP.flush();
 	}
 	
@@ -579,6 +586,21 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	public long getAverageBlockCnt() {
 		return blockSelector.getAverageBlockCnt();
 	}
+	
+	/**
+	 * @return true iff model checking uses distributed FPSet servers
+	 */
+	private boolean isDistributedFPSet() {
+		return this.fpSet == null;
+	}
+	
+	/**
+	 * @return true iff model checking has not found an error state
+	 */
+	private boolean hasNoErrors() {
+		return errState == null;
+	}
+			
 
 	/**
 	 * @return
@@ -629,11 +651,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
      * form as all other progress statistics.
      * @param workerOverallCacheRate 
      */
-    public final void printSummary(long distinctStates, boolean success, long workerOverallCacheRate) throws IOException
+    public static final void printSummary(int level, long statesGenerated, long statesLeftInQueue, long distinctStates, boolean success, long workerOverallCacheRate) throws IOException
     {
-        long statesGenerated = this.getStatesComputed(workerOverallCacheRate);
-		long statesLeftInQueue = this.getNewStates();
-		int level = this.trace.getLevelForReporting();
 		if (TLCGlobals.tool) {
             MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(level),
                     String.valueOf(statesGenerated), String.valueOf(distinctStates),
