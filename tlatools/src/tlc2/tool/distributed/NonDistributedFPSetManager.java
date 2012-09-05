@@ -17,9 +17,11 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	private final FPSet fpSet;
 	private final String hostname;
 
-	public NonDistributedFPSetManager(final FPSetRMI fpSet, final String hostname) {
+	public NonDistributedFPSetManager(final TLCApp work, final String metadir,
+			final String hostname) throws IOException {
 		this.hostname = hostname;
-		this.fpSet = (FPSet) fpSet;
+		fpSet = FPSet.getFPSet(work.getFPBits(), work.getFpMemSize());
+		fpSet.init(0, metadir, work.getFileName());
 	}
 
 	/* (non-Javadoc)
