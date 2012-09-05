@@ -34,6 +34,7 @@ import tlc2.tool.distributed.fp.DynamicFPSetManager;
 import tlc2.tool.distributed.fp.FPSetManager;
 import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.tool.distributed.fp.IFPSetManager;
+import tlc2.tool.distributed.fp.NonDistributedFPSetManager;
 import tlc2.tool.distributed.management.TLCServerMXWrapper;
 import tlc2.tool.distributed.selector.BlockSelectorFactory;
 import tlc2.tool.distributed.selector.IBlockSelector;

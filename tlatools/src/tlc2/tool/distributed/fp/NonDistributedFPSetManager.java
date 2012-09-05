@@ -1,12 +1,9 @@
 // Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
-package tlc2.tool.distributed;
+package tlc2.tool.distributed.fp;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
-import tlc2.tool.distributed.fp.FPSetManagerException;
-import tlc2.tool.distributed.fp.FPSetRMI;
-import tlc2.tool.distributed.fp.IFPSetManager;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
