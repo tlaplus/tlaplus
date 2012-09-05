@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -374,6 +375,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @throws NotBoundException
 	 */
 	public static void modelCheck(TLCServer server) throws IOException, InterruptedException, NotBoundException {
+		/*
+		 * Before we initialize the server, we check if recovery is requested 
+		 */
+
 		boolean recovered = false;
 		if (server.work.canRecover()) {
             MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_START, server.metadir);
@@ -382,6 +387,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
                     String.valueOf(server.stateQueue.size())});
 			recovered = true;
 		}
+		
+		/*
+		 * Start initializing the server by calculating the init state(s)
+		 */
+
 		//TODO if init states is huge, this might go OOM
 		Set<Long> initFPs = new TreeSet<Long>();
 		if (!recovered) {
@@ -417,26 +427,41 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			return;
 		}
 
+		// Create the central naming authority that is used by _all_ nodes
 		String hostname = InetAddress.getLocalHost().getHostName();
 		Registry rg = LocateRegistry.createRegistry(Port);
 		rg.rebind("TLCServer", server);
 		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_RUNNING, hostname);
 		
-		// First register TLCSERVER with RMI and only then wait for all FPSets to become registered
+		// First register TLCSERVER with RMI and only then wait for all FPSets
+		// to become registered. This only waits if we use distributed
+		// fingerprint set (FPSet) servers which have to partition the
+		// distributed hash table (fingerprint space) prior to starting model
+		// checking.
 		server.latch.await();
+		
+		// Add the init state(s) to the local FPSet or distributed servers 
 		for (Long fp : initFPs) {
 			server.fpSetManager.put(fp);
 		}
+		
+		/*
+		 * This marks the end of the master and FPSet server initialization.
+		 * Model checking can start now.
+		 */
 
-		// Wait for completion, but print out progress report and checkpoint
-		// periodically.
-		synchronized (server) {
-			server.wait(REPORT_INTERVAL);
-		}
+		// Model checking results to be collected after model checking has finished
 		long oldNumOfGenStates = 0;
         long oldFPSetSize = 0;
+		
+		// Wait for completion, but print out progress report and checkpoint
+		// periodically.
+    	synchronized (server) { //TODO convert to do/while to move initial wait into loop
+    		server.wait(REPORT_INTERVAL);
+    	}
 		while (true) {
 			if (TLCGlobals.doCheckPoint()) {
+				// Periodically create a checkpoint assuming it is activated
 				server.checkpoint();
 			}
 			synchronized (server) {
@@ -453,17 +478,26 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(server.trace.getLevelForReporting()),
 			                String.valueOf(numOfGenStates), String.valueOf(fpSetSize),
 			                String.valueOf(server.getNewStates()), String.valueOf(server.statesPerMinute), String.valueOf(server.distinctStatesPerMinute) });
+					
+					// Make the TLCServer main thread sleep for one report interval
 					server.wait(REPORT_INTERVAL);
 					
 					// keep current values as old values
 					oldFPSetSize = fpSetSize;
 					oldNumOfGenStates = numOfGenStates;
 				}
-				if (server.done)
+				if (server.done) {
 					break;
+				}
 			}
 		}
 		long workerOverallCacheRate = 0L;
+		
+		/*
+		 * From this point on forward, we expect model checking to be done. What
+		 * is left open, is to collect results and clean up
+		 */
+		
 		// Wait for all the server threads to die.
 		for (final Entry<TLCServerThread, TLCWorkerRMI> entry : server.threadsToWorkers.entrySet()) {
 			final TLCServerThread thread = entry.getKey();
@@ -483,8 +517,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			try {
 				workerOverallCacheRate = worker.getCacheRate();
 				worker.exit();
-			} catch (Exception e) {
-				e.printStackTrace();
+			} catch (NoSuchObjectException e) {
+				// worker might have been lost in the meantime
+				MP.printMessage(EC.GENERAL, "Ignoring attempt to exit dead worker");
 			}
 			// Clear remote refs as all workers have existed at this point.
 			// Otherwise getNewStates() and getStatesSeen() fail.
@@ -519,6 +554,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 
 		server.printSummary(finalNumberOfDistinctStates, success, workerOverallCacheRate);
 
+		// Close trace and (distributed) _FPSet_ servers!
 		server.close(success);
 		
 		// dispose RMI leftovers
