@@ -69,5 +69,8 @@ public class TLCTimerTask extends TimerTask {
 				// not expected to happen
 			}
 		}
+		// Cancel this time after having exited the worker. Otherwise we keep on
+		// going forever.
+		this.cancel();
 	}
 }
