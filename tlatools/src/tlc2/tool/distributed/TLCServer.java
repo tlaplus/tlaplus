@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -104,11 +103,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	
 	private final Map<TLCServerThread, TLCWorkerRMI> threadsToWorkers = new HashMap<TLCServerThread, TLCWorkerRMI>();
 	
-	private final CyclicBarrier barrier;
 	private final IBlockSelector blockSelector;
-
-
-	static final int expectedWorkerCount = Integer.getInteger(TLCServer.class.getName() + ".expectedWorkerCount", 1);
 	/**
 	 * 
 	 */
@@ -142,7 +137,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		} else {
 			this.fpSetManager = new StaticFPSetManager(TLCGlobals.fpServers);
 		}
-		barrier = new CyclicBarrier(expectedWorkerCount);
 		latch = new CountDownLatch(expectedFPSetCount);
 		blockSelector = BlockSelectorFactory.getBlockSelector(this);
 	}
@@ -201,7 +195,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		stateQueue.resumeAllStuck();
 		
 		// create new server thread for given worker
-		final TLCServerThread thread = new TLCServerThread(this.thId++, worker, this, barrier, blockSelector);
+		final TLCServerThread thread = new TLCServerThread(this.thId++, worker, this, blockSelector);
 		threadsToWorkers.put(thread, worker);
 		fpSetManager.addThread();
 		thread.start();

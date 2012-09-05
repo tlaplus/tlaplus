@@ -14,8 +14,6 @@ import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,7 +42,6 @@ public class TLCServerThread extends IdThread {
 	 */
 	private int receivedStates, sentStates;
 	private double cacheRateRatio;
-	private final CyclicBarrier barrier;
 	private final IBlockSelector selector;
 	private final Timer keepAliveTimer;
 	/**
@@ -62,15 +59,13 @@ public class TLCServerThread extends IdThread {
 	private final AtomicBoolean cleanupGlobals = new AtomicBoolean(true);
 
 	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc) {
-		this(id, worker, tlc, null, null);
+		this(id, worker, tlc, null);
 	}
 
-	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc,
-			CyclicBarrier aBarrier, IBlockSelector aSelector) {
+	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc, IBlockSelector aSelector) {
 		super(id);
 		this.setWorker(worker);
 		this.tlcServer = tlc;
-		this.barrier = aBarrier;
 		this.selector = aSelector;
 
 		// schedule a timer to periodically (60s) check server aliveness
@@ -112,8 +107,6 @@ public class TLCServerThread extends IdThread {
 	 * state queue.
 	 */
 	public void run() {
-		waitOnBarrier();
-
 		TLCGlobals.incNumWorkers();
 		TLCStateVec[] newStates = null;
 		LongVec[] newFps = null;
@@ -293,22 +286,6 @@ public class TLCServerThread extends IdThread {
 			}
 			
 			TLCGlobals.decNumWorkers();
-		}
-	}
-
-	/**
-	 * Causes this thread to wait for all other worker threads before it starts
-	 * computing states. The barrier may be null in which case threads start
-	 * computing next states immediately after creation.
-	 */
-	private void waitOnBarrier() {
-		try {
-			if (barrier != null)
-				barrier.await();
-		} catch (InterruptedException e2) {
-			MP.printError(EC.GENERAL, e2);
-		} catch (BrokenBarrierException e2) {
-			MP.printError(EC.GENERAL, e2);
 		}
 	}
 
