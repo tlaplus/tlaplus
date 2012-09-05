@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 
-import tlc2.tool.distributed.TLCWorker;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
@@ -51,10 +50,13 @@ public interface IFPSetManager extends Serializable {
 	BitVector[] containsBlock(LongVec[] fps, ExecutorService executorService);
 
 	/**
-	 * A bit mask to be used by {@link TLCWorker} to address the corresponding
-	 * FPSetRMI managed by this {@link IFPSetManager}.
+	 * The index address of the {@link FPSetRMI} corresponding with the given
+	 * fingerprint in this {@link IFPSetManager}. It is used by worker nodes to
+	 * pre-sort the fingerprints in {@link LongVec} according to the index of
+	 * the {@link FPSetRMI} responsible for the partition of the fingerprint
+	 * space.
 	 */
-	long getMask();
+	int getFPSetIndex(long fp);
 
 	/**
 	 * @see FPSetRMI#getStatesSeen()

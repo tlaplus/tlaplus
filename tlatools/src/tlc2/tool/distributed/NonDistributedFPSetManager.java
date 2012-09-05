@@ -71,6 +71,13 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.fp.IFPSetManager#getFPSetIndex(long)
+	 */
+	public int getFPSetIndex(long fp) {
+		return 0;
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.fp.FPSetManager#putBlock(tlc2.util.LongVec[])
 	 */
 	public BitVector[] putBlock(LongVec[] fps) {

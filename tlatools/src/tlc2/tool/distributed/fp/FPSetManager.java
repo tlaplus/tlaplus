@@ -205,6 +205,13 @@ public abstract class FPSetManager implements IFPSetManager {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.fp.IFPSetManager#getFPSetIndex(long)
+	 */
+	public int getFPSetIndex(long fp) {
+		return (int) ((fp & mask) % numOfServers());
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.IFPSetManager#putBlock(tlc2.util.LongVec[])
 	 */
 	public BitVector[] putBlock(LongVec[] fps) {

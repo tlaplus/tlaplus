@@ -55,14 +55,12 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private long lastInvocation;
 	
 	private final Cache cache;
-	private final long mask;
 	
 
 	public TLCWorker(DistApp work, IFPSetManager fpSetManager, String aHostname)
 			throws RemoteException {
 		this.work = work;
 		this.fpSetManager = fpSetManager;
-		this.mask = fpSetManager.getMask();
 		uri = URI.create("rmi://" + aHostname + ":" + getPort());
 		
 		this.cache = new SimpleCache();
@@ -131,7 +129,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				Assert.check(last < fp, EC.GENERAL);
 				last = fp;
 
-				int fpIndex = (int) ((fp & mask) % fpServerCnt);
+				int fpIndex = fpSetManager.getFPSetIndex(fp);
 				pvv[fpIndex].addElement(holder.getParentState());
 				nvv[fpIndex].addElement(holder.getNewState());
 				fpvv[fpIndex].addElement(fp);
