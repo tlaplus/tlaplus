@@ -5,27 +5,20 @@
 
 package tlc2.tool.fp;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.InetAddress;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
-import tlc2.tool.distributed.fp.FPSetManager;
 import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
-import util.FileUtil;
 import util.TLCRuntime;
 
 /**
@@ -192,37 +185,58 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
     public abstract void init(int numThreads, String metadir, String filename) throws IOException;
 
     /* Returns the number of fingerprints in this set. */
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#size()
+     */
     public abstract long size();
 
-    /**
-     * Returns <code>true</code> iff the fingerprint <code>fp</code> is
-     * in this set. If the fingerprint is not in the set, it is added to
-     * the set as a side-effect.
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#put(long)
      */
     public abstract boolean put(long fp) throws IOException;
 
-    /**
-     * Returns <code>true</code> iff the fingerprint <code>fp</code> is
-     * in this set.
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#contains(long)
      */
     public abstract boolean contains(long fp) throws IOException;
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#close()
+     */
     public void close()
     { /*SKIP*/
     }
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#addThread()
+     */
     public void addThread() throws IOException
     { /*SKIP*/
     }
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#exit(boolean)
+     */
     public abstract void exit(boolean cleanup) throws IOException;
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#checkFPs()
+     */
     public abstract double checkFPs() throws IOException;
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#beginChkpt()
+     */
     public abstract void beginChkpt() throws IOException;
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#commitChkpt()
+     */
     public abstract void commitChkpt() throws IOException;
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#recover()
+     */
     public abstract void recover() throws IOException;
 
     public abstract void recoverFP(long fp) throws IOException;
@@ -232,10 +246,19 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
     public abstract void completeRecovery() throws IOException;
 
     /* The set of checkpoint methods for remote checkpointing. */
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#beginChkpt(java.lang.String)
+     */
     public abstract void beginChkpt(String filename) throws IOException;
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#commitChkpt(java.lang.String)
+     */
     public abstract void commitChkpt(String filename) throws IOException;
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#recover(java.lang.String)
+     */
     public abstract void recover(String filename) throws IOException;
     
 	/**
@@ -258,6 +281,9 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 		return true;
 	}
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#putBlock(tlc2.util.LongVec)
+     */
     public BitVector putBlock(LongVec fpv) throws IOException
     {
         int size = fpv.size();
@@ -272,6 +298,9 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
         return bv;
     }
 
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#containsBlock(tlc2.util.LongVec)
+     */
     public BitVector containsBlock(LongVec fpv) throws IOException
     {
     	statesSeen += fpv.size();
@@ -288,6 +317,9 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 
     /* (non-Javadoc)
      * @see tlc2.tool.distributed.FPSetRMI#getStatesSeen()
+     */
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.fp.FPSetRMI#getStatesSeen()
      */
     public long getStatesSeen() throws RemoteException {
     	return statesSeen;
@@ -310,105 +342,11 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 		UnicastRemoteObject.unexportObject(this, force);
 	}
 
-    // SZ Jul 10, 2009: this method is not used
-    public static void main(String args[])
-    {
-        System.out.println("TLC FP Server " + TLCGlobals.versionOfTLC);
-
-        String metadir = null;
-        String fromChkpt = null;
-		int fpBits = 0;
-		
-		int index = 0;
-
-		while (index < args.length) {
-			if (args[index].equals("-fpbits")) {
-				index++;
-				if (index < args.length) {
-					try {
-						fpBits = Integer.parseInt(args[index]);
-
-						// make sure it's in valid range
-						if (!FPSet.isValid(fpBits)) {
-							printErrorMsg("Error: Value in interval [0, 30] for fpbits required. But encountered "
-									+ args[index]);
-							System.exit(0);
-						}
-
-						index++;
-					} catch (Exception e) {
-						printErrorMsg("Error: A number for -fpbits is required. But encountered "
-								+ args[index]);
-						System.exit(0);
-					}
-				} else {
-					printErrorMsg("Error: expect an integer for -workers option.");
-					System.exit(0);
-				}
-			} else if (args[index].charAt(0) == '-') {
-				printErrorMsg("Error: unrecognized option: " + args[index]);
-				System.exit(0);
-			} 
-			if (metadir != null) {
-				printErrorMsg("Error: more than one directory for metadata: "
-						+ metadir + " and " + args[index]);
-				System.exit(0);
-			}
-			metadir = args[index++] + FileUtil.separator;
-		}
-
-        String hostname = "Unknown";
-        try
-        {
-            hostname = InetAddress.getLocalHost().getHostName();
-            metadir = (metadir == null) ? hostname : (metadir + hostname);
-            File filedir = new File(metadir);
-            if (!filedir.exists())
-            {
-                boolean created = filedir.mkdirs();
-                if (!created)
-                {
-                    System.err
-                            .println("Error: fingerprint server could not make a directory for the disk files it needs to write.\n");
-                    System.exit(0);
-                }
-            }
-			// Start memory-based fingerprint set server.
-            // Note: It would be wrong to use the disk-based implementation.
-			FPSet fpSet = FPSet.getFPSet(fpBits, -1);
-            fpSet.init(1, metadir, "fpset");
-            if (fromChkpt != null)
-            {
-                fpSet.recover(); // recover when instructed
-            }
-            Registry rg = LocateRegistry.createRegistry(FPSetManager.Port);
-            rg.rebind("FPSetServer", fpSet);
-            System.out.println("Fingerprint set server at " + hostname + " is ready.");
-
-            synchronized (fpSet)
-            {
-                while (true)
-                {
-                    System.out.println("Progress: The number of fingerprints stored at " + hostname + " is "
-                            + fpSet.size() + ".");
-                    fpSet.wait(300000);
-                }
-            }
-        } catch (Exception e)
-        {
-            System.out.println(hostname + ": Error: " + e.getMessage());
-        }
-    }
-    private static void printErrorMsg(String msg)
-    {
-        System.out.println(msg);
-        System.out.println("Usage: java tlc2.tool.FPSet [-option] metadir");
-    }
-
 	/**
 	 * @return A list of classes implementing {@link FPSet}. Eventually this
 	 *         list should be constructed dynamically during runtime.
 	 */
+	@SuppressWarnings("deprecation")
 	public static String[] getImplementations() {
 		final List<String> l = new ArrayList<String>();
 		
@@ -433,6 +371,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 		return LSBDiskFPSet.class.getName();
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static boolean allocatesOnHeap(final Class clazz) {
 		return !OffHeapDiskFPSet.class.isAssignableFrom(clazz);
 	}

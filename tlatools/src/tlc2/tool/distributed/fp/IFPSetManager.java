@@ -6,72 +6,102 @@ import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 
 import tlc2.tool.distributed.TLCWorker;
-import tlc2.tool.fp.FPSet;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
 public interface IFPSetManager extends Serializable {
 
-	int numOfServers();
+	/**
+	 * @see FPSetRMI#addThread()
+	 */
+	void addThread() throws IOException;
 
 	/**
-	 * @see FPSet#close()
+	 * @see FPSetRMI#checkFPs()
+	 */
+	double checkFPs();
+
+	/**
+	 */
+	void checkpoint(String fname) throws InterruptedException, IOException;
+
+	/**
+	 * @see FPSetRMI#close()
 	 */
 	void close(boolean cleanup) throws IOException;
-
+	
 	/**
-	 * @see FPSet#put(long)
+	 * @see FPSetRMI#commitChkpt()
 	 */
-	boolean put(long fp);
+	void commitChkpt() throws IOException;
 
 	/**
-	 * @see FPSet#contains(long)
+	 * @see FPSetRMI#contains(long)
 	 */
 	boolean contains(long fp);
-	
-	/**
-	 * @see FPSet#putBlock(LongVec)
-	 */
-	BitVector[] putBlock(LongVec[] fps);
 
 	/**
-	 * @see FPSet#containsBlock(LongVec);
+	 * @see FPSetRMI#containsBlock(LongVec);
 	 */
 	BitVector[] containsBlock(LongVec[] fps);
-
-	/**
-	 * @see FPSet#putBlock(LongVec)
-	 */
-	BitVector[] putBlock(LongVec[] fps, ExecutorService executorService);
 	
 	/**
-	 * @see FPSet#containsBlock(LongVec);
+	 * @see FPSetRMI#containsBlock(LongVec);
 	 */
 	BitVector[] containsBlock(LongVec[] fps, ExecutorService executorService);
 
 	/**
-	 * @see FPSet#size()
+	 * A bit mask to be used by {@link TLCWorker} to address the corresponding
+	 * FPSetRMI managed by this {@link IFPSetManager}.
 	 */
-	long size();
+	long getMask();
 
 	/**
-	 * @return The amount of states seen by all {@link FPSet}. This amounts to
-	 *         the states computed by all {@link TLCWorker}
+	 * @see FPSetRMI#getStatesSeen()
 	 */
 	long getStatesSeen();
 
-	void checkpoint(String fname) throws InterruptedException, IOException;
+	/**
+	 * @return The number of {@link FPSetRMI} instances backing this
+	 *         {@link IFPSetManager}.
+	 *         <p>
+	 *         The {@link IFPSetManager} distributes the fingerprint space
+	 *         across the number of instances at its own discretion.
+	 */
+	int numOfServers();
 
+	/**
+	 * @see FPSetRMI#put(long)
+	 */
+	boolean put(long fp);
+
+	/**
+	 * @see FPSetRMI#putBlock(LongVec)
+	 */
+	BitVector[] putBlock(LongVec[] fps);
+
+	/**
+	 * @see FPSetRMI#putBlock(LongVec)
+	 */
+	BitVector[] putBlock(LongVec[] fps, ExecutorService executorService);
+
+	/**
+	 * @see FPSetRMI#recover(String)
+	 */
 	void recover(String fname) throws InterruptedException, IOException;
 
+	/**
+	 * Registers the given {@link FPSetRMI} as a usable instance of this
+	 * {@link IFPSetManager}. This means that the given {@link FPSetRMI} will be
+	 * used to store and lookup fingerprints during model checking. It is up to
+	 * the {@link IFPSetManager} to partition the fingerprint space, meaning the
+	 * {@link FPSetRMI} will not see all fingerprints of all distinct states.
+	 */
 	void register(FPSetRMI fpSet, String hostname) throws FPSetManagerException;
 
-	long getMask();
-
-	double checkFPs();
-
-	void addThread() throws IOException;
-
-	void commitChkpt() throws IOException;
+	/**
+	 * @see FPSetRMI#size()
+	 */
+	long size();
 
 }
