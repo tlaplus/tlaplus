@@ -14,11 +14,6 @@ public class TLCWorkerWrapper extends TLCWrapper implements ITLCWorker {
 	public boolean connect(final URI uri) {
 		super.connect("TLCWorker");
 		try {
-			// Running TLC in an OSGi runtime requires the OSGi resolver which
-			// translates OSGi specific resource location to generic ones
-			// understandable by TLC.
-			TLCWorker.setFilenameToStreamResolver(new OSGiNameToFileIStream());
-			
 			TLCWorker.main(new String[] { uri.getHost() });
 		} catch(Exception e) {
 			// not expected to happen
