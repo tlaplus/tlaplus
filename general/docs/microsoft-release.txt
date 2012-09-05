@@ -42,6 +42,9 @@ In org.lamport.tla.toolbox.product.standalone
 
 In org.lamport.tla.toolbox/welcome/welcomeView.html
    Update date and version
+   
+In org.lamport.tla.toolbox.doc/META-INF/MANIFEST.MF, update the version.
+
 
 OBSOLETE:
 In toolbox.product.standalone/intro/root.xhtml: 
