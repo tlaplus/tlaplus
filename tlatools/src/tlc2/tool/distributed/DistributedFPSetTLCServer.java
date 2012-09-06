@@ -16,14 +16,19 @@ import tlc2.tool.distributed.fp.IFPSetManager;
 public class DistributedFPSetTLCServer extends TLCServer {
 	
 	protected final CountDownLatch latch;
-	protected final IFPSetManager fpSetManager;
 
 	public DistributedFPSetTLCServer(final TLCApp work, final int expectedFPSetCount) throws IOException,
 			NotBoundException {
 		super(work);
-
-		this.fpSetManager = new DynamicFPSetManager(expectedFPSetCount);
 		this.latch = new CountDownLatch(expectedFPSetCount);
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServer#getFPSetManagerImpl(tlc2.tool.distributed.TLCApp, java.lang.String, int)
+	 */
+	protected IFPSetManager getFPSetManagerImpl(final TLCApp work,
+			final String metadir, final int fpsetCount) throws IOException {
+		return new DynamicFPSetManager(fpsetCount);
 	}
 
 	/* (non-Javadoc)

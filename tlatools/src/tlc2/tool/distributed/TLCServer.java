@@ -33,7 +33,6 @@ import tlc2.tool.ModelChecker;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
-import tlc2.tool.distributed.fp.DynamicFPSetManager;
 import tlc2.tool.distributed.fp.FPSetManager;
 import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.tool.distributed.fp.IFPSetManager;
@@ -159,20 +158,26 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				this.work);
 
 		// FPSet
-		if (expectedFPSetCount <= 0) {
-			// 1) A single FPSet server running on the master node
-			final FPSet fpSet = FPSet.getFPSet(work.getFPBits(), work.getFpMemSize());
-			fpSet.init(0, metadir, work.getFileName());
-			this.fpSetManager = new NonDistributedFPSetManager(fpSet,
-					InetAddress.getLocalHost().getCanonicalHostName());
-		} else {
-			// 2) Multiple FPSet servers configured dynamically not running on
-			// the master node
-			this.fpSetManager = new DynamicFPSetManager(expectedFPSetCount);
-		}
+		this.fpSetManager = getFPSetManagerImpl(work, metadir, expectedFPSetCount);
 		
 		// Determines the size of the state queue subset handed out to workers
 		blockSelector = BlockSelectorFactory.getBlockSelector(this);
+	}
+	
+	/**
+	 * The {@link IFPSetManager} implementation to be used by the
+	 * {@link TLCServer} implementation. Subclass may want to return specialized
+	 * {@link IFPSetManager}s with different functionality.
+	 * @param expectedfpsetcount2 
+	 */
+	protected IFPSetManager getFPSetManagerImpl(final TLCApp work,
+			final String metadir, final int fpsetCount) throws IOException {
+		// A single FPSet server running on the master node
+		final FPSet fpSet = FPSet.getFPSet(work.getFPBits(),
+				work.getFpMemSize());
+		fpSet.init(0, metadir, work.getFileName());
+		return new NonDistributedFPSetManager(fpSet, InetAddress.getLocalHost()
+				.getCanonicalHostName());
 	}
 
 	/* (non-Javadoc)
@@ -677,7 +682,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		TLCServer server = null;
 		try {
 			TLCGlobals.setNumWorkers(0);
-			server = new TLCServer(TLCApp.create(argv));
+			final TLCApp app = TLCApp.create(argv);
+			if (expectedFPSetCount > 0) {
+				server = new DistributedFPSetTLCServer(app, expectedFPSetCount);
+			} else {
+				server = new TLCServer(app);
+			}
 			tlcServerMXWrapper = new TLCServerMXWrapper(server);
 			if(server != null) {
 				Runtime.getRuntime().addShutdownHook(new Thread(new WorkerShutdownHook(server)));
