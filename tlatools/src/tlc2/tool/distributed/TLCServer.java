@@ -566,6 +566,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			// We redo the work on the error state, recording the call stack.
 			work.setCallStack();
 		}
+		
+		// Finally print the results
+		printSummary(level, statesGenerated, statesLeftInQueue, finalNumberOfDistinctStates, hasNoErrors(), workerOverallCacheRate);
+		MP.printMessage(EC.TLC_FINISHED);
+		MP.flush();
 
 		// Close trace and (distributed) _FPSet_ servers!
 		close(hasNoErrors());
@@ -573,12 +578,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// dispose RMI leftovers
 		rg.unbind("TLCServer");
 		UnicastRemoteObject.unexportObject(this, false);
-
-		// Finally print the results
-		printSummary(level, statesGenerated, statesLeftInQueue, finalNumberOfDistinctStates, hasNoErrors(), workerOverallCacheRate);
-        
-		MP.printMessage(EC.TLC_FINISHED);
-		MP.flush();
 	}
 	
 	/**
