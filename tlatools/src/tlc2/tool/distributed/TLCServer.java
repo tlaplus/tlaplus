@@ -16,12 +16,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
+import java.util.ConcurrentModificationException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -113,11 +114,22 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	private boolean keepCallStack = false;
 	
 	/**
-	 * Main data structure used to maintain the list of active workers (ref {@link TLCWorkerRMI}) and the
-	 * corresponding local {@link TLCServerThread}.<p>
-	 * A worker ({@link TLCWorkerRMI}) requires a local thread counterpart to do its work concurrently.
+	 * Main data structure used to maintain the list of active workers (ref
+	 * {@link TLCWorkerRMI}) and the corresponding local {@link TLCServerThread}
+	 * .
+	 * <p>
+	 * A worker ({@link TLCWorkerRMI}) requires a local thread counterpart to do
+	 * its work concurrently.
+	 * <p>
+	 * The implementation uses a {@link ConcurrentHashMap}, to allow concurrent
+	 * access during the end game phase. It is the phase when
+	 * {@link TLCServer#modelCheck()} cleans up threadsToWorkers by waiting
+	 * {@link Thread#join()} on the various {@link TLCServerThread}s. If this
+	 * action is overlapped with a worker registering - calling
+	 * {@link TLCServer#registerWorker(TLCWorkerRMI)} - which would cause a
+	 * {@link ConcurrentModificationException}.
 	 */
-	private final Map<TLCServerThread, TLCWorkerRMI> threadsToWorkers = new HashMap<TLCServerThread, TLCWorkerRMI>();
+	private final Map<TLCServerThread, TLCWorkerRMI> threadsToWorkers = new ConcurrentHashMap<TLCServerThread, TLCWorkerRMI>();
 	
 	private final IBlockSelector blockSelector;
 	
