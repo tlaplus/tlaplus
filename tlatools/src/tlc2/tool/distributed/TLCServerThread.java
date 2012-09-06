@@ -267,6 +267,11 @@ public class TLCServerThread extends IdThread {
 		// Return the undone worklist (if any)
 		stateQueue.sEnqueue(states != null ? states : new TLCState[0]);
 		
+		// Reset states to empty array to signal to TLCServer that we are not
+		// processing any new states. Otherwise statistics will incorrectly
+		// count this TLCServerThread as actively calculating states.
+		states = new TLCState[0];
+		
 		// This call has to be idempotent, otherwise we see bugs as in 
 		// https://bugzilla.tlaplus.net/show_bug.cgi?id=234
 		if (cleanupGlobals.compareAndSet(true, false)) {
