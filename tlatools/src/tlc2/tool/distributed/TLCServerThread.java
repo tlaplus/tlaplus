@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import tlc2.TLCGlobals;
@@ -25,6 +24,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateVec;
 import tlc2.tool.WorkerException;
 import tlc2.tool.distributed.selector.IBlockSelector;
+import tlc2.tool.fp.FPSet;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.BitVector;
@@ -33,10 +33,6 @@ import tlc2.util.LongVec;
 
 public class TLCServerThread extends IdThread {
 	private static int COUNT = 0;
-	/**
-	 * A thread pool used to execute tasks
-	 */
-	static final ExecutorService es = Executors.newCachedThreadPool();
 	/**
 	 * Identifies the worker
 	 */
@@ -57,9 +53,18 @@ public class TLCServerThread extends IdThread {
 	 * {@link TLCTimerTask#run()} are executed as two separate threads.
 	 */
 	private final AtomicBoolean cleanupGlobals = new AtomicBoolean(true);
+	/**
+	 * An {@link ExecutorService} used to parallelize calls to the _distributed_
+	 * fingerprint set servers ({@link FPSet}).
+	 * <p>
+	 * The fingerprint space is partitioned across all {@link FPSet} servers and
+	 * thus can be accessed concurrently.
+	 */
+	private ExecutorService executorService;
 
-	public TLCServerThread(TLCWorkerRMI worker, TLCServer tlc, IBlockSelector aSelector) {
+	public TLCServerThread(TLCWorkerRMI worker, TLCServer tlc, ExecutorService es, IBlockSelector aSelector) {
 		super(COUNT++);
+		this.executorService = es;
 		this.setWorker(worker);
 		this.tlcServer = tlc;
 		this.selector = aSelector;
@@ -177,7 +182,7 @@ public class TLCServerThread extends IdThread {
 				// fp set would be inconsistent => making it an "atomic"
 				// operation)
 				BitVector[] visited = this.tlcServer.fpSetManager
-						.putBlock(newFps, es);
+						.putBlock(newFps, executorService);
 
 				// recreate newly computed states and add them to queue
 				for (int i = 0; i < visited.length; i++) {

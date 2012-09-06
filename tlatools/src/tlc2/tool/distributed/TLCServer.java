@@ -22,6 +22,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -93,6 +95,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 */
 	private long statesPerMinute;
 
+	/**
+	 * A thread pool used to execute tasks
+	 */
+	private final ExecutorService es = Executors.newCachedThreadPool();
+	
 	public final IFPSetManager fpSetManager;
 	public final IStateQueue stateQueue;
 	public final TLCTrace trace;
@@ -192,7 +199,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		stateQueue.resumeAllStuck();
 		
 		// create new server thread for given worker
-		final TLCServerThread thread = new TLCServerThread(worker, this, blockSelector);
+		final TLCServerThread thread = new TLCServerThread(worker, this, es, blockSelector);
 		threadsToWorkers.put(thread, worker);
 		fpSetManager.addThread();
 		thread.start();
@@ -510,7 +517,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		}
 		
 		// Only shutdown the thread pool if we exit gracefully
-		TLCServerThread.es.shutdown();
+		es.shutdown();
 		
 		// Collect model checking results before exiting remote workers
 		finalNumberOfDistinctStates = fpSetManager.size();
