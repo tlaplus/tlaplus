@@ -106,6 +106,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	private boolean keepCallStack = false;
 	private int thId = 0;
 	
+	/**
+	 * Main data structure used to maintain the list of active workers (ref {@link TLCWorkerRMI}) and the
+	 * corresponding local {@link TLCServerThread}.<p>
+	 * A worker ({@link TLCWorkerRMI}) requires a local thread counterpart to do its work concurrently.
+	 */
 	private final Map<TLCServerThread, TLCWorkerRMI> threadsToWorkers = new HashMap<TLCServerThread, TLCWorkerRMI>();
 	
 	private final IBlockSelector blockSelector;
@@ -210,7 +215,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @param thread
 	 * @return 
 	 */
-	public synchronized TLCWorkerRMI removeTLCServerThread(final TLCServerThread thread) {
+	public TLCWorkerRMI removeTLCServerThread(final TLCServerThread thread) {
 		final TLCWorkerRMI worker = threadsToWorkers.remove(thread);
 		/*
 		 * Only ever report a disconnected worker once!
@@ -235,7 +240,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	/**
 	 * @param s
 	 * @param keep
-	 * @return
+	 * @return true iff setting the error state has succeeded. This is the case
+	 *         for the first worker to call
+	 *         {@link TLCServer#setErrState(TLCState, boolean)}. Subsequent
+	 *         calls by other workers will be ignored. This implies that other
+	 *         error states are ignored.
 	 */
 	public synchronized final boolean setErrState(TLCState s, boolean keep) {
 		if (this.done) {
@@ -248,7 +257,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	}
 
 	/**
-	 * 
+	 * Indicates the completion of model checking. This is called by
+	 * {@link TLCServerThread}s once they find an empty {@link IStateQueue}. An
+	 * empty {@link IStateQueue} is the termination condition.
 	 */
 	public final void setDone() {
 		this.done = true;

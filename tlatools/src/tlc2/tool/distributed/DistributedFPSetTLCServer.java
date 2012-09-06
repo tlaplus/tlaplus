@@ -31,6 +31,7 @@ public class DistributedFPSetTLCServer extends TLCServer {
 		try {
 			this.latch.await();
 		} catch (InterruptedException e) {
+			// not expected to happen
 			e.printStackTrace();
 		}
 		return this.fpSetManager;
