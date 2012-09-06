@@ -127,6 +127,13 @@ public class MP
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$ 
 	private static final DecimalFormat df = new DecimalFormat("###,###.###");
+	
+	/**
+	 * By default run in debug mode which means the full stack trace is printed
+	 * to the console. This potentially screws up the Toolbox parser though.
+	 * Hence, debug can be turned off explicitly by passing the System property.
+	 */
+	private static final boolean NO_DEBUG = Boolean.getBoolean(MP.class.getName() + ".noDebug");
 
     /**
      * The internal instance
@@ -1171,6 +1178,13 @@ public class MP
         msg = msg + "\nThe exception was a " + throwable.getClass().getName();
         if (throwable.getMessage() != null) {
             msg = msg + ": " + throwable.getMessage();
+            
+			// TODO MAK Remove before distributed TLC can really be used in the
+			// Toolbox. Right we want to see the complete stacktrace though, to
+			// be able to debug distributed TLC programming errors.
+            if (!NO_DEBUG) {
+            	msg += throwableToString(throwable);
+            }
         } else {
         	msg += throwableToString(throwable);
         }
