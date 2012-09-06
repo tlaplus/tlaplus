@@ -2,7 +2,6 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 // Last modified on Mon 30 Apr 2007 at 13:18:34 PST by lamport  
 //      modified on Fri Mar  2 23:46:22 PST 2001 by yuanyu   
-
 package tlc2.tool.distributed;
 
 import java.io.EOFException;
@@ -145,6 +144,7 @@ public class TLCServerThread extends IdThread {
 						newFps = (LongVec[]) res[1];
 						workDone = true;
 						lastInvocation = System.currentTimeMillis();
+						cacheRateRatio = this.worker.getCacheRateRatio();
 					} catch (RemoteException e) {
 						// If a (remote) {@link TLCWorkerRMI} fails due to the
 						// amount of new states we have sent it, try to lower
@@ -164,7 +164,10 @@ public class TLCServerThread extends IdThread {
 							continue START;
 						} else { 
 							// non recoverable errors, exit...
-							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
+							MP.printMessage(
+									EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED,
+									getUri().toString());
+							handleRemoteWorkerLost(stateQueue);
 							return;
 						}
 					} catch (NullPointerException e) {
@@ -198,8 +201,6 @@ public class TLCServerThread extends IdThread {
 						stateQueue.sEnqueue(state);
 					}
 				}
-				
-				cacheRateRatio = this.worker.getCacheRateRatio();
 			}
 		} catch (Throwable e) {
 			TLCState state1 = null, state2 = null;
