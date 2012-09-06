@@ -630,7 +630,13 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
     	for (TLCWorkerRMI worker : threadsToWorkers.values()) {
 			// worker is null when model checking is over, but we cling to the
 			// refs to collect statistics.
-    		statesSeen += worker.getCacheRate();
+    		try {
+    			statesSeen += worker.getCacheRate();
+    		} catch (java.rmi.RemoteException e) {
+				MP.printWarning(EC.GENERAL,
+						"Skipping broken worker while calculating states computed");
+				continue;
+    		}
 		}
     	
     	return getStatesComputed(statesSeen);
