@@ -541,9 +541,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				// worker might have been lost in the meantime
 				MP.printMessage(EC.GENERAL, "Ignoring attempt to exit dead worker");
 			}
-			// Clear remote refs as all workers have existed at this point.
-			// Otherwise getNewStates() and getStatesSeen() fail.
-			entry.setValue(null);
 		}
 		
 		// Only shutdown the thread pool if we exit gracefully
@@ -634,9 +631,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
     	for (TLCWorkerRMI worker : threadsToWorkers.values()) {
 			// worker is null when model checking is over, but we cling to the
 			// refs to collect statistics.
-    		if (worker != null) {
-    			statesSeen += worker.getCacheRate();
-    		}
+    		statesSeen += worker.getCacheRate();
 		}
     	
     	return getStatesComputed(statesSeen);
@@ -821,9 +816,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		public void run() {
 			for (TLCWorkerRMI worker : server.threadsToWorkers.values()) {
 				try {
-					if(worker != null) {
-						worker.exit();
-					}
+					worker.exit();
 				} catch (java.rmi.ConnectException e)  {
 					// happens if worker has exited already
 				} catch (java.rmi.NoSuchObjectException e) {
