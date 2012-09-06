@@ -93,8 +93,8 @@ public class TLCServerThread extends IdThread {
 		try {
 			this.uri = worker.getURI();
 		} catch (RemoteException e) {
-			// TODO handle more gracefully
 			MP.printError(EC.GENERAL, e);
+			handleRemoteWorkerLost(null);
 		}
 		// update thread name
 		final String i = String.format("%03d", myGetId());
@@ -266,7 +266,9 @@ public class TLCServerThread extends IdThread {
 		tlcServer.removeTLCServerThread(this);
 		
 		// Return the undone worklist (if any)
-		stateQueue.sEnqueue(states != null ? states : new TLCState[0]);
+		if (stateQueue != null) {
+			stateQueue.sEnqueue(states != null ? states : new TLCState[0]);
+		}
 		
 		// Reset states to empty array to signal to TLCServer that we are not
 		// processing any new states. Otherwise statistics will incorrectly
