@@ -57,6 +57,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * make the threads identifiable in jmx2munin statistics, which uses simple string matching.  
 	 */
 	public static final String THREAD_NAME_PREFIX = "TLCWorkerThread-";
+
 	/**
 	 * Used by TLCStatistics which are collected after the {@link FPSet} or {@link FPSetManager} shut down.
 	 */
@@ -66,7 +67,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * the port # for tlc server
 	 */
 	public static int Port = Integer.getInteger(TLCServer.class.getName() + ".port", 10997);
-
 
 	/**
 	 * show statistics every 1 minutes
@@ -104,7 +104,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	private TLCState errState = null;
 	private boolean done = false;
 	private boolean keepCallStack = false;
-	private int thId = 0;
 	
 	/**
 	 * Main data structure used to maintain the list of active workers (ref {@link TLCWorkerRMI}) and the
@@ -193,7 +192,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		stateQueue.resumeAllStuck();
 		
 		// create new server thread for given worker
-		final TLCServerThread thread = new TLCServerThread(this.thId++, worker, this, blockSelector);
+		final TLCServerThread thread = new TLCServerThread(worker, this, blockSelector);
 		threadsToWorkers.put(thread, worker);
 		fpSetManager.addThread();
 		thread.start();

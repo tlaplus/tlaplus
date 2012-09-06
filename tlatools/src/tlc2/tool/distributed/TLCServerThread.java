@@ -58,12 +58,8 @@ public class TLCServerThread extends IdThread {
 	 */
 	private final AtomicBoolean cleanupGlobals = new AtomicBoolean(true);
 
-	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc) {
-		this(id, worker, tlc, null);
-	}
-
-	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc, IBlockSelector aSelector) {
-		super(id);
+	public TLCServerThread(TLCWorkerRMI worker, TLCServer tlc, IBlockSelector aSelector) {
+		super(COUNT++);
 		this.setWorker(worker);
 		this.tlcServer = tlc;
 		this.selector = aSelector;
@@ -75,7 +71,7 @@ public class TLCServerThread extends IdThread {
 	}
 
 	private TLCWorkerRMI worker;
-	private TLCServer tlcServer;
+	private final TLCServer tlcServer;
 	private URI uri;
 	private long lastInvocation;
 
@@ -97,7 +93,7 @@ public class TLCServerThread extends IdThread {
 			MP.printError(EC.GENERAL, e);
 		}
 		// update thread name
-		final String i = String.format("%03d", COUNT++);
+		final String i = String.format("%03d", myGetId());
 		setName(TLCServer.THREAD_NAME_PREFIX + i + "-[" + uri.toASCIIString() + "]");
 	}
 
