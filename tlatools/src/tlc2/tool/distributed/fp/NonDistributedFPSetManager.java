@@ -4,6 +4,8 @@ package tlc2.tool.distributed.fp;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
@@ -49,7 +51,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 			return this.fpSet.put(fp);
 		} catch (IOException e) {
 			// not expected to happen
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 			return false;
 		}
 	}
@@ -62,7 +64,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 			return this.fpSet.contains(fp);
 		} catch (IOException e) {
 			// not expected to happen
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 			return false;
 		}
 	}
@@ -85,7 +87,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 				res[i] = this.fpSet.putBlock(longVec);
 			} catch (IOException e) {
 				// not expected to happen
-				e.printStackTrace();
+				MP.printError(EC.GENERAL, e);
 				res[i] = new BitVector();
 			}
 		}
@@ -110,7 +112,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 				res[i] = this.fpSet.containsBlock(longVec);
 			} catch (IOException e) {
 				// not expected to happen
-				e.printStackTrace();
+				MP.printError(EC.GENERAL, e);
 				res[i] = new BitVector();
 			}
 		}
@@ -133,7 +135,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 			return this.fpSet.checkFPs();
 		} catch (IOException e) {
 			// not expected to happen
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 			return -1;
 		}
 	}
@@ -146,7 +148,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 			return this.fpSet.size();
 		} catch (IOException e) {
 			// not supposed to happen
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 			return -1;
 		}
 	}
@@ -159,7 +161,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 			return this.fpSet.size();
 		} catch (IOException e) {
 			// not supposed to happen
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 			return -1;
 		}
 	}

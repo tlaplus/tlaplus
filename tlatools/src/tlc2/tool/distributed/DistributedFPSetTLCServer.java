@@ -6,6 +6,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.concurrent.CountDownLatch;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.distributed.fp.DynamicFPSetManager;
 import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.tool.distributed.fp.IFPSetManager;
@@ -32,7 +34,7 @@ public class DistributedFPSetTLCServer extends TLCServer {
 			this.latch.await();
 		} catch (InterruptedException e) {
 			// not expected to happen
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 		}
 		return this.fpSetManager;
 	}

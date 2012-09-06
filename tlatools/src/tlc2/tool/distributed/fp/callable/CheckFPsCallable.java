@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.distributed.fp.FPSetRMI;
 
 public class CheckFPsCallable implements Callable<Double> {
@@ -24,7 +26,7 @@ public class CheckFPsCallable implements Callable<Double> {
 			return fpSetRMI.checkFPs();
 		} catch (IOException e) {
 			// not expected to happen.
-			e.printStackTrace();
+			MP.printError(EC.GENERAL, e);
 			// return max value to indicate to caller that the result is
 			// incorrect.
 			return Double.MAX_VALUE;

@@ -697,7 +697,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				try {
 					server.close(false);
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					MP.printError(EC.GENERAL, e1);
 				}
 			}
 		} finally {
@@ -820,7 +820,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					// happens if worker has exited already
 				} catch (IOException e) {
 					//TODO handle more gracefully
-					e.printStackTrace();
+					MP.printError(EC.GENERAL, e);
 				}
 			}
 		}

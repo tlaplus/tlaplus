@@ -8,6 +8,7 @@ import tlc2.tool.distributed.fp.FPSetManager;
 import tlc2.tool.distributed.fp.FPSetManager.FPSets;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
+import util.ToolIO;
 
 public abstract class FPSetManagerCallable implements Callable<BitVector> {
 	
@@ -27,11 +28,11 @@ public abstract class FPSetManagerCallable implements Callable<BitVector> {
 	
 	//TODO Does this behave correctly if multiple threads execute it concurrently?
 	protected BitVector reassign(Exception e) {
-		System.out.println("Warning: Failed to connect from "
+		ToolIO.out.println("Warning: Failed to connect from "
 				+ fpSetManager.getHostName() + " to the fp server at "
 				+ fpset.getHostname() + ".\n" + e.getMessage());
 		if (fpSetManager.reassign(index) == -1) {
-			System.out
+			ToolIO.out
 			.println("Warning: there is no fp server available.");
 		}
 		BitVector bitVector = new BitVector(fps[index].size());
