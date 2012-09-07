@@ -70,13 +70,6 @@ public class TLCWorkerSmartProxy implements TLCWorkerRMI {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.TLCWorkerRMI#getStatesComputed()
-	 */
-	public long getStatesComputed() throws RemoteException {
-		return worker.getStatesComputed();
-	}
-
-	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#getURI()
 	 */
 	public URI getURI() throws RemoteException {
@@ -88,13 +81,6 @@ public class TLCWorkerSmartProxy implements TLCWorkerRMI {
 	 */
 	public boolean isAlive() throws RemoteException {
 		return worker.isAlive();
-	}
-
-	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.TLCWorkerRMI#getCacheRate()
-	 */
-	public long getCacheRate() throws RemoteException {
-		return worker.getCacheRate();
 	}
 
 	/* (non-Javadoc)

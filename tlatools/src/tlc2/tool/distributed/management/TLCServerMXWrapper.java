@@ -3,7 +3,6 @@
 package tlc2.tool.distributed.management;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 
 import javax.management.NotCompliantMBeanException;
 
@@ -33,11 +32,7 @@ public class TLCServerMXWrapper extends TLCStandardMBean implements TLCStatistic
 	 */
 	public long getStatesGenerated() {
 		if (tlcServer.isRunning()) {
-			try {
-					return tlcServer.getStatesComputed();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			return tlcServer.getStatesGenerated();
 		}
 		return -1;
 	}

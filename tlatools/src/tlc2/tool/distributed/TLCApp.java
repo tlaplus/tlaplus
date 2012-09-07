@@ -90,11 +90,6 @@ public class TLCApp extends DistApp {
      */
     private double fpMemSize;
     
-	/**
-	 * Statistics how many states this app computed 
-	 */
-	private long statesComputed = 0L;
-
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#getCheckDeadlock()
 	 */
@@ -170,7 +165,6 @@ public class TLCApp extends DistApp {
 			}
 			res[i] = (TLCState) curState;
 		}
-		statesComputed += res.length;
 		return res;
 	}
 
@@ -201,7 +195,6 @@ public class TLCApp extends DistApp {
 			}
 			res[i] = succState;
 		}
-		statesComputed += res.length;
 		return res;
 	}
 
@@ -279,16 +272,6 @@ public class TLCApp extends DistApp {
 	 */
 	public TLCStateInfo getState(TLCState s1, TLCState s) {
 		return this.tool.getState(s1, s);
-	}
-
-	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.DistApp#getStatesComputed()
-	 */
-	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.DistApp#getStatesComputed()
-	 */
-	public long getStatesComputed() {
-		return statesComputed;
 	}
 
 	/* (non-Javadoc)

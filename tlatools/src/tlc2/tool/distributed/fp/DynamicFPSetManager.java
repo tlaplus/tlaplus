@@ -20,7 +20,6 @@ public class DynamicFPSetManager extends FPSetManager implements Serializable {
 
 	private int expectedNumOfServers;
 
-
 	public DynamicFPSetManager(int expectedNumOfServers) throws RemoteException {
 		super();
 		this.expectedNumOfServers = expectedNumOfServers;

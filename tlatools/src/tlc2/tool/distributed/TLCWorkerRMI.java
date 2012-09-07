@@ -37,12 +37,6 @@ public interface TLCWorkerRMI extends Remote {
 	 * @throws RemoteException
 	 */
 	public void exit() throws RemoteException;
-
-	/**
-	 * @return The amounts of states computed by this worker
-	 * @throws RemoteException
-	 */
-	public long getStatesComputed() throws RemoteException;
 	
 	/**
 	 * @return The {@link URI} address of this worker
@@ -51,11 +45,7 @@ public interface TLCWorkerRMI extends Remote {
 	public URI getURI() throws RemoteException;
 
 	/**
-	 * @return The number of cache hits during state calculation
-	 */
-	public long getCacheRate() throws RemoteException;
-	/**
-	 * @return The ratio between cache hits and misses during state calculation
+	 * @return The ratio of cache hits to cache misses
 	 */
 	public double getCacheRateRatio() throws RemoteException;
 }

@@ -53,6 +53,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private IFPSetManager fpSetManager;
 	private final URI uri;
 	private long lastInvocation;
+	private long overallStatesComputed;
 	
 	private final Cache cache;
 	
@@ -83,22 +84,31 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		
 		// statistics
 		lastInvocation = System.currentTimeMillis();
+		// Amount of states computed in this single invocation
+		long statesDelta = 0L;
 		
 		TLCState state1 = null, state2 = null;
 		try {
+			TLCState[] nstates;
 			final Set<Holder> treeSet = getSet();
 			// Compute all of the next states of this block of states.
 			for (int i = 0; i < states.length; i++) {
 				state1 = states[i];
-				TLCState[] nstates = this.work.getNextStates(state1);
+				nstates = this.work.getNextStates(state1);
+				// Amount of states computed in during all invocations
+				overallStatesComputed += nstates.length;
 				// add all succ states/fps to the array designated for the corresponding fp server
 				for (int j = 0; j < nstates.length; j++) {
 					long fp = nstates[j].fingerPrint();
 					if (!cache.hit(fp)) {
 						treeSet.add(new Holder(fp, nstates[j], state1));
+					} else {
+						// Keep statistics about states computed during this invocation
+						statesDelta++;
 					}
 				}
 			}
+			
 			
 			// create containers for each fingerprint _server_
 			int fpServerCnt = this.fpSetManager.numOfServers();
@@ -163,10 +173,11 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			}
 			
 			// Prepare the return value.
-			Object[] res = new Object[3];
+			Object[] res = new Object[4];
 			res[0] = newStates;
 			res[1] = newFps;
 			res[2] = System.currentTimeMillis() - lastInvocation;
+			res[3] = statesDelta;
 			return res;
 		} catch (WorkerException e) {
 			throw e;
@@ -182,7 +193,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 */
 	public void exit() throws NoSuchObjectException {
 		ToolIO.out.println(uri.getHost() + ", work completed at: " + new Date() + " Computed: "
-				+ this.work.getStatesComputed()
+				+ overallStatesComputed
 				+ " and a cache hit ratio of " + this.cache.getHitRatioAsString()
 				+ ", Thank you!");
 		
@@ -191,27 +202,6 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		keepAliveTimer.cancel();
 		
 		UnicastRemoteObject.unexportObject(TLCWorker.this, true);
-	}
-
-	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.TLCWorkerRMI#getStatesComputed()
-	 */
-	public long getStatesComputed() throws RemoteException {
-		return this.work.getStatesComputed();
-	}
-	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.TLCWorkerRMI#getCacheRate()
-	 */
-	public long getCacheRate() throws RemoteException {
-		return this.cache.getHitRate();
-	}
-	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.TLCWorkerRMI#getCacheRateRatio()
-	 */
-	public double getCacheRateRatio() throws RemoteException {
-		return this.cache.getHitRatio();
 	}
 	
 	/* (non-Javadoc)
@@ -226,6 +216,13 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 */
 	public URI getURI() throws RemoteException {
 		return uri;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCWorkerRMI#getCacheRateRatio()
+	 */
+	public double getCacheRateRatio() throws RemoteException {
+		return this.cache.getHitRatio();
 	}
 	
 	private int getPort() {

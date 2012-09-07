@@ -36,7 +36,6 @@ public class TLCServerThread extends IdThread {
 	 * Identifies the worker
 	 */
 	private int receivedStates, sentStates;
-	private double cacheRateRatio;
 	private final IBlockSelector selector;
 	private final Timer keepAliveTimer;
 	/**
@@ -144,7 +143,9 @@ public class TLCServerThread extends IdThread {
 						newFps = (LongVec[]) res[1];
 						workDone = true;
 						lastInvocation = System.currentTimeMillis();
-						cacheRateRatio = this.worker.getCacheRateRatio();
+						// Read remote worker cache hits which correspond to
+						// states skipped
+						tlcServer.addStatesGeneratedDelta((Long) res[3]);
 					} catch (RemoteException e) {
 						// If a (remote) {@link TLCWorkerRMI} fails due to the
 						// amount of new states we have sent it, try to lower
@@ -325,13 +326,6 @@ public class TLCServerThread extends IdThread {
 	 */
 	public int getSentStates() {
 		return sentStates;
-	}
-
-	/**
-	 * @return The worker local cache hit ratio 
-	 */
-	public double getCacheRateRatio() {
-		return cacheRateRatio;
 	}
 
 	// ************************************//

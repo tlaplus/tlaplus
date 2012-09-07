@@ -94,10 +94,4 @@ public abstract class DistApp implements TraceApp {
 	 */
 	// TLCServer
 	public abstract String getConfigName();
-
-	/**
-	 * @return Statistics showing how many states have been computed by this app
-	 */
-	// TLCWorker
-	public abstract long getStatesComputed();
 }

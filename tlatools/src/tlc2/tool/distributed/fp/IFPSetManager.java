@@ -105,5 +105,4 @@ public interface IFPSetManager extends Serializable {
 	 * @see FPSetRMI#size()
 	 */
 	long size();
-
 }

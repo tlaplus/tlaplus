@@ -401,8 +401,9 @@ public abstract class FPSetManager implements IFPSetManager {
 	 * @see tlc2.tool.distributed.IFPSetManager#getStatesSeen()
 	 */
 	public long getStatesSeen() {
-		int len = this.fpSets.size();
 		long res = 1; // the initial state
+		
+		int len = this.fpSets.size();
 		for (int i = 0; i < len; i++) {
 			try {
 				res += this.fpSets.get(i).getStatesSeen();
@@ -419,7 +420,7 @@ public abstract class FPSetManager implements IFPSetManager {
 		}
 		return res;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.IFPSetManager#getMask()
 	 */
