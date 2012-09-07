@@ -58,11 +58,12 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private final Cache cache;
 	
 
-	public TLCWorker(DistApp work, IFPSetManager fpSetManager, String aHostname)
+	public TLCWorker(final int threadId, DistApp work, IFPSetManager fpSetManager, String aHostname)
 			throws RemoteException {
 		this.work = work;
 		this.fpSetManager = fpSetManager;
-		uri = URI.create("rmi://" + aHostname + ":" + getPort());
+		this.uri = URI.create("rmi://" + aHostname + ":" + getPort() + "/"
+				+ threadId);
 		
 		this.cache = new SimpleCache();
 	}
@@ -333,7 +334,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			final int numCores = Runtime.getRuntime().availableProcessors();
 			runnables = new TLCWorkerRunnable[numCores];
 			for (int j = 0; j < numCores; j++) {
-				runnables[j] = new TLCWorkerRunnable(server, fpSetManager, work);
+				runnables[j] = new TLCWorkerRunnable(j, server, fpSetManager, work);
 				Thread t = new Thread(runnables[j], TLCServer.THREAD_NAME_PREFIX + String.format("%03d", j));
 				t.start();
 			}
@@ -394,8 +395,11 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		private final IFPSetManager anFpSetManager;
 		private final DistApp aWork;
 		private TLCWorker worker;
+		private final int threadId;
 
-		public TLCWorkerRunnable(TLCServerRMI aServer, IFPSetManager anFpSetManager, DistApp aWork) {
+		public TLCWorkerRunnable(int threadId, TLCServerRMI aServer,
+				IFPSetManager anFpSetManager, DistApp aWork) {
+			this.threadId = threadId;
 			this.aServer = aServer;
 			this.anFpSetManager = anFpSetManager;
 			this.aWork = aWork;
@@ -406,7 +410,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		 */
 		public void run() {
 			try {
-				worker = new TLCWorker(aWork, anFpSetManager, InetAddress.getLocalHost().getCanonicalHostName());
+				worker = new TLCWorker(threadId, aWork, anFpSetManager, InetAddress
+						.getLocalHost().getCanonicalHostName());
 				aServer.registerWorker(worker);
 			} catch (RemoteException e) {
 				throw new RuntimeException(e);
