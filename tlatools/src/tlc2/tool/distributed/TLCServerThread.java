@@ -262,23 +262,29 @@ public class TLCServerThread extends IdThread {
 		// exception in the this run() method has caused handleRemoteWorkerLost
 		// to be called.
 		keepAliveTimer.cancel();
-
-		// De-register TLCServerThread at the main server thread locally
-		tlcServer.removeTLCServerThread(this);
-		
-		// Return the undone worklist (if any)
-		if (stateQueue != null) {
-			stateQueue.sEnqueue(states != null ? states : new TLCState[0]);
-		}
-		
-		// Reset states to empty array to signal to TLCServer that we are not
-		// processing any new states. Otherwise statistics will incorrectly
-		// count this TLCServerThread as actively calculating states.
-		states = new TLCState[0];
 		
 		// This call has to be idempotent, otherwise we see bugs as in 
 		// https://bugzilla.tlaplus.net/show_bug.cgi?id=234
+		//
+		// Prevent second invocation of worker de-registration which stamps from
+		// a race condition between the TimerTask (that periodically checks
+		// server aliveness) and the exception handling that kicks in when the
+		// run() method catches an RMI exception.
 		if (cleanupGlobals.compareAndSet(true, false)) {
+
+			// De-register TLCServerThread at the main server thread locally
+			tlcServer.removeTLCServerThread(this);
+			
+			// Return the undone worklist (if any)
+			if (stateQueue != null) {
+				stateQueue.sEnqueue(states != null ? states : new TLCState[0]);
+			}
+			
+			// Reset states to empty array to signal to TLCServer that we are not
+			// processing any new states. Otherwise statistics will incorrectly
+			// count this TLCServerThread as actively calculating states.
+			states = new TLCState[0];
+			
 			// Before decrementing the worker count, notify all waiters on
 			// stateQueue to re-evaluate the while loop in isAvail(). The demise
 			// of this worker (who potentially was the lock owner) might causes
