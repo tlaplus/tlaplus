@@ -39,6 +39,12 @@ public class TLCServerThread extends IdThread {
 	 */
 	private int receivedStates, sentStates;
 	/**
+	 * {@link TLCWorker}s maintain a worker-local fingerprint cache. The hit
+	 * ratio is kept here for final statistics. A negative value indicates that
+	 * the statistic has not been gathered yet.
+	 */
+	private double cacheRateHitRatio = -1L;
+	/**
 	 * An {@link IBlockSelector} tunes the amount of states send to a remote
 	 * worker. Depending on its concrete implementation it might employ runtime
 	 * statistics to assign the ideal amount of states.
@@ -267,6 +273,18 @@ public class TLCServerThread extends IdThread {
 				}
 			}
 		} finally {
+			try {
+				cacheRateHitRatio = worker.getCacheRateRatio();
+			} catch (RemoteException e) {
+				// Remote worker might crash after return the last next
+				// state computation result but before the cache rate hit
+				// ratio statistic could be read. If this is the case the
+				// final statistic will be reported as negative indicating
+				// that it failed to read the statistic.
+				MP.printWarning(
+						EC.GENERAL,
+						"Failed to read remote worker cache statistic (Expect to see a negative chache hit rate. Does not invalid model checking results)");
+			}
 			keepAliveTimer.cancel();
 			states = new TLCState[0];
 			// not calling TLCGlobals#decNumWorkers here because at this point
@@ -372,6 +390,13 @@ public class TLCServerThread extends IdThread {
 	 */
 	public int getSentStates() {
 		return sentStates;
+	}
+	
+	/**
+	 * @return The hit ratio of the worker-local fingerprint cache.
+	 */
+	public double getCacheRateRatio() {
+		return cacheRateHitRatio;
 	}
 
 	// ************************************//

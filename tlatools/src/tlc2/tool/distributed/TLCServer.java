@@ -550,11 +550,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			// print worker stats
 			int sentStates = thread.getSentStates();
 			int receivedStates = thread.getReceivedStates();
-			double cacheHitRatio = worker.getCacheRateRatio();
+			double cacheHitRatio = thread.getCacheRateRatio();
 			URI name = thread.getUri();
 			MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_STATS,
 					new String[] { name.toString(), Integer.toString(sentStates), Integer.toString(receivedStates),
-					String.format("%1$,.3f", cacheHitRatio) });
+					cacheHitRatio < 0 ? "n/a" : String.format("%1$,.2f", cacheHitRatio) });
 
 			try {
 				worker.exit();
