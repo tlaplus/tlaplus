@@ -701,7 +701,7 @@ public class MP
 					.append(SDF.format(new Date())).append(")");
 			break;
 		case EC.TLC_DISTRIBUTED_WORKER_LOST:
-			b.append("TLC worker connection lost in:\n%1% (").append(SDF.format(new Date())).append(")");
+			b.append("TLC worker connection lost %1% (").append(SDF.format(new Date())).append(")");
 			break;
 		case EC.TLC_DISTRIBUTED_EXCEED_BLOCKSIZE:
 			b.append("Trying to limit max block size (to recover from transport failure): %1% (").append(SDF.format(new Date())).append(")");

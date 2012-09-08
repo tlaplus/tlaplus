@@ -208,14 +208,15 @@ public class TLCServerThread extends IdThread {
 						} else { 
 							// non recoverable errors, exit...
 							MP.printMessage(
-									EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED,
+									EC.TLC_DISTRIBUTED_WORKER_LOST,
 									getUri().toString());
 							handleRemoteWorkerLost(stateQueue);
 							return;
 						}
 					} catch (NullPointerException e) {
 						MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_LOST,
-								throwableToString(e));
+								// have the stack trace on a newline
+								"\n" + throwableToString(e));
 						handleRemoteWorkerLost(stateQueue);
 						return;
 					}
