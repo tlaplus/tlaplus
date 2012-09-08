@@ -33,10 +33,39 @@ import tlc2.util.LongVec;
 public class TLCServerThread extends IdThread {
 	private static int COUNT = 0;
 	/**
-	 * Identifies the worker
+	 * Runtime statistics about states send and received by and from the remote
+	 * worker. These stats are shown at the end of model checking for every
+	 * worker thread.
 	 */
 	private int receivedStates, sentStates;
+	/**
+	 * An {@link IBlockSelector} tunes the amount of states send to a remote
+	 * worker. Depending on its concrete implementation it might employ runtime
+	 * statistics to assign the ideal amount of states.
+	 * 
+	 * @see TLCServerThread#states
+	 */
 	private final IBlockSelector selector;
+	/**
+	 * Current unit of work or null
+	 * 
+	 * @see TLCServerThread#selector
+	 */
+	private TLCState[] states = new TLCState[0];
+	/**
+	 * Periodically check the remote worker's aliveness by spawning a
+	 * asynchronous task that is automatically scheduled by the JVM for
+	 * re-execution in the defined interval.
+	 * <p>
+	 * It is the tasks responsibility to detect a stale worker and disconnect
+	 * it.
+	 * 
+	 * @see TLCServerThread#keepAliveTimer
+	 */
+	private final TLCTimerTask task;
+	/**
+	 * @see TLCServerThread#task
+	 */
 	private final Timer keepAliveTimer;
 	/**
 	 * Synchronized flag used to indicate the correct amount of workers to
@@ -58,46 +87,59 @@ public class TLCServerThread extends IdThread {
 	 * The fingerprint space is partitioned across all {@link FPSet} servers and
 	 * thus can be accessed concurrently.
 	 */
-	private ExecutorService executorService;
+	private final ExecutorService executorService;
+	/**
+	 * An RMI proxy for the remote worker.
+	 * 
+	 * @see TLCServerThread#tlcServer
+	 */
+	private final TLCWorkerRMI worker;
+	/**
+	 * The {@link TLCServer} master this {@link TLCServerThread} provides the
+	 * service of handling a single remote worker. A {@link TLCServer} uses n
+	 * {@link TLCWorker}s to calculate the next state relation. To invoke
+	 * workers concurrently, it spawns a {@link TLCServerThread} for each
+	 * {@link TLCWorkerRMI} RMI proxy.
+	 * <p>
+	 * {@link TLCServer} and {@link TLCWorkerRMI} form a 1:n mapping and
+	 * {@link TLCServerThread} is this mapping.
+	 * 
+	 * @see TLCServerThread#worker
+	 */
+	private final TLCServer tlcServer;
+	/**
+	 * Remote worker's address used to label local threads.
+	 */
+	private URI uri;
 
 	public TLCServerThread(TLCWorkerRMI worker, TLCServer tlc, ExecutorService es, IBlockSelector aSelector) {
 		super(COUNT++);
 		this.executorService = es;
-		this.setWorker(worker);
 		this.tlcServer = tlc;
 		this.selector = aSelector;
-
-		// schedule a timer to periodically (60s) check server aliveness
-		keepAliveTimer = new Timer("TLCWorker KeepAlive Timer ["
-				+ uri.toASCIIString() + "]", true);
-		keepAliveTimer.schedule(new TLCTimerTask(), 10000, 60000);
-	}
-
-	private TLCWorkerRMI worker;
-	private final TLCServer tlcServer;
-	private URI uri;
-	private long lastInvocation;
-
-	/**
-	 * Current unit of work or null
-	 */
-	private TLCState[] states = new TLCState[0];
-
-	public final TLCWorkerRMI getWorker() {
-		return this.worker;
-	}
-
-	public final void setWorker(TLCWorkerRMI worker) {
+		
+		// Wrap the TLCWorker with a SmartProxy. A SmartProxy's responsibility
+		// is to measure the RTT spend to transfer states back and forth.
 		this.worker = new TLCWorkerSmartProxy(worker);
+
+		// Get the remote worker's hostname and update this thread name with it.
+		// Additionally prefix the thread name with a fixed string and a counter.
+		// This part is used by the external Munin based statistics software to
+		// gather thread contention stats.
 		try {
 			this.uri = worker.getURI();
 		} catch (RemoteException e) {
 			MP.printError(EC.GENERAL, e);
 			handleRemoteWorkerLost(null);
 		}
-		// update thread name
 		final String i = String.format("%03d", myGetId());
 		setName(TLCServer.THREAD_NAME_PREFIX + i + "-[" + uri.toASCIIString() + "]");
+		
+		// schedule a timer to periodically (60s) check server aliveness
+		keepAliveTimer = new Timer("TLCWorker KeepAlive Timer ["
+				+ uri.toASCIIString() + "]", true);
+		task = new TLCTimerTask();
+		keepAliveTimer.schedule(task, 10000, 60000);
 	}
 
 	/**
@@ -142,7 +184,7 @@ public class TLCServerThread extends IdThread {
 						receivedStates += newStates[0].size();
 						newFps = (LongVec[]) res[1];
 						workDone = true;
-						lastInvocation = System.currentTimeMillis();
+						task.setLastInvocation(System.currentTimeMillis());
 						// Read remote worker cache hits which correspond to
 						// states skipped
 						tlcServer.addStatesGeneratedDelta((Long) res[3]);
@@ -235,9 +277,6 @@ public class TLCServerThread extends IdThread {
 	 * A recoverable error/exception is defined to be a case where the
 	 * {@link TLCWorkerRMI} can continue to work if {@link TLCServer} sends less
 	 * new states to process.
-	 * 
-	 * @param e
-	 * @return
 	 */
 	private boolean isRecoverable(final Exception e) {
 		final Throwable cause = e.getCause();
@@ -337,13 +376,18 @@ public class TLCServerThread extends IdThread {
 	// ************************************//
 
 	private class TLCTimerTask extends TimerTask {
+		/**
+		 * Timestamp of last successful remote invocation 
+		 */
+		private long lastInvocation = 0L;
 
-		/*
-		 * (non-Javadoc)
-		 * 
+		/* (non-Javadoc)
 		 * @see java.util.TimerTask#run()
 		 */
 		public void run() {
+			// Check if the last invocation happened within the last minute. If
+			// not, check the worker's aliveness and dispose of it if indeed
+			// lost.
 			long now = new Date().getTime();
 			if (lastInvocation == 0 || (now - lastInvocation) > 60000) {
 				try {
@@ -354,6 +398,13 @@ public class TLCServerThread extends IdThread {
 					handleRemoteWorkerLost(tlcServer.stateQueue);
 				}
 			}
+		}
+
+		/**
+		 * @param lastInvocation the lastInvocation to set
+		 */
+		public void setLastInvocation(long lastInvocation) {
+			this.lastInvocation = lastInvocation;
 		}
 	}
 }
