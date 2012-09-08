@@ -531,6 +531,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 		}
 		
+		// Either model checking has found an error/violation or no
+		// violation has been found represented by an empty state queue.
+		Assert.check(!hasNoErrors() || stateQueue.isEmpty(), EC.GENERAL);
+		
 		/*
 		 * From this point on forward, we expect model checking to be done. What
 		 * is left open, is to collect results and clean up

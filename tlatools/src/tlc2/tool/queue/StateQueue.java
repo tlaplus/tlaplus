@@ -262,7 +262,7 @@ public abstract class StateQueue implements IStateQueue {
 	/**
 	 * @return true iff the inner queue does not contain states
 	 */
-	private boolean isEmpty() {
+	public boolean isEmpty() {
 		return len < 1;
 	}
 

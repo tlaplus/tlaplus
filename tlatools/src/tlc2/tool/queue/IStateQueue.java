@@ -75,4 +75,6 @@ public interface IStateQueue {
 	public abstract void commitChkpt() throws IOException;
 
 	public abstract void recover() throws IOException;
+
+	public abstract boolean isEmpty();
 }
