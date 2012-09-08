@@ -179,15 +179,15 @@ public class TLCServerThread extends IdThread {
 				boolean workDone = false;
 				while (!workDone) {
 					try {
-						final Object[] res = this.worker.getNextStates(states);
-						newStates = (TLCStateVec[]) res[0];
+						final NextStateResult res = this.worker.getNextStates(states);
+						newStates = res.getNextStates();
 						receivedStates += newStates[0].size();
-						newFps = (LongVec[]) res[1];
+						newFps = res.getNextFingerprints();
 						workDone = true;
 						task.setLastInvocation(System.currentTimeMillis());
 						// Read remote worker cache hits which correspond to
 						// states skipped
-						tlcServer.addStatesGeneratedDelta((Long) res[3]);
+						tlcServer.addStatesGeneratedDelta(res.getStatesComputedDelta());
 					} catch (RemoteException e) {
 						// If a (remote) {@link TLCWorkerRMI} fails due to the
 						// amount of new states we have sent it, try to lower

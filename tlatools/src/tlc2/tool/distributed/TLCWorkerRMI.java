@@ -24,7 +24,7 @@ public interface TLCWorkerRMI extends Remote {
 	 * @throws RemoteException
 	 * @throws WorkerException
 	 */
-	public Object[] getNextStates(TLCState[] states) throws RemoteException,
+	public NextStateResult getNextStates(TLCState[] states) throws RemoteException,
 			WorkerException;
 	
 	/**

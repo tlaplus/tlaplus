@@ -27,15 +27,15 @@ public class TLCWorkerSmartProxy implements TLCWorkerRMI {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#getNextStates(tlc2.tool.TLCState[])
 	 */
-	public Object[] getNextStates(final TLCState[] states) throws RemoteException, WorkerException {
+	public NextStateResult getNextStates(final TLCState[] states) throws RemoteException, WorkerException {
 		// Prefer currentTimeMillis over nanoTime as it uses less CPU cycles to read
 		final long start = System.currentTimeMillis();
 		
 		// do actual remote call
-		final Object[] nextStates = worker.getNextStates(states);
+		final NextStateResult nextStates = worker.getNextStates(states);
 
 		final long roundTripTime = (System.currentTimeMillis() - start) + 1; // at least one millisecond if get next below resolution
-		final long computationTime = sanitizeComputationTime((Long) nextStates[2]);
+		final long computationTime = sanitizeComputationTime(nextStates.getComputationTime());
 
 		// RTT has to be bigger than computation alone
 		double networkTime = Math.max(roundTripTime - computationTime, 0.00001d);

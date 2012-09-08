@@ -80,13 +80,13 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#getNextStates(tlc2.tool.TLCState[])
 	 */
-	public synchronized Object[] getNextStates(final TLCState[] states)
+	public synchronized NextStateResult getNextStates(final TLCState[] states)
 			throws WorkerException, RemoteException {
 		
 		// statistics
 		lastInvocation = System.currentTimeMillis();
 		// Amount of states computed in this single invocation
-		long statesDelta = 0L;
+		long statesComputed = 0L;
 		
 		TLCState state1 = null, state2 = null;
 		try {
@@ -96,20 +96,19 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			for (int i = 0; i < states.length; i++) {
 				state1 = states[i];
 				nstates = this.work.getNextStates(state1);
-				// Amount of states computed in during all invocations
-				overallStatesComputed += nstates.length;
+				// Keep statistics about states computed during this invocation
+				statesComputed += nstates.length;
 				// add all succ states/fps to the array designated for the corresponding fp server
 				for (int j = 0; j < nstates.length; j++) {
 					long fp = nstates[j].fingerPrint();
 					if (!cache.hit(fp)) {
 						treeSet.add(new Holder(fp, nstates[j], state1));
-					} else {
-						// Keep statistics about states computed during this invocation
-						statesDelta++;
 					}
 				}
 			}
 			
+			// Amount of states computed in during all invocations
+			overallStatesComputed += statesComputed;
 			
 			// create containers for each fingerprint _server_
 			int fpServerCnt = this.fpSetManager.numOfServers();
@@ -174,12 +173,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			}
 			
 			// Prepare the return value.
-			Object[] res = new Object[4];
-			res[0] = newStates;
-			res[1] = newFps;
-			res[2] = System.currentTimeMillis() - lastInvocation;
-			res[3] = statesDelta;
-			return res;
+			final long computationTime = System.currentTimeMillis() - lastInvocation;
+			return new NextStateResult(newStates, newFps, computationTime, statesComputed);
 		} catch (WorkerException e) {
 			throw e;
 		} catch (OutOfMemoryError e) {
