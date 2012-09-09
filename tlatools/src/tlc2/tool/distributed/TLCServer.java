@@ -560,7 +560,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				worker.exit();
 			} catch (NoSuchObjectException e) {
 				// worker might have been lost in the meantime
-				MP.printMessage(EC.GENERAL, "Ignoring attempt to exit dead worker");
+				MP.printWarning(EC.GENERAL, "Ignoring attempt to exit dead worker");
 			}
 		}
 		
