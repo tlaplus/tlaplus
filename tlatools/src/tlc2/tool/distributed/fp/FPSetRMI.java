@@ -54,6 +54,10 @@ public interface FPSetRMI extends Remote {
 	/**
 	 * Checks existence in the {@link FPSet} for each fingerprints contained in
 	 * the given {@link LongVec}.
+	 * <p>
+	 * Contrary to {@link FPSet#contains(long)}, bits in the resulting
+	 * {@link BitVector} are set if the fingerprints are _not_ in this
+	 * {@link FPSet}.
 	 * 
 	 * @see FPSetRMI#contains(long)
 	 */
@@ -84,6 +88,10 @@ public interface FPSetRMI extends Remote {
 	 * Checks existence in the {@link FPSet} for each fingerprints contained in
 	 * the given {@link LongVec}. As a side-effect, new fingerprints are added
 	 * to the {@link FPSet}.
+	 * <p>
+	 * Contrary to {@link FPSet#put(long)}, bits in the resulting
+	 * {@link BitVector} are set if the fingerprints have _not_ been in this
+	 * {@link FPSet}.
 	 * 
 	 * @see FPSet#put(long)
 	 */

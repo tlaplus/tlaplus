@@ -28,7 +28,7 @@ public interface IFPSetManager extends Serializable {
 	 * @see FPSetRMI#close()
 	 */
 	void close(boolean cleanup) throws IOException;
-	
+
 	/**
 	 * @see FPSetRMI#commitChkpt()
 	 */
@@ -40,11 +40,24 @@ public interface IFPSetManager extends Serializable {
 	boolean contains(long fp);
 
 	/**
-	 * @see FPSetRMI#containsBlock(LongVec);
+	 * The given {@link LongVec} has to have the same size as
+	 * {@link IFPSetManager#numOfServers()}.
+	 * <p>
+	 * As a second pre-condition, the fingerprints in the {@link LongVec} have
+	 * to be ordered corresponding with the fingerprint space partitioning used
+	 * by this {@link IFPSetManager}. It is the callers responsibility to set up
+	 * the {@link LongVec} in this way (for efficiency reasons).
+	 * 
+	 * @see IFPSetManager#numOfServers()
+	 * @see IFPSetManager#getFPSetIndex(long)
+	 * @see FPSetRMI#containsBlock(LongVec)
 	 */
 	BitVector[] containsBlock(LongVec[] fps);
-	
+
 	/**
+	 * The given {@link LongVec} has to have the same size as
+	 * {@link IFPSetManager#numOfServers()}.
+	 * 
 	 * @see FPSetRMI#containsBlock(LongVec);
 	 */
 	BitVector[] containsBlock(LongVec[] fps, ExecutorService executorService);
@@ -78,11 +91,17 @@ public interface IFPSetManager extends Serializable {
 	boolean put(long fp);
 
 	/**
+	 * The given {@link LongVec} has to have the same size as
+	 * {@link IFPSetManager#numOfServers()}.
+	 * 
 	 * @see FPSetRMI#putBlock(LongVec)
 	 */
 	BitVector[] putBlock(LongVec[] fps);
 
 	/**
+	 * The given {@link LongVec} has to have the same size as
+	 * {@link IFPSetManager#numOfServers()}.
+	 * 
 	 * @see FPSetRMI#putBlock(LongVec)
 	 */
 	BitVector[] putBlock(LongVec[] fps, ExecutorService executorService);

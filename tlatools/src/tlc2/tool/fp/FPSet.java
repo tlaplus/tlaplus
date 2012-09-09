@@ -290,6 +290,8 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 		BitVector bv = new BitVector(size);
         for (int i = 0; i < fpv.size(); i++)
         {
+			// TODO Figure out why corresponding value in BitVector is inverted
+			// compared to put(long)
             if (!this.put(fpv.elementAt(i)))
             {
                 bv.set(i);
@@ -307,6 +309,8 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
         BitVector bv = new BitVector(fpv.size());
         for (int i = 0; i < fpv.size(); i++)
         {
+			// TODO Figure out why corresponding value in BitVector is inverted
+			// compared to contains(long)
             if (!this.contains(fpv.elementAt(i)))
             {
                 bv.set(i);
@@ -315,9 +319,6 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
         return bv;
     }
 
-    /* (non-Javadoc)
-     * @see tlc2.tool.distributed.FPSetRMI#getStatesSeen()
-     */
     /* (non-Javadoc)
      * @see tlc2.tool.distributed.fp.FPSetRMI#getStatesSeen()
      */

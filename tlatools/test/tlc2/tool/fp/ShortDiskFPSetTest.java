@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import tlc2.util.LongVec;
+
 public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	
 	private static final boolean runKnownFailures = Boolean
@@ -444,5 +446,69 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 		final long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
 		assertTrue(fpSet.memLookup(fp));
 		assertFalse(fpSet.diskLookup(fp0));
+	}
+
+	/**
+	 * Test that both implementations - put(long) & putBlock(LongVec) - yield
+	 * the same results.
+	 */
+	public void testComparePutAndPutBlock() throws IOException {
+		final FPSet putFpSet = (FPSet) getFPSetInitialized();
+		final FPSet putBlockFpSet = (FPSet) getFPSetInitialized();
+		
+		final long fp = 1L;
+		final LongVec fpv = new LongVec();
+		fpv.addElement(fp);
+		
+		// put and putBlock have flipped return values %)
+		boolean putBlockRes = !putBlockFpSet.putBlock(fpv).get(0);
+		assertEquals(putFpSet.put(fp), putBlockRes);
+	}
+
+	/**
+	 * Test that both implementations - contains(long) & containsBlock(LongVec) - yield
+	 * the same results.
+	 */
+	public void testCompareContainsAndContainsBlock() throws IOException {
+		final FPSet containsFpSet = (FPSet) getFPSetInitialized();
+		final FPSet containsBlockFpSet = (FPSet) getFPSetInitialized();
+		
+		final long fp = 1L;
+		final LongVec fpv = new LongVec();
+		fpv.addElement(fp);
+		
+		// put and putBlock have flipped return values %)
+		boolean containsBlockRes = !containsBlockFpSet.containsBlock(fpv).get(0);
+		assertEquals(containsFpSet.contains(fp), containsBlockRes);
+	}
+
+	public void testContainsBlock() throws IOException {
+		final FPSet fpSet = (FPSet) getFPSetInitialized();
+		
+		final long fp = 1L;
+		final LongVec fpv = new LongVec();
+		fpv.addElement(fp);
+		
+		// BitVector is true if fp not in set 
+		assertTrue(fpSet.containsBlock(fpv).get(0));
+		
+		fpSet.put(fp);
+		
+		// BitVector is false if fp is in set 
+		assertFalse(fpSet.containsBlock(fpv).get(0));
+	}
+	
+	public void testPutBlock() throws IOException {
+		final FPSet fpSet = (FPSet) getFPSetInitialized();
+		
+		final long fp = 1L;
+		final LongVec fpv = new LongVec();
+		fpv.addElement(fp);
+		
+		// BitVector is true if fp not in set 
+		assertTrue(fpSet.putBlock(fpv).get(0));
+		
+		// BitVector is false if fp is in set 
+		assertFalse(fpSet.putBlock(fpv).get(0));
 	}
 }
