@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import junit.framework.TestCase;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MemFPSet;
+import tlc2.util.BitVector;
+import tlc2.util.LongVec;
 
 public class DynamicFPSetManagerTest extends TestCase {
 
@@ -282,5 +284,110 @@ public class DynamicFPSetManagerTest extends TestCase {
 		// be new when a FPSet crashes).
 		assertFalse(dfm.put(fp));
 		assertTrue(dfm.contains(fp));
+	}
+
+	/**
+	 * Tests if the {@link FPSetManager} correctly fails over to the replacement {@link FPSet}
+	 */
+	public void testFailoverPutBlock() throws RemoteException {
+		int expectedNumOfServers = 2;
+		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
+		dfm.register(new FaultyFPSet(), "TestFPSet");
+		dfm.register(new MemFPSet(), "RegularFPSet");
+		
+		final int numOfServers = dfm.numOfServers();
+
+		// LongVec has to have same size of IFPSetManager#numServers (putBlock
+		// method contract)
+		final LongVec[] fps = new LongVec[numOfServers]; 
+		fps[0] = new LongVec();
+		fps[0].addElement(0L);
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 0, dfm.getIndex(0L));
+		fps[1] = new LongVec();
+		fps[1].addElement(1L);
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 1, dfm.getIndex(1L));
+		
+		/* Test DFM correctly behaves first time when TestFPSet works as expected */
+
+		BitVector[] bvs = dfm.putBlock(fps);
+		assertEquals(1, bvs[0].trueCnt());
+		assertEquals(1, bvs[1].trueCnt());
+
+		bvs = dfm.containsBlock(fps);
+		// all (the same) fingerprints are now known (meaning corresponding
+		// bit in bvs[x] is zero).
+		assertEquals(0, bvs[0].trueCnt());
+		assertEquals(0, bvs[1].trueCnt());
+		
+		/*
+		 * Test DFM correctly fails over to successor of TestFPSet (Here one can
+		 * observe the behavior that a fingerprint is thought to be new when a
+		 * FPSet crashes).
+		 */
+
+		bvs = dfm.putBlock(fps);
+		assertEquals(1, bvs[0].trueCnt()); // fingerprint is unknown after fpset crash
+		assertEquals(0, bvs[1].trueCnt());
+
+		// The previous putBlock call has caused the FPSetManager to detect the
+		// failure state of the first FPSets and reassigned the replacement FPSet.
+		// Thus, it reports two alive servers
+		assertEquals(1, dfm.numOfAliveServers());
+
+		bvs = dfm.containsBlock(fps);
+		assertEquals(0, bvs[0].trueCnt()); // fingerprint is known again
+		assertEquals(0, bvs[1].trueCnt());
+	}
+
+	/**
+	 * Tests if the {@link FPSetManager} correctly terminates if all nested FPSets fail
+	 */
+	public void testFailoverTerminationPutBlock() throws RemoteException {
+		int expectedNumOfServers = 2;
+		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
+		dfm.register(new FaultyFPSet(), "TestFPSet1");
+		dfm.register(new FaultyFPSet(), "TestFPSet2");
+		
+		final int numOfServers = dfm.numOfServers();
+
+		// LongVec has to have same size of IFPSetManager#numServers (putBlock
+		// method contract)
+		final LongVec[] fps = new LongVec[numOfServers]; 
+		fps[0] = new LongVec();
+		fps[0].addElement(0L);
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 0, dfm.getIndex(0L));
+		fps[1] = new LongVec();
+		fps[1].addElement(1L);
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 1, dfm.getIndex(1L));
+		
+		/* Test DFM correctly behaves first time when TestFPSet works as expected */
+
+		BitVector[] bvs = dfm.putBlock(fps);
+		assertEquals(1, bvs[0].trueCnt());
+		assertEquals(1, bvs[1].trueCnt());
+
+		bvs = dfm.containsBlock(fps);
+		// all (the same) fingerprints are now known (meaning corresponding
+		// bit in bvs[x] is zero).
+		assertEquals(0, bvs[0].trueCnt());
+		assertEquals(0, bvs[1].trueCnt());
+		
+		/*
+		 * Test DFM correctly fails over to successor of TestFPSet (Here one can
+		 * observe the behavior that a fingerprint is thought to be new when a
+		 * FPSet crashes).
+		 */
+
+		bvs = dfm.putBlock(fps);
+		assertEquals(2, bvs[0].trueCnt()); // fingerprint is unknown after fpset crash
+		assertEquals(2, bvs[1].trueCnt());
+		
+		// The previous putBlock call has caused the FPSetManager to detect the
+		// failure state of both FPSets
+		assertEquals(0, dfm.numOfAliveServers());
+		
+		bvs = dfm.containsBlock(fps);
+		assertEquals(2, bvs[0].trueCnt()); // fingerprint is known again
+		assertEquals(2, bvs[1].trueCnt());
 	}
 }
