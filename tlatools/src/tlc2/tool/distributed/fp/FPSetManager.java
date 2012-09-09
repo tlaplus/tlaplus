@@ -169,12 +169,11 @@ public abstract class FPSetManager implements IFPSetManager {
 			try {
 				return this.fpSets.get(fpIdx).put(fp);
 			} catch (Exception e) {
-				System.out.println("Warning: Failed to connect from "
+				ToolIO.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(fpIdx).getHostname() + ".\n" + e.getMessage());
-				e.printStackTrace();
 				if (this.reassign(fpIdx) == -1) {
-					System.out
+					ToolIO.out
 							.println("Warning: there is no fp server available.");
 					return false;
 				}
@@ -191,12 +190,11 @@ public abstract class FPSetManager implements IFPSetManager {
 			try {
 				return this.fpSets.get(fpIdx).contains(fp);
 			} catch (Exception e) {
-				System.out.println("Warning: Failed to connect from "
+				ToolIO.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(fpIdx).getHostname() + ".\n" + e.getMessage());
-				e.printStackTrace();
 				if (this.reassign(fpIdx) == -1) {
-					System.out
+					ToolIO.out
 							.println("Warning: there is no fp server available.");
 					return false;
 				}
@@ -221,14 +219,15 @@ public abstract class FPSetManager implements IFPSetManager {
 			try {
 				res[i] = this.fpSets.get(i).putBlock(fps[i]);
 			} catch (Exception e) {
-				System.out.println("Warning: Failed to connect from "
+				ToolIO.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(i).getHostname() + ".\n" + e.getMessage());
-				e.printStackTrace();
 				if (this.reassign(i) == -1) {
-					System.out
+					ToolIO.out
 							.println("Warning: there is no fp server available.");
 				}
+				// Indicate for all fingerprints of the lost fpset that they are
+				// new. This is achieved by setting all bits in BitVector.
 				res[i] = new BitVector(fps[i].size());
 				res[i].set(0, fps[i].size() - 1);
 			}
@@ -281,14 +280,15 @@ public abstract class FPSetManager implements IFPSetManager {
 			try {
 				res[i] = this.fpSets.get(i).containsBlock(fps[i]);
 			} catch (Exception e) {
-				System.out.println("Warning: Failed to connect from "
+				ToolIO.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(i).getHostname() + ".\n" + e.getMessage());
-				e.printStackTrace();
 				if (this.reassign(i) == -1) {
-					System.out
+					ToolIO.out
 							.println("Warning: there is no fp server available.");
 				}
+				// Indicate for all fingerprints of the lost fpset that they are
+				// new. This is achieved by setting all bits in BitVector.
 				res[i] = new BitVector(fps[i].size());
 				res[i].set(0, fps[i].size() - 1);
 			}
@@ -384,12 +384,11 @@ public abstract class FPSetManager implements IFPSetManager {
 			try {
 				res += this.fpSets.get(i).size();
 			} catch (Exception e) {
-				System.out.println("Warning: Failed to connect from "
+				ToolIO.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(i).getHostname() + ".\n" + e.getMessage());
-				e.printStackTrace();
 				if (this.reassign(i) == -1) {
-					System.out
+					ToolIO.out
 							.println("Warning: there is no fp server available.");
 				}
 			}
@@ -408,12 +407,11 @@ public abstract class FPSetManager implements IFPSetManager {
 			try {
 				res += this.fpSets.get(i).getStatesSeen();
 			} catch (Exception e) {
-				System.out.println("Warning: Failed to connect from "
+				ToolIO.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "
 						+ this.fpSets.get(i).getHostname() + ".\n" + e.getMessage());
-				e.printStackTrace();
 				if (this.reassign(i) == -1) {
-					System.out
+					ToolIO.out
 							.println("Warning: there is no fp server available.");
 				}
 			}
