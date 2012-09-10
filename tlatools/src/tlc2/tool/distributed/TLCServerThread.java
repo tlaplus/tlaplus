@@ -283,7 +283,7 @@ public class TLCServerThread extends IdThread {
 				// that it failed to read the statistic.
 				MP.printWarning(
 						EC.GENERAL,
-						"Failed to read remote worker cache statistic (Expect to see a negative chache hit rate. Does not invalid model checking results)");
+						"Failed to read remote worker cache statistic (Expect to see a negative chache hit rate. Does not invalidate model checking results)");
 			}
 			keepAliveTimer.cancel();
 			states = new TLCState[0];
