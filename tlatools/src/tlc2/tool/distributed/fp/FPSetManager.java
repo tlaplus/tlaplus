@@ -17,12 +17,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import tlc2.tool.distributed.fp.callable.CheckFPsCallable;
 import tlc2.tool.distributed.fp.callable.ContainsBlockCallable;
@@ -355,40 +353,33 @@ public abstract class FPSetManager implements IFPSetManager {
 	 */
 	public double checkFPs() {
 		final int len = this.fpSets.size();
-		
-		// Synchronize this and nested threads
-		final CountDownLatch cdl = new CountDownLatch(len);
-		
 		// Instantiation of a thread pool here is fine, as long as checkFPs is only called seldomly.
 		final ExecutorService executorService = Executors.newFixedThreadPool(len);
 		try {
 			// Start checkFP on all FPSets concurrently
 			// (checkFPs scans the full set sequentially!)
-			final List<Future<Double>> futures = new ArrayList<Future<Double>>();
+			final CompletionService<Double> ecs = new ExecutorCompletionService<Double>(executorService);
 			for (int i = 0; i < len; i++) {
-				futures.add(executorService.submit(new CheckFPsCallable(cdl, fpSets.get(i).getFpset())));
+				ecs.submit(new CheckFPsCallable(fpSets.get(i).getFpset()));
 			}
-
-			// Wait for all threads to finish
-			cdl.await();
-			
 			// Return minimum value
 			double res = Double.MAX_VALUE;
-			for (Future<Double> future : futures) {
-				res = Math.min(res, future.get());
+			for (int i = 0; i < len; i++) {
+				try {
+					res = Math.min(res, ecs.take().get());
+				} catch (InterruptedException e) {
+					// not expected to happen, could return an approximation
+					// if happens (but fail fast for the moment).
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// not expected to happen, could return an approximation
+					// if happens (but fail fast for the moment).
+					e.printStackTrace();
+				}
 			}
 			return res;
-		} catch (InterruptedException e) {
-			// not expected to happen, could return an approximation
-			// if happens (but fail fast for the moment).
-			e.printStackTrace();
-			return -1;
-		} catch (ExecutionException e) {
-			// not expected to happen, could return an approximation
-			// if happens (but fail fast for the moment).
-			e.printStackTrace();
-			return -1;
 		} finally {
+			// Always shutdown the executor service
 			executorService.shutdown();
 		}
 	}
