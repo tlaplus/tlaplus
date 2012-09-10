@@ -35,6 +35,13 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	public int numOfServers() {
 		return 1;
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.fp.IFPSetManager#numOfAliveServers()
+	 */
+	public int numOfAliveServers() {
+		return numOfAliveServers();
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.fp.FPSetManager#getHostName()

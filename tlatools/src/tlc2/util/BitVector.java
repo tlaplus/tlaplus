@@ -33,7 +33,20 @@ public class BitVector implements Serializable {
     int len = (initCapacity == 0) ? 0 : ((initCapacity - 1)/64 + 1);
     this.word = new long[len];
   }
-    
+  
+	/**
+	 * Constructor for a new bit vector that is expected to contain bits with
+	 * indices 0 through <code>initCapacity-1</code>. All bits are initially set
+	 * to <code>true</code>
+	 */
+	public BitVector(int initCapacity, boolean initValue) {
+		int len = (initCapacity == 0) ? 0 : ((initCapacity - 1) / 64 + 1);
+		this.word = new long[len];
+		if (initValue) {
+			set(0, len);
+		}
+	}
+   
   /** Initialize this bit vector to be a copy of <code>bv</code>. */
   public BitVector(BitVector bv) {
     int len = bv.word.length;

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 
+import tlc2.tool.distributed.fp.FPSetManager.FPSets;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
@@ -84,6 +85,16 @@ public interface IFPSetManager extends Serializable {
 	 *         across the number of instances at its own discretion.
 	 */
 	int numOfServers();
+
+	/**
+	 * @return The number of alive {@link FPSetRMI} instances backing this
+	 *         {@link IFPSetManager}. It results a value in the range [0,
+	 *         {@link IFPSetManager#numOfServers()}]<p>
+	 *         It does <b>not</b> re-count reassigned {@link FPSets}. 
+	 * 
+	 * @see IFPSetManager#numOfServers()
+	 */
+	int numOfAliveServers();
 
 	/**
 	 * @see FPSetRMI#put(long)

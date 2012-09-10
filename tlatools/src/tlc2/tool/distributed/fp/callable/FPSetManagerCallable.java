@@ -1,8 +1,8 @@
 // Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
 package tlc2.tool.distributed.fp.callable;
 
+import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 
 import tlc2.tool.distributed.fp.FPSetManager;
 import tlc2.tool.distributed.fp.FPSetManager.FPSets;
@@ -13,30 +13,30 @@ import util.ToolIO;
 public abstract class FPSetManagerCallable implements Callable<BitVector> {
 	
 	protected final FPSetManager fpSetManager;
-	protected final FPSets fpset;
+	protected final List<FPSets> fpset;
 	protected final LongVec[] fps;
 	protected final int index;
-	protected final CountDownLatch cdl;
 	
-	public FPSetManagerCallable(FPSetManager fpSetManager, CountDownLatch cdl, FPSets fpset, LongVec[] fps, int index) {
+	public FPSetManagerCallable(FPSetManager fpSetManager, List<FPSets> fpSets, LongVec[] fps, int index) {
 		this.fpSetManager = fpSetManager;
-		this.cdl = cdl;
-		this.fpset = fpset;
+		this.fpset = fpSets;
 		this.fps = fps;
 		this.index = index;
 	}
 	
-	//TODO Does this behave correctly if multiple threads execute it concurrently?
-	protected BitVector reassign(Exception e) {
+	protected BitVector reassign(Exception e) throws Exception {
 		ToolIO.out.println("Warning: Failed to connect from "
 				+ fpSetManager.getHostName() + " to the fp server at "
-				+ fpset.getHostname() + ".\n" + e.getMessage());
+				+ fpset.get(index).getHostname() + ".\n" + e.getMessage());
 		if (fpSetManager.reassign(index) == -1) {
 			ToolIO.out
 			.println("Warning: there is no fp server available.");
+			// Indicate for all fingerprints of the lost fpset that they are
+			// new. This is achieved by setting all bits in BitVector.
+			return new BitVector(fps[index].size(), true);
+		} else {
+			// Retry with newly assigned FPSet for the given index
+			return call();
 		}
-		BitVector bitVector = new BitVector(fps[index].size());
-		bitVector.set(0, fps[index].size() - 1);
-		return bitVector;
 	}
 }

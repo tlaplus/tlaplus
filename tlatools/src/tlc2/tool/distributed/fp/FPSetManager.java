@@ -11,9 +11,15 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.UnmarshalException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -61,6 +67,26 @@ public abstract class FPSetManager implements IFPSetManager {
 	 */
 	public int numOfServers() {
 		return this.fpSets.size();
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.fp.IFPSetManager#numOfAliveServers()
+	 */
+	public int numOfAliveServers() {
+		// Add all fpsets to a set to remove the duplicates. The duplicates stem
+		// from reassigning alive fpsets to the slot of a dead one.
+		final Set<FPSets> s = new HashSet<FPSets>();
+		s.addAll(this.fpSets);
+		
+		int aliveServer = 0;
+
+		final Iterator<FPSets> itr = s.iterator();
+		while (itr.hasNext()) {
+			if (itr.next().isAvailable()) {
+				aliveServer++;
+			}
+		}
+		return aliveServer;
 	}
 
 	/**
@@ -225,11 +251,14 @@ public abstract class FPSetManager implements IFPSetManager {
 				if (this.reassign(i) == -1) {
 					ToolIO.out
 							.println("Warning: there is no fp server available.");
+					// Indicate for all fingerprints of the lost fpset that they are
+					// new. This is achieved by setting all bits in BitVector.
+					res[i] = new BitVector(fps[i].size(), true);
+				} else {
+					// Cause for loop to retry the current fps[i] to the newly
+					// assigned fingerprint set
+					i -= 1;
 				}
-				// Indicate for all fingerprints of the lost fpset that they are
-				// new. This is achieved by setting all bits in BitVector.
-				res[i] = new BitVector(fps[i].size());
-				res[i].set(0, fps[i].size() - 1);
 			}
 		}
 		return res;
@@ -239,35 +268,14 @@ public abstract class FPSetManager implements IFPSetManager {
 	 * @see tlc2.tool.distributed.fp.IFPSetManager#putBlock(tlc2.util.LongVec[], java.util.concurrent.ExecutorService)
 	 */
 	public BitVector[] putBlock(final LongVec[] fps, final ExecutorService executorService) {
+		// Create a Callable for each fingerprint set
 		final int len = this.fpSets.size();
-		
-		// Synchronize this and nested threads
-		final CountDownLatch cdl = new CountDownLatch(len);
-		
-		final List<Future<BitVector>> futures = new ArrayList<Future<BitVector>>();
+		final List<Callable<BitVector>> solvers = new ArrayList<Callable<BitVector>>();
 		for (int i = 0; i < len; i++) {
-			futures.add(executorService.submit(new PutBlockCallable(this, cdl, fpSets.get(i), fps, i)));
+			solvers.add(new PutBlockCallable(this, fpSets, fps, i));
 		}
-		
-		try {
-			// Wait for all threads to finish
-			cdl.await();
-		
-			// Convert and return result
-			final BitVector[] res = new BitVector[len];
-			for (int i = 0; i < res.length; i++) {
-					res[i] = futures.get(i).get();
-			}
-			return res;
-		} catch (InterruptedException e) {
-			// not expected to happen, fail fast for the moment.
-			e.printStackTrace();
-			return null;
-		} catch (ExecutionException e) {
-			// not expected to happen, fail fast for the moment.
-			e.printStackTrace();
-			return null;
-		}
+
+		return executeCallablesAndCollect(executorService, solvers);
 	}
 
 	/* (non-Javadoc)
@@ -286,11 +294,14 @@ public abstract class FPSetManager implements IFPSetManager {
 				if (this.reassign(i) == -1) {
 					ToolIO.out
 							.println("Warning: there is no fp server available.");
+					// Indicate for all fingerprints of the lost fpset that they are
+					// new. This is achieved by setting all bits in BitVector.
+					res[i] = new BitVector(fps[i].size(), true);
+				} else {
+					// Cause for loop to retry the current fps[i] to the newly
+					// assigned fingerprint set
+					i -= 1;
 				}
-				// Indicate for all fingerprints of the lost fpset that they are
-				// new. This is achieved by setting all bits in BitVector.
-				res[i] = new BitVector(fps[i].size());
-				res[i].set(0, fps[i].size() - 1);
 			}
 		}
 		return res;
@@ -300,35 +311,43 @@ public abstract class FPSetManager implements IFPSetManager {
 	 * @see tlc2.tool.distributed.fp.IFPSetManager#containsBlock(tlc2.util.LongVec[], java.util.concurrent.ExecutorService)
 	 */
 	public BitVector[] containsBlock(final LongVec[] fps, final ExecutorService executorService) {
+		// Create a Callable for each fingerprint set
 		final int len = this.fpSets.size();
-		
-		// Synchronize this and nested threads
-		final CountDownLatch cdl = new CountDownLatch(len);
-		
-		final List<Future<BitVector>> futures = new ArrayList<Future<BitVector>>();
+		final List<Callable<BitVector>> solvers = new ArrayList<Callable<BitVector>>();
 		for (int i = 0; i < len; i++) {
-			futures.add(executorService.submit(new ContainsBlockCallable(this, cdl, fpSets.get(i), fps, i)));
+			solvers.add(new ContainsBlockCallable(this, fpSets, fps, i));
 		}
-		
-		try {
-			// Wait for all threads to finish
-			cdl.await();
-			
-			// Convert and return result
-			final BitVector[] res = new BitVector[len];
-			for (int i = 0; i < res.length; i++) {
-				res[i] = futures.get(i).get();
+
+		return executeCallablesAndCollect(executorService, solvers);
+	}
+
+	/**
+	 * Executes the given solvers by using the executor service. Afterwards it
+	 * waits for completion and collects the results.
+	 */
+	private BitVector[] executeCallablesAndCollect(final ExecutorService executorService, 
+			final List<Callable<BitVector>> solvers) {
+		// Have the callables executed by the executor service
+		final CompletionService<BitVector> ecs = new ExecutorCompletionService<BitVector>(executorService);
+		for (Callable<BitVector> s : solvers) {
+			ecs.submit(s);
+		}
+
+		// Wait for completion of the executor service and convert and return
+		// result
+		final BitVector[] res = new BitVector[solvers.size()];
+		for (int i = 0; i < res.length; i++) {
+			try {
+				res[i] = ecs.take().get();
+			} catch (InterruptedException e) {
+				// not expected to happen
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				// not expected to happen
+				e.printStackTrace();
 			}
-			return res;
-		} catch (InterruptedException e) {
-			// not expected to happen, fail fast for the moment.
-			e.printStackTrace();
-			return null;
-		} catch (ExecutionException e) {
-			// not expected to happen, fail fast for the moment.
-			e.printStackTrace();
-			return null;
 		}
+		return res;
 	}
 
 	/* (non-Javadoc)
