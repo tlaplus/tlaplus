@@ -23,9 +23,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import tlc2.output.EC;
+import tlc2.tool.distributed.fp.callable.BitVectorWrapper;
 import tlc2.tool.distributed.fp.callable.CheckFPsCallable;
 import tlc2.tool.distributed.fp.callable.ContainsBlockCallable;
-import tlc2.tool.distributed.fp.callable.BitVectorWrapper;
 import tlc2.tool.distributed.fp.callable.PutBlockCallable;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
