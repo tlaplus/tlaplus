@@ -152,8 +152,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// TLCApp which calculates the next state relation
 		this.metadir = work.getMetadir();
 		int end = this.metadir.length();
-		if (this.metadir.endsWith(FileUtil.separator))
+		if (this.metadir.endsWith(FileUtil.separator)) {
 			end--;
+		}
 		int start = this.metadir.lastIndexOf(FileUtil.separator, end - 1);
 		this.filename = this.metadir.substring(start + 1, end);
 		this.work = work;
