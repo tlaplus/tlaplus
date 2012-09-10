@@ -42,6 +42,17 @@ In org.lamport.tla.toolbox.product.standalone
 
 In org.lamport.tla.toolbox/welcome/welcomeView.html
    Update date and version
+   
+In org.lamport.tla.toolbox.doc/META-INF/MANIFEST.MF, update the version (major.minor.micro).
+But do _not_ replace the last (".qualifier") segment. It is automatically replaced by the build.
+Explicitly replacing ".qualifier" with e.g. ".f" breaks the build with:
+
+"Failed to execute goal org.eclipse.tycho:tycho-packaging-plugin:0.14.0-SNAPSHOT:validate-version 
+(default-validate-version) on project org.lamport.tla.toolbox.doc: OSGi version 1.4.3.f must have .qualifier qualifier for SNAPSHOT builds"
+
+(If one absolutely has to set the ".qualifier" segment explicitly, do not forget to update 
+the version (not parent version!) org.lamport.tla.toolbox.doc/pom.xml
+correspondingly. It has to match the MANIFEST.MF version verbatim.)
 
 OBSOLETE:
 In toolbox.product.standalone/intro/root.xhtml: 

@@ -1859,10 +1859,19 @@ public class TokenizeSpec
         if (!isCSyntax) {
             return ;
         }
-        // If isTeX is false, then we're at the beginning of the algorithm, 
+        // If isTeX is false, or the first token is --algorithm or --fair,
+        // then we're at the beginning of the algorithm, 
         // and the first "{" that's not a comment is the first PlusCal "{".
         Position pos = pcalStart ;
-        if (! isTeX) {
+        boolean beginningOfAlgorithm = ! isTeX ;
+        if (isTeX &&  pos != null) {
+            String firstString = pos.toToken(spec).string ;
+            if (firstString.equals("--algorithm") || firstString.equals("--fair")) {
+                beginningOfAlgorithm = true ;
+            }
+        }
+
+        if (beginningOfAlgorithm) {
            while (   (pos != null) 
                   && (   (pos.toToken(spec).type != Token.BUILTIN)
                       || (! pos.toToken(spec).string.equals("{")))) {            
