@@ -2,6 +2,7 @@
 
 package tlc2.tool.distributed.fp;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
@@ -404,7 +405,6 @@ public class DynamicFPSetManagerTest extends TestCase {
 		
 		final int numOfServers = dfm.numOfServers();
 		
-		final ExecutorService es = Executors.newCachedThreadPool();
 
 		// LongVec has to have same size of IFPSetManager#numServers (putBlock
 		// method contract)
@@ -417,33 +417,86 @@ public class DynamicFPSetManagerTest extends TestCase {
 		assertEquals("Assert fingerprint corresponds to TestFPSet", 1, dfm.getIndex(1L));
 		
 		/* Test DFM correctly behaves first time when TestFPSet works as expected */
-
-		BitVector[] bvs = dfm.putBlock(fps, es);
-		assertEquals(1, bvs[0].trueCnt());
-		assertEquals(1, bvs[1].trueCnt());
-
-		bvs = dfm.containsBlock(fps, es);
-		// all (the same) fingerprints are now known (meaning corresponding
-		// bit in bvs[x] is zero).
-		assertEquals(0, bvs[0].trueCnt());
-		assertEquals(0, bvs[1].trueCnt());
+		final ExecutorService es = Executors.newCachedThreadPool();
+		try {
+			BitVector[] bvs = dfm.putBlock(fps, es);
+			assertEquals(1, bvs[0].trueCnt());
+			assertEquals(1, bvs[1].trueCnt());
+			
+			bvs = dfm.containsBlock(fps, es);
+			// all (the same) fingerprints are now known (meaning corresponding
+			// bit in bvs[x] is zero).
+			assertEquals(0, bvs[0].trueCnt());
+			assertEquals(0, bvs[1].trueCnt());
+			
+			/*
+			 * Test DFM correctly fails over to successor of TestFPSet (Here one can
+			 * observe the behavior that a fingerprint is thought to be new when a
+			 * FPSet crashes).
+			 */
+			
+			bvs = dfm.putBlock(fps, es);
+			assertEquals(2, bvs[0].trueCnt()); // fingerprint is unknown after fpset crash
+			assertEquals(2, bvs[1].trueCnt());
+			
+			// The previous putBlock call has caused the FPSetManager to detect the
+			// failure state of both FPSets
+			assertEquals(0, dfm.numOfAliveServers());
+			
+			bvs = dfm.containsBlock(fps, es);
+			assertEquals(2, bvs[0].trueCnt()); // fingerprint is known again
+			assertEquals(2, bvs[1].trueCnt());
+		} finally {
+			es.shutdown();
+		}
+	}
+	
+	/**
+	 * Tests if the {@link FPSetManager} returns the BitVector[] with correct
+	 * order.
+	 * <p>
+	 * Due to the nature of concurrency, this test can pass by chance (inversely
+	 * proportional probability to expectedNumOfServers). However, repeatedly
+	 * test execution is expected to fail most of the time if
+	 * {@link DynamicFPSetManager} is indeed faulty (pay attention to
+	 * intermittent test failures).
+	 */
+	public void testPutBlockConcurrentOrder() throws IOException {
+		int expectedNumOfServers = 20;
+		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
 		
-		/*
-		 * Test DFM correctly fails over to successor of TestFPSet (Here one can
-		 * observe the behavior that a fingerprint is thought to be new when a
-		 * FPSet crashes).
-		 */
+		// expectedNumOfServers - 1 empty fpsets
+		for (int i = 0; i < expectedNumOfServers - 1; i++) {
+			dfm.register(new MemFPSet(), "TestFPSet" + i);
+		}
 
-		bvs = dfm.putBlock(fps, es);
-		assertEquals(2, bvs[0].trueCnt()); // fingerprint is unknown after fpset crash
-		assertEquals(2, bvs[1].trueCnt());
+		final long fp = 1L;
 		
-		// The previous putBlock call has caused the FPSetManager to detect the
-		// failure state of both FPSets
-		assertEquals(0, dfm.numOfAliveServers());
+		// add a single non-empty fpset at the last position
+		FPSet nonEmptyFPSet = new MemFPSet();
+		nonEmptyFPSet.put(fp);
+		dfm.register(nonEmptyFPSet, "localhost");
 		
-		bvs = dfm.containsBlock(fps, es);
-		assertEquals(2, bvs[0].trueCnt()); // fingerprint is known again
-		assertEquals(2, bvs[1].trueCnt());
+		
+		final LongVec[] fps = new LongVec[expectedNumOfServers]; 
+		for (int i = 0; i < expectedNumOfServers; i++) {
+			fps[i] = new LongVec();
+			fps[i].addElement(fp);
+		}
+		
+		// Check if the last element in the resulting bitvector has the bit for the fp set
+		final ExecutorService es = Executors.newCachedThreadPool();
+		try {
+			final BitVector[] bvs = dfm.containsBlock(fps, es);
+			// The first expectedNumOfServers - 1 must not contain the fp
+			for (int i = 0; i < expectedNumOfServers - 1; i++) {
+				assertEquals(1, bvs[i].trueCnt());
+			}
+
+			// The last element is expected to contain the fingerprint
+			assertEquals(0, bvs[expectedNumOfServers - 1].trueCnt());
+		} finally {
+			es.shutdown();
+		}
 	}
 }

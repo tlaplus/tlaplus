@@ -22,11 +22,14 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import tlc2.output.EC;
 import tlc2.tool.distributed.fp.callable.CheckFPsCallable;
 import tlc2.tool.distributed.fp.callable.ContainsBlockCallable;
+import tlc2.tool.distributed.fp.callable.BitVectorWrapper;
 import tlc2.tool.distributed.fp.callable.PutBlockCallable;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
+import util.Assert;
 import util.ToolIO;
 
 /**
@@ -268,7 +271,7 @@ public abstract class FPSetManager implements IFPSetManager {
 	public BitVector[] putBlock(final LongVec[] fps, final ExecutorService executorService) {
 		// Create a Callable for each fingerprint set
 		final int len = this.fpSets.size();
-		final List<Callable<BitVector>> solvers = new ArrayList<Callable<BitVector>>();
+		final List<Callable<BitVectorWrapper>> solvers = new ArrayList<Callable<BitVectorWrapper>>();
 		for (int i = 0; i < len; i++) {
 			solvers.add(new PutBlockCallable(this, fpSets, fps, i));
 		}
@@ -311,7 +314,7 @@ public abstract class FPSetManager implements IFPSetManager {
 	public BitVector[] containsBlock(final LongVec[] fps, final ExecutorService executorService) {
 		// Create a Callable for each fingerprint set
 		final int len = this.fpSets.size();
-		final List<Callable<BitVector>> solvers = new ArrayList<Callable<BitVector>>();
+		final List<Callable<BitVectorWrapper>> solvers = new ArrayList<Callable<BitVectorWrapper>>();
 		for (int i = 0; i < len; i++) {
 			solvers.add(new ContainsBlockCallable(this, fpSets, fps, i));
 		}
@@ -324,10 +327,10 @@ public abstract class FPSetManager implements IFPSetManager {
 	 * waits for completion and collects the results.
 	 */
 	private BitVector[] executeCallablesAndCollect(final ExecutorService executorService, 
-			final List<Callable<BitVector>> solvers) {
+			final List<Callable<BitVectorWrapper>> solvers) {
 		// Have the callables executed by the executor service
-		final CompletionService<BitVector> ecs = new ExecutorCompletionService<BitVector>(executorService);
-		for (Callable<BitVector> s : solvers) {
+		final CompletionService<BitVectorWrapper> ecs = new ExecutorCompletionService<BitVectorWrapper>(executorService);
+		for (Callable<BitVectorWrapper> s : solvers) {
 			ecs.submit(s);
 		}
 
@@ -336,7 +339,17 @@ public abstract class FPSetManager implements IFPSetManager {
 		final BitVector[] res = new BitVector[solvers.size()];
 		for (int i = 0; i < res.length; i++) {
 			try {
-				res[i] = ecs.take().get();
+				// Callers of putBlock and containBlock expect as a post-condition:
+				// for all i BitVector[i] is result of LongVec[i].
+				// (The LongVec[] order has to reflect itself in the BitVector[] order)
+				// Otherwise one is going to see NPEs on the caller end.
+				// Thus this code uses a BitVectorWrapper which associates the
+				// BitVector return with its LongVec[i] input value.
+				final BitVectorWrapper indexBitVector = ecs.take().get();
+				final int index = indexBitVector.getIndex();
+				// Only one result for a given LongVec[i] is correct
+				Assert.check(res[index] == null, EC.GENERAL);
+				res[index] = indexBitVector.getBitVector();
 			} catch (InterruptedException e) {
 				// not expected to happen
 				e.printStackTrace();

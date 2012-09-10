@@ -17,9 +17,10 @@ public class ContainsBlockCallable extends FPSetManagerCallable {
 	/* (non-Javadoc)
 	 * @see java.util.concurrent.Callable#call()
 	 */
-	public BitVector call() throws Exception {
+	public BitVectorWrapper call() throws Exception {
 		try {
-			return fpset.get(index).containsBlock(fps[index]);
+			BitVector bv = fpset.get(index).containsBlock(fps[index]);
+			return new BitVectorWrapper(index, bv);
 		} catch (Exception e) {
 			return reassign(e);
 		}

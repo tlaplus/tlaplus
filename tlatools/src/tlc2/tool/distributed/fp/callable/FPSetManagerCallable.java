@@ -10,7 +10,7 @@ import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.ToolIO;
 
-public abstract class FPSetManagerCallable implements Callable<BitVector> {
+public abstract class FPSetManagerCallable implements Callable<BitVectorWrapper> {
 	
 	protected final FPSetManager fpSetManager;
 	protected final List<FPSets> fpset;
@@ -24,7 +24,7 @@ public abstract class FPSetManagerCallable implements Callable<BitVector> {
 		this.index = index;
 	}
 	
-	protected BitVector reassign(Exception e) throws Exception {
+	protected BitVectorWrapper reassign(Exception e) throws Exception {
 		ToolIO.out.println("Warning: Failed to connect from "
 				+ fpSetManager.getHostName() + " to the fp server at "
 				+ fpset.get(index).getHostname() + ".\n" + e.getMessage());
@@ -33,7 +33,7 @@ public abstract class FPSetManagerCallable implements Callable<BitVector> {
 			.println("Warning: there is no fp server available.");
 			// Indicate for all fingerprints of the lost fpset that they are
 			// new. This is achieved by setting all bits in BitVector.
-			return new BitVector(fps[index].size(), true);
+			return new BitVectorWrapper(index, new BitVector(fps[index].size(), true));
 		} else {
 			// Retry with newly assigned FPSet for the given index
 			return call();

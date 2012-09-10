@@ -17,9 +17,10 @@ public class PutBlockCallable extends FPSetManagerCallable {
 	/* (non-Javadoc)
 	 * @see java.util.concurrent.Callable#call()
 	 */
-	public BitVector call() throws Exception {
+	public BitVectorWrapper call() throws Exception {
 		try {
-			return fpset.get(index).putBlock(fps[index]);
+			BitVector bv = fpset.get(index).putBlock(fps[index]);
+			return new BitVectorWrapper(index, bv);
 		} catch (Exception e) {
 			return reassign(e);
 		}
