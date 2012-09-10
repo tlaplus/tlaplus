@@ -55,6 +55,7 @@
         </configuration>
         <executions>
           <execution>
+	    <phase>compile</phase>
             <id>sign</id>
             <goals>
               <goal>sign</goal>
@@ -68,6 +69,22 @@
           </execution>
         </executions>
       </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+           <version>2.4.1</version>
+            <configuration>
+                <filesets>
+                    <fileset>
+                        <directory>files</directory>
+                        <includes>
+                            <include>**/tla2tools.jar</include>
+                        </includes>
+                        <followSymlinks>false</followSymlinks>
+                    </fileset>
+                </filesets>
+            </configuration>
+        </plugin>
     </plugins>
   </build>
   
