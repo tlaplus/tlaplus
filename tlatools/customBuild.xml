@@ -73,16 +73,6 @@
 				<exclude name="**/*##*" />
 			</fileset>
 		</copy>
-		<!-- These jare are requried for by fpset implementations -->
-		<!-- Thus, extract to class.dir to have dist step/target pick them up an zip them into tla2tools.jar -->
-		<!-- Essentially, this creates on big tla2tools.jar with all its dependencies included, -->
-		<!-- which makes it easier for consumer to run TLC (no classpath woes). -->
-		<!-- (as a technical side note: Limiting to *.class might miss required resources in the future -->
-		<unzip dest="${class.dir}">
-		   <patternset>
-		        <include name="**/*.class"/>
-		    </patternset>
-		</unzip>
 	</target>
 
 	<target name="compile-aj" depends="compile" if="withaj">
