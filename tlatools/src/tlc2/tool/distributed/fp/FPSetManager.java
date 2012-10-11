@@ -46,6 +46,8 @@ public abstract class FPSetManager implements IFPSetManager {
 	 * case, where it's impossible to call {@link FPSetRMI#getHostname}.
 	 */
 	protected List<FPSets> fpSets;
+	
+	protected boolean managerIsBroken = false; 
 
 	// SZ Jul 13, 2009: moved from FPSetRMI
 	public static int Port = 10998; // port # for fpset server
@@ -103,6 +105,16 @@ public abstract class FPSetManager implements IFPSetManager {
 			throw new IllegalArgumentException("index not within bounds");
 		}
 		
+		// Avoid cycling over the list of broken FPSets if all are broken
+		// anyway. This is just a performance enhancement in that it prevents
+		// the code from looping over the (potentially large) list of nested
+		// FPSets.
+		// Since the method is synchronized, we do not need to guard
+		// managerIsBroken from concurrent access.
+		if (managerIsBroken) {
+			return -1;
+		}
+		
 		// The broken FPSet
 		final FPSets broken = this.fpSets.get(index);
 		broken.setUnavailable();
@@ -123,7 +135,11 @@ public abstract class FPSetManager implements IFPSetManager {
 			next = (next + 1) % this.fpSets.size();
 		}
 		
-		// No FPSets left that can be used
+		// No FPSets left that can be used.
+		// Mark the FPSetManager itself as broken and cache it for subsequent
+		// calls.
+		managerIsBroken = true;
+		
 		return -1;
 	}
 
