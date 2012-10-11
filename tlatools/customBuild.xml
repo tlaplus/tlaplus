@@ -62,10 +62,6 @@
 		<javac srcdir="${src.dir}" destdir="${class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
 			<!-- compilerarg value="-Xlint:deprecation"/-->
 			<classpath refid="project.classpath" />
-			<classpath>
-			    <pathelement location="lib/high-scale-lib.jar" />
-			    <pathelement location="lib/trove-3.0.3.jar" />
-			</classpath>
 		</javac>
 
 		<!-- copy the resource files -->
@@ -86,10 +82,6 @@
 		   <patternset>
 		        <include name="**/*.class"/>
 		    </patternset>
-			<fileset dir="lib">
-				<include name="trove-3.0.3.jar"/>
-				<include name="high-scale-lib.jar"/>
-			</fileset>
 		</unzip>
 	</target>
 

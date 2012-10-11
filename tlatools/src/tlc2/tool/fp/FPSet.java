@@ -359,8 +359,6 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 		l.add(MemFPSet2.class.getName());
 		
 		l.add(OffHeapDiskFPSet.class.getName());
-		l.add(TroveOffHeapDiskFPSet.class.getName());
-		l.add(WaitFreeOffHeapDiskFPSet.class.getName());
 
 		return l.toArray(new String[l.size()]);
 	}
