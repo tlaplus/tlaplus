@@ -64,7 +64,7 @@ public class IndexServlet extends URLHttpServlet {
 		// b) command line
 		resp.getWriter().println(
 				"<li>\n" + 
-					"Run from slave command line:</p>\n" + 
+					"<p>Run from slave command line:</p>\n" + 
 					"<p><pre>" + 
 						"javaws " + url + jnlpName +
 					"</pre></p>\n" + 
