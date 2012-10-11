@@ -12,7 +12,6 @@ import java.rmi.RemoteException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import javax.management.NotCompliantMBeanException;
 
@@ -27,7 +26,6 @@ import tlc2.util.Sort;
 import util.Assert;
 import util.FileUtil;
 
-import com.google.common.util.concurrent.Striped;
 
 /**
  * A <code>DiskFPSet</code> is a subtype of <code>FPSet</code> that uses a
@@ -83,7 +81,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * protects n memory buckets
 	 */
-	protected final Striped<ReadWriteLock> rwLock;
+	protected final Striped rwLock;
 	/**
 	 * Is (1 << LogLockCnt) and exposed here for subclasses
 	 */

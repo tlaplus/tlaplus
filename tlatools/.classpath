@@ -7,7 +7,6 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="src" path="test-long"/>
 	<classpathentry kind="src" path="test-concurrent"/>
-	<classpathentry exported="true" kind="lib" path="lib/guava-13.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/trove-3.0.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/high-scale-lib.jar"/>
 	<classpathentry kind="output" path="class"/>

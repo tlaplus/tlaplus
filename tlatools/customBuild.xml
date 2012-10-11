@@ -63,7 +63,6 @@
 			<!-- compilerarg value="-Xlint:deprecation"/-->
 			<classpath refid="project.classpath" />
 			<classpath>
-			    <pathelement location="lib/guava-13.0.jar" />
 			    <pathelement location="lib/high-scale-lib.jar" />
 			    <pathelement location="lib/trove-3.0.3.jar" />
 			</classpath>
@@ -88,7 +87,6 @@
 		        <include name="**/*.class"/>
 		    </patternset>
 			<fileset dir="lib">
-				<include name="guava-13.0.jar"/>
 				<include name="trove-3.0.3.jar"/>
 				<include name="high-scale-lib.jar"/>
 			</fileset>
@@ -147,7 +145,6 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
-				<pathelement location="lib/guava-13.0.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</javac>
@@ -164,7 +161,6 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
-				<pathelement location="lib/guava-13.0.jar" />
 				<pathelement path="${ws.class.dir}" />
 				<pathelement path="${test.class.dir}" />
 			</classpath>
@@ -235,7 +231,6 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
-				<pathelement location="lib/guava-13.0.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</javac>
@@ -252,7 +247,6 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
-				<pathelement location="lib/guava-13.0.jar" />
 				<pathelement location="${dist.file}" />
 				<pathelement path="${test.class.dir}" />
 			</classpath>
