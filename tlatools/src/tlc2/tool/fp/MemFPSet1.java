@@ -28,16 +28,9 @@ public final class MemFPSet1 extends FPSet {
   private String filename;
   private SetOfLong set;
 
-  public MemFPSet1() throws RemoteException {
+  public MemFPSet1(final FPSetConfiguration fpSetConfig) throws RemoteException {
+    super(fpSetConfig);
     this.set = new SetOfLong(10001, 0.75f);
-  }
-  
-  public MemFPSet1(int size) throws RemoteException {
-    this.set = new SetOfLong(size) ;
-  }
-
-  public MemFPSet1(int size, float load) throws RemoteException {
-    this.set = new SetOfLong(size, load) ;
   }
 
   public final void init(int numThreads, String metadir, String filename) {

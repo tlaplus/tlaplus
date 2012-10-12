@@ -14,15 +14,9 @@ import util.Assert;
 @SuppressWarnings("serial")
 public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 
-	protected LSBDiskFPSet(long maxInMemoryCapacity) throws RemoteException {
-		super(maxInMemoryCapacity);
+	protected LSBDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+		super(fpSetConfig);
 		this.flusher = new LSBFlusher();
-	}
-	
-	protected LSBDiskFPSet(long maxInMemoryCapacity, int prefixBit) throws RemoteException {
-		this(maxInMemoryCapacity);
-		// ignore prefixBits, LSB works on least significant bits and not most
-		// ones.
 	}
 	
 	/* (non-Javadoc)

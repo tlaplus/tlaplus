@@ -12,8 +12,8 @@ public class MultiThreadedOffHeapDiskFPSetTest extends MultiThreadedFPSetTest {
 	 * @see tlc2.tool.fp.AbstractFPSetTest#getFPSet(long)
 	 */
 	@Override
-	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
-		long freeMemoryInFPs = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) FPSet.LongSize;
-		return new OffHeapDiskFPSet(freeMemoryInFPs);
+	protected FPSet getFPSet(final FPSetConfiguration fpSetConfig) throws IOException {
+		return new OffHeapDiskFPSet(new FPSetConfiguration(TLCRuntime
+				.getInstance().getNonHeapPhysicalMemory()));
 	}
 }

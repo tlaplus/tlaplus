@@ -18,6 +18,7 @@ import tla2sany.semantic.OpDefNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.util.FP64;
 import util.Assert;
 import util.FileUtil;
@@ -39,9 +40,9 @@ public class CheckImplFile extends CheckImpl
      * 
      */
     public CheckImplFile(String specFile, String configFile, boolean deadlock, int depth, String fromChkpt,
-            String traceFile, long fpMemSize) throws IOException
+            String traceFile, final FPSetConfiguration fpSetConfig) throws IOException
     {
-        super(specFile, configFile, deadlock, depth, fromChkpt, fpMemSize);
+        super(specFile, configFile, deadlock, depth, fromChkpt, fpSetConfig);
         this.traceFile = traceFile;
         this.states = null;
         this.sidx = 0;
@@ -315,7 +316,7 @@ public class CheckImplFile extends CheckImpl
        */
       long fpMemSize = runtime.totalMemory() >> 2;
       CheckImplFile checker = new CheckImplFile(mainFile, configFile, deadlock,
-						depth, fromChkpt, traceFile, fpMemSize);
+						depth, fromChkpt, traceFile, new FPSetConfiguration(fpMemSize));
       checker.init();
       while (true) {
 	// Get a trace and check it.

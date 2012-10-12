@@ -37,10 +37,10 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 	protected static final int LogDefaultMaxTblCnt = 19;
 	static final int DefaultMaxTblCnt = (1 << LogDefaultMaxTblCnt);
 
-	protected HeapBasedDiskFPSet(long maxInMemoryCapacity) throws RemoteException {
-		super(maxInMemoryCapacity);
+	protected HeapBasedDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+		super(fpSetConfig);
 		
-		long maxMemCnt = (long) (maxInMemoryCapacity / getAuxiliaryStorageRequirement());
+		long maxMemCnt = (long) (fpSetConfig.getMemoryInFingerprintCnt() / getAuxiliaryStorageRequirement());
 
 		// default if not specific value given
 		if ((maxMemCnt - LogMaxLoad) <= 0) {

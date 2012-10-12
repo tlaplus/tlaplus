@@ -8,6 +8,7 @@ import java.io.IOException;
 import tlc2.TLCGlobals;
 import tlc2.output.StatePrinter;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.queue.DiskStateQueue;
 import util.ToolIO;
 
@@ -29,10 +30,10 @@ public abstract class CheckImpl extends ModelChecker {
    * because same parameter was added to the ModelChecker constructor. 
    */
   public CheckImpl(String specFile, String configFile, boolean deadlock,
-		   int depth, String fromChkpt, long fpMemSize)
+		   int depth, String fromChkpt, final FPSetConfiguration fpSetConfig)
   throws IOException {
     // SZ Feb 20, 2009: patched due to changes to ModelCheker
-    super(specFile, configFile, null, deadlock, fromChkpt, null, null, fpMemSize, 1); // no name resolver and no specobj
+    super(specFile, configFile, null, deadlock, fromChkpt, null, null, fpSetConfig); // no name resolver and no specobj
     this.depth = depth;
     this.curState = null;
     this.coverSet = FPSet.getFPSet();

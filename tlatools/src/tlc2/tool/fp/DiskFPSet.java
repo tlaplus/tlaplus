@@ -189,14 +189,14 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * <code>DefaultMaxTblCnt</code> entries. When the buffer fills up, its
 	 * entries are atomically flushed to the FPSet's backing disk file.
 	 * 
-	 * @param maxInMemoryCapacity The number of fingerprints (not memory) this DiskFPSet should maximally store in-memory.
 	 * @throws RemoteException
 	 */
-	protected DiskFPSet(final long maxInMemoryCapacity) throws RemoteException {
+	protected DiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+		super(fpSetConfig);
 		this.lockCnt = 1 << LogLockCnt; //TODO come up with a more dynamic value for stripes that takes tblCapacity into account
 		this.rwLock = Striped.readWriteLock(lockCnt);
 		
-		this.maxTblCnt = maxInMemoryCapacity;
+		this.maxTblCnt = fpSetConfig.getMemoryInFingerprintCnt();
 		this.fileCnt = 0;
 		this.tblCnt = new AtomicLong(0);
 		this.flusherChosen = new AtomicBoolean(false);

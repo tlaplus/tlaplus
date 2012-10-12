@@ -81,12 +81,8 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
 	private final ReadWriteLock csRWLock = new ReentrantReadWriteLock();
 
-	protected OffHeapDiskFPSet(long maxInMemoryCapacity) throws RemoteException {
-		this(maxInMemoryCapacity, 0);
-	}
-	
-	protected OffHeapDiskFPSet(final long maxInMemoryCapacity, final int prefixBits) throws RemoteException {
-		super(maxInMemoryCapacity);
+	protected OffHeapDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+		super(fpSetConfig);
 		
 		// Determine base address which varies depending on machine architecture.
 		u = getUnsafe();
@@ -99,14 +95,14 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		logAddressSize = cnt;
 
 		// Allocate non-heap memory for maxInMemoryCapacity fingerprints
-		long bytes = maxInMemoryCapacity << logAddressSize;
+		long bytes = fpSetConfig.getMemoryInFingerprintCnt() << logAddressSize;
 		baseAddress = u.allocateMemory(bytes);
 		
 		// Null memory (could be done in parallel on segments when bottleneck).
 		// This is essential as allocateMemory returns uninitialized memory and
 		// memInsert/memLockup utilize 0L as a mark for an unused fingerprint slot.
 		// Otherwise memory garbage wouldn't be distinguishable from a true fp. 
-		for (long i = 0; i < maxInMemoryCapacity; i++) {
+		for (long i = 0; i < fpSetConfig.getMemoryInFingerprintCnt(); i++) {
 			u.putAddress(log2phy(i), 0L);
 		}
 
@@ -118,15 +114,15 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		// Move n as many times to the right to calculate moveBy. moveBy is the
 		// number of bits the (fp & mask) has to be right shifted to make the
 		// logical bucket index.
-		long n = (Long.MAX_VALUE >>> prefixBits) - (maxInMemoryCapacity - 1);
+		long n = (Long.MAX_VALUE >>> fpSetConfig.getPrefixBits()) - (fpSetConfig.getMemoryInFingerprintCnt() - 1);
 		int moveBy = 0;
-		while (n >= maxInMemoryCapacity) {
+		while (n >= fpSetConfig.getMemoryInFingerprintCnt()) {
 			moveBy++;
 			n = n >>> 1; // == (n/2)
 		}
 		
 		// Calculate Hamming weight of maxTblCnt
-		final int bitCount = Long.bitCount(maxInMemoryCapacity);
+		final int bitCount = Long.bitCount(fpSetConfig.getMemoryInFingerprintCnt());
 		
 		// If Hamming weight is 1, the logical index address can be calculated
 		// significantly faster by bit-shifting. However, with large memory
@@ -139,7 +135,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		// still outperforms disk I/0.
 		if (bitCount == 1) {
 			bucketCapacity = InitialBucketCapacity;
-			this.indexer = new BitshiftingIndexer(moveBy, prefixBits);
+			this.indexer = new BitshiftingIndexer(moveBy, fpSetConfig.getPrefixBits());
 		} else {
 			// Round maxInMemoryCapacity to next lower 2^n power
 			cnt = -1;
@@ -149,7 +145,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			}
 			
 			// Extra memory that cannot be addressed by BitshiftingIndexer
-			final long extraMem = (maxInMemoryCapacity * LongSize) - (long) Math.pow(2, cnt);
+			final long extraMem = (fpSetConfig.getMemoryInFingerprintCnt() * LongSize) - (long) Math.pow(2, cnt);
 			
 			// Divide extra memory across addressable buckets
 			int x = (int) (extraMem / ((n + 1) / InitialBucketCapacity));
@@ -159,7 +155,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			Assert.check(bucketCapacity < (2 * InitialBucketCapacity), EC.GENERAL);
 
 			// non 2^n buckets cannot use a bit shifting indexer
-			this.indexer = new Indexer(moveBy, prefixBits);
+			this.indexer = new Indexer(moveBy, fpSetConfig.getPrefixBits());
 		}
 	}
 

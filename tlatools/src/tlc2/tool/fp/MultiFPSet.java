@@ -38,34 +38,34 @@ public class MultiFPSet extends FPSet {
 	 */
 	protected int fpbits;
 
-	/* Create a MultiFPSet with 2^bits FPSets. */
-	public MultiFPSet(int bits) throws RemoteException {
-		this(bits, MEM_DEFAULT);
-	}
-
 	/**
 	 * Create a MultiFPSet with 2^bits FPSets.
 	 * @param bits [1,30]
 	 */
-	public MultiFPSet(int bits, long fpMemSize) throws RemoteException {
+	public MultiFPSet(final FPSetConfiguration fpSetConfiguration) throws RemoteException {
+		super(fpSetConfiguration);
+
+		int bits = fpSetConfiguration.getFpBits();
+		long fpMemSize = fpSetConfiguration.getMemoryInBytes();
+		
 	    // LL modified error message on 7 April 2012
 		Assert.check(bits > 0 && bits <= MAX_FPBITS, "Illegal number of FPSets found.");
 		
-		int len = 1 << bits; // len = 2^bits
-		this.sets = new FPSet[len];
+		this.sets = new FPSet[fpSetConfiguration.getMultiFPSetCnt()];
 		
 		if (fpMemSize == MEM_DEFAULT) {
 			fpMemSize = HeapBasedDiskFPSet.DefaultMaxTblCnt / 20;
 		}
 
-		this.sets = getNestedFPSets(bits, fpMemSize, len);
+		this.sets = getNestedFPSets(fpSetConfiguration);
 		this.fpbits = 64 - bits;
 	}
 
-	protected FPSet[] getNestedFPSets(int bits, long fpMemSize, int len) throws RemoteException {
+	protected FPSet[] getNestedFPSets(final FPSetConfiguration fpSetConfiguration) throws RemoteException {
+		int len = fpSetConfiguration.getMultiFPSetCnt();
 		final FPSet[] s = new FPSet[len];
 		for (int i = 0; i < len; i++) {
-			s[i] = FPSet.getFPSet(0, (fpMemSize / (long) len), false);
+			s[i] = FPSet.getFPSet(new MultiFPSetConfiguration(fpSetConfiguration), false);
 		}
 		return s;
 	}
@@ -257,5 +257,27 @@ public class MultiFPSet extends FPSet {
 
 	public FPSet[] getFPSets() {
 		return sets;
+	}
+	
+	static class MultiFPSetConfiguration extends FPSetConfiguration {
+		private final FPSetConfiguration fpSetConfig;
+
+		public MultiFPSetConfiguration(final FPSetConfiguration fpSetConfig) {
+			this.fpSetConfig = fpSetConfig;
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.FPSetConfiguration#getMemoryInBytes()
+		 */
+		public long getMemoryInBytes() {
+			return super.getMemoryInBytes() / getMultiFPSetCnt();
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.FPSetConfiguration#getMemoryInFingerprintCnt()
+		 */
+		public long getMemoryInFingerprintCnt() {
+			return super.getMemoryInFingerprintCnt() / getMultiFPSetCnt();
+		}
 	}
 }

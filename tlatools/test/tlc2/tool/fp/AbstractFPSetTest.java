@@ -66,7 +66,7 @@ public abstract class AbstractFPSetTest extends TestCase {
 	 * @return A new {@link FPSet} instance
 	 * @throws IOException
 	 */
-	protected abstract FPSet getFPSet(long freeMemoryInBytes) throws IOException;
+	protected abstract FPSet getFPSet(final FPSetConfiguration fpSetConfig) throws IOException;
 
 	protected FPSet getFPSetInitialized() throws IOException {
 		return getFPSetInitialized(1);
@@ -74,7 +74,7 @@ public abstract class AbstractFPSetTest extends TestCase {
 	
 	protected FPSet getFPSetInitialized(int numThreads) throws IOException {
 		long freeMemory = getFreeMemoryInBytes();
-		final FPSet fpSet = getFPSet(freeMemory);
+		final FPSet fpSet = getFPSet(new FPSetConfiguration(freeMemory));
 		fpSet.init(numThreads, tmpdir, filename);
 
 		if (fpSet instanceof FPSetStatistic) {

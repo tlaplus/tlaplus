@@ -9,19 +9,20 @@ public class MSBMultiFPSet extends MultiFPSet {
 
 	private final int moveBy;
 
-	public MSBMultiFPSet(int bits, long fpMemSize) throws RemoteException {
-		super(bits, fpMemSize);
+	public MSBMultiFPSet(final FPSetConfiguration fpSetConfiguration) throws RemoteException {
+		super(fpSetConfiguration);
 		
-		this.moveBy = 63 - bits;
+		this.moveBy = 63 - fpSetConfiguration.getFpBits();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.MultiFPSet#getNestedFPSets(int, long, int)
 	 */
-	protected FPSet[] getNestedFPSets(int bits, long fpMemSize, int len) throws RemoteException {
+	protected FPSet[] getNestedFPSets(final FPSetConfiguration fpSetConfiguration) throws RemoteException {
+		int len = fpSetConfiguration.getMultiFPSetCnt();
 		final FPSet[] s = new FPSet[len];
 		for (int i = 0; i < len; i++) {
-			s[i] = FPSet.getFPSet(bits, (fpMemSize / (long) len), false);
+			s[i] = FPSet.getFPSet(new MultiFPSetConfiguration(fpSetConfiguration), false);
 		}
 		return s;
 	}

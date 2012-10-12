@@ -9,8 +9,8 @@ public class Bug210DiskFPSetTest extends AbstractFPSetTest {
 	 * @see tlc2.tool.fp.AbstractFPSetTest#getFPSet(int)
 	 */
 	@Override
-	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
-		final DummyDiskFPSet fpSet = new DummyDiskFPSet(freeMemoryInBytes);
+	protected FPSet getFPSet(final FPSetConfiguration fpSetConfig) throws IOException {
+		final DummyDiskFPSet fpSet = new DummyDiskFPSet(fpSetConfig);
 		fpSet.init(1, tmpdir, filename);
 		return fpSet;
 	}
@@ -30,7 +30,7 @@ public class Bug210DiskFPSetTest extends AbstractFPSetTest {
 		anIndex[size - 2] = Long.MAX_VALUE - 3;
 		anIndex[size - 1] = Long.MAX_VALUE - 1;
 
-		final DummyDiskFPSet fpSet = (DummyDiskFPSet) getFPSet(getFreeMemoryInBytes());
+		final DummyDiskFPSet fpSet = (DummyDiskFPSet) getFPSet(new FPSetConfiguration());
 		fpSet.setIndex(anIndex);
 		
 		// do a diskLookup for a non-existent fp that accesses the index values

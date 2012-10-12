@@ -26,7 +26,9 @@ public class TLCTest extends TestCase {
 	public void testHandleParametersAllocateLowerBound() {
 		final TLC tlc = new TLC();
 		assertTrue(tlc.handleParameters(new String[] {"-fpmem", "0", "MC"}));
-		assertEquals("Allocating to little should result in min default", TLCRuntime.MinFpMemSize, tlc.getFpMemSize());
+		assertEquals("Allocating to little should result in min default",
+				TLCRuntime.MinFpMemSize, tlc.getFPSetConfiguration()
+						.getMemoryInBytes());
 	}
 	
 	/**
@@ -36,7 +38,8 @@ public class TLCTest extends TestCase {
 		final TLC tlc = new TLC();
 		assertTrue(tlc.handleParameters(new String[] {"-fpmem", Long.toString(Long.MAX_VALUE), "MC"}));
         final long maxMemory = (long) (Runtime.getRuntime().maxMemory() * 0.75d);
-		assertEquals("Overallocating should result in max default (75%)", maxMemory, tlc.getFpMemSize());
+		assertEquals("Overallocating should result in max default (75%)",
+				maxMemory, tlc.getFPSetConfiguration().getMemoryInBytes());
 	}
 	
 	/**
@@ -46,7 +49,8 @@ public class TLCTest extends TestCase {
 		final TLC tlc = new TLC();
 		assertTrue(tlc.handleParameters(new String[] {"-fpmem", ".5", "MC"}));
         final long maxMemory = (long) (Runtime.getRuntime().maxMemory() * 0.50d);
-		assertEquals("Overallocating should result in max default (50%)", maxMemory, tlc.getFpMemSize());
+		assertEquals("Overallocating should result in max default (50%)",
+				maxMemory, tlc.getFPSetConfiguration().getMemoryInBytes());
 	}
 	
 	/**
@@ -56,7 +60,8 @@ public class TLCTest extends TestCase {
 		final TLC tlc = new TLC();
 		assertTrue(tlc.handleParameters(new String[] {"-fpmem", ".99", "MC"}));
         final long maxMemory = (long) (Runtime.getRuntime().maxMemory() * 0.99d);
-		assertEquals("Overallocating should result in max default (99%)", maxMemory, tlc.getFpMemSize());
+		assertEquals("Overallocating should result in max default (99%)",
+				maxMemory, tlc.getFPSetConfiguration().getMemoryInBytes());
 	}
 	
 	/**

@@ -49,16 +49,16 @@ public class MemFPSet extends FPSet {
    */
   private int mask;
 
-  /* Constructs a new, empty FPSet.  */
   public MemFPSet() throws RemoteException {
-    this(LogInitialCapacity, MaxLoad);
+	  this(new FPSetConfiguration());
   }
-
-  /* The following constructor is provided for test programs only. */
-  public MemFPSet(int logInitialCapacity, int maxLoad) throws RemoteException {
-    int initialCapacity = 1 << logInitialCapacity;
+  
+  /* Constructs a new, empty FPSet.  */
+  public MemFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+	super(fpSetConfig);
+    int initialCapacity = 1 << LogInitialCapacity;
     this.count = 0;
-    this.threshold = (initialCapacity * maxLoad);
+    this.threshold = (initialCapacity * MaxLoad);
     this.table = new long[initialCapacity][];
     this.mask = initialCapacity - 1;
   }

@@ -13,7 +13,7 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 
 	public void testCollisionBucket() throws IOException {
 		long freeMemory = getFreeMemoryInBytes();
-		final FPSet fpSet = getFPSet(freeMemory);
+		final FPSet fpSet = getFPSet(new FPSetConfiguration(freeMemory));
 		fpSet.init(1, tmpdir, filename);
 
 		for (int i = 0; i < DiskFPSet.InitialBucketCapacity + 1; i++) {
@@ -24,7 +24,7 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 
 	public void testPosition() throws IOException {
 		long freeMemory = getFreeMemoryInBytes();
-		final FPSet fpSet = getFPSet(freeMemory);
+		final FPSet fpSet = getFPSet(new FPSetConfiguration(freeMemory));
 		fpSet.init(1, tmpdir, filename);
 
 		// max expected to cause highest position
@@ -40,7 +40,7 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 	 * 
 	 */
 	public void testMultipleFlushes() throws IOException {
-		final FPSet fpSet = getFPSet(-1L);
+		final FPSet fpSet = getFPSet(new FPSetConfiguration(-1L));
 		fpSet.init(1, tmpdir, filename);
 		
 		final Random rnd = new Random(RNG_SEED);
@@ -64,8 +64,8 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 	 * @see tlc2.tool.fp.AbstractFPSetTest#getFPSet(long)
 	 */
 	@Override
-	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
-		long freeMemoryInFPs = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) FPSet.LongSize;
-		return new OffHeapDiskFPSet(freeMemoryInFPs);
+	protected FPSet getFPSet(final FPSetConfiguration fpSetConfig) throws IOException {
+		return new OffHeapDiskFPSet(new FPSetConfiguration(TLCRuntime
+				.getInstance().getNonHeapPhysicalMemory()));
 	}
 }

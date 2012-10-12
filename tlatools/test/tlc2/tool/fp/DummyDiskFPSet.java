@@ -10,8 +10,8 @@ import java.rmi.RemoteException;
 @SuppressWarnings("serial")
 public class DummyDiskFPSet extends LSBDiskFPSet {
 
-	public DummyDiskFPSet(long maxRealMemInBytes) throws RemoteException {
-		super(maxRealMemInBytes / FPSet.LongSize);
+	public DummyDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+		super(fpSetConfig);
 	}
 
 	public void setIndex(long[] anIndex) {

@@ -23,7 +23,9 @@ public class MultiFPSetTest extends TestCase {
 	 */
 	public void testCTorLowerMin() throws IOException {
 		try {
-			new MultiFPSet(0);
+			FPSetConfiguration conf = new FPSetConfiguration();
+			conf.setFpBits(0);
+			new MultiFPSet(conf);
 		} catch (RuntimeException e) {
 			return;
 		}
@@ -36,7 +38,9 @@ public class MultiFPSetTest extends TestCase {
 	 */
 	public void testCTorMin() throws IOException {
 		try {
-			new MultiFPSet(1);
+			FPSetConfiguration conf = new FPSetConfiguration();
+			conf.setFpBits(1);
+			new MultiFPSet(conf);
 		} catch (RuntimeException e) {
 			fail();
 		}
@@ -49,7 +53,9 @@ public class MultiFPSetTest extends TestCase {
 	 */
 	public void testCTorMax() throws IOException {
 		try {
-			new MultiFPSet(30);
+			FPSetConfiguration conf = new FPSetConfiguration();
+			conf.setFpBits(30);
+			new MultiFPSet(conf);
 		} catch (OutOfMemoryError e) {
 			// might happen depending on test machine setup
 			return;
@@ -65,7 +71,9 @@ public class MultiFPSetTest extends TestCase {
 	 */
 	public void testCTorHigherMax() throws IOException {
 		try {
-			new MultiFPSet(31);
+			FPSetConfiguration conf = new FPSetConfiguration();
+			conf.setFpBits(31);
+			new MultiFPSet(conf);
 		} catch (RuntimeException e) {
 			return;
 		}
@@ -77,7 +85,9 @@ public class MultiFPSetTest extends TestCase {
 	 * @throws IOException Not supposed to happen
 	 */
 	public void testPutMax() throws IOException {
-		final MultiFPSet mfps = new MultiFPSet(1);
+		FPSetConfiguration conf = new FPSetConfiguration();
+		conf.setFpBits(1);
+		final MultiFPSet mfps = new MultiFPSet(conf);
 
 		// put a random fp value into set
 		try {
@@ -92,7 +102,9 @@ public class MultiFPSetTest extends TestCase {
 	 * @throws IOException Not supposed to happen
 	 */
 	public void testPutMin() throws IOException {
-		final MultiFPSet mfps = new MultiFPSet(1);
+		FPSetConfiguration conf = new FPSetConfiguration();
+		conf.setFpBits(1);
+		final MultiFPSet mfps = new MultiFPSet(conf);
 
 		// put a random fp value into set
 		try {
@@ -107,7 +119,9 @@ public class MultiFPSetTest extends TestCase {
 	 * @throws IOException Not supposed to happen
 	 */
 	public void testPutZero() throws IOException {
-		final MultiFPSet mfps = new MultiFPSet(1);
+		FPSetConfiguration conf = new FPSetConfiguration();
+		conf.setFpBits(1);
+		final MultiFPSet mfps = new MultiFPSet(conf);
 
 		// put a random fp value into set
 		try {

@@ -19,19 +19,6 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 	 * Number of bits to right shift bits during index calculation
 	 */
 	protected final int moveBy;
-
-	/**
-	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
-	 * buffer of new fingerprints can contain up to
-	 * <code>DefaultMaxTblCnt</code> entries. When the buffer fills up, its
-	 * entries are atomically flushed to the FPSet's backing disk file.
-	 * 
-	 * @param maxInMemoryCapacity The number of fingerprints (not memory) this DiskFPSet should maximally store in-memory.
-	 * @throws RemoteException
-	 */
-	protected MSBDiskFPSet(long maxInMemoryCapacity) throws RemoteException {
-		this(maxInMemoryCapacity, 0);
-	}
 	
 	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
@@ -43,14 +30,14 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 	 * @param preBits Take the amount of DiskFPSet instance into account to move the index bits further to the right
 	 * @throws RemoteException
 	 */
-	protected MSBDiskFPSet(long maxInMemoryCapacity, int preBits) throws RemoteException {
-		super(maxInMemoryCapacity);
+	protected MSBDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+		super(fpSetConfig);
 
 		// To pre-sort fingerprints in memory, use n MSB fp bits for the
 		// index. However, we cannot use the 32st bit, because it is used to
 		// indicate if a fp has been flushed to disk. Hence we use the first n
 		// bits starting from the second most significant bit.
-		this.moveBy = (31 - preBits) - (logMaxMemCnt - LogMaxLoad);
+		this.moveBy = (31 - fpSetConfig.getPrefixBits()) - (logMaxMemCnt - LogMaxLoad);
 		this.mask = (capacity - 1) << moveBy;
 		
 		this.flusher = new MSBFlusher();

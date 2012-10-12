@@ -64,7 +64,8 @@ public final class MemFPSet2 extends FPSet {
     private int LogSpineSize = 24;
   
   /* Constructs a new, empty FPSet. */
-  public MemFPSet2() throws RemoteException {
+  public MemFPSet2(final FPSetConfiguration fpSetConfig) throws RemoteException {
+	super(fpSetConfig);
     int spineSize = 1 << LogSpineSize;
     this.count = 0;
     this.table = new byte[spineSize][];

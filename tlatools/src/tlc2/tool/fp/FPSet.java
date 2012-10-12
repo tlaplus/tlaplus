@@ -53,7 +53,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 * @throws RemoteException 
 	 */
 	public static FPSet getFPSet() throws RemoteException {
-		return getFPSet(0, -1);
+		return getFPSet(new FPSetConfiguration());
 	}
 	
 	/**
@@ -63,31 +63,29 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 * @return
 	 * @throws RemoteException
 	 */
-	public static FPSet getFPSet(int fpBits, long fpMemSizeInBytes) throws RemoteException {
-		return getFPSet(fpBits, fpMemSizeInBytes, true);
+	public static FPSet getFPSet(final FPSetConfiguration fpSetConfiguration) throws RemoteException {
+		return getFPSet(fpSetConfiguration, true);
 	}
 	
-	static FPSet getFPSet(int fpBits, long fpMemSizeInBytes, boolean multiFPSet) throws RemoteException {
-		// convert from physical mem into logical amount of fingerprints
-		long fpMemSizeInFPs = fpMemSizeInBytes / LongSize;
+	static FPSet getFPSet(final FPSetConfiguration fpSetConfiguration, boolean multiFPSet) throws RemoteException {
 		
 		FPSet set = null;
 		
 		//TODO handle case where fpbits > 0 and custom factory set which does not take fpbits into account
 		if (loadCustomFactory() && multiFPSet == false) {
-			set = loadCustomFactory(USER_FPSET_IMPL_CLASSNAME, fpBits, fpMemSizeInFPs);
+			set = loadCustomFactory(USER_FPSET_IMPL_CLASSNAME, fpSetConfiguration);
 		}
 		
-		if (set == null && fpBits == 0) {
-			set = new LSBDiskFPSet(fpMemSizeInFPs);
+		if (set == null && fpSetConfiguration.getFpBits() == 0) {
+			set = new LSBDiskFPSet(fpSetConfiguration);
 		} else if (set == null) {
 			// Pass physical memory instead of logical FP count to adhere to the
 			// general FPSet ctor contract.
 			// @see http://bugzilla.tlaplus.net/show_bug.cgi?id=290
 			if (loadCustomFactory() && msbBasedFPSet(USER_FPSET_IMPL_CLASSNAME)) {
-				set = new MSBMultiFPSet(fpBits, fpMemSizeInBytes);
+				set = new MSBMultiFPSet(fpSetConfiguration);
 			} else {
-				set = new MultiFPSet(fpBits, fpMemSizeInBytes);
+				set = new MultiFPSet(fpSetConfiguration);
 			}
 		}
 		return set;
@@ -123,7 +121,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 * @param fpBits 
 	 * @return
 	 */
-	private static FPSet loadCustomFactory(final String clazz, int fpBits, long fpMemSizeInFPs) {
+	private static FPSet loadCustomFactory(final String clazz, final FPSetConfiguration fpSetConfiguraiton) {
 		Exception exp = null;
 		try {
 			// poor mans version of modularity, booh!
@@ -135,13 +133,15 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 			if (!allocatesOnHeap(clazz)) {
 				long l = TLCRuntime.getInstance().getNonHeapPhysicalMemory() / (long) LongSize;
 				// divide l among all FPSet instances
-				fpMemSizeInFPs = l >> fpBits; 
+				long fpMemSizeInFPs = fpSetConfiguraiton.getMemoryInFingerprintCnt();
+				fpMemSizeInFPs = l >> fpSetConfiguraiton.getFpBits();
+				throw new UnsupportedOperationException("Broken!!!");
 			}
 
 			final Constructor<?> constructor = factoryClass
 					.getDeclaredConstructor(new Class[] { long.class, int.class });
 			final Object instance = constructor.newInstance(
-					fpMemSizeInFPs, fpBits);
+					fpSetConfiguraiton);
 			// sanity check if given class from string implements FPSet
 			if (instance instanceof FPSet) {
 				return (FPSet) instance;
@@ -172,7 +172,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	//TODO need AtomicLong here to prevent dirty writes to statesSeen?
 	protected long statesSeen = 0L;
 	
-    protected FPSet() throws RemoteException
+    protected FPSet(final FPSetConfiguration fpSetConfig) throws RemoteException
     { /*SKIP*/
     }
 

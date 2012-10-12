@@ -4,6 +4,7 @@ package tlc2.tool.distributed.fp;
 
 import java.rmi.RemoteException;
 
+import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.MemFPSet;
 
 @SuppressWarnings("serial")
@@ -13,7 +14,7 @@ public class FaultyFPSet extends MemFPSet implements FPSetRMI {
 	private int containsInvocations = 0;
 
 	protected FaultyFPSet() throws RemoteException {
-		super();
+		super(new FPSetConfiguration());
 	}
 
 	/* (non-Javadoc)

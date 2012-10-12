@@ -8,9 +8,8 @@ public class DiskFPSetTest extends FPSetTest {
 	 * @see tlc2.tool.fp.AbstractFPSetTest#getFPSet(int)
 	 */
 	@Override
-	protected FPSet getFPSet(long freeMemory) throws IOException {
-		long maxInMemoryCapacity = freeMemory / (long) FPSet.LongSize;
-		final DiskFPSet fpSet = new LSBDiskFPSet(maxInMemoryCapacity);
+	protected FPSet getFPSet(final FPSetConfiguration fpSetConfig) throws IOException {
+		final DiskFPSet fpSet = new LSBDiskFPSet(fpSetConfig);
 		System.out.println("DiskFPSet approx. consumes MiB: "
 				+ ((fpSet.getMaxTblCnt() * (long) FPSet.LongSize) >> 20));
     	return fpSet;

@@ -22,7 +22,7 @@ public class Bug246DiskFPSetTest extends TestCase {
 		assertTrue("Not enough memory dedicated to JVM, increase -Vmx value", vmMaxMemory > maxMemoryInBytes);
 
 		//TODO maxMemoryInBytes actually max amount of fingerprints which technically fit into memory?
-		DummyDiskFPSet fpSet = new DummyDiskFPSet(maxMemoryInBytes);
+		DummyDiskFPSet fpSet = new DummyDiskFPSet(new FPSetConfiguration(maxMemoryInBytes));
 		fpSet.init(0, System.getProperty("java.io.tmpdir"), getClass().getName()+System.currentTimeMillis());
 
 		long bucketCapacity = 0;

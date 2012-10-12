@@ -15,6 +15,7 @@ import tlc2.output.MP;
 import tlc2.tool.distributed.TLCServer;
 import tlc2.tool.distributed.TLCServerRMI;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.MultiFPSet;
 import util.TLCRuntime;
 import util.ToolIO;
@@ -51,7 +52,10 @@ public class DistributedFPSet  {
 			
 			// Initialize this FPSet with n-prefix bits and m mask bits
 			final long fpMemSize = TLCRuntime.getInstance().getFPMemSize(1.);
-			final FPSet fpSet = FPSet.getFPSet(1 + prefixBits , fpMemSize / 8);
+			final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration(
+					fpMemSize / 8);
+			fpSetConfiguration.setFpBits(1 + prefixBits);
+			final FPSet fpSet = FPSet.getFPSet(fpSetConfiguration);
 			final String filename = "FPSet" + System.currentTimeMillis();
 			fpSet.init(0,metadir,filename);
 			

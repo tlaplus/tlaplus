@@ -14,6 +14,7 @@ import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.FP64;
@@ -64,11 +65,8 @@ public class TLC
     
     // handle to the cancellable instance (MC or Simulator)
     private Cancelable instance;
-    /**
-     * @see TLCRuntime#getFPMemSize(double)
-     */
-    private double fpMemSize;
-    private int fpBits;
+
+    private FPSetConfiguration fpSetConfiguration;
     
     /**
      * Initialization
@@ -97,8 +95,7 @@ public class TLC
         // instance is not set
         instance = null;
 
-        fpMemSize = -1;
-        fpBits = 1;
+        fpSetConfiguration = new FPSetConfiguration();
     }
 
     /*
@@ -187,7 +184,8 @@ public class TLC
         // parameter handling from the actual processing
                
         int index = 0;
-        while (index < args.length)
+        double fpMemSize = 0;
+		while (index < args.length)
         {
             if (args[index].equals("-simulate"))
             {
@@ -551,13 +549,14 @@ public class TLC
                 {
                     try
                     {
-                    	fpBits = Integer.parseInt(args[index]);
+                    	int fpBits = Integer.parseInt(args[index]);
 
                     	// make sure it's in valid range
                     	if (!FPSet.isValid(fpBits)) {
                     		printErrorMsg("Error: Value in interval [0, 30] for fpbits required. But encountered " + args[index]);
                     		return false;
                     	}
+                    	fpSetConfiguration.setFpBits(fpBits);
                     	
                         index++;
                     } catch (Exception e)
@@ -591,7 +590,7 @@ public class TLC
             }
         }
         
-        fpMemSize = TLCRuntime.getInstance().getFPMemSize(fpMemSize);
+        fpSetConfiguration.setMemory(TLCRuntime.getInstance().getFPMemSize(fpMemSize));
         
         if (mainFile == null)
         {
@@ -680,7 +679,7 @@ public class TLC
                 AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
                 {
-                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, (long) fpMemSize, fpBits);
+                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
                     TLCGlobals.mainChecker = (ModelChecker) mc;
                     modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc);
                 } else
@@ -786,10 +785,7 @@ public class TLC
         MP.printMessage(EC.TLC_USAGE);
     }
 
-	/**
-	 * @return the fpMemSize
-	 */
-	long getFpMemSize() {
-		return (long) fpMemSize;
-	}
+    FPSetConfiguration getFPSetConfiguration() {
+    	return fpSetConfiguration;
+    }
 }
