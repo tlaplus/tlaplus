@@ -2,7 +2,7 @@
 // Last modified on Mon 30 Apr 2007 at 13:12:32 PST by lamport
 //      modified on Tue May 15 11:44:57 PDT 2001 by yuanyu
 
-package tlc2.tool.fp;
+package tlc2.tool.fp.dfid;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
