@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-package tlc2.tool.fp;
+package tlc2.tool.fp.dfid;
 
 import java.io.EOFException;
 import java.io.File;
