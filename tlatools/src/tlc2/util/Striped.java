@@ -1,5 +1,5 @@
 // Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
-package tlc2.tool.fp;
+package tlc2.util;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
