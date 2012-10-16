@@ -40,6 +40,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 	protected HeapBasedDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
 		super(fpSetConfig);
 		
+		// Reserve a portion of the memory for the auxiliary storage
 		long maxMemCnt = (long) (fpSetConfig.getMemoryInFingerprintCnt() / getAuxiliaryStorageRequirement());
 
 		// default if not specific value given
@@ -47,18 +48,12 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 			maxMemCnt = DefaultMaxTblCnt;
 		}
 		
-		// half maxMemCnt until it hits 1
-		// to approximate 2^n ~= maxMemCnt
-		this.logMaxMemCnt = 1;
-		maxMemCnt--;
-		while (maxMemCnt > 1) {
-			maxMemCnt = maxMemCnt / 2;
-			logMaxMemCnt++;
-		}
-
+		// approximate next lower 2^n ~= maxMemCnt
+		logMaxMemCnt = (Long.SIZE - 1) - Long.numberOfLeadingZeros(maxMemCnt);
+		
 		// guard against underflow
 		// LL modified error message on 7 April 2012
-		Assert.check(logMaxMemCnt - LogMaxLoad >= 0, "Underflow when computing DiskFPSet");
+		Assert.check(logMaxMemCnt - LogMaxLoad >= 0, "Underflow when computing HeapBasedDiskFPSet");
 		this.capacity = 1 << (logMaxMemCnt - LogMaxLoad);
 		
 		// instead of changing maxTblCnd to long and pay an extra price when 
@@ -67,7 +62,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		// (unless java starts supporting 64bit array sizes)
 		//
 		// maxTblCnt mathematically has to be an upper limit for the in-memory storage 
-		// so that it a disk flush occurs before an _evenly_ distributed fp distribution fills up 
+		// so that a disk flush occurs before an _evenly_ distributed fp distribution fills up 
 		// the collision buckets to a size that exceeds the VM limit (unevenly distributed 
 		// fp distributions can still cause a OutOfMemoryError which this guard).
 		this.maxTblCnt = (logMaxMemCnt >= 31) ? Integer.MAX_VALUE : (1 << logMaxMemCnt); // maxTblCnt := 2^logMaxMemCnt

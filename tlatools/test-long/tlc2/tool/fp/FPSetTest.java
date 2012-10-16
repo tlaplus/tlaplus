@@ -11,8 +11,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	 * @throws IOException
 	 */
 	public void testSimpleFill() throws IOException {
-		long freeMemory = getFreeMemoryInBytes();
-		final FPSet fpSet = getFPSet(new FPSetConfiguration(freeMemory));
+		final FPSet fpSet = getFPSet(new FPSetConfiguration());
 		fpSet.init(1, tmpdir, filename);
 
 		long fp = 1L;
@@ -73,7 +72,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	public void testMaxFPSetSize() throws IOException {
 	
 		//
-		final FPSet fpSet = getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final FPSet fpSet = getFPSet(new FPSetConfiguration());
 		fpSet.init(1, tmpdir, filename);
 	
 		long counter = 0;

@@ -17,8 +17,12 @@ public class Bug242DiskFPSetTest extends AbstractFPSetTest {
 		return new DummyDiskFPSet(fpSetConfig);
 	}
 	
+	@SuppressWarnings("deprecation")
 	private FPSet getFPSet(int mem) throws IOException {
-		return getFPSet(new FPSetConfiguration(mem));
+		FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
+		fpSetConfiguration.setMemory(mem);
+		fpSetConfiguration.setRatio(1.0d);
+		return getFPSet(fpSetConfiguration);
 	}
 	
 	/**
@@ -48,8 +52,10 @@ public class Bug242DiskFPSetTest extends AbstractFPSetTest {
 		try {
 			getFPSet(Integer.MIN_VALUE);
 		} catch (Exception e) {
-			fail(e.getMessage());
+			// expected to be invalid
+			return;
 		}
+		fail();
 	}
 	public void testDiskFPSetZero() throws RemoteException {
 		try {

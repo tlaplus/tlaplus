@@ -24,7 +24,6 @@ import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
-import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -178,13 +177,13 @@ public class TLC
      * @return status of parsing: true iff parameter check was ok, false otherwise
      */
     // SZ Feb 23, 2009: added return status to indicate the error in parsing
-    public boolean handleParameters(String[] args)
+    @SuppressWarnings("deprecation")
+	public boolean handleParameters(String[] args)
     {
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
                
         int index = 0;
-        double fpMemSize = 0;
 		while (index < args.length)
         {
             if (args[index].equals("-simulate"))
@@ -524,12 +523,23 @@ public class TLC
 						// Independently of relative or absolute mem allocation,
 						// a user cannot allocate more than JVM heap space
 						// available. Conversely there is the lower hard limit TLC#MinFpMemSize.
-                        fpMemSize = Double.parseDouble(args[index]);
+                        double fpMemSize = Double.parseDouble(args[index]);
                         if (fpMemSize < 0) {
                             printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
                             return false;
                         } else if (fpMemSize > 1) {
-                        	fpMemSize = (long) fpMemSize;
+							// For legacy reasons we allow users to set the
+							// absolute amount of memory. If this is the case,
+							// we know the user intends to allocate all 100% of
+							// the absolute memory to the fpset.
+                    		ToolIO.out
+            				.println("Using -fpmem with an abolute memory value has been deprecated. " +
+            						"Please allocate memory for the TLC process via the JVM mechanisms " +
+            						"and use -fpmem to set the fraction to be used for fingerprint storage.");
+                        	fpSetConfiguration.setMemory((long) fpMemSize);
+                        	fpSetConfiguration.setRatio(1.0d);
+                        } else {
+                    		fpSetConfiguration.setRatio(fpMemSize);
                         }
                         index++;
                     } catch (Exception e)
@@ -589,8 +599,6 @@ public class TLC
                 }
             }
         }
-        
-        fpSetConfiguration.setMemory(TLCRuntime.getInstance().getFPMemSize(fpMemSize));
         
         if (mainFile == null)
         {

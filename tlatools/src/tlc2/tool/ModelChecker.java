@@ -15,6 +15,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
+import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
@@ -64,7 +65,7 @@ public class ModelChecker extends AbstractChecker
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
         //TODO why used to div by 20?
-		this.theFPSet = FPSet.getFPSet(fpSetConfig);
+		this.theFPSet = FPSetFactory.getFPSet(fpSetConfig);
 
         // initialize the set
         this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, specFile);

@@ -65,7 +65,7 @@ public class MultiFPSet extends FPSet {
 		int len = fpSetConfiguration.getMultiFPSetCnt();
 		final FPSet[] s = new FPSet[len];
 		for (int i = 0; i < len; i++) {
-			s[i] = FPSet.getFPSet(new MultiFPSetConfiguration(fpSetConfiguration), false);
+			s[i] = FPSetFactory.getFPSet(new MultiFPSetConfiguration(fpSetConfiguration));
 		}
 		return s;
 	}
@@ -257,27 +257,5 @@ public class MultiFPSet extends FPSet {
 
 	public FPSet[] getFPSets() {
 		return sets;
-	}
-	
-	static class MultiFPSetConfiguration extends FPSetConfiguration {
-		private final FPSetConfiguration fpSetConfig;
-
-		public MultiFPSetConfiguration(final FPSetConfiguration fpSetConfig) {
-			this.fpSetConfig = fpSetConfig;
-		}
-
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.FPSetConfiguration#getMemoryInBytes()
-		 */
-		public long getMemoryInBytes() {
-			return super.getMemoryInBytes() / getMultiFPSetCnt();
-		}
-
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.FPSetConfiguration#getMemoryInFingerprintCnt()
-		 */
-		public long getMemoryInFingerprintCnt() {
-			return super.getMemoryInFingerprintCnt() / getMultiFPSetCnt();
-		}
 	}
 }

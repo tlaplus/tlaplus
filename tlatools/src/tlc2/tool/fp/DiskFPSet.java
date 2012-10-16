@@ -198,6 +198,9 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		this.rwLock = Striped.readWriteLock(lockCnt);
 		
 		this.maxTblCnt = fpSetConfig.getMemoryInFingerprintCnt();
+		if (maxTblCnt <= 0) {
+			throw new IllegalArgumentException("Negative or zero upper storage limit");
+		}
 		this.fileCnt = 0;
 		this.tblCnt = new AtomicLong(0);
 		this.flusherChosen = new AtomicBoolean(false);

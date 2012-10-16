@@ -28,7 +28,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.TLC;
-import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.FPSetFactory;
 import util.TLCRuntime;
 
 /**
@@ -103,14 +103,9 @@ public class TLCProcessJob extends TLCJob
 
 			// Set class name of FPSet (added by MAK on 07/31/2012)
 			final String clazz = launch.getLaunchConfiguration().getAttribute(LAUNCH_FPSET_IMPL,
-					FPSet.getImplementationDefault());
-			vmArgs.add("-Dtlc2.tool.fp.FPSet.impl=" + clazz);
-
-			if (FPSet.allocatesOnHeap(clazz)) {
-				vmArgs.add("-Xmx" + absolutePhysicalSystemMemory + "m");
-			} else {
-				vmArgs.add("-XX:MaxDirectMemorySize=" + absolutePhysicalSystemMemory + "m");
-			}
+					FPSetFactory.getImplementationDefault());
+			vmArgs.add("-D" + FPSetFactory.IMPL_PROPERTY + "=" + clazz);
+			vmArgs.add(FPSetFactory.getVMArguments(clazz, absolutePhysicalSystemMemory));
 			
             // add remaining VM args
             vmArgs.addAll(getAdditionalVMArgs());

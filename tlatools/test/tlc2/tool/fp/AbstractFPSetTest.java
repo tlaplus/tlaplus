@@ -8,8 +8,6 @@ import java.text.DecimalFormat;
 import java.util.Date;
 
 import junit.framework.TestCase;
-import tlc2.TLC;
-import util.TLCRuntime;
 
 public abstract class AbstractFPSetTest extends TestCase {
 
@@ -73,8 +71,7 @@ public abstract class AbstractFPSetTest extends TestCase {
 	}
 	
 	protected FPSet getFPSetInitialized(int numThreads) throws IOException {
-		long freeMemory = getFreeMemoryInBytes();
-		final FPSet fpSet = getFPSet(new FPSetConfiguration(freeMemory));
+		final FPSet fpSet = getFPSet(new FPSetConfiguration());
 		fpSet.init(numThreads, tmpdir, filename);
 
 		if (fpSet instanceof FPSetStatistic) {
@@ -89,16 +86,6 @@ public abstract class AbstractFPSetTest extends TestCase {
 		return fpSet;
 	}
 
-	/**
-	 * Implementation based on {@link TLC#handleParameters(String[])}
-	 * @return
-	 */
-	protected long getFreeMemoryInBytes() {
-		// Leave room for system GC to work which approximately requires 20% of
-		// memory to do its job.
-		return TLCRuntime.getInstance().getFPMemSize(.75d);
-	}
-	
 	// insertion speed
 	public void printInsertionSpeed(final long currentSize) {
 		final long currentTimestamp = System.currentTimeMillis();

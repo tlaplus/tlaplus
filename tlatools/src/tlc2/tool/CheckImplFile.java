@@ -308,15 +308,8 @@ public class CheckImplFile extends CheckImpl
       FP64.Init(0);
       
       // Start the checker:
-      Runtime runtime = Runtime.getRuntime();
-      /**
-       * The following modified by Yuan Yu on 6 Apr 2010 to provide the newly added
-       * parameter to the constructor.  Note that this changes (and probably enlarges)
-       * the amount of memory devoted to fingerprints of found states.
-       */
-      long fpMemSize = runtime.totalMemory() >> 2;
       CheckImplFile checker = new CheckImplFile(mainFile, configFile, deadlock,
-						depth, fromChkpt, traceFile, new FPSetConfiguration(fpMemSize));
+						depth, fromChkpt, traceFile, new FPSetConfiguration());
       checker.init();
       while (true) {
 	// Get a trace and check it.

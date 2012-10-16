@@ -9,6 +9,7 @@ import tlc2.TLCGlobals;
 import tlc2.output.StatePrinter;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
+import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.queue.DiskStateQueue;
 import util.ToolIO;
 
@@ -36,7 +37,7 @@ public abstract class CheckImpl extends ModelChecker {
     super(specFile, configFile, null, deadlock, fromChkpt, null, null, fpSetConfig); // no name resolver and no specobj
     this.depth = depth;
     this.curState = null;
-    this.coverSet = FPSet.getFPSet();
+    this.coverSet = FPSetFactory.getFPSet();
     this.coverSet.init(TLCGlobals.getNumWorkers(), this.metadir, specFile+"_cs");
     this.stateEnum = null;
   }

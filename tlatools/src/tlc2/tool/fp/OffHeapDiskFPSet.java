@@ -84,6 +84,8 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	protected OffHeapDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
 		super(fpSetConfig);
 		
+		final long memoryInFingerprintCnt = fpSetConfig.getMemoryInFingerprintCnt();
+		
 		// Determine base address which varies depending on machine architecture.
 		u = getUnsafe();
 		int addressSize = u.addressSize();
@@ -95,14 +97,15 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		logAddressSize = cnt;
 
 		// Allocate non-heap memory for maxInMemoryCapacity fingerprints
-		long bytes = fpSetConfig.getMemoryInFingerprintCnt() << logAddressSize;
+		long bytes = memoryInFingerprintCnt << logAddressSize;
+		
 		baseAddress = u.allocateMemory(bytes);
 		
 		// Null memory (could be done in parallel on segments when bottleneck).
 		// This is essential as allocateMemory returns uninitialized memory and
 		// memInsert/memLockup utilize 0L as a mark for an unused fingerprint slot.
 		// Otherwise memory garbage wouldn't be distinguishable from a true fp. 
-		for (long i = 0; i < fpSetConfig.getMemoryInFingerprintCnt(); i++) {
+		for (long i = 0; i < memoryInFingerprintCnt; i++) {
 			u.putAddress(log2phy(i), 0L);
 		}
 
@@ -114,15 +117,15 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		// Move n as many times to the right to calculate moveBy. moveBy is the
 		// number of bits the (fp & mask) has to be right shifted to make the
 		// logical bucket index.
-		long n = (Long.MAX_VALUE >>> fpSetConfig.getPrefixBits()) - (fpSetConfig.getMemoryInFingerprintCnt() - 1);
+		long n = (Long.MAX_VALUE >>> fpSetConfig.getPrefixBits()) - (memoryInFingerprintCnt - 1);
 		int moveBy = 0;
-		while (n >= fpSetConfig.getMemoryInFingerprintCnt()) {
+		while (n >= memoryInFingerprintCnt) {
 			moveBy++;
 			n = n >>> 1; // == (n/2)
 		}
 		
 		// Calculate Hamming weight of maxTblCnt
-		final int bitCount = Long.bitCount(fpSetConfig.getMemoryInFingerprintCnt());
+		final int bitCount = Long.bitCount(memoryInFingerprintCnt);
 		
 		// If Hamming weight is 1, the logical index address can be calculated
 		// significantly faster by bit-shifting. However, with large memory
@@ -145,7 +148,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			}
 			
 			// Extra memory that cannot be addressed by BitshiftingIndexer
-			final long extraMem = (fpSetConfig.getMemoryInFingerprintCnt() * LongSize) - (long) Math.pow(2, cnt);
+			final long extraMem = (memoryInFingerprintCnt * LongSize) - (long) Math.pow(2, cnt);
 			
 			// Divide extra memory across addressable buckets
 			int x = (int) (extraMem / ((n + 1) / InitialBucketCapacity));

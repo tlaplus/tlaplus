@@ -27,7 +27,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testWithoutZeroFP() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		assertFalse("Succeeded to look up 0 fp", fpSet.contains(0l));
 	}
 	
@@ -36,7 +36,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testWithoutMinFP() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		assertFalse("Succeeded to look up 0 fp", fpSet.contains(Long.MIN_VALUE));
 	}
 	
@@ -45,7 +45,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testWithoutMaxFP() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		assertFalse("Succeeded to look up 0 fp", fpSet.contains(Long.MAX_VALUE));
 	}
 	
@@ -62,7 +62,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 			return;
 		}
 
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		assertFalse(fpSet.put(0l));
 		assertTrue("Failed to look up 0 fp", fpSet.contains(0l));
 	}
@@ -80,7 +80,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 			return;
 		}
 		
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		// zeroing the msb in DiskFPSet turns Long.Min_Value into 0
 		assertFalse(fpSet.put(Long.MIN_VALUE));
 		assertTrue("Failed to look up min fp", fpSet.contains(Long.MIN_VALUE));
@@ -91,7 +91,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testMinMin1FP() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		// zeroing the msb in DiskFPSet turns Long.Min_Value into 0
 		assertFalse(fpSet.put(Long.MIN_VALUE - 1l));
 		assertTrue("Failed to look up min fp", fpSet.contains(Long.MIN_VALUE - 1l));
@@ -103,7 +103,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testNeg1FP() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		assertFalse(fpSet.put(-1l));
 		assertTrue("Failed to look up min fp", fpSet.contains(-1l));
 	}
@@ -113,7 +113,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testPos1FP() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		assertFalse(fpSet.put(1l));
 		assertTrue("Failed to look up min fp", fpSet.contains(1l));
 	}
@@ -123,7 +123,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testMaxFP() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		assertFalse(fpSet.put(Long.MAX_VALUE));
 		assertTrue("Failed to look up max fp", fpSet.contains(Long.MAX_VALUE));
 	}
@@ -136,7 +136,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException
 	 */
 	public void testValues() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 
 		final List<Long> loVals = new ArrayList<Long>();
 		// no negative values (MSB stripped in DiskFPSet)
@@ -261,9 +261,13 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * 
 	 * @throws IOException 
 	 */
+	@SuppressWarnings("deprecation")
 	public void testDiskLookupWithFpOnLoPage() throws IOException {
 		int freeMemory = 1000; // causes 16 in memory entries
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(freeMemory));
+		FPSetConfiguration fpSetConfig = new DummyFPSetConfiguration();
+		fpSetConfig.setRatio(1.0d);
+		fpSetConfig.setMemory(freeMemory);
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(fpSetConfig);
 		
 		// add enough fps to cause 3 disk writes
 		final long fp = 1l;
@@ -289,7 +293,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 			return;
 		}
 		
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(.75d));
 		assertFalse(fpSet.memInsert(0l));
 		assertFalse(fpSet.diskLookup(0l));
 		assertTrue(fpSet.memLookup(0l));
@@ -309,7 +313,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 			return;
 		}
 		
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(.75d));
 		assertFalse(fpSet.memInsert(Long.MIN_VALUE & 0x7FFFFFFFFFFFFFFFL));
 		assertFalse(fpSet.diskLookup(Long.MIN_VALUE & 0x7FFFFFFFFFFFFFFFL));
 		assertTrue(fpSet.memLookup(Long.MIN_VALUE & 0x7FFFFFFFFFFFFFFFL));
@@ -321,7 +325,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testMemLookupWithMax() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(.75d));
 		assertFalse(fpSet.memInsert(Long.MAX_VALUE));
 		assertFalse(fpSet.diskLookup(Long.MAX_VALUE));
 		assertTrue(fpSet.memLookup(Long.MAX_VALUE));
@@ -335,7 +339,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	public void testDiskLookupWithZeros() throws IOException {
 		final long fp = 0L;
 
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(.75d));
 
 		// Add fp to empty fpset
 		//assertFalse(fpSet.memInsert(fp));
@@ -367,7 +371,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testDiskLookupWithMin() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		assertFalse(fpSet.memInsert(Long.MIN_VALUE & 0x7FFFFFFFFFFFFFFFL));
 		assertFalse(fpSet.diskLookup(Long.MIN_VALUE & 0x7FFFFFFFFFFFFFFFL));
 		fpSet.flusher.flushTable();
@@ -382,7 +386,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testDiskLookupWithMax() throws IOException {
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(getFreeMemoryInBytes()));
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration());
 		assertFalse(fpSet.memInsert(Long.MAX_VALUE));
 		assertFalse(fpSet.diskLookup(Long.MAX_VALUE));
 		fpSet.flusher.flushTable();
@@ -432,9 +436,13 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 		testDiskLookupOnPage(Long.MIN_VALUE);
 	}
 
+	@SuppressWarnings("deprecation")
 	private void testDiskLookupOnPage(final long fp) throws IOException {
 		int freeMemory = 1000; // causes 16 in memory entries
-		final DiskFPSet fpSet = (DiskFPSet) getFPSet(new FPSetConfiguration(freeMemory));
+		FPSetConfiguration fpSetConfig = new FPSetConfiguration();
+		fpSetConfig.setRatio(1.0d);
+		fpSetConfig.setMemory(freeMemory);
+		final DiskFPSet fpSet = (DiskFPSet) getFPSet(fpSetConfig);
 		
 		// add enough fps to cause 2 disk writes
 		assertFalse(fpSet.put(fp));

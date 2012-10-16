@@ -47,6 +47,7 @@ import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.OpDefNode;
 import tlc2.TLCGlobals;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.fp.MultiFPSet;
 
 /**
@@ -951,7 +952,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         fpSetImpl.setToolTipText(""); //TODO add meaningful explanation
         
         // test input data
-        fpSetImpl.setItems(FPSet.getImplementations());
+        fpSetImpl.setItems(FPSetFactory.getImplementations());
     
         return advancedSection;
     }

@@ -4,8 +4,6 @@ package tlc2.tool.fp;
 
 import java.io.IOException;
 
-import util.TLCRuntime;
-
 public class MultiThreadedOffHeapDiskFPSetTest extends MultiThreadedFPSetTest {
 
 	/* (non-Javadoc)
@@ -13,7 +11,6 @@ public class MultiThreadedOffHeapDiskFPSetTest extends MultiThreadedFPSetTest {
 	 */
 	@Override
 	protected FPSet getFPSet(final FPSetConfiguration fpSetConfig) throws IOException {
-		return new OffHeapDiskFPSet(new FPSetConfiguration(TLCRuntime
-				.getInstance().getNonHeapPhysicalMemory()));
+		return new OffHeapDiskFPSet(new FPSetConfiguration(1.0d));
 	}
 }

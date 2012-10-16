@@ -6,7 +6,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
 import tlc2.TLCGlobals;
-import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.FPSetFactory;
 
 /**
  * Class used to initialize default TLC preference values.
@@ -27,7 +27,7 @@ public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
         store.setDefault(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY, true);
         store.setDefault(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT, MAX_HEAP_SIZE_DEFAULT);
         store.setDefault(ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT, TLCGlobals.setBound);
-        store.setDefault(ITLCPreferenceConstants.I_TLC_FPSETIMPL_DEFAULT, FPSet.getImplementationDefault());
+        store.setDefault(ITLCPreferenceConstants.I_TLC_FPSETIMPL_DEFAULT, FPSetFactory.getImplementationDefault());
         store.setDefault(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME,
                 IModelConfigurationDefaults.MODEL_AUTO_LOCK_TIME_DEFAULT);
         // store.setDefault(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES, true);

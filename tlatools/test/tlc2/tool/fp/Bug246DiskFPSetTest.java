@@ -16,13 +16,17 @@ public class Bug246DiskFPSetTest extends TestCase {
 	 * Tests if the DiskFPSet gets correctly flushed to disk (if the fp spaces is unevenly distributed) or causes an {@link OutOfMemoryError} 
 	 * @throws IOException 
 	 */
+	@SuppressWarnings("deprecation")
 	public void testLinearFillup() throws IOException {
 		final long vmMaxMemory = Runtime.getRuntime().maxMemory();
 		long maxMemoryInBytes = TLCRuntime.getInstance().getFPMemSize(0.5d);
 		assertTrue("Not enough memory dedicated to JVM, increase -Vmx value", vmMaxMemory > maxMemoryInBytes);
 
 		//TODO maxMemoryInBytes actually max amount of fingerprints which technically fit into memory?
-		DummyDiskFPSet fpSet = new DummyDiskFPSet(new FPSetConfiguration(maxMemoryInBytes));
+		FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
+		fpSetConfiguration.setMemory(maxMemoryInBytes);
+		fpSetConfiguration.setRatio(1.0d);
+		DummyDiskFPSet fpSet = new DummyDiskFPSet(fpSetConfiguration);
 		fpSet.init(0, System.getProperty("java.io.tmpdir"), getClass().getName()+System.currentTimeMillis());
 
 		long bucketCapacity = 0;

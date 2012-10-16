@@ -42,7 +42,7 @@ import tlc2.tool.distributed.management.TLCServerMXWrapper;
 import tlc2.tool.distributed.selector.BlockSelectorFactory;
 import tlc2.tool.distributed.selector.IBlockSelector;
 import tlc2.tool.fp.FPSet;
-import tlc2.tool.fp.FPSetConfiguration;
+import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
@@ -183,10 +183,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	protected IFPSetManager getFPSetManagerImpl(final TLCApp work,
 			final String metadir, final int fpsetCount) throws IOException {
 		// A single FPSet server running on the master node
-		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration(
-				work.getFpMemSize());
-		fpSetConfiguration.setFpBits(work.getFPBits());
-		final FPSet fpSet = FPSet.getFPSet(fpSetConfiguration);
+		final FPSet fpSet = FPSetFactory.getFPSet(work.getFPSetConfiguration());
 		fpSet.init(0, metadir, work.getFileName());
 		return new NonDistributedFPSetManager(fpSet, InetAddress.getLocalHost()
 				.getCanonicalHostName());

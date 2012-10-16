@@ -16,11 +16,11 @@ import tlc2.tool.TLCStateInfo;
 import tlc2.tool.Tool;
 import tlc2.tool.WorkerException;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.util.FP64;
 import tlc2.value.Value;
 import util.FileUtil;
 import util.FilenameToStream;
-import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -33,17 +33,17 @@ public class TLCApp extends DistApp {
 
 	/* Constructors */
 	public TLCApp(String specFile, String configFile, boolean deadlock,
-			String fromChkpt, int fpBits, double fpMemSize) throws IOException {
-		this(specFile, configFile, deadlock, true, null, fpBits);
+			String fromChkpt, FPSetConfiguration fpSetConfig) throws IOException {
+		this(specFile, configFile, deadlock, true, null);
 
 		this.fromChkpt = fromChkpt;
 		this.metadir = FileUtil.makeMetaDir(this.tool.specDir, fromChkpt);
-		this.fpMemSize = fpMemSize;
+		this.fpSetConfig = fpSetConfig;
 	}
 
 	// TODO too many constructors redefinitions, replace with this(..) calls
 	public TLCApp(String specFile, String configFile,
-			Boolean deadlock, Boolean preprocess, FilenameToStream fts, int fpBits) throws IOException {
+			Boolean deadlock, Boolean preprocess, FilenameToStream fts) throws IOException {
 
 		// get the spec dir from the spec file
 		int lastSep = specFile.lastIndexOf(File.separatorChar);
@@ -66,7 +66,6 @@ public class TLCApp extends DistApp {
 		this.invariants = this.tool.getInvariants();
 		this.impliedActions = this.tool.getImpliedActions();
 		this.actions = this.tool.getActions();
-		this.fpBits = fpBits;
 	}
 
 	/* Fields */
@@ -79,17 +78,8 @@ public class TLCApp extends DistApp {
 	private boolean preprocess; // preprocess?
 	private String fromChkpt = null; // recover from this checkpoint
 	private String metadir = null; // the directory pathname for metadata
-	private int fpBits = -1;
-    /**
-     * fpMemSize is the number of bytes of memory to allocate
-     * to storing fingerprints of found states in memory.  It
-     * defaults to .25 * runtime.maxMemory().
-     * The minimum value of fpMemSize is MinFpMemSize unless
-     * that's bigger than Runtime.getRuntime()).maxMemory(), in
-     * which case it is .75 * (Runtime.getRuntime()).maxMemory().
-     */
-    private double fpMemSize;
-    
+	private FPSetConfiguration fpSetConfig;
+   
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#getCheckDeadlock()
 	 */
@@ -130,17 +120,6 @@ public class TLCApp extends DistApp {
 	 */
 	public final String getMetadir() {
 		return this.metadir;
-	}
-	
-	public final int getFPBits() {
-		return fpBits;
-	}
-
-	/**
-	 * @return the fpMemSize
-	 */
-	public long getFpMemSize() {
-		return TLCRuntime.getInstance().getFPMemSize(fpMemSize);
 	}
 
 	/* (non-Javadoc)
@@ -290,15 +269,16 @@ public class TLCApp extends DistApp {
 		return this.tool.getCallStack().toString();
 	}
 
+	@SuppressWarnings("deprecation")
 	public static TLCApp create(String args[]) throws IOException {
 		String specFile = null;
 		String configFile = null;
 		boolean deadlock = true;
 		int fpIndex = 0;
-		int fpBits = 1;
 		String fromChkpt = null;
-		double fpmem = -1;
 
+		FPSetConfiguration fpSetConfig = new FPSetConfiguration();
+		
 		int index = 0;
 		while (index < args.length) {
 			if (args[index].equals("-config")) {
@@ -425,13 +405,14 @@ public class TLCApp extends DistApp {
 				index++;
 				if (index < args.length) {
 					try {
-						fpBits = Integer.parseInt(args[index]);
+						int fpBits = Integer.parseInt(args[index]);
 						
                     	// make sure it's in valid range
                     	if (!FPSet.isValid(fpBits)) {
                     		printErrorMsg("Error: Value in interval [0, 30] for fpbits required. But encountered " + args[index]);
                     		return null;
                     	}
+                    	fpSetConfig.setFpBits(fpBits);
                     	
 						index++;
 					} catch (Exception e) {
@@ -460,12 +441,23 @@ public class TLCApp extends DistApp {
 						// Independently of relative or absolute mem allocation,
 						// a user cannot allocate more than JVM heap space
 						// available. Conversely there is the lower hard limit TLC#MinFpMemSize.
-                    	fpmem = Double.parseDouble(args[index]);
+                    	double fpmem = Double.parseDouble(args[index]);
                         if (fpmem < 0) {
                             printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
                             return null;
                         } else if (fpmem > 1) {
-                        	fpmem = (long) fpmem;
+							// For legacy reasons we allow users to set the
+							// absolute amount of memory. If this is the case,
+							// we know the user intends to allocate all 100% of
+							// the absolute memory to the fpset.
+                    		ToolIO.out
+            				.println("Using -fpmem with an abolute memory value has been deprecated. " +
+            						"Please allocate memory for the TLC process via the JVM mechanisms " +
+            						"and use -fpmem to set the fraction to be used for fingerprint storage.");
+                        	fpSetConfig.setMemory((long) fpmem);
+                        	fpSetConfig.setRatio(1.0);
+                        } else {
+                        	fpSetConfig.setRatio(fpmem);
                         }
                         index++;
                     } catch (Exception e)
@@ -514,7 +506,7 @@ public class TLCApp extends DistApp {
 		}
 		FP64.Init(fpIndex);
 
-		return new TLCApp(specFile, configFile, deadlock, fromChkpt, fpBits, fpmem);
+		return new TLCApp(specFile, configFile, deadlock, fromChkpt, fpSetConfig);
 	}
 
 	private static void printErrorMsg(String msg) {
@@ -523,4 +515,7 @@ public class TLCApp extends DistApp {
 				.println("Usage: java tlc2.tool.TLCServer [-option] inputfile");
 	}
 
+	public FPSetConfiguration getFPSetConfiguration() {
+		return fpSetConfig;
+	}
 }

@@ -76,7 +76,9 @@ public class TLCRuntime {
 	 * @return The non-heap memory JVM memory set with -XX:MaxDirectMemorySize in Bytes
 	 */
 	public long getNonHeapPhysicalMemory() {
-		long l = 0L;
+		// 64MB by default. This happens to be the JVM default for
+		// XX:MaxDirectMemorySize if no other value is given.
+		long l = (64L * 1024L * 1024L);
 		
 		final RuntimeMXBean RuntimemxBean = ManagementFactory.getRuntimeMXBean();
 		final List<String> arguments = RuntimemxBean.getInputArguments();

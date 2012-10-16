@@ -22,7 +22,7 @@ public class MSBMultiFPSet extends MultiFPSet {
 		int len = fpSetConfiguration.getMultiFPSetCnt();
 		final FPSet[] s = new FPSet[len];
 		for (int i = 0; i < len; i++) {
-			s[i] = FPSet.getFPSet(new MultiFPSetConfiguration(fpSetConfiguration), false);
+			s[i] = FPSetFactory.getFPSet(new MultiFPSetConfiguration(fpSetConfiguration));
 		}
 		return s;
 	}

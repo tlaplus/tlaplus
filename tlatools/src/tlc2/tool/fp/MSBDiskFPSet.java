@@ -49,6 +49,8 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 	 */
 	@Override
 	protected double getAuxiliaryStorageRequirement() {
+		// Need auxiliary storage for the disk file index which needs approx.
+		// 1/3 of the overall memory.
 		return 1.5d;
 	}
 	
