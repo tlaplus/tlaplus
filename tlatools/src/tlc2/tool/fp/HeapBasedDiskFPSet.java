@@ -49,7 +49,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		}
 		
 		// approximate next lower 2^n ~= maxMemCnt
-		logMaxMemCnt = (Long.SIZE - 1) - Long.numberOfLeadingZeros(maxMemCnt);
+		logMaxMemCnt = (Long.SIZE - 1) - Long.numberOfLeadingZeros(maxMemCnt - 1);
 		
 		// guard against underflow
 		// LL modified error message on 7 April 2012
@@ -66,6 +66,10 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		// the collision buckets to a size that exceeds the VM limit (unevenly distributed 
 		// fp distributions can still cause a OutOfMemoryError which this guard).
 		this.maxTblCnt = (logMaxMemCnt >= 31) ? Integer.MAX_VALUE : (1 << logMaxMemCnt); // maxTblCnt := 2^logMaxMemCnt
+
+		System.out.println("Dedicated fingerprint cnt to maxTblCnt ratio: " + fpSetConfig.getMemoryInFingerprintCnt() + "/" + maxTblCnt);
+
+		Assert.check(maxTblCnt <= fpSetConfig.getMemoryInFingerprintCnt(), "Exeeded upper memory storage limit");
 
 		// guard against negative maxTblCnt
 		// LL modified error message on 7 April 2012

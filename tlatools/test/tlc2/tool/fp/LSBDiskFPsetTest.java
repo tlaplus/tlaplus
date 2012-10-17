@@ -18,4 +18,13 @@ public class LSBDiskFPsetTest extends AbstractHeapBasedDiskFPSetTest {
 	protected long getLowerLimit() {
 		return 1L << 9;
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.AbstractHeapBasedDiskFPSetTest#getUpperLimit()
+	 */
+	protected long getUpperLimit() {
+		// LSBDiskFPSet uses a temporary storage array which is limited by
+		// java's array length restriction. This restriction is Integer.MAX_VALUE
+		return 1L << 31;
+	}
 }

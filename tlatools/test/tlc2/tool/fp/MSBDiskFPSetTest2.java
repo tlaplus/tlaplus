@@ -18,4 +18,11 @@ public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {
 	protected long getLowerLimit() {
 		return 1L << 8;
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.AbstractHeapBasedDiskFPSetTest#getUpperLimit()
+	 */
+	protected long getUpperLimit() {
+		return 1L << 31;
+	}
 }
