@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -22,7 +23,6 @@ import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.IdThread;
-import tlc2.util.Sort;
 import tlc2.util.Striped;
 import util.Assert;
 import util.FileUtil;
@@ -893,7 +893,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	public final void recoverFP(long fp) throws IOException {
 		recoveryBuff[recoveryIdx++] = (fp & 0x7FFFFFFFFFFFFFFFL);
 		if (recoveryIdx == recoveryBuff.length) {
-			Sort.LongArray(recoveryBuff, recoveryIdx);
+			Arrays.sort(recoveryBuff, 0, recoveryIdx);
 			flusher.mergeNewEntries(recoveryBuff, recoveryIdx);
 			recoveryIdx = 0;
 		}
@@ -903,7 +903,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#completeRecovery()
 	 */
 	public final void completeRecovery() throws IOException {
-		Sort.LongArray(recoveryBuff, recoveryIdx);
+		Arrays.sort(recoveryBuff, 0, recoveryIdx);
 		flusher.mergeNewEntries(recoveryBuff, recoveryIdx);
 		recoveryBuff = null;
 		recoveryIdx = -1;

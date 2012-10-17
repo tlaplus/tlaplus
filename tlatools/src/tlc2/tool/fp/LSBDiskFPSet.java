@@ -6,9 +6,9 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 
 import tlc2.output.EC;
-import tlc2.util.Sort;
 import util.Assert;
 
 @SuppressWarnings("serial")
@@ -56,7 +56,7 @@ public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 			}
 			
 			// sort in-memory entries
-			Sort.LongArray(buff, buff.length);
+			Arrays.sort(buff, 0, buff.length);
 		}
 
 		/* (non-Javadoc)
