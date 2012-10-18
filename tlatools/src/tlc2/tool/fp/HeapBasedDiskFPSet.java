@@ -67,9 +67,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		// fp distributions can still cause a OutOfMemoryError which this guard).
 		this.maxTblCnt = (logMaxMemCnt >= 31) ? Integer.MAX_VALUE : (1 << logMaxMemCnt); // maxTblCnt := 2^logMaxMemCnt
 
-		System.out.println("Dedicated fingerprint cnt to maxTblCnt ratio: " + fpSetConfig.getMemoryInFingerprintCnt() + "/" + maxTblCnt);
-
-		Assert.check(maxTblCnt <= fpSetConfig.getMemoryInFingerprintCnt(), "Exeeded upper memory storage limit");
+		Assert.check(maxTblCnt <= fpSetConfig.getMemoryInFingerprintCnt(), "Exceeded upper memory storage limit");
 
 		// guard against negative maxTblCnt
 		// LL modified error message on 7 April 2012
