@@ -49,7 +49,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		}
 		
 		// approximate next lower 2^n ~= maxMemCnt
-		logMaxMemCnt = (Long.SIZE - 1) - Long.numberOfLeadingZeros(maxMemCnt - 1);
+		logMaxMemCnt = (Long.SIZE - 1) - Long.numberOfLeadingZeros(maxMemCnt);
 		
 		// guard against underflow
 		// LL modified error message on 7 April 2012
