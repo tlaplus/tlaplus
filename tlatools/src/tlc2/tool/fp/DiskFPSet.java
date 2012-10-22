@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.management.NotCompliantMBeanException;
 
@@ -53,6 +55,8 @@ import util.FileUtil;
  */
 @SuppressWarnings("serial")
 public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
+
+	private final static Logger LOGGER = Logger.getLogger(DiskFPSet.class.getName());
 
 	// fields
 	/**
@@ -414,6 +418,9 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 
 			long l = System.currentTimeMillis() - timestamp;
 			flushTime += l;
+			
+			LOGGER.log(Level.FINE, "Flushed disk {0} {1}. tine, in {2} sec", new Object[] {
+					((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l});
 		}
 		w.unlock();
 		return false;
