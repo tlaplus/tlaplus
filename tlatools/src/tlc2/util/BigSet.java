@@ -5,6 +5,7 @@ package tlc2.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Enumeration;
 
 import util.FileUtil;
@@ -88,7 +89,7 @@ public class BigSet implements Cloneable {
       bA[i] = (BigInt)e.nextElement();
     }
 
-    Sort.sortArray(bA, 0, size-1);
+    Arrays.sort(bA, 0, size-1);
     
     ByteUtils.writeInt(out, size);
     for (int i = 0; i < size(); i++) {

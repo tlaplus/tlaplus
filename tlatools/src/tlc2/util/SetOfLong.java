@@ -8,6 +8,7 @@ package tlc2.util;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 public final class SetOfLong {
   private int count;
@@ -93,7 +94,7 @@ public final class SetOfLong {
 	this.table[cnt++] = this.table[i];
       }
     }
-    Sort.LongArray(this.table, cnt);
+    Arrays.sort(this.table, 0, cnt);
 
     long dis = Long.MAX_VALUE;
     long x = 0;
