@@ -114,27 +114,46 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	public TLCServer(TLCApp work) throws IOException, NotBoundException {
 	    // LL modified error message on 7 April 2012
 		Assert.check(work != null, "TLC server found null work.");
+
+		// TLCApp which calculates the next state relation
 		this.metadir = work.getMetadir();
 		int end = this.metadir.length();
-		if (this.metadir.endsWith(FileUtil.separator))
+		if (this.metadir.endsWith(FileUtil.separator)) {
 			end--;
+		}
 		int start = this.metadir.lastIndexOf(FileUtil.separator, end - 1);
 		this.filename = this.metadir.substring(start + 1, end);
 		this.work = work;
+		
+		// State Queue of unexplored states
 		this.stateQueue = new DiskStateQueue(this.metadir);
+		
+		// State trace file
 		this.trace = new TLCTrace(this.metadir, this.work.getFileName(),
 				this.work);
+		
+		// FPSet
+		// 1) A single FPSet server running on the master node
 		if (TLCGlobals.fpServers == null && expectedFPSetCount <= 0) {
 			this.fpSet = FPSet.getFPSet(work.getFPBits(), work.getFpMemSize());
 			this.fpSet.init(0, this.metadir, this.work.getFileName());
 			this.fpSetManager = new StaticFPSetManager((FPSetRMI) this.fpSet);
+		// 2) Multiple FPSet servers configured dynamically
 		} else if (expectedFPSetCount > 0) {
 			this.fpSetManager = new DynamicFPSetManager(expectedFPSetCount);
+		// 3) Multiple FPSet servers configured statically via a config file
 		} else {
 			this.fpSetManager = new StaticFPSetManager(TLCGlobals.fpServers);
 		}
+		
+		// Barrier used to make all workers start simultaneously 
 		barrier = new CyclicBarrier(expectedWorkerCount);
+		
+		// Latch to wait for all fingerprint set server to be registered before
+		// state exploration can start
 		latch = new CountDownLatch(expectedFPSetCount);
+		
+		// Determines the size of the state queue subset handed out to workers
 		blockSelector = BlockSelectorFactory.getBlockSelector(this);
 	}
 
