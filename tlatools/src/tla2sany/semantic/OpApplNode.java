@@ -340,7 +340,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     * If param is a formal parameter of this node's operator, then return  *
     * the operand being substituted for that parameter, else return null.  *
     ***********************************************************************/
-    OpDefNode opDef = (OpDefNode)this.operator;
+    AnyDefNode opDef = (AnyDefNode)this.operator;
     FormalParamNode[] formals = opDef.getParams();
     for (int i = 0; i < this.operands.length; i++) {
       if (formals[i] == param) {
@@ -424,7 +424,10 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       }
     }
 
-    if (this.operator instanceof OpDefNode) {
+    // On 24 Oct 2012, LL Changed OpDefNode -> AnyDefNode so this
+    // handles ThmnOrAssumpDefNodes as well as OpDefNodes.  See the
+    // comments in AnyDefNode.java for an explanation.
+    if (this.operator instanceof AnyDefNode) {
       // Application of a builtin or user defined operator
       // Level correctness conditions
       /*********************************************************************
@@ -455,7 +458,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       *    point to this because an ArgLevelConstraint with a level <=     *
       *    VariableLevel seems to have no practical effect.                *
       *********************************************************************/
-      OpDefNode opDef = (OpDefNode)this.operator;
+      AnyDefNode opDef = (AnyDefNode)this.operator;
       boolean opDefLevelCheck = opDef.levelCheck(itr) ;
         /*******************************************************************
         * Need to call levelCheck before obtaining its level params.       *
@@ -476,9 +479,13 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             }
             this.levelCorrect = false;
           }
+          // LL changed OpDefNode -> AnyDefNode in the following.
+          // See comments in AnyDefNode.java.  (It is only in the
+          // most bizarre cases that opd.getOp() would be a
+          // ThmOrAssumpDefNode.
           if (opd instanceof OpArgNode &&
-              ((OpArgNode)opd).getOp() instanceof OpDefNode) {
-            OpDefNode opdDef = (OpDefNode)((OpArgNode)opd).getOp();
+              ((OpArgNode)opd).getOp() instanceof AnyDefNode) {
+            AnyDefNode opdDef = (AnyDefNode)((OpArgNode)opd).getOp();
             boolean opdDefLevelCheck = opdDef.levelCheck(itr) ;
               /*************************************************************
               * Need to call opdDef.levelCheck before using its level      *
@@ -572,7 +579,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
          };
         int ii = i ;
         if (ar == -1) {ii = 0;} ;
-        if (! opDef.isLeibnizArg[ii]) {
+        if (! opDef.getIsLeibnizArg()[ii]) {
           this.nonLeibnizParams.addAll(this.operands[i].getAllParams());
          }
       }
@@ -666,10 +673,14 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       *********************************************************************/
       for (int i = 0; i < this.operands.length; i++) {
         ExprOrOpArgNode opdi = this.operands[i];
+        // LL changed OpDefNode -> AnyDefNode in the following.
+        // See comments in AnyDefNode.java.  (It is only in the
+        // most bizarre cases that opdi.getOp() would be a
+        // ThmOrAssumpDefNode.
         if (opdi != null &&
             opdi instanceof OpArgNode &&
-            ((OpArgNode)opdi).getOp() instanceof OpDefNode) {
-          OpDefNode argDef = (OpDefNode)((OpArgNode)opdi).getOp();
+            ((OpArgNode)opdi).getOp() instanceof AnyDefNode) {
+          AnyDefNode argDef = (AnyDefNode)((OpArgNode)opdi).getOp();
           argDef.levelCheck(itr) ;
             /***************************************************************
             * Need to invoke levelCheck before invoking getMaxLevel.       *
@@ -694,11 +705,11 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           * this.nonLeibnizParams.  (See leibniz-checking.txt, appended    *
           * to LevelNode.java.)                                            *
           *****************************************************************/
-          if (! argDef.isLeibniz) {
+          if (! argDef.getIsLeibniz()) {
             for (int j = 0; j < this.operands.length; j++) {
               for (int k = 0; k < alen; k++) {
                 if (   opDef.getOpLevelCond(i, j, k)
-                    && ! argDef.isLeibnizArg[k]) {
+                    && ! argDef.getIsLeibnizArg()[k]) {
                   this.nonLeibnizParams.addAll(this.operands[j].getAllParams()) ;
                 } // if (opDef.getOpLevelCond(i, j, k))
                } // for k
@@ -711,10 +722,14 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       while (iter.hasNext()) {
         ArgLevelParam alp = (ArgLevelParam)iter.next();
         ExprOrOpArgNode arg = this.getArg(alp.op);
+        // LL changed OpDefNode -> AnyDefNode in the following.
+        // See comments in AnyDefNode.java.  (It is only in the
+        // most bizarre cases that arg.getOp() would be a
+        // ThmOrAssumpDefNode. 
         if (arg != null &&
             arg instanceof OpArgNode &&
-            ((OpArgNode)arg).getOp() instanceof OpDefNode) {
-          OpDefNode argDef = (OpDefNode)((OpArgNode)arg).getOp();
+            ((OpArgNode)arg).getOp() instanceof AnyDefNode) {
+          AnyDefNode argDef = (AnyDefNode)((OpArgNode)arg).getOp();
           argDef.levelCheck(itr) ;
             /***************************************************************
             * Need to invoke levelCheck before invoking getMaxLevel.       *

@@ -175,11 +175,15 @@ import util.WrongInvocationException;
    *                                                                      
    *     $TemporalExists                                                  
    *     $TemporalForall                                                  
-   *        Represent \EE and \AA.                                        
+   *        Represent \EE and \AA.        
+   *        
+   *  On 24 Oct 2012, LL added the AnyDefNode interface and made the OpDefNode 
+   *  class implement it.  He also added the getIsLeibnizArg method.  See
+   *  the comments in AnyDefNode.java for an explanation.
    */
 
 public class OpDefNode extends OpDefOrDeclNode 
-         implements OpDefOrLabelNode {
+         implements OpDefOrLabelNode, AnyDefNode {
 
 
 /*************************************************************************
@@ -808,7 +812,18 @@ public class OpDefNode extends OpDefOrDeclNode
     * isLeibnizArg[i] is true iff the i-th argument of op is Leibniz, and  *
     * isLeibniz = \A i : isLeibnizArg[i]                                   *
     ***********************************************************************/
-    
+  /**
+   * This "getters" for isLeibnizArg and isLeibniz were added by LL on 24 Oct 2012. 
+   *  See the comments in AnyDefNode.java for an explanation of why.
+   */
+  public boolean[] getIsLeibnizArg() {
+      return isLeibnizArg; 
+  }
+  public boolean getIsLeibniz() {
+      return isLeibniz; 
+  }
+  
+  
   private boolean[][][] opLevelCond;
     /***********************************************************************
     * According to LevelSpec.tla, if this is the OpDefNode for the         *

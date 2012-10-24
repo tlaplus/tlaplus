@@ -38,6 +38,7 @@ import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.semantic.ThmOrAssumpDefNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -1724,6 +1725,28 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         return c1;
     }
 
+    /**
+     * The following added by LL on 23 October 2012 to fix bug in evaluation of names of theorems and 
+     * assumptions imported by parameterized instantiation.
+     *  
+     * @param opDef
+     * @param args
+     * @param c
+     * @param cachable
+     * @return
+     */
+    public final Context getOpContext(ThmOrAssumpDefNode opDef, ExprOrOpArgNode[] args, Context c, boolean cachable)
+    {
+        FormalParamNode[] formals = opDef.getParams();
+        int alen = args.length;
+        Context c1 = c;
+        for (int i = 0; i < alen; i++)
+        {
+            Object aval = this.getVal(args[i], c, cachable);
+            c1 = c1.cons(formals[i], aval);
+        }
+        return c1;
+    }
     /**
      * Return a table containing the locations of subexpression in the
      * spec of forms x' = e and x' \in e. Warning: Current implementation
