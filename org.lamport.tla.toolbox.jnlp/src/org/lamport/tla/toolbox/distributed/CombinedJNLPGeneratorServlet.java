@@ -1,5 +1,4 @@
-// Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
-
+// Copyright (c) 2012 Markus Alexander Kuppe. All rights reserved.
 package org.lamport.tla.toolbox.distributed;
 
 @SuppressWarnings("serial")
