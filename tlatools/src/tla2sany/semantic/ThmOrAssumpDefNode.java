@@ -241,12 +241,19 @@ public class ThmOrAssumpDefNode extends SymbolNode
     /***********************************************************************
     * The name of a theorem or assumption has no parameters.               *
     ***********************************************************************/
-    
-  public final boolean isLocal() { return false; }
-    /***********************************************************************
-    * Theorem and assumption definitions are never local.                  *
-    ***********************************************************************/
 
+  // Modified by LL on 30 Oct 2012 to handle locally instantiated theorems
+  // and assumptions.
+  private boolean local = false ;
+  public final boolean isLocal() { return local; }
+    /***********************************************************************
+    * Theorem and assumption definitions are local iff imported with a     *
+    * LOCAL instance.                                                      *
+    ***********************************************************************/
+  public final void setLocal(boolean localness) {
+      local = localness ;
+  }
+  
 //  public final ModuleNode getModuleNode() { return this.moduleNode; }
 
   public final boolean match( OpApplNode test, ModuleNode mn ) {

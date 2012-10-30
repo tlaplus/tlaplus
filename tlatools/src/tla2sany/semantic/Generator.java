@@ -4873,10 +4873,10 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
       ThmOrAssumpDefNode taOdn = (ThmOrAssumpDefNode)taelts.elementAt(i);
 
       /*********************************************************************
-      * There are no local or builtin ThmOrAssumpDefNode objects.          *
+      * There are no builtin ThmOrAssumpDefNode objects.                   *
       *********************************************************************/
-      // Ignore it if it is local or builtin defs
-      // if (!taOdn.isLocal() && (taOdn.getKind() == UserDefinedOpKind)) { 
+      // Ignore it if it is local 
+      if (!taOdn.isLocal()) { 
         // Create the new name prepended with "name!"
         String compoundID = name + "!" + taOdn.getName();
         UniqueString qualifiedName = UniqueString.uniqueStringOf(compoundID);
@@ -4910,6 +4910,10 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                                 substInNode, cm, symbolTable, 
                                  treeNode, params, instanceeModule,
                                  taOdn.getSource());   
+          // Following statement added by LL on 30 Oct 2012 to handle locally 
+          // instantiated theorems and assumptions.          
+          newtaOdn.setLocal(localness);
+          
           /*****************************************************************
           * No recursion fields needed for a theorem or assumption         *
           * because it can't appear in a recursive section.                *
@@ -4923,7 +4927,11 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
           newtaOdn = new ThmOrAssumpDefNode(qualifiedName, taOdn.isTheorem(),
                                  taOdn.getBody(), cm, symbolTable, 
                                  treeNode, params, instanceeModule,
-                                 taOdn.getSource());   
+                                 taOdn.getSource());
+          // Following statement added by LL on 30 Oct 2012 to handle locally 
+          // instantiated theorems and assumptions.          
+          newtaOdn.setLocal(localness);
+ 
           /*****************************************************************
           * No recursion fields needed for theorems or assumptions         *
           * because they can't appear in a recursive section.              *
@@ -4940,7 +4948,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
         else {
           defs.addElement(newtaOdn);
         }
-//      } // if (!taOdn.isLocal()&& ... )
+      } // if (!taOdn.isLocal()&& ... )
     } // for
 
     // Create a new InstanceNode to represent this INSTANCE stmt 
@@ -5406,6 +5414,12 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
        tadn = (ThmOrAssumpDefNode)tadefs.elementAt(i); 
           // ThmOrAssumpDefNode in module being instantiated (instancee)
 
+       // Following statement added by LL on 30 Oct 2012 to handle locally 
+       // instantiated theorems and assumptions.          
+       if (tadn.isLocal()) {
+           continue ;
+       }
+
        // If there are parameters to the module being instantiated, then 
        // a SubstInNode is required, and possibly a different module of 
        // origin should be indicated
@@ -5416,8 +5430,26 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
          // as well as large parts of its body (all but the SubstInNode). 
          // Hence, changes by a tool to an Original ThmOrAssumpDefNode will 
          // likely be reflected in all instances of it.
-         if ( tadn.getOriginallyDefinedInModuleNode().isParameterFree() ) {  
-           newTadn = tadn;
+         if ( tadn.getOriginallyDefinedInModuleNode().isParameterFree() ) { 
+           // Following if/else added by LL on 30 Oct 2012 to handle locally
+           // instantiated theorems and assumptions.
+           if (localness  && topLevel ) {
+               newTadn = new ThmOrAssumpDefNode(tadn.getName(), tadn.isTheorem(), 
+                                           tadn.getBody(), cm, symbolTable, treeNode,
+                                           tadn.getParams(), instanceeModuleNode, 
+                                           tadn.getSource()) ;
+               newTadn.setLocal(true);
+           }
+           else {
+              newTadn = tadn;
+              // On 30 Oct 2012, LL noticed that code was added on 16 Feb 2009
+              // to the corresponding place in the code for an OpDefNode, but that
+              // nothing was added here.  I suspect that something should have been
+              // that the 2009 code should also have been added here, but wasn't--
+              // perhaps because there's no getLabelsHT method for a ThmOrAssumpDefNode.
+              // This may mean that there's a bug in handling labels in the
+              // instantiated theorem or assumption.
+           }
            /*
              new ThmOrAssumpDefNode( tadn.getName(), UserDefinedOpKind, 
                             tadn.getParams(),
@@ -5437,6 +5469,9 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                                   tasubstInTemplate, cm, symbolTable, 
                                   treeNode, tadn.getParams(), 
                                   instanceeModuleNode, tadn.getSource());
+           // Following if/else added by LL on 30 Oct 2012 to handle locally
+           // instantiated theorems and assumptions.
+           newTadn.setLocal(localness) ;
          }
        }
        else { 
@@ -5454,6 +5489,9 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                          tadn.getOriginallyDefinedInModuleNode(), 
                          symbolTable, treeNode, tadn.getParams(),
                          instanceeModuleNode, tadn.getSource()); 
+         // Following if/else added by LL on 30 Oct 2012 to handle locally
+         // instantiated theorems and assumptions.
+         newTadn.setLocal(localness) ;
        }
        if (topLevel) {cm.appendDef(newTadn);} ;
        /********************************************************************
