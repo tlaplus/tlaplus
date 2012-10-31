@@ -70,4 +70,26 @@ public abstract class SymbolNode extends LevelNode {
     return (this instanceof OpDeclNode ||
 	    this instanceof FormalParamNode);
   }
+  
+  /**
+   * Returns true iff  this node and otherNode are both OpDefOrDeclNode objects or
+   * both ThmOrAssumpDefNode objects and have the same originallyDefinedInModule
+   * field.  Added by LL on 31 Oct 2012.
+   * 
+   * @param otherNode
+   * @return
+   */
+  public final boolean sameOriginallyDefinedInModule(SymbolNode otherNode) {     
+      if (this.getClass() == otherNode.getClass()) {
+          if (this instanceof OpDefOrDeclNode) {
+              return ((OpDefOrDeclNode) this).originallyDefinedInModule ==
+                       ((OpDefOrDeclNode) otherNode).originallyDefinedInModule ;
+          }
+          if (this instanceof ThmOrAssumpDefNode) {
+              return ((ThmOrAssumpDefNode) this).getOriginallyDefinedInModuleNode() ==
+                      ((ThmOrAssumpDefNode) otherNode).getOriginallyDefinedInModuleNode() ;
+          }
+      }
+      return false ;
+  }
 }

@@ -4911,8 +4911,10 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                                  treeNode, params, instanceeModule,
                                  taOdn.getSource());   
           // Following statement added by LL on 30 Oct 2012 to handle locally 
-          // instantiated theorems and assumptions.          
+          // instantiated theorems and assumptions. Added setLabels call
+          // on 31 Oct 2012.
           newtaOdn.setLocal(localness);
+          newtaOdn.setLabels(taOdn.getLabelsHT()) ;
           
           /*****************************************************************
           * No recursion fields needed for a theorem or assumption         *
@@ -4929,9 +4931,10 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                                  treeNode, params, instanceeModule,
                                  taOdn.getSource());
           // Following statement added by LL on 30 Oct 2012 to handle locally 
-          // instantiated theorems and assumptions.          
+          // instantiated theorems and assumptions.   Added setLabels call
+          // on 31 Oct 2012.       
           newtaOdn.setLocal(localness);
- 
+          newtaOdn.setLabels(taOdn.getLabelsHT()) ;
           /*****************************************************************
           * No recursion fields needed for theorems or assumptions         *
           * because they can't appear in a recursive section.              *
@@ -5214,7 +5217,35 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
   /*************************************************************************
   * However, SANY2 imports ThmOrAssumpDef nodes.                           *
   *************************************************************************/
-  private final InstanceNode 
+  /**
+ * @param treeNode
+ * @param cm
+ * @param topLevel
+ * @return
+ * @throws AbortException
+ */
+/**
+ * @param treeNode
+ * @param cm
+ * @param topLevel
+ * @return
+ * @throws AbortException
+ */
+/**
+ * @param treeNode
+ * @param cm
+ * @param topLevel
+ * @return
+ * @throws AbortException
+ */
+/**
+ * @param treeNode
+ * @param cm
+ * @param topLevel
+ * @return
+ * @throws AbortException
+ */
+private final InstanceNode 
    generateInstance(TreeNode treeNode, ModuleNode cm, boolean topLevel)
    throws AbortException {
      /**********************************************************************
@@ -5472,6 +5503,9 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
            // Following if/else added by LL on 30 Oct 2012 to handle locally
            // instantiated theorems and assumptions.
            newTadn.setLocal(localness) ;
+           // cm.appendDef(newTadn);
+           newTadn.setLabels(tadn.getLabelsHT()) ;
+           
          }
        }
        else { 
@@ -5483,16 +5517,23 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
 
          // Create a ThmOrAssumpDefNode whose body is the same as 
          // the instancer's.
-         newTadn = 
-           new ThmOrAssumpDefNode(tadn.getName(), tadn.isTheorem(),
-                         tadn.getBody(), 
-                         tadn.getOriginallyDefinedInModuleNode(), 
-                         symbolTable, treeNode, tadn.getParams(),
-                         instanceeModuleNode, tadn.getSource()); 
-         // Following if/else added by LL on 30 Oct 2012 to handle locally
-         // instantiated theorems and assumptions.
-         newTadn.setLocal(localness) ;
-       }
+         if (localness && topLevel) {
+           newTadn = 
+              new ThmOrAssumpDefNode(tadn.getName(), tadn.isTheorem(),
+                            tadn.getBody(), 
+                            tadn.getOriginallyDefinedInModuleNode(), 
+                            symbolTable, treeNode, tadn.getParams(),
+                            instanceeModuleNode, tadn.getSource()); 
+            // Following if/else added by LL on 30 Oct 2012 to handle locally
+            // instantiated theorems and assumptions.
+            newTadn.setLocal(localness) ;
+            newTadn.setLabels(tadn.getLabelsHT()) ;
+         }
+         else {
+         newTadn = tadn;
+         symbolTable.addSymbol(tadn.getName(), tadn);
+         }
+        }
        if (topLevel) {cm.appendDef(newTadn);} ;
        /********************************************************************
        * No recursion fields needed for theorems or assumptions because    *

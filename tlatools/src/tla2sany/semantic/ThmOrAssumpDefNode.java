@@ -77,6 +77,13 @@ public class ThmOrAssumpDefNode extends SymbolNode
   * definition.                                                            *
   *************************************************************************/
   private Hashtable labels = null ;    
+  public Hashtable  getLabelsHT() {
+      /***********************************************************************
+      * Return the labels field.  Used to "clone" an OpDefNode for module    *
+      * instantiation.                                                       *
+      ***********************************************************************/
+      return labels ;
+     }
 
   public int arity = 0 ;
   private FormalParamNode[] params = new FormalParamNode[0];   
