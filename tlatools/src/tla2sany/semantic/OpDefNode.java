@@ -202,8 +202,28 @@ public class OpDefNode extends OpDefOrDeclNode
     * It can be a DefStepNode, UseOrHideNode, or InstanceNode.  Otherwise, *
     * it is null.                                                          *
     ***********************************************************************/
-    
-
+  
+  /** 
+   * This is the module from which this definition is ultimately obtained.
+   * The field originallyDefinedInModule purports to be that, but when the
+   * definition is instantiated, this can create a new OpDefNode whose
+   * originallyDefinedInModule field is the instantiating module.  In that
+   * case, the sourceModule field is the same as that of the OpDefNode of
+   * the instantiated definition.  Hence, this really is the module containing
+   * the ultimate source of the definition.
+   * 
+   * This field added by LL on 1 Nov 2012 to fix a bug in which the exact 
+   * same definition imported by two different routes generated a warning.
+   * (This warning was originally harmless, but it became a problem when
+   * it was decided that the Toolbox would regard warnings as errors.) 
+   * 
+   */
+//  private ModuleNode sourceModule = null ;
+//
+//  public ModuleNode getSourceModule() {
+//      return sourceModule ;
+//  }
+  
   /*************************************************************************
   * The following fields state if an operator is recursively defined, and  *
   * give some potentially useful information having to do with recursive   *
@@ -388,7 +408,7 @@ public class OpDefNode extends OpDefOrDeclNode
                    SymbolTable symbolTable, TreeNode stn) {
     super(us, k, (parms == null ? -1 : parms.length), oModNode, symbolTable, stn);
     params = parms;
-
+   
     // Create phony FormalParamNodes for built-in operators
     if ( arity >= 0 ) {
       for (int i = 0; i < params.length; i++ ) {

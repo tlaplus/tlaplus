@@ -72,24 +72,48 @@ public abstract class SymbolNode extends LevelNode {
   }
   
   /**
-   * Returns true iff  this node and otherNode are both OpDefOrDeclNode objects or
+   * Returns true iff this node and otherNode are both OpDefOrDeclNode objects or
    * both ThmOrAssumpDefNode objects and have the same originallyDefinedInModule
-   * field.  Added by LL on 31 Oct 2012.
+   * field.  Added by LL on 31 Oct 2012. 
+   * 
+   * Corrected by LL on 1 Nov 2012 by (a) using the originallyDefinedInModule for
+   * the source definitions (returned by getSource()), and by adding requirement 
+   * that their module of origin has no parameters. 
+   * 
+   * This method is used to check that two instantiations of a definition
+   * are the same.  They may not be if the two instantiations of their module have different
+   * substitutions for parameters.  To check that the substitutions are the same
+   * would be difficult, so we require that the module has no parameters.  This covers
+   * the common case when the definitions come from a standard module.
    * 
    * @param otherNode
    * @return
    */
   public final boolean sameOriginallyDefinedInModule(SymbolNode otherNode) {     
       if (this.getClass() == otherNode.getClass()) {
-          if (this instanceof OpDefOrDeclNode) {
-              return ((OpDefOrDeclNode) this).originallyDefinedInModule ==
-                       ((OpDefOrDeclNode) otherNode).originallyDefinedInModule ;
+          ModuleNode thisModule = null ;
+          if (this instanceof OpDefNode) {
+              OpDefNode thisSrc = ((OpDefNode) this).getSource() ;
+              if (thisSrc != ((OpDefNode) otherNode).getSource()) {
+                  return false;
+              }
+              thisModule  = ((OpDefNode) thisSrc).getOriginallyDefinedInModuleNode();
           }
-          if (this instanceof ThmOrAssumpDefNode) {
-              return ((ThmOrAssumpDefNode) this).getOriginallyDefinedInModuleNode() ==
-                      ((ThmOrAssumpDefNode) otherNode).getOriginallyDefinedInModuleNode() ;
+          else if (this instanceof ThmOrAssumpDefNode) {
+              ThmOrAssumpDefNode thisSrc = ((ThmOrAssumpDefNode) this).getSource() ;
+              if (thisSrc != ((ThmOrAssumpDefNode) otherNode).getSource()) {
+                  return false;
+              }
+              thisModule  = ((ThmOrAssumpDefNode) thisSrc).getOriginallyDefinedInModuleNode();
           }
+          else {
+              return false;
+          }
+          
+          return   (thisModule == null)
+                || (   (thisModule.getConstantDecls().length == 0)
+                    && (thisModule.getVariableDecls().length == 0)) ;
       }
-      return false ;
+      return false ; // The compiler doesn't realize this is unreachable.
   }
 }

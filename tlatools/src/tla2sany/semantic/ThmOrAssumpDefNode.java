@@ -147,7 +147,12 @@ public class ThmOrAssumpDefNode extends SymbolNode
       * has this field set to the instantiating module.  Thus, this field  *
       * is not useful to track down the module of origin of a theorem.     *
       *********************************************************************/
-      
+    // On 1 Nov 2012,, LL moved the following two statements to here from
+    // the end of the constructor.  It's necessary for the source field to be 
+    // set before addSymbol is called.
+    this.instantiatedFrom = iFrom ;
+    this.source = src;
+ 
     if (st != null) {st.addSymbol(name, this);} ;
       /*********************************************************************
       * By some magic, this eventually puts the name into the current      *
@@ -157,8 +162,6 @@ public class ThmOrAssumpDefNode extends SymbolNode
       this.params = parms;
       this.arity = parms.length;
      } ;
-    this.instantiatedFrom = iFrom ;
-    this.source = src;
   }   
 
   /*************************************************************************
