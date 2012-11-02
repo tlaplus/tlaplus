@@ -64,7 +64,8 @@ public class TLCWorkerSmartProxyTest extends TestCase {
 		TLCWorkerSmartProxy proxy = new TLCWorkerSmartProxy(aWorker);
 
 		// let proxy calculate current network overhead
-		proxy.getNextStates(states);
+		NextStateResult nsr = proxy.getNextStates(states);
+		assertNotNull(nsr);
 
 		double networkOverhead = proxy.getNetworkOverhead();
 		return networkOverhead;
