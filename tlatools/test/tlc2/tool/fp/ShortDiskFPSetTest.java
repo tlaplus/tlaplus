@@ -7,6 +7,12 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ShortDiskFPSetTest extends AbstractFPSetTest {
+	/**
+	 * Used to make sure that each tests has a unique file name to prevent test
+	 * interference when deleting/renaming buffer files on windows during disc
+	 * flush.
+	 */
+	private static int CNT = 0;
 	
 	private static final boolean runKnownFailures = Boolean
 			.getBoolean(ShortDiskFPSetTest.class.getName() + ".runKnown");
@@ -16,7 +22,7 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 */
 	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
 		final DiskFPSet fpSet = new DummyDiskFPSet(freeMemoryInBytes);
-		fpSet.init(1, tmpdir, filename);
+		fpSet.init(1, tmpdir, filename + CNT++);
 		return fpSet;
 	}
 	
