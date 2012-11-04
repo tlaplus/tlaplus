@@ -294,9 +294,9 @@ public class Context implements ExploreNode {
   /**
    * Restricted Context merge.  Invoked once in Generator class.
    * Merges Context "ct" into THIS Context, except for local symbols
-   * in "ct" Two symbols clash if they have the same name AND the same
-   * class; that is an error.  If they only have the same name, they
-   * are considered to be two inheritances of the same(or at least
+   * in "ct" Two symbols clash if they have the same name AND a different
+   * class; that is an error.  If they have the same name and class, they
+   * are considered to be two inheritances of the same (or at least
    * compatible) declarations, and there is only a warning.  Returns
    * true if there is no error or there are only warnings; returns
    * false if there is an error
@@ -329,17 +329,22 @@ public class Context implements ExploreNode {
           SymbolNode symbol = ((Pair)table.get(sName)).info;
           if (symbol != sn) {
 	    // if the two SymbolNodes with the same name are distinct nodes,
-	    // We issue a warning if they are instances of the same Java class
-	    // i.e. FormalParamNode, OpDeclNode, OpDefNode, or ModuleNode.
+	    // We issue a warning or do nothing if they are instances of the same Java 
+        // class--i.e. FormalParamNode, OpDeclNode, OpDefNode, or ModuleNode--doing
+        // nothing if they are both definitions coming from the same module.
 	    // otherwise, it is considered to be an error.
+        // Option of doing nothing if from same module added by LL on 31 Oct 2012 to
+        // fix problem caused by the same module being both EXTENDed and imported with 
+        // a LOCAL INSTANCE.  Previously, it always added the warning.
 	    if (symbol.getClass() == sn.getClass()) {
+	        if (! symbol.sameOriginallyDefinedInModule(sn)) {
               errors.addWarning( sn.getTreeNode().getLocation(),
                                  "Warning: the " + kindOfNode(symbol) +  " of '" + 
                                  sName.toString() + 
                                  "' conflicts with \nits " + kindOfNode(symbol) + " at " + 
                                  symbol.getTreeNode().getLocation() + ".");
-
-            }
+	        }
+         }
 	    else {
               errors.addError( sn.getTreeNode().getLocation(),
                                "The " + kindOfNode(symbol) +  " of '" + 

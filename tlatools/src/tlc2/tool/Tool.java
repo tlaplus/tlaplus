@@ -429,10 +429,15 @@ public class Tool
         }
       }
       // Added 13 Nov 2009 by LL to fix Yuan's fix.
+      /*********************************************************************
+      * Modified on 23 October 2012 by LL to work if ThmOrAssumpDefNode    *
+      * imported with parameterized instantiation.                         *
+      *********************************************************************/
       if (val instanceof ThmOrAssumpDefNode) {
           ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
           opcode = BuiltInOPs.getOpCode(opDef.getName());
-          this.getInitStates(opDef.getBody(), acts, c, ps, states);
+          Context c1 = this.getOpContext(opDef, args, c, true);
+          this.getInitStates(opDef.getBody(), acts, c1, ps, states);
           return;
         }
 
@@ -818,9 +823,14 @@ public class Tool
       }
       
       // Added by LL 13 Nov 2009 to fix Yuan's fix 
+      /*********************************************************************
+       * Modified on 23 October 2012 by LL to work if ThmOrAssumpDefNode    *
+       * imported with parameterized instantiation.                         *
+       *********************************************************************/
       if (val instanceof ThmOrAssumpDefNode) {
           ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
-          return this.getNextStates(opDef.getBody(), acts, c, s0, s1, nss);
+          Context c1 = this.getOpContext(opDef, args, c, true);
+          return this.getNextStates(opDef.getBody(), acts, c1, s0, s1, nss);
         }
 
       if (val instanceof LazyValue) {
@@ -1347,12 +1357,17 @@ public class Tool
       /*********************************************************************
       * The following added by Yuan Yu on 13 Nov 2009 to allow theorem an  *
       * assumption names to be used as expressions.                        *
+      *                                                                    *
+      * Modified on 23 October 2012 by LL to work if ThmOrAssumpDefNode    *
+      * imported with parameterized instantiation.                         *
       *********************************************************************/
       else if (val instanceof ThmOrAssumpDefNode) {
 //        Assert.fail("Trying to evaluate the theorem or assumption name `"
 //                     + opNode.getName() + "'. \nUse `" + opNode.getName() 
 //                     + "!:' instead.\n" +expr);
-        return this.eval(((ThmOrAssumpDefNode)val).getBody(), c, s0, s1, control);
+        ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode) val ;
+        Context c1 = this.getOpContext(opDef, args, c, true);
+        return this.eval(opDef.getBody(), c1, s0, s1, control);
         }
       else {
         Assert.fail("In evaluation, the identifier " + opNode.getName() + " is either" +
@@ -2229,10 +2244,15 @@ public class Tool
             
 
             // Added 13 Nov 2009 by LL to handle theorem or assumption names
+            /*********************************************************************
+            * Modified on 23 October 2012 by LL to work if ThmOrAssumpDefNode    *
+            * imported with parameterized instantiation.                         *
+            *********************************************************************/
             if (val instanceof ThmOrAssumpDefNode)
             {
                 ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode) val;
-                return this.enabled(opDef.getBody(), acts, c, s0, s1);
+                Context c1 = this.getOpContext(opDef, args, c, true);
+                return this.enabled(opDef.getBody(), acts, c1, s0, s1);
             }
 
 

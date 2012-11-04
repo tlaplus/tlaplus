@@ -23,12 +23,15 @@
 package tla2sany.semantic;
 
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import util.UniqueString;
+import util.WrongInvocationException;
 
 /***************************************************************************
 * This node represents the definition of Foo in                            *
@@ -38,7 +41,7 @@ import util.UniqueString;
 ***************************************************************************/
 
 public class ThmOrAssumpDefNode extends SymbolNode  
-         implements OpDefOrLabelNode {
+         implements OpDefOrLabelNode, AnyDefNode {
 
   private LevelNode body        = null;   
   private ModuleNode originallyDefinedInModule = null;
@@ -74,6 +77,13 @@ public class ThmOrAssumpDefNode extends SymbolNode
   * definition.                                                            *
   *************************************************************************/
   private Hashtable labels = null ;    
+  public Hashtable  getLabelsHT() {
+      /***********************************************************************
+      * Return the labels field.  Used to "clone" an OpDefNode for module    *
+      * instantiation.                                                       *
+      ***********************************************************************/
+      return labels ;
+     }
 
   public int arity = 0 ;
   private FormalParamNode[] params = new FormalParamNode[0];   
@@ -137,7 +147,12 @@ public class ThmOrAssumpDefNode extends SymbolNode
       * has this field set to the instantiating module.  Thus, this field  *
       * is not useful to track down the module of origin of a theorem.     *
       *********************************************************************/
-      
+    // On 1 Nov 2012,, LL moved the following two statements to here from
+    // the end of the constructor.  It's necessary for the source field to be 
+    // set before addSymbol is called.
+    this.instantiatedFrom = iFrom ;
+    this.source = src;
+ 
     if (st != null) {st.addSymbol(name, this);} ;
       /*********************************************************************
       * By some magic, this eventually puts the name into the current      *
@@ -147,8 +162,6 @@ public class ThmOrAssumpDefNode extends SymbolNode
       this.params = parms;
       this.arity = parms.length;
      } ;
-    this.instantiatedFrom = iFrom ;
-    this.source = src;
   }   
 
   /*************************************************************************
@@ -238,12 +251,19 @@ public class ThmOrAssumpDefNode extends SymbolNode
     /***********************************************************************
     * The name of a theorem or assumption has no parameters.               *
     ***********************************************************************/
-    
-  public final boolean isLocal() { return false; }
-    /***********************************************************************
-    * Theorem and assumption definitions are never local.                  *
-    ***********************************************************************/
 
+  // Modified by LL on 30 Oct 2012 to handle locally instantiated theorems
+  // and assumptions.
+  private boolean local = false ;
+  public final boolean isLocal() { return local; }
+    /***********************************************************************
+    * Theorem and assumption definitions are local iff imported with a     *
+    * LOCAL instance.                                                      *
+    ***********************************************************************/
+  public final void setLocal(boolean localness) {
+      local = localness ;
+  }
+  
 //  public final ModuleNode getModuleNode() { return this.moduleNode; }
 
   public final boolean match( OpApplNode test, ModuleNode mn ) {
@@ -304,37 +324,233 @@ public class ThmOrAssumpDefNode extends SymbolNode
     return retVal ;
    }
 
-  /*************************************************************************
-  * Level checking.                                                        *
-  *************************************************************************/
-  public boolean levelCheck(int iter) {
-    if (levelChecked >= iter) {return levelCorrect;} ;
-    levelChecked = iter ;
-    levelCorrect        = this.body.levelCheck(iter) ;
-    level               = this.body.level ;
-    levelParams         = this.body.levelParams ;
-    allParams           = this.body.allParams ;
-    levelConstraints    = this.body.levelConstraints ;
-    argLevelConstraints = this.body.argLevelConstraints ;
-    argLevelParams      = this.body.argLevelParams ;
-    return levelCorrect ;
-   }
-  
-//  /*************************************************************************
-//  * The implementation of the LevelNode abstract methods.  They simply     *
-//  * return the corresponding values for the body.                          *
-//  *************************************************************************/
-//  public final LevelNode getBody()  {return this.body;}
-//  public boolean levelCheck()       {return this.body.levelCheck();}
-//  public int getLevel()             {return this.body.getLevel();}
-//  public HashSet getLevelParams()   {return this.body.getLevelParams();}
-//  public SetOfLevelConstraints getLevelConstraints() 
-//    {return this.body.getLevelConstraints() ;}
-//  public SetOfArgLevelConstraints getArgLevelConstraints() 
-//    {return this.body.getArgLevelConstraints() ; }
-//  public HashSet getArgLevelParams() 
-//    {return this.body.getArgLevelParams() ; }
+// On 24 Oct 2012 replaced the following levelCheck method with the current
+// one, which was obtained by cloning the method from OpDefNode with some
+// simplifications that were possible because a theorem or assumption, unlike
+// and ordinary definition, cannot appear in the scope of a RECURSIVE declaration.
+// He also made the ThmOrAssumpDefNode implement the AnyNode interface.
+// See the comments in AnyDefNode.java for an explanation of why.
 
+//  /*************************************************************************
+//  * Level checking.                                                        *
+//  *************************************************************************/
+//  public boolean levelCheck(int iter) {
+//    if (levelChecked >= iter) {return levelCorrect;} ;
+//    levelChecked = iter ;
+//    levelCorrect        = this.body.levelCheck(iter) ;
+//    level               = this.body.level ;
+//    levelParams         = this.body.levelParams ;
+//    allParams           = this.body.allParams ;
+//    levelConstraints    = this.body.levelConstraints ;
+//    argLevelConstraints = this.body.argLevelConstraints ;
+//    argLevelParams      = this.body.argLevelParams ;
+//    return levelCorrect ;
+//   }
+//  
+////  /*************************************************************************
+////  * The implementation of the LevelNode abstract methods.  They simply     *
+////  * return the corresponding values for the body.                          *
+////  *************************************************************************/
+////  public final LevelNode getBody()  {return this.body;}
+////  public boolean levelCheck()       {return this.body.levelCheck();}
+////  public int getLevel()             {return this.body.getLevel();}
+////  public HashSet getLevelParams()   {return this.body.getLevelParams();}
+////  public SetOfLevelConstraints getLevelConstraints() 
+////    {return this.body.getLevelConstraints() ;}
+////  public SetOfArgLevelConstraints getArgLevelConstraints() 
+////    {return this.body.getArgLevelConstraints() ; }
+////  public HashSet getArgLevelParams() 
+////    {return this.body.getArgLevelParams() ; }
+
+  /*************************************************************************
+  * The fields used for level checking.                                    *
+  *************************************************************************/
+// These fields are now present in all LevelNode subclasses
+//  private boolean levelCorrect;
+//  private int level;
+//  private HashSet levelParams;
+//  private SetOfLevelConstraints levelConstraints;
+//  private SetOfArgLevelConstraints argLevelConstraints;
+//  private HashSet argLevelParams;
+
+
+  int[] maxLevels;
+  int[] weights;
+  int[][] minMaxLevel;
+    /***********************************************************************
+    * According to LevelSpec.tla, if this is the OpDefNode for the         *
+    * definition of op, then op.minMaxLevel[i][k] is the minimum value of  *
+    * oparg.maxLevels[k] for the i-th argument of Op.  Thus,               *
+    * op.minMaxLevels[i] is a sequence whose length is the number of       *
+    * arguments taken by the i-th argument of Op.  (It equals 0 if the     *
+    * i-th argument of Op is not an operator argument.)                    *
+    ***********************************************************************/
+
+  boolean[] isLeibnizArg;
+  boolean   isLeibniz;
+    /***********************************************************************
+    * If this is the OpDefNode for the definition of op, then              *
+    * isLeibnizArg[i] is true iff the i-th argument of op is Leibniz, and  *
+    * isLeibniz = \A i : isLeibnizArg[i]                                   *
+    ***********************************************************************/
+  public boolean[] getIsLeibnizArg() {
+      return isLeibnizArg; 
+  }
+  public boolean getIsLeibniz() {
+      return isLeibniz; 
+  }
+  private boolean[][][] opLevelCond;
+    /***********************************************************************
+    * According to LevelSpec.tla, if thisnode defines op,                  *
+    * then op.opLevelCond[i][j][k] is true iff                             *
+    * the i-th argument of op is an operator argument opArg, and the       *
+    * definition of op contains an expression in which the j-th formal     *
+    * parameter of the definition of op appears within the k-th argument   *
+    * of opArg.                                                            *
+    ***********************************************************************/
+  public final boolean levelCheck(int itr) {
+      if (this.levelChecked >= itr) { return this.levelCorrect; }
+      this.levelChecked = itr ;
+      
+      /***********************************************************************
+      * Initialize maxLevels to the least restrictive value and weights to 0.*
+      * Initialize isLeibniz and all isLeibniz[i] to true.                   *
+      ***********************************************************************/
+      this.maxLevels    = new int[this.params.length];
+      this.weights      = new int[this.params.length];
+      for (int i = 0 ; i < this.params.length ; i++) {
+          this.maxLevels[i] = MaxLevel ;
+          this.weights[i] = 0 ;
+          this.isLeibniz    = true;
+          this.isLeibnizArg = new boolean[this.params.length];
+          this.isLeibnizArg[i] = true ;
+        } ;
+
+
+   // Level check the body:
+      this.levelCorrect = this.body.levelCheck(itr);
+      this.level = this.body.getLevel();
+      
+      SetOfLevelConstraints lcSet = this.body.getLevelConstraints();
+      for (int i = 0; i < this.params.length; i++) {
+         Object plevel = lcSet.get(params[i]);
+         if (plevel != null) {
+             this.maxLevels[i] = ((Integer)plevel).intValue();
+           }
+      }
+      
+      for (int i = 0; i < this.params.length; i++) {
+          if (this.body.getLevelParams().contains(this.params[i])) {
+            this.weights[i] = this.weights[i];
+          }
+        }
+      
+      this.minMaxLevel = new int[this.params.length][];
+      SetOfArgLevelConstraints alcSet = this.body.getArgLevelConstraints();
+      for (int i = 0; i < this.params.length; i++) {
+        int alen = this.params[i].getArity();
+        this.minMaxLevel[i] = new int[alen];
+        for (int j = 0; j < alen; j++) {
+          Object alevel = alcSet.get(new ParamAndPosition(this.params[i], j));
+          if (alevel == null) {
+            this.minMaxLevel[i][j] = MinLevel;
+          }
+          else {
+            this.minMaxLevel[i][j] = ((Integer)alevel).intValue();
+          }
+        }
+      }
+      
+      this.opLevelCond = new boolean[this.params.length][this.params.length][];
+      HashSet alpSet = this.body.getArgLevelParams();
+      for (int i = 0; i < this.params.length; i++) {
+        for (int j = 0; j < this.params.length; j++) {
+          this.opLevelCond[i][j] = new boolean[this.params[i].getArity()];
+          for (int k = 0; k < this.params[i].getArity(); k++) {
+            ArgLevelParam alp = new ArgLevelParam(this.params[i], k, this.params[j]);
+            this.opLevelCond[i][j][k] = alpSet.contains(alp);
+          }
+        }
+      }
+      
+      this.levelParams.addAll(this.body.getLevelParams());
+      this.allParams.addAll(this.body.getAllParams());
+      this.nonLeibnizParams.addAll(this.body.getNonLeibnizParams());
+      for (int i = 0; i < this.params.length; i++) {
+        this.levelParams.remove(this.params[i]);
+        this.allParams.remove(this.params[i]);
+        if (this.nonLeibnizParams.contains(this.params[i])) {
+          /*******************************************************************
+          * The i-th argument is non-Leibniz if this.params[i] is in the     *
+          * body's nonLeibnizParams hashset (and hence now in this node's    *
+          * nonLeibnizParams hashset.                                        *
+          *******************************************************************/
+          this.nonLeibnizParams.remove(this.params[i]) ;
+          this.isLeibnizArg[i] = false ;
+          this.isLeibniz = false ;
+         } ;
+      }
+
+      this.levelConstraints = (SetOfLevelConstraints)lcSet.clone();
+      for (int i = 0; i < this.params.length; i++) {
+        this.levelConstraints.remove(this.params[i]);
+      }
+
+      this.argLevelConstraints = (SetOfArgLevelConstraints)alcSet.clone();
+      for (int i = 0; i < this.params.length; i++) {
+        int alen = this.params[i].getArity();
+        for (int j = 0; j < alen; j++) {
+          this.argLevelConstraints.remove(new ParamAndPosition(this.params[i], j));
+        }
+      }
+
+      Iterator iter = alpSet.iterator();
+      while (iter.hasNext()) {
+        ArgLevelParam alp = (ArgLevelParam)iter.next();
+        if (!alp.op.occur(this.params) ||
+            !alp.param.occur(this.params)) {
+          this.argLevelParams.add(alp);
+        }
+      }
+
+      return levelCorrect ;
+  }
+  
+  /***************************************************************************
+  * The following Asserts can be removed after debugging.                    *
+  ***************************************************************************/
+    public final int getMaxLevel(int i) {
+      if (this.levelChecked == 0) 
+        {throw new WrongInvocationException("getMaxLevel called before levelCheck");};
+      int idx = (this.getArity() == -1) ? 0 : i;
+      return this.maxLevels[idx];
+    }
+
+    public final int getWeight(int i) {
+      if (this.levelChecked == 0) 
+        {throw new WrongInvocationException("getWeight called before levelCheck");};
+      int idx = (this.getArity() == -1) ? 0 : i;
+      return this.weights[idx];
+    }  
+
+    public final int getMinMaxLevel(int i, int j) {
+      if (this.levelChecked == 0) 
+        {throw new WrongInvocationException("getMinMaxLevel called before levelCheck");};
+      if (this.minMaxLevel == null) {
+        return ConstantLevel;
+      }
+      return this.minMaxLevel[i][j];
+    }
+
+    public final boolean getOpLevelCond(int i, int j, int k) {
+      if (this.levelChecked == 0) 
+        {throw new WrongInvocationException("getOpLevelCond called before levelCheck");};
+      if (this.opLevelCond == null) {
+        return false;
+      }
+      return this.opLevelCond[i][j][k];
+    }
+  
   /** 
    * toString, levelDataToString and walkGraph methods to implement
    * ExploreNode interface

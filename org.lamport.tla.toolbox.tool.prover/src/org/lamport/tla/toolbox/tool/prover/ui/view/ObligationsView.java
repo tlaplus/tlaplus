@@ -154,6 +154,17 @@ public class ObligationsView extends ViewPart
         }
     };
 
+    // method added by LL on 1 Nov 2012
+    private SelectionListener gotoObListener = new SelectionAdapter() {
+        public void widgetSelected(SelectionEvent e)
+        {
+            if (e.widget instanceof Button && e.widget.getData() instanceof IMarker)
+            {
+                TLAMarkerHelper.gotoMarker((IMarker) e.widget.getData());
+            }
+        }
+    };
+
     public ObligationsView()
     {
         items = new HashMap<Integer, ExpandItem>();
@@ -313,6 +324,10 @@ public class ObligationsView extends ViewPart
      * If there is already an item with information of the same
      * obligation as the status, that item is updated. If no
      * such item exists, a new one is created.
+     * 
+     * Modified by LL on 1 Nov 2012 to add the Goto Obligation button
+     * and remove the listener from the text widget so clicking on
+     * the obligation text no longer goes to the obligation.
      */
     private void updateItem(ObligationStatus status)
     {
@@ -360,6 +375,14 @@ public class ObligationsView extends ViewPart
                 gl.marginHeight = 0;
                 oblWidget.setLayout(gl);
 
+                // LL added buttonsWidget to be an inner composite to hold
+                // the Stop Proving and Goto Obligation buttons on one line.
+                Composite buttonsWidget = new Composite(oblWidget, SWT.LINE_SOLID);
+                GridLayout buttonsGl = new GridLayout(2, true);
+                buttonsGl.marginWidth = 0;
+                buttonsGl.marginHeight = 0;
+                buttonsWidget.setLayout(buttonsGl);
+                buttonsWidget.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
                 /*
                  * Add a button for stopping the obligation. This button is
                  * later disabled if the obligation is not being proved.
@@ -369,7 +392,7 @@ public class ObligationsView extends ViewPart
                  * to retrieve the id of the obligation, or any other information
                  * which it must send to the prover to stop the proof.
                  */
-                Button stopButton = new Button(oblWidget, SWT.PUSH);
+                Button stopButton = new Button(buttonsWidget /*oblWidget*/, SWT.PUSH);
                 stopButton.setText("Stop Proving");
                 stopButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
                 stopButton.setData(status.getObMarker());
@@ -377,6 +400,13 @@ public class ObligationsView extends ViewPart
                 item.setControl(oblWidget);
                 item.setData(KEY_BUTTON, stopButton);
 
+                // gotoButton added by LL on 1 Nov 2012
+                Button gotoButton = new Button(buttonsWidget /*oblWidget*/, SWT.PUSH);
+                gotoButton.setText("Goto Obligation");
+                gotoButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+                gotoButton.setData(status.getObMarker());
+                gotoButton.addSelectionListener(gotoObListener);
+                
                 /*
                  * We use a source viewer to display the
                  * obligation. This allows us to easily do
@@ -417,8 +447,11 @@ public class ObligationsView extends ViewPart
                 oblWidget.setData(status.getObMarker());
                 // adding the listener to the item seems to have no effect.
                 item.addListener(SWT.MouseDown, obClickListener);
-                viewer.getTextWidget().addListener(SWT.MouseDown, obClickListener);
-                oblWidget.addListener(SWT.MouseDown, obClickListener);
+                // The following 2 lines were commented out by LL on 1 Nov 2012
+                // so clicking on the textWidget does not goto the obligation.
+                //
+                // viewer.getTextWidget().addListener(SWT.MouseDown, obClickListener);
+                // oblWidget.addListener(SWT.MouseDown, obClickListener);
 
                 items.put(new Integer(id), item);
             }

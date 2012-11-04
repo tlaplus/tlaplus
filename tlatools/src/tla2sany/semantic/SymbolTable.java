@@ -117,6 +117,8 @@ public class SymbolTable implements ASTConstants {
    * declaration causing symbol to be bound to "name" is the same
    *
    * In other cases, it appends a message to "errors" and returns false.
+   * 
+   * As of 31 Oct 2012, the return value was not used by any calling method.
    */
   public final boolean addSymbol(UniqueString name, SymbolNode symbol) {
     SymbolNode currentBinding = resolveSymbol(name);
@@ -194,8 +196,14 @@ public class SymbolTable implements ASTConstants {
     
 
     // If we survive the above tests, however, then this is a case of
-    // multiple definition which we must report as a warning, but
-    // otherwise permit.
+    // multiple definitions.  We report this as a warning unless both definitions
+    // come from the same module.  
+    // Test for same module added by LL on 31 Oct 2012 to fix problem caused by
+    // the same module being both EXTENDed and imported with a LOCAL INSTANCE.  
+    // Previously, it always added the warning.
+    if (symbol.sameOriginallyDefinedInModule(currentBinding)) {
+        return true ;
+    }
     errors.addWarning(symbol.getTreeNode().getLocation(), 
 		      "Multiple declarations or definitions for symbol " + name +
 		      ".  \nThis duplicates the one at " +
