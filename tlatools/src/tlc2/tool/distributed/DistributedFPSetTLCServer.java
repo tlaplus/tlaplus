@@ -16,10 +16,12 @@ import tlc2.tool.distributed.fp.IFPSetManager;
 public class DistributedFPSetTLCServer extends TLCServer {
 	
 	protected final CountDownLatch latch;
+	private final int expectedFPSetCount;
 
 	public DistributedFPSetTLCServer(final TLCApp work, final int expectedFPSetCount) throws IOException,
 			NotBoundException {
 		super(work);
+		this.expectedFPSetCount = expectedFPSetCount;
 		this.latch = new CountDownLatch(expectedFPSetCount);
 	}
 	
@@ -48,6 +50,8 @@ public class DistributedFPSetTLCServer extends TLCServer {
 	 * @see tlc2.tool.distributed.TLCServer#waitForFPSetManager()
 	 */
 	protected void waitForFPSetManager() throws InterruptedException {
+		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_FPSET_WAITING,
+				Integer.toString(this.expectedFPSetCount));
 		latch.await();
 	}
 
@@ -57,5 +61,10 @@ public class DistributedFPSetTLCServer extends TLCServer {
 	public synchronized void registerFPSet(FPSetRMI fpSet, String hostname) throws RemoteException {
 		this.fpSetManager.register(fpSet, hostname);
 		latch.countDown();
+		
+		long diff = this.expectedFPSetCount - latch.getCount();
+		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_FPSET_REGISTERED,
+				new String[] { Long.toString(diff),
+				Integer.toString(this.expectedFPSetCount)});
 	}
 }

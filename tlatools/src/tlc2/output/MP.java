@@ -706,7 +706,15 @@ public class MP
 		case EC.TLC_DISTRIBUTED_EXCEED_BLOCKSIZE:
 			b.append("Trying to limit max block size (to recover from transport failure): %1% (").append(SDF.format(new Date())).append(")");
 			break;
-
+		case EC.TLC_DISTRIBUTED_SERVER_FPSET_REGISTERED:
+			b.append("%1% out of %2% FPSet server(s) registered (").append(SDF.format(new Date())).append(")");
+			break;
+		case EC.TLC_DISTRIBUTED_SERVER_FPSET_WAITING:
+			b.append("Waiting for %1% FPSet server(s) to register (").append(SDF.format(new Date())).append(")");
+			break;
+		case EC.TLC_DISTRIBUTED_SERVER_FPSET_DONE:
+			b.append("Done waiting for FPSet server(s) (").append(SDF.format(new Date())).append(")");
+			break;
             
         /*------------------------------------------- */
         case EC.TLC_STARTING:
