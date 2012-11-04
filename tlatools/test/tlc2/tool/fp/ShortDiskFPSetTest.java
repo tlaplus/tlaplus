@@ -20,10 +20,10 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 			.getBoolean(ShortDiskFPSetTest.class.getName() + ".runKnown");
 	
 	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.AbstractFPSetTest#getFPSet(int)
+	 * @see tlc2.tool.fp.AbstractFPSetTest#getFPSet(FPSetConfiguration)
 	 */
-	protected FPSet getFPSet(long freeMemoryInBytes) throws IOException {
-		final DiskFPSet fpSet = new DummyDiskFPSet(freeMemoryInBytes);
+	protected FPSet getFPSet(FPSetConfiguration fpSetConfig) throws IOException {
+		final DiskFPSet fpSet = new DummyDiskFPSet(fpSetConfig);
 		fpSet.init(1, tmpdir, filename + CNT++);
 		return fpSet;
 	}
