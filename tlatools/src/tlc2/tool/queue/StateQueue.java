@@ -247,7 +247,9 @@ public abstract class StateQueue implements IStateQueue {
 		}
 		// 
 		if (!stop && !isEmpty() && this.numWaiting > 0) {
-			this.notifyAll();
+			synchronized (this) {
+				this.notifyAll();
+			}
 		}
 	}
 
