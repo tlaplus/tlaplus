@@ -233,7 +233,7 @@ public class MultiFPSet extends FPSet {
 	 */
 	public final void beginChkpt(String filename) throws IOException {
 		for (int i = 0; i < this.sets.length; i++) {
-			this.sets[i].beginChkpt(filename);
+			this.sets[i].beginChkpt(filename + "_" + i);
 		}
 	}
 
@@ -242,7 +242,7 @@ public class MultiFPSet extends FPSet {
 	 */
 	public final void commitChkpt(String filename) throws IOException {
 		for (int i = 0; i < this.sets.length; i++) {
-			this.sets[i].commitChkpt(filename);
+			this.sets[i].commitChkpt(filename + "_" + i);
 		}
 	}
 
@@ -251,7 +251,7 @@ public class MultiFPSet extends FPSet {
 	 */
 	public final void recover(String filename) throws IOException {
 		for (int i = 0; i < this.sets.length; i++) {
-			this.sets[i].recover(filename);
+			this.sets[i].recover(filename + "_" + i);
 		}
 	}
 
