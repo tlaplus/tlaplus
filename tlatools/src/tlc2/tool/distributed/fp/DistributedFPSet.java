@@ -18,7 +18,6 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.fp.MultiFPSet;
-import util.TLCRuntime;
 import util.ToolIO;
 
 public class DistributedFPSet  {
