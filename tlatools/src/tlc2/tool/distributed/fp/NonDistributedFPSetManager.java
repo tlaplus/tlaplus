@@ -95,7 +95,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 			} catch (IOException e) {
 				// not expected to happen
 				MP.printError(EC.GENERAL, e);
-				res[i] = new BitVector();
+				res[i] = new BitVector(0);
 			}
 		}
 		return res;
@@ -120,7 +120,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 			} catch (IOException e) {
 				// not expected to happen
 				MP.printError(EC.GENERAL, e);
-				res[i] = new BitVector();
+				res[i] = new BitVector(0);
 			}
 		}
 		return res;
