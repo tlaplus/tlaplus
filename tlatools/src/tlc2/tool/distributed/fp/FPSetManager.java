@@ -518,14 +518,6 @@ public abstract class FPSetManager implements IFPSetManager {
 	public void commitChkpt() throws IOException {
 		// no-op, added due to polymorphism with NonDistribuedFPSetManager
 	}
-	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.fp.IFPSetManager#addThread()
-	 */
-	public void addThread() throws IOException {
-		// no-op, added due to polymorphism with NonDistribuedFPSetManager
-		//TODO How do distributed FPSets handle additional readers/writers?
-	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.IFPSetManager#recover(java.lang.String)

@@ -240,7 +240,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// create new server thread for given worker
 		final TLCServerThread thread = new TLCServerThread(worker, this, es, blockSelector);
 		threadsToWorkers.put(thread, worker);
-		fpSetManager.addThread();
 		thread.start();
 
 		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_REGISTERED, worker.getURI().toString());

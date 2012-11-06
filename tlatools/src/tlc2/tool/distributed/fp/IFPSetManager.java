@@ -12,11 +12,6 @@ import tlc2.util.LongVec;
 public interface IFPSetManager extends Serializable {
 
 	/**
-	 * @see FPSetRMI#addThread()
-	 */
-	void addThread() throws IOException;
-
-	/**
 	 * @see FPSetRMI#checkFPs()
 	 */
 	double checkFPs();

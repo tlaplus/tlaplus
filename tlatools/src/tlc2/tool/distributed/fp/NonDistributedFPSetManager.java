@@ -181,13 +181,6 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.fp.IFPSetManager#addThread()
-	 */
-	public void addThread() throws IOException {
-		this.fpSet.addThread();
-	}
-
-	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.fp.FPSetManager#checkpoint(java.lang.String)
 	 */
 	public void checkpoint(String fname) throws InterruptedException, IOException {
