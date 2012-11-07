@@ -478,7 +478,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// distributed hash table (fingerprint space) prior to starting model
 		// checking.
 		waitForFPSetManager();
-		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_FPSET_DONE);
 		
 		// Add the init state(s) to the local FPSet or distributed servers 
 		for (Long fp : initFPs) {
