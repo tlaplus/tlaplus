@@ -16,7 +16,7 @@ public class TLCGlobals
 {
 
     // The current version of TLC
-    public static String versionOfTLC = "Version 2.05 of 24 October 2012";
+    public static String versionOfTLC = "Version 2.05 of 7 November 2012";
 
     // The bound for set enumeration, used for pretty printing
     public static int enumBound = 2000;
@@ -78,7 +78,8 @@ public class TLCGlobals
     public static final int progressInterval = 1 * 60 * 1000;
 
     // The time interval to checkpoint. (in milliseconds)
-    public static long chkptDuration = 30 * 60 * 1000;
+	public static long chkptDuration = Integer.getInteger(
+			TLCGlobals.class.getName() + ".chkpt", 30 * 60 * 1000);
     
 	// MAK 08.2012: centralized checkpoint code and added disabling and
 	// externally forced checkpoints
