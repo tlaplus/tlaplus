@@ -1158,7 +1158,8 @@ public class MP
         msg = msg
                 + "\nThis was probably caused by an error in the spec or model.";
         if (cause.equals("")) {
-            msg = msg + "\nSee the TLC Console for clues to what happened.";
+            // On 10 Nov 2012, LL added "User Output or" to the following message.
+            msg = msg + "\nSee the User Output or TLC Console for clues to what happened.";
         } else {
             msg = msg + "\nThe error occurred when TLC was " + cause + ".";
         }
