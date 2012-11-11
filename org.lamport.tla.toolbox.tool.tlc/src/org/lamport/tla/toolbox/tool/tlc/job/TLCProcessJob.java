@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.jdt.launching.IVMInstall;
@@ -245,15 +246,40 @@ public class TLCProcessJob extends TLCJob
 	 * @return A list of additional vm arguments
 	 */
 	protected List<String> getAdditionalVMArgs() throws CoreException {
+		final List<String> result = new ArrayList<String>(0);
+
+		// Library Path
 		final Spec spec = Activator.getSpecManager().getSpecByName(specName);
 		final String tlaLibraryPathAsVMArg = spec.getTLALibraryPathAsVMArg();
 		if (!"".equals(tlaLibraryPathAsVMArg)) {
-			final List<String> result = new ArrayList<String>(1);
 			result.add(tlaLibraryPathAsVMArg);
-			return result;
-		} else {
-			return new ArrayList<String>();
 		}
+
+		// JVM arguments/system properties
+		final ILaunchConfiguration launchConfig = launch.getLaunchConfiguration();
+		final String vmArgs = launchConfig.getAttribute(LAUNCH_JVM_ARGS, (String) null);
+		if(vmArgs != null) {
+			result.addAll(sanitizeString(vmArgs));
+		}
+
+		return result;
+	}
+	
+	/**
+	 * @param vmArgs may look like " -Djava.rmi.foo=bar  -Djava.tralla=avalue  "
+	 * @return a {@link List} with ["-Djava.rmi.foo=bar", "-Djava.tralla=avlue"]
+	 */
+	private List<String> sanitizeString(final String vmArgs) {
+		final String[] strings = vmArgs.split(" ");
+		final List<String> results = new ArrayList<String>(strings.length);
+		for (int i = 0; i < strings.length; i++) {
+			final String string = strings[i];
+			if(!"".equals(string) && !" ".equals(string)) {
+				results.add(string.trim());
+			}
+			// additional sanity checks could go here, but the nested process will report errors anyway
+		}
+		return results;
 	}
 
 	@SuppressWarnings("rawtypes")

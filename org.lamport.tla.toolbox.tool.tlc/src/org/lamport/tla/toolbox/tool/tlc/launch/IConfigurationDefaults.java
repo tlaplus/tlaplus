@@ -30,7 +30,11 @@ public interface IConfigurationDefaults
 	/**
 	 * Additional (e.g. RMI specific) VM args for distributed model checker
 	 */
-	public static final String LAUNCH_DISTRIBUTED_ARGS_DEFAULT = "";
+	public static final String LAUNCH_JVM_ARGS_DEFAULT = "";
+	/**
+	 * Additional TLC cmdline parameters
+	 */
+	public static final String LAUNCH_TLC_PARAMETERS_DEFAULT = "";
 	
 	/**
 	 * Additional script for distributed model checker

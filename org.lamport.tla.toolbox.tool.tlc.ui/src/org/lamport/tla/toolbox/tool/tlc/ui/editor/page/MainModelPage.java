@@ -151,7 +151,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      * text: pre-flight script
      */
     private Button distributedButton;
-    private Text distributedText;
     private Text distributedScriptText;
     private Button browseDistributedScriptButton;
     
@@ -287,10 +286,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
          */
         final boolean distributed = getConfig().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
         this.distributedButton.setSelection(distributed);
-
-        final String vmArgs = getConfig().getAttribute(LAUNCH_DISTRIBUTED_ARGS, LAUNCH_DISTRIBUTED_ARGS_DEFAULT);
-        this.distributedText.setText(vmArgs);
-        
+       
         final String distributedScript = getConfig().getAttribute(LAUNCH_DISTRIBUTED_SCRIPT, LAUNCH_DISTRIBUTED_SCRIPT_DEFAULT);
         this.distributedScriptText.setText(distributedScript);
         
@@ -650,7 +646,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         // enablement for distributed input text boxes depends on button
         boolean distributed = this.distributedButton.getSelection();
-        this.distributedText.setEnabled(distributed);
         this.distributedScriptText.setEnabled(distributed);
         
         // verify existence of pre-flight script
@@ -782,9 +777,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // run in distributed mode
         boolean distributed = this.distributedButton.getSelection();
         getConfig().setAttribute(LAUNCH_DISTRIBUTED, distributed);
-        
-        final String vmArgs = this.distributedText.getText();
-        getConfig().setAttribute(LAUNCH_DISTRIBUTED_ARGS, vmArgs);
         
         final String distributedScript = this.distributedScriptText.getText();
         getConfig().setAttribute(LAUNCH_DISTRIBUTED_SCRIPT, distributedScript);
@@ -1286,25 +1278,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		distributedButton.setToolTipText("If checked, state computation will be performed by (remote) workers.");
 		distributedButton.addFocusListener(focusListener);
 		
-		// Additional VM arguments for distributed mode
-        FormText distributedLabel = toolkit.createFormText(howToRunArea, true);
-        distributedLabel.setText("Additional JVM arguments:", false, false);
-
-        distributedText = toolkit.createText(howToRunArea, "");
-        distributedText.setEditable(true);
-        distributedText
-        .setToolTipText("Optionally pass additional JVM arguments to master TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
-        distributedText.addModifyListener(howToRunListener);
-        distributedText.addFocusListener(focusListener);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 300;
-        distributedText.setLayoutData(gd);
-
         /*
          * pre-fligh script executed prior to distributed TLC (e.g. to start remote workers)
          */
-        distributedLabel = toolkit.createFormText(howToRunArea, true);
+        FormText distributedLabel = toolkit.createFormText(howToRunArea, true);
         distributedLabel.setText("Pre Flight Script:", false, false);
 
         // non-editable text input

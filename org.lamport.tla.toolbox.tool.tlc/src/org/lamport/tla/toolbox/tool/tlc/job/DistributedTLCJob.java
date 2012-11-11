@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.tool.distributed.TLCServer;
@@ -63,38 +62,6 @@ public class DistributedTLCJob extends TLCProcessJob {
 		arguments.add(userDir + File.separator + specFile);
 		arguments.add("-tool");
         return arguments.toArray(new String[arguments.size()]);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob#getAdditionalVMArgs()
-	 */
-	protected List<String> getAdditionalVMArgs() throws CoreException {
-		final ILaunchConfiguration launchConfig = launch.getLaunchConfiguration();
-		
-		final String vmArgs = launchConfig.getAttribute(LAUNCH_DISTRIBUTED_ARGS, (String) null);
-		if(vmArgs != null) {
-			return sanitizeString(vmArgs);
-		}
-
-		// no args given
-		return new ArrayList<String>(0);
-	}
-	
-	/**
-	 * @param vmArgs may look like " -Djava.rmi.foo=bar  -Djava.tralla=avalue  "
-	 * @return a {@link List} with ["-Djava.rmi.foo=bar", "-Djava.tralla=avlue"]
-	 */
-	private List<String> sanitizeString(final String vmArgs) {
-		final String[] strings = vmArgs.split(" ");
-		final List<String> results = new ArrayList<String>(strings.length);
-		for (int i = 0; i < strings.length; i++) {
-			final String string = strings[i];
-			if(!"".equals(string) && !" ".equals(string)) {
-				results.add(string.trim());
-			}
-			// additional sanity checks could go here, but the nested process will report errors anyway
-		}
-		return results;
 	}
 
 	/* (non-Javadoc)
