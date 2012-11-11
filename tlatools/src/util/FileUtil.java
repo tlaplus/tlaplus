@@ -320,7 +320,12 @@ public class FileUtil
     public static OutputStream newBFOS(String name)
     {
         File file = new File(name);
-        if (file != null && file.exists())
+        
+        // LL removed file.exists() test on 10 Nov 2012 because
+        // it causes an error when TLC called with -dump option
+        // for a file that doesn't already exist.  Also changed
+        // the error message to something more helpful.
+        if (file != null /* && file.exists() */)
         {
             try
             {
@@ -328,7 +333,7 @@ public class FileUtil
                 return fos;
             } catch (FileNotFoundException e)
             {
-                ToolIO.out.println("***Internal error: Unable to create FileOutStream");
+                ToolIO.out.println("Error: Unable to write to file " + name);
             }
         }
         return null;

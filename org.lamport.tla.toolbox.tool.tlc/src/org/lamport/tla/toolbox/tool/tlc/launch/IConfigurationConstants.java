@@ -32,7 +32,11 @@ public interface IConfigurationConstants
     /**
      * Additional VM args for distributed version of TLC
      */
-	public static final String LAUNCH_DISTRIBUTED_ARGS = "distributedTLCVMArgs";
+	public static final String LAUNCH_JVM_ARGS = "distributedTLCVMArgs";
+    /**
+     * Additional VM args for distributed version of TLC
+     */
+	public static final String LAUNCH_TLC_PARAMETERS = "TLCCmdLineParameters";
     /**
      * Pre-flight script (primarily for distributed version of TLC)
      */

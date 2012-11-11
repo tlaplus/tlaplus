@@ -85,6 +85,15 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=264
      */
     private Spinner maxSetSize;
+    /**
+	 * Text box to pass additional/extra JVM arguments/system properties to
+	 * nested TLC java process.
+	 */
+    private Text extraVMArgumentsText;
+    /**
+	 * Text box to pass additional/extra parameters to nested process.
+	 */
+    private Text extraTLCParametersText;
     
     private TableViewer definitionsTable;
 
@@ -179,6 +188,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
         maxSetSize.setSelection(getConfig().getAttribute(LAUNCH_MAXSETSIZE, defaultMaxSetSize));
+        
+        // Extra JVM arguments and system properties
+        final String vmArgs = getConfig().getAttribute(LAUNCH_JVM_ARGS, LAUNCH_JVM_ARGS_DEFAULT);
+        this.extraVMArgumentsText.setText(vmArgs);
+
+        // Extra JVM arguments and system properties
+        final String tlcParameters = getConfig().getAttribute(LAUNCH_TLC_PARAMETERS, LAUNCH_TLC_PARAMETERS_DEFAULT);
+        this.extraTLCParametersText.setText(tlcParameters);
     }
 
     /**
@@ -252,6 +269,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         String actionConstraintFormula = FormHelper.trimTrailingSpaces(actionConstraintSource.getDocument().get());
         getConfig().setAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintFormula);
 
+        // extra vm arguments
+        final String vmArgs = this.extraVMArgumentsText.getText();
+        getConfig().setAttribute(LAUNCH_JVM_ARGS, vmArgs);
+
+        // extra tlc parameters
+        final String tlcParameters = this.extraTLCParametersText.getText();
+        getConfig().setAttribute(LAUNCH_TLC_PARAMETERS, tlcParameters);
+      
         super.commit(onSave);
     }
 
@@ -699,6 +724,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         dfidOption.addSelectionListener(launchListener);
         mcOption.addSelectionListener(launchListener);
         viewSource.addTextListener(launchListener);
+        extraTLCParametersText.addModifyListener(launchListener);
+        extraVMArgumentsText.addModifyListener(launchListener);
 
         // add section ignoring listeners
         dirtyPartListeners.add(newDefinitionsListener);
@@ -912,6 +939,38 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         		ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
         maxSetSize.setSelection(defaultMaxSetSize);
     
+		// Extra/Additional VM arguments and system properties
+        FormText vmArgsLabel = toolkit.createFormText(area, true);
+        vmArgsLabel.setText("JVM arguments:", false, false);
+
+        extraVMArgumentsText = toolkit.createText(area, "", SWT.MULTI | SWT.WRAP);
+        extraVMArgumentsText.setEditable(true);
+        extraVMArgumentsText
+        .setToolTipText("Optionally pass additional JVM arguments to TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
+        extraVMArgumentsText.addFocusListener(focusListener);
+        gd = new GridData();
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 20;
+        gd.widthHint = 300;
+        gd.heightHint = 40;
+        extraVMArgumentsText.setLayoutData(gd);
+
+		// Extra/Additional TLC arguments
+        FormText tlcParamsLabel = toolkit.createFormText(area, true);
+        tlcParamsLabel.setText("TLC command line parameters:", false, false);
+
+        extraTLCParametersText = toolkit.createText(area, "", SWT.MULTI | SWT.WRAP);
+        extraTLCParametersText.setEditable(true);
+        extraTLCParametersText
+        .setToolTipText("Optionally pass additional TLC process parameters (e.g. -Dcheckpoint 0)");
+        extraTLCParametersText.addFocusListener(focusListener);
+        gd = new GridData();
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 20;
+        gd.widthHint = 300;
+        gd.heightHint = 40;
+        extraTLCParametersText.setLayoutData(gd);
+        
         return advancedSection;
     }
 }

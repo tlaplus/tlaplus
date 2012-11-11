@@ -1,5 +1,11 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
@@ -22,8 +28,8 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.result.IResultPresenter;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.ToolboxJob;
 
 import tlc2.TLCGlobals;
 
@@ -113,7 +119,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
      */
     protected String[] constructProgramArguments() throws CoreException
     {
-        Vector<String> arguments = new Vector<String>();
+    	Map<String, String> arguments = new HashMap<String, String>();
         ILaunchConfiguration config = launch.getLaunchConfiguration();
 
         // deadlock
@@ -121,12 +127,11 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                 IModelConfigurationDefaults.MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
         if (!checkDeadlock) /* "!" added by LL on 22 Aug 2009 */
         {
-            arguments.add("-deadlock");
+            arguments.put("-deadlock", null);
         }
 
         // adjust checkpointing
-        arguments.add("-checkpoint");
-        arguments.add(String.valueOf(CHECKPOINT_INTERVAL));
+       	arguments.put("-checkpoint", String.valueOf(CHECKPOINT_INTERVAL));
 
         boolean hasSpec = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT) != IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_NO_SPEC;
 
@@ -144,20 +149,18 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                     // for depth-first run, look for the depth
                     int dfidDepth = config.getAttribute(IModelConfigurationConstants.LAUNCH_DFID_DEPTH,
                             IModelConfigurationDefaults.LAUNCH_DFID_DEPTH_DEFAULT);
-                    arguments.add("-dfid");
-                    arguments.add(String.valueOf(dfidDepth));
+                    arguments.put("-dfid", String.valueOf(dfidDepth));
                 }
             } else
             {
-                arguments.add("-simulate");
+                arguments.put("-simulate", null);
 
                 // look for advanced simulation parameters
                 int traceDepth = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_DEPTH,
                         IModelConfigurationDefaults.LAUNCH_SIMU_DEPTH_DEFAULT);
                 if (traceDepth != IModelConfigurationDefaults.LAUNCH_SIMU_DEPTH_DEFAULT)
                 {
-                    arguments.add("-depth");
-                    arguments.add(String.valueOf(traceDepth));
+                    arguments.put("-depth", String.valueOf(traceDepth));
                 }
 
                 int aril = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_ARIL,
@@ -166,13 +169,11 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                         IModelConfigurationDefaults.LAUNCH_SIMU_SEED_DEFAULT);
                 if (aril != IModelConfigurationDefaults.LAUNCH_SIMU_ARIL_DEFAULT)
                 {
-                    arguments.add("-aril");
-                    arguments.add(String.valueOf(aril));
+                    arguments.put("-aril", String.valueOf(aril));
                 }
                 if (seed != IModelConfigurationDefaults.LAUNCH_SIMU_SEED_DEFAULT)
                 {
-                    arguments.add("-seed");
-                    arguments.add(String.valueOf(seed));
+                    arguments.put("-seed", String.valueOf(seed));
                 }
             }
         }
@@ -187,8 +188,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                 IResource[] checkpoints = ModelHelper.getCheckpoints(config, false);
                 if (checkpoints.length > 0)
                 {
-                    arguments.add("-recover");
-                    arguments.add(checkpoints[0].getName());
+                    arguments.put("-recover", checkpoints[0].getName());
                 }
             }
         }
@@ -196,50 +196,65 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         // fpBits
         int fpBits = launch.getLaunchConfiguration().getAttribute(LAUNCH_FPBITS, -1);
         if(fpBits >= 0) {
-        	arguments.add("-fpbits");
-        	arguments.add(String.valueOf(fpBits));
+        	arguments.put("-fpbits", String.valueOf(fpBits));
         }
         
         // fp seed offset (decrease by one to map from [1, 64] interval to [0, 63] array address
         final int fpSeedOffset = launch.getLaunchConfiguration().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
-        arguments.add("-fp");
-        arguments.add(String.valueOf(fpSeedOffset - 1));
+        arguments.put("-fp", String.valueOf(fpSeedOffset - 1));
         
         // add maxSetSize argument if not equal to the default
         // code added by LL on 9 Mar 2012
         final int maxSetSize = launch.getLaunchConfiguration().getAttribute(
                 LAUNCH_MAXSETSIZE, TLCGlobals.setBound);
         if (maxSetSize != TLCGlobals.setBound) {
-            arguments.add("-maxSetSize");
-            arguments.add(String.valueOf(maxSetSize));
+            arguments.put("-maxSetSize", String.valueOf(maxSetSize));
         }
         
-        arguments.add("-config");
-        arguments.add(cfgFile.getName()); // configuration file
+        arguments.put("-config", cfgFile.getName()); // configuration file
 
         // Should not add a coverage option only if TLC is being run
         // without a spec. This change added 10 Sep 2009 by LL & DR
         if (config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT) != MODEL_BEHAVIOR_TYPE_NO_SPEC)
         {
-            arguments.add("-coverage");
-            arguments.add(String.valueOf(COVERAGE_INTERVAL)); // coverage 0.1
-            // hour
+        	// coverage 0.1 hour
+        	arguments.put("-coverage", String.valueOf(COVERAGE_INTERVAL)); 
         }
-        arguments.add("-workers");
-        arguments.add(String.valueOf(workers)); // number of workers
-        // arguments.add("-debug"); // debugging only
-        arguments.add("-tool"); // run in tool mode
-        arguments.add("-metadir");
-        arguments.add(launchDir.getLocation().toOSString()); // running in
-        // directory
-        arguments.add(ResourceHelper.getModuleName(rootModule)); // name of the
-        // module to
-        // check
+        
+        // number of workers
+        arguments.put("-workers", String.valueOf(workers));
+        
+        // debugging only
+        //arguments.put("-debug", null); 
+        
+        // run in tool mode
+        arguments.put("-tool", null);
+        
+        // running in directory
+        arguments.put("-metadir", launchDir.getLocation().toOSString()); 
+        
+		// name of the module to check
+        arguments.put(ResourceHelper.getModuleName(rootModule), null); 
 
-        return (String[]) arguments.toArray(new String[arguments.size()]);
+        // Replace any of the above parameters if explicitly given as extra TLC parameters
+		final ILaunchConfiguration launchConfig = launch.getLaunchConfiguration();
+		final String tlcParameters = launchConfig.getAttribute(LAUNCH_TLC_PARAMETERS, (String) null);
+		arguments.putAll(parseTLCParameters(tlcParameters));
+
+        // Convert Map<String, String> of arguments to String[]
+		final List<String> res = new ArrayList<String>(arguments.size());
+		final Iterator<Entry<String, String>> iterator = arguments.entrySet().iterator();
+		while(iterator.hasNext()) {
+			Entry<String, String> elem = iterator.next();
+			res.add(elem.getKey());
+			if (elem.getValue() != null) {
+				res.add(elem.getValue());
+			}
+		}
+        return (String[]) res.toArray(new String[arguments.size()]);
     }
 
-    /**
+	/**
      * Returns the action that tells all registered result
      * presenters to show results. Result presenters are registered
      * using the extension point {@link IResultPresenter#EXTENSION_ID}.
@@ -330,4 +345,36 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         return validExtensions.toArray(new IResultPresenter[validExtensions.size()]);
     }
 
+    /**
+	 * Accepts a list like "-checkpoint 0 -workers 8 -tool" and creates a Map of
+	 * "-checkpoint=0, -workers=8, -tool=null".<br>
+	 * It does _not_ handle single non-command parameters like the name of the
+	 * model file! This should generally be passed by the toolbox automatically.
+	 * 
+	 * @param tlcParameters
+	 * @return
+	 */
+    private Map<String, String> parseTLCParameters(final String tlcParameters) {
+    	if (tlcParameters == null || "".equals(tlcParameters)) {
+    		return new HashMap<String, String>();
+    	} else {
+    		// use dash as a delimiter (prepend it later)
+    		final String[] strings = tlcParameters.trim().split("-");
+    		
+    		final Map<String, String> res = new HashMap<String, String>(strings.length);
+    		
+    		for (int i = 0; i < strings.length; i++) {
+    			if (!"".equals(strings[i])) {
+    				String[] split = strings[i].split(" ");
+    				if (split.length == 2) {
+    					res.put("-" + split[0].trim(), split[1].trim());
+    				} else {
+    					res.put("-" + split[0].trim(), null);
+    				}
+    			}
+			}
+    		
+    		return res;
+    	}
+	}
 }
