@@ -693,7 +693,10 @@ public class MP
 			b.append("Worker: %1% Sent: %2% Rcvd: %3% CacheRatio: %4% (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_DISTRIBUTED_SERVER_NOT_RUNNING:
-            b.append("TLCServer is gone, exiting worker... (").append(SDF.format(new Date())).append(")");
+            b.append("TLCServer is gone due to %1%, exiting worker... (").append(SDF.format(new Date())).append(")");
+            break;
+        case EC.TLC_DISTRIBUTED_SERVER_FINISHED:
+            b.append("TLCServer has finished, exiting worker... (").append(SDF.format(new Date())).append(")");
             break;
 		case EC.TLC_DISTRIBUTED_VM_VERSION:
 			b.append(

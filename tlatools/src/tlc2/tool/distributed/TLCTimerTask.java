@@ -8,15 +8,20 @@ import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.distributed.TLCWorker.TLCWorkerRunnable;
 
 /**
- * Periodically checks if the server is still alive and exists the worker otherwise
+ * Periodically checks if the server is still alive and exits the worker otherwise
  */
 public class TLCTimerTask extends TimerTask {
+	private final static Logger LOGGER = Logger.getLogger(TLCTimerTask.class.getName());
+
+	private static final int TIMEOUT = Integer.getInteger(TLCTimerTask.class.getName() + ".timeout", 60) * 1000;
 
 	private final String serverUrl;
 	private final TLCWorkerRunnable[] runnables;
@@ -35,19 +40,19 @@ public class TLCTimerTask extends TimerTask {
 		
 		long lastInvocation = getMostRecentInvocation();
 		long now = new Date().getTime();
-		if(lastInvocation == 0 || (now - lastInvocation) > 60000) {
+		if(lastInvocation == 0 || (now - lastInvocation) > TIMEOUT) {
 			try {
 				final TLCServerRMI server = (TLCServerRMI) Naming.lookup(serverUrl);
 				if(server.isDone()) {
-					exitWorker();
+					exitWorker(null);
 				}
 			} catch (MalformedURLException e) {
 				// not expected to happen
-				MP.printError(EC.GENERAL, e);
+				LOGGER.log(Level.FINEST, "Failed to exit worker", e);
 			} catch (RemoteException e) {
-				exitWorker();
+				exitWorker(e);
 			} catch (NotBoundException e) {
-				exitWorker();
+				exitWorker(e);
 			}
 		}
 	}
@@ -62,14 +67,19 @@ public class TLCTimerTask extends TimerTask {
 		return minInvocation;
 	}
 
-	private void exitWorker() {
-		MP.printError(EC.TLC_DISTRIBUTED_SERVER_NOT_RUNNING);
+	private void exitWorker(Throwable e) {
+		if (e != null) {
+			MP.printError(EC.TLC_DISTRIBUTED_SERVER_NOT_RUNNING, e);
+		} else {
+			MP.printError(EC.TLC_DISTRIBUTED_SERVER_FINISHED);
+		}
 		for (int i = 0; i < runnables.length; i++) {
 			try {
 				TLCWorkerRunnable runnable = runnables[i];
 				runnable.getTLCWorker().exit();
-			} catch (NoSuchObjectException e) {
+			} catch (NoSuchObjectException ex) {
 				// not expected to happen
+				LOGGER.log(Level.FINEST, "Failed to exit worker", ex);
 			}
 		}
 		// Cancel this time after having exited the worker. Otherwise we keep on

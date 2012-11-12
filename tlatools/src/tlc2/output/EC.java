@@ -156,6 +156,7 @@ public interface EC
     public static final int TLC_DISTRIBUTED_EXCEED_BLOCKSIZE = TLC_DISTRIBUTED_WORKER_LOST + 1;
     public static final int TLC_DISTRIBUTED_SERVER_FPSET_WAITING = TLC_DISTRIBUTED_EXCEED_BLOCKSIZE + 1;
     public static final int TLC_DISTRIBUTED_SERVER_FPSET_REGISTERED = TLC_DISTRIBUTED_SERVER_FPSET_WAITING + 1;
+    public static final int TLC_DISTRIBUTED_SERVER_FINISHED = TLC_DISTRIBUTED_SERVER_FPSET_REGISTERED + 1;
     
     // errors during parsing of the model configuration
     
