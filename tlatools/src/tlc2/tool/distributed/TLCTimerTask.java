@@ -19,7 +19,7 @@ import tlc2.tool.distributed.TLCWorker.TLCWorkerRunnable;
  * Periodically checks if the server is still alive and exits the worker otherwise
  */
 public class TLCTimerTask extends TimerTask {
-	private final static Logger LOGGER = Logger.getLogger(TLCTimerTask.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(TLCTimerTask.class.getName());
 
 	private static final int TIMEOUT = Integer.getInteger(TLCTimerTask.class.getName() + ".timeout", 60) * 1000;
 
@@ -37,10 +37,7 @@ public class TLCTimerTask extends TimerTask {
 	 * @see java.util.TimerTask#run()
 	 */
 	public void run() {
-		
-		long lastInvocation = getMostRecentInvocation();
-		long now = new Date().getTime();
-		if(lastInvocation == 0 || (now - lastInvocation) > TIMEOUT) {
+		if(noActivityWithin(TIMEOUT)) {
 			try {
 				final TLCServerRMI server = (TLCServerRMI) Naming.lookup(serverUrl);
 				if(server.isDone()) {
@@ -56,12 +53,34 @@ public class TLCTimerTask extends TimerTask {
 			}
 		}
 	}
+	
+	private boolean noActivityWithin(int timeout) {
+		long lastInvocation = getMostRecentInvocation();
+		if (lastInvocation == -1) {
+			return false;
+		} else {
+			long now = new Date().getTime();
+			return lastInvocation == 0 || (now - lastInvocation) > timeout;
+		}
+	}
 
 	private long getMostRecentInvocation() {
 		long minInvocation = 0L;
 		for (int i = 0; i < runnables.length; i++) {
-			TLCWorkerRunnable runnable = runnables[i];
-			long lastInvocation = runnable.getTLCWorker().getLastInvocation();
+			TLCWorker tlcWorker = runnables[i].getTLCWorker();
+			/*
+			 * If one of the TLCworker threads is computing states, we assume
+			 * the TLCMaster/TLCServer to still be alive. At least we definitely
+			 * want to finish the computation first. Under the condition of a
+			 * server crash, all workers will eventually converge into a
+			 * non-computing state though. Then, lastInvocation is going to
+			 * matter. The same is the case, when the master is slow to request
+			 * states from workers.
+			 */
+			if (tlcWorker.isComputing()) {
+				return -1L;
+			}
+			long lastInvocation = tlcWorker.getLastInvocation();
 			minInvocation = Math.max(minInvocation, lastInvocation);
 		}
 		return minInvocation;

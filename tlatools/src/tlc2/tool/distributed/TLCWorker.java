@@ -52,6 +52,10 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private DistApp work;
 	private IFPSetManager fpSetManager;
 	private final URI uri;
+	/**
+	 * Indicate whether the worker is busy computing states
+	 */
+	private volatile boolean computing = false;
 	private long lastInvocation;
 	private long overallStatesComputed;
 	
@@ -82,6 +86,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 */
 	public synchronized NextStateResult getNextStates(final TLCState[] states)
 			throws WorkerException, RemoteException {
+		
+		computing = true;
 		
 		// statistics
 		lastInvocation = System.currentTimeMillis();
@@ -181,6 +187,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			throw new RemoteException("OutOfMemoryError occurred at worker: " + uri.toASCIIString(), e);
 		} catch (Throwable e) {
 			throw new WorkerException(e.getMessage(), e, state1, state2, true);
+		} finally {
+			computing = false;
 		}
 	}
 
@@ -261,8 +269,12 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		return 0;
 	}
 
-	public long getLastInvocation() {
+	long getLastInvocation() {
 		return lastInvocation;
+	}
+	
+	boolean isComputing() {
+		return computing;
 	}
 	
 	public static void main(String args[]) {
