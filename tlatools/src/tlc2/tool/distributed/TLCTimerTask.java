@@ -38,8 +38,14 @@ public class TLCTimerTask extends TimerTask {
 	 */
 	public void run() {
 		if(noActivityWithin(TIMEOUT)) {
+			// If we haven't seen any activity within the timeout, we
+			// actively call the server to find out if it is still alive and
+			// model checking is ongoing.
 			try {
+				// If the master has crashed, the RMI lookup is going to fail
 				final TLCServerRMI server = (TLCServerRMI) Naming.lookup(serverUrl);
+				// At this point the master is responsive, but model checking
+				// might has ended already
 				if(server.isDone()) {
 					exitWorker(null);
 				}
@@ -54,9 +60,11 @@ public class TLCTimerTask extends TimerTask {
 		}
 	}
 	
-	private boolean noActivityWithin(int timeout) {
+	private boolean noActivityWithin(final int timeout) {
 		long lastInvocation = getMostRecentInvocation();
 		if (lastInvocation == -1) {
+			// The worker is currently computing states, thus we count this as
+			// an activity
 			return false;
 		} else {
 			long now = new Date().getTime();
