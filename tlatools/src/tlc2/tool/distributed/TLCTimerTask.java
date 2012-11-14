@@ -19,6 +19,8 @@ import tlc2.tool.distributed.TLCWorker.TLCWorkerRunnable;
  * Periodically checks if the server is still alive and exits the worker otherwise
  */
 public class TLCTimerTask extends TimerTask {
+	public static final long PERIOD = 60000L;
+	
 	private static final Logger LOGGER = Logger.getLogger(TLCTimerTask.class.getName());
 
 	private static final int TIMEOUT = Integer.getInteger(TLCTimerTask.class.getName() + ".timeout", 60) * 1000;
