@@ -14,6 +14,11 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Worker;
 import util.Assert;
 
+/**
+ * 
+ */
+// TODO-MAK - Why do consumer/producer game on StateQueue when workers could
+// maintaine thread local StateQueue until it gets empty?
 public abstract class StateQueue implements IStateQueue {
 	/**
 	 * In model checking, this is the sequence of states waiting to be explored

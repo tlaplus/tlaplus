@@ -53,6 +53,9 @@ import util.FileUtil;
  * By doing so, we lose one bit of the fingerprint. However, we will get this
  * bit back if using MultiFPSet.
  */
+// TODO-MAK Overlap flushTable-to-disk with reads
+// TODO-MAK Flush asynchronously and with multiple threads (Exploit SSD support
+// for multiple concurrent readers)
 @SuppressWarnings("serial")
 public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 

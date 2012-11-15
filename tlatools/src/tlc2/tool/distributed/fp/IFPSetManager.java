@@ -9,6 +9,9 @@ import tlc2.tool.distributed.fp.FPSetManager.FPSets;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
+/**
+ *
+ */
 public interface IFPSetManager extends Serializable {
 
 	/**
