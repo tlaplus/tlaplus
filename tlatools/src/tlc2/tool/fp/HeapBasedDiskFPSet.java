@@ -85,7 +85,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 	 */
 	public long sizeof() {
 		long size = 44; // approx size of this DiskFPSet object
-		acquireAllLocks();
+		rwLock.acquireAllLocks();
 		size += 16 + (this.tbl.length * 4); // for this.tbl
 		for (int i = 0; i < this.tbl.length; i++) {
 			if (this.tbl[i] != null) {
@@ -95,7 +95,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		}
 		// size of index array if non-null
 		size += getIndexCapacity() * 4;
-		releaseAllLocks();
+		rwLock.releaseAllLocks();
 		return size;
 	}
 

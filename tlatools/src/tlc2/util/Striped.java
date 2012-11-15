@@ -26,4 +26,17 @@ public class Striped {
 	public int size() {
 		return locks.length;
 	}
+
+	public void releaseAllLocks() {
+		for (int i = size() - 1; i >= 0; i--) {
+			this.locks[i].writeLock().unlock();
+		}
+	}
+
+	public void acquireAllLocks() {
+		//TODO find way to do this more efficiently
+		for (int i = 0; i < size(); i++) {
+			this.locks[i].writeLock().lock();
+		}
+	}
 }

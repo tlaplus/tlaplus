@@ -405,13 +405,13 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			long timestamp = System.currentTimeMillis();
 			
 			// acquire _all_ write locks
-			acquireAllLocks();
+			rwLock.acquireAllLocks();
 			
 			// flush memory entries to disk
 			flusher.flushTable();
 			
 			// release _all_ write locks
-			releaseAllLocks();
+			rwLock.releaseAllLocks();
 			
 			// reset forceFlush to false
 			forceFlush = false;
@@ -427,21 +427,6 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		}
 		w.unlock();
 		return false;
-	}
-
-	protected void releaseAllLocks() {
-		int size = this.rwLock.size();
-		for (int i = size - 1; i >= 0; i--) {
-			this.rwLock.getAt(i).writeLock().unlock();
-		}
-	}
-
-	protected void acquireAllLocks() {
-		//TODO find way to do this more efficiently
-		int size = this.rwLock.size();
-		for (int i = 0; i < size; i++) {
-			this.rwLock.getAt(i).writeLock().lock();
-		}
 	}
 
 	/**
@@ -786,14 +771,14 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	public final void beginChkpt(String fname) throws IOException {
 		
 		this.flusherChosen.set(true);
-		acquireAllLocks();
+		rwLock.acquireAllLocks();
 		
 		flusher.flushTable();
 		FileUtil.copyFile(this.fpFilename,
 				this.getChkptName(fname, "tmp"));
 		checkPointMark++;
 
-		releaseAllLocks();
+		rwLock.releaseAllLocks();
 		this.flusherChosen.set(false);
 	}
 
@@ -959,7 +944,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#checkInvariant()
 	 */
 	public boolean checkInvariant() throws IOException {
-		acquireAllLocks();
+		rwLock.acquireAllLocks();
 		flusher.flushTable(); // No need for any lock here
 		final RandomAccessFile braf = new BufferedRandomAccessFile(
 				this.fpFilename, "r");
@@ -977,7 +962,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			}
 		} finally {
 			braf.close();
-			releaseAllLocks();
+			rwLock.releaseAllLocks();
 		}
 		return true;
 	}
