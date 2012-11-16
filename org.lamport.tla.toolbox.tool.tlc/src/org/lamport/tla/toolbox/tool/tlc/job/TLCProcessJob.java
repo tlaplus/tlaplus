@@ -191,14 +191,15 @@ public class TLCProcessJob extends TLCJob
                             process.terminate();
                         } catch (DebugException e)
                         {
-                            // react on the status code
-                            switch (e.getStatus().getCode()) {
-                            case DebugException.TARGET_REQUEST_FAILED:
-                            case DebugException.NOT_SUPPORTED:
-                            default:
-                                return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-                                        "Error terminating the running TLC instance. This is a bug. Make sure to exit the toolbox.");
-                            }
+							// react on the status code
+							switch (e.getStatus().getCode()) {
+							case DebugException.TARGET_REQUEST_FAILED:
+							case DebugException.NOT_SUPPORTED:
+							default:
+								//MAK 11/2012: Remove e (throwable) once Chris' problem cancellation has been diagnosed
+								return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+										"Error terminating the running TLC instance. This is a bug. Make sure to exit the toolbox.", e);
+							}
                         }
 
                         // abnormal termination
