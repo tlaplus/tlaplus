@@ -952,7 +952,10 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
             pcalEndCommentOffset = -1 ;
             break ;
         case START_ALGORITHM :
-            System.out.println("Error in TLAFastPartioner.documentChanged2: line 917") ;
+            // Error message commented out by LL on 21 Nov 2012 because execution
+            // seems to get here on any change that lies completely before
+            // the beginning of the algorithm.
+            // System.out.println("Error in TLAFastPartioner.documentChanged2: line 917") ;
             break ;
         case IN_ALGORITHM :
            // I originally had the following, but I believe it was incorrect.  
