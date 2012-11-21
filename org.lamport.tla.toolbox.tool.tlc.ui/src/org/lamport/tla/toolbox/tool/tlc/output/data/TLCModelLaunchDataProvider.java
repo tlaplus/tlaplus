@@ -607,8 +607,15 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                     {
                                         // invariants and properties
                                         List<Formula> valueList = ModelHelper.deserializeFormulaList(attributeValue);
-                                        Formula value = (Formula) valueList.get(attributeNumber);
-                                        idReplacement = value.getFormula();
+                                        
+                                        // @see bug #98 (if root cause has been fixed, remove if/else)
+                                        if (valueList.size() >= (attributeNumber + 1)) {
+                                        	Formula value = valueList.get(attributeNumber);
+                                        	idReplacement = value.getFormula();
+                                        } else {
+                                            idReplacement = "'No value in valueList " + attributeValue + " for " + attributeNumber
+													+ ". Bug in TLCModelLaunchDataProvider.'";
+                                        }
                                     }
                                 } else
                                 {

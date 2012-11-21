@@ -858,7 +858,10 @@ public class MP
             b.append("The %1% of %2% is equal to %3%");
             break;
         case EC.TLC_CONFIG_MISSING_INIT:
-            b.append("The configuration file did not specify the initial state predicate.");
+            b.append("The configuration file did not specify the initial state predicate." +
+                     // Following part of error message added by LL on 15 Nov 2012
+                     "\nCan also be caused by trying to run TLC on a specification from" +
+                     "\na module imported with a parameterized INSTANCE statement.");
             break;
         case EC.TLC_CONFIG_MISSING_NEXT:
             b.append("The configuration file did not specify the next state predicate.");
