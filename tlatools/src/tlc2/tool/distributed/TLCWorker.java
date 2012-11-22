@@ -23,6 +23,7 @@ import java.util.Timer;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -185,6 +186,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			throw e;
 		} catch (OutOfMemoryError e) {
 			throw new RemoteException("OutOfMemoryError occurred at worker: " + uri.toASCIIString(), e);
+		} catch (RejectedExecutionException e) {
+			throw new RemoteException("Executor rejected task at worker: " + uri.toASCIIString(), e);
 		} catch (Throwable e) {
 			throw new WorkerException(e.getMessage(), e, state1, state2, true);
 		} finally {
