@@ -180,33 +180,35 @@ public class TLCProcessJob extends TLCJob
                 process.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
 
                 // loop until the process is terminated
-                while (checkAndSleep())
-                {
-                    // check the cancellation status
-                    if (monitor.isCanceled())
-                    {
-                        // cancel the TLC
-                        try
-                        {
-                            process.terminate();
-                        } catch (DebugException e)
-                        {
+				while (checkAndSleep()) {
+					// check the cancellation status
+					if (monitor.isCanceled()) {
+						// cancel the TLC
+						try {
+							process.terminate();
+						} catch (DebugException e) {
 							// react on the status code
 							switch (e.getStatus().getCode()) {
 							case DebugException.TARGET_REQUEST_FAILED:
 							case DebugException.NOT_SUPPORTED:
 							default:
-								//MAK 11/2012: Remove e (throwable) once Chris' problem cancellation has been diagnosed
-								return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-										"Error terminating the running TLC instance. This is a bug. Make sure to exit the toolbox.", e);
+								// MAK 11/2012: Remove e.getStatus().getCode()
+								// and e (throwable) once Chris' problem
+								// cancellation has been diagnosed
+								return new Status(
+										IStatus.ERROR,
+										TLCActivator.PLUGIN_ID,
+										e.getStatus().getCode(),
+										"Error terminating the running TLC instance. This is a bug. Make sure to exit the toolbox.",
+										e);
 							}
-                        }
+						}
 
-                        // abnormal termination
-                        tlcEndTime = System.currentTimeMillis();
-                        return Status.CANCEL_STATUS;
-                    }
-                }
+						// abnormal termination
+						tlcEndTime = System.currentTimeMillis();
+						return Status.CANCEL_STATUS;
+					}
+				}
 
                 // step 6
                 monitor.worked(STEP);
