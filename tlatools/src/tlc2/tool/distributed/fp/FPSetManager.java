@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -41,6 +42,9 @@ import util.ToolIO;
  */
 @SuppressWarnings("serial")
 public abstract class FPSetManager implements IFPSetManager {
+	
+	private static final Random rnd = new Random();
+	
 	private final static Logger LOGGER = Logger.getLogger(FPSetManager.class.getName());
 
 	protected long mask = 0x7FFFFFFFFFFFFFFFL;
@@ -355,31 +359,39 @@ public abstract class FPSetManager implements IFPSetManager {
 			final Callable<BitVectorWrapper> s = solvers.get(i);
 			try {
 				ecs.submit(s);
-				// reset retry after successfully scheduling a executable
+				// reset retry after successfully scheduling a callable
 				retry = 0;
 			} catch (RejectedExecutionException e) {
 				// Throttle current execution if executor service is rejecting
 				// task due to excessive task submission
 				if (retry++ < 3 && !executorService.isShutdown()) {
+					// Determine sleep interval [1,5] randomly to prevent all waiters
+					// from retrying at the same moment.
+					int sleep = 1 + rnd.nextInt(5);
+					
 					LOGGER.log(
 							Level.FINE,
-							"{0}. time throttleing task submission due to overload during FPSetManager callable execution #{1}",
+							"{0}. time throttleing task submission due to overload during FPSetManager callable execution #{1} for {2} seconds",
 							new Object[] {retry, i});
 
-					// Sleep for 5 seconds
+					// Sleep for n seconds
 					try {
-						Thread.sleep(5000);
+						Thread.sleep(sleep * 1000L);
 					} catch (InterruptedException e1) {
 						// not expected to happen
 						e1.printStackTrace();
 					}
 					
-					// rewind for loop by one to have it execute for the same
+					// rewind for loop by one to have it schedule the same
 					// callable again
 					i -= 1;
 					continue;
+				} else {
+					// If ExecutorService has been shut down or REE has been
+					// caused for some other reason, re-throw to escalate to
+					// higher level exception handling.
+					throw e;
 				}
-				throw e;
 			}
 		}
 
