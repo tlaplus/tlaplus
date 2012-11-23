@@ -21,6 +21,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import tlc2.output.EC;
 import tlc2.tool.distributed.fp.callable.BitVectorWrapper;
@@ -38,6 +41,7 @@ import util.ToolIO;
  */
 @SuppressWarnings("serial")
 public abstract class FPSetManager implements IFPSetManager {
+	private final static Logger LOGGER = Logger.getLogger(FPSetManager.class.getName());
 
 	protected long mask = 0x7FFFFFFFFFFFFFFFL;
 	/**
@@ -345,9 +349,38 @@ public abstract class FPSetManager implements IFPSetManager {
 	private BitVector[] executeCallablesAndCollect(final ExecutorService executorService, 
 			final List<Callable<BitVectorWrapper>> solvers) {
 		// Have the callables executed by the executor service
+		int retry = 0;
 		final CompletionService<BitVectorWrapper> ecs = new ExecutorCompletionService<BitVectorWrapper>(executorService);
-		for (Callable<BitVectorWrapper> s : solvers) {
-			ecs.submit(s);
+		for (int i = 0; i < solvers.size(); i++) {
+			final Callable<BitVectorWrapper> s = solvers.get(i);
+			try {
+				ecs.submit(s);
+				// reset retry after successfully scheduling a executable
+				retry = 0;
+			} catch (RejectedExecutionException e) {
+				// Throttle current execution if executor service is rejecting
+				// task due to excessive task submission
+				if (retry++ < 3 && !executorService.isShutdown()) {
+					LOGGER.log(
+							Level.FINE,
+							"{0}. time throttleing task submission due to overload during FPSetManager callable execution #{1}",
+							new Object[] {retry, i});
+
+					// Sleep for 5 seconds
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e1) {
+						// not expected to happen
+						e1.printStackTrace();
+					}
+					
+					// rewind for loop by one to have it execute for the same
+					// callable again
+					i -= 1;
+					continue;
+				}
+				throw e;
+			}
 		}
 
 		// Wait for completion of the executor service and convert and return
