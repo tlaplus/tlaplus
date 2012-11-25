@@ -264,6 +264,23 @@ contains more than this number of elements.&nbsp;  TLC enumerates sets when comp
 the set of all initial states.&nbsp;  If you are trying to run a spec with lots of
 initial states, you may have to increase the value of this parameter.
 
+<h3><A name="jvmargs">JVM arguments</A></h3>
+
+These are the arguments given to the Java Virtual Machine when TLC is run on the model.&nbsp;  
+You may need to specify such arguments when running TLC in 
+<a href="distributed-mode.html">distributed mode</a>.
+
+<h3>TLC command line parameters</h3>
+
+These are options given to TLC when it is run on the model.&nbsp;
+An incomplete list of TLC options is given in the
+  <a href="http://www.tlaplus.net/posts/2009/08/command-line-switches/">Command Line Switches</a>
+  posting on the <code>tlaplus.net</code> web page.&nbsp;  
+An option specified here can override an option otherwise specified by the rest of the model,
+which can cause strange things to happen.&nbsp; You should therefore use this
+feature with care.
+  
+
 </p>
 
 <!--  I don't know what I'm saving the following for
