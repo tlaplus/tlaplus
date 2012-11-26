@@ -380,8 +380,16 @@ as independent regions for parenthesis matching.
 
 This command causes the editor to enter or leave block-selection mode.&nbsp;
 In block-selection mode, you can select a rectangular region (which may have zero width).&nbsp;
-You can delete or copy and paste the region.&nbsp;  Typing into a zero-width region
-has an amusing and possibly useful effect.
+You can delete, type into, or copy and paste the region.&nbsp;  Typing space or <code>LeftArrow</code>
+(backspace) into a zero-width region allows you to move a block of text left or right, which
+is useful for adjusting alignment.&nbsp;  In general, typing a single character into
+a zero-width region inserts that character on each line of the region.&nbsp;
+
+<p> 
+The module is displayed in Text Editor Block Selection Font
+instead of Text Font when in Block Selection Mode.&nbsp;  You can change those fonts by 
+selecting <samp>General / Appearance / Colors and Fonts</samp>  on the 
+<a href="../gettingstarted/preferences.html">Preference</a> menu.
 
 
 <h2><a name="key-bindings">Module Editor Key Bindings</a></h2>

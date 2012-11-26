@@ -20,7 +20,7 @@ public class NonLeafProofNode extends ProofNode {
   private LevelNode[] steps = null ;
     /***********************************************************************
     * An array of nodes representing the steps of the proof.  It is read   *
-    * publically by the method getSteps().  Since any non-leaf proof must  *
+    * publicly by the method getSteps().  Since any non-leaf proof must    *
     * end with a QED step, this array has non-zero length.  Here are the   *
     * possible classes of nodes in this array and the proof steps they     *
     * represent.                                                           *

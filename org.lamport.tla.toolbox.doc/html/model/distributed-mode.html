@@ -18,7 +18,7 @@
 Contents
   <a href="#how-it-works">How Distributed TLC Works</a>
   <a href="#running-master">Running the Master from the Toolbox</a>
-  <a href="#running-workers">Running the Workers</a>
+  <a href="#running-workers">Running the Slave Computers</a>
   <a href="#limitations">Limitations of Distributed Mode </a>
   <a href="#help">Getting and Giving Help</a>
 </pre>
@@ -26,18 +26,30 @@ Contents
 
 <a name="how-it-works"></a><h2>How Distributed TLC Works</h2>
 
-TLC consists of a collection of worker threads that do the actual
+TLC has a collection of worker threads that do the actual
 model checking--that is, they compute the graph of reachable states
 and check invariants and other safety properties.&nbsp; There is also
 a master thread that coordinates the worker threads.&nbsp; In ordinary
 (non-distributed) mode, these threads all run on the same Java Virtual
 Machine (JVM) on the same computer as the Toolbox.&nbsp; In
-distributed mode, each thread runs under its own JVM, usually on
-different computers.&nbsp; The master thread runs on the same computer
-as the Toolbox.&nbsp; (In network terminology, the master is a server
-and the workers are clients.)&nbsp; The master and the workers are
-started separately, in any order.
+distributed mode, the threads can be run on multiple computers.&nbsp; 
+The master thread runs on the same computer
+as the Toolbox--a computer we call here the <i>master computer</i>.&nbsp; 
+The threads are run on a collection of <i>slave computers</i>.&nbsp;  Each
+slave computer runs as many threads as it has processors (cores).
 
+<p>
+TLC keeps fingerprints of all states that it has found, which it uses to 
+determine if a newly computed state has already been examined.
+&nbsp;
+
+It writes the set of fingerprints to disk if it becomes too big to fit
+in memory.&nbsp;  Having to read fingerprints from memory slows TLC down
+considerably.&nbsp;  As explained below, you can have distributed TLC  distribute the
+set of fingerprints to multiple slave computers (instead of keeping them
+on the master computer).
+
+</p>
 
 <a name="running-master"></a><h2>Running the Master from the Toolbox</h2>
 
@@ -60,12 +72,15 @@ as is not needed by the operating system and other programs that will
 be running at the same time.&nbsp;  (Note that the <i>Number of worker
 threads</i> parameter in the <i>How to run</i> section applies only to
 running TLC in ordinary, non-distributed mode.)
+</p></p>
 
+<p>
 For distributed mode, you may also want to add special arguments to
 the command that launches the JVM that runs the master.&nbsp; As
 explained <a href="#possible-problem">below</a>, one such argument may
 be needed for the master and the workers to communicate.&nbsp; The
-arguments are put in the <i>Additional JVM arguments</i> field.  </p>
+arguments are put in the <A href="advanced-page.html#jvmargs">JVM arguments</A> field
+of the model's Advanced Options page.  </p>
 
 <p> You start a TLC run in distributed mode as usual by clicking on
 the <IMG SRC="run-icon.gif" Align="bottom"/> button, by selecting
@@ -75,18 +90,31 @@ href="results-page.html">Model Checking Results Page</a> to change to
 <i>Master is waiting for (remote) workers</i> and then to indicate
 that one or more workers have registered with the master.  </p>
 
-<a name="running-workers"></a><h2>Running the Workers</h2>
+<p>
+If you want TLC to store the fingerprint set among slave computers,
+you must run a (single) <i>fingerprint server</i> on each of them.&nbsp;
+Your model must tell TLC how many fingerprint servers it will use.&nbsp;  If you
+want them stored on 5 fingerprint servers (on 5 slave computers), you specify the following
+<A href="advanced-page.html#jvmargs">JVM argument</A>.
+ 
+<pre>
+   -Dtlc2.tool.distributed.TLCServer.expectedFPSetCount=5
+</pre>
+
+</p>
+<a name="running-workers"></a><h2>Running the Slave Computers</h2>
 
 <p>
 The following are the basic steps that must be accomplished to start
-the workers.&nbsp;  The details of how these steps are performed will vary
+the slaves.&nbsp;  The details of how these steps are performed will vary
 according to the operating system and network configuration that you
-are using.&nbsp;  For help getting the workers started on your system,
-go to (web page).
+are using.&nbsp;  If you have trouble getting distributed TLC to
+work on your system, try finding help on the
+  <A href="https://groups.google.com/forum/?fromgroups#!forum/tlaplus">TLA+ Google group</a>.
 </p>
 
 <p>
-To run the workers, you must have a network of computers that can
+To run the slaves, you must have a network of computers that can
 communicate with one another and with the machine running the master
 and the Toolbox.&nbsp;  We assume that there is some some remote
 management/administration system installed on the computers that run
@@ -96,24 +124,41 @@ or later, must also be installed on the macines.&nbsp;
 </p>
 
 <p>
-There are two basic ways to run a worker thread on a computer that we
-will call the worker computer.&nbsp;  In the following instructions,
-master-computer is the name of the computer running the Toolbox and
-the master.
+There are two basic ways to run a slave computer computer.&nbsp;  In the following instructions,
+<code>master-computer</code> is the name (or IP address) of the master computer.
 </p>
 
 <dl>
 <dt><b>Method 1</b></dt>
+
 <dd>
-Start the Toolbox on the master computer.&nbsp;  Then execute the
-following command in a shell on the worker computer:
+Start the Toolbox on the master computer.&nbsp;  Then doo the following on a
+shell on each slave computer:
 <pre>
    wget http://master-computer:10996/files/tla2tools.jar
 </pre>   
-Then execute this command on that shell:
+Then execute one of the following commands in that slave's shell:
+<ul>
+<li> To run just worker threads on the slave, execute:
 <pre>
   java -cp tla2tools.jar tlc2.tool.distributed.TLCWorker master-computer
-</pre> The <code>wget</code> command downloads the file
+</pre> 
+</li>
+
+<li> To run just a fingerprint on the slave, execute:
+<pre>
+  java -cp tla2tools.jar tlc2.tool.distributed.fp.DistributedFPSet master-computer
+</pre>
+</li>
+
+<li> To run both worker threads and a fingerprint on the slave, execute:
+<pre>
+  java -cp tla2tools.jar tlc2.tool.distributed.fp.TLCWorkerAndFPSet master-computer 
+</pre>
+</li>
+</ul>
+
+The <code>wget</code> command downloads the file
 <code>tla2tools.jar</code> into the current directory on the worker
 machine, the java command actually starts the worker.&nbsp; The
 <code>wget</code> command therefore just has to be executed the first
@@ -121,18 +166,24 @@ time you run a worker, and then whenever you install a new version of
 the Toolbox.&nbsp; The <code>wget</code> command is not part of
 Windows, but can be installed on Windows as part of Cygwin.  </dd>
 
+<p> </P>
 <dt><b>Method 2</b></dt>
 <dd>
 Start the Toolbox on the master computer, and then run a Web browser
 on the worker computer.&nbsp;  In that web browser, enter the url
 <pre>
     http://master-computer:10996
-</pre> This will display a Web page containing a Launch button labeled
+</pre> This will display a Web page containing  buttons to launch
+worker threads, a fingerprint server, or both on the slave.
+
+<!-- COMMENTED OUT
 <i>Launch worker from browser</i>.&nbsp; Clicking on that will
 download the file <code>tla2tools.jar</code> and will execute it,
-starting the worker.  </dd> </dl>
+starting the worker.  
+  END  COMMENTED OUT -->
+</dd> </dl>
 
-<h4><a name="possible-problem"></a>A Possible Problem</h4>
+<h3><a name="possible-problem"></a>A Possible Problem</h3>
 
 The master-computer name you use in the instructions above for running
 the workers is usually a name like <code>jones-home-laptop</code> or
@@ -153,13 +204,15 @@ section:
    -Djava.rmi.server.hostname=192.168.1.10
 </pre>
 
+<!--  COMMENTED OUT
 <h4>Using Multi-Core Worker Machines</h4>
 Currently, workers are single threaded.&nbsp;  You can take advantage of
 multi-core computers by running multiple workers on the same computer,
 using one of the previous methods to start each of the workers.&nbsp;
 The major disadvantage of doing this is that a separate copy of 
 the worker code is loaded into memory for each worker.
-
+    END COMMENTED OUT -->
+    
 <a name="limitations"></a><h2>Limitations of Distributed Mode </h2>
 
 It does not run in depth-first mode or Simulation mode, even if one of
@@ -182,10 +235,12 @@ described above for copying the <code>tla2tools.jar</code> file and
 starting the workers.&nbsp; How this is done will depend on the
 operating system and network configuration.&nbsp; 
 If you need help, try going to 
-the
+the <A href="https://groups.google.com/forum/?fromgroups#!forum/tlaplus">TLA+ Google group</a>.
+ <!-- COMMENTED OUT
 <a href="http://bbpress.tlaplus.net/forum/distributed-tlc" target="_blank">Forum on
 Distributed TLC</a> on the 
   <a href="http://tlaplus.net" target="_blank">tlaplus.net page</a>.&nbsp;
+   END COMMENTED OUT -->
 If you have successfully run TLC in distributed mode, please use that
 Forum to tell others how you did it on your system.
 <hr> 
