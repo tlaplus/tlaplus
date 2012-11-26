@@ -17,7 +17,7 @@
 <pre>
 Contents
   <a href="#how-it-works">How Distributed TLC Works</a>
-  <a href="#running-master">Running the Master from the Toolbox</a>
+  <a href="#running-master">Running the Master</a>
   <a href="#running-workers">Running the Slave Computers</a>
   <a href="#limitations">Limitations of Distributed Mode </a>
   <a href="#help">Getting and Giving Help</a>
@@ -36,7 +36,8 @@ distributed mode, the threads can be run on multiple computers.&nbsp;
 The master thread runs on the same computer
 as the Toolbox--a computer we call here the <i>master computer</i>.&nbsp; 
 The threads are run on a collection of <i>slave computers</i>.&nbsp;  Each
-slave computer runs as many threads as it has processors (cores).
+slave computer can run multiple threads--the default is to run as many threads
+as it has processors (cores).
 
 <p>
 TLC keeps fingerprints of all states that it has found, which it uses to 
@@ -44,14 +45,14 @@ determine if a newly computed state has already been examined.
 &nbsp;
 
 It writes the set of fingerprints to disk if it becomes too big to fit
-in memory.&nbsp;  Having to read fingerprints from memory slows TLC down
+in memory.&nbsp;  Having to read fingerprints from disk slows TLC down
 considerably.&nbsp;  As explained below, you can have distributed TLC  distribute the
 set of fingerprints to multiple slave computers (instead of keeping them
 on the master computer).
 
 </p>
 
-<a name="running-master"></a><h2>Running the Master from the Toolbox</h2>
+<a name="running-master"></a><h2>Running the Master</h2>
 
 <p>
 TLC is run on a <a href="creating-model.html">model</a>.&nbsp;  
@@ -94,12 +95,38 @@ that one or more workers have registered with the master.  </p>
 If you want TLC to store the fingerprint set among slave computers,
 you must run a (single) <i>fingerprint server</i> on each of them.&nbsp;
 Your model must tell TLC how many fingerprint servers it will use.&nbsp;  If you
-want them stored on 5 fingerprint servers (on 5 slave computers), you specify the following
-<A href="advanced-page.html#jvmargs">JVM argument</A>.
+want fingerprints stored on 5 fingerprint servers (5 slave computers), you specify the following
+<A href="advanced-page.html#jvmargs">JVM argument</A>:
  
 <pre>
    -Dtlc2.tool.distributed.TLCServer.expectedFPSetCount=5
 </pre>
+</p>
+
+<p>
+By default, each slave that runs workers runs as many worker threads
+as it has processors.&nbsp;  Running that many threads on the slave might
+cause problems with some operating system.&nbsp;   The following JVM argument causes
+each slave to run 5 threads:
+<pre>
+   -Dtlc2.tool.distributed.TLCWorker.threadCount=5
+</pre>
+</p>
+<p>
+If your model will run for a long time (days or weeks), you may not want to 
+keep the Toolbox open for the entire run.&nbsp;  Instead, you can run TLC from 
+a command line.&nbsp;  
+
+The easiest way to do this is to create the model
+in the Toolbox, and <a href="executing-tlc.html#validating">validate it</a>.&nbsp; 
+
+You can then run distributed
+TLC in the <a href="executing-tlc.html#MC">model's subdirectory of the <code>.toolbox</code> directory</a>
+with the following command:
+<pre>
+   java tlc2.tool.distributed.TLCServer MC
+</pre>
+JVM arguments must follow the <code>java</code>.
 
 </p>
 <a name="running-workers"></a><h2>Running the Slave Computers</h2>
@@ -120,7 +147,7 @@ and the Toolbox.&nbsp;  We assume that there is some some remote
 management/administration system installed on the computers that run
 the workers.&nbsp;  Examples of such a system are Remote Desktop (Windows),
 ssh, rsh, and telnet.&nbsp;  A Java Runtime Environment (JRE), version 1.5
-or later, must also be installed on the macines.&nbsp;
+or later, must also be installed on the machines.&nbsp;
 </p>
 
 <p>
@@ -132,7 +159,7 @@ There are two basic ways to run a slave computer computer.&nbsp;  In the followi
 <dt><b>Method 1</b></dt>
 
 <dd>
-Start the Toolbox on the master computer.&nbsp;  Then doo the following on a
+Start the Toolbox on the master computer.&nbsp;  Then do the following on a
 shell on each slave computer:
 <pre>
    wget http://master-computer:10996/files/tla2tools.jar
@@ -196,9 +223,8 @@ worker not to be able to communicate with the master because they are
 using different IP addresses.&nbsp;  To solve this problem, choose one of
 those IP addresses--say <code>192.168.1.10</code>.  Use that address
 as the master-computer name in the instructions above for running the
-workers, and put the following argument in the <i>Additional JVM
-arguments</i> field of the Model Overview's <i>How to run?</i>
-section:
+workers, add the following  <A href="advanced-page.html#jvmargs">JVM argument</A>
+to the model:
 
 <pre>
    -Djava.rmi.server.hostname=192.168.1.10
