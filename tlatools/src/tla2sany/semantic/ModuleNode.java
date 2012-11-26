@@ -298,6 +298,10 @@ public class ModuleNode extends SymbolNode {
   // Required for SymbolNode interface.
   public final int getArity() { return -2; }
 
+  /**
+   * This just returns null.  I don't know why its needed.
+   * @return
+   */
   public final SymbolTable getSymbolTable() { return null; }
 
   public final Context getContext() { return this.ctxt; }

@@ -293,6 +293,13 @@
             id="org.lamport.tla.toolbox.editor.basic.gotoMatchingParen"
             name="Goto Matching Paren">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.DecomposeProofHandler"
+            description="Raise popup to create proof of selected step."
+            id="org.lamport.tla.toolbox.editor.basic.DecomposeProof"
+            name="Decompose Proof">
+      </command>
 
    </extension>
    <extension
@@ -493,6 +500,12 @@
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+P">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.DecomposeProof"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+A">
       </key>
       
    </extension>
