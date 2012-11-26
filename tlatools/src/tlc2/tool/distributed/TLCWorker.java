@@ -271,8 +271,12 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 			final IFPSetManager fpSetManager = server.getFPSetManager();
 			
-			// spawn as many worker threads as we have cores
-			final int numCores = Runtime.getRuntime().availableProcessors();
+			// spawn twice as many worker threads as we have cores unless user
+			// explicitly passes thread count
+			final int numCores = Integer.getInteger(TLCWorker.class.getName()
+					+ ".threadCount", Runtime.getRuntime()
+					.availableProcessors());
+			
 			runnables = new TLCWorkerRunnable[numCores];
 			for (int j = 0; j < numCores; j++) {
 				runnables[j] = new TLCWorkerRunnable(server, fpSetManager, work);
