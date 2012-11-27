@@ -55,8 +55,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public static final String COMPUTING_REACHABLE = "Computing reachable states";
     public static final String CHECKPOINTING = "Checkpointing";
     public static final String CHECKING_LIVENESS = "Checking liveness";
-    public static final String SERVER_RUNNING = "Master waiting for worker(s)";
-    public static final String WORKER_REGISTERED = " worker(s) registered";
+    public static final String SERVER_RUNNING = "Master waiting for workers";
+    public static final String SINGLE_WORKER_REGISTERED = " worker registered";
+    public static final String MULTIPLE_WORKERS_REGISTERED = " workers registered";
 
     // pattern for the output of evaluating constant expressions
     public static final Pattern CONSTANT_EXPRESSION_OUTPUT_PATTERN = Pattern.compile("(?s)" + ModelWriter.BEGIN_TUPLE
@@ -400,12 +401,20 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_DISTRIBUTED_WORKER_REGISTERED:
-                	this.setCurrentStatus(++numWorkers + WORKER_REGISTERED);
+                	if (++numWorkers <= 1) {
+                		this.setCurrentStatus(numWorkers + SINGLE_WORKER_REGISTERED);
+                	} else {
+                		this.setCurrentStatus(numWorkers + MULTIPLE_WORKERS_REGISTERED);
+                	}
                     informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED:
-                	this.setCurrentStatus(--numWorkers + WORKER_REGISTERED);
+                	if (--numWorkers <= 1) {
+                		this.setCurrentStatus(numWorkers + SINGLE_WORKER_REGISTERED);
+                	} else {
+                		this.setCurrentStatus(numWorkers + MULTIPLE_WORKERS_REGISTERED);
+                	}
                     informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
@@ -868,42 +877,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     {
         return lastCheckpointTimeStamp;
     }
-
-    /**
-     * The following method added by LL on 19 July 2011.
-     * This method is a kludge I added because I find it very inelegant to
-     * see a message saying "1 worker(s) registered"; it tells me that
-     * the programmer doesn't care enough about his program to take the
-     * 30 seconds it should require to produce "1 worker registered" or
-     * "2 workers registered" as appropriate.  However, so many levels of
-     * method calls are used to generate a simple message that adding this
-     * after the fact is not easy.  Hence, this method. 
-     * 
-     * The method assumes that msg is a string such as "24 wild frob(s) are loose"
-     * and changes the "(s)" to either "s" or "" depending on whether or
-     * not frob should be plural.  It returns the original string if it
-     * doesn't contain "(s)".  It assumes it should be plural unless the
-     * string begins with "1 ".
-     *  
-     * @param msg
-     * @return
-     */
-    public static String makeSingularOrPlural(String msg) {
-     String val = msg;
-     if (msg.indexOf("(s)") != -1) {
-    	 if (val.subSequence(0, 2).equals("1 ")) {
- 			val = val.replaceAll("\\(s\\)", "");
- 		} else {
- 			val = val.replaceAll("\\(s\\)", "s");
- 		}
-     }
-     return val;
-    }
     
     public void setCurrentStatus(String currentStatus)
     {
-    	// Call to makeSingularOrPlural added by LL on 19 Jul 2011
-        this.currentStatus = makeSingularOrPlural(currentStatus);
+        this.currentStatus = currentStatus;
         
     }
 
