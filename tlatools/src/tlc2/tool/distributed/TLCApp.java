@@ -487,7 +487,7 @@ public class TLCApp extends DistApp {
                         index++;
                     } catch (Exception e)
                     {
-                        printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
+                        printErrorMsg("Error: A positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
                         return null;
                     }
                 }

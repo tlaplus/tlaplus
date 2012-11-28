@@ -82,7 +82,6 @@ public class StringHelper
     /**
      * Returns str with any terminating whitespace removed. 
      */
-    
     public static final String trimEnd(String str) {
         int position = str.length();
         while ((position > 0) && 
@@ -90,6 +89,15 @@ public class StringHelper
           position--;
         }
         return str.substring(0, position);
+    }
+    
+    /**
+     * Returns the number of leading spaces in the string str.
+     * @param str
+     * @return
+     */
+    public static final int leadingSpaces(String str) {
+        return str.length() - trimFront(str).length() ;
     }
     /**
      * Prints the elements of the array, one per line, enclosed between

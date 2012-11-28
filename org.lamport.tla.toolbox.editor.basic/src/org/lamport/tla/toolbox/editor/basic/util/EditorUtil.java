@@ -7,8 +7,10 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -354,6 +356,27 @@ public class EditorUtil
         return (ITextSelection) editor.getSelectionProvider().getSelection();
     }
 
+    /**
+     * This returns the region in <code>document</code> represented by the
+     * <code>location</code>.  Note that a <code>Location</code> is a region
+     * represented by the <row, column> coordinates of its first and last 
+     * characters.
+     * @param document
+     * @param location
+     * @return
+     * @throws BadLocationException
+     */
+    public static IRegion getRegionOf(IDocument document, Location location)
+               throws BadLocationException {
+        int offset;
+        int length;
+        offset = document.getLineInformation(location.beginLine()-1).getOffset()
+                            + location.beginColumn() -1;
+        length = document.getLineInformation(location.endLine()-1).getOffset()
+                          + location.endColumn() - offset;
+        return new Region(offset, length) ;
+    }
+    
     public static Location getLocationAt(IDocument document, int offset, int length)
     {
     	return getLocationAt(document, offset, length, 0);
