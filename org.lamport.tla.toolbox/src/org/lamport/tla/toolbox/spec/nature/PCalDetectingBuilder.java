@@ -72,7 +72,8 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
 			if (IResource.PROJECT == resource.getType()) {
 				return true;
 			} else if (IResource.FILE == resource.getType() && ResourceHelper.isModule(resource)) {
-				final IDocument document = getDocument(resource.getFullPath(), LocationKind.NORMALIZE);
+				final IPath fullPath = resource.getFullPath();
+				final IDocument document = getDocument(fullPath, LocationKind.NORMALIZE);
 				final FindReplaceDocumentAdapter searchAdapter = new FindReplaceDocumentAdapter(document);
 				try {
 					// matchRegion is set non-null iff there is a "--algorithm"
@@ -98,6 +99,19 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
 					// do not swallow exceptions locally
 					throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID,
 							"Error trying to detect the algorithm", e));
+				} finally {
+					// Release document handle so the ITextFileBufferManager can
+					// correctly dispose of the document. Disposing means all
+					// consumers of the document disconnect. This is done by
+					// reference counting per document.
+					// If we don't correctly dispose, subsequent document
+					// consumers might get an out dated version from the
+					// manager's cache if the document names happen to be
+					// identical. This is e.g. the case, when a spec with name
+					// "frob" is deleted and recreated with name "frob" in a
+					// different file system location.
+					final ITextFileBufferManager bufferManager = ITextFileBufferManager.DEFAULT;
+					bufferManager.disconnect(fullPath, LocationKind.NORMALIZE, new NullProgressMonitor());
 				}
 			}
 			return false;
