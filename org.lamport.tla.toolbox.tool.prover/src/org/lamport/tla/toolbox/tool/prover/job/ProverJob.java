@@ -35,6 +35,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
@@ -757,7 +758,14 @@ public class ProverJob extends Job
 
         // why just the last segment?
         command.add(module.getLocation().toOSString());
-
+     
+        // Following preliminary code added by LL on 28 Nov 2012.  It
+        // sets pathList to the array of library paths specified in the Preferences
+        // menu.  They appear in pathList inverse order of their appearance in the
+        // preference window.  This list will eventually get given to tlapm by
+        // a call argument added to `command'.
+        String[] pathList = Activator.getSpecManager().getSpecLoaded().getTLALibraryPath();
+        
         return (String[]) command.toArray(new String[command.size()]);
     }
 

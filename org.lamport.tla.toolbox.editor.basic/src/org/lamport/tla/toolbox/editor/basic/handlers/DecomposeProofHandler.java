@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.handlers.ShowDeclarationsHandler.ShowDeclarationsPopupDialog;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
@@ -68,8 +69,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private TheoremNode step; // The step being decomposed.
 
     // fields for displaying Decompose Proof window
-    private Shell parent ;  // The shell of the Decompose Proof window
-    private boolean exists = false ;
+    private Shell windowShell ;  // The shell of the Decompose Proof window
     private Point location = null ;  // The location at which window
                                      // should open.
     // private IRegion lineInfo; // The lineInfo for the current offset.
@@ -91,7 +91,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         // TODO Auto-generated method stub
         System.out.println("Decomposing Proof");
-
+        String[] pathList = Activator.getSpecManager().getSpecLoaded().getTLALibraryPath();
+for (int i = 0; i < pathList.length; i++) {
+    System.out.println("item " + i + ": " + pathList[i]) ;
+}
         /*
          * The following text for finding the editor, document, selection, and
          * module are copied from other commands.
@@ -122,7 +125,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         theorem = null;
         int i = 0;
         while ((theorem == null) & (i < allTheorems.length)) {
-            if (EditorUtil.locationContainment(selectedLocation,
+            if ( // (allTheorems[i].module)
+                 EditorUtil.locationContainment(selectedLocation,
                     allTheorems[i].stn.getLocation())) {
                 theorem = allTheorems[i];
             }
@@ -193,8 +197,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          * See also the ScrolledComposite method, which with luck will just be
          * a composite with scrollbars when needed.
          */
-        if (this.parent != null)  {
-            if (this.parent.isDisposed()) {
+        if (this.windowShell != null)  {
+            if (this.windowShell.isDisposed()) {
                 System.out.println("Parent disposed") ;
                 raiseWindow("newWindow") ;
             }
@@ -277,14 +281,15 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         // for testing
         // topshell = the Toolbox's shell
         Shell topshell = UIHelper.getShellProvider().getShell() ;
-          parent = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
-          parent.setText(windowTitle) ;
-          Composite shell = new Composite(parent, SWT.NONE) ;
+          windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
+          windowShell.setText(windowTitle) ;
+          Composite shell = new Composite(windowShell, SWT.NONE) ;
         GridLayout gridLayout = new GridLayout(3, false);
         shell.setLayout(gridLayout);
         Button closeButton = new Button(shell, SWT.PUSH) ;
-        closeButton.setText("Close");
-        closeButton.addSelectionListener(new MyButtonHandler(this)) ;
+        setupButton(closeButton, MENU, "Refresh") ;
+//        closeButton.setText("Close");
+//        closeButton.addSelectionListener(new DecomposeProofButton(this, windowShell, DecomposeProofButton.MENU, "refresh")) ;
         new Button(shell, SWT.PUSH).setText("Wide Button 2");
         new Button(shell, SWT.PUSH).setText("Button 3");
         Button button4 = new Button(shell, SWT.PUSH) ;
@@ -345,23 +350,72 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
 //        System.out.println("Shell.size = " + shell.getSize().toString());
 //        System.out.println("parent.size = " + parent.getSize().toString());
         Point shellSize = shell.getSize() ;;
-        parent.setSize(shellSize.x + 30, shellSize.y + 30) ;
-        System.out.println("location = " + parent.getLocation().toString()) ;
-        System.out.println("size = " + parent.getSize().toString()) ;
+        windowShell.setSize(shellSize.x + 30, shellSize.y + 30) ;
+        System.out.println("location = " + windowShell.getLocation().toString()) ;
+        System.out.println("size = " + windowShell.getSize().toString()) ;
         System.out.println("location = " + topshell.getLocation().toString()) ;
         System.out.println("size = " + topshell.getSize().toString()) ;
 
-        parent.update();
+        windowShell.update();
         if (this.location != null) {
-            parent.setLocation(this.location) ;
+            windowShell.setLocation(this.location) ;
         }
-        parent.open();
+        windowShell.open();
         
         
         System.out.println("closed") ;
         
     }
-    public class MyButtonHandler extends SelectionAdapter implements SelectionListener {
+    
+    /**
+     * A NodeRepresentation object is describes the TLA+ source text
+     * that produced a SemanticNode, after substitutions have been performed
+     * for some identifiers.  It contains the following information:
+     * <ul>
+     * <li> The SemanticNode <code>node</code>.
+     * 
+     * <li> A String[] object <code>nodeText</code> that describes the source text 
+     *      after substitutions have been performed.
+     *      
+     * <li> A mapping from <line, column> coordinates occurring in locations
+     *      in the syntax tree of <code>node</code> to the corresponding
+     *      positions in <code>nodeText</code>.
+     *      
+     * </ul>
+     * 
+     * 
+     * @author lamport
+     *
+     */
+    public class NodeRepresentation {
+        SemanticNode node ;
+        String[] nodeText ;
+        
+    }
+    
+    public static final int MENU = 1 ;
+    
+    /**
+     * Used to set various parameters of a button
+     * 
+     * @param button
+     * @param type  The style type of the button.
+     * @param text  The button's text
+     */
+    private void setupButton(Button button, int type, String text) {
+        button.addSelectionListener(new DecomposeProofButtonListener(this, type)) ;
+        button.setText(text) ;    
+    }
+    
+    /**
+     * The listener for buttons on the DecomposeProof window.  The button
+     * type tells what to do when clicked.  Any data needed by the listener
+     * must be put in fields of the DecomposeProofHandler object.
+     * 
+     * @author lamport
+     *
+     */
+    public class DecomposeProofButtonListener extends SelectionAdapter implements SelectionListener {
 
         public Object execute(ExecutionEvent event) throws ExecutionException {
             // TODO Auto-generated method stub
@@ -369,9 +423,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         }
  
         DecomposeProofHandler decomposeHandler ;
-        public MyButtonHandler(DecomposeProofHandler dHandler) {
+        int type ;
+        
+        public DecomposeProofButtonListener(DecomposeProofHandler dHandler, int tp) {
             super();
             decomposeHandler = dHandler ;
+            type = tp ;
             
         }
         
@@ -383,21 +440,20 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          */
         public void widgetSelected(SelectionEvent e) {
             System.out.println("Click") ;
-            parent = decomposeHandler.parent ;
-            decomposeHandler.location = parent.getLocation();
-            parent.close() ;
-            if (parent != null) {
-              if (parent.isDisposed()) {
+            windowShell = decomposeHandler.windowShell ;
+            decomposeHandler.location = windowShell.getLocation();
+            windowShell.close() ;
+            if (windowShell != null) {
+              if (windowShell.isDisposed()) {
                   System.out.println("closing disposes of window") ;
               } else {
-                  parent.dispose() ;
+                  windowShell.dispose() ;
               }
-            if (parent == null) {
+            if (windowShell == null) {
                   System.out.println("Closing nullifies");
               }
             }
             raiseWindow("Re-opened window " + decomposeHandler.location.toString()) ;
-            exists = true ;
         }
 
         /**
