@@ -107,10 +107,11 @@ want fingerprints stored on 5 fingerprint servers (5 slave computers), you speci
 By default, each slave that runs workers runs as many worker threads
 as it has processors.&nbsp;  Running that many threads on the slave might
 cause problems with some operating system.&nbsp;   The following JVM argument causes
-each slave to run 5 threads:
+each slave to run 2 threads:
 <pre>
-   -Dtlc2.tool.distributed.TLCWorker.threadCount=5
+   -Dtlc2.tool.distributed.TLCWorker.threadCount=2
 </pre>
+(This JVM argument is only applicable for slaves and is without affect if passed to the master process).
 </p>
 <p>
 If your model will run for a long time (days or weeks), you may not want to 
@@ -120,14 +121,16 @@ a command line.&nbsp;
 The easiest way to do this is to create the model
 in the Toolbox, and <a href="executing-tlc.html#validating">validate it</a>.&nbsp; 
 
-You can then run distributed
-TLC in the <a href="executing-tlc.html#MC">model's subdirectory of the <code>.toolbox</code> directory</a>
-with the following command:
+You can then run distributed TLC with the following command:
 <pre>
-   java tlc2.tool.distributed.TLCServer MC
+   java -cp /path/to/tla2tools.jar tlc2.tool.distributed.TLCServer /path/to/the/model/MC
 </pre>
-JVM arguments must follow the <code>java</code>.
-
+JVM arguments must follow the <code>java</code>. E.g. with the 
+<a href="executing-tlc.html#MC">model's subdirectory of the <code>.toolbox</code> directory</a> 
+and the the Toolbox's installation directory in /opt, the command line will look like:
+<pre>
+   java -cp /opt/toolbox/plugins/org.lamport.tlatools_1.0.0.201211261208 -Dtlc2.tool.distributed.TLCServer.expectedFPSetCount=5 tlc2.tool.distributed.TLCServer /home/user/DieHard/DieHard.toolbox/Model_1/MC
+</pre>
 </p>
 <a name="running-workers"></a><h2>Running the Slave Computers</h2>
 
@@ -253,7 +256,7 @@ specification specifies what you think it does.&nbsp;
 <a name="help"></a><h2>Getting and Giving Help</h2>
 
 You may want to run TLC in distributed mode with many workers.&nbsp;
-(Very preliminary tests suggest that linear speedup is possible even
+(Preliminary tests suggest that linear speedup is possible even
 with hundreds of workers.)&nbsp; Manually starting so many workers is
 not practical.&nbsp; It is possible to implement scripts that can
 automate the installation of the JRE and one of the two methods
