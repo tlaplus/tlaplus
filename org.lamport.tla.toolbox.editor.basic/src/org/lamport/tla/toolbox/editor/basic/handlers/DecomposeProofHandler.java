@@ -5,12 +5,14 @@
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
 import java.awt.MenuBar;
+import java.util.Vector;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -18,6 +20,8 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -40,6 +44,8 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.semantic.AssumeProveNode;
+import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
@@ -53,6 +59,11 @@ import tla2sany.st.Location;
 import util.UniqueString;
 
 /**
+ * Notes:
+ * 
+ *   For expanding a definition that comes from a different file, use subexpression naming.
+ *   
+ *   When expanding a definition like Foo(Bar(a)), the "Bar(a)" is treated lik
  * @author lamport
  * 
  */
@@ -64,14 +75,20 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private ISelectionProvider selectionProvider; //
     private TextSelection selection; // The current selection.
     private int offset; // The current offset.
-    private ModuleNode module; // The module being edited.
+    private ModuleNode moduleNode; // The module being edited.
     private TheoremNode theorem;// The theorem containing the selected step
     private TheoremNode step; // The step being decomposed.
+    private  ProofNode proof;
+    
+    // The assumptions and 
+    private OpApplNode[] assumes ;
+    private OpApplNode goal ;
 
     // fields for displaying Decompose Proof window
     private Shell windowShell ;  // The shell of the Decompose Proof window
     private Point location = null ;  // The location at which window
                                      // should open.
+    private TLAEditor editor;  // The editor from which window was raised.
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
     /**
@@ -90,18 +107,18 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
         // TODO Auto-generated method stub
-        System.out.println("Decomposing Proof");
-        String[] pathList = Activator.getSpecManager().getSpecLoaded().getTLALibraryPath();
-for (int i = 0; i < pathList.length; i++) {
-    System.out.println("item " + i + ": " + pathList[i]) ;
-}
+System.out.println("Decomposing Proof");
+//        String[] pathList = Activator.getSpecManager().getSpecLoaded().getTLALibraryPath();
+//for (int i = 0; i < pathList.length; i++) {
+//    System.out.println("item " + i + ": " + pathList[i]) ;
+//}
         /*
          * The following text for finding the editor, document, selection, and
          * module are copied from other commands.
          */
-        TLAEditor editor;
+
+        //gets the editor to which command applies
         editor = EditorUtil.getTLAEditorWithFocus();
-        // gets the editor to which command applies
         if (editor == null) {
             return null;
         }
@@ -120,12 +137,15 @@ for (int i = 0; i < pathList.length; i++) {
         Location selectedLocation = EditorUtil.getLocationAt(doc, offset,
                 selection.getLength());
 
-        // Set theorem the THEOREM containing the selection
+        // Set theorem to  the THEOREM containing the selection
         TheoremNode[] allTheorems = moduleNode.getTheorems();
         theorem = null;
         int i = 0;
+        String moduleFile = moduleNode.stn.getFilename() ;
         while ((theorem == null) & (i < allTheorems.length)) {
-            if ( // (allTheorems[i].module)
+            if ( allTheorems[i].stn.getFilename()
+                    .equals(moduleFile)
+                 &&
                  EditorUtil.locationContainment(selectedLocation,
                     allTheorems[i].stn.getLocation())) {
                 theorem = allTheorems[i];
@@ -152,7 +172,7 @@ for (int i = 0; i < pathList.length; i++) {
         //   
         step = theorem;
         boolean notDone = true;
-        ProofNode proof = step.getProof();
+        proof = step.getProof();
         while (notDone && (proof != null)
                 && (proof instanceof NonLeafProofNode)) {
             LevelNode[] pfsteps = ((NonLeafProofNode) proof).getSteps();
@@ -178,10 +198,44 @@ for (int i = 0; i < pathList.length; i++) {
                 proof = step.getProof();
             }
         }
+  
+        // the step must have either no proof or a leaf proof.
+        if ((proof != null) && !(proof instanceof LeafProofNode)) {
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    "Decompose Proof Command",
+                    "You have selected a step that already has a non-leaf proof.");
+            return null;
+        }
         
+        LevelNode thm = step.getTheorem();
+        if (thm instanceof AssumeProveNode) {
+            SemanticNode[] assump = ((AssumeProveNode) thm).getAssumes() ;
+            assumes = new OpApplNode[assump.length] ;
+            for (i = 0 ; i < assump.length; i++) {
+                if (assump[i] instanceof AssumeProveNode) {
+                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                            "Decompose Proof Command",
+                            "Cannot decompose a step with a nested ASSUME/PROVE.");
+                    return null;
+                } else if (!(assump[i] instanceof OpApplNode)) {
+                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                            "Decompose Proof Command",
+                            "Cannot handle assumption " + (i+1) + ".");
+                    return null;
+                }
+                assumes[i] = (OpApplNode) assump[i];
+                
+                // XXXXXXXXXXXXXXXXXx
+                // change representation to have clauses an array with clauses[0] = goal
+                // and clauses[1], ... the assumptions?
+            }
+            
+        } else {
+            System.out.println(thm.getClass().toString()) ;
+        }
 //        editor.setHighlightRange(thmregion.getOffset(), thmregion.getLength(), true) ;
         try {
-            System.out.println("XXX\n" + stringArrayToString(nodeToStringArray(doc, step)) + "XXX\n");
+            System.out.println((new NodeRepresentation(doc, step)).toString());
         } catch (BadLocationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -209,92 +263,53 @@ for (int i = 0; i < pathList.length; i++) {
         return null;
     }
     
-    /**
-     * We represent the text of a TLA+ syntactic unit as a String array, each element
-     * representing one line of the text with no end-of-line characters.
-     * 
-     * This method the text from the module that represents <code>node</code>, represented
-     * as an array A of strings defined as follows.  Let S be the region of the module
-     * that produces the node.  If S lies entirely on one line, then A has length 1
-     * and A[0] = S.  Otherwise, suppose S lies on N lines.  Let B be the array with B[0]
-     * containing the beginning of S up until the end of the first line, with
-     * B[1], ... , B[n-1] containing the next n-2 lines of S, and with B[n] containing
-     * the rest of S.  Then A is the array obtained from B by possibly adding spaces to
-     * the beginning of B[0] and possibly removing spaces from the beginning of
-     * B[1], ... , B[n] so that there is at least one line of A that does not begin with
-     * a space and the formatting of the original text is maintained in A.
-     *  
-     * @param document
-     * @param node
-     * @return
-     */
-    public static String[] nodeToStringArray(IDocument document, SemanticNode node) 
-                            throws BadLocationException {
-        Location location = node.stn.getLocation() ;
-        if (location.beginLine() == location.endLine()) {
-            IRegion thmregion = EditorUtil.getRegionOf(document, node.stn.getLocation()) ;
-            String str = document.get(thmregion.getOffset(), thmregion.getLength());
-            return new String[] {str}; 
-        }
-        
-        String[] A = new String[location.endLine() - location.beginLine() + 1] ;
-        IRegion region = document.getLineInformation(location.beginLine()-1) ;
-        A[0] = document.get(region.getOffset() + location.beginColumn() - 1,
-                            region.getLength() - location.beginColumn() + 1) ;
-        // minCol is the min of the beginning column of the first line (with
-        // the first column numbered 0) and the smallest number of leading spaces 
-        // in any later line
-        int minCol = location.beginColumn() - 1;
-       
-        for (int i = 1; i < A.length ; i++) {
-            region = document.getLineInformation(location.beginLine()- 1 + i) ;
-            A[i] = document.get(region.getOffset(), region.getLength()) ;
-            minCol = Math.min(minCol, StringHelper.leadingSpaces(A[i]));
-        }
-        
-        // remove the rest of the last line that's not part of the token's text
-        A[A.length-1] = A[A.length-1].substring(0, location.endColumn()) ;
-        
-        // Add any necessary space at the beginning of A[0]
-        A[0] = StringHelper.copyString(" ", location.beginColumn() - minCol - 1) + A[0];
-        
-        // Trim any necessary space from the beginning of A[1], ... , A[n]
-        for (int i = 1; i < A.length; i++) {
-            A[i] = A[i].substring(minCol) ;
-        }
-        return A;
-    }
 
-    public String stringArrayToString(String[] A) {
-        if (A.length == 0) {
-            return A[0] ;
-        }
-        String result = A[0] ;
-        for (int i = 1; i < A.length; i++) {
-            result = result + "\n" + A[i] ;
-        }
-        return result ;
-        
-    }
 
     private void raiseWindow(String windowTitle) {
         // for testing
         // topshell = the Toolbox's shell
         Shell topshell = UIHelper.getShellProvider().getShell() ;
-          windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
-          windowShell.setText(windowTitle) ;
-          Composite shell = new Composite(windowShell, SWT.NONE) ;
+        windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
+        windowShell.setText(windowTitle) ;
+        windowShell.addDisposeListener(new DisposeListener() {
+            
+            public void widgetDisposed(DisposeEvent e) {
+                // TODO Auto-generated method stub
+                System.out.println("windowShell's disposeListener called");
+            }
+        }) ;
+        Composite shell = new Composite(windowShell, SWT.NONE) ;
         GridLayout gridLayout = new GridLayout(3, false);
         shell.setLayout(gridLayout);
-        Button closeButton = new Button(shell, SWT.PUSH) ;
-        setupButton(closeButton, MENU, "Refresh") ;
+        
+        Composite topMenu = new Composite(shell,SWT.NONE) ;   
+        gridLayout = new GridLayout(4, false);
+        gridLayout.marginBottom = 0;
+        topMenu.setLayout(gridLayout);        
+        GridData gridData = new GridData() ;
+        gridData.horizontalSpan = 3;
+        topMenu.setLayoutData(gridData) ;
+        
+        Button closeButton = new Button(topMenu, SWT.PUSH) ;
+        setupMenuButton(closeButton, "Refresh") ;
+        Button closeButton2 = new Button(topMenu, SWT.PUSH) ;
+        setupMenuButton(closeButton2, "Refresh2") ;
+        
 //        closeButton.setText("Close");
 //        closeButton.addSelectionListener(new DecomposeProofButton(this, windowShell, DecomposeProofButton.MENU, "refresh")) ;
+        
+        Label assumeLabel = new Label(shell, SWT.NONE);
+        assumeLabel.setText("ASSUME");
+        assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
+        gridData = new GridData();
+        gridData.horizontalSpan = 3;
+        assumeLabel.setLayoutData(gridData);
+        
         new Button(shell, SWT.PUSH).setText("Wide Button 2");
         new Button(shell, SWT.PUSH).setText("Button 3");
         Button button4 = new Button(shell, SWT.PUSH) ;
         button4.setText("B4eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"); 
-        GridData gridData = new GridData() ;
+        gridData = new GridData() ;
         gridData.verticalAlignment = SWT.TOP;
         button4.setLayoutData(gridData);
 
@@ -389,11 +404,157 @@ for (int i = 0; i < pathList.length; i++) {
      */
     public class NodeRepresentation {
         SemanticNode node ;
+        
+        /**
+         * We represent the text of a TLA+ syntactic unit as a String array, each element
+         * representing one line of the text with no end-of-line characters.
+         * 
+         * The text from the module that represents <code>node</code>, represented by
+         * the array nodeText of strings  as follows.  Let S be the region of the module
+         * that produces the node.  If S lies entirely on one line, then nodeText has length 1
+         * and nodeText[0] = S.  Otherwise, suppose S lies on N lines.  Let B be the array with B[0]
+         * containing the beginning of S up until the end of the first line, with
+         * B[1], ... , B[n-1] containing the next n-2 lines of S, and with B[n] containing
+         * the rest of S.  Then nodeText is the array obtained from B by possibly adding spaces to
+         * the beginning of B[0] and possibly removing spaces from the beginning of
+         * B[1], ... , B[n] so that there is at least one line of nodeText that does not begin with
+         * a space and the formatting of the original text is maintained in nodeText.
+         *  
+         * @param document
+         * @param node
+         * @return
+         */
         String[] nodeText ;
         
+        // mapping defines the mapping from <line, column> coordinates
+        // within the syntax tree of `node' to positions in nodeText,
+        // where <ln, c> is mapped into the position mapping[j](c) in
+        // string nodeText[j], where j = ln - node.stn.beginLine() 
+        // (node.stn.beginLine() is the number of the line on which the
+        // source text of `node' begins.  (See the comments on the
+        // MappingPair class for a definition of mapping[j](c).
+        Vector<MappingPair>[] mapping ;
+
+        // If non-null, then originalOperator is the name of the
+        // operator that was expanded to produce `node'.
+        String originalOperator = null ;
+
+        
+        NodeRepresentation(IDocument document, SemanticNode node)
+                throws BadLocationException {
+            this.node = node ;
+            Location location = node.stn.getLocation();
+            nodeText = new String[location.endLine() - location.beginLine() + 1] ;
+            mapping = new Vector[nodeText.length] ;
+            for (int i = 0; i < mapping.length; i++) {
+                mapping[i] = new Vector<MappingPair>() ;
+                mapping[i].add(new MappingPair(1, -1)) ;
+            }
+            if (location.beginLine() == location.endLine()) {
+                IRegion thmregion = EditorUtil.getRegionOf(document,
+                        node.stn.getLocation());
+                String str = document.get(thmregion.getOffset(),
+                        thmregion.getLength());
+                nodeText[0] = str ;
+                return ;
+            }
+
+            IRegion region = document
+                    .getLineInformation(location.beginLine() - 1);
+            nodeText[0] = document.get(
+                    region.getOffset() + location.beginColumn() - 1,
+                    region.getLength() - location.beginColumn() + 1);
+            // minCol is the min of the beginning column of the first line (with
+            // the first column numbered 0) and the smallest number of leading
+            // spaces of any later line
+            int minCol = location.beginColumn() - 1;
+            for (int i = 1; i < nodeText.length; i++) {
+                region = document.getLineInformation(location.beginLine() - 1
+                        + i);
+                nodeText[i] = document.get(region.getOffset(), region.getLength());
+                minCol = Math.min(minCol, StringHelper.leadingSpaces(nodeText[i]));
+            }
+
+            // remove the rest of the last line that's not part of the token's
+            // text
+            nodeText[nodeText.length - 1] = nodeText[nodeText.length - 1]
+                    .substring(0, location.endColumn());
+
+            // Add any necessary space at the beginning of nodeText[0]
+            int spacesAddedToFirstLine = location.beginColumn() - minCol - 1 ;
+            nodeText[0] = StringHelper.copyString(" ", spacesAddedToFirstLine)
+                              + nodeText[0];
+            mapping[0].elementAt(0).inc = -spacesAddedToFirstLine;
+            
+            
+            // Trim any necessary space from the beginning of nodeText[i] for i > 0.
+            for (int i = 1; i < nodeText.length; i++) {
+                nodeText[i] = nodeText[i].substring(minCol);
+                mapping[i].elementAt(0).inc = -1 - minCol ;
+            }
+            return ;
+        }
+        
+        public String toString() {
+            String val = "" ;
+            if (originalOperator != null) {
+                val = "Original Operator: " + originalOperator + "\n" ;
+            }
+            val = val + "nodeText: |=\n" + stringArrayToString(nodeText) + "=|" ;
+            for (int i = 0; i < mapping.length; i++) {
+                val = val + "\n" + i + ":" ;
+                for (int j = 0; j < mapping[i].size(); j++) {
+                    val = val + "  " + mapping[i].elementAt(j).toString() ;
+                }
+            }
+            
+            return val ;
+        }
     }
     
+    /**
+     * A MappingPair contains two int-valued fields : `col' and `inc'.
+     *  
+     * A line-mapping is a mapping from column-numbers in a line of
+     * the specification to positions in a string.  It is represented
+     * by a vector V of MappingPair objects such that V[0].col = 1 and
+     * i < j implies V[i].col < V[j].col.  Such an array represents the
+     * line-mapping M such that M(c) equals c plus the sum of all 
+     * V[i].inc such that V[i].col <= c.
+     * 
+     * @author lamport
+     *
+     */
+    private class MappingPair {
+        int col;
+        int inc;
+        MappingPair(int c, int p) {
+            col = c;
+            inc = p;
+        }
+        
+        public String toString() {
+            return "<" + col + ", " + inc + ">" ;
+        }
+    }
+    
+    public String stringArrayToString(String[] A) {
+        if (A.length == 0) {
+            return A[0] ;
+        }
+        String result = A[0] ;
+        for (int i = 1; i < A.length; i++) {
+            result = result + "\n" + A[i] ;
+        }
+        return result ;
+        
+    }
+
+    /*
+     * The following are the types of buttons in the 
+     */
     public static final int MENU = 1 ;
+    public static final int ACTION = 2 ;
     
     /**
      * Used to set various parameters of a button
@@ -402,10 +563,15 @@ for (int i = 0; i < pathList.length; i++) {
      * @param type  The style type of the button.
      * @param text  The button's text
      */
-    private void setupButton(Button button, int type, String text) {
-        button.addSelectionListener(new DecomposeProofButtonListener(this, type)) ;
-        button.setText(text) ;    
-    }
+    private void setupMenuButton(Button button, String text) {
+            button.addSelectionListener(new DecomposeProofButtonListener(this, MENU)) ;
+            button.setText(text) ; 
+            button.setSize(100, button.getSize().y);
+            GridData gridData = new GridData();
+            gridData.horizontalIndent = 30 ;
+            button.setLayoutData(gridData) ;
+        }
+    
     
     /**
      * The listener for buttons on the DecomposeProof window.  The button
@@ -439,21 +605,29 @@ for (int i = 0; i < pathList.length; i++) {
          * @param e an event containing information about the selection
          */
         public void widgetSelected(SelectionEvent e) {
-            System.out.println("Click") ;
-            windowShell = decomposeHandler.windowShell ;
-            decomposeHandler.location = windowShell.getLocation();
-            windowShell.close() ;
-            if (windowShell != null) {
-              if (windowShell.isDisposed()) {
-                  System.out.println("closing disposes of window") ;
-              } else {
-                  windowShell.dispose() ;
-              }
-            if (windowShell == null) {
-                  System.out.println("Closing nullifies");
-              }
+            switch (type) {
+            case MENU:
+                System.out.println("MENU Click");
+                windowShell = decomposeHandler.windowShell;
+                decomposeHandler.location = windowShell.getLocation();
+                windowShell.close();
+                if (windowShell != null) {
+                    if (windowShell.isDisposed()) {
+                        System.out.println("closing disposes of window");
+                    } else {
+                        windowShell.dispose();
+                    }
+                    if (windowShell == null) {
+                        System.out.println("Closing nullifies");
+                    }
+                }
+                raiseWindow("Re-opened window "
+                        + decomposeHandler.location.toString());
+                break;
+            case ACTION:
+                System.out.println("ACTION Click");
+                break ;
             }
-            raiseWindow("Re-opened window " + decomposeHandler.location.toString()) ;
         }
 
         /**
