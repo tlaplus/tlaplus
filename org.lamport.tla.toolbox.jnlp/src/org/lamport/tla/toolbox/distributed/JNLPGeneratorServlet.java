@@ -1,3 +1,4 @@
+// Copyright (c) 2011 Microsoft Corporation. All rights reserved.
 package org.lamport.tla.toolbox.distributed;
 
 import java.io.IOException;
