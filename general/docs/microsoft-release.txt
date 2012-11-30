@@ -167,6 +167,7 @@ Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
 Version 1.4.4 of ?
+  - Markus made quite a few changes to distributed TLC and its Toolbox UI.
   - Fixed bug in Find Declaration and other commands that caused problems
     recognizing an identifier containing a "_".
   - Fixed a couple of minor bugs in TLC error messages in Version 2.05 of 18 May

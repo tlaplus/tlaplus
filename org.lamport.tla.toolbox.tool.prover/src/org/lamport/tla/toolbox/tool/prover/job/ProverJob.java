@@ -755,19 +755,31 @@ public class ProverJob extends Job
                 command.add(options[i]);
             }
         }
-
+        // Following code added by LL on 30 Nov 2012.  It
+        // sets pathList to the array of library paths specified in the Preferences
+        // menu.  It then gives them to tlapm as -I options, in reverse order.
+        // SANY searches the library paths in the order they're specified in the
+        // preference menu; tlapm seems to search them in the inverse order of the
+        // -I options.
+        String[] pathList = Activator.getSpecManager().getSpecLoaded().getTLALibraryPath();
+        if (pathList != null) {
+            for (int i=0; i < pathList.length; i++) {
+                command.add("-I") ;
+                command.add(pathList[pathList.length - i - 1]) ;
+            }
+        }
+        
         // why just the last segment?
         command.add(module.getLocation().toOSString());
      
-        // Following preliminary code added by LL on 28 Nov 2012.  It
-        // sets pathList to the array of library paths specified in the Preferences
-        // menu.  They appear in pathList inverse order of their appearance in the
-        // preference window.  This list will eventually get given to tlapm by
-        // a call argument added to `command'.
-        String[] pathList = Activator.getSpecManager().getSpecLoaded().getTLALibraryPath();
+        // for debugging
+        // for (int i=0; i<command.size(); i++) {
+        //     System.out.println(command.get(i)) ;
+        // }
         
         return (String[]) command.toArray(new String[command.size()]);
     }
+
 
     /**
      * Get the begin line of the region to pass to the prover.

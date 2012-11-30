@@ -106,14 +106,15 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
 				    IRegion matchRegion = null ;
 				    if (document.getLength() != 0) {
 					  matchRegion = searchAdapter.find(0, PCAL_ALGORITHM_DEFINITION, true, true, false, false);
+		              if (matchRegion == null) {
+		                        matchRegion = searchAdapter.find(0, PCAL_FAIR_ALGORITHM_DEFINITION, true, true, false, false);
+		                    }
+
 					  } else {
 					      Activator.getDefault().logError(
 					          "Error occurred when checking if there is a PlusCal algorithm") ;
 					  }
 				    
-					if (matchRegion == null) {
-						matchRegion = searchAdapter.find(0, PCAL_FAIR_ALGORITHM_DEFINITION, true, true, false, false);
-					}
 
 					// store the session property
 					final QualifiedName key = new QualifiedName(Activator.PLUGIN_ID,

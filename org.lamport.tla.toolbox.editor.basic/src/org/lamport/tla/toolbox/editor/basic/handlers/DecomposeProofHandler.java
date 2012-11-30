@@ -11,6 +11,8 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
@@ -36,6 +38,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.handlers.ShowDeclarationsHandler.ShowDeclarationsPopupDialog;
@@ -89,6 +92,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private Point location = null ;  // The location at which window
                                      // should open.
     private TLAEditor editor;  // The editor from which window was raised.
+    private IFile editorIFile ; // The IFile of the editor, used for making it read-only.
+    public boolean ignore = true ; // for producing a release without the handler doing anything.
+    
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
     /**
@@ -107,22 +113,38 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
         // TODO Auto-generated method stub
+        
+        // For a release without the handler doing anything.
+        if (ignore) {
+            return null ;
+       }
+
 System.out.println("Decomposing Proof");
 //        String[] pathList = Activator.getSpecManager().getSpecLoaded().getTLALibraryPath();
 //for (int i = 0; i < pathList.length; i++) {
 //    System.out.println("item " + i + ": " + pathList[i]) ;
 //}
-        /*
-         * The following text for finding the editor, document, selection, and
-         * module are copied from other commands.
-         */
+         
+         /*
+          * The following text for finding the editor, document, selection, and
+          * module are copied from other commands.
+          */
+
 
         //gets the editor to which command applies
         editor = EditorUtil.getTLAEditorWithFocus();
         if (editor == null) {
             return null;
         }
-
+        editorIFile = ((FileEditorInput) editor.getEditorInput()).getFile() ;
+        if (editor.isDirty()) {
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    "Decompose Proof Command",
+                    "The module is dirty; will replace by asking if it should be saved.");
+            return null;
+        }
+        
+        
         doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         text = doc.get();
         selectionProvider = editor.getSelectionProvider();
@@ -254,12 +276,28 @@ System.out.println("Decomposing Proof");
         if (this.windowShell != null)  {
             if (this.windowShell.isDisposed()) {
                 System.out.println("Parent disposed") ;
+                // This setReadOnly is a no-op.  Why???
+                // The following method was deprecated because it was actually possible to use
+                // it, so it had to be replaced by something that requires a PhD in Eclipse
+                // to figure out how to use.
+                editorIFile.setReadOnly(true) ;
                 raiseWindow("newWindow") ;
+                
             }
             return null ;
         }
+        
+        
         System.out.println("parent null") ;
+        // This setReadOnly is a no-op.  Why???
+        EditorUtil.setReadOnly(editorIFile, true);
+        
+        // The following method was deprecated because it was actually possible to use
+        // it, so it had to be replaced by something that requires a PhD in Eclipse
+        // to figure out how to use.
+        editorIFile.setReadOnly(true) ;
         raiseWindow("newWindow") ;
+        
         return null;
     }
     
@@ -276,6 +314,13 @@ System.out.println("Decomposing Proof");
             public void widgetDisposed(DisposeEvent e) {
                 // TODO Auto-generated method stub
                 System.out.println("windowShell's disposeListener called");
+                if (editor.isDirty()) {
+                    System.out.println("Editor is dirty");
+                }
+                // The following method was deprecated because it was actually possible to use
+                // it, so it had to be replaced by something that requires a PhD in Eclipse
+                // to figure out how to use. 
+                editorIFile.setReadOnly(false);
             }
         }) ;
         Composite shell = new Composite(windowShell, SWT.NONE) ;
