@@ -123,6 +123,10 @@ public class TLCServerThread extends IdThread {
 		this.executorService = es;
 		this.tlcServer = tlc;
 		this.selector = aSelector;
+
+		// Create Timer early to avoid NPE in handleRemoteWorkerLost (it tries to cancel the timer)
+		keepAliveTimer = new Timer("TLCWorker KeepAlive Timer ["
+				+ uri.toASCIIString() + "]", true);
 		
 		// Wrap the TLCWorker with a SmartProxy. A SmartProxy's responsibility
 		// is to measure the RTT spend to transfer states back and forth.
@@ -142,8 +146,6 @@ public class TLCServerThread extends IdThread {
 		setName(TLCServer.THREAD_NAME_PREFIX + i + "-[" + uri.toASCIIString() + "]");
 		
 		// schedule a timer to periodically (60s) check server aliveness
-		keepAliveTimer = new Timer("TLCWorker KeepAlive Timer ["
-				+ uri.toASCIIString() + "]", true);
 		task = new TLCTimerTask();
 		keepAliveTimer.schedule(task, 10000, 60000);
 	}
