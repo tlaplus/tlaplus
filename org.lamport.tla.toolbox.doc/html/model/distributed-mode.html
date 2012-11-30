@@ -203,7 +203,9 @@ Windows, but can be installed on Windows as part of Cygwin.
 <p>
 
 <p>
-You can add JVM arguments to the <code>java</code> command, such as an argument to give the slave more memory.  
+You can add JVM arguments to the <code>java</code> command, such as the argument 
+<code>-Xmx7G</code> that
+gives the slave 7 gigabytes of memory.  
 </p>
 </dd>
 
@@ -218,8 +220,9 @@ on the worker computer.&nbsp;  In that web browser, enter the URL
 worker threads, a fingerprint server, or both on the slave.
 
 <p>
-You can launch the slaves with additional system properties and JVM arguments
-by adding them to the URL.&nbsp; For example, the URL
+You can launch the slaves with additional system properties and VM arguments
+by adding them to the URL.&nbsp; (When you launch a slave from a command line, 
+system properties [which begin with <code>-D</code>] and VM arguments are specified separately.)&nbsp; For example, the URL
 <pre>
    http://localhost:10996/worker.jnlp?sysprops=-Diron.bar=5%20-Dfrob=2%20foo=&vmargs=-Xmx=512m%20-XX:MaxDirectMemorysize=512m
 </pre>
