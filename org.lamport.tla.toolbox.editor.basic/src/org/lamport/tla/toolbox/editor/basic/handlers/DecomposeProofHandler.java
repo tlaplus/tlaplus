@@ -339,6 +339,8 @@ System.out.println("Decomposing Proof");
         setupMenuButton(closeButton, "Refresh") ;
         Button closeButton2 = new Button(topMenu, SWT.PUSH) ;
         setupMenuButton(closeButton2, "Refresh2") ;
+        Button testRadio = new Button(topMenu, SWT.CHECK);
+        setupCheckButton(testRadio, "CheckBox");
         
 //        closeButton.setText("Close");
 //        closeButton.addSelectionListener(new DecomposeProofButton(this, windowShell, DecomposeProofButton.MENU, "refresh")) ;
@@ -600,6 +602,7 @@ System.out.println("Decomposing Proof");
      */
     public static final int MENU = 1 ;
     public static final int ACTION = 2 ;
+    public static final int CHECK = 3 ;
     
     /**
      * Used to set various parameters of a button
@@ -609,7 +612,7 @@ System.out.println("Decomposing Proof");
      * @param text  The button's text
      */
     private void setupMenuButton(Button button, String text) {
-            button.addSelectionListener(new DecomposeProofButtonListener(this, MENU)) ;
+            button.addSelectionListener(new DecomposeProofButtonListener(this, button, MENU)) ;
             button.setText(text) ; 
             button.setSize(100, button.getSize().y);
             GridData gridData = new GridData();
@@ -617,6 +620,15 @@ System.out.println("Decomposing Proof");
             button.setLayoutData(gridData) ;
         }
     
+    private void setupCheckButton(Button button, String text) {
+        button.addSelectionListener(new DecomposeProofButtonListener(this, button, CHECK)) ;
+        button.setText(text) ; 
+//        button.setSize(100, button.getSize().y);
+        GridData gridData = new GridData();
+        gridData.horizontalIndent = 30 ;
+        button.setLayoutData(gridData) ;
+    }
+
     
     /**
      * The listener for buttons on the DecomposeProof window.  The button
@@ -635,12 +647,12 @@ System.out.println("Decomposing Proof");
  
         DecomposeProofHandler decomposeHandler ;
         int type ;
-        
-        public DecomposeProofButtonListener(DecomposeProofHandler dHandler, int tp) {
+        Button button ;
+        public DecomposeProofButtonListener(DecomposeProofHandler dHandler, Button but, int tp) {
             super();
             decomposeHandler = dHandler ;
             type = tp ;
-            
+            button = but ;
         }
         
         /**
@@ -672,6 +684,9 @@ System.out.println("Decomposing Proof");
             case ACTION:
                 System.out.println("ACTION Click");
                 break ;
+            case CHECK:
+                System.out.println("status = " + button.getSelection()) ;
+                button.setEnabled(false) ;
             }
         }
 
