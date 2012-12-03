@@ -1,10 +1,15 @@
 /**
  * Currently, this command is under construction and is not bound to the proper key or menu.
  * Instead, it is executed by typing Ctl+Shift+A.
+ * 
+ * A single object of this class is created and attached to the command.  Multiple
+ * executions of the command use the same object, so data can be stored as (non-static)
+ * fields of the object between executions of the command.
+ * 
  */
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
-import java.awt.MenuBar;
+import java.awt.Font;
 import java.util.Vector;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -12,7 +17,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
@@ -21,43 +25,37 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.FileEditorInput;
-import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.handlers.ShowDeclarationsHandler.ShowDeclarationsPopupDialog;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.AssumeProveNode;
 import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
-import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
-import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
 import util.UniqueString;
 
@@ -81,11 +79,14 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private ModuleNode moduleNode; // The module being edited.
     private TheoremNode theorem;// The theorem containing the selected step
     private TheoremNode step; // The step being decomposed.
+    private NodeRepresentation stepRep; // the steps node representation;
     private  ProofNode proof;
     
-    // The assumptions and 
-    private OpApplNode[] assumes ;
+    // The assumptions and goal
+    private SemanticNode[] assumes ;
+    private NodeRepresentation[] assumeReps ; // the assumptions NodeRepresentations 
     private OpApplNode goal ;
+    private NodeRepresentation goalRep ;
 
     // fields for displaying Decompose Proof window
     private Shell windowShell ;  // The shell of the Decompose Proof window
@@ -95,6 +96,46 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private IFile editorIFile ; // The IFile of the editor, used for making it read-only.
     public boolean ignore = true ; // for producing a release without the handler doing anything.
     
+    // buttons and stuff for the window
+    // Radio buttons for how to rewrite proof: 
+    Button sufficesButton ; //  Use SUFFICES step in proof
+    Button rewriteButton ;  //  Rewrite step
+    Button neitherButton ;  //  Use ASSUME/PROOF steps
+
+    // The value selected by the radiobuttons.  Should initialize by preference
+    private static final int SUFFICES_CHOSEN = 0 ;
+    private static final int REWRITE_CHOSEN = 1 ;
+    private static final int NEITHER_CHOSEN = 2 ;
+    private int radioChoice = SUFFICES_CHOSEN ;
+    
+    private Button subexpressionButton ; // Determines how definitions are expanded
+    private boolean subexpressionValue = false ; // should be initialized by preference
+    
+    // Some fields holding the state of the decomposition
+    private boolean hasChanged = false ;       // true iff the user has done something
+    private boolean assumeHasChanged = false ;  
+            // true iff an action has been performed on an assumption. 
+            // It is not set by an action that modifies the goal and creates a new
+            // assumption.
+    private int splitOrIdx = -1 ;  // If # -1, then assumption splitOrIdx has been OR-split.
+            
+    /**
+     * Set radioChoice to indicate the currently selected radio button.
+     * currently selected values ;
+     */
+    private void readButtons() {
+        subexpressionValue = subexpressionButton.getSelection() ;
+        if (sufficesButton.getSelection()) {
+            radioChoice = SUFFICES_CHOSEN ;
+            return ;
+        }
+        if (rewriteButton.getSelection()) {
+            radioChoice = REWRITE_CHOSEN ;
+            return ;
+        }
+        radioChoice = NEITHER_CHOSEN ;
+        return ;
+    }
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
     /**
@@ -115,21 +156,25 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         // TODO Auto-generated method stub
         
         // For a release without the handler doing anything.
-        if (ignore) {
-            return null ;
-       }
+//        if (ignore) {
+//            return null ;
+//       }
 
 System.out.println("Decomposing Proof");
-//        String[] pathList = Activator.getSpecManager().getSpecLoaded().getTLALibraryPath();
-//for (int i = 0; i < pathList.length; i++) {
-//    System.out.println("item " + i + ": " + pathList[i]) ;
-//}
-         
-         /*
-          * The following text for finding the editor, document, selection, and
-          * module are copied from other commands.
-          */
 
+        // Do nothing if already executing command. 
+        if (this.windowShell != null) {
+            if (!this.windowShell.isDisposed()) {
+                System.out.println("Command called when being executed.");
+                return null;
+            }
+        }
+
+         
+        /*
+         * The following text for finding the editor, document, selection, and
+         * module is copied from other commands.
+         */
 
         //gets the editor to which command applies
         editor = EditorUtil.getTLAEditorWithFocus();
@@ -228,41 +273,43 @@ System.out.println("Decomposing Proof");
                     "You have selected a step that already has a non-leaf proof.");
             return null;
         }
-        
-        LevelNode thm = step.getTheorem();
-        if (thm instanceof AssumeProveNode) {
-            SemanticNode[] assump = ((AssumeProveNode) thm).getAssumes() ;
-            assumes = new OpApplNode[assump.length] ;
-            for (i = 0 ; i < assump.length; i++) {
-                if (assump[i] instanceof AssumeProveNode) {
-                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                            "Decompose Proof Command",
-                            "Cannot decompose a step with a nested ASSUME/PROVE.");
-                    return null;
-                } else if (!(assump[i] instanceof OpApplNode)) {
-                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                            "Decompose Proof Command",
-                            "Cannot handle assumption " + (i+1) + ".");
-                    return null;
-                }
-                assumes[i] = (OpApplNode) assump[i];
-                
-                // XXXXXXXXXXXXXXXXXx
-                // change representation to have clauses an array with clauses[0] = goal
-                // and clauses[1], ... the assumptions?
-            }
-            
-        } else {
-            System.out.println(thm.getClass().toString()) ;
-        }
-//        editor.setHighlightRange(thmregion.getOffset(), thmregion.getLength(), true) ;
         try {
+            stepRep = new NodeRepresentation(doc, step) ;
             System.out.println((new NodeRepresentation(doc, step)).toString());
         } catch (BadLocationException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             System.out.println("threw exception");
         }
+        LevelNode thm = step.getTheorem();
+        if (thm instanceof AssumeProveNode) {
+            SemanticNode[] assump = ((AssumeProveNode) thm).getAssumes();
+            assumes = new OpApplNode[assump.length];
+            assumeReps = new NodeRepresentation[assump.length];
+            for (i = 0; i < assump.length; i++) {
+                if (assump[i] instanceof AssumeProveNode) {
+                    MessageDialog
+                            .openError(UIHelper.getShellProvider().getShell(),
+                                    "Decompose Proof Command",
+                                    "Cannot decompose a step with a nested ASSUME/PROVE.");
+                    return null;
+                } else if (!(assump[i] instanceof OpApplNode)) {
+                    MessageDialog.openError(UIHelper.getShellProvider()
+                            .getShell(), "Decompose Proof Command",
+                            "Cannot handle assumption " + (i + 1) + ".");
+                    return null;
+                }
+                assumes[i] = (OpApplNode) assump[i];
+                assumeReps[i] = stepRep.subNode(assumes[i]);
+                goal = (OpApplNode) ((AssumeProveNode) thm).getProve();
+                goalRep = stepRep.subNode(goal);
+            }
+            
+        } else {
+            assumes = null ;
+            goal = (OpApplNode) thm ;
+            goalRep = stepRep.subNode(goal) ;
+        }
+
         /*
          * To figure out how to layout a nice popup, see 
          *    
@@ -309,10 +356,8 @@ System.out.println("Decomposing Proof");
         Shell topshell = UIHelper.getShellProvider().getShell() ;
         windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
         windowShell.setText(windowTitle) ;
-        windowShell.addDisposeListener(new DisposeListener() {
-            
+        windowShell.addDisposeListener(new DisposeListener() {            
             public void widgetDisposed(DisposeEvent e) {
-                // TODO Auto-generated method stub
                 System.out.println("windowShell's disposeListener called");
                 if (editor.isDirty()) {
                     System.out.println("Editor is dirty");
@@ -336,11 +381,47 @@ System.out.println("Decomposing Proof");
         topMenu.setLayoutData(gridData) ;
         
         Button closeButton = new Button(topMenu, SWT.PUSH) ;
-        setupMenuButton(closeButton, "Refresh") ;
+        setupMenuButton(closeButton, TEST_BUTTON, "Refresh") ;
         Button closeButton2 = new Button(topMenu, SWT.PUSH) ;
-        setupMenuButton(closeButton2, "Refresh2") ;
-        Button testRadio = new Button(topMenu, SWT.CHECK);
-        setupCheckButton(testRadio, "CheckBox");
+        setupMenuButton(closeButton2, TEST_BUTTON, "Refresh2") ;
+        
+        // button to choose whether to expand definitions with subexpression names
+        subexpressionButton = new Button(topMenu, SWT.CHECK);
+        setupCheckButton(subexpressionButton, "Use subexpression names.");
+        subexpressionButton.setSelection(subexpressionValue) ;
+        
+        // How to rewrite composite
+        Composite radio = new Composite(topMenu, SWT.BORDER) ;
+        GridLayout radioLayout = new GridLayout(4, false) ;
+        radio.setLayout(radioLayout) ;
+        Label radioLabel = new Label(radio, SWT.NONE) ;
+        radioLabel.setText("prove using:") ;
+        sufficesButton = new Button(radio, SWT.RADIO) ;
+        neitherButton = new Button(radio, SWT.RADIO) ;
+        rewriteButton = new Button(radio, SWT.RADIO) ;
+        
+        sufficesButton.setText("SUFFICES") ;
+        rewriteButton.setText("rewritten goal") ;
+        neitherButton.setText("ASSUME/PROVE steps") ;
+        switch (radioChoice) {
+        case SUFFICES_CHOSEN :
+            sufficesButton.setSelection(true) ;
+            rewriteButton.setSelection(false) ;
+            neitherButton.setSelection(false) ;
+            break ;
+        case REWRITE_CHOSEN :
+            sufficesButton.setSelection(false) ;
+            rewriteButton.setSelection(true) ;
+            neitherButton.setSelection(false) ;
+            break ;
+        case NEITHER_CHOSEN :
+            sufficesButton.setSelection(false) ;
+            rewriteButton.setSelection(false) ;
+            neitherButton.setSelection(true) ;
+            break ;
+        }
+       
+        
         
 //        closeButton.setText("Close");
 //        closeButton.addSelectionListener(new DecomposeProofButton(this, windowShell, DecomposeProofButton.MENU, "refresh")) ;
@@ -352,6 +433,38 @@ System.out.println("Decomposing Proof");
         gridData.horizontalSpan = 3;
         assumeLabel.setLayoutData(gridData);
         
+        if (assumes != null) {
+            for (int i = 0 ; i < assumes.length; i++) {
+                assumeLabel = new Label(shell, SWT.BORDER);
+                assumeLabel.setText(stringArrayToString(assumeReps[i].nodeText));
+                gridData = new GridData();
+                gridData.horizontalSpan = 3;
+                assumeLabel.setLayoutData(gridData);
+                
+            }
+        }
+        
+        
+        assumeLabel = new Label(shell, SWT.NONE);
+        assumeLabel.setText("PROVE");
+        assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
+        gridData = new GridData();
+        gridData.horizontalSpan = 3;
+        assumeLabel.setLayoutData(gridData);
+        
+        assumeLabel = new Label(shell, SWT.NONE) ;
+        assumeLabel.setText(goal.getOperator().getName().toString()) ;
+        
+        assumeLabel = new Label(shell, SWT.BORDER);
+        assumeLabel.setText(stringArrayToString(goalRep.nodeText));
+        gridData = new GridData();
+        gridData.horizontalSpan = 2;
+        assumeLabel.setLayoutData(gridData);
+        Display display = UIHelper.getCurrentDisplay() ;
+        // The following sets the font to be the Toolbox editor's text font.
+        assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.TEXT_FONT));
+
+        // ---------- Garbage below
         new Button(shell, SWT.PUSH).setText("Wide Button 2");
         new Button(shell, SWT.PUSH).setText("Button 3");
         Button button4 = new Button(shell, SWT.PUSH) ;
@@ -486,7 +599,118 @@ System.out.println("Decomposing Proof");
         // operator that was expanded to produce `node'.
         String originalOperator = null ;
 
+        // The nodeType is the type of node.
+        private static final int EXPR_NODE  = 0  ; // An OpApplNode that is not an OR_Node
+        private static final int NEW_NODE   = 1  ; // A NewSymbNode
+        private static final int DISJ_NODE  = 2  ; // A node representing a decomposition
+                                                   // into the disjunction of its children
+        private static final int EXISTS_NODE = 3 ; // Represents a decomposition into \E
+                                                   // of children[0].
+        private static final int PROOF_NODE = 4  ; // The LeafProofNode of the step
+        private static final int OTHER_NODE = 5  ;        
+        private int nodeType ;
         
+        // An EXPR_NODE can have multiple subtypes, indicating what decomposition
+        // can be applied.
+        private static final int AND_TYPE     = 0 ;
+        private static final int OR_TYPE      = 1 ;
+        private static final int IMPLIES_TYPE = 2 ;
+        private static final int FORALL_TYPE  = 3 ;
+        private static final int EXISTS_TYPE  = 4 ;
+        private static final int SQSUB_TYPE   = 5 ;  // An [A]_v expression
+        
+        
+        // children is the array of children of this object, if it has
+        // any.  Otherwise it is null.  Only an OR node should have children.
+        //
+        // If the node is the child of a NodeRepresentation object,
+        // then it equals parent.children[parentIdx]
+        NodeRepresentation parent ;
+        int parentIdx = -1;
+        NodeRepresentation[] children ;
+        
+        /**
+         * 
+         * @param sn  A subnode of this.node.
+         * @return
+         */
+        NodeRepresentation subNode(SemanticNode sn) {
+            
+            NodeRepresentation result = new NodeRepresentation() ;
+            result.node = sn ;
+            // set beginId to be the index in this.nodeText representing the
+            // first line of the source of node sn.
+            int beginIdx = getBeginLine(this.node) - getBeginLine(sn) ;
+            result.nodeText = new String[getEndLine(sn) - getBeginLine(sn)+1];
+            result.mapping = new Vector[result.nodeText.length] ;
+            // Set beginCol to the column of the first token of sn.
+            // Set beginPos to the position of the first token of sn in the string
+            // this.result.nodeText[beginLine - 1] containing its text.
+            int beginCol = sn.stn.getLocation().beginColumn() ;
+            int beginPos = colToLoc(beginCol, this.mapping[beginIdx]);
+            
+            // Set result.nodeText[0] to the string containing the first
+            // token and everything to its right in this.nodeText[...].
+            // Set result.mapping[0] to the MappingVector obtained by
+            // subtracting beginPos from all increments.
+            
+            result.nodeText[0] = this.nodeText[0].substring(beginPos);
+            Vector<MappingPair> mv = cloneMappingPairVector(this.mapping[beginIdx]) ;
+            // Since we just removed beginPos characters to the left of beginCol, we should 
+            // execute 
+            adjustMappingPairVector(beginCol, -beginPos, mv) ;
+            // but we'll do the adjustment by -beginPos later.
+            result.mapping[0] = mv ;
+           
+            // Set result.nodeText[i] to a copy of this.nodeText[i+...] 
+            //   and result.mapping[i] to a copy of this.mapping[i] for 
+            //   all other lines of the subnode's text.
+            // Set minPos = the minimum of beginPos and the smallest number
+            //   of leading spaces of any subsequent line of result.nodeText
+            int minPos = beginPos ;
+            for (int i = 1; i < result.mapping.length; i++) {
+                result.nodeText[i] = this.nodeText[i + beginIdx] ;
+                minPos = Math.min(minPos, StringHelper.leadingSpaces(result.nodeText[i]));
+                result.mapping[i] = new Vector<MappingPair>() ;
+                for (int j = 0; j < this.mapping[i + beginIdx].size(); j++) {
+                    result.mapping[i].add(this.mapping[i + beginIdx].elementAt(j).clone());
+                }
+            }
+            
+            // Remove the part of the last line of result.nodeText that doesn't
+            // belong to the subnode
+            result.nodeText[result.nodeText.length - 1] =
+                   result.nodeText[result.nodeText.length - 1].
+                     substring(0, colToLoc(sn.stn.getLocation().endColumn()+1, 
+                               result.mapping[result.mapping.length-1])) ;
+            
+            // Add any necessary space at the beginning of result.nodeText[0]
+            int spacesAddedToFirstLine = beginPos - minPos;
+            result.nodeText[0] = StringHelper.copyString(" ", spacesAddedToFirstLine)
+                              + result.nodeText[0];
+            // Since we now have added spacesAddedToFirstLine, we  execute
+            adjustMappingPairVector(beginCol, -spacesAddedToFirstLine, result.mapping[0]) ;
+
+            // Trim any necessary space from the beginning of result.nodeText[i] for i > 0.
+            for (int i = 1; i < result.nodeText.length; i++) {
+                result.nodeText[i] = result.nodeText[i].substring(minPos);
+                adjustMappingPairVector(1, minPos, result.mapping[i]) ;
+            }
+
+//            OpDefNode odn = new OpDefNode(UniqueString.uniqueStringOf("foo")) ;
+//            boolean isBuiltIn = odn.getKind() == ASTConstants.BuiltInKind ;
+            return result ;
+        }
+        
+        
+        /**
+         * This constructor is used to construct a NodeRepresentation
+         * object for the entire selected step and its leaf proof (if any).
+         * 
+         * @param document The document of the editor 
+         * @param node
+         * @throws BadLocationException
+         */
         NodeRepresentation(IDocument document, SemanticNode node)
                 throws BadLocationException {
             this.node = node ;
@@ -505,7 +729,7 @@ System.out.println("Decomposing Proof");
                 nodeText[0] = str ;
                 return ;
             }
-
+           
             IRegion region = document
                     .getLineInformation(location.beginLine() - 1);
             nodeText[0] = document.get(
@@ -531,7 +755,7 @@ System.out.println("Decomposing Proof");
             int spacesAddedToFirstLine = location.beginColumn() - minCol - 1 ;
             nodeText[0] = StringHelper.copyString(" ", spacesAddedToFirstLine)
                               + nodeText[0];
-            mapping[0].elementAt(0).inc = -spacesAddedToFirstLine;
+            mapping[0].elementAt(0).inc = -minCol-1;
             
             
             // Trim any necessary space from the beginning of nodeText[i] for i > 0.
@@ -542,6 +766,13 @@ System.out.println("Decomposing Proof");
             return ;
         }
         
+        /**
+         * Constructs an empty object
+         */
+        public NodeRepresentation() {
+            // TODO Auto-generated constructor stub
+        }
+
         public String toString() {
             String val = "" ;
             if (originalOperator != null) {
@@ -572,7 +803,7 @@ System.out.println("Decomposing Proof");
      * @author lamport
      *
      */
-    private class MappingPair {
+    private static class MappingPair {
         int col;
         int inc;
         MappingPair(int c, int p) {
@@ -580,9 +811,68 @@ System.out.println("Decomposing Proof");
             inc = p;
         }
         
+        public DecomposeProofHandler.MappingPair clone() {
+            return new MappingPair(this.col, this.inc) ;
+            
+        }
         public String toString() {
             return "<" + col + ", " + inc + ">" ;
         }
+    }
+    
+    /**
+     * Returns the string position to which the line-mapping defined by MappingPair
+     * vec maps the column col.
+     * 
+     * @param col
+     * @param vec
+     * @return
+     */    
+    private int colToLoc(int col, Vector<MappingPair> vec) {
+        int loc = col ;
+        for (int i = 0 ; (i < vec.size()) && (vec.elementAt(i).col <= col) ; i++) {
+            loc = loc + vec.elementAt(i).inc ;
+        }
+        return loc ;
+    }
+    
+    /**
+     * Modify vec so the line mapping nl it represents is related to the original
+     * line mapping ol by 
+     *     nl[c] = IF c < col THEN ol[c] ELSE ol[c] + incr
+     * @param col
+     * @param incr
+     * @param vec
+     * @return
+     */
+    private static void adjustMappingPairVector(int col, int incr, Vector<MappingPair> vec) {
+        // set i to the smallest value such that vec[i].col >= col, or i = vec.size() if
+        // there is none.
+        int i;
+        for (i = 0; (i < vec.size()) && (vec.elementAt(i).col < col); i++) {
+        }
+        
+        if (i == vec.size()) {
+            vec.add(new MappingPair(col, incr)) ;
+        } else if (vec.elementAt(i).col == col){
+            vec.elementAt(i).inc = vec.elementAt(i).inc + incr ;
+        } else {
+            vec.insertElementAt(new MappingPair(col, incr), i) ;
+        }
+    }
+    
+    /**
+     * Returns a vector the same length as vec whose elements are clones of the elements
+     * of vec.
+     * @param vec
+     * @return
+     */
+    private static Vector<MappingPair> cloneMappingPairVector(Vector<MappingPair> vec) {
+        Vector<MappingPair> result = new Vector<DecomposeProofHandler.MappingPair>() ;
+        for (int i=0 ; i < vec.size(); i++) {
+            result.add(vec.elementAt(i).clone()) ;
+        }
+        return result ;
     }
     
     public String stringArrayToString(String[] A) {
@@ -604,6 +894,12 @@ System.out.println("Decomposing Proof");
     public static final int ACTION = 2 ;
     public static final int CHECK = 3 ;
     
+    /*
+     * The followingidentify the various menu buttons.
+     */
+    
+    public static final int PROVE_BUTTON = 1 ;
+    public static final int TEST_BUTTON = 99 ;
     /**
      * Used to set various parameters of a button
      * 
@@ -611,8 +907,9 @@ System.out.println("Decomposing Proof");
      * @param type  The style type of the button.
      * @param text  The button's text
      */
-    private void setupMenuButton(Button button, String text) {
-            button.addSelectionListener(new DecomposeProofButtonListener(this, button, MENU)) ;
+    private void setupMenuButton(Button button, int whichOne, String text) {
+            button.addSelectionListener(new 
+                DecomposeProofButtonListener(this, new Integer(whichOne), MENU)) ;
             button.setText(text) ; 
             button.setSize(100, button.getSize().y);
             GridData gridData = new GridData();
@@ -621,19 +918,21 @@ System.out.println("Decomposing Proof");
         }
     
     private void setupCheckButton(Button button, String text) {
-        button.addSelectionListener(new DecomposeProofButtonListener(this, button, CHECK)) ;
+        // There doesn't seem to be a need to set a listener on a checkbutton;
+        // It can be read when some action button is pushed.
+//        button.addSelectionListener(new DecomposeProofButtonListener(this, button, CHECK)) ;
         button.setText(text) ; 
 //        button.setSize(100, button.getSize().y);
         GridData gridData = new GridData();
-        gridData.horizontalIndent = 30 ;
+//        gridData.horizontalIndent = 30 ;
         button.setLayoutData(gridData) ;
     }
 
     
     /**
      * The listener for buttons on the DecomposeProof window.  The button
-     * type tells what to do when clicked.  Any data needed by the listener
-     * must be put in fields of the DecomposeProofHandler object.
+     * type tells what to do when clicked.  Data identifying the button or what
+     * it should do is in the object fiel.
      * 
      * @author lamport
      *
@@ -647,12 +946,12 @@ System.out.println("Decomposing Proof");
  
         DecomposeProofHandler decomposeHandler ;
         int type ;
-        Button button ;
-        public DecomposeProofButtonListener(DecomposeProofHandler dHandler, Button but, int tp) {
+        Object object ;
+        public DecomposeProofButtonListener(DecomposeProofHandler dHandler, Object but, int tp) {
             super();
             decomposeHandler = dHandler ;
             type = tp ;
-            button = but ;
+            object = but ;
         }
         
         /**
@@ -662,31 +961,40 @@ System.out.println("Decomposing Proof");
          * @param e an event containing information about the selection
          */
         public void widgetSelected(SelectionEvent e) {
+            readButtons() ;
             switch (type) {
             case MENU:
                 System.out.println("MENU Click");
-                windowShell = decomposeHandler.windowShell;
-                decomposeHandler.location = windowShell.getLocation();
-                windowShell.close();
-                if (windowShell != null) {
-                    if (windowShell.isDisposed()) {
-                        System.out.println("closing disposes of window");
-                    } else {
-                        windowShell.dispose();
+                int buttonId = ((Integer) object).intValue() ;
+                switch (buttonId) {
+                case PROVE_BUTTON :
+                    break;
+                case TEST_BUTTON:
+                    windowShell = decomposeHandler.windowShell;
+                    decomposeHandler.location = windowShell.getLocation();
+                    windowShell.close();
+                    if (windowShell != null) {
+                        if (windowShell.isDisposed()) {
+                            System.out.println("closing disposes of window");
+                        } else {
+                            windowShell.dispose();
+                        }
+                        if (windowShell == null) {
+                            System.out.println("Closing nullifies");
+                        }
                     }
-                    if (windowShell == null) {
-                        System.out.println("Closing nullifies");
-                    }
+                    raiseWindow("Re-opened window "
+                            + decomposeHandler.location.toString());
+                    break;
                 }
-                raiseWindow("Re-opened window "
-                        + decomposeHandler.location.toString());
-                break;
-            case ACTION:
+                
+                            case ACTION:
                 System.out.println("ACTION Click");
                 break ;
             case CHECK:
-                System.out.println("status = " + button.getSelection()) ;
-                button.setEnabled(false) ;
+                Button but = (Button) object ;
+                System.out.println("status = " + but.getSelection()) ;
+                but.setEnabled(false) ;
             }
         }
 
@@ -702,6 +1010,38 @@ System.out.println("Decomposing Proof");
              
         }
         
+    }
+    
+    /**
+     * A convenience method that returns the first line of a semantic node's
+     * source in a module.  I don't know what to do if the semantic node is
+     * constructed and has no source.
+     *  
+     * @param nd
+     * @return
+     */
+    static int getBeginLine(SemanticNode nd) {
+        if (nd.stn == null) {
+            System.out.println("getBeginLine called on node with null stn field.") ;
+            return -1 ;
+        }
+        return nd.stn.getLocation().beginLine() ;
+    }
+
+    /**
+     * A convenience method that returns the first line of a semantic node's
+     * source in a module.  I don't know what to do if the semantic node is
+     * constructed and has no source.
+     *  
+     * @param nd
+     * @return
+     */
+    static int getEndLine(SemanticNode nd) {
+        if (nd.stn == null) {
+            System.out.println("getEndLine called on node with null stn field.") ;
+            return -1 ;
+        }
+        return nd.stn.getLocation().endLine() ;
     }
 
 }
