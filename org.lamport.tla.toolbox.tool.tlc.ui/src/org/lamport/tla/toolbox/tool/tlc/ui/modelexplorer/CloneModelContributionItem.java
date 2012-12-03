@@ -16,6 +16,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandlerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
@@ -42,7 +43,11 @@ public class CloneModelContributionItem extends CompoundContributionItem
 
         Vector modelContributions = new Vector();
 
-        IProject specProject = ToolboxHandle.getCurrentSpec().getProject();
+        Spec currentSpec = ToolboxHandle.getCurrentSpec();
+        if (currentSpec == null) {
+        	return new IContributionItem[0];
+        }
+		IProject specProject = currentSpec.getProject();
 
         try
         {
@@ -89,7 +94,7 @@ public class CloneModelContributionItem extends CompoundContributionItem
 
         } catch (CoreException e)
         {
-
+        	e.printStackTrace();
         }
         return (IContributionItem[]) modelContributions.toArray(new IContributionItem[modelContributions.size()]);
     }
