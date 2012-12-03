@@ -62,7 +62,7 @@ be used in more than one specification.&nbsp;
 When a specification imports a module (with an <code>EXTENDS</code> or
 <code>INSTANCE</code> statement), the parser searches for that module
 first in the root module's folder, then in the sequence of specified
-library folders, then among the standard modules.&nbsp;
+library folders (in the order they appear in the list), then among the standard modules.&nbsp;
 
 The list of library folders specified here can be overridden for a
 particular spec with a different list in the spec's <a

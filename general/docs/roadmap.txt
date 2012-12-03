@@ -199,6 +199,10 @@ RAISING AN ERROR OR WARNING WINDOW
 
  MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), window-title, message)
 ------------------------------------------------------------
+LOGGING AN ERROR ON THE TOOLBOX'S LOG
+
+   Activator.getDefault().logError
+------------------------------------------------------------
 ADDING A BUTTON TO A MENU
 
 In the Extensions tab of the appropriate plugin.xml file:

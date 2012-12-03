@@ -29,7 +29,7 @@
          </property>
          <property
                name="aboutText"
-               value="TLA+ Toolbox provides a user interface for TLA+ Tools. &#x0A;&#x0A;This is Version 1.4.3.f of 17 August 2012 and includes:&#x0A;  - SANY Version 2.1 of 31 October 2012&#x0A;  - TLC Version 2.05 of 24 October 2012&#x0A;  - PlusCal Version 1.8 of 10 August 2012&#x0A;  - TLATeX Version 1.0 of 18 August 2012&#x0A;&#x0A;Don&apos;t forget to click on help.  You can learn about features that you never knew about or have forgotten.&#x0A;&#x0A;Please send us reports of problems or suggestions; see http://www.tlaplus.net .">
+               value="TLA+ Toolbox provides a user interface for TLA+ Tools. &#x0A;&#x0A;This is Version 1.4.4 of 30 November 2012 and includes:&#x0A;  - SANY Version 2.1 of 31 October 2012&#x0A;  - TLC Version 2.05 of 24 October 2012&#x0A;  - PlusCal Version 1.8 of 18 August 2012&#x0A;  - TLATeX Version 1.0 of 9 August 2012&#x0A;&#x0A;Don&apos;t forget to click on help.  You can learn about features that you never knew about or have forgotten.&#x0A;&#x0A;Please send us reports of problems or suggestions; see http://www.tlaplus.net .">
          </property>
          <property
                name="aboutImage"

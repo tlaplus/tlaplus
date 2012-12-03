@@ -35,6 +35,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
@@ -754,12 +755,31 @@ public class ProverJob extends Job
                 command.add(options[i]);
             }
         }
-
+        // Following code added by LL on 30 Nov 2012.  It
+        // sets pathList to the array of library paths specified in the Preferences
+        // menu.  It then gives them to tlapm as -I options, in reverse order.
+        // SANY searches the library paths in the order they're specified in the
+        // preference menu; tlapm seems to search them in the inverse order of the
+        // -I options.
+        String[] pathList = Activator.getSpecManager().getSpecLoaded().getTLALibraryPath();
+        if (pathList != null) {
+            for (int i=0; i < pathList.length; i++) {
+                command.add("-I") ;
+                command.add(pathList[pathList.length - i - 1]) ;
+            }
+        }
+        
         // why just the last segment?
         command.add(module.getLocation().toOSString());
-
+     
+        // for debugging
+        // for (int i=0; i<command.size(); i++) {
+        //     System.out.println(command.get(i)) ;
+        // }
+        
         return (String[]) command.toArray(new String[command.size()]);
     }
+
 
     /**
      * Get the begin line of the region to pass to the prover.

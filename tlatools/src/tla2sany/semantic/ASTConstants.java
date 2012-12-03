@@ -163,4 +163,10 @@ public interface ASTConstants {
   * OP_suffices added by LL 16 Feb 2009.                                   *
   *************************************************************************/
   public static UniqueString OP_suffices  = UniqueString.uniqueStringOf("$Suffices");
+  
+  /*************************************************************************
+  * OP_prime added by LL 2 Dec 2012.                                       *
+  *************************************************************************/
+  public static UniqueString OP_prime  = UniqueString.uniqueStringOf("'");
+
 }

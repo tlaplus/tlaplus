@@ -45,14 +45,17 @@ In org.lamport.tla.toolbox/welcome/welcomeView.html
    
 In org.lamport.tla.toolbox.doc/META-INF/MANIFEST.MF, update the version (major.minor.micro).
 But do _not_ replace the last (".qualifier") segment. It is automatically replaced by the build.
-Explicitly replacing ".qualifier" with e.g. ".f" breaks the build with:
+Also, the version number in the pom.xml file in the same directory (and only in the same 
+directory???) has to be made the same (but leave the "-SNAPSHOT" unchanged).  Note that 
+explicitly replacing ".qualifier" with e.g. ".f" breaks the build with:
 
 "Failed to execute goal org.eclipse.tycho:tycho-packaging-plugin:0.14.0-SNAPSHOT:validate-version 
 (default-validate-version) on project org.lamport.tla.toolbox.doc: OSGi version 1.4.3.f must have .qualifier qualifier for SNAPSHOT builds"
 
 (If one absolutely has to set the ".qualifier" segment explicitly, do not forget to update 
 the version (not parent version!) org.lamport.tla.toolbox.doc/pom.xml
-correspondingly. It has to match the MANIFEST.MF version verbatim.)
+correspondingly. It has to match the MANIFEST.MF version verbatim.  However, 3 levels of version numbers
+are enough and we should abandon the .a, .b, ...)
 
 OBSOLETE:
 In toolbox.product.standalone/intro/root.xhtml: 
@@ -64,8 +67,8 @@ Note: org.lamport.tla.toolbox.product.product.product
        before June 2011 was named
    org.lamport.tla.toolbox.product.standalone.product
    
-   
-  synchronize and use Eclipse Product export wizard
+  Go to the Overview tab of org.lamport.tla.toolbox.product.product.product   
+  Synchronize and use Eclipse Product export wizard
   In the first menu, give
     Product Configuration: 
       Configuration:
@@ -113,9 +116,16 @@ Method 2. Using Maven
 Method 3. Using tla.msr-inria.inria.fr
   - In browser, goto https://tla.msr-inria.inria.fr/build
   - login
+  - before making a release, check that there are no problems by checking
+    in all changes, and going to M-HEAD-Toolbox.product.standalone
+    IF THERE IS A FAILURE, click on the "default" button under "Configurations"
+    (which will add "/os=master" to the URL), then
+    click on the appropriate version, then click on "Console Output" (not "raw").
+    The error may appear in red at the bottom.
   - to make a new release: click on the button to the right of
        Release-HEAD-Toolbox.product.standalone  
        This isn't released publicly until I do the release step, below
+       
   - to get the release zip files, 
        * To get the last promoted (publicly available) release, go to: 
             - goto https://tla.msr-inria.inria.fr/build
@@ -166,7 +176,8 @@ TO GENERATE THE RELEASE:
 Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
-Version 1.4.4 of ?
+Version 1.4.4 of 30 November 2012
+  - Markus made quite a few changes to distributed TLC and its Toolbox UI.
   - Fixed bug in Find Declaration and other commands that caused problems
     recognizing an identifier containing a "_".
   - Fixed a couple of minor bugs in TLC error messages in Version 2.05 of 18 May
