@@ -115,10 +115,12 @@ Method 2. Using Maven
      mvn install -Dmaven.test.failure.ignore=true
     However, failure of a test seems capable of hanging up Maven.
   The .zip files are in
+       C:\lamport\tla\newtools\tla-workspace\org.lamport.tla.toolbox.product.product\target\products
+  They also appear with weird names in:
        C:\Users\lamport\.m2\repository\tlatoolbox\org.lamport.tla.toolbox.product.product\version-number-SNAPSHOT
-  This will keep accumulating new versions.  To delete an old version, delete the
-       C:\Users\lamport\.m2\repository\tlatoolbox\
-    directory.
+       This will keep accumulating new versions.  To delete an old version, delete the
+          C:\Users\lamport\.m2\repository\tlatoolbox\
+       directory.
 
 Method 3. Using tla.msr-inria.inria.fr
   - In browser, goto https://tla.msr-inria.inria.fr/build
