@@ -283,7 +283,7 @@ System.out.println("Decomposing Proof");
         LevelNode thm = step.getTheorem();
         if (thm instanceof AssumeProveNode) {
             SemanticNode[] assump = ((AssumeProveNode) thm).getAssumes();
-            assumes = new OpApplNode[assump.length];
+            assumes = new SemanticNode[assump.length];
             assumeReps = new NodeRepresentation[assump.length];
             for (i = 0; i < assump.length; i++) {
                 if (assump[i] instanceof AssumeProveNode) {
@@ -292,13 +292,14 @@ System.out.println("Decomposing Proof");
                                     "Decompose Proof Command",
                                     "Cannot decompose a step with a nested ASSUME/PROVE.");
                     return null;
-                } else if (!(assump[i] instanceof OpApplNode)) {
-                    MessageDialog.openError(UIHelper.getShellProvider()
-                            .getShell(), "Decompose Proof Command",
-                            "Cannot handle assumption " + (i + 1) + ".");
-                    return null;
-                }
-                assumes[i] = (OpApplNode) assump[i];
+                } 
+//                else if (!(assump[i] instanceof OpApplNode)) {
+//                    MessageDialog.openError(UIHelper.getShellProvider()
+//                            .getShell(), "Decompose Proof Command",
+//                            "Cannot handle assumption " + (i + 1) + ".");
+//                    return null;
+//                }
+                assumes[i] =  assump[i];
                 assumeReps[i] = stepRep.subNode(assumes[i]);
                 goal = (OpApplNode) ((AssumeProveNode) thm).getProve();
                 goalRep = stepRep.subNode(goal);
@@ -307,6 +308,23 @@ System.out.println("Decomposing Proof");
         } else {
             assumes = null ;
             goal = (OpApplNode) thm ;
+            UniqueString goalOpName = goal.getOperator().getName() ;
+            
+            // Abort if this is one of the following kinds of steps:
+            //  QED, HAVE, PICK, WITNESS, SUFFICES
+            if (   (goalOpName == ASTConstants.OP_qed)
+                    || (goalOpName == ASTConstants.OP_pfcase)
+                    || (goalOpName == ASTConstants.OP_have)
+                    || (goalOpName == ASTConstants.OP_pick)
+                    || (goalOpName == ASTConstants.OP_witness)
+                    || (goalOpName == ASTConstants.OP_suffices)
+               ) {
+            	MessageDialog
+                .openError(UIHelper.getShellProvider().getShell(),
+                        "Decompose Proof Command",
+                        "Cannot decompose this kind of step.");
+        return null;
+            }
             goalRep = stepRep.subNode(goal) ;
         }
 
@@ -349,6 +367,8 @@ System.out.println("Decomposing Proof");
     }
     
 
+    // Note: It looks like horizontalSpan doesn't apply to a Label or a Button
+    // Probably have to put the label or Button inside a composite to do that.
 
     private void raiseWindow(String windowTitle) {
         // for testing
@@ -392,7 +412,7 @@ System.out.println("Decomposing Proof");
         
         // How to rewrite composite
         Composite radio = new Composite(topMenu, SWT.BORDER) ;
-        GridLayout radioLayout = new GridLayout(4, false) ;
+        GridLayout radioLayout = new GridLayout(6, false) ;
         radio.setLayout(radioLayout) ;
         Label radioLabel = new Label(radio, SWT.NONE) ;
         radioLabel.setText("prove using:") ;
@@ -422,29 +442,64 @@ System.out.println("Decomposing Proof");
         }
        
         
-        
-//        closeButton.setText("Close");
-//        closeButton.addSelectionListener(new DecomposeProofButton(this, windowShell, DecomposeProofButton.MENU, "refresh")) ;
-        
+        // Display the Assumptions        
         Label assumeLabel = new Label(shell, SWT.NONE);
         assumeLabel.setText("ASSUME");
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
         gridData = new GridData();
-        gridData.horizontalSpan = 3;
+//        gridData.horizontalSpan = 3;
+        new Label(shell, SWT.NONE) ;
+        new Label(shell, SWT.NONE) ;
+        
         assumeLabel.setLayoutData(gridData);
         
         if (assumes != null) {
             for (int i = 0 ; i < assumes.length; i++) {
+            	String labelText = null ;        		
+            	if (assumes[i].getKind() == ASTConstants.OpApplKind) {
+            		switch (assumeReps[i].nodeSubtype) {
+            		case NodeRepresentation.AND_TYPE:
+            			labelText = "/\\";
+            			break;
+            		case NodeRepresentation.OR_TYPE:
+            		case NodeRepresentation.SQSUB_TYPE:
+            			labelText = "\\/";
+            			break;
+            		case NodeRepresentation.IMPLIES_TYPE:
+            			labelText = "=>";
+            			break;
+            		case NodeRepresentation.EXISTS_TYPE:
+            			labelText = "\\E";
+            			break;
+            	    default:
+            	    	labelText = null ;
+            		}
+            	}
+                if (labelText != null) {
+            	      setupActionButton(new Button(shell, SWT.PUSH), assumeReps[i], labelText);
+            		}
+            	else {
+            		assumeLabel = new Label(shell, SWT.NONE) ;
+            	    assumeLabel.setText("  ") ;
+            	}
+            	gridData = new GridData();
+                gridData.verticalAlignment = SWT.TOP;
+                assumeLabel.setLayoutData(gridData);
+                
                 assumeLabel = new Label(shell, SWT.BORDER);
                 assumeLabel.setText(stringArrayToString(assumeReps[i].nodeText));
                 gridData = new GridData();
-                gridData.horizontalSpan = 3;
+//                gridData.horizontalSpan = 2;
+                new Label(shell, SWT.NONE) ;
+//                new Label(shell, SWT.NONE) ;
+                
+                gridData.verticalAlignment = SWT.TOP;
                 assumeLabel.setLayoutData(gridData);
                 
             }
         }
         
-        
+        // Display the Goal
         assumeLabel = new Label(shell, SWT.NONE);
         assumeLabel.setText("PROVE");
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
@@ -452,19 +507,42 @@ System.out.println("Decomposing Proof");
         gridData.horizontalSpan = 3;
         assumeLabel.setLayoutData(gridData);
         
-        assumeLabel = new Label(shell, SWT.NONE) ;
-        assumeLabel.setText(goal.getOperator().getName().toString()) ;
+        String labelText = null ;
+        switch(goalRep.nodeSubtype) {
+        case NodeRepresentation.AND_TYPE:
+			labelText = "/\\";
+			break;
+        case NodeRepresentation.FORALL_TYPE:
+			labelText = "\\A";
+			break;	
+        default:
+	    	labelText = null ;
+        }
+        if (labelText != null) {
+  	      setupActionButton(new Button(shell, SWT.PUSH), goalRep, labelText);
+  		}
+  	else {
+  		assumeLabel = new Label(shell, SWT.NONE) ;
+  	    assumeLabel.setText("  ") ;
+  	}
+//        assumeLabel = new Label(shell, SWT.NONE) ;
+//        assumeLabel.setText(goal.getOperator().getName().toString()) ;
+//        assumeLabel.setText(ASTConstants.kinds[goal.getKind()]) ;
+//        gridData = new GridData();
+//        gridData.verticalAlignment = SWT.TOP;
+//        assumeLabel.setLayoutData(gridData);
         
         assumeLabel = new Label(shell, SWT.BORDER);
         assumeLabel.setText(stringArrayToString(goalRep.nodeText));
         gridData = new GridData();
         gridData.horizontalSpan = 2;
+        gridData.verticalAlignment = SWT.TOP;
         assumeLabel.setLayoutData(gridData);
         Display display = UIHelper.getCurrentDisplay() ;
         // The following sets the font to be the Toolbox editor's text font.
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.TEXT_FONT));
 
-        // ---------- Garbage below
+/*  ---------- Garbage below
         new Button(shell, SWT.PUSH).setText("Wide Button 2");
         new Button(shell, SWT.PUSH).setText("Button 3");
         Button button4 = new Button(shell, SWT.PUSH) ;
@@ -520,17 +598,19 @@ System.out.println("Decomposing Proof");
         gridData = new GridData() ;
         gridData.verticalAlignment = SWT.FILL;
         l3.setLayoutData(gridData);
-        shell.pack() ;
+        
 
 //        System.out.println("Shell.size = " + shell.getSize().toString());
 //        System.out.println("parent.size = " + parent.getSize().toString());
-        Point shellSize = shell.getSize() ;;
-        windowShell.setSize(shellSize.x + 30, shellSize.y + 30) ;
         System.out.println("location = " + windowShell.getLocation().toString()) ;
         System.out.println("size = " + windowShell.getSize().toString()) ;
         System.out.println("location = " + topshell.getLocation().toString()) ;
         System.out.println("size = " + topshell.getSize().toString()) ;
-
+*/
+        shell.pack() ;
+        Point shellSize = shell.getSize() ;;
+        windowShell.setSize(shellSize.x + 30, shellSize.y + 30) ;
+        
         windowShell.update();
         if (this.location != null) {
             windowShell.setLocation(this.location) ;
@@ -604,9 +684,14 @@ System.out.println("Decomposing Proof");
         private static final int NEW_NODE   = 1  ; // A NewSymbNode
         private static final int DISJ_NODE  = 2  ; // A node representing a decomposition
                                                    // into the disjunction of its children
-        private static final int EXISTS_NODE = 3 ; // Represents a decomposition into \E
-                                                   // of children[0].
-        private static final int PROOF_NODE = 4  ; // The LeafProofNode of the step
+        private static final int EXISTS_NODE = 3 ; 
+           // Represents a decomposition into \E of children[0].
+           // This should not be the NodeRepresentation object for an assumption or goal,
+           // but it could be an inner object, such as the \E x of the assumption
+           //    \/ 1+1=2
+           //    \/ \E x : 1+x = 3
+        private static final int PROOF_NODE = 4  ; 
+          // The LeafProofNode of the step.  This may not be needed.
         private static final int OTHER_NODE = 5  ;        
         private int nodeType ;
         
@@ -618,7 +703,9 @@ System.out.println("Decomposing Proof");
         private static final int FORALL_TYPE  = 3 ;
         private static final int EXISTS_TYPE  = 4 ;
         private static final int SQSUB_TYPE   = 5 ;  // An [A]_v expression
+        private static final int OTHER_TYPE   = 99 ;  // anything else
         
+        public int nodeSubtype ;
         
         // children is the array of children of this object, if it has
         // any.  Otherwise it is null.  Only an OR node should have children.
@@ -640,7 +727,7 @@ System.out.println("Decomposing Proof");
             result.node = sn ;
             // set beginId to be the index in this.nodeText representing the
             // first line of the source of node sn.
-            int beginIdx = getBeginLine(this.node) - getBeginLine(sn) ;
+            int beginIdx =  getBeginLine(sn) - getBeginLine(this.node) ;
             result.nodeText = new String[getEndLine(sn) - getBeginLine(sn)+1];
             result.mapping = new Vector[result.nodeText.length] ;
             // Set beginCol to the column of the first token of sn.
@@ -649,12 +736,14 @@ System.out.println("Decomposing Proof");
             int beginCol = sn.stn.getLocation().beginColumn() ;
             int beginPos = colToLoc(beginCol, this.mapping[beginIdx]);
             
+            /*
+             * Set the nodeText and mapping fields.
+             */
             // Set result.nodeText[0] to the string containing the first
             // token and everything to its right in this.nodeText[...].
             // Set result.mapping[0] to the MappingVector obtained by
-            // subtracting beginPos from all increments.
-            
-            result.nodeText[0] = this.nodeText[0].substring(beginPos);
+            // subtracting beginPos from all increments.           
+            result.nodeText[0] = this.nodeText[beginIdx].substring(beginPos);
             Vector<MappingPair> mv = cloneMappingPairVector(this.mapping[beginIdx]) ;
             // Since we just removed beginPos characters to the left of beginCol, we should 
             // execute 
@@ -697,6 +786,55 @@ System.out.println("Decomposing Proof");
                 adjustMappingPairVector(1, minPos, result.mapping[i]) ;
             }
 
+            
+            /*
+             *  Compute the type and subType fields.
+             */
+            switch (sn.getKind()){
+            case ASTConstants.OpApplKind:
+            	result.nodeType = EXPR_NODE ;
+            	/* 
+            	 * Compute subType field.
+            	 */
+            	// If this is a primed expression, we need to
+            	// look at the argument of the prime operator.
+            	// So we set nd to the OpApplNode to check.
+            	OpApplNode nd = (OpApplNode) sn ;
+            	if (nd.getOperator().getName() == ASTConstants.OP_prime) {
+            		nd = (OpApplNode) nd.getArgs()[0] ;
+            	}
+            	
+            	UniqueString opId = nd.getOperator().getName();
+            	String opName = opId.toString();
+            	// Note \: experimentation revelas that 
+            	//  \lor and \/ both yield operator name \lor, and
+            	// \land and /\ both yield operator name \land
+            	if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
+            		result.nodeSubtype = AND_TYPE;
+            	} else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
+            		result.nodeSubtype = OR_TYPE;
+            	} else if (opName.equals("=>")) {
+            		result.nodeSubtype = IMPLIES_TYPE;
+            	} else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
+            		result.nodeSubtype = FORALL_TYPE;
+            	} else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
+            		result.nodeSubtype = EXISTS_TYPE;
+            	} else if (opId == ASTConstants.OP_sa) {
+            		result.nodeSubtype = SQSUB_TYPE;
+            	} else {
+            		result.nodeSubtype = OTHER_TYPE;
+            	}
+            	break;
+            case ASTConstants.NewSymbKind:
+            	result.nodeType = NEW_NODE;
+            	break;
+            case ASTConstants.LeafProofKind:
+            	result.nodeType = PROOF_NODE;
+            	break;
+            default:
+                result.nodeType = OTHER_NODE ;
+            }
+            
 //            OpDefNode odn = new OpDefNode(UniqueString.uniqueStringOf("foo")) ;
 //            boolean isBuiltIn = odn.getKind() == ASTConstants.BuiltInKind ;
             return result ;
@@ -928,6 +1066,15 @@ System.out.println("Decomposing Proof");
         button.setLayoutData(gridData) ;
     }
 
+    private void setupActionButton(Button button, NodeRepresentation nodeRep, String text) {
+    	button.setText(text) ; 
+        button.setSize(30, button.getSize().y);
+        GridData gridData = new GridData();
+        gridData.horizontalIndent = 10 ;
+        gridData.verticalAlignment = SWT.TOP;
+        button.setLayoutData(gridData) ;
+        button.addSelectionListener(new DecomposeProofButtonListener(this, nodeRep, ACTION)) ;
+    }
     
     /**
      * The listener for buttons on the DecomposeProof window.  The button
