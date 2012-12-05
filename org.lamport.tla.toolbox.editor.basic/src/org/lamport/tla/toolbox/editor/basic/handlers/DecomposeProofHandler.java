@@ -9,7 +9,6 @@
  */
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
-import java.awt.Font;
 import java.util.Vector;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -30,6 +29,8 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -45,8 +46,10 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.AssumeProveNode;
+import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
@@ -55,6 +58,7 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
 import util.UniqueString;
@@ -87,7 +91,13 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private NodeRepresentation[] assumeReps ; // the assumptions NodeRepresentations 
     private OpApplNode goal ;
     private NodeRepresentation goalRep ;
-
+    
+    /**
+     * If the step being proved is <code>left-angle i right-angle x. ...</code> , 
+     * then this equals <code>i</code>.
+     */
+    private int proofLevel;
+    
     // fields for displaying Decompose Proof window
     private Shell windowShell ;  // The shell of the Decompose Proof window
     private Point location = null ;  // The location at which window
@@ -153,8 +163,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * ExecutionEvent)
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        // TODO Auto-generated method stub
-        
         // For a release without the handler doing anything.
 //        if (ignore) {
 //            return null ;
@@ -239,13 +247,17 @@ System.out.println("Decomposing Proof");
         //   
         step = theorem;
         boolean notDone = true;
+        // Set proofLevel to the level of the final step selected, where
+        // it equals 2 if the step is labeld <2>x.
+        proofLevel = -1 ;
         proof = step.getProof();
         while (notDone && (proof != null)
                 && (proof instanceof NonLeafProofNode)) {
             LevelNode[] pfsteps = ((NonLeafProofNode) proof).getSteps();
             LevelNode foundLevelNode = null;
             i = 0;
-            while ((foundLevelNode == null) && (i < pfsteps.length)) {
+            proofLevel = stepLevel(pfsteps[0]);
+           while ((foundLevelNode == null) && (i < pfsteps.length)) {
                 if (EditorUtil.locationContainment(selectedLocation,
                         pfsteps[i].stn.getLocation())) {
                     foundLevelNode = pfsteps[i];
@@ -275,7 +287,7 @@ System.out.println("Decomposing Proof");
         }
         try {
             stepRep = new NodeRepresentation(doc, step) ;
-            System.out.println((new NodeRepresentation(doc, step)).toString());
+//            System.out.println((new NodeRepresentation(doc, step)).toString());
         } catch (BadLocationException e) {
             e.printStackTrace();
             System.out.println("threw exception");
@@ -346,7 +358,7 @@ System.out.println("Decomposing Proof");
                 // it, so it had to be replaced by something that requires a PhD in Eclipse
                 // to figure out how to use.
                 editorIFile.setReadOnly(true) ;
-                raiseWindow("newWindow") ;
+                raiseWindow("Decompose Proof") ;
                 
             }
             return null ;
@@ -400,17 +412,24 @@ System.out.println("Decomposing Proof");
         gridData.horizontalSpan = 3;
         topMenu.setLayoutData(gridData) ;
         
-        Button closeButton = new Button(topMenu, SWT.PUSH) ;
-        setupMenuButton(closeButton, TEST_BUTTON, "Refresh") ;
-        Button closeButton2 = new Button(topMenu, SWT.PUSH) ;
-        setupMenuButton(closeButton2, TEST_BUTTON, "Refresh2") ;
+        Button proveButton = new Button(topMenu, SWT.PUSH) ;
+        setupMenuButton(proveButton, TEST_BUTTON, "Prove") ;
+        Button replaceButton = new Button(topMenu, SWT.PUSH) ;
+        setupMenuButton(replaceButton, TEST_BUTTON, "Replace Step") ;
         
+		// There doesn't seem to be any need for a cancel button,
+		// since the user can just close the window.
+		// Button cancelButton = new Button(topMenu, SWT.PUSH) ;
+		// setupMenuButton(cancelButton, TEST_BUTTON, "Cancel") ;
+
         // button to choose whether to expand definitions with subexpression names
         subexpressionButton = new Button(topMenu, SWT.CHECK);
         setupCheckButton(subexpressionButton, "Use subexpression names.");
         subexpressionButton.setSelection(subexpressionValue) ;
         
-        // How to rewrite composite
+        /*
+         * Adds the radio buttons, which are a Composite
+         */
         Composite radio = new Composite(topMenu, SWT.BORDER) ;
         GridLayout radioLayout = new GridLayout(6, false) ;
         radio.setLayout(radioLayout) ;
@@ -441,21 +460,25 @@ System.out.println("Decomposing Proof");
             break ;
         }
        
-        
-        // Display the Assumptions        
-        Label assumeLabel = new Label(shell, SWT.NONE);
+        /*
+         * Display the ASSUME Section
+         */
+        // Display the "ASSUME", which must be put in a 
+        // composite because it spans multiple rows, and it appears
+        // that a Label can't do that.
+        Composite comp = new Composite(shell, SWT.NONE) ;
+        GridLayout compLayout = new GridLayout(1, false) ;
+        comp.setLayout(compLayout) ;       
+        gridData = new GridData();
+        gridData.horizontalSpan = 3;
+        comp.setLayoutData(gridData);
+        Label assumeLabel = new Label(comp, SWT.NONE);
         assumeLabel.setText("ASSUME");
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
-        gridData = new GridData();
-//        gridData.horizontalSpan = 3;
-        new Label(shell, SWT.NONE) ;
-        new Label(shell, SWT.NONE) ;
-        
-        assumeLabel.setLayoutData(gridData);
         
         if (assumes != null) {
             for (int i = 0 ; i < assumes.length; i++) {
-            	String labelText = null ;        		
+            	String labelText =  null ;        		
             	if (assumes[i].getKind() == ASTConstants.OpApplKind) {
             		switch (assumeReps[i].nodeSubtype) {
             		case NodeRepresentation.AND_TYPE:
@@ -479,34 +502,72 @@ System.out.println("Decomposing Proof");
             	      setupActionButton(new Button(shell, SWT.PUSH), assumeReps[i], labelText);
             		}
             	else {
-            		assumeLabel = new Label(shell, SWT.NONE) ;
-            	    assumeLabel.setText("  ") ;
+//            		setupActionButton(new Button(shell, SWT.PUSH), assumeReps[i], "  ");
+            		assumeLabel = new Label(shell, SWT.NONE);
+            		assumeLabel.setText("  ") ;
             	}
             	gridData = new GridData();
                 gridData.verticalAlignment = SWT.TOP;
                 assumeLabel.setLayoutData(gridData);
                 
-                assumeLabel = new Label(shell, SWT.BORDER);
+                // Add a spacer between the button and the formula
+                comp = new Composite(shell, SWT.NONE);
+                gridLayout = new GridLayout(1, false);
+                comp.setLayout(gridLayout);
+                comp.setSize(0, 5) ;
+                assumeLabel = new Label(shell, SWT.NONE);
                 assumeLabel.setText(stringArrayToString(assumeReps[i].nodeText));
+                // Set the font to be the editors main text font.
+                assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+            			JFaceResources.TEXT_FONT));
                 gridData = new GridData();
-//                gridData.horizontalSpan = 2;
-                new Label(shell, SWT.NONE) ;
-//                new Label(shell, SWT.NONE) ;
-                
+                // I have no idea why (undoubtedly a feature that no one has ever 
+                // bothered to document), but the following statement either does or 
+                // does not add 100 pixels of space to the left of the label. I
+				// been unable to figure out when it does and when it doesn't.
+				// gridData.horizontalIndent = 100 ;
+                gridData.horizontalIndent = 0 ;
                 gridData.verticalAlignment = SWT.TOP;
                 assumeLabel.setLayoutData(gridData);
                 
+                // Add a spacer between the items.
+                // I think it looks better with a spacer after the last item,
+                // but just uncomment the "-1" to remove it.
+				if (i != assumeReps.length - 1  ) {
+//					comp = new Composite(shell, SWT.NONE);
+//					comp.setSize(100,0) ;
+					comp = new Composite(shell, SWT.NONE);
+					comp.setLayout(compLayout);
+					gridData = new GridData();
+					gridData.horizontalSpan = 3;
+					gridData.horizontalIndent = 30;
+					comp.setLayoutData(gridData);
+//					assumeLabel.setText("---------------------------------");
+					comp.setSize(100,0) ;
+				    gridLayout = new GridLayout(3, false) ;
+				    comp.setLayout(gridLayout);
+					assumeLabel = new Label(comp, SWT.SEPARATOR|SWT.HORIZONTAL);
+//					assumeLabel = new Label(comp, SWT.SEPARATOR|SWT.HORIZONTAL);
+//					assumeLabel = new Label(comp, SWT.SEPARATOR|SWT.HORIZONTAL);
+                }
             }
         }
         
-        // Display the Goal
-        assumeLabel = new Label(shell, SWT.NONE);
-        assumeLabel.setText("PROVE");
-        assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
+        /*
+         *  Display the Goal
+         */
+        // Display the "PROVE", which must be put in a 
+        // composite because it spans multiple rows, and it appears
+        // that a Label can't do that.
+        comp = new Composite(shell, SWT.NONE) ;
+        compLayout = new GridLayout(1, false) ;
+        comp.setLayout(compLayout) ;       
         gridData = new GridData();
         gridData.horizontalSpan = 3;
-        assumeLabel.setLayoutData(gridData);
-        
+        comp.setLayoutData(gridData);
+        assumeLabel = new Label(comp, SWT.NONE);
+        assumeLabel.setText("PROVE");
+        assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
         String labelText = null ;
         switch(goalRep.nodeSubtype) {
         case NodeRepresentation.AND_TYPE:
@@ -525,22 +586,23 @@ System.out.println("Decomposing Proof");
   		assumeLabel = new Label(shell, SWT.NONE) ;
   	    assumeLabel.setText("  ") ;
   	}
-//        assumeLabel = new Label(shell, SWT.NONE) ;
-//        assumeLabel.setText(goal.getOperator().getName().toString()) ;
-//        assumeLabel.setText(ASTConstants.kinds[goal.getKind()]) ;
-//        gridData = new GridData();
-//        gridData.verticalAlignment = SWT.TOP;
-//        assumeLabel.setLayoutData(gridData);
         
-        assumeLabel = new Label(shell, SWT.BORDER);
-        assumeLabel.setText(stringArrayToString(goalRep.nodeText));
-        gridData = new GridData();
-        gridData.horizontalSpan = 2;
-        gridData.verticalAlignment = SWT.TOP;
-        assumeLabel.setLayoutData(gridData);
-        Display display = UIHelper.getCurrentDisplay() ;
-        // The following sets the font to be the Toolbox editor's text font.
-        assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.TEXT_FONT));
+	// Add a spacer between the button and the formula
+	comp = new Composite(shell, SWT.NONE);
+	gridLayout = new GridLayout(1, false);
+	comp.setLayout(gridLayout);
+	comp.setSize(0, 5);
+
+	assumeLabel = new Label(shell, SWT.NONE);
+	assumeLabel.setText(stringArrayToString(goalRep.nodeText));
+	gridData = new GridData();
+//	gridData.horizontalSpan = 2;
+	gridData.verticalAlignment = SWT.TOP;
+	assumeLabel.setLayoutData(gridData);
+	Display display = UIHelper.getCurrentDisplay();
+	// The following sets the font to be the Toolbox editor's text font.
+	assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+			JFaceResources.TEXT_FONT));
 
 /*  ---------- Garbage below
         new Button(shell, SWT.PUSH).setText("Wide Button 2");
@@ -796,13 +858,10 @@ System.out.println("Decomposing Proof");
             	/* 
             	 * Compute subType field.
             	 */
-            	// If this is a primed expression, we need to
-            	// look at the argument of the prime operator.
-            	// So we set nd to the OpApplNode to check.
-            	OpApplNode nd = (OpApplNode) sn ;
-            	if (nd.getOperator().getName() == ASTConstants.OP_prime) {
-            		nd = (OpApplNode) nd.getArgs()[0] ;
-            	}
+            	// Set nd to the expression we should look at to compute
+            	// the subType, which is the expression obtained from sn
+            	// by removing an application of ' and expanding user definitions.
+            	OpApplNode nd = exposeRelevantExpr((OpApplNode) sn) ;
             	
             	UniqueString opId = nd.getOperator().getName();
             	String opName = opId.toString();
@@ -1049,9 +1108,9 @@ System.out.println("Decomposing Proof");
             button.addSelectionListener(new 
                 DecomposeProofButtonListener(this, new Integer(whichOne), MENU)) ;
             button.setText(text) ; 
-            button.setSize(100, button.getSize().y);
+//            button.setSize(100, button.getSize().y);
             GridData gridData = new GridData();
-            gridData.horizontalIndent = 30 ;
+            gridData.horizontalIndent = 5 ;
             button.setLayoutData(gridData) ;
         }
     
@@ -1062,18 +1121,22 @@ System.out.println("Decomposing Proof");
         button.setText(text) ; 
 //        button.setSize(100, button.getSize().y);
         GridData gridData = new GridData();
-//        gridData.horizontalIndent = 30 ;
+        gridData.horizontalIndent = 10 ;
         button.setLayoutData(gridData) ;
     }
 
     private void setupActionButton(Button button, NodeRepresentation nodeRep, String text) {
     	button.setText(text) ; 
-        button.setSize(30, button.getSize().y);
+//        button.setSize(30, button.getSize().y + 100);
         GridData gridData = new GridData();
-        gridData.horizontalIndent = 10 ;
+        gridData.horizontalIndent = 15 ;
         gridData.verticalAlignment = SWT.TOP;
         button.setLayoutData(gridData) ;
         button.addSelectionListener(new DecomposeProofButtonListener(this, nodeRep, ACTION)) ;
+        button.setFont(JFaceResources.getFontRegistry().get(JFaceResources.TEXT_FONT));
+        if (text.equals("  ")) {
+        	button.setEnabled(false);
+        }
     }
     
     /**
@@ -1190,5 +1253,52 @@ System.out.println("Decomposing Proof");
         }
         return nd.stn.getLocation().endLine() ;
     }
+    
+    /**
+     *  If nd is a step of a proof--that is, it is an element of the array returned by
+     *  NonLeafProofNode.getSteps()--then this returns the level number of the proof, which
+     *  is the i such that the step begins "<i>".  A little experimentation reveals that
+     *  the parser turns "<+>" or "<*>" in the source into "<i>" for the appropriate i.
+     * @param nd
+     * @return
+     */
+    static int stepLevel(SemanticNode nd) {
+    	String stepStr = ((SyntaxTreeNode) nd.stn).getHeirs()[0].image.toString() ;
+    	String stepNum = stepStr.substring(stepStr.indexOf('<')+1, stepStr.indexOf('>')) ;
+    	return Integer.valueOf(stepNum).intValue();
+    }
 
+    /**
+     * Performs the following operation.
+     *          nd := oan ;
+     *    loop: if    oan = expr' 
+     *             or oan = Op(...) where Op is a user-defined symbol
+     *                              and expr is the body of its definition
+     *            then oan := expr
+     *                 goto loop
+     *          return oan;
+     * @param oan
+     * @return
+     */
+	static OpApplNode exposeRelevantExpr(OpApplNode oan) {
+		OpApplNode nd = oan;
+		boolean notDone = true;
+		while (notDone) {
+			if (nd.getOperator().getName() == ASTConstants.OP_prime) {
+				nd = (OpApplNode) nd.getArgs()[0];
+			} else if (nd.getOperator().getKind() == ASTConstants.UserDefinedOpKind) {
+				ExprNode opDef = ((OpDefNode) nd.getOperator()).getBody();
+				if (opDef instanceof OpApplNode) {
+					nd = (OpApplNode) opDef;
+				} else {
+					notDone = false;
+				}
+
+			} else {
+				notDone = false;
+
+			}
+		}
+		return nd ;
+    }
 }
