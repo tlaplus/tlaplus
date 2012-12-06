@@ -7,6 +7,17 @@
  * fields of the object between executions of the command.
  * 
  */
+        /*
+         * To figure out how to layout a nice popup, see 
+         *    
+         *    http://www.eclipse.org/articles/article.php?file=Article-Understanding-Layouts/index.html
+         *    
+         * to find out how to use GridLayout, and see ObligationsView.updateItem 
+         * to see how to add things to a Composite nested inside other things.  
+         * See also the ScrolledComposite method, which with luck will just be
+         * a composite with scrollbars when needed.
+         */
+
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
 import java.util.Iterator;
@@ -52,6 +63,7 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -97,11 +109,24 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     
     private  ProofNode proof;
     
-    // The current assumptions and goal.  Once DecomposeProofHandler.execute is
-    // called, the vector objects assumes and assumeReps remain fixed; only 
-    // their contents varies.  Objects will have pointers to these vectors.
-    // these vectors.
+    /*************************************************************************
+     * Fields that contain the current assumptions and goal.  
+     * 
+     * The data for the current assumptions are kept in vectors, the
+     * i-th element containing data for the i-th assumption.  This is done
+     * to make it easy to replace one assumption by several.  Other objects
+     * contain pointers to these vectors, so once the vectors are
+     * constructed by DecomposeProofHandler.execute, they can be modified
+     * but must not be replaced by new vectors.
+     *************************************************************************/
+    /**
+     * The semantic nodes for the current assumptions.
+     */
     private Vector <SemanticNode> assumes ;
+    
+    /**
+     * The NodeRepresentation objects for the current assumptions
+     */
     private Vector <NodeRepresentation> assumeReps ; 
     
     private OpApplNode goal ;
@@ -125,6 +150,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      */
     private int stepColumn;
     
+    /**
+     * The number of columns to the right of stepColumn to which the
+     * created proof is to be indented.  It should be set from a 
+     * preference.
+     */
+    int proofIndent = 2 ;
     
     // fields for displaying Decompose Proof window
     private Shell windowShell ;  // The shell of the Decompose Proof window
@@ -134,8 +165,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private IFile editorIFile ; // The IFile of the editor, used for making it read-only.
     public boolean ignore = true ; // for producing a release without the handler doing anything.
 
-    // The following fields represent the state of the decomposition
-    
+    /********************************************************
+     * Fields representing the state of the decomposition
+     ********************************************************/  
     /**
      * True iff some user action was performed that changed the obligation.
      */
@@ -160,9 +192,35 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     int andSplitBegin;
     int andSplitEnd;
     
-    // buttons and stuff for the window
+    /**
+     * True iff the user has done something to change goal and/or set
+     * of assumptions.  (This is used to disable the Replace option.)
+     */
+    private boolean hasChanged = false ;
     
-	// The possible ways to distribute added assumptions in the proof are
+    /**
+     * True iff an action has been performed on an assumption--either
+     * an AND-split, a \E-split, or an OR-split.  Such an action disables
+     * actions on other assumptions.  Once an \E-split or an OR-split
+     * has been performed, at most one assumption node can have actions 
+     * performed on it.  After an AND-split, only AND-split nodes can
+     * have enabled actions.
+     */
+    private boolean assumeHasChanged = false ;  
+
+    /**
+     * It equals -1 unless an \E-split or OR-split has been performed on
+     * an assume node, in which case it is the index of that node. In
+     * that case, this is the only node that can contain an enabled action
+     * (possibly in a descendant node if this is an OR node).
+     * 
+     */
+    private int enabledIdx = -1 ;  // If # -1, then assumption splitOrIdx has been OR-split.
+
+    /****************************************
+     * Top Menu buttons.
+     *****************************************/
+    // The possible ways to distribute added assumptions in the proof are
 	// - Put them in a SUFFICES step
 	// - Put them in the ASSUMES clause of each step.
 	// - Rewrite the original step.
@@ -182,23 +240,28 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
 	//    private static final int NEITHER_CHOSEN = 2 ;
 	//    private int radioChoice = SUFFICES_CHOSEN ;
     
-    private Button useSufficesButton;  // 
+    /**
+     * The useSufficesButton determines whether the created proof will
+     * use an initial SUFFICES step to declare the newly created assumptions,
+     * or if those assumptions will be put on each step of the proof in
+     * an ASSUME/PROVE.
+     */
     private boolean useSufficesValue = true;
+    private Button useSufficesButton;  // 
     
-    private Button subexpressionButton ; // Determines how definitions are expanded
-    private boolean subexpressionValue = true ; // should be initialized by preference
+    /**
+     * The subexpressionButton determines if an occurrence of a user-defined
+     * operator should be expanded by replacing it with its definition,
+     * or by using subexpression names like Op(43)!2.  In the initial
+     * implementation, definitions that come from a different module are
+     * always expanded by using subexpression names.
+     */
+    private boolean subexpressionValue = true ; 
+    private Button subexpressionButton ; 
     
-    // Some fields holding the state of the decomposition
-    private boolean hasChanged = false ;       // true iff the user has done something
-    private boolean assumeHasChanged = false ;  
-            // true iff an action has been performed on an assumption. 
-            // It is not set by an action that modifies the goal and creates a new
-            // assumption.
-    private int splitOrIdx = -1 ;  // If # -1, then assumption splitOrIdx has been OR-split.
             
     /**
-     * Set radioChoice to indicate the currently selected radio button.
-     * currently selected values ;
+     * Record the state of the top menu's check buttons.
      */
     private void readButtons() {
     	useSufficesValue = useSufficesButton.getSelection() ;
@@ -217,33 +280,27 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
     /**
-     * 
-     */
-    // public DecomposeProofHandler() {
-    // // TODO Auto-generated constructor stub
-    // }
-
-    /*
-     * (non-Javadoc)
-     * 
+     * The execute method is called when the user issues a DecomposeProof
+     * command.
+     *  
      * @see
      * org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      * ExecutionEvent)
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        // For a release without the handler doing anything.
-//        if (ignore) {
-//            return null ;
-//       }
 
-System.out.println("Decomposing Proof");
-
-        // Initialize the state of the decomposition.
+    	/**********************************************
+    	 * Initialize the state of the decomposition.
+    	 **********************************************/
         changed = false ;
         chosenSplit = -1;
         andSplitBegin = -1;
         andSplitEnd = -1 ;
 
+        /******************************************************************
+         * Perform various checks to see if the command should be
+         * executed, and possibly raise an error warning if it shouldn't. 
+         *******************************************************************/
         // Do nothing if already executing command. 
         if (this.windowShell != null) {
             if (!this.windowShell.isDisposed()) {
@@ -327,8 +384,10 @@ System.out.println("Decomposing Proof");
             return null;
         }
 
-        // Set step to innermost step (or the theorem itself) containing
-        // the selected region.
+		/********************************************************************
+		 * Set step to innermost step (or the theorem itself) containing the
+		 * selected region.
+		 *********************************************************************/
         // NEED TO ADD CODE to compute a symbol table of all identifiers
         // that are defined by the context of the found step.
         // Things to check to find out how to do that
@@ -339,8 +398,15 @@ System.out.println("Decomposing Proof");
         //   
         step = theorem;
         boolean notDone = true;
-        // Set proofLevel to the level of the final step selected, where
-        // it equals 2 if the step is labeld <2>x.
+        
+        /****************************************************************
+         * Set proofLevel to the level of the final step selected, where
+         * it equals 2 if the step is labeled <2>x.
+         * 
+         * Note that the SANY parser appears to replace <+> or <*> by
+         * <n> for the appropriate number n, so the Toolbox doesn't have
+         * to deal with <+> or <*>.
+         ****************************************************************/
         proofLevel = -1 ;
         proof = step.getProof();
         while (notDone && (proof != null)
@@ -370,8 +436,10 @@ System.out.println("Decomposing Proof");
             }
         }
   
-        // set stepNumber and stepColumn
-        SyntaxTreeNode nd = (SyntaxTreeNode) step.stn ;
+		/*********************************
+		 * set stepNumber and stepColumn 
+		 *********************************/
+		SyntaxTreeNode nd = (SyntaxTreeNode) step.stn;
         if (step == theorem) {
                 stepNumber = null ;
         } else {
@@ -382,9 +450,11 @@ System.out.println("Decomposing Proof");
         }        
         stepColumn = nd.getLocation().beginColumn() ;
         
-        System.out.println("stepNumber = " + stepNumber + ", stepColumn = " + stepColumn);
-        
-        // the step must have either no proof or a leaf proof.
+        /**************************************************************
+         * Check that this step is one that the DecomposeProof commmand
+         * can handle.
+         *************************************************************/
+        // Check that the step has either no proof or a leaf proof.
         if ((proof != null) && !(proof instanceof LeafProofNode)) {
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command",
@@ -393,7 +463,6 @@ System.out.println("Decomposing Proof");
         }
         try {
             stepRep = new NodeRepresentation(doc, step) ;
-//            System.out.println((new NodeRepresentation(doc, step)).toString());
         } catch (BadLocationException e) {
             e.printStackTrace();
             System.out.println("threw exception");
@@ -440,16 +509,6 @@ System.out.println("Decomposing Proof");
             goalRep = stepRep.subNode(goal, null) ;
         }
 
-        /*
-         * To figure out how to layout a nice popup, see 
-         *    
-         *    http://www.eclipse.org/articles/article.php?file=Article-Understanding-Layouts/index.html
-         *    
-         * to find out how to use GridLayout, and see ObligationsView.updateItem 
-         * to see how to add things to a Composite nested inside other things.  
-         * See also the ScrolledComposite method, which with luck will just be
-         * a composite with scrollbars when needed.
-         */
         if (this.windowShell != null)  {
             if (this.windowShell.isDisposed()) {
                 System.out.println("Parent disposed") ;
@@ -930,7 +989,7 @@ System.out.println("Decomposing Proof");
         private static final int PROOF_NODE = 4  ; 
           // The LeafProofNode of the step.  This may not be needed.
         private static final int OTHER_NODE = 5  ;        
-        private int nodeType ;
+        private int nodeType = 0 ;
         
         // An EXPR_NODE can have multiple subtypes, indicating what decomposition
         // can be applied.
@@ -942,7 +1001,7 @@ System.out.println("Decomposing Proof");
         private static final int SQSUB_TYPE   = 5 ;  // An [A]_v expression
         private static final int OTHER_TYPE   = 99 ;  // anything else
         
-        public int nodeSubtype ;
+        public int nodeSubtype = OTHER_TYPE ;
         
         // NodeRepresentation objects that are constructed for the DecomposeProof window
         // are structured as a forest with two roots: the Assume root, whose children
@@ -979,8 +1038,30 @@ System.out.println("Decomposing Proof");
          * True iff this assumption or goal was not in the original
          * step.
          */
-        boolean isCreated;
+        boolean isCreated = false;
 
+        /**
+         * True iff this is a NEW node that is to be displayed on the same
+         * line as the next node, which is also a NEW node.  For nodes
+         * that come from the step, this is true iff this and the next node
+         * are NEW nodes that all appear entirely on the same line.  For added
+         * NEW nodes, it will be true iff:
+         * 
+         *   - The NEW statement fits on a single line (meaning that it is NOT of
+         *     the form NEW x \in S where S is a multi-line formula)
+         *     
+         *   - It and the next node come from the same \A or \E, as in the NEW x and 
+         *     NEW y from \A x, y : ... 
+         *     
+         * A sequence of same-line NEWs will not all be put on the same line in the 
+         * proof if its width plus proofIndent is greater than the module-editor right 
+         * margin preference, which is obtained with
+         * 
+         *   Activator.getDefault().getPreferenceStore().getInt(
+         *       EditorPreferencePage.EDITOR_RIGHT_MARGIN);
+         */
+        boolean onSameLineAsNext = false ;
+        
 // The following commented-out state information is deducible from the
 //  handler object's state.
 //        /**
