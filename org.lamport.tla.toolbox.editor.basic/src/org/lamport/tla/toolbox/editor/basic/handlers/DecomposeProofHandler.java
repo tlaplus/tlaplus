@@ -9,6 +9,9 @@
  */
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -16,6 +19,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
@@ -39,9 +43,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
+import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -83,20 +93,38 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private ModuleNode moduleNode; // The module being edited.
     private TheoremNode theorem;// The theorem containing the selected step
     private TheoremNode step; // The step being decomposed.
-    private NodeRepresentation stepRep; // the steps node representation;
+    private NodeRepresentation stepRep; // the step's node representation;
+    
     private  ProofNode proof;
     
-    // The assumptions and goal
-    private SemanticNode[] assumes ;
-    private NodeRepresentation[] assumeReps ; // the assumptions NodeRepresentations 
+    // The current assumptions and goal.  Once DecomposeProofHandler.execute is
+    // called, the vector objects assumes and assumeReps remain fixed; only 
+    // their contents varies.  Objects will have pointers to these vectors.
+    // these vectors.
+    private Vector <SemanticNode> assumes ;
+    private Vector <NodeRepresentation> assumeReps ; 
+    
     private OpApplNode goal ;
     private NodeRepresentation goalRep ;
     
     /**
-     * If the step being proved is <code>left-angle i right-angle x. ...</code> , 
-     * then this equals <code>i</code>.
+     * If the step being proved is numbered <2>3,  then this equals 2.
      */
     private int proofLevel;
+    
+    /**
+     * If the step is number <2>3, then this is "<2>3".  If the step is unnumbered,
+     * as in <2>, or if it is the entire theorem, then this string is null.
+     */
+    private String stepNumber;
+    
+    
+    /**
+     * The column in which the step begins.  (Used for determining indentation of
+     * the proof.
+     */
+    private int stepColumn;
+    
     
     // fields for displaying Decompose Proof window
     private Shell windowShell ;  // The shell of the Decompose Proof window
@@ -105,21 +133,60 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private TLAEditor editor;  // The editor from which window was raised.
     private IFile editorIFile ; // The IFile of the editor, used for making it read-only.
     public boolean ignore = true ; // for producing a release without the handler doing anything.
+
+    // The following fields represent the state of the decomposition
+    
+    /**
+     * True iff some user action was performed that changed the obligation.
+     */
+    boolean changed;
+    
+    /**
+     * If the user has done an \E split or an OR split on an assumption,
+     * then this is the index of the assumption in assumes and assumeReps.
+     * Otherwise, it equals -1.
+     */
+    int chosenSplit;
+    
+    /**
+     * Once the user has performed an AND split on an assumption, then
+     * another AND split can be performed only on one of the results of
+     * that split.  The indices of the nodes in <code>assumes</code> and
+     * <code>assumeReps</code> resulting from AND splits range from
+     * andSplitBegin through andSplitEnd.  If no AND split has been performed,
+     * then andSplitBegin and andSplitEnd equal -1.
+     * 
+     */
+    int andSplitBegin;
+    int andSplitEnd;
     
     // buttons and stuff for the window
-    // Radio buttons for how to rewrite proof: 
-    Button sufficesButton ; //  Use SUFFICES step in proof
-    Button rewriteButton ;  //  Rewrite step
-    Button neitherButton ;  //  Use ASSUME/PROOF steps
-
-    // The value selected by the radiobuttons.  Should initialize by preference
-    private static final int SUFFICES_CHOSEN = 0 ;
-    private static final int REWRITE_CHOSEN = 1 ;
-    private static final int NEITHER_CHOSEN = 2 ;
-    private int radioChoice = SUFFICES_CHOSEN ;
+    
+	// The possible ways to distribute added assumptions in the proof are
+	// - Put them in a SUFFICES step
+	// - Put them in the ASSUMES clause of each step.
+	// - Rewrite the original step.
+	// I originally thought I'd allow all three, which required three
+	// radio buttons. But I decided to disallow the third possibility,
+	// so I needed only the single useSuffices check box.
+    //
+	//    // Radio buttons for how to rewrite proof:
+	//    Button sufficesButton ; // Use SUFFICES step in proof
+	//    Button rewriteButton ; // Rewrite step
+	//    Button neitherButton ; // Use ASSUME/PROOF steps
+	//
+	//    // The value selected by the radiobuttons. Should initialize by preference
+	// 
+	//    private static final int SUFFICES_CHOSEN = 0 ;
+	//    private static final int REWRITE_CHOSEN = 1 ;
+	//    private static final int NEITHER_CHOSEN = 2 ;
+	//    private int radioChoice = SUFFICES_CHOSEN ;
+    
+    private Button useSufficesButton;  // 
+    private boolean useSufficesValue = true;
     
     private Button subexpressionButton ; // Determines how definitions are expanded
-    private boolean subexpressionValue = false ; // should be initialized by preference
+    private boolean subexpressionValue = true ; // should be initialized by preference
     
     // Some fields holding the state of the decomposition
     private boolean hasChanged = false ;       // true iff the user has done something
@@ -134,17 +201,18 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * currently selected values ;
      */
     private void readButtons() {
+    	useSufficesValue = useSufficesButton.getSelection() ;
         subexpressionValue = subexpressionButton.getSelection() ;
-        if (sufficesButton.getSelection()) {
-            radioChoice = SUFFICES_CHOSEN ;
-            return ;
-        }
-        if (rewriteButton.getSelection()) {
-            radioChoice = REWRITE_CHOSEN ;
-            return ;
-        }
-        radioChoice = NEITHER_CHOSEN ;
-        return ;
+		// if (sufficesButton.getSelection()) {
+		// radioChoice = SUFFICES_CHOSEN ;
+		// return ;
+		// }
+		// if (rewriteButton.getSelection()) {
+		// radioChoice = REWRITE_CHOSEN ;
+		// return ;
+		// }
+		// radioChoice = NEITHER_CHOSEN ;
+		// return ;
     }
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
@@ -170,6 +238,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
 
 System.out.println("Decomposing Proof");
 
+        // Initialize the state of the decomposition.
+        changed = false ;
+        chosenSplit = -1;
+        andSplitBegin = -1;
+        andSplitEnd = -1 ;
+
         // Do nothing if already executing command. 
         if (this.windowShell != null) {
             if (!this.windowShell.isDisposed()) {
@@ -178,6 +252,24 @@ System.out.println("Decomposing Proof");
             }
         }
 
+        // Report an error if there are dirty modules.
+        if (existDirtyModules())
+        {
+                MessageDialog
+            .openError(UIHelper.getShellProvider().getShell(),  
+                        "Decompose Proof Command",
+                        "There is an unsaved module.");
+            return null;
+        }
+        
+        // Pop up an error if the spec is not parsed.
+        Spec spec = Activator.getSpecManager().getSpecLoaded();
+        if (spec == null || spec.getStatus() != IParseConstants.PARSED) {
+                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                        "Decompose Proof Command",
+                        "The spec status must be \"parsed\" to execute this command.");
+                return null;
+        }
          
         /*
          * The following text for finding the editor, document, selection, and
@@ -278,6 +370,20 @@ System.out.println("Decomposing Proof");
             }
         }
   
+        // set stepNumber and stepColumn
+        SyntaxTreeNode nd = (SyntaxTreeNode) step.stn ;
+        if (step == theorem) {
+                stepNumber = null ;
+        } else {
+                stepNumber = nd.getHeirs()[0].image.toString();
+                if (stepNumber.indexOf('>') == stepNumber.length()-1) {
+                        stepNumber = null ;
+                }
+        }        
+        stepColumn = nd.getLocation().beginColumn() ;
+        
+        System.out.println("stepNumber = " + stepNumber + ", stepColumn = " + stepColumn);
+        
         // the step must have either no proof or a leaf proof.
         if ((proof != null) && !(proof instanceof LeafProofNode)) {
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
@@ -295,8 +401,8 @@ System.out.println("Decomposing Proof");
         LevelNode thm = step.getTheorem();
         if (thm instanceof AssumeProveNode) {
             SemanticNode[] assump = ((AssumeProveNode) thm).getAssumes();
-            assumes = new SemanticNode[assump.length];
-            assumeReps = new NodeRepresentation[assump.length];
+            assumes = new Vector<SemanticNode>() ;
+            assumeReps = new Vector<NodeRepresentation>();
             for (i = 0; i < assump.length; i++) {
                 if (assump[i] instanceof AssumeProveNode) {
                     MessageDialog
@@ -305,16 +411,10 @@ System.out.println("Decomposing Proof");
                                     "Cannot decompose a step with a nested ASSUME/PROVE.");
                     return null;
                 } 
-//                else if (!(assump[i] instanceof OpApplNode)) {
-//                    MessageDialog.openError(UIHelper.getShellProvider()
-//                            .getShell(), "Decompose Proof Command",
-//                            "Cannot handle assumption " + (i + 1) + ".");
-//                    return null;
-//                }
-                assumes[i] =  assump[i];
-                assumeReps[i] = stepRep.subNode(assumes[i]);
+                assumes.add(assump[i]);
+                assumeReps.add(stepRep.subNode(assump[i], assumeReps));
                 goal = (OpApplNode) ((AssumeProveNode) thm).getProve();
-                goalRep = stepRep.subNode(goal);
+                goalRep = stepRep.subNode(goal, null );
             }
             
         } else {
@@ -331,13 +431,13 @@ System.out.println("Decomposing Proof");
                     || (goalOpName == ASTConstants.OP_witness)
                     || (goalOpName == ASTConstants.OP_suffices)
                ) {
-            	MessageDialog
+                MessageDialog
                 .openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "Cannot decompose this kind of step.");
         return null;
             }
-            goalRep = stepRep.subNode(goal) ;
+            goalRep = stepRep.subNode(goal, null) ;
         }
 
         /*
@@ -417,48 +517,53 @@ System.out.println("Decomposing Proof");
         Button replaceButton = new Button(topMenu, SWT.PUSH) ;
         setupMenuButton(replaceButton, TEST_BUTTON, "Replace Step") ;
         
-		// There doesn't seem to be any need for a cancel button,
-		// since the user can just close the window.
-		// Button cancelButton = new Button(topMenu, SWT.PUSH) ;
-		// setupMenuButton(cancelButton, TEST_BUTTON, "Cancel") ;
+                // There doesn't seem to be any need for a cancel button,
+                // since the user can just close the window.
+                // Button cancelButton = new Button(topMenu, SWT.PUSH) ;
+                // setupMenuButton(cancelButton, TEST_BUTTON, "Cancel") ;
 
+        // button to choose how to write proof
+        useSufficesButton = new Button(topMenu, SWT.CHECK);
+        setupCheckButton(useSufficesButton, "Use SUFFICES") ;
+        useSufficesButton.setSelection(useSufficesValue) ;
+        
         // button to choose whether to expand definitions with subexpression names
         subexpressionButton = new Button(topMenu, SWT.CHECK);
-        setupCheckButton(subexpressionButton, "Use subexpression names.");
+        setupCheckButton(subexpressionButton, "Use subexpression names");
         subexpressionButton.setSelection(subexpressionValue) ;
         
-        /*
-         * Adds the radio buttons, which are a Composite
-         */
-        Composite radio = new Composite(topMenu, SWT.BORDER) ;
-        GridLayout radioLayout = new GridLayout(6, false) ;
-        radio.setLayout(radioLayout) ;
-        Label radioLabel = new Label(radio, SWT.NONE) ;
-        radioLabel.setText("prove using:") ;
-        sufficesButton = new Button(radio, SWT.RADIO) ;
-        neitherButton = new Button(radio, SWT.RADIO) ;
-        rewriteButton = new Button(radio, SWT.RADIO) ;
-        
-        sufficesButton.setText("SUFFICES") ;
-        rewriteButton.setText("rewritten goal") ;
-        neitherButton.setText("ASSUME/PROVE steps") ;
-        switch (radioChoice) {
-        case SUFFICES_CHOSEN :
-            sufficesButton.setSelection(true) ;
-            rewriteButton.setSelection(false) ;
-            neitherButton.setSelection(false) ;
-            break ;
-        case REWRITE_CHOSEN :
-            sufficesButton.setSelection(false) ;
-            rewriteButton.setSelection(true) ;
-            neitherButton.setSelection(false) ;
-            break ;
-        case NEITHER_CHOSEN :
-            sufficesButton.setSelection(false) ;
-            rewriteButton.setSelection(false) ;
-            neitherButton.setSelection(true) ;
-            break ;
-        }
+		// /*
+		// * Adds the radio buttons, which are a Composite
+		// */
+		// Composite radio = new Composite(topMenu, SWT.BORDER) ;
+		// GridLayout radioLayout = new GridLayout(6, false) ;
+		// radio.setLayout(radioLayout) ;
+		// Label radioLabel = new Label(radio, SWT.NONE) ;
+		// radioLabel.setText("prove using:") ;
+		// sufficesButton = new Button(radio, SWT.RADIO) ;
+		// neitherButton = new Button(radio, SWT.RADIO) ;
+		// rewriteButton = new Button(radio, SWT.RADIO) ;
+		//
+		// sufficesButton.setText("SUFFICES") ;
+		// rewriteButton.setText("rewritten goal") ;
+		// neitherButton.setText("ASSUME/PROVE steps") ;
+		// switch (radioChoice) {
+		// case SUFFICES_CHOSEN :
+		// sufficesButton.setSelection(true) ;
+		// rewriteButton.setSelection(false) ;
+		// neitherButton.setSelection(false) ;
+		// break ;
+		// case REWRITE_CHOSEN :
+		// sufficesButton.setSelection(false) ;
+		// rewriteButton.setSelection(true) ;
+		// neitherButton.setSelection(false) ;
+		// break ;
+		// case NEITHER_CHOSEN :
+		// sufficesButton.setSelection(false) ;
+		// rewriteButton.setSelection(false) ;
+		// neitherButton.setSelection(true) ;
+		// break ;
+		// }
        
         /*
          * Display the ASSUME Section
@@ -477,78 +582,133 @@ System.out.println("Decomposing Proof");
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
         
         if (assumes != null) {
-            for (int i = 0 ; i < assumes.length; i++) {
-            	String labelText =  null ;        		
-            	if (assumes[i].getKind() == ASTConstants.OpApplKind) {
-            		switch (assumeReps[i].nodeSubtype) {
-            		case NodeRepresentation.AND_TYPE:
-            			labelText = "/\\";
-            			break;
-            		case NodeRepresentation.OR_TYPE:
-            		case NodeRepresentation.SQSUB_TYPE:
-            			labelText = "\\/";
-            			break;
-            		case NodeRepresentation.IMPLIES_TYPE:
-            			labelText = "=>";
-            			break;
-            		case NodeRepresentation.EXISTS_TYPE:
-            			labelText = "\\E";
-            			break;
-            	    default:
-            	    	labelText = null ;
-            		}
-            	}
+			// Set assumeWidth to the number of characters in the widest line
+			// among all the lines in the assumptions.
+			int assumeWidth = 0;
+			for (int i = 0; i < assumes.size(); i++) {
+				for (int j = 0; j < assumeReps.elementAt(i).nodeText.length; j++) {
+					assumeWidth = Math.max(assumeWidth,
+							assumeReps.elementAt(i).nodeText[j].length());
+				}
+			}
+			
+			// Add the assumptions to the DecomposeProof window.
+			boolean firstAndSplitFound = false ;
+			boolean lastAndSplitFound = false ;
+            for (int i = 0 ; i < assumes.size(); i++) {
+            	
+            	// Add the button or blank area to the first column
+                String labelText =  null ;                      
+                if (assumes.elementAt(i).getKind() == ASTConstants.OpApplKind) {
+                        switch (assumeReps.elementAt(i).nodeSubtype) {
+                        case NodeRepresentation.AND_TYPE:
+                                labelText = "/\\";
+                                break;
+                        case NodeRepresentation.OR_TYPE:
+                        case NodeRepresentation.SQSUB_TYPE:
+                                labelText = "\\/";
+                                break;
+                        case NodeRepresentation.EXISTS_TYPE:
+                                labelText = "\\E";
+                                break;
+                    default:
+                        labelText = null ;
+                        }
+                }
                 if (labelText != null) {
-            	      setupActionButton(new Button(shell, SWT.PUSH), assumeReps[i], labelText);
-            		}
-            	else {
-//            		setupActionButton(new Button(shell, SWT.PUSH), assumeReps[i], "  ");
-            		assumeLabel = new Label(shell, SWT.NONE);
-            		assumeLabel.setText("  ") ;
-            	}
-            	gridData = new GridData();
+                      setupActionButton(new Button(shell, SWT.PUSH), assumeReps.elementAt(i), labelText);
+                        }
+                else {
+//                      setupActionButton(new Button(shell, SWT.PUSH), assumeReps[i], "  ");
+                        comp = new Composite(shell, SWT.NONE);
+                        gridLayout = new GridLayout(1, false) ;
+                        comp.setLayout(gridLayout);
+                        assumeLabel = new Label(comp, SWT.NONE);
+                        assumeLabel.setText("  ") ;
+                        gridData = new GridData();
+                        gridData.horizontalIndent =  25 ;
+                        comp.setLayoutData(gridData);
+                }
+                gridData = new GridData();
                 gridData.verticalAlignment = SWT.TOP;
                 assumeLabel.setLayoutData(gridData);
                 
                 // Add a spacer between the button and the formula
                 comp = new Composite(shell, SWT.NONE);
                 gridLayout = new GridLayout(1, false);
-                comp.setLayout(gridLayout);
+                comp.setLayout(gridLayout);                  
                 comp.setSize(0, 5) ;
-                assumeLabel = new Label(shell, SWT.NONE);
-                assumeLabel.setText(stringArrayToString(assumeReps[i].nodeText));
+                
+                // Add the text of the clause, preceded by appropriate up/down arrows
+                // for a node that comes from an AND-SPLIT
+                comp = new Composite(shell, SWT.NONE);
+                gridLayout = new GridLayout(3, false);
+                comp.setLayout(gridLayout);                  
+                  if (i < 4) {
+                	  Button arrowButton = 
+                			  new Button(comp, SWT.ARROW | SWT.UP );
+                	  gridData = new GridData();
+                	  gridData.verticalAlignment = SWT.TOP ;
+                	  arrowButton.setLayoutData(gridData);
+                	  if (i == 0) {
+                		  arrowButton.setEnabled(false);
+                	  }
+                	  arrowButton = 
+                			  new Button(comp, SWT.ARROW | SWT.DOWN );
+                	  gridData = new GridData();
+                	  gridData.verticalAlignment = SWT.TOP ;
+                	  arrowButton.setLayoutData(gridData);
+                	  if (i == 3) {
+                		  arrowButton.setEnabled(false);
+                	  }
+                  }
+                
+
+                assumeLabel = new Label(comp, SWT.NONE);
+                assumeLabel.setText(stringArrayToString(assumeReps.elementAt(i).nodeText));
                 // Set the font to be the editors main text font.
                 assumeLabel.setFont(JFaceResources.getFontRegistry().get(
-            			JFaceResources.TEXT_FONT));
+                                JFaceResources.TEXT_FONT));
                 gridData = new GridData();
                 // I have no idea why (undoubtedly a feature that no one has ever 
-                // bothered to document), but the following statement either does or 
-                // does not add 100 pixels of space to the left of the label. I
-				// been unable to figure out when it does and when it doesn't.
-				// gridData.horizontalIndent = 100 ;
-                gridData.horizontalIndent = 0 ;
+                // bothered to document), but the following statement did not have 
+                // any effect before I added the new composite between the button
+                // and it.  Now it can be used to add positive or negative space
+                // to the left of the label.
+                                gridData.horizontalIndent = 0 ;
                 gridData.verticalAlignment = SWT.TOP;
                 assumeLabel.setLayoutData(gridData);
                 
                 // Add a spacer between the items.
-                // I think it looks better with a spacer after the last item,
-                // but just uncomment the "-1" to remove it.
-				if (i != assumeReps.length - 1  ) {
-//					comp = new Composite(shell, SWT.NONE);
-//					comp.setSize(100,0) ;
-					comp = new Composite(shell, SWT.NONE);
-					comp.setLayout(compLayout);
-					gridData = new GridData();
-					gridData.horizontalSpan = 3;
-					gridData.horizontalIndent = 30;
-					comp.setLayoutData(gridData);
-//					assumeLabel.setText("---------------------------------");
-					comp.setSize(100,0) ;
-				    gridLayout = new GridLayout(3, false) ;
-				    comp.setLayout(gridLayout);
-					assumeLabel = new Label(comp, SWT.SEPARATOR|SWT.HORIZONTAL);
-//					assumeLabel = new Label(comp, SWT.SEPARATOR|SWT.HORIZONTAL);
-//					assumeLabel = new Label(comp, SWT.SEPARATOR|SWT.HORIZONTAL);
+                if (i != assumeReps.size() - 1  ) {
+//                                      comp = new Composite(shell, SWT.NONE);
+//                                      comp.setSize(100,0) ;
+                                        comp = new Composite(shell, SWT.NONE);
+                                        comp.setLayout(compLayout);
+                                        gridData = new GridData();
+                                        gridData.horizontalSpan = 3;
+                                        gridData.horizontalIndent = 30;
+                                        comp.setLayoutData(gridData);
+                                        gridLayout = new GridLayout(1, false) ;
+                                    comp.setLayout(gridLayout);
+                                    assumeLabel = new Label(comp, SWT.NONE) ;
+                                    String dashes = StringHelper.copyString("  -", (assumeWidth+5)/3);
+                                        assumeLabel.setText(dashes);
+                                        assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+                                        JFaceResources.TEXT_FONT));
+
+                                        // The following is one of many vain attempts to create a separator
+                                        // of a given width. It works only if the following line begins with
+                                        // a blank label, but not if it begins with a button.(?!)
+                    //  assumeLabel = new Label(comp, SWT.SEPARATOR | SWT.HORIZONTAL);
+                                        //
+                                        // gridData = new GridData();
+                                        // gridData.horizontalAlignment = GridData.FILL;
+                                        // gridData.grabExcessHorizontalSpace = true;
+                                        // gridData.minimumWidth = 500;
+                                        // assumeLabel.setLayoutData(gridData) ;
+                                       // comp.setSize(0,0) ;
+                                        // System.out.println("Line " + i) ;
                 }
             }
         }
@@ -569,40 +729,55 @@ System.out.println("Decomposing Proof");
         assumeLabel.setText("PROVE");
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
         String labelText = null ;
+        
+        // isProver = true means clicking on the button produces the proof.
+        boolean isProver = false ;
         switch(goalRep.nodeSubtype) {
         case NodeRepresentation.AND_TYPE:
-			labelText = "/\\";
-			break;
+                        labelText = "/\\";
+                        isProver = true ;
+                        break;
         case NodeRepresentation.FORALL_TYPE:
-			labelText = "\\A";
-			break;	
+                        labelText = "\\A";
+                        break;  
+        case NodeRepresentation.IMPLIES_TYPE:
+                        labelText = "=>";
+                        break;
         default:
-	    	labelText = null ;
+                labelText = null ;
         }
         if (labelText != null) {
-  	      setupActionButton(new Button(shell, SWT.PUSH), goalRep, labelText);
-  		}
-  	else {
-  		assumeLabel = new Label(shell, SWT.NONE) ;
-  	    assumeLabel.setText("  ") ;
-  	}
+        	  Button goalButton = new Button(shell, SWT.PUSH) ;
+              setupActionButton(goalButton, goalRep, labelText);
+              
+                }
+        else {
+                assumeLabel = new Label(shell, SWT.NONE) ;
+            assumeLabel.setText("  ") ;
+        }
         
-	// Add a spacer between the button and the formula
-	comp = new Composite(shell, SWT.NONE);
-	gridLayout = new GridLayout(1, false);
-	comp.setLayout(gridLayout);
-	comp.setSize(0, 5);
+        // Add a spacer between the button and the formula
+        comp = new Composite(shell, SWT.NONE);
+        gridLayout = new GridLayout(1, false);
+        comp.setLayout(gridLayout);
+		if (isProver) {
+			assumeLabel = new Label(comp, SWT.NONE);
+			assumeLabel.setText("P");
+			assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+					JFaceResources.HEADER_FONT));
+		}
+        comp.setSize(0, 5);
 
-	assumeLabel = new Label(shell, SWT.NONE);
-	assumeLabel.setText(stringArrayToString(goalRep.nodeText));
-	gridData = new GridData();
-//	gridData.horizontalSpan = 2;
-	gridData.verticalAlignment = SWT.TOP;
-	assumeLabel.setLayoutData(gridData);
-	Display display = UIHelper.getCurrentDisplay();
-	// The following sets the font to be the Toolbox editor's text font.
-	assumeLabel.setFont(JFaceResources.getFontRegistry().get(
-			JFaceResources.TEXT_FONT));
+        assumeLabel = new Label(shell, SWT.NONE);
+        assumeLabel.setText(stringArrayToString(goalRep.nodeText));
+        gridData = new GridData();
+//      gridData.horizontalSpan = 2;
+        gridData.verticalAlignment = SWT.TOP;
+        assumeLabel.setLayoutData(gridData);
+        Display display = UIHelper.getCurrentDisplay();
+        // The following sets the font to be the Toolbox editor's text font.
+        assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+                        JFaceResources.TEXT_FONT));
 
 /*  ---------- Garbage below
         new Button(shell, SWT.PUSH).setText("Wide Button 2");
@@ -769,23 +944,70 @@ System.out.println("Decomposing Proof");
         
         public int nodeSubtype ;
         
-        // children is the array of children of this object, if it has
-        // any.  Otherwise it is null.  Only an OR node should have children.
-        //
-        // If the node is the child of a NodeRepresentation object,
-        // then it equals parent.children[parentIdx]
-        NodeRepresentation parent ;
-        int parentIdx = -1;
-        NodeRepresentation[] children ;
+        // NodeRepresentation objects that are constructed for the DecomposeProof window
+        // are structured as a forest with two roots: the Assume root, whose children
+        // are the sequence of NodeRepresentation objects of assumeReps, and goalRep, whose
+        // that is an isolated root.  The children field contains the children of the current
+        // node.  The parentVector field point to the children Vector of the node's parent,
+        // except that goalRep.parentVector equals null.
+        // 
+        Vector <NodeRepresentation> parentVector ;
+        Vector <NodeRepresentation> children ;
         
         /**
+         * If parentVector is non-null, then the current node equals
+         * parentVector.elementAt(getParentIndex()).  If parentVector
+         * is null, then getParentIndex() equals -l.
+         * 
+         * @return
+         */
+        int getParentIndex() {
+        	if (parentVector == null) {
+        		return -1 ;
+        	}
+        	for (int i = 0; i < parentVector.size(); i++) {
+        		if (this == parentVector.elementAt(i)) {
+        			return i;
+        		}
+        	}
+        	return -1;  // this shouldn't happen
+        }
+        
+        // State information about this clause.
+        
+        /**
+         * True iff this assumption or goal was not in the original
+         * step.
+         */
+        boolean isCreated;
+
+// The following commented-out state information is deducible from the
+//  handler object's state.
+//        /**
+//         * True if the action associated with this node is disabled
+//         * because the user has performed an AND or OR or \E split on
+//         * some other node.
+//         * 
+//         */
+//        boolean isDisabled;
+//        
+//        /**
+//         * True iff this node is the result of the user doing an AND 
+//         * split on an assumption.
+//         */
+//        boolean fromAndSplit;
+        
+        
+        /**
+         * Create a NodeRepresentation for a subnode of this node.
          * 
          * @param sn  A subnode of this.node.
          * @return
          */
-        NodeRepresentation subNode(SemanticNode sn) {
+        NodeRepresentation subNode(SemanticNode sn, Vector <NodeRepresentation> vec) {
             
             NodeRepresentation result = new NodeRepresentation() ;
+            result.parentVector = vec ;
             result.node = sn ;
             // set beginId to be the index in this.nodeText representing the
             // first line of the source of node sn.
@@ -854,42 +1076,42 @@ System.out.println("Decomposing Proof");
              */
             switch (sn.getKind()){
             case ASTConstants.OpApplKind:
-            	result.nodeType = EXPR_NODE ;
-            	/* 
-            	 * Compute subType field.
-            	 */
-            	// Set nd to the expression we should look at to compute
-            	// the subType, which is the expression obtained from sn
-            	// by removing an application of ' and expanding user definitions.
-            	OpApplNode nd = exposeRelevantExpr((OpApplNode) sn) ;
-            	
-            	UniqueString opId = nd.getOperator().getName();
-            	String opName = opId.toString();
-            	// Note \: experimentation revelas that 
-            	//  \lor and \/ both yield operator name \lor, and
-            	// \land and /\ both yield operator name \land
-            	if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
-            		result.nodeSubtype = AND_TYPE;
-            	} else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
-            		result.nodeSubtype = OR_TYPE;
-            	} else if (opName.equals("=>")) {
-            		result.nodeSubtype = IMPLIES_TYPE;
-            	} else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
-            		result.nodeSubtype = FORALL_TYPE;
-            	} else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
-            		result.nodeSubtype = EXISTS_TYPE;
-            	} else if (opId == ASTConstants.OP_sa) {
-            		result.nodeSubtype = SQSUB_TYPE;
-            	} else {
-            		result.nodeSubtype = OTHER_TYPE;
-            	}
-            	break;
+                result.nodeType = EXPR_NODE ;
+                /* 
+                 * Compute subType field.
+                 */
+                // Set nd to the expression we should look at to compute
+                // the subType, which is the expression obtained from sn
+                // by removing an application of ' and expanding user definitions.
+                OpApplNode nd = exposeRelevantExpr((OpApplNode) sn) ;
+                
+                UniqueString opId = nd.getOperator().getName();
+                String opName = opId.toString();
+                // Note \: experimentation revelas that 
+                //  \lor and \/ both yield operator name \lor, and
+                // \land and /\ both yield operator name \land
+                if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
+                        result.nodeSubtype = AND_TYPE;
+                } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
+                        result.nodeSubtype = OR_TYPE;
+                } else if (opName.equals("=>")) {
+                        result.nodeSubtype = IMPLIES_TYPE;
+                } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
+                        result.nodeSubtype = FORALL_TYPE;
+                } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
+                        result.nodeSubtype = EXISTS_TYPE;
+                } else if (opId == ASTConstants.OP_sa) {
+                        result.nodeSubtype = SQSUB_TYPE;
+                } else {
+                        result.nodeSubtype = OTHER_TYPE;
+                }
+                break;
             case ASTConstants.NewSymbKind:
-            	result.nodeType = NEW_NODE;
-            	break;
+                result.nodeType = NEW_NODE;
+                break;
             case ASTConstants.LeafProofKind:
-            	result.nodeType = PROOF_NODE;
-            	break;
+                result.nodeType = PROOF_NODE;
+                break;
             default:
                 result.nodeType = OTHER_NODE ;
             }
@@ -1126,7 +1348,7 @@ System.out.println("Decomposing Proof");
     }
 
     private void setupActionButton(Button button, NodeRepresentation nodeRep, String text) {
-    	button.setText(text) ; 
+        button.setText(text) ; 
 //        button.setSize(30, button.getSize().y + 100);
         GridData gridData = new GridData();
         gridData.horizontalIndent = 15 ;
@@ -1135,7 +1357,7 @@ System.out.println("Decomposing Proof");
         button.addSelectionListener(new DecomposeProofButtonListener(this, nodeRep, ACTION)) ;
         button.setFont(JFaceResources.getFontRegistry().get(JFaceResources.TEXT_FONT));
         if (text.equals("  ")) {
-        	button.setEnabled(false);
+                button.setEnabled(false);
         }
     }
     
@@ -1198,8 +1420,9 @@ System.out.println("Decomposing Proof");
                     break;
                 }
                 
-                            case ACTION:
+            case ACTION:
                 System.out.println("ACTION Click");
+                System.out.println("Parent index = " + ((NodeRepresentation) object).getParentIndex());
                 break ;
             case CHECK:
                 Button but = (Button) object ;
@@ -1263,42 +1486,78 @@ System.out.println("Decomposing Proof");
      * @return
      */
     static int stepLevel(SemanticNode nd) {
-    	String stepStr = ((SyntaxTreeNode) nd.stn).getHeirs()[0].image.toString() ;
-    	String stepNum = stepStr.substring(stepStr.indexOf('<')+1, stepStr.indexOf('>')) ;
-    	return Integer.valueOf(stepNum).intValue();
+        String stepStr = ((SyntaxTreeNode) nd.stn).getHeirs()[0].image.toString() ;
+        String stepNum = stepStr.substring(stepStr.indexOf('<')+1, stepStr.indexOf('>')) ;
+        return Integer.valueOf(stepNum).intValue();
     }
 
     /**
-     * Performs the following operation.
+     * Performs the following operation to extract the descendant of an expr node that
+     * that should be examined to see if it's an implication, a conjunction, or whatever.
+     * 
      *          nd := oan ;
-     *    loop: if    oan = expr' 
-     *             or oan = Op(...) where Op is a user-defined symbol
+     *          if nd = expr'  then nd := expr
+     *          if nd = Op(...) where Op is a user-defined symbol
      *                              and expr is the body of its definition
-     *            then oan := expr
-     *                 goto loop
-     *          return oan;
+     *            then nd := expr
+     *          if nd = expr'  then nd := expr
+     *          return nd
+     *          
+     * Note that the first and last if test can't both be true.
+     * 
      * @param oan
      * @return
      */
 	static OpApplNode exposeRelevantExpr(OpApplNode oan) {
 		OpApplNode nd = oan;
-		boolean notDone = true;
-		while (notDone) {
-			if (nd.getOperator().getName() == ASTConstants.OP_prime) {
-				nd = (OpApplNode) nd.getArgs()[0];
-			} else if (nd.getOperator().getKind() == ASTConstants.UserDefinedOpKind) {
-				ExprNode opDef = ((OpDefNode) nd.getOperator()).getBody();
-				if (opDef instanceof OpApplNode) {
-					nd = (OpApplNode) opDef;
-				} else {
-					notDone = false;
-				}
-
+		if (nd.getOperator().getName() == ASTConstants.OP_prime) {
+			nd = (OpApplNode) nd.getArgs()[0];
+		}
+		if (nd.getOperator().getKind() == ASTConstants.UserDefinedOpKind) {
+			ExprNode opDef = ((OpDefNode) nd.getOperator()).getBody();
+			if (opDef instanceof OpApplNode) {
+				nd = (OpApplNode) opDef;
 			} else {
-				notDone = false;
-
+				return nd;
 			}
 		}
-		return nd ;
+		if (nd.getOperator().getName() == ASTConstants.OP_prime) {
+			nd = (OpApplNode) nd.getArgs()[0];
+		}
+		return nd;
+	}
+        
+        /**
+         * Returns true iff some module of the spec is unsaved.  Code
+         * taken from UIHelper.promptUserForDirtyModules.  This is not optimal because
+         * it returns true even if the dirty module is not a spec module, but that's
+         * not worth worrying about.
+         * 
+         * @return
+         */
+        public boolean existDirtyModules()
+    {
+        final List<IEditorReference> dirtyEditors = new LinkedList<IEditorReference>();
+        IEditorReference[] references = UIHelper.getActivePage().getEditorReferences();
+        if (references != null)
+        {
+            for (int i = 0; i < references.length; i++)
+            {
+                try
+                {
+                    if (references[i].isDirty() && references[i].getEditorInput().getName().endsWith(".tla"))
+                    {
+                        dirtyEditors.add(references[i]);
+                    }
+                } catch (PartInitException e)
+                {
+                    Activator.getDefault().logError("Error getting unsaved resources.", e);
+                }
+            }
+        }
+
+        return (dirtyEditors.size() > 0) ;
+       
     }
+
 }
