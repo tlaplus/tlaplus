@@ -7,6 +7,116 @@
  * fields of the object between executions of the command.
  * 
  */
+
+/*************************************************
+A SPEC OF PROOF GENERATION
+
+The |= Notation
+---------------
+I will write A |= P as an abbreviation for ASSUME A PROVE P, for
+A a list of assumptions and P a formula.
+
+A formula P is equivalent to |= P (the case of A the empty list).
+
+Define A_1 |= (A_2 |= P) to be A_1, A2 |= P , where I use "," to mean
+concatenation of lists of assumptions.
+
+I will also allow assumptions of the form A_1 \/ ... \/ A_n
+where the A_i are sequents of the form  A |= P .  I hope its meaning
+is obvious.  It obeys the rule that
+
+    A, (B_1 \/ ... \/ B_n), C |= P
+
+is equivalent to
+
+    (A, B_1, C |= P) \/ ... \/ (A, B_n, C |= P)
+
+CASE
+----
+If the A_i are formulas and P is the current goal, then the step
+
+  <i>j. A_1, ... , A_n |= P 
+
+can be written 
+
+  <i>j. CASE A_1 /\ ... /\ A_n
+
+
+Proofs with and without SUFFICES
+--------------------------------
+Any proof of the form
+
+  <i> SUFFICES A |= P
+    BY DEF D_1, ... , D_k
+  <i>1. S_1
+  ...
+  <i>n. S_n
+  <i> QED
+    BY <i>1, ... , <i>n DEF P
+
+is equivalent to
+
+  <i>1. A |= S_1
+  ...
+  <i>n. A |= S_n
+  <i> QED
+    BY <i>1, ... , <i>n DEF D_1, ... , D_k, P
+
+I will therefore only consider proofs with SUFFICES.
+
+
+Proof by Conjunction Splitting
+-----------------------------
+Suppose an obligation A |= P is transformed into the obligation 
+A, H |= C by expanding definitions D_1, ...  , D_k, where 
+C == C_1 /\ ...  /\ C_n.  Then A |= P has the proof:
+
+   <i> SUFFICES  H |= C
+     BY DEF D_1, ... , D_k
+   <i>1. C_1
+   ...
+   <i>n. C_n
+   <1> QED
+     BY <i>1, ... , <i>n DEF C
+
+If C is equal to C_1 /\ ... /\ C_n (rather than equal after the
+definition of C is expanded, then the DEF C is eliminated.
+
+
+Proof by Disjunction Splitting
+-------------------------------
+Suppose an obligation A |= P is transformed into the obligation 
+A, H |= C by expanding definitions D_1, ...  , D_k.
+
+Suppose that A, H |= C is then transformed to the equivalent
+obligation  J, K, L |= C by expanding definitions E_1, ... , E_m
+and introducing additional declarations NEW v_1, ... , NEW v_j,
+where K has the form K_1, ... , K_n.  Then A |= P has the
+proof
+
+   <i> SUFFICES H, NEW v_1, ... , NEW v_j |= C
+     BY DEF D_1, ... , D_k
+   <i>1. K_1 |= C
+     ...
+   <i>n. K_n |= C
+   <1> QED
+     BY <i>1, ... , <i>n DEF E_1, ..., E_m
+
+The transformation of A, H |= C to J, K, L |= C will be done in
+two steps:
+
+ 1. Splitting conjunctions into separate assumptions.
+
+ 2. Performing the following transformations:
+
+      \E x : S   ->  NEW x, S .
+
+      NEW x, S_1 \/ ... \/ S_n  ->  
+          (NEW x |= S_1) \/ ... \/ (NEW x |= S_n)
+
+
+*********************************/
+
         /*
          * To figure out how to layout a nice popup, see 
          *    
@@ -96,19 +206,90 @@ import util.UniqueString;
  */
 public class DecomposeProofHandler extends AbstractHandler implements IHandler {
 
+    /***************************************************************
+     * Fields holding information about the module, its source text,
+     * the selected text, the selected step, and the theorem in
+     * which it appears.
+     ****************************************************************/
+    /**
+     * The document being edited.
+     */
+    private IDocument doc; 
 
-    private IDocument doc; // The document being edited.
-    private String text; // The document as a string.
-    private ISelectionProvider selectionProvider; //
-    private TextSelection selection; // The current selection.
-    private int offset; // The current offset.
-    private ModuleNode moduleNode; // The module being edited.
-    private TheoremNode theorem;// The theorem containing the selected step
-    private TheoremNode step; // The step being decomposed.
-    private NodeRepresentation stepRep; // the step's node representation;
+    /**
+     * The document as a string.
+     */
+    private String text; 
+
+    /**
+     * Some Eclipse thingee that seems to be needed.
+     */
+    private ISelectionProvider selectionProvider; 
+
+    /**
+     * The current selection.
+     */
+    private TextSelection selection; 
+
+    /**
+     * The current offset.
+     */
+    private int offset; 
+
+    /**
+     * The module being edited.
+     */
+    private ModuleNode moduleNode; 
+
+    /**
+     * The theorem containing the selected step
+     */
+    private TheoremNode theorem;
+
+    /**
+     * The step being decomposed.
+     */
+    private TheoremNode step; 
+
+    /**
+     * The step's node representation.
+     */
+    private NodeRepresentation stepRep; 
     
+    /**
+     * The step's proof which should be either null or a
+     * LeafProofNode.
+     */
     private  ProofNode proof;
     
+    /**
+     * If the step being proved is numbered <2>3,  then this equals 2.
+     */
+    private int proofLevel;
+    
+    /**
+     * If the step is number <2>3, then this is "<2>3".  If the step is unnumbered,
+     * as in <2>, or if it is the entire theorem, then this string is null.
+     * 
+     * Note that the SANY parser appears to replace <+> or <*> by
+     * <n> for the appropriate number n, so the Toolbox doesn't have
+     * to deal with <+> or <*>.
+     */
+    private String stepNumber;   
+    
+    /**
+     * The column in which the step begins.  (Used for determining indentation of
+     * the proof.
+     */
+    private int stepColumn;
+    
+    /**
+     * The number of columns to the right of stepColumn to which the
+     * created proof is to be indented.  It should be set from a 
+     * preference.
+     */
+    int proofIndent = 2 ;
+ 
     /*************************************************************************
      * Fields that contain the current assumptions and goal.  
      * 
@@ -132,39 +313,14 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private OpApplNode goal ;
     private NodeRepresentation goalRep ;
     
-    /**
-     * If the step being proved is numbered <2>3,  then this equals 2.
-     */
-    private int proofLevel;
-    
-    /**
-     * If the step is number <2>3, then this is "<2>3".  If the step is unnumbered,
-     * as in <2>, or if it is the entire theorem, then this string is null.
-     */
-    private String stepNumber;
-    
-    
-    /**
-     * The column in which the step begins.  (Used for determining indentation of
-     * the proof.
-     */
-    private int stepColumn;
-    
-    /**
-     * The number of columns to the right of stepColumn to which the
-     * created proof is to be indented.  It should be set from a 
-     * preference.
-     */
-    int proofIndent = 2 ;
-    
+   
     // fields for displaying Decompose Proof window
     private Shell windowShell ;  // The shell of the Decompose Proof window
     private Point location = null ;  // The location at which window
                                      // should open.
     private TLAEditor editor;  // The editor from which window was raised.
     private IFile editorIFile ; // The IFile of the editor, used for making it read-only.
-    public boolean ignore = true ; // for producing a release without the handler doing anything.
-
+    
     /********************************************************
      * Fields representing the state of the decomposition
      ********************************************************/  
@@ -208,37 +364,28 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      */
     private boolean assumeHasChanged = false ;  
 
-    /**
-     * It equals -1 unless an \E-split or OR-split has been performed on
-     * an assume node, in which case it is the index of that node. In
-     * that case, this is the only node that can contain an enabled action
-     * (possibly in a descendant node if this is an OR node).
-     * 
-     */
-    private int enabledIdx = -1 ;  // If # -1, then assumption splitOrIdx has been OR-split.
-
     /****************************************
      * Top Menu buttons.
      *****************************************/
     // The possible ways to distribute added assumptions in the proof are
-	// - Put them in a SUFFICES step
-	// - Put them in the ASSUMES clause of each step.
-	// - Rewrite the original step.
-	// I originally thought I'd allow all three, which required three
-	// radio buttons. But I decided to disallow the third possibility,
-	// so I needed only the single useSuffices check box.
+    // - Put them in a SUFFICES step
+    // - Put them in the ASSUMES clause of each step.
+    // - Rewrite the original step.
+    // I originally thought I'd allow all three, which required three
+    // radio buttons. But I decided to disallow the third possibility,
+    // so I needed only the single useSuffices check box.
     //
-	//    // Radio buttons for how to rewrite proof:
-	//    Button sufficesButton ; // Use SUFFICES step in proof
-	//    Button rewriteButton ; // Rewrite step
-	//    Button neitherButton ; // Use ASSUME/PROOF steps
-	//
-	//    // The value selected by the radiobuttons. Should initialize by preference
-	// 
-	//    private static final int SUFFICES_CHOSEN = 0 ;
-	//    private static final int REWRITE_CHOSEN = 1 ;
-	//    private static final int NEITHER_CHOSEN = 2 ;
-	//    private int radioChoice = SUFFICES_CHOSEN ;
+    //    // Radio buttons for how to rewrite proof:
+    //    Button sufficesButton ; // Use SUFFICES step in proof
+    //    Button rewriteButton ; // Rewrite step
+    //    Button neitherButton ; // Use ASSUME/PROOF steps
+    //
+    //    // The value selected by the radiobuttons. Should initialize by preference
+    // 
+    //    private static final int SUFFICES_CHOSEN = 0 ;
+    //    private static final int REWRITE_CHOSEN = 1 ;
+    //    private static final int NEITHER_CHOSEN = 2 ;
+    //    private int radioChoice = SUFFICES_CHOSEN ;
     
     /**
      * The useSufficesButton determines whether the created proof will
@@ -264,18 +411,18 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * Record the state of the top menu's check buttons.
      */
     private void readButtons() {
-    	useSufficesValue = useSufficesButton.getSelection() ;
+        useSufficesValue = useSufficesButton.getSelection() ;
         subexpressionValue = subexpressionButton.getSelection() ;
-		// if (sufficesButton.getSelection()) {
-		// radioChoice = SUFFICES_CHOSEN ;
-		// return ;
-		// }
-		// if (rewriteButton.getSelection()) {
-		// radioChoice = REWRITE_CHOSEN ;
-		// return ;
-		// }
-		// radioChoice = NEITHER_CHOSEN ;
-		// return ;
+        // if (sufficesButton.getSelection()) {
+        // radioChoice = SUFFICES_CHOSEN ;
+        // return ;
+        // }
+        // if (rewriteButton.getSelection()) {
+        // radioChoice = REWRITE_CHOSEN ;
+        // return ;
+        // }
+        // radioChoice = NEITHER_CHOSEN ;
+        // return ;
     }
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
@@ -288,14 +435,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * ExecutionEvent)
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
-
-    	/**********************************************
-    	 * Initialize the state of the decomposition.
-    	 **********************************************/
-        changed = false ;
-        chosenSplit = -1;
-        andSplitBegin = -1;
-        andSplitEnd = -1 ;
 
         /******************************************************************
          * Perform various checks to see if the command should be
@@ -346,7 +485,18 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             return null;
         }
         
-        
+        /**********************************************
+         * Initialize the state of the decomposition.
+         **********************************************/
+        changed = false ;
+        chosenSplit = -1;
+        andSplitBegin = -1;
+        andSplitEnd = -1 ;
+
+        /*******************************************************************
+         * Set the following fields:
+         *    doc, text, selectionProvider, selection, offset, moduleNode.
+         ******************************************************************/
         doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         text = doc.get();
         selectionProvider = editor.getSelectionProvider();
@@ -355,13 +505,15 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
 
         // Get the module.
         String moduleName = editor.getModuleName();
-        ModuleNode moduleNode = ResourceHelper.getModuleNode(moduleName);
+        moduleNode = ResourceHelper.getModuleNode(moduleName);
 
         // selectedLocation is Location of selected region.
         Location selectedLocation = EditorUtil.getLocationAt(doc, offset,
                 selection.getLength());
 
-        // Set theorem to  the THEOREM containing the selection
+        /****************************************************
+         * Set the `theorem' field.
+         *****************************************************/
         TheoremNode[] allTheorems = moduleNode.getTheorems();
         theorem = null;
         int i = 0;
@@ -384,10 +536,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             return null;
         }
 
-		/********************************************************************
-		 * Set step to innermost step (or the theorem itself) containing the
-		 * selected region.
-		 *********************************************************************/
+        /********************************************************************
+         * Set the following fields:
+         *   step, proofLevel, proof
+         *********************************************************************/
         // NEED TO ADD CODE to compute a symbol table of all identifiers
         // that are defined by the context of the found step.
         // Things to check to find out how to do that
@@ -398,15 +550,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         //   
         step = theorem;
         boolean notDone = true;
-        
-        /****************************************************************
-         * Set proofLevel to the level of the final step selected, where
-         * it equals 2 if the step is labeled <2>x.
-         * 
-         * Note that the SANY parser appears to replace <+> or <*> by
-         * <n> for the appropriate number n, so the Toolbox doesn't have
-         * to deal with <+> or <*>.
-         ****************************************************************/
         proofLevel = -1 ;
         proof = step.getProof();
         while (notDone && (proof != null)
@@ -422,7 +565,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 }
                 i++;
             }
-
             if (foundLevelNode == null) {
                 notDone = false;
             } else if (!(foundLevelNode instanceof TheoremNode)) {
@@ -436,10 +578,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             }
         }
   
-		/*********************************
-		 * set stepNumber and stepColumn 
-		 *********************************/
-		SyntaxTreeNode nd = (SyntaxTreeNode) step.stn;
+        /*********************************
+         * set stepNumber and stepColumn 
+         *********************************/
+        SyntaxTreeNode nd = (SyntaxTreeNode) step.stn;
         if (step == theorem) {
                 stepNumber = null ;
         } else {
@@ -451,28 +593,44 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         stepColumn = nd.getLocation().beginColumn() ;
         
         /**************************************************************
-         * Check that this step is one that the DecomposeProof commmand
-         * can handle.
+         * Check that the step has either no proof or a leaf proof.
          *************************************************************/
-        // Check that the step has either no proof or a leaf proof.
         if ((proof != null) && !(proof instanceof LeafProofNode)) {
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command",
                     "You have selected a step that already has a non-leaf proof.");
             return null;
         }
+        
+        /**************************************************************
+         * Set stepRep
+         *************************************************************/
         try {
             stepRep = new NodeRepresentation(doc, step) ;
         } catch (BadLocationException e) {
             e.printStackTrace();
             System.out.println("threw exception");
         }
+        
+        /**************************************************************
+         * Set assumes, assumesRep, goal, and goalRep
+         *************************************************************/
         LevelNode thm = step.getTheorem();
         if (thm instanceof AssumeProveNode) {
+            /**************************************************************
+             * This is an ASSUME/PROVE.
+             *************************************************************/
             SemanticNode[] assump = ((AssumeProveNode) thm).getAssumes();
             assumes = new Vector<SemanticNode>() ;
             assumeReps = new Vector<NodeRepresentation>();
+            
+            int rowOfLastNew = -1;
             for (i = 0; i < assump.length; i++) {
+                /**************************************************************
+                 * Loop invariant:
+                 *   rowOfLastNew = n > -1 iff assumption i-1 is a NEW
+                 *   statement that lies entirely on row n
+                 *************************************************************/
                 if (assump[i] instanceof AssumeProveNode) {
                     MessageDialog
                             .openError(UIHelper.getShellProvider().getShell(),
@@ -481,53 +639,78 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                     return null;
                 } 
                 assumes.add(assump[i]);
-                assumeReps.add(stepRep.subNode(assump[i], assumeReps));
+                NodeRepresentation nodeRep = stepRep.subNode(assump[i], assumeReps) ;
+                if (nodeRep.nodeType == NodeRepresentation.NEW_NODE) {
+                    Location loc = nodeRep.node.stn.getLocation() ;
+                    if (loc.beginLine() == loc.endLine()) {
+                        if (loc.beginLine() == rowOfLastNew) {
+                            assumeReps.elementAt(i-1).onSameLineAsNext = true ;
+                        }
+                        rowOfLastNew = loc.beginLine() ;
+                    } else {
+                        rowOfLastNew = -1;
+                    }
+                } else {
+                    rowOfLastNew = -1;
+                }
+                assumeReps.add(nodeRep);
+                
                 goal = (OpApplNode) ((AssumeProveNode) thm).getProve();
                 goalRep = stepRep.subNode(goal, null );
             }
             
         } else {
-            assumes = null ;
-            goal = (OpApplNode) thm ;
-            UniqueString goalOpName = goal.getOperator().getName() ;
-            
+            /**************************************************************
+             * This is not an ASSUME/PROVE, so have to set assumes & and
+             * assumesRep to null and check that this isn't something like a QED
+             * step that the command doesn't handle.
+             *************************************************************/
+            assumes = null;
+            assumeReps = null;
+            goal = (OpApplNode) thm;
+            UniqueString goalOpName = goal.getOperator().getName();
+
             // Abort if this is one of the following kinds of steps:
-            //  QED, HAVE, PICK, WITNESS, SUFFICES
-            if (   (goalOpName == ASTConstants.OP_qed)
+            // QED, HAVE, PICK, WITNESS, SUFFICES
+            if ((goalOpName == ASTConstants.OP_qed)
                     || (goalOpName == ASTConstants.OP_pfcase)
                     || (goalOpName == ASTConstants.OP_have)
                     || (goalOpName == ASTConstants.OP_pick)
                     || (goalOpName == ASTConstants.OP_witness)
-                    || (goalOpName == ASTConstants.OP_suffices)
-               ) {
-                MessageDialog
-                .openError(UIHelper.getShellProvider().getShell(),
+                    || (goalOpName == ASTConstants.OP_suffices)) {
+                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "Cannot decompose this kind of step.");
-        return null;
+                return null;
             }
-            goalRep = stepRep.subNode(goal, null) ;
+            goalRep = stepRep.subNode(goal, null);
         }
 
-        if (this.windowShell != null)  {
-            if (this.windowShell.isDisposed()) {
-                System.out.println("Parent disposed") ;
-                // This setReadOnly is a no-op.  Why???
-                // The following method was deprecated because it was actually possible to use
-                // it, so it had to be replaced by something that requires a PhD in Eclipse
-                // to figure out how to use.
-                editorIFile.setReadOnly(true) ;
-                raiseWindow("Decompose Proof") ;
-                
-            }
-            return null ;
-        }
+        // The following code seems to be redundant.
+        // The return null can never happen because that would have
+        // caused a null return in the test at the beginning of the module
+        // for whether the command was issued in the middle of executing
+        // a DecomposeProof command.
+//        if (this.windowShell != null)  {
+//            if (this.windowShell.isDisposed()) {
+//                // The following method was deprecated because it was actually possible to use
+//                // it, so it had to be replaced by something that requires a PhD in Eclipse
+//                // to figure out how to use.
+//                editorIFile.setReadOnly(true) ;
+//                raiseWindow("Decompose Proof") ;
+//                
+//            }
+//            return null ;
+//        }
         
         
-        System.out.println("parent null") ;
-        // This setReadOnly is a no-op.  Why???
-        EditorUtil.setReadOnly(editorIFile, true);
+//        System.out.println("parent null") ;
+//        // This setReadOnly is a no-op.  Why???
+//        EditorUtil.setReadOnly(editorIFile, true);
         
+        /***************************************************************************
+         * Make the editor read-only.
+         ***************************************************************************/
         // The following method was deprecated because it was actually possible to use
         // it, so it had to be replaced by something that requires a PhD in Eclipse
         // to figure out how to use.
@@ -547,18 +730,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         Shell topshell = UIHelper.getShellProvider().getShell() ;
         windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
         windowShell.setText(windowTitle) ;
-        windowShell.addDisposeListener(new DisposeListener() {            
-            public void widgetDisposed(DisposeEvent e) {
-                System.out.println("windowShell's disposeListener called");
-                if (editor.isDirty()) {
-                    System.out.println("Editor is dirty");
-                }
-                // The following method was deprecated because it was actually possible to use
-                // it, so it had to be replaced by something that requires a PhD in Eclipse
-                // to figure out how to use. 
-                editorIFile.setReadOnly(false);
-            }
-        }) ;
+        windowShell.addDisposeListener(new WindowDisposeListener(this)) ;
         Composite shell = new Composite(windowShell, SWT.NONE) ;
         GridLayout gridLayout = new GridLayout(3, false);
         shell.setLayout(gridLayout);
@@ -571,62 +743,60 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         gridData.horizontalSpan = 3;
         topMenu.setLayoutData(gridData) ;
         
+        // Display Prove and Replace Step buttons. 
+        // NEED TO ADD DISABLING OF Prove BUTTON
         Button proveButton = new Button(topMenu, SWT.PUSH) ;
         setupMenuButton(proveButton, TEST_BUTTON, "Prove") ;
         Button replaceButton = new Button(topMenu, SWT.PUSH) ;
         setupMenuButton(replaceButton, TEST_BUTTON, "Replace Step") ;
+        replaceButton.setEnabled(changed && (chosenSplit == -1) && (andSplitEnd == -1)) ;
         
-                // There doesn't seem to be any need for a cancel button,
-                // since the user can just close the window.
-                // Button cancelButton = new Button(topMenu, SWT.PUSH) ;
-                // setupMenuButton(cancelButton, TEST_BUTTON, "Cancel") ;
-
-        // button to choose how to write proof
+        // Display checkbox to choose how to write proof.
         useSufficesButton = new Button(topMenu, SWT.CHECK);
         setupCheckButton(useSufficesButton, "Use SUFFICES") ;
         useSufficesButton.setSelection(useSufficesValue) ;
         
-        // button to choose whether to expand definitions with subexpression names
+        // Display checkbox to choose whether to expand definitions with subexpression names.
         subexpressionButton = new Button(topMenu, SWT.CHECK);
         setupCheckButton(subexpressionButton, "Use subexpression names");
         subexpressionButton.setSelection(subexpressionValue) ;
         
-		// /*
-		// * Adds the radio buttons, which are a Composite
-		// */
-		// Composite radio = new Composite(topMenu, SWT.BORDER) ;
-		// GridLayout radioLayout = new GridLayout(6, false) ;
-		// radio.setLayout(radioLayout) ;
-		// Label radioLabel = new Label(radio, SWT.NONE) ;
-		// radioLabel.setText("prove using:") ;
-		// sufficesButton = new Button(radio, SWT.RADIO) ;
-		// neitherButton = new Button(radio, SWT.RADIO) ;
-		// rewriteButton = new Button(radio, SWT.RADIO) ;
-		//
-		// sufficesButton.setText("SUFFICES") ;
-		// rewriteButton.setText("rewritten goal") ;
-		// neitherButton.setText("ASSUME/PROVE steps") ;
-		// switch (radioChoice) {
-		// case SUFFICES_CHOSEN :
-		// sufficesButton.setSelection(true) ;
-		// rewriteButton.setSelection(false) ;
-		// neitherButton.setSelection(false) ;
-		// break ;
-		// case REWRITE_CHOSEN :
-		// sufficesButton.setSelection(false) ;
-		// rewriteButton.setSelection(true) ;
-		// neitherButton.setSelection(false) ;
-		// break ;
-		// case NEITHER_CHOSEN :
-		// sufficesButton.setSelection(false) ;
-		// rewriteButton.setSelection(false) ;
-		// neitherButton.setSelection(true) ;
-		// break ;
-		// }
+        // /*
+        // * Adds the radio buttons, which are a Composite.
+        // */
+        // Composite radio = new Composite(topMenu, SWT.BORDER) ;
+        // GridLayout radioLayout = new GridLayout(6, false) ;
+        // radio.setLayout(radioLayout) ;
+        // Label radioLabel = new Label(radio, SWT.NONE) ;
+        // radioLabel.setText("prove using:") ;
+        // sufficesButton = new Button(radio, SWT.RADIO) ;
+        // neitherButton = new Button(radio, SWT.RADIO) ;
+        // rewriteButton = new Button(radio, SWT.RADIO) ;
+        //
+        // sufficesButton.setText("SUFFICES") ;
+        // rewriteButton.setText("rewritten goal") ;
+        // neitherButton.setText("ASSUME/PROVE steps") ;
+        // switch (radioChoice) {
+        // case SUFFICES_CHOSEN :
+        // sufficesButton.setSelection(true) ;
+        // rewriteButton.setSelection(false) ;
+        // neitherButton.setSelection(false) ;
+        // break ;
+        // case REWRITE_CHOSEN :
+        // sufficesButton.setSelection(false) ;
+        // rewriteButton.setSelection(true) ;
+        // neitherButton.setSelection(false) ;
+        // break ;
+        // case NEITHER_CHOSEN :
+        // sufficesButton.setSelection(false) ;
+        // rewriteButton.setSelection(false) ;
+        // neitherButton.setSelection(true) ;
+        // break ;
+        // }
        
-        /*
+        /**************************************************************
          * Display the ASSUME Section
-         */
+         **************************************************************/
         // Display the "ASSUME", which must be put in a 
         // composite because it spans multiple rows, and it appears
         // that a Label can't do that.
@@ -641,22 +811,28 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
         
         if (assumes != null) {
-			// Set assumeWidth to the number of characters in the widest line
-			// among all the lines in the assumptions.
-			int assumeWidth = 0;
-			for (int i = 0; i < assumes.size(); i++) {
-				for (int j = 0; j < assumeReps.elementAt(i).nodeText.length; j++) {
-					assumeWidth = Math.max(assumeWidth,
-							assumeReps.elementAt(i).nodeText[j].length());
-				}
-			}
-			
-			// Add the assumptions to the DecomposeProof window.
-			boolean firstAndSplitFound = false ;
-			boolean lastAndSplitFound = false ;
+            /*************************************************************
+             * Displaying  the assumptions.  
+             * 
+             * First, Set assumeWidth to the number of characters in the widest 
+             * line among all the lines in the assumptions.
+             **************************************************************/
+            int assumeWidth = 0;
+            for (int i = 0; i < assumes.size(); i++) {
+                for (int j = 0; j < assumeReps.elementAt(i).nodeText.length; j++) {
+                    assumeWidth = Math.max(assumeWidth,
+                            assumeReps.elementAt(i).nodeText[j].length());
+                }
+            }
+            
+            /*************************************************************
+             * Add the assumptions to the DecomposeProof window.
+             *************************************************************/
             for (int i = 0 ; i < assumes.size(); i++) {
-            	
-            	// Add the button or blank area to the first column
+                
+                /*************************************************************
+                 * Add the button or blank area to the first column.
+                 *************************************************************/
                 String labelText =  null ;                      
                 if (assumes.elementAt(i).getKind() == ASTConstants.OpApplKind) {
                         switch (assumeReps.elementAt(i).nodeSubtype) {
@@ -675,18 +851,29 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                         }
                 }
                 if (labelText != null) {
-                      setupActionButton(new Button(shell, SWT.PUSH), assumeReps.elementAt(i), labelText);
-                        }
-                else {
-//                      setupActionButton(new Button(shell, SWT.PUSH), assumeReps[i], "  ");
-                        comp = new Composite(shell, SWT.NONE);
-                        gridLayout = new GridLayout(1, false) ;
-                        comp.setLayout(gridLayout);
-                        assumeLabel = new Label(comp, SWT.NONE);
-                        assumeLabel.setText("  ") ;
-                        gridData = new GridData();
-                        gridData.horizontalIndent =  25 ;
-                        comp.setLayoutData(gridData);
+                    /*************************************************************
+                     * Add a button
+                     *************************************************************/
+                    Button button = new Button(shell, SWT.PUSH);
+                    setupActionButton(button, assumeReps.elementAt(i),
+                            labelText);
+                    if (((chosenSplit != -1) && (i != chosenSplit))
+                            || (   (andSplitBegin != -1) 
+                                && ((i < andSplitBegin) || (i > andSplitEnd)))) {
+                        button.setEnabled(false);
+                    }
+                } else {
+                    /*************************************************************
+                     * Add a blank area.
+                     *************************************************************/
+                    comp = new Composite(shell, SWT.NONE);
+                    gridLayout = new GridLayout(1, false);
+                    comp.setLayout(gridLayout);
+                    assumeLabel = new Label(comp, SWT.NONE);
+                    assumeLabel.setText("  ");
+                    gridData = new GridData();
+                    gridData.horizontalIndent = 25;
+                    comp.setLayoutData(gridData);
                 }
                 gridData = new GridData();
                 gridData.verticalAlignment = SWT.TOP;
@@ -698,33 +885,43 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 comp.setLayout(gridLayout);                  
                 comp.setSize(0, 5) ;
                 
-                // Add the text of the clause, preceded by appropriate up/down arrows
-                // for a node that comes from an AND-SPLIT
+                /********************************************************************
+                 * Add the text of the clause, preceded by appropriate up/down arrows
+                 * for a node that comes from an AND-SPLIT.  
+                 * Combine it with the next node if its onSameLineAsNext
+                 * field is true (which implies it and the next node are NEW nodes.
+                 ********************************************************************/
                 comp = new Composite(shell, SWT.NONE);
                 gridLayout = new GridLayout(3, false);
-                comp.setLayout(gridLayout);                  
-                  if (i < 4) {
-                	  Button arrowButton = 
-                			  new Button(comp, SWT.ARROW | SWT.UP );
-                	  gridData = new GridData();
-                	  gridData.verticalAlignment = SWT.TOP ;
-                	  arrowButton.setLayoutData(gridData);
-                	  if (i == 0) {
-                		  arrowButton.setEnabled(false);
-                	  }
-                	  arrowButton = 
-                			  new Button(comp, SWT.ARROW | SWT.DOWN );
-                	  gridData = new GridData();
-                	  gridData.verticalAlignment = SWT.TOP ;
-                	  arrowButton.setLayoutData(gridData);
-                	  if (i == 3) {
-                		  arrowButton.setEnabled(false);
-                	  }
-                  }
+                comp.setLayout(gridLayout);   
+                // Add arrow buttons if necessary
+                if ((chosenSplit == -1) && (andSplitBegin <= i) && (i <= andSplitEnd)) {
+                    Button arrowButton = new Button(comp, SWT.ARROW | SWT.UP);
+                    gridData = new GridData();
+                    gridData.verticalAlignment = SWT.TOP;
+                    arrowButton.setLayoutData(gridData);
+                    if (i == andSplitBegin) {
+                        arrowButton.setEnabled(false);
+                    }
+                    arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
+                    gridData = new GridData();
+                    gridData.verticalAlignment = SWT.TOP;
+                    arrowButton.setLayoutData(gridData);
+                    if (i == andSplitEnd) {
+                        arrowButton.setEnabled(false);
+                    }
+                }
                 
 
                 assumeLabel = new Label(comp, SWT.NONE);
-                assumeLabel.setText(stringArrayToString(assumeReps.elementAt(i).nodeText));
+                String text = stringArrayToString(assumeReps.elementAt(i).nodeText) ;
+                // Combine this with following NEW nodes if necessary
+                while (assumeReps.elementAt(i).onSameLineAsNext) {
+                    i++;
+                    text = text + ", " + stringArrayToString(assumeReps.elementAt(i).nodeText) ;
+
+                }
+                assumeLabel.setText(text);
                 // Set the font to be the editors main text font.
                 assumeLabel.setFont(JFaceResources.getFontRegistry().get(
                                 JFaceResources.TEXT_FONT));
@@ -772,9 +969,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             }
         }
         
-        /*
+        /**********************************************************
          *  Display the Goal
-         */
+         **********************************************************/
         // Display the "PROVE", which must be put in a 
         // composite because it spans multiple rows, and it appears
         // that a Label can't do that.
@@ -791,10 +988,15 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         
         // isProver = true means clicking on the button produces the proof.
         boolean isProver = false ;
+        // Set disable to disable the button, which should be done iff
+        // decomposition of an assumption has been started and this is
+        // an AND node.
+        boolean disable = false;
         switch(goalRep.nodeSubtype) {
         case NodeRepresentation.AND_TYPE:
                         labelText = "/\\";
                         isProver = true ;
+                        disable = (chosenSplit != -1) || (andSplitBegin != -1) ;
                         break;
         case NodeRepresentation.FORALL_TYPE:
                         labelText = "\\A";
@@ -806,8 +1008,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 labelText = null ;
         }
         if (labelText != null) {
-        	  Button goalButton = new Button(shell, SWT.PUSH) ;
+              Button goalButton = new Button(shell, SWT.PUSH) ;
               setupActionButton(goalButton, goalRep, labelText);
+              goalButton.setEnabled(! disable) ;
               
                 }
         else {
@@ -819,90 +1022,23 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         comp = new Composite(shell, SWT.NONE);
         gridLayout = new GridLayout(1, false);
         comp.setLayout(gridLayout);
-		if (isProver) {
-			assumeLabel = new Label(comp, SWT.NONE);
-			assumeLabel.setText("P");
-			assumeLabel.setFont(JFaceResources.getFontRegistry().get(
-					JFaceResources.HEADER_FONT));
-		}
+        if (isProver) {
+            assumeLabel = new Label(comp, SWT.NONE);
+            assumeLabel.setText("P");
+            assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+                    JFaceResources.HEADER_FONT));
+        }
         comp.setSize(0, 5);
 
         assumeLabel = new Label(shell, SWT.NONE);
         assumeLabel.setText(stringArrayToString(goalRep.nodeText));
         gridData = new GridData();
-//      gridData.horizontalSpan = 2;
         gridData.verticalAlignment = SWT.TOP;
         assumeLabel.setLayoutData(gridData);
         Display display = UIHelper.getCurrentDisplay();
         // The following sets the font to be the Toolbox editor's text font.
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(
                         JFaceResources.TEXT_FONT));
-
-/*  ---------- Garbage below
-        new Button(shell, SWT.PUSH).setText("Wide Button 2");
-        new Button(shell, SWT.PUSH).setText("Button 3");
-        Button button4 = new Button(shell, SWT.PUSH) ;
-        button4.setText("B4eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"); 
-        gridData = new GridData() ;
-        gridData.verticalAlignment = SWT.TOP;
-        button4.setLayoutData(gridData);
-
-        
-        Composite comp = new Composite(shell, SWT.NONE) ;
-        GridLayout gl = new GridLayout(1, false);
-        // no margin around the widget.
-        gl.marginWidth = 0;
-        gl.marginHeight = 0;
-        comp.setLayout(gl);
-
-        Label l1 = new Label(comp, SWT.NONE);
-        l1.setText("Label1");
-        Composite compInner = new Composite(comp, SWT.None) ;
-        GridLayout gin = new GridLayout(2, false) ;
-          gin.marginWidth = 0;
-          gin.marginHeight = 0 ;
-          compInner.setLayout(gin) ;
-          gridData = new GridData() ;
-          gridData.verticalAlignment = SWT.TOP;
-          compInner.setLayoutData(gridData) ;          
-          Button button7 = new Button(compInner, SWT.PUSH) ;
-          button7.setText("B7") ;
-          gridData = new GridData() ;
-          gridData.verticalAlignment = SWT.TOP;
-          button7.setLayoutData(gridData) ;       
-          
-        Label l2 = new Label(compInner, SWT.NONE);
-        l2.setText("Label22\n22222"  + "\n22222222222222222222222222222\n" + 
-                   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-                );
-        gridData = new GridData() ;
-        gridData.verticalAlignment = SWT.TOP;
-        l2.setLayoutData(gridData) ; 
-        gridData = new GridData() ;
-//        gridData.horizontalAlignment = SWT.LEFT;
-//        gridData.grabExcessHorizontalSpace = true;
-        gridData.verticalAlignment = SWT.TOP;
-//        gridData.grabExcessVerticalSpace = true;
-        comp.setLayoutData(gridData);
-//        comp.setSize(comp.computeSize(SWT.DEFAULT, SWT.DEFAULT)) ;
-//        sc2.setSize(comp.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-        
-        
-        
-        Label l3 = new Label(shell, SWT.NONE) ;
-        l3.setText("LabelLabel3");
-        gridData = new GridData() ;
-        gridData.verticalAlignment = SWT.FILL;
-        l3.setLayoutData(gridData);
-        
-
-//        System.out.println("Shell.size = " + shell.getSize().toString());
-//        System.out.println("parent.size = " + parent.getSize().toString());
-        System.out.println("location = " + windowShell.getLocation().toString()) ;
-        System.out.println("size = " + windowShell.getSize().toString()) ;
-        System.out.println("location = " + topshell.getLocation().toString()) ;
-        System.out.println("size = " + topshell.getSize().toString()) ;
-*/
         shell.pack() ;
         Point shellSize = shell.getSize() ;;
         windowShell.setSize(shellSize.x + 30, shellSize.y + 30) ;
@@ -912,14 +1048,29 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             windowShell.setLocation(this.location) ;
         }
         windowShell.open();
-        
-        
-        System.out.println("closed") ;
-        
+
+        /***************************************************************************
+         * For some reason, reraising the window seems to cause the editor to become
+         * writable, so we make it read-only again.
+         ***************************************************************************/
+        // The following method was deprecated because it was actually possible to use
+        // it, so it had to be replaced by something that requires a PhD in Eclipse
+        // to figure out how to use.       
+        editorIFile.setReadOnly(true);
+    }
+    
+    
+    /***************************************************************************
+     * The action-button handlers
+     ****************************************************************************/
+    
+    void andAction(NodeRepresentation nodeRep) {
+       boolean isPrimed = false;
+       boolean defExpanded = false;
     }
     
     /**
-     * A NodeRepresentation object is describes the TLA+ source text
+     * A NodeRepresentation object  describes the TLA+ source text
      * that produced a SemanticNode, after substitutions have been performed
      * for some identifiers.  It contains the following information:
      * <ul>
@@ -930,10 +1081,11 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      *      
      * <li> A mapping from <line, column> coordinates occurring in locations
      *      in the syntax tree of <code>node</code> to the corresponding
-     *      positions in <code>nodeText</code>.
-     *      
+     *      positions in <code>nodeText</code>.  
      * </ul>
-     * 
+     * An OR-decomposition node represents a node that represents an assumption that has
+     * been decomposed into a disjunction for a proof by cases.  Such a node has a
+     * vector of children, which can include OR-decomposition nodes.
      * 
      * @author lamport
      *
@@ -976,16 +1128,11 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         String originalOperator = null ;
 
         // The nodeType is the type of node.
-        private static final int EXPR_NODE  = 0  ; // An OpApplNode that is not an OR_Node
-        private static final int NEW_NODE   = 1  ; // A NewSymbNode
-        private static final int DISJ_NODE  = 2  ; // A node representing a decomposition
-                                                   // into the disjunction of its children
-        private static final int EXISTS_NODE = 3 ; 
-           // Represents a decomposition into \E of children[0].
-           // This should not be the NodeRepresentation object for an assumption or goal,
-           // but it could be an inner object, such as the \E x of the assumption
-           //    \/ 1+1=2
-           //    \/ \E x : 1+x = 3
+        private static final int EXPR_NODE = 0  ; // An OpApplNode 
+        private static final int NEW_NODE  = 1  ; // A NewSymbNode
+        private static final int OR_DECOMP = 2  ; 
+           // A node representing a decomposition into the disjunction of its children
+           // Its node and nodeRep 
         private static final int PROOF_NODE = 4  ; 
           // The LeafProofNode of the step.  This may not be needed.
         private static final int OTHER_NODE = 5  ;        
@@ -1021,15 +1168,15 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          * @return
          */
         int getParentIndex() {
-        	if (parentVector == null) {
-        		return -1 ;
-        	}
-        	for (int i = 0; i < parentVector.size(); i++) {
-        		if (this == parentVector.elementAt(i)) {
-        			return i;
-        		}
-        	}
-        	return -1;  // this shouldn't happen
+            if (parentVector == null) {
+                return -1 ;
+            }
+            for (int i = 0; i < parentVector.size(); i++) {
+                if (this == parentVector.elementAt(i)) {
+                    return i;
+                }
+            }
+            return -1;  // this shouldn't happen
         }
         
         // State information about this clause.
@@ -1388,7 +1535,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     }
 
     /*
-     * The following are the types of buttons in the 
+     * The following are the types of buttons in the window
      */
     public static final int MENU = 1 ;
     public static final int ACTION = 2 ;
@@ -1500,15 +1647,37 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                             + decomposeHandler.location.toString());
                     break;
                 }
-                
+                break;               
             case ACTION:
+                // Any ACTION button causes a change.
+                changed = true ;
+                NodeRepresentation nodeObj = (NodeRepresentation) object ;
+                switch (nodeObj.nodeSubtype) {
+                case NodeRepresentation.AND_TYPE:
+                   decomposeHandler.andAction(nodeObj) ;
+                   break ;
+                case NodeRepresentation.OR_TYPE:    
+                   break ;
+                case NodeRepresentation.IMPLIES_TYPE:
+                   break ;
+                case NodeRepresentation.FORALL_TYPE:
+                   break ;
+                case NodeRepresentation.EXISTS_TYPE:
+                   break ;
+                case NodeRepresentation.SQSUB_TYPE:
+                   break ;
+                case NodeRepresentation.OTHER_TYPE: 
+                   break ;
+                }
+                
+               
                 System.out.println("ACTION Click");
-                System.out.println("Parent index = " + ((NodeRepresentation) object).getParentIndex());
                 break ;
-            case CHECK:
-                Button but = (Button) object ;
-                System.out.println("status = " + but.getSelection()) ;
-                but.setEnabled(false) ;
+// There doesn't seem to be any need to put a listener on a check button.                
+//            case CHECK:
+//                Button but = (Button) object ;
+//                System.out.println("status = " + but.getSelection()) ;
+//                but.setEnabled(false) ;
             }
         }
 
@@ -1524,6 +1693,31 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
              
         }
         
+    }
+    
+    /**
+     * This is a DisposeListener for the window that sets the editor to be writable
+     * and sets the handler's `location' * field to the window's current location, 
+     * so it opens in the same place the next time the command is issued.
+     * 
+     * @author lamport
+     *
+     */
+    class  WindowDisposeListener implements DisposeListener {
+        DecomposeProofHandler commandHandler;
+        
+        WindowDisposeListener(DecomposeProofHandler handler) {
+            commandHandler = handler;
+            
+        }
+
+        public void widgetDisposed(DisposeEvent e) {
+            commandHandler.location = windowShell.getLocation() ;
+            // The following method was deprecated because it was actually possible to use
+            // it, so it had to be replaced by something that requires a PhD in Eclipse
+            // to figure out how to use.
+            commandHandler.editorIFile.setReadOnly(false) ;
+        }
     }
     
     /**
@@ -1589,24 +1783,24 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * @param oan
      * @return
      */
-	static OpApplNode exposeRelevantExpr(OpApplNode oan) {
-		OpApplNode nd = oan;
-		if (nd.getOperator().getName() == ASTConstants.OP_prime) {
-			nd = (OpApplNode) nd.getArgs()[0];
-		}
-		if (nd.getOperator().getKind() == ASTConstants.UserDefinedOpKind) {
-			ExprNode opDef = ((OpDefNode) nd.getOperator()).getBody();
-			if (opDef instanceof OpApplNode) {
-				nd = (OpApplNode) opDef;
-			} else {
-				return nd;
-			}
-		}
-		if (nd.getOperator().getName() == ASTConstants.OP_prime) {
-			nd = (OpApplNode) nd.getArgs()[0];
-		}
-		return nd;
-	}
+    static OpApplNode exposeRelevantExpr(OpApplNode oan) {
+        OpApplNode nd = oan;
+        if (nd.getOperator().getName() == ASTConstants.OP_prime) {
+            nd = (OpApplNode) nd.getArgs()[0];
+        }
+        if (nd.getOperator().getKind() == ASTConstants.UserDefinedOpKind) {
+            ExprNode opDef = ((OpDefNode) nd.getOperator()).getBody();
+            if (opDef instanceof OpApplNode) {
+                nd = (OpApplNode) opDef;
+            } else {
+                return nd;
+            }
+        }
+        if (nd.getOperator().getName() == ASTConstants.OP_prime) {
+            nd = (OpApplNode) nd.getArgs()[0];
+        }
+        return nd;
+    }
         
         /**
          * Returns true iff some module of the spec is unsaved.  Code
