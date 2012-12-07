@@ -641,7 +641,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 assumes.add(assump[i]);
                 NodeRepresentation nodeRep = stepRep.subNode(assump[i], assumeReps) ;
                 if (nodeRep.nodeType == NodeRepresentation.NEW_NODE) {
-                    Location loc = nodeRep.node.stn.getLocation() ;
+                    Location loc = nodeRep.semanticNode.stn.getLocation() ;
                     if (loc.beginLine() == loc.endLine()) {
                         if (loc.beginLine() == rowOfLastNew) {
                             assumeReps.elementAt(i-1).onSameLineAsNext = true ;
@@ -1091,7 +1091,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      *
      */
     public class NodeRepresentation {
-        SemanticNode node ;
+        SemanticNode semanticNode ;
         
         /**
          * We represent the text of a TLA+ syntactic unit as a String array, each element
@@ -1109,7 +1109,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          * a space and the formatting of the original text is maintained in nodeText.
          *  
          * @param document
-         * @param node
+         * @param semanticNode
          * @return
          */
         String[] nodeText ;
@@ -1150,16 +1150,30 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         
         public int nodeSubtype = OTHER_TYPE ;
         
-        // NodeRepresentation objects that are constructed for the DecomposeProof window
-        // are structured as a forest with two roots: the Assume root, whose children
-        // are the sequence of NodeRepresentation objects of assumeReps, and goalRep, whose
-        // that is an isolated root.  The children field contains the children of the current
-        // node.  The parentVector field point to the children Vector of the node's parent,
-        // except that goalRep.parentVector equals null.
-        // 
-        Vector <NodeRepresentation> parentVector ;
-        Vector <NodeRepresentation> children ;
+        /********************************************************************
+         *  An OR-Split operation can be performed on a node of type EXPR_NODE 
+         *  and subtype OR_TYPE.  This operation replaces the node with one
+         *  of type OR_DECOMP, whose children field is a vector with one 
+         *  element for each disjunct of the semanticNode's disjuncts, where
+         *  children.elementAt(i) is a vector of length 1 containing a node
+         *  of type EXPR_NODE for that disjunct.  Further operations on that
+         *  node can turn children.elementAt(i) into a vector consisting of
+         *  a sequence of NEW_NODE NodeRepresentation objects followed by
+         *  an EXPR_NODE or OR_DECOMP node.  The `children' field is null
+         *  for a node of type other than OR_DECOMP.
+         *********************************************************************/
+        Vector<Vector <NodeRepresentation>> children = null ;
         
+        /********************************************************************
+         * If this node has type OR_DECOMP, then either: 
+         * - it equals n.children.elementAt(i).elementAt(j) for an OR_DECOMP node n, 
+         *   parentNode = n and parentVector = n.children.elementAt(i).
+         * - it equals h.assumeReps.elementAt(j) for the DecomposeProofHandler
+         *   object h, parentNode = null, and parentVector = assumeReps.
+         ********************************************************************/
+        NodeRepresentation parentNode = null ;
+        Vector<NodeRepresentation> parentVector = null ;
+             
         /**
          * If parentVector is non-null, then the current node equals
          * parentVector.elementAt(getParentIndex()).  If parentVector
@@ -1179,6 +1193,21 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             return -1;  // this shouldn't happen
         }
         
+        /**
+         * If parentNode is non-null (which implies parentVector is non-null),
+         * then parentVector = parentNode.children.elementAt(getParentVectorIndex).
+         * 
+         * @return
+         */
+        int getParentVectorIndex() {
+            for (int i = 0; i < parentNode.children.size(); i++) {
+                if (this.parentVector == parentNode.children.elementAt(i)) {
+                    return i;
+                }
+            }
+            return -1;  // this shouldn't happen
+
+        }
         // State information about this clause.
         
         /**
@@ -1236,10 +1265,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             
             NodeRepresentation result = new NodeRepresentation() ;
             result.parentVector = vec ;
-            result.node = sn ;
+            result.semanticNode = sn ;
             // set beginId to be the index in this.nodeText representing the
-            // first line of the source of node sn.
-            int beginIdx =  getBeginLine(sn) - getBeginLine(this.node) ;
+            // first line of the source of SemanticNode node sn.
+            int beginIdx =  getBeginLine(sn) - getBeginLine(this.semanticNode) ;
             result.nodeText = new String[getEndLine(sn) - getBeginLine(sn)+1];
             result.mapping = new Vector[result.nodeText.length] ;
             // Set beginCol to the column of the first token of sn.
@@ -1360,7 +1389,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          */
         NodeRepresentation(IDocument document, SemanticNode node)
                 throws BadLocationException {
-            this.node = node ;
+            this.semanticNode = node ;
             Location location = node.stn.getLocation();
             nodeText = new String[location.endLine() - location.beginLine() + 1] ;
             mapping = new Vector[nodeText.length] ;
