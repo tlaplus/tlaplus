@@ -4,7 +4,6 @@ package tlc2.tool.fp;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.reflect.Field;
 import java.nio.LongBuffer;
 import java.rmi.RemoteException;
 import java.util.Arrays;
@@ -22,18 +21,6 @@ import util.Assert;
 public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
 	protected static final double COLLISION_BUCKET_RATIO = .025d;
-
-	private static sun.misc.Unsafe getUnsafe() {
-		try {
-			final Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-			f.setAccessible(true);
-			return (sun.misc.Unsafe) f.get(null);
-		} catch (Exception e) {
-			throw new RuntimeException(
-					"Trying to use Sun VM specific sun.misc.Unsafe implementation but no Sun based VM detected.",
-					e);
-		}
-	}
 	
 	protected final int bucketCapacity;
 
@@ -87,7 +74,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		final long memoryInFingerprintCnt = fpSetConfig.getMemoryInFingerprintCnt();
 		
 		// Determine base address which varies depending on machine architecture.
-		u = getUnsafe();
+		u = OffHeapDiskFPSetHelper.getUnsafe();
 		int addressSize = u.addressSize();
 		int cnt = -1;
 		while (addressSize > 0) {
@@ -100,14 +87,6 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 		long bytes = memoryInFingerprintCnt << logAddressSize;
 		
 		baseAddress = u.allocateMemory(bytes);
-		
-		// Null memory (could be done in parallel on segments when bottleneck).
-		// This is essential as allocateMemory returns uninitialized memory and
-		// memInsert/memLockup utilize 0L as a mark for an unused fingerprint slot.
-		// Otherwise memory garbage wouldn't be distinguishable from a true fp. 
-		for (long i = 0; i < memoryInFingerprintCnt; i++) {
-			u.putAddress(log2phy(i), 0L);
-		}
 
 		final int csCapacity = (int) (maxTblCnt * COLLISION_BUCKET_RATIO);
 		this.collisionBucket = new TreeSetCollisionBucket(csCapacity);
@@ -160,6 +139,16 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			// non 2^n buckets cannot use a bit shifting indexer
 			this.indexer = new Indexer(moveBy, fpSetConfig.getPrefixBits());
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#init(int, java.lang.String, java.lang.String)
+	 */
+	public void init(int numThreads, String aMetadir, String filename)
+			throws IOException {
+		super.init(numThreads, aMetadir, filename);
+		
+		OffHeapDiskFPSetHelper.zeroMemory(u, baseAddress, numThreads, fpSetConfig.getMemoryInFingerprintCnt());
 	}
 
 	/* (non-Javadoc)
