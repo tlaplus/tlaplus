@@ -130,6 +130,7 @@ two steps:
 
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
+import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -140,7 +141,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
@@ -180,6 +183,8 @@ import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ASTConstants;
@@ -1077,11 +1082,29 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             shell.dispose();
             return;
     }
-    String html = "<BODY BGCOLOR=#ffffe4>" +
-                  "<PRE> this is some pre\n another line \n</PRE>" +
-                 "a b <i>c</i> d <font color=#ff00001>Large</font>" + 
-                 "</BODY>";
-    browser.setUrl("org.lamport.tla.toolbox.doc/html/prover/prover.html") ;
+        
+        Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+        String url = bundle.getLocation() ;
+        System.out.println("What's going on");
+        int idx = url.indexOf("reference:file:/");
+        System.out.println("original url = " + url);
+        if (idx == 0) {
+            url = url.substring("reference:file:/".length()) ;
+            
+        }
+        String url2 = url + "html/test.html" ;
+        String url1 = url ;
+        idx = url.indexOf("org.lamport.tla.toolbox.editor.basic/") ;
+        if (idx == url.length() - "org.lamport.tla.toolbox.editor.basic/".length()) {
+            url1 = url.substring(0, idx) + 
+              "org.lamport.tla.toolbox.doc/html/model/overview-page.html#what-is-model";
+        }
+    System.out.println(url1 + ",  " + url2);
+//    String html = "<BODY BGCOLOR=#ffffe4>" +
+//                  "<PRE> this is some pre\n another line \n</PRE>" +
+//                 "a b <i>c</i> d <font color=#ff00001>Large</font>" + 
+//                 "</BODY>";
+       browser.setUrl(url1) ;
 
 //    browser.setText(html);
     shell.open();
