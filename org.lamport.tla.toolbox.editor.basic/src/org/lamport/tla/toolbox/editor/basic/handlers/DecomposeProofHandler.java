@@ -149,6 +149,8 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
+import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -157,6 +159,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -661,7 +664,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             
         } else {
             /**************************************************************
-             * This is not an ASSUME/PROVE, so have to set assumes & and
+             * This is not an ASSUME/PROVE, so have to set assumes and
              * assumesRep to null and check that this isn't something like a QED
              * step that the command doesn't handle.
              *************************************************************/
@@ -735,6 +738,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         GridLayout gridLayout = new GridLayout(3, false);
         shell.setLayout(gridLayout);
         
+//        UIHelper.setHelp(shell, "definition_override_wizard");
         Composite topMenu = new Composite(shell,SWT.NONE) ;   
         gridLayout = new GridLayout(4, false);
         gridLayout.marginBottom = 0;
@@ -746,7 +750,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         // Display Prove and Replace Step buttons. 
         // NEED TO ADD DISABLING OF Prove BUTTON
         Button proveButton = new Button(topMenu, SWT.PUSH) ;
-        setupMenuButton(proveButton, TEST_BUTTON, "Prove") ;
+//        HelpListener listener = new HelpListe
+//        proveButton.addHelpListener(listener) ;
+        setupMenuButton(proveButton, PROVE_BUTTON, "Prove") ;
         Button replaceButton = new Button(topMenu, SWT.PUSH) ;
         setupMenuButton(replaceButton, TEST_BUTTON, "Replace Step") ;
         replaceButton.setEnabled(changed && (chosenSplit == -1) && (andSplitEnd == -1)) ;
@@ -1011,7 +1017,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
               Button goalButton = new Button(shell, SWT.PUSH) ;
               setupActionButton(goalButton, goalRep, labelText);
               goalButton.setEnabled(! disable) ;
-              
                 }
         else {
                 assumeLabel = new Label(shell, SWT.NONE) ;
@@ -1022,14 +1027,14 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         comp = new Composite(shell, SWT.NONE);
         gridLayout = new GridLayout(1, false);
         comp.setLayout(gridLayout);
-        if (isProver) {
+        if (isProver && !disable) {
             assumeLabel = new Label(comp, SWT.NONE);
             assumeLabel.setText("P");
             assumeLabel.setFont(JFaceResources.getFontRegistry().get(
                     JFaceResources.HEADER_FONT));
         }
         comp.setSize(0, 5);
-
+        
         assumeLabel = new Label(shell, SWT.NONE);
         assumeLabel.setText(stringArrayToString(goalRep.nodeText));
         gridData = new GridData();
@@ -1059,6 +1064,28 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         editorIFile.setReadOnly(true);
     }
     
+    
+    void displayHTML() {
+        Shell topshell = UIHelper.getShellProvider().getShell() ;
+        Shell shell = new Shell(topshell, SWT.SHELL_TRIM) ;
+        shell.setLayout(new FillLayout());
+        Browser browser;
+        try {
+          browser = new Browser(shell, SWT.NONE);
+    } catch (SWTError e) {
+            System.out.println("Could not instantiate Browser: " + e.getMessage());
+            shell.dispose();
+            return;
+    }
+    String html = "<BODY BGCOLOR=#ffffe4>" +
+                  "<PRE> this is some pre\n another line \n</PRE>" +
+                 "a b <i>c</i> d <font color=#ff00001>Large</font>" + 
+                 "</BODY>";
+    browser.setUrl("org.lamport.tla.toolbox.doc/html/prover/prover.html") ;
+
+//    browser.setText(html);
+    shell.open();
+    }
     
     /***************************************************************************
      * The action-button handlers
@@ -1657,6 +1684,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 int buttonId = ((Integer) object).intValue() ;
                 switch (buttonId) {
                 case PROVE_BUTTON :
+                    displayHTML();
                     break;
                 case TEST_BUTTON:
                     windowShell = decomposeHandler.windowShell;
