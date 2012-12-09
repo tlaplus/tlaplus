@@ -63,10 +63,13 @@ public class HelpButton {
             Bundle bundle = FrameworkUtil.getBundle(this.getClass());
             String url = bundle.getLocation() ;
             System.out.println("What's going on");
-            int idx = url.indexOf("reference:file:/");
+            int idx = url.indexOf("reference:file:");
             System.out.println("original url = " + url);
             if (idx != -1) {
-                url = url.substring(idx+"reference:file:/".length()) ;
+                url = url.substring(idx+"reference:file:".length()) ;
+                if (url.charAt(0) == '/') {
+                    url = url.substring(1) ;
+                }
             }
             System.out.println("url - initial stuff: " + url);
             idx = url.indexOf("org.lamport.tla.toolbox") ;
