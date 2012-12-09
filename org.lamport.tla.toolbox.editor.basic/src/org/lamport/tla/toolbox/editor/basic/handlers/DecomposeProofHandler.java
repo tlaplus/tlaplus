@@ -130,8 +130,6 @@ two steps:
 
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
-import java.net.URL;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -141,9 +139,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
@@ -159,8 +154,6 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -172,18 +165,18 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
+//import org.lamport.tla.toolbox.doc.HelpButton;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
-import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
+import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -202,7 +195,6 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
-import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
 import util.UniqueString;
@@ -448,16 +440,17 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         GridLayout gridLayout = new GridLayout(2, false);
         shell.setLayout(gridLayout);
         // Set up the help button
-        Button helpButton = new Button(shell, SWT.PUSH);
+        Button helpButton = HelpButton.helpButton(shell, "prover/test.html");
+//        Button helpButton = new Button(shell, SWT.PUSH) ;
         Image helpImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
         helpButton.setImage(helpImg);
         GridData gridData = new GridData();
         gridData.verticalAlignment = SWT.TOP;
         helpButton.setLayoutData(gridData);
         // Attach the listener to it
-        helpButton.addSelectionListener(new HelpButtonListener());
-        Bundle bundle = FrameworkUtil.getBundle(this.getClass());
-        String url = bundle.getLocation() ;
+//        helpButton.addSelectionListener(new HelpButtonListener());
+//        Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+        String url = HelpButton.baseURL; //bundle.getLocation() ;
         String msgText = 
            "Please click on the `?' button on the left.\n\n" +
            "It will be obvious if it succeeds in doing what it should.\n\n" +
