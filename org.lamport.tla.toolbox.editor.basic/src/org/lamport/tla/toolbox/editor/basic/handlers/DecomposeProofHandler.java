@@ -161,6 +161,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -170,9 +171,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
@@ -434,6 +438,57 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     }
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
+    
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        
+        Shell topshell = UIHelper.getShellProvider().getShell() ;
+        windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
+        windowShell.setText("Leslie's Test") ;
+        Composite shell = new Composite(windowShell, SWT.NONE) ;
+        GridLayout gridLayout = new GridLayout(2, false);
+        shell.setLayout(gridLayout);
+        // Set up the help button
+        Button helpButton = new Button(shell, SWT.PUSH);
+        Image helpImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
+        helpButton.setImage(helpImg);
+        GridData gridData = new GridData();
+        gridData.verticalAlignment = SWT.TOP;
+        helpButton.setLayoutData(gridData);
+        // Attach the listener to it
+        helpButton.addSelectionListener(new HelpButtonListener());
+        Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+        String url = bundle.getLocation() ;
+        String msgText = 
+           "Please click on the `?' button on the left.\n\n" +
+           "It will be obvious if it succeeds in doing what it should.\n\n" +
+           "If it doesn't do what it should, please copy the following\n" +
+           "text and send it to me.\n\n  |-" + url + "-|   \n\n" +
+           "Thanks,\n\nLeslie" ;
+        Text text = new Text(shell, SWT.NONE+SWT.MULTI) ;
+        text.setText(msgText);
+        text.setFont(JFaceResources.getFontRegistry().get(
+                JFaceResources.TEXT_FONT));
+        text.setEnabled(true) ;
+//        Label label = new Label(shell, SWT.BORDER) ;
+//        label.setText(msgText);
+        shell.pack() ;
+        windowShell.update();
+        windowShell.open();
+        return null;
+        
+    }
+    
+    public class HelpButtonListener extends SelectionAdapter implements SelectionListener {
+
+        public void widgetSelected(SelectionEvent e) {
+            displayHTML();
+        }
+        
+        public void widgetDefaultSelected(SelectionEvent e) {
+            displayHTML();
+        }
+
+    }
     /**
      * The execute method is called when the user issues a DecomposeProof
      * command.
@@ -442,7 +497,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      * ExecutionEvent)
      */
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object testExecute(ExecutionEvent event) throws ExecutionException {
 
         /******************************************************************
          * Perform various checks to see if the command should be
@@ -1090,16 +1145,15 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         System.out.println("original url = " + url);
         if (idx == 0) {
             url = url.substring("reference:file:/".length()) ;
-            
         }
-        String url2 = url + "html/test.html" ;
+        String url2 = url + "html/prover/test.html" ;
         String url1 = url ;
         idx = url.indexOf("org.lamport.tla.toolbox.editor.basic/") ;
         if (idx == url.length() - "org.lamport.tla.toolbox.editor.basic/".length()) {
             url1 = url.substring(0, idx) + 
-              "org.lamport.tla.toolbox.doc/html/model/overview-page.html#what-is-model";
+              "org.lamport.tla.toolbox.doc/html/prover/test.html";
         }
-    System.out.println(url1 + ",  " + url2);
+    System.out.println(url1); // + ",  " + url2);
 //    String html = "<BODY BGCOLOR=#ffffe4>" +
 //                  "<PRE> this is some pre\n another line \n</PRE>" +
 //                 "a b <i>c</i> d <font color=#ff00001>Large</font>" + 
@@ -1636,7 +1690,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private void setupMenuButton(Button button, int whichOne, String text) {
             button.addSelectionListener(new 
                 DecomposeProofButtonListener(this, new Integer(whichOne), MENU)) ;
-            button.setText(text) ; 
+            Image folderImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
+            String foo = ISharedImages.IMG_LCL_LINKTO_HELP ;
+             button.setImage(folderImg);
+//            button.setText(text) ; 
 //            button.setSize(100, button.getSize().y);
             GridData gridData = new GridData();
             gridData.horizontalIndent = 5 ;
