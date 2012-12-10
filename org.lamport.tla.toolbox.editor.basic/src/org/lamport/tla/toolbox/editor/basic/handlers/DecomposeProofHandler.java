@@ -130,6 +130,8 @@ two steps:
 
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -436,7 +438,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         Shell topshell = UIHelper.getShellProvider().getShell() ;
         windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
         windowShell.setText("Leslie's Test") ;
-        Composite shell = new Composite(windowShell, SWT.NONE) ;
+        Composite shell = windowShell; // new Composite(windowShell, SWT.NONE) ;
         GridLayout gridLayout = new GridLayout(2, false);
         shell.setLayout(gridLayout);
         // Set up the help button
@@ -451,11 +453,14 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
 //        helpButton.addSelectionListener(new HelpButtonListener());
 //        Bundle bundle = FrameworkUtil.getBundle(this.getClass());
         String url = HelpButton.baseURL; //bundle.getLocation() ;
+        
+        
+        System.out.println("url:  " + url);
         String msgText = 
            "Please click on the `?' button on the left.\n\n" +
            "It will be obvious if it succeeds in doing what it should.\n\n" +
            "If it doesn't do what it should, please copy the following\n" +
-           "text and send it to me.\n\n  |-" + url + "-|   \n\n" +
+           "text and send it to me.\n\n  |-" + url + "-|   \n\n"  +
            "Thanks,\n\nLeslie" ;
         Text text = new Text(shell, SWT.NONE+SWT.MULTI) ;
         text.setText(msgText);
