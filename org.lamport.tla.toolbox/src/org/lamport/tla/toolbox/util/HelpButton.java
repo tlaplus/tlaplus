@@ -13,10 +13,13 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -33,6 +36,12 @@ public class HelpButton {
         Button button = new Button(parent, SWT.PUSH);
         HelpButtonListener listener = new HelpButtonListener(parent, helpFile);
         button.addSelectionListener(listener);
+        Image helpImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
+        button.setImage(helpImg);
+        GridData gridData = new GridData();
+        gridData.verticalAlignment = SWT.TOP;
+        button.setLayoutData(gridData);
+        button.setEnabled(true);
         baseURL = listener.url;
         return button;
     }
@@ -103,9 +112,9 @@ public class HelpButton {
                             + url.substring(idx
                                     + "org.lamport.tla.toolbox".length());
                 }
-                System.out.println("url of toolbox.doc directory: " + url);
+//                System.out.println("url of toolbox.doc directory: " + url);
                 url = url + "html/" + file;
-
+                System.out.println("url = " + url);
             }
 
         }
@@ -155,6 +164,7 @@ public class HelpButton {
             // "http://127.0.0.1:45076/help/index.jsp?topic=%2Forg.lamport.tla.toolbox.doc%2Fhtml%2F";
             // url = url + file.replaceAll("/", "%2F") ;
             // System.out.println("final url: " + url);
+            System.out.println("url actually used: " + url) ;
             browser.setUrl(url);
             shell.open();
 

@@ -433,7 +433,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
     
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object testexecute(ExecutionEvent event) throws ExecutionException {
         
         Shell topshell = UIHelper.getShellProvider().getShell() ;
         windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
@@ -495,7 +495,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      * ExecutionEvent)
      */
-    public Object testExecute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
 
         /******************************************************************
          * Perform various checks to see if the command should be
@@ -700,7 +700,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                     return null;
                 } 
                 assumes.add(assump[i]);
-                NodeRepresentation nodeRep = stepRep.subNode(assump[i], assumeReps) ;
+                NodeRepresentation nodeRep = stepRep.subNode(assump[i], assumeReps, null) ;
                 if (nodeRep.nodeType == NodeRepresentation.NEW_NODE) {
                     Location loc = nodeRep.semanticNode.stn.getLocation() ;
                     if (loc.beginLine() == loc.endLine()) {
@@ -717,7 +717,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 assumeReps.add(nodeRep);
                 
                 goal = (OpApplNode) ((AssumeProveNode) thm).getProve();
-                goalRep = stepRep.subNode(goal, null );
+                goalRep = stepRep.subNode(goal, null, null );
             }
             
         } else {
@@ -744,7 +744,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                         "Cannot decompose this kind of step.");
                 return null;
             }
-            goalRep = stepRep.subNode(goal, null);
+            goalRep = stepRep.subNode(goal, null, null);
         }
 
         // The following code seems to be redundant.
@@ -805,12 +805,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         gridData.horizontalSpan = 3;
         topMenu.setLayoutData(gridData) ;
         
-        // Display Prove and Replace Step buttons. 
+        // Display Help and Replace Step buttons. 
         // NEED TO ADD DISABLING OF Prove BUTTON
-        Button proveButton = new Button(topMenu, SWT.PUSH) ;
+        Button helpButton = HelpButton.helpButton(topMenu, "prover/test.html") ;
 //        HelpListener listener = new HelpListe
 //        proveButton.addHelpListener(listener) ;
-        setupMenuButton(proveButton, PROVE_BUTTON, "Prove") ;
+//        setupMenuButton(proveButton, PROVE_BUTTON, "Prove") ;
         Button replaceButton = new Button(topMenu, SWT.PUSH) ;
         setupMenuButton(replaceButton, TEST_BUTTON, "Replace Step") ;
         replaceButton.setEnabled(changed && (chosenSplit == -1) && (andSplitEnd == -1)) ;
@@ -1169,6 +1169,27 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     void andAction(NodeRepresentation nodeRep) {
        boolean isPrimed = false;
        boolean defExpanded = false;
+       /**
+        * Set conjuncts to the vector of conjunctions.
+        */
+       Vector<OpApplNode> conjunctions = new Vector<OpApplNode> () ;
+       if (nodeRep.parentVector == null) {
+           /**
+            * This is a "prove by AND-split" operation.
+            */
+           // not yet implemented
+           return ;
+       } else {
+           /**
+            * This is an AND-SPLIT of an assumption, so nodeRep is assumeReps(i) 
+            * node, and parentNode = null.  We set idx to i.
+            */
+           int idx = nodeRep.getParentIndex() ;
+           
+           
+           
+       }
+       
     }
     
     /**
@@ -1267,11 +1288,16 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         Vector<Vector <NodeRepresentation>> children = null ;
         
         /********************************************************************
-         * If this node has type OR_DECOMP, then either: 
-         * - it equals n.children.elementAt(i).elementAt(j) for an OR_DECOMP node n, 
-         *   parentNode = n and parentVector = n.children.elementAt(i).
+         * If this node has parentNode # null, then it equals 
+         * n.children.elementAt(i).elementAt(j) for an OR_DECOMP node n,
+         * where parentNode = n and parentVector = n.children.elementAt(i).
+         * In this case, the node is of type EXPR_NODE, NEW_NODE, or
+         * OR_DECOMP.
+         * 
+         * If this node has parentNode = null, then either
          * - it equals h.assumeReps.elementAt(j) for the DecomposeProofHandler
          *   object h, parentNode = null, and parentVector = assumeReps.
+         * - parentVector = null and the node is the current goal.
          ********************************************************************/
         NodeRepresentation parentNode = null ;
         Vector<NodeRepresentation> parentVector = null ;
@@ -1297,6 +1323,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         
         /**
          * If parentNode is non-null (which implies parentVector is non-null),
+         * and parentNode is an OR-SPLIT node, 
          * then parentVector = parentNode.children.elementAt(getParentVectorIndex).
          * 
          * @return
@@ -1363,9 +1390,11 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          * @param sn  A subnode of this.node.
          * @return
          */
-        NodeRepresentation subNode(SemanticNode sn, Vector <NodeRepresentation> vec) {
+        NodeRepresentation subNode(SemanticNode sn, Vector <NodeRepresentation> vec,
+                                     NodeRepresentation father) {
             
             NodeRepresentation result = new NodeRepresentation() ;
+            result.parentNode = father;
             result.parentVector = vec ;
             result.semanticNode = sn ;
             // set beginId to be the index in this.nodeText representing the
