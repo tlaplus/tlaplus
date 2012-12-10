@@ -77,9 +77,10 @@ public class HelpButton {
                 url = url.substring(0, idx) + "org.lamport.tla.toolbox.doc" 
                         + url.substring(idx + "org.lamport.tla.toolbox".length());
             }
-            url = url + "html/" + file;          
+            url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file ;         
         System.out.println("final url: " + url); 
-           browser.setUrl(url) ;
+//           browser.setUrl("http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file) ;
+           browser.setUrl(url);
            shell.open();
       
         }
