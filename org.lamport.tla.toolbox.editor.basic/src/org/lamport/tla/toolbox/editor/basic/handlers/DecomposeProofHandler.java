@@ -433,7 +433,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
     
-    public Object testexecute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         
         Shell topshell = UIHelper.getShellProvider().getShell() ;
         windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
@@ -495,7 +495,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      * ExecutionEvent)
      */
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object realExecute(ExecutionEvent event) throws ExecutionException {
 
         /******************************************************************
          * Perform various checks to see if the command should be
