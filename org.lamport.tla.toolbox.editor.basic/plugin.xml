@@ -505,7 +505,7 @@
             commandId="org.lamport.tla.toolbox.editor.basic.DecomposeProof"
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+A">
+            sequence="M1+G M1+D">
       </key>
       
    </extension>
@@ -579,6 +579,10 @@
               </command>
               <command
                     commandId="org.lamport.tla.toolbox.editor.basic.renumberProof"
+                    style="push">
+              </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.DecomposeProof"
                     style="push">
               </command>
               <separator
