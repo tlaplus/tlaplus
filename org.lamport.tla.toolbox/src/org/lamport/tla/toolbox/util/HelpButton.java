@@ -29,6 +29,14 @@ import org.osgi.framework.FrameworkUtil;
  * Implemented by Leslie Lamport
  */
 
+/*
+ * Some times Eclipse default internal web browser will not work in your
+ * Ubuntu environment.  Is that the case, you need to install webkit
+ * library for Ubuntu.  In order to install webkit libraries got to your
+ * terminal and run this command.
+ *
+ *   sudo apt-get install libwebkitgtk-1.0-0
+ */
 public class HelpButton {
     public static String baseURL;
 

@@ -433,6 +433,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
     
+    /**
+     * TEST OF HELP BUTTON.  Rename this to execute for test.
+     * @param event
+     * @return
+     * @throws ExecutionException
+     */
     public Object execute(ExecutionEvent event) throws ExecutionException {
         
         Shell topshell = UIHelper.getShellProvider().getShell() ;
@@ -476,18 +482,21 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         
     }
     
-    public class HelpButtonListener extends SelectionAdapter implements SelectionListener {
-
-        public void widgetSelected(SelectionEvent e) {
-            displayHTML();
-        }
-        
-        public void widgetDefaultSelected(SelectionEvent e) {
-            displayHTML();
-        }
-
-    }
+//    public class HelpButtonListener extends SelectionAdapter implements SelectionListener {
+//
+//        public void widgetSelected(SelectionEvent e) {
+//            displayHTML();
+//        }
+//        
+//        public void widgetDefaultSelected(SelectionEvent e) {
+//            displayHTML();
+//        }
+//
+//    }
+    
     /**
+     * THE REAL EXECUTE METHOD
+     * 
      * The execute method is called when the user issues a DecomposeProof
      * command.
      *  
@@ -747,36 +756,23 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             goalRep = stepRep.subNode(goal, null, null);
         }
 
-        // The following code seems to be redundant.
-        // The return null can never happen because that would have
-        // caused a null return in the test at the beginning of the module
-        // for whether the command was issued in the middle of executing
-        // a DecomposeProof command.
-//        if (this.windowShell != null)  {
-//            if (this.windowShell.isDisposed()) {
-//                // The following method was deprecated because it was actually possible to use
-//                // it, so it had to be replaced by something that requires a PhD in Eclipse
-//                // to figure out how to use.
-//                editorIFile.setReadOnly(true) ;
-//                raiseWindow("Decompose Proof") ;
-//                
-//            }
-//            return null ;
-//        }
-        
-        
-//        System.out.println("parent null") ;
-//        // This setReadOnly is a no-op.  Why???
-//        EditorUtil.setReadOnly(editorIFile, true);
+              
         
         /***************************************************************************
          * Make the editor read-only.
          ***************************************************************************/
-        // The following method was deprecated because it was actually possible to use
-        // it, so it had to be replaced by something that requires a PhD in Eclipse
-        // to figure out how to use.
+        // The following method is deprecated because it is actually possible to use
+        // it, so it has been replaced by something that requires a PhD in Eclipse
+        // to figure out how to use.  The command 
+        //
+        //      EditorUtil.setReadOnly(editorIFile, true);
+        //
+        // that has worked in other places in the Toolbox code seems to work here
+        // only occasionally.  This being modern 21st century code, I have the 
+        // choice of reading 10^6 lines of code to figure out what is going on,
+        // or doing what seems to work. 
         editorIFile.setReadOnly(true) ;
-        raiseWindow("newWindow") ;
+        raiseWindow("Decompose Proof") ;
         
         return null;
     }
@@ -1116,52 +1112,51 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          * For some reason, reraising the window seems to cause the editor to become
          * writable, so we make it read-only again.
          ***************************************************************************/
-        // The following method was deprecated because it was actually possible to use
-        // it, so it had to be replaced by something that requires a PhD in Eclipse
-        // to figure out how to use.       
+        // See the comments on the following command where it is used in the execute 
+        // method.
         editorIFile.setReadOnly(true);
     }
     
     
-    void displayHTML() {
-        Shell topshell = UIHelper.getShellProvider().getShell() ;
-        Shell shell = new Shell(topshell, SWT.SHELL_TRIM) ;
-        shell.setLayout(new FillLayout());
-        Browser browser;
-        try {
-          browser = new Browser(shell, SWT.NONE);
-    } catch (SWTError e) {
-            System.out.println("Could not instantiate Browser: " + e.getMessage());
-            shell.dispose();
-            return;
-    }
-        
-        Bundle bundle = FrameworkUtil.getBundle(this.getClass());
-        String url = bundle.getLocation() ;
-        System.out.println("What's going on");
-        int idx = url.indexOf("reference:file:/");
-        System.out.println("original url = " + url);
-        if (idx == 0) {
-            url = url.substring("reference:file:/".length()) ;
-        }
-        String url2 = url + "html/prover/test.html" ;
-        String url1 = url ;
-        idx = url.indexOf("org.lamport.tla.toolbox.editor.basic/") ;
-        if (idx == url.length() - "org.lamport.tla.toolbox.editor.basic/".length()) {
-            url1 = url.substring(0, idx) + 
-              "org.lamport.tla.toolbox.doc/html/prover/test.html";
-        }
-    System.out.println(url1); // + ",  " + url2);
-//    String html = "<BODY BGCOLOR=#ffffe4>" +
-//                  "<PRE> this is some pre\n another line \n</PRE>" +
-//                 "a b <i>c</i> d <font color=#ff00001>Large</font>" + 
-//                 "</BODY>";
-       browser.setUrl(url1) ;
-
-//    browser.setText(html);
-    shell.open();
-    }
-    
+//   private void displayHTML() {
+//        Shell topshell = UIHelper.getShellProvider().getShell() ;
+//        Shell shell = new Shell(topshell, SWT.SHELL_TRIM) ;
+//        shell.setLayout(new FillLayout());
+//        Browser browser;
+//        try {
+//          browser = new Browser(shell, SWT.NONE);
+//    } catch (SWTError e) {
+//            System.out.println("Could not instantiate Browser: " + e.getMessage());
+//            shell.dispose();
+//            return;
+//    }
+//        
+//        Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+//        String url = bundle.getLocation() ;
+//        System.out.println("What's going on");
+//        int idx = url.indexOf("reference:file:/");
+//        System.out.println("original url = " + url);
+//        if (idx == 0) {
+//            url = url.substring("reference:file:/".length()) ;
+//        }
+//        String url2 = url + "html/prover/test.html" ;
+//        String url1 = url ;
+//        idx = url.indexOf("org.lamport.tla.toolbox.editor.basic/") ;
+//        if (idx == url.length() - "org.lamport.tla.toolbox.editor.basic/".length()) {
+//            url1 = url.substring(0, idx) + 
+//              "org.lamport.tla.toolbox.doc/html/prover/test.html";
+//        }
+//    System.out.println(url1); // + ",  " + url2);
+////    String html = "<BODY BGCOLOR=#ffffe4>" +
+////                  "<PRE> this is some pre\n another line \n</PRE>" +
+////                 "a b <i>c</i> d <font color=#ff00001>Large</font>" + 
+////                 "</BODY>";
+//       browser.setUrl(url1) ;
+//
+////    browser.setText(html);
+//    shell.open();
+//    }
+//    
     /***************************************************************************
      * The action-button handlers
      ****************************************************************************/
@@ -1717,10 +1712,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private void setupMenuButton(Button button, int whichOne, String text) {
             button.addSelectionListener(new 
                 DecomposeProofButtonListener(this, new Integer(whichOne), MENU)) ;
-            Image folderImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
-            String foo = ISharedImages.IMG_LCL_LINKTO_HELP ;
-             button.setImage(folderImg);
-//            button.setText(text) ; 
+//            Image folderImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
+//            String foo = ISharedImages.IMG_LCL_LINKTO_HELP ;
+//             button.setImage(folderImg);
+            button.setText(text) ; 
 //            button.setSize(100, button.getSize().y);
             GridData gridData = new GridData();
             gridData.horizontalIndent = 5 ;
@@ -1791,7 +1786,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 int buttonId = ((Integer) object).intValue() ;
                 switch (buttonId) {
                 case PROVE_BUTTON :
-                    displayHTML();
+//                    displayHTML();
                     break;
                 case TEST_BUTTON:
                     windowShell = decomposeHandler.windowShell;
