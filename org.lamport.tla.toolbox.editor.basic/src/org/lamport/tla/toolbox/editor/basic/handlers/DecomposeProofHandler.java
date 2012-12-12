@@ -448,7 +448,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         GridLayout gridLayout = new GridLayout(2, false);
         shell.setLayout(gridLayout);
         // Set up the help button
-        Button helpButton = HelpButton.helpButton(shell, "prover/test.html");
+        Button helpButton = HelpButton.helpButton(shell, "prover/prover.html");
 //        Button helpButton = new Button(shell, SWT.PUSH) ;
         Image helpImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
         helpButton.setImage(helpImg);
@@ -459,6 +459,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
 //        helpButton.addSelectionListener(new HelpButtonListener());
 //        Bundle bundle = FrameworkUtil.getBundle(this.getClass());
         String url = HelpButton.baseURL; //bundle.getLocation() ;
+        
+//        Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+//        url = bundle.getLocation() ;
         
         
         System.out.println("url:  " + url);
