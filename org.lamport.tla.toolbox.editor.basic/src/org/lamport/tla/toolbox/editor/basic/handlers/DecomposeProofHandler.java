@@ -132,6 +132,9 @@ package org.lamport.tla.toolbox.editor.basic.handlers;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -141,6 +144,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
@@ -440,7 +446,20 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * @throws ExecutionException
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        
+        /**
+         * TESTING STUFF
+         */
+//        Bundle bundle = Platform.getBundle("org.lamport.tla.toolbox.doc");
+//        URL fileURL = bundle.getEntry("html/prover/test.html");
+//        File file = null;try {    
+//           file = new File(FileLocator.resolve(fileURL).toURI());
+//        } catch (URISyntaxException e1) {   
+//            e1.printStackTrace();} catch (IOException e1) { 
+//           e1.printStackTrace();}
+//        System.out.println("url = " + file.getPath());
+        /**
+         * END TESTING STUFF
+         */
         Shell topshell = UIHelper.getShellProvider().getShell() ;
         windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
         windowShell.setText("Leslie's Test") ;

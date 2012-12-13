@@ -5,7 +5,12 @@ package org.lamport.tla.toolbox.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
@@ -65,6 +70,8 @@ public class HelpButton {
             super();
             file = helpFile;
             shell = parent;
+            // Set fileX to the file name with "/"s replaced by
+            // the local file separator.
             String fileX = file;
             if (!File.separator.equals("/")) {
                 while (fileX.indexOf('/') != -1) {
@@ -93,68 +100,91 @@ public class HelpButton {
              * executable, then this sets dir to its plugins directory
              * and dir.
              */
-            File dir = new File("plugins");
-            url = null;
-            String[] children = dir.list();
+//            File dir = new File("plugins");
+//            url = null;
+//            String[] children = dir.list();
+//            try {
+//                url = dir.getCanonicalPath();
+//            } catch (IOException e) {
+//                // I don't know what can cause this, but we have little
+//                // choice but to use the help pages on the Web.
+//                children = null ;
+//                e.printStackTrace();
+//            }
+//            String docdir = null;
+//            if ((url == null) || (children == null) || (children.length == 0)) {
+//                // Something's wrong.  The user may be running the Toolbox from
+//                // a directory other than the one containing the executable.
+//                // In that case, we use the help pages on the Web.
+//                url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + fileX ;                
+//            } else {
+//                // We use the Toolbox's own copy of the Help files.
+//                int i = 0;
+//                boolean found = false;
+//                while ((i < children.length) && !found) {
+//                    docdir = children[i];
+//                    if (docdir.indexOf("org.lamport.tla.toolbox.doc") != -1) {
+//                        found = true;
+//                    }
+//                    i++;
+//                }
+//                System.out.println("File separator = " + File.separator);
+//                if (found) {
+//
+//                    url = url + File.separator + docdir + File.separator
+//                            + "html" + File.separator + fileX;
+//                } else {
+//                    // The Toolbox is being run from Eclipse, or else there's a
+//                    // problem.
+//                    Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+//                    url = bundle.getLocation();
+//                    System.out.println("What's going on");
+//                    int idx = url.indexOf("reference:file:");
+//                    System.out.println("original url = " + url);
+//                    if (idx != -1) {
+//                        url = url.substring(idx + "reference:file:".length());
+//                        if (url.charAt(0) == '/') {
+//                            url = url.substring(1);
+//                        }
+//                    }
+//                    System.out.println("url - initial stuff: " + url);
+//                    idx = url.indexOf("org.lamport.tla.toolbox");
+//                    if (idx != -1) {
+//                        url = url.substring(0, idx)
+//                                + "org.lamport.tla.toolbox.doc"
+//                                + url.substring(idx
+//                                        + "org.lamport.tla.toolbox".length());
+//                    }
+//                    // System.out.println("url of toolbox.doc directory: " +
+//                    // url);
+//                    url = url + "html/" + file;
+//                    System.out.println("url = " + url);
+//                }
+//            }
+            /**
+             * TESTING STUFF -- which seems to work.
+             */
+            Bundle bundle = Platform.getBundle("org.lamport.tla.toolbox.doc");
+            URL fileURL = bundle.getEntry("html/prover/test.html");
+            File file = null;
             try {
-                url = dir.getCanonicalPath();
-            } catch (IOException e) {
-                // I don't know what can cause this, but we have little
-                // choice but to use the help pages on the Web.
-                children = null ;
-                e.printStackTrace();
+                file = new File(FileLocator.resolve(fileURL).toURI());
+            } catch (URISyntaxException e1) {
+                e1.printStackTrace();
+            } catch (IOException e1) {
+                e1.printStackTrace();
             }
-            String docdir = null;
-            if ((url == null) || (children == null) || (children.length == 0)) {
-                // Something's wrong.  The user may be running the Toolbox from
-                // a directory other than the one containing the executable.
-                // In that case, we use the help pages on the Web.
-                url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + fileX ;                
-            } else {
-                // We use the Toolbox's own copy of the Help files.
-                int i = 0;
-                boolean found = false;
-                while ((i < children.length) && !found) {
-                    docdir = children[i];
-                    if (docdir.indexOf("org.lamport.tla.toolbox.doc") != -1) {
-                        found = true;
-                    }
-                    i++;
-                }
-                System.out.println("File separator = " + File.separator);
-                if (found) {
-
-                    url = url + File.separator + docdir + File.separator
-                            + "html" + File.separator + fileX;
-                } else {
-                    // The Toolbox is being run from Eclipse, or else there's a
-                    // problem.
-                    Bundle bundle = FrameworkUtil.getBundle(this.getClass());
-                    url = bundle.getLocation();
-                    System.out.println("What's going on");
-                    int idx = url.indexOf("reference:file:");
-                    System.out.println("original url = " + url);
-                    if (idx != -1) {
-                        url = url.substring(idx + "reference:file:".length());
-                        if (url.charAt(0) == '/') {
-                            url = url.substring(1);
-                        }
-                    }
-                    System.out.println("url - initial stuff: " + url);
-                    idx = url.indexOf("org.lamport.tla.toolbox");
-                    if (idx != -1) {
-                        url = url.substring(0, idx)
-                                + "org.lamport.tla.toolbox.doc"
-                                + url.substring(idx
-                                        + "org.lamport.tla.toolbox".length());
-                    }
-                    // System.out.println("url of toolbox.doc directory: " +
-                    // url);
-                    url = url + "html/" + file;
-                    System.out.println("url = " + url);
-                }
+            if (file != null) {
+              url = file.getPath();
+            } ;
+            if ((file == null) || (url == null)) {
+                url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file ;
+                System.out.println("Could not find local copy of help file.");
             }
-
+            System.out.println("url = " + url);
+            /**
+             * END TESTING STUFF
+             */
         }
 
         public void widgetSelected(SelectionEvent e) {
