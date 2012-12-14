@@ -46,7 +46,7 @@ public class HelpButton {
     public static String baseURL;
 
     public static Button helpButton(Composite parent, String helpFile) {
-        Button button = new Button(parent, SWT.PUSH);
+        Button button = new Button(parent, SWT.NONE);
         HelpButtonListener listener = new HelpButtonListener(parent, helpFile);
         button.addSelectionListener(listener);
         Image helpImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);

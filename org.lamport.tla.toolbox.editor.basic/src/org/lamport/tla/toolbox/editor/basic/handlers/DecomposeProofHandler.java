@@ -135,8 +135,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.AbstractSet;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -195,6 +198,8 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.AssumeProveNode;
 import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
@@ -375,6 +380,18 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * have enabled actions.
      */
     private boolean assumeHasChanged = false ;  
+    
+    /** 
+     * The set of Ids of user-defined operations whose definitions 
+     * were expanded in decomposing the assumptions.
+     */
+    private HashSet<String> assumeDefinitions = new HashSet<String> ();
+    
+    /** 
+     * The set of Ids of user-defined operations whose definitions 
+     * were expanded in decomposing the goal.
+     */
+    private HashSet<String> goalDefinitions = new HashSet<String> ();
 
     /****************************************
      * Top Menu buttons.
@@ -445,7 +462,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * @return
      * @throws ExecutionException
      */
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object testExecute(ExecutionEvent event) throws ExecutionException {
         /**
          * TESTING STUFF
          */
@@ -526,7 +543,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      * ExecutionEvent)
      */
-    public Object realExecute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
 
         /******************************************************************
          * Perform various checks to see if the command should be
@@ -731,7 +748,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                     return null;
                 } 
                 assumes.add(assump[i]);
-                NodeRepresentation nodeRep = stepRep.subNode(assump[i], assumeReps, null) ;
+                NodeRepresentation nodeRep = stepRep.subNodeRep(assump[i], assumeReps, null) ;
                 if (nodeRep.nodeType == NodeRepresentation.NEW_NODE) {
                     Location loc = nodeRep.semanticNode.stn.getLocation() ;
                     if (loc.beginLine() == loc.endLine()) {
@@ -748,7 +765,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 assumeReps.add(nodeRep);
                 
                 goal = (OpApplNode) ((AssumeProveNode) thm).getProve();
-                goalRep = stepRep.subNode(goal, null, null );
+                goalRep = stepRep.subNodeRep(goal, null, null );
             }
             
         } else {
@@ -775,8 +792,14 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                         "Cannot decompose this kind of step.");
                 return null;
             }
-            goalRep = stepRep.subNode(goal, null, null);
+            goalRep = stepRep.subNodeRep(goal, null, null);
         }
+if (goalRep.decomposition == null) {
+    System.out.println("null decomposition");
+} else {
+    System.out.println("goalRep.decomposition:");
+    System.out.println(goalRep.decomposition.toString());
+}
 
               
         
@@ -1384,6 +1407,29 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          */
         boolean onSameLineAsNext = false ;
         
+        /**
+         * True iff the formula represented by this node has an implicit prime
+         * that does not appear in the semanticNode or nodeText fields.
+         */
+        boolean isPrimed = false ;
+        
+        /**
+         * If this is true, then the semanticNode field represents the expansion
+         * of the subexpression name that appears in the nodeText field.
+         */
+        boolean isSubexpressionName = false ;
+        
+        /**
+         * The formula represented by this node was obtained by expanding
+         * the definitions of all the identifiers in this array.
+         */
+        String[] expandedDefs = new String[0];
+        
+        /**
+         * Non-null iff the node can be decomposed as indicated by
+         * the Decomposition object.
+         */
+        Decomposition decomposition = null ;
 // The following commented-out state information is deducible from the
 //  handler object's state.
 //        /**
@@ -1404,15 +1450,155 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         /**
          * Create a NodeRepresentation for a subnode of this node.
          * 
-         * @param sn  A subnode of this.node.
+         * @param sn  The subnode
+         * @param vec The result's parentVector field.
+         * @param father The result's parentNode field.
          * @return
          */
-        NodeRepresentation subNode(SemanticNode sn, Vector <NodeRepresentation> vec,
+        NodeRepresentation subNodeRep(SemanticNode sn, Vector <NodeRepresentation> vec,
                                      NodeRepresentation father) {
             
             NodeRepresentation result = new NodeRepresentation() ;
             result.parentNode = father;
             result.parentVector = vec ;
+            result.semanticNode = sn ;
+            
+/***** REMOVE TEXT BELOW AFTER TESTING 
+            
+            // set beginId to be the index in this.nodeText representing the
+            // first line of the source of SemanticNode node sn.
+            int beginIdx =  getBeginLine(sn) - getBeginLine(this.semanticNode) ;
+            result.nodeText = new String[getEndLine(sn) - getBeginLine(sn)+1];
+            result.mapping = new Vector[result.nodeText.length] ;
+            // Set beginCol to the column of the first token of sn.
+            // Set beginPos to the position of the first token of sn in the string
+            // this.result.nodeText[beginLine - 1] containing its text.
+            int beginCol = sn.stn.getLocation().beginColumn() ;
+            int beginPos = colToLoc(beginCol, this.mapping[beginIdx]);
+            
+            //
+            // Set the nodeText and mapping fields.
+            //
+            // Set result.nodeText[0] to the string containing the first
+            // token and everything to its right in this.nodeText[...].
+            // Set result.mapping[0] to the MappingVector obtained by
+            // subtracting beginPos from all increments.           
+            result.nodeText[0] = this.nodeText[beginIdx].substring(beginPos);
+            Vector<MappingPair> mv = cloneMappingPairVector(this.mapping[beginIdx]) ;
+            // Since we just removed beginPos characters to the left of beginCol, we should 
+            // execute 
+            adjustMappingPairVector(beginCol, -beginPos, mv) ;
+            // but we'll do the adjustment by -beginPos later.
+            result.mapping[0] = mv ;
+           
+            // Set result.nodeText[i] to a copy of this.nodeText[i+...] 
+            //   and result.mapping[i] to a copy of this.mapping[i] for 
+            //   all other lines of the subnode's text.
+            // Set minPos = the minimum of beginPos and the smallest number
+            //   of leading spaces of any subsequent line of result.nodeText
+            int minPos = beginPos ;
+            for (int i = 1; i < result.mapping.length; i++) {
+                result.nodeText[i] = this.nodeText[i + beginIdx] ;
+                minPos = Math.min(minPos, StringHelper.leadingSpaces(result.nodeText[i]));
+                result.mapping[i] = new Vector<MappingPair>() ;
+                for (int j = 0; j < this.mapping[i + beginIdx].size(); j++) {
+                    result.mapping[i].add(this.mapping[i + beginIdx].elementAt(j).clone());
+                }
+            }
+            
+            // Remove the part of the last line of result.nodeText that doesn't
+            // belong to the subnode
+            result.nodeText[result.nodeText.length - 1] =
+                   result.nodeText[result.nodeText.length - 1].
+                     substring(0, colToLoc(sn.stn.getLocation().endColumn()+1, 
+                               result.mapping[result.mapping.length-1])) ;
+            
+            // Add any necessary space at the beginning of result.nodeText[0]
+            int spacesAddedToFirstLine = beginPos - minPos;
+            result.nodeText[0] = StringHelper.copyString(" ", spacesAddedToFirstLine)
+                              + result.nodeText[0];
+            // Since we now have added spacesAddedToFirstLine, we  execute
+            adjustMappingPairVector(beginCol, -spacesAddedToFirstLine, result.mapping[0]) ;
+
+            // Trim any necessary space from the beginning of result.nodeText[i] for i > 0.
+            for (int i = 1; i < result.nodeText.length; i++) {
+                result.nodeText[i] = result.nodeText[i].substring(minPos);
+                adjustMappingPairVector(1, minPos, result.mapping[i]) ;
+            }
+
+REMOVE TEXT ABOVE AFTER TESTING *******/
+            
+            NodeTextRep nodeText = this.subNodeText(sn);
+            result.nodeText = nodeText.nodeText;
+            result.mapping = nodeText.mapping;
+            
+            /*
+             *  Compute the type and subType fields.
+             */
+            switch (sn.getKind()){
+            case ASTConstants.OpApplKind:
+                result.nodeType = EXPR_NODE ;
+                /* 
+                 * Compute subType field.
+                 */
+                // Set nd to the expression we should look at to compute
+                // the subType, which is the expression obtained from sn
+                // by removing an application of ' and expanding user definitions.
+//                OpApplNode nd = exposeRelevantExpr((OpApplNode) sn) ;
+//                
+//                UniqueString opId = nd.getOperator().getName();
+//                result.nodeSubtype = operatorNameToNodeSubtype(opId);
+                
+                result.decomposition = decompose(result) ;
+                if (result.decomposition == null) {
+                    result.nodeSubtype = OTHER_TYPE;
+                } else {
+                    result.nodeSubtype = result.decomposition.type;
+                }
+//                String opName = opId.toString();
+//                // Note \: experimentation reveals that 
+//                //  \lor and \/ both yield operator name \lor, and
+//                // \land and /\ both yield operator name \land
+//                if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
+//                        result.nodeSubtype = AND_TYPE;
+//                } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
+//                        result.nodeSubtype = OR_TYPE;
+//                } else if (opName.equals("=>")) {
+//                        result.nodeSubtype = IMPLIES_TYPE;
+//                } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
+//                        result.nodeSubtype = FORALL_TYPE;
+//                } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
+//                        result.nodeSubtype = EXISTS_TYPE;
+//                } else if (opId == ASTConstants.OP_sa) {
+//                        result.nodeSubtype = SQSUB_TYPE;
+//                } else {
+//                        result.nodeSubtype = OTHER_TYPE;
+//                }
+                break;
+            case ASTConstants.NewSymbKind:
+                result.nodeType = NEW_NODE;
+                break;
+            case ASTConstants.LeafProofKind:
+                result.nodeType = PROOF_NODE;
+                break;
+            default:
+                result.nodeType = OTHER_NODE ;
+            }
+            
+//            OpDefNode odn = new OpDefNode(UniqueString.uniqueStringOf("foo")) ;
+//            boolean isBuiltIn = odn.getKind() == ASTConstants.BuiltInKind ;
+            return result ;
+        }
+        
+        /**
+         * This is like subNodeRep except it returns only the fields contained
+         * in a NodeText.  It is called by subNodeRep to set those fields.
+         * 
+         * @param sn
+         * @return
+         */
+        NodeTextRep subNodeText(SemanticNode sn) {
+            NodeTextRep result = new NodeTextRep();
             result.semanticNode = sn ;
             // set beginId to be the index in this.nodeText representing the
             // first line of the source of SemanticNode node sn.
@@ -1474,56 +1660,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 result.nodeText[i] = result.nodeText[i].substring(minPos);
                 adjustMappingPairVector(1, minPos, result.mapping[i]) ;
             }
-
-            
-            /*
-             *  Compute the type and subType fields.
-             */
-            switch (sn.getKind()){
-            case ASTConstants.OpApplKind:
-                result.nodeType = EXPR_NODE ;
-                /* 
-                 * Compute subType field.
-                 */
-                // Set nd to the expression we should look at to compute
-                // the subType, which is the expression obtained from sn
-                // by removing an application of ' and expanding user definitions.
-                OpApplNode nd = exposeRelevantExpr((OpApplNode) sn) ;
-                
-                UniqueString opId = nd.getOperator().getName();
-                String opName = opId.toString();
-                // Note \: experimentation revelas that 
-                //  \lor and \/ both yield operator name \lor, and
-                // \land and /\ both yield operator name \land
-                if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
-                        result.nodeSubtype = AND_TYPE;
-                } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
-                        result.nodeSubtype = OR_TYPE;
-                } else if (opName.equals("=>")) {
-                        result.nodeSubtype = IMPLIES_TYPE;
-                } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
-                        result.nodeSubtype = FORALL_TYPE;
-                } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
-                        result.nodeSubtype = EXISTS_TYPE;
-                } else if (opId == ASTConstants.OP_sa) {
-                        result.nodeSubtype = SQSUB_TYPE;
-                } else {
-                        result.nodeSubtype = OTHER_TYPE;
-                }
-                break;
-            case ASTConstants.NewSymbKind:
-                result.nodeType = NEW_NODE;
-                break;
-            case ASTConstants.LeafProofKind:
-                result.nodeType = PROOF_NODE;
-                break;
-            default:
-                result.nodeType = OTHER_NODE ;
-            }
-            
-//            OpDefNode odn = new OpDefNode(UniqueString.uniqueStringOf("foo")) ;
-//            boolean isBuiltIn = odn.getKind() == ASTConstants.BuiltInKind ;
-            return result ;
+            return result;
         }
         
         
@@ -1615,6 +1752,400 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     }
     
     /**
+     * A NodeTextRep object contains only the semanticNode, nodeText, and mapping
+     * fields of a NodeRepresentation object.  I should probably refactor
+     * things so that instead of having those three fields, a NodeRepresentation
+     * object contains a NodeText field
+     */
+    static class NodeTextRep {
+        SemanticNode semanticNode ;
+        String[] nodeText ;
+        Vector<MappingPair>[] mapping ;
+        
+        public String toString() {
+            String val = "" ;
+            val = val + "nodeText: |=\n" + stringArrayToString(nodeText) + "=|" ;
+            for (int i = 0; i < mapping.length; i++) {
+                val = val + "\n" + i + ":" ;
+                for (int j = 0; j < mapping[i].size(); j++) {
+                    val = val + "  " + mapping[i].elementAt(j).toString() ;
+                }
+            }
+            
+            return val ;
+        }
+    }
+    /**
+     * A Decomposition object describes the possible decomposition of
+     * an assumption or goal.
+     * 
+     * @author lamport
+     *
+     */
+    static class Decomposition {
+        /**
+         * The type of decomposition.  Its value is any of the first six 
+         * possible nodeSubtype values of a NodeRepresentation object.
+         * This is redundant information, since for any NodeRepresentation
+         * object nd, nd.nodeSubtype should equal nd.decomposition.type
+         * if nd.decomposition is non-null. 
+         */
+        int type ;
+        
+        /**
+         * If non-null, then the decomposition is to be performed by
+         * expanding the definition of this (user-defined) symbol.
+         */
+        String definedOp = null ;
+        
+        /**
+         * If non-null, then this is the NodeTextRep representing the operator use
+         * that is to be expanded.  E.g., it could represent source text such as
+         * 
+         *     Foo(a + b,
+         *         c)
+         */
+        NodeTextRep definedOpRep = null ;
+        
+        /**
+         * If definedOp is not null, then this is the name of the
+         * module containing the node's definition.
+         */
+        String moduleName = null;
+        
+        /**
+         * The nodes into which the assumption or goal is to be decomposed.
+         */
+        Vector<SemanticNode> children = new Vector<SemanticNode>() ;
+        
+        /**
+         * If definedOp is the string "foo", then children.elementAt(i)
+         * has the name "foo" + namePath.elementAt(i).
+         * 
+         */
+        Vector<String> namePath = new Vector<String>() ;
+            
+        
+        /** 
+         * If this is a \A or \E decomposition, then this is the list
+         * of bound identifiers.
+         */
+        Vector<FormalParamNode> quantIds = null ;
+        
+        /**  
+         * If this is a \A or \E decomposition for a bounded quantifier (like
+         *   \A x \in S), then this is the list of bound identifiers.             
+         */
+        Vector<ExprNode> quantBounds = null ;
+        
+        /** True iff the Decomposition's children and  quantBounds should be primed. */
+        boolean primed = false ;
+       
+        public String toString() {
+            String val = "type: " + nodeSubTypeToString(this.type);
+            if (definedOp != null) {
+                val = val + "\ndefinedOp: " + this.definedOp;
+                val = val + "\ndefinedOpRep: " + definedOpRep.toString();
+            }
+            val = val + "\nmoduleName: " + this.moduleName;
+            val = val + "\nchildren: ";
+            for (int i = 0; i < this.children.size(); i++) {
+                val = val + "\nchildren[" + i + "]:\n " + 
+                         children.elementAt(i).toString() ;
+            }
+//            val = val + "\nchildren: " + this.children.toString();
+            val = val + "\nnamePath: " + this.namePath.toString();
+            if (quantIds != null) {
+                val = val + "\nquantIds: " ;
+                for (int i = 0; i < this.quantIds.size(); i++) {
+                   if (i!=0) {
+                       val = val + ", ";
+                   }
+                   val = val + quantIds.elementAt(i).getName().toString();
+                }
+            }
+            if (quantBounds != null) {
+                for (int i = 0; i < this.quantBounds.size(); i++) {
+                    val = val + "\nquantBounds[" + i + "]:\n " + 
+                             quantBounds.elementAt(i).toString() ;
+                }
+            }    
+            val = val + "\nprimed: " + primed ;
+            return val;
+        }
+    }
+    
+    /**
+     * Converts a NodeRepresentation subType to a string.  Used
+     * for debugging.
+     * @param subType
+     * @return
+     */
+    public static String nodeSubTypeToString(int subType) {
+        String val = "?";
+        switch (subType) {
+        case NodeRepresentation.AND_TYPE:
+            val = "AND_TYPE";
+            break;
+        case NodeRepresentation.OR_TYPE:
+            val = "OR_TYPE";
+            break;
+        case NodeRepresentation.IMPLIES_TYPE:
+            val = "IMPLIES_TYPE";
+            break;
+        case NodeRepresentation.FORALL_TYPE:
+            val = "FORALL_TYPE";
+            break;
+        case NodeRepresentation.EXISTS_TYPE:
+            val = "EXISTS_TYPE";
+            break;
+        case NodeRepresentation.SQSUB_TYPE:
+            val = "SQSUB_TYPE";
+            break;
+        case NodeRepresentation.OTHER_TYPE:
+            val = "OTHER_TYPE";
+            break;
+        }
+        return val;
+    }
+    
+    /**
+     * Returns the NodeRepresentation subtype for an OpApplNode whose
+     * operator name is opId.
+     * 
+     * @param opId
+     * @return
+     */
+    private static int operatorNameToNodeSubtype(UniqueString opId) {
+        String opName = opId.toString();
+        if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
+            return NodeRepresentation.AND_TYPE;
+        } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
+            return NodeRepresentation.OR_TYPE;
+        } else if (opName.equals("=>")) {
+            return NodeRepresentation.IMPLIES_TYPE;
+        } else if ((opId == ASTConstants.OP_bf)
+                || (opId == ASTConstants.OP_uf)) {
+            return NodeRepresentation.FORALL_TYPE;
+        } else if ((opId == ASTConstants.OP_be)
+                || (opId == ASTConstants.OP_ue)) {
+            return NodeRepresentation.EXISTS_TYPE;
+        } else if (opId == ASTConstants.OP_sa) {
+            return NodeRepresentation.SQSUB_TYPE;
+        } else {
+            return NodeRepresentation.OTHER_TYPE;
+        }
+    }
+    
+    /**
+     * 
+     * @param sn
+     * @return
+     */
+    private static Decomposition decompose(NodeRepresentation nodeRep) {
+        SemanticNode sn = nodeRep.semanticNode ;
+        if (!(sn instanceof OpApplNode)) {
+            return null;
+        }
+
+        OpApplNode node = (OpApplNode) sn;
+        OpApplNode unprimedNode = node ;
+        
+        Decomposition result = new Decomposition();
+
+        // Check if primed expression.
+        if (node.getOperator().getName() == ASTConstants.OP_prime) {
+            node = (OpApplNode) node.getArgs()[0];
+            unprimedNode = node ;
+            result.primed = true;
+        }
+
+        // See if this is an operator definition we can handle
+        if (node.getOperator().getKind() == ASTConstants.UserDefinedOpKind) {
+            String operatorName = ((OpDefNode) node.getOperator()).getName()
+                    .toString();
+
+            ExprNode opDef = ((OpDefNode) node.getOperator()).getBody();
+            if (opDef instanceof OpApplNode) {
+                // This is a user-defined operator. We can handle it iff
+                // the arguments are all single-line expressions.
+                ExprOrOpArgNode[] args = node.getArgs();
+                for (int i = 0; i < args.length; i++) {
+                    SyntaxTreeNode stn = (SyntaxTreeNode) args[i].stn;
+                    Location stnLoc = stn.getLocation();
+                    if (stnLoc.beginLine() != stnLoc.endLine()) {
+                        return null;
+                    }
+                }
+                result.definedOpRep = nodeRep.subNodeText(unprimedNode) ;
+                node = (OpApplNode) opDef;
+                result.definedOp = operatorName;
+                result.moduleName = ((SyntaxTreeNode) node.stn).getLocation()
+                        .source();
+                System.out.println(operatorName + " defined in module "
+                        + result.moduleName);
+            } else {
+                // This means that the definition is not an OpApplNode, which
+                // I don't think is possible.
+                return null;
+            }
+        }
+        
+        // Indicate exactly how it needs to be decomposed by setting
+        // the type field and also:
+        //   - setting isAndOrOr true iff this is an infix /\ or \/
+        //   - setting isJunction true iff this is a bulleted disjunction 
+        //     or conjunction.
+        //   - setting isQuantifier true iff this is a \A or \E.
+        //   - setting isBoundedQuantifier iff isQuantifier true and it's
+        //     a boundedquantifier.
+        // Return null if it can't be decomposed.
+        boolean isAndOrOr = false ;
+        boolean isJunction = false ;
+        boolean isQuantifier = false ;
+        boolean isBoundedQuantifier = false ;
+        UniqueString opId = ((OpDefNode) node.getOperator()) .getName();
+        String opName = opId.toString();
+        // Note: experimentation reveals that /\ and \/ are parsed
+        // with operator names "\\land" and "\\lor".
+        if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
+            result.type = NodeRepresentation.AND_TYPE;
+            if (opId == ASTConstants.OP_cl) {
+                isJunction = true;
+            } else {
+                isAndOrOr = true;
+            }
+        } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
+            result.type = NodeRepresentation.OR_TYPE;
+            if (opId == ASTConstants.OP_dl) {
+                isJunction = true ;
+            }  else {
+                isAndOrOr = true;
+            }
+        } else if (opName.equals("=>")) {
+            result.type = NodeRepresentation.IMPLIES_TYPE;
+        } else if ((opId == ASTConstants.OP_bf)
+                || (opId == ASTConstants.OP_uf)) {
+            result.type = NodeRepresentation.FORALL_TYPE;
+            isQuantifier = true;
+            if (opId == ASTConstants.OP_bf) {
+                isBoundedQuantifier = true ;
+            }
+        } else if ((opId == ASTConstants.OP_be)
+                || (opId == ASTConstants.OP_ue)) {
+            result.type = NodeRepresentation.EXISTS_TYPE;
+            isQuantifier = true;
+            if (opId == ASTConstants.OP_be) {
+                isBoundedQuantifier = true ;
+            }
+        } else if (opId == ASTConstants.OP_sa) {
+            result.type = NodeRepresentation.SQSUB_TYPE;
+        } else {
+            return null ;
+        }
+        
+        /**
+         * Now set result.children and result.namePath.
+         */
+        if (isAndOrOr) {
+            processAndOrOr(result, node, "", opName) ;
+        } else if (isJunction) {
+            SemanticNode[] juncts = node.getArgs();
+            for (int i = 0; i < juncts.length; i++) {
+                result.children.add(juncts[i]);
+                result.namePath.add("!" + (i+1));
+            }
+        } else if (isQuantifier) {
+            // There is just a single child.  Set it, and
+            // set namePath to its namePath entry.
+            result.children.add(node.getArgs()[0]);
+            String namePath = "!(" ;
+            result.quantIds = new Vector<FormalParamNode>();
+            if (isBoundedQuantifier) {
+                // Bounded Quantifier
+                result.quantBounds = new Vector<ExprNode>() ;
+                FormalParamNode[][] quantIdsArray = node.getBdedQuantSymbolLists() ;
+                ExprNode[] quantBounds = node.getBdedQuantBounds();
+                for (int i = 0; i < quantIdsArray.length; i++) {
+                    // We don't handle a quantifier bound of the form <<x, y>> \in S
+                    if (node.isBdedQuantATuple()[i]) {
+                        return null;
+                    }
+                    FormalParamNode[] quantIds = quantIdsArray[i];
+                    for (int j = 0; j < quantIds.length; j++) {
+                        result.quantIds.add(quantIds[j]) ;
+                        // Note that we have to repeat the quantifier bound
+                        // for x and y in \E x, y \in S : ...
+                        result.quantBounds.add(quantBounds[i]) ;
+                        if (!((i==0) && (j==0))) {
+                            namePath = namePath + ",";
+                        }
+                        namePath = namePath + quantIds[j].getName().toString();
+                    }
+                }
+            } else {
+                // Unbounded Quantifier
+                FormalParamNode[] quantIds = node.getUnbdedQuantSymbols() ;
+                for (int i = 0; i < quantIds.length; i++) {
+                    result.quantIds.add(quantIds[i]) ;
+                    if (i != 0) {
+                        namePath = namePath + "," ;
+                    }
+                    namePath = namePath + quantIds[i].getName().toString();
+                }
+                
+            }
+            namePath = namePath + ")";
+            result.namePath.add(namePath);
+            
+        } else if((result.type == NodeRepresentation.IMPLIES_TYPE) ||
+                (result.type == NodeRepresentation.SQSUB_TYPE) ){
+            result.children.add(node.getArgs()[0]) ;
+            result.namePath.add("!1");
+            result.children.add(node.getArgs()[1]) ;
+            result.namePath.add("!2");
+        }
+        return result;
+    }
+    
+    /**
+     * Recursive procedure to set the children and namePath fields of
+     * a Decomposition object for an infix /\ or \/ .  It is based on
+     * the observation that A /\ B /\ C is parsed as (A /\ B) /\ C
+     * (and similarly for \/).  It does the obvious depth-first dive
+     * into the left operand, adding the entire node if it's not
+     * an op operation.
+     * 
+     * @param decomp   The Decomposition object whose fields are being set.
+     * @param node The node being decomposed.
+     * @param namePathPrefix The prefix to be prepended to the constructed namePath
+     *        entry.
+     * @param op either "\\lor" or "\\land".
+     */
+    private static void processAndOrOr(Decomposition decomp, SemanticNode node,
+            String namePathPrefix, String op) {
+        if (! (node instanceof OpApplNode)) {
+            decomp.children.add(node) ;
+            decomp.namePath.add(namePathPrefix);
+            return;
+        }
+        OpApplNode aonode = (OpApplNode) node ;
+        UniqueString opId = ((OpDefNode) aonode.getOperator()) .getName();
+        String opName = opId.toString();
+        
+        if (!opName.equals(opName)) {
+            decomp.children.add(node) ;
+            decomp.namePath.add(namePathPrefix);
+            return;
+        }
+        // This is an op infix operation, so recurse.
+        processAndOrOr(decomp, aonode.getArgs()[0], namePathPrefix + "!1", op);
+        decomp.children.add(aonode.getArgs()[1]) ;
+        decomp.namePath.add(namePathPrefix + "!2");
+        return;
+    }
+    
+    /**
      * A MappingPair contains two int-valued fields : `col' and `inc'.
      *  
      * A line-mapping is a mapping from column-numbers in a line of
@@ -1699,7 +2230,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         return result ;
     }
     
-    public String stringArrayToString(String[] A) {
+    public static String stringArrayToString(String[] A) {
         if (A.length == 0) {
             return A[0] ;
         }
