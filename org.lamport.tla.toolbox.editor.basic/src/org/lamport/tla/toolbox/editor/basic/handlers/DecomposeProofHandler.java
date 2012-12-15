@@ -1653,12 +1653,12 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
             result.nodeText[0] = StringHelper.copyString(" ", spacesAddedToFirstLine)
                               + result.nodeText[0];
             // Since we now have added spacesAddedToFirstLine, we  execute
-            adjustMappingPairVector(beginCol, -spacesAddedToFirstLine, result.mapping[0]) ;
+            adjustMappingPairVector(beginCol, spacesAddedToFirstLine, result.mapping[0]) ;
 
             // Trim any necessary space from the beginning of result.nodeText[i] for i > 0.
             for (int i = 1; i < result.nodeText.length; i++) {
                 result.nodeText[i] = result.nodeText[i].substring(minPos);
-                adjustMappingPairVector(1, minPos, result.mapping[i]) ;
+                adjustMappingPairVector(1, -minPos, result.mapping[i]) ;
             }
             return result;
         }
