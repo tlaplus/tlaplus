@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.lamport.tla.toolbox.util;
 
 import java.io.File;
@@ -30,6 +27,9 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
 /**
+ * This class implements a help button that takes the user to a specified location
+ * in the help system's html files.  The only part of this class that is used
+ * externally is the helpButton command.
  * 
  * Implemented by Leslie Lamport
  */
@@ -42,9 +42,36 @@ import org.osgi.framework.FrameworkUtil;
  *
  *   sudo apt-get install libwebkitgtk-1.0-0
  */
+
+/*
+ * To do:
+ * - Add a menu bar  to the HTML browser with back and forward buttons.  See:
+ * 
+ *    http://www.eclipse.org/articles/Article-SWT-browser-widget/browser.html
+ *    
+ * - Re-use the same browser window if it exists?  Or perhaps make that a
+ *   preference?
+ *   
+ * - Remember the previous size and location of the browser when raising
+ *   a new one.
+ */
+
+/**
+ * The constructor adds a help button to a specified Composite that goes
+ * to the help page specified by its String argument.
+ */
 public class HelpButton {
     public static String baseURL;
 
+    /**
+     * 
+     * @param parent    Where the button should be added.
+     * @param helpFile  The suffix of the URL of the help page, which follows
+     *                  .../org.lamport.tla.toolbox.doc/html/ -- for example,
+     *                  "model/overview-page.html#what-to-check" .             
+     * @return A Button that has been added to the Composite that, when clicked
+     *         raises a browser window on the specified help page URL.
+     */
     public static Button helpButton(Composite parent, String helpFile) {
         Button button = new Button(parent, SWT.NONE);
         HelpButtonListener listener = new HelpButtonListener(parent, helpFile);
