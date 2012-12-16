@@ -118,11 +118,12 @@ public class TLCServerThread extends IdThread {
 	 */
 	private URI uri;
 
-	public TLCServerThread(TLCWorkerRMI worker, TLCServer tlc, ExecutorService es, IBlockSelector aSelector) {
+	public TLCServerThread(TLCWorkerRMI worker, URI aURI, TLCServer tlc, ExecutorService es, IBlockSelector aSelector) {
 		super(COUNT++);
 		this.executorService = es;
 		this.tlcServer = tlc;
 		this.selector = aSelector;
+		this.uri = aURI;
 
 		// Create Timer early to avoid NPE in handleRemoteWorkerLost (it tries to cancel the timer)
 		keepAliveTimer = new Timer("TLCWorker KeepAlive Timer ["
@@ -132,16 +133,9 @@ public class TLCServerThread extends IdThread {
 		// is to measure the RTT spend to transfer states back and forth.
 		this.worker = new TLCWorkerSmartProxy(worker);
 
-		// Get the remote worker's hostname and update this thread name with it.
-		// Additionally prefix the thread name with a fixed string and a counter.
+		// Prefix the thread name with a fixed string and a counter.
 		// This part is used by the external Munin based statistics software to
 		// gather thread contention stats.
-		try {
-			this.uri = worker.getURI();
-		} catch (RemoteException e) {
-			MP.printError(EC.GENERAL, e);
-			handleRemoteWorkerLost(null);
-		}
 		final String i = String.format("%03d", myGetId());
 		setName(TLCServer.THREAD_NAME_PREFIX + i + "-[" + uri.toASCIIString() + "]");
 		

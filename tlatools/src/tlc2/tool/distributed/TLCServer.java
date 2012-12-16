@@ -238,7 +238,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		stateQueue.resumeAllStuck();
 		
 		// create new server thread for given worker
-		final TLCServerThread thread = new TLCServerThread(worker, this, es, blockSelector);
+		final TLCServerThread thread = new TLCServerThread(worker, worker.getURI(), this, es, blockSelector);
 		threadsToWorkers.put(thread, worker);
 		thread.start();
 
