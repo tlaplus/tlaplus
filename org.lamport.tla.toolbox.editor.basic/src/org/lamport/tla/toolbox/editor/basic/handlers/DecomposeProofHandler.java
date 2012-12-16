@@ -208,6 +208,7 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
 import util.UniqueString;
@@ -217,7 +218,18 @@ import util.UniqueString;
  * 
  *   For expanding a definition that comes from a different file, use subexpression naming.
  *   
- *   When expanding a definition like Foo(Bar(a)), the "Bar(a)" is treated lik
+ *   When expanding a definition like Foo(exp), the expression exp is treated as an 
+ *   uninterpreted string.  Thus, if Id(x) == x , then an AND-split cannot be done 
+ *   on Id(A /\ B) 
+ *   
+ *   What should be done about splitting formulas with LET-INs?
+ *   
+ *   Note that decomposition has to do renaming of bound variables in two cases:
+ *    - When a bound variable in a \E is split out to a NEW variable, it may
+ *      conflict with bound variables or NEW variables below it in the obligation.
+ *    - When a definition is expanded, its bound variables may conflict with
+ *      identifiers that are defined or declared in the current context.
+ *   
  * @author lamport
  * 
  */
@@ -344,7 +356,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     /**
      * True iff some user action was performed that changed the obligation.
      */
-    boolean changed;
+    boolean hasChanged;
     
     /**
      * If the user has done an \E split or an OR split on an assumption,
@@ -358,8 +370,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * another AND split can be performed only on one of the results of
      * that split.  The indices of the nodes in <code>assumes</code> and
      * <code>assumeReps</code> resulting from AND splits range from
-     * andSplitBegin through andSplitEnd.  If no AND split has been performed,
-     * then andSplitBegin and andSplitEnd equal -1.
+     * andSplitBegin through (including) andSplitEnd.  If no AND split has 
+     * been performed, then andSplitBegin and andSplitEnd equal -1.
      * 
      */
     int andSplitBegin;
@@ -368,8 +380,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     /**
      * True iff the user has done something to change goal and/or set
      * of assumptions.  (This is used to disable the Replace option.)
+     * 
+     * Redundant.
      */
-    private boolean hasChanged = false ;
+    // private boolean hasChanged = false ;
     
     /**
      * True iff an action has been performed on an assumption--either
@@ -597,7 +611,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         /**********************************************
          * Initialize the state of the decomposition.
          **********************************************/
-        changed = false ;
+        hasChanged = false ;
         chosenSplit = -1;
         andSplitBegin = -1;
         andSplitEnd = -1 ;
@@ -748,7 +762,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                     return null;
                 } 
                 assumes.add(assump[i]);
-                NodeRepresentation nodeRep = stepRep.subNodeRep(assump[i], assumeReps, null) ;
+                NodeRepresentation nodeRep = stepRep.subNodeRep(assump[i], assumeReps, null, null) ;
                 if (nodeRep.nodeType == NodeRepresentation.NEW_NODE) {
                     Location loc = nodeRep.semanticNode.stn.getLocation() ;
                     if (loc.beginLine() == loc.endLine()) {
@@ -765,7 +779,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 assumeReps.add(nodeRep);
                 
                 goal = (OpApplNode) ((AssumeProveNode) thm).getProve();
-                goalRep = stepRep.subNodeRep(goal, null, null );
+                goalRep = stepRep.subNodeRep(goal, null, null, null );
             }
             
         } else {
@@ -792,7 +806,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                         "Cannot decompose this kind of step.");
                 return null;
             }
-            goalRep = stepRep.subNodeRep(goal, null, null);
+            goalRep = stepRep.subNodeRep(goal, null, null, null);
         }
 if (goalRep.decomposition == null) {
     System.out.println("null decomposition");
@@ -823,12 +837,16 @@ if (goalRep.decomposition == null) {
     }
     
 
-    // Note: It looks like horizontalSpan doesn't apply to a Label or a Button
-    // Probably have to put the label or Button inside a composite to do that.
-
+    // Note: Experimentation seems to show that horizontalSpan doesn't apply to a Label 
+    // or a Button, so I've been putting the Label or Button inside a composite to do that.
     private void raiseWindow(String windowTitle) {
         // for testing
         // topshell = the Toolbox's shell
+        if ((windowShell != null) && (!windowShell.isDisposed())) {
+            location = windowShell.getLocation() ;
+            windowShell.close();
+            windowShell.dispose();
+        }
         Shell topshell = UIHelper.getShellProvider().getShell() ;
         windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
         windowShell.setText(windowTitle) ;
@@ -854,7 +872,7 @@ if (goalRep.decomposition == null) {
 //        setupMenuButton(proveButton, PROVE_BUTTON, "Prove") ;
         Button replaceButton = new Button(topMenu, SWT.PUSH) ;
         setupMenuButton(replaceButton, TEST_BUTTON, "Replace Step") ;
-        replaceButton.setEnabled(changed && (chosenSplit == -1) && (andSplitEnd == -1)) ;
+        replaceButton.setEnabled(hasChanged && (chosenSplit == -1) && (andSplitEnd == -1)) ;
         
         // Display checkbox to choose how to write proof.
         useSufficesButton = new Button(topMenu, SWT.CHECK);
@@ -1002,6 +1020,7 @@ if (goalRep.decomposition == null) {
                 // Add arrow buttons if necessary
                 if ((chosenSplit == -1) && (andSplitBegin <= i) && (i <= andSplitEnd)) {
                     Button arrowButton = new Button(comp, SWT.ARROW | SWT.UP);
+                    arrowButton.addSelectionListener(new ArrowSelectionListener (i, SWT.UP, this));
                     gridData = new GridData();
                     gridData.verticalAlignment = SWT.TOP;
                     arrowButton.setLayoutData(gridData);
@@ -1009,6 +1028,8 @@ if (goalRep.decomposition == null) {
                         arrowButton.setEnabled(false);
                     }
                     arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
+                    arrowButton.addSelectionListener(new ArrowSelectionListener (i, SWT.DOWN, this));
+                    
                     gridData = new GridData();
                     gridData.verticalAlignment = SWT.TOP;
                     arrowButton.setLayoutData(gridData);
@@ -1206,32 +1227,266 @@ if (goalRep.decomposition == null) {
      * The action-button handlers
      ****************************************************************************/
     
+    /**
+     * The /\ action, both for a goal (which generates the proof) and
+     * for an assumption (which splits the assumption).  
+     * 
+     * Precondition: if this is an AND-split of assumption assumeReps(i),
+     * then either andSplitBegin = -1 or andSplitBegin \leq i \leq andSplitEnd.
+     * 
+     * @param nodeRep
+     */
     void andAction(NodeRepresentation nodeRep) {
-       boolean isPrimed = false;
-       boolean defExpanded = false;
-       /**
-        * Set conjuncts to the vector of conjunctions.
-        */
-       Vector<OpApplNode> conjunctions = new Vector<OpApplNode> () ;
-       if (nodeRep.parentVector == null) {
-           /**
-            * This is a "prove by AND-split" operation.
-            */
-           // not yet implemented
-           return ;
-       } else {
-           /**
-            * This is an AND-SPLIT of an assumption, so nodeRep is assumeReps(i) 
-            * node, and parentNode = null.  We set idx to i.
-            */
-           int idx = nodeRep.getParentIndex() ;
-           
-           
-           
-       }
-       
+        boolean isPrimed = false;
+        boolean defExpanded = false;
+        /**
+         * Set conjuncts to the vector of conjunctions.
+         */
+        Vector<OpApplNode> conjunctions = new Vector<OpApplNode>();
+        if (nodeRep.parentVector == null) {
+            /**
+             * This is a "prove by AND-split" operation.
+             */
+            // not yet implemented
+            return;
+        } else {
+            /**
+             * This is an AND-SPLIT of an assumption, so nodeRep equals
+             * assumeReps(i) for some i and parentNode = null. We set idx to i,
+             * and we set decomp to the Decomposition object.
+             * 
+             */
+            int idx = nodeRep.getParentIndex();
+            Decomposition decomp = nodeRep.decomposition;
+
+            // Modify hasChanged, assumeHasChanged, and assumeDefinitions.
+            hasChanged = true;
+            assumeHasChanged = true;
+            if (decomp.definedOp != null) {
+                assumeDefinitions.add(decomp.definedOp);
+            }
+
+            // Remove this assumption and insert the split nodes in its place.
+            // Set newSemanticNodes to the vector of new assumptions.
+            Vector<SemanticNode> addedAssumps = decomp.children;
+            this.assumes.remove(idx);
+            this.assumeReps.remove(idx);
+            for (int i = 0; i < addedAssumps.size(); i++) {
+                // Call decompositionChildToNodeRep to construct the child's
+                // NodeRepresentation.
+                NodeRepresentation rep = decompositionChildToNodeRep(nodeRep,
+                        i, this.assumeReps, null);
+                this.assumes.add(idx + i, decomp.children.elementAt(i));
+                this.assumeReps.add(idx + i, rep);
+
+            }
+
+            // Update andSplitBegin & andSplitEnd. Recall the precondition.
+            if (andSplitBegin == -1) {
+                andSplitBegin = idx;
+                andSplitEnd = idx + addedAssumps.size() - 1;
+            } else {
+                andSplitEnd = andSplitEnd + addedAssumps.size() - 1;
+            }
+            raiseWindow("Decompose Proof");
+        }
+    }
+
+    /**
+     * Execute a \A split of the goal.
+     * 
+     * @param nodeRep
+     */
+    void forAllAction(NodeRepresentation nodeRep) {
+        boolean isPrimed = false;
+        boolean defExpanded = false;
+        Decomposition decomp = nodeRep.decomposition;
+        hasChanged = true;
+        if (decomp.definedOp != null) {
+            goalDefinitions.add(decomp.definedOp);
+        }
+        
+        QuantifierDecomposition qdc = decomposeQuantifier(nodeRep) ;
+        this.goalRep = qdc.body ;
+        this.goal = (OpApplNode) qdc.body.semanticNode ; 
+           // I don't think goal is ever used once we start decomposing things.
+        for (int i = 0; i < qdc.news.size(); i++) {
+            this.assumeReps.add(qdc.news.elementAt(i)) ;
+            this.assumes.add(qdc.news.elementAt(i).semanticNode) ;
+        }
+        raiseWindow("Decompose Proof");
+    }
+
+    /**
+     * Returns the NodeRepresentation for a child in nodeRep's decomposition when
+     * nodeRep's formula is decomposed.
+     * 
+     * @param nodeRep  The NodeRepresentation whose decomposition child's representation
+     *   is returned.
+     * @param i  The index of the child in nodeRep's decomposition's children vector.
+     * @param vec     The result's parentVector field.
+     * @param father The result's parentNode field.
+     * @return
+     */
+    NodeRepresentation decompositionChildToNodeRep(NodeRepresentation nodeRep, int i,  Vector <NodeRepresentation> vec,
+            NodeRepresentation father) {
+        // decomp is the nodeRep's decomposition
+        Decomposition decomp = nodeRep.decomposition;
+        
+        // Set newNodeText to be null if the result's nodeText is to be obtained
+        // from nodeText's semantic node.  Otherwise, set it to the appropriate
+        // subexpression name.
+        NodeTextRep newNodeText = null;
+        if (decomp.definedOp != null) {
+            newNodeText = appendToNodeText(decomp.definedOpRep,
+                    decomp.namePath.elementAt(i));
+        } else if (nodeRep.isSubexpressionName) {
+            newNodeText = appendToNodeText(new NodeTextRep(
+                    nodeRep.nodeText, nodeRep.mapping),
+                    decomp.namePath.elementAt(i));
+        }
+        
+        // Call subNodeRep to construct the result.
+        NodeRepresentation rep = nodeRep.subNodeRep(
+                decomp.children.elementAt(i), nodeRep.parentVector, nodeRep.parentNode,
+                newNodeText);
+        
+        // Set various fields whose values can be inferred from nodeRep and decomp.
+        rep.isCreated = true;
+        rep.isPrimed = rep.isPrimed || decomp.primed;
+        rep.isSubexpressionName = 
+                nodeRep.isSubexpressionName || (decomp.definedOp != null);        
+        return rep ;
     }
     
+    /**
+     * Since Java doesn't allow structs, this is a class whose sole purpose is
+     * to provide a return type for the following method.  Its fields are
+     * a vector of NodRepresentations that will be a vector of NEW nodes obtained from
+     * a quantified expression, and a NodeRepresentation obtained from the body
+     * of that expression.
+    */
+    static class QuantifierDecomposition {
+        Vector<NodeRepresentation> news ;
+        NodeRepresentation body ;
+    }
+    /**
+     * Returns the NodeRepresentations of the nodes forming the decomposition
+     * for a \A or \E split.  It assumes that the decomposition is
+     * a \A or \E decomposition, so its quantIds field is not null.
+     * The NodeRepresentations for the NEW assumptions are given a null
+     * semanticNode field, since I don't think that field is ever used once
+     * decomposition begins.
+     * 
+     * Must be enhanced to handle a decomposition that comes from a full expansion of
+     * a defined operator.
+     * 
+     * @param decomp
+     * @return
+     */
+    QuantifierDecomposition decomposeQuantifier(NodeRepresentation nodeRep) {
+        QuantifierDecomposition result = new QuantifierDecomposition();
+        
+        result.news  = new Vector<NodeRepresentation>() ;
+        Decomposition decomp = nodeRep.decomposition;
+        
+        // If this is within the subexpression-name expansion of a definition,
+        // set NodeTextRep to the NodeTextRep that is the name of the formula
+        // represented by nodeRep.
+        NodeTextRep newNodeText = null;
+        if (decomp.definedOp != null) {
+            newNodeText = decomp.definedOpRep ;
+        } else if (nodeRep.isSubexpressionName) {
+            newNodeText = new NodeTextRep(nodeRep.nodeText, nodeRep.mapping);
+        }
+        
+        // We first compute the vector of NEW assumptions
+        int lastLine = -1 ;
+        for (int i = 0; i < decomp.quantIds.size(); i++) {
+            // Loop invariant:
+            //  lastRow != -1 iff /\ i > 0 
+            //                    /\ \/ this is an unbounded quantifier
+            //                       \/ the i-1st NEW fits entirely on line lastLine
+            NodeRepresentation rep = new NodeRepresentation() ;
+            rep.semanticNode = null ;
+            rep.nodeType = NodeRepresentation.NEW_NODE;
+            rep.isCreated = true ;
+            rep.parentNode = nodeRep.parentNode ;
+            if (nodeRep.parentVector != null) {
+                rep.parentVector = nodeRep.parentVector ;
+            } else {
+                // nodeRep is the current goal and so the NEW assumptions
+                // will become top-level assumptions and rep.parentVector
+                // should be set to the DecomposeProofHandler's assumeRep
+                // vector. 
+                rep.parentVector = this.assumeReps ;
+            }
+            
+            // set id to "NEW" plus the bound identifier
+            NodeTextRep ntrep = new NodeTextRep() ;
+            String id = "NEW " + decomp.quantIds.elementAt(i).getName().toString();
+            
+            // beginLine is set to the line containing the source if there is
+            // no quantifier bound or the quantifier bound occupies a single line.
+            // Otherwise, it is set to -1.
+            int beginLine = ((SyntaxTreeNode) 
+                    decomp.quantIds.elementAt(i).stn).getLocation().beginLine();
+            if (decomp.quantBounds == null) {
+                // Set ntrep to a trivial NodeTextRep representing a 
+                // 1-line string with a standard mapping that should never
+                // be used.
+                ntrep.nodeText = new String[1] ;
+                ntrep.nodeText[0] = id;
+                ntrep.mapping = new Vector[1] ;
+                ntrep.mapping[0] = new Vector<MappingPair> ();
+                ntrep.mapping[0].addElement(new MappingPair(1, -1)) ;
+            } else {
+                // Set ntrep to be a NodeTextRep for the quantifier bound 
+                if (newNodeText == null) {
+                    // The bound is not a subexpression name.
+                    ntrep = nodeRep.subNodeText(decomp.quantBounds.elementAt(i));
+                } else {
+                    // The bound is a subexpression name.
+                    ntrep = appendToNodeText(newNodeText, 
+                              decomp.quantBoundsubexpNames.elementAt(i));
+                }
+                ntrep = prependToNodeText(ntrep, " \\in ");
+                if (ntrep.nodeText.length > 1) {
+                    beginLine = -1;
+                }
+            }
+            
+            ntrep = prependToNodeText(ntrep, id) ;
+            rep.nodeText = ntrep.nodeText ;
+            rep.mapping  = ntrep.mapping ;
+            result.news.add(rep) ;
+            if ((beginLine != -1) && (beginLine == lastLine)) {
+              result.news.elementAt(i-1).onSameLineAsNext = true ;
+            }
+            lastLine = beginLine ;
+        }
+        
+        // We next compute the NodeRepresentation for the body of the quantified
+        // expression.
+        if (newNodeText != null) {
+            // We are using subexpression names, so we append to newNodeText
+            // the "!(id1, ... , idn)" needed to form the subexpression name
+            // of the body.
+            String str = "!(" ;
+            for (int i = 0; i < decomp.quantIds.size(); i++) {
+                if (i != 0) {
+                    str = str + ", " ;
+                }
+                str = str + decomp.quantIds.elementAt(i).getName().toString();
+            }
+            str = str + ")";
+            newNodeText = appendToNodeText(newNodeText, str);
+        }
+        result.body = nodeRep.subNodeRep(decomp.children.elementAt(0), 
+                nodeRep.parentVector, nodeRep.parentNode, newNodeText) ;
+        return result;
+    }
+
     /**
      * A NodeRepresentation object  describes the TLA+ source text
      * that produced a SemanticNode, after substitutions have been performed
@@ -1288,7 +1543,8 @@ if (goalRep.decomposition == null) {
 
         // If non-null, then originalOperator is the name of the
         // operator that was expanded to produce `node'.
-        String originalOperator = null ;
+        // I don't think this is needed.
+        // String originalOperator = null ;
 
         // The nodeType is the type of node.
         private static final int EXPR_NODE = 0  ; // An OpApplNode 
@@ -1415,37 +1671,29 @@ if (goalRep.decomposition == null) {
         
         /**
          * If this is true, then the semanticNode field represents the expansion
-         * of the subexpression name that appears in the nodeText field.
+         * of the subexpression name that appears in the nodeText field.  This means
+         * that the node has been obtained by decomposing another node by expanding
+         * a definition, so no further decomposition by expanding a definition
+         * is possible.  (Using a subexpression name, it's impossible to name the
+         * result of expanding a definition unless it's a LET definition inside
+         * the current definition.  I'm not sure what should be done with LET definitions
+         * inside assumptions or goals.)
          */
         boolean isSubexpressionName = false ;
         
         /**
          * The formula represented by this node was obtained by expanding
          * the definitions of all the identifiers in this array.
+         * 
+         * I don't think this is needed.
          */
-        String[] expandedDefs = new String[0];
+        // String[] expandedDefs = new String[0];
         
         /**
          * Non-null iff the node can be decomposed as indicated by
          * the Decomposition object.
          */
         Decomposition decomposition = null ;
-// The following commented-out state information is deducible from the
-//  handler object's state.
-//        /**
-//         * True if the action associated with this node is disabled
-//         * because the user has performed an AND or OR or \E split on
-//         * some other node.
-//         * 
-//         */
-//        boolean isDisabled;
-//        
-//        /**
-//         * True iff this node is the result of the user doing an AND 
-//         * split on an assumption.
-//         */
-//        boolean fromAndSplit;
-        
         
         /**
          * Create a NodeRepresentation for a subnode of this node.
@@ -1453,15 +1701,28 @@ if (goalRep.decomposition == null) {
          * @param sn  The subnode
          * @param vec The result's parentVector field.
          * @param father The result's parentNode field.
+         * @param newNodeText If non-null, then the result's nodeText field is 
+         *   to be set to this rather than the NodeTextRep representation of
+         *   the semanticNode field. (It will be non-null if the nodeText is to
+         *   be set to a subexpression name.)
          * @return
          */
         NodeRepresentation subNodeRep(SemanticNode sn, Vector <NodeRepresentation> vec,
-                                     NodeRepresentation father) {
+                                     NodeRepresentation father, NodeTextRep setNodeText) {
             
             NodeRepresentation result = new NodeRepresentation() ;
             result.parentNode = father;
             result.parentVector = vec ;
             result.semanticNode = sn ;
+            
+            // Set the fields of the result that are inherited from its father.
+            if (father != null) {
+                result.isPrimed = father.isPrimed;
+                result.isSubexpressionName = father.isSubexpressionName;
+                result.isCreated = father.isCreated;
+                // I don't think it's necessary to copy the isCreated field,
+                // but I don't think it hurts.
+            }
             
 /***** REMOVE TEXT BELOW AFTER TESTING 
             
@@ -1527,8 +1788,10 @@ if (goalRep.decomposition == null) {
             }
 
 REMOVE TEXT ABOVE AFTER TESTING *******/
-            
-            NodeTextRep nodeText = this.subNodeText(sn);
+            NodeTextRep nodeText = setNodeText;
+            if (nodeText == null ) {
+              nodeText = this.subNodeText(sn);
+            }
             result.nodeText = nodeText.nodeText;
             result.mapping = nodeText.mapping;
             
@@ -1599,7 +1862,7 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
          */
         NodeTextRep subNodeText(SemanticNode sn) {
             NodeTextRep result = new NodeTextRep();
-            result.semanticNode = sn ;
+//            result.semanticNode = sn ;
             // set beginId to be the index in this.nodeText representing the
             // first line of the source of SemanticNode node sn.
             int beginIdx =  getBeginLine(sn) - getBeginLine(this.semanticNode) ;
@@ -1736,9 +1999,9 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
 
         public String toString() {
             String val = "" ;
-            if (originalOperator != null) {
-                val = "Original Operator: " + originalOperator + "\n" ;
-            }
+//            if (originalOperator != null) {
+//                val = "Original Operator: " + originalOperator + "\n" ;
+//            }
             val = val + "nodeText: |=\n" + stringArrayToString(nodeText) + "=|" ;
             for (int i = 0; i < mapping.length; i++) {
                 val = val + "\n" + i + ":" ;
@@ -1752,15 +2015,35 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
     }
     
     /**
-     * A NodeTextRep object contains only the semanticNode, nodeText, and mapping
+     * A NodeTextRep object contains only the  nodeText, and mapping
      * fields of a NodeRepresentation object.  I should probably refactor
-     * things so that instead of having those three fields, a NodeRepresentation
+     * things so that instead of having those two fields, a NodeRepresentation
      * object contains a NodeText field
      */
     static class NodeTextRep {
-        SemanticNode semanticNode ;
-        String[] nodeText ;
-        Vector<MappingPair>[] mapping ;
+//        SemanticNode semanticNode = null ;
+        String[] nodeText = null ;
+        Vector<MappingPair>[] mapping = null ;
+        
+        public NodeTextRep(String[] text, Vector<MappingPair>[] map) {
+//            semanticNode = node ;
+            nodeText = text;
+            mapping = map ;
+        }
+        
+        public NodeTextRep() {
+            // TODO Auto-generated constructor stub
+        }
+
+        public NodeTextRep clone() {
+            NodeTextRep result = new NodeTextRep() ;
+            result.nodeText = new String[this.nodeText.length];
+            for (int i = 0; i < result.nodeText.length; i++) {
+                result.nodeText[i] = this.nodeText[i];
+            }
+            result.mapping = this.mapping.clone() ;
+            return result ;
+        }
         
         public String toString() {
             String val = "" ;
@@ -1775,6 +2058,36 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
             return val ;
         }
     }
+    
+    /**
+     * Returns a brand new NodeTextRep obtained thats equal to the nodeRep argument
+     * except that the String str has been appended to the last line.
+     * 
+     * @param nodeRep
+     * @param str
+     * @return
+     */
+    static NodeTextRep appendToNodeText(NodeTextRep nodeRep, String str) {
+        NodeTextRep result = nodeRep.clone();
+        result.nodeText[result.nodeText.length - 1] = 
+                result.nodeText[result.nodeText.length - 1] + str;
+        return result;
+    }
+    
+    static NodeTextRep prependToNodeText(NodeTextRep nodeRep, String str) {
+        NodeTextRep result = nodeRep.clone();
+        for (int i = 0; i < nodeRep.nodeText.length; i++) {
+            if (i==0) {
+               result.nodeText[0] = str + result.nodeText[0] ;
+            } else {
+               result.nodeText[i] = StringHelper.copyString(" ", str.length());
+            }
+            adjustMappingPairVector(1, str.length(), result.mapping[i]) ;
+        }       
+        return result;
+    }
+    
+    
     /**
      * A Decomposition object describes the possible decomposition of
      * an assumption or goal.
@@ -1838,6 +2151,13 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
          */
         Vector<ExprNode> quantBounds = null ;
         
+        /**  
+         * If this is a \A or \E decomposition for a bounded quantifier (like
+         *   \A x \in S), then this is the list of subexpression names for
+         *   each of the elements of quantBounds.             
+         */
+        Vector<String> quantBoundsubexpNames = null ;
+        
         /** True iff the Decomposition's children and  quantBounds should be primed. */
         boolean primed = false ;
        
@@ -1869,6 +2189,12 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
                     val = val + "\nquantBounds[" + i + "]:\n " + 
                              quantBounds.elementAt(i).toString() ;
                 }
+                val = val + "quantBoundsubexpNames: ";
+                for (int i = 0; i < this.quantBounds.size(); i++) {
+                    val = val + ((i == 0)?"":", ") + 
+                            quantBoundsubexpNames.elementAt(i) ;
+                }
+                
             }    
             val = val + "\nprimed: " + primed ;
             return val;
@@ -1938,34 +2264,53 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
     }
     
     /**
+     * This computes the decompose field of a NodeRepresentation.  It does not
+     * yet handle the decomposition of a defined operator except by using 
+     * subexpression names.  Other than having to indicate substitute for parameters
+     * in the definition, it needs to provide the information for extracting the
+     * nodeText for the definition.  The problem is, that it has to be extracted
+     * in the context of the module, not as a subnode of the node being expanded.
+     * For this reason, at the moment definition expansion is all by subexpression
+     * names.
      * 
      * @param sn
      * @return
      */
-    private static Decomposition decompose(NodeRepresentation nodeRep) {
-        SemanticNode sn = nodeRep.semanticNode ;
+    private Decomposition decompose(NodeRepresentation nodeRep) {
+        SemanticNode sn = nodeRep.semanticNode;
         if (!(sn instanceof OpApplNode)) {
             return null;
         }
 
         OpApplNode node = (OpApplNode) sn;
-        OpApplNode unprimedNode = node ;
-        
+        OpApplNode unprimedNode = node;
+
         Decomposition result = new Decomposition();
 
         // Check if primed expression.
         if (node.getOperator().getName() == ASTConstants.OP_prime) {
             node = (OpApplNode) node.getArgs()[0];
-            unprimedNode = node ;
+            unprimedNode = node;
             result.primed = true;
         }
 
-        // See if this is an operator definition we can handle
-        if (node.getOperator().getKind() == ASTConstants.UserDefinedOpKind) {
+        // If nodeRep.isSubexpressionName is false (so it was not obtained by
+        // decomposing a definition using subexpression names), then we
+        // see if this is an operator definition we can handle.
+
+        if ((!nodeRep.isSubexpressionName)
+                && (node.getOperator().getKind() == ASTConstants.UserDefinedOpKind)) {
             String operatorName = ((OpDefNode) node.getOperator()).getName()
                     .toString();
-
             ExprNode opDef = ((OpDefNode) node.getOperator()).getBody();
+
+            // If the definition comes from an INSTANCE, it may be a
+            // SubstInNode. If so, we strip off the top-level SubstInNode
+            // object(s).
+            while (opDef instanceof SubstInNode) {
+                opDef = ((SubstInNode) opDef).getBody();
+            }
+
             if (opDef instanceof OpApplNode) {
                 // This is a user-defined operator. We can handle it iff
                 // the arguments are all single-line expressions.
@@ -1977,34 +2322,55 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
                         return null;
                     }
                 }
-                result.definedOpRep = nodeRep.subNodeText(unprimedNode) ;
                 node = (OpApplNode) opDef;
-                result.definedOp = operatorName;
+
+                // We now set the definedOp and definedOpRep fields
+                // iff we want to use subexpression names.
                 result.moduleName = ((SyntaxTreeNode) node.stn).getLocation()
                         .source();
                 System.out.println(operatorName + " defined in module "
                         + result.moduleName);
+                System.out.println("This module is: "
+                        + moduleNode.getName().toString());
+                // The following test is to determine if the definition should
+                // be expanded by subexpression naming or by actual expansion.
+                // (Initially, we don't deal with expansion of names from another
+                // module.)  However, actual expansion is not yet implemented.
+                //
+                // if (subexpressionButton.getSelection()
+                //      || !result.moduleName.equals(moduleNode.getName()
+                //               .toString())) {
+                    result.definedOpRep = nodeRep.subNodeText(unprimedNode);
+                    result.definedOp = operatorName;
+                // } // end of if
+
             } else {
                 // This means that the definition is not an OpApplNode, which
                 // I don't think is possible.
                 return null;
             }
         }
-        
+
         // Indicate exactly how it needs to be decomposed by setting
         // the type field and also:
-        //   - setting isAndOrOr true iff this is an infix /\ or \/
-        //   - setting isJunction true iff this is a bulleted disjunction 
-        //     or conjunction.
-        //   - setting isQuantifier true iff this is a \A or \E.
-        //   - setting isBoundedQuantifier iff isQuantifier true and it's
-        //     a boundedquantifier.
+        // - setting isAndOrOr true iff this is an infix /\ or \/
+        // - setting isJunction true iff this is a bulleted disjunction
+        // or conjunction.
+        // - setting isQuantifier true iff this is a \A or \E.
+        // - setting isBoundedQuantifier iff isQuantifier true and it's
+        // a boundedquantifier.
         // Return null if it can't be decomposed.
-        boolean isAndOrOr = false ;
-        boolean isJunction = false ;
-        boolean isQuantifier = false ;
-        boolean isBoundedQuantifier = false ;
-        UniqueString opId = ((OpDefNode) node.getOperator()) .getName();
+        boolean isAndOrOr = false;
+        boolean isJunction = false;
+        boolean isQuantifier = false;
+        boolean isBoundedQuantifier = false;
+
+        // First check if the OpApplNode's operator is a defined or built-in
+        // operator. If not, we can't decompose so we return null.
+        if (!(node.getOperator() instanceof OpDefNode)) {
+            return null;
+        }
+        UniqueString opId = ((OpDefNode) node.getOperator()).getName();
         String opName = opId.toString();
         // Note: experimentation reveals that /\ and \/ are parsed
         // with operator names "\\land" and "\\lor".
@@ -2018,66 +2384,68 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
         } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
             result.type = NodeRepresentation.OR_TYPE;
             if (opId == ASTConstants.OP_dl) {
-                isJunction = true ;
-            }  else {
+                isJunction = true;
+            } else {
                 isAndOrOr = true;
             }
         } else if (opName.equals("=>")) {
             result.type = NodeRepresentation.IMPLIES_TYPE;
-        } else if ((opId == ASTConstants.OP_bf)
-                || (opId == ASTConstants.OP_uf)) {
+        } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
             result.type = NodeRepresentation.FORALL_TYPE;
             isQuantifier = true;
             if (opId == ASTConstants.OP_bf) {
-                isBoundedQuantifier = true ;
+                isBoundedQuantifier = true;
             }
-        } else if ((opId == ASTConstants.OP_be)
-                || (opId == ASTConstants.OP_ue)) {
+        } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
             result.type = NodeRepresentation.EXISTS_TYPE;
             isQuantifier = true;
             if (opId == ASTConstants.OP_be) {
-                isBoundedQuantifier = true ;
+                isBoundedQuantifier = true;
             }
         } else if (opId == ASTConstants.OP_sa) {
             result.type = NodeRepresentation.SQSUB_TYPE;
         } else {
-            return null ;
+            return null;
         }
-        
+
         /**
          * Now set result.children and result.namePath.
          */
         if (isAndOrOr) {
-            processAndOrOr(result, node, "", opName) ;
+            processAndOrOr(result, node, "", opName);
         } else if (isJunction) {
             SemanticNode[] juncts = node.getArgs();
             for (int i = 0; i < juncts.length; i++) {
                 result.children.add(juncts[i]);
-                result.namePath.add("!" + (i+1));
+                result.namePath.add("!" + (i + 1));
             }
         } else if (isQuantifier) {
-            // There is just a single child.  Set it, and
+            // There is just a single child. Set it, and
             // set namePath to its namePath entry.
             result.children.add(node.getArgs()[0]);
-            String namePath = "!(" ;
+            String namePath = "!(";
             result.quantIds = new Vector<FormalParamNode>();
             if (isBoundedQuantifier) {
                 // Bounded Quantifier
-                result.quantBounds = new Vector<ExprNode>() ;
-                FormalParamNode[][] quantIdsArray = node.getBdedQuantSymbolLists() ;
+                result.quantBounds = new Vector<ExprNode>();
+                result.quantBoundsubexpNames = new Vector<String>();
+                FormalParamNode[][] quantIdsArray = node
+                        .getBdedQuantSymbolLists();
                 ExprNode[] quantBounds = node.getBdedQuantBounds();
                 for (int i = 0; i < quantIdsArray.length; i++) {
-                    // We don't handle a quantifier bound of the form <<x, y>> \in S
+                    // We don't handle a quantifier bound of the form <<x, y>>
+                    // \in S
                     if (node.isBdedQuantATuple()[i]) {
                         return null;
                     }
                     FormalParamNode[] quantIds = quantIdsArray[i];
                     for (int j = 0; j < quantIds.length; j++) {
-                        result.quantIds.add(quantIds[j]) ;
+                        result.quantIds.add(quantIds[j]);
                         // Note that we have to repeat the quantifier bound
                         // for x and y in \E x, y \in S : ...
-                        result.quantBounds.add(quantBounds[i]) ;
-                        if (!((i==0) && (j==0))) {
+                        result.quantBounds.add(quantBounds[i]);
+                        result.quantBoundsubexpNames.add("!" + (i + 1));
+                        if (!((i == 0) && (j == 0))) {
                             namePath = namePath + ",";
                         }
                         namePath = namePath + quantIds[j].getName().toString();
@@ -2085,62 +2453,66 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
                 }
             } else {
                 // Unbounded Quantifier
-                FormalParamNode[] quantIds = node.getUnbdedQuantSymbols() ;
+                FormalParamNode[] quantIds = node.getUnbdedQuantSymbols();
                 for (int i = 0; i < quantIds.length; i++) {
-                    result.quantIds.add(quantIds[i]) ;
+                    result.quantIds.add(quantIds[i]);
                     if (i != 0) {
-                        namePath = namePath + "," ;
+                        namePath = namePath + ",";
                     }
                     namePath = namePath + quantIds[i].getName().toString();
                 }
-                
+
             }
             namePath = namePath + ")";
             result.namePath.add(namePath);
-            
-        } else if((result.type == NodeRepresentation.IMPLIES_TYPE) ||
-                (result.type == NodeRepresentation.SQSUB_TYPE) ){
-            result.children.add(node.getArgs()[0]) ;
+
+        } else if ((result.type == NodeRepresentation.IMPLIES_TYPE)
+                || (result.type == NodeRepresentation.SQSUB_TYPE)) {
+            result.children.add(node.getArgs()[0]);
             result.namePath.add("!1");
-            result.children.add(node.getArgs()[1]) ;
+            result.children.add(node.getArgs()[1]);
             result.namePath.add("!2");
         }
+System.out.println("Decomposition");
+System.out.println(result.toString());
         return result;
     }
-    
+
     /**
-     * Recursive procedure to set the children and namePath fields of
-     * a Decomposition object for an infix /\ or \/ .  It is based on
-     * the observation that A /\ B /\ C is parsed as (A /\ B) /\ C
-     * (and similarly for \/).  It does the obvious depth-first dive
-     * into the left operand, adding the entire node if it's not
-     * an op operation.
+     * Recursive procedure to set the children and namePath fields of a
+     * Decomposition object for an infix /\ or \/ . It is based on the
+     * observation that A /\ B /\ C is parsed as (A /\ B) /\ C (and similarly
+     * for \/). It does the obvious depth-first dive into the left operand,
+     * adding the entire node if it's not an op operation.
      * 
-     * @param decomp   The Decomposition object whose fields are being set.
-     * @param node The node being decomposed.
-     * @param namePathPrefix The prefix to be prepended to the constructed namePath
-     *        entry.
-     * @param op either "\\lor" or "\\land".
+     * @param decomp
+     *            The Decomposition object whose fields are being set.
+     * @param node
+     *            The node being decomposed.
+     * @param namePathPrefix
+     *            The prefix to be prepended to the constructed namePath entry.
+     * @param op
+     *            either "\\lor" or "\\land".
      */
     private static void processAndOrOr(Decomposition decomp, SemanticNode node,
             String namePathPrefix, String op) {
-        if (! (node instanceof OpApplNode)) {
-            decomp.children.add(node) ;
+        if (!(node instanceof OpApplNode)) {
+            decomp.children.add(node);
             decomp.namePath.add(namePathPrefix);
             return;
         }
-        OpApplNode aonode = (OpApplNode) node ;
-        UniqueString opId = ((OpDefNode) aonode.getOperator()) .getName();
+        OpApplNode aonode = (OpApplNode) node;
+        UniqueString opId = ((OpDefNode) aonode.getOperator()).getName();
         String opName = opId.toString();
-        
+
         if (!opName.equals(opName)) {
-            decomp.children.add(node) ;
+            decomp.children.add(node);
             decomp.namePath.add(namePathPrefix);
             return;
         }
         // This is an op infix operation, so recurse.
         processAndOrOr(decomp, aonode.getArgs()[0], namePathPrefix + "!1", op);
-        decomp.children.add(aonode.getArgs()[1]) ;
+        decomp.children.add(aonode.getArgs()[1]);
         decomp.namePath.add(namePathPrefix + "!2");
         return;
     }
@@ -2230,16 +2602,41 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
         return result ;
     }
     
+    /**
+     * Returns the array of strings as a single string, with the obvious 
+     * line-breaks inserted.
+     * 
+     * @param A
+     * @return
+     */
     public static String stringArrayToString(String[] A) {
         if (A.length == 0) {
-            return A[0] ;
+            return A[0];
         }
-        String result = A[0] ;
+        String result = A[0];
         for (int i = 1; i < A.length; i++) {
-            result = result + "\n" + A[i] ;
+            result = result + "\n" + A[i];
         }
-        return result ;
-        
+        return result;
+    }
+
+    /**
+     * Returns the array of strings as a single string, where the first line
+     * is inserted at column indent (Java numbering, columns starting at 0).
+     * 
+     * @param A
+     * @param indent
+     * @return
+     */
+    public static String stringArrayToIndentedString(String[] A, int indent) {
+        if (A.length == 0) {
+            return A[0];
+        }
+        String result = A[0];
+        for (int i = 1; i < A.length; i++) {
+            result = result + "\n" + StringHelper.copyString(" ", indent) + A[i];
+        }
+        return result;
     }
 
     /*
@@ -2362,7 +2759,7 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
                 break;               
             case ACTION:
                 // Any ACTION button causes a change.
-                changed = true ;
+                hasChanged = true ;
                 NodeRepresentation nodeObj = (NodeRepresentation) object ;
                 switch (nodeObj.nodeSubtype) {
                 case NodeRepresentation.AND_TYPE:
@@ -2373,6 +2770,7 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
                 case NodeRepresentation.IMPLIES_TYPE:
                    break ;
                 case NodeRepresentation.FORALL_TYPE:
+                   decomposeHandler.forAllAction(nodeObj) ;
                    break ;
                 case NodeRepresentation.EXISTS_TYPE:
                    break ;
@@ -2432,6 +2830,32 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
         }
     }
     
+    class ArrowSelectionListener implements SelectionListener {
+        int index ;
+        int direction ;
+        DecomposeProofHandler handler ;
+        
+        ArrowSelectionListener(int idx, int dir, DecomposeProofHandler han) {
+            index     = idx;
+            direction = dir;
+            handler   = han;
+        }
+        public void widgetSelected(SelectionEvent e) {
+            SemanticNode node = handler.assumes.elementAt(index);
+            NodeRepresentation rep = handler.assumeReps.elementAt(index);
+            handler.assumes.remove(index) ;
+            handler.assumeReps.remove(index);
+            int inc = (direction == SWT.DOWN)?1:-1;
+            handler.assumes.add(index + inc, node) ;
+            handler.assumeReps.add(index + inc, rep) ;
+            handler.raiseWindow("Decompose Proof");
+        }
+
+        public void widgetDefaultSelected(SelectionEvent e) {
+            widgetSelected(e) ;
+        }
+        
+    }
     /**
      * A convenience method that returns the first line of a semantic node's
      * source in a module.  I don't know what to do if the semantic node is
