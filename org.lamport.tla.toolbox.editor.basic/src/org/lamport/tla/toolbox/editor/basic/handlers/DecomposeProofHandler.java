@@ -209,6 +209,7 @@ import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SubstInNode;
+import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
 import util.UniqueString;
@@ -956,8 +957,11 @@ if (goalRep.decomposition == null) {
                 /*************************************************************
                  * Add the button or blank area to the first column.
                  *************************************************************/
-                String labelText =  null ;                      
-                if (assumes.elementAt(i).getKind() == ASTConstants.OpApplKind) {
+                String labelText =  null ;               
+                // Need to test if assumes.elementAt(i) is null because created
+                // NEW nodes have null semanticNode fields.
+                if (    (assumes.elementAt(i) != null) 
+                     && (assumes.elementAt(i).getKind() == ASTConstants.OpApplKind)) {
                         switch (assumeReps.elementAt(i).nodeSubtype) {
                         case NodeRepresentation.AND_TYPE:
                                 labelText = "/\\";
@@ -1040,7 +1044,7 @@ if (goalRep.decomposition == null) {
                 
 
                 assumeLabel = new Label(comp, SWT.NONE);
-                String text = stringArrayToString(assumeReps.elementAt(i).nodeText) ;
+                String text = stringArrayToString(assumeReps.elementAt(i).primedNodeText()) ;
                 // Combine this with following NEW nodes if necessary
                 while (assumeReps.elementAt(i).onSameLineAsNext) {
                     i++;
@@ -1156,7 +1160,7 @@ if (goalRep.decomposition == null) {
         comp.setSize(0, 5);
         
         assumeLabel = new Label(shell, SWT.NONE);
-        assumeLabel.setText(stringArrayToString(goalRep.nodeText));
+        assumeLabel.setText(stringArrayToString(goalRep.primedNodeText()));
         gridData = new GridData();
         gridData.verticalAlignment = SWT.TOP;
         assumeLabel.setLayoutData(gridData);
@@ -1316,6 +1320,10 @@ if (goalRep.decomposition == null) {
         }
         raiseWindow("Decompose Proof");
     }
+    
+    void impliesAction(NodeRepresentation nodeRep) {
+        
+    }
 
     /**
      * Returns the NodeRepresentation for a child in nodeRep's decomposition when
@@ -1335,9 +1343,13 @@ if (goalRep.decomposition == null) {
         
         // Set newNodeText to be null if the result's nodeText is to be obtained
         // from nodeText's semantic node.  Otherwise, set it to the appropriate
-        // subexpression name.
+        // subexpression name.  
         NodeTextRep newNodeText = null;
-        if (decomp.definedOp != null) {
+        if ((decomp.definedOp != null) 
+             // && this.subexpressionButton.getSelection() 
+             // commented out because only expanding definitions by subexpression 
+             // names for now.
+             ){
             newNodeText = appendToNodeText(decomp.definedOpRep,
                     decomp.namePath.elementAt(i));
         } else if (nodeRep.isSubexpressionName) {
@@ -1350,7 +1362,6 @@ if (goalRep.decomposition == null) {
         NodeRepresentation rep = nodeRep.subNodeRep(
                 decomp.children.elementAt(i), nodeRep.parentVector, nodeRep.parentNode,
                 newNodeText);
-        
         // Set various fields whose values can be inferred from nodeRep and decomp.
         rep.isCreated = true;
         rep.isPrimed = rep.isPrimed || decomp.primed;
@@ -1370,6 +1381,7 @@ if (goalRep.decomposition == null) {
         Vector<NodeRepresentation> news ;
         NodeRepresentation body ;
     }
+    
     /**
      * Returns the NodeRepresentations of the nodes forming the decomposition
      * for a \A or \E split.  It assumes that the decomposition is
@@ -1456,7 +1468,9 @@ if (goalRep.decomposition == null) {
                 }
             }
             
-            ntrep = prependToNodeText(ntrep, id) ;
+            if (decomp.quantBounds != null) {
+                ntrep = prependToNodeText(ntrep, id);
+            }
             rep.nodeText = ntrep.nodeText ;
             rep.mapping  = ntrep.mapping ;
             result.news.add(rep) ;
@@ -1703,8 +1717,9 @@ if (goalRep.decomposition == null) {
          * @param father The result's parentNode field.
          * @param newNodeText If non-null, then the result's nodeText field is 
          *   to be set to this rather than the NodeTextRep representation of
-         *   the semanticNode field. (It will be non-null if the nodeText is to
-         *   be set to a subexpression name.)
+         *   the semanticNode field. It will be non-null if the nodeText is to
+         *   be set to a subexpression name, so set isSubexpressionName field
+         *   true in that case.
          * @return
          */
         NodeRepresentation subNodeRep(SemanticNode sn, Vector <NodeRepresentation> vec,
@@ -1724,76 +1739,14 @@ if (goalRep.decomposition == null) {
                 // but I don't think it hurts.
             }
             
-/***** REMOVE TEXT BELOW AFTER TESTING 
-            
-            // set beginId to be the index in this.nodeText representing the
-            // first line of the source of SemanticNode node sn.
-            int beginIdx =  getBeginLine(sn) - getBeginLine(this.semanticNode) ;
-            result.nodeText = new String[getEndLine(sn) - getBeginLine(sn)+1];
-            result.mapping = new Vector[result.nodeText.length] ;
-            // Set beginCol to the column of the first token of sn.
-            // Set beginPos to the position of the first token of sn in the string
-            // this.result.nodeText[beginLine - 1] containing its text.
-            int beginCol = sn.stn.getLocation().beginColumn() ;
-            int beginPos = colToLoc(beginCol, this.mapping[beginIdx]);
-            
-            //
-            // Set the nodeText and mapping fields.
-            //
-            // Set result.nodeText[0] to the string containing the first
-            // token and everything to its right in this.nodeText[...].
-            // Set result.mapping[0] to the MappingVector obtained by
-            // subtracting beginPos from all increments.           
-            result.nodeText[0] = this.nodeText[beginIdx].substring(beginPos);
-            Vector<MappingPair> mv = cloneMappingPairVector(this.mapping[beginIdx]) ;
-            // Since we just removed beginPos characters to the left of beginCol, we should 
-            // execute 
-            adjustMappingPairVector(beginCol, -beginPos, mv) ;
-            // but we'll do the adjustment by -beginPos later.
-            result.mapping[0] = mv ;
-           
-            // Set result.nodeText[i] to a copy of this.nodeText[i+...] 
-            //   and result.mapping[i] to a copy of this.mapping[i] for 
-            //   all other lines of the subnode's text.
-            // Set minPos = the minimum of beginPos and the smallest number
-            //   of leading spaces of any subsequent line of result.nodeText
-            int minPos = beginPos ;
-            for (int i = 1; i < result.mapping.length; i++) {
-                result.nodeText[i] = this.nodeText[i + beginIdx] ;
-                minPos = Math.min(minPos, StringHelper.leadingSpaces(result.nodeText[i]));
-                result.mapping[i] = new Vector<MappingPair>() ;
-                for (int j = 0; j < this.mapping[i + beginIdx].size(); j++) {
-                    result.mapping[i].add(this.mapping[i + beginIdx].elementAt(j).clone());
-                }
+            NodeTextRep nodeTextRep = setNodeText;
+            if (nodeTextRep == null ) {
+              nodeTextRep = this.subNodeText(sn);
+            } else {
+                result.isSubexpressionName = true ;
             }
-            
-            // Remove the part of the last line of result.nodeText that doesn't
-            // belong to the subnode
-            result.nodeText[result.nodeText.length - 1] =
-                   result.nodeText[result.nodeText.length - 1].
-                     substring(0, colToLoc(sn.stn.getLocation().endColumn()+1, 
-                               result.mapping[result.mapping.length-1])) ;
-            
-            // Add any necessary space at the beginning of result.nodeText[0]
-            int spacesAddedToFirstLine = beginPos - minPos;
-            result.nodeText[0] = StringHelper.copyString(" ", spacesAddedToFirstLine)
-                              + result.nodeText[0];
-            // Since we now have added spacesAddedToFirstLine, we  execute
-            adjustMappingPairVector(beginCol, -spacesAddedToFirstLine, result.mapping[0]) ;
-
-            // Trim any necessary space from the beginning of result.nodeText[i] for i > 0.
-            for (int i = 1; i < result.nodeText.length; i++) {
-                result.nodeText[i] = result.nodeText[i].substring(minPos);
-                adjustMappingPairVector(1, minPos, result.mapping[i]) ;
-            }
-
-REMOVE TEXT ABOVE AFTER TESTING *******/
-            NodeTextRep nodeText = setNodeText;
-            if (nodeText == null ) {
-              nodeText = this.subNodeText(sn);
-            }
-            result.nodeText = nodeText.nodeText;
-            result.mapping = nodeText.mapping;
+            result.nodeText = nodeTextRep.nodeText;
+            result.mapping = nodeTextRep.mapping;
             
             /*
              *  Compute the type and subType fields.
@@ -1924,6 +1877,49 @@ REMOVE TEXT ABOVE AFTER TESTING *******/
                 adjustMappingPairVector(1, -minPos, result.mapping[i]) ;
             }
             return result;
+        }
+        
+        /**
+         * If this.isPrimed is false, it just returns this.nodeText.  Otherwise,
+         * it returns the primed version of this.nodeText.  It tries to be
+         * clever and not put parentheses around the text if they're not needed,
+         * but it doesn't try very hard.  It puts parentheses iff 
+         * 
+         *  - The isSubexpressionName is false, and
+         *  
+         *  - semanticNode is an OpApplNode whose operator is user-defined
+         *    and has a name that is an Identifier (so it's not in/prep/postfix).
+         */
+       String[] primedNodeText() {
+           if (!this.isPrimed) {
+               return this.nodeText ;
+           }
+           
+           boolean needsParens = 
+                 ! this.isSubexpressionName 
+              && (this.semanticNode instanceof OpApplNode) ;
+              
+           if (needsParens) {
+               SymbolNode ops = ((OpApplNode) this.semanticNode).getOperator() ;
+               if (ops instanceof OpDefNode) {
+                 OpDefNode odn = (OpDefNode) ops ;
+                 needsParens = 
+                         (odn.getKind() == ASTConstants.BuiltInKind)
+                      || ! StringHelper.isIdentifier(odn.getName().toString());
+               } else {
+                   needsParens = false ;
+               }
+           }
+          
+          String[] result = this.nodeText.clone() ;
+          if (needsParens) {
+              result[0] = "(" + result[0] ;
+              result[result.length-1] = StringHelper.trimEnd(result[result.length-1]) + ")'" ;
+          } else {
+              result[result.length-1] = StringHelper.trimEnd(result[result.length-1]) + "'" ;
+          }
+          
+          return result;
         }
         
         

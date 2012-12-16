@@ -99,6 +99,7 @@ public class StringHelper
     public static final int leadingSpaces(String str) {
         return str.length() - trimFront(str).length() ;
     }
+    
     /**
      * Prints the elements of the array, one per line, enclosed between
      * *- and -*, except with the first line enclosed with 0- and -0.
@@ -127,5 +128,26 @@ public class StringHelper
     public static final String[] getWords(String str) {
         String[] result = trimFront(str).split("\\s+") ;
         return result;
+    }
+    
+    /**
+     * Returns true iff str is a sequence of letters, "_" characters, and digits
+     * that is not all digits.  
+     * 
+     * @param str
+     * @return
+     */
+    public static final boolean isIdentifier(String str) {
+        
+        boolean result = true ;
+        boolean allChars = true ;
+        int i = 0;
+        while (result && (i < str.length())) {
+            char ch = str.charAt(i) ;
+            result = Character.isLetterOrDigit(ch) || (ch == '_') ;
+            allChars = allChars && Character.isDigit(ch) ;
+            i++;
+        }
+        return result && (! allChars) ;
     }
 }
