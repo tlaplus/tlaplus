@@ -431,11 +431,14 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     //    private static final int NEITHER_CHOSEN = 2 ;
     //    private int radioChoice = SUFFICES_CHOSEN ;
     
+    
     /**
      * The useSufficesButton determines whether the created proof will
      * use an initial SUFFICES step to declare the newly created assumptions,
      * or if those assumptions will be put on each step of the proof in
-     * an ASSUME/PROVE.
+     * an ASSUME/PROVE.  
+     * 
+     * Its initial value should probably be set by a preference.
      */
     private boolean useSufficesValue = true;
     private Button useSufficesButton;  // 
@@ -446,6 +449,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * or by using subexpression names like Op(43)!2.  In the initial
      * implementation, definitions that come from a different module are
      * always expanded by using subexpression names.
+     * 
+     * Its initial value should probably be set by a preference.
      */
     private boolean subexpressionValue = true ; 
     private Button subexpressionButton ; 
@@ -457,16 +462,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private void readButtons() {
         useSufficesValue = useSufficesButton.getSelection() ;
         subexpressionValue = subexpressionButton.getSelection() ;
-        // if (sufficesButton.getSelection()) {
-        // radioChoice = SUFFICES_CHOSEN ;
-        // return ;
-        // }
-        // if (rewriteButton.getSelection()) {
-        // radioChoice = REWRITE_CHOSEN ;
-        // return ;
-        // }
-        // radioChoice = NEITHER_CHOSEN ;
-        // return ;
     }
     // private IRegion lineInfo; // The lineInfo for the current offset.
 
@@ -779,7 +774,16 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 }
                 assumeReps.add(nodeRep);
                 
-                goal = (OpApplNode) ((AssumeProveNode) thm).getProve();
+               SemanticNode sgoal = ((AssumeProveNode) thm).getProve();
+               if (! (sgoal instanceof OpApplNode)) {
+                   MessageDialog
+                   .openError(UIHelper.getShellProvider().getShell(),  
+                               "Decompose Proof Command",
+                               "This step has a weird goal that cannot\n be processed.");
+                   return null ;
+               }
+               
+                goal = (OpApplNode) sgoal ;
                 goalRep = stepRep.subNodeRep(goal, null, null, null );
             }
             
@@ -791,6 +795,13 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
              *************************************************************/
             assumes = null;
             assumeReps = null;
+            if (! (thm instanceof OpApplNode)) {
+                MessageDialog
+                .openError(UIHelper.getShellProvider().getShell(),  
+                            "Decompose Proof Command",
+                            "This is a weird step that cannot\n be processed.");
+                return null ;
+            }
             goal = (OpApplNode) thm;
             UniqueString goalOpName = goal.getOperator().getName();
 
@@ -809,13 +820,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             }
             goalRep = stepRep.subNodeRep(goal, null, null, null);
         }
-if (goalRep.decomposition == null) {
-    System.out.println("null decomposition");
-} else {
-    System.out.println("goalRep.decomposition:");
-    System.out.println(goalRep.decomposition.toString());
-}
-
+//        if (goalRep.decomposition == null) {
+//            System.out.println("null decomposition");
+//        } else {
+//            System.out.println("goalRep.decomposition:");
+//            System.out.println(goalRep.decomposition.toString());
+//        }
               
         
         /***************************************************************************
@@ -832,7 +842,7 @@ if (goalRep.decomposition == null) {
         // choice of reading 10^6 lines of code to figure out what is going on,
         // or doing what seems to work. 
         editorIFile.setReadOnly(true) ;
-        raiseWindow("Decompose Proof") ;
+        raiseWindow() ;
         
         return null;
     }
@@ -840,7 +850,7 @@ if (goalRep.decomposition == null) {
 
     // Note: Experimentation seems to show that horizontalSpan doesn't apply to a Label 
     // or a Button, so I've been putting the Label or Button inside a composite to do that.
-    private void raiseWindow(String windowTitle) {
+    private void raiseWindow() {
         // for testing
         // topshell = the Toolbox's shell
         if ((windowShell != null) && (!windowShell.isDisposed())) {
@@ -850,13 +860,15 @@ if (goalRep.decomposition == null) {
         }
         Shell topshell = UIHelper.getShellProvider().getShell() ;
         windowShell = new Shell(topshell, SWT.SHELL_TRIM) ; // | SWT.H_SCROLL); // SWT.RESIZE) ; // | SWT.V_SCROLL | SWT.H_SCROLL) ;
-        windowShell.setText(windowTitle) ;
+        windowShell.setText("Decompose Proof") ;
         windowShell.addDisposeListener(new WindowDisposeListener(this)) ;
         Composite shell = new Composite(windowShell, SWT.NONE) ;
         GridLayout gridLayout = new GridLayout(3, false);
         shell.setLayout(gridLayout);
-        
-//        UIHelper.setHelp(shell, "definition_override_wizard");
+        /**
+         * Display the top-line window
+         */
+        // topMenu is a composite containing the stuff on the menu line.
         Composite topMenu = new Composite(shell,SWT.NONE) ;   
         gridLayout = new GridLayout(4, false);
         gridLayout.marginBottom = 0;
@@ -865,59 +877,34 @@ if (goalRep.decomposition == null) {
         gridData.horizontalSpan = 3;
         topMenu.setLayoutData(gridData) ;
         
-        // Display Help and Replace Step buttons. 
-        // NEED TO ADD DISABLING OF Prove BUTTON
-        Button helpButton = HelpButton.helpButton(topMenu, "prover/test.html") ;
-//        HelpListener listener = new HelpListe
-//        proveButton.addHelpListener(listener) ;
-//        setupMenuButton(proveButton, PROVE_BUTTON, "Prove") ;
+        // Display "Replace Step" button
         Button replaceButton = new Button(topMenu, SWT.PUSH) ;
         setupMenuButton(replaceButton, TEST_BUTTON, "Replace Step") ;
         replaceButton.setEnabled(hasChanged && (chosenSplit == -1) && (andSplitEnd == -1)) ;
         
-        // Display checkbox to choose how to write proof.
+        // Display "Use SUFFICES" checkbox.
         useSufficesButton = new Button(topMenu, SWT.CHECK);
         setupCheckButton(useSufficesButton, "Use SUFFICES") ;
         useSufficesButton.setSelection(useSufficesValue) ;
-        
-        // Display checkbox to choose whether to expand definitions with subexpression names.
+
+        // Display checkbox to choose whether to expand definitions with 
+        // subexpression names.
         subexpressionButton = new Button(topMenu, SWT.CHECK);
         setupCheckButton(subexpressionButton, "Use subexpression names");
         subexpressionButton.setSelection(subexpressionValue) ;
+        gridData = new GridData() ;
+        gridData.horizontalAlignment = GridData.FILL;
+        gridData.grabExcessHorizontalSpace = true ;
+        subexpressionButton.setLayoutData(gridData) ;
         
-        // /*
-        // * Adds the radio buttons, which are a Composite.
-        // */
-        // Composite radio = new Composite(topMenu, SWT.BORDER) ;
-        // GridLayout radioLayout = new GridLayout(6, false) ;
-        // radio.setLayout(radioLayout) ;
-        // Label radioLabel = new Label(radio, SWT.NONE) ;
-        // radioLabel.setText("prove using:") ;
-        // sufficesButton = new Button(radio, SWT.RADIO) ;
-        // neitherButton = new Button(radio, SWT.RADIO) ;
-        // rewriteButton = new Button(radio, SWT.RADIO) ;
-        //
-        // sufficesButton.setText("SUFFICES") ;
-        // rewriteButton.setText("rewritten goal") ;
-        // neitherButton.setText("ASSUME/PROVE steps") ;
-        // switch (radioChoice) {
-        // case SUFFICES_CHOSEN :
-        // sufficesButton.setSelection(true) ;
-        // rewriteButton.setSelection(false) ;
-        // neitherButton.setSelection(false) ;
-        // break ;
-        // case REWRITE_CHOSEN :
-        // sufficesButton.setSelection(false) ;
-        // rewriteButton.setSelection(true) ;
-        // neitherButton.setSelection(false) ;
-        // break ;
-        // case NEITHER_CHOSEN :
-        // sufficesButton.setSelection(false) ;
-        // rewriteButton.setSelection(false) ;
-        // neitherButton.setSelection(true) ;
-        // break ;
-        // }
-       
+        // Display Help button that should raise help page for this
+        // dialog window.  I wish I knew how to move the button to
+        // the right edge of the window.
+        Button helpButton = HelpButton.helpButton(topMenu, "prover/test.html") ;
+        gridData = new GridData() ;
+        gridData.horizontalIndent = 20;
+        helpButton.setLayoutData(gridData);
+      
         /**************************************************************
          * Display the ASSUME Section
          **************************************************************/
@@ -1292,7 +1279,7 @@ if (goalRep.decomposition == null) {
             } else {
                 andSplitEnd = andSplitEnd + addedAssumps.size() - 1;
             }
-            raiseWindow("Decompose Proof");
+            raiseWindow();
         }
     }
 
@@ -1302,8 +1289,6 @@ if (goalRep.decomposition == null) {
      * @param nodeRep
      */
     void forAllAction(NodeRepresentation nodeRep) {
-        boolean isPrimed = false;
-        boolean defExpanded = false;
         Decomposition decomp = nodeRep.decomposition;
         hasChanged = true;
         if (decomp.definedOp != null) {
@@ -1312,17 +1297,78 @@ if (goalRep.decomposition == null) {
         
         QuantifierDecomposition qdc = decomposeQuantifier(nodeRep) ;
         this.goalRep = qdc.body ;
-        this.goal = (OpApplNode) qdc.body.semanticNode ; 
-           // I don't think goal is ever used once we start decomposing things.
+        // I don't think goal is ever used once we start decomposing 
+        // things, but it doesn't hurt to set it.  But let's not
+        // set it if, sor some weird reason, it's not an
+        // OpApplNode
+        if (qdc.body.semanticNode instanceof OpApplNode) {
+           this.goal = (OpApplNode) qdc.body.semanticNode ; 
+        } else {
+            this.goal = null ;
+        }
         for (int i = 0; i < qdc.news.size(); i++) {
             this.assumeReps.add(qdc.news.elementAt(i)) ;
             this.assumes.add(qdc.news.elementAt(i).semanticNode) ;
         }
-        raiseWindow("Decompose Proof");
+        raiseWindow();
     }
     
     void impliesAction(NodeRepresentation nodeRep) {
+        Decomposition decomp = nodeRep.decomposition;
+        hasChanged = true;
+        if (decomp.definedOp != null) {
+            goalDefinitions.add(decomp.definedOp);
+        }
         
+     // If this is within the subexpression-name expansion of a definition,
+        // set NodeTextRep to the NodeTextRep that is the name of the formula
+        // represented by nodeRep.
+        NodeTextRep newNodeText = null;
+        if ((decomp.definedOp != null)
+               // && (subexpressionButton.getSelection()) // uncomment for def expansion
+                ) {
+            newNodeText = decomp.definedOpRep ;
+        } else if (nodeRep.isSubexpressionName) {
+            newNodeText = new NodeTextRep(nodeRep.nodeText, nodeRep.mapping);
+        }
+        
+        NodeTextRep ntrep = null ;
+        if (newNodeText != null) {
+            ntrep = appendToNodeText(newNodeText, "!1") ;
+        }
+        NodeRepresentation nrep = nodeRep.subNodeRep(decomp.children.elementAt(0), 
+                nodeRep.parentVector, nodeRep.parentNode, ntrep) ;
+        nrep.isCreated = true;
+        nrep.isPrimed = nrep.isPrimed || decomp.primed;
+        nrep.isSubexpressionName = 
+                nrep.isSubexpressionName || (decomp.definedOp != null);
+        this.assumeReps.add(nrep) ;
+        this.assumes.add(nrep.semanticNode);
+          // I don't think the assumes vector is used after decomposition is
+          // begun, but I'm not positive.
+        
+        ntrep = null ;
+        if (newNodeText != null) {
+            ntrep = appendToNodeText(newNodeText, "!2") ;
+        }
+        nrep = nodeRep.subNodeRep(decomp.children.elementAt(1), 
+                nodeRep.parentVector, nodeRep.parentNode, ntrep) ;
+        nrep.isCreated = true;
+        nrep.isPrimed = nrep.isPrimed || decomp.primed;
+        nrep.isSubexpressionName = 
+                nrep.isSubexpressionName || (decomp.definedOp != null);
+        this.goalRep = nrep;
+        // I don't think goal is ever used once we start decomposing 
+        // things, but it doesn't hurt to set it.  But let's not
+        // set it if, sor some weird reason, it's not an
+        // OpApplNode
+        if (nrep.semanticNode instanceof OpApplNode) {
+           this.goal = (OpApplNode) nrep.semanticNode ; 
+        } else {
+            this.goal = null ;
+        }
+        
+        raiseWindow();
     }
 
     /**
@@ -1336,8 +1382,8 @@ if (goalRep.decomposition == null) {
      * @param father The result's parentNode field.
      * @return
      */
-    NodeRepresentation decompositionChildToNodeRep(NodeRepresentation nodeRep, int i,  Vector <NodeRepresentation> vec,
-            NodeRepresentation father) {
+    NodeRepresentation decompositionChildToNodeRep(NodeRepresentation nodeRep, int i,  
+            Vector <NodeRepresentation> vec, NodeRepresentation father) {
         // decomp is the nodeRep's decomposition
         Decomposition decomp = nodeRep.decomposition;
         
@@ -1406,7 +1452,9 @@ if (goalRep.decomposition == null) {
         // set NodeTextRep to the NodeTextRep that is the name of the formula
         // represented by nodeRep.
         NodeTextRep newNodeText = null;
-        if (decomp.definedOp != null) {
+        if ((decomp.definedOp != null)
+               // && (subexpressionButton.getSelection()) // uncomment for def expansion
+                ) {
             newNodeText = decomp.definedOpRep ;
         } else if (nodeRep.isSubexpressionName) {
             newNodeText = new NodeTextRep(nodeRep.nodeText, nodeRep.mapping);
@@ -1453,14 +1501,25 @@ if (goalRep.decomposition == null) {
                 ntrep.mapping[0] = new Vector<MappingPair> ();
                 ntrep.mapping[0].addElement(new MappingPair(1, -1)) ;
             } else {
-                // Set ntrep to be a NodeTextRep for the quantifier bound 
+                // Set ntrep to be a NodeTextRep for the quantifier bound,
+                // primed if decomp.primed = true.
                 if (newNodeText == null) {
                     // The bound is not a subexpression name.
                     ntrep = nodeRep.subNodeText(decomp.quantBounds.elementAt(i));
+                    if (decomp.primed) {
+                        if (primingNeedsParens(decomp.quantBounds.elementAt(i))) {
+                            ntrep = prependToNodeText(appendToNodeText(ntrep, ")'"), "(");
+                        } else {
+                            ntrep = appendToNodeText(ntrep, "'") ;
+                        }
+                    }
                 } else {
                     // The bound is a subexpression name.
-                    ntrep = appendToNodeText(newNodeText, 
-                              decomp.quantBoundsubexpNames.elementAt(i));
+                    String str = decomp.quantBoundsubexpNames.elementAt(i);
+                    if (decomp.primed) {
+                        str = str + "'" ;
+                    }
+                    ntrep = appendToNodeText(newNodeText, str);
                 }
                 ntrep = prependToNodeText(ntrep, " \\in ");
                 if (ntrep.nodeText.length > 1) {
@@ -1498,6 +1557,10 @@ if (goalRep.decomposition == null) {
         }
         result.body = nodeRep.subNodeRep(decomp.children.elementAt(0), 
                 nodeRep.parentVector, nodeRep.parentNode, newNodeText) ;
+        result.body.isCreated = true;
+        result.body.isPrimed = result.body.isPrimed || decomp.primed;
+        result.body.isSubexpressionName = 
+                nodeRep.isSubexpressionName || (newNodeText != null); 
         return result;
     }
 
@@ -1730,14 +1793,13 @@ if (goalRep.decomposition == null) {
             result.parentVector = vec ;
             result.semanticNode = sn ;
             
-            // Set the fields of the result that are inherited from its father.
-            if (father != null) {
-                result.isPrimed = father.isPrimed;
-                result.isSubexpressionName = father.isSubexpressionName;
-                result.isCreated = father.isCreated;
-                // I don't think it's necessary to copy the isCreated field,
-                // but I don't think it hurts.
-            }
+            // Set the fields of the result that are inherited from the node it's
+            // a subnode of.
+            result.isPrimed = this.isPrimed;
+            result.isSubexpressionName = this.isSubexpressionName;
+            result.isCreated = this.isCreated;
+              // I don't think it's necessary to copy the isCreated field,
+              // but I don't think it hurts.
             
             NodeTextRep nodeTextRep = setNodeText;
             if (nodeTextRep == null ) {
@@ -1882,44 +1944,28 @@ if (goalRep.decomposition == null) {
         /**
          * If this.isPrimed is false, it just returns this.nodeText.  Otherwise,
          * it returns the primed version of this.nodeText.  It tries to be
-         * clever and not put parentheses around the text if they're not needed,
-         * but it doesn't try very hard.  It puts parentheses iff 
-         * 
-         *  - The isSubexpressionName is false, and
-         *  
-         *  - semanticNode is an OpApplNode whose operator is user-defined
-         *    and has a name that is an Identifier (so it's not in/prep/postfix).
+         * clever and not put parentheses around the text if they're not needed.
+         * Parentheses are not needed if isSubexpressionName is true, or
+         * if primingNeedsParens(...) says they're not needed.
          */
-       String[] primedNodeText() {
-           if (!this.isPrimed) {
-               return this.nodeText ;
-           }
-           
-           boolean needsParens = 
-                 ! this.isSubexpressionName 
-              && (this.semanticNode instanceof OpApplNode) ;
-              
-           if (needsParens) {
-               SymbolNode ops = ((OpApplNode) this.semanticNode).getOperator() ;
-               if (ops instanceof OpDefNode) {
-                 OpDefNode odn = (OpDefNode) ops ;
-                 needsParens = 
-                         (odn.getKind() == ASTConstants.BuiltInKind)
-                      || ! StringHelper.isIdentifier(odn.getName().toString());
-               } else {
-                   needsParens = false ;
-               }
-           }
-          
-          String[] result = this.nodeText.clone() ;
-          if (needsParens) {
-              result[0] = "(" + result[0] ;
-              result[result.length-1] = StringHelper.trimEnd(result[result.length-1]) + ")'" ;
-          } else {
-              result[result.length-1] = StringHelper.trimEnd(result[result.length-1]) + "'" ;
-          }
-          
-          return result;
+        String[] primedNodeText() {
+            if (!this.isPrimed) {
+                return this.nodeText;
+            }
+
+            boolean needsParens = (!this.isSubexpressionName)
+                    && primingNeedsParens(this.semanticNode);
+
+            String[] result = this.nodeText.clone();
+            if (needsParens) {
+                result[0] = "(" + result[0];
+                result[result.length - 1] = StringHelper
+                        .trimEnd(result[result.length - 1]) + ")'";
+            } else {
+                result[result.length - 1] = StringHelper
+                        .trimEnd(result[result.length - 1]) + "'";
+            }
+            return result;
         }
         
         
@@ -2132,8 +2178,7 @@ if (goalRep.decomposition == null) {
          * has the name "foo" + namePath.elementAt(i).
          * 
          */
-        Vector<String> namePath = new Vector<String>() ;
-            
+        Vector<String> namePath = new Vector<String>() ;   
         
         /** 
          * If this is a \A or \E decomposition, then this is the list
@@ -2153,6 +2198,7 @@ if (goalRep.decomposition == null) {
          *   each of the elements of quantBounds.             
          */
         Vector<String> quantBoundsubexpNames = null ;
+        
         
         /** True iff the Decomposition's children and  quantBounds should be primed. */
         boolean primed = false ;
@@ -2501,7 +2547,7 @@ System.out.println(result.toString());
         UniqueString opId = ((OpDefNode) aonode.getOperator()).getName();
         String opName = opId.toString();
 
-        if (!opName.equals(opName)) {
+        if (!opName.equals(op)) {
             decomp.children.add(node);
             decomp.namePath.add(namePathPrefix);
             return;
@@ -2748,8 +2794,7 @@ System.out.println(result.toString());
                             System.out.println("Closing nullifies");
                         }
                     }
-                    raiseWindow("Re-opened window "
-                            + decomposeHandler.location.toString());
+                    raiseWindow();
                     break;
                 }
                 break;               
@@ -2764,6 +2809,7 @@ System.out.println(result.toString());
                 case NodeRepresentation.OR_TYPE:    
                    break ;
                 case NodeRepresentation.IMPLIES_TYPE:
+                   impliesAction(nodeObj);
                    break ;
                 case NodeRepresentation.FORALL_TYPE:
                    decomposeHandler.forAllAction(nodeObj) ;
@@ -2844,7 +2890,7 @@ System.out.println(result.toString());
             int inc = (direction == SWT.DOWN)?1:-1;
             handler.assumes.add(index + inc, node) ;
             handler.assumeReps.add(index + inc, rep) ;
-            handler.raiseWindow("Decompose Proof");
+            handler.raiseWindow();
         }
 
         public void widgetDefaultSelected(SelectionEvent e) {
@@ -2915,25 +2961,49 @@ System.out.println(result.toString());
      * @param oan
      * @return
      */
-    static OpApplNode exposeRelevantExpr(OpApplNode oan) {
-        OpApplNode nd = oan;
-        if (nd.getOperator().getName() == ASTConstants.OP_prime) {
-            nd = (OpApplNode) nd.getArgs()[0];
+// No longer used.
+//    static OpApplNode exposeRelevantExpr(OpApplNode oan) {
+//        OpApplNode nd = oan;
+//        if (nd.getOperator().getName() == ASTConstants.OP_prime) {
+//            nd = (OpApplNode) nd.getArgs()[0];
+//        }
+//        if (nd.getOperator().getKind() == ASTConstants.UserDefinedOpKind) {
+//            ExprNode opDef = ((OpDefNode) nd.getOperator()).getBody();
+//            if (opDef instanceof OpApplNode) {
+//                nd = (OpApplNode) opDef;
+//            } else {
+//                return nd;
+//            }
+//        }
+//        if (nd.getOperator().getName() == ASTConstants.OP_prime) {
+//            nd = (OpApplNode) nd.getArgs()[0];
+//        }
+//        return nd;
+//    }
+     
+    /**
+     * Returns true if it may be necessary to put parentheses around the
+     * expression represented by `node' in order to prime it.  This is the
+     * case if node is an OpApplNode whose operator is NOT a user-defined 
+     * operator with an identifier as its name (so it's not in/prep/postfix).
+     * 
+     * @param node
+     * @return
+     */
+    static boolean primingNeedsParens(SemanticNode node) {
+        if (!(node instanceof OpApplNode)) {
+            return false;
         }
-        if (nd.getOperator().getKind() == ASTConstants.UserDefinedOpKind) {
-            ExprNode opDef = ((OpDefNode) nd.getOperator()).getBody();
-            if (opDef instanceof OpApplNode) {
-                nd = (OpApplNode) opDef;
-            } else {
-                return nd;
-            }
+        SymbolNode ops = ((OpApplNode) node).getOperator();
+        if (ops instanceof OpDefNode) {
+            OpDefNode odn = (OpDefNode) ops;
+            return (odn.getKind() == ASTConstants.BuiltInKind)
+                    || !StringHelper.isIdentifier(odn.getName().toString());
+        } else {
+            return false;
         }
-        if (nd.getOperator().getName() == ASTConstants.OP_prime) {
-            nd = (OpApplNode) nd.getArgs()[0];
-        }
-        return nd;
     }
-        
+    
         /**
          * Returns true iff some module of the spec is unsaved.  Code
          * taken from UIHelper.promptUserForDirtyModules.  This is not optimal because
