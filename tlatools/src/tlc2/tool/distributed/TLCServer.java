@@ -184,7 +184,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			final String metadir, final int fpsetCount) throws IOException {
 		// A single FPSet server running on the master node
 		final FPSet fpSet = FPSetFactory.getFPSet(work.getFPSetConfiguration());
-		fpSet.init(0, metadir, work.getFileName());
+		fpSet.init(1, metadir, work.getFileName());
 		return new NonDistributedFPSetManager(fpSet, InetAddress.getLocalHost()
 				.getCanonicalHostName());
 	}
