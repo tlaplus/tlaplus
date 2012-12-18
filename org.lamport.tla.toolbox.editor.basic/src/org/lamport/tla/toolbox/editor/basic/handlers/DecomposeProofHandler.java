@@ -86,12 +86,12 @@ definition of C is expanded, then the DEF C is eliminated.
 Proof by Disjunction Splitting
 -------------------------------
 Suppose an obligation A |= P is transformed into the obligation 
-A, H |= C by expanding definitions D_1, ...  , D_k.
+A, H |= C by expanding definitions D_1, ... , D_k.
 
 Suppose that A, H |= C is then transformed to the equivalent
 obligation  J, K, L |= C by expanding definitions E_1, ... , E_m
 and introducing additional declarations NEW v_1, ... , NEW v_j,
-where K has the form K_1, ... , K_n.  Then A |= P has the
+where K has the form K_1 \/ ... \/ K_n.  Then A |= P has the
 proof
 
    <i> SUFFICES H, NEW v_1, ... , NEW v_j |= C
@@ -118,7 +118,7 @@ two steps:
 *********************************/
 
         /*
-         * To figure out how to layout a nice popup, see 
+         * To figure out how to lay out a nice popup, see 
          *    
          *    http://www.eclipse.org/articles/article.php?file=Article-Understanding-Layouts/index.html
          *    
@@ -193,6 +193,8 @@ import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
+
+import pcal.exception.StringVectorToFileException;
 
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ASTConstants;
@@ -340,7 +342,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      */
     private Vector <NodeRepresentation> assumeReps ; 
     
-    private OpApplNode goal ;
+    private SemanticNode goal ;
     private NodeRepresentation goalRep ;
     
    
@@ -774,8 +776,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 }
                 assumeReps.add(nodeRep);
                 
-               SemanticNode sgoal = ((AssumeProveNode) thm).getProve();
-               if (! (sgoal instanceof OpApplNode)) {
+               goal = ((AssumeProveNode) thm).getProve();
+               if (! (goal instanceof OpApplNode)) {
                    MessageDialog
                    .openError(UIHelper.getShellProvider().getShell(),  
                                "Decompose Proof Command",
@@ -783,7 +785,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                    return null ;
                }
                
-                goal = (OpApplNode) sgoal ;
                 goalRep = stepRep.subNodeRep(goal, null, null, null );
             }
             
@@ -802,12 +803,16 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                             "This is a weird step that cannot\n be processed.");
                 return null ;
             }
-            goal = (OpApplNode) thm;
-            UniqueString goalOpName = goal.getOperator().getName();
+            goal = thm;
+            UniqueString goalOpName = null ;
+            if (goal instanceof OpApplNode) {
+                goalOpName = ((OpApplNode) goal).getOperator().getName();
+            }
 
             // Abort if this is one of the following kinds of steps:
             // QED, HAVE, PICK, WITNESS, SUFFICES
-            if ((goalOpName == ASTConstants.OP_qed)
+            if (       (goalOpName == null)
+                    || (goalOpName == ASTConstants.OP_qed)
                     || (goalOpName == ASTConstants.OP_pfcase)
                     || (goalOpName == ASTConstants.OP_have)
                     || (goalOpName == ASTConstants.OP_pick)
@@ -1239,6 +1244,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
              * This is a "prove by AND-split" operation.
              */
             // not yet implemented
+            System.out.println(stringArrayToString(createdAssumptions()));
+            
             return;
         } else {
             /**
@@ -1295,17 +1302,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             goalDefinitions.add(decomp.definedOp);
         }
         
-        QuantifierDecomposition qdc = decomposeQuantifier(nodeRep) ;
+        QuantifierDecomposition qdc = decomposeQuantifier(nodeRep, true) ;
         this.goalRep = qdc.body ;
-        // I don't think goal is ever used once we start decomposing 
-        // things, but it doesn't hurt to set it.  But let's not
-        // set it if, sor some weird reason, it's not an
-        // OpApplNode
-        if (qdc.body.semanticNode instanceof OpApplNode) {
-           this.goal = (OpApplNode) qdc.body.semanticNode ; 
-        } else {
-            this.goal = null ;
-        }
+        // I think that, once we start decomposing things, goal
+        // may be used in calling primingNeedsParens
+        this.goal = qdc.body.semanticNode ; 
+        
         for (int i = 0; i < qdc.news.size(); i++) {
             this.assumeReps.add(qdc.news.elementAt(i)) ;
             this.assumes.add(qdc.news.elementAt(i).semanticNode) ;
@@ -1358,15 +1360,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         nrep.isSubexpressionName = 
                 nrep.isSubexpressionName || (decomp.definedOp != null);
         this.goalRep = nrep;
-        // I don't think goal is ever used once we start decomposing 
-        // things, but it doesn't hurt to set it.  But let's not
-        // set it if, sor some weird reason, it's not an
-        // OpApplNode
-        if (nrep.semanticNode instanceof OpApplNode) {
-           this.goal = (OpApplNode) nrep.semanticNode ; 
-        } else {
-            this.goal = null ;
-        }
+        // I think that, once we start decomposing things, goal
+        // may be used in calling primingNeedsParens
+        
+        this.goal = nrep.semanticNode ; 
         
         raiseWindow();
     }
@@ -1409,7 +1406,11 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 decomp.children.elementAt(i), nodeRep.parentVector, nodeRep.parentNode,
                 newNodeText);
         // Set various fields whose values can be inferred from nodeRep and decomp.
-        rep.isCreated = true;
+        // Don't set rep.isCreated because don't want it set for an
+        // AND-split of an assumption, unless that assumption came from
+        // a split of the goal.
+        //
+        // rep.isCreated = true;
         rep.isPrimed = rep.isPrimed || decomp.primed;
         rep.isSubexpressionName = 
                 nodeRep.isSubexpressionName || (decomp.definedOp != null);        
@@ -1434,15 +1435,18 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * a \A or \E decomposition, so its quantIds field is not null.
      * The NodeRepresentations for the NEW assumptions are given a null
      * semanticNode field, since I don't think that field is ever used once
-     * decomposition begins.
+     * decomposition begins.  The isForAll argument is used to determine
+     * whether the body's created field should be set true.
      * 
      * Must be enhanced to handle a decomposition that comes from a full expansion of
      * a defined operator.
      * 
      * @param decomp
+     * @param isForAll  True iff this is called for a \A split
      * @return
      */
-    QuantifierDecomposition decomposeQuantifier(NodeRepresentation nodeRep) {
+    QuantifierDecomposition decomposeQuantifier(NodeRepresentation nodeRep,
+            boolean isForAll) {
         QuantifierDecomposition result = new QuantifierDecomposition();
         
         result.news  = new Vector<NodeRepresentation>() ;
@@ -1502,11 +1506,11 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 ntrep.mapping[0].addElement(new MappingPair(1, -1)) ;
             } else {
                 // Set ntrep to be a NodeTextRep for the quantifier bound,
-                // primed if decomp.primed = true.
+                // primed if decomp.primed or nodeRep.isPrimed is = true.
                 if (newNodeText == null) {
                     // The bound is not a subexpression name.
                     ntrep = nodeRep.subNodeText(decomp.quantBounds.elementAt(i));
-                    if (decomp.primed) {
+                    if (decomp.primed || nodeRep.isPrimed) {
                         if (primingNeedsParens(decomp.quantBounds.elementAt(i))) {
                             ntrep = prependToNodeText(appendToNodeText(ntrep, ")'"), "(");
                         } else {
@@ -1557,11 +1561,71 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         }
         result.body = nodeRep.subNodeRep(decomp.children.elementAt(0), 
                 nodeRep.parentVector, nodeRep.parentNode, newNodeText) ;
-        result.body.isCreated = true;
+        result.body.isCreated = isForAll;
         result.body.isPrimed = result.body.isPrimed || decomp.primed;
         result.body.isSubexpressionName = 
                 nodeRep.isSubexpressionName || (newNodeText != null); 
         return result;
+    }
+    
+    /**
+     * Returns string array such that applying stringArrayToString to it
+     * produces the text of a list of of assumptions in this.assumeReps 
+     * for which the isCreated field equals true.
+     */
+    String[] createdAssumptions() {
+        /** 
+         * Sets vec to a vector of string arrays such that applying stringArrayToString to 
+         * each of them produces the text of an assumption in this.assumeReps 
+         * for which the isCreated field equals true--except that multiple
+         * one-line NEW assumptions are combined into a single 1-line string array.
+         */
+        Vector<String[]> vec = new Vector<String[]>() ;
+        for (int i = 0; i < this.assumeReps.size(); i++) {
+            NodeRepresentation rep = assumeReps.elementAt(i) ;
+           if (rep.isCreated) {
+                String newDecls = null ;
+                while (rep.onSameLineAsNext) {
+                  if (newDecls != null) {
+                      newDecls = newDecls + ", " ;
+                  } else {
+                      newDecls = "" ;
+                  }
+                  newDecls = newDecls + rep.nodeText[0];
+                  i++ ;
+                  rep = assumeReps.elementAt(i) ;
+                }
+                if (newDecls == null) {
+                   vec.add(rep.primedNodeText()) ;
+                } else {
+                    vec.add(new String[] {newDecls + ", " + rep.nodeText[0]});                 
+                }
+            }
+        }
+        
+        /**
+         * Sets resVec to a single vector obtained by combining the elements
+         * of vec, putting commas between them.
+         */
+        
+        Vector<String> resVec = new Vector<String>();
+        for (int i = 0; i < vec.size(); i++) {
+            String[] strArray = vec.elementAt(i) ;
+            for (int j = 0; j < strArray.length; j++) {
+                String str = strArray[j] ;
+                if ((j == strArray.length - 1) && (i != vec.size() - 1)) {
+                    str = str + "," ;
+                }
+                resVec.add(str) ;
+            }
+        }
+        
+        // Convert resVec to the array result and return it.
+        String[] result = new String[resVec.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = resVec.elementAt(i);
+        }
+        return result ;
     }
 
     /**
@@ -1713,8 +1777,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         // State information about this clause.
         
         /**
-         * True iff this assumption or goal was not in the original
-         * step.
+         * True iff this is a NEW assumption that was not in the original
+         * obligation, or it is an ExprNode that was created by splitting
+         * the goal. 
          */
         boolean isCreated = false;
 
@@ -1797,10 +1862,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             // a subnode of.
             result.isPrimed = this.isPrimed;
             result.isSubexpressionName = this.isSubexpressionName;
-            result.isCreated = this.isCreated;
-              // I don't think it's necessary to copy the isCreated field,
-              // but I don't think it hurts.
             
+            // If the original node came from splitting the
+            // goal, then this node also came from splitting the
+            // goal.
+            result.isCreated = this.isCreated;
+              
             NodeTextRep nodeTextRep = setNodeText;
             if (nodeTextRep == null ) {
               nodeTextRep = this.subNodeText(sn);
@@ -1811,21 +1878,11 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             result.mapping = nodeTextRep.mapping;
             
             /*
-             *  Compute the type and subType fields.
+             *  Compute the type, subType, and decomposition fields an
              */
             switch (sn.getKind()){
             case ASTConstants.OpApplKind:
                 result.nodeType = EXPR_NODE ;
-                /* 
-                 * Compute subType field.
-                 */
-                // Set nd to the expression we should look at to compute
-                // the subType, which is the expression obtained from sn
-                // by removing an application of ' and expanding user definitions.
-//                OpApplNode nd = exposeRelevantExpr((OpApplNode) sn) ;
-//                
-//                UniqueString opId = nd.getOperator().getName();
-//                result.nodeSubtype = operatorNameToNodeSubtype(opId);
                 
                 result.decomposition = decompose(result) ;
                 if (result.decomposition == null) {
@@ -1833,25 +1890,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 } else {
                     result.nodeSubtype = result.decomposition.type;
                 }
-//                String opName = opId.toString();
-//                // Note \: experimentation reveals that 
-//                //  \lor and \/ both yield operator name \lor, and
-//                // \land and /\ both yield operator name \land
-//                if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
-//                        result.nodeSubtype = AND_TYPE;
-//                } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
-//                        result.nodeSubtype = OR_TYPE;
-//                } else if (opName.equals("=>")) {
-//                        result.nodeSubtype = IMPLIES_TYPE;
-//                } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
-//                        result.nodeSubtype = FORALL_TYPE;
-//                } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
-//                        result.nodeSubtype = EXISTS_TYPE;
-//                } else if (opId == ASTConstants.OP_sa) {
-//                        result.nodeSubtype = SQSUB_TYPE;
-//                } else {
-//                        result.nodeSubtype = OTHER_TYPE;
-//                }
                 break;
             case ASTConstants.NewSymbKind:
                 result.nodeType = NEW_NODE;
