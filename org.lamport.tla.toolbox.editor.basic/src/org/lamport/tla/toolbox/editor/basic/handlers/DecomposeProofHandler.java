@@ -137,6 +137,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.AbstractSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -310,18 +311,42 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private String stepNumber;   
     
     /**
-     * The column in which the step begins.  (Used for determining indentation of
-     * the proof.
+     * The column in which the step begins.  
      */
     private int stepColumn;
     
+    
+    /**
+     * PREFERENCES
+     * 
+     * The following fields are constants that should be set as preferences.
+     */
+    
     /**
      * The number of columns to the right of stepColumn to which the
-     * created proof is to be indented.  It should be set from a 
-     * preference.
+     * created proof is to be indented if the step has no proof.  Otherwise, 
+     * the created proof is indented to the column of the existing proof.
      */
-    int proofIndent = 2 ;
+    private static final int PROOF_INDENT = 2 ;
  
+    /**
+     * True iff an "obvious" proof should be written "PROOF OBVIOUS"
+     * rather than just "OBVIOUS".
+     */
+    private static final boolean OBVIOUS_HAS_PROOF = false ;
+    
+    /**
+     * True iff the QED step of the new proof should have a number
+     * rather than just a level.
+     */
+    private static final boolean NUMBER_QED_STEP = true ;
+    
+    /**
+     * The string that should follow a step number like <2>7 in
+     * proofs constructed by decomposition.
+     */
+    private static final String STEP_NUMBER_PUNCTUATION = "." ;
+    
     /*************************************************************************
      * Fields that contain the current assumptions and goal.  
      * 
@@ -396,19 +421,19 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * performed on it.  After an AND-split, only AND-split nodes can
      * have enabled actions.
      */
-    private boolean assumeHasChanged = false ;  
+    private boolean assumeHasChanged ;  
     
     /** 
      * The set of Ids of user-defined operations whose definitions 
      * were expanded in decomposing the assumptions.
      */
-    private HashSet<String> assumeDefinitions = new HashSet<String> ();
+    private HashSet<String> assumeDefinitions ;
     
     /** 
      * The set of Ids of user-defined operations whose definitions 
      * were expanded in decomposing the goal.
      */
-    private HashSet<String> goalDefinitions = new HashSet<String> ();
+    private HashSet<String> goalDefinitions ;
 
     /****************************************
      * Top Menu buttons.
@@ -557,6 +582,13 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
+        String[] blankLine = new String[] {""} ;
+        String[] oneline = new String[] {"1"} ;
+        System.out.println("Try this:") ;
+        System.out.println(
+                stringArrayToString(concatStringArrays(oneline, 
+                        concatStringArrays(blankLine, oneline)))) ;
+        
         /******************************************************************
          * Perform various checks to see if the command should be
          * executed, and possibly raise an error warning if it shouldn't. 
@@ -613,7 +645,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         chosenSplit = -1;
         andSplitBegin = -1;
         andSplitEnd = -1 ;
-
+        assumeHasChanged = false;
+        assumeDefinitions = new HashSet<String> ();
+        goalDefinitions = new HashSet<String> ();
+        
         /*******************************************************************
          * Set the following fields:
          *    doc, text, selectionProvider, selection, offset, moduleNode.
@@ -794,8 +829,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
              * assumesRep to null and check that this isn't something like a QED
              * step that the command doesn't handle.
              *************************************************************/
-            assumes = null;
-            assumeReps = null;
+            assumes = new Vector<SemanticNode>();
+            assumeReps = new Vector<NodeRepresentation>();
             if (! (thm instanceof OpApplNode)) {
                 MessageDialog
                 .openError(UIHelper.getShellProvider().getShell(),  
@@ -1243,9 +1278,205 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             /**
              * This is a "prove by AND-split" operation.
              */
-            // not yet implemented
-            System.out.println(stringArrayToString(createdAssumptions()));
             
+            
+            /** 
+             * Set levelString to something like "<3>" for the new
+             * proof.  If this is the highest-level proof, we use
+             * level l; perhaps there should be a preference if the
+             * user wants to use level 0, or 42.
+             */
+            int level = this.proofLevel ;
+            if (level < 0) {
+                level = 0;
+            }
+            String levelString = "<" + (level + 1) + ">";
+            
+            /**
+             * Set proofIndent to the amount to indent both the new proof
+             * and the proofs of its steps.  We may want to do something clever
+             * about inferring what the user wants from the indentation he used
+             * if the step has a leaf proof.  However, this can be complicated
+             * because some people put the proof on the last line of the
+             * obligation.  So for now, we just set it to PROOF_INDENT.
+             * 
+             * We also set proofIndentString to a string of that number of spaces.
+             */
+            int proofIndent = this.PROOF_INDENT ;
+            String proofIndentString = StringHelper.copyString(" ", proofIndent) ;
+            
+            // Get the assumptions, goal, and proof as string arrays.
+            // 
+            String[] assumptionsText = createdAssumptions() ;
+            String[] goalText = this.goalRep.primedNodeText() ;
+            String[] proofText = null ;
+            
+            // If there is a proof, set proofText to its string array
+            // representation and delete it.
+            if (this.proof != null) {
+                proofText = this.stepRep.subNodeText(this.proof).nodeText;
+                // System.out.println("proof = " +
+                // stringArrayToString(proofText)) ;
+                try {
+                    IRegion proofRegion = EditorUtil.getRegionOf(this.doc,
+                            ((SyntaxTreeNode) this.proof.stn).getLocation());
+                    this.doc.replace(proofRegion.getOffset(),
+                            proofRegion.getLength(), "");
+                } catch (BadLocationException e) {
+                    MessageDialog.openError(UIHelper.getShellProvider()
+                            .getShell(), "Decompose Proof Command",
+                            "An error that should not happen has occurred in"
+                                    + "line 1266 of DecomposeProofHandler.");
+                    e.printStackTrace();
+                }
+            }
+
+            // Set sufficesStep to the string array of the suffices step,
+            // or null if there is none.
+            // There is a suffices step iff the user has selected the Use SUFFICES
+            // option, and the decomposition of the goal has created an assumption.
+            String[] sufficesStep = null ;
+            if (useSufficesButton.getSelection() && (assumptionsText.length != 0)) {
+                
+                String sufficesProof = null ;
+                
+                
+                String[] suffices = prependToStringArray(
+                            concatStringArrays(
+                               prependToStringArray(assumptionsText, "ASSUME "),
+                               prependToStringArray(this.goalRep.primedNodeText(), "PROVE  ")),
+                            levelString + " SUFFICES ");
+                if (goalDefinitions.isEmpty()) {
+                    // No goal definitions were expanded; the proof is obvious.
+                    if (OBVIOUS_HAS_PROOF) {
+                        sufficesProof = "PROOF OBVIOUS" ;
+                    } else {
+                        sufficesProof = "OBVIOUS" ;
+                    }
+                } else {
+                    // Need to use the DEF of the expanded definitions
+                    sufficesProof = "BY DEF " + setOfStringsToList(goalDefinitions);
+                }
+                
+                sufficesStep = concatStringArrays(suffices, 
+                                  new String[] { proofIndentString + sufficesProof});
+            }
+            
+            // Set conjuctSteps to be an array of string arrays for the
+            // steps of the proof that prove the conjuncts in the decomposition.
+            Decomposition decomp = nodeRep.decomposition;
+            int numberOfSteps = decomp.children.size() ;
+            String[][] conjunctSteps = new String[numberOfSteps][] ;
+            
+            for (int i = 0 ; i < numberOfSteps ; i++) {
+                
+                // Set goalArray to the String array of the goal.
+                NodeRepresentation stepGoalRep = decompositionChildToNodeRep(nodeRep,
+                        i, null, null);
+                String[] goalArray = stepGoalRep.primedNodeText();
+      
+                // Set step to step number + the step's obligation.
+                String[] step ;
+                // If there is no SUFFICES step but the goal decomposition
+                // created new ASSUME clauses, then they must be the ASSUME
+                // of an ASSUME / PROVE
+                if ((sufficesStep == null) & (assumptionsText.length > 0)) {
+                    // Need to make ASSUME / PROVE
+                    step = concatStringArrays(
+                            prependToStringArray(assumptionsText, "ASSUME "),
+                            prependToStringArray(goalArray, "PROVE  ")) ;
+                } else {
+                    // Just a simple step, no ASSUME/PROVE.
+                    step = goalArray ;
+                }
+                step = prependToStringArray(step, levelString + (i+1) + STEP_NUMBER_PUNCTUATION + " ") ;
+                
+                
+                // Add the proof to step, if there is one.
+                if (proofText != null) {
+                    step = concatStringArrays(step, 
+                             prependToStringArray(proofText,  proofIndentString));
+                }
+                
+//                System.out.println("step " + i + ":") ;
+//                System.out.println(stringArrayToString(step)) ;
+                // Set the i-th conjunctStep to step
+                conjunctSteps[i] = step ;
+            }
+            
+            // Set qedStep to the QED step (with its step number and proof).
+            String[] qedStep = new String[2];
+            qedStep[0] = levelString + (numberOfSteps + 1) + STEP_NUMBER_PUNCTUATION + "QED";
+            qedStep[1] = proofIndentString + "BY " + (levelString + 1) ;
+            for (int i = 2; i <= numberOfSteps; i++ ) {
+                qedStep[1] = qedStep[1] + ", " + levelString + i ;
+            }
+            
+            boolean hasDEF = false ;
+            if ((sufficesStep == null) && (! this.goalDefinitions.isEmpty())) {
+                boolean hasDef = true ;
+                qedStep[1] = qedStep[1] + " DEF " + setOfStringsToList(this.goalDefinitions) ;
+            }
+            if (decomp.definedOp != null) {
+                if (hasDEF) {
+                qedStep[1] = qedStep[1] + ", " + decomp.definedOp ;
+                } else {
+                    qedStep[1] = qedStep[1] + " DEF " + decomp.definedOp ;
+                }
+            }
+            
+//            System.out.println("QED Step:") ;
+//            System.out.println(stringArrayToString(qedStep)) ;
+            
+//            String foo = "";
+//            for (int i = 0; i < conjunctSteps.length; i++) {
+//                foo = foo + stringArrayToString(conjunctSteps[i]) ;
+//            }
+//            System.out.println("conjunctSteps:");
+//            System.out.println(foo) ;
+//            // System.out.println(stringArrayToString(assumptionsText));
+            
+            String[] blankLine = new String[] {""} ;
+            String[] completeProof =  new String[0] ;
+            if (sufficesStep != null) {
+                completeProof = concatStringArrays(sufficesStep, blankLine);
+            }
+            
+            completeProof = concatStringArrays(completeProof, conjunctSteps[0]) ;
+            for (int i = 1; i < conjunctSteps.length; i++) {
+                completeProof = concatStringArrays(completeProof, 
+                                  concatStringArrays(blankLine, conjunctSteps[i])) ;
+            }
+            
+            completeProof = concatStringArrays(completeProof, 
+                    concatStringArrays(blankLine, qedStep)) ;
+            
+            // we indent the proof.
+            completeProof = prependToStringArray(completeProof, 
+                   StringHelper.copyString(" ", 
+                      this.step.getLocation().beginColumn() - 1 + proofIndent)) ;
+            
+//            System.out.println("complete proof:") ;
+//            System.out.println(stringArrayToString(completeProof));
+            
+            // we now add the proof to the module.  We put it on the line
+            // after the last line of the theorem.
+            try {
+                int nextLineOffset = 
+                       doc.getLineInformation(this.step.getTheorem().getLocation().endLine()).
+                          getOffset();
+                this.doc.replace(nextLineOffset, 0, stringArrayToString(completeProof));
+            } catch (BadLocationException e) {
+                MessageDialog.openError(UIHelper.getShellProvider()
+                        .getShell(), "Decompose Proof Command",
+                        "An error that should not happen has occurred in"
+                                + "line 1465 of DecomposeProofHandler.");
+                e.printStackTrace();
+            }
+            
+            // We dispose of the window.  The disposal listener will do everything
+            // that's supposed to happen when the window is removed.
+            this.windowShell.dispose() ;
             return;
         } else {
             /**
@@ -2023,7 +2254,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             mapping = new Vector[nodeText.length] ;
             for (int i = 0; i < mapping.length; i++) {
                 mapping[i] = new Vector<MappingPair>() ;
-                mapping[i].add(new MappingPair(1, -1)) ;
+                mapping[i].add(new MappingPair(1, - node.stn.getLocation().beginColumn())) ;
             }
             if (location.beginLine() == location.endLine()) {
                 IRegion thmregion = EditorUtil.getRegionOf(document,
@@ -2140,12 +2371,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     }
     
     /**
-     * Returns a brand new NodeTextRep obtained thats equal to the nodeRep argument
+     * Returns a brand new NodeTextRep that's equal to the nodeRep argument
      * except that the String str has been appended to the last line.
-     * 
-     * @param nodeRep
-     * @param str
-     * @return
      */
     static NodeTextRep appendToNodeText(NodeTextRep nodeRep, String str) {
         NodeTextRep result = nodeRep.clone();
@@ -2154,6 +2381,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         return result;
     }
     
+    /**
+     * Returns a brand new NodeTextRep that's equal to the nodeRep argument
+     * except that the String str has been prepended to the first line and 
+     * subsequent lines have been indented to preserve the alignment with the
+     * original first line.
+     */
     static NodeTextRep prependToNodeText(NodeTextRep nodeRep, String str) {
         NodeTextRep result = nodeRep.clone();
         for (int i = 0; i < nodeRep.nodeText.length; i++) {
@@ -2167,6 +2400,69 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         return result;
     }
     
+    /** 
+     * Returns a new string array that's the same as `array' except that the  
+     * String str has been appended to the last line.
+     */
+    static String[] appendToStringArray(String[] array,  String str) {
+        String[] result = new String[array.length] ;
+        for (int i = 0; i < result.length; i++) {
+            result[i] = array[i];
+        }
+        result[result.length - 1] = array[result.length - 1] + str;
+        return result;
+    }
+    
+    /** 
+     * Returns a new string array that's the same as `array' except that the  
+     * String str has been prepended to the first line and subsequent lines have
+     * added spaces to indent them to preserve the alignment with the original
+     * first line.
+     */
+     static String[] prependToStringArray(String[] array, String str) {
+        String[] result = new String[array.length] ;
+        for (int i = 0; i < result.length; i++) {
+            if (i==0) {
+                result[0] = str + array[0] ;
+             } else {
+                result[i] = StringHelper.copyString(" ", str.length()) + array[i];
+             }
+        }
+        return result;
+    }
+ 
+    /**
+     * Returns the concatenation of array1 and array2.
+     */
+    static String[] concatStringArrays(String[] array1, String[] array2) {
+        String[] result = new String[array1.length + array2.length] ;
+        for (int i = 0; i < array1.length; i++) {
+            result[i] = array1[i] ;
+        }
+        for (int i = 0; i < array2.length; i++) {
+            result[i + array1.length] = array2[i] ;
+        }
+        return result ;
+    }
+    
+    /**
+     * Returns a string containing a comma-separated list of the
+     * elements in the set.
+     */
+    static String setOfStringsToList(Set<String> set) {
+       String result = "" ;
+       Iterator<String> iter = set.iterator() ;
+       boolean first = true ;
+       while (iter.hasNext()) {
+           if (first) {
+               first = false;
+           } else {
+               result = result + ", ";
+           }
+           result = result + iter.next();
+       }
+       return result;
+    }
     
     /**
      * A Decomposition object describes the possible decomposition of
@@ -2582,10 +2878,14 @@ System.out.println(result.toString());
             return;
         }
         OpApplNode aonode = (OpApplNode) node;
-        UniqueString opId = ((OpDefNode) aonode.getOperator()).getName();
-        String opName = opId.toString();
-
-        if (!opName.equals(op)) {
+        SymbolNode sym = aonode.getOperator();
+        UniqueString opId = null;
+        String opName = null;
+        if (sym instanceof OpDefNode) {
+            opId = ((OpDefNode) sym).getName();
+            opName = opId.toString();
+        }
+        if ((opName == null) || (!opName.equals(op))) {
             decomp.children.add(node);
             decomp.namePath.add(namePathPrefix);
             return;
@@ -2861,7 +3161,7 @@ System.out.println(result.toString());
                 }
                 
                
-                System.out.println("ACTION Click");
+//                System.out.println("ACTION Click");
                 break ;
 // There doesn't seem to be any need to put a listener on a check button.                
 //            case CHECK:
@@ -2878,7 +3178,7 @@ System.out.println(result.toString());
          * @param e an event containing information about the default selection
          */
         public void widgetDefaultSelected(SelectionEvent e) {
-            System.out.println("widgetDefaultSelected called") ;
+//            System.out.println("widgetDefaultSelected called") ;
             widgetSelected(e) ;
              
         }
