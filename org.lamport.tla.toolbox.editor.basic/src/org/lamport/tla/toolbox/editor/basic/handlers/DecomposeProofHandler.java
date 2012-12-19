@@ -360,14 +360,19 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     /**
      * The semantic nodes for the current assumptions.
      */
-    private Vector <SemanticNode> assumes ;
+    // This is redundant because, once the state of the handler is set
+    // by the execute method, the SemanticNodes of the assumptions are in
+    // the semanticNode objects of the assumeReps objects.
+    // private Vector <SemanticNode> assumes ;
     
     /**
      * The NodeRepresentation objects for the current assumptions
      */
     private Vector <NodeRepresentation> assumeReps ; 
     
-    private SemanticNode goal ;
+    // goal field is redundant because, once the state of the handler is set
+    // by the execute method, it should always equal goalRep.semanticNode.
+    // private SemanticNode goal ;
     private NodeRepresentation goalRep ;
     
    
@@ -581,7 +586,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * ExecutionEvent)
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
-
+        // We will set assumes to the vector of SemanticNodes of the assumptions,
+        // if there are any, and goal to the SemanticNode of the goal.
+        Vector <SemanticNode> assumes ;
+        SemanticNode goal ;
         String[] blankLine = new String[] {""} ;
         String[] oneline = new String[] {"1"} ;
         System.out.println("Try this:") ;
@@ -961,7 +969,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         assumeLabel.setText("ASSUME");
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(JFaceResources.HEADER_FONT));
         
-        if (assumes != null) {
+        if (assumeReps != null) {
             /*************************************************************
              * Displaying  the assumptions.  
              * 
@@ -969,7 +977,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
              * line among all the lines in the assumptions.
              **************************************************************/
             int assumeWidth = 0;
-            for (int i = 0; i < assumes.size(); i++) {
+            for (int i = 0; i < assumeReps.size(); i++) {
                 for (int j = 0; j < assumeReps.elementAt(i).nodeText.length; j++) {
                     assumeWidth = Math.max(assumeWidth,
                             assumeReps.elementAt(i).nodeText[j].length());
@@ -979,7 +987,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             /*************************************************************
              * Add the assumptions to the DecomposeProof window.
              *************************************************************/
-            for (int i = 0 ; i < assumes.size(); i++) {
+            for (int i = 0 ; i < assumeReps.size(); i++) {
                 
                 /*************************************************************
                  * Add the button or blank area to the first column.
@@ -987,8 +995,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 String labelText =  null ;               
                 // Need to test if assumes.elementAt(i) is null because created
                 // NEW nodes have null semanticNode fields.
-                if (    (assumes.elementAt(i) != null) 
-                     && (assumes.elementAt(i).getKind() == ASTConstants.OpApplKind)) {
+                if (    (assumeReps.elementAt(i).semanticNode != null) 
+                     && (assumeReps.elementAt(i).semanticNode.getKind() == ASTConstants.OpApplKind)) {
                         switch (assumeReps.elementAt(i).nodeSubtype) {
                         case NodeRepresentation.AND_TYPE:
                                 labelText = "/\\";
@@ -1498,14 +1506,14 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             // Remove this assumption and insert the split nodes in its place.
             // Set newSemanticNodes to the vector of new assumptions.
             Vector<SemanticNode> addedAssumps = decomp.children;
-            this.assumes.remove(idx);
+//            this.assumes.remove(idx);
             this.assumeReps.remove(idx);
             for (int i = 0; i < addedAssumps.size(); i++) {
                 // Call decompositionChildToNodeRep to construct the child's
                 // NodeRepresentation.
                 NodeRepresentation rep = decompositionChildToNodeRep(nodeRep,
                         i, this.assumeReps, null);
-                this.assumes.add(idx + i, decomp.children.elementAt(i));
+//                this.assumes.add(idx + i, decomp.children.elementAt(i));
                 this.assumeReps.add(idx + i, rep);
 
             }
@@ -1537,12 +1545,38 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         this.goalRep = qdc.body ;
         // I think that, once we start decomposing things, goal
         // may be used in calling primingNeedsParens
-        this.goal = qdc.body.semanticNode ; 
+//        this.goal = qdc.body.semanticNode ; 
         
         for (int i = 0; i < qdc.news.size(); i++) {
             this.assumeReps.add(qdc.news.elementAt(i)) ;
-            this.assumes.add(qdc.news.elementAt(i).semanticNode) ;
+//            this.assumes.add(qdc.news.elementAt(i).semanticNode) ;
         }
+        raiseWindow();
+    }
+    
+    void existsAction(NodeRepresentation nodeRep) {
+        // Set decomp to nodeRep's decomposition and idx
+        // and parentVec so that nodeRep = parentVec.elementAt(idx).
+        // to the value such that 
+        int idx = nodeRep.getParentIndex();
+        Vector<NodeRepresentation> parentVec = nodeRep.parentVector; 
+        
+        Decomposition decomp = nodeRep.decomposition;
+        hasChanged = true;
+        if (decomp.definedOp != null) {
+            goalDefinitions.add(decomp.definedOp);
+        }
+        
+        QuantifierDecomposition qdc = decomposeQuantifier(nodeRep, true) ;
+        
+        parentVec.remove(idx) ;
+        
+        for (int i = 0; i < qdc.news.size(); i++) {
+            parentVec.add(idx + i, qdc.news.elementAt(i)) ;
+//            parentVec.add(idx + i, qdc.news.elementAt(i).semanticNode) ;
+        }
+        parentVec.add(idx + qdc.news.size(), qdc.body) ;
+//        parentVec.add(idx + qdc.news.size(), qdc.body.semanticNode) ;
         raiseWindow();
     }
     
@@ -1570,13 +1604,13 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             ntrep = appendToNodeText(newNodeText, "!1") ;
         }
         NodeRepresentation nrep = nodeRep.subNodeRep(decomp.children.elementAt(0), 
-                nodeRep.parentVector, nodeRep.parentNode, ntrep) ;
+                this.assumeReps, nodeRep.parentNode, ntrep) ;
         nrep.isCreated = true;
         nrep.isPrimed = nrep.isPrimed || decomp.primed;
         nrep.isSubexpressionName = 
                 nrep.isSubexpressionName || (decomp.definedOp != null);
         this.assumeReps.add(nrep) ;
-        this.assumes.add(nrep.semanticNode);
+//        this.assumes.add(nrep.semanticNode);
           // I don't think the assumes vector is used after decomposition is
           // begun, but I'm not positive.
         
@@ -1594,7 +1628,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         // I think that, once we start decomposing things, goal
         // may be used in calling primingNeedsParens
         
-        this.goal = nrep.semanticNode ; 
+//        this.goal = nrep.semanticNode ; 
         
         raiseWindow();
     }
@@ -3153,6 +3187,7 @@ System.out.println(result.toString());
                    decomposeHandler.forAllAction(nodeObj) ;
                    break ;
                 case NodeRepresentation.EXISTS_TYPE:
+                    decomposeHandler.existsAction(nodeObj) ;
                    break ;
                 case NodeRepresentation.SQSUB_TYPE:
                    break ;
@@ -3221,12 +3256,12 @@ System.out.println(result.toString());
             handler   = han;
         }
         public void widgetSelected(SelectionEvent e) {
-            SemanticNode node = handler.assumes.elementAt(index);
+//            SemanticNode node = handler.assumes.elementAt(index);
             NodeRepresentation rep = handler.assumeReps.elementAt(index);
-            handler.assumes.remove(index) ;
+//            handler.assumes.remove(index) ;
             handler.assumeReps.remove(index);
             int inc = (direction == SWT.DOWN)?1:-1;
-            handler.assumes.add(index + inc, node) ;
+//            handler.assumes.add(index + inc, node) ;
             handler.assumeReps.add(index + inc, rep) ;
             handler.raiseWindow();
         }
