@@ -2481,11 +2481,16 @@ assumeLabel.setLayoutData(gridData);
             qedStep[1] = qedStep[1] + ", " + this.stepNumber;
         }
 
+        boolean hasGoalDefs = (! this.goalDefinitions.isEmpty()) 
+                                 && (sufficesStep == null);
+        boolean hasAssumeDefs = ! this.assumeDefinitions.isEmpty();
         boolean hasDEF = false;
-        if ((sufficesStep == null) && (!this.goalDefinitions.isEmpty())) {
+        if (hasGoalDefs || hasAssumeDefs) {
             hasDEF = true;
             qedStep[1] = qedStep[1] + " DEF "
-                    + setOfStringsToList(this.goalDefinitions);
+                    + (hasGoalDefs ? setOfStringsToList(this.goalDefinitions) : "")
+                    + ((hasGoalDefs && hasAssumeDefs) ? ", " : "")
+                    + (hasAssumeDefs ? setOfStringsToList(this.assumeDefinitions) : "");
         }
         if (proofDef != null) {
             if (hasDEF) {
@@ -2566,37 +2571,48 @@ assumeLabel.setLayoutData(gridData);
        // Set newAssumpArray to the concatenation of assumpArray and
        // the NEW assumptions of childVec --- which must be all the elements of
        // childVec except the last.
-       // First set newAssumpCount to the length of newAssumpArray
+       // First set newAssumpCount to the length of newAssumpArray.  Note that
+       // it includes the last element of childVec iff that element is not an OR_DECOMP
+       // node.
        int newAssumpCount = assumpArray.length ;
-       for (int i = 0; i < childVec.size()-1; i++) {
+       
+       NodeRepresentation lastChildNode = childVec.elementAt(childVec.size()-1) ;
+       
+       // The assumptions to be added to newAssumpArray the elements 0 through
+       // lenOfChildAssumps - 1.
+       int lenOfChildAssumps = childVec.size() ;
+       if (lastChildNode.nodeType == NodeRepresentation.OR_DECOMP) {
+           lenOfChildAssumps-- ;
+       }
+       
+       for (int i = 0; i < lenOfChildAssumps; i++) {
            newAssumpCount = newAssumpCount + childVec.elementAt(i).primedNodeText().length;
        }
        String[] newAssumpArray = new String[newAssumpCount] ;
        for (int i = 0; i < assumpArray.length; i++ ) {
            newAssumpArray[i] = assumpArray[i];
        }
-       if (childVec.size() > 1) {
+       if (lenOfChildAssumps > 0) {
            if (assumpArray.length > 0) {
                newAssumpArray[assumpArray.length-1] = newAssumpArray[assumpArray.length-1] + ",";
            }
            int idx = assumpArray.length ;
-           for (int i = 0; i < childVec.size()-1; i++) {
+           for (int i = 0; i < lenOfChildAssumps; i++) {
                String[] assump = childVec.elementAt(i).primedNodeText() ;
                for (int j = 0; j < assump.length; j++) {
                    newAssumpArray[idx] = assump[j] ;
                    idx++ ;
                }
-               if (i != childVec.size()-2) {
+               if (i != lenOfChildAssumps - 1) {
                    newAssumpArray[idx-1] = newAssumpArray[idx-1] + ",";
                }
            }
        }
        
-       NodeRepresentation mainChildNode = childVec.elementAt(childVec.size()-1) ;
-       if (mainChildNode.nodeType == NodeRepresentation.OR_DECOMP) {
+       if (lastChildNode.nodeType == NodeRepresentation.OR_DECOMP) {
            // Need to recurse through the children
-           for (int i = 0; i < mainChildNode.children.size(); i++) {
-               addCaseProofs(pfStepVec, mainChildNode.children.elementAt(i), newAssumpArray, proofText);
+           for (int i = 0; i < lastChildNode.children.size(); i++) {
+               addCaseProofs(pfStepVec, lastChildNode.children.elementAt(i), newAssumpArray, proofText);
            }
        } else {
            // This is a terminal node.  Construct the proof step.
@@ -2604,12 +2620,12 @@ assumeLabel.setLayoutData(gridData);
            String[] step;
            if (newAssumpArray.length == 0) {
                // This is a CASE step.
-               step = prependToStringArray(mainChildNode.primedNodeText(), "CASE ") ;
+               step = prependToStringArray(lastChildNode.primedNodeText(), "CASE ") ;
            } else {
                // This is an ASSUME/PROVE step.
                step = concatStringArrays(
                        prependToStringArray(newAssumpArray, "ASSUME "),
-                       prependToStringArray(mainChildNode.primedNodeText(), "PROVE  "));
+                       prependToStringArray(this.goalRep.primedNodeText(), "PROVE  "));
            }
            step = prependToStringArray(step, proofLevelString + 
                    (pfStepVec.size() + 1)
