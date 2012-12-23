@@ -1,11 +1,63 @@
 /**
- * Currently, this command is under construction and is not bound to the proper key or menu.
- * Instead, it is executed by typing Ctl+Shift+A.
+ * Currently, this command is under construction.  It is bound to  Control-G Control-D
+ * and to the editor right-click menu with other proof/prover commands.
  * 
  * A single object of this class is created and attached to the command.  Multiple
  * executions of the command use the same object, so data can be stored as (non-static)
  * fields of the object between executions of the command.
  * 
+ * The structure of the methods is as follows.  Executing the command calls the
+ * execute() method, which initializes the state and calls raiseWindow to draw the
+ * window, creating the buttons and their listeners.  Each formula shown in the
+ * command's window is described by a NodeRepresentation object.
+ * 
+ * Clicking a button calls the widgetSelected method of the 
+ * DecomposeProofButtonListener subclass.  This calls the appropriate one of the 
+ * following methods to handle the click:
+ * 
+ *   andAction     (splitting an /\ assumption and producing an /\-split proof)
+ *   forAllAction  (splitting a \A goal)
+ *   existsAction  (splitting a \E assumption)
+ *   impliesAction (splitting a => goal)
+ *   orAction      (splitting a \/ assumption)
+ *   sqsubAction   (splitting a [N]_v assumption)
+ *   caseAction    (producing a case-split proof)
+ *   
+ *   A NodeRepresentation object is created for a formula in the window by
+ *   calling the subNodeRep method of the NodeRepresentation method, which calls
+ *   the decompose method to set the object's decomposition field that describes
+ *   how that the proof can be split on that formula.  
+ *   
+ *   When a formula with NodeRepresentation nrep is split, the resulting formulas 
+ *   have NodeRepresentation objects constructed by calling the 
+ *   decompositionChildToNodeRep method (which calls the nrep.subNodeRep method).
+ *   
+ *   IMPLEMENTATION NOTE
+ *   When something is substituted for an, the substitution
+ *   is done at the level of strings.  Therefore, any identifiers that appear
+ *   in the substituting expression will never be found when looking for name
+ *   clashes.  There are two sources of substituting expressions:
+ *   
+ *   - Arguments of expanded definitions.  If an identifier id occurring in 
+ *     such an argument is free in that argument, then it is already declared
+ *     at that point, so it can't clash with any identifier introduced later.
+ *     However, if id is a bound identifier, it could clash with an identifier
+ *     introduced later.  For example, consider
+ *        ASSUME  \E i : A(i),
+ *                Bar({i \in S : B(i)})
+ *     Expanding the definition of Bar in the 2nd assumption, and then later
+ *     splitting the first assumption into NEW i, A(i) will lead to a name
+ *     clash.  This situation is unlikely.  It can be solved by remembering
+ *     all bound identifiers that have been hidden in this way and checking
+ *     for name clashes with them when exposing new identifiers.  They can be
+ *     found by adding them to a field in decomposition objects to accompany
+ *     the arguments field.
+ *     
+ *   - To eliminate name clashes, new identifiers are substituted for existing
+ *     bound identifiers.  These new identifiers clash with nothing when they
+ *     are introduced.  To keep them from clashing with identifiers introduced
+ *     or revealed later, these names should be remembered in a field of the 
+ *     DecomposeProofHandler object.
  */
 
 /*************************************************
@@ -1815,224 +1867,6 @@ assumeLabel.setLayoutData(gridData);
              * This is a "prove by AND-split" operation.
              */
              makeProof(nodeRep, true) ;
-//            /**
-//             * Set levelString to something like "<3>" for the new proof. If
-//             * this is the highest-level proof, we use level l; perhaps there
-//             * should be a preference if the user wants to use level 0, or 42.
-//             */
-//            int level = this.proofLevel;
-//            if (level < 0) {
-//                level = 0;
-//            }
-//            String levelString = "<" + (level + 1) + ">";
-//
-//            /**
-//             * Set proofIndent to the amount to indent both the new proof and
-//             * the proofs of its steps. We may want to do something clever about
-//             * inferring what the user wants from the indentation he used if the
-//             * step has a leaf proof. However, this can be complicated because
-//             * some people put the proof on the last line of the obligation. So
-//             * for now, we just set it to PROOF_INDENT.
-//             * 
-//             * We also set proofIndentString to a string of that number of
-//             * spaces.
-//             */
-//            int proofIndent = PROOF_INDENT;
-//            String proofIndentString = StringHelper
-//                    .copyString(" ", proofIndent);
-//
-//            // Get the assumptions, goal, and proof as string arrays.
-//            //
-//            String[] assumptionsText = createdAssumptions();
-//            // String[] goalText = this.goalRep.primedNodeText() ;
-//            String[] proofText = null;
-//
-//            // If there is a proof, set proofText to its string array
-//            // representation and delete it.
-//            if (this.proof != null) {
-//                proofText = this.stepRep.subNodeText(this.proof).nodeText;
-//                // System.out.println("proof = " +
-//                // stringArrayToString(proofText)) ;
-//                try {
-//                    IRegion proofRegion = EditorUtil.getRegionOf(this.doc,
-//                            ((SyntaxTreeNode) this.proof.stn).getLocation());
-//                    this.doc.replace(proofRegion.getOffset(),
-//                            proofRegion.getLength(), "");
-//                } catch (BadLocationException e) {
-//                    MessageDialog.openError(UIHelper.getShellProvider()
-//                            .getShell(), "Decompose Proof Command",
-//                            "An error that should not happen has occurred in"
-//                                    + "line 1266 of DecomposeProofHandler.");
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            // Set addStepNumber true iff we need to add the step number to the
-//            // BY clause of a SUFFICES step or of the QED step.
-//            boolean addStepNumber = (stepNumber != null)
-//                    && this.needsStepNumber;
-//
-//            // Set sufficesStep to the string array of the suffices step,
-//            // or null if there is none.
-//            // There is a suffices step iff the user has selected the Use
-//            // SUFFICES
-//            // option, and the decomposition of the goal has created an
-//            // assumption.
-//            String[] sufficesStep = null;
-//            if (useSufficesButton.getSelection()
-//                    && (assumptionsText.length != 0)) {
-//
-//                String sufficesProof = null;
-//
-//                String[] suffices = prependToStringArray(
-//                        concatStringArrays(
-//                                prependToStringArray(assumptionsText, "ASSUME "),
-//                                prependToStringArray(
-//                                        this.goalRep.primedNodeText(),
-//                                        "PROVE  ")), levelString + " SUFFICES ");
-//
-//                if (goalDefinitions.isEmpty() && !addStepNumber) {
-//                    // No goal definitions were expanded; the proof is obvious.
-//                    if (OBVIOUS_HAS_PROOF) {
-//                        sufficesProof = "PROOF OBVIOUS";
-//                    } else {
-//                        sufficesProof = "OBVIOUS";
-//                    }
-//                } else {
-//                    // Need a BY proof, with a DEF if there are expanded
-//                    // definitions
-//                    sufficesProof = "BY ";
-//                    if (addStepNumber) {
-//                        sufficesProof = sufficesProof + this.stepNumber + " ";
-//                    }
-//                    if (!goalDefinitions.isEmpty()) {
-//                        sufficesProof = sufficesProof + "DEF "
-//                                + setOfStringsToList(goalDefinitions);
-//                    }
-//                }
-//
-//                sufficesStep = concatStringArrays(suffices,
-//                        new String[] { proofIndentString + sufficesProof });
-//            }
-//
-//            // Set conjuctSteps to be an array of string arrays for the
-//            // steps of the proof that prove the conjuncts in the decomposition.
-//            Decomposition decomp = nodeRep.decomposition;
-//            int numberOfSteps = decomp.children.size();
-//            String[][] conjunctSteps = new String[numberOfSteps][];
-//
-//            for (int i = 0; i < numberOfSteps; i++) {
-//
-//                // Set goalArray to the String array of the goal.
-//                NodeRepresentation stepGoalRep = decompositionChildToNodeRep(
-//                        nodeRep, i, null, null);
-//                String[] goalArray = stepGoalRep.primedNodeText();
-//
-//                // Set step to step number + the step's obligation.
-//                String[] step;
-//                // If there is no SUFFICES step but the goal decomposition
-//                // created new ASSUME clauses, then they must be the ASSUME
-//                // of an ASSUME / PROVE
-//                if ((sufficesStep == null) & (assumptionsText.length > 0)) {
-//                    // Need to make ASSUME / PROVE
-//                    step = concatStringArrays(
-//                            prependToStringArray(assumptionsText, "ASSUME "),
-//                            prependToStringArray(goalArray, "PROVE  "));
-//                } else {
-//                    // Just a simple step, no ASSUME/PROVE.
-//                    step = goalArray;
-//                }
-//                step = prependToStringArray(step, levelString + (i + 1)
-//                        + STEP_NUMBER_PUNCTUATION + " ");
-//
-//                // Add the proof to step, if there is one.
-//                if (proofText != null) {
-//                    step = concatStringArrays(step,
-//                            prependToStringArray(proofText, proofIndentString));
-//                }
-//
-//                // System.out.println("step " + i + ":") ;
-//                // System.out.println(stringArrayToString(step)) ;
-//                // Set the i-th conjunctStep to step
-//                conjunctSteps[i] = step;
-//            }
-//
-//            // Set qedStep to the QED step (with its step number and proof).
-//            String[] qedStep = new String[2];
-//            qedStep[0] = levelString ;
-//            if (NUMBER_QED_STEP) {
-//                qedStep[0] = qedStep[0] + (numberOfSteps + 1) + STEP_NUMBER_PUNCTUATION ;
-//            }
-//            qedStep[0] = qedStep[0] + " QED";
-//            qedStep[1] = proofIndentString + "BY " + (levelString + 1);
-//            for (int i = 2; i <= numberOfSteps; i++) {
-//                qedStep[1] = qedStep[1] + ", " + levelString + i;
-//            }
-//
-//            // Add step number if necessary.
-//            if ((sufficesStep == null) && needsStepNumber) {
-//                qedStep[1] = qedStep[1] + ", " + this.stepNumber;
-//            }
-//
-//            boolean hasDEF = false;
-//            if ((sufficesStep == null) && (!this.goalDefinitions.isEmpty())) {
-//                hasDEF = true;
-//                qedStep[1] = qedStep[1] + " DEF "
-//                        + setOfStringsToList(this.goalDefinitions);
-//            }
-//            if (decomp.definedOp != null) {
-//                if (hasDEF) {
-//                    qedStep[1] = qedStep[1] + ", " + decomp.definedOp;
-//                } else {
-//                    qedStep[1] = qedStep[1] + " DEF " + decomp.definedOp;
-//                }
-//            }
-//
-//            String[] blankLine = new String[] { "" };
-//            String[] completeProof = new String[0];
-//            if (sufficesStep != null) {
-//                completeProof = concatStringArrays(sufficesStep, blankLine);
-//            }
-//
-//            completeProof = concatStringArrays(completeProof, conjunctSteps[0]);
-//            for (int i = 1; i < conjunctSteps.length; i++) {
-//                completeProof = concatStringArrays(completeProof,
-//                        concatStringArrays(blankLine, conjunctSteps[i]));
-//            }
-//
-//            completeProof = concatStringArrays(completeProof,
-//                    concatStringArrays(blankLine, qedStep));
-//
-//            // we indent the proof.
-//            completeProof = prependToStringArray(
-//                    completeProof,
-//                    StringHelper.copyString(" ", this.step.getLocation()
-//                            .beginColumn() - 1 + proofIndent));
-//
-//            // System.out.println("complete proof:") ;
-//            // System.out.println(stringArrayToString(completeProof));
-//
-//            // we now add the proof to the module. We put it on the line
-//            // after the last line of the theorem.
-//            try {
-//                int nextLineOffset = doc.getLineInformation(
-//                        this.step.getTheorem().getLocation().endLine())
-//                        .getOffset();
-//                this.doc.replace(nextLineOffset, 0,
-//                        stringArrayToString(completeProof) + "\n");
-//            } catch (BadLocationException e) {
-//                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-//                        "Decompose Proof Command",
-//                        "An error that should not happen has occurred in"
-//                                + "line 1465 of DecomposeProofHandler.");
-//                e.printStackTrace();
-//            }
-//
-//            // We dispose of the window. The disposal listener will do
-//            // everything
-//            // that's supposed to happen when the window is removed.
-//            this.windowShell.dispose();
-//            return;
         } else {
             /**
              * This is an AND-SPLIT of an assumption, so nodeRep equals
@@ -2143,41 +1977,47 @@ assumeLabel.setLayoutData(gridData);
         // set NodeTextRep to the NodeTextRep that is the name of the formula
         // represented by nodeRep.
         NodeTextRep newNodeText = null;
-        if ((decomp.definedOp != null)
-        // && (subexpressionButton.getSelection()) // uncomment for def
-        // expansion
-        ) {
+        if ((decomp.definedOp != null) && (subexpressionButton.getSelection())) {
             newNodeText = decomp.definedOpRep;
         } else if (nodeRep.isSubexpressionName) {
             newNodeText = new NodeTextRep(nodeRep.nodeText, nodeRep.mapping);
         }
 
-        NodeTextRep ntrep = null;
-        if (newNodeText != null) {
-            ntrep = appendToNodeText(newNodeText, "!1");
-        }
-        NodeRepresentation nrep = nodeRep.subNodeRep(
-                decomp.children.elementAt(0), this.assumeReps,
-                nodeRep.parentNode, ntrep);
+//        NodeTextRep ntrep = null;
+//        if (newNodeText != null) {
+//            ntrep = appendToNodeText(newNodeText, "!1");
+//        }
+//        NodeRepresentation nrep = nodeRep.subNodeRep(
+//                decomp.children.elementAt(0), this.assumeReps,
+//                nodeRep.parentNode, ntrep);
+        NodeRepresentation nrep = 
+                decompositionChildToNodeRep(nodeRep, 0,   
+                this.assumeReps,
+                nodeRep.parentNode);
+
         nrep.isCreated = true;
         nrep.isPrimed = nrep.isPrimed || decomp.primed;
-        nrep.isSubexpressionName = nrep.isSubexpressionName
-                || (decomp.definedOp != null);
+//        nrep.isSubexpressionName = 
+//               nrep.isSubexpressionName
+//            || ((decomp.definedOp != null) && (subexpressionButton.getSelection()));
         this.assumeReps.add(nrep);
         // this.assumes.add(nrep.semanticNode);
         // I don't think the assumes vector is used after decomposition is
         // begun, but I'm not positive.
 
-        ntrep = null;
-        if (newNodeText != null) {
-            ntrep = appendToNodeText(newNodeText, "!2");
-        }
-        nrep = nodeRep.subNodeRep(decomp.children.elementAt(1),
-                nodeRep.parentVector, nodeRep.parentNode, ntrep);
+//        ntrep = null;
+//        if (newNodeText != null) {
+//            ntrep = appendToNodeText(newNodeText, "!2");
+//        }
+//        nrep = nodeRep.subNodeRep(decomp.children.elementAt(1),
+//                nodeRep.parentVector, nodeRep.parentNode, ntrep);
+        nrep = decompositionChildToNodeRep(nodeRep, 1, 
+                nodeRep.parentVector, nodeRep.parentNode);
         nrep.isCreated = true;
-        nrep.isPrimed = nrep.isPrimed || decomp.primed;
-        nrep.isSubexpressionName = nrep.isSubexpressionName
-                || (decomp.definedOp != null);
+//        nrep.isPrimed = nrep.isPrimed || decomp.primed;
+//        nrep.isSubexpressionName = 
+//               nrep.isSubexpressionName
+//           || ((decomp.definedOp != null) && (subexpressionButton.getSelection()));
         this.goalRep = nrep;
         // I think that, once we start decomposing things, goal
         // may be used in calling primingNeedsParens
@@ -2641,7 +2481,7 @@ assumeLabel.setLayoutData(gridData);
     
     /**
      * Returns the NodeRepresentation for a child in nodeRep's decomposition
-     * when nodeRep's formula is decomposed.
+     * when nodeRep's formula is decomposed.  It is called when generating the proof.
      * 
      * @param nodeRep
      *            The NodeRepresentation whose decomposition child's
@@ -2665,23 +2505,47 @@ assumeLabel.setLayoutData(gridData);
         // subexpression name.
         NodeTextRep newNodeText = null;
         if ((decomp.definedOp != null)
-                && this.subexpressionButton.getSelection()
-        // commented out because only expanding definitions by subexpression
-        // names for now.
-        ) {
+                && this.subexpressionButton.getSelection() ) {
             newNodeText = appendToNodeText(decomp.definedOpRep,
                     decomp.namePath.elementAt(i));
         } else if (nodeRep.isSubexpressionName) {
             newNodeText = appendToNodeText(new NodeTextRep(nodeRep.nodeText,
                     nodeRep.mapping), decomp.namePath.elementAt(i));
         }
-
+        
+        // Set result  to the node representation.
+        NodeRepresentation result ;
+        if ((decomp.definedOp != null) && (newNodeText == null)) {
+            // Have to expand nodeRep's definition node.
+            // NEED TO ADD CODE TO SUBSTITUTE FOR DEFINITION PARAMETERS IN THE
+            // result.nodeText AND MODIFY result.mapping appropriately.
+            try {
+                NodeRepresentation res = 
+                        new NodeRepresentation(this.doc, decomp.children.elementAt(i)) ;
+                // This is a hack, calling subNodeRep for the subnode of
+                // the definition body consisting of the entire definition body.
+                // But a little thought reveals that this does what needs to be done.
+                result = res.subNodeRep(decomp.children.elementAt(i), vec, father, null);
+                result.isPrimed = nodeRep.isPrimed ;
+            } catch (BadLocationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                MessageDialog.openError(UIHelper.getShellProvider()
+                        .getShell(), "Decompose Proof Command",
+                        "An error that should not happen has occurred in"
+                                + "line 2714 of DecomposeProofHandler.");
+                return null;
+            }
+            
+            
+        } else {
         // Call subNodeRep to construct the result.
-        NodeRepresentation rep = nodeRep.subNodeRep(
+         result = nodeRep.subNodeRep(
                 decomp.children.elementAt(i), 
                 vec, // nodeRep.parentVector,   changed by LL on 19 Dec 2012 at 5PM
                 father, // nodeRep.parentNode, 
                 newNodeText);
+        }
         // Set various fields whose values can be inferred from nodeRep and
         // decomp.
         // Don't set rep.isCreated because don't want it set for an
@@ -2689,10 +2553,10 @@ assumeLabel.setLayoutData(gridData);
         // a split of the goal.
         //
         // rep.isCreated = true;
-        rep.isPrimed = rep.isPrimed || decomp.primed;
-        rep.isSubexpressionName = nodeRep.isSubexpressionName
-                || (decomp.definedOp != null);
-        return rep;
+        result.isPrimed = result.isPrimed || decomp.primed;
+        result.isSubexpressionName = nodeRep.isSubexpressionName
+                || newNodeText != null;
+        return result;
     }
 
     /**
@@ -2716,18 +2580,15 @@ assumeLabel.setLayoutData(gridData);
      * isForAll argument is used to determine whether the body's created field
      * should be set true.
      * 
-     * Must be enhanced to handle a decomposition that comes from a full
-     * expansion of a defined operator.
-     * 
-     * @param decomp
+     * @param nodeRepArg
      * @param isForAll
      *            True iff this is called for a \A split
      * @return
      */
-    QuantifierDecomposition decomposeQuantifier(NodeRepresentation nodeRep,
+    QuantifierDecomposition decomposeQuantifier(NodeRepresentation nodeRepArg,
             boolean isForAll) {
         QuantifierDecomposition result = new QuantifierDecomposition();
-
+        NodeRepresentation nodeRep = nodeRepArg;
         result.news = new Vector<NodeRepresentation>();
         Decomposition decomp = nodeRep.decomposition;
 
@@ -2735,14 +2596,47 @@ assumeLabel.setLayoutData(gridData);
         // set NodeTextRep to the NodeTextRep that is the name of the formula
         // represented by nodeRep.
         NodeTextRep newNodeText = null;
-        if ((decomp.definedOp != null)
-        // && (subexpressionButton.getSelection()) // uncomment for def
-        // expansion
-        ) {
+        if ((decomp.definedOp != null) 
+                && (subexpressionButton.getSelection()) ) {
             newNodeText = decomp.definedOpRep;
         } else if (nodeRep.isSubexpressionName) {
             newNodeText = new NodeTextRep(nodeRep.nodeText, nodeRep.mapping);
-        }
+        } else if (decomp.definedOp != null) {
+            // Must expand the definition.  We do this by creating a new 
+            // NodeRepresentation whose semanticNode, nodeText, and mapping
+            // fields are what they should be for the definition body,
+            // and creating a decomposition field for it.
+            try {
+                // NEED TO SUBSTITUTE FOR DEFINITION'S FORMAL PARAMETERS
+                
+                // Strip prime from nodeRepArg.semanticNode if it has one.
+                OpApplNode oan = (OpApplNode) nodeRepArg.semanticNode ;
+                if (oan.getOperator().getName() == ASTConstants.OP_prime) {
+                    if (! (oan instanceof OpApplNode)) {
+                        return null ;
+                    }
+                    oan = (OpApplNode) oan.getArgs()[0] ;
+                }
+                
+                SemanticNode sn = ((OpDefNode) oan.getOperator()).getBody() ;
+                NodeRepresentation res = 
+                        new NodeRepresentation(this.doc, sn) ;
+                // This is a hack, calling subNodeRep for the subnode of
+                // the definition body consisting of the entire definition body.
+                // But a little thought reveals that this does what needs to be done.
+                nodeRep = res.subNodeRep(sn, 
+                           nodeRepArg.parentVector, nodeRepArg.parentNode, null);
+                nodeRep.isPrimed = nodeRepArg.isPrimed ;
+            } catch (BadLocationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                MessageDialog.openError(UIHelper.getShellProvider()
+                        .getShell(), "Decompose Proof Command",
+                        "An error that should not happen has occurred in"
+                                + "line 2624 of DecomposeProofHandler.");
+                return null;
+            }
+                    }
 
         // We first compute the vector of NEW assumptions
         int lastLine = -1;
@@ -3174,7 +3068,7 @@ assumeLabel.setLayoutData(gridData);
             result.mapping = nodeTextRep.mapping;
 
             /*
-             * Compute the type, subType, and decomposition fields an
+             * Compute the type, subType, and decomposition fields.
              */
             switch (sn.getKind()) {
             case ASTConstants.OpApplKind:
@@ -3312,7 +3206,9 @@ assumeLabel.setLayoutData(gridData);
 
         /**
          * This constructor is used to construct a NodeRepresentation object for
-         * the entire selected step and its leaf proof (if any).
+         * the entire selected step and its leaf proof (if any), and for an
+         * expanded definition body.  It just sets the semanticNode, nodeText and 
+         * mapping fields.
          * 
          * @param document
          *            The document of the editor
@@ -3384,6 +3280,25 @@ assumeLabel.setLayoutData(gridData);
             // TODO Auto-generated constructor stub
         }
 
+        protected NodeRepresentation clone() {
+            NodeRepresentation result = new NodeRepresentation() ;
+
+            result.semanticNode = this.semanticNode ;
+            result.nodeText = this.nodeText ;
+            result.mapping = this.mapping ;
+            result.nodeType = this.nodeType ;
+            result.nodeSubtype = this.nodeSubtype ;
+            result.children = this.children ;
+            result.parentNode = this.parentNode ;
+            result.parentVector = this.parentVector ;
+            result.isCreated = this.isCreated ;
+            result.onSameLineAsNext = this.onSameLineAsNext ;
+            result.isPrimed = this.isPrimed ;
+            result.isSubexpressionName = this.isSubexpressionName ;
+            result.decomposition = this.decomposition ;
+
+            return result ;
+        }
         public String toString() {
             String val = "";
             // if (originalOperator != null) {
@@ -3469,7 +3384,7 @@ assumeLabel.setLayoutData(gridData);
             if (i == 0) {
                 result.nodeText[0] = str + result.nodeText[0];
             } else {
-                result.nodeText[i] = StringHelper.copyString(" ", str.length());
+                result.nodeText[i] = StringHelper.copyString(" ", str.length()) + result.nodeText[i];
             }
             adjustMappingPairVector(1, str.length(), result.mapping[i]);
         }
@@ -3563,13 +3478,22 @@ assumeLabel.setLayoutData(gridData);
          * the definition of this (user-defined) symbol.
          */
         String definedOp = null;
-
+        
+        /**
+         * If definedOp != null, so this decomposition is expanding a
+         * definition, then formalParms[i] is the FormalParamNode of the
+         * i-th formal parameter of the definition, and arguments[i] is
+         * the string that is the i-th argument (which must appear on
+         * a single line).
+         */
+        FormalParamNode[] formalParams = null;
+        String[] arguments = null ;
+        
         /**
          * If non-null, then this is the NodeTextRep representing the operator
          * use that is to be expanded. E.g., it could represent source text such
-         * as
-         * 
-         * Foo(a + b, c)
+         * as  Bar(a + b, c) .   If this decomposition is effected by the user with
+         * the appropriate button push, then 
          */
         NodeTextRep definedOpRep = null;
 
@@ -3718,13 +3642,10 @@ assumeLabel.setLayoutData(gridData);
 
     /**
      * This computes the decompose field of a NodeRepresentation. It does not
-     * yet handle the decomposition of a defined operator except by using
-     * subexpression names. Other than having to indicate substitute for
-     * parameters in the definition, it needs to provide the information for
-     * extracting the nodeText for the definition. The problem is, that it has
-     * to be extracted in the context of the module, not as a subnode of the
-     * node being expanded. For this reason, at the moment definition expansion
-     * is all by subexpression names.
+     * yet correctly handle the decomposition of a defined operator except by using
+     * subexpression names.  The problem is that bound identifiers in the definition
+     * may have to be renamed because they may be defined or declared in the
+     * current context.
      * 
      * @param sn
      * @return
@@ -3753,13 +3674,12 @@ assumeLabel.setLayoutData(gridData);
         // If nodeRep.isSubexpressionName is false (so it was not obtained by
         // decomposing a definition using subexpression names), then we
         // see if this is an operator definition we can handle.
-
         if ((!nodeRep.isSubexpressionName)
                 && (node.getOperator().getKind() == ASTConstants.UserDefinedOpKind)) {
-            String operatorName = ((OpDefNode) node.getOperator()).getName()
-                    .toString();
-            ExprNode opDef = ((OpDefNode) node.getOperator()).getBody();
-
+            // This is a user-defined operator
+            OpDefNode definition = (OpDefNode) node.getOperator() ;
+            String operatorName = definition.getName().toString();            
+            ExprNode opDef = definition.getBody();
             // If the definition comes from an INSTANCE, it may be a
             // SubstInNode. If so, we strip off the top-level SubstInNode
             // object(s).
@@ -3784,6 +3704,10 @@ assumeLabel.setLayoutData(gridData);
                 // iff we want to use subexpression names.
                 result.moduleName = ((SyntaxTreeNode) node.stn).getLocation()
                         .source();
+// I think we need to set result.definedOp to the operator name so it can
+// be added to assumeDefinitions or goalDefinitions when the proof is generated.
+// However, it appears that the definedOp field is used to check if 
+// subexpression naming is being used.
 //                System.out.println(operatorName + " defined in module "
 //                        + result.moduleName);
 //                System.out.println("This module is: "
@@ -3791,16 +3715,20 @@ assumeLabel.setLayoutData(gridData);
                 // The following test is to determine if the definition should
                 // be expanded by subexpression naming or by actual expansion.
                 // (Initially, we don't deal with expansion of names from
-                // another
-                // module.) However, actual expansion is not yet implemented.
-                //
-                // if (subexpressionButton.getSelection()
-                // || !result.moduleName.equals(moduleNode.getName()
-                // .toString())) {
-                result.definedOpRep = nodeRep.subNodeText(unprimedNode);
+                // another module.)
                 result.definedOp = operatorName;
-                // } // end of if
-
+                result.definedOpRep = nodeRep.subNodeText(unprimedNode);
+                result.formalParams = definition.getParams() ;
+                result.arguments = new String[result.formalParams.length];
+System.out.println("Expanding " + result.definedOp);
+                for (int i = 0 ; i < result.arguments.length; i++) {
+                        result.arguments[i] = 
+                            stringArrayToString(
+                                nodeRep.subNodeText(
+                                ((OpApplNode) unprimedNode).getArgs()[i]).nodeText);
+System.out.println(result.formalParams[i].getName().toString() + " <- "
+        + result.arguments[i])    ;                  
+                }
             } else {
                 // This means that the definition is not an OpApplNode, which
                 // I don't think is possible.
