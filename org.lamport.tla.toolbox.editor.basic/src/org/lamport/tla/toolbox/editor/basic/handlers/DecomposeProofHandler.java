@@ -600,7 +600,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         GridLayout gridLayout = new GridLayout(2, false);
         shell.setLayout(gridLayout);
         // Set up the help button
-        Button helpButton = HelpButton.helpButton(shell, "prover/prover.html");
+        Button helpButton = HelpButton.helpButton(shell, "prover/decompose.html");
         // Button helpButton = new Button(shell, SWT.PUSH) ;
         Image helpImg = PlatformUI.getWorkbench().getSharedImages()
                 .getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
@@ -1044,7 +1044,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         // Display Help button that should raise help page for this
         // dialog window. I wish I knew how to move the button to
         // the right edge of the window.
-        Button helpButton = HelpButton.helpButton(topMenu, "prover/test.html");
+        Button helpButton = HelpButton.helpButton(topMenu, "prover/reading.html");
         gridData = new GridData();
         gridData.horizontalIndent = 20;
         helpButton.setLayoutData(gridData);
@@ -1808,46 +1808,6 @@ assumeLabel.setLayoutData(gridData);
     }
     
     
-    // private void displayHTML() {
-    // Shell topshell = UIHelper.getShellProvider().getShell() ;
-    // Shell shell = new Shell(topshell, SWT.SHELL_TRIM) ;
-    // shell.setLayout(new FillLayout());
-    // Browser browser;
-    // try {
-    // browser = new Browser(shell, SWT.NONE);
-    // } catch (SWTError e) {
-    // System.out.println("Could not instantiate Browser: " + e.getMessage());
-    // shell.dispose();
-    // return;
-    // }
-    //
-    // Bundle bundle = FrameworkUtil.getBundle(this.getClass());
-    // String url = bundle.getLocation() ;
-    // System.out.println("What's going on");
-    // int idx = url.indexOf("reference:file:/");
-    // System.out.println("original url = " + url);
-    // if (idx == 0) {
-    // url = url.substring("reference:file:/".length()) ;
-    // }
-    // String url2 = url + "html/prover/test.html" ;
-    // String url1 = url ;
-    // idx = url.indexOf("org.lamport.tla.toolbox.editor.basic/") ;
-    // if (idx == url.length() -
-    // "org.lamport.tla.toolbox.editor.basic/".length()) {
-    // url1 = url.substring(0, idx) +
-    // "org.lamport.tla.toolbox.doc/html/prover/test.html";
-    // }
-    // System.out.println(url1); // + ",  " + url2);
-    // // String html = "<BODY BGCOLOR=#ffffe4>" +
-    // // "<PRE> this is some pre\n another line \n</PRE>" +
-    // // "a b <i>c</i> d <font color=#ff00001>Large</font>" +
-    // // "</BODY>";
-    // browser.setUrl(url1) ;
-    //
-    // // browser.setText(html);
-    // shell.open();
-    // }
-    //
     /***************************************************************************
      * The action-button handlers
      ****************************************************************************/
@@ -2164,7 +2124,7 @@ assumeLabel.setLayoutData(gridData);
             } catch (BadLocationException e) {
                 MessageDialog.openError(UIHelper.getShellProvider()
                         .getShell(), "Decompose Proof Command",
-                        "An error that should not happen has occurred in"
+                        "An error that should not happen has occurred in "
                                 + "line 1266 of DecomposeProofHandler.");
                 e.printStackTrace();
             }
@@ -2386,7 +2346,7 @@ assumeLabel.setLayoutData(gridData);
         } catch (BadLocationException e) {
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command",
-                    "An error that should not happen has occurred in"
+                    "An error that should not happen has occurred in "
                             + "line 1465 of DecomposeProofHandler.");
             e.printStackTrace();
         }
@@ -2517,8 +2477,6 @@ assumeLabel.setLayoutData(gridData);
         NodeRepresentation result ;
         if ((decomp.definedOp != null) && (newNodeText == null)) {
             // Have to expand nodeRep's definition node.
-            // NEED TO ADD CODE TO SUBSTITUTE FOR DEFINITION PARAMETERS IN THE
-            // result.nodeText AND MODIFY result.mapping appropriately.
             try {
                 NodeRepresentation res = 
                         new NodeRepresentation(this.doc, decomp.children.elementAt(i)) ;
@@ -2527,12 +2485,24 @@ assumeLabel.setLayoutData(gridData);
                 // But a little thought reveals that this does what needs to be done.
                 result = res.subNodeRep(decomp.children.elementAt(i), vec, father, null);
                 result.isPrimed = nodeRep.isPrimed ;
+                if (!(decomp.children.elementAt(i) instanceof ExprNode)) {
+                    MessageDialog.openError(UIHelper.getShellProvider()
+                            .getShell(), "Decompose Proof Command",
+                            "An error that should not happen has occurred in "
+                                    + "line 2534 of DecomposeProofHandler."); 
+                }
+                NodeTextRep ntext = substituteInNodeText(decomp, 
+                        (ExprNode) decomp.children.elementAt(i), 
+                        new NodeTextRep(result.nodeText, result.mapping)) ;
+                result.nodeText = ntext.nodeText ;
+                result.mapping = ntext.mapping;
+
             } catch (BadLocationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
                 MessageDialog.openError(UIHelper.getShellProvider()
                         .getShell(), "Decompose Proof Command",
-                        "An error that should not happen has occurred in"
+                        "An error that should not happen has occurred in "
                                 + "line 2714 of DecomposeProofHandler.");
                 return null;
             }
@@ -2618,7 +2588,7 @@ assumeLabel.setLayoutData(gridData);
                     oan = (OpApplNode) oan.getArgs()[0] ;
                 }
                 
-                SemanticNode sn = ((OpDefNode) oan.getOperator()).getBody() ;
+                ExprNode sn = ((OpDefNode) oan.getOperator()).getBody() ;
                 NodeRepresentation res = 
                         new NodeRepresentation(this.doc, sn) ;
                 // This is a hack, calling subNodeRep for the subnode of
@@ -2627,12 +2597,16 @@ assumeLabel.setLayoutData(gridData);
                 nodeRep = res.subNodeRep(sn, 
                            nodeRepArg.parentVector, nodeRepArg.parentNode, null);
                 nodeRep.isPrimed = nodeRepArg.isPrimed ;
+                NodeTextRep ntext = substituteInNodeText(decomp, sn, 
+                                     new NodeTextRep(nodeRep.nodeText, nodeRep.mapping)) ;
+                nodeRep.nodeText = ntext.nodeText ;
+                nodeRep.mapping = ntext.mapping;
             } catch (BadLocationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
                 MessageDialog.openError(UIHelper.getShellProvider()
                         .getShell(), "Decompose Proof Command",
-                        "An error that should not happen has occurred in"
+                        "An error that should not happen has occurred in "
                                 + "line 2624 of DecomposeProofHandler.");
                 return null;
             }
@@ -2805,6 +2779,105 @@ assumeLabel.setLayoutData(gridData);
             result[i] = resVec.elementAt(i);
         }
         return result;
+    }
+    
+    /**
+     * Assumes that nodeTextRep is the NodeTextRep for the ExprNode sn (possibly
+     * after some substitutions have been made).  It returns the NodeTextRep
+     * object representing sn after substituting decomp.arguments[i] for
+     * decomp.formalParams[i], for each i.  
+     * 
+     * Note: this assumes that none of the substitutions made before this one have
+     * added any of the decomp.argument symbols being substituted for.  We also assume
+     * that the node sn is being used as a complete assume clause or goal.
+     *  
+     * @param decomp
+     * @param sn
+     * @param nodeTextRep
+     * @return
+     */
+    NodeTextRep substituteInNodeText(Decomposition decomp, ExprNode sn, NodeTextRep nodeTextRep) {
+        NodeTextRep result = nodeTextRep.clone();
+        
+        // Line of first token of sn, used to translate from Location line numbers to
+        // indices in noteTextRep.nodeText.
+        int beginLine = sn.stn.getLocation().beginLine();
+        
+        for (int i = 0; i < decomp.arguments.length; i++) {
+            SemanticNode[] uses = ResourceHelper.getUsesOfSymbol(decomp.formalParams[i], sn) ;
+            
+            String replacementText = decomp.arguments[i]  ;
+            int sourceTextLength = decomp.formalParams[i].getName().toString().length() ;
+         // Set mayNeedParens true if replacementText doesn't end in ' and would
+            // need parentheses around it in order to prime it.
+            boolean mayNeedParens = false ; 
+            if (primingNeedsParens(decomp.argNodes[i]) && 
+                    (replacementText.charAt(replacementText.length() - 1) != '\'')) {
+                mayNeedParens = true ;
+            }
+            for (int j = 0; j < uses.length; j++) {
+                if (!(uses[j] instanceof OpApplNode)) {
+                    MessageDialog.openError(UIHelper.getShellProvider()
+                            .getShell(), "Decompose Proof Command",
+                            "An error that should not happen has occurred in "
+                                    + "line 2842 of DecomposeProofHandler.");
+                    return result;
+                }
+                Location useLocation = uses[j].stn.getLocation() ;
+                int useIdx = useLocation.beginLine()-beginLine ;
+                int offset = colToLoc(useLocation.beginColumn(),
+                                      result.mapping[useIdx] );
+                String thisReplaceText = replacementText ;
+                if (mayNeedParens) {
+                   // Define text that, if it surrounds the replaced text, implies
+                   // that no parentheses are needed.
+                   String[] precedingSafe = new String[] {"(", "[", "{", ",", "<<", "->", ":"} ;
+                   String[] followingSafe = new String[] {")", "]", "}", ",", ">>", "->", "~>"} ; 
+                   
+                   // Because we assume that the formula we're substituting into is a complete
+                   // assumption or goal, the end of the formula is also a safe preceding
+                   // or following "string".
+                   String testString = result.nodeText[useIdx].substring(0, offset).trim() ;
+                   int line = useIdx ;
+                   while (testString.equals("") && line > 0) {
+                       line-- ;
+                       testString = result.nodeText[line] ;
+                   }
+                   boolean terminated = testString.equals("");
+                   int k = 0;
+                   while (!terminated && k < precedingSafe.length) {
+                       terminated = testString.endsWith(precedingSafe[k]) ;
+                       k++ ;
+                   }
+                   if (terminated) {
+                       testString = 
+                          result.nodeText[useIdx].substring(offset + sourceTextLength).trim() ;
+                       line = useIdx ;
+                       while (testString.equals("") && line < result.nodeText.length) {
+                           line++ ;
+                           testString = result.nodeText[line] ;
+                       }
+                       terminated = testString.equals("");
+                       k = 0;
+                       while (!terminated && k < precedingSafe.length) {
+                           terminated = testString.startsWith(followingSafe[k]) ;
+                           k++ ;
+                       }
+                   }
+                   if (!terminated) {
+                    thisReplaceText = "(" + replacementText + ")" ;
+                   }
+                }
+                result.nodeText[useIdx] = 
+                        result.nodeText[useIdx].substring(0, offset) + thisReplaceText 
+                          + result.nodeText[useIdx].substring(offset+sourceTextLength);
+                adjustMappingPairVector(useLocation.beginColumn() + sourceTextLength, 
+                                        thisReplaceText.length() - sourceTextLength, 
+                                        result.mapping[useIdx]);
+            }
+        }
+        
+        return result ;
     }
 
     /**
@@ -3337,6 +3410,9 @@ assumeLabel.setLayoutData(gridData);
             // TODO Auto-generated constructor stub
         }
 
+        /**
+         * Makes a deep copy of the NodeTextRep object.
+         */
         public NodeTextRep clone() {
             NodeTextRep result = new NodeTextRep();
             result.nodeText = new String[this.nodeText.length];
@@ -3344,6 +3420,12 @@ assumeLabel.setLayoutData(gridData);
                 result.nodeText[i] = this.nodeText[i];
             }
             result.mapping = this.mapping.clone();
+            for (int i = 0; i < result.mapping.length; i++) {
+                result.mapping[i] = new Vector<MappingPair>() ;
+                for (int j = 0; j < this.mapping[i].size(); j++) {
+                    result.mapping[i].add(this.mapping[i].elementAt(j)) ;
+                }
+            }
             return result;
         }
 
@@ -3488,7 +3570,7 @@ assumeLabel.setLayoutData(gridData);
          */
         FormalParamNode[] formalParams = null;
         String[] arguments = null ;
-        
+        SemanticNode[] argNodes = null ;
         /**
          * If non-null, then this is the NodeTextRep representing the operator
          * use that is to be expanded. E.g., it could represent source text such
@@ -3720,6 +3802,7 @@ assumeLabel.setLayoutData(gridData);
                 result.definedOpRep = nodeRep.subNodeText(unprimedNode);
                 result.formalParams = definition.getParams() ;
                 result.arguments = new String[result.formalParams.length];
+                result.argNodes  = unprimedNode.getArgs() ;
 System.out.println("Expanding " + result.definedOp);
                 for (int i = 0 ; i < result.arguments.length; i++) {
                         result.arguments[i] = 
@@ -4368,7 +4451,8 @@ System.out.println(result.formalParams[i].getName().toString() + " <- "
      * Returns true if it may be necessary to put parentheses around the
      * expression represented by `node' in order to prime it. This is the case
      * if node is an OpApplNode whose operator is NOT a user-defined operator
-     * with an identifier as its name (so it's not in/prep/postfix).
+     * with an identifier as its name (so it returns truen if the operator is 
+     * not in/prep/postfix) or if it's an OpApplNode with no arguments.
      * 
      * @param node
      * @return
@@ -4376,6 +4460,9 @@ System.out.println(result.formalParams[i].getName().toString() + " <- "
     static boolean primingNeedsParens(SemanticNode node) {
         if (!(node instanceof OpApplNode)) {
             return false;
+        }
+        if (((OpApplNode) node).getArgs().length == 0) {
+            return false ;
         }
         SymbolNode ops = ((OpApplNode) node).getOperator();
         if (ops instanceof OpDefNode) {

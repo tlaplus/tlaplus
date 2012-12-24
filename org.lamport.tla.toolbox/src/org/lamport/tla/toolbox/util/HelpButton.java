@@ -127,72 +127,11 @@ public class HelpButton {
              * executable, then this sets dir to its plugins directory
              * and dir.
              */
-//            File dir = new File("plugins");
-//            url = null;
-//            String[] children = dir.list();
-//            try {
-//                url = dir.getCanonicalPath();
-//            } catch (IOException e) {
-//                // I don't know what can cause this, but we have little
-//                // choice but to use the help pages on the Web.
-//                children = null ;
-//                e.printStackTrace();
-//            }
-//            String docdir = null;
-//            if ((url == null) || (children == null) || (children.length == 0)) {
-//                // Something's wrong.  The user may be running the Toolbox from
-//                // a directory other than the one containing the executable.
-//                // In that case, we use the help pages on the Web.
-//                url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + fileX ;                
-//            } else {
-//                // We use the Toolbox's own copy of the Help files.
-//                int i = 0;
-//                boolean found = false;
-//                while ((i < children.length) && !found) {
-//                    docdir = children[i];
-//                    if (docdir.indexOf("org.lamport.tla.toolbox.doc") != -1) {
-//                        found = true;
-//                    }
-//                    i++;
-//                }
-//                System.out.println("File separator = " + File.separator);
-//                if (found) {
-//
-//                    url = url + File.separator + docdir + File.separator
-//                            + "html" + File.separator + fileX;
-//                } else {
-//                    // The Toolbox is being run from Eclipse, or else there's a
-//                    // problem.
-//                    Bundle bundle = FrameworkUtil.getBundle(this.getClass());
-//                    url = bundle.getLocation();
-//                    System.out.println("What's going on");
-//                    int idx = url.indexOf("reference:file:");
-//                    System.out.println("original url = " + url);
-//                    if (idx != -1) {
-//                        url = url.substring(idx + "reference:file:".length());
-//                        if (url.charAt(0) == '/') {
-//                            url = url.substring(1);
-//                        }
-//                    }
-//                    System.out.println("url - initial stuff: " + url);
-//                    idx = url.indexOf("org.lamport.tla.toolbox");
-//                    if (idx != -1) {
-//                        url = url.substring(0, idx)
-//                                + "org.lamport.tla.toolbox.doc"
-//                                + url.substring(idx
-//                                        + "org.lamport.tla.toolbox".length());
-//                    }
-//                    // System.out.println("url of toolbox.doc directory: " +
-//                    // url);
-//                    url = url + "html/" + file;
-//                    System.out.println("url = " + url);
-//                }
-//            }
             /**
              * TESTING STUFF -- which seems to work.
              */
             Bundle bundle = Platform.getBundle("org.lamport.tla.toolbox.doc");
-            URL fileURL = bundle.getEntry("html/prover/test.html");
+            URL fileURL = bundle.getEntry("html/prover/decompose.html");
             File file = null;
             try {
                 file = new File(FileLocator.resolve(fileURL).toURI());
@@ -219,13 +158,6 @@ public class HelpButton {
             Shell shell = new Shell(topshell, SWT.SHELL_TRIM);
             shell.setLayout(new FillLayout());
 
-            // String contextHelpID = "definition_override_wizard";
-            // final String ECLIPSE_HELP = "org.eclipse.ui.help";
-            // shell.setData(ECLIPSE_HELP,contextHelpID);
-            // UIHelper.setHelp(shell, contextHelpID) ;
-            // /*PlatformUI.getWorkbench().*/
-            // getHelpSystem().displayHelp(contextHelpID);
-
             Browser browser;
             try {
                 browser = new Browser(shell, SWT.NONE);
@@ -236,29 +168,6 @@ public class HelpButton {
                 return;
             }
 
-            // Bundle bundle = FrameworkUtil.getBundle(this.getClass());
-            // String url = bundle.getLocation() ;
-            // System.out.println("What's going on");
-            // int idx = url.indexOf("reference:file:");
-            // System.out.println("original url = " + url);
-            // if (idx != -1) {
-            // url = url.substring(idx+"reference:file:".length()) ;
-            // if (url.charAt(0) == '/') {
-            // url = url.substring(1) ;
-            // }
-            // }
-            // System.out.println("url - initial stuff: " + url);
-            // idx = url.indexOf("org.lamport.tla.toolbox") ;
-            // if (idx != -1) {
-            // url = url.substring(0, idx) + "org.lamport.tla.toolbox.doc"
-            // + url.substring(idx + "org.lamport.tla.toolbox".length());
-            // }
-            // System.out.println("url of toolbox.doc directory: " + url);
-            // url = url + "html/" + file ;
-            // String url =
-            // "http://127.0.0.1:45076/help/index.jsp?topic=%2Forg.lamport.tla.toolbox.doc%2Fhtml%2F";
-            // url = url + file.replaceAll("/", "%2F") ;
-            // System.out.println("final url: " + url);
             System.out.println("url actually used: " + url) ;
             browser.setUrl(url);
             shell.open();

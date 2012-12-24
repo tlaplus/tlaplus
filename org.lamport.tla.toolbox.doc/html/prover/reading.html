@@ -82,8 +82,19 @@ is equivalent to <em>Hide All Proofs</em>
 
 <h2><a name="editing">Editing Proofs</a></h2>
 
-There is currently only a single command especially for editing proofs:
+There are two commands especially for editing proofs:
 <dl>
+<dt><b>Decompose Proof</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+D</samp> </dt>
+<dd> To use this command, put the cursor in a theorem or proof step that
+has either no proof or else a leaf proof (a <code>BY</code> or <code>OBVIOUS</code>
+proof) that TLAPS can't verify.&nbsp;  This command raises a dialog window that allows
+you to decompose the proof of the theorem or step into simpler steps.&nbsp;
+The dialog contains a 
+   <IMG SRC=../gettingstarted/question-mark.gif align=bottom>
+button that raises <a href="decompose.html">this help page</a>, which explains
+what you can do with this dialog.
+
+</dd>
 <dt><b>Renumber Proof</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+R</samp> </dt>
 <dd>
 A proof step is either <i>named</i> or <i>unnamed</i>.&nbsp;  
@@ -113,3 +124,6 @@ Please tell us what commands <i>you</i> would like.&nbsp;
 <hr>
 <a href = "prover.html">&uarr; Proofs</a>
 </hr>
+
+</body>
+</html>

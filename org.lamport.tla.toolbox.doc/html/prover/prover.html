@@ -64,24 +64,11 @@ to install
 </p>
 
 <p>
-Because new releases of the Toolbox and of TLAPS are not completely synchronized,
-the version of the standard TLAPS module used by the Toolbox (through the SANY parser)
-may differ from the one used by TLAPS.&nbsp;  That module will eventually stabilize to
-a final version, but until it does, you may want to copy the TLAPS.tla file needed
-by TLAPS into your spec's directory.&nbsp;  Alternatively, you can replace the 
-version used by the Toolbox with the lastest version from TLAPS.&nbsp;  The Toolbox's
-version is in a subdirectory (subfolder) of the directory containing the Toolbox
-program; that subdirectory has a name something like:
-<pre>
-   \plugins\org.lamport.tlatools_1.0.0.201201191425\tla2sany\StandardModules
-</pre>
-The current version used by TLAPS should be available at
-<pre>
-    <a 
-    href="http://msr-inria.inria.fr/~doligez/tlaps/dist/TLAPS.tla"
-     target="_blank">http://msr-inria.inria.fr/~doligez/tlaps/dist/TLAPS.tla</a>
- 
-</pre>
+When using TLAPS, you will need to use the module <code>TLAPS.tla</code> and perhaps other
+TLAPS library modules.&nbsp;  The TLAPS download page will tell you in what
+folder (directory) those modules are.&nbsp;  The  
+<a href="../gettingstarted/tla-preferences.html#library-folders">TLA+ Preferences</a> page will allow
+you to declare that modules from that folder should be usable in your specifications.
 </p>
 <dl>
 <hr><dt><b><font color=#0000c0>Subtopics</font></b></dt>
