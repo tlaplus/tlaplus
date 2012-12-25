@@ -32,6 +32,24 @@
  *   have NodeRepresentation objects constructed by calling the 
  *   decompositionChildToNodeRep method (which calls the nrep.subNodeRep method).
  *   
+ *   WARNING.
+ *   The current method of implementing definition expansion had a bug.  In
+ *   
+ *      Bar(b) == (b \/ C)
+ *      Foo(a) ==  Bar(a) => B
+ *      THEOREM Foo(F)
+ *      
+ *   After expanding Foo(F), we get
+ *   
+ *      ASSUME Bar(F)
+ *      PROVE  B
+ *      
+ *   However, the decomposition of Bar(F) produced the decomposition of  a \/ C .
+ *   The tweak on line 2372 seems to have fixed it, and a little testing doesn't
+ *   reveal any problem.  But I'm worried about this.  Substitution needs to be
+ *   tested carefully.
+ *   
+ *   
  *   IMPLEMENTATION NOTE
  *   When something is substituted for an, the substitution
  *   is done at the level of strings.  Therefore, any identifiers that appear
@@ -380,6 +398,15 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      */
 
     /**
+     * The default value of the useSufficesValue ;
+     */
+    private static final boolean USE_SUFFICES_DEFAULT = true ;
+    
+    /**
+     * The default value of subexpressionValue.
+     */
+    private static final boolean SUBEXPRESSION_DEFAULT = false ;
+    /**
      * The number of columns to the right of stepColumn to which the created
      * proof is to be indented if the step has no proof. Otherwise, the created
      * proof is indented to the column of the existing proof.
@@ -540,10 +567,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * initial SUFFICES step to declare the newly created assumptions, or if
      * those assumptions will be put on each step of the proof in an
      * ASSUME/PROVE.
-     * 
-     * Its initial value should probably be set by a preference.
      */
-    private boolean useSufficesValue = true;
+    private boolean useSufficesValue = USE_SUFFICES_DEFAULT;
     private Button useSufficesButton; //
 
     /**
@@ -552,10 +577,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * using subexpression names like Op(43)!2. In the initial implementation,
      * definitions that come from a different module are always expanded by
      * using subexpression names.
-     * 
-     * Its initial value should probably be set by a preference.
      */
-    private boolean subexpressionValue = true;
+    private boolean subexpressionValue = SUBEXPRESSION_DEFAULT;
     private Button subexpressionButton;
 
     /**
@@ -1022,7 +1045,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
 
         // Display "Replace Step" button
         Button replaceButton = new Button(topMenu, SWT.PUSH);
-        setupMenuButton(replaceButton, TEST_BUTTON, "Replace Step");
+        setupMenuButton(replaceButton, PROVE_BUTTON, "P");
+        replaceButton.setFont(JFaceResources.getFontRegistry().get(
+                JFaceResources.HEADER_FONT));
         replaceButton.setEnabled(hasChanged && (chosenSplit == -1)
                 && (andSplitEnd == -1));
 
@@ -1055,203 +1080,15 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         // Display the "ASSUME", which must be put in a
         // composite because it spans multiple rows, and it appears
         // that a Label can't do that.
-//        Composite comp = new Composite(shell, SWT.NONE);
-//        GridLayout compLayout = new GridLayout(1, false);
-//        comp.setLayout(compLayout);
         gridData = new GridData();
         gridData.horizontalSpan = 3;
-//        comp.setLayoutData(gridData);
-//        Label assumeLabel = new Label(comp, SWT.NONE);
-Label assumeLabel = new Label(shell, SWT.NONE);
-        
+        Label assumeLabel = new Label(shell, SWT.NONE);      
         assumeLabel.setText("ASSUME");
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(
                 JFaceResources.HEADER_FONT));
-assumeLabel.setLayoutData(gridData);
+        assumeLabel.setLayoutData(gridData);
         if (assumeReps != null) {
             addAssumptionsToComposite(assumeReps, shell) ;
-//            /*************************************************************
-//             * Displaying the assumptions.
-//             * 
-//             * First, Set assumeWidth to the number of characters in the widest
-//             * line among all the lines in the assumptions.
-//             **************************************************************/
-//            int assumeWidth = 0;
-//            for (int i = 0; i < assumeReps.size(); i++) {
-//                for (int j = 0; j < assumeReps.elementAt(i).nodeText.length; j++) {
-//                    assumeWidth = Math.max(assumeWidth,
-//                            assumeReps.elementAt(i).nodeText[j].length());
-//                }
-//            }
-//
-//            /*************************************************************
-//             * Add the assumptions to the DecomposeProof window.
-//             *************************************************************/
-//            for (int i = 0; i < assumeReps.size(); i++) {
-//                NodeRepresentation aRep = assumeReps.elementAt(i);
-//
-//                if (aRep.nodeType != NodeRepresentation.OR_DECOMP) {
-//                    // This is an ordinary assumption (and Expression or NEW
-//                    // node).
-//                    // assumeLabel = new Label(comp, SWT.NONE);
-//                    /*************************************************************
-//                     * Add the button or blank area to the first column.
-//                     *************************************************************/
-//                    String labelText = null;
-//                    // The null test is because created NEW nodes have null
-//                    // semanticNode fields.
-//                    if ((aRep.semanticNode != null)
-//                            && (aRep.semanticNode.getKind() == ASTConstants.OpApplKind)) {
-//                        switch (aRep.nodeSubtype) {
-//                        case NodeRepresentation.AND_TYPE:
-//                            labelText = "/\\";
-//                            break;
-//                        case NodeRepresentation.OR_TYPE:
-//                        case NodeRepresentation.SQSUB_TYPE:
-//                            labelText = "\\/";
-//                            break;
-//                        case NodeRepresentation.EXISTS_TYPE:
-//                            labelText = "\\E";
-//                            break;
-//                        default:
-//                            labelText = null;
-//                        }
-//                    }
-//                    if (labelText != null) {
-//                        /*************************************************************
-//                         * Add a button
-//                         *************************************************************/
-//                        Button button = new Button(shell, SWT.PUSH);
-//                        setupActionButton(button, assumeReps.elementAt(i), labelText);
-//                        if (((chosenSplit != -1) && (i != chosenSplit))
-//                                || ((andSplitBegin != -1) && ((i < andSplitBegin) || (i > andSplitEnd)))) {
-//                            button.setEnabled(false);
-//                        }
-//                    } else {
-//                        /*************************************************************
-//                         * Add a blank area.
-//                         *************************************************************/
-//                        comp = new Composite(shell, SWT.NONE);
-//                        gridLayout = new GridLayout(1, false);
-//                        comp.setLayout(gridLayout);
-//                        assumeLabel = new Label(comp, SWT.NONE);
-//                        assumeLabel.setText("  ");
-//                        gridData = new GridData();
-//                        gridData.horizontalIndent = 25;
-//                        comp.setLayoutData(gridData);
-//                    }
-//                    gridData = new GridData();
-//                    gridData.verticalAlignment = SWT.TOP;
-//                    assumeLabel.setLayoutData(gridData);
-//
-//                    // Add a spacer between the button and the formula
-//                    comp = new Composite(shell, SWT.NONE);
-//                    gridLayout = new GridLayout(1, false);
-//                    comp.setLayout(gridLayout);
-//                    comp.setSize(0, 5);
-//
-//                    /********************************************************************
-//                     * Add the text of the clause, preceded by appropriate
-//                     * up/down arrows for a node that comes from an AND-SPLIT.
-//                     * Combine it with the next node if its onSameLineAsNext
-//                     * field is true (which implies it and the next node are NEW
-//                     * nodes.
-//                     ********************************************************************/
-//                    comp = new Composite(shell, SWT.NONE);
-//                    gridLayout = new GridLayout(3, false);
-//                    comp.setLayout(gridLayout);
-//                    // Add arrow buttons if necessary
-//                    if ((chosenSplit == -1) && (andSplitBegin <= i)
-//                            && (i <= andSplitEnd)) {
-//                        Button arrowButton = new Button(comp, SWT.ARROW
-//                                | SWT.UP);
-//                        arrowButton
-//                                .addSelectionListener(new ArrowSelectionListener(
-//                                        i, SWT.UP, this));
-//                        gridData = new GridData();
-//                        gridData.verticalAlignment = SWT.TOP;
-//                        arrowButton.setLayoutData(gridData);
-//                        if (i == andSplitBegin) {
-//                            arrowButton.setEnabled(false);
-//                        }
-//                        arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
-//                        arrowButton
-//                                .addSelectionListener(new ArrowSelectionListener(
-//                                        i, SWT.DOWN, this));
-//
-//                        gridData = new GridData();
-//                        gridData.verticalAlignment = SWT.TOP;
-//                        arrowButton.setLayoutData(gridData);
-//                        if (i == andSplitEnd) {
-//                            arrowButton.setEnabled(false);
-//                        }
-//                    }
-//
-//                    assumeLabel = new Label(comp, SWT.NONE);
-//                    String text = stringArrayToString(assumeReps.elementAt(i).primedNodeText());
-//                    // Combine this with following NEW nodes if necessary
-//                    while (assumeReps.elementAt(i).onSameLineAsNext) {
-//                        i++;
-//                        text = text
-//                                + ", "
-//                                + stringArrayToString(assumeReps.elementAt(i).nodeText);
-//
-//                    }
-//                    assumeLabel.setText(text);
-//                    // Set the font to be the editors main text font.
-//                    assumeLabel.setFont(JFaceResources.getFontRegistry().get(
-//                            JFaceResources.TEXT_FONT));
-//                    gridData = new GridData();
-//                    // I have no idea why (undoubtedly a feature that no one has
-//                    // ever bothered to document), but the following statement did
-//                    // not have any effect before I added the new composite between the
-//                    // button and it. Now it can be used to add positive or negative space
-//                    // to the left of the label.
-//                    gridData.horizontalIndent = 0;
-//                    gridData.verticalAlignment = SWT.TOP;
-//                    assumeLabel.setLayoutData(gridData);
-//
-//                    // Add a spacer between the items.
-//                    if (i != assumeReps.size() - 1) {
-//                        // comp = new Composite(shell, SWT.NONE);
-//                        // comp.setSize(100,0) ;
-//                        comp = new Composite(shell, SWT.NONE);
-//                        comp.setLayout(compLayout);
-//                        gridData = new GridData();
-//                        gridData.horizontalSpan = 3;
-//                        gridData.horizontalIndent = 30;
-//                        comp.setLayoutData(gridData);
-//                        gridLayout = new GridLayout(1, false);
-//                        comp.setLayout(gridLayout);
-//                        assumeLabel = new Label(comp, SWT.NONE);
-//                        String dashes = StringHelper.copyString("  -",
-//                                (assumeWidth + 5) / 3);
-//                        assumeLabel.setText(dashes);
-//                        assumeLabel.setFont(JFaceResources.getFontRegistry()
-//                                .get(JFaceResources.TEXT_FONT));
-//
-//                        // The following is one of many vain attempts to create
-//                        // a separator
-//                        // of a given width. It works only if the following line
-//                        // begins with
-//                        // a blank label, but not if it begins with a
-//                        // button.(?!)
-//                        // assumeLabel = new Label(comp, SWT.SEPARATOR |
-//                        // SWT.HORIZONTAL);
-//                        //
-//                        // gridData = new GridData();
-//                        // gridData.horizontalAlignment = GridData.FILL;
-//                        // gridData.grabExcessHorizontalSpace = true;
-//                        // gridData.minimumWidth = 500;
-//                        // assumeLabel.setLayoutData(gridData) ;
-//                        // comp.setSize(0,0) ;
-//                        // System.out.println("Line " + i) ;
-//                    }
-//                } else {
-//                    // This is an OR_DECOMP node.
-//
-//                }
-//            }
         }
 
         /**********************************************************
@@ -1826,7 +1663,7 @@ assumeLabel.setLayoutData(gridData);
             /**
              * This is a "prove by AND-split" operation.
              */
-             makeProof(nodeRep, true) ;
+             makeProof(nodeRep, true, false) ;
         } else {
             /**
              * This is an AND-SPLIT of an assumption, so nodeRep equals
@@ -2075,17 +1912,20 @@ assumeLabel.setLayoutData(gridData);
      * @param nodeRep
      */
     void caseAction(NodeRepresentation nodeRep) {
-        makeProof(nodeRep, false) ;
+        makeProof(nodeRep, false, false) ;
     }
     
     /**
-     * Creates the proof, which is an and-split proof if
-     * isAndProof is true, and a case-split proof otherwise.
+     * Creates the proof, which is a Suffices Only proof if sufficesONly = true,
+     * and otherwise is an and-split proof if * isAndProof is true, and a case-split
+     * proof otherwise.
+     * 
      * 
      * @param nodeRep
      * @param isAndProof
+     * @param sufficesOnly
      */
-    void makeProof(NodeRepresentation nodeRep, boolean isAndProof) {
+    void makeProof(NodeRepresentation nodeRep, boolean isAndProof, boolean sufficesOnly) {
         
 
         /**
@@ -2144,7 +1984,7 @@ assumeLabel.setLayoutData(gridData);
         String[] sufficesStep = null;
         boolean hasSufficesStep = useSufficesButton.getSelection()
                                      && (assumptionsText.length != 0) ;
-        if (hasSufficesStep) {
+        if (hasSufficesStep || sufficesOnly) {
             String sufficesProof = null;
 
             String[] suffices = prependToStringArray(
@@ -2187,91 +2027,99 @@ assumeLabel.setLayoutData(gridData);
         //     is the current goal,  if this is an and-split proof.
         //     It is null otherwise.
         
-        String[][] mainProofSteps;
-        int numberOfSteps;
-        String proofDef = null ;
-        
-        if (isAndProof) {
-            /**
-             * This is an and-decomposition proof
-             */
+        String[][] mainProofSteps = null;
+        int numberOfSteps = 0;   
+        String proofDef = null;
+
+        if (!sufficesOnly) {
             
-            Decomposition decomp = nodeRep.decomposition;
-            numberOfSteps = decomp.children.size();
-            mainProofSteps = new String[numberOfSteps][];
-            proofDef = decomp.definedOp ;
+            if (isAndProof) {
+                /**
+                 * This is an and-decomposition proof
+                 */
 
-            for (int i = 0; i < numberOfSteps; i++) {
+                Decomposition decomp = nodeRep.decomposition;
+                numberOfSteps = decomp.children.size();
+                mainProofSteps = new String[numberOfSteps][];
+                proofDef = decomp.definedOp;
 
-                // Set goalArray to the String array of the goal.
-                NodeRepresentation stepGoalRep = decompositionChildToNodeRep(
-                        nodeRep, i, null, null);
-                String[] goalArray = stepGoalRep.primedNodeText();
+                for (int i = 0; i < numberOfSteps; i++) {
 
-                // Set step to step number + the step's obligation.
-                String[] step;
-                // If there is no SUFFICES step but the goal decomposition
-                // created new ASSUME clauses, then they must be the ASSUME
-                // of an ASSUME / PROVE
-                if ((sufficesStep == null) & (assumptionsText.length > 0)) {
-                    // Need to make ASSUME / PROVE
-                    step = concatStringArrays(
-                            prependToStringArray(assumptionsText, "ASSUME "),
-                            prependToStringArray(goalArray, "PROVE  "));
-                } else {
-                    // Just a simple step, no ASSUME/PROVE.
-                    step = goalArray;
-                }
-                step = prependToStringArray(step, proofLevelString + (i + 1)
-                        + STEP_NUMBER_PUNCTUATION + " ");
+                    // Set goalArray to the String array of the goal.
+                    NodeRepresentation stepGoalRep = decompositionChildToNodeRep(
+                            nodeRep, i, null, null);
+                    String[] goalArray = stepGoalRep.primedNodeText();
 
-                // Add the proof to step, if there is one.
-                if (proofText != null) {
-                    step = concatStringArrays(step, proofText); 
-                }
-
-                // System.out.println("step " + i + ":") ;
-                // System.out.println(stringArrayToString(step)) ;
-                // Set the i-th conjunctStep to step
-                mainProofSteps[i] = step;
-            }
-        } else {
-            /**
-             * This is a case-split proof.
-             */
-            
-            // Set pfStepVec to a Vector of proof steps.
-            Vector<String[]> pfStepVec = new Vector<String[]>() ;
-            for (int i = 0; i < nodeRep.children.size(); i++) {
-                Vector<NodeRepresentation> childVec = nodeRep.children.elementAt(i) ;
-                String[] assumpArray ; 
-                if (! hasSufficesStep) {
-                    assumpArray = new String[assumptionsText.length];
-                    for (int j = 0; j < assumptionsText.length; j++) {
-                        assumpArray[j] = assumptionsText[j];
+                    // Set step to step number + the step's obligation.
+                    String[] step;
+                    // If there is no SUFFICES step but the goal decomposition
+                    // created new ASSUME clauses, then they must be the ASSUME
+                    // of an ASSUME / PROVE
+                    if ((sufficesStep == null)) {
+                        // Need to make ASSUME / PROVE
+                        step = concatStringArrays(
+                                prependToStringArray(assumptionsText, "ASSUME "),
+                                prependToStringArray(goalArray, "PROVE  "));
+                    } else {
+                        // Just a simple step, no ASSUME/PROVE.
+                        step = goalArray;
                     }
-                } else {
-                    assumpArray = new String[0] ;
+                    step = prependToStringArray(step, proofLevelString
+                            + (i + 1) + STEP_NUMBER_PUNCTUATION + " ");
+
+                    // Add the proof to step, if there is one.
+                    if (proofText != null) {
+                        step = concatStringArrays(step, proofText);
+                    }
+
+                    // System.out.println("step " + i + ":") ;
+                    // System.out.println(stringArrayToString(step)) ;
+                    // Set the i-th conjunctStep to step
+                    mainProofSteps[i] = step;
                 }
-                addCaseProofs(pfStepVec, childVec, assumpArray, proofText );
+            } else {
+                /**
+                 * This is a case-split proof.
+                 */
+
+                // Set pfStepVec to a Vector of proof steps.
+                Vector<String[]> pfStepVec = new Vector<String[]>();
+                for (int i = 0; i < nodeRep.children.size(); i++) {
+                    Vector<NodeRepresentation> childVec = nodeRep.children
+                            .elementAt(i);
+                    String[] assumpArray;
+                    if (!hasSufficesStep) {
+                        assumpArray = new String[assumptionsText.length];
+                        for (int j = 0; j < assumptionsText.length; j++) {
+                            assumpArray[j] = assumptionsText[j];
+                        }
+                    } else {
+                        assumpArray = new String[0];
+                    }
+                    addCaseProofs(pfStepVec, childVec, assumpArray, proofText);
+                }
+
+                // turn pfStepVec into the array mainProofSteps
+                mainProofSteps = new String[pfStepVec.size()][];
+                for (int i = 0; i < mainProofSteps.length; i++) {
+                    mainProofSteps[i] = pfStepVec.elementAt(i);
+                }
+                numberOfSteps = mainProofSteps.length;
             }
-   
-            // turn pfStepVec into the array mainProofSteps
-            mainProofSteps = new String[pfStepVec.size()][] ;
-            for (int i = 0; i < mainProofSteps.length; i++) {
-                mainProofSteps[i] = pfStepVec.elementAt(i) ;
-            }
-            numberOfSteps = mainProofSteps.length ;
-        }
-        
+        } 
+        /*
+         * The following is much too complicated in the sufficesOnly case.  In that
+         * case, hasGoalDefs and hasAssumeDefs will all be set to false, so 
+         */
         // Set qedStep to the QED step (with its step number and proof).
         String[] qedStep = new String[2];
         qedStep[0] = proofLevelString ;
-        if (NUMBER_QED_STEP) {
+        if (NUMBER_QED_STEP && (numberOfSteps != 0)) {
             qedStep[0] = qedStep[0] + (numberOfSteps + 1) + STEP_NUMBER_PUNCTUATION ;
         }
         qedStep[0] = qedStep[0] + " QED";
-        qedStep[1] = proofIndentString + "BY " + (proofLevelString + 1);
+        qedStep[1] = proofIndentString + "BY " 
+                        + ((numberOfSteps > 0) ? (proofLevelString + 1) : "");
         for (int i = 2; i <= numberOfSteps; i++) {
             qedStep[1] = qedStep[1] + ", " + proofLevelString + i;
         }
@@ -2284,19 +2132,60 @@ assumeLabel.setLayoutData(gridData);
         boolean hasGoalDefs = (! this.goalDefinitions.isEmpty()) 
                                  && (sufficesStep == null);
         boolean hasAssumeDefs = ! this.assumeDefinitions.isEmpty();
-        boolean hasDEF = false;
-        if (hasGoalDefs || hasAssumeDefs) {
-            hasDEF = true;
-            qedStep[1] = qedStep[1] + " DEF "
-                    + (hasGoalDefs ? setOfStringsToList(this.goalDefinitions) : "")
-                    + ((hasGoalDefs && hasAssumeDefs) ? ", " : "")
-                    + (hasAssumeDefs ? setOfStringsToList(this.assumeDefinitions) : "");
-        }
-        if (proofDef != null) {
-            if (hasDEF) {
-                qedStep[1] = qedStep[1] + ", " + proofDef;
+        
+        String goalAndAssumeDefs = 
+                (hasGoalDefs ? setOfStringsToList(this.goalDefinitions) : "")
+              + ((hasGoalDefs && hasAssumeDefs) ? ", " : "")
+              + (hasAssumeDefs ? setOfStringsToList(this.assumeDefinitions) : "");
+        if (sufficesOnly) {
+            if  (this.proof != null) {
+                qedStep = concatStringArrays(new String[] {qedStep[0]}, 
+                     prependToStringArray(proofText, proofIndentString)) ;
             } else {
-                qedStep[1] = qedStep[1] + " DEF " + proofDef;
+                qedStep[1] = "" ;
+            }
+//            // We make the proof the beginning of the QED step's proof, if it's
+//            // not "OBVIOUS"
+//            LeafProofNode pf = (LeafProofNode) this.proof ;
+//            if ((pf.getFacts() != null) || (pf.getDefs() != null)) {
+//                // this is not an OBVIOUS or OMITTED proof
+//                qedStep = concatStringArrays(new String[] {qedStep[0]}, 
+//                                   prependToStringArray(proofText, proofIndentString)) ;
+//                if (hasGoalDefs || hasAssumeDefs) {
+//                    if (pf.getDefs() == null) {
+//                        appendToStringArray(qedStep, " DEF ") ;
+//                    }
+//                    appendToStringArray(qedStep, goalAndAssumeDefs) ;
+//                }
+//            } else {
+//                // This is an OBVIOUS or OMITTED PROOF
+//                if (hasGoalDefs || hasAssumeDefs) {
+//                    qedStep[1] = qedStep[1] + " DEF " + goalAndAssumeDefs ;
+//                } else {
+//                    qedStep = concatStringArrays(new String[] {qedStep[0]}, 
+//                            prependToStringArray(proofText, proofIndentString)) ;
+//                }
+//            }
+//            
+//        } else if (sufficesOnly && (!hasGoalDefs) && (!hasAssumeDefs)) {
+//            // In this case, there is no QED proof needed.  We
+//            // leave a blank line after the QED step because it's easier than
+//            // not doing so.
+//            qedStep[1] = "" ;
+        } else {
+            // Either not a suffices only proof, or proof = null.  In
+            // either case, can construct the QED step as if it 
+            boolean hasDEF = false;
+            if (hasGoalDefs || hasAssumeDefs) {
+                hasDEF = true;
+                qedStep[1] = qedStep[1] + " DEF " + goalAndAssumeDefs ;
+            }
+            if (proofDef != null) {
+                if (hasDEF) {
+                    qedStep[1] = qedStep[1] + ", " + proofDef;
+                } else {
+                    qedStep[1] = qedStep[1] + " DEF " + proofDef;
+                }
             }
         }
 
@@ -2310,19 +2199,21 @@ assumeLabel.setLayoutData(gridData);
             }
         }
 
-        completeProof = concatStringArrays(completeProof, mainProofSteps[0]);
-        for (int i = 1; i < mainProofSteps.length; i++) {
-            if (this.BLANK_LINE_BETWEEN_STEPS) {
-            completeProof = concatStringArrays(completeProof,
-                    concatStringArrays(blankLine, mainProofSteps[i]));
-            } else {
-                completeProof = concatStringArrays(completeProof,
-                                    mainProofSteps[i]);
+        if (mainProofSteps != null) {
+            completeProof = concatStringArrays(completeProof, mainProofSteps[0]);
+            for (int i = 1; i < mainProofSteps.length; i++) {
+                if (this.BLANK_LINE_BETWEEN_STEPS) {
+                    completeProof = concatStringArrays(completeProof,
+                            concatStringArrays(blankLine, mainProofSteps[i]));
+                } else {
+                    completeProof = concatStringArrays(completeProof,
+                            mainProofSteps[i]);
+                }
             }
-        }
 
-        if (this.BLANK_LINE_BETWEEN_STEPS) {
-            completeProof = concatStringArrays(completeProof, blankLine);
+            if (this.BLANK_LINE_BETWEEN_STEPS) {
+                completeProof = concatStringArrays(completeProof, blankLine);
+            }
         }
         completeProof = concatStringArrays(completeProof, qedStep);
 
@@ -2480,6 +2371,14 @@ assumeLabel.setLayoutData(gridData);
             try {
                 NodeRepresentation res = 
                         new NodeRepresentation(this.doc, decomp.children.elementAt(i)) ;
+                // TRIAL CODE -- this seems to be working
+                NodeTextRep ntext = substituteInNodeText(decomp, 
+                        (ExprNode) decomp.children.elementAt(i), 
+                        new NodeTextRep(res.nodeText, res.mapping)) ;
+                res.nodeText = ntext.nodeText ;
+                res.mapping = ntext.mapping;
+                // END TRIAL CODE
+                
                 // This is a hack, calling subNodeRep for the subnode of
                 // the definition body consisting of the entire definition body.
                 // But a little thought reveals that this does what needs to be done.
@@ -2491,11 +2390,12 @@ assumeLabel.setLayoutData(gridData);
                             "An error that should not happen has occurred in "
                                     + "line 2534 of DecomposeProofHandler."); 
                 }
-                NodeTextRep ntext = substituteInNodeText(decomp, 
-                        (ExprNode) decomp.children.elementAt(i), 
-                        new NodeTextRep(result.nodeText, result.mapping)) ;
-                result.nodeText = ntext.nodeText ;
-                result.mapping = ntext.mapping;
+//     FOLLOWING COMMENTED OUT FOR TRIAL ABOVE
+//                /* NodeTextRep */ ntext = substituteInNodeText(decomp, 
+//                        (ExprNode) decomp.children.elementAt(i), 
+//                        new NodeTextRep(result.nodeText, result.mapping)) ;
+//                result.nodeText = ntext.nodeText ;
+//                result.mapping = ntext.mapping;
 
             } catch (BadLocationException e) {
                 // TODO Auto-generated catch block
@@ -4227,7 +4127,7 @@ System.out.println(result.formalParams[i].getName().toString() + " <- "
                 int buttonId = ((Integer) object).intValue();
                 switch (buttonId) {
                 case PROVE_BUTTON:
-                    // displayHTML();
+                    makeProof(null, false, true);
                     break;
                 case TEST_BUTTON:
                     windowShell = decomposeHandler.windowShell;
