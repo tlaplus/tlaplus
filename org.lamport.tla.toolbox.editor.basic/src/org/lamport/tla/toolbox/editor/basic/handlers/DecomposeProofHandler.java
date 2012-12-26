@@ -495,6 +495,11 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     boolean needsStepNumber;
 
     /**
+     * True iff the step/theorem being decomposed is an ASSUME/PROVE.  This
+     * is relevant for setting needsStepNumber.
+     */
+    boolean hasAssumes;
+    /**
      * Once the user has performed an AND split on an assumption, then another
      * AND split can be performed only on one of the results of that split. The
      * indices of the nodes in <code>assumes</code> and <code>assumeReps</code>
@@ -898,6 +903,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             /**************************************************************
              * This is an ASSUME/PROVE.
              *************************************************************/
+        	hasAssumes = true ;
             SemanticNode[] assump = ((AssumeProveNode) thm).getAssumes();
             assumes = new Vector<SemanticNode>();
             assumeReps = new Vector<NodeRepresentation>();
@@ -951,6 +957,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
              * assumesRep to null and check that this isn't something like a QED
              * step that the command doesn't handle.
              *************************************************************/
+        	hasAssumes = false ;
             assumes = new Vector<SemanticNode>();
             assumeReps = new Vector<NodeRepresentation>();
             if (!(thm instanceof OpApplNode)) {
@@ -1746,7 +1753,7 @@ assumeLabel.setLayoutData(gridData);
         }
 
         // Set needsStepNumber if necessary. (See that field's documentation.)
-        if (!nodeRep.isCreated) {
+        if (!nodeRep.isCreated && this.hasAssumes) {
             needsStepNumber = true;
         }
 
@@ -1973,7 +1980,7 @@ assumeLabel.setLayoutData(gridData);
         // Set addStepNumber true iff we need to add the step number to the
         // BY clause of a SUFFICES step or of the QED step.
         boolean addStepNumber = (stepNumber != null)
-                && this.needsStepNumber;
+                && this.needsStepNumber ;
 
         // Set sufficesStep to the string array of the suffices step,
         // or null if there is none.
@@ -2055,11 +2062,11 @@ assumeLabel.setLayoutData(gridData);
                     // If there is no SUFFICES step but the goal decomposition
                     // created new ASSUME clauses, then they must be the ASSUME
                     // of an ASSUME / PROVE
-                    if ((sufficesStep == null)) {
-                        // Need to make ASSUME / PROVE
-                        step = concatStringArrays(
+                    if ((sufficesStep == null || assumptionsText == null && assumptionsText.length == 0)) {
+                    	step = concatStringArrays(
                                 prependToStringArray(assumptionsText, "ASSUME "),
                                 prependToStringArray(goalArray, "PROVE  "));
+                    
                     } else {
                         // Just a simple step, no ASSUME/PROVE.
                         step = goalArray;
