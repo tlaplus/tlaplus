@@ -135,6 +135,18 @@ public class EditorUtil
         return (loc1.endLine() < loc2.endLine())
                 || ((loc1.endLine() == loc2.endLine()) && (loc1.endColumn() <= loc2.endColumn()));
     }
+    
+    /**
+     * True iff the range of lines specified by loc1 is a subset of the range of lines
+     * specified by loc2.
+     * 
+     * @param loc1
+     * @param loc2
+     * @return
+     */
+    public static boolean lineLocationContainment(Location loc1, Location loc2) {
+    	return (loc1.beginLine() >= loc2.beginLine()) && (loc2.endLine() >= loc1.endLine()) ;
+    }
 
     /**
      * Returns the TLA+ token in the document containing the region delimited

@@ -785,7 +785,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         String moduleFile = moduleNode.stn.getFilename();
         while ((theorem == null) & (i < allTheorems.length)) {
             if (allTheorems[i].stn.getFilename().equals(moduleFile)
-                    && EditorUtil.locationContainment(selectedLocation,
+                    && EditorUtil.lineLocationContainment(selectedLocation,
                             allTheorems[i].stn.getLocation())) {
                 theorem = allTheorems[i];
             }
@@ -821,7 +821,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             i = 0;
             proofLevel = stepLevel(pfsteps[0]);
             while ((foundLevelNode == null) && (i < pfsteps.length)) {
-                if (EditorUtil.locationContainment(selectedLocation,
+                if (EditorUtil.lineLocationContainment(selectedLocation,
                         pfsteps[i].stn.getLocation())) {
                     foundLevelNode = pfsteps[i];
                 }
@@ -840,6 +840,15 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             }
         }
         
+        /**
+         * Found the step.  Raise an error if this is a SUFFICES step.
+         */
+        if (step.isSuffices()) {
+        	MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    "Decompose Proof Command",
+                    "Cannot decompose a SUFFICES step.");
+            return null;
+        }
         /* 
          * set proofLevelString
          */
