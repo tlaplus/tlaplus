@@ -1758,7 +1758,7 @@ assumeLabel.setLayoutData(gridData);
         Decomposition decomp = nodeRep.decomposition;
         hasChanged = true;
         if (decomp.definedOp != null) {
-            goalDefinitions.add(decomp.definedOp);
+            assumeDefinitions.add(decomp.definedOp);
         }
 
         // Set needsStepNumber if necessary. (See that field's documentation.)
@@ -2071,7 +2071,7 @@ assumeLabel.setLayoutData(gridData);
                     // If there is no SUFFICES step but the goal decomposition
                     // created new ASSUME clauses, then they must be the ASSUME
                     // of an ASSUME / PROVE
-                    if ((sufficesStep == null || assumptionsText == null && assumptionsText.length == 0)) {
+                    if ((sufficesStep == null && assumptionsText != null && assumptionsText.length != 0)) {
                     	step = concatStringArrays(
                                 prependToStringArray(assumptionsText, "ASSUME "),
                                 prependToStringArray(goalArray, "PROVE  "));
