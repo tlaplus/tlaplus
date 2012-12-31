@@ -6,6 +6,12 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.eclipse.swt.*;
+import org.eclipse.swt.browser.*;
+import org.eclipse.swt.custom.*;
+import org.eclipse.swt.layout.*;
+import org.eclipse.swt.widgets.*;
+
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -19,9 +25,13 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
@@ -62,7 +72,19 @@ import org.osgi.framework.FrameworkUtil;
  * to the help page specified by its String argument.
  */
 public class HelpButton {
+	
+	/**
+	 *  This is used only for testing
+	 */
     public static String baseURL;
+
+    // If we want clicking a help button to re-use an existing window,
+    // then we need to replace the local declaration of browser in
+    // widgetSelected with a static field, and also add a static field
+    // to contain the current local variable shell of that method.
+    //
+    //    static Browser browser;
+    //    static Shell shell;
 
     /**
      * 
@@ -93,23 +115,23 @@ public class HelpButton {
         String file;
         String url;
         Composite shell;
-String testString = "";
+//String testString = "";
         HelpButtonListener(Composite parent, String helpFile) {
             super();
             file = helpFile;
             shell = parent;
             // Set fileX to the file name with "/"s replaced by
             // the local file separator.
-            String fileX = file;
-            if (!File.separator.equals("/")) {
-                while (fileX.indexOf('/') != -1) {
-                    fileX = fileX.substring(0, fileX.indexOf('/'))
-                            + File.separator
-                            + fileX.substring(fileX.indexOf('/') + 1);
-                    System.out.println("FileX = " + fileX);
-testString = testString + "FileX = " + fileX + "\n" ;
-                }
-            }
+//            String fileX = file;
+//            if (!File.separator.equals("/")) {
+//                while (fileX.indexOf('/') != -1) {
+//                    fileX = fileX.substring(0, fileX.indexOf('/'))
+//                            + File.separator
+//                            + fileX.substring(fileX.indexOf('/') + 1);
+//                    System.out.println("FileX = " + fileX);
+////testString = testString + "FileX = " + fileX + "\n" ;
+//                }
+//            }
             
             /**
              * When run on Eclipse, the following code sets baseURL to
@@ -133,37 +155,38 @@ testString = testString + "FileX = " + fileX + "\n" ;
              * TESTING STUFF -- which seems to work.
              */
             Bundle bundle = Platform.getBundle("org.lamport.tla.toolbox.doc");
-            URL fileURL = bundle.getEntry("html/prover/decompose.html");
-            File file = null;
+            URL fileURL = bundle.getEntry("html/" + this.file);
+            File theFile = null;
             try {
-                file = new File(FileLocator.resolve(fileURL).toURI());
+                theFile = new File(FileLocator.resolve(fileURL).toURI());
             } catch (URISyntaxException e1) {
                 e1.printStackTrace();
-testString = testString + "URISyntaxException\n" ;
+//testString = testString + "URISyntaxException\n" ;
             } catch (IOException e1) {
                 e1.printStackTrace();
-testString = testString + "IOException\n" ;
+//testString = testString + "IOException\n" ;
             }
-            if (file != null) {
-              url = file.getPath();
+            if (theFile != null) {
+              url = theFile.getPath();
             } ;
-            if ((file == null) || (url == null)) {
+            if ((theFile == null) || (url == null)) {
                 url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file ;
                 System.out.println("Could not find local copy of help file.");
-testString = testString + "Could not find local copy of help file.\n";
+//testString = testString + "Could not find local copy of help file.\n";
             }
             System.out.println("url = " + url);
-testString = testString + "url = " + url + "\nEnd constructor\n" ;
+//testString = testString + "url = " + url + "\nEnd constructor\n" ;
             /**
              * END TESTING STUFF
              */
         }
 
         public void widgetSelected(SelectionEvent e) {
+         /* The following code works.
+          * 
             Shell topshell = UIHelper.getShellProvider().getShell();
             Shell shell = new Shell(topshell, SWT.SHELL_TRIM);
             shell.setLayout(new FillLayout());
-
             Browser browser;
             try {
                 browser = new Browser(shell, SWT.NONE);
@@ -173,14 +196,75 @@ testString = testString + "url = " + url + "\nEnd constructor\n" ;
                 shell.dispose();
                 return;
             }
-
+            browser.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, true)) ;
             System.out.println("url actually used: " + url) ;
-testString = testString + "url actually used: " + url;
             browser.setUrl(url);
             shell.open();
-MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                    "Decompose Proof Command Test", testString);
-        }
+
+        */
+            
+            
+        	Shell topshell = UIHelper.getShellProvider().getShell();
+            Shell shell = new Shell(topshell, SWT.SHELL_TRIM);
+            
+//            FillLayout fillLayout = new FillLayout();
+//            fillLayout.type = SWT.VERTICAL;
+//            shell.setLayout(fillLayout);
+            shell.setLayout(new FillLayout());
+            Composite comp = new Composite(shell, SWT.NONE);
+            comp.setLayout(new GridLayout(1, false));
+
+            ToolBar navBar = new ToolBar(comp, SWT.NONE);
+        	navBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+            final ToolItem back = new ToolItem(navBar,  SWT.PUSH);
+        	back.setText("<-    Back    ");
+        	back.setEnabled(false);
+//        	Label label = new Label(navBar, SWT.NONE);
+//        	label.setText(" x  ");
+        	final ToolItem forward = new ToolItem(navBar, SWT.PUSH);
+        	forward.setText(" Forward  ->");
+        	forward.setEnabled(false);
+        	
+            final Browser browser ;
+            try {
+                browser = new Browser(comp, SWT.NONE);
+            } catch (SWTError e1) {
+                System.out.println("Could not instantiate Browser: "
+                        + e1.getMessage());
+                shell.dispose();
+                return;
+            }
+            GridData data = new GridData(GridData.FILL_BOTH);
+        	browser.setLayoutData(data);
+            
+        	back.addListener(SWT.Selection, new Listener() {
+        		public void handleEvent(Event event) {
+        			browser.back();
+        		}
+        	});
+        	forward.addListener(SWT.Selection, new Listener() {
+        		public void handleEvent(Event event) {
+        			browser.forward();
+        		}
+        	});
+        	final LocationListener locationListener = new LocationListener() {
+        		public void changed(LocationEvent event) {
+        			Browser browser = (Browser)event.widget;
+        			back.setEnabled(browser.isBackEnabled());
+        			forward.setEnabled(browser.isForwardEnabled());
+        		}
+        		public void changing(LocationEvent event) {
+        		}
+        	};
+        	browser.addLocationListener(locationListener);
+        	
+            System.out.println("url actually used: " + url) ;
+//testString = testString + "url actually used: " + url;
+            browser.setUrl(url);
+            shell.open();
+//MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+//                    "Decompose Proof Command Test", testString);
+       }
 
         public void widgetDefaultSelected(SelectionEvent e) {
             widgetSelected(e);

@@ -1085,7 +1085,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         // Display Help button that should raise help page for this
         // dialog window. I wish I knew how to move the button to
         // the right edge of the window.
-        Button helpButton = HelpButton.helpButton(topMenu, "prover/reading.html");
+        Button helpButton = HelpButton.helpButton(topMenu, "prover/decompose.html");
         gridData = new GridData();
         gridData.horizontalIndent = 20;
         helpButton.setLayoutData(gridData);
