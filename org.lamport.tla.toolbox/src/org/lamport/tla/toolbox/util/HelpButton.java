@@ -8,6 +8,7 @@ import java.net.URL;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
@@ -92,7 +93,7 @@ public class HelpButton {
         String file;
         String url;
         Composite shell;
-
+String testString = "";
         HelpButtonListener(Composite parent, String helpFile) {
             super();
             file = helpFile;
@@ -106,6 +107,7 @@ public class HelpButton {
                             + File.separator
                             + fileX.substring(fileX.indexOf('/') + 1);
                     System.out.println("FileX = " + fileX);
+testString = testString + "FileX = " + fileX + "\n" ;
                 }
             }
             
@@ -137,8 +139,10 @@ public class HelpButton {
                 file = new File(FileLocator.resolve(fileURL).toURI());
             } catch (URISyntaxException e1) {
                 e1.printStackTrace();
+testString = testString + "URISyntaxException\n" ;
             } catch (IOException e1) {
                 e1.printStackTrace();
+testString = testString + "IOException\n" ;
             }
             if (file != null) {
               url = file.getPath();
@@ -146,8 +150,10 @@ public class HelpButton {
             if ((file == null) || (url == null)) {
                 url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file ;
                 System.out.println("Could not find local copy of help file.");
+testString = testString + "Could not find local copy of help file.\n";
             }
             System.out.println("url = " + url);
+testString = testString + "url = " + url + "\nEnd constructor\n" ;
             /**
              * END TESTING STUFF
              */
@@ -169,9 +175,11 @@ public class HelpButton {
             }
 
             System.out.println("url actually used: " + url) ;
+testString = testString + "url actually used: " + url;
             browser.setUrl(url);
             shell.open();
-
+MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    "Decompose Proof Command Test", testString);
         }
 
         public void widgetDefaultSelected(SelectionEvent e) {
