@@ -206,6 +206,7 @@ public class HelpButton {
             
         	Shell topshell = UIHelper.getShellProvider().getShell();
             Shell shell = new Shell(topshell, SWT.SHELL_TRIM);
+            shell.setText("Toolbox Help");
             
 //            FillLayout fillLayout = new FillLayout();
 //            fillLayout.type = SWT.VERTICAL;

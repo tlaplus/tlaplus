@@ -103,6 +103,9 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
 				    // calling the translator in either case.  Of course, this property may
 				    // have some well-hidden influence that I didn't find.
                     //
+					// By the way, when the error occurs, it is reported 14 times.  I presume that,
+					// that this piece of code is called 14 times whenever the module is parsed.
+					// One hopes it is idempotent.
 				    IRegion matchRegion = null ;
 				    if (document.getLength() != 0) {
 					  matchRegion = searchAdapter.find(0, PCAL_ALGORITHM_DEFINITION, true, true, false, false);
