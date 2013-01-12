@@ -219,8 +219,13 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
@@ -258,6 +263,8 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
+import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
@@ -489,7 +496,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     /**
      * True if the proof of a SUFFICES step (or of the QED step if there is no
      * SUFFICES step) needs the name of the step being decomposed in the BY
-     * clause if that step has a name. * I believe this is the case iff an
+     * clause if that step has a name.  I believe this is the case iff an
      * \E-split has been done on an assumption that was not moved from the goal.
      */
     boolean needsStepNumber;
@@ -677,6 +684,13 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     //
     // }
 
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+    	Job job = new DecomposeProofJob("DecomposeProof", this) ;
+    	  job.setUser(true) ;
+//    	  job.setPriority(Job.LONG);
+    	  job.schedule(); // start as soon as possible
+    	return null ;
+    }
     /**
      * THE REAL EXECUTE METHOD
      * 
@@ -686,10 +700,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      *      ExecutionEvent)
      */
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object realExecute(/* ExecutionEvent event*/ 
+    		TLAEditor theEditor, TextSelection theSelection) throws ExecutionException {
         // We will set assumes to the vector of SemanticNodes of the
         // assumptions,
         // if there are any, and goal to the SemanticNode of the goal.
+Activator.getDefault().logDebug("Decompose Proof Called");
         Vector<SemanticNode> assumes;
         SemanticNode goal;
         String[] blankLine = new String[] { "" };
@@ -709,7 +725,53 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 return null;
             }
         }
+        
+// THE FOLLOWING TESTING STUFF NOW SEEMS TO BE WORKING.
+        
+// The following code raises a menu to ask the user if he wants to save 
+// unsaved modules.  However, the modules don't get parsed before the test for
+// whether the module is parsed occurs.
+//
+//        // TEST
+Activator.getDefault().logDebug("Calling promptUserForDirtyModules");
+        boolean proceed = UIHelper.promptUserForDirtyModules();
+Activator.getDefault().logDebug("Return from promptUserForDirtyModules");
+        if (!proceed)
+        {
+            // the user cancelled
+            return null;
+        }
+//        // END TEST
+        
+        // MORE TESTING
+        editor = theEditor;
+//        editor = EditorUtil.getTLAEditorWithFocus();
+        if (editor == null) {
+        	Activator.getDefault().logDebug("getTLAEditorWithFocus returned null");
+            return null;
+        }
+        editorIFile = ((FileEditorInput) editor.getEditorInput()).getFile();
 
+        ParseResult parseResult = ResourceHelper.getValidParseResult(editorIFile);
+
+        if (parseResult == null)
+        {
+            /*
+             * Its necessary to call this parsing within the job's run method.
+             * Its a bad idea to have two calls to SANY executing at the same time,
+             * and its possible for a launch of the prover to trigger background
+             * parsing. For example, the user might have dirty editors open
+             * when launching the prover. He will be prompted to save them. This
+             * could trigger background parsing. The run method will not be
+             * executed while the background parsing completes. This ensures
+             * that the following parsing will not occur while the background parsing
+             * executes.
+             */
+            parseResult = new ModuleParserLauncher().parseModule(editorIFile, new NullProgressMonitor());
+        }
+        // END TESTING
+        
+        
         // Report an error if there are dirty modules.
         if (existDirtyModules()) {
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
@@ -733,11 +795,15 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          */
 
         // gets the editor to which command applies
-        editor = EditorUtil.getTLAEditorWithFocus();
+//        editor = EditorUtil.getTLAEditorWithFocus();
         if (editor == null) {
+        	Activator.getDefault().logDebug("2nd call of getTLAEditorWithFocus returned null");
             return null;
         }
         editorIFile = ((FileEditorInput) editor.getEditorInput()).getFile();
+        
+
+
         if (editor.isDirty()) {
             MessageDialog
                     .openError(UIHelper.getShellProvider().getShell(),
@@ -764,8 +830,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          ******************************************************************/
         doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         text = doc.get();
-        selectionProvider = editor.getSelectionProvider();
-        selection = (TextSelection) selectionProvider.getSelection();
+//        selectionProvider = editor.getSelectionProvider();
+//        selection = (TextSelection) selectionProvider.getSelection();
+        selection = theSelection ;
         offset = selection.getOffset();
 
         // Get the module.
@@ -1021,10 +1088,50 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         // or doing what seems to work.
         editorIFile.setReadOnly(true);
         raiseWindow();
-
+Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
         return null;
     }
 
+    
+    
+    public class DecomposeProofJob extends Job {
+        DecomposeProofHandler handler ;
+        TLAEditor theEditor ;
+        TextSelection theSelection ;
+    	/**
+    	 * @param name
+    	 */
+    	public DecomposeProofJob(String name) {
+    		super(name);
+    		// TODO Auto-generated constructor stub
+    	}
+    	
+    	public DecomposeProofJob(String name, DecomposeProofHandler h) {
+    		super(name);
+    		handler = h ;
+    		theEditor = EditorUtil.getTLAEditorWithFocus() ;
+//          selectionProvider = editor.getSelectionProvider();
+          theSelection = (TextSelection) theEditor.getSelectionProvider().getSelection();
+
+    		// TODO Auto-generated constructor stub
+    	}
+
+    	/* (non-Javadoc)
+    	 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
+    	 */
+    	@Override
+    	protected IStatus run(IProgressMonitor monitor) {
+    		// TODO Auto-generated method stub
+    		try {
+				handler.realExecute(theEditor, theSelection);
+			} catch (ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		return null;
+    	}
+
+    }
     // Note: Experimentation seems to show that horizontalSpan doesn't apply to
     // a Label
     // or a Button, so I've been putting the Label or Button inside a composite
@@ -1707,6 +1814,7 @@ assumeLabel.setLayoutData(gridData);
                 // NodeRepresentation.
                 NodeRepresentation rep = decompositionChildToNodeRep(nodeRep,
                         i, this.assumeReps, null);
+                rep.isCreated = true ;
                 // this.assumes.add(idx + i, decomp.children.elementAt(i));
                 this.assumeReps.add(idx + i, rep);
 
@@ -2952,7 +3060,7 @@ assumeLabel.setLayoutData(gridData);
         /**
          * True iff this is a NEW assumption that was not in the original
          * obligation, or it is an ExprNode that was created by splitting the
-         * goal.
+         * goal or by doing an AND-split on an assumption.
          */
         boolean isCreated = false;
 
@@ -3183,7 +3291,7 @@ assumeLabel.setLayoutData(gridData);
 
             String[] result = this.nodeText.clone();
             if (needsParens) {
-                result[0] = "(" + result[0];
+                result = prependToStringArray(result, "(") ;
                 result[result.length - 1] = StringHelper
                         .trimEnd(result[result.length - 1]) + ")'";
             } else {
