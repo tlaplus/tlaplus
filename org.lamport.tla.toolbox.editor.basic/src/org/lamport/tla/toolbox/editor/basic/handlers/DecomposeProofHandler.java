@@ -329,7 +329,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     /**
      * The document as a string.
      */
-    private String text;
+//    private String text;
 
     /**
      * Some Eclipse thingee that seems to be needed.
@@ -684,7 +684,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     //
     // }
 
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object testExecuteInJob(ExecutionEvent event) throws ExecutionException {
     	Job job = new DecomposeProofJob("DecomposeProof", this) ;
     	  job.setUser(true) ;
 //    	  job.setPriority(Job.LONG);
@@ -700,8 +700,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      *      ExecutionEvent)
      */
-    public Object realExecute(/* ExecutionEvent event*/ 
-    		TLAEditor theEditor, TextSelection theSelection) throws ExecutionException {
+    public Object realExecute(/*ExecutionEvent event*/) throws ExecutionException {
         // We will set assumes to the vector of SemanticNodes of the
         // assumptions,
         // if there are any, and goal to the SemanticNode of the goal.
@@ -744,7 +743,7 @@ Activator.getDefault().logDebug("Return from promptUserForDirtyModules");
 //        // END TEST
         
         // MORE TESTING
-        editor = theEditor;
+       // Commented out to test Dan's idea
 //        editor = EditorUtil.getTLAEditorWithFocus();
         if (editor == null) {
         	Activator.getDefault().logDebug("getTLAEditorWithFocus returned null");
@@ -828,16 +827,17 @@ Activator.getDefault().logDebug("Return from promptUserForDirtyModules");
          * Set the following fields: doc, text, selectionProvider, selection,
          * offset, moduleNode.
          ******************************************************************/
-        doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-        text = doc.get();
+        // Commented out to try Dan's idea
+//        doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+//// This is never used.
+////        text = doc.get();
 //        selectionProvider = editor.getSelectionProvider();
 //        selection = (TextSelection) selectionProvider.getSelection();
-        selection = theSelection ;
-        offset = selection.getOffset();
-
-        // Get the module.
-        String moduleName = editor.getModuleName();
-        moduleNode = ResourceHelper.getModuleNode(moduleName);
+//        offset = selection.getOffset();
+//
+//        // Get the module.
+//        String moduleName = editor.getModuleName();
+//        moduleNode = ResourceHelper.getModuleNode(moduleName);
 
         // selectedLocation is Location of selected region.
         Location selectedLocation = EditorUtil.getLocationAt(doc, offset,
@@ -1092,8 +1092,52 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
         return null;
     }
 
+    // Another try, suggested by Dan
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+		this.editor = EditorUtil.getTLAEditorWithFocus();
+		this.doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+//        text = doc.get();
+        this.selectionProvider = editor.getSelectionProvider();
+        this.selection = (TextSelection) selectionProvider.getSelection();
+        this.offset = selection.getOffset();
+
+        // Get the module.
+        String moduleName = editor.getModuleName();
+        this.moduleNode = ResourceHelper.getModuleNode(moduleName);
+
+    	DecomposeProofRunnable runnable = new DecomposeProofRunnable(this) ;
+    	UIHelper.runUISync(runnable) ;
+    	return null ;
+    }
+    public class DecomposeProofRunnable implements java.lang.Runnable {
+    	DecomposeProofHandler handler ;
+    	
+    	DecomposeProofRunnable(DecomposeProofHandler h) {
+    		handler = h ;
+    	}
+    	public void run() {
+    		try {
+    			handler.editor = EditorUtil.getTLAEditorWithFocus();
+    			handler.doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+//    	        text = doc.get();
+    	        handler.selectionProvider = editor.getSelectionProvider();
+    	        handler.selection = (TextSelection) selectionProvider.getSelection();
+    	        handler.offset = selection.getOffset();
+
+    	        // Get the module.
+    	        String moduleName = editor.getModuleName();
+    	        handler.moduleNode = ResourceHelper.getModuleNode(moduleName);
+
+				handler.realExecute() ;
+			} catch (ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    }
     
-    
+    // This doesn't work.  I think need to raise a Display
+    // instead of doing it with a shell 
     public class DecomposeProofJob extends Job {
         DecomposeProofHandler handler ;
         TLAEditor theEditor ;
@@ -1110,6 +1154,7 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
     		super(name);
     		handler = h ;
     		theEditor = EditorUtil.getTLAEditorWithFocus() ;
+//    		handler.topshell = UIHelper.getShellProvider().getShell();
 //          selectionProvider = editor.getSelectionProvider();
           theSelection = (TextSelection) theEditor.getSelectionProvider().getSelection();
 
@@ -1122,16 +1167,17 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
     	@Override
     	protected IStatus run(IProgressMonitor monitor) {
     		// TODO Auto-generated method stub
-    		try {
-				handler.realExecute(theEditor, theSelection);
-			} catch (ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//    		try {
+//				handler.realExecute(theEditor, theSelection);
+//			} catch (ExecutionException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
     		return null;
     	}
 
     }
+    
     // Note: Experimentation seems to show that horizontalSpan doesn't apply to
     // a Label
     // or a Button, so I've been putting the Label or Button inside a composite
