@@ -19,10 +19,15 @@ import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -34,6 +39,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+//import org.lamport.tla.toolbox.editor.basic.handlers.DecomposeProofHandler;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
@@ -83,9 +89,11 @@ public class HelpButton {
     // widgetSelected with a static field, and also add a static field
     // to contain the current local variable shell of that method.
     //
-    //    static Browser browser;
-    //    static Shell shell;
-
+    static Browser browser = null;
+    static Shell helpShell = null;
+    static Point location = null ;
+    static Point size = null ;
+    
     /**
      * 
      * @param parent    Where the button should be added.
@@ -180,7 +188,7 @@ public class HelpButton {
              * END TESTING STUFF
              */
         }
-
+        
         public void widgetSelected(SelectionEvent e) {
          /* The following code works.
           * 
@@ -202,17 +210,23 @@ public class HelpButton {
             shell.open();
 
         */
+            boolean setSize = false ;
+            if (helpShell == null) {
+              setSize = true ;
+        	  Shell  topshell = UIHelper.getShellProvider().getShell();
+              /* Shell */ helpShell = new Shell(topshell, SWT.CLOSE | SWT.TITLE| SWT.RESIZE 
+                          /*SWT.SHELL_TRIM */);
+              helpShell.setText("Toolbox Help");
+              helpShell.addDisposeListener(new HelpWindowDisposeListener()) ;
+              helpShell.addShellListener(new HelpShellListener()) ;
+              browser = null ;
             
-            
-        	Shell topshell = UIHelper.getShellProvider().getShell();
-            Shell shell = new Shell(topshell, SWT.SHELL_TRIM);
-            shell.setText("Toolbox Help");
             
 //            FillLayout fillLayout = new FillLayout();
 //            fillLayout.type = SWT.VERTICAL;
 //            shell.setLayout(fillLayout);
-            shell.setLayout(new FillLayout());
-            Composite comp = new Composite(shell, SWT.NONE);
+            helpShell.setLayout(new FillLayout());
+            Composite comp = new Composite(helpShell, SWT.NONE);
             comp.setLayout(new GridLayout(1, false));
 
             ToolBar navBar = new ToolBar(comp, SWT.NONE);
@@ -226,14 +240,16 @@ public class HelpButton {
         	forward.setText(" Forward  ->");
         	forward.setEnabled(false);
         	
-            final Browser browser ;
-            try {
-                browser = new Browser(comp, SWT.NONE);
-            } catch (SWTError e1) {
-                System.out.println("Could not instantiate Browser: "
-                        + e1.getMessage());
-                shell.dispose();
-                return;
+            /* final Browser browser ; */
+            if (browser == null) {
+                try {
+                    browser = new Browser(comp, SWT.NONE);
+                } catch (SWTError e1) {
+                    System.out.println("Could not instantiate Browser: "
+                            + e1.getMessage());
+                    helpShell.dispose();
+                    return;
+                }
             }
             GridData data = new GridData(GridData.FILL_BOTH);
         	browser.setLayoutData(data);
@@ -258,11 +274,20 @@ public class HelpButton {
         		}
         	};
         	browser.addLocationListener(locationListener);
-        	
-            System.out.println("url actually used: " + url) ;
+            }
+//            System.out.println("url actually used: " + url) ;
 //testString = testString + "url actually used: " + url;
             browser.setUrl(url);
-            shell.open();
+            if (setSize) {
+            if (HelpButton.location != null) {
+                helpShell.setLocation(HelpButton.location) ;
+            }
+            if (HelpButton.size != null) {
+                helpShell.setSize(HelpButton.size) ;
+            }
+            }
+            helpShell.open();
+            helpShell.forceFocus();
 //MessageDialog.openError(UIHelper.getShellProvider().getShell(),
 //                    "Decompose Proof Command Test", testString);
        }
@@ -271,6 +296,54 @@ public class HelpButton {
             widgetSelected(e);
         }
 
+    }
+
+    static class HelpShellListener implements ShellListener {
+
+        public void shellActivated(ShellEvent e) {
+            // TODO Auto-generated method stub
+            System.out.println("shellActivated") ;
+            
+        }
+
+        public void shellClosed(ShellEvent e) {
+            // TODO Auto-generated method stub
+            System.out.println("shellClosed") ;
+        }
+
+        public void shellDeactivated(ShellEvent e) {
+            System.out.println("shellDeActivated") ;
+            
+        }
+
+        public void shellDeiconified(ShellEvent e) {
+            // TODO Auto-generated method stub
+            System.out.println("shellDeiconified") ;
+        }
+
+        public void shellIconified(ShellEvent e) {
+            // TODO Auto-generated method stub
+            System.out.println("shellIconified") ;
+            
+        }
+        
+    }
+    static class HelpWindowDisposeListener implements DisposeListener {
+//        DecomposeProofHandler commandHandler;
+
+//        WindowDisposeListener(DecomposeProofHandler handler) {
+//            commandHandler = handler;
+
+//        }
+
+        public void widgetDisposed(DisposeEvent e) {
+            HelpButton.location = helpShell.getLocation();
+            HelpButton.size = helpShell.getSize();
+            HelpButton.helpShell = null ;
+            
+            
+            
+        }
     }
 
 }
