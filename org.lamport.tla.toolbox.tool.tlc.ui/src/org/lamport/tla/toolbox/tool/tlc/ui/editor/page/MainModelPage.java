@@ -66,6 +66,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -1196,16 +1197,21 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 //        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
         
         /*
-         * run from the checkpoint
+         * run from the checkpoint.  Checkpoint help button added by LL on 17 Jan 2013
          */
-        checkpointButton = toolkit.createButton(howToRunArea, "Recover from checkpoint", SWT.CHECK);
+        Composite ckptComp = new Composite(howToRunArea, SWT.NONE) ;
+        layout = new GridLayout(2, true);
+        ckptComp.setLayout(layout);
+        
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 20;
+        ckptComp.setLayoutData(gd);
 
-        checkpointButton.setLayoutData(gd);
+        checkpointButton = toolkit.createButton(ckptComp, "Recover from checkpoint", SWT.CHECK);
         checkpointButton.addSelectionListener(howToRunListener);
         checkpointButton.addFocusListener(focusListener);
+        Button ckptHelpButton = HelpButton.helpButton(ckptComp, "model/overview-page.html#checkpoint") ;
 
         FormText chkpointIdLabel = toolkit.createFormText(howToRunArea, true);
         chkpointIdLabel.setText("Checkpoint ID:", false, false);
@@ -1266,20 +1272,24 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         chkptDeleteButton.addFocusListener(focusListener);
         
         /*
-         * Distribution
+         * Distribution.  Help button added by LL on 17 Jan 2013
          */
-        //TODO Link help page for distribution mode 
-        distributedButton = toolkit.createButton(howToRunArea, "Run in distributed mode", SWT.CHECK);
+        Composite distComp = new Composite(howToRunArea, SWT.NONE) ;
+        layout = new GridLayout(2, true);
+        distComp.setLayout(layout);
+        
         gd = new GridData();
         gd.horizontalSpan = 2;
-
-        distributedButton.setLayoutData(gd);
+        distComp.setLayoutData(gd);
+        
+        distributedButton = toolkit.createButton(distComp, "Run in distributed mode", SWT.CHECK);
+        Button distHelpButton = HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
         distributedButton.addSelectionListener(howToRunListener);
 		distributedButton.setToolTipText("If checked, state computation will be performed by (remote) workers.");
 		distributedButton.addFocusListener(focusListener);
 		
         /*
-         * pre-fligh script executed prior to distributed TLC (e.g. to start remote workers)
+         * pre-flight script executed prior to distributed TLC (e.g. to start remote workers)
          */
         FormText distributedLabel = toolkit.createFormText(howToRunArea, true);
         distributedLabel.setText("Pre Flight Script:", false, false);

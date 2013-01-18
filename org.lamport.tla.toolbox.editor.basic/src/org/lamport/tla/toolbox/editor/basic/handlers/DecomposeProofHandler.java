@@ -159,30 +159,31 @@
  A, H |= C by expanding definitions D_1, ... , D_k.
 
  Suppose that A, H |= C is then transformed to the equivalent
- obligation  J, K, L |= C by expanding definitions E_1, ... , E_m
- and introducing additional declarations NEW v_1, ... , NEW v_j,
- where K has the form K_1 \/ ... \/ K_n.  Then A |= P has the
+ obligation  J, K, L |= C by expanding definitions E_1, ... , E_m,
+ and K == K_1 \/ ... \/ K_n.  Then A |= P has the
  proof
 
- <i> SUFFICES H, NEW v_1, ... , NEW v_j |= C
- BY DEF D_1, ... , D_k
+ <i> SUFFICES H, J, K, L |= C
+ BY DEF D_1, ... , D_k, E_1, ... , E_m
  <i>1. K_1 |= C
  ...
  <i>n. K_n |= C
  <1> QED
- BY <i>1, ... , <i>n DEF E_1, ..., E_m
+ BY <i>1, ... , <i>n DEF K
+
+(The DEF K can be eliminated if K equals 
 
  The transformation of A, H |= C to J, K, L |= C will be done in
  two steps:
 
  1. Splitting conjunctions into separate assumptions.
 
- 2. Performing the following transformations:
+ 2. Performing the transformations:
 
- \E x : S   ->  NEW x, S .
+     \E x : S   ->  NEW x, S .
 
- NEW x, S_1 \/ ... \/ S_n  ->  
- (NEW x |= S_1) \/ ... \/ (NEW x |= S_n)
+      NEW x, S_1 \/ ... \/ S_n  ->  
+      (NEW x |= S_1) \/ ... \/ (NEW x |= S_n)
 
 
  *********************************/
@@ -519,61 +520,23 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     int andSplitEnd;
 
     /**
-     * True iff the user has done something to change goal and/or set of
-     * assumptions. (This is used to disable the Replace option.)
-     * 
-     * Redundant.
-     */
-    // private boolean hasChanged = false ;
-
-    /**
-     * True iff an action has been performed on an assumption--either an
-     * AND-split, a \E-split, or an OR-split. Such an action disables actions on
-     * other assumptions. Once an \E-split or an OR-split has been performed, at
-     * most one assumption node can have actions performed on it. After an
-     * AND-split, only AND-split nodes can have enabled actions.
-     */
-    // This doesn't seem to be necessary. I decided to allow other
-    // actions after a \E-split, and AND-splits and OR-splits can
-    // be detected by other means.
-    // private boolean assumeHasChanged ;
-
-    /**
-     * The set of Ids of user-defined operations whose definitions were expanded
-     * in decomposing the assumptions.
-     */
-    private HashSet<String> assumeDefinitions;
-
-    /**
-     * The set of Ids of user-defined operations whose definitions were expanded
-     * in decomposing the goal.
+     * The set of Ids of user-defined operations that must appear in the
+     * DEF clause of the QED step's proof.  They are definitions that were 
+     * expanded in decomposing non-top level \E assumptions.
      */
     private HashSet<String> goalDefinitions;
+
+    /**
+     * The set of Ids of user-defined operations that must appear in the 
+     * DEF clause of a SUFFICES step's proof.  They are those definitions 
+     * that were expanded the AND decomposition of the goal or an assumption,
+     * a CASE decomposition and a top-level \E assumption. 
+     */
+    private HashSet<String> assumpDefinitions;
 
     /****************************************
      * Top Menu buttons.
      *****************************************/
-    // The possible ways to distribute added assumptions in the proof are
-    // - Put them in a SUFFICES step
-    // - Put them in the ASSUMES clause of each step.
-    // - Rewrite the original step.
-    // I originally thought I'd allow all three, which required three
-    // radio buttons. But I decided to disallow the third possibility,
-    // so I needed only the single useSuffices check box.
-    //
-    // // Radio buttons for how to rewrite proof:
-    // Button sufficesButton ; // Use SUFFICES step in proof
-    // Button rewriteButton ; // Rewrite step
-    // Button neitherButton ; // Use ASSUME/PROOF steps
-    //
-    // // The value selected by the radiobuttons. Should initialize by
-    // preference
-    //
-    // private static final int SUFFICES_CHOSEN = 0 ;
-    // private static final int REWRITE_CHOSEN = 1 ;
-    // private static final int NEITHER_CHOSEN = 2 ;
-    // private int radioChoice = SUFFICES_CHOSEN ;
-
     /**
      * The useSufficesButton determines whether the created proof will use an
      * initial SUFFICES step to declare the newly created assumptions, or if
@@ -601,117 +564,24 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         subexpressionValue = subexpressionButton.getSelection();
     }
 
-    // private IRegion lineInfo; // The lineInfo for the current offset.
-
-    /**
-     * TEST OF HELP BUTTON. Rename this to execute for test.
-     * 
-     * @param event
-     * @return
-     * @throws ExecutionException
-     */
-    public Object testExecute(ExecutionEvent event) throws ExecutionException {
-        /**
-         * TESTING STUFF
-         */
-        // Bundle bundle = Platform.getBundle("org.lamport.tla.toolbox.doc");
-        // URL fileURL = bundle.getEntry("html/prover/test.html");
-        // File file = null;try {
-        // file = new File(FileLocator.resolve(fileURL).toURI());
-        // } catch (URISyntaxException e1) {
-        // e1.printStackTrace();} catch (IOException e1) {
-        // e1.printStackTrace();}
-        // System.out.println("url = " + file.getPath());
-        /**
-         * END TESTING STUFF
-         */
-        Shell topshell = UIHelper.getShellProvider().getShell();
-        windowShell = new Shell(topshell, SWT.SHELL_TRIM); // | SWT.H_SCROLL);
-                                                           // // SWT.RESIZE) ;
-                                                           // // | SWT.V_SCROLL
-                                                           // | SWT.H_SCROLL) ;
-        windowShell.setText("Leslie's Test");
-        Composite shell = windowShell; // new Composite(windowShell, SWT.NONE) ;
-        GridLayout gridLayout = new GridLayout(2, false);
-        shell.setLayout(gridLayout);
-        // Set up the help button
-        Button helpButton = HelpButton.helpButton(shell, "prover/decompose.html");
-        // Button helpButton = new Button(shell, SWT.PUSH) ;
-        Image helpImg = PlatformUI.getWorkbench().getSharedImages()
-                .getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
-        helpButton.setImage(helpImg);
-        GridData gridData = new GridData();
-        gridData.verticalAlignment = SWT.TOP;
-        helpButton.setLayoutData(gridData);
-        // Attach the listener to it
-        // helpButton.addSelectionListener(new HelpButtonListener());
-        // Bundle bundle = FrameworkUtil.getBundle(this.getClass());
-        String url = HelpButton.baseURL; // bundle.getLocation() ;
-
-        // Bundle bundle = FrameworkUtil.getBundle(this.getClass());
-        // url = bundle.getLocation() ;
-
-        // System.out.println("url:  " + url);
-        String msgText = "Please click on the `?' button on the left.\n\n"
-                + "It will be obvious if it succeeds in doing what it should.\n\n"
-                + "If it doesn't do what it should, please copy the following\n"
-                + "text and send it to me.\n\n  |-" + url + "-|   \n\n"
-                + "Thanks,\n\nLeslie";
-        Text text = new Text(shell, SWT.NONE + SWT.MULTI);
-        text.setText(msgText);
-        text.setFont(JFaceResources.getFontRegistry().get(
-                JFaceResources.TEXT_FONT));
-        text.setEnabled(true);
-        // Label label = new Label(shell, SWT.BORDER) ;
-        // label.setText(msgText);
-        shell.pack();
-        windowShell.update();
-        windowShell.open();
-        return null;
-
-    }
-
-    // public class HelpButtonListener extends SelectionAdapter implements
-    // SelectionListener {
-    //
-    // public void widgetSelected(SelectionEvent e) {
-    // displayHTML();
-    // }
-    //
-    // public void widgetDefaultSelected(SelectionEvent e) {
-    // displayHTML();
-    // }
-    //
-    // }
-
-    public Object testExecuteInJob(ExecutionEvent event) throws ExecutionException {
-    	Job job = new DecomposeProofJob("DecomposeProof", this) ;
-    	  job.setUser(true) ;
-//    	  job.setPriority(Job.LONG);
-    	  job.schedule(); // start as soon as possible
-    	return null ;
-    }
     /**
      * THE REAL EXECUTE METHOD
      * 
-     * The execute method is called when the user issues a DecomposeProof
-     * command.
+     * This method is called by a synchronous job launched in the execute method 
+     * to do most of the work of executing the Decompose Proof command.
      * 
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      *      ExecutionEvent)
      */
     public Object realExecute(/*ExecutionEvent event*/) throws ExecutionException {
         // We will set assumes to the vector of SemanticNodes of the
-        // assumptions,
-        // if there are any, and goal to the SemanticNode of the goal.
-Activator.getDefault().logDebug("Decompose Proof Called");
+        // assumptions, if there are any, and goal to the SemanticNode 
+        // of the goal.
+        Activator.getDefault().logDebug("Decompose Proof Called");
         Vector<SemanticNode> assumes;
         SemanticNode goal;
         String[] blankLine = new String[] { "" };
         String[] oneline = new String[] { "1" };
-//        System.out.println("Try this:");
-//        System.out.println(stringArrayToString(concatStringArrays(oneline,
-//                concatStringArrays(blankLine, oneline))));
 
         /******************************************************************
          * Perform various checks to see if the command should be executed, and
@@ -725,26 +595,17 @@ Activator.getDefault().logDebug("Decompose Proof Called");
             }
         }
         
-// THE FOLLOWING TESTING STUFF NOW SEEMS TO BE WORKING.
-        
-// The following code raises a menu to ask the user if he wants to save 
-// unsaved modules.  However, the modules don't get parsed before the test for
-// whether the module is parsed occurs.
-//
-//        // TEST
-Activator.getDefault().logDebug("Calling promptUserForDirtyModules");
+        // The following code raises a menu to ask the user if he wants to save
+        // unsaved modules. However, the modules don't get parsed before the
+        // test for whether the module is parsed occurs.  This code was copied
+        // from the code for launching the prover.
         boolean proceed = UIHelper.promptUserForDirtyModules();
-Activator.getDefault().logDebug("Return from promptUserForDirtyModules");
         if (!proceed)
         {
             // the user cancelled
             return null;
         }
-//        // END TEST
         
-        // MORE TESTING
-       // Commented out to test Dan's idea
-//        editor = EditorUtil.getTLAEditorWithFocus();
         if (editor == null) {
         	Activator.getDefault().logDebug("getTLAEditorWithFocus returned null");
             return null;
@@ -820,8 +681,8 @@ Activator.getDefault().logDebug("Return from promptUserForDirtyModules");
         andSplitBegin = -1;
         andSplitEnd = -1;
         // assumeHasChanged = false;
-        assumeDefinitions = new HashSet<String>();
         goalDefinitions = new HashSet<String>();
+        assumpDefinitions = new HashSet<String>();
 
         /*******************************************************************
          * Set the following fields: doc, text, selectionProvider, selection,
@@ -1092,11 +953,18 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
         return null;
     }
 
-    // Another try, suggested by Dan
+    /**
+     * This method is called when the user issues a the Decompose Proof command.
+     * It launches a synchronous job that calls realExecute() to do most of 
+     * the work.  However, before doing that, it sets various fields of the
+     * DecomposeProofHandler object that can't be set from the separate thread.
+     * 
+     * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
+     *      ExecutionEvent)
+     */
     public Object execute(ExecutionEvent event) throws ExecutionException {
 		this.editor = EditorUtil.getTLAEditorWithFocus();
 		this.doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-//        text = doc.get();
         this.selectionProvider = editor.getSelectionProvider();
         this.selection = (TextSelection) selectionProvider.getSelection();
         this.offset = selection.getOffset();
@@ -1119,7 +987,6 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
     		try {
     			handler.editor = EditorUtil.getTLAEditorWithFocus();
     			handler.doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-//    	        text = doc.get();
     	        handler.selectionProvider = editor.getSelectionProvider();
     	        handler.selection = (TextSelection) selectionProvider.getSelection();
     	        handler.offset = selection.getOffset();
@@ -1179,9 +1046,8 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
     }
     
     // Note: Experimentation seems to show that horizontalSpan doesn't apply to
-    // a Label
-    // or a Button, so I've been putting the Label or Button inside a composite
-    // to do that.
+    // a Label or a Button, so I've been putting the Label or Button inside a 
+    // composite to do that.
     private void raiseWindow() {
         // for testing
         // topshell = the Toolbox's shell
@@ -1843,11 +1709,11 @@ assumeLabel.setLayoutData(gridData);
             int idx = nodeRep.getParentIndex();
             Decomposition decomp = nodeRep.decomposition;
 
-            // Modify hasChanged, assumeHasChanged, and assumeDefinitions.
+            // Modify hasChanged, assumeHasChanged, and goalDefinitions.
             hasChanged = true;
             // assumeHasChanged = true;
             if (decomp.definedOp != null) {
-                assumeDefinitions.add(decomp.definedOp);
+                goalDefinitions.add(decomp.definedOp);
             }
 
             // Remove this assumption and insert the split nodes in its place.
@@ -1886,7 +1752,7 @@ assumeLabel.setLayoutData(gridData);
         Decomposition decomp = nodeRep.decomposition;
         hasChanged = true;
         if (decomp.definedOp != null) {
-            goalDefinitions.add(decomp.definedOp);
+            assumpDefinitions.add(decomp.definedOp);
         }
 
         QuantifierDecomposition qdc = decomposeQuantifier(nodeRep, true);
@@ -1912,7 +1778,11 @@ assumeLabel.setLayoutData(gridData);
         Decomposition decomp = nodeRep.decomposition;
         hasChanged = true;
         if (decomp.definedOp != null) {
-            assumeDefinitions.add(decomp.definedOp);
+            if (parentVec == assumeReps) {
+                assumpDefinitions.add(decomp.definedOp);
+            } else {
+                goalDefinitions.add(decomp.definedOp);
+            }
         }
 
         // Set needsStepNumber if necessary. (See that field's documentation.)
@@ -1937,7 +1807,7 @@ assumeLabel.setLayoutData(gridData);
         Decomposition decomp = nodeRep.decomposition;
         hasChanged = true;
         if (decomp.definedOp != null) {
-            goalDefinitions.add(decomp.definedOp);
+            assumpDefinitions.add(decomp.definedOp);
         }
 
         // If this is within the subexpression-name expansion of a definition,
@@ -2014,7 +1884,7 @@ assumeLabel.setLayoutData(gridData);
         Decomposition decomp = nodeRep.decomposition;
         hasChanged = true;
         if (decomp.definedOp != null) {
-            assumeDefinitions.add(decomp.definedOp);
+            goalDefinitions.add(decomp.definedOp);
         }
 
         nodeRep.nodeType = NodeRepresentation.OR_DECOMP;
@@ -2050,7 +1920,7 @@ assumeLabel.setLayoutData(gridData);
         Decomposition decomp = nodeRep.decomposition;
         hasChanged = true;
         if (decomp.definedOp != null) {
-            assumeDefinitions.add(decomp.definedOp);
+            goalDefinitions.add(decomp.definedOp);
         }
 
         nodeRep.nodeType = NodeRepresentation.OR_DECOMP;
@@ -2164,7 +2034,7 @@ assumeLabel.setLayoutData(gridData);
                                     this.goalRep.primedNodeText(),
                                     "PROVE  ")), proofLevelString + " SUFFICES ");
 
-            if (goalDefinitions.isEmpty() && !addStepNumber) {
+            if (assumpDefinitions.isEmpty() && !addStepNumber) {
                 // No goal definitions were expanded; the proof is obvious.
                 if (OBVIOUS_HAS_PROOF) {
                     sufficesProof = "PROOF OBVIOUS";
@@ -2178,9 +2048,9 @@ assumeLabel.setLayoutData(gridData);
                 if (addStepNumber) {
                     sufficesProof = sufficesProof + this.stepNumber + " ";
                 }
-                if (!goalDefinitions.isEmpty()) {
+                if (!assumpDefinitions.isEmpty()) {
                     sufficesProof = sufficesProof + "DEF "
-                            + setOfStringsToList(goalDefinitions);
+                            + setOfStringsToList(assumpDefinitions);
                 }
             }
 
@@ -2295,18 +2165,18 @@ assumeLabel.setLayoutData(gridData);
         }
 
         // Add step number if necessary.
-        if ((sufficesStep == null) && needsStepNumber) {
+        if ((sufficesStep == null) && needsStepNumber && (this.stepNumber != null)) {
             qedStep[1] = qedStep[1] + ", " + this.stepNumber;
         }
 
-        boolean hasGoalDefs = (! this.goalDefinitions.isEmpty()) 
+        boolean hasGoalDefs = (! this.assumpDefinitions.isEmpty()) 
                                  && (sufficesStep == null);
-        boolean hasAssumeDefs = ! this.assumeDefinitions.isEmpty();
+        boolean hasAssumeDefs = ! this.goalDefinitions.isEmpty();
         
         String goalAndAssumeDefs = 
-                (hasGoalDefs ? setOfStringsToList(this.goalDefinitions) : "")
+                (hasGoalDefs ? setOfStringsToList(this.assumpDefinitions) : "")
               + ((hasGoalDefs && hasAssumeDefs) ? ", " : "")
-              + (hasAssumeDefs ? setOfStringsToList(this.assumeDefinitions) : "");
+              + (hasAssumeDefs ? setOfStringsToList(this.goalDefinitions) : "");
         if (sufficesOnly) {
             if  (this.proof != null) {
                 qedStep = concatStringArrays(new String[] {qedStep[0]}, 
@@ -3057,10 +2927,10 @@ assumeLabel.setLayoutData(gridData);
          * parentNode = n and parentVector = n.children.elementAt(i). In this
          * case, the node is of type EXPR_NODE, NEW_NODE, or OR_DECOMP.
          * 
-         * If this node has parentNode = null, then either - it equals
-         * h.assumeReps.elementAt(j) for the DecomposeProofHandler object h,
-         * parentNode = null, and parentVector = assumeReps. - parentVector =
-         * null and the node is the current goal.
+         * If this node has parentNode = null, then either 
+         *   - it equals h.assumeReps.elementAt(j) for the DecomposeProofHandler
+         *      object h, parentNode = null, and parentVector = assumeReps. 
+         *   - parentVector = null and the node is the current goal.
          ********************************************************************/
         NodeRepresentation parentNode = null;
         Vector<NodeRepresentation> parentVector = null;
@@ -3857,7 +3727,7 @@ assumeLabel.setLayoutData(gridData);
                 result.moduleName = ((SyntaxTreeNode) node.stn).getLocation()
                         .source();
 // I think we need to set result.definedOp to the operator name so it can
-// be added to assumeDefinitions or goalDefinitions when the proof is generated.
+// be added to goalDefinitions or assumpDefinitions when the proof is generated.
 // However, it appears that the definedOp field is used to check if 
 // subexpression naming is being used.
 //                System.out.println(operatorName + " defined in module "
