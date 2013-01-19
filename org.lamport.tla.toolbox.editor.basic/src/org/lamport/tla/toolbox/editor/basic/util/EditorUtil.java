@@ -135,6 +135,18 @@ public class EditorUtil
         return (loc1.endLine() < loc2.endLine())
                 || ((loc1.endLine() == loc2.endLine()) && (loc1.endColumn() <= loc2.endColumn()));
     }
+    
+    /**
+     * True iff the range of lines specified by loc1 is a subset of the range of lines
+     * specified by loc2.
+     * 
+     * @param loc1
+     * @param loc2
+     * @return
+     */
+    public static boolean lineLocationContainment(Location loc1, Location loc2) {
+    	return (loc1.beginLine() >= loc2.beginLine()) && (loc2.endLine() >= loc1.endLine()) ;
+    }
 
     /**
      * Returns the TLA+ token in the document containing the region delimited
@@ -335,6 +347,15 @@ public class EditorUtil
 		return getCurrentLocation(0);
     }
     
+    /**
+     * Like getCurrentLocation, except it adds x to the result's endCol
+     * field.  For some reason, computing the region of the PlusCal code 
+     * corresponding to a region in the TLA+ translation calls this
+     * method with x=1.
+     * 
+     * @param x
+     * @return
+     */
     public static Location getCurrentLocation(int x)
     {
         ITextSelection selection = getCurrentSelection();
@@ -382,6 +403,15 @@ public class EditorUtil
     	return getLocationAt(document, offset, length, 0);
     }
     
+    /**
+     * Like getLocationAt, except it adds x to the endCol.
+     * 
+     * @param document
+     * @param offset
+     * @param length
+     * @param x
+     * @return
+     */
     public static Location getLocationAt(IDocument document, int offset, int length, int x)
     {
         // I don't think document or selection can be null, but...

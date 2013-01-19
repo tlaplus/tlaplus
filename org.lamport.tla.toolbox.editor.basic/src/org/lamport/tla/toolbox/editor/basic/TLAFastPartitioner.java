@@ -1213,7 +1213,17 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
 
                 gapOffset= (previous != null) ? previous.getOffset() + previous.getLength() : 0;
                 gap.setOffset(gapOffset);
-                gap.setLength(current.getOffset() - gapOffset);
+                // On 11 Jan 2013, LL added the following if/else because gap.setLength caused a failed
+                // assertion when called with a negative argument, which prevented the spec from
+                // loading.  Since I have no idea what this code does, and since Eclipse contains
+                // 10^6 line of code and about 10^2 lines of explanation of that code, I'm not going
+                // to live long enough to find out what it does even if I devoted my life to it.
+                // So I'm just calling gap.setLength with 0 argument and praying.
+                if (current.getOffset() >=gapOffset) {
+                  gap.setLength(current.getOffset() - gapOffset);
+                } else {
+                	gap.setLength(0) ;
+                }
                 if ((includeZeroLengthPartitions && overlapsOrTouches(gap, offset, length)) ||
                         (gap.getLength() > 0 && gap.overlapsWith(offset, length))) {
                     start= Math.max(offset, gapOffset);

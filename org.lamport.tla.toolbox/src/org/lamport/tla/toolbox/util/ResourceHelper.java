@@ -1362,11 +1362,15 @@ public class ResourceHelper
      * Return all the <code>OpApplNode</code>s in <code>module</code> whose
      * operator node equals <code>symbol</code>.
      * 
+     * Modified by LL on 23 Dec 2012 to generalize the `module' parameter from a ModuleNode
+     * to a SemanticNode for use in DecomposeProofHandler.  (This required no change to the
+     * code except the change of argument type.)
+     * 
      * @param symbol
      * @param module
      * @return
      */
-    public static SemanticNode[] getUsesOfSymbol(SymbolNode symbol, ModuleNode module)
+    public static SemanticNode[] getUsesOfSymbol(SymbolNode symbol, SemanticNode module)
     {
         Vector<SemanticNode> found = new Vector<SemanticNode>(20); // For some reason, Eclipse doesn't let me use a List here.
         // If I write
