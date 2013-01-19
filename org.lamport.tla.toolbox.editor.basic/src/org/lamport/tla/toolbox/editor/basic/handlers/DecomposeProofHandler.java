@@ -533,6 +533,37 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * a CASE decomposition and a top-level \E assumption. 
      */
     private HashSet<String> assumpDefinitions;
+    
+    /**
+     * The set of all user-definable identifiers that are declared or defined
+     * before the theorem or step being decomposed.  It consists of the following:
+     * 
+     *  - CONSTANTS and VARIABLES of the current module declared before the
+     *    step.  These are obtained from moduleNode.getConstantDecls() and
+     *    moduleNode.getVariableDecls().  (See ShowDeclarationsHandler.setList.)
+     *    
+     *  - Operators and Theorem/Assumption name defined before the current
+     *    step.  These are obtained from moduleNode.getOpDefs() and 
+     *    moduleNode.getThmOrAssDefs().  To do this, we first find the names of all
+     *    modules whose definitions are imported by INSTANCE statements that
+     *    occur before the step.  We do this from moduleNode.getInstances() to find
+     *    all unnamed INSTANCE statements occurring before the step, and then
+     *    follow the getInstances() pointers to find them.  To determine if 
+     *    the identifier defined by an OpDefNode or ThmOrAssumpDefNode node n 
+     *    occurs before the step, we examine n.getSource() and if its not
+     *    moduleNode, we see if it's a member of the set of relevant instantiated 
+     *    modules.
+     *    
+     * - Identifiers used in named instantiations (e.g., the I in I == INSTANCE ...).
+     *   They are obtained from  moduleNode.getInstances().
+     *   
+     * - Identifiers declared by NEW clauses in ASSUME/PROVE or SUFFICES ASSUME/PROVE
+     *   statements in whose scope the step lies.
+     *   
+     * - Definitions in DEFINE steps (represented by DefStepNode objects) in whose
+     *   scope the step lies. 
+     */
+    private HashSet<String> declaredIdentifiers;
 
     /****************************************
      * Top Menu buttons.
