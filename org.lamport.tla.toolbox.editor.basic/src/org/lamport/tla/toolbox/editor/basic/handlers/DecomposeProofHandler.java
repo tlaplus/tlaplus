@@ -402,7 +402,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     /**
      * PREFERENCES
      * 
-     * The following fields are constants that should be set as preferences.
+     * The following fields are constants, some of which should perhaps be set 
+     * as preferences.
      */
 
     /**
@@ -443,6 +444,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * constructed by decomposition.
      */
     private static final String STEP_NUMBER_PUNCTUATION = ".";
+    
+    /**
+     * 
+     */
+    private static final int X_EXPAND_PIXELS = 30;
+    private static final int Y_EXPAND_PIXELS = 30;
 
     /*************************************************************************
      * Fields that contain the current assumptions and goal.
@@ -1234,8 +1241,11 @@ assumeLabel.setLayoutData(gridData);
                 JFaceResources.TEXT_FONT));
         shell.pack();
         Point shellSize = shell.getSize();
+        windowShell.pack();
+        Point windowShellSize = windowShell.getSize();
+        System.out.println("windowShellSize = " + windowShellSize.x + ", " + windowShellSize.y) ;
         ;
-        windowShell.setSize(shellSize.x + 30, shellSize.y + 30);
+//        windowShell.setSize(shellSize.x + 30, shellSize.y + 30);
 
         windowShell.update();
         if (this.location != null) {
@@ -1799,10 +1809,16 @@ assumeLabel.setLayoutData(gridData);
         raiseWindow();
     }
 
+    /**
+     * Executes an \E split of an assumption.  If this is a top-level assumption,
+     * then the NEW variables may have to be changed to avoid a name clash with
+     * NEW variables or other bound variables of later assumptions or of the goal.
+     *  
+     * @param nodeRep
+     */
     void existsAction(NodeRepresentation nodeRep) {
         // Set decomp to nodeRep's decomposition and idx
         // and parentVec so that nodeRep = parentVec.elementAt(idx).
-        // to the value such that
         int idx = nodeRep.getParentIndex();
         Vector<NodeRepresentation> parentVec = nodeRep.parentVector;
 
@@ -2520,6 +2536,12 @@ assumeLabel.setLayoutData(gridData);
      * don't think that field is ever used once decomposition begins. The
      * isForAll argument is used to determine whether the body's created field
      * should be set true.
+     * 
+     * If this is a top-level \E split, then the NEW variables may have to be 
+     * changed to avoid name clashes with NEW variables or other bound variables
+     * of later assumptions or of the goal.  This is not a problem for a \A split
+     * because, since the \A formula is the goal, there are no later items to
+     * clash with.
      * 
      * @param nodeRepArg
      * @param isForAll

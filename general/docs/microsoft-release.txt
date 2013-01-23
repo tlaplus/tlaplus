@@ -95,6 +95,9 @@ Note: org.lamport.tla.toolbox.product.product.product
  The repository/ directory in c:\users\lamport\tla\ contains the content for the update site (p2)
 
 Method 2. Using Maven
+ NOTE:  ~/tla/newtools/tla2-inria-workspace/tla2-inria has been changed to
+      ~/tla/newtools/tla-workspace on SVC-LAMPORT-2 and to ~/tla/newtools/tla2-workspace
+      on SVC-LAMPORT-1.
   Run svn update on  pom.xml in ~/tla/newtools/tla2-inria-workspace/tla2-inria. 
   Set the version number in ...product.product/pom.xml.
   (The target platforms to build for are specified in tla2-inria/pom.xml.  This file also specifies
