@@ -1095,10 +1095,13 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
             windowShell.dispose();
         }
         Shell topshell = UIHelper.getShellProvider().getShell();
-        windowShell = new Shell(topshell, SWT.SHELL_TRIM); // | SWT.H_SCROLL);
-                                                           // // SWT.RESIZE) ;
-                                                           // // | SWT.V_SCROLL
-                                                           // | SWT.H_SCROLL) ;
+        
+        // Since minimizing the window does something weird--namely,
+        // makes it contain just the top bar and puts it in a corner
+        // of the screen--we create a resizable window with only a
+        // close button.
+        windowShell = new Shell(topshell, SWT.CLOSE | SWT.TITLE
+                                  | SWT.RESIZE);
         windowShell.setText("Decompose Proof");
         windowShell.addDisposeListener(new WindowDisposeListener(this));
         Composite shell = new Composite(windowShell, SWT.NONE);
@@ -2792,6 +2795,15 @@ assumeLabel.setLayoutData(gridData);
     NodeTextRep substituteInNodeText(Decomposition decomp, ExprNode sn, NodeTextRep nodeTextRep) {
         NodeTextRep result = nodeTextRep.clone();
         
+        int numOfLines = result.nodeText.length ;
+        
+        // We set inserts to an array of Insertion vectors that describe the modification made
+        // to nodeTextRep to get result.  This is used to call adjustIndentation to fix the
+        // indentation of result.
+        Vector<Insertion>[] inserts = new Vector[numOfLines] ;
+        for (int i = 0; i < numOfLines; i++) {
+        	inserts[i] = new Vector() ;
+        }
         // Line of first token of sn, used to translate from Location line numbers to
         // indices in noteTextRep.nodeText.
         int beginLine = sn.stn.getLocation().beginLine();
@@ -2867,8 +2879,14 @@ assumeLabel.setLayoutData(gridData);
                 adjustMappingPairVector(useLocation.beginColumn() + sourceTextLength, 
                                         thisReplaceText.length() - sourceTextLength, 
                                         result.mapping[useIdx]);
+                
+                // Update inserts
+                inserts[useIdx].add(new Insertion(offset, sourceTextLength, thisReplaceText.length())) ;
             }
         }
+        
+        // Adjust the indentation.
+        adjustIndentation(nodeTextRep, result, inserts) ;
         
         return result ;
     }
@@ -2887,14 +2905,30 @@ assumeLabel.setLayoutData(gridData);
      * the syntax tree of <code>node</code> to the corresponding positions in
      * <code>nodeText</code>.
      * </ul>
-     * An OR-decomposition node represents a node that represents an assumption
+     * Substitutions are performed for an identifier for two reasons:
+     * <ul>
+     * <li>The formal parameter of a definition is replaced by an argument when
+     * expanding the definition.  To simplify the implementation, such an expansion
+     * is performed only when all the arguments consist of text occurring on 
+     * a single line.
+     * 
+     * <li>A bound identifier has been renamed to avoid a name conflict.
+     * </ul>
+     * A substitution cannot be performed for any occurrence that was added by a
+     * substitution.  Hence, an identifier introduced by renaming cannot be renamed.
+     * 
+     * An OR-decomposition node  represents an assumption
      * that has been decomposed into a disjunction for a proof by cases. Such a
      * node has a vector of children, which can include OR-decomposition nodes.
+     * 
      * 
      * @author lamport
      * 
      */
     public class NodeRepresentation {
+    	/**
+    	 * The original semantic node
+    	 */
         SemanticNode semanticNode;
 
         /**
@@ -2914,6 +2948,8 @@ assumeLabel.setLayoutData(gridData);
          * from the beginning of B[1], ... , B[n] so that there is at least one
          * line of nodeText that does not begin with a space and the formatting
          * of the original text is maintained in nodeText.
+         * 
+         * This is not quite accurate.  
          * 
          * @param document
          * @param semanticNode
@@ -3195,22 +3231,24 @@ assumeLabel.setLayoutData(gridData);
             result.nodeText[0] = this.nodeText[beginIdx].substring(beginPos);
             Vector<MappingPair> mv = cloneMappingPairVector(this.mapping[beginIdx]);
             // Since we just removed beginPos characters to the left of
-            // beginCol, we should
-            // execute
+            // beginCol, we should execute
             adjustMappingPairVector(beginCol, -beginPos, mv);
-            // but we'll do the adjustment by -beginPos later.
+
             result.mapping[0] = mv;
 
             // Set result.nodeText[i] to a copy of this.nodeText[i+...]
             // and result.mapping[i] to a copy of this.mapping[i] for
             // all other lines of the subnode's text.
             // Set minPos = the minimum of beginPos and the smallest number
-            // of leading spaces of any subsequent line of result.nodeText
+            // of leading spaces of any subsequent line of result.nodeText.
+            // However, we need to ignore lines consisting of only spaces.
             int minPos = beginPos;
             for (int i = 1; i < result.mapping.length; i++) {
                 result.nodeText[i] = this.nodeText[i + beginIdx];
-                minPos = Math.min(minPos,
-                        StringHelper.leadingSpaces(result.nodeText[i]));
+				if (!StringHelper.onlySpaces(result.nodeText[i])) {
+					minPos = Math.min(minPos,
+							StringHelper.leadingSpaces(result.nodeText[i]));
+				}
                 result.mapping[i] = new Vector<MappingPair>();
                 for (int j = 0; j < this.mapping[i + beginIdx].size(); j++) {
                     result.mapping[i].add(this.mapping[i + beginIdx].elementAt(
@@ -3236,10 +3274,12 @@ assumeLabel.setLayoutData(gridData);
 
             // Trim any necessary space from the beginning of result.nodeText[i]
             // for i > 0.
-            for (int i = 1; i < result.nodeText.length; i++) {
-                result.nodeText[i] = result.nodeText[i].substring(minPos);
-                adjustMappingPairVector(1, -minPos, result.mapping[i]);
-            }
+			for (int i = 1; i < result.nodeText.length; i++) {
+				if (!StringHelper.onlySpaces(result.nodeText[i])) {
+					result.nodeText[i] = result.nodeText[i].substring(minPos);
+					adjustMappingPairVector(1, -minPos, result.mapping[i]);
+				}
+			}
             return result;
         }
 
@@ -3308,15 +3348,18 @@ assumeLabel.setLayoutData(gridData);
                     region.getLength() - location.beginColumn() + 1);
             // minCol is the min of the beginning column of the first line (with
             // the first column numbered 0) and the smallest number of leading
-            // spaces of any later line
+            // spaces of any later line.  However, lines with no text
+            // should be ignored.
             int minCol = location.beginColumn() - 1;
             for (int i = 1; i < nodeText.length; i++) {
                 region = document.getLineInformation(location.beginLine() - 1
                         + i);
                 nodeText[i] = document.get(region.getOffset(),
                         region.getLength());
-                minCol = Math.min(minCol,
-                        StringHelper.leadingSpaces(nodeText[i]));
+				if (!StringHelper.onlySpaces(nodeText[i])) {
+					minCol = Math.min(minCol,
+							StringHelper.leadingSpaces(nodeText[i]));
+				}
             }
 
             // remove the rest of the last line that's not part of the token's
@@ -3331,10 +3374,12 @@ assumeLabel.setLayoutData(gridData);
             mapping[0].elementAt(0).inc = -minCol - 1;
 
             // Trim any necessary space from the beginning of nodeText[i] for i
-            // > 0.
+            // > 0.  However, must check for the case of an empty line.
             for (int i = 1; i < nodeText.length; i++) {
-                nodeText[i] = nodeText[i].substring(minCol);
-                mapping[i].elementAt(0).inc = -1 - minCol;
+				if (!StringHelper.onlySpaces(nodeText[i])) {
+					nodeText[i] = nodeText[i].substring(minCol);
+					mapping[i].elementAt(0).inc = -1 - minCol;
+				}
             }
             return;
         }
@@ -3982,7 +4027,12 @@ System.out.println(result.formalParams[i].getName().toString() + " <- "
         return;
     }
 
+    /********************* MappingPairs and their methods *******************************/
     /**
+     * Note: If the Decompose Proof command ever gets recoded, it would probably be a good 
+     * idea to do away with MappingPairs and replace them with Insertions.  See the comments
+     * for the Insertion class below.
+     * 
      * A MappingPair contains two int-valued fields : `col' and `inc'.
      * 
      * A line-mapping is a mapping from column-numbers in a line of the
@@ -3990,6 +4040,26 @@ System.out.println(result.formalParams[i].getName().toString() + " <- "
      * of MappingPair objects such that V[0].col = 1 and i < j implies V[i].col
      * < V[j].col. Such an array represents the line-mapping M such that M(c)
      * equals c plus the sum of all V[i].inc such that V[i].col <= c.
+     * 
+     * Suppose NTR is a NodeTextRep that represents the text of a SemanticNode SN 
+     * after some substitutions for identifiers have been performed.  Then NTR.mapping[i]
+     * is the mapping M from character locations in the (i+1)st line of the source text 
+     * of SN (locations start at 1) to the corresponding character position (starting 
+     * from 0) in the string NTR.nodeText[i].  The value of M(c) is the obvious 
+     * position in the string if c is the location of any character in the original
+     * source that does not lie within an identifier that has been substituted for,
+     * or if c is the location of the first character of an identifier that has been
+     * substituted for.  Hence, the restriction of M to all such character locations
+     * is monotone.  If character location c+i lies within an identifier starting at
+     * location c that has been substituted for, then M(c+i) = M(c) + i.  This implies
+     * that  M is not monotone on all character locations in the source if the
+     * string substituted for an identifier has fewer characters than the identifier.
+     *  
+     * In order to preserve essential alignments after substitutions, it seems to be
+     * necessary to understand how a vector V of MappingPair objects that represents a 
+     * line mapping is constructed.  If V is a line mapping for a line in a NodeTextRep
+     * for a source SemanticNode SN, 
+     * 
      * 
      * @author lamport
      * 
@@ -4028,7 +4098,7 @@ System.out.println(result.formalParams[i].getName().toString() + " <- "
         }
         return loc;
     }
-
+    
     /**
      * Modify vec so the line mapping nl it represents is related to the
      * original line mapping ol by nl[c] = IF c < col THEN ol[c] ELSE ol[c] +
@@ -4072,7 +4142,224 @@ System.out.println(result.formalParams[i].getName().toString() + " <- "
         }
         return result;
     }
+    
+    /************************* Insertions and their methods ***************************/
+    /**
+     * An Insertion object o represents the modification of a string
+     * in which a sequence of o.oldLen characters at string position o.pos 
+     * (counting from 0) is replaced by a sequence of o.newLen characters.  
+     * The position newInsertPos(p, o) in the modified string corresponding to
+     * position p in the original string is defined by
+     * 
+     *   newInsertPos(p, o) == CASE p =< o.pos 
+     *                              -> p
+     *                           [] o.pos < p < o.pos + o.oldLen
+     *                               -> IF o.newLen = 1
+     *                                    THEN o.pos
+     *                                    ELSE some value in (o.pos+1)..(o.pos + o.newLen - 1)
+     *                           [] o.pos + o.oldLen =< p 
+     *                               -> p + (o.newLen - o.oldLen)
+     * 
+     * A sequence s of Insertion objects represents a sequence of such
+     * modifications.  The position newVecInsertPos(p, s) in the modified
+     * string corresponding to the position p in the original string is
+     * defined by
+     * 
+     *   newVecInsertPos(p, s) ==
+     *     IF s = << >> THEN p
+     *                  ELSE newVecInsertPos(newInsertPos(p, Head(p)), Tail(p))
+     * 
+     * Insertions and these operations are used to preserve significant 
+     * indentation in TLA+ formulas after substitution.  More precisely,
+     * suppose L1 is a line and L0 is the line above L1 and closest to it
+     * such that the position of the first non-blank character of L0 is =<
+     * the position of the first non-blank character of L1.  Suppose L0'
+     * and L1' are obtained from L0 and L1 by insertions described by the
+     * vectors V0 and V1.  If p is the position of the first non-blank
+     * character in L1, then 
+     * 
+     *   newVecInsertPos(p, V0) - newVecInsertPos(p, V1)
+     *   
+     * space characters must be added to the beginning of L1 to preserve
+     * the indentation.  (Adding negative characters means deletion.)
+     * 
+     * In this application, modifications are represented by vectors of 
+     * non-overlapping insertions.  Thus, the non-deterministic choice in
+     * the evaluation of newInsertPos occurs at most once in the evaluation
+     * of newVecInsertPos.
+     * 
+     * Line mappings can be defined in terms of Insertion vectors as well by 
+     * MappingPair vectors.  Insertions contain more information than MappingPairs,
+     * which is why I had to introduce them.  It would probably have been better
+     * to use Insertions instead of MappingPairs from the beginning.  However,
+     * I don't feel like rewriting the code that uses them.
+     * 
+     * @author lamport
+     *
+     */
+    private static class Insertion {
+    	int pos ;
+    	int oldLen ;
+    	int newLen ;
+    	
+    	/**
+    	 * The obvious constructor.
+    	 */
+    	private Insertion(int pos, int oldLen, int newLen) {
+    		this.pos = pos ;
+    		this.oldLen = oldLen ;
+    		this.newLen = newLen ;
+    	}
+    	
+    	public String toString() {
+    		return "[pos: " + pos + ", oldLen: " + oldLen + ", newLen: "
+    				+ newLen + "]" ;
+    	}
+    }
+    
+    /**
+     * The new position corresponding to old position oldPos after the insertion
+     * ins.  See comments for the Insertion class.
+     * @param oldPos
+     * @param ins
+     * @return
+     */
+   static int newInsertPos(int oldPos, Insertion ins) {
+    	if (oldPos <= ins.pos) {
+    		return oldPos ;
+    	}
+    	if (oldPos < ins.pos + ins.oldLen) {
+    		// oldPos lies inside the text that was replaced.
+    		if (oldPos < ins.pos + ins.newLen) {
+    			// if oldPos lies inside the replacing text, return its value.
+    			return oldPos ;
+    		} else {
+    			// if oldPos isn't inside the replacing text, then we have to
+    			// move it left.  We might as well minimize indentation by moving
+    			// it as far left as we can without making it align with ins.pos 
+    			// (which it didn't do initially).
+    			return ins.pos + ins.newLen - ins.oldLen;
+    		}
+    	} else {
+    		// oldPos is to the right of the replacing text.
+    		return oldPos + ins.newLen - ins.oldLen;
+    	}
+    	
+    }
 
+    /**
+     * The new position corresponding to old position oldPos after the sequence
+     * vec of insertions.  See comments for the Insertion class.
+     * @param oldPos
+     * @param ins
+     * @return
+     */
+    static int newVecInsertPos(int oldPos, Vector<Insertion> vec) {
+    	return innerNewVecInsertPos(oldPos, 0, vec) ;
+    }
+    
+    /**
+     * The recursive procedure that evaluates newVecInsertPos(oldPos, v) where
+     * v is the vector of elements vec[idx], vec[idx+1], ... 
+     *    
+     * @param oldPos
+     * @param idx
+     * @param vec
+     * @return
+     */
+    static int innerNewVecInsertPos(int oldPos, int idx, Vector<Insertion> vec) {
+    	if (vec.size() <= idx) {
+    		return oldPos ;
+    	} else {
+    		return innerNewVecInsertPos(newInsertPos(oldPos, vec.elementAt(idx)), 
+    				                    idx+1, vec) ;
+    	}
+    }
+    
+    /**
+     * This method assumes that newTextRep was obtained from oldTextRep by substitutions at are
+     * described by insVecArray, where insVecArray[i] describes the changes that produced 
+     * newTextRep.nodeText[i] from oldTextRep.nodeText[i].  (The arrays newTextRep.nodeText, 
+     * oldTextRep.nodeText, and insVecArray must have the same length.)  It modifies newTextRep.mapping
+     * by adding and/or removing leading blanks to maintain any alignment necessary to preserve
+     * the meaning of the formula.  This requires modifying  newTextRep.mapping as well
+     * as newTextRep.nodeText.  I think there are just two essential kinds of alignment
+     * that must be preserved.
+     * 
+     * - If a /\ or \/ that begins a line L1 is part of a con/disjunction list beginning on
+     *   line L0, then the /\ or \/ beginning L1 must remain aligned with the corresponding
+     *   /\ or \/ on L0.
+     * 
+     * - If a token t that begins a line L1 is part of a con/disjunction-list item started
+     *   by a /\ or \/ on line L0, then t must remain to the right of that /\ or \/. 
+     * 
+     * Here is the what the method does.
+     * 
+     *    LET startingPos[i] == The position of the 1st non-blank character of oldTextRep.node[i],
+     *                          or -1 if there is none.
+     *        coveringLine[i] == LET S == {j \in 0..(i-1) : startingPos[j] \leq startingPos[i]}
+     *                           IN  IF S = {} \/ startingPos[i] = -1
+     *                                 THEN -1 ELSE Maximum S 
+     *        newStartingPos[i] == IF coveringLine[i] = -1
+     *                               THEN startingPos[i]
+     *                               ELSE newVecInsertPos(startingPos[i], insVecArray[coveringLine[i]])
+     *        addSpace[i] == newStartingPos[i] - startingPos[i] ;
+     *    For each i, add addSpace[i] spaces to line i of newTextRep.
+     *    (Adding a negative number of spaces means deletion.)
+     *                                
+     * @param oldTextRep
+     * @param newTextRep
+     * @param insVecArray
+     */
+    static void adjustIndentation(NodeTextRep oldTextRep, NodeTextRep newTextRep, Vector<Insertion>[] insVecArray) {
+        int numOfLines = insVecArray.length ;
+    	int[] startingPos  = new int[numOfLines] ;
+//    	int[] coveringLine = new int[numOfLines] ;
+//    	int[] addSpace     = new int[numOfLines] ;
+    	
+    	for (int i = 0 ; i < numOfLines; i++) {
+    		// compute startingPos[i]
+    		String str = oldTextRep.nodeText[i] ;
+    		startingPos[i] = StringHelper.leadingSpaces(str);
+    		if (startingPos[i] == str.length()) {
+    			startingPos[i] = -1 ;
+    		}
+    		
+    		// compute coveringLine[i]
+    		int coveringLine ;
+    		if (startingPos[i] == -1) {
+    			coveringLine = -1 ;
+    		} else {
+    			int j = i-1 ;
+    			while ((j >= 0) && 
+    					((startingPos[j] > startingPos[i]) || (startingPos[j] == -1))) {
+    				j-- ;
+    			}
+    			coveringLine = j ;
+    		}
+    		
+    		// Compute addSpace[i]
+    		int addSpace;
+    		if (coveringLine == -1) {
+    			addSpace = 0;
+    		} else {
+    			addSpace = newVecInsertPos(startingPos[i], 
+    					                   insVecArray[coveringLine])
+    			                 - startingPos[i] ;
+    		}
+    		
+    		// Add or remove space
+    		str = newTextRep.nodeText[i] ;
+    		if (addSpace > 0) {
+    			newTextRep.nodeText[i] = StringHelper.copyString(" ", addSpace) + str ;
+    		} else if (addSpace < 0) {
+    			newTextRep.nodeText[i] = str.substring(-addSpace);
+    		}
+    		adjustMappingPairVector(1, addSpace, newTextRep.mapping[i]) ;
+    	}
+    }
+    
+    /******************** Some Methods for String Arrays *****************************/
     /**
      * Returns the array of strings as a single string, with the obvious
      * line-breaks inserted.
