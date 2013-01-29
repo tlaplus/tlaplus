@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
 
@@ -1605,6 +1606,44 @@ public class ResourceHelper
         return value;
     }
 
+    /**
+     * Returns a HashSet containing all user-definable names that are globally 
+     * defined or declared at Location loc of the module.  The returned
+     * value may or may not contain strings that are not user-definable names--in
+     * particular strings like "I!bar".  
+     * 
+     * If the statement at loc defines or declares a symbol, that symbol does
+     * not appear in the returned value.  However, the implementation assumes that
+     * there there is no declaration or definition that begins on the same line
+     * as the beginning of loc.  If there is, the symbol it defines will not 
+     * appear in the returned result. 
+     * 
+     * The method also assumes that loc is after any EXTENDS statement in the
+     * module.
+     * 
+     * @param module  The module.
+     * @param loc     The location.
+     * @return
+     */
+    public HashSet<String> declaredSymbolsInScope(ModuleNode module, Location loc) {
+        HashSet result = new HashSet() ;
+        Vector<ModuleNode> extendedModulesVec = new Vector();
+        addExtendedModules(extendedModulesVec, module) ;
+        
+        return result ;
+    }
+    
+    /**
+     * If node is not an element of vec, this method adds node and all
+     * modules EXTENDed (directly or indirectly) by node to vec.
+     * 
+     * @param vec
+     * @param node
+     */
+    public void addExtendedModules(Vector<ModuleNode> vec, ModuleNode node) {
+        
+    }
+    
     /**
      * Checks a specification name for its validity WRT the parser identifier definition
      * @param aSpecName The intended specification name to check for validity

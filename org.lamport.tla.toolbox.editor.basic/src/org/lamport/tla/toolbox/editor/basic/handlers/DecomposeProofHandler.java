@@ -1,4 +1,22 @@
 /**
+ * CURRENT BUGS AND MISSING FEATURES:
+ *   - If the "use SUFFICES" option is NOT chosen, then the result of decomposing
+ *     A \/ B => C produces proof steps with an unnecessary A \/ B hypothesis:
+ *     
+ *        ASSUME A \/ B, A PROVE C
+ *        ASSUME A \/ B, B PROVE C
+ * 
+ *  - If "use CASE" is chosen, an ASSUME / PROVE with multiple assumptions should be turned
+ *    into a case if it contains no NEWs, with the assumptions being turned into a 
+ *    conjunction.  Currently, it only is if there is a single assumption.
+ *    
+ *  - When an OR-decomposition produces a proof step that is an ASSUME/PROVE or CASE,
+ *    a user-provided proof should be modified to add the current step to the BY clause
+ *    (producing a BY clause if necessary).
+ *  
+ *  - The decomposition will not expand definitions imported from other modules
+ *    except with the "Use subexpression names" option. 
+ *  
  * Currently, this command is under construction.  It is bound to  Control-G Control-D
  * and to the editor right-click menu with other proof/prover commands.
  * 
@@ -51,7 +69,7 @@
  *   
  *   
  *   IMPLEMENTATION NOTE
- *   When something is substituted for an, the substitution
+ *   When something is substituted for an identifier, the substitution
  *   is done at the level of strings.  Therefore, any identifiers that appear
  *   in the substituting expression will never be found when looking for name
  *   clashes.  There are two sources of substituting expressions:
@@ -673,21 +691,21 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          * module is copied from other commands.
          */
 
-        // gets the editor to which command applies
-//        editor = EditorUtil.getTLAEditorWithFocus();
+        // editor field already set.
+        // The following should be a no-op, because the editor was already
+        // found to be non-null.
         if (editor == null) {
         	Activator.getDefault().logDebug("2nd call of getTLAEditorWithFocus returned null");
             return null;
         }
         editorIFile = ((FileEditorInput) editor.getEditorInput()).getFile();
         
-
-
+        // The editor should not be dirty, so the following should be a no-op.
         if (editor.isDirty()) {
             MessageDialog
                     .openError(UIHelper.getShellProvider().getShell(),
                             "Decompose Proof Command",
-                            "The module is dirty; will replace by asking if it should be saved.");
+                            "The module is dirty; this should not happen.");
             return null;
         }
 
@@ -985,6 +1003,11 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
      * However, previous versions seemed to work until bugs appeared--perhaps
      * because the weather changed in Bangladesh.  So, I have no idea if it
      * will still work when the monsoons come.
+     * 
+     * Apparently the monsoons came, and the race condition re-appeared.  However,
+     * so far, its only effect seems to be a race between two executions of the
+     * parser, which can make the command fail and may produce a bogus parsing error.
+     * Of course, when the monsoons stop, some other failure mode may appear.
      * 
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      *      ExecutionEvent)
@@ -2500,7 +2523,7 @@ assumeLabel.setLayoutData(gridData);
                 NodeRepresentation res = 
                         new NodeRepresentation(this.doc, decomp.children.elementAt(i)) ;
                 // TRIAL CODE -- this seems to be working
-                NodeTextRep ntext = substituteInNodeText(decomp, 
+                NodeTextRep ntext = decompSubstituteInNodeText(decomp, 
                         (ExprNode) decomp.children.elementAt(i), 
                         new NodeTextRep(res.nodeText, res.mapping)) ;
                 res.nodeText = ntext.nodeText ;
@@ -2631,7 +2654,7 @@ assumeLabel.setLayoutData(gridData);
                 nodeRep = res.subNodeRep(sn, 
                            nodeRepArg.parentVector, nodeRepArg.parentNode, null);
                 nodeRep.isPrimed = nodeRepArg.isPrimed ;
-                NodeTextRep ntext = substituteInNodeText(decomp, sn, 
+                NodeTextRep ntext = decompSubstituteInNodeText(decomp, sn, 
                                      new NodeTextRep(nodeRep.nodeText, nodeRep.mapping)) ;
                 nodeRep.nodeText = ntext.nodeText ;
                 nodeRep.mapping = ntext.mapping;
@@ -2818,19 +2841,26 @@ assumeLabel.setLayoutData(gridData);
     /**
      * Assumes that nodeTextRep is the NodeTextRep for the ExprNode sn (possibly
      * after some substitutions have been made).  It returns the NodeTextRep
-     * object representing sn after substituting decomp.arguments[i] for
-     * decomp.formalParams[i], for each i.  
+     * object representing sn after substituting arguments[i] for formalParams[i], 
+     * for each i.  It assumes that argNodes[i] is the semantic node whose string
+     * representation is arguments[i].  That string representation must be a 
+     * single-line string (no line breaks).
      * 
      * Note: this assumes that none of the substitutions made before this one have
-     * added any of the decomp.argument symbols being substituted for.  We also assume
+     * added any of the formal parameter symbols being substituted for.  We also assume
      * that the node sn is being used as a complete assume clause or goal.
      *  
-     * @param decomp
+     * @param formalParams  The formal parameters to be substituted for.
+     * @param arguments     The String representations of argNodes, which must be
+     *                      a single-line expression.
+     * @param argNodes      The semantic nodes of the expressions to be substituted.
      * @param sn
      * @param nodeTextRep
      * @return
      */
-    NodeTextRep substituteInNodeText(Decomposition decomp, ExprNode sn, NodeTextRep nodeTextRep) {
+    NodeTextRep substituteInNodeText(
+            FormalParamNode[] formalParams, String[] arguments, SemanticNode[] argNodes, 
+            ExprNode sn, NodeTextRep nodeTextRep) {
         NodeTextRep result = nodeTextRep.clone();
         
         int numOfLines = result.nodeText.length ;
@@ -2846,12 +2876,116 @@ assumeLabel.setLayoutData(gridData);
         // indices in noteTextRep.nodeText.
         int beginLine = sn.stn.getLocation().beginLine();
         
+        for (int i = 0; i < arguments.length; i++) {
+            SemanticNode[] uses = ResourceHelper.getUsesOfSymbol(formalParams[i], sn) ;
+            
+            String replacementText = arguments[i]  ;
+            int sourceTextLength = formalParams[i].getName().toString().length() ;
+            // Set mayNeedParens true if replacementText doesn't end in ' and would
+            // need parentheses around it in order to prime it.
+            boolean mayNeedParens = false ; 
+            if (primingNeedsParens(argNodes[i]) && 
+                    (replacementText.charAt(replacementText.length() - 1) != '\'')) {
+                mayNeedParens = true ;
+            }
+            for (int j = 0; j < uses.length; j++) {
+                if (!(uses[j] instanceof OpApplNode)) {
+                    MessageDialog.openError(UIHelper.getShellProvider()
+                            .getShell(), "Decompose Proof Command",
+                            "An error that should not happen has occurred in "
+                                    + "line 2842 of DecomposeProofHandler.");
+                    return result;
+                }
+                Location useLocation = uses[j].stn.getLocation() ;
+                int useIdx = useLocation.beginLine()-beginLine ;
+                int offset = colToLoc(useLocation.beginColumn(),
+                                      result.mapping[useIdx] );
+                String thisReplaceText = replacementText ;
+                if (mayNeedParens) {
+                   // Define text that, if it surrounds the replaced text, implies
+                   // that no parentheses are needed.
+                   String[] precedingSafe = new String[] {"(", "[", "{", ",", "<<", "->", ":"} ;
+                   String[] followingSafe = new String[] {")", "]", "}", ",", ">>", "->", "~>"} ; 
+                   
+                   // Because we assume that the formula we're substituting into is a complete
+                   // assumption or goal, the end of the formula is also a safe preceding
+                   // or following "string".
+                   String testString = result.nodeText[useIdx].substring(0, offset).trim() ;
+                   int line = useIdx ;
+                   while (testString.equals("") && line > 0) {
+                       line-- ;
+                       testString = result.nodeText[line] ;
+                   }
+                   boolean terminated = testString.equals("");
+                   int k = 0;
+                   while (!terminated && k < precedingSafe.length) {
+                       terminated = testString.endsWith(precedingSafe[k]) ;
+                       k++ ;
+                   }
+                   if (terminated) {
+                       testString = 
+                          result.nodeText[useIdx].substring(offset + sourceTextLength).trim() ;
+                       line = useIdx ;
+                       while (testString.equals("") && line < result.nodeText.length) {
+                           line++ ;
+                           testString = result.nodeText[line] ;
+                       }
+                       terminated = testString.equals("");
+                       k = 0;
+                       while (!terminated && k < precedingSafe.length) {
+                           terminated = testString.startsWith(followingSafe[k]) ;
+                           k++ ;
+                       }
+                   }
+                   if (!terminated) {
+                    thisReplaceText = "(" + replacementText + ")" ;
+                   }
+                }
+                result.nodeText[useIdx] = 
+                        result.nodeText[useIdx].substring(0, offset) + thisReplaceText 
+                          + result.nodeText[useIdx].substring(offset+sourceTextLength);
+                adjustMappingPairVector(useLocation.beginColumn() + sourceTextLength, 
+                                        thisReplaceText.length() - sourceTextLength, 
+                                        result.mapping[useIdx]);
+                
+                // Update inserts
+                inserts[useIdx].add(new Insertion(offset, sourceTextLength, thisReplaceText.length())) ;
+            }
+        }
+        
+        // Adjust the indentation.
+        adjustIndentation(nodeTextRep, result, inserts) ;
+        
+        return result ;
+    }
+
+    NodeTextRep decompSubstituteInNodeText(Decomposition decomp, ExprNode sn, NodeTextRep nodeTextRep) {
+        return substituteInNodeText(
+                decomp.formalParams, decomp.arguments, decomp.argNodes, sn, nodeTextRep);
+    }
+    
+    NodeTextRep oldSubstituteInNodeText(Decomposition decomp, ExprNode sn, NodeTextRep nodeTextRep) {
+        NodeTextRep result = nodeTextRep.clone();
+        
+        int numOfLines = result.nodeText.length ;
+        
+        // We set inserts to an array of Insertion vectors that describe the modification made
+        // to nodeTextRep to get result.  This is used to call adjustIndentation to fix the
+        // indentation of result.
+        Vector<Insertion>[] inserts = new Vector[numOfLines] ;
+        for (int i = 0; i < numOfLines; i++) {
+            inserts[i] = new Vector() ;
+        }
+        // Line of first token of sn, used to translate from Location line numbers to
+        // indices in noteTextRep.nodeText.
+        int beginLine = sn.stn.getLocation().beginLine();
+        
         for (int i = 0; i < decomp.arguments.length; i++) {
             SemanticNode[] uses = ResourceHelper.getUsesOfSymbol(decomp.formalParams[i], sn) ;
             
             String replacementText = decomp.arguments[i]  ;
             int sourceTextLength = decomp.formalParams[i].getName().toString().length() ;
-         // Set mayNeedParens true if replacementText doesn't end in ' and would
+            // Set mayNeedParens true if replacementText doesn't end in ' and would
             // need parentheses around it in order to prime it.
             boolean mayNeedParens = false ; 
             if (primingNeedsParens(decomp.argNodes[i]) && 
@@ -3640,13 +3774,14 @@ assumeLabel.setLayoutData(gridData);
         /**
          * If definedOp != null, so this decomposition is expanding a
          * definition, then formalParms[i] is the FormalParamNode of the
-         * i-th formal parameter of the definition, and arguments[i] is
-         * the string that is the i-th argument (which must appear on
-         * a single line).
+         * i-th formal parameter of the definition, argNodes[i] is the semantic
+         * node of the i-th argument, and arguments[i] is its string representation,
+         * which must appear on a single line.
          */
         FormalParamNode[] formalParams = null;
         String[] arguments = null ;
         SemanticNode[] argNodes = null ;
+        
         /**
          * If non-null, then this is the NodeTextRep representing the operator
          * use that is to be expanded. E.g., it could represent source text such
@@ -3862,14 +3997,6 @@ assumeLabel.setLayoutData(gridData);
                 // iff we want to use subexpression names.
                 result.moduleName = ((SyntaxTreeNode) node.stn).getLocation()
                         .source();
-// I think we need to set result.definedOp to the operator name so it can
-// be added to goalDefinitions or assumpDefinitions when the proof is generated.
-// However, it appears that the definedOp field is used to check if 
-// subexpression naming is being used.
-//                System.out.println(operatorName + " defined in module "
-//                        + result.moduleName);
-//                System.out.println("This module is: "
-//                        + moduleNode.getName().toString());
                 // The following test is to determine if the definition should
                 // be expanded by subexpression naming or by actual expansion.
                 // (Initially, we don't deal with expansion of names from
@@ -3879,14 +4006,14 @@ assumeLabel.setLayoutData(gridData);
                 result.formalParams = definition.getParams() ;
                 result.arguments = new String[result.formalParams.length];
                 result.argNodes  = unprimedNode.getArgs() ;
-System.out.println("Expanding " + result.definedOp);
+//System.out.println("Expanding " + result.definedOp);
                 for (int i = 0 ; i < result.arguments.length; i++) {
                         result.arguments[i] = 
                             stringArrayToString(
                                 nodeRep.subNodeText(
                                 ((OpApplNode) unprimedNode).getArgs()[i]).nodeText);
-System.out.println(result.formalParams[i].getName().toString() + " <- "
-        + result.arguments[i])    ;                  
+//System.out.println(result.formalParams[i].getName().toString() + " <- "
+//       + result.arguments[i])    ;                  
                 }
             } else {
                 // This means that the definition is not an OpApplNode, which

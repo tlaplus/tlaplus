@@ -131,7 +131,7 @@ the top  <font size=+1><b>P</b></font> button (which does no decomposing), the o
 
 <h2>Options</h2>
 
-There are two options that you can select.
+There are three options that you can select.
 
 <DL> <DT> <b>Use <code>SUFFICES</code></b> </DT>
 <DD>Splitting the goal or a <code>\E</code> assumption generates new assumptions.&nbsp;
@@ -140,6 +140,14 @@ Selecting this option causes those assumptions to be asserted by a
 step.&nbsp;  Otherwise, these assumption are added to each of the decomposed proof steps.&nbsp;
 </DD>
 
+<BR> </BR>
+ <DT><b>Use <code>CASE</code></b>
+ </DT>
+<DD>This selection determines whether, in the created substeps of the proof of an <code>\/</code>
+decomposition, <code>CASE</code> steps should be used instead of <code>ASSUME/PROVE</code>
+steps when possible.&nbsp;  One reason not to choose this option is that
+the Decompose Command does not decompose <code>CASE</code> steps.
+</DD>
 <BR> </BR>
  <DT><b>Use subexpression names</b>
  </DT>

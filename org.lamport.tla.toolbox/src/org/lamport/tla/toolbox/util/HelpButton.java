@@ -261,28 +261,28 @@ public class HelpButton {
 
         public void shellActivated(ShellEvent e) {
             // TODO Auto-generated method stub
-            System.out.println("shellActivated") ;
+//            System.out.println("shellActivated") ;
             
         }
 
         public void shellClosed(ShellEvent e) {
             // TODO Auto-generated method stub
-            System.out.println("shellClosed") ;
+//            System.out.println("shellClosed") ;
         }
 
         public void shellDeactivated(ShellEvent e) {
-            System.out.println("shellDeActivated") ;
+//            System.out.println("shellDeActivated") ;
             
         }
 
         public void shellDeiconified(ShellEvent e) {
             // TODO Auto-generated method stub
-            System.out.println("shellDeiconified") ;
+//            System.out.println("shellDeiconified") ;
         }
 
         public void shellIconified(ShellEvent e) {
             // TODO Auto-generated method stub
-            System.out.println("shellIconified") ;
+//            System.out.println("shellIconified") ;
             
         }
         
