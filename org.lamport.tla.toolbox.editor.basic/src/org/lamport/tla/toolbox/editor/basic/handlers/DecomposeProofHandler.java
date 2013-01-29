@@ -411,6 +411,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      */
     private static final boolean USE_SUFFICES_DEFAULT = true ;
     
+
+    /**
+     * The default value of the useCaseValue ;
+     */
+    private static final boolean USE_CASE_DEFAULT = true ;
+    
     /**
      * The default value of subexpressionValue.
      */
@@ -585,6 +591,15 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     private Button useSufficesButton; //
 
     /**
+     * The useSufficesButton determines whether the created proof will use an
+     * initial SUFFICES step to declare the newly created assumptions, or if
+     * those assumptions will be put on each step of the proof in an
+     * ASSUME/PROVE.
+     */
+    private boolean useCaseValue = USE_CASE_DEFAULT;
+    private Button useCaseButton; //
+
+    /**
      * The subexpressionButton determines if an occurrence of a user-defined
      * operator should be expanded by replacing it with its definition, or by
      * using subexpression names like Op(43)!2. In the initial implementation,
@@ -599,6 +614,7 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      */
     private void readButtons() {
         useSufficesValue = useSufficesButton.getSelection();
+        useCaseValue = useCaseButton.getSelection();
         subexpressionValue = subexpressionButton.getSelection();
     }
 
@@ -633,44 +649,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             }
         }
         
-        // The following code raises a menu to ask the user if he wants to save
-        // unsaved modules. However, the modules don't get parsed before the
-        // test for whether the module is parsed occurs.  This code was copied
-        // from the code for launching the prover.
-        boolean proceed = UIHelper.promptUserForDirtyModules();
-        if (!proceed)
-        {
-            // the user cancelled
-            return null;
-        }
-        
-        if (editor == null) {
-        	Activator.getDefault().logDebug("getTLAEditorWithFocus returned null");
-            return null;
-        }
-        editorIFile = ((FileEditorInput) editor.getEditorInput()).getFile();
-
-        ParseResult parseResult = ResourceHelper.getValidParseResult(editorIFile);
-
-        if (parseResult == null)
-        {
-            /*
-             * Its necessary to call this parsing within the job's run method.
-             * Its a bad idea to have two calls to SANY executing at the same time,
-             * and its possible for a launch of the prover to trigger background
-             * parsing. For example, the user might have dirty editors open
-             * when launching the prover. He will be prompted to save them. This
-             * could trigger background parsing. The run method will not be
-             * executed while the background parsing completes. This ensures
-             * that the following parsing will not occur while the background parsing
-             * executes.
-             */
-            parseResult = new ModuleParserLauncher().parseModule(editorIFile, new NullProgressMonitor());
-        }
-        // END TESTING
-        
         
         // Report an error if there are dirty modules.
+        // This should not happen
         if (existDirtyModules()) {
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command", "There is an unsaved module.");
@@ -993,9 +974,17 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
 
     /**
      * This method is called when the user issues a the Decompose Proof command.
-     * It launches a synchronous job that calls realExecute() to do most of 
+     * It launches a synchronous task that calls realExecute() to do most of 
      * the work.  However, before doing that, it sets various fields of the
      * DecomposeProofHandler object that can't be set from the separate thread.
+     * 
+     * This running of a separate task was done to allow the command to ask the
+     * user if he wants to save and parse dirty modules, and to not run the code in
+     * realExecute() before those modules were actually saved and parsed.  I tried
+     * all sorts of things until coming up with this code, which seems to work.
+     * However, previous versions seemed to work until bugs appeared--perhaps
+     * because the weather changed in Bangladesh.  So, I have no idea if it
+     * will still work when the monsoons come.
      * 
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      *      ExecutionEvent)
@@ -1010,8 +999,48 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
         // Get the module.
         String moduleName = editor.getModuleName();
         this.moduleNode = ResourceHelper.getModuleNode(moduleName);
+        
+        /**
+         * The Following code copied from ProverHelper.
+         */
+        
+        boolean proceed = UIHelper.promptUserForDirtyModules();
+        if (!proceed)
+        {
+            // the user cancelled
+            return null;
+        }
+        
+        if (editor == null) {
+            Activator.getDefault().logDebug("getTLAEditorWithFocus returned null");
+            return null;
+        }
+        editorIFile = ((FileEditorInput) editor.getEditorInput()).getFile();
 
-    	DecomposeProofRunnable runnable = new DecomposeProofRunnable(this) ;
+        ParseResult parseResult = ResourceHelper.getValidParseResult(editorIFile);
+
+        if (parseResult == null)
+        {
+            /*
+             * Its necessary to call this parsing within the job's run method.
+             * Its a bad idea to have two calls to SANY executing at the same time,
+             * and its possible for a launch of the prover to trigger background
+             * parsing. For example, the user might have dirty editors open
+             * when launching the prover. He will be prompted to save them. This
+             * could trigger background parsing. The run method will not be
+             * executed while the background parsing completes. This ensures
+             * that the following parsing will not occur while the background parsing
+             * executes.
+             */
+            parseResult = new ModuleParserLauncher().parseModule(editorIFile, new NullProgressMonitor());
+        }
+
+        /**
+         * ProverHelper at this point schedules a new job.  I couldn't get that to work
+         * right, so I tried a runnable. 
+         */
+        DecomposeProofRunnable runnable = new DecomposeProofRunnable(this) ;
+    	
     	UIHelper.runUISync(runnable) ;
     	return null ;
     }
@@ -1112,7 +1141,7 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
          */
         // topMenu is a composite containing the stuff on the menu line.
         Composite topMenu = new Composite(shell, SWT.NONE);
-        gridLayout = new GridLayout(4, false);
+        gridLayout = new GridLayout(5, false);
         gridLayout.marginBottom = 0;
         topMenu.setLayout(gridLayout);
         GridData gridData = new GridData();
@@ -1131,6 +1160,11 @@ Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
         useSufficesButton = new Button(topMenu, SWT.CHECK);
         setupCheckButton(useSufficesButton, "Use SUFFICES");
         useSufficesButton.setSelection(useSufficesValue);
+
+        // Display "Use CASE" checkbox.
+        useCaseButton = new Button(topMenu, SWT.CHECK);
+        setupCheckButton(useCaseButton, "Use CASE");
+        useCaseButton.setSelection(useCaseValue);
 
         // Display checkbox to choose whether to expand definitions with
         // subexpression names.
@@ -2340,11 +2374,13 @@ assumeLabel.setLayoutData(gridData);
     }
     
     /**
+     * Adds the proofs steps for a CASE decomposition.
      * 
      * @param pfStepVec   The vector to which proof steps should be added.
      * @param childVec    The vector of CASE assumptions' NodeRepresentation objects, 
      *                     which may include OR_DECOMP nodes.
-     * @param assumptionsText The assumptions that must be prepended to a each case.
+     * @param assumpArray The assumptions that must be prepended to each case.
+     * @param proofText   The user's proof, or null if none.
      */
     void addCaseProofs(Vector<String[]> pfStepVec, Vector<NodeRepresentation> childVec, 
             String[] assumpArray, String[] proofText) {
@@ -2399,7 +2435,9 @@ assumeLabel.setLayoutData(gridData);
            // This is a terminal node.  Construct the proof step.
            // Set step to the step's obligation.
            String[] step;
-           if (newAssumpArray.length == 0) {
+           // We use a CASE step if there's just a single new assumption
+           // and "use CASE" is selected.
+           if (newAssumpArray.length == 1 && useCaseButton.getSelection()) {
                // This is a CASE step.
                step = prependToStringArray(lastChildNode.primedNodeText(), "CASE ") ;
            } else {
