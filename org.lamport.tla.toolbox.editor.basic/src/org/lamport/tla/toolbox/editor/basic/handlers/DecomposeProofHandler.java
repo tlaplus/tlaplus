@@ -302,6 +302,7 @@ import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.NewSymbNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
@@ -763,18 +764,16 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                     "The cursor is not in a theorem.");
             return null;
         }
+        
+        // Set declaredIdentifiers to all the defined or declared symbols
+        // whose scope contains `theorem'
+        this.declaredIdentifiers = 
+                ResourceHelper.declaredSymbolsInScope(this.moduleNode, theorem.stn.getLocation()) ;
 
         /********************************************************************
-         * Set the following fields: step, proofLevel, proof
+         * Set the following fields: step, proofLevel, proof.  Add the 
+         * necessary declarations to this.declaredIdentifiers.
          *********************************************************************/
-        // NEED TO ADD CODE to compute a symbol table of all identifiers
-        // that are defined by the context of the found step.
-        // Things to check to find out how to do that
-        // classes: Context, SymbolTable
-        // SemanticHelper.getNewContext for generating a new Context from an
-        // existing module's context. This context will have built-in
-        // operators, but they can be ignored by their OpDefNode's kind field.
-        //
         step = theorem;
         boolean notDone = true;
         proofLevel = -1;
@@ -788,7 +787,25 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             while ((foundLevelNode == null) && (i < pfsteps.length)) {
                 if (EditorUtil.lineLocationContainment(selectedLocation,
                         pfsteps[i].stn.getLocation())) {
-                    foundLevelNode = pfsteps[i];
+                    foundLevelNode = pfsteps[i];                    
+                    // If step is a (non-SUFFICES) ASSUME/PROVE, must add
+                    //   its NEW declarations to declaredIdentifiers.
+                    if (!step.isSuffices() && (step.getTheorem() instanceof AssumeProveNode)) {
+                        SemanticNode[] assumptions = ((AssumeProveNode) step.getTheorem()).getAssumes() ;
+                        for (int j = 0; j < assumptions.length; j++) {
+                            if (assumptions[j] instanceof NewSymbNode) {
+                                declaredIdentifiers.add(
+                                   ((NewSymbNode) assumptions[j]).getOpDeclNode().getName().toString());
+                            }
+                        }
+                    }
+                } else {
+                    // If this step is a SUFFICES ASSUME step, must
+                    //   add NEW declarations to declaredIdentifiers.
+                    // It it's a DEFINE step, must add the defined
+                    //   operator names to declaredIdentifiers.
+                    // If its an INSTANCE step, must add the instantiated
+                    //   module's definitions.
                 }
                 i++;
             }

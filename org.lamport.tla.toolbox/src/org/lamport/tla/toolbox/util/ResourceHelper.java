@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -73,6 +74,7 @@ import tla2sany.semantic.NewSymbNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
@@ -1625,25 +1627,147 @@ public class ResourceHelper
      * @param loc     The location.
      * @return
      */
-    public HashSet<String> declaredSymbolsInScope(ModuleNode module, Location loc) {
-        HashSet result = new HashSet() ;
-        Vector<ModuleNode> extendedModulesVec = new Vector();
-        addExtendedModules(extendedModulesVec, module) ;
-        
+    public static HashSet<String> declaredSymbolsInScope(ModuleNode module, Location loc) {
+        // result accumulates the return value.
+        HashSet<String> result = new HashSet<String>() ;
+        addDeclaredSymbolsInScope(result, module, loc);
         return result ;
     }
     
     /**
-     * If node is not an element of vec, this method adds node and all
-     * modules EXTENDed (directly or indirectly) by node to vec.
+     * Like declaredSymbolsInScope, except instead of returning the computed value as a result,
+     * it adds it to the elements of the `result' argument.
      * 
-     * @param vec
-     * @param node
+     * @param result
+     * @param module
+     * @param loc
      */
-    public void addExtendedModules(Vector<ModuleNode> vec, ModuleNode node) {
+    public static void addDeclaredSymbolsInScope(HashSet<String> result, ModuleNode module, Location loc) {
+        // Set result to the set of all CONSTANT and VARIABLE declarations it should contain.
+        // These are the ones from `module' that precede loc, and the ones from any extended
+        // module.
+        HashSet extendees = module.getExtendedModuleSet();
+        extendees.add(module) ;
+        Iterator iter = extendees.iterator() ;
+        while (iter.hasNext()) {
+            ModuleNode modNode = (ModuleNode) iter.next() ;
+            // Get CONSTANTS
+            OpDeclNode[] decls = modNode.getConstantDecls() ;
+            for (int i = 0; i < decls.length; i++) {
+                if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
+                    result.add(decls[i].getName().toString()) ;
+                }
+            }
+            
+           // Get VARIABLES
+            decls = modNode.getVariableDecls() ;
+            for (int i = 0; i < decls.length; i++) {
+                if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
+                    result.add(decls[i].getName().toString()) ;
+                }
+            }
+        }
         
+        // Set allModulesSet to the set of ModuleNodes containing module and all imported
+        // modules that can contribute definitions or declarations of user-typeable symbols.
+        // Add to `result' the set of all symbols sym that contribute to the final result from
+        // statements of the form
+        //
+        //    sym == INSTANCE ...
+        HashSet<ModuleNode> allModulesSet = new HashSet<ModuleNode>();
+        addImportedModules(allModulesSet, result, loc, module) ;
+        
+        // Add defined operator and theorem names
+        iter = allModulesSet.iterator();
+        while (iter.hasNext()) {
+            ModuleNode modNode = (ModuleNode) iter.next() ;
+            
+            // add definitions
+            OpDefNode[] decls = module.getOpDefs();
+            for (int i = 0; i < decls.length; i++) {
+                if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
+                    result.add(decls[i].getName().toString()) ;
+                } 
+            }
+            
+            // add theorems
+            ThmOrAssumpDefNode[] tdecls = module.getThmOrAssDefs();
+            for (int i = 0; i < tdecls.length; i++) {
+                if ((modNode != module) || earlierLine(tdecls[i].stn.getLocation(), loc)) {
+                    result.add(tdecls[i].getName().toString()) ;
+                } 
+            }
+        }
     }
     
+    /**
+     * If node is an element of modules, it does nothing.  If it is then it
+     * adds to <code>modules</code> all modules imported (directly or indirectly)
+     * by module <code>node</code> by an EXTENDS statement or by an unnamed
+     * INSTANCE occurring before Location <code>loc</code>.  It adds to 
+     * <code>symbols</code> all symbols sym that occur in a
+     * 
+     *    sym == INSTANCE ...
+     *    
+     * statement that occurs in module <code>node</code> before location 
+     * <code>loc</code> or anywhere in one of the modules added to <code>modules</code>.
+     * 
+     * This procedure is called by declaredSymbolsInScope and by itself, the
+     * latter calls always with loc a Location beyond the end of any module.
+     * 
+     * @param modules
+     * @param symbols
+     * @param loc
+     * @param node
+     */
+    public static void addImportedModules(HashSet<ModuleNode> modules, HashSet<String> symbols, 
+                                   Location loc, ModuleNode node) {
+        if (modules.contains(node)) {
+            return ;
+        }
+        modules.add(node) ;
+        
+        HashSet extendees = node.getExtendedModuleSet();
+        Iterator iter = extendees.iterator() ;
+        while (iter.hasNext()) {
+            ModuleNode modNode = (ModuleNode) iter.next() ;
+            addImportedModules(modules, symbols, infiniteLoc, modNode) ;
+        }
+        
+        InstanceNode[] instances = node.getInstances() ;
+        for (int i = 0; i < instances.length; i++) {
+            // We add the instance only if its comes before loc.
+            // For a LOCAL instance, we add the module to `module' or its name to `symbols'
+            // only if this is the initial call, which is the case iff  loc # infiniteLoc
+            if ( earlierLine(instances[i].stn.getLocation(), loc)
+                 && (   ! instances[i].getLocal()
+                     || earlierLine(loc, infiniteLoc))){
+               if (instances[i].getName() != null) {
+                   symbols.add(instances[i].getName().toString()) ;
+               } else {
+                   addImportedModules(modules, symbols, infiniteLoc, instances[i].getModule()) ;
+               }
+            }
+        }     
+
+    }
+    
+    /**
+     * A location beyond the end of any module.
+     */
+    private static final Location infiniteLoc = 
+          new Location(Integer.MAX_VALUE, 0, Integer.MAX_VALUE, Integer.MAX_VALUE) ;
+    
+    /**
+     * True iff the beginning line of loc1 is less than the beginning line of loc2.
+     * 
+     * @param loc1
+     * @param loc2
+     * @return
+     */
+    private static boolean earlierLine(Location loc1, Location loc2) {
+        return loc1.beginLine() < loc2.beginLine() ;
+    }
     /**
      * Checks a specification name for its validity WRT the parser identifier definition
      * @param aSpecName The intended specification name to check for validity

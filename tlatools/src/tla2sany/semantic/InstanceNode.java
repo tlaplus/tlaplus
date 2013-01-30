@@ -37,16 +37,28 @@ public class InstanceNode extends LevelNode {
    *  mexp[i] is a simply a reference to a constant or variable
    *  declared in the current module that has the same name as mparam[i]
    *  declared in M (or a module M extends).
+   *  
+   *  On 30 Jan 2013, LL added some public get...() methods that
+   *  return some fields.
    */      
 
   UniqueString      name;     
      // The name of this instance, e.g. "I" in the example above;
      //   null if this is an unnamed instance.
+  
+  public UniqueString getName() {
+      return name ;
+  }
   FormalParamNode[] params;   
      // The instance parameters, e.g. param[1]  ... param[n] in the
      // example above. Has length zero if there is no param.
   ModuleNode        module;   
      // Reference to the module, M, being instantiated
+  
+  public ModuleNode getModule() {
+      return module ;
+  }
+  
   Subst[]           substs;   
      // The substitutions mparam[1] <- mexp[1], ... , mparam[r] <- mexp[r]
      // This includes substitutions not explicitly mentioned in the
@@ -58,9 +70,13 @@ public class InstanceNode extends LevelNode {
   * The following field was added by LL on 29 Jul 2007.                    *
   *************************************************************************/
   boolean local;
-    /**
- * @param stepName the stepName to set
- */
+    /***********************************************************************
+    * True iff this is a LOCAL instance.                                   *
+    ***********************************************************************/
+
+  public boolean getLocal() {
+      return this.local ;
+  }
  
   /**
    * If the InstanceNode is a proof step, this is the step number.  It
@@ -70,21 +86,17 @@ public class InstanceNode extends LevelNode {
    */
   private UniqueString stepName = null;
   public void setStepName(UniqueString stepName)
-{
+   {
     this.stepName = stepName;
-}
+   }
 
-/**
- * @return the stepName
- */
-public UniqueString getStepName()
-{
+  /**
+   * @return the stepName
+   */
+  public UniqueString getStepName()
+   {
     return stepName;
-}
-
-    /***********************************************************************
-    * True iff this is a LOCAL instance.                                   *
-    ***********************************************************************/
+   }
 
   public InstanceNode(UniqueString name, boolean localness,
                       FormalParamNode[] params,
