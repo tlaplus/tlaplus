@@ -16,6 +16,14 @@
  *  
  *  - The decomposition will not expand definitions imported from other modules
  *    except with the "Use subexpression names" option. 
+ *    
+ *  - It would be useful to have the option of expanding an assumption or goal
+ *    that is a LET formula.  This would create an initial DEFINE step in the proof.
+ *    
+ *  - Renaming of identifiers to avoid name clashes when expanding definitions doesn't do
+ *    all the renaming it should.  In particular, it does not rename operators defined in
+ *    a LET clause or their definition parameters.  See ResourceHelper.getBoundIdentifiers
+ *    to get a start on fixing this.
  *  
  * Currently, this command is under construction.  It is bound to  Control-G Control-D
  * and to the editor right-click menu with other proof/prover commands.
@@ -311,6 +319,8 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.semantic.DefStepNode;
+import tla2sany.semantic.InstanceNode;
 import tla2sany.st.Location;
 import util.UniqueString;
 
@@ -802,11 +812,36 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 } else {
                     // If this step is a SUFFICES ASSUME step, must
                     //   add NEW declarations to declaredIdentifiers.
+                    if (pfsteps[i] instanceof TheoremNode) {
+                        TheoremNode node = (TheoremNode) pfsteps[i];
+                        if (node.isSuffices() && (node.getTheorem() instanceof AssumeProveNode)) {
+                            SemanticNode[] assumptions = ((AssumeProveNode) node.getTheorem()).getAssumes() ;
+                            for (int j = 0; j < assumptions.length; j++) {
+                                if (assumptions[j] instanceof NewSymbNode) {
+                                    declaredIdentifiers.add(
+                                       ((NewSymbNode) assumptions[j]).getOpDeclNode().getName().toString());
+                                }
+                            } 
+                        }
+                    }
+                    
                     // It it's a DEFINE step, must add the defined
                     //   operator names to declaredIdentifiers.
+                    if (pfsteps[i] instanceof DefStepNode) {
+                        OpDefNode[] defs = ((DefStepNode) pfsteps[i]).getDefs() ;
+                        for (int j = 0; j < defs.length; j++) {
+                            declaredIdentifiers.add(defs[j].getName().toString()) ;
+                        }
+                    }
                     // If its an INSTANCE step, must add the instantiated
                     //   module's definitions.
+                    if (pfsteps[i] instanceof InstanceNode) {
+                        ResourceHelper.addDeclaredSymbolsInScope(
+                              declaredIdentifiers, ((InstanceNode) pfsteps[i]).getModule(), 
+                              ResourceHelper.infiniteLoc);
+                    }
                 }
+                
                 i++;
             }
             if (foundLevelNode == null) {
@@ -2684,7 +2719,7 @@ assumeLabel.setLayoutData(gridData);
                                 + "line 2624 of DecomposeProofHandler.");
                 return null;
             }
-                    }
+        }
 
         // We first compute the vector of NEW assumptions
         int lastLine = -1;
@@ -2897,6 +2932,11 @@ assumeLabel.setLayoutData(gridData);
             SemanticNode[] uses = ResourceHelper.getUsesOfSymbol(formalParams[i], sn) ;
             
             String replacementText = arguments[i]  ;
+// NOTE: If we were substituting for a formal parameter for which a different
+// identifier had been substituted, we would have had to use as 
+// sourceTextLength the length of the new identifier.  This may be relevant
+// when adding renaming, since this code might wind up getting called after
+// some renaming has been done.
             int sourceTextLength = formalParams[i].getName().toString().length() ;
             // Set mayNeedParens true if replacementText doesn't end in ' and would
             // need parentheses around it in order to prime it.
@@ -3951,11 +3991,7 @@ assumeLabel.setLayoutData(gridData);
     }
 
     /**
-     * This computes the decompose field of a NodeRepresentation. It does not
-     * yet correctly handle the decomposition of a defined operator except by using
-     * subexpression names.  The problem is that bound identifiers in the definition
-     * may have to be renamed because they may be defined or declared in the
-     * current context.
+     * This computes the decompose field of a NodeRepresentation. 
      * 
      * @param sn
      * @return

@@ -66,6 +66,8 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.semantic.DefStepNode;
+import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
@@ -1434,18 +1436,18 @@ public class ResourceHelper
         // We have to detect the following instances in which we get a use directly from
         // this node. There are three basic cases:
         // 1. This is an OpApplNode and the operator is a use. There are three subcases:
-        // (a) The operator equals symbol
-        // (b) The operator is an OpDefNode that represents a subexpression of the
-        // the definition of symbol.
-        // (c) The operator is either an OpDefNode or a ThmOrAssumpDefNode whose
-        // source (in another module) is symbol.
+        //    (a) The operator equals symbol
+        //    (b) The operator is an OpDefNode that represents a subexpression of the
+        //        definition of symbol.
+        //    (c) The operator is either an OpDefNode or a ThmOrAssumpDefNode whose
+        //        source (in another module) is symbol.
         // 2. This is an OpArgNode whose operator either
-        // (a) equals symbol, or
-        // (b) is an OpDefNode whose source (in another module) is symbol
+        //    (a) equals symbol, or
+        //    (b) is an OpDefNode whose source (in another module) is symbol
         // 3. This is a LeafProofNode or UseOrHideNode and one of the DEF entries either
-        // (a) equals symbol, or
-        // (b) is an OpDefNode or a ThmOrAssumpDefNode whose
-        // source (in another module) is symbol
+        //    (a) equals symbol, or
+        //    (b) is an OpDefNode or a ThmOrAssumpDefNode whose source (in another module) 
+        //        is symbol
         if (node instanceof OpApplNode)
         { // check for case 1
             OpApplNode oan = (OpApplNode) node;
@@ -1768,6 +1770,71 @@ public class ResourceHelper
     private static boolean earlierLine(Location loc1, Location loc2) {
         return loc1.beginLine() < loc2.beginLine() ;
     }
+    
+    /**
+     * Returns the FormalParmNode for all bound identifiers that are declared
+     * in expr.  These are the bound identifiers introduced OpApplNodes.  They do
+     * not include ones introduced as definition parameters in a LET definition.
+     * 
+     * This method was introduced for bound identifier renaming in the DecomposeProofHandler
+     * methods.  For that, it would be nice to also return the symbols introduced by LET
+     * definitions--both the defined operators and the definition parameters.  However,
+     * it complicates things to handle the defined operators, since there's no FormalParamNode
+     * corresponding to them.  And if we're not doing that, then there seems to be little point
+     * worrying about their definition parameters. 
+     * 
+     * @param expr
+     * @return
+     */
+    public static FormalParamNode[] getBoundIdentifiers(ExprNode expr) {
+        Vector<FormalParamNode> vec = new Vector<FormalParamNode>() ; 
+        innerGetBoundIdentifiers(vec, expr) ;
+        FormalParamNode[] result = new FormalParamNode[vec.size()] ;
+        for (int i=0; i < result.length; i++) {
+            result[i] = vec.elementAt(i) ;
+        }
+        return result;
+    }
+    
+    /**
+     * This is the recursive operator that implements getBoundIdentifiers.  It adds the
+     * bound identifiers in expr to those in vec.  The identifiers in vec should be different
+     * from the ones declared in expr.
+     * 
+     * @param vec
+     * @param expr
+     */
+    private static void innerGetBoundIdentifiers(Vector<FormalParamNode> vec,
+            ExprNode expr) {
+        if (!(expr instanceof OpApplNode)) {
+            return;
+        }
+        
+        OpApplNode node = (OpApplNode) expr;
+        if (node.getUnbdedQuantSymbols() != null) {
+            for (int i = 0; i < node.getUnbdedQuantSymbols().length; i++) {
+                vec.add(node.getUnbdedQuantSymbols()[i]);
+            }
+        }
+
+        if (node.getBdedQuantSymbolLists() != null) {
+            for (int i = 0; i < node.getBdedQuantSymbolLists().length; i++) {
+                FormalParamNode[] nodeList = node.getBdedQuantSymbolLists()[i] ;
+                for (int j=0; j < nodeList.length; j++) {
+                    vec.add(nodeList[j]) ;
+                }
+                innerGetBoundIdentifiers(vec, node.getBdedQuantBounds()[i]) ;
+            }
+        }
+        
+        for (int i=0; i < node.getArgs().length; i++) {
+            if (node.getArgs()[i] instanceof ExprNode) {
+                innerGetBoundIdentifiers(vec, (ExprNode) node.getArgs()[i]);
+            }
+        }
+
+    }
+    
     /**
      * Checks a specification name for its validity WRT the parser identifier definition
      * @param aSpecName The intended specification name to check for validity
