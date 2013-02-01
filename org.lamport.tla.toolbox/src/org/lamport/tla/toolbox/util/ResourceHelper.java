@@ -1417,7 +1417,7 @@ public class ResourceHelper
      * OpApplNodes  to <code>found</code>.
      * 
      * Note: modified by LL on 14 Sep 2010 so a subexpression name like 
-     * Foo!1!(a) will be returned as a use of Foo.  This is introduces another
+     * Foo!1!(a) will be returned as a use of Foo.  This introduces another
      * case to be handled when trying to extract the symbol's occurrence from the 
      * OpApplNode containing the symbol.  This is the one case in which the symbol
      * is not really the operator of the OpApplNode.
@@ -1755,7 +1755,7 @@ public class ResourceHelper
     /**
      * A location beyond the end of any module.
      */
-    private static final Location infiniteLoc = 
+    public static final Location infiniteLoc = 
           new Location(Integer.MAX_VALUE, 0, Integer.MAX_VALUE, Integer.MAX_VALUE) ;
     
     /**
