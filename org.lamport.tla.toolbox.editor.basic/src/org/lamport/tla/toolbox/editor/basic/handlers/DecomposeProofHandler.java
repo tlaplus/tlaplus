@@ -656,6 +656,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      *      ExecutionEvent)
      */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
     public Object realExecute(/*ExecutionEvent event*/) throws ExecutionException {
         // We will set assumes to the vector of SemanticNodes of the
         // assumptions, if there are any, and goal to the SemanticNode 
@@ -1024,21 +1028,19 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          * Make the editor read-only.
          ***************************************************************************/
         // The following method is deprecated because it is actually possible to
-        // use
-        // it, so it has been replaced by something that requires a PhD in
-        // Eclipse
-        // to figure out how to use. The command
+        // use it, so it has been replaced by something that requires a PhD in
+        // Eclipse to figure out how to use. The command
         //
         // EditorUtil.setReadOnly(editorIFile, true);
         //
         // that has worked in other places in the Toolbox code seems to work
-        // here
-        // only occasionally. This being modern 21st century code, I have the
-        // choice of reading 10^6 lines of code to figure out what is going on,
-        // or doing what seems to work.
+        // here only occasionally. This being modern 21st century code, I have
+        // the choice of reading 10^6 lines of code to figure out what is going 
+        // on, or doing what seems to work.
         editorIFile.setReadOnly(true);
         raiseWindow();
-Activator.getDefault().logDebug("Finished Decompose Proof Handler execute");
+        // Activator.getDefault().logDebug(
+        //        "Finished Decompose Proof Handler execute");
         return null;
     }
 
@@ -1866,7 +1868,11 @@ assumeLabel.setLayoutData(gridData);
             hasChanged = true;
             // assumeHasChanged = true;
             if (decomp.definedOp != null) {
-                goalDefinitions.add(decomp.definedOp);
+                // Modified by LL on 4 Feb 2013 to change assumpDefinitions
+                // instead of goalDefinitions to fix a bug.  But I'm not
+                // sure that this is always the correct thing to do.
+                // goalDefinitions.add(decomp.definedOp);
+                assumpDefinitions.add(decomp.definedOp);
             }
 
             // Remove this assumption and insert the split nodes in its place.
@@ -1925,6 +1931,10 @@ assumeLabel.setLayoutData(gridData);
      * Executes an \E split of an assumption.  If this is a top-level assumption,
      * then the NEW variables may have to be changed to avoid a name clash with
      * NEW variables or other bound variables of later assumptions or of the goal.
+     * 
+     * Also, for a top-level assumption , if an AND-split has been performed, 
+     * then this has to increment andSplitEnd because it adds an assumption
+     * to the AND-split region.
      *  
      * @param nodeRep
      */
@@ -1953,6 +1963,12 @@ assumeLabel.setLayoutData(gridData);
 
         parentVec.remove(idx);
 
+        // If this is a top-level assumption and an AND-split has been
+        // performed, then increment andSplitEnd
+        if ((parentVec == assumeReps) && (andSplitBegin != -1)) {
+            andSplitEnd = andSplitEnd + qdc.news.size();
+        }
+        
         for (int i = 0; i < qdc.news.size(); i++) {
             parentVec.add(idx + i, qdc.news.elementAt(i));
             // parentVec.add(idx + i, qdc.news.elementAt(i).semanticNode) ;
@@ -2054,7 +2070,7 @@ assumeLabel.setLayoutData(gridData);
             Vector<NodeRepresentation> repVec = new Vector<NodeRepresentation>();
             nodeRep.children.add(repVec);
             NodeRepresentation rep = decompositionChildToNodeRep(nodeRep, i,
-                    repVec, null);
+                    repVec, nodeRep);
             repVec.add(rep);
         }
         raiseWindow();
@@ -2090,7 +2106,7 @@ assumeLabel.setLayoutData(gridData);
             Vector<NodeRepresentation> repVec = new Vector<NodeRepresentation>();
             nodeRep.children.add(repVec);
             NodeRepresentation rep = decompositionChildToNodeRep(nodeRep, i,
-                    repVec, null);
+                    repVec, nodeRep);
             if (i == 1) {
                 // Have to fix the UNCHANGED node.  We prepend the "UNCHANGED"
                 // to nodeText and set it to be a node of type OTHER, which means it
@@ -2126,7 +2142,6 @@ assumeLabel.setLayoutData(gridData);
      */
     void makeProof(NodeRepresentation nodeRep, boolean isAndProof, boolean sufficesOnly) {
         
-
         /**
          * Set proofIndent to the amount to indent both the new proof and
          * the proofs of its steps. We may want to do something clever about
@@ -2138,6 +2153,9 @@ assumeLabel.setLayoutData(gridData);
          * We also set proofIndentString to a string of that number of
          * spaces.
          */
+        HashSet<String> aaTestSet = new HashSet<String>();
+        addDeclaredSymbols(aaTestSet, goalRep) ;
+
         int proofIndent = PROOF_INDENT;
         String proofIndentString = StringHelper
                 .copyString(" ", proofIndent);
@@ -2574,13 +2592,11 @@ assumeLabel.setLayoutData(gridData);
             try {
                 NodeRepresentation res = 
                         new NodeRepresentation(this.doc, decomp.children.elementAt(i)) ;
-                // TRIAL CODE -- this seems to be working
                 NodeTextRep ntext = decompSubstituteInNodeText(decomp, 
                         (ExprNode) decomp.children.elementAt(i), 
                         new NodeTextRep(res.nodeText, res.mapping)) ;
                 res.nodeText = ntext.nodeText ;
                 res.mapping = ntext.mapping;
-                // END TRIAL CODE
                 
                 // This is a hack, calling subNodeRep for the subnode of
                 // the definition body consisting of the entire definition body.
@@ -2671,6 +2687,7 @@ assumeLabel.setLayoutData(gridData);
         result.news = new Vector<NodeRepresentation>();
         Decomposition decomp = nodeRep.decomposition;
 
+        // For testing:
         // If this is within the subexpression-name expansion of a definition,
         // set NodeTextRep to the NodeTextRep that is the name of the formula
         // represented by nodeRep.
@@ -2731,6 +2748,7 @@ assumeLabel.setLayoutData(gridData);
             NodeRepresentation rep = new NodeRepresentation();
             rep.semanticNode = null;
             rep.nodeType = NodeRepresentation.NEW_NODE;
+            rep.newId = decomp.quantIds.elementAt(i).getName().toString();
             rep.isCreated = true;
             rep.parentNode = nodeRep.parentNode;
             if (nodeRep.parentVector != null) {
@@ -3016,6 +3034,15 @@ assumeLabel.setLayoutData(gridData);
         return result ;
     }
 
+    /**
+     * Calls substituteInNodeText to perform the substitution of arguments for formal 
+     * parameters in a decomposition that is the expansion of a definition
+     * 
+     * @param decomp
+     * @param sn
+     * @param nodeTextRep
+     * @return
+     */
     NodeTextRep decompSubstituteInNodeText(Decomposition decomp, ExprNode sn, NodeTextRep nodeTextRep) {
         return substituteInNodeText(
                 decomp.formalParams, decomp.arguments, decomp.argNodes, sn, nodeTextRep);
@@ -3212,9 +3239,8 @@ assumeLabel.setLayoutData(gridData);
         private static final int OTHER_NODE = 5;
         private int nodeType = 0;
 
-        // An EXPR_NODE can have multiple subtypes, indicating what
-        // decomposition
-        // can be applied.
+        // An EXPR_NODE has a subtype, indicating what
+        // decomposition can be applied.
         private static final int AND_TYPE = 0;
         private static final int OR_TYPE = 1;
         private static final int IMPLIES_TYPE = 2;
@@ -3224,6 +3250,12 @@ assumeLabel.setLayoutData(gridData);
         private static final int OTHER_TYPE = 99; // anything else
 
         public int nodeSubtype = OTHER_TYPE;
+        
+        /**
+         * If this NodeRepresentation object is of type NEW_NODE,
+         * then this is the NEW identifier.
+         */
+        public String newId = null ;
 
         /********************************************************************
          * An OR-Split operation can be performed on a node of type EXPR_NODE
@@ -3414,6 +3446,8 @@ assumeLabel.setLayoutData(gridData);
                 break;
             case ASTConstants.NewSymbKind:
                 result.nodeType = NEW_NODE;
+                NewSymbNode newNode = (NewSymbNode) sn ;
+                result.newId = newNode.getOpDeclNode().getName().toString();
                 break;
             case ASTConstants.LeafProofKind:
                 result.nodeType = PROOF_NODE;
@@ -3639,6 +3673,7 @@ assumeLabel.setLayoutData(gridData);
 
             return result ;
         }
+                
         public String toString() {
             String val = "";
             // if (originalOperator != null) {
@@ -3929,6 +3964,46 @@ assumeLabel.setLayoutData(gridData);
             return val;
         }
     }
+    
+    /**
+     * Adds to `result' all symbols in scope for NodeRepresentation `node'
+     * that are defined or declared in the current step by NEW assumptions.
+     * It can be called only when `node' is in this.assumeReps, is
+     * a descendant of a node in this.assumeReps, or is the goal.
+     * 
+     * @param result
+     * @param node
+     */
+    public void addDeclaredSymbols(HashSet<String> result, NodeRepresentation node) {
+        Vector<NodeRepresentation> parentVec = node.parentVector ;
+        // node.parentVector = null iff node is the goal, the case we
+        // handle by simply setting parentVec to assumeReps.
+        if (parentVec == null) {
+           parentVec = this.assumeReps;
+        }
+        
+        int i = 0;
+        while ((i < parentVec.size()) && (parentVec.elementAt(i) != node)) {
+            NodeRepresentation parent = parentVec.elementAt(i) ;
+            if (parent.nodeType == NodeRepresentation.NEW_NODE) {
+                result.add(parent.newId) ;
+            }
+            i++ ;
+        }
+        
+        // If this isn't a top-level assumption (or the goal), call the method on
+        // its parent.
+        if (parentVec != this.assumeReps) {
+            // If parentVec != null, then node.parentNode should be
+            // non-null--but just in case
+            if (node.parentNode != null) {
+              addDeclaredSymbols(result, node.parentNode) ;
+            } else {
+                System.out.println("Bug found in DecomposeProofHandler.addDeclaredSymbols.") ;
+            }
+        }
+    }
+
 
     /**
      * Converts a NodeRepresentation subType to a string. Used for debugging.
