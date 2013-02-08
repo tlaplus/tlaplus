@@ -619,35 +619,22 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      *   scope the step lies. 
      */
     private HashSet<String> declaredIdentifiers;
-
-    /**
-     * renamedIdentifiers is a list of all FormalParamNodes representing bound
-     * identifiers that have been renamed to avoid name clashes.
-     * newIdentifierNames is a list of the new names that have been substituted
-     * for those identifiers.
-     * 
-     * These lists are used only so that, when renaming, we can try to rename
-     * two identifiers that have the same original name to the same new name.
-     * For finding the current name of a node, the analogous fields of a 
-     * Decomposition object are used.
-     */
-    private Vector<FormalParamNode> renamedIdentifiers;
-    private Vector<String> newIdentifierNames;
     
     /**
-     * Returns the current name of the FormalParamNode `node'. If it has been
-     * renamed, then this name is found in decomp.dRenamedIdentifiers.
-     * Otherwise, it is the original name.
+     * Returns the current name of the FormalParamNode `node'.  If it has been
+     * renamed, then this name is found in rename.newNames.  Otherwise, it is 
+     * the original name.
      * 
      * @param node
+     * @param rename
      * @return
      */
-    private String getCurrentName(FormalParamNode node, Decomposition decomp) {
+    private String getCurrentName(FormalParamNode node, Renaming rename) {
         String newName = null ;
         int i = 0;
-        while ((i < decomp.dRenamedIdentifiers.size()) && (newName == null)) {
-            if (decomp.dRenamedIdentifiers.elementAt(i) == node) {
-              newName = decomp.dNewIdentifierNames.elementAt(i) ;  
+        while ((i < rename.identifiers.size()) && (newName == null)) {
+            if (rename.identifiers.elementAt(i) == node) {
+              newName = rename.newNames.elementAt(i) ;  
             }
             i++ ;
         }
@@ -660,83 +647,68 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     }
     
     /**
-     * Modifies decomp.dRenamedIdentifiers, decomp.dNewIdentifierNames,
-     * renamedIdentifiers, and newIdentifierNames to indicate that the current
-     * name of `node' is `name'.
+     * Modifies the Renaming object rename to indicate that the current name of
+     * `node' is `name'. If the current name of `node' is its original name,
+     * then do nothing.
      * 
      * @param node
      * @param name
-     * @param decomp
+     * @param rename
      */
-    private void addCurrentName(FormalParamNode node, String name, Decomposition decomp) {
-        // if node is in renamedIdentifiers, set i to its index.
-        // otherwise set i to renamedIdentiers.size() ;
+    private void addCurrentName(FormalParamNode node, String name,
+            Renaming rename) {
+        // If node is in rename.identifiers, then set i to its index.
+        // Otherwise, set i to rename.identiers.size().
         int i = 0;
-        while ((i < renamedIdentifiers.size()) && (renamedIdentifiers.elementAt(i) != node)) {
-            i++ ;
-        }
-        
-        if (i < renamedIdentifiers.size()) {
-            newIdentifierNames.remove(i) ;
-            newIdentifierNames.insertElementAt(name, i) ;
-        } else {
-            renamedIdentifiers.add(node) ;
-            newIdentifierNames.add(name) ;
+        while ((i < rename.identifiers.size())
+                && (rename.identifiers.elementAt(i) != node)) {
+            i++;
         }
 
-        // do the same thing for decomp.dRenamedIdentifiers
-        i = 0;
-        while ((i < decomp.dRenamedIdentifiers.size()) && 
-               (decomp.dRenamedIdentifiers.elementAt(i) != node)) {
-            i++ ;
-        }
-        
-        if (i < decomp.dRenamedIdentifiers.size()) {
-            decomp.dNewIdentifierNames.remove(i) ;
-            decomp.dNewIdentifierNames.insertElementAt(name, i) ;
+        // Either replace the current renaming of `name' in `rename'
+        // if there is one, otherwise add the renaming iff it's not
+        // the same as its original name.
+        if (i < rename.identifiers.size()) {
+            rename.newNames.remove(i);
+            rename.newNames.insertElementAt(name, i);
         } else {
-            decomp.dRenamedIdentifiers.add(node) ;
-            decomp.dNewIdentifierNames.add(name) ;
+            if (!name.equals(node.getName().toString())) {
+                rename.identifiers.add(node);
+                rename.newNames.add(name);
+            }
         }
-}
+    }
     
-   /**
-    * Returns a new name for `node' that is different from any of the names
-    * in currentlyDeclared.  If getCurrentName(node) is not in currentlyDeclared,
-    * then that's the name returned.  Otherwise, if there's a node n in renamedIdentifiers
-    * with the same original name as `node' and
-    * with getCurrentName(n) not in currentlyDeclared, then return getCurrentName(n).
-    * Otherwise, return nm_i where nm is the original name of `node', and i is the
-    * smallest positive integer such that nm_i is not in currentlyDeclared. 
-    * 
-    * Does not modify renamedIdentifiers or newIdentifierNames.
-    * 
-    * @param node
-    * @param currentlyDeclared
-    * @return
-    */
+    /**
+     * Returns a new name for `node' that is different from any of the names in
+     * the set currentlyDeclared of names . If getCurrentName(node, rename) is
+     * not in currentlyDeclared, then that's the name returned. Otherwise, if
+     * there's a node n with the same original name as `node' that is being
+     * renamed by `rename', and getCurrentName(n, rename) not in
+     * currentlyDeclared, then the methods return getCurrentName(n, rename).
+     * Otherwise, it returns the string nm + RENAMING_SUFFIX + i where nm is the
+     * original name of `node', and i is the smallest positive integer such that
+     * this string is not in currentlyDeclared.
+     * 
+     * @param node
+     * @param currentlyDeclared
+     * @param rename
+     * @return
+     */
    private String getNewName(
-           FormalParamNode node, HashSet<String> currentlyDeclared, Decomposition decomp) {
-       String curName = getCurrentName(node, decomp) ;
+           FormalParamNode node, HashSet<String> currentlyDeclared, Renaming rename) {
+
+       String curName = getCurrentName(node, rename) ;
        if (! currentlyDeclared.contains(curName)) {
            return curName ;
        }
-       for (int i=0; i < renamedIdentifiers.size(); i++) {
-           FormalParamNode n = renamedIdentifiers.elementAt(i) ;
-           if (node.getName() == n.getName() && 
-                   ! currentlyDeclared.contains(newIdentifierNames.elementAt(i))) {
-//               addCurrentName(node, newIdentifierNames.elementAt(i)) ;
-               return newIdentifierNames.elementAt(i); 
-           }
-       }
-       
+
        String oldName = getNewNamePrefix(node.getName().toString()) ;
        int i = 1 ;
        while (currentlyDeclared.contains(oldName + i)) {
            i++ ;
        }
-       
-//       addCurrentName(node, oldName + i) ;
+
        return oldName + i ;
    }
    
@@ -876,7 +848,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          * module is copied from other commands.
          */
 
-        // editor field already set.
         // The following should be a no-op, because the editor was already
         // found to be non-null.
         if (editor == null) {
@@ -905,22 +876,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         // assumeHasChanged = false;
         goalDefinitions = new HashSet<String>();
         assumpDefinitions = new HashSet<String>();
-
-        /*******************************************************************
-         * Set the following fields: doc, text, selectionProvider, selection,
-         * offset, moduleNode.
-         ******************************************************************/
-        // Commented out to try Dan's idea
-//        doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-//// This is never used.
-////        text = doc.get();
-//        selectionProvider = editor.getSelectionProvider();
-//        selection = (TextSelection) selectionProvider.getSelection();
-//        offset = selection.getOffset();
-//
-//        // Get the module.
-//        String moduleName = editor.getModuleName();
-//        moduleNode = ResourceHelper.getModuleNode(moduleName);
 
         // selectedLocation is Location of selected region.
         Location selectedLocation = EditorUtil.getLocationAt(doc, offset,
@@ -954,9 +909,6 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         this.declaredIdentifiers = 
                 ResourceHelper.declaredSymbolsInScope(this.moduleNode, theorem.stn.getLocation()) ;
 
-        // initialize renamedIdentifiers and newIdentifierNames
-        this.renamedIdentifiers = new Vector<FormalParamNode>() ;
-        this.newIdentifierNames = new Vector<String>() ;
         /********************************************************************
          * Set the following fields: step, proofLevel, proof.  Add the 
          * necessary declarations to this.declaredIdentifiers.
@@ -1240,7 +1192,11 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      *      ExecutionEvent)
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
-		this.editor = EditorUtil.getTLAEditorWithFocus();
+        /*******************************************************************
+         * Set the following fields: doc, text, selectionProvider, selection,
+         * offset, moduleNode.
+         ******************************************************************/
+        this.editor = EditorUtil.getTLAEditorWithFocus();
 		this.doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         this.selectionProvider = editor.getSelectionProvider();
         this.selection = (TextSelection) selectionProvider.getSelection();
@@ -2909,15 +2865,54 @@ assumeLabel.setLayoutData(gridData);
             }
         }
 
-     // IMPLEMENTATION TODO
-     // At this point, for a \E decomposition, we must perform any needed substitutions
-     // in nodeRep for the \E's bound identifiers that clash with bound identifiers or
-     // NEW declarations that occur after this assumption.
-     // This substitution should be necessary only for a \E decomposition that occurs
-     // as a top-level assumption.
-     // Note that the NEW variables cannot occur in the quantifier bounds.
-
-        // We first compute the vector of NEW assumptions
+        // IMPLEMENTATION TODO
+        // At this point, for a \E decomposition, we must perform any needed
+        // substitutions in nodeRep for the \E's bound identifiers that can 
+        // cause a clash with bound identifiers or NEW declarations that occur
+        // after this assumption.  I believe but have not totally convinced
+        // myself that the following are the only clashes that must be
+        // checked for (for a \E decomposition at any level):
+        //   - Any top-level NEW variable that follows the \E decomposition assumption.
+        //   - Any bound variable in the goal.
+        // Note that the new names must not conflict with any names occurring before
+        // this step.
+        if (!isForAll) {
+            // Set prevDeclared to the set of all identifiers declared or
+            // defined at the location of nodeRepArg.
+            HashSet<String> prevDeclared = 
+                    (HashSet<String>) this.declaredIdentifiers.clone();
+            addDeclaredSymbols(prevDeclared, nodeRepArg);
+            
+            // Set assumpRepNode to the NodeRepresentation and
+            // set idx to the number such that assumpRepNode equals 
+            // assumpReps.elementAt(idx) and either either equals or is an
+            // ancestor of nodeRepArg.
+            NodeRepresentation assumpRepNode = nodeRepArg ;
+            while (assumpRepNode.parentNode != null) {
+                assumpRepNode = assumpRepNode.parentNode ;
+            }
+            int idx = 0;
+            while ((this.assumeReps.elementAt(idx) != assumpRepNode) 
+                    && (idx < this.assumeReps.size())) {
+                idx++ ;
+            }
+            if (idx == this.assumeReps.size()) {
+                MessageDialog.openError(UIHelper.getShellProvider()
+                        .getShell(), "Decompose Proof Command",
+                        "An error that should not happen has occurred in "
+                                + "line 2904 of DecomposeProofHandler.");
+                return null;
+            }
+            
+            // Set laterDeclared to be the set of all top-level NEW identifiers that follow
+            // assumpRepNode in assumeReps together with all the bound identifiers
+            // in the goal.
+            
+            
+            
+        }
+        
+        
         int lastLine = -1;
         for (int i = 0; i < decomp.quantIds.size(); i++) {
             // Loop invariant:
@@ -2928,7 +2923,7 @@ assumeLabel.setLayoutData(gridData);
             rep.semanticNode = null;
             rep.nodeType = NodeRepresentation.NEW_NODE;
             rep.newId = getCurrentName(decomp.quantIds.elementAt(i), 
-                                            nodeRep.decomposition) ;
+                                            nodeRep.decomposition.renaming) ;
             rep.isCreated = true;
             rep.parentNode = nodeRep.parentNode;
             if (nodeRep.parentVector != null) {
@@ -3145,7 +3140,7 @@ assumeLabel.setLayoutData(gridData);
             // different
             // identifier had been substituted, we have had to use as
             // sourceTextLength the length of the new identifier.
-            int sourceTextLength = getCurrentName(formalParams[i], decomp).length() ;
+            int sourceTextLength = getCurrentName(formalParams[i], decomp.renaming).length() ;
             // Set mayNeedParens true if replacementText doesn't end in ' and would
             // need parentheses around it in order to prime it.
             boolean mayNeedParens = false ; 
@@ -3267,8 +3262,12 @@ assumeLabel.setLayoutData(gridData);
         // the location of nodeRep.
         HashSet<String> prevDeclared = (HashSet<String>) this.declaredIdentifiers.clone() ;
         addDeclaredSymbols(prevDeclared, nodeRep) ;
-        
-        // Set declaredIdentifiers to all bounded identifiers declared in sn.
+/********************************************
+        // OLD CODE THAT PRODUCED NAME CONFLICTS WITH EXISTING 
+        // BOUND IDENTIFIERS HAVING THE SAME NAMES AS ONES GENERATED TO
+        // RESOLVE CONFLICTS
+          // Set declaredIdentifiers to all bounded identifiers declared in sn.
+
         FormalParamNode[] declaredIdentifiers = ResourceHelper.getBoundIdentifiers(sn) ;
         
         // Set renameIdentifiers to all elements of declaredIdentifers that clash
@@ -3279,6 +3278,13 @@ assumeLabel.setLayoutData(gridData);
                 renameIdentifiers.add(declaredIdentifiers[i]) ;
             }
         }
+*******************************************************************/        
+        // Set rename to a new Renaming object containing the renamings
+        // in decomp.renamings together with all additional renamings
+        // necessary to avoid name conflicts with names in prevDeclared.
+        Renaming rename = decomp.renaming.clone() ;
+        
+        addToRenaming(rename, prevDeclared, sn) ;
         
         // Compile the arguments for calling substituteInNodeText.
         // Set decompParamsLen to the number of formal parameters, which is 0
@@ -3288,7 +3294,7 @@ assumeLabel.setLayoutData(gridData);
             decompParamsLen = decomp.formalParams.length;
         }
         FormalParamNode[] formalParams = 
-                new FormalParamNode[decompParamsLen + renameIdentifiers.size()] ;
+                new FormalParamNode[decompParamsLen + rename.identifiers.size()] ;
         String[] arguments = new String[formalParams.length] ;
         
         boolean[] isBoundedIdRenaming = new boolean[formalParams.length] ;
@@ -3307,16 +3313,10 @@ assumeLabel.setLayoutData(gridData);
         // to substituteInNode because, if an identifier gets re-renamed,
         // then substituteInNode needs to know the  name of the
         // identifier (actually, its length) before the re-renaming.
-        Vector<String> renameIdentifiersNames = new Vector<String>() ;
-        for (int i=0; i < renameIdentifiers.size(); i++) {
-            formalParams[i + decompParamsLen] = 
-                    renameIdentifiers.elementAt(i) ;            
-            String newName = getNewName(renameIdentifiers.elementAt(i), prevDeclared, decomp) ;
-//            this.renamedIdentifiers.add(renameIdentifiers.elementAt(i));
-//            this.newIdentifierNames.add(newName) ;
-            renameIdentifiersNames.add(newName) ;
-            arguments[i + decompParamsLen] = newName ;
-         isBoundedIdRenaming[i + decompParamsLen] = true ;
+        for (int i=0; i < rename.identifiers.size(); i++) {
+            formalParams[i + decompParamsLen] = rename.identifiers.elementAt(i) ;
+            arguments[i + decompParamsLen] = rename.newNames.elementAt(i) ;
+            isBoundedIdRenaming[i + decompParamsLen] = true ;
             argNodes[i+ decompParamsLen] = null ;
         }
         
@@ -3325,16 +3325,67 @@ assumeLabel.setLayoutData(gridData);
                 formalParams, arguments, isBoundedIdRenaming, argNodes, 
                 sn, nodeTextRep, decomp);
         
-        // Add the renamings to renamedIdentifiers and newIdentifierNames
-        for (int i=0; i < renameIdentifiers.size(); i++) {
-            addCurrentName(renameIdentifiers.elementAt(i), 
-                           renameIdentifiersNames.elementAt(i), decomp) ;
-        }
+        // Add the renamings to decomp.renaming
+        decomp.renaming = rename ;
         
         return result ;
     }
     
-    
+    /**
+     * Adds to `renaming' all the renamings to bound identifiers in expr that are
+     * necessary to eliminate clashes with names in the set prevDeclared.
+     * 
+     * This code was obtained by modifying the implementation of
+     * ResourceHelper.innerGetBoundIdentifiers.
+     * 
+     * @param rename
+     * @param prevDeclared
+     * @param expr
+     * @return
+     */
+    private void addToRenaming(Renaming renaming, HashSet<String> prevDeclared, ExprNode expr) {
+        if (!(expr instanceof OpApplNode)) {
+            return ;
+        }
+        
+        HashSet<String> newDeclared = (HashSet<String>) prevDeclared.clone() ;
+        
+        OpApplNode node = (OpApplNode) expr;
+        if (node.getUnbdedQuantSymbols() != null) {
+            for (int i = 0; i < node.getUnbdedQuantSymbols().length; i++) {
+                FormalParamNode id = node.getUnbdedQuantSymbols()[i] ;
+                if (newDeclared.contains( getCurrentName(id, renaming))){
+                    String newname = getNewName(id, newDeclared, renaming);
+                    newDeclared.add(newname) ;
+                    addCurrentName(id, newname, renaming) ;  
+                }
+            }
+        }
+
+        if (node.getBdedQuantSymbolLists() != null) {
+            for (int i = 0; i < node.getBdedQuantSymbolLists().length; i++) {
+                addToRenaming(renaming, prevDeclared,
+                        node.getBdedQuantBounds()[i]);
+                FormalParamNode[] nodeList = node.getBdedQuantSymbolLists()[i];
+                for (int j = 0; j < nodeList.length; j++) {
+                    FormalParamNode id = nodeList[j];
+                    if (newDeclared.contains(getCurrentName(id, renaming))) {
+                        String newname = getNewName(id, newDeclared, renaming);
+                        newDeclared.add(newname);
+                        addCurrentName(id, newname, renaming);
+                    }
+                }
+            }
+        }
+        
+        for (int i=0; i < node.getArgs().length; i++) {
+            if (node.getArgs()[i] instanceof ExprNode) {
+                addToRenaming(renaming, newDeclared, (ExprNode) node.getArgs()[i]);
+            }
+        }
+
+
+    }
 //    NodeTextRep oldSubstituteInNodeText(Decomposition decomp, ExprNode sn, NodeTextRep nodeTextRep) {
 //        NodeTextRep result = nodeTextRep.clone();
 //        
@@ -4131,6 +4182,30 @@ assumeLabel.setLayoutData(gridData);
     }
 
     /**
+     * A renaming object indicates that the name of each node
+     * identifiers.elementAt(i) has been renamed to newNames.elementAt(i).
+     * 
+     * @author lamport
+     */
+    private static class Renaming {
+        Vector<FormalParamNode> identifiers = new Vector<FormalParamNode>();
+        Vector<String> newNames = new Vector<String>();
+
+        /**
+         * Returns a new Renaming object whose fields are clones of this
+         * object's fields (meaning that they are new Vector objects containing
+         * the same elements).
+         */
+        public Renaming clone() {
+            Renaming result = new Renaming();
+            result.identifiers = 
+                    (Vector<FormalParamNode>) this.identifiers.clone();
+            result.newNames = (Vector<String>) this.newNames;
+            return result;
+        }
+    }
+    
+    /**
      * A Decomposition object describes the possible decomposition of an
      * assumption or goal.
      * 
@@ -4173,12 +4248,18 @@ assumeLabel.setLayoutData(gridData);
         NodeTextRep definedOpRep = null;
 
         /**
+         * If definedOp != null, then `renaming' indicates the renaming of bound
+         * identifiers that have been performed in the definition of definedOp
+         * to avoid name clashes.
+         */
+        Renaming renaming = new Renaming() ;
+        /**
          * dRenamedIdentifiers and dNewIdentifierNames are the analogs of 
          * renamedIdentifiers and newIdentifierNames for renamings done in
          * this decomposition.
          */
-        Vector<FormalParamNode> dRenamedIdentifiers = new Vector<FormalParamNode>() ;
-        Vector<String> dNewIdentifierNames = new Vector<String>() ;
+//        Vector<FormalParamNode> dRenamedIdentifiers = new Vector<FormalParamNode>() ;
+//        Vector<String> dNewIdentifierNames = new Vector<String>() ;
         /**
          * If definedOp is not null, then this is the name of the module
          * containing the node's definition.
@@ -4381,10 +4462,10 @@ assumeLabel.setLayoutData(gridData);
 
         Decomposition result = new Decomposition();
         if (decomp != null) {
-            result.dRenamedIdentifiers = 
-                    (Vector<FormalParamNode>) decomp.dRenamedIdentifiers.clone();
-            result.dNewIdentifierNames = 
-                    (Vector<String>) decomp.dNewIdentifierNames.clone();
+            result.renaming.identifiers = 
+                    (Vector<FormalParamNode>) decomp.renaming.identifiers.clone();
+            result.renaming.newNames = 
+                    (Vector<String>) decomp.renaming.newNames.clone();
         }
 
         // Check if primed expression.
