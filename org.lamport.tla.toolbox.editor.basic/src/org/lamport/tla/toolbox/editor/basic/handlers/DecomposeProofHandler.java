@@ -2083,7 +2083,7 @@ assumeLabel.setLayoutData(gridData);
             needsStepNumber = true;
         }
 
-        QuantifierDecomposition qdc = decomposeQuantifier(nodeRep, true);
+        QuantifierDecomposition qdc = decomposeQuantifier(nodeRep, false);
 
         parentVec.remove(idx);
 
@@ -2814,7 +2814,6 @@ assumeLabel.setLayoutData(gridData);
         result.news = new Vector<NodeRepresentation>();
         Decomposition decomp = nodeRep.decomposition;
 
-        // For testing:
         // If this is within the subexpression-name expansion of a definition,
         // set NodeTextRep to the NodeTextRep that is the name of the formula
         // represented by nodeRep.
@@ -2850,6 +2849,19 @@ assumeLabel.setLayoutData(gridData);
                 nodeRep = res.subNodeRep(sn, 
                            nodeRepArg.parentVector, nodeRepArg.parentNode, null, decomp);
                 nodeRep.isPrimed = nodeRepArg.isPrimed ;
+                
+                // We now want to call decompSubstituteInNodeText using the substitutions
+                // in nodeRepArg.decomposition, rather than the one computed by this
+                // call to subNodeRep.  So, we just set the necessary fields.
+                nodeRep.decomposition.formalParams = nodeRepArg.decomposition.formalParams ;
+                nodeRep.decomposition.arguments = nodeRepArg.decomposition.arguments ;
+                nodeRep.decomposition.argNodes = nodeRepArg.decomposition.argNodes ;
+                
+                // At this point, renamings in nodeRep have come from nodeRepArg, which
+                // are in a different part of the spec than nodeRep, which comes from
+                // the expanded definition, we don't want to use its renamings.
+                nodeRep.decomposition.renaming = new Renaming() ;
+                                
                 NodeTextRep ntext = decompSubstituteInNodeText(nodeRep, sn, 
                                      new NodeTextRep(nodeRep.nodeText, nodeRep.mapping)) ;
                 nodeRep.nodeText = ntext.nodeText ;
@@ -2876,6 +2888,13 @@ assumeLabel.setLayoutData(gridData);
         //   - Any bound variable in the goal.
         // Note that the new names must not conflict with any names occurring before
         // this step.
+        
+        // Set idsToRename to the vector of NEW identifiers to be renamed, 
+        // and set idNewNames to the vector of their new names.  These will be
+        // empty vectors for a \A decomposition.
+        Vector<FormalParamNode> idsToRename = new Vector<FormalParamNode>() ;
+        Vector<String> idNewNames = new Vector<String>() ;
+        
         if (!isForAll) {
             // Set prevDeclared to the set of all identifiers declared or
             // defined at the location of nodeRepArg.
@@ -2885,7 +2904,7 @@ assumeLabel.setLayoutData(gridData);
             
             // Set assumpRepNode to the NodeRepresentation and
             // set idx to the number such that assumpRepNode equals 
-            // assumpReps.elementAt(idx) and either either equals or is an
+            // assumpReps.elementAt(idx) and either equals or is an
             // ancestor of nodeRepArg.
             NodeRepresentation assumpRepNode = nodeRepArg ;
             while (assumpRepNode.parentNode != null) {
@@ -2904,21 +2923,64 @@ assumeLabel.setLayoutData(gridData);
                 return null;
             }
             
-            // Set laterDeclared to be the set of all top-level NEW identifiers that follow
+            // Add to prevDeclared the set of all top-level NEW identifiers that follow
             // assumpRepNode in assumeReps together with all the bound identifiers
             // in the goal.
+           for (int i = idx+1; i < assumeReps.size(); i++) {
+            	NodeRepresentation anode = assumeReps.elementAt(i) ;
+            	if (anode.nodeType == NodeRepresentation.NEW_NODE) {
+            		prevDeclared.add(anode.newId);
+            	}
+            }
+            FormalParamNode[] goalIdents = 
+            		ResourceHelper.getBoundIdentifiers((ExprNode) this.goalRep.semanticNode) ;
+            for (int i=0; i < goalIdents.length; i++) {
+            	prevDeclared.add(goalIdents[i].getName().toString()) ;
+            }
             
+            // set idsToRename to the vector of NEW identifiers to be renamed, 
+            // and set idNewNames to the vector of their new names.
+            // nrenaming is the renaming field of nodeRep, which will have
+            // changed if the 
+            for (int i = 0; i < decomp.quantIds.size(); i++) {
+            	FormalParamNode id = decomp.quantIds.elementAt(i);
+            	if (prevDeclared.contains(getCurrentName(id, decomp.renaming))) {
+            		idsToRename.add(id) ;
+            		idNewNames.add(getNewName(id, prevDeclared, decomp.renaming)) ;            		
+            	}
+            }
             
+            // Call substituteInNode to do the renamings in nodeRep. 
+            FormalParamNode[] formalParams = new FormalParamNode[idsToRename.size()] ;
+            String[] arguments = new String[idsToRename.size()] ;
+            boolean[] isBoundedIdRenaming = new boolean[idsToRename.size()] ;
+            SemanticNode[] argNodes = new SemanticNode[idsToRename.size()] ;
+            for (int i=0; i < idsToRename.size(); i++) {
+            	formalParams[i] = idsToRename.elementAt(i) ;
+            	arguments[i] = idNewNames.elementAt(i) ;
+            	isBoundedIdRenaming[i] = true ;
+            	argNodes[i] = null ;
+            }
             
+			NodeTextRep nText = substituteInNodeText(formalParams, arguments,
+					isBoundedIdRenaming, argNodes,
+					(ExprNode) nodeRep.semanticNode, 
+					new NodeTextRep(nodeRep.nodeText, nodeRep.mapping),
+					nodeRep.decomposition);
+			nodeRep.nodeText = nText.nodeText ;
+			nodeRep.mapping  = nText.mapping ;
+			nodeRep.decomposition.renaming.identifiers = idsToRename ;
+			nodeRep.decomposition.renaming.newNames = idNewNames ;
         }
         
         
         int lastLine = -1;
         for (int i = 0; i < decomp.quantIds.size(); i++) {
             // Loop invariant:
-            // lastRow != -1 iff /\ i > 0
-            // /\ \/ this is an unbounded quantifier
-            // \/ the i-1st NEW fits entirely on line lastLine
+            // lastRow != -1 iff 
+        	//    /\ i > 0
+            //    /\ \/ this is an unbounded quantifier
+            //       \/ the i-1st NEW fits entirely on line lastLine
             NodeRepresentation rep = new NodeRepresentation();
             rep.semanticNode = null;
             rep.nodeType = NodeRepresentation.NEW_NODE;
@@ -3137,8 +3199,7 @@ assumeLabel.setLayoutData(gridData);
             String replacementText = arguments[i];
             
             // NOTE: If we were substituting for a formal parameter for which a
-            // different
-            // identifier had been substituted, we have had to use as
+            // different identifier had been substituted, we have to use as
             // sourceTextLength the length of the new identifier.
             int sourceTextLength = getCurrentName(formalParams[i], decomp.renaming).length() ;
             // Set mayNeedParens true if replacementText doesn't end in ' and would
@@ -3218,6 +3279,9 @@ assumeLabel.setLayoutData(gridData);
             // if isBoundedIdRenaming[i] is true, then rename the occurrence of
             // the FormalParamNode.  The code was cloned for the code above that
             // renames uses.
+            // BUG! AT THE MOMENT, THIS IS BEING CALLED WITH decomp.renaming CONTAINING
+            // RENAMINGS FOR BOUNDED IDENTIFIERS THAT OCCUR IN A DIFFERENT PART OF THE
+            // SPEC BECAUSE WE'RE NOW INSIDE AN EXPANDED DEFINITION.
             if (isBoundedIdRenaming[i]) {
                 Location useLocation = formalParams[i].stn.getLocation() ;
                 int useIdx = useLocation.beginLine()-beginLine ;
@@ -3324,9 +3388,11 @@ assumeLabel.setLayoutData(gridData);
          substituteInNodeText(
                 formalParams, arguments, isBoundedIdRenaming, argNodes, 
                 sn, nodeTextRep, decomp);
-        
+        // The following commented out by LL on 8 Feb 2013 because it seems wrong.
+        // The renamings for decomp are for the expression that is the use
+        // of the operator in whose definition we are performing the substitutions.
         // Add the renamings to decomp.renaming
-        decomp.renaming = rename ;
+        // decomp.renaming = rename ;  
         
         return result ;
     }
@@ -3731,7 +3797,7 @@ assumeLabel.setLayoutData(gridData);
          *            The result's parentVector field.
          * @param father
          *            The result's parentNode field.
-         * @param newNodeText
+         * @param setNodeText
          *            If non-null, then the result's nodeText field is to be set
          *            to this rather than the NodeTextRep representation of the
          *            semanticNode field. It will be non-null if the nodeText is
@@ -4251,6 +4317,8 @@ assumeLabel.setLayoutData(gridData);
          * If definedOp != null, then `renaming' indicates the renaming of bound
          * identifiers that have been performed in the definition of definedOp
          * to avoid name clashes.
+         * 
+         * I suspect that this field always contains an empty renaming.
          */
         Renaming renaming = new Renaming() ;
         /**
