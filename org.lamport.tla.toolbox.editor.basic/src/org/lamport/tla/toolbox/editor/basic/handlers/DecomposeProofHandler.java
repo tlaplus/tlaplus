@@ -2000,19 +2000,24 @@ assumeLabel.setLayoutData(gridData);
             }
 
             // Remove this assumption and insert the split nodes in its place.
-            // Set newSemanticNodes to the vector of new assumptions.
+            // Set newSemanticNodes to the vector of new assumptions.  However,
+            // the call to decompositionChildToNodeRep calls decompSubstituteInNodeText,
+            // which requires nodeRep to still be in assumeReps.  Therefore, we
+            // accumulate the NodeRepresentation objects for the children and
+            // replace nodeRep afterwards.
             Vector<SemanticNode> addedAssumps = decomp.children;
-            // this.assumes.remove(idx);
-            this.assumeReps.remove(idx);
+            Vector<NodeRepresentation> addedToAssumeReps = new Vector<NodeRepresentation>() ;
             for (int i = 0; i < addedAssumps.size(); i++) {
                 // Call decompositionChildToNodeRep to construct the child's
                 // NodeRepresentation.
                 NodeRepresentation rep = decompositionChildToNodeRep(nodeRep,
                         i, this.assumeReps, null);
                 rep.isCreated = true ;
-                // this.assumes.add(idx + i, decomp.children.elementAt(i));
-                this.assumeReps.add(idx + i, rep);
-
+                addedToAssumeReps.add(rep) ;    
+            }
+            this.assumeReps.remove(idx);
+            for (int i = 0; i < addedToAssumeReps.size(); i++) {
+                this.assumeReps.add(idx + i, addedToAssumeReps.elementAt(i));
             }
 
             // Update andSplitBegin & andSplitEnd. Recall the precondition.
@@ -2393,6 +2398,10 @@ assumeLabel.setLayoutData(gridData);
 
                     // Set step to step number + the step's obligation.
                     String[] step;
+                    
+                    // Set isAssumeProve to indicate if this is an ASSUME/PROVE
+                    // step, rather than an ordinary assertion.
+                    boolean isAssumeProve = false ;
                     // If there is no SUFFICES step but the goal decomposition
                     // created new ASSUME clauses, then they must be the ASSUME
                     // of an ASSUME / PROVE
@@ -2400,17 +2409,25 @@ assumeLabel.setLayoutData(gridData);
                     	step = concatStringArrays(
                                 prependToStringArray(assumptionsText, "ASSUME "),
                                 prependToStringArray(goalArray, "PROVE  "));
+                    	isAssumeProve = true ;
                     
                     } else {
                         // Just a simple step, no ASSUME/PROVE.
                         step = goalArray;
                     }
-                    step = prependToStringArray(step, proofLevelString
-                            + (i + 1) + STEP_NUMBER_PUNCTUATION + " ");
+                    // Set stepNum to the step number--e.g. "<2>3"
+                    String stepNum = proofLevelString + (i + 1) ;
+                    
+                    step = prependToStringArray(step, stepNum + STEP_NUMBER_PUNCTUATION + " ");
 
                     // Add the proof to step, if there is one.
                     if (proofText != null) {
-                        step = concatStringArrays(step, proofText);
+                        String[] newProofText = proofText.clone() ;
+                    	if (isAssumeProve) {
+                    		// Need to add step number to the BY part;
+                    	    addStepNumToProof(stepNum, newProofText) ;
+                    	}
+                        step = concatStringArrays(step, newProofText);
                     }
 
                     // System.out.println("step " + i + ":") ;
@@ -2591,7 +2608,7 @@ assumeLabel.setLayoutData(gridData);
     }
     
     /**
-     * Adds the proofs steps for a CASE decomposition.
+     * Adds the proof steps for a CASE decomposition.
      * 
      * @param pfStepVec   The vector to which proof steps should be added.
      * @param childVec    The vector of CASE assumptions' NodeRepresentation objects, 
@@ -2663,17 +2680,82 @@ assumeLabel.setLayoutData(gridData);
                        prependToStringArray(newAssumpArray, "ASSUME "),
                        prependToStringArray(this.goalRep.primedNodeText(), "PROVE  "));
            }
-           step = prependToStringArray(step, proofLevelString + 
-                   (pfStepVec.size() + 1)
-                   + STEP_NUMBER_PUNCTUATION + " ");
-           // Add the proof to step, if there is one.
+           
+           String stepNum = proofLevelString + (pfStepVec.size() + 1) ;
+           step = prependToStringArray(step, stepNum + STEP_NUMBER_PUNCTUATION + " ");
+           // Add the proof to step, if there is one.  Since this is always either
+           // a CASE or an ASSUME/PROVE, if there is a proof, then we must add the step 
+           // number to the proof's BY facts.
            if (proofText != null) {
-               step = concatStringArrays(step, proofText); 
+               String[] newProofText = proofText.clone() ;
+               addStepNumToProof(stepNum, newProofText) ;
+               step = concatStringArrays(step, newProofText); 
            }
            pfStepVec.add(step) ;
        }
        
     }
+    
+	/**
+	 * Adds the stepNum as a fact to the BY part of the leaf proof represented
+	 * by proofText--unless the proof is "OMITTED", in which case it does
+	 * nothing.
+	 * 
+	 * @param stepNum
+	 *            A step number such as "<2>3"
+	 * @param proofText
+	 *            A leaf proof as a string array of the proof of the step being
+	 *            decomposed, which is assumed to be non-null.
+	 */
+	private void addStepNumToProof(String stepNum, String[] proofText) {
+        LeafProofNode pfNode = (LeafProofNode) this.proof ;
+
+        if (pfNode.getOmitted()) {
+			return ;
+		}
+        
+        if (( (pfNode.getFacts() == null) || (pfNode.getFacts().length == 0)) && 
+                ((pfNode.getDefs() == null) || (pfNode.getDefs().length == 0))){
+        	// This is an "OBVIOUS" proof.  Must replace the "OBVIOUS"
+        	// by "BY " + stepNum
+        	int i = 0 ;
+        	boolean notDone = true ;
+        	while (notDone && (i < proofText.length)) {
+        		int idx = proofText[i].indexOf("OBVIOUS") ;
+        		if (idx != -1) {
+        		  proofText[i] = proofText[i].replaceFirst("OBVIOUS", "BY " + stepNum) ;  
+        		  notDone = false ;
+        		}
+        		i++ ;
+        	}
+        } else {
+        	// There is a "BY".  Set comesAfter to either "BY"
+        	// or "ONLY", depending on whether there is not or there
+        	// is not a "BY ONLY"
+        	String comesAfter = "BY" ;
+        	if (pfNode.getOnlyFlag()) {
+        		comesAfter = "ONLY" ;
+        	}
+        	
+        	// Have to add a "," after stepNum if there already are BY
+        	// facts.
+        	String stepNumAdded = stepNum ;
+        	if ((pfNode.getFacts() != null) && (pfNode.getFacts().length > 0)) {
+        	    stepNumAdded = stepNum + "," ;
+        	}
+        	int i = 0 ;
+            boolean notDone = true ;
+            while (notDone && (i < proofText.length)) {
+                int idx = proofText[i].indexOf(comesAfter) ;
+                if (idx != -1) {
+                    proofText[i] = 
+                            proofText[i].replaceFirst(comesAfter, comesAfter + " " + stepNumAdded) ; 
+                    notDone = false ;
+                }
+                i++ ;
+        	}
+        }
+	}
     
     /**
      * Returns the NodeRepresentation for a child in nodeRep's decomposition
@@ -2719,7 +2801,8 @@ assumeLabel.setLayoutData(gridData);
                         new NodeRepresentation(this.doc, decomp.children.elementAt(i)) ;
                 NodeTextRep ntext = decompSubstituteInNodeText(nodeRep, 
                         (ExprNode) decomp.children.elementAt(i), 
-                        new NodeTextRep(res.nodeText, res.mapping)) ;
+                        new NodeTextRep(res.nodeText, res.mapping),
+                        nodeRep) ;
                 res.nodeText = ntext.nodeText ;
                 res.mapping = ntext.mapping;
                 
@@ -2863,7 +2946,8 @@ assumeLabel.setLayoutData(gridData);
                 nodeRep.decomposition.renaming = new Renaming() ;
                                 
                 NodeTextRep ntext = decompSubstituteInNodeText(nodeRep, sn, 
-                                     new NodeTextRep(nodeRep.nodeText, nodeRep.mapping)) ;
+                                     new NodeTextRep(nodeRep.nodeText, nodeRep.mapping),
+                                     nodeRepArg) ;
                 nodeRep.nodeText = ntext.nodeText ;
                 nodeRep.mapping = ntext.mapping;
             } catch (BadLocationException e) {
@@ -2902,6 +2986,7 @@ assumeLabel.setLayoutData(gridData);
                     (HashSet<String>) this.declaredIdentifiers.clone();
             addDeclaredSymbols(prevDeclared, nodeRepArg);
             
+            // XXXXXXX REPLACE FOLLOWING WITH CALL TO addSymbolsDeclaredLater
             // Set assumpRepNode to the NodeRepresentation and
             // set idx to the number such that assumpRepNode equals 
             // assumpReps.elementAt(idx) and either equals or is an
@@ -3308,41 +3393,36 @@ assumeLabel.setLayoutData(gridData);
     }
 
     /**
-     * Calls substituteInNodeText to perform the substitution of arguments for formal 
-     * parameters in a decomposition that is the expansion of a definition, as well as 
-     * for bound identifiers that must be renamed because of name clashes with 
-     * declarations and definitions occurring earlier in the module. 
+     * Calls substituteInNodeText to perform the substitution of arguments for
+     * formal parameters in a decomposition that is the expansion of a
+     * definition, as well as for bound identifiers that must be renamed because
+     * of name clashes with declarations and definitions occurring earlier in
+     * the module.
      * 
-     * @param nodeRep  NodeRepresentation being decomposed.
+     * @param nodeRep
+     *            NodeRepresentation being decomposed.
      * @param sn
      * @param nodeTextRep
+     * @param originalNodeRep
+     *            NodeRepresentation that is currently in the assumeReps / goalRep
+     *            data structure at the place where nodeRep will go.
+     * 
      * @return
      */
     NodeTextRep decompSubstituteInNodeText(
-            NodeRepresentation nodeRep, ExprNode sn, NodeTextRep nodeTextRep) {
+            NodeRepresentation nodeRep, ExprNode sn, NodeTextRep nodeTextRep,
+            NodeRepresentation originalNodeRep) {
         Decomposition decomp = nodeRep.decomposition ;
         
         // Set prevDeclared to the set of all identifiers declared or defined at
         // the location of nodeRep.
         HashSet<String> prevDeclared = (HashSet<String>) this.declaredIdentifiers.clone() ;
-        addDeclaredSymbols(prevDeclared, nodeRep) ;
-/********************************************
-        // OLD CODE THAT PRODUCED NAME CONFLICTS WITH EXISTING 
-        // BOUND IDENTIFIERS HAVING THE SAME NAMES AS ONES GENERATED TO
-        // RESOLVE CONFLICTS
-          // Set declaredIdentifiers to all bounded identifiers declared in sn.
+        addDeclaredSymbols(prevDeclared, originalNodeRep) ;
 
-        FormalParamNode[] declaredIdentifiers = ResourceHelper.getBoundIdentifiers(sn) ;
+        // Added by LL on 10 Feb 2013 because formulas that are being decomposed
+        // may wind up added in the scope later NEW declarations.
+        addSymbolsDeclaredLater(prevDeclared, originalNodeRep, false) ;
         
-        // Set renameIdentifiers to all elements of declaredIdentifers that clash
-        // with a previously declared symbol.
-        Vector<FormalParamNode> renameIdentifiers = new Vector<FormalParamNode>() ;
-        for (int i=0; i < declaredIdentifiers.length; i++) {
-            if (prevDeclared.contains(declaredIdentifiers[i].getName().toString())) {
-                renameIdentifiers.add(declaredIdentifiers[i]) ;
-            }
-        }
-*******************************************************************/        
         // Set rename to a new Renaming object containing the renamings
         // in decomp.renamings together with all additional renamings
         // necessary to avoid name conflicts with names in prevDeclared.
@@ -3393,6 +3473,8 @@ assumeLabel.setLayoutData(gridData);
         // of the operator in whose definition we are performing the substitutions.
         // Add the renamings to decomp.renaming
         // decomp.renaming = rename ;  
+        // On 10 Feb 2013, LL realized that this may be wrong, because some 
+        // bounded id renaming is getting lost.
         
         return result ;
     }
@@ -4420,7 +4502,7 @@ assumeLabel.setLayoutData(gridData);
      * @param result
      * @param node
      */
-    public void addDeclaredSymbols(HashSet<String> result, NodeRepresentation node) {
+    private void addDeclaredSymbols(HashSet<String> result, NodeRepresentation node) {
         Vector<NodeRepresentation> parentVec = node.parentVector ;
         // node.parentVector = null iff node is the goal, the case we
         // handle by simply setting parentVec to assumeReps.
@@ -4450,6 +4532,58 @@ assumeLabel.setLayoutData(gridData);
         }
     }
 
+    /**
+     * Adds to `prevDeclared' all top-level NEW symbols that occur after the position
+     * of NodeRepresentation `nodeRepArg' or its ancestor in assumpReps. And, if
+     * includeGoal = true, to all bound symbols in the goal. It can be called
+     * only when `nodeRepArg' is in this.assumeReps, is a descendant of a node in
+     * this.assumeReps, or is the goal.
+     * 
+     * @param prevDeclared
+     * @param nodeRepArg
+     * @param includeGoal
+     */
+    private void addSymbolsDeclaredLater(
+            HashSet<String> prevDeclared, NodeRepresentation nodeRepArg, boolean includeGoal) {
+        // Set assumpRepNode to the NodeRepresentation and
+        // set idx to the number such that assumpRepNode equals 
+        // assumpReps.elementAt(idx) and either equals or is an
+        // ancestor of nodeRepArg.
+        NodeRepresentation assumpRepNode = nodeRepArg ;
+        while (assumpRepNode.parentNode != null) {
+            assumpRepNode = assumpRepNode.parentNode ;
+        }
+        int idx = 0;
+        while ((this.assumeReps.elementAt(idx) != assumpRepNode) 
+                && (idx < this.assumeReps.size())) {
+            idx++ ;
+        }
+        if (idx == this.assumeReps.size()) {
+            MessageDialog.openError(UIHelper.getShellProvider()
+                    .getShell(), "Decompose Proof Command",
+                    "An error that should not happen has occurred in "
+                            + "line 4544 of DecomposeProofHandler.");
+            return ;
+        }
+        
+        // Add to prevDeclared the set of all top-level NEW identifiers that follow
+        // assumpRepNode in assumeReps together with all the bound identifiers
+        // in the goal.
+       for (int i = idx+1; i < assumeReps.size(); i++) {
+            NodeRepresentation anode = assumeReps.elementAt(i) ;
+            if (anode.nodeType == NodeRepresentation.NEW_NODE) {
+                prevDeclared.add(anode.newId);
+            }
+        }
+       
+        if (includeGoal) {
+            FormalParamNode[] goalIdents = ResourceHelper
+                    .getBoundIdentifiers((ExprNode) this.goalRep.semanticNode);
+            for (int i = 0; i < goalIdents.length; i++) {
+                prevDeclared.add(goalIdents[i].getName().toString());
+            }
+        }
+    }
 
     /**
      * Converts a NodeRepresentation subType to a string. Used for debugging.
