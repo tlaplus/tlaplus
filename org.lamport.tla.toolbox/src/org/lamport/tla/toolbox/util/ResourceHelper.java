@@ -70,6 +70,7 @@ import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LeafProofNode;
+import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NewSymbNode;
@@ -1806,33 +1807,46 @@ public class ResourceHelper
      */
     private static void innerGetBoundIdentifiers(Vector<FormalParamNode> vec,
             ExprNode expr) {
-        if (!(expr instanceof OpApplNode)) {
-            return;
-        }
-        
-        OpApplNode node = (OpApplNode) expr;
-        if (node.getUnbdedQuantSymbols() != null) {
-            for (int i = 0; i < node.getUnbdedQuantSymbols().length; i++) {
-                vec.add(node.getUnbdedQuantSymbols()[i]);
-            }
-        }
-
-        if (node.getBdedQuantSymbolLists() != null) {
-            for (int i = 0; i < node.getBdedQuantSymbolLists().length; i++) {
-                FormalParamNode[] nodeList = node.getBdedQuantSymbolLists()[i] ;
-                for (int j=0; j < nodeList.length; j++) {
-                    vec.add(nodeList[j]) ;
+        if (expr instanceof OpApplNode) {
+            OpApplNode node = (OpApplNode) expr;
+            if (node.getUnbdedQuantSymbols() != null) {
+                for (int i = 0; i < node.getUnbdedQuantSymbols().length; i++) {
+                    vec.add(node.getUnbdedQuantSymbols()[i]);
                 }
-                innerGetBoundIdentifiers(vec, node.getBdedQuantBounds()[i]) ;
             }
-        }
-        
-        for (int i=0; i < node.getArgs().length; i++) {
-            if (node.getArgs()[i] instanceof ExprNode) {
-                innerGetBoundIdentifiers(vec, (ExprNode) node.getArgs()[i]);
-            }
-        }
 
+            if (node.getBdedQuantSymbolLists() != null) {
+                for (int i = 0; i < node.getBdedQuantSymbolLists().length; i++) {
+                    FormalParamNode[] nodeList = node.getBdedQuantSymbolLists()[i];
+                    for (int j = 0; j < nodeList.length; j++) {
+                        vec.add(nodeList[j]);
+                    }
+                    innerGetBoundIdentifiers(vec, node.getBdedQuantBounds()[i]);
+                }
+            }
+
+            for (int i = 0; i < node.getArgs().length; i++) {
+                if (node.getArgs()[i] instanceof ExprNode) {
+                    innerGetBoundIdentifiers(vec, (ExprNode) node.getArgs()[i]);
+                }
+            }
+        } else if (expr instanceof LetInNode) {
+            // We'd like to add the names declared in the LET/IN, but
+            // they're not FormalParamNodes.  Instead, we add the 
+            // LET declaration parameters and recursively call the method
+            // on the IN clause (the body).
+            LetInNode node = (LetInNode) expr ;
+            for (int i=0; i < node.getLets().length; i++) {
+                OpDefNode def = node.getLets()[i] ;
+                for (int j = 0; j < def.getParams().length; j++) {
+                    vec.add(def.getParams()[j]) ;
+                }
+                innerGetBoundIdentifiers(vec, node.getBody()) ;
+                return ;
+            }
+        } else {
+            return ;
+        }
     }
     
     /**

@@ -11,22 +11,6 @@
 
 <body>
 
-<p><b>
-This command's implementation has not been tested and undoubtedly contains many bugs.&nbsp;
-
-Please report them to me.
-</b></p>
-
-<p>
-
-<b>Decomposing a proof may expose previously bound identifiers, leading to parsing errors caused by name clashes.&nbsp;
-
-I plan to enhance the command to eliminate those clashes by renaming identifiers.&nbsp;
-
-However, I would be delighted to be told that this happens so infrequently that it's not worth
-bothering about.
-</b>
-</p>
 
 <h1>The Decompose Proof Command</h1>
 
@@ -131,7 +115,7 @@ the top  <font size=+1><b>P</b></font> button (which does no decomposing), the o
 
 <h2>Options</h2>
 
-There are three options that you can select.
+There are two options that you can select.
 
 <DL> <DT> <b>Use <code>SUFFICES</code></b> </DT>
 <DD>Splitting the goal or a <code>\E</code> assumption generates new assumptions.&nbsp;
@@ -148,6 +132,8 @@ decomposition, <code>CASE</code> steps should be used instead of <code>ASSUME/PR
 steps when possible.&nbsp;  One reason not to choose this option is that
 the Decompose Command does not decompose <code>CASE</code> steps.
 </DD>
+
+<!-- COMMENT
 <BR> </BR>
  <DT><b>Use subexpression names</b>
  </DT>
@@ -157,8 +143,26 @@ For example, you can do an <code>/\</code> decomposition if the goal is    &nbsp
 will produce steps that prove each of the conjuncts as they appear in the definition of &nbsp;<code>P</code>&nbsp;.
 However, if you select this option, the generated steps will contain the goals &nbsp;<code>P!1,&nbsp;P!2,&nbsp;...</code>&nbsp;.
 </DD>
+END COMMENT -->
 </DL>
 
+<h2>Limitations</h2>
+
+The following are the known problems and limitations of the command.
+<ul>
+
+<li> The command will not expand definitions that come from a different module.
+</li>
+
+<BR></BR>
+
+<li> Decomposing a proof step may require renaming of bound identifiers
+to avoid name clashes.&nbsp; This renaming is not done for clashes with names
+defined by <code>LET</code> definitions within the step.&nbsp; This can cause parsing
+errors in the decomposed proof.
+
+</li>
+</ul>
 <hr>
 <a href = "reading.html">&uarr; Viewing and Editing Structured Proofs</a>
 </hr>
