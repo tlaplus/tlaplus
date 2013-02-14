@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -741,9 +742,22 @@ public class ProverHelper
                 marker.setAttribute(SANY_IS_LEAF_ATR, true);
             }
 
-            if (marker.getAttribute(SANY_IS_LEAF_ATR, false))
-            {
-                proverJob.getLeafStepMap().put(new Integer(locForAttr.beginLine()), stepTuple);
+            if (marker.getAttribute(SANY_IS_LEAF_ATR, false)) {
+                if (proverJob.getLeafStepMap().put(
+                        new Integer(locForAttr.beginLine()), stepTuple) != null) {
+                    // If there are two proof steps that begin at the same line,
+                    // then raise a warning. Added by LL on 14 Feb 2013. 
+                    System.out.println("Two steps start on line " + locForAttr.beginLine());
+                    UIHelper.runUIAsync(
+                            new ResourceHelper.ErrorMessageRunnable(
+                               "Error in Proof",
+                               "Two different proof steps begin on line" 
+                                 + locForAttr.beginLine() +
+                               ".\nThis may cause an error in reporting the proof status of some steps." +
+                               "\n\nAlways start a new proof step on a separate line."
+                               )
+                            );
+                }
             }
 
             return stepTuple;
@@ -1063,7 +1077,15 @@ public class ProverHelper
                 {
                     ObligationStatus obligation = it.next();
                     int searchLine = obligation.getTLAPMLocation().beginLine();
-                    while (true)
+                    // The following loop was changed from a while (true) loop by
+                    // LL on 10 Jan 2013.  Apparently because of a bad message being
+                    // sent by tlapm, the non-null value of stepTuple was never
+                    // being found and the program kept looping until searchLine 
+                    // got to be too large a negative number and some exception was
+                    // thrown.  Tlapm has been fixed not to send the bad message.
+                    // However, it seems like a good idea to keep the sanity check
+                    // and to raise an error if insanity is found.
+                    while (searchLine >= 0)
                     {
                         StepTuple stepTuple = proverJob.getLeafStepMap().get(new Integer(searchLine));
                         if (stepTuple != null)
@@ -1074,13 +1096,32 @@ public class ProverHelper
                         }
                         searchLine--;
                     }
+                    if (searchLine < 0) {
+                        // If this sanity check fails, then raise a warning. The 
+                         // following code added  by LL on 14 Feb 2013.
+                        UIHelper.runUIAsync(
+                            new ResourceHelper.ErrorMessageRunnable(
+                                "Error", 
+                                "There is an error in the information sent by"+
+                                "\nTLAPS to the Toolbox.  This may cause incorrect"+
+                                "\nreporting of a step's proof status." +
+                                "\n\nPlease report this problem to the developers.")
+                            );
+                    }
                 }
-
-                ProverUIActivator.getDefault().logDebug("After ob parenting creation " + proverJob.getCurRelTime());
-
+                
+                ProverUIActivator.getDefault().logDebug(
+                        "After ob parenting creation " + proverJob.getCurRelTime());
             }
 
-            obStatus.updateObligation(message);
+            // The following try/catch added by LL on 10 Jan 2012.  The exception seems to
+            // be thrown when the while loop above exists because searchLine goes negative.
+            try {
+              obStatus.updateObligation(message);
+            } catch (NullPointerException e) {
+                System.out.println("NullPointerException caused by message with id " + 
+                  message.getID() + " and location " + message.getLocation().toString());
+            }
 
             // update the obligations view with the new information
             UIHelper.runUIAsync(new Runnable() {

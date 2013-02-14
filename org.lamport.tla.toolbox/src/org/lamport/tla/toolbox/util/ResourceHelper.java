@@ -38,6 +38,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.MultiRule;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -1770,6 +1771,38 @@ public class ResourceHelper
      */
     private static boolean earlierLine(Location loc1, Location loc2) {
         return loc1.beginLine() < loc2.beginLine() ;
+    }
+    
+    
+    /**
+     * This Runnable class is used to raise an error message from a non-UI
+     * thread.  (If running MessageDialog.openError throws a null-pointer
+     * exception, this is the mechanism you should use instead.)  To
+     * raise an error-message dialog, execute
+     * 
+     *   UIHelper.runUIAsync(
+     *     new ResourceHelper.ErrorMessageRunnable(title, message)) ;
+     *     
+     * where `title' and `message' are the title and error message of the
+     * dialog.
+     * 
+     * This method of raising the dialog was provided by Dan Ricketts.
+     * 
+     * @author lamport
+     *
+     */
+    public static class ErrorMessageRunnable implements Runnable {
+        String title ;
+        String message ;
+        
+        public ErrorMessageRunnable(String tit, String msg) {
+          this.title = tit ;
+          this.message = msg ;
+        }
+        public void run() {
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    title, message);
+        }
     }
     
     /**
