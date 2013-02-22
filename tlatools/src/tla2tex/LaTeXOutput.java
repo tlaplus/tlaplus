@@ -80,9 +80,19 @@ public static void WriteTeXAlignmentFile(Token[][] spec,
   if (linewidth >= 0)
    { writer.putLine("\\setlength{\\textwidth}{" 
                      + Misc.floatToString(linewidth, 2) + "pt}");
-     writer.putLine("\\makeatletter") ;   // added by LL on 7 Aug 2012
+     // see below for why this is commented out.
+     //writer.putLine("\\makeatletter") ;   // added by LL on 7 Aug 2012
    } ;
   writer.putLine("\\begin{document}");
+  // We need to put the \makeatletter command after the \begin{document}
+  // because it appears that the beamer style and probably others cause
+  // the \begin{document} command to reset the catcoding of @ to "other".
+  // I don't know why I added the \makeatletter command only if linewidth >=0,
+  // which seems to be the case only if the number of environments is different
+  // this time than the last time tlatex was run.  However, it seems like 
+  // there's no reason not to write the \makeatletter command in that case.
+  // Hence the following statement was added by LL on 21 Feb 2013.
+  writer.putLine("\\makeatletter"); 
 
   /*************************************************************************
   * Define \% to have its usual meaning, in case it is redefined by the    *

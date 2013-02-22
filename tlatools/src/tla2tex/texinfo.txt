@@ -108,6 +108,13 @@ correct TLA+.  However, it will report an error if it encounters an
 illegal lexeme, such as ";".  (Of course, ";" is illegal only in a
 `tla' environment, not in a `pcal' or `ppcal' environment.)
 
+HOW tla2tex.TeX TYPESETS pcal and ppcal ENVIRONMENTS
+----------------------------------------------------
+The `pcal' and `ppcal' environments are similar to the `tla' environment
+except that tla2tex.TeX treats the text of a `pcal' environment as all or
+part of a PlusCal algorithm written with the C-syntax.  The `ppcal'
+environment is similar, except for an algorithm written with PlusCal's
+P-syntax.
 
 HOW tla2tex.TeX TYPESETS COMMENTS
 --------------------------------

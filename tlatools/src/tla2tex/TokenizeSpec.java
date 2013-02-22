@@ -29,7 +29,7 @@
 *                  for a pcal environment.)                                *
 *                                                                          *
 *   P_PLUSCAL mode : It assumes that the input consists of all or part of  *
-*                    a C-Syntax PlusCal algorithm.  (Called by tlatex.TeX  *
+*                    a P-Syntax PlusCal algorithm.  (Called by tlatex.TeX  *
 *                    for a ppcal environment.)                             *
 *                                                                          *
 * The result returned by Tokenize is an an array of arrays spec of Token   *
