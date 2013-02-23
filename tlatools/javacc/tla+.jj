@@ -1,4 +1,4 @@
-// last modified on Fri 22 February 2013 at 14:17:41 PST by lamport
+// last modified on Fri 22 February 2013 at 16:23:05 PST by lamport
 
 
 
@@ -378,11 +378,13 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
              *      a == ...                                               *
              **************************************************************/
              Token identifier = t;
-             if (    isPrefixOp( t.next )  
-                  || (    isInfixOp(t.next) 
-                       && (t.next.next != null)
-                       && (t.next.next.kind == IDENTIFIER) 
-                     ) ) {
+             if (    isOp(t.next)
+                  && ! isPostfixOp(t.next)
+                  && (    ! isInfixOp(t.next) 
+                       || (   (t.next.next != null)
+                           && (t.next.next.kind == IDENTIFIER) )
+                     ) 
+                ) {
                t = t.next;
                if ( t.next.kind == SUBSTITUTE )
                   t = identifier; // skip back
