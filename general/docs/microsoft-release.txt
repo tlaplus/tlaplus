@@ -188,6 +188,10 @@ TO GENERATE THE RELEASE:
 Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
+Version 1.4.5
+  - Added Decompose Proof command
+  - Fixed minor parsing bug in USE statement.
+  
 Version 1.4.4 of 30 November 2012
   - Markus made quite a few changes to distributed TLC and its Toolbox UI.
   - Fixed bug in Find Declaration and other commands that caused problems
