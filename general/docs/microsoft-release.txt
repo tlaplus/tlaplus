@@ -177,6 +177,15 @@ Methods 1 and 2)
      C:\lamport\tla\newtools\tla2-inria\tlatools\dist\tla.zip
 
 TO GENERATE THE RELEASE:
+  In Feb 2013, the following became obsolete.  Perhaps I can do it
+  by going to 
+  
+     https://microsoft.sharepoint.com/teams/MSRrelease/Pages/default.aspx
+     
+  probably I will need help.  In Feb 2013, I was helped by 
+  John Ransier (Aditi Technologies Private LTD) <v-jorans@microsoft.com>.
+  
+  OBSOLETE:
   Go to  Code Posting Tool - My Requests
     http://msrredtools/tools/publish/cpt_v26/research/list.aspx
   Click on the version:
@@ -185,7 +194,7 @@ TO GENERATE THE RELEASE:
   Note: when uploading the file, wait for progress bar at bottom
     of screen to indicate it's done (and for new file name to
     appear in Installation field)
-Queries to msrcpx or Chuck Needham (chuckne)
+  Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
 Version 1.4.5
