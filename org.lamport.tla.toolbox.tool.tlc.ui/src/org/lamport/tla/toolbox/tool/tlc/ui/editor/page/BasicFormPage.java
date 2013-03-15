@@ -802,6 +802,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     /**
      * Deletes messages (with bubbles) from the current page
      * @param applyChange iff set to <code>true</code> makes the changes visible
+     * 
+     * The comment above was probably written by Simon.  It seems to be false
+     * because calling this method removes the error "message" at the top of the
+     * page that says how many errors there are, but it doesn't remove the bubbles
+     * (which I presume are the red X icons placed near the source of the error).
+     * LL 15 Mar 2013
      */
     public void resetAllMessages(boolean applyChange)
     {
