@@ -304,10 +304,19 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         IMessageManager mm = getManagedForm().getMessageManager();
         ModelEditor modelEditor = (ModelEditor) getEditor();
 
-        // delete the messages
-        // this is now done in validateRunnable
-        // in ModelEditor
-        // resetAllMessages(false);
+        // The following comment was apparently written by Simon:
+           // delete the messages
+           // this is now done in validateRunnable
+           // in ModelEditor
+           // resetAllMessages(false);
+        // There is no validateRunnable method in the code, but I presume this
+        // is done when the user executes the Run or Validate Model command.
+        // Errors that the validatePage method checks for should be cleared
+        // whenever the method is called.  I am putting this call of resetAllMessages
+        // back.  It causes the correct number of errors to be reported after
+        // page validation.  It doesn't erase the red error "X" icons that it
+        // should, but it's better than nothing.  LL 14 Mar 2013
+        resetAllMessages(false);
 
         // getting the root module node of the spec
         // this can be null!
