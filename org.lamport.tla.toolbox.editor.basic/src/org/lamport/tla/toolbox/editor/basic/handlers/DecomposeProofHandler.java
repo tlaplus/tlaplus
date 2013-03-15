@@ -871,6 +871,23 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
          *********************************************************************/
         step = theorem;
         boolean notDone = true;
+        /*
+         * proofLevel is set to the level of the current proof, if there is
+         * one; otherwise it is set to -1.  This is tricky because for a proof
+         * node that is a DefStepNode (which comes from a DEFINE step or a
+         * step of the form Foo == INSTANCE...) or an InstanceNode (which
+         * comes from a step that is a simple INSTANCE statement) from an
+         * unnumbered step, the level number is nowhere in the semantic (or
+         * syntax) tree.  So, we have to keep checking proof steps until
+         * we find a step whose node is not a DefStepNode or InstanceNode.
+         * If we don't find one, proofLevel is set to -1.  Fortunately,
+         * the chosen step can't be decomposed in that case, so an error
+         * should be raised before any use is made of proofLevel.
+         * 
+         * This represents a change made by LL on 8 Mar 2013.  Before then,
+         * stepLevel was called on pfsteps[0], causing a bug if pfsteps[0]
+         * was a DefStepNode or InstanceNode.
+         */
         proofLevel = -1;
         proof = step.getProof();
         while (notDone && (proof != null)
@@ -878,8 +895,12 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             LevelNode[] pfsteps = ((NonLeafProofNode) proof).getSteps();
             LevelNode foundLevelNode = null;
             i = 0;
-            proofLevel = stepLevel(pfsteps[0]);
             while ((foundLevelNode == null) && (i < pfsteps.length)) {
+                if (   (proofLevel == -1)
+                     && !(pfsteps[i] instanceof DefStepNode)
+                     && !(pfsteps[i] instanceof InstanceNode) ) {
+                    proofLevel = stepLevel(pfsteps[i]);
+                }
                 if (EditorUtil.lineLocationContainment(selectedLocation,
                         pfsteps[i].stn.getLocation())) {
                     foundLevelNode = pfsteps[i];                    
@@ -5177,6 +5198,11 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
      * number of the proof, which is the i such that the step begins "<i>". A
      * little experimentation reveals that the parser turns "<+>" or "<*>" in
      * the source into "<i>" for the appropriate i.
+     * 
+     * This method must not be called if nd is a DefStepNode or InstanceNode,
+     * since for an unnumbered step (which such a step is likely to be), there
+     * is no way to find the level number.  See the comments to the one place
+     * where this method is called.
      * 
      * @param nd
      * @return
