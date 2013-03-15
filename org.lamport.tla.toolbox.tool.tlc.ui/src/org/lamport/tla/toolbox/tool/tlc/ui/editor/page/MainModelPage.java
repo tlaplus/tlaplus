@@ -309,8 +309,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
            // this is now done in validateRunnable
            // in ModelEditor
            // resetAllMessages(false);
-        // There is no validateRunnable method in the code, but I presume this
-        // is done when the user executes the Run or Validate Model command.
+        // validateRunnable is in ModelEditor.  I believe it is executed only when
+        // the user executes the Run or Validate Model command.
         // Errors that the validatePage method checks for should be cleared
         // whenever the method is called.  I am putting this call of resetAllMessages
         // back.  It causes the correct number of errors to be reported after
