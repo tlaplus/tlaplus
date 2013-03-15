@@ -81,7 +81,8 @@ public class InstanceNode extends LevelNode {
   /**
    * If the InstanceNode is a proof step, this is the step number.  It
    * is made a UniqueString for consistency; there's no need to make
-   * comparison efficient.
+   * comparison efficient.  It is null if the proof step has only
+   * a level (like <9>) rather than a complete step number.
    * Added by LL on 6 June 2010.
    */
   private UniqueString stepName = null;
