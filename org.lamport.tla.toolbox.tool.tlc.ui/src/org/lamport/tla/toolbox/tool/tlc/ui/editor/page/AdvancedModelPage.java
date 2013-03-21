@@ -313,7 +313,13 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                         IMessageProvider.ERROR, dfidDepthText);
                 setComplete(false);
                 expandSection(SEC_LAUNCHING_SETUP);
+            } 
+            else {
+              // Call of removeErrorMessage added by LL on 21 Mar 2013
+              modelEditor.removeErrorMessage("dfid1", dfidDepthText);
             }
+            // Call of removeErrorMessage added by LL on 21 Mar 2013
+            modelEditor.removeErrorMessage("dfid2", dfidDepthText);
         } catch (NumberFormatException e)
         {
             modelEditor.addErrorMessage("dfid2", "Depth of DFID launch must be a positive integer", this.getId(),
@@ -330,8 +336,13 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                         this.getId(), IMessageProvider.ERROR, simuDepthText);
                 setComplete(false);
                 expandSection(SEC_LAUNCHING_SETUP);
+            } 
+            else {
+                // Call of removeErrorMessage added by LL on 21 Mar 2013
+                modelEditor.removeErrorMessage("simuDepth1", simuDepthText);
             }
-
+            // Call of removeErrorMessage added by LL on 21 Mar 2013
+            modelEditor.removeErrorMessage("simuDepth2", simuDepthText);
         } catch (NumberFormatException e)
         {
             modelEditor.addErrorMessage("simuDepth2", "Length of the simulation trace must be a positive integer", this
@@ -350,6 +361,12 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                             .getId(), IMessageProvider.ERROR, simuArilText);
                     setComplete(false);
                 }
+                else {
+                    // Call of removeErrorMessage added by LL on 21 Mar 2013
+                    modelEditor.removeErrorMessage("simuAril1", simuArilText);
+                }
+                // Call of removeErrorMessage added by LL on 21 Mar 2013
+                modelEditor.removeErrorMessage("simuAril2", simuArilText);
             } catch (NumberFormatException e)
             {
                 modelEditor.addErrorMessage("simuAril2", "The simulation aril must be a positive integer",
@@ -364,6 +381,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             {
                 // long simuSeed =
                 Long.parseLong(simuSeedText.getText());
+               // Call of removeErrorMessage added by LL on 21 Mar 2013
+                modelEditor.removeErrorMessage("simuSeed1", simuSeedText);
 
             } catch (NumberFormatException e)
             {
@@ -411,7 +430,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                     modelEditor.addErrorMessage(value, "The toolbox cannot handle the model value " + value + ".", this
                             .getId(), IMessageProvider.ERROR, widget);
                     setComplete(false);
-                }
+                } 
+//                else {
+//                   // Call of removeErrorMessage added by LL on 21 Mar 2013
+//                   // However, it did nothing because the value argument is a string
+                     // currently in the field, which is not going to be the one that
+                     // caused any existing error message.
+//                   modelEditor.removeErrorMessage(value, widget);
+//                }
             }
 
         }
@@ -455,6 +481,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             // have been removed from the spec.
             if (opDefNodes != null)
             {
+                // Note added by LL on 21 Mar 2013:  We do not remove error messages
+                // for overridden definitions that are set by this code because doing so 
+                // may remove error messages set for these definitions by checks elsewhere
+                // in the code.
+
                 // check if definition still appears in root module
                 if (!nodeTable.containsKey(definition.getLabel()))
                 {
@@ -520,6 +551,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             setComplete(false);
             expandSection(SEC_HOW_TO_RUN);
         }
+//        else {
+//            // Call of removeErrorMessage added by LL on 21 Mar 2013
+//            // However, it seems to be a no-op because you can't enter an illegal
+//            // value into the widget.  I've commented this out in case it has some
+//            // unknown evil side effects.
+//            modelEditor.removeErrorMessage("wrongNumber3", 
+//                                            UIHelper.getWidget(dm.getAttributeControl(LAUNCH_FPBITS)));
+//          }
         
         // maxSetSize
         if (!TLCGlobals.isValidSetSize(maxSetSize.getSelection()))
@@ -530,6 +569,13 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             setComplete(false);
             expandSection(SEC_HOW_TO_RUN);
         }
+//        else {
+//        // Call of removeErrorMessage added by LL on 21 Mar 2013
+//        // However, it seems to be a no-op because you can't enter an illegal
+//        // value into the widget, so this was all commented out.
+//        modelEditor.removeErrorMessage("wrongNumber3", 
+//                                        UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAXSETSIZE)));
+//        }
         
         super.validatePage(switchToErrorPage);
     }

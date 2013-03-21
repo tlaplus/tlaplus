@@ -1098,12 +1098,32 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /**
+     * This removes the error "message" added by the corresponding call to
+     * addErrorMessage if it exists.  It does nothing if the "message  
+     * does not exist.  This provides a partial fix to the problem of
+     * page validation showing an error when the user has made a mistake, but
+     * not removing the error when the user corrects the mistake.  Code that
+     * checks for an error and calls addErrorMessage when it is found can
+     * call removeErrorMessage when it's not found.  It is only a partial 
+     * solution for two reasons:
+     * 1. It can't be used where the same error "message" can
+     *    be added in two different places in the code.  Perhaps this can be
+     *    fixed by splitting such messages into separate ones with 
+     *    different keys and different messages, it is added, but I haven't 
+     *    tried this because I don't know where those keys might be used.  
+     *    If all those places where the error is generated lie in the
+     *    same call of pageValidate, then error messages generated in 
+     *    the previous call of pageValidate can be remembered in a field
+     *    and removed at the beginning of the call.
+     * 2. Some of those keys are dynamically created when addErrorMessage is
+     *    called, and it may be impossible to recompute the keys for which
+     *    the error messages were previously generated.  Such cases could
+     *    also be handled by adding a field that remembers what error messages 
+     *    were added the last time the error was chaecked for. 
      * Added 21 Mar 2013 by LL.
-     * @param key
-     * @param messageText
-     * @param pageId
-     * @param type
-     * @param control
+     * 
+     * @param key the unique message key
+     * @param control the control to associate the message with
      */
     public void removeErrorMessage(Object key, Control control)
     {

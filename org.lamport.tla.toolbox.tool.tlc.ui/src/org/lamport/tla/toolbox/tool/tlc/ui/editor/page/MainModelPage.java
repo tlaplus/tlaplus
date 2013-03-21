@@ -312,23 +312,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // validateRunnable is in ModelEditor.  I believe it is executed only when
         // the user executes the Run or Validate Model command.
         // Errors that the validatePage method checks for should be cleared
-        // whenever the method is called.  I am putting this call of resetAllMessages
-        // back.  It causes the correct number of errors to be reported after
-        // page validation.  It doesn't erase the red error "X" icons that it
-        // should, but it's better than nothing.  LL 14 Mar 2013
-        //
-        // Note added on 19 Mar 2013: This change causes the correct number of errors
-        // to be reported only on the Main Model Page.  If I make the corresponding
-        // change to the validatePage method of AdvancedModelPage, no errors are
-        // shown on that page even when there are errors on the Main Model Page--
-        // in particular, when a new model is created and needs values for CONSTANTS.
-        // Making the corresponding change to the validatePage method of BasicFormPage,
-        // which is used by the subclass ResultPage, seems to do nothing.
-        // But of course, since there is no specification for any of these methods
-        // or for any of the Eclipse methods they call, why should I be surprised by
-        // anything they do?
-        // Following commented out again by LL on 21 Mar 2013.
-        // resetAllMessages(false);
+        // whenever the method is called.  However, calling resetAllMessages
+        // seems to be the wrong way to do it because error messages from all
+        // pages are reported on each page.  Hence, that would require validating
+        // all pages whenever any one is validated.  See the ModelEditor.removeErrorMessage
+        // method for a further discussion of this problem.
+        // Comments added by LL on 21 Mar 2013.
         
         // getting the root module node of the spec
         // this can be null!
