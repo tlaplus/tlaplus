@@ -327,7 +327,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // But of course, since there is no specification for any of these methods
         // or for any of the Eclipse methods they call, why should I be surprised by
         // anything they do?
-        resetAllMessages(false);
+        // Following commented out again by LL on 21 Mar 2013.
+        // resetAllMessages(false);
         
         // getting the root module node of the spec
         // this can be null!
@@ -381,7 +382,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
 
             } else
-            {
+            {   // Following added by LL on 21 Mar 2013
+                modelEditor.removeErrorMessage(constant.getLabel(), UIHelper.getWidget(dm
+                                .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                 if (constant.isSetOfModelValues())
                 {
                     TypedSet modelValuesSet = TypedSet.parseSet(constant.getRight());

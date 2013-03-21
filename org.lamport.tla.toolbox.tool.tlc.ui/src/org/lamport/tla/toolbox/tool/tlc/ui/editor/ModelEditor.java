@@ -1098,6 +1098,24 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /**
+     * Added 21 Mar 2013 by LL.
+     * @param key
+     * @param messageText
+     * @param pageId
+     * @param type
+     * @param control
+     */
+    public void removeErrorMessage(Object key, Control control)
+    {
+        if (control != null)
+        {
+            for (int i = 0; i < pagesToAdd.length; i++)
+            {
+                pagesToAdd[i].getManagedForm().getMessageManager().removeMessage(key, control);
+            }
+        }
+    }
+    /**
      * Returns the validateRunnable so that the pages
      * can be validated by code outside of this class.
      * @return
