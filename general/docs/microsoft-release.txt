@@ -200,6 +200,7 @@ TO GENERATE THE RELEASE:
 Version 1.4.5
   - Added Decompose Proof command
   - Fixed minor parsing bug in USE statement.
+  - Fixed bug in handling operator arguments like _(+)_ in definitions
   
 Version 1.4.4 of 30 November 2012
   - Markus made quite a few changes to distributed TLC and its Toolbox UI.
