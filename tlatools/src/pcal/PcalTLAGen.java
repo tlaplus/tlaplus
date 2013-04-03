@@ -4296,7 +4296,22 @@ public class PcalTLAGen
     		for (int i = 0; i < this.prcdFormulas.size(); i++) {
     		    FormulaPair form = (FormulaPair) this.prcdFormulas.elementAt(i) ;
     		    line = form.singleLine();
-    		    val.append("\nTHIS_EXTRA_SPACE_INSERTED");
+    		    // On 2 Apr 2013, LL discovered the following totally bizarre
+    		    // line of code, which inserted copies of "THIS_EXTRA_SPACE_INSERTED" into
+    		    // the translation, which of course then didn't parse.  Apparently some
+    		    // change was made and never tested.  The conjuncts being inserted here
+    		    // seem to be the fairness formulas for procedures in a fair process.
+    		    //
+    		    //val.append("\nTHIS_EXTRA_SPACE_INSERTED");
+    		    
+    		    // One experiment seems to indicate that the following statement is needed
+    		    // to put the first of the procedures' liveness formulas where it belongs.
+    		    // However, I don't understand the code so I have no idea what actually
+    		    // should be done.  LL 2 Apr 2013
+    		    // 
+    		    if (i == 0) {
+    		        val.append("\n") ;
+    		    }
     		    val.append(NSpaces(curCol));
     		    if (curCol + line.length() + 3 <= PcalTLAGen.wrapColumn) {
     	    		   val.append("/\\ " + line + "\n");
