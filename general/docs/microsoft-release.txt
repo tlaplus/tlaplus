@@ -197,6 +197,10 @@ TO GENERATE THE RELEASE:
   Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
+Future Version 1.4.6
+  - Fixed bug in PlusCal translator's generating of fairness formulas in 
+    algorithms with procedures.
+    
 Version 1.4.5
   - Added Decompose Proof command
   - Fixed minor parsing bug in USE statement.
