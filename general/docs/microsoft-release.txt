@@ -95,6 +95,9 @@ Note: org.lamport.tla.toolbox.product.product.product
  The repository/ directory in c:\users\lamport\tla\ contains the content for the update site (p2)
 
 Method 2. Using Maven
+ NOTE:  ~/tla/newtools/tla2-inria-workspace/tla2-inria has been changed to
+      ~/tla/newtools/tla-workspace on SVC-LAMPORT-2 and to ~/tla/newtools/tla2-workspace
+      on SVC-LAMPORT-1.
   Run svn update on  pom.xml in ~/tla/newtools/tla2-inria-workspace/tla2-inria. 
   Set the version number in ...product.product/pom.xml.
   (The target platforms to build for are specified in tla2-inria/pom.xml.  This file also specifies
@@ -174,6 +177,15 @@ Methods 1 and 2)
      C:\lamport\tla\newtools\tla2-inria\tlatools\dist\tla.zip
 
 TO GENERATE THE RELEASE:
+  In Feb 2013, the following became obsolete.  Perhaps I can do it
+  by going to 
+  
+     https://microsoft.sharepoint.com/teams/MSRrelease/Pages/default.aspx
+     
+  probably I will need help.  In Feb 2013, I was helped by 
+  John Ransier (Aditi Technologies Private LTD) <v-jorans@microsoft.com>.
+  
+  OBSOLETE:
   Go to  Code Posting Tool - My Requests
     http://msrredtools/tools/publish/cpt_v26/research/list.aspx
   Click on the version:
@@ -182,9 +194,19 @@ TO GENERATE THE RELEASE:
   Note: when uploading the file, wait for progress bar at bottom
     of screen to indicate it's done (and for new file name to
     appear in Installation field)
-Queries to msrcpx or Chuck Needham (chuckne)
+  Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
+Future Version 1.4.6
+  - Fixed bug in PlusCal translator's generating of fairness formulas in 
+    algorithms with procedures.
+  - Fixed TLATeX bug
+    
+Version 1.4.5
+  - Added Decompose Proof command
+  - Fixed minor parsing bug in USE statement.
+  - Fixed bug in handling operator arguments like _(+)_ in definitions
+  
 Version 1.4.4 of 30 November 2012
   - Markus made quite a few changes to distributed TLC and its Toolbox UI.
   - Fixed bug in Find Declaration and other commands that caused problems

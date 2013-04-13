@@ -11,22 +11,6 @@
 
 <body>
 
-<p><b>
-This command's implementation has not been tested and undoubtedly contains many bugs.&nbsp;
-
-Please report them to me.
-</b></p>
-
-<p>
-
-<b>Decomposing a proof may expose previously bound identifiers, leading to parsing errors caused by name clashes.&nbsp;
-
-I plan to enhance the command to eliminate those clashes by renaming identifiers.&nbsp;
-
-However, I would be delighted to be told that this happens so infrequently that it's not worth
-bothering about.
-</b>
-</p>
 
 <h1>The Decompose Proof Command</h1>
 
@@ -74,7 +58,7 @@ and the goal &nbsp;<code>Q</code>&nbsp;.
  <DT><b><code>\A</code> splitting</b>
  </DT>
 <DD>A goal &nbsp;<code>\A x \in S : P</code>&nbsp; is equivalent to the assumption &nbsp;<code>NEW&nbsp;x&nbsp;\in&nbsp;S</code>&nbsp;
-and the goal &nbsp;<code>p</code>&nbsp;.&nbsp;  The goal &nbsp;<code>\A x&nbsp;:&nbsp;P</code>&nbsp; is similarly split.
+and the goal &nbsp;<code>P</code>&nbsp;.&nbsp;  The goal &nbsp;<code>\A x&nbsp;:&nbsp;P</code>&nbsp; is similarly split.
 
 </DD>
 </DL>
@@ -141,6 +125,16 @@ step.&nbsp;  Otherwise, these assumption are added to each of the decomposed pro
 </DD>
 
 <BR> </BR>
+ <DT><b>Use <code>CASE</code></b>
+ </DT>
+<DD>This selection determines whether, in the created substeps of the proof of an <code>\/</code>
+decomposition, <code>CASE</code> steps should be used instead of <code>ASSUME/PROVE</code>
+steps when possible.&nbsp;  One reason not to choose this option is that
+the Decompose Command does not decompose <code>CASE</code> steps.
+</DD>
+
+<!-- COMMENT
+<BR> </BR>
  <DT><b>Use subexpression names</b>
  </DT>
 <DD>The command looks at the expansions of definitions when looking for splittings and decompositions.&nbsp;
@@ -149,8 +143,26 @@ For example, you can do an <code>/\</code> decomposition if the goal is    &nbsp
 will produce steps that prove each of the conjuncts as they appear in the definition of &nbsp;<code>P</code>&nbsp;.
 However, if you select this option, the generated steps will contain the goals &nbsp;<code>P!1,&nbsp;P!2,&nbsp;...</code>&nbsp;.
 </DD>
+END COMMENT -->
 </DL>
 
+<h2>Limitations</h2>
+
+The following are the known problems and limitations of the command.
+<ul>
+
+<li> The command will not expand definitions that come from a different module.
+</li>
+
+<BR></BR>
+
+<li> Decomposing a proof step may require renaming of bound identifiers
+to avoid name clashes.&nbsp; This renaming is not done for clashes with names
+defined by <code>LET</code> definitions within the step.&nbsp; This can cause parsing
+errors in the decomposed proof.
+
+</li>
+</ul>
 <hr>
 <a href = "reading.html">&uarr; Viewing and Editing Structured Proofs</a>
 </hr>

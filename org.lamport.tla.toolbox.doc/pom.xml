@@ -11,6 +11,6 @@
   </parent>
   <groupId>tlatoolbox</groupId>
   <artifactId>org.lamport.tla.toolbox.doc</artifactId>
-  <version>1.4.4-SNAPSHOT</version>
+  <version>1.4.5-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

@@ -120,13 +120,24 @@ public class PcalFixIDs {
         // We first initialize the algorithm's main variable, path, where
         // path[i][j] will be true iff the i-th procedure calls (perhaps
         // indirectly the j-th procedure.  (Java counting.)  
+        //
+        // On 2 April 2013, LL discovered that the initialization code actually
+        // set path[i][j] true iff the j-th procedure calls the i-th procedure,
+        // resulting in the proceduresCalled field of the AST.Procedure object
+        // to list the procedures that call the given procedure.  He fixed this
         int n = procedureNames.size();
         boolean path[][] = new boolean[n][] ;
         for (int i=0; i < n; i++) {
             path[i] = new boolean[n];
-            String nm = (String) procedureNames.elementAt(i);
+            // following commented out 2 Apr 2013
+            // String nm = (String) procedureNames.elementAt(i);
             for (int j = 0; j < n; j++) {
-                path[i][j] = (-1 != nameToNum(nm, (Vector) proceduresCalled.elementAt(j)));
+                // following commented out 2 Apr 2013
+                // path[i][j] = (-1 != nameToNum(nm, (Vector) proceduresCalled.elementAt(j)));
+                
+                // following added 2 Apr 2013
+                String nm = (String) procedureNames.elementAt(j);
+                path[i][j] = (-1 != nameToNum(nm, (Vector) proceduresCalled.elementAt(i)));
             }
         }
         

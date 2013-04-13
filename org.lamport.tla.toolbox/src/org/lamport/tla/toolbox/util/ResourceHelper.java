@@ -11,6 +11,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -36,6 +38,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.MultiRule;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -64,14 +67,18 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.semantic.DefStepNode;
+import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LeafProofNode;
+import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NewSymbNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
@@ -1414,7 +1421,7 @@ public class ResourceHelper
      * OpApplNodes  to <code>found</code>.
      * 
      * Note: modified by LL on 14 Sep 2010 so a subexpression name like 
-     * Foo!1!(a) will be returned as a use of Foo.  This is introduces another
+     * Foo!1!(a) will be returned as a use of Foo.  This introduces another
      * case to be handled when trying to extract the symbol's occurrence from the 
      * OpApplNode containing the symbol.  This is the one case in which the symbol
      * is not really the operator of the OpApplNode.
@@ -1431,18 +1438,18 @@ public class ResourceHelper
         // We have to detect the following instances in which we get a use directly from
         // this node. There are three basic cases:
         // 1. This is an OpApplNode and the operator is a use. There are three subcases:
-        // (a) The operator equals symbol
-        // (b) The operator is an OpDefNode that represents a subexpression of the
-        // the definition of symbol.
-        // (c) The operator is either an OpDefNode or a ThmOrAssumpDefNode whose
-        // source (in another module) is symbol.
+        //    (a) The operator equals symbol
+        //    (b) The operator is an OpDefNode that represents a subexpression of the
+        //        definition of symbol.
+        //    (c) The operator is either an OpDefNode or a ThmOrAssumpDefNode whose
+        //        source (in another module) is symbol.
         // 2. This is an OpArgNode whose operator either
-        // (a) equals symbol, or
-        // (b) is an OpDefNode whose source (in another module) is symbol
+        //    (a) equals symbol, or
+        //    (b) is an OpDefNode whose source (in another module) is symbol
         // 3. This is a LeafProofNode or UseOrHideNode and one of the DEF entries either
-        // (a) equals symbol, or
-        // (b) is an OpDefNode or a ThmOrAssumpDefNode whose
-        // source (in another module) is symbol
+        //    (a) equals symbol, or
+        //    (b) is an OpDefNode or a ThmOrAssumpDefNode whose source (in another module) 
+        //        is symbol
         if (node instanceof OpApplNode)
         { // check for case 1
             OpApplNode oan = (OpApplNode) node;
@@ -1605,6 +1612,276 @@ public class ResourceHelper
         return value;
     }
 
+    /**
+     * Returns a HashSet containing all user-definable names that are globally 
+     * defined or declared at Location loc of the module.  The returned
+     * value may or may not contain strings that are not user-definable names--in
+     * particular strings like "I!bar".  
+     * 
+     * If the statement at loc defines or declares a symbol, that symbol does
+     * not appear in the returned value.  However, the implementation assumes that
+     * there there is no declaration or definition that begins on the same line
+     * as the beginning of loc.  If there is, the symbol it defines will not 
+     * appear in the returned result. 
+     * 
+     * The method also assumes that loc is after any EXTENDS statement in the
+     * module.
+     * 
+     * @param module  The module.
+     * @param loc     The location.
+     * @return
+     */
+    public static HashSet<String> declaredSymbolsInScope(ModuleNode module, Location loc) {
+        // result accumulates the return value.
+        HashSet<String> result = new HashSet<String>() ;
+        addDeclaredSymbolsInScope(result, module, loc);
+        return result ;
+    }
+    
+    /**
+     * Like declaredSymbolsInScope, except instead of returning the computed value as a result,
+     * it adds it to the elements of the `result' argument.
+     * 
+     * @param result
+     * @param module
+     * @param loc
+     */
+    public static void addDeclaredSymbolsInScope(HashSet<String> result, ModuleNode module, Location loc) {
+        // Set result to the set of all CONSTANT and VARIABLE declarations it should contain.
+        // These are the ones from `module' that precede loc, and the ones from any extended
+        // module.
+        HashSet extendees = module.getExtendedModuleSet();
+        extendees.add(module) ;
+        Iterator iter = extendees.iterator() ;
+        while (iter.hasNext()) {
+            ModuleNode modNode = (ModuleNode) iter.next() ;
+            // Get CONSTANTS
+            OpDeclNode[] decls = modNode.getConstantDecls() ;
+            for (int i = 0; i < decls.length; i++) {
+                if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
+                    result.add(decls[i].getName().toString()) ;
+                }
+            }
+            
+           // Get VARIABLES
+            decls = modNode.getVariableDecls() ;
+            for (int i = 0; i < decls.length; i++) {
+                if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
+                    result.add(decls[i].getName().toString()) ;
+                }
+            }
+        }
+        
+        // Set allModulesSet to the set of ModuleNodes containing module and all imported
+        // modules that can contribute definitions or declarations of user-typeable symbols.
+        // Add to `result' the set of all symbols sym that contribute to the final result from
+        // statements of the form
+        //
+        //    sym == INSTANCE ...
+        HashSet<ModuleNode> allModulesSet = new HashSet<ModuleNode>();
+        addImportedModules(allModulesSet, result, loc, module) ;
+        
+        // Add defined operator and theorem names
+        iter = allModulesSet.iterator();
+        while (iter.hasNext()) {
+            ModuleNode modNode = (ModuleNode) iter.next() ;
+            
+            // add definitions
+            OpDefNode[] decls = module.getOpDefs();
+            for (int i = 0; i < decls.length; i++) {
+                if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
+                    result.add(decls[i].getName().toString()) ;
+                } 
+            }
+            
+            // add theorems
+            ThmOrAssumpDefNode[] tdecls = module.getThmOrAssDefs();
+            for (int i = 0; i < tdecls.length; i++) {
+                if ((modNode != module) || earlierLine(tdecls[i].stn.getLocation(), loc)) {
+                    result.add(tdecls[i].getName().toString()) ;
+                } 
+            }
+        }
+    }
+    
+    /**
+     * If node is an element of modules, it does nothing.  If it is then it
+     * adds to <code>modules</code> all modules imported (directly or indirectly)
+     * by module <code>node</code> by an EXTENDS statement or by an unnamed
+     * INSTANCE occurring before Location <code>loc</code>.  It adds to 
+     * <code>symbols</code> all symbols sym that occur in a
+     * 
+     *    sym == INSTANCE ...
+     *    
+     * statement that occurs in module <code>node</code> before location 
+     * <code>loc</code> or anywhere in one of the modules added to <code>modules</code>.
+     * 
+     * This procedure is called by declaredSymbolsInScope and by itself, the
+     * latter calls always with loc a Location beyond the end of any module.
+     * 
+     * @param modules
+     * @param symbols
+     * @param loc
+     * @param node
+     */
+    public static void addImportedModules(HashSet<ModuleNode> modules, HashSet<String> symbols, 
+                                   Location loc, ModuleNode node) {
+        if (modules.contains(node)) {
+            return ;
+        }
+        modules.add(node) ;
+        
+        HashSet extendees = node.getExtendedModuleSet();
+        Iterator iter = extendees.iterator() ;
+        while (iter.hasNext()) {
+            ModuleNode modNode = (ModuleNode) iter.next() ;
+            addImportedModules(modules, symbols, infiniteLoc, modNode) ;
+        }
+        
+        InstanceNode[] instances = node.getInstances() ;
+        for (int i = 0; i < instances.length; i++) {
+            // We add the instance only if its comes before loc.
+            // For a LOCAL instance, we add the module to `module' or its name to `symbols'
+            // only if this is the initial call, which is the case iff  loc # infiniteLoc
+            if ( earlierLine(instances[i].stn.getLocation(), loc)
+                 && (   ! instances[i].getLocal()
+                     || earlierLine(loc, infiniteLoc))){
+               if (instances[i].getName() != null) {
+                   symbols.add(instances[i].getName().toString()) ;
+               } else {
+                   addImportedModules(modules, symbols, infiniteLoc, instances[i].getModule()) ;
+               }
+            }
+        }     
+
+    }
+    
+    /**
+     * A location beyond the end of any module.
+     */
+    public static final Location infiniteLoc = 
+          new Location(Integer.MAX_VALUE, 0, Integer.MAX_VALUE, Integer.MAX_VALUE) ;
+    
+    /**
+     * True iff the beginning line of loc1 is less than the beginning line of loc2.
+     * 
+     * @param loc1
+     * @param loc2
+     * @return
+     */
+    private static boolean earlierLine(Location loc1, Location loc2) {
+        return loc1.beginLine() < loc2.beginLine() ;
+    }
+    
+    
+    /**
+     * This Runnable class is used to raise an error message from a non-UI
+     * thread.  (If running MessageDialog.openError throws a null-pointer
+     * exception, this is the mechanism you should use instead.)  To
+     * raise an error-message dialog, execute
+     * 
+     *   UIHelper.runUIAsync(
+     *     new ResourceHelper.ErrorMessageRunnable(title, message)) ;
+     *     
+     * where `title' and `message' are the title and error message of the
+     * dialog.
+     * 
+     * This method of raising the dialog was provided by Dan Ricketts.
+     * 
+     * @author lamport
+     *
+     */
+    public static class ErrorMessageRunnable implements Runnable {
+        String title ;
+        String message ;
+        
+        public ErrorMessageRunnable(String tit, String msg) {
+          this.title = tit ;
+          this.message = msg ;
+        }
+        public void run() {
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    title, message);
+        }
+    }
+    
+    /**
+     * Returns the FormalParmNode for all bound identifiers that are declared
+     * in expr.  These are the bound identifiers introduced OpApplNodes.  They do
+     * not include ones introduced as definition parameters in a LET definition.
+     * 
+     * This method was introduced for bound identifier renaming in the DecomposeProofHandler
+     * methods.  For that, it would be nice to also return the symbols introduced by LET
+     * definitions--both the defined operators and the definition parameters.  However,
+     * it complicates things to handle the defined operators, since there's no FormalParamNode
+     * corresponding to them.  And if we're not doing that, then there seems to be little point
+     * worrying about their definition parameters. 
+     * 
+     * @param expr
+     * @return
+     */
+    public static FormalParamNode[] getBoundIdentifiers(ExprNode expr) {
+        Vector<FormalParamNode> vec = new Vector<FormalParamNode>() ; 
+        innerGetBoundIdentifiers(vec, expr) ;
+        FormalParamNode[] result = new FormalParamNode[vec.size()] ;
+        for (int i=0; i < result.length; i++) {
+            result[i] = vec.elementAt(i) ;
+        }
+        return result;
+    }
+    
+    /**
+     * This is the recursive operator that implements getBoundIdentifiers.  It adds the
+     * bound identifiers in expr to those in vec.  The identifiers in vec should be different
+     * from the ones declared in expr.
+     * 
+     * @param vec
+     * @param expr
+     */
+    private static void innerGetBoundIdentifiers(Vector<FormalParamNode> vec,
+            ExprNode expr) {
+        if (expr instanceof OpApplNode) {
+            OpApplNode node = (OpApplNode) expr;
+            if (node.getUnbdedQuantSymbols() != null) {
+                for (int i = 0; i < node.getUnbdedQuantSymbols().length; i++) {
+                    vec.add(node.getUnbdedQuantSymbols()[i]);
+                }
+            }
+
+            if (node.getBdedQuantSymbolLists() != null) {
+                for (int i = 0; i < node.getBdedQuantSymbolLists().length; i++) {
+                    FormalParamNode[] nodeList = node.getBdedQuantSymbolLists()[i];
+                    for (int j = 0; j < nodeList.length; j++) {
+                        vec.add(nodeList[j]);
+                    }
+                    innerGetBoundIdentifiers(vec, node.getBdedQuantBounds()[i]);
+                }
+            }
+
+            for (int i = 0; i < node.getArgs().length; i++) {
+                if (node.getArgs()[i] instanceof ExprNode) {
+                    innerGetBoundIdentifiers(vec, (ExprNode) node.getArgs()[i]);
+                }
+            }
+        } else if (expr instanceof LetInNode) {
+            // We'd like to add the names declared in the LET/IN, but
+            // they're not FormalParamNodes.  Instead, we add the 
+            // LET declaration parameters and recursively call the method
+            // on the IN clause (the body).
+            LetInNode node = (LetInNode) expr ;
+            for (int i=0; i < node.getLets().length; i++) {
+                OpDefNode def = node.getLets()[i] ;
+                for (int j = 0; j < def.getParams().length; j++) {
+                    vec.add(def.getParams()[j]) ;
+                }
+                innerGetBoundIdentifiers(vec, node.getBody()) ;
+                return ;
+            }
+        } else {
+            return ;
+        }
+    }
+    
     /**
      * Checks a specification name for its validity WRT the parser identifier definition
      * @param aSpecName The intended specification name to check for validity

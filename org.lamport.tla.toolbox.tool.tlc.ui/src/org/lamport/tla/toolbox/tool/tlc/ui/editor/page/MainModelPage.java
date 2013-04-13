@@ -304,11 +304,21 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         IMessageManager mm = getManagedForm().getMessageManager();
         ModelEditor modelEditor = (ModelEditor) getEditor();
 
-        // delete the messages
-        // this is now done in validateRunnable
-        // in ModelEditor
-        // resetAllMessages(false);
-
+        // The following comment was apparently written by Simon:
+           // delete the messages
+           // this is now done in validateRunnable
+           // in ModelEditor
+           // resetAllMessages(false);
+        // validateRunnable is in ModelEditor.  I believe it is executed only when
+        // the user executes the Run or Validate Model command.
+        // Errors that the validatePage method checks for should be cleared
+        // whenever the method is called.  However, calling resetAllMessages
+        // seems to be the wrong way to do it because error messages from all
+        // pages are reported on each page.  Hence, that would require validating
+        // all pages whenever any one is validated.  See the ModelEditor.removeErrorMessage
+        // method for a further discussion of this problem.
+        // Comments added by LL on 21 Mar 2013.
+        
         // getting the root module node of the spec
         // this can be null!
         ModuleNode rootModuleNode = SemanticHelper.getRootModuleNode();
@@ -361,7 +371,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
 
             } else
-            {
+            {   // Following added by LL on 21 Mar 2013
+                modelEditor.removeErrorMessage(constant.getLabel(), UIHelper.getWidget(dm
+                                .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                 if (constant.isSetOfModelValues())
                 {
                     TypedSet modelValuesSet = TypedSet.parseSet(constant.getRight());

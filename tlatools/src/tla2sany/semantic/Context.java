@@ -57,6 +57,32 @@ public class Context implements ExploreNode {
     }
     
     public SymbolNode getSymbol() { return this.info; }
+    
+    /**
+     * For a Pair node pr, let List(pr) be the sequence of
+     * Pair nodes of length n defined by 
+     * 
+     *   List(pr)[1] = pr
+     *   List(pr)[n].link = null
+     *   \A i \in 1..(n-1) : List(pr)[i+1] = List(pr)[i].link
+     *   
+     * Then reversePairList() is a Pair node such that
+     * List(reversePairList()) has the same length n as
+     * List(this), and whose elements are new Pair nodes such
+     * that 
+     * 
+     *   \A i \in 1..n : List(reversePairList())[i].info = 
+     *                      List(this)[n-i+1].info
+     */
+    public Pair reversePairList() {
+        Pair curResult = new Pair(null, this.info) ;
+        Pair nextOriginal = this.link  ;
+        while (nextOriginal != null) {
+            curResult = new Pair(curResult, nextOriginal.info) ;
+            nextOriginal = nextOriginal.link ;
+        }
+        return curResult ;
+    }
   } // class Pair
 
   public class InitialSymbolEnumeration {
@@ -291,6 +317,10 @@ public class Context implements ExploreNode {
     return result;
   }
 
+  // The following is a revised version of mergeExendContext that
+  // fixes an apparent bug in the original in which elements of 
+  // Context ct are added to this context in the inverse order.
+  // Corrected version written by LL on 12 Mar 2013
   /**
    * Restricted Context merge.  Invoked once in Generator class.
    * Merges Context "ct" into THIS Context, except for local symbols
@@ -299,13 +329,19 @@ public class Context implements ExploreNode {
    * are considered to be two inheritances of the same (or at least
    * compatible) declarations, and there is only a warning.  Returns
    * true if there is no error or there are only warnings; returns
-   * false if there is an error
+   * false if there is an error.
+   * 
+   * The original implementation added the elements of Context ct to
+   * this context in the inverse order as they appear in ct.  It was 
+   * changed on 12 Mar 2013 by LL to add them in the same order.
    */
   public boolean mergeExtendContext(Context ct) {
     boolean erc = true;
 
     // check locality, and multiplicity
-    Pair p = ct.lastPair;
+    // the .reversePairList was added to the following statement
+    // by LL on 12 Mar 2013
+    Pair p = ct.lastPair.reversePairList();
     while (p != null) {
       // Walk back along the list of pairs added to Context "ct"
       SymbolNode sn = p.info;

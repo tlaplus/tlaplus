@@ -50,6 +50,13 @@ public class PCalTranslateModuleHandler extends SaveDirtyEditorAbstractHandler i
                 final Shell shell = (window != null) ? window.getShell() : null;
                 final ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(shell);
                 final IProgressMonitor monitor = progressDialog.getProgressMonitor();
+                // Changing the first argument of the following call to false
+                // will make the translator run in the UI thread, making the UI
+                // unresponsive while the translator is running.  However, it
+                // might fix the Heisenbug that causes the translator to produce
+                // a bogus "missing `begin'" error when run after fixing
+                // a real error.  Or again, it might not.  
+                // - Note added by LL on 2 Apr 2013
                 progressDialog.run(true, false, translatorOperation);
                 fileToBuild.refreshLocal(IResource.DEPTH_ONE, monitor);
 

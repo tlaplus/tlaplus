@@ -23,7 +23,7 @@
 		<link>
 			<name>CarTalkPuzzle.tla</name>
 			<type>1</type>
-			<location>C:/lamport/tla/newtools/tla2-inria-workspace/tla2-inria/examples/CarTalkPuzzle/CarTalkPuzzle.tla</location>
+			<location>C:/lamport/tla/newtools/tla-workspace/examples/CarTalkPuzzle/CarTalkPuzzle.tla</location>
 		</link>
 	</linkedResources>
 </projectDescription>

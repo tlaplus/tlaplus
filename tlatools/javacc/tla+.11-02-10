@@ -1,4 +1,4 @@
-// last modified on Fri 22 February 2013 at 16:23:05 PST by lamport
+// last modified on Wed  7 October 2009 at  2:34:21 PST by lamport
 
 
 
@@ -369,22 +369,9 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
              * error is hardly worth worrying about, but it would be easy  *
              * enough to add a test and might be worth doing if it's easy  *
              * to produce the right error message.                         *
-             *                                                             *
-             * Modified 22 Feb 2013 by LL to check that something like     *
-             * "++ a ==" is preceded by an identifier.  This fixes         *
-             * mishandled case of something like                           *
-             *                                                             *
-             *      USE ... DEF ++                                         *
-             *      a == ...                                               *
              **************************************************************/
              Token identifier = t;
-             if (    isOp(t.next)
-                  && ! isPostfixOp(t.next)
-                  && (    ! isInfixOp(t.next) 
-                       || (   (t.next.next != null)
-                           && (t.next.next.kind == IDENTIFIER) )
-                     ) 
-                ) {
+             if ( isOp( t.next )  && ! isPostfixOp( t.next ) ) {
                t = t.next;
                if ( t.next.kind == SUBSTITUTE )
                   t = identifier; // skip back

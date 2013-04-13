@@ -198,6 +198,9 @@ do whatever else you want to do on a save.  There's also a performSaveAs() metho
 RAISING AN ERROR OR WARNING WINDOW
 
  MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), window-title, message)
+ 
+If that doesn't work (probably throwing a null-pointer exception), see
+ResourceHelper.ErrorMessageRunnable.
 ------------------------------------------------------------
 LOGGING AN ERROR ON THE TOOLBOX'S LOG
 

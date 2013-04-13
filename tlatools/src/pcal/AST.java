@@ -311,6 +311,10 @@ public class AST
      * a fairness requirement on a process implies a fairness requirement on
      * all the procedures that the process calls.)
      * 
+     * Note added 2 Apr 2013 by LL.  Also, it should be noted
+     * that the transitive closure is computed by the call to PcalFixIDs.Fix,
+     * not during the initial parsing phase. 
+     * 
      * @author lamport
      *
      */
@@ -371,7 +375,12 @@ public class AST
      * January 2011 to implement the Version 1.5 enhancement that allows
      * fairness modifiers on labels.  They are set much like the corresponding
      * fields of an AST.Procedure object, as described above.
-     * The proceduresCalled field was also added then.
+     * The proceduresCalled field was also added then.  
+     * 
+     * Note added by LL on 2 April 2013.  The genius LL never noticed that 
+     * the proceduresCalled field only contains the procedures directly called,
+     * and he used that in generating the fairness conditions without finding
+     * the procedures that are called indirectly.
      * 
      * @author lamport
      *

@@ -2436,7 +2436,13 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
           }
           else if ( ss[ lvi ].isKind( N_InfixDecl ) ) {
             // parameter is infix operator
+            // Call of Operators.resolveSynonym added by LL on 27 Mar 2013
             name = sss[1].getUS();
+            
+            // Following added by LL on 27 Mar 2013
+            // to handle parameters like _(+)_
+            name = Operators.resolveSynonym(name);
+            
             arity = 2;
           }
           else if ( ss[ lvi ].isKind( N_PrefixDecl ) ) {
