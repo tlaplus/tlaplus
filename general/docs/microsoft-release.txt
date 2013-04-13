@@ -200,6 +200,7 @@ TO GENERATE THE RELEASE:
 Future Version 1.4.6
   - Fixed bug in PlusCal translator's generating of fairness formulas in 
     algorithms with procedures.
+  - Fixed TLATeX bug
     
 Version 1.4.5
   - Added Decompose Proof command

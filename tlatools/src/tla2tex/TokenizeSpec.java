@@ -380,8 +380,12 @@
 *   \* token1, col1 represents the comment on the current line preceding   * ADDED for PlusCal
 *   \* the "-"; token, col is the "-"                                      * ADDED for PlusCal
 *   ("-")      +                            --> C_DASH_DASH                * ADDED for PlusCal
-*   [OTHER]    token := token1 \o token;                                   * ADDED for PlusCal
-*              col := col1               +  --> COMMENT                    * ADDED for PlusCal
+*   [OTHER]    \* this case modified by LL on 12 April 2013 to fix a bug   *
+*              \* that occurred if the single "-" was followed by "\n"     *
+*              \* or "*)".                                                 *
+*              token := token1 \o token;                                   * ADDED for PlusCal
+*              col := col1  --> IF ORCom THEN OR_COMMENT                   * ADDED for PlusCal
+*                                        ELSE COMMENT                      * ADDED for PlusCal
 *                                                                          *
 * C_DASH_DASH:                                                             * ADDED for PlusCal 
 *   (Letter)    + --> C_DASH_DASH                                          * ADDED for PlusCal
@@ -1438,10 +1442,19 @@ public class TokenizeSpec
                         state = C_DASH_DASH ;
                     }
                     else {
-                        token = token1 + token ;
-                        col = col1;
-                        addNextChar();
-                        state = COMMENT;
+                         // Bug fix of 12 Apr 2013 by LL.
+                         // Appending the next character to the current
+                         // token causes an error if the next token is the "*" of
+                         // a "*)" or is a '\n'.  So, I commented out the
+                         // adNextChar().  I also changed the assignment to state
+                         // to go to the right place depending on whether or not
+                         // this is an OR_COMMENT.  I don't know why the previous code
+                         // didn't do that.
+                         token = token1 + token ;
+                         col = col1;
+                        // addNextChar();
+                        // state = COMMENT;
+                        state = ORCom ? OR_COMMENT : COMMENT ;
                     }
                   break ;
                   
