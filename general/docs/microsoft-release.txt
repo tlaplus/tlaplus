@@ -197,10 +197,12 @@ TO GENERATE THE RELEASE:
   Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
-Future Version 1.4.6
+Version 1.4.6
   - Fixed bug in PlusCal translator's generating of fairness formulas in 
     algorithms with procedures.
   - Fixed TLATeX bug
+  - Added handling of strings to TLC's handling of Tail and SubSeq
+    operators of Sequences module.
     
 Version 1.4.5
   - Added Decompose Proof command
