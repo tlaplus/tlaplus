@@ -197,6 +197,9 @@ TO GENERATE THE RELEASE:
   Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
+Unreleased Version 1.4.7
+  - No changes yet.
+  
 Version 1.4.6
   - Fixed bug in PlusCal translator's generating of fairness formulas in 
     algorithms with procedures.
