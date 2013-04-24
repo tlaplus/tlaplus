@@ -45,6 +45,7 @@ In org.lamport.tla.toolbox/welcome/welcomeView.html
    
 In org.lamport.tla.toolbox.doc/META-INF/MANIFEST.MF, update the version (major.minor.micro).
 But do _not_ replace the last (".qualifier") segment. It is automatically replaced by the build.
+
 Also, the version number in the pom.xml file in the same directory (and only in the same 
 directory???) has to be made the same (but leave the "-SNAPSHOT" unchanged).  Note that 
 explicitly replacing ".qualifier" with e.g. ".f" breaks the build with:
@@ -198,7 +199,7 @@ TO GENERATE THE RELEASE:
 
 -------------------------------------------------------------
 Unreleased Version 1.4.7
-  - No changes yet.
+  - Fixed serious bug in Toolbox's Decompose Proof Step command.
   
 Version 1.4.6
   - Fixed bug in PlusCal translator's generating of fairness formulas in 

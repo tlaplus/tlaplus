@@ -895,6 +895,10 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             LevelNode[] pfsteps = ((NonLeafProofNode) proof).getSteps();
             LevelNode foundLevelNode = null;
             i = 0;
+            // The following step added by LL on 24 April 2013.  Without
+            // it, the added steps get the level number of 1 plus the
+            // highest-level of the proof.
+            proofLevel = -1;
             while ((foundLevelNode == null) && (i < pfsteps.length)) {
                 if (   (proofLevel == -1)
                      && !(pfsteps[i] instanceof DefStepNode)
