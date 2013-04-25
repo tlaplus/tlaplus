@@ -4342,11 +4342,22 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             OpDefNode definition = (OpDefNode) node.getOperator() ;
             String operatorName = definition.getName().toString();            
             ExprNode opDef = definition.getBody();
+            // The following commented out by LL on 24 April 2013.
+            // For some reason, definitions that came from an INSTANCE
+            // weren't being recognized as such and were creating
+            // weird results.  Rather than trying to debug what was going on,
+            // I just returned null opDef is a SubstInNode.  This class
+            // will have to be completely rewritten to expand formulas
+            // obtained by instantiation.
+            
             // If the definition comes from an INSTANCE, it may be a
             // SubstInNode. If so, we strip off the top-level SubstInNode
             // object(s).
-            while (opDef instanceof SubstInNode) {
-                opDef = ((SubstInNode) opDef).getBody();
+            // while (opDef instanceof SubstInNode) {
+            //    opDef = ((SubstInNode) opDef).getBody();
+            // }
+            if (opDef instanceof SubstInNode) {
+            	return null ;
             }
 
             if (opDef instanceof OpApplNode) {

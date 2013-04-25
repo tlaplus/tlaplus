@@ -199,7 +199,8 @@ TO GENERATE THE RELEASE:
 
 -------------------------------------------------------------
 Unreleased Version 1.4.7
-  - Fixed serious bug in Toolbox's Decompose Proof Step command.
+  - Fixed serious bug and a not so serious bug in Toolbox's Decompose 
+    Proof Step command.
   
 Version 1.4.6
   - Fixed bug in PlusCal translator's generating of fairness formulas in 
