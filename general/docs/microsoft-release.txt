@@ -28,27 +28,26 @@ Notes: 0. Run Ant on tlatools/src/customBuild.xml
 Step 1: Get the right version numbers to appear:
 
 
-In org.lamport.tla.toolbox.product.standalone 
-  plugin.xml : line 32 (the "aboutText" property), update date and version 
+-- In org.lamport.tla.toolbox.product.standalone 
+   plugin.xml : line 32 (the "aboutText" property), update date and version 
                and other stuff that appears in the Help/About window.  
 
-  standalone.product: 
+-- standalone.product: 
     As of 24 Jun 2011, standalone.product has moved to:
     org.lamport.tla.toolbox.product.product.product
      Branding tab: update date and version (This is used in Help > About and used to
         create zip file names.)
      Overview: update version.  (I don't know if this is used anywhere.)
 
-
-In org.lamport.tla.toolbox/welcome/welcomeView.html
+-- In org.lamport.tla.toolbox/welcome/welcomeView.html
    Update date and version
    
-In org.lamport.tla.toolbox.doc/META-INF/MANIFEST.MF, update the version (major.minor.micro).
-But do _not_ replace the last (".qualifier") segment. It is automatically replaced by the build.
+-- In org.lamport.tla.toolbox.doc/META-INF/MANIFEST.MF, update the version (major.minor.micro).
+   But do _not_ replace the last (".qualifier") segment. It is automatically replaced by the build.
 
-Also, the version number in the pom.xml file in the same directory (and only in the same 
-directory???) has to be made the same (but leave the "-SNAPSHOT" unchanged).  Note that 
-explicitly replacing ".qualifier" with e.g. ".f" breaks the build with:
+-- Also, the version number in the pom.xml file in the same directory (and only in the same 
+   directory???) has to be made the same (but leave the "-SNAPSHOT" unchanged).  Note that 
+   explicitly replacing ".qualifier" with e.g. ".f" breaks the build with:
 
 "Failed to execute goal org.eclipse.tycho:tycho-packaging-plugin:0.14.0-SNAPSHOT:validate-version 
 (default-validate-version) on project org.lamport.tla.toolbox.doc: OSGi version 1.4.3.f must have .qualifier qualifier for SNAPSHOT builds"
@@ -198,7 +197,11 @@ TO GENERATE THE RELEASE:
   Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
-Unreleased Version 1.4.7
+Version 1.4.8 - unreleased
+  - Modified standard Reals module so TLC produces errors when
+    it tries to evaluate the operators it defines.
+    
+Version 1.4.7 of 24 April 2013
   - Fixed serious bug and a not so serious bug in Toolbox's Decompose 
     Proof Step command.
   
