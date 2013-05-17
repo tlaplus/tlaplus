@@ -82,6 +82,15 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value Tail(Value s)
     {
+    	// Implementation of Tail(string) by LL on 17 April 2013
+    	if (s instanceof StringValue) {
+    		String str = ((StringValue) s).val.toString();
+    		if (str.equals("")) {
+    			throw new EvalException(EC.TLC_MODULE_APPLY_EMPTY_SEQ, "Tail");
+    		}
+    		return new StringValue(str.substring(1));
+    	}
+    	
         TupleValue seq = TupleValue.convert(s);
         if (seq != null)
         {
@@ -245,12 +254,24 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value SubSeq(Value s, Value m, Value n)
     {
-        TupleValue seq = TupleValue.convert(s);
-        if (seq == null)
-        {
+    	// Handling of strings added by LL on 17 Apr 2013
+    	boolean isString = false ;
+    	String str = null ;
+    	TupleValue seq = null ;
+    	if (s instanceof StringValue) {
+    		str = ((StringValue) s).val.toString();
+    		isString = true ;
+    	}
+    	
+    	if (! isString) {
+          seq = TupleValue.convert(s);
+          if (seq == null)
+          {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SubSeq", "sequence",
                     Value.ppr(s.toString()) });
-        }
+          }
+    	}
+    	
         if (!(m instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SubSeq", "natural number",
@@ -263,9 +284,16 @@ public class Sequences extends UserObj implements ValueConstants
         }
         int beg = ((IntValue) m).val;
         int end = ((IntValue) n).val;
-        if (beg > end)
-            return EmptyTuple;
-        int len = seq.size();
+        if (beg > end) {
+        	if (isString) {
+        		return new StringValue("") ;
+        	} 
+        	else {
+              return EmptyTuple;
+        	}
+        }
+        
+        int len = isString ? str.length() : seq.size();
         int sublen = end - beg + 1;
         if (beg < 1 || beg > len)
         {
@@ -277,6 +305,10 @@ public class Sequences extends UserObj implements ValueConstants
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_NOT_IN_DOMAIN, new String[] { "third", "SubSeq",
                     Value.ppr(s.toString()), Value.ppr(n.toString()) });
+        }
+        
+        if (isString) {
+        	return new StringValue(str.substring(beg-1,end));
         }
         Value[] elems = new Value[sublen];
         for (int i = 0; i < sublen; i++)
