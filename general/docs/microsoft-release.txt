@@ -1,6 +1,6 @@
 TO START SVC-LAMPORT-7 AS A TESTBED
   https://tla.msr-inria.inria.fr/build/computer/svc/
-  log in as lamport/...
+  log in as lamport/g...
   Start the slave.
   
   Note: To set up a new machine to replace SVC-LAMPORT-7,
