@@ -1,12 +1,13 @@
 TO START SVC-LAMPORT-7 AS A TESTBED
   https://tla.msr-inria.inria.fr/build/computer/svc/
-  log in as lamport/lamportpassword
+  log in as lamport/...
   Start the slave.
   
   Note: To set up a new machine to replace SVC-LAMPORT-7,
         must install Java jdk and add the environment variable JAVA_HOME 
         and set it to something like C:\Program Files\Java\jdk1.6.0_26
 
+CODEPLEX: tlaplus.codeplex.com
 
 TO PREPARE THE ZIP FILES FOR THE TOOLBOX RELEASE
 
