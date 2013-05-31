@@ -178,7 +178,10 @@ public class PcalFixIDs {
                 String pName = (String) pCalled.elementAt(j);
                 int pNum = nameToNum(pName, procedureNames);
                 if (pNum == -1) {
-                    PcalDebug.ReportBug(
+                	// For some reason, this originally called PcalDebug.ReportBug.
+                	// Since it can occur just because there is no procedure by that
+                	// name in the code, it occurs on an error.  Fixed 31 May 2013 by LL.
+                    PcalDebug.reportError(
                      "Could not find procedure name `" + pName +
                      "' in method FixMultiprocess");
                 }
