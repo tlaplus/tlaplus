@@ -46,7 +46,7 @@ if you run LaTeX on your system by typing something other than
 
 You will probably run TLATeX by typing 
 
-   java tla2tex.TLA [options] fileName
+   java tla2tex.TeX [options] fileName
 
 where [options] is an optional list of options, and fileName is the
 name of the input file.  (If fileName does not contain an extension,
