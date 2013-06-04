@@ -33,9 +33,10 @@ Append(s, e) == s \o <<e>>
   (**************************************************************************)
 
 Head(s) == s[1]
-Tail(s) == [i \in 1..(Len(s)-1) |-> s[i+1]]
+Tail(s) == CASE s # << >> -> [i \in 1..(Len(s)-1) |-> s[i+1]]
   (*************************************************************************)
-  (* The usual head (first) and tail (rest) operators.                     *)
+  (* The usual head (first) and tail (rest) operators. (Definition of Tail *)
+  (* changed on 4 Jun 2013 because original defined Tail(<< >>) = << >> .  *)
   (*************************************************************************)
 
 SubSeq(s, m, n) == [i \in 1..(1+n-m) |-> s[i+m-1]]
