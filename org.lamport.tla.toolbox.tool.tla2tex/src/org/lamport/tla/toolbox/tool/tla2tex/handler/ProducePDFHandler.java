@@ -6,6 +6,7 @@ import java.util.Vector;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -256,6 +257,16 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 					TLA.runTranslation((String[]) tla2texArgs
 							.toArray(new String[tla2texArgs.size()]));
 
+					// Refresh the Eclipse workspace after a file has been
+					// created outside of the Eclipse Resource realm. This makes
+					// sure that the Eclipse resource layer sees the newly
+					// created (PDF) file.
+					// Without an explicit refresh, one might see the symtoms
+					// outlined in bug #317 (http://bugzilla.tlaplus.net/show_bug.cgi?id=317)
+					// (org.eclipse.core.internal.resources.ResourceException:
+					// Resource '/Test/Test.pdf' does not exist.)
+					fileToTranslate.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+
 					monitor.worked(1);
 
 					final String outputFileName = fileToTranslate.getProject()
@@ -303,6 +314,19 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 						}
 					});
 
+				} catch (final CoreException e) {
+					TLA2TeXActivator.getDefault()
+					.logError(
+							"Error while producing pdf file: "
+									+ e.getMessage(), e);
+					UIHelper.runUISync(new Runnable() {
+
+						public void run() {
+							MessageDialog.openError(UIHelper.getShellProvider()
+									.getShell(), "PDF Production Error", e
+									.getMessage());
+						}
+					});
 				} finally {
 
 				}
