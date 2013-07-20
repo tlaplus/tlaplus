@@ -678,6 +678,23 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                          * At this point the error message string does not contain any generated ids and
                          * locations. Set it as a message inside of all marker property maps  
                          */
+                        
+                        /*
+                         * Hack to fix bug added by LL on 19 July 2013.
+                         * If the string errorMessage is too long, the call of ModelHelper.installModelProblemMarker
+                         * produces an exception deep inside the Eclipse methods that are called, which results
+                         * in no error being reported by the Toolbox.  (Experimentation suggests that "too long" is 
+                         * more than 64K characters.)  The following code was therefore added to shorten the message.  
+                         * (A very long error message is of dubious value.)  Since the stuff at the end of the
+                         * message is likely to be more interesting than the stuff in the middle, characters in
+                         * the middle are removed.
+                         */
+                        int msgLen = errorMessage.length() ;
+                        if (msgLen > 50000) {  	
+                        	errorMessage = errorMessage.substring(0, 30000) + "  ...stuff deleted here...  " 
+                        			          + errorMessage.substring(msgLen - 20000, msgLen);
+                        }
+                        
                         for (int j = 0; j < props.length; j++)
                         {
                             // patch the error marker
