@@ -60,7 +60,19 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             return null;
         }
 
-        if (IncrementalProjectBuilder.FULL_BUILD == kind)
+        /*
+         * In July 2013, LL discovered that the "Reparse specification on spec module save" preference 
+         * had stopped working.  (Once upon a time it did work, but on examining the code, he saw no 
+         * reason why it should ever have worked, so someone must have screwed up the code without leaving
+         * a suitable trace.)  See the comments below made on 23 July 2013.
+         * On 23 July 2013 LL added the second disjunct to the following `if' test. 
+         * A tiny bit of testing reveals that this seems to have fixed the problem, and it seems that the worst
+         * thing the change can do is reparse the entire spec when it shouldn't.  But since LL has no idea
+         * how things actually work, he has little confidence in this change.
+         */
+        if (IncrementalProjectBuilder.FULL_BUILD == kind 
+        		|| PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
+                        IPreferenceConstants.I_PARSE_SPEC_ON_MODIFY))
         {
             monitor.beginTask("Invoking the SANY to re-parse the spec", IProgressMonitor.UNKNOWN);
             // explicit full build
@@ -97,6 +109,12 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                     rootFile = spec.getRootFile();
                 }
 
+                // LL comment added 23 July 2013:  Because of the change made above on this date,
+                // control should never get here unless the next statement sets buildSpecOnly
+                // to false.  However, the way this value is used, setting it true seems to cause
+                // the spec to be rebuilt only when reparsing the root module, which should cause the
+                // spec to be rebuilt anyway.  So I have no idea what the writer of this code thought
+                // he was doing.
                 boolean buildSpecOnly = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
                         IPreferenceConstants.I_PARSE_SPEC_ON_MODIFY);
 
