@@ -204,6 +204,8 @@ Version 1.4.8 - unreleased
   - Fixed pcal translator bug that reported a bug instead of an
     error when the algorithm calls a non-existant procedure.
   - Tiny fix to tla2tex.TeX -info output.
+  - Bug fixes to TLC and SANY
+  - Fixed "Re-parse specification on spec module save" option 
     
 Version 1.4.7 of 24 April 2013
   - Fixed serious bug and a not so serious bug in Toolbox's Decompose 

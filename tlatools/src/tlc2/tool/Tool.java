@@ -2884,12 +2884,19 @@ public class Tool
    * value. By doing this, TLC avoids evaluating the same expression
    * multiple times.
    * 
-   * The method runs for every module in the module tables
+   * The method runs for every module in the module tables.
+   * 
+   * Modified by LL on 23 July 2013 so it is not run for modules that are
+   * instantiated and have parameters (CONSTANT or VARIABLE declarations)
    */
   private void processConstantDefns() {
       ModuleNode[] mods = this.moduleTbl.getModuleNodes();
       for (int i = 0; i < mods.length; i++) {
-          this.processConstantDefns(mods[i]);
+    	  if (   (! mods[i].isInstantiated())
+    		  || (   (mods[i].getConstantDecls().length == 0)
+    			  && (mods[i].getVariableDecls().length == 0) ) ) {
+            this.processConstantDefns(mods[i]);
+    	  }
       }
   }
 
@@ -2923,6 +2930,7 @@ public class Tool
               Assert.check(opDef.getArity() == consts[i].getArity(), 
                            EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS,
                            new String[] {consts[i].getName().toString(), opDef.getName().toString()});
+                            
               if (opDef.getArity() == 0) {
                 Value defVal = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty);
                 defVal.deepNormalize();
@@ -2935,7 +2943,17 @@ public class Tool
       OpDefNode[] opDefs = mod.getOpDefs();
       for (int i = 0; i < opDefs.length; i++) {
           OpDefNode opDef = opDefs[i]; 
-          if (opDef.getArity() == 0) {
+          
+          // The following variable evaluate and its value added by LL on 24 July 2013 
+          // to prevent pre-evaluation of a definition from an EXTENDS of a module that 
+          // is also instantiated.
+          ModuleNode moduleNode = opDef.getOriginallyDefinedInModuleNode() ;
+          boolean evaluate =    (moduleNode == null)
+        		             || (! moduleNode.isInstantiated())
+        		             || (   (moduleNode.getConstantDecls().length == 0)
+        		                 && (moduleNode.getVariableDecls().length == 0) ) ;
+
+          if (evaluate && opDef.getArity() == 0) {
               Object realDef = this.lookup(opDef, Context.Empty, false);
               if (realDef instanceof OpDefNode) {
                   opDef = (OpDefNode)realDef;

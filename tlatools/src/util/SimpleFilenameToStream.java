@@ -41,7 +41,9 @@ public class SimpleFilenameToStream implements FilenameToStream {
 			+ '/' + STANDARD_MODULES_FOLDER + '/';
   
   /**
-   * path of directories to be searched in order for the named file 
+   * path of directories to be searched in order for the named file.  The setting of 
+   * a module's isStandard field depends on the path to the standard modules directory
+   * being the last element of this array. 
    */
   private String[] libraryPaths;
 
@@ -246,4 +248,23 @@ public class SimpleFilenameToStream implements FilenameToStream {
 		return resolve(name, false);
 	}
 
+	/**
+	 * Returns true iff moduleName is the name of a standard module.  It
+	 * assumes the empirically determined fact that libraryPaths is set to
+	 * have the path of the standard modules as the last element of the array.
+	 * This method is used to set the isStandard field of the module's ModuleNode.
+	 * I don't know if this is every called with a module that 
+	 * Added by LL on 24 July 2013.
+	 */
+	public boolean isStandardModule(String moduleName) {
+		 File file = this.resolve(moduleName, true) ;
+		 if (file == null) {
+			 return false ; 
+			 }
+		 String path = file.getAbsolutePath() ;
+		 if (path == null) {
+			 return false ;
+		 }
+	     return path.startsWith(this.libraryPaths[this.libraryPaths.length - 1] ) ;
+	}
 } // end class

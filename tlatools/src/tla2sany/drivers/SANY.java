@@ -19,7 +19,6 @@ import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.Generator;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SemanticNode;
-import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import util.FileUtil;
 import util.ToolIO;
@@ -48,7 +47,7 @@ public class SANY {
 //    ***********************************************************************/
 //    "last modified on Tue  10 February 2011 at 11:49:54 PST by lamport";
 
-  private static String modDate = "27 March 2013";
+  private static String modDate = "24 July 2013";
 //                lastModified.substring(21, lastModified.indexOf(" at"));
     /***********************************************************************
     * The modification date.                                               *
@@ -200,7 +199,7 @@ public class SANY {
   public static void frontEndParse(SpecObj spec, PrintStream syserr) 
   throws ParseException {
       /***********************************************************************
-       * Modified on 12 May 2008 by LL to remove "throws AbortExceptiion",    *
+       * Modified on 12 May 2008 by LL to remove "throws AbortException",     *
        * since it catches all exceptions and turns them into                  *
        * ParseExceptions.                                                     *
        ***********************************************************************/
@@ -301,6 +300,10 @@ public class SANY {
           // Perform semantic analysis and create semantic graph for one external module here
           moduleNode = gen.generate(syntaxTreeRoot);    
                       
+          // Set the isStandard field of the moduleNode.
+          // Added by LL on 24 July 2013
+          moduleNode.setStandard(spec.getResolver().isStandardModule(moduleStringName)) ;
+          
           // Put the semantic graph and related info for moduleNode into the module table
           externalModuleTable.put(UniqueString.uniqueStringOf(moduleStringName), 
                                   gen.getSymbolTable().getExternalContext(),

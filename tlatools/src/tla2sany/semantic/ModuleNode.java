@@ -246,7 +246,25 @@ public class ModuleNode extends SymbolNode {
     * Theorems, assumptions, and top-level module instantiations, USEs,    *
     * and HIDEs.                                                           *
     ***********************************************************************/
-    
+  private boolean isInstantiated = false;
+    /***********************************************************************
+    * True iff this module is instantiated in a top-level INSTANCE         *
+    * statement--that is, one not inside a proof.  It is set when          *
+    * processing the INSTANCE statement in the Generator class.            *
+    ***********************************************************************/
+  
+  private boolean isStandard = false ;
+    /***********************************************************************
+    * True iff this module is a standard module.  It is set in the SANY    *
+    * class's frontEndSemanticAnalysis method after the ModuleNode object  *
+    * is created.  It is apparently not set for a module nested within     *
+    * another module.  Therefore, it is initialized to false because no    *
+    * standard module has an inner module.                                 *
+    *                                                                      *
+    * It is possible that this field is never set when the parser is       *
+    * called by distributed TLC.                                           *
+    ***********************************************************************/
+  
     /***********************************************************************
     * The "unnamed" in the comments above is meaningless, because the      *
     * semantic analysis in SANY1 never handled named theorems and          *
@@ -492,7 +510,35 @@ public class ModuleNode extends SymbolNode {
   }
 
 
-  final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st, 
+  /**
+ * @return the isInstantiated
+ */
+public boolean isInstantiated() {
+	return isInstantiated;
+}
+
+/**
+ * @param isInstantiated the isInstantiated to set
+ */
+public void setInstantiated(boolean isInstantiated) {
+	this.isInstantiated = isInstantiated;
+}
+
+/**
+ * @return the isStandard
+ */
+public boolean isStandard() {
+	return isStandard;
+}
+
+/**
+ * @param isStandard the isStandard to set
+ */
+public void setStandard(boolean isStandard) {
+	this.isStandard = isStandard;
+}
+
+final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st, 
                            ThmOrAssumpDefNode tadn) {
     /***********************************************************************
     * Create a new assumption node and add it to assumptionVec and         *

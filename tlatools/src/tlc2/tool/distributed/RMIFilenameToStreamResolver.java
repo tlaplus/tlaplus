@@ -8,6 +8,7 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
+import tlc2.output.MP;
 import util.FilenameToStream;
 
 /**
@@ -76,6 +77,24 @@ public class RMIFilenameToStreamResolver implements FilenameToStream {
 		}
 		
 		return file;
+	}
+	
+	/**
+	 * I am hoping that a resolver of this class is never used to parse
+	 * the spec.  If it is, then a module's isStandard field will always
+	 * be false in a run of distributed TLC.  This isn't a problem, since
+	 * that field was added for use by a version of SANY called by TLAPS.
+	 * 
+	 * Added by LL on 24 July 2013.
+	 */
+	public boolean isStandardModule(String moduleName) {
+		// The following error message code should be uncommented
+		// if the parser should not be called with an object of
+		// this class.
+//		 String[] foo = new String[] {
+//	       "Parsing called with unexpected FileNameToString implementation."} ;
+//		 MP.printTLCBug(42, foo) ;
+		 return false ;
 	}
 
 	private String getRandomStoragePrefix() {

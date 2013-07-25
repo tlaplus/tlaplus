@@ -4768,6 +4768,12 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
       return nullODN;
     }
 
+    /*
+     * Set isInstantiated field of instancee.  Added by LL 23 July 2013
+     */
+    instanceeModule.setInstantiated(true) ;
+
+
     // Create a SubstInNode that will be used to wrap each definition
     // body in the module being defined. "children" is the array of
     // explicit substitution clauses used in the module definition.
@@ -5299,7 +5305,12 @@ private final InstanceNode
                         "Could not find module " + moduleId.toString(),
                         false);
      }
-
+    
+     /*
+      * Set isInstantiated field of instancee.  Added by LL 23 July 2013
+      */
+     instanceeModuleNode.setInstantiated(true) ;
+     
      // Create the SubstInNode that will act as a template "wrapper"
      // for each definition in the module being instantiated; this
      // SubstInNode itself gets discarded after being used as template

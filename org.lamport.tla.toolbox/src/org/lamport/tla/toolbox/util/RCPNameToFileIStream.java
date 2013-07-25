@@ -9,6 +9,7 @@ import java.util.Vector;
 import org.eclipse.core.runtime.FileLocator;
 import org.lamport.tla.toolbox.Activator;
 
+import tla2sany.semantic.ModuleNode;
 import util.FilenameToStream;
 import util.ToolIO;
 
@@ -20,7 +21,7 @@ import util.ToolIO;
 public class RCPNameToFileIStream implements FilenameToStream
 {
 
-    // TODO move to generic contsant interface
+    // TODO move to generic constant interface
     public static final String STANDARD_MODULES   = "StandardModules";
     private Vector             libraryPathEntries = new Vector();
 
@@ -138,5 +139,23 @@ public class RCPNameToFileIStream implements FilenameToStream
 
     }
 
+	/**
+	 * Returns true iff moduleName is the name of a standard module.  
+	 * Because we are in the Toolbox code, we can use ResourceHelper.isFromUserModule
+	 * to compute the result.  This is useful because the code from SimpleFileNameToStream
+	 * doesn't work because the libraryPathEntries entry for the StandardModules
+	 * directory appears as a URL rather than a path name--which means it has "/"
+	 * as a name separator so it can't easily be compared to the file path name, which
+	 * on Windows has "\\" as a name separator.
+	 * 
+	 * Added by LL on 24 July 2013.
+	 */
+	public boolean isStandardModule(String moduleName) {
+		ModuleNode moduleNode = ResourceHelper.getModuleNode(moduleName) ;
+		if (moduleNode == null) {
+			return false ;
+		}
+		return ! ResourceHelper.isFromUserModule(moduleNode) ;
 
+	}
 }
