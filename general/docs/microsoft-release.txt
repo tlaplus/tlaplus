@@ -205,7 +205,9 @@ Version 1.4.8 - unreleased
     error when the algorithm calls a non-existant procedure.
   - Tiny fix to tla2tex.TeX -info output.
   - Bug fixes to TLC and SANY
-  - Fixed "Re-parse specification on spec module save" option 
+  - Fixed "Re-parse specification on spec module save" option.
+  - Added options for the RenumberProof command to the Module Editor
+    preferences page.
     
 Version 1.4.7 of 24 April 2013
   - Fixed serious bug and a not so serious bug in Toolbox's Decompose 

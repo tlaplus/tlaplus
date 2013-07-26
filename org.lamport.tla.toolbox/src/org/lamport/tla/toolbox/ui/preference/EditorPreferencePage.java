@@ -6,9 +6,12 @@ package org.lamport.tla.toolbox.ui.preference;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.lamport.tla.toolbox.Activator;
@@ -27,6 +30,13 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
     
     public static final String CLEAR_DECLARATION_USE_MARKERS_ON_PARSE = "removeDeclarationUseMarkersOnParse";
     public static final boolean CLEAR_DECLARATION_USE_MARKERS_ON_PARSE_DEFAULT = true;
+
+    // The following added 25 July 2013 for Renumber proof command options.
+    public static final String RENUMBER_KEY = "renumber_proof_option" ;
+    public static final String ALL_NAMES = "renumber_proof_all" ;
+    public static final String FIRST_DIGIT = "renumber_proof_first_digit" ;
+    public static final String ALL_DIGITS = "renumber_proof_all_digits" ;
+    
     /**
      * 
      */
@@ -87,6 +97,16 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
         
         addField(new BooleanFieldEditor(CLEAR_DECLARATION_USE_MARKERS_ON_PARSE,
                 "&Clear declaration use markers when parsing", getFieldEditorParent()));
+        
+        // Preferences for renumbering.  Added 25 July 2013 by LL
+        Label lbl = new Label(getFieldEditorParent(), SWT.NONE);
+        addField(new RadioGroupFieldEditor(EditorPreferencePage.RENUMBER_KEY, 
+        		"Renumber Proof Command: which step names to renumber", 1,
+        		new String[][] 
+        	      { {"All step names", ALL_NAMES},
+        	      {"Names beginning with a digit", FIRST_DIGIT},
+        	      {"Names that are all digits", ALL_DIGITS} },
+        		getFieldEditorParent())) ;
     }
 
     /* (non-Javadoc)
