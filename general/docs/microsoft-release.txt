@@ -207,7 +207,9 @@ Version 1.4.8 - unreleased
   - Bug fixes to TLC and SANY
   - Fixed "Re-parse specification on spec module save" option.
   - Added options for the RenumberProof command to the Module Editor
-    preferences page.
+    preferences page, made the command attempt to preserve indentation, 
+    and made it do nothing in the presence of tabs. 
+  - Added warnings about using tabs to the help pages.
     
 Version 1.4.7 of 24 April 2013
   - Fixed serious bug and a not so serious bug in Toolbox's Decompose 

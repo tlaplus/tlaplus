@@ -40,6 +40,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
          */
         store.setDefault(EditorPreferencePage.RENUMBER_KEY,  
         		EditorPreferencePage.ALL_NAMES);
+        store.setDefault(EditorPreferencePage.SAVE_MODULE, true);
     }
 
 }

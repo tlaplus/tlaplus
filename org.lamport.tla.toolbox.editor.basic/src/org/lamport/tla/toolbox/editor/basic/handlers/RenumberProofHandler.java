@@ -10,6 +10,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
@@ -24,6 +25,7 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.DefStepNode;
@@ -62,7 +64,7 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
     {
     	
     	/*
-    	 * Modified by LL in July 25 2013 to do the following:
+    	 * Modified by LL in July 26 2013 to do the following:
     	 * When renumbering a step, this method should try to maintain alignments
     	 * in the statement of a proof step.  For example, if 
     	 * 
@@ -104,7 +106,7 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
     	 * 
     	 * The implementation maintains an ArrayList addSpaces of IntPairs, such that
     	 * the entries are in order of increasing `one' fields and an element ip in
-    	 * addSpaces means that ip.two spaces are to be added to the file at offset ip.one.
+    	 * addSpaces means that ip.two spaces are to be added to the file at line ip.one.
     	 * (Again, adding a negative number of spaces means deletion.)
     	 * 
     	 */
@@ -116,7 +118,29 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
             return null;
         }
 
-        // Get the names of the steps.
+        // Added by LL on 26 July 2013 
+        // If the first step number is preceded by a tab, the IRegion computed
+        // for pfNode begins after it should, which means the first step number
+        // is not renamed (although instances of it are).  This is a particular 
+        // instance of a general problem with tabs in specifications.  Any command
+        // should do nothing if, like this one,  the presence of tabs could cause
+        // it to incorrectly modify the spec.
+ 
+       try {
+			IRegion thmRegion = AdapterFactory.locationToRegion(doc, node.getLocation());
+			if (text.substring(thmRegion.getOffset(), thmRegion.getOffset() + thmRegion.getLength()).indexOf('\t') != -1) {
+				displayRenumberError("The Renumber Command does not work on a proof containing tabs.\n" +
+			                         "You should not use tab characters in specifications.\n"  + 
+						              "See the General section of the  Getting Started > Preferences  help page.") ;
+				return null ;
+			}
+		} catch (BadLocationException e1) {
+			// This shouldn't happen, so we don't handle it
+		}
+
+        
+       // Set the preference store for getting the command's preferences
+       IPreferenceStore store = Activator.getDefault().getPreferenceStore() ;
 
         try
         {
@@ -129,6 +153,7 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
             
             ArrayList addSpaces = new ArrayList<IntPair>(40) ;
             
+        	
             int stepNumber = 1;
             for (int i = 0; i < steps.length; i++)
             {
@@ -174,7 +199,6 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
                     // step should be renamed.
                     String suffix = oldName.substring(oldName.indexOf('>')+1);
                     boolean rename = true ;
-                	IPreferenceStore store = Activator.getDefault().getPreferenceStore() ;
                 	String preference = store.getString(EditorPreferencePage.RENUMBER_KEY);
                 	if (preference == EditorPreferencePage.FIRST_DIGIT) {
                 	    rename = Character.isDigit(suffix.charAt(0)) ;
@@ -198,23 +222,53 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
 						
 						// If this is a TheoremNode, add appropriate entries
 						// to addSpaces if needed.
-//						if (steps[i] instanceof TheoremNode) {
-//							TheoremNode tstep = (TheoremNode) steps[i] ;
-//							int ncoc = newName.length() - oldName.length(); // nc - oc
-//							int ls = tstep.stn.getLocation().beginLine() ;
-//							Location thmLoc = tstep.getTheorem().stn.getLocation() ;
-//							int l0 = thmLoc.beginLine();
-//							int c0 = thmLoc.beginColumn() ;
-//							int n  = thmLoc.endLine() - l0;
-//							if ((ncoc != 0) && (l0 == ls) && (n > 0)) {
-//								ArrayList newaddSpaces = new ArrayList<IntPair>(10) ;
-//								boolean shouldAdd = true ;
-//								int j = 1 ;
-//								while (shouldAdd && (j <= n)) {
-//									j++ ;
-//								}
-//							}
-//						}
+						if (steps[i] instanceof TheoremNode) {
+							TheoremNode tstep = (TheoremNode) steps[i] ;
+							int ncoc = newName.length() - oldName.length(); // nc - oc
+							int ls = tstep.stn.getLocation().beginLine() ;
+							Location thmLoc = tstep.getTheorem().stn.getLocation() ;
+							int l0 = thmLoc.beginLine();
+							int c0 = thmLoc.beginColumn() ;
+							int n  = thmLoc.endLine() - l0;
+							if ((ncoc != 0) && (l0 == ls) && (n > 0)) {
+								// The first three conditions oc # nc, ... are satisfied.
+								// set shouldAdd to true iff the fourth condition 
+								// \A i \in 1..n : line l0 + i either... is satisfied
+								// and set newAddSpaces to the elements that
+								// should be added to addSpaces if it is satisfied.
+								ArrayList newaddSpaces = new ArrayList<IntPair>(10) ;
+								boolean shouldAdd = true ;
+								int j = 1 ;
+								while (shouldAdd && (j <= n)) {
+									int lineOffset = doc.getLineOffset(l0 + j - 1) ;
+									int lineLength = doc.getLineLength(l0 + j - 1) ;
+									String line = doc.get(lineOffset, lineLength) ;
+									// need to remove end-of-line characters, but
+									// it can't hurt to remove ending spaces.
+									line = StringHelper.trimEnd(line) ;
+									lineLength = line.length() ;
+									int k = 0 ;
+									while (shouldAdd && k < c0-1 && k < lineLength) {
+										if (line.charAt(k) != ' ') {
+											shouldAdd = false ;
+										}
+										k++ ;
+									}
+									if (lineLength >= c0-1) {
+										newaddSpaces.add(new IntPair(l0+j, ncoc)) ;
+									}
+									j++ ;
+								}
+								// if shouldAdd is true, append newaddSpaces to addSpaces
+								if (shouldAdd) {
+									for (j = 0; j < newaddSpaces.size(); j++) {
+										addSpaces.add(newaddSpaces.get(j)) ;
+									}
+									
+								}
+							}
+						}
+						 
 					}
                 }
             }
@@ -299,6 +353,22 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
                 doc.replace(pair.one, rep.oldStr.length(), rep.newStr);
             }
 
+            // We now do the adding and removing of leading spaces indicated
+            // by addSpaces.  Since we're converting from line numbers to
+            // offsets each time, it doesn't matter in which order we make
+            // the changes.
+            for (int i = 0; i < addSpaces.size(); i++) {
+            	IntPair pair = (IntPair) addSpaces.get(i) ;
+            	int lineOffset = doc.getLineOffset(pair.one - 1) ;
+            	if (pair.two > 0) {
+            		doc.replace(lineOffset, 0, StringHelper.copyString(" ", pair.two)) ;
+            	} 
+            	else {
+            		doc.replace(lineOffset, -pair.two, "") ;
+            		
+            	}
+            }
+                 
             // Test code to highlight region. Note method used to translate
             // a location to a region.
             // IRegion iregion = AdapterFactory.locationToRegion(doc, node.getLocation());
@@ -309,6 +379,12 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
 
         }
         resetFields();
+        
+        // Save the module if preference set.
+        if(store.getBoolean(EditorPreferencePage.SAVE_MODULE)) {
+        	UIHelper.getActiveEditor().doSave(new NullProgressMonitor());
+        }
+
         return null;
     }
 
