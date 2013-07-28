@@ -203,6 +203,17 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
                 	if (preference == EditorPreferencePage.FIRST_DIGIT) {
                 	    rename = Character.isDigit(suffix.charAt(0)) ;
                 	}
+                	else if (preference == EditorPreferencePage.SOME_DIGIT) {
+                		int j = 0 ;
+                		boolean dontRename = true ;
+                		while (rename && (j < suffix.length())) {
+                			if (Character.isDigit(suffix.charAt(j)) ) {
+                				dontRename = false ;
+                			}
+                			j++ ;
+                		}
+                		rename = ! dontRename ;
+                	}
                 	else if (preference == EditorPreferencePage.ALL_DIGITS) {
                 		int j = 0 ;
                 		while (rename && (j < suffix.length())) {

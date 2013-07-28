@@ -36,6 +36,7 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
     public static final String RENUMBER_KEY = "renumber_proof_option" ;
     public static final String ALL_NAMES = "renumber_proof_all" ;
     public static final String FIRST_DIGIT = "renumber_proof_first_digit" ;
+    public static final String SOME_DIGIT = "renumber_proof_some_digit" ;
     public static final String ALL_DIGITS = "renumber_proof_all_digits" ;
     public static final String SAVE_MODULE = "renumber_proof_save" ;
     
@@ -114,6 +115,7 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
         		"Which step names to renumber", 1,
         		new String[][] 
         	      { {"All step names", ALL_NAMES},
+        		  {"Names containing  a digit", SOME_DIGIT},
         	      {"Names beginning with a digit", FIRST_DIGIT},
         	      {"Names that are all digits", ALL_DIGITS} },
         		getFieldEditorParent())) ;

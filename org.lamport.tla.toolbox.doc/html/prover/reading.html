@@ -95,7 +95,9 @@ button that raises <a href="decompose.html">this help page</a>, which explains
 what you can do with this dialog.
 
 </dd>
-<dt><b>Renumber Proof</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+R</samp> </dt>
+
+<p> </p>
+<dt><b><a name="renumber-proof">Renumber Proof</a></b> &nbsp; &nbsp; <samp>Ctl+G Ctl+R</samp> </dt>
 <dd>
 A proof step is either <i>named</i> or <i>unnamed</i>.&nbsp;  
 
@@ -106,7 +108,18 @@ or <code><4>xy2</code> (optionally followed by a period).&nbsp;
 
 Putting the cursor on a proof step and executing the <i>Renumber Proof</i>
 command causes all the named top-level steps of its proof to be renamed with
-consecutive numbers, like <code><4>1</code>, <code><4>2</code>, etc.
+consecutive numbers, like <code><4>1</code>, <code><4>2</code>, etc.&nbsp;
+
+However, you might want to use some meaningful step names like <code><2>NextImpliesInv1</code>
+that you don't want to be turned into numbers.&nbsp;
+
+A <a href="../gettingstarted/module-editor-preferences.html">module editor
+preference</a> provides options to control what step names don't get turned 
+into numbers.&nbsp;
+
+There is also a preference that determines whether the module should be saved 
+after executing the command.
+
 </dd>
 </dl>
 The Toolbox editor's 
