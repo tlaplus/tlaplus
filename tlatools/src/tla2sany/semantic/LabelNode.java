@@ -257,7 +257,16 @@ public class LabelNode extends ExprNode
       {throw new WrongInvocationException("getArgLevelParams called for ThmNode before levelCheck");};
     return this.body.getArgLevelParams();
   }
-  
+
+  /* 
+   * The following method was inexplicably missing until added by LL
+   * on 16 October 2013.
+   * 
+   * @see tla2sany.semantic.SemanticNode#getChildren()
+   */
+  public SemanticNode[] getChildren() {
+      return new SemanticNode[] { this.body };
+  }
   /*************************************************************************
   * The methods for implementing the ExploreNode interface.                *
   *************************************************************************/

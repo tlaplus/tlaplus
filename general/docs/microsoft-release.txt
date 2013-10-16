@@ -199,6 +199,8 @@ TO GENERATE THE RELEASE:
 
 -------------------------------------------------------------
 Version 1.4.8 - unreleased
+  - Fixed bug which caused GotoDeclaration command not to work
+    for a symbol inside a labeled expression.
   - Modified standard Reals module so TLC produces errors when
     it tries to evaluate the operators it defines.
   - Fixed pcal translator bug that reported a bug instead of an
