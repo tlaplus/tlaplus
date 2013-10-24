@@ -129,11 +129,12 @@ public class MP
 	private static final DecimalFormat df = new DecimalFormat("###,###.###");
 	
 	/**
-	 * By default run in debug mode which means the full stack trace is printed
-	 * to the console. This potentially screws up the Toolbox parser though.
-	 * Hence, debug can be turned off explicitly by passing the System property.
+	 * By default, do not run in debug mode which means full stack traces do not
+	 * get printed to the console. Printing stack traces is known to screw up
+	 * the Toolbox parser though. Hence, debug has to be turned on explicitly by
+	 * passing the System property.
 	 */
-	private static final boolean NO_DEBUG = Boolean.getBoolean(MP.class.getName() + ".noDebug");
+	private static final boolean DO_DEBUG = Boolean.getBoolean(MP.class.getName() + ".noDebug");
 
     /**
      * The internal instance
@@ -1191,10 +1192,11 @@ public class MP
         if (throwable.getMessage() != null) {
             msg = msg + ": " + throwable.getMessage();
             
-			// TODO MAK Remove before distributed TLC can really be used in the
-			// Toolbox. Right we want to see the complete stacktrace though, to
-			// be able to debug distributed TLC programming errors.
-            if (!NO_DEBUG) {
+            // Distributed TLC potentially throws exceptions unknown to the
+            // toolbox and thus not correctly reported by the toolbox. For users
+            // who want to help diagnose their problems, they can activate debug
+            // output (full stack traces) in the console.
+            if (DO_DEBUG) {
             	msg += throwableToString(throwable);
             }
         } else {
