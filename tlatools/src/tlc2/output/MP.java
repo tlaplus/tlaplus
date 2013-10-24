@@ -1193,9 +1193,13 @@ public class MP
             msg = msg + ": " + throwable.getMessage();
             
             // Distributed TLC potentially throws exceptions unknown to the
-            // toolbox and thus not correctly reported by the toolbox. For users
+            // Toolbox and thus not correctly reported by the Toolbox. For users
             // who want to help diagnose their problems, they can activate debug
-            // output (full stack traces) in the console.
+            // output (full stack traces) in the console.  However, doing that
+            // will cause some TLC errors not to be reported by the Toolbox.
+            // Instead, TLC will simply halt prematurely with no error reported,
+            // and the user will have to look in the console log to find out
+            // what happened.
             if (DO_DEBUG) {
             	msg += throwableToString(throwable);
             }
