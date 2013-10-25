@@ -1016,6 +1016,36 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       }
     };
     
+    /*
+     * Check of logical operators /\ , \/ , => , <=>, and dis/conjunction
+     * lists.  Added by LL 25 Oct 2013
+     */
+    if (   opName.equals("\\land")
+    	|| opName.equals("\\lor")
+    	|| opName.equals("=>")
+    	|| opName.equals("\\equiv")
+    	|| opName.equals("$ConjList")
+    	|| opName.equals("$DisjList")) {
+    	boolean hasTemporal = false ;
+    	boolean hasAction = false ;
+    	for (int i = 0; i < this.getArgs().length; i++) {
+    		hasTemporal = hasTemporal || (this.getArgs()[i].getLevel() == TemporalLevel) ;
+    		hasAction = hasAction || (this.getArgs()[i].getLevel() == ActionLevel) ;
+    	}
+    	if (hasTemporal && hasAction) {
+    		String pop = opName ;
+    		if (pop.equals("$ConjList")) {
+    			pop = "Conjunction list" ;
+    		}
+    		if (pop.equals("$DisjList")) {
+    			pop = "Disjunction list" ;
+    		}
+    		errors.addError(
+    	             stn.getLocation(),
+    	             pop + " has both temporal formula and action as arguments."); 
+    	}
+    }
+    
     /***********************************************************************
     * Check of \A and \E.                                                  *
     ***********************************************************************/
