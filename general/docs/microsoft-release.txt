@@ -220,6 +220,9 @@ Version 1.4.8 - unreleased
     preferences page, made the command attempt to preserve indentation, 
     and made it do nothing in the presence of tabs. 
   - Added warnings about using tabs to the help pages.
+  - Fixed bug added in Oct 2012 that some TLC errors not to produce
+    error window.
+  - Added some tests for non-stuttering-insensitive formulas.
     
 Version 1.4.7 of 24 April 2013
   - Fixed serious bug and a not so serious bug in Toolbox's Decompose 
