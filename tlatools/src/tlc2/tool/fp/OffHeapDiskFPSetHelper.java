@@ -27,6 +27,7 @@ public final class OffHeapDiskFPSetHelper {
 	 * @return An Unsafe object or a {@link RuntimeException} wrapping any {@link Exception}. 
 	 */
 	public static sun.misc.Unsafe getUnsafe() {
+		// More Details can be found at: http://www.mydailyjava.blogspot.no/2013/12/sunmiscunsafe.html
 		try {
 			// Use reflection API to unhide Unsafe
 			final Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
