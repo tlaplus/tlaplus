@@ -115,6 +115,10 @@ public class AdapterFactory implements IAdapterFactory
      * Possible reasons are that the location points to a non-existent module or a
      * location in a module that does not exist.
      * 
+     * WARNING: A module named "foo" is considered not to exist if the file containing
+     * it is named "Foo.tla"--that is, if the file name and the module name don't
+     * agree exactly.   (Added by LL on 16 Jan 2014).
+     * 
      * @param location
      * @return
      */
