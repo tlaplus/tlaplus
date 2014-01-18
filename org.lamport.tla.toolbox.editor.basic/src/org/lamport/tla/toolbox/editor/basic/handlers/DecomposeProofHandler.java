@@ -13,6 +13,12 @@
  * 
  * CURRENT BUGS AND MISSING FEATURES:
  * 
+ *  - Bug reported 16 Jan 2014 by Jael:  Decomposing
+ *  
+ *       THEOREM \A x, y : x /\ y => TRUE
+ *       
+ *    with \A then => then /\ puts the menu in a state in which P is not enabled.
+ *  
  *  - The implementation contains code written to implement a "use Subexpression Names"
  *    feature that allowed the user to specify that decomposition that involved 
  *    expanding definitions was to be done by using subexpression names rather
