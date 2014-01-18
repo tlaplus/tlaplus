@@ -11,6 +11,15 @@
  * any that are hard to fix are triggered only in situations that are unlikely to occur 
  * in actual proofs.
  * 
+ * POSSIBLE ENHANCEMENTS
+ * 
+ * - Allow case splits and introduction of Skolem constants on usable assumptions--
+ *   that is, assumption from relevant ASSUME or SUFFICES ASSUME clauses.
+ *   These can be displayed in a separate section of the window--with that display
+ *   toggle-able.  It would be nice to also allow such case splits and Skolem
+ *   constants for previously proved steps.  However, there are too many of them
+ *   to display, so the user would have to be able to select them.
+ *   
  * CURRENT BUGS AND MISSING FEATURES:
  * 
  *  - Bug reported 16 Jan 2014 by Jael:  Decomposing
