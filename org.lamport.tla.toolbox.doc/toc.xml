@@ -95,7 +95,7 @@
  
     <topic label="Proofs"
            href = "html/prover/prover.html">
-           <topic label="Viewing Structured Proofs"
+           <topic label="Viewing and Editing Structured Proofs"
                href = "html/prover/reading.html">
            </topic>
            <topic label="Running TLAPS"
