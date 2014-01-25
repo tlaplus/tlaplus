@@ -386,7 +386,11 @@ public class LaunchProverDialog extends Dialog
          */
         if (isatool.getSelection())
         {
-            command.add(ITLAPMOptions.ISAPROVE);
+        	// Removed by Damien. This is now the default for the PM, so we don't
+        	// need to pass anything. Note that this means the "Do not use Isabelle"
+        	// button is obsolete: it does the same thing as "Use Isabelle only if
+        	// necessary".
+            //command.add(ITLAPMOptions.ISAPROVE);
         } else if (isacheck.getSelection())
         {
             command.add(ITLAPMOptions.ISACHECK);
@@ -428,22 +432,53 @@ public class LaunchProverDialog extends Dialog
          */
         ProverHelper.setSafeFPOption(command);
 
-        String[] extraOptions = extraOptionsText.getText().trim().split(" ");
-        for (int i = 0; i < extraOptions.length; i++)
+        /* Split the string given by the user into an array of strings.
+         * The string is split on every space that is not within a pair of
+         * single-quote characters. Unlike the shell, we do not allow
+         * backslash-escapes, and we do not trigger an error in case of
+         * unclosed quote. This means there is no way to have a single-quote
+         * inside an argument.
+         * The parsing is done with a simple 3-state automaton.
+         */
+        String extraOptions = extraOptionsText.getText();
+        StringBuilder argument = new StringBuilder();
+        int state = 0;
+        for (int j = 0; j < extraOptions.length(); j++)
         {
-            /*
-             * The following if test added by LL on 17 Oct 2010 for the following reason.
-             * 
-             * For each space in the extraOptionsText, the split method generates
-             * an empty string as an array element.  If extraOptionsText is empty, then
-             * the split method generates a one-element array with a single element that
-             * is the empty string.  The resulting emptyr-string arguments don't cause
-             * a problem on Windows, but they do on the Mac; so we have to remove them.
-             */
-            if (!extraOptions[i].equals(""))
-            {
-                command.add(extraOptions[i]);
-            }
+        	char c = extraOptions.charAt(j);
+        	switch (state){
+        	case 0: // "space" state: between arguments
+        		if (c == ' '){
+        			// skip
+        		}else if (c == '\''){
+        			state = 2;
+        		}else{
+        			argument.append (c);
+        			state = 1;
+        		}
+        		break;
+        	case 1: // "unquoted" state: inside an argument but outside quotes
+        		if (c == ' '){
+        			command.add(argument.toString());
+        			argument.setLength(0);
+        			state = 0;
+         		}else if (c == '\''){
+        			state = 2;
+        		}else{
+        			argument.append (c);
+        		}
+        		break;
+        	case 2: // "quoted" state : inside quotes
+        		if (c == '\''){
+        			state = 1;
+        		}else{
+        			argument.append (c);
+        		}
+        		break;
+        	}
+        }
+        if (state == 1 || state == 2){
+        	command.add(argument.toString());
         }
 
         TLAEditor editor = EditorUtil.getActiveTLAEditor();
