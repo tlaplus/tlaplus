@@ -117,7 +117,11 @@ public class AdapterFactory implements IAdapterFactory
      * 
      * WARNING: A module named "foo" is considered not to exist if the file containing
      * it is named "Foo.tla"--that is, if the file name and the module name don't
-     * agree exactly.   (Added by LL on 16 Jan 2014).
+     * agree exactly.  This is because org.eclipse.core.internal.resources.File.exists()
+     * returns false if the names disagree in the case of some letter(s).  Working
+     * around this bug/feature is not trivial because it requires getting hold of
+     * those two names, and this doesn't seem to be easy to do here.
+     * (Added by LL on 16 Jan 2014).
      * 
      * @param location
      * @return
