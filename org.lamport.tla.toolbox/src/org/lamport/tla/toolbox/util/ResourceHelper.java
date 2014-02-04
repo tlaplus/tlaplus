@@ -1147,7 +1147,16 @@ public class ResourceHelper
         {
             nodeEndLine = ((TheoremNode) levelNode).getTheorem().getLocation().endLine();
         } else if (levelNode instanceof UseOrHideNode || levelNode instanceof InstanceNode
-                || levelNode instanceof DefStepNode)
+                     || levelNode instanceof DefStepNode)
+        	/*
+        	 * Comment added by LL on 4 Feb 2014:  To make the Prove command prove
+        	 * the innermost enclosing proof when the cursor is on a HIDE or DEFINE step,
+        	 * change the else if condition to (approximately)
+        	 * 
+        	 *       ((levelNode instanceof UseOrHideNode) && (((UseOrHideNode) levelNode).getKind() == ASTConstants.UseKind))
+        	 *       
+        	 *  Since we decided not to do this, I didn't check if this is correct.
+        	 */
         {
             nodeEndLine = levelNode.getLocation().endLine();
         } else

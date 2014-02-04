@@ -985,8 +985,20 @@ public class ProverJob extends Job
         /**********************************************************
          * Step 4                                                 *
          **********************************************************/
+        /*
+         * The "|| nodeToProve instanceof DefStepNode" disjunct caused the entire module
+         * to be proved if the user selected a DefStepNode.  This seemed like obviously the
+         * wrong thing to do.  So, LL commented it out on 4 Feb 2014.  This causes the Toolbox
+         * to call the prover on just that definition step, which causes the prover to do 
+         * nothing.  The case of an InstanceNode was also commented out for the same reason,
+         * in case TLAPS ever handles an INSTANCE step.
+         * 
+         * An alternate fix would  be to have the Toolbox call the prover on the smallest 
+         * containing proof, but we decided not to do that.  If we change our minds, the
+         * fix is indicated in a comment on line 1152 of ResourceHelper.
+         */
 
-        if (nodeToProve == null || nodeToProve instanceof InstanceNode || nodeToProve instanceof DefStepNode)
+        if (nodeToProve == null /* || nodeToProve instanceof InstanceNode  || nodeToProve instanceof DefStepNode */ )
         {
             nodeToProve = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
                     UniqueString.uniqueStringOf(moduleName));
