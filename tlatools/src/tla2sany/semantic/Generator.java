@@ -5822,7 +5822,37 @@ private final InstanceNode
         * pfNumNode is set to a node that will be the stepNode of a        *
         * NumberedProofStepKind OpDefNode.                                 *
         *******************************************************************/
-        
+      /*
+       * On 23 Feb 2014 LL added the following code to make step numbers
+       * like <*>13 illegal, so <+> and <*> can be used only for unnamed
+       * steps.  It would be most natural to make the change age the
+       * parsing level by changing the JavaCC code.  However, that code
+       * is a Kludge that it is best not to touch unless absolutely necessary.
+       * Also, detecting the error here allows multiple instances of the
+       * error to be reported in a single execution of the parser.
+       * 
+       * The modification is based on the following empirical observation:
+       * 
+       *   - For a step number like "<3>13."
+       *       stepNumSTN.image = stepNumSTN.originalImage = "<3>13."
+       *   - For a step number like "<*>13.",
+       *       stepNumSTN.image = "<3>13." and stepNumSTN.originalImage = "<*>13."
+       *   - For unnumbered steps,
+       *       stepNumSTN.originalImage = null  and    stepNumSTN.image = the actual token.
+       */
+      SyntaxTreeNode STN = (SyntaxTreeNode) stepNumSTN ;
+      if (    (STN.originalImage != null)
+           && (STN.originalImage != STN.image) 
+           ) {
+          String oimage = STN.originalImage.toString() ;
+          if   (    (! oimage.equals(STN.image.toString()))
+                 && ( (oimage.charAt(1) == '*') || (oimage.charAt(1) == '+') )
+               ) {
+              errors.addError(stepNumSTN.getLocation(),
+                      "<*> and <+> cannot be used for a named step.");
+          }          
+      }
+
       /*********************************************************************
       * Set stepNum to the step number, or null if its an unnumbered step. *
       *********************************************************************/
