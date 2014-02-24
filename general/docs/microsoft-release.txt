@@ -207,6 +207,8 @@ TO GENERATE THE RELEASE:
 
 -------------------------------------------------------------
 Version 1.4.8 - unreleased
+  - Made module names case sensitive, so they must exactly match
+    the name of the file containing them.
   - Disallowed <*> and <+> in names of named proof steps. 
   - Fixed bug which caused GotoDeclaration command not to work
     for a symbol inside a labeled expression.

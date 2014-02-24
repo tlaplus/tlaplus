@@ -199,7 +199,14 @@ public class ParseUnit {
 
     // Make sure the module named in the file matches the name of the file, at least
     // with a case-independent test.
-    if (!mName.equalsIgnoreCase(fName)) {
+    //
+    // Change made by LL on 16 Jan 2014.  Added requirement that module name 
+    // exactly matches file name.  Done because a mismatch provoked a bug in
+    // the code calling TLAPS, and it was easier to add this requirement
+    // than to fix that bug.  (See documentation of 
+    // toolbox.util.AdapterFactory.locationToRegion.)  
+    if (!mName.equals(fName)) {
+    //  was:    if (!mName.equalsIgnoreCase(fName)) {
       errors.addAbort("File name '" + fName + "' does not match the name '" +
 		      mName + "' of the top level module it contains.");
     }

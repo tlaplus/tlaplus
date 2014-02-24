@@ -47,7 +47,7 @@ public class SANY {
 //    ***********************************************************************/
 //    "last modified on Tue  10 February 2011 at 11:49:54 PST by lamport";
 
-  private static String modDate = "24 July 2013";
+  private static String modDate = "24 February 2014";
 //                lastModified.substring(21, lastModified.indexOf(" at"));
     /***********************************************************************
     * The modification date.                                               *
