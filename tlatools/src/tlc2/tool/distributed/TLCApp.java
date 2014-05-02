@@ -40,6 +40,15 @@ public class TLCApp extends DistApp {
 		this.metadir = FileUtil.makeMetaDir(this.tool.specDir, fromChkpt);
 		this.fpSetConfig = fpSetConfig;
 	}
+	
+	public TLCApp(String specFile, String configFile, boolean deadlock,
+			String fromChkpt, FPSetConfiguration fpSetConfig, FilenameToStream fts) throws IOException {
+		this(specFile, configFile, deadlock, true, fts);
+
+		this.fromChkpt = fromChkpt;
+		this.metadir = FileUtil.makeMetaDir(this.tool.specDir, fromChkpt);
+		this.fpSetConfig = fpSetConfig;
+	}
 
 	// TODO too many constructors redefinitions, replace with this(..) calls
 	public TLCApp(String specFile, String configFile,
@@ -494,6 +503,18 @@ public class TLCApp extends DistApp {
 		}
 
 		if (specFile == null) {
+			// command line omitted name of spec file, take this as an
+			// indicator to check the in-jar model/ folder for a spec.
+			// If a spec is found, use it instead (used by distributed TLC).
+			if (TLCApp.class.getResource("/model/MC.tla") != null) {
+				TLCGlobals.tool = true; // always run in Tool mode (to parse output by Toolbox later)
+				TLCGlobals.chkptDuration = 0; // never use checkpoints with distributed TLC (highly inefficient)
+				FP64.Init(fpIndex);
+				FilenameToStream resolver = new InJarFilenameToStream("/model/");
+				return new TLCApp("MC", "MC", deadlock, fromChkpt,
+						fpSetConfig, resolver);
+			}
+			
 			printErrorMsg("Error: Missing input TLA+ module.");
 			return null;
 		}

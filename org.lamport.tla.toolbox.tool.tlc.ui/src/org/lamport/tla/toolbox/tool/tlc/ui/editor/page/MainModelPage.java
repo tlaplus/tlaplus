@@ -14,6 +14,8 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -23,11 +25,13 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -147,11 +151,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     /*
      * Checkbox and input box for distributed model checking
      * 
-     * button: activate distribution
+     * combo: choose distribution and cloud to run on
      * text: additional vm arguments (e.g. -Djava.rmi...) 
      * text: pre-flight script
      */
-    private Button distributedButton;
+    private Combo distributedCombo;
     private Text distributedScriptText;
     private Button browseDistributedScriptButton;
     
@@ -285,8 +289,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         /*
          * Distributed mode
          */
-        final boolean distributed = getConfig().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
-        this.distributedButton.setSelection(distributed);
+        final String cloud = getConfig().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        //TODO re-select the cloud from the previous model run
        
         final String distributedScript = getConfig().getAttribute(LAUNCH_DISTRIBUTED_SCRIPT, LAUNCH_DISTRIBUTED_SCRIPT_DEFAULT);
         this.distributedScriptText.setText(distributedScript);
@@ -658,8 +662,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
         
         // enablement for distributed input text boxes depends on button
-        boolean distributed = this.distributedButton.getSelection();
-        this.distributedScriptText.setEnabled(distributed);
+        int selectionIndex = this.distributedCombo.getSelectionIndex();
+		String distributed = this.distributedCombo.getItem(selectionIndex);
+		// only allow a script if the "local" cloud is selected. The local cloud
+		// is the one where TLC just spawns a thread and the user is required to
+		// start the workers (e.g. via jnlp)
+        this.distributedScriptText.setEnabled(distributed.equals("local")); //TODO use constant
         
         // verify existence of pre-flight script
 //       	if(distributed) {
@@ -788,7 +796,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getConfig().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
 
         // run in distributed mode
-        boolean distributed = this.distributedButton.getSelection();
+        String distributed = this.distributedCombo.getItem(this.distributedCombo.getSelectionIndex());
         getConfig().setAttribute(LAUNCH_DISTRIBUTED, distributed);
         
         final String distributedScript = this.distributedScriptText.getText();
@@ -1287,18 +1295,21 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
          * Distribution.  Help button added by LL on 17 Jan 2013
          */
         Composite distComp = new Composite(howToRunArea, SWT.NONE) ;
-        layout = new GridLayout(2, true);
+        layout = new GridLayout(3, true);
         distComp.setLayout(layout);
         
         gd = new GridData();
         gd.horizontalSpan = 2;
         distComp.setLayoutData(gd);
         
-        distributedButton = toolkit.createButton(distComp, "Run in distributed mode", SWT.CHECK);
-        Button distHelpButton = HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
-        distributedButton.addSelectionListener(howToRunListener);
-		distributedButton.setToolTipText("If checked, state computation will be performed by (remote) workers.");
-		distributedButton.addFocusListener(focusListener);
+        toolkit.createLabel(distComp, "Run in distributed mode");
+        distributedCombo = new Combo(distComp, SWT.NONE);
+        distributedCombo.setItems(new String[] {"off", "local", "aws-ec2"});
+        distributedCombo.select(0);
+        HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
+        distributedCombo.addSelectionListener(howToRunListener);
+		distributedCombo.setToolTipText("If other than 'off' selected, state computation will be performed by (remote) workers.");
+		distributedCombo.addFocusListener(focusListener);
 		
         /*
          * pre-flight script executed prior to distributed TLC (e.g. to start remote workers)

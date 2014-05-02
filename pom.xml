@@ -30,6 +30,7 @@
 
 		<!-- bundles -->
 		<module>org.lamport.tla.toolbox</module>
+		<module>org.lamport.tla.toolbox.jclouds</module>
 		<module>org.lamport.tla.toolbox.jnlp</module>
 		<module>org.lamport.tla.toolbox.doc</module>
 		<module>org.lamport.tla.toolbox.editor.basic</module>
