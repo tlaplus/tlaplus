@@ -35,6 +35,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.IParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.job.CloudDistributedTLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.DistributedTLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
@@ -642,14 +643,18 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
 
         // distributed launch
-        boolean distributed = config.getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        String cloud = config.getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
         
         // TLC job
         TLCJob tlcjob = null;
-        if(distributed) {
-        	tlcjob = new DistributedTLCJob(specName, modelName, launch, numberOfWorkers);
-        } else {
+        if("off".equalsIgnoreCase(cloud)) {
         	tlcjob = new TLCProcessJob(specName, modelName, launch, numberOfWorkers);
+        } else {
+        	if ("local".equalsIgnoreCase(cloud)) {
+        		tlcjob = new DistributedTLCJob(specName, modelName, launch, numberOfWorkers);
+        	} else {
+        		tlcjob = new CloudDistributedTLCJob(cloud, mode, launch, numberOfWorkers, cloud);
+        	}
         }
         tlcjob.setPriority(Job.LONG);
         tlcjob.setUser(true);

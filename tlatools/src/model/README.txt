@@ -1,0 +1,1 @@
+If this directory contains a model and a spec in the final .jar file, TLC will load this model unless explicitly overridden on the command line.

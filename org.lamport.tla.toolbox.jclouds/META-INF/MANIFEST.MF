@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Jcloud
+Bundle-SymbolicName: org.lamport.tla.toolbox.jclouds
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Markus Alexander Kuppe
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.eclipse.core.runtime,
+ jclouds-core;bundle-version="1.7.2",
+ jclouds-compute;bundle-version="1.7.2",
+ jclouds-scriptbuilder;bundle-version="1.7.2",
+ jclouds-enterprise;bundle-version="1.7.2",
+ jclouds-slf4j;bundle-version="1.7.2",
+ jclouds-sshj;bundle-version="1.7.2",
+ com.google.guava;bundle-version="15.0.0",
+ com.google.inject;bundle-version="3.0.0",
+ org.apache.commons.io;bundle-version="2.0.1"
+DynamicImport-Package: *
+Bundle-Activator: org.lamport.tla.toolbox.jcloud.JCloudActivator
+Import-Package: org.jclouds.aws.ec2.reference;version="1.7.2",
+ org.jclouds.ec2.reference;version="1.7.2"
