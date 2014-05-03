@@ -122,6 +122,14 @@ COMPAQ.
          id="org.lamport.tlatools.feature"
          version="0.0.0"/>
 
+   <includes
+         id="org.lamport.tla.toolbox.feature.jclouds"
+         version="0.0.0"/>
+
+   <includes
+         id="org.apache.jclouds.feature"
+         version="0.0.0"/>
+
    <plugin
          id="org.lamport.tla.toolbox.product.standalone"
          download-size="0"

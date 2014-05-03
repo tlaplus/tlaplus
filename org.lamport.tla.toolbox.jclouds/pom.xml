@@ -56,6 +56,18 @@
                 </filesets>
             </configuration>
         </plugin>
+        <!-- Uses Java7 file API -->
+		<plugin>
+			<groupId>org.eclipse.tycho</groupId>
+			<artifactId>tycho-compiler-plugin</artifactId>
+			<version>${tycho-version}</version>
+			<configuration>
+				<source>1.7</source>
+				<target>1.5</target>
+				<encoding>UTF-8</encoding>
+			</configuration>
+		</plugin>
+        
     </plugins>
   </build>
 

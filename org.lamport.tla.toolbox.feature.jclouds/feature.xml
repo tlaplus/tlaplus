@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.lamport.tla.toolbox.feature.jclouds"
+      label="TLA+ Toolbox JClouds Feature"
+      version="1.0.0.qualifier"
+      provider-name="Markus Alexander Kuppe"
+      plugin="org.lamport.tla.toolbox.jclouds"
+      license-feature="org.lamport.tla.toolbox.feature.standalone"
+      license-feature-version="1.0.0.qualifier">
+
+   <description>
+      This feature defines the set of plug-ins that are required to run the base of the TLA+ Toolbox.
+   </description>
+
+   <includes
+         id="org.apache.jclouds.feature"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.lamport.tla.toolbox.jclouds"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+</feature>
