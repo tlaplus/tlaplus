@@ -6,6 +6,7 @@
 	<groupId>tlatoolbox</groupId>
 	<artifactId>org.lamport.tla.toolbox.jclouds.target</artifactId>
 	<version>1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 	
 	<build>
 		<plugins>
@@ -27,6 +28,33 @@
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>false</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Copy feature.xml to target/source/features/org.apache.jclouds.feature/ -->
+			<!-- to be picked up by the tycho's publish-features-and-bundles below.  -->
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.6</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<!-- here the phase you need -->
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/source/features/org.apache.jclouds.feature/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>feature.xml</include>
+									</includes>
+								</resource>
+							</resources>
 						</configuration>
 					</execution>
 				</executions>

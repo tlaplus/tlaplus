@@ -1,8 +1,6 @@
 Simply run:
 
 mvn clean verify
-mkdir -p target/source/features/org.apache.jclouds.feature/
-mvn verify
 
 The feature.xml has been create inside Eclipse (new feature project) and all jclouds bundles manually added to it. The "Version" button in the feature 
 editor syncs the bundle version into the feature.xml.

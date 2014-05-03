@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.6"?>
-
-<target name="TLA+ Toolbox 3.6" sequenceNumber="45">
+<?pde version="3.6"?><target name="TLA+ Toolbox 3.6" sequenceNumber="51">
 <locations>
 <location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.draw2d.feature.group" version="3.7.1.v20110830-1143-4607w3122194102254"/>
@@ -36,6 +34,15 @@
 <location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
 <repository location="http://tla.msr-inria.inria.fr/pdf4eclipse/"/>
+</location>
+<location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="org.apache.commons.io.source" version="2.0.1.v201105210651"/>
+<unit id="org.apache.commons.io" version="2.0.1.v201105210651"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20130517111416/repository/"/>
+</location>
+<location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="org.apache.jclouds.feature.feature.group" version="1.0.0.qualifier"/>
+<repository location="http://tla.msr-inria.inria.fr/jclouds2p2/"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
