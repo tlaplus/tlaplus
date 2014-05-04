@@ -8,6 +8,8 @@ package tlc2.tool.distributed;
 import java.io.File;
 import java.io.IOException;
 
+import model.InJarFilenameToStream;
+import model.ModelInJar;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
 import tlc2.tool.StateVec;
@@ -505,12 +507,12 @@ public class TLCApp extends DistApp {
 		if (specFile == null) {
 			// command line omitted name of spec file, take this as an
 			// indicator to check the in-jar model/ folder for a spec.
-			// If a spec is found, use it instead (used by distributed TLC).
-			if (TLCApp.class.getResource("/model/MC.tla") != null) {
+			// If a spec is found, use it instead.
+			if (ModelInJar.hasModel()) {
 				TLCGlobals.tool = true; // always run in Tool mode (to parse output by Toolbox later)
 				TLCGlobals.chkptDuration = 0; // never use checkpoints with distributed TLC (highly inefficient)
 				FP64.Init(fpIndex);
-				FilenameToStream resolver = new InJarFilenameToStream("/model/");
+				FilenameToStream resolver = new InJarFilenameToStream(ModelInJar.PATH);
 				return new TLCApp("MC", "MC", deadlock, fromChkpt,
 						fpSetConfig, resolver);
 			}

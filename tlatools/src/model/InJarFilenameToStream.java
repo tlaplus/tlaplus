@@ -1,4 +1,4 @@
-package tlc2.tool.distributed;
+package model;
 
 import java.io.File;
 import java.io.FileOutputStream;

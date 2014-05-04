@@ -5,6 +5,8 @@
 
 package tlc2;
 
+import model.InJarFilenameToStream;
+import model.ModelInJar;
 import tla2sany.modanalyzer.SpecObj;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -13,6 +15,7 @@ import tlc2.tool.Cancelable;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
+import tlc2.tool.distributed.TLCApp;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.management.ModelCheckerMXWrapper;
@@ -36,8 +39,8 @@ import util.UniqueString;
  */
 public class TLC
 {
-
     
+    private static boolean MODEL_PART_OF_JAR = false;
 
     // SZ Feb 20, 2009: the class has been 
     // transformed from static to dynamic
@@ -163,7 +166,11 @@ public class TLC
         // handle parameters
         if (tlc.handleParameters(args))
         {
-            tlc.setResolver(new SimpleFilenameToStream());
+        	if (MODEL_PART_OF_JAR) {
+        		tlc.setResolver(new InJarFilenameToStream(ModelInJar.PATH));
+        	} else {
+        		tlc.setResolver(new SimpleFilenameToStream());
+        	}
             // call the actual processing method
             tlc.process();
         }
@@ -602,8 +609,18 @@ public class TLC
         
         if (mainFile == null)
         {
-            printErrorMsg("Error: Missing input TLA+ module.");
-            return false;
+			// command line omitted name of spec file, take this as an
+			// indicator to check the in-jar model/ folder for a spec.
+			// If a spec is found, use it instead.
+			if (ModelInJar.hasModel()) {
+				MODEL_PART_OF_JAR = true;
+				TLCGlobals.tool = true; // always run in Tool mode (to parse output by Toolbox later)
+				TLCGlobals.chkptDuration = 0; // never use checkpoints with distributed TLC (highly inefficient)
+				mainFile = "MC";
+			} else {
+				printErrorMsg("Error: Missing input TLA+ module.");
+				return false;
+			}
         }
         if (configFile == null)
         {
