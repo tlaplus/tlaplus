@@ -2,15 +2,14 @@ package org.lamport.tla.toolbox.jcloud;
 
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.jclouds.compute.options.TemplateOptions.Builder.runScript;
 import static org.jclouds.compute.predicates.NodePredicates.TERMINATED;
 import static org.jclouds.compute.predicates.NodePredicates.inGroup;
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -39,8 +38,10 @@ import org.jclouds.scriptbuilder.statements.login.AdminAccess;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.sshj.config.SshjSshClientModule;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.inject.AbstractModule;
 
 public class CloudDistributedTLCJob extends Job {
@@ -57,27 +58,29 @@ public class CloudDistributedTLCJob extends Job {
 
 	public CloudDistributedTLCJob(String aName) {
 		super(aName);
+
 		groupName = aName;
-		// TODO read from launch
-		modelPath = Paths.get("/home/markus/src/TLA/models/Grid5kPerformanceTest/Test.toolbox/k8l8n6");
+		
 		mainClass = "tlc2.tool.distributed.TLCServer";
 		imageId = US_EAST_UBUNTU_14_04_AMD64;
 		ownerId = OWNER_ID_CANONICAL_LTD;
 	}
+	
+	public CloudDistributedTLCJob(String aName, File aModelFolder, int numberOfWorkers) {
+		this(aName);
+		
+		workers = numberOfWorkers;
+		modelPath = aModelFolder.toPath();
+	}
 
 	private final String ownerId;
 	private final String imageId;
-	private final Path modelPath;
 	private final String cloudProvider = "aws-ec2";
 	private final String groupName;
-	private final int workers = 1;
 	private final String mainClass;
-
-	// public CloudDistributedTLCJob(String specName, String modelName,
-	// ILaunch launch, int workers, String cloudProvider) {
-	// super(specName, modelName, launch, workers);
-	// this.cloudProvider = cloudProvider;
-	// }
+	
+	private Path modelPath;
+	private int workers;
 
 	/*
 	 * (non-Javadoc)
@@ -131,10 +134,6 @@ public class CloudDistributedTLCJob extends Job {
             Set<? extends NodeMetadata> createNodesInGroup;
 				createNodesInGroup = compute.createNodesInGroup(groupName, workers , templateBuilder.build());
 
-            NodeMetadata node = getOnlyElement(createNodesInGroup);
-            System.out.printf("<< node %s: %s%n", node.getId(),
-                  concat(node.getPrivateAddresses(), node.getPublicAddresses()));
-
             // Install Java
             Statement installOpenJDK = InstallJDK.fromOpenJDK();
 			Map<? extends NodeMetadata, ExecResponse> responses = compute
@@ -148,18 +147,25 @@ public class CloudDistributedTLCJob extends Job {
 					exec("mkdir /mnt/tlc/ && chmod 777 /mnt/tlc/"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			
-            
-			// Copy tlatools.jar to remote host
-			SshClient sshClient = context.utils().sshForNode().apply(node);
 			
-			sshClient.put("/mnt/tlc/tla2tools.jar",
-					jarPayLoad);
-			
+			final String masterTag = "master";
+			final Predicate<NodeMetadata> isMaster = new Predicate<NodeMetadata>() {
+				@Override
+				public boolean apply(NodeMetadata nodeMetadata) {
+					return nodeMetadata.getTags().contains(masterTag);
+				};
+			};
+			// Copy tlatools.jar to _one_ remote host (dp not exhaust upload of
+			// the machine running the toolbox)
+			NodeMetadata master = Iterables.getLast(createNodesInGroup);
+			master.getTags().add(masterTag);
+			SshClient sshClient = context.utils().sshForNode().apply(master);
+			sshClient.put("/mnt/tlc/tla2tools.jar",	jarPayLoad);
 			sshClient.disconnect();
-			
+
 			// Run model checker master
 			responses = compute.runScriptOnNodesMatching(
-					inGroup(groupName),
+					isMaster,
 					exec("cd /mnt/tlc/ && java -jar /mnt/tlc/tla2tools.jar"),
 					new TemplateOptions().runAsRoot(false).wrapInInitScript(
 							false));

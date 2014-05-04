@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Jcloud
-Bundle-SymbolicName: org.lamport.tla.toolbox.jclouds
+Bundle-SymbolicName: org.lamport.tla.toolbox.jclouds;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Markus Alexander Kuppe
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
@@ -18,4 +18,5 @@ Require-Bundle: org.eclipse.core.runtime,
 DynamicImport-Package: *
 Bundle-Activator: org.lamport.tla.toolbox.jcloud.JCloudActivator
 Import-Package: org.jclouds.aws.ec2.reference;version="1.7.2",
- org.jclouds.ec2.reference;version="1.7.2"
+ org.jclouds.ec2.reference;version="1.7.2",
+ org.lamport.tla.toolbox.tool.tlc.job;resolution:=optional

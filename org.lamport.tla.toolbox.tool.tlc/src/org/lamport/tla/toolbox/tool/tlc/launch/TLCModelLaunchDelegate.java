@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -15,6 +16,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -35,9 +38,9 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.IParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
-import org.lamport.tla.toolbox.tool.tlc.job.CloudDistributedTLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.DistributedTLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
+import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -45,6 +48,9 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
@@ -646,25 +652,42 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         String cloud = config.getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
         
         // TLC job
-        TLCJob tlcjob = null;
+        Job job = null;
         if("off".equalsIgnoreCase(cloud)) {
-        	tlcjob = new TLCProcessJob(specName, modelName, launch, numberOfWorkers);
+        	job = new TLCProcessJob(specName, modelName, launch, numberOfWorkers);
         } else {
-        	if ("local".equalsIgnoreCase(cloud)) {
-        		tlcjob = new DistributedTLCJob(specName, modelName, launch, numberOfWorkers);
+        	if ("built-in".equalsIgnoreCase(cloud)) {
+        		job = new DistributedTLCJob(specName, modelName, launch, numberOfWorkers);
         	} else {
-        		tlcjob = new CloudDistributedTLCJob(cloud, mode, launch, numberOfWorkers, cloud);
+                //final IProject iproject = ResourceHelper.getProject(specName);
+                final IFolder launchDir = project.getFolder(modelName);
+                final File file = launchDir.getRawLocation().makeAbsolute().toFile();
+
+				final BundleContext bundleContext = FrameworkUtil.getBundle(
+						TLCModelLaunchDelegate.class).getBundleContext();
+				final ServiceReference<IExtensionRegistry> serviceReference = bundleContext
+						.getServiceReference(IExtensionRegistry.class);
+				final IExtensionRegistry registry = bundleContext
+						.getService(serviceReference);
+				final IConfigurationElement[] elements = registry
+						.getConfigurationElementsFor("org.lamport.tla.toolx.tlc.job");
+				for (IConfigurationElement element : elements) {
+					final TLCJobFactory factory = (TLCJobFactory) element
+							.createExecutableExtension("clazz");
+					job = factory.getTLCJob(cloud, file, numberOfWorkers);
+					break;
+				}
         	}
         }
-        tlcjob.setPriority(Job.LONG);
-        tlcjob.setUser(true);
+        job.setPriority(Job.LONG);
+        job.setUser(true);
         // The TLC job itself does not do any file IO
-        tlcjob.setRule(mutexRule);
+        job.setRule(mutexRule);
 
         // setup the job change listener
         TLCJobChangeListener tlcJobListener = new TLCJobChangeListener(config);
-        tlcjob.addJobChangeListener(tlcJobListener);
-        tlcjob.schedule();
+        job.addJobChangeListener(tlcJobListener);
+        job.schedule();
     }
 
     /**
