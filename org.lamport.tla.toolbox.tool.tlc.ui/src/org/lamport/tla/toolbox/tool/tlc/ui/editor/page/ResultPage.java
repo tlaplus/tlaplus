@@ -1,12 +1,28 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchDelegate;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -28,6 +44,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -48,6 +65,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
@@ -249,8 +267,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     public void loadData() throws CoreException
     {
 
-        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(
-                getConfig());
+        TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry.getModelCheckSourceRegistry();
+		TLCModelLaunchDataProvider provider = modelCheckSourceRegistry.getProvider(getConfig());
         if (provider != null)
         {
             provider.setPresenter(this);
@@ -532,7 +550,38 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         fontChangeListener = new FontPreferenceChangeListener(controls, ITLCPreferenceConstants.I_TLC_OUTPUT_FONT);
 
         JFaceResources.getFontRegistry().addListener(fontChangeListener);
+        
+        headClientTBM.add(new DynamicContributionItem(new LoadOutputAction()));
     }
+
+	class LoadOutputAction extends Action {
+		public LoadOutputAction() {
+			super("Load output", TLCUIActivator.imageDescriptorFromPlugin(
+					TLCUIActivator.PLUGIN_ID,
+					"icons/full/copy_edit.gif"));
+			setDescription("Loads the output from an external model run corresponding to this model.");
+			setToolTipText("Loads an existing output (e.g. from a standlone TLC run that corresponds to this model.");
+		}
+
+		public void run() {
+			FileDialog fileDialog = new FileDialog(new Shell());
+			String path = fileDialog.open();
+			try {
+				TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry
+						.getModelCheckSourceRegistry();
+				modelCheckSourceRegistry
+						.removeTLCStatusSource(new ILaunchConfiguration[] { getConfig() });
+				ModelHelper.createModelOutputLogFile(getConfig(),
+						new FileInputStream(new File(path)));
+				ResultPage.this.loadData();
+			} catch (CoreException e) {
+				e.printStackTrace();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 
     /**
      * Save data back to model

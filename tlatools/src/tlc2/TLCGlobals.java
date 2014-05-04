@@ -10,13 +10,13 @@ import tlc2.tool.ModelChecker;
  * @author Leslie Lamport
  * @author Yuan Yu
  * @author Simon Zambrovski
- * @version $Id$
+ * @author Markus A. Kuppe
  */
 public class TLCGlobals
 {
 
     // The current version of TLC
-    public static String versionOfTLC = "Version 2.05 of 23 July 2013";
+    public static String versionOfTLC = "Version 2.06 of 6 May 2014";
 
     // The bound for set enumeration, used for pretty printing
     public static int enumBound = 2000;

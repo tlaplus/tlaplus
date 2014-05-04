@@ -31,7 +31,6 @@ import org.jclouds.compute.domain.TemplateBuilder;
 import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.enterprise.config.EnterpriseConfigurationModule;
 import org.jclouds.io.Payload;
-import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.scriptbuilder.domain.Statement;
 import org.jclouds.scriptbuilder.statements.java.InstallJDK;
 import org.jclouds.scriptbuilder.statements.login.AdminAccess;
@@ -55,15 +54,19 @@ public class CloudDistributedTLCJob extends Job {
 	private final String identity = System.getenv("AWS_ACCESS_KEY_ID");
 	private final String credential = System
 			.getenv("AWS_SECRET_ACCESS_KEY");
+	private final Properties props;
 
 	public CloudDistributedTLCJob(String aName) {
 		super(aName);
 
 		groupName = aName;
 		
-		mainClass = "tlc2.tool.distributed.TLCServer";
+		mainClass = "tlc2.TLC";
 		imageId = US_EAST_UBUNTU_14_04_AMD64;
 		ownerId = OWNER_ID_CANONICAL_LTD;
+		props = new Properties();
+		props.put("result.mail.address", "markus.kuppe@gmail.com");
+
 	}
 	
 	public CloudDistributedTLCJob(String aName, File aModelFolder, int numberOfWorkers) {
@@ -94,7 +97,7 @@ public class CloudDistributedTLCJob extends Job {
 		
 		ComputeServiceContext context = null;
 		try {
-			final Payload jarPayLoad = PayloadHelper.appendModel2Jar(modelPath, mainClass, monitor);
+			final Payload jarPayLoad = PayloadHelper.appendModel2Jar(modelPath, mainClass, props, monitor);
 
 			// example of specific properties, in this case optimizing image
 			// list to
@@ -109,7 +112,7 @@ public class CloudDistributedTLCJob extends Job {
 			// example of injecting a ssh implementation
 			final Iterable<AbstractModule> modules = ImmutableSet
 					.<AbstractModule> of(new SshjSshClientModule(),
-							new SLF4JLoggingModule(),
+//							new SLF4JLoggingModule(),
 							new EnterpriseConfigurationModule());
 
 			final ContextBuilder builder = ContextBuilder
@@ -130,6 +133,7 @@ public class CloudDistributedTLCJob extends Job {
             // node. ex. you can connect via ssh publicip
             Statement bootInstructions = AdminAccess.standard();
             templateBuilder.options(runScript(bootInstructions));
+//            templateBuilder.fastest();
 
             Set<? extends NodeMetadata> createNodesInGroup;
 				createNodesInGroup = compute.createNodesInGroup(groupName, workers , templateBuilder.build());
@@ -148,17 +152,17 @@ public class CloudDistributedTLCJob extends Job {
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			
 			
-			final String masterTag = "master";
+			// Choose one of the nodes to be the master and create an
+			// identifying predicate.
+			final NodeMetadata master = Iterables.getLast(createNodesInGroup);
 			final Predicate<NodeMetadata> isMaster = new Predicate<NodeMetadata>() {
 				@Override
 				public boolean apply(NodeMetadata nodeMetadata) {
-					return nodeMetadata.getTags().contains(masterTag);
+					return nodeMetadata.equals(master);
 				};
 			};
-			// Copy tlatools.jar to _one_ remote host (dp not exhaust upload of
+			// Copy tlatools.jar to _one_ remote host (do not exhaust upload of
 			// the machine running the toolbox)
-			NodeMetadata master = Iterables.getLast(createNodesInGroup);
-			master.getTags().add(masterTag);
 			SshClient sshClient = context.utils().sshForNode().apply(master);
 			sshClient.put("/mnt/tlc/tla2tools.jar",	jarPayLoad);
 			sshClient.disconnect();

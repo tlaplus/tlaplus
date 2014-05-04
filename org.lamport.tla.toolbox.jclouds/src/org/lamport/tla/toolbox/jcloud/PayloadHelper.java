@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.Writer;
@@ -20,6 +21,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -32,7 +34,7 @@ import org.osgi.framework.FrameworkUtil;
 
 public class PayloadHelper {
 
-	public static Payload appendModel2Jar(final Path modelPath, String mainClass, IProgressMonitor monitor) throws IOException {
+	public static Payload appendModel2Jar(final Path modelPath, String mainClass, Properties properties, IProgressMonitor monitor) throws IOException {
 		final Bundle bundle = FrameworkUtil.getBundle(PayloadHelper.class);
 		final URL toolsURL = bundle.getEntry("files/tla2tools.jar");
 		if (toolsURL == null) {
@@ -70,6 +72,13 @@ public class PayloadHelper {
 			manifest.write(ps);
 			ps.close();
 			Files.copy(is, manifestPath, StandardCopyOption.REPLACE_EXISTING);
+			
+			// add properties file to archive
+			File f = new File("generated.properties");
+            OutputStream out = new FileOutputStream( f );
+            properties.store(out, "This is an optional header comment string");
+        	final Path to = fs.getPath("/model/generated.properties");
+        	Files.copy(f.toPath(), to, StandardCopyOption.REPLACE_EXISTING);
 		} catch (final IOException e1) {
 			throw new RuntimeException("No model directory found to deploy");
 		}

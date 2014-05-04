@@ -62,6 +62,9 @@
 		<javac srcdir="${src.dir}" destdir="${class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
 			<!-- compilerarg value="-Xlint:deprecation"/-->
 			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/javax.mail.jar" />
+			</classpath>
 		</javac>
 
 		<!-- copy the resource files -->
@@ -105,6 +108,16 @@
 	</target>
 
 	<target name="dist" description="Build a distribution">
+		<!-- Extract javax.mail jar into class directory to be packaged into tla2tools.jar -->
+		<!-- javax.mail is used by the MailSender functionality, that mails the output -->
+		<!-- of TLC to a given email address. -->
+		<!-- The javax.mail dependency as well as javax.activation is also depended upon -->
+		<!-- by the tla2tools OSGi bundle and is expected to be the same version. -->
+		<unzip src="lib/javax.mail.jar" dest="${class.dir}"/>
+		
+		<!-- TODO: add javax.activation to lib/ and extract it here too. Otherwise we have a -->
+		<!-- runtime dependency on Java 6. -->
+		
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.file}">

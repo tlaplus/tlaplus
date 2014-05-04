@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -29,6 +30,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -705,6 +707,19 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
 
         return null;
+    }
+    
+    public static void createModelOutputLogFile(ILaunchConfiguration config, InputStream is) throws CoreException {
+        Assert.isNotNull(config);
+        IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
+        if (targetFolder != null && targetFolder.exists())
+        {
+        	IFile file = targetFolder.getFile(ModelHelper.FILE_OUT);
+        	if (file.exists()) {
+        		file.delete(true, new NullProgressMonitor());
+        	}
+        	file.create(is, true, new NullProgressMonitor());
+        }
     }
 
     /**

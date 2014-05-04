@@ -115,7 +115,7 @@ public class TLCOutputSourceRegistry
         this.providers.remove(name);
         printStats();
     }
-
+    
     /**
      * Remove a source and the date provider associated with that source, if it
      * exists.

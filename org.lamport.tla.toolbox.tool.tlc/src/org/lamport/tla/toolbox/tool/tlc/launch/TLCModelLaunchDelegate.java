@@ -753,21 +753,23 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 refreshJob.schedule();
 
                 // make the model modification in order to make it runnable again
-                Assert.isTrue(event.getJob() instanceof TLCProcessJob);
-                Assert.isNotNull(event.getResult());
-                TLCProcessJob tlcJob = (TLCProcessJob) event.getJob();
-                if (event.getResult().isOK())
-                {
-                    int autoLockTime = config.getAttribute(LAUNCH_AUTO_LOCK_MODEL_TIME,
-                            IModelConfigurationDefaults.MODEL_AUTO_LOCK_TIME_DEFAULT);
-                    // auto lock time is in minutes, getTLCStartTime() and getTLCEndTime()
-                    // are in milliseconds
-                    if (tlcJob.getTlcEndTime() - tlcJob.getTlcStartTime() > autoLockTime * 60 * 1000)
-                    {
-                        // length of job execution exceeded a certain length of time
-                        // should lock
-                        ModelHelper.setModelLocked(config, true);
-                    }
+                if (event.getJob() instanceof TLCProcessJob) {
+                	Assert.isTrue(event.getJob() instanceof TLCProcessJob);
+                	Assert.isNotNull(event.getResult());
+                	TLCProcessJob tlcJob = (TLCProcessJob) event.getJob();
+                	if (event.getResult().isOK())
+                	{
+                		int autoLockTime = config.getAttribute(LAUNCH_AUTO_LOCK_MODEL_TIME,
+                				IModelConfigurationDefaults.MODEL_AUTO_LOCK_TIME_DEFAULT);
+                		// auto lock time is in minutes, getTLCStartTime() and getTLCEndTime()
+                		// are in milliseconds
+                		if (tlcJob.getTlcEndTime() - tlcJob.getTlcStartTime() > autoLockTime * 60 * 1000)
+                		{
+                			// length of job execution exceeded a certain length of time
+                			// should lock
+                			ModelHelper.setModelLocked(config, true);
+                		}
+                	}
                 }
 
                 ModelHelper.setModelRunning(config, false);

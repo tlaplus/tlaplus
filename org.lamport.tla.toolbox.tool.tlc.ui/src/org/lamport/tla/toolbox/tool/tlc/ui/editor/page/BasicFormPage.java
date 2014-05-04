@@ -119,7 +119,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     // the page completion status (true by default)
     private boolean isComplete = true;
 
-    private ToolBarManager headClientTBM = null;
+    protected ToolBarManager headClientTBM = null;
 
     /**
 	 * A {@link FocusListener} responsible for marking a location in the
@@ -977,7 +977,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             return !isModelRunning() && isModelLocked();
         }
     }
-
+    
     class LockModelAction extends Action
     {
         LockModelAction()

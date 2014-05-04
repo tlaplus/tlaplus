@@ -5,6 +5,13 @@
 
 package tlc2;
 
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+
 import model.InJarFilenameToStream;
 import model.ModelInJar;
 import tla2sany.modanalyzer.SpecObj;
@@ -15,7 +22,6 @@ import tlc2.tool.Cancelable;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
-import tlc2.tool.distributed.TLCApp;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.management.ModelCheckerMXWrapper;
@@ -26,6 +32,7 @@ import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
+import util.MailSender;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
@@ -159,13 +166,19 @@ public class TLC
      *                     default: 1000000
      *    
      */
-    public static void main(String[] args)
+    public static void main(String[] args) throws UnknownHostException
     {
         TLC tlc = new TLC();
 
         // handle parameters
         if (tlc.handleParameters(args))
         {
+        	final String mailto = System.getProperty("result.mail.address");
+        	// Record/Log output to later send it by email
+        	if (mailto != null) {
+        		ToolIO.out = new LogPrintStream();
+        	}
+        	
         	if (MODEL_PART_OF_JAR) {
         		tlc.setResolver(new InJarFilenameToStream(ModelInJar.PATH));
         	} else {
@@ -173,9 +186,53 @@ public class TLC
         	}
             // call the actual processing method
             tlc.process();
+
+            // Send logged output by email 
+			if (mailto != null) {
+				final LogPrintStream lps = (LogPrintStream) ToolIO.out;
+				final String from = "TLC the friendly model checker <"
+						+ System.getProperty("user.name") + "@"
+						+ InetAddress.getLocalHost().getHostName() + ">";
+				MailSender.send(from, mailto, mailto.split("@")[1],
+						"Model Checking result for " + tlc.mainFile,
+						lps.toString());
+			}
         }
         // terminate
         System.exit(0);
+    }
+    
+    private static class LogPrintStream extends PrintStream {
+
+		private final List<String> buf = new ArrayList<String>();
+    	
+    	public LogPrintStream() {
+			super(new PipedOutputStream());
+		}
+    	
+    	/* (non-Javadoc)
+    	 * @see java.io.PrintStream#print(java.lang.String)
+    	 */
+    	public void print(String str) {
+    		buf.add(str);
+    		System.out.print(str);
+    	}
+
+    	/* (non-Javadoc)
+    	 * @see java.io.PrintStream#println(java.lang.String)
+    	 */
+    	public void println(String str) {
+    		buf.add(str + "\n");
+    		System.out.println(str);
+    	}
+    	
+    	public String toString() {
+        	StringBuilder builder = new StringBuilder();
+        	for(String s : buf) {
+        	    builder.append(s);
+        	}
+            return builder.toString();
+    	}
     }
 
     /**
@@ -614,6 +671,7 @@ public class TLC
 			// If a spec is found, use it instead.
 			if (ModelInJar.hasModel()) {
 				MODEL_PART_OF_JAR = true;
+				ModelInJar.loadProperties();
 				TLCGlobals.tool = true; // always run in Tool mode (to parse output by Toolbox later)
 				TLCGlobals.chkptDuration = 0; // never use checkpoints with distributed TLC (highly inefficient)
 				mainFile = "MC";
