@@ -1,10 +1,10 @@
 package org.lamport.tla.toolbox.jcloud;
 
 import static com.google.common.base.Predicates.not;
-import static com.google.common.collect.Iterables.concat;
 import static org.jclouds.compute.options.TemplateOptions.Builder.runScript;
 import static org.jclouds.compute.predicates.NodePredicates.TERMINATED;
 import static org.jclouds.compute.predicates.NodePredicates.inGroup;
+import static org.jclouds.ec2.compute.options.EC2TemplateOptions.Builder.inboundPorts;
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
 
 import java.io.File;
@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -36,6 +37,7 @@ import org.jclouds.scriptbuilder.statements.java.InstallJDK;
 import org.jclouds.scriptbuilder.statements.login.AdminAccess;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.sshj.config.SshjSshClientModule;
+import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -56,34 +58,30 @@ public class CloudDistributedTLCJob extends Job {
 			.getenv("AWS_SECRET_ACCESS_KEY");
 	private final Properties props;
 
-	public CloudDistributedTLCJob(String aName) {
+	public CloudDistributedTLCJob(String aName, File aModelFolder,
+			int numberOfWorkers, final Properties properties) {
 		super(aName);
-
-		groupName = aName;
+		groupNameUUID = aName + "-" + UUID.randomUUID().toString();
+		props = properties;
+		modelPath = aModelFolder.toPath();
 		
-		mainClass = "tlc2.TLC";
+		//TODO Make this configurable
 		imageId = US_EAST_UBUNTU_14_04_AMD64;
 		ownerId = OWNER_ID_CANONICAL_LTD;
-		props = new Properties();
-		props.put("result.mail.address", "markus.kuppe@gmail.com");
-
-	}
-	
-	public CloudDistributedTLCJob(String aName, File aModelFolder, int numberOfWorkers) {
-		this(aName);
-		
-		workers = numberOfWorkers;
-		modelPath = aModelFolder.toPath();
 	}
 
 	private final String ownerId;
 	private final String imageId;
 	private final String cloudProvider = "aws-ec2";
-	private final String groupName;
-	private final String mainClass;
+	/**
+	 * The groupName has to be unique per job. This is how cloud instances are
+	 * associated to this job. If two jobs use the same groupName, the will talk
+	 * to the same set of nodes.
+	 */
+	private final String groupNameUUID;
 	
 	private Path modelPath;
-	private int workers;
+	private final int nodes = 1; //TODO only support launching TLC on a single node for now
 
 	/*
 	 * (non-Javadoc)
@@ -93,11 +91,20 @@ public class CloudDistributedTLCJob extends Job {
 	 * .IProgressMonitor)
 	 */
 	@Override
-	protected IStatus run(IProgressMonitor monitor) {
+	protected IStatus run(final IProgressMonitor monitor) {
+		monitor.beginTask("Starting TLC model checker in the cloud", 85);
 		
 		ComputeServiceContext context = null;
 		try {
-			final Payload jarPayLoad = PayloadHelper.appendModel2Jar(modelPath, mainClass, props, monitor);
+			final Payload jarPayLoad = PayloadHelper
+					.appendModel2Jar(modelPath,
+							props.getProperty(TLCJobFactory.MAIN_CLASS), props,
+							monitor);
+			// User has canceled the job, thus stop it (there will be more
+			// cancelled checks down below).
+			if (monitor.isCanceled()) {
+				return Status.CANCEL_STATUS;
+			}
 
 			// example of specific properties, in this case optimizing image
 			// list to
@@ -120,40 +127,107 @@ public class CloudDistributedTLCJob extends Job {
 					.credentials(identity, credential).modules(modules)
 					.overrides(properties);
 
-			System.out.printf(">> initializing %s%n", builder.getApiMetadata());
-
+			monitor.subTask("Initializing " + builder.getApiMetadata().getName());
 			context = builder.buildView(ComputeServiceContext.class);
 			final ComputeService compute = context.getComputeService();
-
-			// start a node
+			monitor.worked(10);
+			if (monitor.isCanceled()) {
+				return Status.CANCEL_STATUS;
+			}
+			
+			// start a node, but first configure it
             TemplateBuilder templateBuilder = compute.templateBuilder();
             templateBuilder.imageId(imageId);
+            //TODO Support faster/bigger types then just 'small'
+//            templateBuilder.fastest();
+            
+			// Open up node's firewall to allow http traffic in. This allows users to 
+			// look at the munin/ stats generated for the OS as well as TLC specifically.
+			// (See below where munin gets installed manually)
+            // This now makes us dependent on EC2 (for now)
+            templateBuilder.options(inboundPorts(22, 80));
 
             // note this will create a user with the same name as you on the
-            // node. ex. you can connect via ssh publicip
+            // node. ex. you can connect via ssh public IP
             Statement bootInstructions = AdminAccess.standard();
             templateBuilder.options(runScript(bootInstructions));
-//            templateBuilder.fastest();
 
-            Set<? extends NodeMetadata> createNodesInGroup;
-				createNodesInGroup = compute.createNodesInGroup(groupName, workers , templateBuilder.build());
+            monitor.subTask("Starting " + nodes + " instance(s).");
+			final Set<? extends NodeMetadata> createNodesInGroup;
+			createNodesInGroup = compute.createNodesInGroup(groupNameUUID,
+					nodes, templateBuilder.build());
+			monitor.worked(20);
+			if (monitor.isCanceled()) {
+				return Status.CANCEL_STATUS;
+			}
 
             // Install Java
+			monitor.subTask("Provisioning Java on all node(s)");
             Statement installOpenJDK = InstallJDK.fromOpenJDK();
 			Map<? extends NodeMetadata, ExecResponse> responses = compute
 					.runScriptOnNodesMatching(
-							inGroup(groupName),
+							inGroup(groupNameUUID),
 							installOpenJDK);
+			monitor.worked(20);
+			if (monitor.isCanceled()) {
+				return Status.CANCEL_STATUS;
+			}
 			
-			// Create /mnt/tlc and change permission to be world writable
+			// Install custom tailored jmx2munin to monitor the TLC process. Can
+			// either monitor standalone tlc2.TLC or TLCServer.
+			monitor.subTask("Provisioning TLC Monitoring on all node(s)");
 			responses = compute.runScriptOnNodesMatching(
-					inGroup(groupName),
-					exec("mkdir /mnt/tlc/ && chmod 777 /mnt/tlc/"),
+					inGroup(groupNameUUID),
+					// Never be prompted for input
+					exec("export DEBIAN_FRONTEND=noninteractive && "
+							// Download jmx2munin from the INRIA host
+							// TODO make it part of Toolbox and upload from
+							// there (it's tiny 48kb anyway) instead.
+							// This needs some better build-time integration
+							// between TLA and jmx2munin (probably best to make
+							// jmx2munin a submodule of the TLA git repo).
+							+ "wget http://tla.msr-inria.inria.fr/jmx2munin/jmx2munin_1.0_all.deb && "
+							// Install jmx2munin into the system
+							+ "dpkg -i jmx2munin_1.0_all.deb ; "
+							// Force apt to download and install the
+							// missing dependencies of jmx2munin without
+							// user interaction
+							+ "apt-get install -fy && "
+							// screen is needed to allow us to re-attach
+							// to the TLC process if logged in to the
+							// instance directly (it's probably already
+							// installed).
+							+ "apt-get install screen -y"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			
+			monitor.worked(10);
+			if (monitor.isCanceled()) {
+				return Status.CANCEL_STATUS;
+			}
 			
+			// Create /mnt/tlc and change permission to be world writable
+			// Requires package 'apache2' to be already installed. apache2
+			// creates /var/www/html.
+			monitor.subTask("Creating TLC environment on all node(s)");
+			responses = compute.runScriptOnNodesMatching(
+					inGroup(groupNameUUID),
+					exec("mkdir /mnt/tlc/ && "
+							+ "chmod 777 /mnt/tlc/ && "
+							+ "ln -s /tmp/MC.out /var/www/html/MC.out && "
+							+ "ln -s /tmp/MC.err /var/www/html/MC.err"),
+					new TemplateOptions().runAsRoot(true).wrapInInitScript(
+							false));
+			monitor.worked(5);
+			if (monitor.isCanceled()) {
+				return Status.CANCEL_STATUS;
+			}
+
+			// TODO CloudD...TLC currently only supports a single tlc2.TLC
+			// process. Thus the Predicate and isMaster check is not used for
+			// the moment.
 			// Choose one of the nodes to be the master and create an
 			// identifying predicate.
+			monitor.subTask("Copying tla2tools.jar to master node");
 			final NodeMetadata master = Iterables.getLast(createNodesInGroup);
 			final Predicate<NodeMetadata> isMaster = new Predicate<NodeMetadata>() {
 				@Override
@@ -166,50 +240,89 @@ public class CloudDistributedTLCJob extends Job {
 			SshClient sshClient = context.utils().sshForNode().apply(master);
 			sshClient.put("/mnt/tlc/tla2tools.jar",	jarPayLoad);
 			sshClient.disconnect();
+			monitor.worked(10);
+			if (monitor.isCanceled()) {
+				return Status.CANCEL_STATUS;
+			}
 
 			// Run model checker master
+			monitor.subTask("Starting TLC model checker process on the master node (in background)");
 			responses = compute.runScriptOnNodesMatching(
 					isMaster,
-					exec("cd /mnt/tlc/ && java -jar /mnt/tlc/tla2tools.jar"),
+					// "/mnt/tlc" is on the ephemeral and thus faster storage of the
+					// instance.
+					exec("cd /mnt/tlc/ && "
+							// This requires a modified version where all parameters and
+							// all spec modules are stored in files in a model/ folder
+							// inside of the jar.
+							// This is done in anticipation of other cloud providers
+							// where one cannot easily pass in parameters on the command
+							// line because there is no command line.
+							+ "screen java -jar /mnt/tlc/tla2tools.jar && "
+							// Let the machine power down immediately after
+							// finishing model checking to cut costs. However,
+							// do not shut down (hence "&&") when TLC finished
+							// with an error.
+							// It uses "sudo" because the script is explicitly
+							// run as a user. No need to run the TLC process as
+							// root.
+							// TODO what exit status does TLC show on an error
+							// in the spec with a trace?
+							+ "sudo shutdown -h now"),
 					new TemplateOptions().runAsRoot(false).wrapInInitScript(
 							false));
+			monitor.worked(5);
 
 			for (Entry<? extends NodeMetadata, ExecResponse> response : responses
 					.entrySet()) {
-				System.out.printf(
-						"<< node %s: %s%n",
-						response.getKey().getId(),
-						concat(response.getKey().getPrivateAddresses(),
-								response.getKey().getPublicAddresses()));
-				System.out.printf("<<     %s%n", response.getValue());
+				final String endMsg = String
+								.format("TLC is model checking at %s. "
+										+ "Expect to receive an email for %s with the model checking result eventually. "
+										+ "In the meantime, progress can be seen at http://%s/munin/",
+										response.getKey().getPublicAddresses(), props
+												.get("result.mail.address"), response
+												.getKey().getPublicAddresses());
+				monitor.subTask(endMsg);
+				System.out.println(endMsg);
+				//				System.out.printf(
+				//						"<< node %s: %s%n",
+				//						response.getKey().getId(),
+				//						concat(response.getKey().getPrivateAddresses(),
+				//								response.getKey().getPublicAddresses()));
+				//				System.out.printf("<<     %s%n", response.getValue());
 			}
             
+			monitor.done();
 			return Status.OK_STATUS;
-		} catch (RunNodesException e) {
+		} catch (RunNodesException|IOException|RunScriptOnNodesException e) {
 			e.printStackTrace();
-			return new Status(Status.ERROR, "org.lamport.tla.toolbox.jcloud",
-					e.getMessage(), e);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return new Status(Status.ERROR, "org.lamport.tla.toolbox.jcloud",
-					e.getMessage(), e);
-		} catch (RunScriptOnNodesException e) {
-			e.printStackTrace();
+			if (context != null) {
+				destroyNodes(context, groupNameUUID);
+			}
+			// signal error to caller
 			return new Status(Status.ERROR, "org.lamport.tla.toolbox.jcloud",
 					e.getMessage(), e);
 		} finally {
 			if (context != null) {
-				// Destroy all workers identified by the group
-				ComputeService computeService = context.getComputeService();
-				if (computeService != null) {
-					Set<? extends NodeMetadata> destroyed = computeService
-							.destroyNodesMatching(
-									Predicates.<NodeMetadata> and(not(TERMINATED),
-											inGroup(groupName)));
-					System.out.printf("<< destroyed nodes %s%n", destroyed);
+				// The user has canceled the Toolbox job, take this as a request
+				// to destroy all nodes this job has created.
+				if (monitor.isCanceled()) {
+					destroyNodes(context, groupNameUUID);
 				}
 				context.close();
 			}
+		}
+	}
+
+	private static void destroyNodes(final ComputeServiceContext ctx, final String groupname) {
+		// Destroy all workers identified by the group
+		final ComputeService computeService = ctx.getComputeService();
+		if (computeService != null) {
+			Set<? extends NodeMetadata> destroyed = computeService
+					.destroyNodesMatching(
+							Predicates.<NodeMetadata> and(not(TERMINATED),
+									inGroup(groupname)));
+			System.out.printf("<< destroyed nodes %s%n", destroyed);
 		}
 	}
 

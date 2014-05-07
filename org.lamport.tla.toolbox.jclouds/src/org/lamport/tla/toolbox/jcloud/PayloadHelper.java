@@ -35,6 +35,8 @@ import org.osgi.framework.FrameworkUtil;
 public class PayloadHelper {
 
 	public static Payload appendModel2Jar(final Path modelPath, String mainClass, Properties properties, IProgressMonitor monitor) throws IOException {
+		monitor.subTask("Tweaking tla2tools.jar to contain the spec & model");
+		
 		final Bundle bundle = FrameworkUtil.getBundle(PayloadHelper.class);
 		final URL toolsURL = bundle.getEntry("files/tla2tools.jar");
 		if (toolsURL == null) {
@@ -92,6 +94,8 @@ public class PayloadHelper {
 			jarPayLoad.getContentMetadata().setContentLength(Long.valueOf(openStream.available()));
 		} catch (final IOException e1) {
 			throw new RuntimeException("No tlatools.jar to deploy");
+		} finally {
+			monitor.worked(5);
 		}
 
 		return jarPayLoad;

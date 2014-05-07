@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Properties;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
@@ -39,7 +40,6 @@ import org.lamport.tla.toolbox.tool.IParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.job.DistributedTLCJob;
-import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
@@ -674,7 +674,14 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 				for (IConfigurationElement element : elements) {
 					final TLCJobFactory factory = (TLCJobFactory) element
 							.createExecutableExtension("clazz");
-					job = factory.getTLCJob(cloud, file, numberOfWorkers);
+					final Properties props = new Properties();
+					props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
+					//TODO eventually this should come from the preferences
+					if (System.getProperty(TLCJobFactory.MAIL_ADDRESS) != null) {
+						props.put(TLCJobFactory.MAIL_ADDRESS,
+								System.getProperty(TLCJobFactory.MAIL_ADDRESS));
+					}
+					job = factory.getTLCJob(cloud, file, numberOfWorkers, props);
 					break;
 				}
         	}
