@@ -1,10 +1,8 @@
 package org.lamport.tla.toolbox.jcloud;
 
 import static com.google.common.base.Predicates.not;
-import static org.jclouds.compute.options.TemplateOptions.Builder.runScript;
 import static org.jclouds.compute.predicates.NodePredicates.TERMINATED;
 import static org.jclouds.compute.predicates.NodePredicates.inGroup;
-import static org.jclouds.ec2.compute.options.EC2TemplateOptions.Builder.inboundPorts;
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
 
 import java.io.File;
@@ -136,21 +134,23 @@ public class CloudDistributedTLCJob extends Job {
 			}
 			
 			// start a node, but first configure it
-            TemplateBuilder templateBuilder = compute.templateBuilder();
-            templateBuilder.imageId(imageId);
-            //TODO Support faster/bigger types then just 'small'
-//            templateBuilder.fastest();
-            
+			final TemplateOptions templateOptions = compute.templateOptions();
+			
 			// Open up node's firewall to allow http traffic in. This allows users to 
 			// look at the munin/ stats generated for the OS as well as TLC specifically.
 			// (See below where munin gets installed manually)
-            // This now makes us dependent on EC2 (for now)
-            templateBuilder.options(inboundPorts(22, 80));
-
-            // note this will create a user with the same name as you on the
-            // node. ex. you can connect via ssh public IP
-            Statement bootInstructions = AdminAccess.standard();
-            templateBuilder.options(runScript(bootInstructions));
+			// This now makes us dependent on EC2 (for now)
+			templateOptions.inboundPorts(22, 80);
+			
+			// note this will create a user with the same name as you on the
+			// node. ex. you can connect via ssh public IP
+			templateOptions.runScript(AdminAccess.standard());
+			
+            TemplateBuilder templateBuilder = compute.templateBuilder();
+            templateBuilder.options(templateOptions);
+            templateBuilder.imageId(imageId);
+            //TODO Support faster/bigger types then just 'small'
+//            templateBuilder.fastest();
 
             monitor.subTask("Starting " + nodes + " instance(s).");
 			final Set<? extends NodeMetadata> createNodesInGroup;
