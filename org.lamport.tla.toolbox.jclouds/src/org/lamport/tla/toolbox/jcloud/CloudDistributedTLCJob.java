@@ -28,7 +28,6 @@ import org.jclouds.compute.domain.ExecResponse;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.TemplateBuilder;
 import org.jclouds.compute.options.TemplateOptions;
-import org.jclouds.enterprise.config.EnterpriseConfigurationModule;
 import org.jclouds.io.Payload;
 import org.jclouds.scriptbuilder.domain.Statement;
 import org.jclouds.scriptbuilder.statements.java.InstallJDK;
@@ -116,9 +115,7 @@ public class CloudDistributedTLCJob extends Job {
 
 			// example of injecting a ssh implementation
 			final Iterable<AbstractModule> modules = ImmutableSet
-					.<AbstractModule> of(new SshjSshClientModule(),
-//							new SLF4JLoggingModule(),
-							new EnterpriseConfigurationModule()); //TODO EnterpriseConfigurationModule not needed
+					.<AbstractModule> of(new SshjSshClientModule());
 
 			final ContextBuilder builder = ContextBuilder
 					.newBuilder(cloudProvider)
