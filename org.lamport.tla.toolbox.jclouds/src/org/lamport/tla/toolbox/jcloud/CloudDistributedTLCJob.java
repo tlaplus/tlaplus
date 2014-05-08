@@ -118,7 +118,7 @@ public class CloudDistributedTLCJob extends Job {
 			final Iterable<AbstractModule> modules = ImmutableSet
 					.<AbstractModule> of(new SshjSshClientModule(),
 //							new SLF4JLoggingModule(),
-							new EnterpriseConfigurationModule());
+							new EnterpriseConfigurationModule()); //TODO EnterpriseConfigurationModule not needed
 
 			final ContextBuilder builder = ContextBuilder
 					.newBuilder(cloudProvider)
@@ -258,7 +258,18 @@ public class CloudDistributedTLCJob extends Job {
 							// This is done in anticipation of other cloud providers
 							// where one cannot easily pass in parameters on the command
 							// line because there is no command line.
-							+ "screen java -jar /mnt/tlc/tla2tools.jar && "
+							+ "screen java "
+								// These properties cannot be "backed" into
+								// the payload jar as java itself does not 
+							    // support this.
+								// It might be able to read the properties from 
+								// the config file with 'com.sun.management.config.file=path',
+								// but I haven't tried if the path can point into the jar.
+								+ "-Dcom.sun.management.jmxremote "
+								+ "-Dcom.sun.management.jmxremote.port=5400 "
+								+ "-Dcom.sun.management.jmxremote.ssl=false "
+								+ "-Dcom.sun.management.jmxremote.authenticate=false "
+								+ "-jar /mnt/tlc/tla2tools.jar && "
 							// Let the machine power down immediately after
 							// finishing model checking to cut costs. However,
 							// do not shut down (hence "&&") when TLC finished
@@ -275,13 +286,18 @@ public class CloudDistributedTLCJob extends Job {
 
 			for (Entry<? extends NodeMetadata, ExecResponse> response : responses
 					.entrySet()) {
+				
+				// TLC nodes only have a single public IP address
+				final Set<String> publicAddresses = response.getKey().getPublicAddresses();
+				final String[] pubAddr = publicAddresses.toArray(new String[publicAddresses.size()]);
+				
 				final String endMsg = String
-								.format("TLC is model checking at %s. "
-										+ "Expect to receive an email for %s with the model checking result eventually. "
-										+ "In the meantime, progress can be seen at http://%s/munin/",
-										response.getKey().getPublicAddresses(), props
-												.get("result.mail.address"), response
-												.getKey().getPublicAddresses());
+						.format("TLC is model checking at %s. "
+								+ "Expect to receive an email for %s with the model checking result eventually. "
+								+ "In the meantime, progress can be seen at http://%s/munin/ "
+								+ "(it takes approximately five minutes for results to come up. "
+								+ "It shows \"403 Forbidden\" until then.).",
+								pubAddr[0], props.get("result.mail.address"), pubAddr[0]);
 				monitor.subTask(endMsg);
 				System.out.println(endMsg);
 				//				System.out.printf(
