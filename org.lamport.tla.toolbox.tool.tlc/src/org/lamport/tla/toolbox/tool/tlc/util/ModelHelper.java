@@ -712,6 +712,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static void createModelOutputLogFile(ILaunchConfiguration config, InputStream is) throws CoreException {
         Assert.isNotNull(config);
         IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
+		// create targetFolder which might be missing if the model has never
+		// been checked but the user wants to load TLC output anyway.
+		// This happens with distributed TLC, where the model is executed
+		// remotely and the log is send to the user afterwards.
+        if (targetFolder == null || !targetFolder.exists()) {
+            String modelName = getModelName(config.getFile());
+    		targetFolder = config.getFile().getProject().getFolder(modelName);
+    		targetFolder.create(true, true, new NullProgressMonitor());
+        }
         if (targetFolder != null && targetFolder.exists())
         {
         	IFile file = targetFolder.getFile(ModelHelper.FILE_OUT);
