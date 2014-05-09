@@ -5,12 +5,8 @@
 
 package tlc2;
 
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
-import java.net.InetAddress;
+import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
@@ -166,19 +162,14 @@ public class TLC
      *                     default: 1000000
      *    
      */
-    public static void main(String[] args) throws UnknownHostException
+    public static void main(String[] args) throws UnknownHostException, FileNotFoundException
     {
         TLC tlc = new TLC();
 
         // handle parameters
         if (tlc.handleParameters(args))
         {
-        	final String mailto = System.getProperty("result.mail.address");
-        	// Record/Log output to later send it by email
-        	if (mailto != null) {
-        		ToolIO.out = new LogPrintStream();
-        	}
-        	
+        	final MailSender ms = new MailSender(tlc.mainFile);
         	if (MODEL_PART_OF_JAR) {
         		tlc.setResolver(new InJarFilenameToStream(ModelInJar.PATH));
         	} else {
@@ -188,51 +179,22 @@ public class TLC
             tlc.process();
 
             // Send logged output by email 
-			if (mailto != null) {
-				final LogPrintStream lps = (LogPrintStream) ToolIO.out;
-				final String from = "TLC the friendly model checker <"
-						+ System.getProperty("user.name") + "@"
-						+ InetAddress.getLocalHost().getHostName() + ">";
-				MailSender.send(from, mailto, mailto.split("@")[1],
-						"Model Checking result for " + tlc.mainFile,
-						lps.toString());
+            boolean success = ms.send();
+            
+			// In case sending the mail has failed we treat this as an error.
+			// This is needed when TLC runs on another host and email is
+			// the only means for the user to get access to the model checking
+			// results. 
+			// With distributed TLC and CloudDistributedTLCJob in particular,
+			// the cloud node is immediately turned off once the TLC process has
+			// finished. If we were to shutdown the node even when sending out 
+            // the email has failed, the result would be lost.
+			if (!success) {
+				System.exit(1);
 			}
         }
         // terminate
         System.exit(0);
-    }
-    
-    private static class LogPrintStream extends PrintStream {
-
-		private final List<String> buf = new ArrayList<String>();
-    	
-    	public LogPrintStream() {
-			super(new PipedOutputStream());
-		}
-    	
-    	/* (non-Javadoc)
-    	 * @see java.io.PrintStream#print(java.lang.String)
-    	 */
-    	public void print(String str) {
-    		buf.add(str);
-    		System.out.print(str);
-    	}
-
-    	/* (non-Javadoc)
-    	 * @see java.io.PrintStream#println(java.lang.String)
-    	 */
-    	public void println(String str) {
-    		buf.add(str + "\n");
-    		System.out.println(str);
-    	}
-    	
-    	public String toString() {
-        	StringBuilder builder = new StringBuilder();
-        	for(String s : buf) {
-        	    builder.append(s);
-        	}
-            return builder.toString();
-    	}
     }
 
     /**

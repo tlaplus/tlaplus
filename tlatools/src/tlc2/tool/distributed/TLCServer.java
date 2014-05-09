@@ -49,6 +49,7 @@ import tlc2.tool.queue.IStateQueue;
 import tlc2.util.FP64;
 import util.Assert;
 import util.FileUtil;
+import util.MailSender;
 import util.SimpleFilenameToStream;
 import util.UniqueString;
 
@@ -668,10 +669,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	public static void main(String argv[]) {
 		MP.printMessage(EC.GENERAL, "TLC Server " + TLCGlobals.versionOfTLC);
 		TLCStandardMBean tlcServerMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
+		MailSender mail = null;
 		TLCServer server = null;
 		try {
 			TLCGlobals.setNumWorkers(0);
 			final TLCApp app = TLCApp.create(argv);
+			mail = new MailSender(app.getFileName());
 			if (expectedFPSetCount > 0) {
 				server = new DistributedFPSetTLCServer(app, expectedFPSetCount);
 			} else {
@@ -701,6 +704,18 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 		} finally {
 			tlcServerMXWrapper.unregister();
+			boolean send = mail.send();
+			// In case sending the mail has failed we treat this as an error.
+			// This is needed when TLC runs on another host and email is
+			// the only means for the user to get access to the model checking
+			// results. 
+			// With distributed TLC and CloudDistributedTLCJob in particular,
+			// the cloud node is immediately turned off once the TLC process has
+			// finished. If we were to shutdown the node even when sending out 
+            // the email has failed, the result would be lost.
+			if (!send) {
+				System.exit(1);
+			}
 		}
 	}
 
