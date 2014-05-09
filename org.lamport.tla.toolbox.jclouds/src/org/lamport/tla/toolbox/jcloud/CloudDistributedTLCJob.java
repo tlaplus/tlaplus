@@ -7,6 +7,7 @@ import static org.jclouds.scriptbuilder.domain.Statements.exec;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,6 +35,7 @@ import org.jclouds.scriptbuilder.statements.java.InstallJDK;
 import org.jclouds.scriptbuilder.statements.login.AdminAccess;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.sshj.config.SshjSshClientModule;
+import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 
 import com.google.common.base.Predicate;
@@ -78,7 +80,7 @@ public class CloudDistributedTLCJob extends Job {
 	private final String groupNameUUID;
 	
 	private Path modelPath;
-	private final int nodes = 1; //TODO only support launching TLC on a single node for now
+	private final int nodes = 1; //TODO only supports launching TLC on a single node for now
 
 	/*
 	 * (non-Javadoc)
@@ -113,7 +115,8 @@ public class CloudDistributedTLCJob extends Job {
 					ownerId);
 //			properties.setProperty(AWSEC2Constants.PROPERTY_EC2_CC_REGIONS, "eu-west-1");
 
-			// example of injecting a ssh implementation
+			// Create compute environment in the cloud and inject an ssh
+			// implementation. ssh is our means of communicating with the node.
 			final Iterable<AbstractModule> modules = ImmutableSet
 					.<AbstractModule> of(new SshjSshClientModule());
 
@@ -281,20 +284,22 @@ public class CloudDistributedTLCJob extends Job {
 							false));
 			monitor.worked(5);
 
+			String endMsg = "";
+			URL url = null;
 			for (Entry<? extends NodeMetadata, ExecResponse> response : responses
 					.entrySet()) {
 				
 				// TLC nodes only have a single public IP address
 				final Set<String> publicAddresses = response.getKey().getPublicAddresses();
 				final String[] pubAddr = publicAddresses.toArray(new String[publicAddresses.size()]);
-				
-				final String endMsg = String
-						.format("TLC is model checking at %s. "
-								+ "Expect to receive an email for %s with the model checking result eventually. "
-								+ "In the meantime, progress can be seen at http://%s/munin/ "
-								+ "(it takes approximately five minutes for results to come up. "
-								+ "It shows \"403 Forbidden\" until then.).",
-								pubAddr[0], props.get("result.mail.address"), pubAddr[0]);
+				url = new URL("http://" + pubAddr[0] + "/munin/");
+				endMsg = String
+						.format("TLC is model checking at host %s. "
+								+ "Expect to receive an email for model %s with the model checking result eventually.",
+//								+ "In the meantime, progress can be seen at <a href=\"http://%s/munin/\">http://%s/munin/</a> "
+//								+ "(it takes approximately five minutes for results to come up. "
+//								+ "It shows \"403 Forbidden\" until then.).",
+								pubAddr[0], props.get("result.mail.address"));
 				monitor.subTask(endMsg);
 				System.out.println(endMsg);
 				//				System.out.printf(
@@ -306,7 +311,7 @@ public class CloudDistributedTLCJob extends Job {
 			}
             
 			monitor.done();
-			return Status.OK_STATUS;
+			return new CloudStatus(Status.OK, "org.lamport.tla.toolbox.jcloud", Status.OK, endMsg, null, url);
 		} catch (RunNodesException|IOException|RunScriptOnNodesException e) {
 			e.printStackTrace();
 			if (context != null) {
@@ -337,6 +342,23 @@ public class CloudDistributedTLCJob extends Job {
 									inGroup(groupname)));
 			System.out.printf("<< destroyed nodes %s%n", destroyed);
 		}
+	}
+	
+	class CloudStatus extends Status implements ITLCJobStatus {
+
+		private final URL url;
+
+		public CloudStatus(int severity, String pluginId, int code,
+				String message, Throwable exception, URL url) {
+			super(severity, pluginId, code, message, exception);
+			this.url = url;
+		}
+
+		@Override
+		public URL getURL() {
+			return url;
+		}
+		
 	}
 
 	// /* (non-Javadoc)

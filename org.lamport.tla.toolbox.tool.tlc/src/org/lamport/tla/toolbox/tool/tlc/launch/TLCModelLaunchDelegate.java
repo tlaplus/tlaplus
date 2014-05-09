@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.tlc.launch;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.net.URL;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
@@ -32,14 +33,19 @@ import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.IParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.job.DistributedTLCJob;
+import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
@@ -682,6 +688,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 								System.getProperty(TLCJobFactory.MAIL_ADDRESS));
 					}
 					job = factory.getTLCJob(cloud, file, numberOfWorkers, props);
+					job.addJobChangeListener(new WithStatusJobChangeListener(config));
 					break;
 				}
         	}
@@ -697,6 +704,52 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         job.schedule();
     }
 
+	// This opens up a dialog at the end of the job showing the status message
+    class WithStatusJobChangeListener extends SimpleJobChangeListener {
+
+		private final ILaunchConfiguration config;
+
+		public WithStatusJobChangeListener(ILaunchConfiguration config) {
+			this.config = config;
+		}
+
+		public void done(IJobChangeEvent event) {
+			super.done(event);
+	
+			// TLC models seem to require some clean-up
+			try {
+				ModelHelper.setModelLocked(config, false);
+				ModelHelper.setModelRunning(config, false);
+				ModelHelper.recoverModel(config);
+			} catch (CoreException doesNotHappen) {
+				doesNotHappen.printStackTrace();
+				// Not supposed to happen
+			}
+
+			final ITLCJobStatus result = (ITLCJobStatus) event.getJob().getResult();
+			final String message = result.getMessage();
+			final URL url = result.getURL();
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run() {
+					boolean yesOpenBrowser = MessageDialog
+							.openConfirm(
+									Display.getDefault().getActiveShell(),
+									"Cloud TLC",
+									message
+											+ "\n\nClicking OK opens a status page in a browser");
+					if (yesOpenBrowser) {
+						try {
+							PlatformUI.getWorkbench().getBrowserSupport()
+							.getExternalBrowser().openURL(url);
+						} catch (PartInitException doesNotHappen) {
+							doesNotHappen.printStackTrace();
+						}
+					}
+				}
+			});
+		}
+    }
+    
     /**
      * listens to the termination of the TLC run 
      */
