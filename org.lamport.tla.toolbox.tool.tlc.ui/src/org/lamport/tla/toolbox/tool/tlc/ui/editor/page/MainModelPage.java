@@ -14,8 +14,6 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -25,7 +23,6 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -1306,6 +1303,22 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         distributedCombo = new Combo(distComp, SWT.READ_ONLY);
         distributedCombo.setItems(new String[] {"off", "built-in", "aws-ec2"});
         distributedCombo.select(0);
+        distributedCombo.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(SelectionEvent e) {
+				int selectionIndex = distributedCombo.getSelectionIndex();
+				String item = distributedCombo.getItem(selectionIndex);
+				if (item.equalsIgnoreCase("aws-ec2")) {
+					workers.setEnabled(false);
+					maxHeapSize.setEnabled(false);
+				} else {
+					workers.setEnabled(true);
+					maxHeapSize.setEnabled(true);
+				}
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+        });
         HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
         distributedCombo.addSelectionListener(howToRunListener);
 		distributedCombo.setToolTipText("If other than 'off' selected, state computation will be performed by (remote) workers.");
