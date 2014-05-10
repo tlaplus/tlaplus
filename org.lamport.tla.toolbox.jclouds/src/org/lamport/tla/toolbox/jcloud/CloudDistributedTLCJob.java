@@ -253,13 +253,19 @@ public class CloudDistributedTLCJob extends Job {
 					// "/mnt/tlc" is on the ephemeral and thus faster storage of the
 					// instance.
 					exec("cd /mnt/tlc/ && "
+							// Execute TLC (java) process inside screen
+							// and shutdown on TLC's completion. But
+							// detach from screen directly. Name screen 
+							// session "tlc".
+							// (see http://stackoverflow.com/a/10126799)
+//							+ "screen -dm -S tlc bash -c \" "
 							// This requires a modified version where all parameters and
 							// all spec modules are stored in files in a model/ folder
 							// inside of the jar.
 							// This is done in anticipation of other cloud providers
 							// where one cannot easily pass in parameters on the command
 							// line because there is no command line.
-							+ "screen java "
+							+ "nohup java "
 								// These properties cannot be "backed" into
 								// the payload jar as java itself does not 
 							    // support this.
@@ -281,8 +287,9 @@ public class CloudDistributedTLCJob extends Job {
 							// TODO what exit status does TLC show on an error
 							// in the spec with a trace?
 							+ "sudo shutdown -h now"),
+//							+ "\""), // closing opening '"' of screen/bash -c
 					new TemplateOptions().runAsRoot(false).wrapInInitScript(
-							false));
+							true).blockOnComplete(false).blockUntilRunning(false));
 			monitor.worked(5);
 
 			String endMsg = "";
