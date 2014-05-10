@@ -150,6 +150,7 @@ public class CloudDistributedTLCJob extends Job {
             templateBuilder.options(templateOptions);
             templateBuilder.imageId(imageId);
             //TODO Support faster/bigger types then just 'small'
+            templateBuilder.hardwareId("m3.2xlarge");
 //            templateBuilder.fastest();
 
             monitor.subTask("Starting " + nodes + " instance(s).");
