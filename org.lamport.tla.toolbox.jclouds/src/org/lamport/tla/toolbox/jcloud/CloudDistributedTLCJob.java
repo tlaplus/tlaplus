@@ -45,33 +45,23 @@ import com.google.common.collect.Iterables;
 import com.google.inject.AbstractModule;
 
 public class CloudDistributedTLCJob extends Job {
-
-	// ubuntu official
-	public static final String OWNER_ID_CANONICAL_LTD = "owner-id=owner-id=099720109477;state=available;image-type=machine";
-	// instance store/paravirtual/amd64/ubuntu/server
-	public static final String US_EAST_UBUNTU_14_04_AMD64 = "us-east-1/ami-7fe7fe16"; // ubuntu 64bit 14.04 precise
-	public static final String EU_WEST_UBUNTU_12_04_AMD64 = "eu-west-1/ami-036eaa74";
 	
 	private final String identity = System.getenv("AWS_ACCESS_KEY_ID");
 	private final String credential = System
 			.getenv("AWS_SECRET_ACCESS_KEY");
+	
 	private final Properties props;
+	private final CloudTLCInstanceParameters params;
 
 	public CloudDistributedTLCJob(String aName, File aModelFolder,
-			int numberOfWorkers, final Properties properties) {
+			int numberOfWorkers, final Properties properties, CloudTLCInstanceParameters params) {
 		super(aName);
+		this.params = params;
 		groupNameUUID = aName + "-" + UUID.randomUUID().toString();
 		props = properties;
 		modelPath = aModelFolder.toPath();
-		
-		//TODO Make this configurable
-		imageId = US_EAST_UBUNTU_14_04_AMD64;
-		ownerId = OWNER_ID_CANONICAL_LTD;
 	}
-
-	private final String ownerId;
-	private final String imageId;
-	private final String cloudProvider = "aws-ec2";
+	
 	/**
 	 * The groupName has to be unique per job. This is how cloud instances are
 	 * associated to this job. If two jobs use the same groupName, the will talk
@@ -112,7 +102,7 @@ public class CloudDistributedTLCJob extends Job {
 			properties
 			.setProperty(
 					AWSEC2Constants.PROPERTY_EC2_AMI_QUERY,
-					ownerId);
+					params.getOwnerId());
 //			properties.setProperty(AWSEC2Constants.PROPERTY_EC2_CC_REGIONS, "eu-west-1");
 
 			// Create compute environment in the cloud and inject an ssh
@@ -121,7 +111,7 @@ public class CloudDistributedTLCJob extends Job {
 					.<AbstractModule> of(new SshjSshClientModule());
 
 			final ContextBuilder builder = ContextBuilder
-					.newBuilder(cloudProvider)
+					.newBuilder(params.getCloudProvier())
 					.credentials(identity, credential).modules(modules)
 					.overrides(properties);
 
@@ -148,10 +138,8 @@ public class CloudDistributedTLCJob extends Job {
 			
             TemplateBuilder templateBuilder = compute.templateBuilder();
             templateBuilder.options(templateOptions);
-            templateBuilder.imageId(imageId);
-            //TODO Support faster/bigger types then just 'small'
-            templateBuilder.hardwareId("m3.2xlarge");
-//            templateBuilder.fastest();
+            templateBuilder.imageId(params.getImageId());
+            templateBuilder.hardwareId(params.getHardwareId());
 
             monitor.subTask("Starting " + nodes + " instance(s).");
 			final Set<? extends NodeMetadata> createNodesInGroup;
@@ -266,6 +254,7 @@ public class CloudDistributedTLCJob extends Job {
 							// where one cannot easily pass in parameters on the command
 							// line because there is no command line.
 							+ "java "
+								+ params.getJavaVMArgs() + " "
 								// These properties cannot be "backed" into
 								// the payload jar as java itself does not 
 							    // support this.
@@ -276,7 +265,11 @@ public class CloudDistributedTLCJob extends Job {
 								+ "-Dcom.sun.management.jmxremote.port=5400 "
 								+ "-Dcom.sun.management.jmxremote.ssl=false "
 								+ "-Dcom.sun.management.jmxremote.authenticate=false "
-								+ "-jar /mnt/tlc/tla2tools.jar && "
+								// TLC tuning options
+								+ params.getJavaSystemProperties() + " "
+								+ "-jar /mnt/tlc/tla2tools.jar " 
+								+ params.getTLCParameters() + " "
+								+ "&& "
 							// Let the machine power down immediately after
 							// finishing model checking to cut costs. However,
 							// do not shut down (hence "&&") when TLC finished

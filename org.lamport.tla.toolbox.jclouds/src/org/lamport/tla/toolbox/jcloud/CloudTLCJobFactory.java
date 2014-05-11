@@ -10,7 +10,7 @@ public class CloudTLCJobFactory implements TLCJobFactory {
 
 	@Override
 	public Job getTLCJob(String aName, File aModelFolder, int numberOfWorkers, final Properties props) {
-		return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props);
+		return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props, new EC2CloudTLCInstanceParameters());
 	}
 
 }
