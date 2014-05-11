@@ -9,8 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -25,7 +23,6 @@ import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.RunNodesException;
 import org.jclouds.compute.RunScriptOnNodesException;
-import org.jclouds.compute.domain.ExecResponse;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.TemplateBuilder;
 import org.jclouds.compute.options.TemplateOptions;
@@ -50,6 +47,14 @@ public class CloudDistributedTLCJob extends Job {
 	private final String credential = System
 			.getenv("AWS_SECRET_ACCESS_KEY");
 	
+	/**
+	 * The groupName has to be unique per job. This is how cloud instances are
+	 * associated to this job. If two jobs use the same groupName, the will talk
+	 * to the same set of nodes.
+	 */
+	private final String groupNameUUID;
+	private final Path modelPath;
+	private final int nodes = 1; //TODO only supports launching TLC on a single node for now
 	private final Properties props;
 	private final CloudTLCInstanceParameters params;
 
@@ -61,24 +66,7 @@ public class CloudDistributedTLCJob extends Job {
 		props = properties;
 		modelPath = aModelFolder.toPath();
 	}
-	
-	/**
-	 * The groupName has to be unique per job. This is how cloud instances are
-	 * associated to this job. If two jobs use the same groupName, the will talk
-	 * to the same set of nodes.
-	 */
-	private final String groupNameUUID;
-	
-	private Path modelPath;
-	private final int nodes = 1; //TODO only supports launching TLC on a single node for now
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.lamport.tla.toolbox.tool.tlc.job.TLCJob#run(org.eclipse.core.runtime
-	 * .IProgressMonitor)
-	 */
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
 		monitor.beginTask("Starting TLC model checker in the cloud", 85);
@@ -96,14 +84,10 @@ public class CloudDistributedTLCJob extends Job {
 			}
 
 			// example of specific properties, in this case optimizing image
-			// list to
-			// only amazon supplied
+			// list to only amazon supplied
 			final Properties properties = new Properties();
-			properties
-			.setProperty(
-					AWSEC2Constants.PROPERTY_EC2_AMI_QUERY,
+			properties.setProperty(AWSEC2Constants.PROPERTY_EC2_AMI_QUERY,
 					params.getOwnerId());
-//			properties.setProperty(AWSEC2Constants.PROPERTY_EC2_CC_REGIONS, "eu-west-1");
 
 			// Create compute environment in the cloud and inject an ssh
 			// implementation. ssh is our means of communicating with the node.
@@ -136,11 +120,12 @@ public class CloudDistributedTLCJob extends Job {
 			// node. ex. you can connect via ssh public IP
 			templateOptions.runScript(AdminAccess.standard());
 			
-            TemplateBuilder templateBuilder = compute.templateBuilder();
+            final TemplateBuilder templateBuilder = compute.templateBuilder();
             templateBuilder.options(templateOptions);
             templateBuilder.imageId(params.getImageId());
             templateBuilder.hardwareId(params.getHardwareId());
 
+            // Everything configured, now launch node
             monitor.subTask("Starting " + nodes + " instance(s).");
 			final Set<? extends NodeMetadata> createNodesInGroup;
 			createNodesInGroup = compute.createNodesInGroup(groupNameUUID,
@@ -153,10 +138,8 @@ public class CloudDistributedTLCJob extends Job {
             // Install Java
 			monitor.subTask("Provisioning Java on all node(s)");
             Statement installOpenJDK = InstallJDK.fromOpenJDK();
-			Map<? extends NodeMetadata, ExecResponse> responses = compute
-					.runScriptOnNodesMatching(
-							inGroup(groupNameUUID),
-							installOpenJDK);
+			compute.runScriptOnNodesMatching(inGroup(groupNameUUID),
+					installOpenJDK);
 			monitor.worked(20);
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
@@ -165,7 +148,7 @@ public class CloudDistributedTLCJob extends Job {
 			// Install custom tailored jmx2munin to monitor the TLC process. Can
 			// either monitor standalone tlc2.TLC or TLCServer.
 			monitor.subTask("Provisioning TLC Monitoring on all node(s)");
-			responses = compute.runScriptOnNodesMatching(
+			compute.runScriptOnNodesMatching(
 					inGroup(groupNameUUID),
 					// Never be prompted for input
 					exec("export DEBIAN_FRONTEND=noninteractive && "
@@ -198,7 +181,7 @@ public class CloudDistributedTLCJob extends Job {
 			// Requires package 'apache2' to be already installed. apache2
 			// creates /var/www/html.
 			monitor.subTask("Creating TLC environment on all node(s)");
-			responses = compute.runScriptOnNodesMatching(
+			compute.runScriptOnNodesMatching(
 					inGroup(groupNameUUID),
 					exec("mkdir /mnt/tlc/ && "
 							+ "chmod 777 /mnt/tlc/ && "
@@ -236,7 +219,7 @@ public class CloudDistributedTLCJob extends Job {
 
 			// Run model checker master
 			monitor.subTask("Starting TLC model checker process on the master node (in background)");
-			responses = compute.runScriptOnNodesMatching(
+			compute.runScriptOnNodesMatching(
 					isMaster,
 					// "/mnt/tlc" is on the ephemeral and thus faster storage of the
 					// instance.
@@ -283,34 +266,19 @@ public class CloudDistributedTLCJob extends Job {
 							true).blockOnComplete(false).blockUntilRunning(false));
 			monitor.worked(5);
 
-			String endMsg = "";
-			URL url = null;
-			for (Entry<? extends NodeMetadata, ExecResponse> response : responses
-					.entrySet()) {
-				
-				// TLC nodes only have a single public IP address
-				final Set<String> publicAddresses = response.getKey().getPublicAddresses();
-				final String[] pubAddr = publicAddresses.toArray(new String[publicAddresses.size()]);
-				url = new URL("http://" + pubAddr[0] + "/munin/");
-				endMsg = String
-						.format("TLC is model checking at host %s. "
-								+ "Expect to receive an email for model %s with the model checking result eventually.",
-//								+ "In the meantime, progress can be seen at <a href=\"http://%s/munin/\">http://%s/munin/</a> "
-//								+ "(it takes approximately five minutes for results to come up. "
-//								+ "It shows \"403 Forbidden\" until then.).",
-								pubAddr[0], props.get("result.mail.address"));
-				monitor.subTask(endMsg);
-				System.out.println(endMsg);
-				//				System.out.printf(
-				//						"<< node %s: %s%n",
-				//						response.getKey().getId(),
-				//						concat(response.getKey().getPrivateAddresses(),
-				//								response.getKey().getPublicAddresses()));
-				//				System.out.printf("<<     %s%n", response.getValue());
-			}
-            
+			// Communicate result to user
 			monitor.done();
-			return new CloudStatus(Status.OK, "org.lamport.tla.toolbox.jcloud", Status.OK, endMsg, null, url);
+			final String hostname = Iterables.getOnlyElement(master.getPublicAddresses()); // master.getHostname() only returns internal name
+			return new CloudStatus(
+					Status.OK,
+					"org.lamport.tla.toolbox.jcloud",
+					Status.OK,
+					String.format(
+							"TLC is model checking at host %s. "
+									+ "Expect to receive an email for model %s with the model checking result eventually.",
+							hostname,
+							props.get("result.mail.address")), null, new URL(
+							"http://" + hostname + "/munin/"));
 		} catch (RunNodesException|IOException|RunScriptOnNodesException e) {
 			e.printStackTrace();
 			if (context != null) {
@@ -332,7 +300,7 @@ public class CloudDistributedTLCJob extends Job {
 	}
 
 	private static void destroyNodes(final ComputeServiceContext ctx, final String groupname) {
-		// Destroy all workers identified by the group
+		// Destroy all workers identified by the given group
 		final ComputeService computeService = ctx.getComputeService();
 		if (computeService != null) {
 			Set<? extends NodeMetadata> destroyed = computeService
@@ -357,15 +325,5 @@ public class CloudDistributedTLCJob extends Job {
 		public URL getURL() {
 			return url;
 		}
-		
 	}
-
-	// /* (non-Javadoc)
-	// * @see org.lamport.tla.toolbox.tool.tlc.job.TLCJob#checkCondition()
-	// */
-	// @Override
-	// protected boolean checkCondition() {
-	// //TODO return false once done calculating to end this Job
-	// return true;
-	// }
 }
