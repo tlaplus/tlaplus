@@ -265,7 +265,7 @@ public class CloudDistributedTLCJob extends Job {
 							// This is done in anticipation of other cloud providers
 							// where one cannot easily pass in parameters on the command
 							// line because there is no command line.
-							+ "nohup java "
+							+ "java "
 								// These properties cannot be "backed" into
 								// the payload jar as java itself does not 
 							    // support this.
