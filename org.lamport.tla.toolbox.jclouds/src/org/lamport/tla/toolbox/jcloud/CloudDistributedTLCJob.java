@@ -258,7 +258,7 @@ public class CloudDistributedTLCJob extends Job {
 							// detach from screen directly. Name screen 
 							// session "tlc".
 							// (see http://stackoverflow.com/a/10126799)
-//							+ "screen -dm -S tlc bash -c \" "
+							+ "screen -dm -S tlc bash -c \" "
 							// This requires a modified version where all parameters and
 							// all spec modules are stored in files in a model/ folder
 							// inside of the jar.
@@ -284,10 +284,8 @@ public class CloudDistributedTLCJob extends Job {
 							// It uses "sudo" because the script is explicitly
 							// run as a user. No need to run the TLC process as
 							// root.
-							// TODO what exit status does TLC show on an error
-							// in the spec with a trace?
-							+ "sudo shutdown -h now"),
-//							+ "\""), // closing opening '"' of screen/bash -c
+							+ "sudo shutdown -h now"
+							+ "\""), // closing opening '"' of screen/bash -c
 					new TemplateOptions().runAsRoot(false).wrapInInitScript(
 							true).blockOnComplete(false).blockUntilRunning(false));
 			monitor.worked(5);
