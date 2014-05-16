@@ -28,6 +28,11 @@
 		<!-- non-OSGi jars -->
 		<module>tlatools</module>
 
+		<!-- OSGi based multi invocation worker (model check > 1 spec in a single runtime -->
+		<module>org.lamport.tlatools.api</module>
+		<module>org.lamport.tlatools.impl.distributed</module>
+		<module>org.lamport.tlatools.consumer.distributed</module>
+
 		<!-- bundles -->
 		<module>org.lamport.tla.toolbox</module>
 		<module>org.lamport.tla.toolbox.jnlp</module>
@@ -48,11 +53,6 @@
 		<module>org.lamport.tla.toolbox.uitest</module>
 		<module>org.lamport.tla.toolbox.tool.tla2tex.uitest</module>
 		<module>org.lamport.tla.toolbox.tool.tlc.ui.uitest</module>
-
-		<!-- OSGi based multi invocation worker (model check > 1 spec in a single runtime -->
-		<module>org.lamport.tlatools.api</module>
-		<module>org.lamport.tlatools.impl.distributed</module>
-		<module>org.lamport.tlatools.consumer.distributed</module>
 
 		<!-- features -->
 		<module>org.lamport.tlatools.feature</module>

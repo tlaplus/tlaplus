@@ -16,6 +16,103 @@
   
     <build>
     <plugins>
+
+		<!-- This section below creates an OSGi distribution of TLC to be run as 
+			an ever connecting worker. For that, it uses a base OSGi framework and the 
+			fileinstall bundle to install all OSGi bundles in the plugins/ folder. The 
+			packaging done here has to run _after_ the referenced org.lamport.tla* bundles 
+			have been packaged, but before this .jnlp bundle is. This is because the 
+			.jnlp bundle is later serving the dist-tlc.zip distribution from its files/ 
+			folder and thus has to include the dist-tlc.zip in the .jnlp.jar. -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-dependency-plugin</artifactId>
+			<version>2.8</version>
+			<executions>
+				<execution>
+					<id>copy</id>
+					<phase>prepare-package</phase>
+					<goals>
+						<goal>copy</goal>
+					</goals>
+					<configuration>
+						<artifactItems>
+							<!-- FW -->
+							<artifactItems>
+								<groupId>org.eclipse</groupId>
+								<artifactId>org.eclipse.osgi</artifactId>
+								<version>3.8.0.v20120529-1548</version>
+							</artifactItems>
+							<artifactItem>
+								<groupId>org.apache.felix</groupId>
+								<artifactId>org.apache.felix.fileinstall</artifactId>
+								<version>3.4.0</version>
+								<type>jar</type>
+							</artifactItem>
+							<artifactItem>
+								<groupId>org.apache.felix</groupId>
+								<artifactId>org.apache.felix.scr</artifactId>
+								<version>1.8.2</version>
+								<type>jar</type>
+								<outputDirectory>${project.build.directory}/disttlc/plugins</outputDirectory>
+							</artifactItem>
+							<!-- TLA payload -->
+							<artifactItem>
+								<groupId>tlatoolbox</groupId>
+								<artifactId>org.lamport.tlatools.api</artifactId>
+								<version>1.0.0-SNAPSHOT</version>
+								<type>jar</type>
+								<outputDirectory>${project.build.directory}/disttlc/plugins</outputDirectory>
+							</artifactItem>
+							<artifactItem>
+								<groupId>tlatoolbox</groupId>
+								<artifactId>org.lamport.tlatools.consumer.distributed</artifactId>
+								<version>1.0.0-SNAPSHOT</version>
+								<type>jar</type>
+								<outputDirectory>${project.build.directory}/disttlc/plugins</outputDirectory>
+							</artifactItem>
+							<artifactItem>
+								<groupId>tlatoolbox</groupId>
+								<artifactId>org.lamport.tlatools.impl.distributed</artifactId>
+								<version>1.0.0-SNAPSHOT</version>
+								<type>jar</type>
+								<outputDirectory>${project.build.directory}/disttlc/plugins</outputDirectory>
+							</artifactItem>
+							<artifactItem>
+								<groupId>tlatoolbox</groupId>
+								<artifactId>org.lamport.tlatools</artifactId>
+								<version>1.0.0-SNAPSHOT</version>
+								<type>jar</type>
+								<outputDirectory>${project.build.directory}/disttlc/plugins</outputDirectory>
+							</artifactItem>
+						</artifactItems>
+						<outputDirectory>${project.build.directory}/disttlc</outputDirectory>
+						<overWriteReleases>false</overWriteReleases>
+						<overWriteSnapshots>true</overWriteSnapshots>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.4</version>
+			<executions>
+				<execution>
+					<id>single</id>
+					<phase>prepare-package</phase>
+					<goals>
+						<goal>single</goal>
+					</goals>
+					<configuration>
+						<finalName>dist</finalName>
+						<descriptors>
+							<descriptor>src/assembly/zip.xml</descriptor>
+						</descriptors>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
       <!--  copy tla2tools.jar into files/ where it will be served from -->
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
@@ -36,8 +133,25 @@
                   <include>tla2tools.jar</include>
                 </resource>
               </resources>              
-            </configuration>            
+            </configuration>  
+            <!-- Copy dist-tlc.zip in a later mvn phase -->          
           </execution>
+				<execution>
+					<id>copy-resources-dist-tlc</id>
+					<phase>prepare-package</phase>
+					<goals>
+						<goal>copy-resources</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>${project.build.directory}/../files/</outputDirectory>
+						<resources>
+							<resource>
+								<directory>${project.build.directory}/</directory>
+								<include>dist-tlc.zip</include>
+							</resource>
+						</resources>
+					</configuration>
+				</execution>
         </executions>
       </plugin>
       <!--  sign tla2tools.jar in place with dummy cert (required for JNLP) -->
@@ -69,6 +183,7 @@
           </execution>
         </executions>
       </plugin>
+	      
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-clean-plugin</artifactId>
@@ -79,6 +194,7 @@
                         <directory>files</directory>
                         <includes>
                             <include>**/tla2tools.jar</include>
+                            <include>**/dist-tlc.zip</include>
                         </includes>
                         <followSymlinks>false</followSymlinks>
                     </fileset>
