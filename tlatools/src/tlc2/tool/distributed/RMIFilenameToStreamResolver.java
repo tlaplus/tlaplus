@@ -8,7 +8,6 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
-import tlc2.output.MP;
 import util.FilenameToStream;
 
 /**
@@ -55,11 +54,9 @@ public class RMIFilenameToStreamResolver implements FilenameToStream {
 		// strip off path
 		final String name = new File(filename).getName();
 		
-		File tempFile = fileCache.get(name);
-		
-		File file = null;
+		File file = fileCache.get(name);
 		// not in cache
-		if (tempFile == null) {
+		if (file == null ||  !file.exists()) {
 			
 			// read bytes from server
 			byte[] bs = new byte[0];
