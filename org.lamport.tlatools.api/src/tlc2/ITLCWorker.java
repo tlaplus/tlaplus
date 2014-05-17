@@ -11,7 +11,13 @@ public interface ITLCWorker {
 	 * @return true iff connected successfully
 	 */
 	boolean connect(URI uri);
-
+	
+	/**
+	 * Block the caller for as long as the connected worker is computing. The
+	 * behavior on calling this on a disconnected worker is undefined.
+	 */
+	void awaitTermination();
+	
 	/**
 	 * Disconnects from the remote TLCServer
 	 * @return true iff disconnected successfully

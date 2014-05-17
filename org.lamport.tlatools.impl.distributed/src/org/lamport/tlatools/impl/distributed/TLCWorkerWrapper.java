@@ -36,4 +36,12 @@ public class TLCWorkerWrapper extends TLCWrapper implements ITLCWorker {
 		}
 		return true;
 	}
+	
+	public void awaitTermination() {
+		try {
+			TLCWorker.awaitTermination();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

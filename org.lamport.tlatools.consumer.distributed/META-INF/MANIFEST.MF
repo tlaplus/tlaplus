@@ -7,3 +7,5 @@ Require-Bundle: org.lamport.tlatools.api;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Service-Component: OSGi-INF/workerConsumer.xml,
  OSGi-INF/fpsetConsumer.xml
+Import-Package: org.osgi.framework;version="1.6.0",
+ org.osgi.service.packageadmin

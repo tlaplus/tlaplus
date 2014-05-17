@@ -1,5 +1,5 @@
 // Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
-package org.lamport.tla.distributed.consumer;
+package org.lamport.tla.distributed.consumer.faulty;
 
 import java.util.Random;
 import java.util.concurrent.Executor;
