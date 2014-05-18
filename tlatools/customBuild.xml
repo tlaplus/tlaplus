@@ -116,6 +116,11 @@
 				<attribute name="Implementation-Title" value="TLA+ Tools" />
 				<attribute name="Implementation-Version" value="${version} ${TODAY}" />
 				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
+				<!-- App-Name and Permissions is required by Java Webstart used by distributed TLC -->
+				<!-- Depending on security level, the user will see a warning otherwise. -->
+				<!-- http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/security/manifest.html -->
+				<attribute name="Application-Name" value="TLC" />
+				<attribute name="permissions" value="all-permissions" /> <!-- won't work with 'sandbox' as it writes files -->
 			</manifest>
 		</jar>
 	</target>
@@ -205,7 +210,7 @@
 		<!-- remove copied class.dir -->
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
-	
+
 	<target name="test-dist-long" description="Executes accompining long-running unit tests on jar file" depends="dist" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
@@ -245,7 +250,7 @@
 		<!-- remove copied class.dir -->
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
-	
+
 	<target name="dist-mixed-jar" description="Build a distribution" depends="default">
 		<!-- create a JAR file for the users -->
 		<jar destfile="${dist-mixed.file.jar}">
