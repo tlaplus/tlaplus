@@ -44,6 +44,36 @@ public class IndexServlet extends URLHttpServlet {
 		// third table
 		printTable(resp, CombinedJNLPGeneratorServlet.JNLP, CombinedJNLPGeneratorServlet.MAINCLASS, "combined", CombinedJNLPGeneratorServlet.INDEX_DESC);
 		
+		// d) dist-tlc.zip OSGi fw that acts as a TLCWorker daemon
+		resp.getWriter().println(
+				"<table id=\"header\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" border=\"0\">\n" + 
+					"<p>Start a daemon-stlye TLCWorker (no need to restart the worker for each model checker run)</p>\n" + 
+					"<tr><td>\n" + 
+					"<ul>");
+			
+		resp.getWriter().println(
+				"<li>\n" + 
+					"<p>Run from slave command line (works best with <a href=\"http://www.oracle.com/technetwork/java/javase/downloads/index.html\">Java 8</a>):</p>\n" + 
+					// Linux
+					"<h4>bash</h4>" +
+					"<pre>\n" + 
+						"wget <a href=\"" + addr + "/files/dist-tlc.zip\">" + addr + "/files/dist-tlc.zip</a>\n" + 
+						"unzip dist-tlc.zip\n" + 
+						"cd disttlc/\n" + 
+						"java -Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997 -jar dist-tlc.jar " +
+					"\n</pre>\n" + 
+					// Windows Powershell 2.0 with manually create C:\\tmp folder ($env:temp does not seem to work) and x86 Java installed in default location
+					"<h4>Windows Powershell 2.0:</h4>" +
+					"<pre>\n" + 
+						"(new-object System.Net.WebClient).DownloadFile(\"" + addr + "/files/dist-tlc.zip\", \"C:\\tmp\\dist-tlc.zip\")\n" + 
+						"(new-object -com shell.application).namespace(\"C:\\tmp\").CopyHere((new-object -com shell.application).namespace(\"C:\\tmp\\dist-tlc.zip\").Items(),16)\n" +
+						"& 'C:\\Program Files (x86)\\Java\\jre7\\bin\\java.exe' \"-Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997\" -jar C:\\tmp\\disttlc\\dist-tlc.jar" +
+				"\n</pre>\n" + 
+				"</li>");
+		resp.getWriter().println(
+				"</ul>\n" + 
+				"</td></tr></table>\n");
+		
 		resp.getWriter().println(
 				"</body></html>");
 	}

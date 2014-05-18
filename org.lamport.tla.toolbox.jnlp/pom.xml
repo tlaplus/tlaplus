@@ -42,6 +42,9 @@
 								<groupId>org.eclipse</groupId>
 								<artifactId>org.eclipse.osgi</artifactId>
 								<version>3.8.0.v20120529-1548</version>
+								<!-- Remove version suffix from resulting jar to make command shown in org.lamport.tla.toolbox.distributed.IndexServlet.printTable(HttpServletResponse, 
+									String, String, String, String) work regardless of version -->
+								<destFileName>dist-tlc.jar</destFileName>
 							</artifactItems>
 							<artifactItem>
 								<groupId>org.apache.felix</groupId>
