@@ -62,7 +62,7 @@ public class IndexServlet extends URLHttpServlet {
 						"cd disttlc/\n" + 
 						"java -Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997 -jar dist-tlc.jar " +
 					"\n</pre>\n" + 
-					// Windows Powershell 2.0 with manually create C:\\tmp folder ($env:temp does not seem to work) and x86 Java installed in default location
+					// Windows Powershell 2.0 with manually created C:\\tmp folder ($env:temp does not seem to work) and x86 Java installed in default location
 					"<h4>Windows Powershell 2.0:</h4>" +
 					"<pre>\n" + 
 						"(new-object System.Net.WebClient).DownloadFile(\"" + addr + "/files/dist-tlc.zip\", \"C:\\tmp\\dist-tlc.zip\")\n" + 

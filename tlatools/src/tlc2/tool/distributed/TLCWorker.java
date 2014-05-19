@@ -316,7 +316,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					server = (TLCServerRMI) Naming.lookup(url);
 					break;
 				} catch (ConnectException e) {
-					// if the cause if a java.NET.ConnectException the server is
+					// if the cause is a java.NET.ConnectException the server is
 					// simply not ready yet
 					final Throwable cause = e.getCause();
 					if(cause instanceof java.net.ConnectException) {
