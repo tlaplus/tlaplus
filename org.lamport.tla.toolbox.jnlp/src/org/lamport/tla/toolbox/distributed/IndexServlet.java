@@ -30,7 +30,7 @@ public class IndexServlet extends URLHttpServlet {
 		
 		// boostrap JRE on Windows systems
 		resp.getWriter().println(
-				"<object codebase=\"https://java.sun.com/update/1.6.0/jinstall-6-windows-i586.cab#Version=6,0,0,0\" classid=\"clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284\" height='0' width='0'>" +
+				"<object codebase=\"https://java.sun.com/update/1.7.0/jinstall-7u55-windows-i586.cab#Version=7,0,0,0\" classid=\"clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284\" height='0' width='0'>" +
 						"<param name=\"app\" value=\"" + url + "\"/>" +
 						"<param name=\"back\" value=\"false\"/>" +
 				"</object>");
@@ -43,6 +43,36 @@ public class IndexServlet extends URLHttpServlet {
 		
 		// third table
 		printTable(resp, CombinedJNLPGeneratorServlet.JNLP, CombinedJNLPGeneratorServlet.MAINCLASS, "combined", CombinedJNLPGeneratorServlet.INDEX_DESC);
+		
+		// d) dist-tlc.zip OSGi fw that acts as a TLCWorker daemon
+		resp.getWriter().println(
+				"<table id=\"header\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" border=\"0\">\n" + 
+					"<p>Start a daemon-stlye TLCWorker (no need to restart the worker for each model checker run)</p>\n" + 
+					"<tr><td>\n" + 
+					"<ul>");
+			
+		resp.getWriter().println(
+				"<li>\n" + 
+					"<p>Run from slave command line (works best with <a href=\"http://www.oracle.com/technetwork/java/javase/downloads/index.html\">Java 8</a>):</p>\n" + 
+					// Linux
+					"<h4>bash</h4>" +
+					"<pre>\n" + 
+						"wget <a href=\"" + addr + "/files/dist-tlc.zip\">" + addr + "/files/dist-tlc.zip</a>\n" + 
+						"unzip dist-tlc.zip\n" + 
+						"cd disttlc/\n" + 
+						"java -Djava.rmi.server.hostname=" + remoteAddr + " -Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997 -jar dist-tlc.jar " +
+					"\n</pre>\n" + 
+					// Windows Powershell 2.0 with manually created C:\\tmp folder ($env:temp does not seem to work) and x86 Java installed in default location
+					"<h4>Windows Powershell 2.0:</h4>" +
+					"<pre>\n" + 
+						"(new-object System.Net.WebClient).DownloadFile(\"" + addr + "/files/dist-tlc.zip\", \"C:\\tmp\\dist-tlc.zip\")\n" + 
+						"(new-object -com shell.application).namespace(\"C:\\tmp\").CopyHere((new-object -com shell.application).namespace(\"C:\\tmp\\dist-tlc.zip\").Items(),16)\n" +
+						"& 'C:\\Program Files (x86)\\Java\\jre7\\bin\\java.exe' \"-Djava.rmi.server.hostname=" + remoteAddr + "\" \"-Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997\" -jar C:\\tmp\\disttlc\\dist-tlc.jar" +
+				"\n</pre>\n" + 
+				"</li>");
+		resp.getWriter().println(
+				"</ul>\n" + 
+				"</td></tr></table>\n");
 		
 		resp.getWriter().println(
 				"</body></html>");
@@ -77,7 +107,8 @@ public class IndexServlet extends URLHttpServlet {
 					"<p>Or if the slave is headless:</p>\n" + 
 					"<pre>\n" + 
 						"wget " + addr + "/files/" + TLA2TOOLS_JAR + "\n" + 
-						"java -cp <a href=\"/files/" + TLA2TOOLS_JAR + "\">" + TLA2TOOLS_JAR + "</a> " + mainClass
+						"java -Djava.rmi.server.hostname=" + remoteAddr
+								+ " -cp <a href=\"/files/" + TLA2TOOLS_JAR + "\">" + TLA2TOOLS_JAR + "</a> " + mainClass
 						+ " " + url.getHost() +
 					"</pre>\n" + 
 				"</li>");

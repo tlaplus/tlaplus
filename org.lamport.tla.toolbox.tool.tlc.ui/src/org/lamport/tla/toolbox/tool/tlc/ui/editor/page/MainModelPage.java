@@ -499,6 +499,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                     this.getId(), IMessageProvider.WARNING, UIHelper.getWidget(dm
 					        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
             expandSection(SEC_HOW_TO_RUN);
+        } else {
+        	modelEditor.removeErrorMessage("strangeNumber1", UIHelper.getWidget(dm
+			        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
         }
         
 		// legacy value?

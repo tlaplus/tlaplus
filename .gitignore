@@ -15,3 +15,4 @@ tlatools/ByteUtilsTest*.bin
 *.csv
 examples/*/states/
 general/performance/states/
+org.lamport.tla.toolbox.jnlp/files/dist-tlc.zip

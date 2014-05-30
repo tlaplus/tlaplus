@@ -1,13 +1,11 @@
 // Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
-package org.lamport.tla.distributed.consumer;
+package org.lamport.tla.distributed.consumer.faulty;
 
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import tlc2.IDistributedFPSet;
 
-public class DistributedFPSetConsumer {
+public class FaultyDistributedFPSetConsumer extends FaultyConsumer {
 	
 	/**
 	 * TLCServer address to connect to.
@@ -16,7 +14,7 @@ public class DistributedFPSetConsumer {
 	 * //TODO port number currently hard coded in TLCServer/TLCWorker 
 	 */
 	private final URI uri = URI
-			.create(System.getProperty(DistributedFPSetConsumer.class.getName()
+			.create(System.getProperty(FaultyDistributedFPSetConsumer.class.getName()
 					+ ".uri", "rmi://localhost:10997"));
 
 	/**
@@ -29,13 +27,19 @@ public class DistributedFPSetConsumer {
 	 */
 	public void setIDistributedFPSet(final IDistributedFPSet anIDistributedFPSet) {
 		// Fork out to a separate thread to not block DeclarativeService forever
-		final ExecutorService executor = Executors.newSingleThreadExecutor();
 		executor.execute(new Runnable() {
 			/* (non-Javadoc)
 			 * @see java.lang.Runnable#run()
 			 */
 			public void run() {
 				anIDistributedFPSet.connect(uri);
+				
+				// Decide if this instance simulates a faulty one and - if so -
+				// wait for a random time before disconnecting the FPSet.
+				if (shouldKill()) {
+					sleep();
+					anIDistributedFPSet.disconnect();
+				}
 			}
 		});
 	}

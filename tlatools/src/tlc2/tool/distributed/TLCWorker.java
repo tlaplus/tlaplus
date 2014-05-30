@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -49,6 +50,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private static RMIFilenameToStreamResolver fts;
 	private static final ExecutorService executorService = Executors.newCachedThreadPool();
 	private static TLCWorkerRunnable[] runnables = new TLCWorkerRunnable[0];
+
+	private static volatile CountDownLatch cdl;
 	
 	private DistApp work;
 	private IFPSetManager fpSetManager;
@@ -209,6 +212,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		keepAliveTimer.cancel();
 		
 		UnicastRemoteObject.unexportObject(TLCWorker.this, true);
+		
+		cdl.countDown();
 	}
 	
 	/* (non-Javadoc)
@@ -291,6 +296,14 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		}
 		final String serverName = args[0];
 
+		// spawn as many worker threads as we have cores unless user
+		// explicitly passes thread count
+		final int numCores = Integer.getInteger(TLCWorker.class.getName()
+				+ ".threadCount", Runtime.getRuntime()
+				.availableProcessors());
+		
+		cdl = new CountDownLatch(numCores);
+		
 		try {
 			String url = "//" + serverName + ":" + TLCServer.Port
 					+ "/TLCServer";
@@ -303,7 +316,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					server = (TLCServerRMI) Naming.lookup(url);
 					break;
 				} catch (ConnectException e) {
-					// if the cause if a java.NET.ConnectException the server is
+					// if the cause is a java.NET.ConnectException the server is
 					// simply not ready yet
 					final Throwable cause = e.getCause();
 					if(cause instanceof java.net.ConnectException) {
@@ -339,12 +352,6 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					server.getPreprocess(), fts);
 
 			final IFPSetManager fpSetManager = server.getFPSetManager();
-			
-			// spawn twice as many worker threads as we have cores unless user
-			// explicitly passes thread count
-			final int numCores = Integer.getInteger(TLCWorker.class.getName()
-					+ ".threadCount", Runtime.getRuntime()
-					.availableProcessors());
 			
 			runnables = new TLCWorkerRunnable[numCores];
 			for (int j = 0; j < numCores; j++) {
@@ -394,7 +401,9 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		for (int i = 0; i < runnables.length; i++) {
 			TLCWorker worker = runnables[i].getTLCWorker();
 			try {
-				worker.exit();
+				if (worker != null) {
+					worker.exit();
+				}
 			} catch (NoSuchObjectException e) {
 				// may happen, ignore
 			}
@@ -402,6 +411,16 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		
 		fts = null;
 		runnables = new TLCWorkerRunnable[0];
+	}
+
+	public static void awaitTermination() throws InterruptedException {
+		cdl.await();
+		
+		// Sleep 10 seconds for TLCServer to dispose itself. Otherwise
+		// if callees wait for this termination, they might end up connecting to
+		// the old TLCServer instance once
+		// _again_.
+		Thread.sleep(10 * 1000);
 	}
 
 	public static class TLCWorkerRunnable implements Runnable {

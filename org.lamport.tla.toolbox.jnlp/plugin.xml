@@ -34,6 +34,10 @@
             alias="/files/webstart.gif"
             base-name="files/webstart.gif">
       </resource>
+      <resource
+            alias="/files/dist-tlc.zip"
+            base-name="files/dist-tlc.zip">
+      </resource>
    </extension>
 
 

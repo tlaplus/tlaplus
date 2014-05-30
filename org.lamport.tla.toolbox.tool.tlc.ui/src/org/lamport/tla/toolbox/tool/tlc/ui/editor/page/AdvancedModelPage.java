@@ -269,8 +269,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         String actionConstraintFormula = FormHelper.trimTrailingSpaces(actionConstraintSource.getDocument().get());
         getConfig().setAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintFormula);
 
-        // extra vm arguments
-        final String vmArgs = this.extraVMArgumentsText.getText();
+		// extra vm arguments (replace newlines which otherwise cause the
+		// process to ignore all args except the first one)
+        final String vmArgs = this.extraVMArgumentsText.getText().replace("\r\n", " ").replace("\n", " ");
         getConfig().setAttribute(LAUNCH_JVM_ARGS, vmArgs);
 
         // extra tlc parameters
