@@ -15,6 +15,7 @@ public abstract class URLHttpServlet extends HttpServlet {
 
 	protected URL url;
 	protected String addr;
+	protected String remoteAddr;
 	
 	
 	/* (non-Javadoc)
@@ -27,5 +28,7 @@ public abstract class URLHttpServlet extends HttpServlet {
 		final StringBuffer requestURL = req.getRequestURL();
 		url = new URL(requestURL.toString());
 		addr = url.getProtocol() + "://" + url.getAuthority();
+		
+		remoteAddr = req.getRemoteAddr();
 	}
 }

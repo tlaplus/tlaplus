@@ -60,14 +60,14 @@ public class IndexServlet extends URLHttpServlet {
 						"wget <a href=\"" + addr + "/files/dist-tlc.zip\">" + addr + "/files/dist-tlc.zip</a>\n" + 
 						"unzip dist-tlc.zip\n" + 
 						"cd disttlc/\n" + 
-						"java -Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997 -jar dist-tlc.jar " +
+						"java -Djava.rmi.server.hostname=" + remoteAddr + " -Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997 -jar dist-tlc.jar " +
 					"\n</pre>\n" + 
 					// Windows Powershell 2.0 with manually created C:\\tmp folder ($env:temp does not seem to work) and x86 Java installed in default location
 					"<h4>Windows Powershell 2.0:</h4>" +
 					"<pre>\n" + 
 						"(new-object System.Net.WebClient).DownloadFile(\"" + addr + "/files/dist-tlc.zip\", \"C:\\tmp\\dist-tlc.zip\")\n" + 
 						"(new-object -com shell.application).namespace(\"C:\\tmp\").CopyHere((new-object -com shell.application).namespace(\"C:\\tmp\\dist-tlc.zip\").Items(),16)\n" +
-						"& 'C:\\Program Files (x86)\\Java\\jre7\\bin\\java.exe' \"-Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997\" -jar C:\\tmp\\disttlc\\dist-tlc.jar" +
+						"& 'C:\\Program Files (x86)\\Java\\jre7\\bin\\java.exe' \"-Djava.rmi.server.hostname=" + remoteAddr + "\" \"-Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997\" -jar C:\\tmp\\disttlc\\dist-tlc.jar" +
 				"\n</pre>\n" + 
 				"</li>");
 		resp.getWriter().println(
@@ -107,7 +107,8 @@ public class IndexServlet extends URLHttpServlet {
 					"<p>Or if the slave is headless:</p>\n" + 
 					"<pre>\n" + 
 						"wget " + addr + "/files/" + TLA2TOOLS_JAR + "\n" + 
-						"java -cp <a href=\"/files/" + TLA2TOOLS_JAR + "\">" + TLA2TOOLS_JAR + "</a> " + mainClass
+						"java -Djava.rmi.server.hostname=" + remoteAddr
+								+ " -cp <a href=\"/files/" + TLA2TOOLS_JAR + "\">" + TLA2TOOLS_JAR + "</a> " + mainClass
 						+ " " + url.getHost() +
 					"</pre>\n" + 
 				"</li>");
