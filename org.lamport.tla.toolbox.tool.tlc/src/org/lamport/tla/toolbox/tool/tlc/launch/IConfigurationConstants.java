@@ -30,6 +30,10 @@ public interface IConfigurationConstants
      */
 	public static final String LAUNCH_DISTRIBUTED = "distributedTLC";
     /**
+     * Launch distributed version of TLC and send result to this address
+     */
+	public static final String LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS = "result.mail.address";
+    /**
      * Additional VM args for distributed version of TLC
      */
 	public static final String LAUNCH_JVM_ARGS = "distributedTLCVMArgs";

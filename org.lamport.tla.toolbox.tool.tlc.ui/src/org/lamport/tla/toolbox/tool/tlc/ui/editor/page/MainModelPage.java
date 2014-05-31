@@ -5,6 +5,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Vector;
 
+import javax.mail.internet.AddressException;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -16,6 +18,8 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.PaintEvent;
@@ -153,6 +157,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      * text: pre-flight script
      */
     private Combo distributedCombo;
+    private Text resultMailAddressText;
     private Text distributedScriptText;
     private Button browseDistributedScriptButton;
     
@@ -799,6 +804,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         String distributed = this.distributedCombo.getItem(this.distributedCombo.getSelectionIndex());
         getConfig().setAttribute(LAUNCH_DISTRIBUTED, distributed);
         
+        String resultMailAddress = this.resultMailAddressText.getText();
+        getConfig().setAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddress);
+        
         final String distributedScript = this.distributedScriptText.getText();
         getConfig().setAttribute(LAUNCH_DISTRIBUTED_SCRIPT, distributedScript);
 
@@ -1306,6 +1314,54 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         distributedCombo = new Combo(distComp, SWT.READ_ONLY);
         distributedCombo.setItems(new String[] {"off", "built-in", "aws-ec2"});
         distributedCombo.select(0);
+        HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
+        distributedCombo.addSelectionListener(howToRunListener);
+		distributedCombo.setToolTipText("If other than 'off' selected, state computation will be performed by (remote) workers.");
+		distributedCombo.addFocusListener(focusListener);
+		
+		// Result mail address input
+        final Composite resultAddress = new Composite(howToRunArea, SWT.NONE) ;
+        layout = new GridLayout(3, true);
+        resultAddress.setLayout(layout);
+        
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        distComp.setLayoutData(gd);
+        
+		toolkit.createLabel(resultAddress, "Result mailto address:");
+		resultMailAddressText = toolkit.createText(resultAddress, "");
+		resultMailAddressText.setMessage("my-name@my-domain.org"); // hint
+		resultMailAddressText.addKeyListener(new KeyAdapter() {
+			
+			private final ModelEditor modelEditor = (ModelEditor) getEditor();
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				super.keyPressed(e);
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				super.keyReleased(e);
+				try {
+					String text = resultMailAddressText.getText();
+					new javax.mail.internet.InternetAddress(text, true);
+				} catch (AddressException exp) {
+					modelEditor.addErrorMessage("emailAddressInvalid",
+							"Invalid email address", getId(),
+							IMessageProvider.ERROR, resultMailAddressText);
+					return;
+				}
+				modelEditor.removeErrorMessage("emailAddressInvalid", resultMailAddressText);
+			}
+		});
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 200;
+        resultMailAddressText.setLayoutData(gd);
+		
+		resultAddress.setVisible(false);
+
         distributedCombo.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent e) {
 				int selectionIndex = distributedCombo.getSelectionIndex();
@@ -1313,20 +1369,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				if (item.equalsIgnoreCase("aws-ec2")) {
 					workers.setEnabled(false);
 					maxHeapSize.setEnabled(false);
+					resultAddress.setVisible(true);
 				} else {
 					workers.setEnabled(true);
 					maxHeapSize.setEnabled(true);
+					resultAddress.setVisible(false);
 				}
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
         });
-        HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
-        distributedCombo.addSelectionListener(howToRunListener);
-		distributedCombo.setToolTipText("If other than 'off' selected, state computation will be performed by (remote) workers.");
-		distributedCombo.addFocusListener(focusListener);
-		
+
         /*
          * pre-flight script executed prior to distributed TLC (e.g. to start remote workers)
          */

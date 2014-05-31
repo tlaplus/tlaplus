@@ -682,11 +682,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 							.createExecutableExtension("clazz");
 					final Properties props = new Properties();
 					props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
-					//TODO eventually this should come from the preferences
-					if (System.getProperty(TLCJobFactory.MAIL_ADDRESS) != null) {
-						props.put(TLCJobFactory.MAIL_ADDRESS,
-								System.getProperty(TLCJobFactory.MAIL_ADDRESS));
-					}
+					props.put(TLCJobFactory.MAIL_ADDRESS, config.getAttribute(
+							LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, "tlc@localhost"));
 					job = factory.getTLCJob(cloud, file, numberOfWorkers, props);
 					job.addJobChangeListener(new WithStatusJobChangeListener(config));
 					break;
