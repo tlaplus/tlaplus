@@ -275,7 +275,7 @@ public class CloudDistributedTLCJob extends Job {
 					Status.OK,
 					String.format(
 							"TLC is model checking at host %s. "
-									+ "Expect to receive an email for model %s with the model checking result eventually.",
+									+ "Expect to receive an email at %s with the model checking result eventually.",
 							hostname,
 							props.get("result.mail.address")), null, new URL(
 							"http://" + hostname + "/munin/"));
