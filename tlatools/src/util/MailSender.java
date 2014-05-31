@@ -69,6 +69,7 @@ public class MailSender {
 					messageBodyPart.setDataHandler(new DataHandler(
 							new FileDataSource(file)));
 					messageBodyPart.setFileName(file.getName());
+					messageBodyPart.setHeader("Content-Type", "text/plain");
 					multipart.addBodyPart(messageBodyPart);
 				}
 		        msg.setContent(multipart);
