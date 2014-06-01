@@ -661,9 +661,12 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         Job job = null;
         if("off".equalsIgnoreCase(cloud)) {
         	job = new TLCProcessJob(specName, modelName, launch, numberOfWorkers);
+            // The TLC job itself does not do any file IO
+            job.setRule(mutexRule);
         } else {
         	if ("built-in".equalsIgnoreCase(cloud)) {
         		job = new DistributedTLCJob(specName, modelName, launch, numberOfWorkers);
+                job.setRule(mutexRule);
         	} else {
                 //final IProject iproject = ResourceHelper.getProject(specName);
                 final IFolder launchDir = project.getFolder(modelName);
@@ -692,8 +695,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         }
         job.setPriority(Job.LONG);
         job.setUser(true);
-        // The TLC job itself does not do any file IO
-        job.setRule(mutexRule);
 
         // setup the job change listener
         TLCJobChangeListener tlcJobListener = new TLCJobChangeListener(config);
