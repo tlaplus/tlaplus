@@ -109,7 +109,7 @@ public class IndexServlet extends URLHttpServlet {
 						"wget " + addr + "/files/" + TLA2TOOLS_JAR + "\n" + 
 						"java -Djava.rmi.server.hostname=" + remoteAddr
 								+ " -cp <a href=\"/files/" + TLA2TOOLS_JAR + "\">" + TLA2TOOLS_JAR + "</a> " + mainClass
-						+ " " + url.getHost() +
+						+ " " + url.getHost() + "\n" +
 					"</pre>\n" + 
 				"</li>");
 		
