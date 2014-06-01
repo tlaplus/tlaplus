@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.tool.distributed.TLCServer;
@@ -25,7 +26,7 @@ public class DistributedTLCJob extends TLCProcessJob {
 		WHITELIST.add("-nowarning");
 		
 		WHITELIST_WITH_ARG.add("-checkpoint");
-// Temporarily removed due to https://http://bugzilla.tlaplus.net/show_bug.cgi?id=212
+// Temporarily removed due to http://bugzilla.tlaplus.net/show_bug.cgi?id=212
 //		WHITELIST_WITH_ARG.add("-coverage");
 		WHITELIST_WITH_ARG.add("-fp");
 		WHITELIST_WITH_ARG.add("-recover");
@@ -63,6 +64,26 @@ public class DistributedTLCJob extends TLCProcessJob {
 		arguments.add("-tool");
         return arguments.toArray(new String[arguments.size()]);
 	}
+	
+	protected List<String> getAdditionalVMArgs() throws CoreException {
+		final List<String> additionalVMArgs = super.getAdditionalVMArgs();
+		
+		// distributed FPSet count
+		final ILaunchConfiguration launchConfig = launch.getLaunchConfiguration();
+		final int distributedFPSetCount = launchConfig.getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, 0);
+		if (distributedFPSetCount > 0) {
+			additionalVMArgs.add("-Dtlc2.tool.distributed.TLCServer.expectedFPSetCount=" + distributedFPSetCount);
+		}
+		
+		// Inet Address to listen on
+		final String iface = launchConfig.getAttribute(LAUNCH_DISTRIBUTED_INTERFACE, "");
+		if (!"".equals(iface)) {
+			additionalVMArgs.add("-Djava.rmi.server.hostname=" + iface);
+		}
+		
+		return additionalVMArgs;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob#getMainClass()

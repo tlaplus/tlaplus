@@ -1,7 +1,11 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
@@ -18,6 +22,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
@@ -105,6 +110,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private SourceViewer specSource;
     private Button checkDeadlockButton;
     private Spinner workers;
+    /**
+	 * Spinner to set the number of (expected) distributed FPSets.
+	 */
+    private Spinner distributedFPSetCountSpinner;
+    private Combo networkInterfaceCombo;
     private Scale maxHeapSize;
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
@@ -297,6 +307,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         final String distributedScript = getConfig().getAttribute(LAUNCH_DISTRIBUTED_SCRIPT, LAUNCH_DISTRIBUTED_SCRIPT_DEFAULT);
         this.distributedScriptText.setText(distributedScript);
         
+        // distribute FPSet count
+        distributedFPSetCountSpinner.setSelection(getConfig().getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
     }
 
     public void validatePage(boolean switchToErrorPage)
@@ -806,6 +818,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         String resultMailAddress = this.resultMailAddressText.getText();
         getConfig().setAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddress);
+        
+        // distributed FPSet count
+        getConfig().setAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, distributedFPSetCountSpinner.getSelection());
+        
+        // network interface
+        final String iface = this.networkInterfaceCombo.getItem(this.networkInterfaceCombo.getSelectionIndex());
+        getConfig().setAttribute(LAUNCH_DISTRIBUTED_INTERFACE, iface);
         
         final String distributedScript = this.distributedScriptText.getText();
         getConfig().setAttribute(LAUNCH_DISTRIBUTED_SCRIPT, distributedScript);
@@ -1319,8 +1338,105 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		distributedCombo.setToolTipText("If other than 'off' selected, state computation will be performed by (remote) workers.");
 		distributedCombo.addFocusListener(focusListener);
 		
-		// Result mail address input
-        final Composite resultAddress = new Composite(howToRunArea, SWT.NONE) ;
+		// Need stack layout to switch between distribution specific controls
+        final Composite distributedOptions = new Composite(howToRunArea, SWT.NONE) ;
+		final StackLayout stackLayout = new StackLayout();
+		distributedOptions.setLayout(stackLayout);
+		distributedOptions.setVisible(false); // by default invisible because default is "off"
+        
+		/*
+		 * Composite wrapping number of distributed FPSet and iface when built-in selected
+		 */
+        final Composite builtInOptions = new Composite(distributedOptions, SWT.NONE);
+        layout = new GridLayout(3, true);
+        builtInOptions.setLayout(layout);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        builtInOptions.setLayoutData(gd);
+
+        builtInOptions.setVisible(false); // by default off
+		
+		/*
+		 * Server interface/hostname (This text shows the hostname detected by the Toolbox under which TLCServer will listen
+		 */
+		// composite
+        final Composite networkInterface = new Composite(builtInOptions, SWT.NONE) ;
+        layout = new GridLayout(3, true);
+        networkInterface.setLayout(layout);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        networkInterface.setLayoutData(gd);
+		
+        // label
+        FormText networkInterfaceLabel = toolkit.createFormText(networkInterface, true);
+        networkInterfaceLabel.setText("Network Interface:", false, false);
+
+        // field
+        networkInterfaceCombo = new Combo(networkInterface, SWT.NONE);
+        networkInterfaceCombo.addSelectionListener(howToRunListener);
+        networkInterfaceCombo.addFocusListener(focusListener);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        networkInterfaceCombo.setLayoutData(gd);
+        
+        networkInterfaceCombo.setToolTipText("IP address which workers (and distributed FPSets) will connect to.");
+        networkInterfaceCombo.addSelectionListener(howToRunListener);
+        networkInterfaceCombo.addFocusListener(focusListener);
+        try {
+			final Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+			while (nets.hasMoreElements()) {
+				NetworkInterface iface = (NetworkInterface) nets.nextElement();
+				Enumeration<InetAddress> inetAddresses = iface.getInetAddresses();
+				while (inetAddresses.hasMoreElements()) {
+					InetAddress inetAddress = (InetAddress) inetAddresses
+							.nextElement();
+					networkInterfaceCombo.add(inetAddress.getHostAddress());
+					networkInterfaceCombo.select(0);
+				}
+			}
+		} catch (SocketException e1) {
+			e1.printStackTrace();
+		}
+
+        dm.bindAttribute(LAUNCH_DISTRIBUTED_INTERFACE, networkInterfaceCombo, howToRunPart);
+
+		/*
+		 * Distributed FPSet count
+		 */
+
+		// composite
+        final Composite distributedFPSetCount = new Composite(builtInOptions, SWT.NONE);
+        layout = new GridLayout(3, true);
+        distributedFPSetCount.setLayout(layout);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        distributedFPSetCount.setLayoutData(gd);
+		
+        // label
+        FormText distributedFPSetCountLabel = toolkit.createFormText(distributedFPSetCount, true);
+        distributedFPSetCountLabel.setText("Number of distributed FPSets:", false, false);
+
+        // field
+        distributedFPSetCountSpinner = new Spinner(distributedFPSetCount, SWT.NONE);
+        distributedFPSetCountSpinner.addSelectionListener(howToRunListener);
+        distributedFPSetCountSpinner.addFocusListener(focusListener);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 40;
+        distributedFPSetCountSpinner.setLayoutData(gd);
+        
+        distributedFPSetCountSpinner.setMinimum(0);
+        distributedFPSetCountSpinner.setMaximum(64); // Haven't really tested this many distributed fpsets
+        distributedFPSetCountSpinner.setPageIncrement(1);
+        distributedFPSetCountSpinner.setToolTipText("Determines how many distributed FPSets will be expected by the TLCServer process");
+        distributedFPSetCountSpinner.setSelection(IConfigurationDefaults.LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT);
+
+        dm.bindAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, distributedFPSetCountSpinner, howToRunPart);
+		
+		/*
+		 * Result mail address input
+		 */
+        final Composite resultAddress = new Composite(distributedOptions, SWT.NONE) ;
         layout = new GridLayout(3, true);
         resultAddress.setLayout(layout);
         
@@ -1369,12 +1485,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				if (item.equalsIgnoreCase("aws-ec2")) {
 					workers.setEnabled(false);
 					maxHeapSize.setEnabled(false);
-					resultAddress.setVisible(true);
+					distributedOptions.setVisible(true);
+					stackLayout.topControl = resultAddress;
+				} else if(item.equalsIgnoreCase("built-in")) {
+					workers.setEnabled(false);
+					distributedOptions.setVisible(true);
+					stackLayout.topControl = builtInOptions;
 				} else {
+					distributedOptions.setVisible(false);
 					workers.setEnabled(true);
 					maxHeapSize.setEnabled(true);
-					resultAddress.setVisible(false);
 				}
+				distributedOptions.layout();
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {

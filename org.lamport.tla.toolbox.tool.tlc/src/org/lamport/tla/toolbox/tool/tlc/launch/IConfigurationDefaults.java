@@ -28,6 +28,11 @@ public interface IConfigurationDefaults
 	public static final String LAUNCH_DISTRIBUTED_DEFAULT = "off";
 	
 	/**
+	 * Distributed FPSet default count
+	 */
+	public static final int LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT = 0;
+	
+	/**
 	 * Additional (e.g. RMI specific) VM args for distributed model checker
 	 */
 	public static final String LAUNCH_JVM_ARGS_DEFAULT = "";

@@ -42,6 +42,14 @@ public interface IConfigurationConstants
      */
 	public static final String LAUNCH_TLC_PARAMETERS = "TLCCmdLineParameters";
     /**
+     * Distributed FPSets
+     */
+	public static final String LAUNCH_DISTRIBUTED_FPSET_COUNT = "distributedFPSetCount";
+	/**
+	 * Network interface under which TLC server process will listen (java.rmi.server.hostname)
+	 */
+	public static final String LAUNCH_DISTRIBUTED_INTERFACE = "distributedNetworkInterface";
+    /**
      * Pre-flight script (primarily for distributed version of TLC)
      */
 	public static final String LAUNCH_DISTRIBUTED_SCRIPT = "distributedTLCScript";
