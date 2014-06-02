@@ -4,7 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,8 +56,6 @@ public class MailSender {
 				msg.setFrom(new InternetAddress(from));
 				msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
 				msg.setSubject(subject);
-				msg.setText("TLC finished model checking for you in "
-						+ ManagementFactory.getRuntimeMXBean().getUptime());
 				
 				// not sure why the extra body part is needed here
 				MimeBodyPart messageBodyPart = new MimeBodyPart();
@@ -76,35 +75,6 @@ public class MailSender {
 				
 		        Transport.send(msg);
 				return true;
-				
-				
-//				properties.put("mail.host", mxRecord.hostname);
-//				try {
-//					final URL url = new URL("mailto:" + to);
-//					final URLConnection conn = url.openConnection();
-//					
-//					conn.setDoOutput(true);
-//					conn.setDoInput(true);
-//					System.out.flush();
-//					conn.connect();
-//					
-//					final OutputStream os = conn.getOutputStream();
-//					final OutputStreamWriter osw = new OutputStreamWriter(os);
-//					final PrintWriter pw = new PrintWriter(osw);
-//
-//					pw.print("From: \"" + from + "\"\r\n");
-//					pw.print("To: " + to + "\r\n");
-//					pw.print("Subject: " + subject + "\r\n");
-//					pw.print("\r\n");
-//					for (int i = 0; i < messages.length; i++) {
-//						pw.print(messages[i] + "\r\n");
-//					}
-//					pw.print("." + "\r\n");
-//					pw.close();
-//					return true;
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
 			}
 		} catch (NamingException e) {
 			e.printStackTrace();
@@ -170,16 +140,15 @@ public class MailSender {
 	private String from;
 	private String domain;
 
-	public MailSender(String aMainFile) throws FileNotFoundException
+	public MailSender(String aMainFile) throws FileNotFoundException, UnknownHostException
 			 {
 		mailto = System.getProperty("result.mail.address");
 		if (mailto != null) {
 			domain = mailto.split("@")[1];
 			
-//			from = "TLC - The friendly model checker <"
-//					+ System.getProperty("user.name") + "@"
-//					+ InetAddress.getLocalHost().getHostName() + ">";
-			from = "markus@kuppe.org";
+			from = "TLC - The friendly model checker <"
+					+ System.getProperty("user.name") + "@"
+					+ InetAddress.getLocalHost().getHostName() + ">";
 			
 			mainFile = aMainFile;
 			
