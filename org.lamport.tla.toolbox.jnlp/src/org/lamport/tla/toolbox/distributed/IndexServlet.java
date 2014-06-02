@@ -60,15 +60,29 @@ public class IndexServlet extends URLHttpServlet {
 						"wget <a href=\"" + addr + "/files/dist-tlc.zip\">" + addr + "/files/dist-tlc.zip</a>\n" + 
 						"unzip dist-tlc.zip\n" + 
 						"cd disttlc/\n" + 
-						"java -Djava.rmi.server.hostname=" + remoteAddr + " -Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997 -jar dist-tlc.jar " +
-					"\n</pre>\n" + 
+						 "java -Djava.rmi.server.hostname="
+														+ remoteAddr
+														+ " -Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://"
+														+ url.getHost()
+														+ ":10997 "
+//														+ "-Dorg.lamport.tla.distributed.consumer.DistributedFPSetConsumer.uri=rmi://"
+//														+ url.getHost()	+ ":10997 "
+														+ "-jar dist-tlc.jar "
+														+					"\n</pre>\n" + 
 					// Windows Powershell 2.0 with manually created C:\\tmp folder ($env:temp does not seem to work) and x86 Java installed in default location
 					"<h4>Windows Powershell 2.0:</h4>" +
 					"<pre>\n" + 
 						"(new-object System.Net.WebClient).DownloadFile(\"" + addr + "/files/dist-tlc.zip\", \"C:\\tmp\\dist-tlc.zip\")\n" + 
 						"(new-object -com shell.application).namespace(\"C:\\tmp\").CopyHere((new-object -com shell.application).namespace(\"C:\\tmp\\dist-tlc.zip\").Items(),16)\n" +
-						"& 'C:\\Program Files (x86)\\Java\\jre7\\bin\\java.exe' \"-Djava.rmi.server.hostname=" + remoteAddr + "\" \"-Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://" + url.getHost() + ":10997\" -jar C:\\tmp\\disttlc\\dist-tlc.jar" +
-				"\n</pre>\n" + 
+						 "& 'C:\\Program Files (x86)\\Java\\jre7\\bin\\java.exe' \"-Djava.rmi.server.hostname="
+														+ remoteAddr
+														+ "\" \"-Dorg.lamport.tla.distributed.consumer.TLCWorkerConsumer.uri=rmi://"
+														+ url.getHost()
+														+ ":10997\" "
+//														+ "\"-Dorg.lamport.tla.distributed.consumer.DistributedFPSetConsumer.uri=rmi://"
+//														+ url.getHost()	+ ":10997\" "
+														+ "-jar C:\\tmp\\disttlc\\dist-tlc.jar"
+														+				"\n</pre>\n" + 
 				"</li>");
 		resp.getWriter().println(
 				"</ul>\n" + 

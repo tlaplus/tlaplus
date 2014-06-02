@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="org.lamport.tlatools.consumer.distributed.fpset">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" enabled="false" name="org.lamport.tlatools.consumer.distributed.fpset">
    <implementation class="org.lamport.tla.distributed.consumer.DistributedFPSetConsumer"/>
    <reference bind="setIDistributedFPSet" cardinality="1..1" interface="tlc2.IDistributedFPSet" name="IDistributedFPSet" policy="static" unbind="unsetIDistributedFPSet"/>
 </scr:component>
