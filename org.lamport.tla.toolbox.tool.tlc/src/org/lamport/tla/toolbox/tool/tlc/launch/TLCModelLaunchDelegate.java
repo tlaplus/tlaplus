@@ -664,7 +664,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             // The TLC job itself does not do any file IO
             job.setRule(mutexRule);
         } else {
-        	if ("built-in".equalsIgnoreCase(cloud)) {
+        	if ("ad hoc".equalsIgnoreCase(cloud)) {
         		job = new DistributedTLCJob(specName, modelName, launch, numberOfWorkers);
                 job.setRule(mutexRule);
         	} else {

@@ -681,10 +681,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // enablement for distributed input text boxes depends on button
         int selectionIndex = this.distributedCombo.getSelectionIndex();
 		String distributed = this.distributedCombo.getItem(selectionIndex);
-		// only allow a script if the "built-in" cloud is selected. The built-in cloud
+		// only allow a script if the "ad hoc" cloud is selected. The ad hoc cloud
 		// is the one where TLC just spawns a thread and the user is required to
 		// start the workers (e.g. via jnlp)
-        this.distributedScriptText.setEnabled(distributed.equals("built-in")); //TODO use constant
+        this.distributedScriptText.setEnabled(distributed.equals("ad hoc")); //TODO use constant
         
         // verify existence of pre-flight script
 //       	if(distributed) {
@@ -1331,7 +1331,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         toolkit.createLabel(distComp, "Run in distributed mode");
         distributedCombo = new Combo(distComp, SWT.READ_ONLY);
-        distributedCombo.setItems(new String[] {"off", "built-in", "aws-ec2"});
+        distributedCombo.setItems(new String[] {"off", "ad hoc", "aws-ec2"});
         distributedCombo.select(0);
         HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
         distributedCombo.addSelectionListener(howToRunListener);
@@ -1345,7 +1345,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		distributedOptions.setVisible(false); // by default invisible because default is "off"
         
 		/*
-		 * Composite wrapping number of distributed FPSet and iface when built-in selected
+		 * Composite wrapping number of distributed FPSet and iface when ad hoc selected
 		 */
         final Composite builtInOptions = new Composite(distributedOptions, SWT.NONE);
         layout = new GridLayout(3, true);
@@ -1487,7 +1487,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 					maxHeapSize.setEnabled(false);
 					distributedOptions.setVisible(true);
 					stackLayout.topControl = resultAddress;
-				} else if(item.equalsIgnoreCase("built-in")) {
+				} else if(item.equalsIgnoreCase("ad hoc")) {
 					workers.setEnabled(false);
 					distributedOptions.setVisible(true);
 					stackLayout.topControl = builtInOptions;
