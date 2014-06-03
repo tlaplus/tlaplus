@@ -180,7 +180,7 @@ public class CloudDistributedTLCJob extends Job {
 			// Create /mnt/tlc and change permission to be world writable
 			// Requires package 'apache2' to be already installed. apache2
 			// creates /var/www/html.
-			monitor.subTask("Creating TLC environment on all node(s)");
+			monitor.subTask("Creating a TLC environment on all node(s)");
 			compute.runScriptOnNodesMatching(
 					inGroup(groupNameUUID),
 					exec("mkdir /mnt/tlc/ && "
