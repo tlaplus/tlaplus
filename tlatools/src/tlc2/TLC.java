@@ -5,11 +5,16 @@
 
 package tlc2;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
+import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -178,10 +183,10 @@ public class TLC
             // call the actual processing method
             tlc.process();
 
-            // Send logged output by email 
-            boolean success = ms.send();
+            // Send logged output by email
+            boolean success = ms.send(tlc.getModuleFiles());
             
-			// In case sending the mail has failed we treat this as an error.
+			// In case sending the mail has failed, we treat this as an error.
 			// This is needed when TLC runs on another host and email is
 			// the only means for the user to get access to the model checking
 			// results. 
@@ -763,6 +768,23 @@ public class TLC
             MP.printMessage(EC.TLC_FINISHED);
             MP.flush();
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+	public List<File> getModuleFiles() {
+    	final List<File> result = new ArrayList<File>();
+    	
+    	if (instance instanceof ModelChecker) {
+    		ModelChecker mc = (ModelChecker) instance;
+			final Enumeration<ParseUnit> parseUnitContext = mc.specObj.parseUnitContext
+					.elements();
+    		while (parseUnitContext.hasMoreElements()) {
+    			ParseUnit pu = (ParseUnit) parseUnitContext.nextElement();
+				File resolve = resolver.resolve(pu.getFileName(), false);
+				result.add(resolve);
+    		}
+    	}
+        return result;
     }
 
     /**

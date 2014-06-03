@@ -97,14 +97,14 @@ public class Tool
    * Initialization. Any Tool object must call it before doing anything.
    * @param spec - <code>null</code> or a filled spec object from previous SANY run
    */
-  public final void init(boolean preprocess, SpecObj spec) 
+  public final SpecObj init(boolean preprocess, SpecObj spec) 
   {
       
       // Parse and process this spec. 
       // It takes care of all overrides.
       // SZ Feb 20, 2009: added spec reference,
       // if not null it is just used instead of re-parsing
-      super.processSpec(spec);
+      SpecObj processSpec = super.processSpec(spec);
 
       // Initialize state.
       if (TLCGlobals.coverageInterval >= 0) {
@@ -121,6 +121,8 @@ public class Tool
 
       // Finally, process the config file.
       super.processConfig();
+      
+      return processSpec;
   }
 
   public final void setCallStack() 

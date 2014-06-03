@@ -33,6 +33,7 @@ public abstract class AbstractChecker implements Cancelable
     protected String fromChkpt;
     public String metadir;
     public Tool tool;
+    public final SpecObj specObj;
     public Action[] invariants;
     public Action[] impliedActions;
     public Action[] impliedInits;
@@ -64,7 +65,7 @@ public abstract class AbstractChecker implements Cancelable
 
         this.tool = new Tool(specDir, specFile, configFile, resolver);
 
-        this.tool.init(preprocess, spec);
+        this.specObj = this.tool.init(preprocess, spec);
         this.checkLiveness = !this.tool.livenessIsTrue();
 
         // moved to file utilities

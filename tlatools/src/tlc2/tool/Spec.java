@@ -141,7 +141,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
      * class) to override the corresponding TLA+ module.
      */
     // SZ Feb 20, 2009: added support for existing specObj
-    protected final void processSpec(SpecObj spec)
+    protected final SpecObj processSpec(SpecObj spec)
     {
 
         if (spec == null)
@@ -487,6 +487,8 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 Assert.fail(EC.TLC_NO_MODULES, modName.toString());
             }
         }
+        
+        return spec;
     }
 
     /*************************************************************************

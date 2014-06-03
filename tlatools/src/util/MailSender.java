@@ -64,6 +64,9 @@ public class MailSender {
 
 				// attach file(s)
 				for (File file : files) {
+					if (file == null) {
+						continue;
+					}
 					messageBodyPart = new MimeBodyPart();
 					messageBodyPart.setDataHandler(new DataHandler(
 							new FileDataSource(file)));
@@ -162,9 +165,12 @@ public class MailSender {
 	}
 	
 	public boolean send() {
+		return send(new ArrayList<File>());
+	}
+
+	public boolean send(List<File> files) {
 		if (mailto != null) {
 			// Only add the err file if there is actually content 
-			final List<File> files = new ArrayList<File>();
 			files.add(out);
 			if (err.length() != 0L) {
 				files.add(err);
