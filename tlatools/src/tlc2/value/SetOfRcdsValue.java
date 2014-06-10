@@ -35,6 +35,11 @@ public class SetOfRcdsValue extends Value implements Enumerable {
   public final boolean equals(Object obj) {
     if (obj instanceof SetOfRcdsValue) {
       SetOfRcdsValue rcds = (SetOfRcdsValue)obj;
+
+      boolean isEmpty1 = this.isEmpty();
+      if (isEmpty1) return rcds.isEmpty();
+      if (rcds.isEmpty()) return isEmpty1;
+      
       if (this.names.length != rcds.names.length) {
 	return false;
       }
