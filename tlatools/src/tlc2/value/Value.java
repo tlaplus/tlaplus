@@ -91,7 +91,8 @@ public abstract class Value implements ValueConstants, Serializable {
       }
     case SUBSETVALUE:
       {
-        return true;
+        // SUBSET S is never empty.  (It always contains {}.)
+        return false;
       }
     case UNIONVALUE:
       {
