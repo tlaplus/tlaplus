@@ -937,6 +937,9 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                 } else {
                     // If this step is a SUFFICES ASSUME step, must
                     //   add NEW declarations to declaredIdentifiers.
+                	// Bug fixed by LL on 24 June 2014:
+                	// If it's a PICK step, must add the introduced identifier
+                	//   to declaredIdentifiers.  Added the code to do that.
                     if (pfsteps[i] instanceof TheoremNode) {
                         TheoremNode node = (TheoremNode) pfsteps[i];
                         if (node.isSuffices() && (node.getTheorem() instanceof AssumeProveNode)) {
@@ -947,6 +950,29 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                                        ((NewSymbNode) assumptions[j]).getOpDeclNode().getName().toString());
                                 }
                             } 
+                        }
+                        else if (node.getTheorem() instanceof OpApplNode) {
+                        	// Check if it's a $Pick step and add declared identifiers if it is.
+                        	OpApplNode oanode = (OpApplNode) node.getTheorem() ;
+                        	
+                        	if (oanode.getOperator().getName().toString().equals("$Pick")) {
+                        		FormalParamNode[] fp = oanode.getUnbdedQuantSymbols() ;
+                        	  if (fp != null) {
+                        		  // This is an unbounded PICK -- e.g., PICK x, y : exp
+                        		  for (int j = 0;  j < fp.length; j++) {
+                        			declaredIdentifiers.add(fp[j].getName().toString())  ;
+                        		  }
+                        		
+                        	  } else {
+                        		  // This is a bounded PICK -- e.g., PICK x, y \in S, z \in T : exp
+                        		  FormalParamNode[][] fpn = oanode.getBdedQuantSymbolLists() ;
+                        		  for (int j = 0;  j < fpn.length; j++) {
+                        			  for (int k = 0; k < fpn[j].length; k++) {
+                        				  declaredIdentifiers.add(fpn[j][k].getName().toString())  ;
+                        			  }
+                          		  }
+                        	  }                      		  
+                        	}
                         }
                     }
                     

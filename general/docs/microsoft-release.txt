@@ -206,6 +206,11 @@ TO GENERATE THE RELEASE:
   Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
+Version 1.4.9 - ??
+  - Fixed bug in TLC that caused infinite looping if a recursively
+    defined operator is used as an operator argument in its own
+    definition.
+  - Fixed minor bug in Decompose Proof command.
 Version 1.4.8 - 25 February 2014
   - Made module names case sensitive, so they must exactly match
     the name of the file containing them.
