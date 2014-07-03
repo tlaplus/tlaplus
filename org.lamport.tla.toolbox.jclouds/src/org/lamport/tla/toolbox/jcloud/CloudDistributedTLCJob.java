@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +29,7 @@ import org.jclouds.compute.domain.TemplateBuilder;
 import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.io.Payload;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
+import org.jclouds.rest.AuthorizationException;
 import org.jclouds.scriptbuilder.domain.Statement;
 import org.jclouds.scriptbuilder.statements.java.InstallJDK;
 import org.jclouds.scriptbuilder.statements.login.AdminAccess;
@@ -67,10 +69,33 @@ public class CloudDistributedTLCJob extends Job {
 		props = properties;
 		modelPath = aModelFolder.toPath();
 	}
+	
+	// http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/AWSCredentials.html
+	private boolean validateAWSCredentials() {
+		// must not be null
+		if (identity != null && credential != null) {
+			// identity always starts with "AIKA" and has 20 chars
+			if (identity.matches("AKIA[a-zA-Z0-9]{16}")) {
+				// secret has 40 chars
+				return credential.length() == 40;
+			}
+		}
+		return false;
+	}
 
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
 		monitor.beginTask("Starting TLC model checker in the cloud", 85);
+		
+		// Validate credentials and fail fast if null or syntactically incorrect
+		if (!validateAWSCredentials()) {
+			return new Status(
+					Status.ERROR,
+					"org.lamport.tla.toolbox.jcloud",
+					"Invalid credentials, please check the environment variables "
+							+ "(AWS_ACCESS_KEY_ID & AWS_SECRET_ACCESS_KEY) are correctly "
+							+ "set up and picked up by the Toolbox.");
+		}
 		
 		ComputeServiceContext context = null;
 		try {
@@ -280,7 +305,7 @@ public class CloudDistributedTLCJob extends Job {
 							hostname,
 							props.get("result.mail.address")), null, new URL(
 							"http://" + hostname + "/munin/"));
-		} catch (RunNodesException|IOException|RunScriptOnNodesException e) {
+		} catch (RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException e) {
 			e.printStackTrace();
 			if (context != null) {
 				destroyNodes(context, groupNameUUID);
