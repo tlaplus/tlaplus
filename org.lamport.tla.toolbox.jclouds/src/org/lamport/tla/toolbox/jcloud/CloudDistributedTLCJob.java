@@ -27,6 +27,7 @@ import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.TemplateBuilder;
 import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.io.Payload;
+import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.scriptbuilder.domain.Statement;
 import org.jclouds.scriptbuilder.statements.java.InstallJDK;
 import org.jclouds.scriptbuilder.statements.login.AdminAccess;
@@ -92,7 +93,7 @@ public class CloudDistributedTLCJob extends Job {
 			// Create compute environment in the cloud and inject an ssh
 			// implementation. ssh is our means of communicating with the node.
 			final Iterable<AbstractModule> modules = ImmutableSet
-					.<AbstractModule> of(new SshjSshClientModule());
+					.<AbstractModule> of(new SshjSshClientModule(), new SLF4JLoggingModule());
 
 			final ContextBuilder builder = ContextBuilder
 					.newBuilder(params.getCloudProvier())
