@@ -3039,6 +3039,18 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
     }
     
     /**
+     * The following bug fixed by LL on 3 July 2014: Decomposing
+     * 
+     *    foo(p) == \A x : p <=> A
+     *                     \/ B                       
+     *    THEOREM foo(\/ C')
+     *    
+     * produces the new goal
+     * 
+     *    ASSUME NEW x
+     *    PROVE  \/ C' <=> A
+     *           \/ B
+     * ---------         
      * Assumes that nodeTextRep is the NodeTextRep for the ExprNode sn (possibly
      * after some substitutions have been made).  It returns the NodeTextRep
      * object representing sn after substituting arguments[i] for formalParams[i], 
@@ -3099,7 +3111,11 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
             // need parentheses around it in order to prime it.
             boolean mayNeedParens = false ; 
             if (primingNeedsParens(argNodes[i]) && 
-                    (replacementText.charAt(replacementText.length() - 1) != '\'')) {
+                   ( (replacementText.charAt(replacementText.length() - 1) != '\'')
+                    // Following disjuncts added on 3 July 2014 to fix bug
+                    // described above.
+                    || replacementText.startsWith("\\/")
+                    || replacementText.startsWith("/\\") )) {
                 mayNeedParens = true ;
             }
             for (int j = 0; j < uses.length; j++) {
