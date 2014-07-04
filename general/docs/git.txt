@@ -2,6 +2,12 @@ GIT STUFF :
 
 CODEPLEX REPOSITORY: http://tlaplus.codeplex.com
 
+From Markus: In git speak:
+* you "push" and "pull" commit to/from (remote) git repositories
+* you "merge" or "rebase" commits across branches of a (local) git repository
+* you "commit" or "revert" changes in a (local) branch of a (local) git repository
+
+
 TO MAKE REVERT TO HEAD WORK
 ---------------------------
   After doing revert to HEAD, Eclipse reverts the file but still marks it as
