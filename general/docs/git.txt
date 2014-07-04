@@ -1,0 +1,41 @@
+GIT STUFF :
+
+TO MAKE REVERT TO HEAD WORK
+---------------------------
+  After doing revert to HEAD, Eclipse reverts the file but still marks it as
+  changed.  To unmark it, open a Cygwin shell and perform the command
+
+      git checkout FileName
+
+  where FileName is the path from the current directory to ~/git/tlaplus2/FileNameEclipseShows
+
+
+TO IMPORT A REPOSITORY BRANCH
+-----------------------------
+1.  First make sure you have opened the EGit Repository view. 
+    If you haven't opened it already, go to "Window -> Show View -> Other..." 
+    and from there select "Git -> Git Repositories".
+
+2. In the Repository view choose "Branches -> Remote Tracking".  You
+   should see your remote branches there already (example:
+   origin/new_feature).
+
+3. Right click on the remote branch you wish to have with your local
+   branches.  Choose "Create Branch..."
+
+4. The default values should be OK. Normally you should not change
+   anything here.  Please note that you should not change the "Pull
+   strategy" to something else than "Merge" if you don't know what you
+   are doing.  Otherwise pulling upstream changes might result in a loss
+   of data.  
+   
+5. Click on OK "Finish" and you are done 
+
+
+TO CREATE A NEW BRANCH
+----------------------
+- Select a package, right click, Team -> Switch To -> New branch
+
+- Probably select Merge for Pull Option
+
+- Commit will put the branch in the repository. 
