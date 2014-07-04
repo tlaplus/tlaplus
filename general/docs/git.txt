@@ -1,5 +1,7 @@
 GIT STUFF :
 
+CODEPLEX REPOSITORY: http://tlaplus.codeplex.com
+
 TO MAKE REVERT TO HEAD WORK
 ---------------------------
   After doing revert to HEAD, Eclipse reverts the file but still marks it as

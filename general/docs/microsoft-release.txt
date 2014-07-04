@@ -8,7 +8,6 @@ OBSOLETE TO START SVC-LAMPORT-7 AS A TESTBED
         must install Java jdk and add the environment variable JAVA_HOME 
         and set it to something like C:\Program Files\Java\jdk1.6.0_26
 
-CODEPLEX: tlaplus.codeplex.com
 
 TO PREPARE THE ZIP FILES FOR THE TOOLBOX RELEASE
 
