@@ -1,0 +1,810 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Cloud based distributed TLC
+\end_layout
+
+\begin_layout Author
+Markus Alexander Kuppe
+\end_layout
+
+\begin_layout Date
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+today
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Motivation
+\end_layout
+
+\begin_layout Itemize
+Move long running model checking off local machine into the cloud (Short
+ running models not ideal because instance spin-up time is approximately
+ five minutes)
+\end_layout
+
+\begin_layout Itemize
+Maximize cloud instance resource utilization by providing fine-tuned TLC
+ parameter pre-sets optimized for the given cloud instance type
+\end_layout
+
+\begin_layout Itemize
+Minimizes costs by terminating cloud instances immediately after TLC model
+ checking has ended
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Unless email delivery of model checking result fails (n this case the machine
+ remains running for the user to pick up the result manually)
+\end_layout
+
+\begin_layout Itemize
+User then has to terminate the instance manually!
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Warning
+\end_layout
+
+\begin_layout Standard
+Using cloud based TLC launches compute instances at your cloud provider
+ which may incur costs.
+ While the cloud based distributed TLC tries to minimize costs by terminating
+ instances as soon as possible, do not rely on it.
+ Always check if cloud instances have been correctly terminated.
+\end_layout
+
+\begin_layout Section
+Limitation
+\end_layout
+
+\begin_layout Itemize
+Only supports a single cloud provider (
+\begin_inset CommandInset href
+LatexCommand href
+name "Amazon EC2"
+target "http://aws.amazon.com/ec2/"
+
+\end_inset
+
+) as of now
+\end_layout
+
+\begin_layout Itemize
+Runs TLC in non-distributed mode on a single cloud instance only as of now
+\end_layout
+
+\begin_layout Itemize
+Only a single instance type (
+\begin_inset CommandInset href
+LatexCommand href
+name "m4.2xlarge"
+target "http://en.wikipedia.org/wiki/Amazon_Elastic_Compute_Cloud#Instance_types"
+
+\end_inset
+
+) supported as of now 
+\end_layout
+
+\begin_layout Itemize
+Cloud based distributed TLC cannot recover from a checkpoint
+\end_layout
+
+\begin_layout Section
+Usage
+\end_layout
+
+\begin_layout Enumerate
+Set 
+\begin_inset CommandInset href
+LatexCommand href
+name "AWS access key and secret"
+target "http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html"
+
+\end_inset
+
+ as 
+\begin_inset CommandInset href
+LatexCommand href
+name "environment variables"
+target "http://en.wikipedia.org/wiki/Environment_variable"
+
+\end_inset
+
+ prior to launching the Toolbox.
+ See the example with dummy keys below.
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+export AWS_ACCESS_KEY_ID=AKIA7D89HCLJKHZASD7F
+\end_layout
+
+\begin_layout Plain Layout
+
+export AWS_SECRET_ACCESS_KEY=6FDASAIG7DAS976TYDKHCGQAS5D
+\backslash
+FA77
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Create a specification and a model
+\end_layout
+
+\begin_layout Enumerate
+Open your model in the model editor 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ModelEditorA.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Model Editor
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Expand the 
+\begin_inset Quotes eld
+\end_inset
+
+How to run
+\begin_inset Quotes erd
+\end_inset
+
+ section of the 
+\begin_inset Quotes eld
+\end_inset
+
+Model Overview
+\begin_inset Quotes erd
+\end_inset
+
+ page 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ModelEditorB.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+How to run section
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Select 
+\begin_inset Quotes eld
+\end_inset
+
+aws-ec2
+\begin_inset Quotes erd
+\end_inset
+
+ from the 
+\begin_inset Quotes eld
+\end_inset
+
+Run in distributed mode
+\begin_inset Quotes erd
+\end_inset
+
+ drop down 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ModelEditorC.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Select your cloud provider
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Enter an email address into 
+\begin_inset Quotes eld
+\end_inset
+
+Result mailto address
+\begin_inset Quotes erd
+\end_inset
+
+ at which you want to receive the model checking result 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ModelEditorD.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Enter your email address
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Click 
+\begin_inset Quotes eld
+\end_inset
+
+Run TLC
+\begin_inset Quotes erd
+\end_inset
+
+ to start model checking in the cloud and wait for the start-up to finish
+ (it takes approximately five minutes to set-up the cloud instance)
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+The Toolbox switches to the 
+\begin_inset Quotes eld
+\end_inset
+
+Model checking results
+\begin_inset Quotes erd
+\end_inset
+
+ page and opens a progress dialog indicating the state of cloud instance
+ provisioning 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ProgressBar.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Progress Dialog
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+After provisioning the cloud instance, the Toolbox prompts the user to open
+ a website in a browser.
+ 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ProgressBarFinal.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Progress Dialog Final
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ This website is hosted on the cloud instance and shows the TLC process
+ output as well as runtime statistics similar to Toolbox stats 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename MCoutInBrowser.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+TLC runtime statistics in your browser
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Walk out and enjoy the weekend while TLC is busy checking 
+\end_layout
+
+\begin_layout Enumerate
+On Monday
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Depending on the size of your model, this might be a Monday in the far distance.
+\end_layout
+
+\end_inset
+
+ expect to find an email in your inbox 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename EMailResult.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Email Result
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Save MC.out file somewhere to disc
+\end_layout
+
+\begin_layout Enumerate
+Switch back to the Toolbox and open the model editor
+\end_layout
+
+\begin_layout Enumerate
+Open the 
+\begin_inset Quotes eld
+\end_inset
+
+Model Checking Results
+\begin_inset Quotes erd
+\end_inset
+
+ page 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename LoadResultIntoToolbox.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Load result into Toolbox
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:Import-the-MC.out"
+
+\end_inset
+
+Import the MC.out from disc 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename LoadIntoResultPageB.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Load into results page
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Voilá 
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename FinalResultLoaded.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Final result loaded
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Common problems
+\end_layout
+
+\begin_layout Itemize
+The Toolbox fails to start the cloud instance
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Re-check your credentials
+\end_layout
+
+\begin_layout Itemize
+If your credentials are correct, please turn on debug logging (!!!INSTRUCTIONS
+ here!!!) and send us the output.
+ You might have encountered a bug in cloud based distributed TLC.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+The runtime statistics (web browser) indicate that TLC has finished model
+ checking, but no result is sent via email.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Check your email spam folder if the model checking result has incorrectly
+ been classified as spam
+\end_layout
+
+\begin_layout Itemize
+Another reason why mail delivery might fail are too strict spam countermessures
+ at the mail server level.
+ You might want to try to use a different email address (domain part) in
+ the future.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Copy & paste the MC.out content from the browser window into a plain text
+ file and load it from there (see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "enu:Import-the-MC.out"
+
+\end_inset
+
+)
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Section
+TODO
+\end_layout
+
+\begin_layout Itemize
+Even though it is called cloud-based 
+\emph on
+distributed
+\emph default
+ TLC, it can do non-distributed liveness checking.
+\end_layout
+
+\begin_layout Section
+Leslie
+\end_layout
+
+\begin_layout Itemize
+This says nothing about what to do if you're not using aws-ec2.
+ I presume that's selected with the "ad hoc" choice in Figure 3.
+ That needs to be documented.
+ Does it work like the present system? If so, you can just incorporate the
+ existing instructions in some way
+\end_layout
+
+\begin_layout Itemize
+I presume in bullet 2 of section 3, "non-distribute mode" is some EC2 jargon
+ that doesn't mean what a TLC user would expect it to.
+ This should be made more clear to non-EC2 users.
+\end_layout
+
+\begin_layout Itemize
+
+\strikeout on
+In the 3rd bullet, if "(m4.2xlarge)" naming is the single instance type,
+ then it should be moved immediately after "type".
+\end_layout
+
+\begin_layout Itemize
+
+\strikeout on
+Section 4.1.
+ I presume those keys are dummies.
+\end_layout
+
+\begin_layout Itemize
+Step 13 of section 4 isn't clear.
+ I presume the importing is done from the file chooser in Figure 10, but
+ I don't know how that chooser is raised.
+\end_layout
+
+\begin_layout Itemize
+
+\strikeout on
+Section 6.
+ I presume you mean that it does non-distributed liveness-checking? If so,
+ say so.
+ 
+\end_layout
+
+\end_body
+\end_document
