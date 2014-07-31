@@ -724,27 +724,30 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 				// Not supposed to happen
 			}
 
-			final ITLCJobStatus result = (ITLCJobStatus) event.getJob().getResult();
-			final String message = result.getMessage();
-			final URL url = result.getURL();
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					boolean yesOpenBrowser = MessageDialog
-							.openConfirm(
-									Display.getDefault().getActiveShell(),
-									"Cloud TLC",
-									message
-											+ "\n\nClicking OK opens a status page in a browser");
-					if (yesOpenBrowser) {
-						try {
-							PlatformUI.getWorkbench().getBrowserSupport()
-							.getExternalBrowser().openURL(url);
-						} catch (PartInitException doesNotHappen) {
-							doesNotHappen.printStackTrace();
+			final IStatus status = event.getJob().getResult();
+			final String message = status.getMessage();
+			if (status instanceof ITLCJobStatus) {
+				final ITLCJobStatus result = (ITLCJobStatus) status;
+				final URL url = result.getURL();
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						boolean yesOpenBrowser = MessageDialog
+								.openConfirm(
+										Display.getDefault().getActiveShell(),
+										"Cloud TLC",
+										message
+										+ "\n\nClicking OK opens a status page in a browser");
+						if (yesOpenBrowser) {
+							try {
+								PlatformUI.getWorkbench().getBrowserSupport()
+								.getExternalBrowser().openURL(url);
+							} catch (PartInitException doesNotHappen) {
+								doesNotHappen.printStackTrace();
+							}
 						}
 					}
-				}
-			});
+				});
+			}
 		}
     }
     
