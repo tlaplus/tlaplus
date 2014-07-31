@@ -63,7 +63,7 @@
 			<version>${tycho-version}</version>
 			<configuration>
 				<source>1.7</source>
-				<target>1.5</target>
+				<target>1.7</target>
 				<encoding>UTF-8</encoding>
 			</configuration>
 		</plugin>
