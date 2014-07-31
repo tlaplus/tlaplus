@@ -806,5 +806,9 @@ Section 6.
  
 \end_layout
 
+\begin_layout Itemize
+netcat/jna/ssh-agent/pageant native depedencies
+\end_layout
+
 \end_body
 \end_document
