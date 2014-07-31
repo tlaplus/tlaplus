@@ -44,7 +44,7 @@ Please send us reports of problems or suggestions; see http://www.tlaplus.net .
    <intro introId="org.lamport.tla.toolbox.product.standalone.intro"/>
 
    <vm>
-      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6</linux>
+      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7</linux>
       <macos include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6</macos>
       <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6</windows>
    </vm>
@@ -57,14 +57,18 @@ Please send us reports of problems or suggestions; see http://www.tlaplus.net .
    </features>
 
    <configurations>
+      <plugin id="aws-ec2" autoStart="true" startLevel="4" />
+      <plugin id="ec2" autoStart="true" startLevel="4" />
+      <plugin id="sts" autoStart="true" startLevel="4" />
+      <plugin id="jclouds-core" autoStart="true" startLevel="4" />
+      <plugin id="com.jcraft.jsch" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.http.jetty" autoStart="true" startLevel="3" />
       <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
-      <plugin id="jclouds-core" autoStart="true" startLevel="4" />
-      <plugin id="aws-ec2" autoStart="true" startLevel="4" />
-      <property name="eclipse.buildId" value="1.4.2" />
+      <plugin id="org.lamport.tla.toolbox.jclouds" autoStart="true" startLevel="4" />
+       <property name="eclipse.buildId" value="1.4.2" />
    </configurations>
 
 </product>
