@@ -43,7 +43,7 @@
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20130517111416/repository/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.apache.jclouds.feature.feature.group" version="1.7.3.qualifier"/>
+<unit id="org.apache.jclouds.feature.feature.group" version="0.0.0"/>
 <repository location="http://tla.msr-inria.inria.fr/jclouds2p2/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
