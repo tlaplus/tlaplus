@@ -67,6 +67,9 @@
  *    a LET clause or their definition parameters.  See ResourceHelper.getBoundIdentifiers
  *    to get a start on fixing this.
  * 
+ * 
+ * HOW THE COMMAND WORKS
+ * 
  * A single object of this class is created and attached to the command.  Multiple
  * executions of the command use the same object, so data can be stored as (non-static)
  * fields of the object between executions of the command.
@@ -254,6 +257,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -292,10 +296,12 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 //import org.lamport.tla.toolbox.doc.HelpButton;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.handlers.NewDecomposeProofHandler.NodeRepresentation;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
@@ -2653,15 +2659,36 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
                     nodeRep.mapping), decomp.namePath.elementAt(i));
         }
         
+        // Added by LL on 15 Aug 2014 to handle a case of a definition from
+        // a module that gets this far--which will not be the case if
+        // the definition is from a module instantiated with substitutions.
+        // Set childDoc to the IDocument in which the children are to
+        // be found.  The following code was copied from the jumpToLocation
+        // method in UIHelper.java
+        IDocument childDoc = this.doc ;
+        if (     (decomp.moduleName != null)
+             &&  ! this.moduleNode.getName().toString().equals(decomp.moduleName)) {
+          IFile moduleIFile = (IFile) ResourceHelper.getResourceByModuleName(decomp.moduleName) ;  
+          FileEditorInput fileEditorInput = new FileEditorInput(moduleIFile);
+          FileDocumentProvider moduleFileDocProvider = new FileDocumentProvider() ;
+          
+          try {
+              moduleFileDocProvider.connect(fileEditorInput);
+          } catch (CoreException e1)
+          { // I don't know what to do here
+              
+          } 
+          childDoc = moduleFileDocProvider.getDocument(fileEditorInput);
+        }
+
         // Set result  to the node representation.
         NodeRepresentation result ;
         if ((decomp.definedOp != null) && (newNodeText == null)) {
             // Have to expand nodeRep's definition node.
             try {
-                // bug found by LL 15 Aug 2014:
-                // should use IDocument of the actual module, not this.doc.
+                // this.doc replaced by childDoc by LL 15 Aug 2014:
                 NodeRepresentation res = 
-                        new NodeRepresentation(this.doc, decomp.children.elementAt(i)) ;
+                        new NodeRepresentation(childDoc, decomp.children.elementAt(i)) ;
                 NodeTextRep ntext = decompSubstituteInNodeText(nodeRep, 
                         (ExprNode) decomp.children.elementAt(i), 
                         new NodeTextRep(res.nodeText, res.mapping),
