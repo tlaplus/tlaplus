@@ -2658,6 +2658,8 @@ public class DecomposeProofHandler extends AbstractHandler implements IHandler {
         if ((decomp.definedOp != null) && (newNodeText == null)) {
             // Have to expand nodeRep's definition node.
             try {
+                // bug found by LL 15 Aug 2014:
+                // should use IDocument of the actual module, not this.doc.
                 NodeRepresentation res = 
                         new NodeRepresentation(this.doc, decomp.children.elementAt(i)) ;
                 NodeTextRep ntext = decompSubstituteInNodeText(nodeRep, 
