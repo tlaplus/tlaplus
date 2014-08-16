@@ -1,12 +1,12 @@
 TO MAKE Revert to HEAD WORK
   After doing revert to HEAD, Eclipse reverts the file but still marks it as
-  changed.  To unmark it, open a Cygwin shell and perform the command
+  changed.  To unmark it, open a Cygwin shell, cd to ~/git/tlaplus2, and perform the command
 
       git checkout FileName
 
-  where FileName is the path from the current directory to ~/git/tlaplus2/FileNameEclipseShows
-  --
-  Sometimes this works, sometimes it doesn't.
+  where FileName is the path to the file name Eclipse shows, which should be a copy
+  of the file in the branch currently selected in Eclipse.
+  
   
 OBSOLETE TO START SVC-LAMPORT-7 AS A TESTBED
   https://tla.msr-inria.inria.fr/build/computer/svc/
