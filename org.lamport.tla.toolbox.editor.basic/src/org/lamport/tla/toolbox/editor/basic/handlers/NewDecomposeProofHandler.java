@@ -34,7 +34,7 @@
  *  
  *  - The command does renaming of bound variables when necessary to avoid
  *    name clashes but not of symbols defined in a LET.
- *    THIS NEEDS TO BE FIXED
+ *    THIS SHOULD BE FIXED
  *    
  *  - The implementation contains code written to implement a "use Subexpression Names"
  *    feature that allowed the user to specify that decomposition that involved 
@@ -58,7 +58,9 @@
  *    (except with the unfinished and hidden "Use subexpression names" option). 
  *    THIS HAS BEEN FIXED IN THE OLD VERSION only for imported definitions that
  *    don't come from an INSTANCE of a module with CONSTANT or VARIABLE 
- *    declarations.  The general case will be handled in the new version.
+ *    declarations.  The general case will be handled in the new version. 
+ *    However, it probably will have the following bug for instantiation with 
+ *    renaming:  
  *    
  *  - If decomposition requires expanding a definition, the decomposition will be
  *    performed only if each argument of the defined operator appears on a 
@@ -154,7 +156,7 @@
 
  is equivalent to
 
- (A, B_1, C |= P) \/ ... \/ (A, B_n, C |= P)
+ (A, B_1, C |= P) /\ ... /\ (A, B_n, C |= P)
 
  CASE
  ----
@@ -812,8 +814,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         Activator.getDefault().logDebug("Decompose Proof Called");
         Vector<SemanticNode> assumes;
         SemanticNode goal;
-        String[] blankLine = new String[] { "" };
-        String[] oneline = new String[] { "1" };
+        // String[] blankLine = new String[] { "" };
+        // String[] oneline = new String[] { "1" };
 
         /******************************************************************
          * Perform various checks to see if the command should be executed, 
@@ -1352,7 +1354,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         // close button.
         windowShell = new Shell(topshell, SWT.CLOSE | SWT.TITLE
                                   | SWT.RESIZE);
-        windowShell.setText("Decompose Proof");
+        windowShell.setText("Decompose Proof - New Version Under Development");
         windowShell.addDisposeListener(new WindowDisposeListener(this));
         Composite shell = new Composite(windowShell, SWT.NONE);
         GridLayout gridLayout = new GridLayout(3, false);
@@ -1401,7 +1403,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
         // Display Help button that should raise help page for this
         // dialog window. I wish I knew how to move the button to
-        // the right edge of the window.
+        // the right edge of the window.  But it's been a mere 36 
+        // years since Knuth invented the idea of expandable glue,
+        // so we can't expect the Eclipse people to have heard of it
+        // yet.
         Button helpButton = HelpButton.helpButton(topMenu, "prover/decompose.html");
         gridData = new GridData();
         gridData.horizontalIndent = 20;
@@ -1493,7 +1498,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(
                 JFaceResources.TEXT_FONT));
         shell.pack();
-        Point shellSize = shell.getSize();
+        // Point shellSize = shell.getSize();
         windowShell.pack();
         windowShell.update();
         if (this.location != null) {
@@ -3523,12 +3528,18 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
         // An EXPR_NODE has a subtype, indicating what
         // decomposition can be applied.
-        private static final int AND_TYPE = 0;
-        private static final int OR_TYPE = 1;
-        private static final int IMPLIES_TYPE = 2;
-        private static final int FORALL_TYPE = 3;
-        private static final int EXISTS_TYPE = 4;
-        private static final int SQSUB_TYPE = 5; // An [A]_v expression
+        //   Subtypes for decomposing a goal:
+        private static final int AND_TYPE     = 0;      // A conjunction 
+        private static final int IMPLIES_TYPE = 2;  // An implication
+        private static final int FORALL_TYPE  = 3;   // A \A
+        //  Subtypes for decomposing an assumption
+        private static final int OR_TYPE = 1;       // A disjunction 
+        private static final int EXISTS_TYPE = 4;   // An \E
+        private static final int SQSUB_TYPE = 5;    // An [A]_v expression
+        private static final int MULTI_TYPE = 6;    
+           // An assumption that is the conjunction of formulas, two or more 
+           // of which can be decomposed.
+        // Subtype for something that can't be decomposed
         private static final int OTHER_TYPE = 99; // anything else
 
         public int nodeSubtype = OTHER_TYPE;
@@ -4402,24 +4413,24 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * @param opId
      * @return
      */
-    private static int operatorNameToNodeSubtype(UniqueString opId) {
-        String opName = opId.toString();
-        if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
-            return NodeRepresentation.AND_TYPE;
-        } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
-            return NodeRepresentation.OR_TYPE;
-        } else if (opName.equals("=>")) {
-            return NodeRepresentation.IMPLIES_TYPE;
-        } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
-            return NodeRepresentation.FORALL_TYPE;
-        } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
-            return NodeRepresentation.EXISTS_TYPE;
-        } else if (opId == ASTConstants.OP_sa) {
-            return NodeRepresentation.SQSUB_TYPE;
-        } else {
-            return NodeRepresentation.OTHER_TYPE;
-        }
-    }
+//    private static int operatorNameToNodeSubtype(UniqueString opId) {
+//        String opName = opId.toString();
+//        if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
+//            return NodeRepresentation.AND_TYPE;
+//        } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
+//            return NodeRepresentation.OR_TYPE;
+//        } else if (opName.equals("=>")) {
+//            return NodeRepresentation.IMPLIES_TYPE;
+//        } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
+//            return NodeRepresentation.FORALL_TYPE;
+//        } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
+//            return NodeRepresentation.EXISTS_TYPE;
+//        } else if (opId == ASTConstants.OP_sa) {
+//            return NodeRepresentation.SQSUB_TYPE;
+//        } else {
+//            return NodeRepresentation.OTHER_TYPE;
+//        }
+//    }
 
     /**
      * This computes the decompose field of a NodeRepresentation. 
@@ -4943,7 +4954,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
     }
     
     /**
-     * This method assumes that newTextRep was obtained from oldTextRep by substitutions at are
+     * This method assumes that newTextRep was obtained from oldTextRep by substitutions as are
      * described by insVecArray, where insVecArray[i] describes the changes that produced 
      * newTextRep.nodeText[i] from oldTextRep.nodeText[i].  (The arrays newTextRep.nodeText, 
      * oldTextRep.nodeText, and insVecArray must have the same length.)  It modifies newTextRep.mapping
