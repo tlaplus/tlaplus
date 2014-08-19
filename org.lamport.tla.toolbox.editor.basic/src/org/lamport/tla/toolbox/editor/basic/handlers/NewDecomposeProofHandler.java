@@ -31,7 +31,27 @@
  *       THEOREM \A x, y : x /\ y => TRUE
  *       
  *    with \A then => then /\ puts the menu in a state in which P is not enabled.
+ *    
+ *    This may not be a bug, since there decomposing the /\ accomplished nothing.
+ *    However, decomposing the /\ and then the \E in
+ *    
+ *       THEOREM ASSUME (\E x : TRUE) /\ FALSE
+ *       PROVE   TRUE
+ *       
+ *    Leaves the Prove button disabled
+ * 
+ *  - Bug discovered 19 Aug 2014 by LL: Decomposing
+ *    
+ *       <1>3. ASSUME (\E x : D) /\ (A \/ D)
+ *             PROVE  FALSE
+ *             
+ *    by /\ then \E then \/ does not add the necessary assumption <1>3 to
+ *    the BY of the SUFFICES (or QED if USE SUFFICES not chosen).
  *  
+ *  <1>3. ASSUME (\E x : D) /\ (A \/ D)
+      PROVE  FALSE
+ *    Leaves the Prove button disabled
+ *    
  *  - The command does renaming of bound variables when necessary to avoid
  *    name clashes but not of symbols defined in a LET.
  *    THIS SHOULD BE FIXED
@@ -551,6 +571,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * SUFFICES step) needs the name of the step being decomposed in the BY
      * clause if that step has a name.  I believe this is the case iff an
      * \E-split has been done on an assumption that was not moved from the goal.
+     * 
+     * 
      */
     boolean needsStepNumber; // TO BE MOVED TO DecompositionState
 
@@ -569,8 +591,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * andSplitEnd equal -1.
      * 
      */
-    int andSplitBegin;  // THESE PROBABLY NOT NEEDED
-    int andSplitEnd;    // IN NEW VERSION
+    int andSplitBegin;  // NOT CLEAR IF THESE WILL BE USED IN NEW VERSION.
+    int andSplitEnd;    // IF THEY ARE, TO BE MOVED TO DecompositionState.
 
     /**
      * The set of Ids of user-defined operations that must appear in the
@@ -2041,6 +2063,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         }
 
         // Set needsStepNumber if necessary. (See that field's documentation.)
+        // Bug discovered by LL 19 Aug 2014.  The spec of isCreated indicates
+        // that nodeRep.isCreated is true if this exists was created by an
+        // AND-split on an assumption, in which case the documentation of
+        // needsStepNumber implies that needsStepNumber should be set true.
         if (!nodeRep.isCreated && this.hasAssumes) {
             needsStepNumber = true;
         }
