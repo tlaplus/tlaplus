@@ -43,11 +43,6 @@ import tla2sany.utilities.Vector;
 import util.UniqueString;
 import util.WrongInvocationException;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
   /**
    * An OpDefNode can have one of the following kinds:                    
    *                                                                      
@@ -1272,39 +1267,4 @@ public class OpDefNode extends OpDefOrDeclNode
     return ret;
   }
 
-  public Element getElement(Document doc, boolean expandDefinitions) {
-    System.err.println("OpDef: " + getName().toString());
-    Element e = null;
-    if (expandDefinitions) {
-      e = doc.createElement("operator");
-      switch (getKind()) {
-        case UserDefinedOpKind:
-          e.setAttribute("where","user");
-          Element arguments = doc.createElement("arguments");
-          XMLExportable[] params = getParams();
-          for (int i=0; i<params.length; i++) arguments.appendChild(params[i].export(doc));
-          e.appendChild(arguments);
-          Element body = doc.createElement("body");
-          body.appendChild(getBody().export(doc));
-          e.appendChild(body);
-          break;
-        /*case BuiltInKind:
-          e.setAttribute("where","builtin");
-          break;
-        case NumberedProofStepKind:
-          e.setAttribute("where","proof");
-          break;*/
-        default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
-      }
-
-      e.setAttribute("shape",""+getArity());
-      e.setAttribute("local",local ? "true" : "false");
-      e.setAttribute("recursive",getInRecursive() ? "true" : "false");
-    }
-    else {
-      e = doc.createElement("operatorname");
-    }
-    e.appendChild(doc.createTextNode(getName().toString()));
-    return e;
-  }
 }

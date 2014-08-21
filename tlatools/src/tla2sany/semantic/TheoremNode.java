@@ -19,11 +19,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 /**
  * This class represents a theorem
  */
@@ -371,9 +366,5 @@ public final boolean levelCheck(int iter) {
     if (proof != null) {proof.walkGraph(semNodesTable);} ;
   }
 
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("theorem");
-    return e;
-  }
 }
 
