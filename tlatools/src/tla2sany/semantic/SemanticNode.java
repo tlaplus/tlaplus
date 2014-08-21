@@ -13,6 +13,11 @@ import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import util.ToolIO;
 
+import tla2sany.xml.XMLExportable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
  * SemanticNode is the (abstract) superclass of all nodes in the
  * semantic tree.
@@ -21,7 +26,7 @@ import util.ToolIO;
  * used to check for equality.
  */
 public abstract class SemanticNode
-implements ASTConstants, ExploreNode, LevelConstants, Comparable {
+implements ASTConstants, ExploreNode, LevelConstants, Comparable, XMLExportable {
 
   private static final Object[] EmptyArr = new Object[0];
 

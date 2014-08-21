@@ -22,6 +22,11 @@ import tla2sany.utilities.Vector;
 import util.UniqueString;
 import util.WrongInvocationException;
 
+import tla2sany.xml.XMLExportable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 public class ModuleNode extends SymbolNode {
 
 /***************************************************************************
@@ -1140,6 +1145,74 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
         }
       };
     return ret;
+  }
+
+  public Element getElement(Document doc) {
+    Element parent = doc.createElement("module");
+    parent.setAttribute("name",getName().toString());
+
+    // constants
+    Element constants = doc.createElement("constants");
+    XMLExportable[] consts = getConstantDecls();
+    for (int i=0; i<consts.length; i++) {
+      constants.appendChild(consts[i].export(doc));
+    }
+    parent.appendChild(constants);
+
+    // variables
+    Element variables = doc.createElement("variables");
+    XMLExportable[] vars = getVariableDecls();
+    for (int i=0; i<vars.length; i++) {
+      variables.appendChild(vars[i].export(doc));
+    }
+    parent.appendChild(variables);
+
+    //operators
+    Element operators = doc.createElement("operators");
+    XMLExportable[] ops = getOpDefs();
+    for (int i=0; i<ops.length; i++) {
+      operators.appendChild(ops[i].export(doc,true));
+    }
+    parent.appendChild(operators);
+
+    //assumptions
+    Element assumptions = doc.createElement("assumptions");
+    XMLExportable[] assms = getAssumptions();
+    for (int i=0; i<assms.length; i++) {
+      assumptions.appendChild(assms[i].export(doc));
+    }
+    parent.appendChild(assumptions);
+
+    //theorems
+    Element theorems = doc.createElement("theorems");
+    XMLExportable[] thms = getTheorems();
+    for (int i=0; i<thms.length; i++) {
+      theorems.appendChild(thms[i].export(doc));
+    }
+    parent.appendChild(theorems);
+
+    //exteendees
+    Element extendees = doc.createElement("extendees");
+    Iterator exts = getExtendedModuleSet().iterator();
+    while (exts.hasNext()) {
+      ModuleNode childNode = (ModuleNode)exts.next();
+      Element child = doc.createElement("extendee");
+      child.setAttribute("name",childNode.getName().toString());
+      extendees.appendChild(child);
+    }
+    parent.appendChild(extendees);
+
+    //instances
+    Element instances = doc.createElement("instancees");
+    InstanceNode[] insts = getInstances();
+    for (int i=0; i<insts.length; i++) {
+      Element child = doc.createElement("instancee");
+      child.setAttribute("name",insts[i].getName().toString());
+      instances.appendChild(child);
+    }
+    parent.appendChild(instances);
+
+    return parent;
   }
 
 }

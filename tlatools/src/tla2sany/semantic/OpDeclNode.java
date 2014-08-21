@@ -10,6 +10,10 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import util.UniqueString;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
  * An OpDeclNode can have one of the following kinds:
  *
@@ -148,4 +152,41 @@ public class OpDeclNode extends OpDefOrDeclNode {
                              : "<null>" ) ;
   }
 
+  public Element getElement(Document doc) {
+    Element e;
+    switch (getKind()) {
+      case ConstantDeclKind:
+  /*    case NewConstantKind:*/
+        e = doc.createElement("constant");
+        e.setAttribute("name",getName().toString());
+        e.setAttribute("shape",""+getArity());
+            e.setAttribute("level","constant");
+        break;
+      case VariableDeclKind:
+ /*     case NewVariableKind:
+      case NewStateKind:
+      case NewActionKind:
+      case NewTemporalKind:*/
+        e = doc.createElement("variable");
+        e.setAttribute("name",getName().toString());
+        switch (getKind()) {
+          case NewVariableKind:
+            e.setAttribute("level","constant");
+            break;
+          case VariableDeclKind:
+          case NewStateKind:
+            e.setAttribute("level","state");
+            break;
+          case NewActionKind:
+            e.setAttribute("level","action");
+            break;
+          case NewTemporalKind:
+            e.setAttribute("level","temporal");
+            break;
+        }
+        break;
+      default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
+    }
+    return e;
+  }
 }

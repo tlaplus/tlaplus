@@ -26,7 +26,12 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
 
-/** 
+import tla2sany.xml.XMLExportable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+/**
  * OpApplNodes represent all kinds of operator applications in TLA+,
  * including the application of builtin operators and user-defined
  * operators, operators with a variable number of arguments or a fixed
@@ -1223,4 +1228,45 @@ public class OpApplNode extends ExprNode implements ExploreNode {
            + toStringBody(depth) + sEO ;
   }        
 
+  public Element getElement(Document doc) {
+    Element e = doc.createElement("application");
+
+    // operator
+    Element op = doc.createElement("function");
+    op.appendChild(getOperator().export(doc));
+    e.appendChild(op);
+
+    // bound variables (optional)
+    if (unboundedBoundSymbols != null | boundedBoundSymbols != null ) {
+      Element bvars = doc.createElement("bound_variables");
+      if (unboundedBoundSymbols != null) {
+        for (int i=0; i< unboundedBoundSymbols.length; i++) {
+          Element bvar = doc.createElement("variable");
+          bvar.appendChild(unboundedBoundSymbols[i].export(doc));
+          bvars.appendChild(bvar);
+        }
+      }
+
+      if (boundedBoundSymbols != null) {
+        for (int i=0; i< boundedBoundSymbols.length; i++) {
+          for (int j=0; j<boundedBoundSymbols[i].length; j++) {
+            Element bvar = doc.createElement("variable");
+            bvar.appendChild(boundedBoundSymbols[i][j].export(doc));
+            Element domain = doc.createElement("domain");
+            domain.appendChild(ranges[i].export(doc));
+            bvar.appendChild(domain);
+            bvars.appendChild(bvar);
+          }
+        }
+      }
+      e.appendChild(bvars);
+    }
+
+    // params
+    Element params = doc.createElement("arguments");
+    XMLExportable[] args = getArgs();
+    for (int i=0; i< args.length; i++) params.appendChild(args[i].export(doc));
+    e.appendChild(params);
+    return e;
+  }
 }

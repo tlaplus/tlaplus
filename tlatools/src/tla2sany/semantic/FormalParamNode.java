@@ -7,6 +7,11 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import util.UniqueString;
 
+import tla2sany.xml.XMLExportable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
  * A FormalParamNode represents a formal parameter in a user            
  * definition--for example, p and q in                                  
@@ -121,4 +126,10 @@ public class FormalParamNode extends SymbolNode {
 	    "  " + super.toString(depth) + "  arity: " + arity);
   }
 
+  public Element getElement(Document doc) {
+    Element e = doc.createElement("parameter");
+    e.setAttribute("name",getName().toString());
+    e.setAttribute("shape", ""+getArity());
+    return e;
+  }
 }

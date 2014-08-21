@@ -7,6 +7,10 @@ import java.util.Hashtable;
 
 import tla2sany.st.TreeNode;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
  * Describes a numeral like 4095.  This number is represented by the     
  * values           
@@ -118,5 +122,10 @@ public class NumeralNode extends ExprNode {
 	   "; image: " + image);
   }
 
+  public Element getElement(Document doc) {
+    Element e = doc.createElement("number");
+    e.setAttribute("value",(bigValue != null) ? bigValue.toString() : (new Integer(value)).toString());
+    return e;
+  }
 }
 

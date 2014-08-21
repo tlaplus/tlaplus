@@ -8,6 +8,11 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
+import tla2sany.xml.XMLExportable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
  * This class represents an assumption about the constants in a module. 
  */
@@ -176,4 +181,8 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
     if (assumeExpr != null) {assumeExpr.walkGraph(semNodesTable);} ;
   }
 
+  public Element getElement(Document doc) {
+    Element e = doc.createElement("assumption");
+    return e;
+  }
 }
