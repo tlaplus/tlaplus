@@ -13,7 +13,7 @@ package tla2sany.semantic;
 * break.                                                                   *
 *                                                                          *
 * Note: The SubstInNode that represents a substitution A <- expA, B <-     *
-* expB with body Bod is a least almost equivalent to an OpApplNode whose   *
+* expB with body Bod is at least almost equivalent to an OpApplNode whose  *
 * operator is LAMBDA A, B : Bod and whose arguments are expA and expB.     *
 * However, for reasons having to do with operators like ENABLED, in which  *
 * substitution in definitions isn't equivalent to logical substitution,    *
