@@ -26,7 +26,8 @@
  *   
  * CURRENT BUGS AND MISSING FEATURES:
  * 
- *  - Bug reported 16 Jan 2014 by Jael:  Decomposing
+ *  - Bug reported 16 Jan 2014 by Jael, fixed on 23 Aug 2014 by LL. 
+ *    Decomposing
  *  
  *       THEOREM \A x, y : x /\ y => TRUE
  *       
@@ -257,7 +258,7 @@
  <1> QED
  BY <i>1, ... , <i>n DEF K
 
-(The DEF K can be eliminated if K equals 
+ (The DEF K can be eliminated if K equals 
 
  The transformation of A, H |= C to J, K, L |= C will be done in
  two steps:
@@ -266,10 +267,10 @@
 
  2. Performing the transformations:
 
-     \E x : S   ->  NEW x, S .
+ \E x : S   ->  NEW x, S .
 
-      NEW x, S_1 \/ ... \/ S_n  ->  
-      (NEW x |= S_1) \/ ... \/ (NEW x |= S_n)
+ NEW x, S_1 \/ ... \/ S_n  ->  
+ (NEW x |= S_1) \/ ... \/ (NEW x |= S_n)
 
  **************************************************************************/
 
@@ -286,12 +287,6 @@
 
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.AbstractSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -305,14 +300,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
@@ -321,34 +309,24 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTError;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
-//import org.lamport.tla.toolbox.doc.HelpButton;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.handlers.NewDecomposeProofHandler.NodeRepresentation;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
@@ -358,17 +336,15 @@ import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
-
-import pcal.exception.StringVectorToFileException;
 
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.AssumeProveNode;
+import tla2sany.semantic.DefStepNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
@@ -381,12 +357,11 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
-import tla2sany.semantic.DefStepNode;
-import tla2sany.semantic.InstanceNode;
 import tla2sany.st.Location;
 import util.UniqueString;
 
-public class NewDecomposeProofHandler extends AbstractHandler implements IHandler {
+public class NewDecomposeProofHandler extends AbstractHandler implements
+        IHandler {
 
     /***************************************************************
      * Fields holding information about the module, its source text, the
@@ -443,11 +418,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
     private int proofLevel;
 
     /**
-     * The proofLevel converted to a string like "<2>", except that a level
-     * of 0 or -1 (which are possible) is converted to 1.
+     * The proofLevel converted to a string like "<2>", except that a level of 0
+     * or -1 (which are possible) is converted to 1.
      */
-    private String proofLevelString ;
-    
+    private String proofLevelString;
+
     /**
      * If the step is number <2>3, then this is "<2>3". If the step is
      * unnumbered, as in <2>, or if it is the entire theorem, then this string
@@ -467,35 +442,35 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
     /**
      * PREFERENCES
      * 
-     * The following fields are constants, some of which should perhaps be set 
+     * The following fields are constants, some of which should perhaps be set
      * as preferences.
      */
 
     /**
      * The default value of the useSufficesValue ;
      */
-    private static final boolean USE_SUFFICES_DEFAULT = true ;
-    
+    private static final boolean USE_SUFFICES_DEFAULT = true;
+
     /**
      * The default value of the useCaseValue ;
      */
-    private static final boolean USE_CASE_DEFAULT = true ;
-    
+    private static final boolean USE_CASE_DEFAULT = true;
+
     /**
      * The default value of subexpressionValue.
      */
-    private static final boolean SUBEXPRESSION_DEFAULT = false ;
-    
+    private static final boolean SUBEXPRESSION_DEFAULT = false;
+
     /**
      * The number of columns to the right of stepColumn to which the created
      * proof is to be indented.
      */
     private static final int PROOF_INDENT = 2;
-    
+
     /**
      * Whether or not to leave a blank line between the created proof steps.
      */
-    private static final boolean BLANK_LINE_BETWEEN_STEPS = false ;
+    private static final boolean BLANK_LINE_BETWEEN_STEPS = false;
 
     /**
      * True iff an "obvious" proof should be written "PROOF OBVIOUS" rather than
@@ -514,20 +489,19 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * constructed by decomposition.
      */
     private static final String STEP_NUMBER_PUNCTUATION = ".";
-    
+
     /**
-     * When renaming identifiers to avoid name conflicts, an identifier
-     * id is renamed to id + RENAMING_SUFFIX + i for some number i.  Any
-     * identifier that has this form is considered to be a renamed identifier,
-     * and it will be renamed by changing i.
+     * When renaming identifiers to avoid name conflicts, an identifier id is
+     * renamed to id + RENAMING_SUFFIX + i for some number i. Any identifier
+     * that has this form is considered to be a renamed identifier, and it will
+     * be renamed by changing i.
      * 
      * If the value of RENAMING_SUFFIX is "", everything will work but the
-     * renaming will be a little weird for identifiers whose original name
-     * ends in a digit, or if an identifier that gets renamed with i > 9 
-     * gets re-renamed.
+     * renaming will be a little weird for identifiers whose original name ends
+     * in a digit, or if an identifier that gets renamed with i > 9 gets
+     * re-renamed.
      */
-    private static final String RENAMING_SUFFIX = "_" ;
-    
+    private static final String RENAMING_SUFFIX = "_";
 
     /*************************************************************************
      * Fields that contain the current assumptions and goal.
@@ -539,133 +513,134 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * NewDecomposeProofHandler.execute, they can be modified but must not be
      * replaced by new vectors.
      *************************************************************************/
-        
+
     /**
      * The NodeRepresentation objects for the current assumptions.
      */
-//    private Vector<NodeRepresentation> assumeReps; // moved to state
+    // private Vector<NodeRepresentation> assumeReps; // moved to state
 
     /**
      * The NodeRepresentation object for the current goal.
      */
-//    private NodeRepresentation goalRep;  // moved to state
+    // private NodeRepresentation goalRep; // moved to state
 
     // Fields for displaying the Decompose Proof window.
-    private Shell windowShell;     // The shell of the Decompose Proof window
+    private Shell windowShell; // The shell of the Decompose Proof window
     private Point location = null; // The location at which window should open.
-    private TLAEditor editor;      // The editor from which window was raised.
-    private IFile editorIFile;     // The IFile of the editor, used for making 
-                                   //   it read-only.
+    private TLAEditor editor; // The editor from which window was raised.
+    private IFile editorIFile; // The IFile of the editor, used for making
+                               // it read-only.
 
     /**
-     *  Holds the current state of the decomposition.  It will be cloned when the
-     *  state is changed, the clone modified and its previousState field set to
-     *  the current value of state, and state set to the new DecompositionState.
+     * Holds the current state of the decomposition. It will be cloned when the
+     * state is changed, the clone modified and its previousState field set to
+     * the current value of state, and state set to the new DecompositionState.
      */
-    private DecompositionState state = null ; 
-    
+    private DecompositionState state = null;
+
     /* *
-     *  MANY OF THE FOLLOWING FIELDS WILL BE PUT INTO THE state
-     *   DecompositionState OBJECT
+     * MANY OF THE FOLLOWING FIELDS WILL BE PUT INTO THE state
+     * DecompositionState OBJECT
      */
 
-    
     /**
      * If the user has done an OR split on an assumption, then this is the index
-     * of the assumption in assumes and state.assumeReps. Otherwise, it equals -1.
+     * of the assumption in assumes and state.assumeReps. Otherwise, it equals
+     * -1.
      */
-//    int chosenSplit; // MOVED TO DecompositionState (not sure IF STILL NEEDED)
+    // int chosenSplit; // MOVED TO DecompositionState (not sure IF STILL
+    // NEEDED)
 
     /**
      * True if the proof of a SUFFICES step (or of the QED step if there is no
      * SUFFICES step) needs the name of the step being decomposed in the BY
-     * clause if that step has a name.  I believe this is the case iff an
+     * clause if that step has a name. I believe this is the case iff an
      * \E-split has been done on an assumption that was not moved from the goal.
      * 
      * 
      */
-//    boolean needsStepNumber; // TO BE MOVED TO DecompositionState
+    // boolean needsStepNumber; // TO BE MOVED TO DecompositionState
 
     /**
-     * True iff the step/theorem being decomposed is an ASSUME/PROVE.  This
-     * is relevant for setting state.needsStepNumber.
+     * True iff the step/theorem being decomposed is an ASSUME/PROVE. This is
+     * relevant for setting state.needsStepNumber.
      */
     boolean hasAssumes;
-    
+
     /**
      * Once the user has performed an AND split on an assumption, then another
      * AND split can be performed only on one of the results of that split. The
-     * indices of the nodes in <code>assumes</code> and <code>state.assumeReps</code>
-     * resulting from AND splits range from andSplitBegin through (including)
-     * andSplitEnd. If no AND split has been performed, then andSplitBegin and
-     * andSplitEnd equal -1.
+     * indices of the nodes in <code>assumes</code> and
+     * <code>state.assumeReps</code> resulting from AND splits range from
+     * andSplitBegin through (including) andSplitEnd. If no AND split has been
+     * performed, then andSplitBegin and andSplitEnd equal -1.
      * 
      */
-//    int andSplitBegin;  // moved to state
-//    int andSplitEnd;    // moved to state
-//    private HashSet<String> goalDefinitions; // MOVED TO state
-//    private HashSet<String> assumpDefinitions; // MOVED TO state
-    
+    // int andSplitBegin; // moved to state
+    // int andSplitEnd; // moved to state
+    // private HashSet<String> goalDefinitions; // MOVED TO state
+    // private HashSet<String> assumpDefinitions; // MOVED TO state
+
     /**
      * The set of all user-definable identifiers that are declared or defined
-     * before the theorem or step being decomposed.  It consists of the following:
+     * before the theorem or step being decomposed. It consists of the
+     * following:
      * 
-     *  - CONSTANTS and VARIABLES of the current module declared before the
-     *    step.  These are obtained from moduleNode.getConstantDecls() and
-     *    moduleNode.getVariableDecls().  (See ShowDeclarationsHandler.setList.)
-     *    
-     *  - Operators and Theorem/Assumption name defined before the current
-     *    step.  These are obtained from moduleNode.getOpDefs() and 
-     *    moduleNode.getThmOrAssDefs().  To do this, we first find the names of all
-     *    modules whose definitions are imported by INSTANCE statements that
-     *    occur before the step.  We do this from moduleNode.getInstances() to find
-     *    all unnamed INSTANCE statements occurring before the step, and then
-     *    follow the getInstances() pointers to find them.  To determine if 
-     *    the identifier defined by an OpDefNode or ThmOrAssumpDefNode node n 
-     *    occurs before the step, we examine n.getSource() and if its not
-     *    moduleNode, we see if it's a member of the set of relevant instantiated 
-     *    modules.
-     *    
-     * - Identifiers used in named instantiations (e.g., the I in I == INSTANCE ...).
-     *   They are obtained from  moduleNode.getInstances().
-     *   
-     * - Identifiers declared by NEW clauses in ASSUME/PROVE or SUFFICES ASSUME/PROVE
-     *   statements in whose scope the step lies.
-     *   
-     * - Definitions in DEFINE steps (represented by DefStepNode objects) in whose
-     *   scope the step lies. 
+     * - CONSTANTS and VARIABLES of the current module declared before the step.
+     * These are obtained from moduleNode.getConstantDecls() and
+     * moduleNode.getVariableDecls(). (See ShowDeclarationsHandler.setList.)
+     * 
+     * - Operators and Theorem/Assumption name defined before the current step.
+     * These are obtained from moduleNode.getOpDefs() and
+     * moduleNode.getThmOrAssDefs(). To do this, we first find the names of all
+     * modules whose definitions are imported by INSTANCE statements that occur
+     * before the step. We do this from moduleNode.getInstances() to find all
+     * unnamed INSTANCE statements occurring before the step, and then follow
+     * the getInstances() pointers to find them. To determine if the identifier
+     * defined by an OpDefNode or ThmOrAssumpDefNode node n occurs before the
+     * step, we examine n.getSource() and if its not moduleNode, we see if it's
+     * a member of the set of relevant instantiated modules.
+     * 
+     * - Identifiers used in named instantiations (e.g., the I in I == INSTANCE
+     * ...). They are obtained from moduleNode.getInstances().
+     * 
+     * - Identifiers declared by NEW clauses in ASSUME/PROVE or SUFFICES
+     * ASSUME/PROVE statements in whose scope the step lies.
+     * 
+     * - Definitions in DEFINE steps (represented by DefStepNode objects) in
+     * whose scope the step lies.
      */
     private HashSet<String> declaredIdentifiers;
-    
+
     /********************************************************************
      * METHODS INVOLVED IN RENAMING
      *********************************************************************/
     /**
-     * Returns the current name of the FormalParamNode `node'.  If it has been
-     * renamed, then this name is found in rename.newNames.  Otherwise, it is 
-     * the original name.
+     * Returns the current name of the FormalParamNode `node'. If it has been
+     * renamed, then this name is found in rename.newNames. Otherwise, it is the
+     * original name.
      * 
      * @param node
      * @param rename
      * @return
      */
     private String getCurrentName(FormalParamNode node, Renaming rename) {
-        String newName = null ;
+        String newName = null;
         int i = 0;
         while ((i < rename.identifiers.size()) && (newName == null)) {
             if (rename.identifiers.elementAt(i) == node) {
-              newName = rename.newNames.elementAt(i) ;  
+                newName = rename.newNames.elementAt(i);
             }
-            i++ ;
+            i++;
         }
-        
+
         if (newName == null) {
-            return node.getName().toString() ;
+            return node.getName().toString();
         } else {
-            return newName ;
+            return newName;
         }
     }
-    
+
     /**
      * Modifies the Renaming object rename to indicate that the current name of
      * `node' is `name'. If the current name of `node' is its original name,
@@ -698,7 +673,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
             }
         }
     }
-    
+
     /**
      * Returns a new name for `node' that is different from any of the names in
      * the set currentlyDeclared of names . If getCurrentName(node, rename) is
@@ -715,23 +690,23 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * @param rename
      * @return
      */
-   private String getNewName(
-           FormalParamNode node, HashSet<String> currentlyDeclared, Renaming rename) {
+    private String getNewName(FormalParamNode node,
+            HashSet<String> currentlyDeclared, Renaming rename) {
 
-       String curName = getCurrentName(node, rename) ;
-       if (! currentlyDeclared.contains(curName)) {
-           return curName ;
-       }
+        String curName = getCurrentName(node, rename);
+        if (!currentlyDeclared.contains(curName)) {
+            return curName;
+        }
 
-       String oldName = getNewNamePrefix(node.getName().toString()) ;
-       int i = 1 ;
-       while (currentlyDeclared.contains(oldName + i)) {
-           i++ ;
-       }
+        String oldName = getNewNamePrefix(node.getName().toString());
+        int i = 1;
+        while (currentlyDeclared.contains(oldName + i)) {
+            i++;
+        }
 
-       return oldName + i ;
-   }
-   
+        return oldName + i;
+    }
+
     /**
      * The return value is the string str such that if the identifier with name
      * oldname is to be renamed, its new name should have the form str+i for
@@ -743,34 +718,33 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * @param oldname
      * @return
      */
-   private String getNewNamePrefix(String oldname) {
-       
-       // Return oldname unless it has a single character or doesn't end with a digit.
-       if ((oldname.length() < 2) || 
-               ! Character.isDigit(oldname.charAt(oldname.length()-1))) {
-           return oldname + RENAMING_SUFFIX ;
-       }
-       
-       // Set newname to oldname minus the last digit.
-       String newname = oldname.substring(0, oldname.length()-1) ;
-       
-       // Keep removing digits from the end of newname until it ends with 
-       // RENAMING_SUFFIX or gets too short.
-       while ((newname.length() > RENAMING_SUFFIX.length()) && 
-               Character.isDigit(newname.charAt(newname.length()-1)) &&
-               ! newname.endsWith(RENAMING_SUFFIX)
-               ) {
-           newname = newname.substring(0, newname.length()-1) ;
-       }
-       
-       if (newname.endsWith(RENAMING_SUFFIX)) {
-           return newname ;
-       } else {
-           return oldname + RENAMING_SUFFIX ;
-       }
-   }
-   
-   
+    private String getNewNamePrefix(String oldname) {
+
+        // Return oldname unless it has a single character or doesn't end with a
+        // digit.
+        if ((oldname.length() < 2)
+                || !Character.isDigit(oldname.charAt(oldname.length() - 1))) {
+            return oldname + RENAMING_SUFFIX;
+        }
+
+        // Set newname to oldname minus the last digit.
+        String newname = oldname.substring(0, oldname.length() - 1);
+
+        // Keep removing digits from the end of newname until it ends with
+        // RENAMING_SUFFIX or gets too short.
+        while ((newname.length() > RENAMING_SUFFIX.length())
+                && Character.isDigit(newname.charAt(newname.length() - 1))
+                && !newname.endsWith(RENAMING_SUFFIX)) {
+            newname = newname.substring(0, newname.length() - 1);
+        }
+
+        if (newname.endsWith(RENAMING_SUFFIX)) {
+            return newname;
+        } else {
+            return oldname + RENAMING_SUFFIX;
+        }
+    }
+
     /****************************************
      * THE TOP MENU BUTTONS.
      *****************************************/
@@ -816,18 +790,18 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
     /**
      * THE REAL EXECUTE METHOD
      * 
-     * This method is called by a synchronous job launched in the execute method 
+     * This method is called by a synchronous job launched in the execute method
      * to do most of the work of executing the Decompose Proof command.
      * 
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      *      ExecutionEvent)
-     *
+     * 
      * @return
      * @throws ExecutionException
      */
     public Object realExecute() throws ExecutionException {
         // We will set assumes to the vector of SemanticNodes of the
-        // assumptions, if there are any, and goal to the SemanticNode 
+        // assumptions, if there are any, and goal to the SemanticNode
         // of the goal.
         Activator.getDefault().logDebug("Decompose Proof Called");
         Vector<SemanticNode> assumes;
@@ -836,8 +810,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         // String[] oneline = new String[] { "1" };
 
         /******************************************************************
-         * Perform various checks to see if the command should be executed, 
-         * and possibly raise an error warning if it shouldn't.
+         * Perform various checks to see if the command should be executed, and
+         * possibly raise an error warning if it shouldn't.
          *******************************************************************/
         // Do nothing if already executing command.
         if (this.windowShell != null) {
@@ -846,7 +820,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 return null;
             }
         }
-        
+
         // Report an error if there are dirty modules.
         // This should not happen
         if (existDirtyModules()) {
@@ -872,24 +846,24 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         // The following should be a no-op, because the editor was already
         // found to be non-null.
         if (editor == null) {
-            Activator.getDefault().logDebug("2nd call of getTLAEditorWithFocus returned null");
+            Activator.getDefault().logDebug(
+                    "2nd call of getTLAEditorWithFocus returned null");
             return null;
         }
         editorIFile = ((FileEditorInput) editor.getEditorInput()).getFile();
-        
+
         // The editor should not be dirty, so the following should be a no-op.
         if (editor.isDirty()) {
-            MessageDialog
-                    .openError(UIHelper.getShellProvider().getShell(),
-                            "Decompose Proof Command",
-                            "The module is dirty; this should not happen.");
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    "Decompose Proof Command",
+                    "The module is dirty; this should not happen.");
             return null;
         }
 
         /**********************************************
          * Initialize the state of the decomposition.
          **********************************************/
-        this.state = new DecompositionState() ;
+        this.state = new DecompositionState();
         state.hasChanged = false;
         state.chosenSplit = -1;
         state.needsStepNumber = false;
@@ -925,34 +899,34 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                     "The cursor is not in a theorem.");
             return null;
         }
-        
+
         // Set declaredIdentifiers to all the defined or declared symbols
         // whose scope contains `theorem'
-        this.declaredIdentifiers = 
-                ResourceHelper.declaredSymbolsInScope(this.moduleNode, theorem.stn.getLocation()) ;
+        this.declaredIdentifiers = ResourceHelper.declaredSymbolsInScope(
+                this.moduleNode, theorem.stn.getLocation());
 
         /********************************************************************
-         * Set the following fields: step, proofLevel, proof.  Add the 
-         * necessary declarations to this.declaredIdentifiers.
+         * Set the following fields: step, proofLevel, proof. Add the necessary
+         * declarations to this.declaredIdentifiers.
          *********************************************************************/
         step = theorem;
         boolean notDone = true;
         /*
-         * proofLevel is set to the level of the current proof, if there is
-         * one; otherwise it is set to -1.  This is tricky because for a proof
-         * node that is a DefStepNode (which comes from a DEFINE step or a
-         * step of the form Foo == INSTANCE...) or an InstanceNode (which
-         * comes from a step that is a simple INSTANCE statement) from an
-         * unnumbered step, the level number is nowhere in the semantic (or
-         * syntax) tree.  So, we have to keep checking proof steps until
-         * we find a step whose node is not a DefStepNode or InstanceNode.
-         * If we don't find one, proofLevel is set to -1.  Fortunately,
-         * the chosen step can't be decomposed in that case, so an error
-         * should be raised before any use is made of proofLevel.
+         * proofLevel is set to the level of the current proof, if there is one;
+         * otherwise it is set to -1. This is tricky because for a proof node
+         * that is a DefStepNode (which comes from a DEFINE step or a step of
+         * the form Foo == INSTANCE...) or an InstanceNode (which comes from a
+         * step that is a simple INSTANCE statement) from an unnumbered step,
+         * the level number is nowhere in the semantic (or syntax) tree. So, we
+         * have to keep checking proof steps until we find a step whose node is
+         * not a DefStepNode or InstanceNode. If we don't find one, proofLevel
+         * is set to -1. Fortunately, the chosen step can't be decomposed in
+         * that case, so an error should be raised before any use is made of
+         * proofLevel.
          * 
-         * This represents a change made by LL on 8 Mar 2013.  Before then,
-         * stepLevel was called on pfsteps[0], causing a bug if pfsteps[0]
-         * was a DefStepNode or InstanceNode.
+         * This represents a change made by LL on 8 Mar 2013. Before then,
+         * stepLevel was called on pfsteps[0], causing a bug if pfsteps[0] was a
+         * DefStepNode or InstanceNode.
          */
         proofLevel = -1;
         proof = step.getProof();
@@ -961,89 +935,105 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
             LevelNode[] pfsteps = ((NonLeafProofNode) proof).getSteps();
             LevelNode foundLevelNode = null;
             i = 0;
-            // The following step added by LL on 24 April 2013.  Without
+            // The following step added by LL on 24 April 2013. Without
             // it, the added steps get the level number of 1 plus the
             // highest-level of the proof.
             proofLevel = -1;
             while ((foundLevelNode == null) && (i < pfsteps.length)) {
-                if (   (proofLevel == -1)
-                     && !(pfsteps[i] instanceof DefStepNode)
-                     && !(pfsteps[i] instanceof InstanceNode) ) {
+                if ((proofLevel == -1) && !(pfsteps[i] instanceof DefStepNode)
+                        && !(pfsteps[i] instanceof InstanceNode)) {
                     proofLevel = stepLevel(pfsteps[i]);
                 }
                 if (EditorUtil.lineLocationContainment(selectedLocation,
                         pfsteps[i].stn.getLocation())) {
-                    foundLevelNode = pfsteps[i];                    
+                    foundLevelNode = pfsteps[i];
                     // If step is a (non-SUFFICES) ASSUME/PROVE, must add
-                    //   its NEW declarations to declaredIdentifiers.
-                    if (!step.isSuffices() && (step.getTheorem() instanceof AssumeProveNode)) {
-                        SemanticNode[] assumptions = ((AssumeProveNode) step.getTheorem()).getAssumes() ;
+                    // its NEW declarations to declaredIdentifiers.
+                    if (!step.isSuffices()
+                            && (step.getTheorem() instanceof AssumeProveNode)) {
+                        SemanticNode[] assumptions = ((AssumeProveNode) step
+                                .getTheorem()).getAssumes();
                         for (int j = 0; j < assumptions.length; j++) {
                             if (assumptions[j] instanceof NewSymbNode) {
-                                declaredIdentifiers.add(
-                                   ((NewSymbNode) assumptions[j]).getOpDeclNode().getName().toString());
+                                declaredIdentifiers
+                                        .add(((NewSymbNode) assumptions[j])
+                                                .getOpDeclNode().getName()
+                                                .toString());
                             }
                         }
                     }
                 } else {
                     // If this step is a SUFFICES ASSUME step, must
-                    //   add NEW declarations to declaredIdentifiers.
+                    // add NEW declarations to declaredIdentifiers.
                     // Bug fixed by LL on 24 June 2014:
                     // If it's a PICK step, must add the introduced identifier
-                    //   to declaredIdentifiers.  Added the code to do that.
+                    // to declaredIdentifiers. Added the code to do that.
                     if (pfsteps[i] instanceof TheoremNode) {
                         TheoremNode node = (TheoremNode) pfsteps[i];
-                        if (node.isSuffices() && (node.getTheorem() instanceof AssumeProveNode)) {
-                            SemanticNode[] assumptions = ((AssumeProveNode) node.getTheorem()).getAssumes() ;
+                        if (node.isSuffices()
+                                && (node.getTheorem() instanceof AssumeProveNode)) {
+                            SemanticNode[] assumptions = ((AssumeProveNode) node
+                                    .getTheorem()).getAssumes();
                             for (int j = 0; j < assumptions.length; j++) {
                                 if (assumptions[j] instanceof NewSymbNode) {
-                                    declaredIdentifiers.add(
-                                       ((NewSymbNode) assumptions[j]).getOpDeclNode().getName().toString());
+                                    declaredIdentifiers
+                                            .add(((NewSymbNode) assumptions[j])
+                                                    .getOpDeclNode().getName()
+                                                    .toString());
                                 }
-                            } 
-                        }
-                        else if (node.getTheorem() instanceof OpApplNode) {
-                            // Check if it's a $Pick step and add declared identifiers if it is.
-                            OpApplNode oanode = (OpApplNode) node.getTheorem() ;
-                            
-                            if (oanode.getOperator().getName().toString().equals("$Pick")) {
-                                FormalParamNode[] fp = oanode.getUnbdedQuantSymbols() ;
-                              if (fp != null) {
-                                  // This is an unbounded PICK -- e.g., PICK x, y : exp
-                                  for (int j = 0;  j < fp.length; j++) {
-                                    declaredIdentifiers.add(fp[j].getName().toString())  ;
-                                  }
-                                
-                              } else {
-                                  // This is a bounded PICK -- e.g., PICK x, y \in S, z \in T : exp
-                                  FormalParamNode[][] fpn = oanode.getBdedQuantSymbolLists() ;
-                                  for (int j = 0;  j < fpn.length; j++) {
-                                      for (int k = 0; k < fpn[j].length; k++) {
-                                          declaredIdentifiers.add(fpn[j][k].getName().toString())  ;
-                                      }
-                                  }
-                              }                               
+                            }
+                        } else if (node.getTheorem() instanceof OpApplNode) {
+                            // Check if it's a $Pick step and add declared
+                            // identifiers if it is.
+                            OpApplNode oanode = (OpApplNode) node.getTheorem();
+
+                            if (oanode.getOperator().getName().toString()
+                                    .equals("$Pick")) {
+                                FormalParamNode[] fp = oanode
+                                        .getUnbdedQuantSymbols();
+                                if (fp != null) {
+                                    // This is an unbounded PICK -- e.g., PICK
+                                    // x, y : exp
+                                    for (int j = 0; j < fp.length; j++) {
+                                        declaredIdentifiers.add(fp[j].getName()
+                                                .toString());
+                                    }
+
+                                } else {
+                                    // This is a bounded PICK -- e.g., PICK x, y
+                                    // \in S, z \in T : exp
+                                    FormalParamNode[][] fpn = oanode
+                                            .getBdedQuantSymbolLists();
+                                    for (int j = 0; j < fpn.length; j++) {
+                                        for (int k = 0; k < fpn[j].length; k++) {
+                                            declaredIdentifiers.add(fpn[j][k]
+                                                    .getName().toString());
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                    
+
                     // It it's a DEFINE step, must add the defined
-                    //   operator names to declaredIdentifiers.
+                    // operator names to declaredIdentifiers.
                     if (pfsteps[i] instanceof DefStepNode) {
-                        OpDefNode[] defs = ((DefStepNode) pfsteps[i]).getDefs() ;
+                        OpDefNode[] defs = ((DefStepNode) pfsteps[i]).getDefs();
                         for (int j = 0; j < defs.length; j++) {
-                            declaredIdentifiers.add(defs[j].getName().toString()) ;
+                            declaredIdentifiers.add(defs[j].getName()
+                                    .toString());
                         }
                     }
                     // If its an INSTANCE step, must add the instantiated
-                    //   module's definitions.
+                    // module's definitions.
                     if (pfsteps[i] instanceof InstanceNode) {
                         ResourceHelper.addDeclaredSymbolsInScope(
-                              declaredIdentifiers, ((InstanceNode) pfsteps[i]).getModule(), 
-                              ResourceHelper.infiniteLoc);
+                                declaredIdentifiers,
+                                ((InstanceNode) pfsteps[i]).getModule(),
+                                ResourceHelper.infiniteLoc);
                     }
                 }
-                
+
                 i++;
             }
             if (foundLevelNode == null) {
@@ -1058,9 +1048,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 proof = step.getProof();
             }
         }
-        
+
         /**
-         * Found the step.  Raise an error if this is a SUFFICES step.
+         * Found the step. Raise an error if this is a SUFFICES step.
          */
         if (step.isSuffices()) {
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
@@ -1068,7 +1058,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                     "Cannot decompose a SUFFICES step.");
             return null;
         }
-        /* 
+        /*
          * set proofLevelString
          */
         int level = this.proofLevel;
@@ -1131,7 +1121,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
             /**************************************************************
              * This is an ASSUME/PROVE.
              *************************************************************/
-            hasAssumes = true ;
+            hasAssumes = true;
             SemanticNode[] assump = ((AssumeProveNode) thm).getAssumes();
             assumes = new Vector<SemanticNode>();
             state.assumeReps = new Vector<NodeRepresentation>();
@@ -1176,7 +1166,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                     return null;
                 }
 
-                state.goalRep = stepRep.subNodeRep(goal, null, null, null, null);
+                state.goalRep = stepRep
+                        .subNodeRep(goal, null, null, null, null);
             }
 
         } else {
@@ -1185,7 +1176,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
              * assumesRep to null and check that this isn't something like a QED
              * step that the command doesn't handle.
              *************************************************************/
-            hasAssumes = false ;
+            hasAssumes = false;
             assumes = new Vector<SemanticNode>();
             state.assumeReps = new Vector<NodeRepresentation>();
             if (!(thm instanceof OpApplNode)) {
@@ -1227,33 +1218,35 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         //
         // that has worked in other places in the Toolbox code seems to work
         // here only occasionally. This being modern 21st century code, I have
-        // the choice of reading 10^6 lines of code to figure out what is going 
+        // the choice of reading 10^6 lines of code to figure out what is going
         // on, or doing what seems to work.
         editorIFile.setReadOnly(true);
         raiseWindow();
         // Activator.getDefault().logDebug(
-        //        "Finished Decompose Proof Handler execute");
+        // "Finished Decompose Proof Handler execute");
         return null;
     }
 
     /**
      * This method is called when the user issues a the Decompose Proof command.
-     * It launches a synchronous task that calls realExecute() to do most of 
-     * the work.  However, before doing that, it sets various fields of the
-     * NewDecomposeProofHandler object that can't be set from the separate thread.
+     * It launches a synchronous task that calls realExecute() to do most of the
+     * work. However, before doing that, it sets various fields of the
+     * NewDecomposeProofHandler object that can't be set from the separate
+     * thread.
      * 
      * This running of a separate task was done to allow the command to ask the
-     * user if he wants to save and parse dirty modules, and to not run the code in
-     * realExecute() before those modules were actually saved and parsed.  I tried
-     * all sorts of things until coming up with this code, which seems to work.
-     * However, previous versions seemed to work until bugs appeared--perhaps
-     * because the weather changed in Bangladesh.  So, I have no idea if it
-     * will still work when the monsoons come.
+     * user if he wants to save and parse dirty modules, and to not run the code
+     * in realExecute() before those modules were actually saved and parsed. I
+     * tried all sorts of things until coming up with this code, which seems to
+     * work. However, previous versions seemed to work until bugs
+     * appeared--perhaps because the weather changed in Bangladesh. So, I have
+     * no idea if it will still work when the monsoons come.
      * 
-     * Apparently the monsoons came, and the race condition re-appeared.  However,
-     * so far, its only effect seems to be a race between two executions of the
-     * parser, which can make the command fail and may produce a bogus parsing error.
-     * Of course, when the monsoons stop, some other failure mode may appear.
+     * Apparently the monsoons came, and the race condition re-appeared.
+     * However, so far, its only effect seems to be a race between two
+     * executions of the parser, which can make the command fail and may produce
+     * a bogus parsing error. Of course, when the monsoons stop, some other
+     * failure mode may appear.
      * 
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      *      ExecutionEvent)
@@ -1264,7 +1257,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
          * offset, moduleNode.
          ******************************************************************/
         this.editor = EditorUtil.getTLAEditorWithFocus();
-        this.doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+        this.doc = editor.getDocumentProvider().getDocument(
+                editor.getEditorInput());
         this.selectionProvider = editor.getSelectionProvider();
         this.selection = (TextSelection) selectionProvider.getSelection();
         this.offset = selection.getOffset();
@@ -1272,91 +1266,97 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         // Get the module.
         String moduleName = editor.getModuleName();
         this.moduleNode = ResourceHelper.getModuleNode(moduleName);
-        
+
         /**
          * The Following code copied from ProverHelper.
          */
-        
+
         boolean proceed = UIHelper.promptUserForDirtyModules();
-        if (!proceed)
-        {
+        if (!proceed) {
             // the user cancelled
             return null;
         }
-        
+
         if (editor == null) {
-            Activator.getDefault().logDebug("getTLAEditorWithFocus returned null");
+            Activator.getDefault().logDebug(
+                    "getTLAEditorWithFocus returned null");
             return null;
         }
         editorIFile = ((FileEditorInput) editor.getEditorInput()).getFile();
 
-        ParseResult parseResult = ResourceHelper.getValidParseResult(editorIFile);
+        ParseResult parseResult = ResourceHelper
+                .getValidParseResult(editorIFile);
 
-        if (parseResult == null)
-        {
-            /* The following comments taken from ProverJob.initializeFields, from
-             * which the code here was cloned.
+        if (parseResult == null) {
+            /*
+             * The following comments taken from ProverJob.initializeFields,
+             * from which the code here was cloned.
              * 
              * Its necessary to call this parsing within the job's run method.
-             * Its a bad idea to have two calls to SANY executing at the same time,
-             * and its possible for a launch of the prover to trigger background
-             * parsing. For example, the user might have dirty editors open
-             * when launching the prover. He will be prompted to save them. This
-             * could trigger background parsing. The run method will not be
-             * executed while the background parsing completes. This ensures
-             * that the following parsing will not occur while the background parsing
-             * executes.
+             * Its a bad idea to have two calls to SANY executing at the same
+             * time, and its possible for a launch of the prover to trigger
+             * background parsing. For example, the user might have dirty
+             * editors open when launching the prover. He will be prompted to
+             * save them. This could trigger background parsing. The run method
+             * will not be executed while the background parsing completes. This
+             * ensures that the following parsing will not occur while the
+             * background parsing executes.
              */
-            parseResult = new ModuleParserLauncher().parseModule(editorIFile, new NullProgressMonitor());
+            parseResult = new ModuleParserLauncher().parseModule(editorIFile,
+                    new NullProgressMonitor());
         }
 
         /**
-         * ProverHelper at this point schedules a new job.  I couldn't get that to work
-         * right, so I tried a runnable. 
+         * ProverHelper at this point schedules a new job. I couldn't get that
+         * to work right, so I tried a runnable.
          */
-        DecomposeProofRunnable runnable = new DecomposeProofRunnable(this) ;
-        
-        UIHelper.runUISync(runnable) ;
-        return null ;
+        DecomposeProofRunnable runnable = new DecomposeProofRunnable(this);
+
+        UIHelper.runUISync(runnable);
+        return null;
     }
-    
+
     /**
      * The Runnable class extension for running the realExecute() method.
+     * 
      * @author lamport
-     *
+     * 
      */
     public class DecomposeProofRunnable implements java.lang.Runnable {
-        NewDecomposeProofHandler handler ;
-        
+        NewDecomposeProofHandler handler;
+
         DecomposeProofRunnable(NewDecomposeProofHandler h) {
-            handler = h ;
+            handler = h;
         }
+
         public void run() {
             try {
                 handler.editor = EditorUtil.getTLAEditorWithFocus();
-                handler.doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+                handler.doc = editor.getDocumentProvider().getDocument(
+                        editor.getEditorInput());
                 handler.selectionProvider = editor.getSelectionProvider();
-                handler.selection = (TextSelection) selectionProvider.getSelection();
+                handler.selection = (TextSelection) selectionProvider
+                        .getSelection();
                 handler.offset = selection.getOffset();
 
                 // Get the module.
                 String moduleName = editor.getModuleName();
                 handler.moduleNode = ResourceHelper.getModuleNode(moduleName);
 
-                handler.realExecute() ;
+                handler.realExecute();
             } catch (ExecutionException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
     }
-    
+
     /**
      * METHODS FOR DISPLAYING THE COMMAND'S WINDOW
      */
-    
+
     // Note: Experimentation seems to show that horizontalSpan doesn't apply to
-    // a Label or a Button, so I've been putting the Label or Button inside a 
+    // a Label or a Button, so I've been putting the Label or Button inside a
     // composite to do that.
     private void raiseWindow() {
         if ((windowShell != null) && (!windowShell.isDisposed())) {
@@ -1365,13 +1365,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
             windowShell.dispose();
         }
         Shell topshell = UIHelper.getShellProvider().getShell();
-        
+
         // Since minimizing the window does something weird--namely,
         // makes it contain just the top bar and puts it in a corner
         // of the screen--we create a resizable window with only a
         // close button.
-        windowShell = new Shell(topshell, SWT.CLOSE | SWT.TITLE
-                                  | SWT.RESIZE);
+        windowShell = new Shell(topshell, SWT.CLOSE | SWT.TITLE | SWT.RESIZE);
         windowShell.setText("Decompose Proof - New Version Under Development");
         windowShell.addDisposeListener(new WindowDisposeListener(this));
         Composite shell = new Composite(windowShell, SWT.NONE);
@@ -1391,18 +1390,38 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
         // Display "Back Button"
         Button backButton = new Button(topMenu, SWT.PUSH);
-        setupMenuButton(backButton, BACK_BUTTON, "\u2190" );
+        setupMenuButton(backButton, BACK_BUTTON, "\u2190");
         backButton.setFont(JFaceResources.getFontRegistry().get(
                 JFaceResources.HEADER_FONT));
         backButton.setEnabled(state.previousState != null);
-        
+
         // Display "Replace Step" button
+        // The enabling condition for the button was changed by LL on 23 Aug
+        // 2014
+        // to the following: This button is enabled iff the following are all
+        // true
+        //
+        // - some change has been made
+        // - A Case split has not been chosen. (If it has, then
+        // it has an enabled P button.
+        // - The last decomposition action (as opposed to a Back
+        // action or movement of an assumption up or down) was
+        // NOT clicking on an /\ decomposition button
+        // (of an assumption).
+        //
+        // One should click on an /\ decomposition button
+        // only to reveal a \E or \/ decomposition. The third
+        // condition doesn't insure this, since the user could
+        // perform two separate /\ decomposition and only
+        // do a further decomposition on one of the results. But,
+        // it approximates that condition.
         Button replaceButton = new Button(topMenu, SWT.PUSH);
         setupMenuButton(replaceButton, PROVE_BUTTON, "P");
         replaceButton.setFont(JFaceResources.getFontRegistry().get(
                 JFaceResources.HEADER_FONT));
         replaceButton.setEnabled(state.hasChanged && (state.chosenSplit == -1)
-                && (state.andSplitEnd == -1));
+        /* && (state.andSplitEnd == -1) removed with 23 Aug 2014 changes. */
+        );
 
         // Display "Use SUFFICES" checkbox.
         useSufficesButton = new Button(topMenu, SWT.CHECK);
@@ -1423,16 +1442,17 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         gridData.horizontalAlignment = GridData.FILL;
         gridData.grabExcessHorizontalSpace = true;
         subexpressionButton.setLayoutData(gridData);
-        // Hide the option.  See comments at beginning of file.
-        subexpressionButton.setVisible(false) ;
+        // Hide the option. See comments at beginning of file.
+        subexpressionButton.setVisible(false);
 
         // Display Help button that should raise help page for this
         // dialog window. I wish I knew how to move the button to
-        // the right edge of the window.  But it's been a mere 36 
+        // the right edge of the window. But it's been a mere 36
         // years since Knuth invented the idea of expandable glue,
         // so we can't expect the Eclipse people to have heard of it
         // yet.
-        Button helpButton = HelpButton.helpButton(topMenu, "prover/decompose.html");
+        Button helpButton = HelpButton.helpButton(topMenu,
+                "prover/decompose.html");
         gridData = new GridData();
         gridData.horizontalIndent = 20;
         helpButton.setLayoutData(gridData);
@@ -1445,13 +1465,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         // that a Label can't do that.
         gridData = new GridData();
         gridData.horizontalSpan = 3;
-        Label assumeLabel = new Label(shell, SWT.NONE);      
+        Label assumeLabel = new Label(shell, SWT.NONE);
         assumeLabel.setText("ASSUME");
         assumeLabel.setFont(JFaceResources.getFontRegistry().get(
                 JFaceResources.HEADER_FONT));
         assumeLabel.setLayoutData(gridData);
         if (state.assumeReps != null) {
-            addAssumptionsToComposite(state.assumeReps, shell) ;
+            addAssumptionsToComposite(state.assumeReps, shell);
         }
 
         /**********************************************************
@@ -1459,7 +1479,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
          **********************************************************/
         // Display the "PROVE", which must be put in a
         // composite because it spans multiple rows, and it appeared
-        // that a Label can't do that. However, for some reason it 
+        // that a Label can't do that. However, for some reason it
         // now appears that a label can do that.
         gridData = new GridData();
         gridData.horizontalSpan = 3;
@@ -1514,7 +1534,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         comp.setSize(0, 5);
 
         assumeLabel = new Label(shell, SWT.NONE);
-        assumeLabel.setText(stringArrayToString(state.goalRep.primedNodeText()));
+        assumeLabel
+                .setText(stringArrayToString(state.goalRep.primedNodeText()));
         gridData = new GridData();
         gridData.verticalAlignment = SWT.TOP;
         assumeLabel.setLayoutData(gridData);
@@ -1542,29 +1563,29 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
     /**
      * This method assumes that `composite' is a composite with a gridlayout
-     * having 3 columns.  It populates it with the buttons and stuff for an
-     * assumptions list to go in the  Decompose Proof window.  It is called 
-     * only by RaiseWindow to produce the top-level list of assumptions,
-     * with nodeRepVector equal to assume 
+     * having 3 columns. It populates it with the buttons and stuff for an
+     * assumptions list to go in the Decompose Proof window. It is called only
+     * by RaiseWindow to produce the top-level list of assumptions, with
+     * nodeRepVector equal to assume
      * 
-     * @param nodeRepVector 
+     * @param nodeRepVector
      * @param composite
      */
-    void addAssumptionsToComposite(Vector<NodeRepresentation> nodeRepVector, 
+    void addAssumptionsToComposite(Vector<NodeRepresentation> nodeRepVector,
             Composite composite) {
 
         // This code was moved from a place in which the following variables
-        // were declared.  Their original values are irrelevant here.
-        Composite comp ;
-        GridData gridData ;
-        GridLayout gridLayout; 
+        // were declared. Their original values are irrelevant here.
+        Composite comp;
+        GridData gridData;
+        GridLayout gridLayout;
         Label assumeLabel;
-        
+
         /*************************************************************
          * Displaying the assumptions.
          * 
-         * First, Set assumeWidth to the number of characters in the widest
-         * line among all the lines in the assumptions.
+         * First, Set assumeWidth to the number of characters in the widest line
+         * among all the lines in the assumptions.
          **************************************************************/
         int assumeWidth = 0;
         for (int i = 0; i < nodeRepVector.size(); i++) {
@@ -1579,7 +1600,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
          */
         for (int i = 0; i < nodeRepVector.size(); i++) {
             NodeRepresentation aRep = nodeRepVector.elementAt(i);
-
 
             if (aRep.nodeType != NodeRepresentation.OR_DECOMP) {
                 // This is an ordinary assumption (and Expression or NEW
@@ -1638,11 +1658,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 comp.setSize(0, 5);
 
                 /********************************************************************
-                 * Add the text of the clause, preceded by appropriate
-                 * up/down arrows for a node that comes from an AND-SPLIT.
-                 * Combine it with the next node if its onSameLineAsNext
-                 * field is true (which implies it and the next node are NEW
-                 * nodes.
+                 * Add the text of the clause, preceded by appropriate up/down
+                 * arrows for a node that comes from an AND-SPLIT. Combine it
+                 * with the next node if its onSameLineAsNext field is true
+                 * (which implies it and the next node are NEW nodes.
                  ********************************************************************/
                 comp = new Composite(composite, SWT.NONE);
                 gridLayout = new GridLayout(3, false);
@@ -1650,11 +1669,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 // Add arrow buttons if necessary
                 if ((state.chosenSplit == -1) && (state.andSplitBegin <= i)
                         && (i <= state.andSplitEnd)) {
-                    Button arrowButton = new Button(comp, SWT.ARROW
-                            | SWT.UP);
+                    Button arrowButton = new Button(comp, SWT.ARROW | SWT.UP);
                     arrowButton
-                            .addSelectionListener(new ArrowSelectionListener(
-                                    i, SWT.UP, this));
+                            .addSelectionListener(new ArrowSelectionListener(i,
+                                    SWT.UP, this));
                     gridData = new GridData();
                     gridData.verticalAlignment = SWT.TOP;
                     arrowButton.setLayoutData(gridData);
@@ -1663,8 +1681,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                     }
                     arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
                     arrowButton
-                            .addSelectionListener(new ArrowSelectionListener(
-                                    i, SWT.DOWN, this));
+                            .addSelectionListener(new ArrowSelectionListener(i,
+                                    SWT.DOWN, this));
 
                     gridData = new GridData();
                     gridData.verticalAlignment = SWT.TOP;
@@ -1673,9 +1691,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                         arrowButton.setEnabled(false);
                     }
                 }
-                
-                assumeLabel = new Label(comp, SWT.BORDER) ; // SWT.NONE);
-                String text = stringArrayToString(nodeRepVector.elementAt(i).primedNodeText());
+
+                assumeLabel = new Label(comp, SWT.BORDER); // SWT.NONE);
+                String text = stringArrayToString(nodeRepVector.elementAt(i)
+                        .primedNodeText());
                 // Combine this with following NEW nodes if necessary
                 while (nodeRepVector.elementAt(i).onSameLineAsNext) {
                     i++;
@@ -1691,8 +1710,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 gridData = new GridData();
                 // I have no idea why (undoubtedly a feature that no one has
                 // ever bothered to document), but the following statement did
-                // not have any effect before I added the new composite between the
-                // button and it. Now it can be used to add positive or negative space
+                // not have any effect before I added the new composite between
+                // the
+                // button and it. Now it can be used to add positive or negative
+                // space
                 // to the left of the label.
                 gridData.horizontalIndent = 0;
                 gridData.verticalAlignment = SWT.TOP;
@@ -1700,84 +1721,87 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 assumeLabel.setLayoutData(gridData);
             } else {
                 // This is an OR_DECOMP node.
-                    // Add a P button and a P
-                    // 
-                    Button goalButton = new Button(composite, SWT.PUSH);
-                    setupActionButton(goalButton, aRep, "P");
-                    gridData = new GridData() ;
-                    gridData.horizontalIndent = 15 ;
-                    goalButton.setLayoutData(gridData);
-                    
-                    goalButton.setFont(JFaceResources.getFontRegistry().get(
-                            JFaceResources.HEADER_FONT));
-                
+                // Add a P button and a P
+                //
+                Button goalButton = new Button(composite, SWT.PUSH);
+                setupActionButton(goalButton, aRep, "P");
+                gridData = new GridData();
+                gridData.horizontalIndent = 15;
+                goalButton.setLayoutData(gridData);
+
+                goalButton.setFont(JFaceResources.getFontRegistry().get(
+                        JFaceResources.HEADER_FONT));
+
                 // Add a spacer between the button and the cases
                 comp = new Composite(composite, SWT.NONE);
                 gridLayout = new GridLayout(1, false);
                 comp.setLayout(gridLayout);
-                            
+
                 // inner is the composite that contains the CASEs
-                Composite inner = new Composite(composite, SWT.NONE) ;
+                Composite inner = new Composite(composite, SWT.NONE);
                 gridLayout = new GridLayout(2, false);
                 inner.setLayout(gridLayout);
-                
+
                 for (int j = 0; j < aRep.children.size(); j++) {
-                    assumeLabel = new Label(inner, SWT.NONE) ;
-                    assumeLabel.setText("CASE") ;
+                    assumeLabel = new Label(inner, SWT.NONE);
+                    assumeLabel.setText("CASE");
                     assumeLabel.setFont(JFaceResources.getFontRegistry().get(
                             JFaceResources.TEXT_FONT));
-                    Composite caseComp = new Composite(inner, SWT.BORDER); // SWT.NONE) ;
-                    gridLayout = new GridLayout(3, false) ;
-                    caseComp.setLayout(gridLayout) ;
-                    addCaseToComposite(aRep.children.elementAt(j), caseComp) ;
+                    Composite caseComp = new Composite(inner, SWT.BORDER); // SWT.NONE)
+                                                                           // ;
+                    gridLayout = new GridLayout(3, false);
+                    caseComp.setLayout(gridLayout);
+                    addCaseToComposite(aRep.children.elementAt(j), caseComp);
                     gridData = new GridData();
-                    gridData.verticalAlignment = SWT.TOP ;
-                    caseComp.setLayoutData(gridData) ;
-                    
-                    
+                    gridData.verticalAlignment = SWT.TOP;
+                    caseComp.setLayoutData(gridData);
+
                 }
             }
         }
     }
-    
+
     /**
      * This method assumes that `composite' is a composite with a gridlayout
-     * having 3 columns.  It populates it with the buttons and stuff for an
-     * assumptions list to go in the  Decompose Proof window.  It is called 
-     * to produce the contents of a CASE decomposition in the window.  It
-     * is called by addAssumptionsToComposite and by itself.
+     * having 3 columns. It populates it with the buttons and stuff for an
+     * assumptions list to go in the Decompose Proof window. It is called to
+     * produce the contents of a CASE decomposition in the window. It is called
+     * by addAssumptionsToComposite and by itself.
      * 
      * @param nodeRepVector
      * @param composite
      */
     void addCaseToComposite(Vector<NodeRepresentation> nodeRepVector,
             Composite composite) {
-        Composite comp ;
-        GridData gridData ;
-        GridLayout gridLayout; 
+        Composite comp;
+        GridData gridData;
+        GridLayout gridLayout;
         Label assumeLabel;
 
         for (int i = 0; i < nodeRepVector.size(); i++) {
             NodeRepresentation aRep = nodeRepVector.elementAt(i);
 
-            if (   (aRep.nodeType == NodeRepresentation.NEW_NODE)
-                || (aRep.nodeType == NodeRepresentation.OTHER_NODE)
-                || (   (aRep.nodeType == NodeRepresentation.EXPR_NODE)
-                    && (aRep.nodeSubtype != NodeRepresentation.OR_TYPE)
-                    && (aRep.nodeSubtype != NodeRepresentation.EXISTS_TYPE) 
-                    && (aRep.nodeSubtype != NodeRepresentation.SQSUB_TYPE))) {
+            if ((aRep.nodeType == NodeRepresentation.NEW_NODE)
+                    || (aRep.nodeType == NodeRepresentation.OTHER_NODE)
+                    || ((aRep.nodeType == NodeRepresentation.EXPR_NODE)
+                            && (aRep.nodeSubtype != NodeRepresentation.OR_TYPE)
+                            && (aRep.nodeSubtype != NodeRepresentation.EXISTS_TYPE) && (aRep.nodeSubtype != NodeRepresentation.SQSUB_TYPE))) {
                 /**
                  * For a CASE decomposition, these nodes are not split. We
                  * therefore put the text of the the assumption all the way on
                  * the left, filling its line.
                  */
 
-                // For a New node, combine it with following NEW nodes if necessary.
-                String text = stringArrayToString(nodeRepVector.elementAt(i).primedNodeText());
+                // For a New node, combine it with following NEW nodes if
+                // necessary.
+                String text = stringArrayToString(nodeRepVector.elementAt(i)
+                        .primedNodeText());
                 while (nodeRepVector.elementAt(i).onSameLineAsNext) {
                     i++;
-                    text = text + ", "
-                            + stringArrayToString(nodeRepVector.elementAt(i).primedNodeText());
+                    text = text
+                            + ", "
+                            + stringArrayToString(nodeRepVector.elementAt(i)
+                                    .primedNodeText());
                 }
                 assumeLabel = new Label(composite, SWT.NONE);
                 assumeLabel.setText(text);
@@ -1786,16 +1810,17 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 gridData = new GridData();
                 gridData.horizontalSpan = 3;
                 assumeLabel.setLayoutData(gridData);
-            }
-            else if (aRep.nodeType != NodeRepresentation.OR_DECOMP) {
+            } else if (aRep.nodeType != NodeRepresentation.OR_DECOMP) {
                 // This is an ordinary assumption (an Expression or NEW node).
                 /*************************************************************
                  * Add the button or blank area to the first column.
                  *************************************************************/
                 String labelText = null;
-                // The null test was originally added because created NEW nodes have null
-                // semanticNode fields.  However, NEW nodes are no longer processed
-                // by this code.  However, it seems harmless to keep it and I may
+                // The null test was originally added because created NEW nodes
+                // have null
+                // semanticNode fields. However, NEW nodes are no longer
+                // processed
+                // by this code. However, it seems harmless to keep it and I may
                 // have forgotten some case in which a NodeRepresentation with a
                 // null semanticNode field is created.
                 if ((aRep.semanticNode != null)
@@ -1847,8 +1872,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 comp.setSize(0, 5);
 
                 /********************************************************************
-                 * Add the text of the clause, preceded by appropriate
-                 * up/down arrows for a node that comes from an AND-SPLIT.
+                 * Add the text of the clause, preceded by appropriate up/down
+                 * arrows for a node that comes from an AND-SPLIT.
                  ********************************************************************/
                 comp = new Composite(composite, SWT.NONE);
                 gridLayout = new GridLayout(3, false);
@@ -1856,11 +1881,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 // Add arrow buttons if necessary
                 if ((state.chosenSplit == -1) && (state.andSplitBegin <= i)
                         && (i <= state.andSplitEnd)) {
-                    Button arrowButton = new Button(comp, SWT.ARROW
-                            | SWT.UP);
+                    Button arrowButton = new Button(comp, SWT.ARROW | SWT.UP);
                     arrowButton
-                            .addSelectionListener(new ArrowSelectionListener(
-                                    i, SWT.UP, this));
+                            .addSelectionListener(new ArrowSelectionListener(i,
+                                    SWT.UP, this));
                     gridData = new GridData();
                     gridData.verticalAlignment = SWT.TOP;
                     arrowButton.setLayoutData(gridData);
@@ -1869,8 +1893,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                     }
                     arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
                     arrowButton
-                            .addSelectionListener(new ArrowSelectionListener(
-                                    i, SWT.DOWN, this));
+                            .addSelectionListener(new ArrowSelectionListener(i,
+                                    SWT.DOWN, this));
 
                     gridData = new GridData();
                     gridData.verticalAlignment = SWT.TOP;
@@ -1879,9 +1903,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                         arrowButton.setEnabled(false);
                     }
                 }
-                
+
                 assumeLabel = new Label(comp, SWT.NONE);
-                String text = stringArrayToString(nodeRepVector.elementAt(i).primedNodeText());
+                String text = stringArrayToString(nodeRepVector.elementAt(i)
+                        .primedNodeText());
                 assumeLabel.setText(text);
                 // Set the font to be the editors main text font.
                 assumeLabel.setFont(JFaceResources.getFontRegistry().get(
@@ -1896,7 +1921,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
             } else {
                 // This is an OR_DECOMP node.
-                 {
+                {
                     // Add a blank label
                     assumeLabel = new Label(composite, SWT.NONE);
                     assumeLabel.setText("  ");
@@ -1904,7 +1929,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                     gridLayout = new GridLayout(1, false);
                     comp.setLayout(gridLayout);
                 }
-                
+
                 // Add a spacer between the button and the cases
                 comp = new Composite(composite, SWT.NONE);
                 gridLayout = new GridLayout(1, false);
@@ -1922,25 +1947,25 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 // gridLayout.marginHeight = 0;
                 // gridLayout.marginTop = 0;
                 inner.setLayout(gridLayout);
-                
+
                 for (int j = 0; j < aRep.children.size(); j++) {
-                    assumeLabel = new Label(inner, SWT.NONE) ;
-                    assumeLabel.setText("CASE") ;
+                    assumeLabel = new Label(inner, SWT.NONE);
+                    assumeLabel.setText("CASE");
                     assumeLabel.setFont(JFaceResources.getFontRegistry().get(
                             JFaceResources.TEXT_FONT));
-                    Composite caseComp = new Composite(inner, SWT.BORDER); // SWT.NONE) ;
-                    gridLayout = new GridLayout(3, false) ;
-                    caseComp.setLayout(gridLayout) ;
-                    addCaseToComposite(aRep.children.elementAt(j), caseComp) ;
+                    Composite caseComp = new Composite(inner, SWT.BORDER); // SWT.NONE)
+                                                                           // ;
+                    gridLayout = new GridLayout(3, false);
+                    caseComp.setLayout(gridLayout);
+                    addCaseToComposite(aRep.children.elementAt(j), caseComp);
                     gridData = new GridData();
-                    gridData.verticalAlignment = SWT.TOP ;
-                    caseComp.setLayoutData(gridData) ;                    
+                    gridData.verticalAlignment = SWT.TOP;
+                    caseComp.setLayoutData(gridData);
                 }
             }
         }
     }
-    
-    
+
     /***************************************************************************
      * The action-button handlers
      ****************************************************************************/
@@ -1948,60 +1973,70 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * The /\ action, both for a goal (which generates the proof) and for an
      * assumption (which splits the assumption).
      * 
-     * Precondition: if this is an AND-split of assumption state.assumeReps(i), then
-     * either state.andSplitBegin = -1 or state.andSplitBegin \leq i \leq state.andSplitEnd.
+     * Precondition: if this is an AND-split of assumption state.assumeReps(i),
+     * then either state.andSplitBegin = -1 or state.andSplitBegin \leq i \leq
+     * state.andSplitEnd.
      * 
      * @param nodeRep
      */
     void andAction(NodeRepresentation nodeRep) {
-       if (nodeRep.getParentVector() == null) {
+        if (nodeRep.getParentVector() == null) {
             /**
              * This is a "prove by AND-split" operation.
              */
-             makeProof(nodeRep, true, false) ;
+            makeProof(nodeRep, true, false);
         } else {
             /**
              * This is an AND-SPLIT of an assumption, so nodeRep equals
-             * state.assumeReps(i) for some i and parentNode = null (should be # null?). We set idx to i,
-             * and we set decomp to the Decomposition object.
+             * state.assumeReps(i) for some i and parentNode = null (should be #
+             * null?). We set idx to i, and we set decomp to the Decomposition
+             * object.
              * 
              */
             int idx = nodeRep.getParentIndex();
             Decomposition decomp = nodeRep.decomposition;
 
-            // Modify state.hasChanged, assumeHasChanged, and state.goalDefinitions.
-            state.hasChanged = true;
+            // Modify state.hasChanged, assumeHasChanged, and
+            // state.goalDefinitions.
+            state.hasChanged = false; // Changed from true to false by LL on 23
+                                      // Aug 2014. See
+                                      // comments on hasChanged's declaration.
             // assumeHasChanged = true;
             if (decomp.definedOp != null) {
-                // Modified by LL on 4 Feb 2013 to change state.assumpDefinitions
-                // instead of state.goalDefinitions to fix a bug.  But I'm not
+                // Modified by LL on 4 Feb 2013 to change
+                // state.assumpDefinitions
+                // instead of state.goalDefinitions to fix a bug. But I'm not
                 // sure that this is always the correct thing to do.
                 // state.goalDefinitions.add(decomp.definedOp);
                 state.assumpDefinitions.add(decomp.definedOp);
             }
 
             // Remove this assumption and insert the split nodes in its place.
-            // Set newSemanticNodes to the vector of new assumptions.  However,
-            // the call to decompositionChildToNodeRep calls decompSubstituteInNodeText,
-            // which requires nodeRep to still be in state.assumeReps.  Therefore, we
+            // Set newSemanticNodes to the vector of new assumptions. However,
+            // the call to decompositionChildToNodeRep calls
+            // decompSubstituteInNodeText,
+            // which requires nodeRep to still be in state.assumeReps.
+            // Therefore, we
             // accumulate the NodeRepresentation objects for the children and
             // replace nodeRep afterwards.
             Vector<SemanticNode> addedAssumps = decomp.children;
-            Vector<NodeRepresentation> addedToAssumeReps = new Vector<NodeRepresentation>() ;
+            Vector<NodeRepresentation> addedToAssumeReps = new Vector<NodeRepresentation>();
             for (int i = 0; i < addedAssumps.size(); i++) {
                 // Call decompositionChildToNodeRep to construct the child's
                 // NodeRepresentation.
                 NodeRepresentation rep = decompositionChildToNodeRep(nodeRep,
                         i, this.state.assumeReps, null);
-                rep.isCreated = true ;
-                addedToAssumeReps.add(rep) ;    
+                rep.isCreated = true;
+                addedToAssumeReps.add(rep);
             }
             this.state.assumeReps.remove(idx);
             for (int i = 0; i < addedToAssumeReps.size(); i++) {
-                this.state.assumeReps.add(idx + i, addedToAssumeReps.elementAt(i));
+                this.state.assumeReps.add(idx + i,
+                        addedToAssumeReps.elementAt(i));
             }
 
-            // Update state.andSplitBegin & state.andSplitEnd. Recall the precondition.
+            // Update state.andSplitBegin & state.andSplitEnd. Recall the
+            // precondition.
             if (state.andSplitBegin == -1) {
                 state.andSplitBegin = idx;
                 state.andSplitEnd = idx + addedAssumps.size() - 1;
@@ -2038,21 +2073,21 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
     }
 
     /**
-     * Executes an \E split of an assumption.  If this is a top-level assumption,
+     * Executes an \E split of an assumption. If this is a top-level assumption,
      * then the NEW variables may have to be changed to avoid a name clash with
-     * NEW variables or other bound variables of later assumptions or of the goal.
+     * NEW variables or other bound variables of later assumptions or of the
+     * goal.
      * 
-     * Also, for a top-level assumption , if an AND-split has been performed, 
-     * then this has to increment state.andSplitEnd because it adds an assumption
-     * to the AND-split region.
-     *  
+     * Also, for a top-level assumption , if an AND-split has been performed,
+     * then this has to increment state.andSplitEnd because it adds an
+     * assumption to the AND-split region.
+     * 
      * @param nodeRep
      */
     void existsAction(NodeRepresentation nodeRep) {
         // Set decomp to nodeRep's decomposition and idx
         // and parentVec so that nodeRep = parentVec.elementAt(idx).
-        
-        
+
         int idx = nodeRep.getParentIndex();
         Vector<NodeRepresentation> parentVec = nodeRep.getParentVector();
 
@@ -2066,11 +2101,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
             }
         }
 
-        // Set state.needsStepNumber if necessary. (See that field's documentation.)
-        // Bug discovered by LL 19 Aug 2014.  The spec of isCreated indicates
+        // Set state.needsStepNumber if necessary. (See that field's
+        // documentation.)
+        // Bug discovered by LL 19 Aug 2014. The spec of isCreated indicates
         // that nodeRep.isCreated is true if this exists was created by an
         // AND-split on an assumption, in which case the documentation of
-        // state.needsStepNumber implies that state.needsStepNumber should be set true.
+        // state.needsStepNumber implies that state.needsStepNumber should be
+        // set true.
         if (!nodeRep.isCreated && this.hasAssumes) {
             state.needsStepNumber = true;
         }
@@ -2078,8 +2115,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         QuantifierDecomposition qdc = decomposeQuantifier(nodeRep, false);
 
         // This added by LL on 11 Feb 2013
-        qdc.body.isCreated = true ;
-        
+        qdc.body.isCreated = true;
+
         parentVec.remove(idx);
 
         // If this is a top-level assumption and an AND-split has been
@@ -2087,7 +2124,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         if ((parentVec == state.assumeReps) && (state.andSplitBegin != -1)) {
             state.andSplitEnd = state.andSplitEnd + qdc.news.size();
         }
-        
+
         for (int i = 0; i < qdc.news.size(); i++) {
             parentVec.add(idx + i, qdc.news.elementAt(i));
             // parentVec.add(idx + i, qdc.news.elementAt(i).semanticNode) ;
@@ -2119,15 +2156,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
             newNodeText = new NodeTextRep(nodeRep.nodeText, nodeRep.mapping);
         }
 
-        NodeRepresentation nrep = 
-                decompositionChildToNodeRep(nodeRep, 0,   
-                this.state.assumeReps,
-                nodeRep.parentNode);
+        NodeRepresentation nrep = decompositionChildToNodeRep(nodeRep, 0,
+                this.state.assumeReps, nodeRep.parentNode);
 
         nrep.isCreated = true;
         nrep.isPrimed = nrep.isPrimed || decomp.primed;
         this.state.assumeReps.add(nrep);
-        nrep = decompositionChildToNodeRep(nodeRep, 1, 
+        nrep = decompositionChildToNodeRep(nodeRep, 1,
                 nodeRep.getParentVector(), nodeRep.parentNode);
         nrep.isCreated = true;
         this.state.goalRep = nrep;
@@ -2174,6 +2209,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
     /**
      * Perform the or-split for a [N]_v formula.
+     * 
      * @param nodeRep
      */
     void sqsubAction(NodeRepresentation nodeRep) {
@@ -2204,64 +2240,65 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
             NodeRepresentation rep = decompositionChildToNodeRep(nodeRep, i,
                     repVec, nodeRep);
             if (i == 1) {
-                // Have to fix the UNCHANGED node.  We prepend the "UNCHANGED"
-                // to nodeText and set it to be a node of type OTHER, which means it
+                // Have to fix the UNCHANGED node. We prepend the "UNCHANGED"
+                // to nodeText and set it to be a node of type OTHER, which
+                // means it
                 // will never be split.
                 rep.nodeType = NodeRepresentation.OTHER_NODE;
                 rep.nodeSubtype = NodeRepresentation.OTHER_TYPE;
                 rep.nodeText = prependToStringArray(rep.nodeText, "UNCHANGED ");
-              
+
             }
             repVec.add(rep);
         }
         raiseWindow();
     }
-    
+
     /**
      * Create the proof for a case-split.
      * 
      * @param nodeRep
      */
     void caseAction(NodeRepresentation nodeRep) {
-        makeProof(nodeRep, false, false) ;
+        makeProof(nodeRep, false, false);
     }
-    
+
     /**
      * Creates the proof, which is a Suffices Only proof if sufficesONly = true,
-     * and otherwise is an and-split proof if isAndProof is true, and a case-split
-     * proof otherwise.
+     * and otherwise is an and-split proof if isAndProof is true, and a
+     * case-split proof otherwise.
      * 
      * 
      * @param nodeRep
      * @param isAndProof
      * @param sufficesOnly
      */
-    void makeProof(NodeRepresentation nodeRep, boolean isAndProof, boolean sufficesOnly) {
-        
+    void makeProof(NodeRepresentation nodeRep, boolean isAndProof,
+            boolean sufficesOnly) {
+
         /**
-         * Set proofIndent to the amount to indent both the new proof and
-         * the proofs of its steps. We may want to do something clever about
+         * Set proofIndent to the amount to indent both the new proof and the
+         * proofs of its steps. We may want to do something clever about
          * inferring what the user wants from the indentation he used if the
-         * step has a leaf proof. However, this can be complicated because
-         * some people put the proof on the last line of the obligation. So
-         * for now, we just set it to PROOF_INDENT.
+         * step has a leaf proof. However, this can be complicated because some
+         * people put the proof on the last line of the obligation. So for now,
+         * we just set it to PROOF_INDENT.
          * 
-         * We also set proofIndentString to a string of that number of
-         * spaces.
+         * We also set proofIndentString to a string of that number of spaces.
          */
         HashSet<String> aaTestSet = new HashSet<String>();
-        addDeclaredSymbols(aaTestSet, state.goalRep) ;
+        addDeclaredSymbols(aaTestSet, state.goalRep);
 
         int proofIndent = PROOF_INDENT;
-        String proofIndentString = StringHelper
-                .copyString(" ", proofIndent);
+        String proofIndentString = StringHelper.copyString(" ", proofIndent);
 
         // Get the assumptions, goal, and proof as string arrays.
         //
         String[] assumptionsText = createdAssumptions();
         String[] proofText = null;
 
-        // If there is a proof, set proofText to its string array representation,
+        // If there is a proof, set proofText to its string array
+        // representation,
         // with indentation prepended to it, and delete it.
         if (this.proof != null) {
             proofText = this.stepRep.subNodeText(this.proof).nodeText;
@@ -2272,8 +2309,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 this.doc.replace(proofRegion.getOffset(),
                         proofRegion.getLength(), "");
             } catch (BadLocationException e) {
-                MessageDialog.openError(UIHelper.getShellProvider()
-                        .getShell(), "Decompose Proof Command",
+                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                        "Decompose Proof Command",
                         "An error that should not happen has occurred in "
                                 + "line 1266 of NewDecomposeProofHandler.");
                 e.printStackTrace();
@@ -2283,15 +2320,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         // Set addStepNumber true iff we need to add the step number to the
         // BY clause of a SUFFICES step or of the QED step.
         boolean addStepNumber = (stepNumber != null)
-                && this.state.needsStepNumber ;
+                && this.state.needsStepNumber;
 
         // Set sufficesStep to the string array of the suffices step,
-        // or null if there is none. There is a suffices step iff the 
-        // user has selected the Use SUFFICES option, and the 
+        // or null if there is none. There is a suffices step iff the
+        // user has selected the Use SUFFICES option, and the
         // decomposition of the goal has created an assumption.
         String[] sufficesStep = null;
         boolean hasSufficesStep = useSufficesButton.getSelection()
-                                     && (assumptionsText.length != 0) ;
+                && (assumptionsText.length != 0);
         if (hasSufficesStep || sufficesOnly) {
             String sufficesProof = null;
 
@@ -2300,7 +2337,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                             prependToStringArray(assumptionsText, "ASSUME "),
                             prependToStringArray(
                                     this.state.goalRep.primedNodeText(),
-                                    "PROVE  ")), proofLevelString + " SUFFICES ");
+                                    "PROVE  ")), proofLevelString
+                            + " SUFFICES ");
 
             if (state.assumpDefinitions.isEmpty() && !addStepNumber) {
                 // No goal definitions were expanded; the proof is obvious.
@@ -2326,21 +2364,21 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                     new String[] { proofIndentString + sufficesProof });
         }
 
-        // Set 
-        //   - mainProofSteps to be an array of string arrays for the
-        //     steps of the proof other than the SUFFICES and QED steps. ,
-        //   - numberOfSteps to the number of those steps (which
-        //     should equal mainProofSteps.length;
-        //   - proofDefto be the name of the operator whose definition
-        //     is the current goal,  if this is an and-split proof.
-        //     It is null otherwise.
-        
+        // Set
+        // - mainProofSteps to be an array of string arrays for the
+        // steps of the proof other than the SUFFICES and QED steps. ,
+        // - numberOfSteps to the number of those steps (which
+        // should equal mainProofSteps.length;
+        // - proofDefto be the name of the operator whose definition
+        // is the current goal, if this is an and-split proof.
+        // It is null otherwise.
+
         String[][] mainProofSteps = null;
-        int numberOfSteps = 0;   
+        int numberOfSteps = 0;
         String proofDef = null;
 
         if (!sufficesOnly) {
-            
+
             if (isAndProof) {
                 /**
                  * This is an and-decomposition proof
@@ -2359,10 +2397,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
                     // Set step to step number + the step's obligation.
                     String[] step;
-                    
+
                     // Set isAssumeProve to indicate if this is an ASSUME/PROVE
                     // step, rather than an ordinary assertion.
-                    boolean isAssumeProve = false ;
+                    boolean isAssumeProve = false;
                     // If there is no SUFFICES step but the goal decomposition
                     // created new ASSUME clauses, then they must be the ASSUME
                     // of an ASSUME / PROVE
@@ -2370,23 +2408,24 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                         step = concatStringArrays(
                                 prependToStringArray(assumptionsText, "ASSUME "),
                                 prependToStringArray(goalArray, "PROVE  "));
-                        isAssumeProve = true ;
-                    
+                        isAssumeProve = true;
+
                     } else {
                         // Just a simple step, no ASSUME/PROVE.
                         step = goalArray;
                     }
                     // Set stepNum to the step number--e.g. "<2>3"
-                    String stepNum = proofLevelString + (i + 1) ;
-                    
-                    step = prependToStringArray(step, stepNum + STEP_NUMBER_PUNCTUATION + " ");
+                    String stepNum = proofLevelString + (i + 1);
+
+                    step = prependToStringArray(step, stepNum
+                            + STEP_NUMBER_PUNCTUATION + " ");
 
                     // Add the proof to step, if there is one.
                     if (proofText != null) {
-                        String[] newProofText = proofText.clone() ;
+                        String[] newProofText = proofText.clone();
                         if (isAssumeProve) {
                             // Need to add step number to the BY part;
-                            addStepNumToProof(stepNum, newProofText) ;
+                            addStepNumToProof(stepNum, newProofText);
                         }
                         step = concatStringArrays(step, newProofText);
                     }
@@ -2422,51 +2461,54 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 }
                 numberOfSteps = mainProofSteps.length;
             }
-        } 
+        }
         /*
-         * The following is much too complicated in the sufficesOnly case.  In that
-         * case, hasGoalDefs and hasAssumeDefs will all be set to false, so 
+         * The following is much too complicated in the sufficesOnly case. In
+         * that case, hasGoalDefs and hasAssumeDefs will all be set to false, so
          */
         // Set qedStep to the QED step (with its step number and proof).
         String[] qedStep = new String[2];
-        qedStep[0] = proofLevelString ;
+        qedStep[0] = proofLevelString;
         if (NUMBER_QED_STEP && (numberOfSteps != 0)) {
-            qedStep[0] = qedStep[0] + (numberOfSteps + 1) + STEP_NUMBER_PUNCTUATION ;
+            qedStep[0] = qedStep[0] + (numberOfSteps + 1)
+                    + STEP_NUMBER_PUNCTUATION;
         }
         qedStep[0] = qedStep[0] + " QED";
-        qedStep[1] = proofIndentString + "BY " 
-                        + ((numberOfSteps > 0) ? (proofLevelString + 1) : "");
+        qedStep[1] = proofIndentString + "BY "
+                + ((numberOfSteps > 0) ? (proofLevelString + 1) : "");
         for (int i = 2; i <= numberOfSteps; i++) {
             qedStep[1] = qedStep[1] + ", " + proofLevelString + i;
         }
 
         // Add step number if necessary.
-        if ((sufficesStep == null) && state.needsStepNumber && (this.stepNumber != null)) {
+        if ((sufficesStep == null) && state.needsStepNumber
+                && (this.stepNumber != null)) {
             qedStep[1] = qedStep[1] + ", " + this.stepNumber;
         }
 
-        boolean hasGoalDefs = (! this.state.assumpDefinitions.isEmpty()) 
-                                 && (sufficesStep == null);
-        boolean hasAssumeDefs = ! this.state.goalDefinitions.isEmpty();
-        
-        String goalAndAssumeDefs = 
-                (hasGoalDefs ? setOfStringsToList(this.state.assumpDefinitions) : "")
-              + ((hasGoalDefs && hasAssumeDefs) ? ", " : "")
-              + (hasAssumeDefs ? setOfStringsToList(this.state.goalDefinitions) : "");
+        boolean hasGoalDefs = (!this.state.assumpDefinitions.isEmpty())
+                && (sufficesStep == null);
+        boolean hasAssumeDefs = !this.state.goalDefinitions.isEmpty();
+
+        String goalAndAssumeDefs = (hasGoalDefs ? setOfStringsToList(this.state.assumpDefinitions)
+                : "")
+                + ((hasGoalDefs && hasAssumeDefs) ? ", " : "")
+                + (hasAssumeDefs ? setOfStringsToList(this.state.goalDefinitions)
+                        : "");
         if (sufficesOnly) {
-            if  (this.proof != null) {
-                qedStep = concatStringArrays(new String[] {qedStep[0]}, 
-                     prependToStringArray(proofText, proofIndentString)) ;
+            if (this.proof != null) {
+                qedStep = concatStringArrays(new String[] { qedStep[0] },
+                        prependToStringArray(proofText, proofIndentString));
             } else {
-                qedStep[1] = "" ;
+                qedStep[1] = "";
             }
         } else {
-            // Either not a suffices only proof, or proof = null.  In
-            // either case, can construct the QED step as if it 
+            // Either not a suffices only proof, or proof = null. In
+            // either case, can construct the QED step as if it
             boolean hasDEF = false;
             if (hasGoalDefs || hasAssumeDefs) {
                 hasDEF = true;
-                qedStep[1] = qedStep[1] + " DEF " + goalAndAssumeDefs ;
+                qedStep[1] = qedStep[1] + " DEF " + goalAndAssumeDefs;
             }
             if (proofDef != null) {
                 if (hasDEF) {
@@ -2480,10 +2522,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         String[] blankLine = new String[] { "" };
         String[] completeProof = new String[0];
         if (sufficesStep != null) {
-           if (BLANK_LINE_BETWEEN_STEPS) {
+            if (BLANK_LINE_BETWEEN_STEPS) {
                 completeProof = concatStringArrays(sufficesStep, blankLine);
             } else {
-                completeProof = sufficesStep ;
+                completeProof = sufficesStep;
             }
         }
 
@@ -2515,8 +2557,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         // after the last line of the theorem.
         try {
             int nextLineOffset = doc.getLineInformation(
-                    this.step.getTheorem().getLocation().endLine())
-                    .getOffset();
+                    this.step.getTheorem().getLocation().endLine()).getOffset();
             this.doc.replace(nextLineOffset, 0,
                     stringArrayToString(completeProof) + "\n");
         } catch (BadLocationException e) {
@@ -2528,101 +2569,116 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         }
 
         // We dispose of the window. The disposal listener will do
-        // everythingthat's supposed to happen when the window is 
+        // everythingthat's supposed to happen when the window is
         // removed.
         this.windowShell.dispose();
         return;
     }
-    
+
     /**
      * Adds the proof steps for a CASE decomposition.
      * 
-     * @param pfStepVec   The vector to which proof steps should be added.
-     * @param childVec    The vector of CASE assumptions' NodeRepresentation objects, 
-     *                     which may include OR_DECOMP nodes.
-     * @param assumpArray The assumptions that must be prepended to each case.
-     * @param proofText   The user's proof, or null if none.
+     * @param pfStepVec
+     *            The vector to which proof steps should be added.
+     * @param childVec
+     *            The vector of CASE assumptions' NodeRepresentation objects,
+     *            which may include OR_DECOMP nodes.
+     * @param assumpArray
+     *            The assumptions that must be prepended to each case.
+     * @param proofText
+     *            The user's proof, or null if none.
      */
-    void addCaseProofs(Vector<String[]> pfStepVec, Vector<NodeRepresentation> childVec, 
-            String[] assumpArray, String[] proofText) {
-       
-       // Set newAssumpArray to the concatenation of assumpArray and
-       // the NEW assumptions of childVec --- which must be all the elements of
-       // childVec except the last.
-       // First set newAssumpCount to the length of newAssumpArray.  Note that
-       // it includes the last element of childVec iff that element is not an OR_DECOMP
-       // node.
-       int newAssumpCount = assumpArray.length ;
-       
-       NodeRepresentation lastChildNode = childVec.elementAt(childVec.size()-1) ;
-       
-       // The assumptions to be added to newAssumpArray the elements 0 through
-       // lenOfChildAssumps - 1.
-       int lenOfChildAssumps = childVec.size() ;
-       if (lastChildNode.nodeType == NodeRepresentation.OR_DECOMP) {
-           lenOfChildAssumps-- ;
-       }
-       
-       for (int i = 0; i < lenOfChildAssumps; i++) {
-           newAssumpCount = newAssumpCount + childVec.elementAt(i).primedNodeText().length;
-       }
-       String[] newAssumpArray = new String[newAssumpCount] ;
-       for (int i = 0; i < assumpArray.length; i++ ) {
-           newAssumpArray[i] = assumpArray[i];
-       }
-       if (lenOfChildAssumps > 0) {
-           if (assumpArray.length > 0) {
-               newAssumpArray[assumpArray.length-1] = newAssumpArray[assumpArray.length-1] + ",";
-           }
-           int idx = assumpArray.length ;
-           for (int i = 0; i < lenOfChildAssumps; i++) {
-               String[] assump = childVec.elementAt(i).primedNodeText() ;
-               for (int j = 0; j < assump.length; j++) {
-                   newAssumpArray[idx] = assump[j] ;
-                   idx++ ;
-               }
-               if (i != lenOfChildAssumps - 1) {
-                   newAssumpArray[idx-1] = newAssumpArray[idx-1] + ",";
-               }
-           }
-       }
-       
-       if (lastChildNode.nodeType == NodeRepresentation.OR_DECOMP) {
-           // Need to recurse through the children
-           for (int i = 0; i < lastChildNode.children.size(); i++) {
-               addCaseProofs(pfStepVec, lastChildNode.children.elementAt(i), newAssumpArray, proofText);
-           }
-       } else {
-           // This is a terminal node.  Construct the proof step.
-           // Set step to the step's obligation.
-           String[] step;
-           // We use a CASE step if there's just a single new assumption
-           // and "use CASE" is selected.
-           if (newAssumpArray.length == 1 && useCaseButton.getSelection()) {
-               // This is a CASE step.
-               step = prependToStringArray(lastChildNode.primedNodeText(), "CASE ") ;
-           } else {
-               // This is an ASSUME/PROVE step.
-               step = concatStringArrays(
-                       prependToStringArray(newAssumpArray, "ASSUME "),
-                       prependToStringArray(this.state.goalRep.primedNodeText(), "PROVE  "));
-           }
-           
-           String stepNum = proofLevelString + (pfStepVec.size() + 1) ;
-           step = prependToStringArray(step, stepNum + STEP_NUMBER_PUNCTUATION + " ");
-           // Add the proof to step, if there is one.  Since this is always either
-           // a CASE or an ASSUME/PROVE, if there is a proof, then we must add the step 
-           // number to the proof's BY facts.
-           if (proofText != null) {
-               String[] newProofText = proofText.clone() ;
-               addStepNumToProof(stepNum, newProofText) ;
-               step = concatStringArrays(step, newProofText); 
-           }
-           pfStepVec.add(step) ;
-       }
-       
+    void addCaseProofs(Vector<String[]> pfStepVec,
+            Vector<NodeRepresentation> childVec, String[] assumpArray,
+            String[] proofText) {
+
+        // Set newAssumpArray to the concatenation of assumpArray and
+        // the NEW assumptions of childVec --- which must be all the elements of
+        // childVec except the last.
+        // First set newAssumpCount to the length of newAssumpArray. Note that
+        // it includes the last element of childVec iff that element is not an
+        // OR_DECOMP
+        // node.
+        int newAssumpCount = assumpArray.length;
+
+        NodeRepresentation lastChildNode = childVec
+                .elementAt(childVec.size() - 1);
+
+        // The assumptions to be added to newAssumpArray the elements 0 through
+        // lenOfChildAssumps - 1.
+        int lenOfChildAssumps = childVec.size();
+        if (lastChildNode.nodeType == NodeRepresentation.OR_DECOMP) {
+            lenOfChildAssumps--;
+        }
+
+        for (int i = 0; i < lenOfChildAssumps; i++) {
+            newAssumpCount = newAssumpCount
+                    + childVec.elementAt(i).primedNodeText().length;
+        }
+        String[] newAssumpArray = new String[newAssumpCount];
+        for (int i = 0; i < assumpArray.length; i++) {
+            newAssumpArray[i] = assumpArray[i];
+        }
+        if (lenOfChildAssumps > 0) {
+            if (assumpArray.length > 0) {
+                newAssumpArray[assumpArray.length - 1] = newAssumpArray[assumpArray.length - 1]
+                        + ",";
+            }
+            int idx = assumpArray.length;
+            for (int i = 0; i < lenOfChildAssumps; i++) {
+                String[] assump = childVec.elementAt(i).primedNodeText();
+                for (int j = 0; j < assump.length; j++) {
+                    newAssumpArray[idx] = assump[j];
+                    idx++;
+                }
+                if (i != lenOfChildAssumps - 1) {
+                    newAssumpArray[idx - 1] = newAssumpArray[idx - 1] + ",";
+                }
+            }
+        }
+
+        if (lastChildNode.nodeType == NodeRepresentation.OR_DECOMP) {
+            // Need to recurse through the children
+            for (int i = 0; i < lastChildNode.children.size(); i++) {
+                addCaseProofs(pfStepVec, lastChildNode.children.elementAt(i),
+                        newAssumpArray, proofText);
+            }
+        } else {
+            // This is a terminal node. Construct the proof step.
+            // Set step to the step's obligation.
+            String[] step;
+            // We use a CASE step if there's just a single new assumption
+            // and "use CASE" is selected.
+            if (newAssumpArray.length == 1 && useCaseButton.getSelection()) {
+                // This is a CASE step.
+                step = prependToStringArray(lastChildNode.primedNodeText(),
+                        "CASE ");
+            } else {
+                // This is an ASSUME/PROVE step.
+                step = concatStringArrays(
+                        prependToStringArray(newAssumpArray, "ASSUME "),
+                        prependToStringArray(
+                                this.state.goalRep.primedNodeText(), "PROVE  "));
+            }
+
+            String stepNum = proofLevelString + (pfStepVec.size() + 1);
+            step = prependToStringArray(step, stepNum + STEP_NUMBER_PUNCTUATION
+                    + " ");
+            // Add the proof to step, if there is one. Since this is always
+            // either
+            // a CASE or an ASSUME/PROVE, if there is a proof, then we must add
+            // the step
+            // number to the proof's BY facts.
+            if (proofText != null) {
+                String[] newProofText = proofText.clone();
+                addStepNumToProof(stepNum, newProofText);
+                step = concatStringArrays(step, newProofText);
+            }
+            pfStepVec.add(step);
+        }
+
     }
-    
+
     /**
      * Adds the stepNum as a fact to the BY part of the leaf proof represented
      * by proofText--unless the proof is "OMITTED", in which case it does
@@ -2635,58 +2691,59 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      *            decomposed, which is assumed to be non-null.
      */
     private void addStepNumToProof(String stepNum, String[] proofText) {
-        LeafProofNode pfNode = (LeafProofNode) this.proof ;
+        LeafProofNode pfNode = (LeafProofNode) this.proof;
 
         if (pfNode.getOmitted()) {
-            return ;
+            return;
         }
-        
-        if (( (pfNode.getFacts() == null) || (pfNode.getFacts().length == 0)) && 
-                ((pfNode.getDefs() == null) || (pfNode.getDefs().length == 0))){
-            // This is an "OBVIOUS" proof.  Must replace the "OBVIOUS"
+
+        if (((pfNode.getFacts() == null) || (pfNode.getFacts().length == 0))
+                && ((pfNode.getDefs() == null) || (pfNode.getDefs().length == 0))) {
+            // This is an "OBVIOUS" proof. Must replace the "OBVIOUS"
             // by "BY " + stepNum
-            int i = 0 ;
-            boolean notDone = true ;
+            int i = 0;
+            boolean notDone = true;
             while (notDone && (i < proofText.length)) {
-                int idx = proofText[i].indexOf("OBVIOUS") ;
+                int idx = proofText[i].indexOf("OBVIOUS");
                 if (idx != -1) {
-                  proofText[i] = proofText[i].replaceFirst("OBVIOUS", "BY " + stepNum) ;  
-                  notDone = false ;
+                    proofText[i] = proofText[i].replaceFirst("OBVIOUS", "BY "
+                            + stepNum);
+                    notDone = false;
                 }
-                i++ ;
+                i++;
             }
         } else {
-            // There is a "BY".  Set comesAfter to either "BY"
+            // There is a "BY". Set comesAfter to either "BY"
             // or "ONLY", depending on whether there is not or there
             // is not a "BY ONLY"
-            String comesAfter = "BY" ;
+            String comesAfter = "BY";
             if (pfNode.getOnlyFlag()) {
-                comesAfter = "ONLY" ;
+                comesAfter = "ONLY";
             }
-            
+
             // Have to add a "," after stepNum if there already are BY
             // facts.
-            String stepNumAdded = stepNum ;
+            String stepNumAdded = stepNum;
             if ((pfNode.getFacts() != null) && (pfNode.getFacts().length > 0)) {
-                stepNumAdded = stepNum + "," ;
+                stepNumAdded = stepNum + ",";
             }
-            int i = 0 ;
-            boolean notDone = true ;
+            int i = 0;
+            boolean notDone = true;
             while (notDone && (i < proofText.length)) {
-                int idx = proofText[i].indexOf(comesAfter) ;
+                int idx = proofText[i].indexOf(comesAfter);
                 if (idx != -1) {
-                    proofText[i] = 
-                            proofText[i].replaceFirst(comesAfter, comesAfter + " " + stepNumAdded) ; 
-                    notDone = false ;
+                    proofText[i] = proofText[i].replaceFirst(comesAfter,
+                            comesAfter + " " + stepNumAdded);
+                    notDone = false;
                 }
-                i++ ;
+                i++;
             }
         }
     }
-    
+
     /**
      * Returns the NodeRepresentation for a child in nodeRep's decomposition
-     * when nodeRep's formula is decomposed.  It is called when processing an 
+     * when nodeRep's formula is decomposed. It is called when processing an
      * AND-split, => Split, or OR split action.
      * 
      * @param nodeRep
@@ -2711,7 +2768,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         // subexpression name.
         NodeTextRep newNodeText = null;
         if ((decomp.definedOp != null)
-                && this.subexpressionButton.getSelection() ) {
+                && this.subexpressionButton.getSelection()) {
             newNodeText = appendToNodeText(decomp.definedOpRep,
                     decomp.namePath.elementAt(i));
         } else if (nodeRep.isSubexpressionName) {
@@ -2723,73 +2780,69 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         // another module that gets this far--which will not be the case if
         // the definition is from a module instantiated with substitutions.
         // Set childDoc to the IDocument in which the children are to
-        // be found.  The following code was copied from the jumpToLocation
+        // be found. The following code was copied from the jumpToLocation
         // method in UIHelper.java
-        IDocument childDoc = this.doc ;
-        if (     (decomp.moduleName != null)
-             &&  ! this.moduleNode.getName().toString().equals(decomp.moduleName)) {
-          IFile moduleIFile = (IFile) ResourceHelper.getResourceByModuleName(decomp.moduleName) ;  
-          FileEditorInput fileEditorInput = new FileEditorInput(moduleIFile);
-          FileDocumentProvider moduleFileDocProvider = new FileDocumentProvider() ;
-          
-          try {
-              moduleFileDocProvider.connect(fileEditorInput);
-          } catch (CoreException e1)
-          { // I don't know what to do here
-              MessageDialog.openError(UIHelper.getShellProvider()
-                      .getShell(), "Decompose Proof Command",
-                      "An error that should not happen has occurred in "
-                              + "line 2737 of NewDecomposeProofHandler.");
-          } 
-          childDoc = moduleFileDocProvider.getDocument(fileEditorInput);
+        IDocument childDoc = this.doc;
+        if ((decomp.moduleName != null)
+                && !this.moduleNode.getName().toString()
+                        .equals(decomp.moduleName)) {
+            IFile moduleIFile = (IFile) ResourceHelper
+                    .getResourceByModuleName(decomp.moduleName);
+            FileEditorInput fileEditorInput = new FileEditorInput(moduleIFile);
+            FileDocumentProvider moduleFileDocProvider = new FileDocumentProvider();
+
+            try {
+                moduleFileDocProvider.connect(fileEditorInput);
+            } catch (CoreException e1) { // I don't know what to do here
+                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                        "Decompose Proof Command",
+                        "An error that should not happen has occurred in "
+                                + "line 2737 of NewDecomposeProofHandler.");
+            }
+            childDoc = moduleFileDocProvider.getDocument(fileEditorInput);
         }
 
-        // Set result  to the node representation.
-        NodeRepresentation result ;
+        // Set result to the node representation.
+        NodeRepresentation result;
         if ((decomp.definedOp != null) && (newNodeText == null)) {
             // Have to expand nodeRep's definition node.
             try {
                 // this.doc replaced by childDoc by LL 15 Aug 2014:
-                NodeRepresentation res = 
-                        new NodeRepresentation(childDoc, decomp.children.elementAt(i)) ;
-                NodeTextRep ntext = decompSubstituteInNodeText(nodeRep, 
-                        (ExprNode) decomp.children.elementAt(i), 
-                        new NodeTextRep(res.nodeText, res.mapping),
-                        nodeRep) ;
-                res.nodeText = ntext.nodeText ;
+                NodeRepresentation res = new NodeRepresentation(childDoc,
+                        decomp.children.elementAt(i));
+                NodeTextRep ntext = decompSubstituteInNodeText(nodeRep,
+                        (ExprNode) decomp.children.elementAt(i),
+                        new NodeTextRep(res.nodeText, res.mapping), nodeRep);
+                res.nodeText = ntext.nodeText;
                 res.mapping = ntext.mapping;
-                
+
                 // This is a hack, calling subNodeRep for the subnode of
                 // the definition body consisting of the entire definition body.
-                // But a little thought reveals that this does what needs to be done.
-                result = res.subNodeRep(
-                        decomp.children.elementAt(i), vec, father, null, decomp);
-                result.isPrimed = nodeRep.isPrimed ;
+                // But a little thought reveals that this does what needs to be
+                // done.
+                result = res.subNodeRep(decomp.children.elementAt(i), vec,
+                        father, null, decomp);
+                result.isPrimed = nodeRep.isPrimed;
                 if (!(decomp.children.elementAt(i) instanceof ExprNode)) {
                     MessageDialog.openError(UIHelper.getShellProvider()
                             .getShell(), "Decompose Proof Command",
                             "An error that should not happen has occurred in "
-                                    + "line 2534 of NewDecomposeProofHandler."); 
+                                    + "line 2534 of NewDecomposeProofHandler.");
                 }
             } catch (BadLocationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                MessageDialog.openError(UIHelper.getShellProvider()
-                        .getShell(), "Decompose Proof Command",
+                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                        "Decompose Proof Command",
                         "An error that should not happen has occurred in "
                                 + "line 2714 of NewDecomposeProofHandler.");
                 return null;
             }
-            
-            
+
         } else {
-        // Call subNodeRep to construct the result.
-         result = nodeRep.subNodeRep(
-                decomp.children.elementAt(i), 
-                vec, 
-                father, 
-                newNodeText,
-                decomp);
+            // Call subNodeRep to construct the result.
+            result = nodeRep.subNodeRep(decomp.children.elementAt(i), vec,
+                    father, newNodeText, decomp);
         }
         // Set various fields whose values can be inferred from nodeRep and
         // decomp.
@@ -2823,9 +2876,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * isForAll argument is used to determine whether the body's created field
      * should be set true.
      * 
-     * If this is a top-level \E split, then the NEW variables may have to be 
+     * If this is a top-level \E split, then the NEW variables may have to be
      * changed to avoid name clashes with NEW variables or other bound variables
-     * of later assumptions or of the goal.  This is not a problem for a \A split
+     * of later assumptions or of the goal. This is not a problem for a \A split
      * because, since the \A formula is the goal, there are no later items to
      * clash with.
      * 
@@ -2845,55 +2898,56 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         // set NodeTextRep to the NodeTextRep that is the name of the formula
         // represented by nodeRep.
         NodeTextRep newNodeText = null;
-        if ((decomp.definedOp != null) 
-                && (subexpressionButton.getSelection()) ) {
+        if ((decomp.definedOp != null) && (subexpressionButton.getSelection())) {
             newNodeText = decomp.definedOpRep;
         } else if (nodeRep.isSubexpressionName) {
             newNodeText = new NodeTextRep(nodeRep.nodeText, nodeRep.mapping);
         } else if (decomp.definedOp != null) {
-            // Must expand the definition.  We do this by creating a new 
+            // Must expand the definition. We do this by creating a new
             // NodeRepresentation whose semanticNode, nodeText, and mapping
             // fields are what they should be for the definition body,
             // and creating a decomposition field for it.
             try {
                 // NEED TO SUBSTITUTE FOR DEFINITION'S FORMAL PARAMETERS
-                
+
                 // Strip prime from nodeRepArg.semanticNode if it has one.
-                OpApplNode oan = (OpApplNode) nodeRepArg.semanticNode ;
+                OpApplNode oan = (OpApplNode) nodeRepArg.semanticNode;
                 if (oan.getOperator().getName() == ASTConstants.OP_prime) {
-                    if (! (oan instanceof OpApplNode)) {
-                        return null ;
+                    if (!(oan instanceof OpApplNode)) {
+                        return null;
                     }
-                    oan = (OpApplNode) oan.getArgs()[0] ;
+                    oan = (OpApplNode) oan.getArgs()[0];
                 }
-                
-                ExprNode sn = ((OpDefNode) oan.getOperator()).getBody() ;
-                NodeRepresentation res = 
-                        new NodeRepresentation(this.doc, sn) ;
+
+                ExprNode sn = ((OpDefNode) oan.getOperator()).getBody();
+                NodeRepresentation res = new NodeRepresentation(this.doc, sn);
                 // This is a hack, calling subNodeRep for the subnode of
                 // the definition body consisting of the entire definition body.
-                // But a little thought reveals that this does what needs to be done.
-                nodeRep = res.subNodeRep(sn, 
-                           nodeRepArg.getParentVector(), nodeRepArg.parentNode, null, decomp);
-                nodeRep.isPrimed = nodeRepArg.isPrimed ;
-                
-                // We now want to call decompSubstituteInNodeText using the substitutions
-                // in nodeRepArg.decomposition, rather than the one computed by this
-                // call to subNodeRep.  So, we just set the necessary fields.
-                nodeRep.decomposition.formalParams = nodeRepArg.decomposition.formalParams ;
-                nodeRep.decomposition.arguments = nodeRepArg.decomposition.arguments ;
-                nodeRep.decomposition.argNodes = nodeRepArg.decomposition.argNodes ;
-                                
-                NodeTextRep ntext = decompSubstituteInNodeText(nodeRep, sn, 
-                                     new NodeTextRep(nodeRep.nodeText, nodeRep.mapping),
-                                     nodeRepArg) ;
-                nodeRep.nodeText = ntext.nodeText ;
+                // But a little thought reveals that this does what needs to be
+                // done.
+                nodeRep = res.subNodeRep(sn, nodeRepArg.getParentVector(),
+                        nodeRepArg.parentNode, null, decomp);
+                nodeRep.isPrimed = nodeRepArg.isPrimed;
+
+                // We now want to call decompSubstituteInNodeText using the
+                // substitutions
+                // in nodeRepArg.decomposition, rather than the one computed by
+                // this
+                // call to subNodeRep. So, we just set the necessary fields.
+                nodeRep.decomposition.formalParams = nodeRepArg.decomposition.formalParams;
+                nodeRep.decomposition.arguments = nodeRepArg.decomposition.arguments;
+                nodeRep.decomposition.argNodes = nodeRepArg.decomposition.argNodes;
+
+                NodeTextRep ntext = decompSubstituteInNodeText(nodeRep, sn,
+                        new NodeTextRep(nodeRep.nodeText, nodeRep.mapping),
+                        nodeRepArg);
+                nodeRep.nodeText = ntext.nodeText;
                 nodeRep.mapping = ntext.mapping;
             } catch (BadLocationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                MessageDialog.openError(UIHelper.getShellProvider()
-                        .getShell(), "Decompose Proof Command",
+                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                        "Decompose Proof Command",
                         "An error that should not happen has occurred in "
                                 + "line 2624 of NewDecomposeProofHandler.");
                 return null;
@@ -2901,74 +2955,76 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         }
 
         // At this point, for a \E decomposition, we must perform any needed
-        // substitutions in nodeRep for the \E's bound identifiers that can 
+        // substitutions in nodeRep for the \E's bound identifiers that can
         // cause a clash with bound identifiers or NEW declarations that occur
-        // after this assumption.  
-        
-        // Set idsToRename to the vector of NEW identifiers to be renamed, 
-        // and set idNewNames to the vector of their new names.  These will be
+        // after this assumption.
+
+        // Set idsToRename to the vector of NEW identifiers to be renamed,
+        // and set idNewNames to the vector of their new names. These will be
         // empty vectors for a \A decomposition.
-        Vector<FormalParamNode> idsToRename = new Vector<FormalParamNode>() ;
-        Vector<String> idNewNames = new Vector<String>() ;
-        
+        Vector<FormalParamNode> idsToRename = new Vector<FormalParamNode>();
+        Vector<String> idNewNames = new Vector<String>();
+
         if (!isForAll) {
             // Set prevDeclared to the set of all identifiers declared or
             // defined at the location of nodeRepArg.
-            HashSet<String> prevDeclared = 
-                    (HashSet<String>) this.declaredIdentifiers.clone();
+            HashSet<String> prevDeclared = (HashSet<String>) this.declaredIdentifiers
+                    .clone();
             addDeclaredSymbols(prevDeclared, nodeRepArg);
-            
-            addSymbolsDeclaredLater(prevDeclared, nodeRepArg, true) ;
-            
-            // set idsToRename to the vector of NEW identifiers to be renamed, 
+
+            addSymbolsDeclaredLater(prevDeclared, nodeRepArg, true);
+
+            // set idsToRename to the vector of NEW identifiers to be renamed,
             // and set idNewNames to the vector of their new names.
             // nrenaming is the renaming field of nodeRep, which will have
-            // changed if the 
+            // changed if the
             for (int i = 0; i < decomp.quantIds.size(); i++) {
                 FormalParamNode id = decomp.quantIds.elementAt(i);
                 if (prevDeclared.contains(getCurrentName(id, decomp.renaming))) {
-                    idsToRename.add(id) ;
-                    idNewNames.add(getNewName(id, prevDeclared, decomp.renaming)) ;                 
+                    idsToRename.add(id);
+                    idNewNames
+                            .add(getNewName(id, prevDeclared, decomp.renaming));
                 }
             }
-            
-            // Call substituteInNode to do the renamings in nodeRep. 
-            FormalParamNode[] formalParams = new FormalParamNode[idsToRename.size()] ;
-            String[] arguments = new String[idsToRename.size()] ;
-            boolean[] isBoundedIdRenaming = new boolean[idsToRename.size()] ;
-            SemanticNode[] argNodes = new SemanticNode[idsToRename.size()] ;
-            for (int i=0; i < idsToRename.size(); i++) {
-                formalParams[i] = idsToRename.elementAt(i) ;
-                arguments[i] = idNewNames.elementAt(i) ;
-                isBoundedIdRenaming[i] = true ;
-                argNodes[i] = null ;
+
+            // Call substituteInNode to do the renamings in nodeRep.
+            FormalParamNode[] formalParams = new FormalParamNode[idsToRename
+                    .size()];
+            String[] arguments = new String[idsToRename.size()];
+            boolean[] isBoundedIdRenaming = new boolean[idsToRename.size()];
+            SemanticNode[] argNodes = new SemanticNode[idsToRename.size()];
+            for (int i = 0; i < idsToRename.size(); i++) {
+                formalParams[i] = idsToRename.elementAt(i);
+                arguments[i] = idNewNames.elementAt(i);
+                isBoundedIdRenaming[i] = true;
+                argNodes[i] = null;
             }
-            
+
             NodeTextRep nText = substituteInNodeText(formalParams, arguments,
                     isBoundedIdRenaming, argNodes,
-                    (ExprNode) nodeRep.semanticNode, 
-                    new NodeTextRep(nodeRep.nodeText, nodeRep.mapping),
+                    (ExprNode) nodeRep.semanticNode, new NodeTextRep(
+                            nodeRep.nodeText, nodeRep.mapping),
                     nodeRep.decomposition);
-            nodeRep.nodeText = nText.nodeText ;
-            nodeRep.mapping  = nText.mapping ;
+            nodeRep.nodeText = nText.nodeText;
+            nodeRep.mapping = nText.mapping;
             for (int i = 0; i < idsToRename.size(); i++) {
-                addCurrentName(idsToRename.elementAt(i), idNewNames.elementAt(i), 
-                        nodeRep.decomposition.renaming) ;
+                addCurrentName(idsToRename.elementAt(i),
+                        idNewNames.elementAt(i), nodeRep.decomposition.renaming);
             }
         }
-                
+
         int lastLine = -1;
         for (int i = 0; i < decomp.quantIds.size(); i++) {
             // Loop invariant:
-            // lastRow != -1 iff 
-            //    /\ i > 0
-            //    /\ \/ this is an unbounded quantifier
-            //       \/ the i-1st NEW fits entirely on line lastLine
+            // lastRow != -1 iff
+            // /\ i > 0
+            // /\ \/ this is an unbounded quantifier
+            // \/ the i-1st NEW fits entirely on line lastLine
             NodeRepresentation rep = new NodeRepresentation();
             rep.semanticNode = null;
             rep.nodeType = NodeRepresentation.NEW_NODE;
-            rep.newId = getCurrentName(decomp.quantIds.elementAt(i), 
-                                            nodeRep.decomposition.renaming) ;
+            rep.newId = getCurrentName(decomp.quantIds.elementAt(i),
+                    nodeRep.decomposition.renaming);
             rep.isCreated = true;
             rep.parentNode = nodeRep.parentNode;
             if (nodeRep.getParentVector() != null) {
@@ -2983,12 +3039,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
             // set id to "NEW" plus the bound identifier
             NodeTextRep ntrep = new NodeTextRep();
-            String id = "NEW " + rep.newId ;
-//                    + decomp.quantIds.elementAt(i).getName().toString();
+            String id = "NEW " + rep.newId;
+            // + decomp.quantIds.elementAt(i).getName().toString();
 
             // beginLine is set to the line containing the source if there is
             // no quantifier bound or the quantifier bound occupies a single
-            // line.  Otherwise, it is set to -1.
+            // line. Otherwise, it is set to -1.
             int beginLine = ((SyntaxTreeNode) decomp.quantIds.elementAt(i).stn)
                     .getLocation().beginLine();
             if (decomp.quantBounds == null) {
@@ -3058,7 +3114,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
             newNodeText = appendToNodeText(newNodeText, str);
         }
         result.body = nodeRep.subNodeRep(decomp.children.elementAt(0),
-                nodeRep.getParentVector(), nodeRep.parentNode, newNodeText, nodeRep.decomposition);
+                nodeRep.getParentVector(), nodeRep.parentNode, newNodeText,
+                nodeRep.decomposition);
         result.body.isCreated = isForAll;
         result.body.isPrimed = result.body.isPrimed || decomp.primed;
         result.body.isSubexpressionName = nodeRep.isSubexpressionName
@@ -3068,25 +3125,24 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
     /**
      * Returns string array such that applying stringArrayToString to it
-     * produces the text of a list of of assumptions in this.state.assumeReps for
-     * which 
-     *   - isCreated field equals true, and
-     *   - "use Suffices" is chosen or this is not an OR-DECOMP entry
+     * produces the text of a list of of assumptions in this.state.assumeReps
+     * for which - isCreated field equals true, and - "use Suffices" is chosen
+     * or this is not an OR-DECOMP entry
      */
     String[] createdAssumptions() {
         /**
          * Sets vec to a vector of string arrays such that applying
          * stringArrayToString to each of them produces the text of an
-         * assumption in this.state.assumeReps for which the isCreated field equals
-         * true--except that multiple one-line NEW assumptions are combined into
-         * a single 1-line string array.
+         * assumption in this.state.assumeReps for which the isCreated field
+         * equals true--except that multiple one-line NEW assumptions are
+         * combined into a single 1-line string array.
          */
-        Boolean sufficesSelected = useSufficesButton.getSelection() ;
+        Boolean sufficesSelected = useSufficesButton.getSelection();
         Vector<String[]> vec = new Vector<String[]>();
         for (int i = 0; i < this.state.assumeReps.size(); i++) {
             NodeRepresentation rep = state.assumeReps.elementAt(i);
-            if (rep.isCreated && 
-                  (sufficesSelected || (rep.nodeType != NodeRepresentation.OR_DECOMP))) {
+            if (rep.isCreated
+                    && (sufficesSelected || (rep.nodeType != NodeRepresentation.OR_DECOMP))) {
                 String newDecls = null;
                 while (rep.onSameLineAsNext) {
                     if (newDecls != null) {
@@ -3129,86 +3185,93 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         }
         return result;
     }
-    
+
     /**
      * The following bug fixed by LL on 3 July 2014: Decomposing
      * 
-     *    foo(p) == \A x : p <=> A
-     *                     \/ B                       
-     *    THEOREM foo(\/ C')
-     *    
+     * foo(p) == \A x : p <=> A \/ B THEOREM foo(\/ C')
+     * 
      * produces the new goal
      * 
-     *    ASSUME NEW x
-     *    PROVE  \/ C' <=> A
-     *           \/ B
-     * ---------         
-     * Assumes that nodeTextRep is the NodeTextRep for the ExprNode sn (possibly
-     * after some substitutions have been made).  It returns the NodeTextRep
-     * object representing sn after substituting arguments[i] for formalParams[i], 
-     * for each i.  It assumes that argNodes[i] is the semantic node whose string
-     * representation is arguments[i].  That string representation must be a 
-     * single-line string (no line breaks).
+     * ASSUME NEW x PROVE \/ C' <=> A \/ B --------- Assumes that nodeTextRep is
+     * the NodeTextRep for the ExprNode sn (possibly after some substitutions
+     * have been made). It returns the NodeTextRep object representing sn after
+     * substituting arguments[i] for formalParams[i], for each i. It assumes
+     * that argNodes[i] is the semantic node whose string representation is
+     * arguments[i]. That string representation must be a single-line string (no
+     * line breaks).
      * 
-     * Note: this assumes that none of the substitutions made before this one have
-     * added any of the formal parameter symbols being substituted for.  We also assume
-     * that the node sn is being used as a complete assume clause or goal.
-     *  
-     * @param formalParams  The formal parameters to be substituted for.
-     * @param arguments     The String representations of argNodes, which must be
-     *                      a single-line expression.
-     * @param isBoundedIdRenaming  
-     *                      An array whose i-th element is true iff formalParams[i]
-     *                      is the FormalParamNode of a bound identifier in sn that
-     *                      is being renamed to arguments[i].
-     * @param argNodes      The semantic nodes of the expressions to be substituted,
-     *                      except that argNodes[i] is not used and may be null if
-     *                      isBoundedIdRenaming[i] = true.
-     * @param sn            SemanticNode in which the substitutions are being made.
-     * @param nodeTextRep   Representation of sn (perhaps after other substitutions).
-     * @param decomp        A decomposition from which to find renamings of identifiers.
+     * Note: this assumes that none of the substitutions made before this one
+     * have added any of the formal parameter symbols being substituted for. We
+     * also assume that the node sn is being used as a complete assume clause or
+     * goal.
+     * 
+     * @param formalParams
+     *            The formal parameters to be substituted for.
+     * @param arguments
+     *            The String representations of argNodes, which must be a
+     *            single-line expression.
+     * @param isBoundedIdRenaming
+     *            An array whose i-th element is true iff formalParams[i] is the
+     *            FormalParamNode of a bound identifier in sn that is being
+     *            renamed to arguments[i].
+     * @param argNodes
+     *            The semantic nodes of the expressions to be substituted,
+     *            except that argNodes[i] is not used and may be null if
+     *            isBoundedIdRenaming[i] = true.
+     * @param sn
+     *            SemanticNode in which the substitutions are being made.
+     * @param nodeTextRep
+     *            Representation of sn (perhaps after other substitutions).
+     * @param decomp
+     *            A decomposition from which to find renamings of identifiers.
      * @return
      */
-    NodeTextRep substituteInNodeText(
-            FormalParamNode[] formalParams, String[] arguments, 
-            boolean[] isBoundedIdRenaming,
-            SemanticNode[] argNodes, 
-            ExprNode sn, NodeTextRep nodeTextRep,
+    NodeTextRep substituteInNodeText(FormalParamNode[] formalParams,
+            String[] arguments, boolean[] isBoundedIdRenaming,
+            SemanticNode[] argNodes, ExprNode sn, NodeTextRep nodeTextRep,
             Decomposition decomp) {
         NodeTextRep result = nodeTextRep.clone();
-        
-        int numOfLines = result.nodeText.length ;
-        
-        // We set inserts to an array of Insertion vectors that describe the modification made
-        // to nodeTextRep to get result.  This is used to call adjustIndentation to fix the
+
+        int numOfLines = result.nodeText.length;
+
+        // We set inserts to an array of Insertion vectors that describe the
+        // modification made
+        // to nodeTextRep to get result. This is used to call adjustIndentation
+        // to fix the
         // indentation of result.
-        Vector<Insertion>[] inserts = new Vector[numOfLines] ;
+        Vector<Insertion>[] inserts = new Vector[numOfLines];
         for (int i = 0; i < numOfLines; i++) {
-            inserts[i] = new Vector() ;
+            inserts[i] = new Vector();
         }
-        // Line of first token of sn, used to translate from Location line numbers to
+        // Line of first token of sn, used to translate from Location line
+        // numbers to
         // indices in noteTextRep.nodeText.
         int beginLine = sn.stn.getLocation().beginLine();
-        
+
         for (int i = 0; i < arguments.length; i++) {
-            SemanticNode[] uses = ResourceHelper.getUsesOfSymbol(formalParams[i], sn) ;
-            
+            SemanticNode[] uses = ResourceHelper.getUsesOfSymbol(
+                    formalParams[i], sn);
+
             String replacementText = arguments[i];
-            
+
             // NOTE: If we were substituting for a formal parameter for which a
             // different identifier had been substituted, we have to use as
             // sourceTextLength the length of the new identifier.
-            int sourceTextLength = getCurrentName(formalParams[i], decomp.renaming).length() ;
-            // Set mayNeedParens true if replacementText doesn't end in ' and would
+            int sourceTextLength = getCurrentName(formalParams[i],
+                    decomp.renaming).length();
+            // Set mayNeedParens true if replacementText doesn't end in ' and
+            // would
             // need parentheses around it in order to prime it.
-            boolean mayNeedParens = false ; 
-            if (primingNeedsParens(argNodes[i]) && 
-                   ( (replacementText.charAt(replacementText.length() - 1) != '\'')
-                    // Following disjuncts added on 3 July 2014 to fix bug
-                    // described above.
-                    || replacementText.startsWith("\\/")
-                    || replacementText.startsWith("/\\") )) {
-                mayNeedParens = true ;
+            boolean mayNeedParens = false;
+            if (primingNeedsParens(argNodes[i])
+                    && ((replacementText.charAt(replacementText.length() - 1) != '\'')
+                            // Following disjuncts added on 3 July 2014 to fix
+                            // bug
+                            // described above.
+                            || replacementText.startsWith("\\/") || replacementText
+                                .startsWith("/\\"))) {
+                mayNeedParens = true;
             }
             for (int j = 0; j < uses.length; j++) {
                 if (!(uses[j] instanceof OpApplNode)) {
@@ -3219,75 +3282,88 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                     return result;
                 }
                 // Note: the following code outside the if (mayNeedParens) has
-                // been cloned below for renaming the FormalParamNode declaration
+                // been cloned below for renaming the FormalParamNode
+                // declaration
                 // if isBoundedIdRenaming[i] is true.
-                Location useLocation = uses[j].stn.getLocation() ;
-                int useIdx = useLocation.beginLine()-beginLine ;
+                Location useLocation = uses[j].stn.getLocation();
+                int useIdx = useLocation.beginLine() - beginLine;
                 int offset = colToLoc(useLocation.beginColumn(),
-                                      result.mapping[useIdx] );
-                String thisReplaceText = replacementText ;
+                        result.mapping[useIdx]);
+                String thisReplaceText = replacementText;
                 if (mayNeedParens) {
-                   // Define text that, if it surrounds the replaced text, implies
-                   // that no parentheses are needed.
-                   String[] precedingSafe = new String[] {"(", "[", "{", ",", "<<", "->", ":"} ;
-                   String[] followingSafe = new String[] {")", "]", "}", ",", ">>", "->", "~>"} ; 
-                   
-                   // Because we assume that the formula we're substituting into is a complete
-                   // assumption or goal, the end of the formula is also a safe preceding
-                   // or following "string".
-                   String testString = result.nodeText[useIdx].substring(0, offset).trim() ;
-                   int line = useIdx ;
-                   while (testString.equals("") && line > 0) {
-                       line-- ;
-                       testString = result.nodeText[line] ;
-                   }
-                   boolean terminated = testString.equals("");
-                   int k = 0;
-                   while (!terminated && k < precedingSafe.length) {
-                       terminated = testString.endsWith(precedingSafe[k]) ;
-                       k++ ;
-                   }
-                   if (terminated) {
-                       testString = 
-                          result.nodeText[useIdx].substring(offset + sourceTextLength).trim() ;
-                       line = useIdx ;
-                       while (testString.equals("") && line < result.nodeText.length-1) {
-                           line++ ;
-                           testString = result.nodeText[line] ;
-                       }
-                       terminated = testString.equals("");
-                       k = 0;
-                       while (!terminated && k < precedingSafe.length) {
-                           terminated = testString.startsWith(followingSafe[k]) ;
-                           k++ ;
-                       }
-                   }
-                   if (!terminated) {
-                    thisReplaceText = "(" + replacementText + ")" ;
-                   }
+                    // Define text that, if it surrounds the replaced text,
+                    // implies
+                    // that no parentheses are needed.
+                    String[] precedingSafe = new String[] { "(", "[", "{", ",",
+                            "<<", "->", ":" };
+                    String[] followingSafe = new String[] { ")", "]", "}", ",",
+                            ">>", "->", "~>" };
+
+                    // Because we assume that the formula we're substituting
+                    // into is a complete
+                    // assumption or goal, the end of the formula is also a safe
+                    // preceding
+                    // or following "string".
+                    String testString = result.nodeText[useIdx].substring(0,
+                            offset).trim();
+                    int line = useIdx;
+                    while (testString.equals("") && line > 0) {
+                        line--;
+                        testString = result.nodeText[line];
+                    }
+                    boolean terminated = testString.equals("");
+                    int k = 0;
+                    while (!terminated && k < precedingSafe.length) {
+                        terminated = testString.endsWith(precedingSafe[k]);
+                        k++;
+                    }
+                    if (terminated) {
+                        testString = result.nodeText[useIdx].substring(
+                                offset + sourceTextLength).trim();
+                        line = useIdx;
+                        while (testString.equals("")
+                                && line < result.nodeText.length - 1) {
+                            line++;
+                            testString = result.nodeText[line];
+                        }
+                        terminated = testString.equals("");
+                        k = 0;
+                        while (!terminated && k < precedingSafe.length) {
+                            terminated = testString
+                                    .startsWith(followingSafe[k]);
+                            k++;
+                        }
+                    }
+                    if (!terminated) {
+                        thisReplaceText = "(" + replacementText + ")";
+                    }
                 }
-                result.nodeText[useIdx] = 
-                        result.nodeText[useIdx].substring(0, offset) + thisReplaceText 
-                          + result.nodeText[useIdx].substring(offset+sourceTextLength);
-                adjustMappingPairVector(useLocation.beginColumn() + sourceTextLength, 
-                                        thisReplaceText.length() - sourceTextLength, 
-                                        result.mapping[useIdx]);
-                
+                result.nodeText[useIdx] = result.nodeText[useIdx].substring(0,
+                        offset)
+                        + thisReplaceText
+                        + result.nodeText[useIdx].substring(offset
+                                + sourceTextLength);
+                adjustMappingPairVector(useLocation.beginColumn()
+                        + sourceTextLength, thisReplaceText.length()
+                        - sourceTextLength, result.mapping[useIdx]);
+
                 // Update inserts
-                inserts[useIdx].add(new Insertion(offset, sourceTextLength, thisReplaceText.length())) ;
+                inserts[useIdx].add(new Insertion(offset, sourceTextLength,
+                        thisReplaceText.length()));
             }
-            
+
             // if isBoundedIdRenaming[i] is true, then rename the occurrence of
-            // the FormalParamNode.  The code was cloned for the code above that
+            // the FormalParamNode. The code was cloned for the code above that
             // renames uses.
-            // 
+            //
             // This can be called with decomp.renaming containing renamings for
             // bounded identifiers that occur in a different part of the spec
-            // because we're now inside an expanded definition.  We therefore
+            // because we're now inside an expanded definition. We therefore
             // have to not try to do the renaming in that case.
             if (isBoundedIdRenaming[i]) {
-                Location useLocation = formalParams[i].stn.getLocation() ;
-                // We do this replacement iff the identifier declaration is contained
+                Location useLocation = formalParams[i].stn.getLocation();
+                // We do this replacement iff the identifier declaration is
+                // contained
                 // in the location in which the renaming is being performed.
                 if (EditorUtil.locationContainment(useLocation,
                         sn.stn.getLocation())) {
@@ -3308,14 +3384,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                             replacementText.length()));
                 }
             }
-            
-                    
+
         }
-        
+
         // Adjust the indentation.
-        adjustIndentation(nodeTextRep, result, inserts) ;
-        
-        return result ;
+        adjustIndentation(nodeTextRep, result, inserts);
+
+        return result;
     }
 
     /**
@@ -3330,84 +3405,86 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * @param sn
      * @param nodeTextRep
      * @param originalNodeRep
-     *            NodeRepresentation that is currently in the state.assumeReps / state.goalRep
-     *            data structure at the place where nodeRep will go.
+     *            NodeRepresentation that is currently in the state.assumeReps /
+     *            state.goalRep data structure at the place where nodeRep will
+     *            go.
      * 
      * @return
      */
-    NodeTextRep decompSubstituteInNodeText(
-            NodeRepresentation nodeRep, ExprNode sn, NodeTextRep nodeTextRep,
+    NodeTextRep decompSubstituteInNodeText(NodeRepresentation nodeRep,
+            ExprNode sn, NodeTextRep nodeTextRep,
             NodeRepresentation originalNodeRep) {
-        Decomposition decomp = nodeRep.decomposition ;
-        
+        Decomposition decomp = nodeRep.decomposition;
+
         // Set prevDeclared to the set of all identifiers declared or defined at
         // the location of nodeRep.
-        HashSet<String> prevDeclared = (HashSet<String>) this.declaredIdentifiers.clone() ;
-        addDeclaredSymbols(prevDeclared, originalNodeRep) ;
+        HashSet<String> prevDeclared = (HashSet<String>) this.declaredIdentifiers
+                .clone();
+        addDeclaredSymbols(prevDeclared, originalNodeRep);
 
         // Added by LL on 10 Feb 2013 because formulas that are being decomposed
         // may wind up added in the scope later NEW declarations.
-        addSymbolsDeclaredLater(prevDeclared, originalNodeRep, false) ;
-        
+        addSymbolsDeclaredLater(prevDeclared, originalNodeRep, false);
+
         // Set rename to a new Renaming object containing the renamings
         // in decomp.renamings together with all additional renamings
         // necessary to avoid name conflicts with names in prevDeclared.
-        Renaming rename = decomp.renaming.clone() ;
-        
-        addToRenaming(rename, prevDeclared, sn) ;
-        
+        Renaming rename = decomp.renaming.clone();
+
+        addToRenaming(rename, prevDeclared, sn);
+
         // Compile the arguments for calling substituteInNodeText.
         // Set decompParamsLen to the number of formal parameters, which is 0
-        // if decomp.formalParams = null 
-        int decompParamsLen = 0 ;
+        // if decomp.formalParams = null
+        int decompParamsLen = 0;
         if (decomp.formalParams != null) {
             decompParamsLen = decomp.formalParams.length;
         }
-        FormalParamNode[] formalParams = 
-                new FormalParamNode[decompParamsLen + rename.identifiers.size()] ;
-        String[] arguments = new String[formalParams.length] ;
-        
-        boolean[] isBoundedIdRenaming = new boolean[formalParams.length] ;
+        FormalParamNode[] formalParams = new FormalParamNode[decompParamsLen
+                + rename.identifiers.size()];
+        String[] arguments = new String[formalParams.length];
+
+        boolean[] isBoundedIdRenaming = new boolean[formalParams.length];
         SemanticNode[] argNodes = new SemanticNode[formalParams.length];
-        
-        for (int i=0; i < decompParamsLen; i++) {
-            formalParams[i] = decomp.formalParams[i] ;
-            arguments[i] = decomp.arguments[i] ;
-            isBoundedIdRenaming[i] = false ;
-            argNodes[i] = decomp.argNodes[i] ;
+
+        for (int i = 0; i < decompParamsLen; i++) {
+            formalParams[i] = decomp.formalParams[i];
+            arguments[i] = decomp.arguments[i];
+            isBoundedIdRenaming[i] = false;
+            argNodes[i] = decomp.argNodes[i];
         }
-        
+
         // Save the new names chosen for the identifiers in renameIdentifiers
-        // in the vector renameIdentifiersNames.  They must be added
+        // in the vector renameIdentifiersNames. They must be added
         // to renamedIdentifiers and newIdentifierNames after the call
         // to substituteInNode because, if an identifier gets re-renamed,
-        // then substituteInNode needs to know the  name of the
+        // then substituteInNode needs to know the name of the
         // identifier (actually, its length) before the re-renaming.
-        for (int i=0; i < rename.identifiers.size(); i++) {
-            formalParams[i + decompParamsLen] = rename.identifiers.elementAt(i) ;
-            arguments[i + decompParamsLen] = rename.newNames.elementAt(i) ;
-            isBoundedIdRenaming[i + decompParamsLen] = true ;
-            argNodes[i+ decompParamsLen] = null ;
+        for (int i = 0; i < rename.identifiers.size(); i++) {
+            formalParams[i + decompParamsLen] = rename.identifiers.elementAt(i);
+            arguments[i + decompParamsLen] = rename.newNames.elementAt(i);
+            isBoundedIdRenaming[i + decompParamsLen] = true;
+            argNodes[i + decompParamsLen] = null;
         }
-        
-        NodeTextRep result = 
-         substituteInNodeText(
-                formalParams, arguments, isBoundedIdRenaming, argNodes, 
-                sn, nodeTextRep, decomp);
-        // The following commented out by LL on 8 Feb 2013 because it seems wrong.
+
+        NodeTextRep result = substituteInNodeText(formalParams, arguments,
+                isBoundedIdRenaming, argNodes, sn, nodeTextRep, decomp);
+        // The following commented out by LL on 8 Feb 2013 because it seems
+        // wrong.
         // The renamings for decomp are for the expression that is the use
-        // of the operator in whose definition we are performing the substitutions.
+        // of the operator in whose definition we are performing the
+        // substitutions.
         // Add the renamings to decomp.renaming
-        // On 10 Feb 2013, LL realized that seems to be wrong, because some 
+        // On 10 Feb 2013, LL realized that seems to be wrong, because some
         // bounded id renaming is getting lost.
-        decomp.renaming = rename ;  
-        
-        return result ;
+        decomp.renaming = rename;
+
+        return result;
     }
-    
+
     /**
-     * Adds to `renaming' all the renamings to bound identifiers in expr that are
-     * necessary to eliminate clashes with names in the set prevDeclared.
+     * Adds to `renaming' all the renamings to bound identifiers in expr that
+     * are necessary to eliminate clashes with names in the set prevDeclared.
      * 
      * This code was obtained by modifying the implementation of
      * ResourceHelper.innerGetBoundIdentifiers.
@@ -3417,21 +3494,22 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * @param expr
      * @return
      */
-    private void addToRenaming(Renaming renaming, HashSet<String> prevDeclared, ExprNode expr) {
+    private void addToRenaming(Renaming renaming, HashSet<String> prevDeclared,
+            ExprNode expr) {
         if (!(expr instanceof OpApplNode)) {
-            return ;
+            return;
         }
-        
-        HashSet<String> newDeclared = (HashSet<String>) prevDeclared.clone() ;
-        
+
+        HashSet<String> newDeclared = (HashSet<String>) prevDeclared.clone();
+
         OpApplNode node = (OpApplNode) expr;
         if (node.getUnbdedQuantSymbols() != null) {
             for (int i = 0; i < node.getUnbdedQuantSymbols().length; i++) {
-                FormalParamNode id = node.getUnbdedQuantSymbols()[i] ;
-                if (newDeclared.contains( getCurrentName(id, renaming))){
+                FormalParamNode id = node.getUnbdedQuantSymbols()[i];
+                if (newDeclared.contains(getCurrentName(id, renaming))) {
                     String newname = getNewName(id, newDeclared, renaming);
-                    newDeclared.add(newname) ;
-                    addCurrentName(id, newname, renaming) ;  
+                    newDeclared.add(newname);
+                    addCurrentName(id, newname, renaming);
                 }
             }
         }
@@ -3451,41 +3529,46 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 }
             }
         }
-        
-        for (int i=0; i < node.getArgs().length; i++) {
+
+        for (int i = 0; i < node.getArgs().length; i++) {
             if (node.getArgs()[i] instanceof ExprNode) {
-                addToRenaming(renaming, newDeclared, (ExprNode) node.getArgs()[i]);
+                addToRenaming(renaming, newDeclared,
+                        (ExprNode) node.getArgs()[i]);
             }
         }
-
 
     }
 
     /**
-     * A DecompositionState describes the current state of the decomposition, and
-     * determines what is shown in the command's popup window.  There will be 
+     * A DecompositionState describes the current state of the decomposition,
+     * and determines what is shown in the command's popup window. There will be
      * a chain of such objects to support the "Back" option.
      */
     private class DecompositionState {
         /**
          * previousState is the decomposition state to which the "Back" button
-         * goes.  It should be null only for the initial state.
+         * goes. It should be null only for the initial state.
          */
-        DecompositionState previousState = null ;
+        DecompositionState previousState = null;
+
         /**
-         * True iff some user action was performed that changed the obligation.
+         * The hasChanged field is (I believe) used only to determine if the
+         * replaceButton on the command's window raised by raiseWindow() is
+         * enabled. For reasons explained in the comments describing that
+         * button, hasChanged is set true by any decomposition action except
+         * clicking on an /\ decomposition, which sets it false.
          */
-        boolean hasChanged; 
-        
+        boolean hasChanged;
+
         /*************************************************************************
          * Fields that contain the current assumptions and goal.
          * 
          * The data for the current assumptions are kept in vectors, the i-th
-         * element containing data for the i-th assumption. This is done to make it
-         * easy to replace one assumption by several. Other objects contain pointers
-         * to these vectors, so once the vectors are constructed by
-         * NewDecomposeProofHandler.execute, they can be modified but must not be
-         * replaced by new vectors.
+         * element containing data for the i-th assumption. This is done to make
+         * it easy to replace one assumption by several. Other objects contain
+         * pointers to these vectors, so once the vectors are constructed by
+         * NewDecomposeProofHandler.execute, they can be modified but must not
+         * be replaced by new vectors.
          *************************************************************************/
         /**
          * The NodeRepresentation objects for the current assumptions.
@@ -3496,64 +3579,70 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
          * The NodeRepresentation object for the current goal.
          */
         private NodeRepresentation goalRep;
-        
-        /**
-         * If the user has done an OR split on an assumption, then this is the index
-         * of the assumption in assumes and state.assumeReps. Otherwise, it equals -1.
-         */
-        int chosenSplit; 
-        
-        /**
-         * True if the proof of a SUFFICES step (or of the QED step if there is no
-         * SUFFICES step) needs the name of the step being decomposed in the BY
-         * clause if that step has a name.  I believe this is the case iff an
-         * \E-split has been done on an assumption that was not moved from the goal.
-         */
-        boolean needsStepNumber; 
 
         /**
-         * Once the user has performed an AND split on an assumption, then another
-         * AND split can be performed only on one of the results of that split. The
-         * indices of the nodes in <code>assumes</code> and <code>state.assumeReps</code>
-         * resulting from AND splits range from state.andSplitBegin through (including)
-         * state.andSplitEnd. If no AND split has been performed, then state.andSplitBegin and
+         * If the user has done an OR split on an assumption, then this is the
+         * index of the assumption in assumes and state.assumeReps. Otherwise,
+         * it equals -1.
+         */
+        int chosenSplit;
+
+        /**
+         * True if the proof of a SUFFICES step (or of the QED step if there is
+         * no SUFFICES step) needs the name of the step being decomposed in the
+         * BY clause if that step has a name. I believe this is the case iff an
+         * \E-split has been done on an assumption that was not moved from the
+         * goal.
+         */
+        boolean needsStepNumber;
+
+        /**
+         * Once the user has performed an AND split on an assumption, then
+         * another AND split can be performed only on one of the results of that
+         * split. The indices of the nodes in <code>assumes</code> and
+         * <code>state.assumeReps</code> resulting from AND splits range from
+         * state.andSplitBegin through (including) state.andSplitEnd. If no AND
+         * split has been performed, then state.andSplitBegin and
          * state.andSplitEnd equal -1.
          * 
          */
-        int andSplitBegin;  // NOT CLEAR IF THESE WILL BE USED IN NEW VERSION.
-        int andSplitEnd;    // NOT CLEAR IF THESE WILL BE USED IN NEW VERSION.
- 
+        int andSplitBegin; // NOT CLEAR IF THESE WILL BE USED IN NEW VERSION.
+        int andSplitEnd; // NOT CLEAR IF THESE WILL BE USED IN NEW VERSION.
+
         /**
-         * The set of Ids of user-defined operations that must appear in the
-         * DEF clause of the QED step's proof.  They are definitions that were 
+         * The set of Ids of user-defined operations that must appear in the DEF
+         * clause of the QED step's proof. They are definitions that were
          * expanded in decomposing non-top level \E assumptions.
          */
-        private HashSet<String> goalDefinitions; 
+        private HashSet<String> goalDefinitions;
 
-        private HashSet<String> assumpDefinitions; 
+        private HashSet<String> assumpDefinitions;
+
         // PERHAPS CAN BE COMBINED WITH goalDefinitions
-  
 
-        public DecompositionState  clone() {
-            DecompositionState result = new DecompositionState() ;
-            
-            result.hasChanged = hasChanged ;
-            result.assumeReps = new Vector<NodeRepresentation>() ;
-            for (int i=0; i < assumeReps.size(); i++) {
-                result.assumeReps.addElement(assumeReps.elementAt(i).deepClone(null, result.assumeReps)) ;
+        public DecompositionState clone() {
+            DecompositionState result = new DecompositionState();
+
+            result.hasChanged = hasChanged;
+            result.assumeReps = new Vector<NodeRepresentation>();
+            for (int i = 0; i < assumeReps.size(); i++) {
+                result.assumeReps.addElement(assumeReps.elementAt(i).deepClone(
+                        null, result.assumeReps));
             }
-                
-            result.goalRep = goalRep.deepClone(null, null) ;
-            result.chosenSplit = chosenSplit ;
-            result.needsStepNumber = needsStepNumber ;
-            result.andSplitBegin = andSplitBegin ;
-            result.andSplitEnd = andSplitEnd ;            
-            result.goalDefinitions = (HashSet<String>) goalDefinitions.clone() ;
-            result.assumpDefinitions = (HashSet<String>) assumpDefinitions.clone() ;
 
-            return result;           
+            result.goalRep = goalRep.deepClone(null, null);
+            result.chosenSplit = chosenSplit;
+            result.needsStepNumber = needsStepNumber;
+            result.andSplitBegin = andSplitBegin;
+            result.andSplitEnd = andSplitEnd;
+            result.goalDefinitions = (HashSet<String>) goalDefinitions.clone();
+            result.assumpDefinitions = (HashSet<String>) assumpDefinitions
+                    .clone();
+
+            return result;
         }
     }
+
     /**
      * A NodeRepresentation object describes the TLA+ source text that produced
      * a SemanticNode, after substitutions have been performed for some
@@ -3571,18 +3660,19 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
      * Substitutions are performed for an identifier for two reasons:
      * <ul>
      * <li>The formal parameter of a definition is replaced by an argument when
-     * expanding the definition.  To simplify the implementation, such an expansion
-     * is performed only when all the arguments consist of text occurring on 
-     * a single line.
+     * expanding the definition. To simplify the implementation, such an
+     * expansion is performed only when all the arguments consist of text
+     * occurring on a single line.
      * 
      * <li>A bound identifier has been renamed to avoid a name conflict.
      * </ul>
      * A substitution cannot be performed for any occurrence that was added by a
-     * substitution.  Hence, an identifier introduced by renaming cannot be renamed.
+     * substitution. Hence, an identifier introduced by renaming cannot be
+     * renamed.
      * 
-     * An OR-decomposition node  represents an assumption
-     * that has been decomposed into a disjunction for a proof by cases. Such a
-     * node has a vector of children, which can include OR-decomposition nodes.
+     * An OR-decomposition node represents an assumption that has been
+     * decomposed into a disjunction for a proof by cases. Such a node has a
+     * vector of children, which can include OR-decomposition nodes.
      * 
      * 
      * @author lamport
@@ -3612,7 +3702,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
          * line of nodeText that does not begin with a space and the formatting
          * of the original text is maintained in nodeText.
          * 
-         * This is not quite accurate.  
+         * This is not quite accurate.
          * 
          * @param document
          * @param semanticNode
@@ -3633,36 +3723,36 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         private static final int EXPR_NODE = 0; // An OpApplNode
         private static final int NEW_NODE = 1; // A NewSymbNode
         private static final int OR_DECOMP = 2;
-          // A node representing a decomposition into the disjunction of its
-          // children.
+        // A node representing a decomposition into the disjunction of its
+        // children.
         private static final int PROOF_NODE = 4;
-           // The LeafProofNode of the step. This may not be needed.
+        // The LeafProofNode of the step. This may not be needed.
         private static final int OTHER_NODE = 5;
         private int nodeType = 0;
 
         // An EXPR_NODE has a subtype, indicating what
         // decomposition can be applied.
-        //   Subtypes for decomposing a goal:
-        private static final int AND_TYPE     = 0;      // A conjunction 
-        private static final int IMPLIES_TYPE = 2;  // An implication
-        private static final int FORALL_TYPE  = 3;   // A \A
-        //  Subtypes for decomposing an assumption
-        private static final int OR_TYPE = 1;       // A disjunction 
-        private static final int EXISTS_TYPE = 4;   // An \E
-        private static final int SQSUB_TYPE = 5;    // An [A]_v expression
-        private static final int MULTI_TYPE = 6;    
-           // An assumption that is the conjunction of formulas, two or more 
-           // of which can be decomposed.
+        // Subtypes for decomposing a goal:
+        private static final int AND_TYPE = 0; // A conjunction
+        private static final int IMPLIES_TYPE = 2; // An implication
+        private static final int FORALL_TYPE = 3; // A \A
+        // Subtypes for decomposing an assumption
+        private static final int OR_TYPE = 1; // A disjunction
+        private static final int EXISTS_TYPE = 4; // An \E
+        private static final int SQSUB_TYPE = 5; // An [A]_v expression
+        private static final int MULTI_TYPE = 6;
+        // An assumption that is the conjunction of formulas, two or more
+        // of which can be decomposed.
         // Subtype for something that can't be decomposed
         private static final int OTHER_TYPE = 99; // anything else
 
         public int nodeSubtype = OTHER_TYPE;
-        
+
         /**
-         * If this NodeRepresentation object is of type NEW_NODE,
-         * then this is the NEW identifier.
+         * If this NodeRepresentation object is of type NEW_NODE, then this is
+         * the NEW identifier.
          */
-        public String newId = null ;
+        public String newId = null;
 
         /********************************************************************
          * An OR-Split operation can be performed on a node of type EXPR_NODE
@@ -3684,94 +3774,94 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
          * parentNode = n and parentVector = n.children.elementAt(i). In this
          * case, the node is of type EXPR_NODE, NEW_NODE, or OR_DECOMP.
          * 
-         * If parentNode = null, then there are two cases: 
+         * If parentNode = null, then there are two cases:
          * 
-         * - The node is either an element of state.assumeReps. In that case,
-         *   it equals h.state.assumeReps.elementAt(j) for the NewDecomposeProofHandler
-         *   object h,  and parentVector = state.assumeReps.
+         * - The node is either an element of state.assumeReps. In that case, it
+         * equals h.state.assumeReps.elementAt(j) for the
+         * NewDecomposeProofHandler object h, and parentVector =
+         * state.assumeReps.
          * 
          * - the node is state.goalRep and parentVector = null .
          ********************************************************************/
         NodeRepresentation parentNode = null;
         private Vector<NodeRepresentation> parentVector = null;
-        
+
         Vector<NodeRepresentation> getParentVector() {
-            return this.parentVector ;
+            return this.parentVector;
         }
 
         void setParentVector(Vector<NodeRepresentation> parentVector) {
-            this.parentVector = parentVector ;
+            this.parentVector = parentVector;
         }
 
         /**
-         * The two methods NodeRepresentation.nodeRepPath and 
+         * The two methods NodeRepresentation.nodeRepPath and
          * NewDecomposeProofHandler.pathToNodeRep() provide a means of
          * describing a NodeRepresentation object that identifies the "same"
-         * object described by a DecompositionState or by a clone of it.  They
+         * object described by a DecompositionState or by a clone of it. They
          * are defined as follows:
          * 
          * The set NS of all NodeRepresentation objects is defined by:
          * 
-         *   - state.goal \in NS
-         *   - \A i, j : state.assumeReps.elementAt(i) \in NS
-         *   - \A ns \in NS : \A i : ns.children.elementAt(i).elementAt(j) \in NS
+         * - state.goal \in NS - \A i, j : state.assumeReps.elementAt(i) \in NS
+         * - \A ns \in NS : \A i : ns.children.elementAt(i).elementAt(j) \in NS
          * 
-         * For any ns \in NS, ns.nodePath() is a vector <<v0, ... , v2N>> of 
+         * For any ns \in NS, ns.nodePath() is a vector <<v0, ... , v2N>> of
          * Integers (for N >= 0) such that
          * 
-         *   ns = root.children.elementAt(vN-1).elementAt(vN-2)
-         *            .children.elementAt(vN-3).elementAt(vN-4) 
-         *              ...
-         *            .children.elementAt(1).elementAt(0)
-         *  
-         *  where root == IF vN = -1 THEN this.goalRep
-         *                           ELSE this.assumeReps.elementAt(vN)
-         *
-         *  For any vector V of Integers, there exists ns \in NS such that
-         *  V = ns.nodeRepPath(), then pathToNodeRep(V) = ns.  
-         *  
-         *  nodeRepPath is defined below.
-         *  pathToNodeRep is a method in the outer NewDecomposeProofHandler class.
+         * ns = root.children.elementAt(vN-1).elementAt(vN-2)
+         * .children.elementAt(vN-3).elementAt(vN-4) ...
+         * .children.elementAt(1).elementAt(0)
+         * 
+         * where root == IF vN = -1 THEN this.goalRep ELSE
+         * this.assumeReps.elementAt(vN)
+         * 
+         * For any vector V of Integers, there exists ns \in NS such that V =
+         * ns.nodeRepPath(), then pathToNodeRep(V) = ns.
+         * 
+         * nodeRepPath is defined below. pathToNodeRep is a method in the outer
+         * NewDecomposeProofHandler class.
+         * 
          * @return
          */
         Vector<Integer> nodeRepPath() {
-            Vector<Integer> result = new Vector<Integer>() ;
-            NodeRepresentation currNR = this ;
+            Vector<Integer> result = new Vector<Integer>();
+            NodeRepresentation currNR = this;
             while (currNR.parentNode != null) {
-                int idx1 = currNR.getParentIndex() ;
-                result.addElement(new Integer(idx1)) ;
-                Vector<NodeRepresentation> parVec = currNR.getParentVector() ;
-                currNR = currNR.parentNode ;
-                Vector<Vector<NodeRepresentation>> childs = currNR.children ;
-                boolean notFound = true ;
-                int idx2 = 0 ;
+                int idx1 = currNR.getParentIndex();
+                result.addElement(new Integer(idx1));
+                Vector<NodeRepresentation> parVec = currNR.getParentVector();
+                currNR = currNR.parentNode;
+                Vector<Vector<NodeRepresentation>> childs = currNR.children;
+                boolean notFound = true;
+                int idx2 = 0;
                 while (notFound && (idx2 < childs.size())) {
                     if (childs.elementAt(idx2) == parVec) {
-                        notFound = false ;
+                        notFound = false;
                     } else {
-                        idx2++ ;
+                        idx2++;
                     }
                 }
-                
+
                 if (notFound) {
                     MessageDialog.openError(UIHelper.getShellProvider()
                             .getShell(), "Decompose Proof Command",
                             "An error that should not happen has occurred in "
                                     + "line 3750 of NewDecomposeProofHandler.");
-                    return null ;
+                    return null;
                 }
-                
-                result.addElement(new Integer(idx2)) ;
-                
+
+                result.addElement(new Integer(idx2));
+
             }
-            
+
             if (currNR.getParentVector() == null) {
-                result.addElement(new Integer(-1)) ;
+                result.addElement(new Integer(-1));
             } else {
-                result.addElement(new Integer(currNR.getParentIndex())) ;
+                result.addElement(new Integer(currNR.getParentIndex()));
             }
-            
-            return result ;
+
+            return result;
         }
 
         /**
@@ -3793,24 +3883,25 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
             return -2; // this shouldn't happen
         }
 
-//        The following method seems to duplicate getParentIndex, and was apparently
-//        never used.
-//        /**
-//         * If parentNode is non-null (which implies parentVector is non-null),
-//         * and parentNode is an OR-SPLIT node, then parentVector =
-//         * parentNode.children.elementAt(getParentVectorIndex).
-//         * 
-//         * @return
-//         */
-//        int getParentVectorIndex() {
-//            for (int i = 0; i < parentNode.children.size(); i++) {
-//                if (this.getParentVector() == parentNode.children.elementAt(i)) {
-//                    return i;
-//                }
-//            }
-//            return -1; // this shouldn't happen
-//
-//        }
+        // The following method seems to duplicate getParentIndex, and was
+        // apparently
+        // never used.
+        // /**
+        // * If parentNode is non-null (which implies parentVector is non-null),
+        // * and parentNode is an OR-SPLIT node, then parentVector =
+        // * parentNode.children.elementAt(getParentVectorIndex).
+        // *
+        // * @return
+        // */
+        // int getParentVectorIndex() {
+        // for (int i = 0; i < parentNode.children.size(); i++) {
+        // if (this.getParentVector() == parentNode.children.elementAt(i)) {
+        // return i;
+        // }
+        // }
+        // return -1; // this shouldn't happen
+        //
+        // }
 
         // State information about this clause.
 
@@ -3882,10 +3973,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
          *            semanticNode field. It will be non-null if the nodeText is
          *            to be set to a subexpression name, so set
          *            isSubexpressionName field true in that case.
-         * @param decomp 
+         * @param decomp
          *            The Decomposition from which the identifier renamings for
          *            the result's decomposition field are to be obtained.
-         *        
+         * 
          * @return
          */
         NodeRepresentation subNodeRep(SemanticNode sn,
@@ -3932,7 +4023,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                 break;
             case ASTConstants.NewSymbKind:
                 result.nodeType = NEW_NODE;
-                NewSymbNode newNode = (NewSymbNode) sn ;
+                NewSymbNode newNode = (NewSymbNode) sn;
                 result.newId = newNode.getOpDeclNode().getName().toString();
                 break;
             case ASTConstants.LeafProofKind:
@@ -4004,8 +4095,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
             // Remove the part of the last line of result.nodeText that doesn't
             // belong to the subnode
-            result.nodeText[result.nodeText.length - 1] = 
-                    result.nodeText[result.nodeText.length - 1].substring(
+            result.nodeText[result.nodeText.length - 1] = result.nodeText[result.nodeText.length - 1]
+                    .substring(
                             0,
                             colToLoc(sn.stn.getLocation().endColumn() + 1,
                                     result.mapping[result.mapping.length - 1]));
@@ -4046,7 +4137,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
 
             String[] result = this.nodeText.clone();
             if (needsParens) {
-                result = prependToStringArray(result, "(") ;
+                result = prependToStringArray(result, "(");
                 result[result.length - 1] = StringHelper
                         .trimEnd(result[result.length - 1]) + ")'";
             } else {
@@ -4059,7 +4150,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
         /**
          * This constructor is used to construct a NodeRepresentation object for
          * the entire selected step and its leaf proof (if any), and for an
-         * expanded definition body.  It just sets the semanticNode, nodeText and 
+         * expanded definition body. It just sets the semanticNode, nodeText and
          * mapping fields.
          * 
          * @param document
@@ -4094,7 +4185,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
                     region.getLength() - location.beginColumn() + 1);
             // minCol is the min of the beginning column of the first line (with
             // the first column numbered 0) and the smallest number of leading
-            // spaces of any later line.  However, lines with no text
+            // spaces of any later line. However, lines with no text
             // should be ignored.
             int minCol = location.beginColumn() - 1;
             for (int i = 1; i < nodeText.length; i++) {
@@ -4120,7 +4211,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
             mapping[0].elementAt(0).inc = -minCol - 1;
 
             // Trim any necessary space from the beginning of nodeText[i] for i
-            // > 0.  However, must check for the case of an empty line.
+            // > 0. However, must check for the case of an empty line.
             for (int i = 1; i < nodeText.length; i++) {
                 if (!StringHelper.onlySpaces(nodeText[i])) {
                     nodeText[i] = nodeText[i].substring(minCol);
@@ -4141,77 +4232,88 @@ public class NewDecomposeProofHandler extends AbstractHandler implements IHandle
          * Make a deep clone of this NodeRepresentation object, with given
          * parent fields.
          * 
-         * @param parNode    The parentNode field of the cloned object.
-         * @param parVector  The parentVector field of the cloned object
+         * @param parNode
+         *            The parentNode field of the cloned object.
+         * @param parVector
+         *            The parentVector field of the cloned object
          * @return
          */
-        protected NodeRepresentation deepClone(NodeRepresentation parNode, 
-                                               Vector<NodeRepresentation>parVector) {
-            NodeRepresentation result = new NodeRepresentation() ;
+        protected NodeRepresentation deepClone(NodeRepresentation parNode,
+                Vector<NodeRepresentation> parVector) {
+            NodeRepresentation result = new NodeRepresentation();
 
-            result.semanticNode = this.semanticNode ;
-            
+            result.semanticNode = this.semanticNode;
+
             // clone the nodeText field
             result.nodeText = new String[this.nodeText.length];
             for (int i = 0; i < result.nodeText.length; i++) {
-                result.nodeText[i] =  this.nodeText[i];
+                result.nodeText[i] = this.nodeText[i];
             }
-            
-            // clone the mapping field
-            result.mapping = null ;
-            if (this.mapping != null) {
-               result.mapping = this.mapping.clone();
-               for (int i = 0; i < result.mapping.length; i++) {
-                   result.mapping[i] = new Vector<MappingPair>() ;
-                   for (int j = 0; j < this.mapping[i].size(); j++) {
-                       result.mapping[i].add(this.mapping[i].elementAt(j)) ;
-                   }
-               } 
-            }
-            
-            // recursively clone the children
-            result.children = null ;
-            if (this.children != null) {
-               result.children = new Vector<Vector<NodeRepresentation>>() ;
-               for (int i=0; i < this.children.size(); i++) {
-                   Vector<NodeRepresentation> oldParVec = this.children.elementAt(i);
-                   Vector<NodeRepresentation> newParVec = new Vector<NodeRepresentation>() ;
-                   for (int j=0; j < oldParVec.size(); j++) {
-                       newParVec.addElement(oldParVec.elementAt(j).deepClone(result, newParVec));
-                   }
-                   result.children.addElement(newParVec) ;
-               }
-            }
-                               
-            result.nodeType = this.nodeType ;
-            result.nodeSubtype = this.nodeSubtype ;
-            result.newId = this.newId ;
-            result.parentNode = parNode ;
-            result.parentVector = parVector ;
-            result.isCreated = this.isCreated ;
-            result.onSameLineAsNext = this.onSameLineAsNext ;
-            result.isPrimed = this.isPrimed ;
-            result.isSubexpressionName = this.isSubexpressionName ;
-            
-            result.decomposition = null ;
-            if (this.decomposition != null) {
-               result.decomposition = this.decomposition.clone() ;
-            }
-            
-// For testing
-if (result.children != null) {
-for (int i = 0 ; i < result.children.size(); i++) {
-    Vector<NodeRepresentation> pvec = result.children.elementAt(i) ;
-    for (int j = 0; j < pvec.size(); j++) {
-        NodeRepresentation nr = pvec.elementAt(j);
-        if (nr.parentNode != result || nr.parentVector != pvec) {
-            System.out.println("bad clone\n\n" + result.toString() + "original\n" + this.toString()) ;
-        }
-    }
-}
-}     
 
-           return result ;
+            // clone the mapping field
+            result.mapping = null;
+            if (this.mapping != null) {
+                result.mapping = this.mapping.clone();
+                for (int i = 0; i < result.mapping.length; i++) {
+                    result.mapping[i] = new Vector<MappingPair>();
+                    for (int j = 0; j < this.mapping[i].size(); j++) {
+                        result.mapping[i].add(this.mapping[i].elementAt(j));
+                    }
+                }
+            }
+
+            // recursively clone the children
+            result.children = null;
+            if (this.children != null) {
+                result.children = new Vector<Vector<NodeRepresentation>>();
+                for (int i = 0; i < this.children.size(); i++) {
+                    Vector<NodeRepresentation> oldParVec = this.children
+                            .elementAt(i);
+                    Vector<NodeRepresentation> newParVec = new Vector<NodeRepresentation>();
+                    for (int j = 0; j < oldParVec.size(); j++) {
+                        newParVec.addElement(oldParVec.elementAt(j).deepClone(
+                                result, newParVec));
+                    }
+                    result.children.addElement(newParVec);
+                }
+            }
+
+            result.nodeType = this.nodeType;
+            result.nodeSubtype = this.nodeSubtype;
+            result.newId = this.newId;
+            result.parentNode = parNode;
+            result.parentVector = parVector;
+            result.isCreated = this.isCreated;
+            result.onSameLineAsNext = this.onSameLineAsNext;
+            result.isPrimed = this.isPrimed;
+            result.isSubexpressionName = this.isSubexpressionName;
+
+            result.decomposition = null;
+            if (this.decomposition != null) {
+                result.decomposition = this.decomposition.clone();
+            }
+
+            // The following was added for testing. It should no longer be
+            // necessary.
+            // But if it fails, there's a serious bug, so we might as well keep
+            // it.
+            if (result.children != null) {
+                for (int i = 0; i < result.children.size(); i++) {
+                    Vector<NodeRepresentation> pvec = result.children
+                            .elementAt(i);
+                    for (int j = 0; j < pvec.size(); j++) {
+                        NodeRepresentation nr = pvec.elementAt(j);
+                        if (nr.parentNode != result || nr.parentVector != pvec) {
+                            MessageDialog.openError(UIHelper.getShellProvider()
+                                    .getShell(), "Decompose Proof Command",
+                                    "An error that should not happen has occurred in "
+                                            + "line 4310 of NewDecomposeProofHandler.");
+                        }
+                    }
+                }
+            }
+
+            return result;
         }
 
         public String toString() {
@@ -4231,29 +4333,34 @@ for (int i = 0 ; i < result.children.size(); i++) {
         }
 
     }
-    
+
     /**
-     * This is the "inverse" of the method NodeRepresentation.nodeRepPath().  See
+     * This is the "inverse" of the method NodeRepresentation.nodeRepPath(). See
      * the comments for that method to understand what pathToNodeRep is doing.
      * 
-     * @param vec Should be the result produced by a call of nodeRepPath().
-     * @return Should be a NodeRepresentation nr such that nr.nodeRepPath() = vec.
+     * @param vec
+     *            Should be the result produced by a call of nodeRepPath().
+     * @return Should be a NodeRepresentation nr such that nr.nodeRepPath() =
+     *         vec.
      */
     NodeRepresentation pathToNodeRep(Vector<Integer> vec) {
-        NodeRepresentation result = null ;        
-        int i = vec.size() - 1 ;
-        int idx = vec.elementAt(i).intValue() ;
-        if(idx == -1) {return state.goalRep ; } ;
-        result = state.assumeReps.elementAt(idx) ;
-        i-- ;
-        while (i >= 0) {
-          int  idx1 = vec.elementAt(i).intValue() ;
-          i-- ;
-          int idx2 = vec.elementAt(i).intValue() ;
-          result = result.children.elementAt(idx1).elementAt(idx2) ;
-          i-- ;
+        NodeRepresentation result = null;
+        int i = vec.size() - 1;
+        int idx = vec.elementAt(i).intValue();
+        if (idx == -1) {
+            return state.goalRep;
         }
-        return result; 
+        ;
+        result = state.assumeReps.elementAt(idx);
+        i--;
+        while (i >= 0) {
+            int idx1 = vec.elementAt(i).intValue();
+            i--;
+            int idx2 = vec.elementAt(i).intValue();
+            result = result.children.elementAt(idx1).elementAt(idx2);
+            i--;
+        }
+        return result;
     }
 
     /**
@@ -4286,15 +4393,15 @@ for (int i = 0 ; i < result.children.size(); i++) {
             for (int i = 0; i < result.nodeText.length; i++) {
                 result.nodeText[i] = this.nodeText[i];
             }
-            result.mapping = null ;
+            result.mapping = null;
             if (this.mapping != null) {
-              result.mapping = this.mapping.clone();
-              for (int i = 0; i < result.mapping.length; i++) {
-                  result.mapping[i] = new Vector<MappingPair>() ;
-                  for (int j = 0; j < this.mapping[i].size(); j++) {
-                      result.mapping[i].add(this.mapping[i].elementAt(j)) ;
-                  }
-              }
+                result.mapping = this.mapping.clone();
+                for (int i = 0; i < result.mapping.length; i++) {
+                    result.mapping[i] = new Vector<MappingPair>();
+                    for (int j = 0; j < this.mapping[i].size(); j++) {
+                        result.mapping[i].add(this.mapping[i].elementAt(j));
+                    }
+                }
             }
             return result;
         }
@@ -4336,7 +4443,8 @@ for (int i = 0 ; i < result.children.size(); i++) {
             if (i == 0) {
                 result.nodeText[0] = str + result.nodeText[0];
             } else {
-                result.nodeText[i] = StringHelper.copyString(" ", str.length()) + result.nodeText[i];
+                result.nodeText[i] = StringHelper.copyString(" ", str.length())
+                        + result.nodeText[i];
             }
             adjustMappingPairVector(1, str.length(), result.mapping[i]);
         }
@@ -4425,13 +4533,13 @@ for (int i = 0 ; i < result.children.size(); i++) {
          */
         public Renaming clone() {
             Renaming result = new Renaming();
-            result.identifiers = 
-                    (Vector<FormalParamNode>) this.identifiers.clone();
+            result.identifiers = (Vector<FormalParamNode>) this.identifiers
+                    .clone();
             result.newNames = (Vector<String>) this.newNames;
             return result;
         }
     }
-    
+
     /**
      * A Decomposition object describes the possible decomposition of an
      * assumption or goal.
@@ -4454,23 +4562,23 @@ for (int i = 0 ; i < result.children.size(); i++) {
          * the definition of this (user-defined) symbol.
          */
         String definedOp = null;
-        
+
         /**
          * If definedOp != null, so this decomposition is expanding a
-         * definition, then formalParms[i] is the FormalParamNode of the
-         * i-th formal parameter of the definition, argNodes[i] is the semantic
-         * node of the i-th argument, and arguments[i] is its string representation,
+         * definition, then formalParms[i] is the FormalParamNode of the i-th
+         * formal parameter of the definition, argNodes[i] is the semantic node
+         * of the i-th argument, and arguments[i] is its string representation,
          * which must appear on a single line.
          */
         FormalParamNode[] formalParams = null;
-        String[] arguments = null ;
-        SemanticNode[] argNodes = null ;
-        
+        String[] arguments = null;
+        SemanticNode[] argNodes = null;
+
         /**
          * If non-null, then this is the NodeTextRep representing the operator
          * use that is to be expanded. E.g., it could represent source text such
-         * as  Bar(a + b, c) .   If this decomposition is effected by the user with
-         * the appropriate button push, then 
+         * as Bar(a + b, c) . If this decomposition is effected by the user with
+         * the appropriate button push, then
          */
         NodeTextRep definedOpRep = null;
 
@@ -4481,7 +4589,7 @@ for (int i = 0 ; i < result.children.size(); i++) {
          * 
          * I suspect that this field always contains an empty renaming.
          */
-        Renaming renaming = new Renaming() ;
+        Renaming renaming = new Renaming();
 
         /**
          * If definedOp is not null, then this is the name of the module
@@ -4528,38 +4636,39 @@ for (int i = 0 ; i < result.children.size(); i++) {
 
         /**
          * This is a deep clone only in that it clones the renaming and
-         * definedOpRep fields.  The other fields are strings, semantic nodes, and
-         * values, which are (effectively) immutable as far as the command is
-         * concerned.
+         * definedOpRep fields. The other fields are strings, semantic nodes,
+         * and values, which are (effectively) immutable as far as the command
+         * is concerned.
+         * 
          * @return
          */
         public Decomposition clone() {
-            Decomposition result = new Decomposition() ;
-            
-            result.definedOpRep = null ;
+            Decomposition result = new Decomposition();
+
+            result.definedOpRep = null;
             if (this.definedOpRep != null) {
-               result.definedOpRep = this.definedOpRep.clone() ;
+                result.definedOpRep = this.definedOpRep.clone();
             }
-            
-            result.renaming = null ;
+
+            result.renaming = null;
             if (this.renaming != null) {
-              result.renaming = this.renaming.clone() ;
+                result.renaming = this.renaming.clone();
             }
-            result.type = this.type ;
-            result.definedOp = this.definedOp ;
+            result.type = this.type;
+            result.definedOp = this.definedOp;
             result.formalParams = this.formalParams;
-            result.arguments = this.arguments ;
-            result.argNodes = this.argNodes ;
-            result.moduleName = this.moduleName ;
-            result.children = this.children ;
-            result.namePath = this.namePath ;
-            result.quantIds = this.quantIds ;
-            result.quantBounds = this.quantBounds ;
-            result.quantBoundsubexpNames = this.quantBoundsubexpNames ;
-            result.primed = this.primed ;
-            return result; 
+            result.arguments = this.arguments;
+            result.argNodes = this.argNodes;
+            result.moduleName = this.moduleName;
+            result.children = this.children;
+            result.namePath = this.namePath;
+            result.quantIds = this.quantIds;
+            result.quantBounds = this.quantBounds;
+            result.quantBoundsubexpNames = this.quantBoundsubexpNames;
+            result.primed = this.primed;
+            return result;
         }
-        
+
         public String toString() {
             String val = "type: " + nodeSubTypeToString(this.type);
             if (definedOp != null) {
@@ -4599,87 +4708,92 @@ for (int i = 0 ; i < result.children.size(); i++) {
             return val;
         }
     }
-    
+
     /**
-     * Adds to `result' all symbols in scope for NodeRepresentation `node'
-     * that are defined or declared in the current step by NEW assumptions.
-     * It can be called only when `node' is in this.state.assumeReps, is
-     * a descendant of a node in this.state.assumeReps, or is the goal.
+     * Adds to `result' all symbols in scope for NodeRepresentation `node' that
+     * are defined or declared in the current step by NEW assumptions. It can be
+     * called only when `node' is in this.state.assumeReps, is a descendant of a
+     * node in this.state.assumeReps, or is the goal.
      * 
      * @param result
      * @param node
      */
-    private void addDeclaredSymbols(HashSet<String> result, NodeRepresentation node) {
-        Vector<NodeRepresentation> parentVec = node.getParentVector() ;
+    private void addDeclaredSymbols(HashSet<String> result,
+            NodeRepresentation node) {
+        Vector<NodeRepresentation> parentVec = node.getParentVector();
         // node.parentVector = null iff node is the goal, the case we
         // handle by simply setting parentVec to state.assumeReps.
         if (parentVec == null) {
-           parentVec = this.state.assumeReps;
+            parentVec = this.state.assumeReps;
         }
-        
+
         int i = 0;
         while ((i < parentVec.size()) && (parentVec.elementAt(i) != node)) {
-            NodeRepresentation parent = parentVec.elementAt(i) ;
+            NodeRepresentation parent = parentVec.elementAt(i);
             if (parent.nodeType == NodeRepresentation.NEW_NODE) {
-                result.add(parent.newId) ;
+                result.add(parent.newId);
             }
-            i++ ;
+            i++;
         }
-        
-        // If this isn't a top-level assumption (or the goal), call the method on
+
+        // If this isn't a top-level assumption (or the goal), call the method
+        // on
         // its parent.
         if (parentVec != this.state.assumeReps) {
             // If parentVec != null, then node.parentNode should be
             // non-null--but just in case
             if (node.parentNode != null) {
-              addDeclaredSymbols(result, node.parentNode) ;
+                addDeclaredSymbols(result, node.parentNode);
             } else {
-                System.out.println("Bug found in NewDecomposeProofHandler.addDeclaredSymbols.") ;
+                System.out
+                        .println("Bug found in NewDecomposeProofHandler.addDeclaredSymbols.");
             }
         }
     }
 
     /**
-     * Adds to `prevDeclared' all top-level NEW symbols that occur after the position
-     * of NodeRepresentation `nodeRepArg' or its ancestor in assumpReps. And, if
-     * includeGoal = true, to all bound symbols in the goal. It can be called
-     * only when `nodeRepArg' is in this.state.assumeReps, is a descendant of a node in
-     * this.state.assumeReps, or is the goal.
+     * Adds to `prevDeclared' all top-level NEW symbols that occur after the
+     * position of NodeRepresentation `nodeRepArg' or its ancestor in
+     * assumpReps. And, if includeGoal = true, to all bound symbols in the goal.
+     * It can be called only when `nodeRepArg' is in this.state.assumeReps, is a
+     * descendant of a node in this.state.assumeReps, or is the goal.
      * 
      * @param prevDeclared
      * @param nodeRepArg
      * @param includeGoal
      */
-    private void addSymbolsDeclaredLater(
-            HashSet<String> prevDeclared, NodeRepresentation nodeRepArg, boolean includeGoal) {
+    private void addSymbolsDeclaredLater(HashSet<String> prevDeclared,
+            NodeRepresentation nodeRepArg, boolean includeGoal) {
         // Set assumpRepNode to the NodeRepresentation and
-        // set idx to the number such that assumpRepNode equals 
+        // set idx to the number such that assumpRepNode equals
         // assumpReps.elementAt(idx) and either equals or is an
         // ancestor of nodeRepArg.
-        NodeRepresentation assumpRepNode = nodeRepArg ;
+        NodeRepresentation assumpRepNode = nodeRepArg;
         while (assumpRepNode.parentNode != null) {
-            assumpRepNode = assumpRepNode.parentNode ;
+            assumpRepNode = assumpRepNode.parentNode;
         }
         int idx = 0;
-        while ((idx < this.state.assumeReps.size()) &&
-                (this.state.assumeReps.elementAt(idx) != assumpRepNode)) {
-            idx++ ;
+        while ((idx < this.state.assumeReps.size())
+                && (this.state.assumeReps.elementAt(idx) != assumpRepNode)) {
+            idx++;
         }
         if (idx == this.state.assumeReps.size()) {
             // This should be the goal, so there are no later declarations.
-            return ;
+            return;
         }
-        
-        // Add to prevDeclared the set of all top-level NEW identifiers that follow
-        // assumpRepNode in state.assumeReps together with all the bound identifiers
+
+        // Add to prevDeclared the set of all top-level NEW identifiers that
+        // follow
+        // assumpRepNode in state.assumeReps together with all the bound
+        // identifiers
         // in the goal.
-       for (int i = idx+1; i < state.assumeReps.size(); i++) {
-            NodeRepresentation anode = state.assumeReps.elementAt(i) ;
+        for (int i = idx + 1; i < state.assumeReps.size(); i++) {
+            NodeRepresentation anode = state.assumeReps.elementAt(i);
             if (anode.nodeType == NodeRepresentation.NEW_NODE) {
                 prevDeclared.add(anode.newId);
             }
         }
-       
+
         if (includeGoal) {
             FormalParamNode[] goalIdents = ResourceHelper
                     .getBoundIdentifiers((ExprNode) this.state.goalRep.semanticNode);
@@ -4730,34 +4844,38 @@ for (int i = 0 ; i < result.children.size(); i++) {
      * @param opId
      * @return
      */
-//    private static int operatorNameToNodeSubtype(UniqueString opId) {
-//        String opName = opId.toString();
-//        if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
-//            return NodeRepresentation.AND_TYPE;
-//        } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
-//            return NodeRepresentation.OR_TYPE;
-//        } else if (opName.equals("=>")) {
-//            return NodeRepresentation.IMPLIES_TYPE;
-//        } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
-//            return NodeRepresentation.FORALL_TYPE;
-//        } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
-//            return NodeRepresentation.EXISTS_TYPE;
-//        } else if (opId == ASTConstants.OP_sa) {
-//            return NodeRepresentation.SQSUB_TYPE;
-//        } else {
-//            return NodeRepresentation.OTHER_TYPE;
-//        }
-//    }
+    // private static int operatorNameToNodeSubtype(UniqueString opId) {
+    // String opName = opId.toString();
+    // if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
+    // return NodeRepresentation.AND_TYPE;
+    // } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
+    // return NodeRepresentation.OR_TYPE;
+    // } else if (opName.equals("=>")) {
+    // return NodeRepresentation.IMPLIES_TYPE;
+    // } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf))
+    // {
+    // return NodeRepresentation.FORALL_TYPE;
+    // } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue))
+    // {
+    // return NodeRepresentation.EXISTS_TYPE;
+    // } else if (opId == ASTConstants.OP_sa) {
+    // return NodeRepresentation.SQSUB_TYPE;
+    // } else {
+    // return NodeRepresentation.OTHER_TYPE;
+    // }
+    // }
 
     /**
-     * This computes the decompose field of a NodeRepresentation. 
+     * This computes the decompose field of a NodeRepresentation.
      * 
      * @param sn
-     * @param decomp The Decomposition from which the initial identifier renamings of
-     *               the result are obtained.
+     * @param decomp
+     *            The Decomposition from which the initial identifier renamings
+     *            of the result are obtained.
      * @return
      */
-    private Decomposition decompose(NodeRepresentation nodeRep, Decomposition decomp) {
+    private Decomposition decompose(NodeRepresentation nodeRep,
+            Decomposition decomp) {
         SemanticNode sn = nodeRep.semanticNode;
         if (!(sn instanceof OpApplNode)) {
             return null;
@@ -4768,16 +4886,16 @@ for (int i = 0 ; i < result.children.size(); i++) {
 
         Decomposition result = new Decomposition();
         if (decomp != null) {
-            result.renaming.identifiers = 
-                    (Vector<FormalParamNode>) decomp.renaming.identifiers.clone();
-            result.renaming.newNames = 
-                    (Vector<String>) decomp.renaming.newNames.clone();
+            result.renaming.identifiers = (Vector<FormalParamNode>) decomp.renaming.identifiers
+                    .clone();
+            result.renaming.newNames = (Vector<String>) decomp.renaming.newNames
+                    .clone();
         }
 
         // Check if primed expression.
         if (node.getOperator().getName() == ASTConstants.OP_prime) {
             if (!(node.getArgs()[0] instanceof OpApplNode)) {
-                return null ;
+                return null;
             }
             node = (OpApplNode) node.getArgs()[0];
             unprimedNode = node;
@@ -4790,25 +4908,25 @@ for (int i = 0 ; i < result.children.size(); i++) {
         if ((!nodeRep.isSubexpressionName)
                 && (node.getOperator().getKind() == ASTConstants.UserDefinedOpKind)) {
             // This is a user-defined operator
-            OpDefNode definition = (OpDefNode) node.getOperator() ;
-            String operatorName = definition.getName().toString();            
+            OpDefNode definition = (OpDefNode) node.getOperator();
+            String operatorName = definition.getName().toString();
             ExprNode opDef = definition.getBody();
             // The following commented out by LL on 24 April 2013.
             // For some reason, definitions that came from an INSTANCE
             // weren't being recognized as such and were creating
-            // weird results.  Rather than trying to debug what was going on,
-            // I just returned null if opDef is a SubstInNode.  This class
+            // weird results. Rather than trying to debug what was going on,
+            // I just returned null if opDef is a SubstInNode. This class
             // will have to be completely rewritten to expand formulas
             // obtained by instantiation.
-            
+
             // If the definition comes from an INSTANCE, it may be a
             // SubstInNode. If so, we strip off the top-level SubstInNode
             // object(s).
             // while (opDef instanceof SubstInNode) {
-            //    opDef = ((SubstInNode) opDef).getBody();
+            // opDef = ((SubstInNode) opDef).getBody();
             // }
             if (opDef instanceof SubstInNode) {
-                return null ;
+                return null;
             }
 
             if (opDef instanceof OpApplNode) {
@@ -4834,15 +4952,13 @@ for (int i = 0 ; i < result.children.size(); i++) {
                 // another module.)
                 result.definedOp = operatorName;
                 result.definedOpRep = nodeRep.subNodeText(unprimedNode);
-                result.formalParams = definition.getParams() ;
+                result.formalParams = definition.getParams();
                 result.arguments = new String[result.formalParams.length];
-                result.argNodes  = unprimedNode.getArgs() ;
+                result.argNodes = unprimedNode.getArgs();
 
-                for (int i = 0 ; i < result.arguments.length; i++) {
-                        result.arguments[i] = 
-                            stringArrayToString(
-                                nodeRep.subNodeText(
-                                ((OpApplNode) unprimedNode).getArgs()[i]).nodeText);
+                for (int i = 0; i < result.arguments.length; i++) {
+                    result.arguments[i] = stringArrayToString(nodeRep
+                            .subNodeText(((OpApplNode) unprimedNode).getArgs()[i]).nodeText);
                 }
             } else {
                 // This means that the definition is not an OpApplNode, which
@@ -4874,7 +4990,8 @@ for (int i = 0 ; i < result.children.size(); i++) {
         String opName = opId.toString();
         // Note: experimentation reveals that /\ and \/ are parsed
         // with operator names "\\land" and "\\lor".
-        if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
+        if (((opId == ASTConstants.OP_cl) || opName.equals("\\land"))
+                && conjIsDecomposable(node)) {
             result.type = NodeRepresentation.AND_TYPE;
             if (opId == ASTConstants.OP_cl) {
                 isJunction = true;
@@ -4973,9 +5090,56 @@ for (int i = 0 ; i < result.children.size(); i++) {
             result.children.add(node.getArgs()[1]);
             result.namePath.add("!2");
         }
-//        System.out.println("Decomposition");
-//        System.out.println(result.toString());
+        // System.out.println("Decomposition");
+        // System.out.println(result.toString());
         return result;
+    }
+
+    /**
+     * Assumes node represents a conjunction (either infix or bulleted list).
+     * Returns true iff one of the conjuncts is a disjunction, a \E, or a
+     * conjunction c for which conjIsDecomsable(c) is true.
+     * 
+     * It assumes that a conjunct that is a SubstInNode is not decomposable.
+     * This will have to be changed to allow decomposition of formulas imported
+     * by instantiation.
+     * 
+     * @param node
+     * @return
+     */
+    private boolean conjIsDecomposable(OpApplNode node) {
+        ExprOrOpArgNode[] conjuncts = node.getArgs();
+        for (int i = 0; i < conjuncts.length; i++) {
+            // To be decomposable, the conjunct must be an OpApplNode
+            if (conjuncts[i] instanceof OpApplNode) {
+                OpApplNode curNode = (OpApplNode) conjuncts[i];
+
+                // if this is a user-defined operator application
+                // must examine its definition.
+                if ((curNode.getOperator().getKind() == ASTConstants.UserDefinedOpKind)
+                        && ((OpDefNode) curNode.getOperator()).getBody() instanceof OpApplNode) {
+                    curNode = (OpApplNode) ((OpDefNode) curNode.getOperator())
+                            .getBody();
+                }
+
+                if (curNode.getOperator() instanceof OpDefNode) {
+                    UniqueString opId = ((OpDefNode) curNode.getOperator())
+                            .getName();
+                    String opName = opId.toString();
+
+                    if ((opId == ASTConstants.OP_dl)
+                            || opName.equals("\\lor")
+                            || (opId == ASTConstants.OP_be)
+                            || (opId == ASTConstants.OP_ue)
+                            || (((opId == ASTConstants.OP_cl) || opName
+                                    .equals("\\land")) && conjIsDecomposable(curNode))) {
+                        return true;
+                    }
+                }
+            } // end if instanceof OpApplNode
+        }
+
+        return false;
     }
 
     /**
@@ -5023,9 +5187,9 @@ for (int i = 0 ; i < result.children.size(); i++) {
 
     /********************* MappingPairs and their methods *******************************/
     /**
-     * Note: If the Decompose Proof command ever gets recoded, it would probably be a good 
-     * idea to do away with MappingPairs and replace them with Insertions.  See the comments
-     * for the Insertion class below.
+     * Note: If the Decompose Proof command ever gets recoded, it would probably
+     * be a good idea to do away with MappingPairs and replace them with
+     * Insertions. See the comments for the Insertion class below.
      * 
      * A MappingPair contains two int-valued fields : `col' and `inc'.
      * 
@@ -5035,24 +5199,25 @@ for (int i = 0 ; i < result.children.size(); i++) {
      * < V[j].col. Such an array represents the line-mapping M such that M(c)
      * equals c plus the sum of all V[i].inc such that V[i].col <= c.
      * 
-     * Suppose NTR is a NodeTextRep that represents the text of a SemanticNode SN 
-     * after some substitutions for identifiers have been performed.  Then NTR.mapping[i]
-     * is the mapping M from character locations in the (i+1)st line of the source text 
-     * of SN (locations start at 1) to the corresponding character position (starting 
-     * from 0) in the string NTR.nodeText[i].  The value of M(c) is the obvious 
-     * position in the string if c is the location of any character in the original
-     * source that does not lie within an identifier that has been substituted for,
-     * or if c is the location of the first character of an identifier that has been
-     * substituted for.  Hence, the restriction of M to all such character locations
-     * is monotone.  If character location c+i lies within an identifier starting at
-     * location c that has been substituted for, then M(c+i) = M(c) + i.  This implies
-     * that  M is not monotone on all character locations in the source if the
-     * string substituted for an identifier has fewer characters than the identifier.
-     *  
-     * In order to preserve essential alignments after substitutions, it seems to be
-     * necessary to understand how a vector V of MappingPair objects that represents a 
-     * line mapping is constructed.  If V is a line mapping for a line in a NodeTextRep
-     * for a source SemanticNode SN, 
+     * Suppose NTR is a NodeTextRep that represents the text of a SemanticNode
+     * SN after some substitutions for identifiers have been performed. Then
+     * NTR.mapping[i] is the mapping M from character locations in the (i+1)st
+     * line of the source text of SN (locations start at 1) to the corresponding
+     * character position (starting from 0) in the string NTR.nodeText[i]. The
+     * value of M(c) is the obvious position in the string if c is the location
+     * of any character in the original source that does not lie within an
+     * identifier that has been substituted for, or if c is the location of the
+     * first character of an identifier that has been substituted for. Hence,
+     * the restriction of M to all such character locations is monotone. If
+     * character location c+i lies within an identifier starting at location c
+     * that has been substituted for, then M(c+i) = M(c) + i. This implies that
+     * M is not monotone on all character locations in the source if the string
+     * substituted for an identifier has fewer characters than the identifier.
+     * 
+     * In order to preserve essential alignments after substitutions, it seems
+     * to be necessary to understand how a vector V of MappingPair objects that
+     * represents a line mapping is constructed. If V is a line mapping for a
+     * line in a NodeTextRep for a source SemanticNode SN,
      * 
      * 
      * @author lamport
@@ -5092,7 +5257,7 @@ for (int i = 0 ; i < result.children.size(); i++) {
         }
         return loc;
     }
-    
+
     /**
      * Modify vec so the line mapping nl it represents is related to the
      * original line mapping ol by nl[c] = IF c < col THEN ol[c] ELSE ol[c] +
@@ -5136,101 +5301,96 @@ for (int i = 0 ; i < result.children.size(); i++) {
         }
         return result;
     }
-    
+
     /************************* Insertions and their methods ***************************/
     /**
-     * An Insertion object o represents the modification of a string
-     * in which a sequence of o.oldLen characters at string position o.pos 
-     * (counting from 0) is replaced by a sequence of o.newLen characters.  
-     * The position newInsertPos(p, o) in the modified string corresponding to
-     * position p in the original string is defined by
+     * An Insertion object o represents the modification of a string in which a
+     * sequence of o.oldLen characters at string position o.pos (counting from
+     * 0) is replaced by a sequence of o.newLen characters. The position
+     * newInsertPos(p, o) in the modified string corresponding to position p in
+     * the original string is defined by
      * 
-     *   newInsertPos(p, o) == CASE p =< o.pos 
-     *                              -> p
-     *                           [] o.pos < p < o.pos + o.oldLen
-     *                               -> IF o.newLen = 1
-     *                                    THEN o.pos
-     *                                    ELSE some value in (o.pos+1)..(o.pos + o.newLen - 1)
-     *                           [] o.pos + o.oldLen =< p 
-     *                               -> p + (o.newLen - o.oldLen)
+     * newInsertPos(p, o) == CASE p =< o.pos -> p [] o.pos < p < o.pos +
+     * o.oldLen -> IF o.newLen = 1 THEN o.pos ELSE some value in
+     * (o.pos+1)..(o.pos + o.newLen - 1) [] o.pos + o.oldLen =
+     * < p * ->
+     * p + (o.newLen - o.oldLen)
      * 
      * A sequence s of Insertion objects represents a sequence of such
-     * modifications.  The position newVecInsertPos(p, s) in the modified
-     * string corresponding to the position p in the original string is
-     * defined by
+     * modifications. The position newVecInsertPos(p, s) in the modified string
+     * corresponding to the position p in the original string is defined by
      * 
-     *   newVecInsertPos(p, s) ==
-     *     IF s = << >> THEN p
-     *                  ELSE newVecInsertPos(newInsertPos(p, Head(p)), Tail(p))
+     * newVecInsertPos(p, s) == IF s = << >> THEN p ELSE
+     * newVecInsertPos(newInsertPos(p, Head(p)), Tail(p))
      * 
-     * Insertions and these operations are used to preserve significant 
-     * indentation in TLA+ formulas after substitution.  More precisely,
-     * suppose L1 is a line and L0 is the line above L1 and closest to it
-     * such that the position of the first non-blank character of L0 is =<
-     * the position of the first non-blank character of L1.  Suppose L0'
-     * and L1' are obtained from L0 and L1 by insertions described by the
-     * vectors V0 and V1.  If p is the position of the first non-blank
-     * character in L1, then 
+     * Insertions and these operations are used to preserve significant
+     * indentation in TLA+ formulas after substitution. More precisely, suppose
+     * L1 is a line and L0 is the line above L1 and closest to it such that the
+     * position of the first non-blank character of L0 is =< the position of the
+     * first non-blank character of L1. Suppose L0' and L1' are obtained from L0
+     * and L1 by insertions described by the vectors V0 and V1. If p is the
+     * position of the first non-blank character in L1, then
      * 
-     *   newVecInsertPos(p, V0) - newVecInsertPos(p, V1)
-     *   
-     * space characters must be added to the beginning of L1 to preserve
-     * the indentation.  (Adding negative characters means deletion.)
+     * newVecInsertPos(p, V0) - newVecInsertPos(p, V1)
      * 
-     * In this application, modifications are represented by vectors of 
-     * non-overlapping insertions.  Thus, the non-deterministic choice in
-     * the evaluation of newInsertPos occurs at most once in the evaluation
-     * of newVecInsertPos.
+     * space characters must be added to the beginning of L1 to preserve the
+     * indentation. (Adding negative characters means deletion.)
      * 
-     * Line mappings can be defined in terms of Insertion vectors as well by 
-     * MappingPair vectors.  Insertions contain more information than MappingPairs,
-     * which is why I had to introduce them.  It would probably have been better
-     * to use Insertions instead of MappingPairs from the beginning.  However,
-     * I don't feel like rewriting the code that uses them.
+     * In this application, modifications are represented by vectors of
+     * non-overlapping insertions. Thus, the non-deterministic choice in the
+     * evaluation of newInsertPos occurs at most once in the evaluation of
+     * newVecInsertPos.
+     * 
+     * Line mappings can be defined in terms of Insertion vectors as well by
+     * MappingPair vectors. Insertions contain more information than
+     * MappingPairs, which is why I had to introduce them. It would probably
+     * have been better to use Insertions instead of MappingPairs from the
+     * beginning. However, I don't feel like rewriting the code that uses them.
      * 
      * @author lamport
-     *
+     * 
      */
     private static class Insertion {
-        int pos ;
-        int oldLen ;
-        int newLen ;
-        
+        int pos;
+        int oldLen;
+        int newLen;
+
         /**
          * The obvious constructor.
          */
         private Insertion(int pos, int oldLen, int newLen) {
-            this.pos = pos ;
-            this.oldLen = oldLen ;
-            this.newLen = newLen ;
+            this.pos = pos;
+            this.oldLen = oldLen;
+            this.newLen = newLen;
         }
-        
+
         public String toString() {
             return "[pos: " + pos + ", oldLen: " + oldLen + ", newLen: "
-                    + newLen + "]" ;
+                    + newLen + "]";
         }
     }
-    
+
     /**
      * The new position corresponding to old position oldPos after the insertion
-     * ins.  See comments for the Insertion class.
+     * ins. See comments for the Insertion class.
+     * 
      * @param oldPos
      * @param ins
      * @return
      */
-   static int newInsertPos(int oldPos, Insertion ins) {
+    static int newInsertPos(int oldPos, Insertion ins) {
         if (oldPos <= ins.pos) {
-            return oldPos ;
+            return oldPos;
         }
         if (oldPos < ins.pos + ins.oldLen) {
             // oldPos lies inside the text that was replaced.
             if (oldPos < ins.pos + ins.newLen) {
                 // if oldPos lies inside the replacing text, return its value.
-                return oldPos ;
+                return oldPos;
             } else {
                 // if oldPos isn't inside the replacing text, then we have to
-                // move it left.  We might as well minimize indentation by moving
-                // it as far left as we can without making it align with ins.pos 
+                // move it left. We might as well minimize indentation by moving
+                // it as far left as we can without making it align with ins.pos
                 // (which it didn't do initially).
                 return ins.pos + ins.newLen - ins.oldLen;
             }
@@ -5238,24 +5398,25 @@ for (int i = 0 ; i < result.children.size(); i++) {
             // oldPos is to the right of the replacing text.
             return oldPos + ins.newLen - ins.oldLen;
         }
-        
+
     }
 
     /**
      * The new position corresponding to old position oldPos after the sequence
-     * vec of insertions.  See comments for the Insertion class.
+     * vec of insertions. See comments for the Insertion class.
+     * 
      * @param oldPos
      * @param ins
      * @return
      */
     static int newVecInsertPos(int oldPos, Vector<Insertion> vec) {
-        return innerNewVecInsertPos(oldPos, 0, vec) ;
+        return innerNewVecInsertPos(oldPos, 0, vec);
     }
-    
+
     /**
-     * The recursive procedure that evaluates newVecInsertPos(oldPos, v) where
-     * v is the vector of elements vec[idx], vec[idx+1], ... 
-     *    
+     * The recursive procedure that evaluates newVecInsertPos(oldPos, v) where v
+     * is the vector of elements vec[idx], vec[idx+1], ...
+     * 
      * @param oldPos
      * @param idx
      * @param vec
@@ -5263,94 +5424,96 @@ for (int i = 0 ; i < result.children.size(); i++) {
      */
     static int innerNewVecInsertPos(int oldPos, int idx, Vector<Insertion> vec) {
         if (vec.size() <= idx) {
-            return oldPos ;
+            return oldPos;
         } else {
-            return innerNewVecInsertPos(newInsertPos(oldPos, vec.elementAt(idx)), 
-                                        idx+1, vec) ;
+            return innerNewVecInsertPos(
+                    newInsertPos(oldPos, vec.elementAt(idx)), idx + 1, vec);
         }
     }
-    
+
     /**
-     * This method assumes that newTextRep was obtained from oldTextRep by substitutions as are
-     * described by insVecArray, where insVecArray[i] describes the changes that produced 
-     * newTextRep.nodeText[i] from oldTextRep.nodeText[i].  (The arrays newTextRep.nodeText, 
-     * oldTextRep.nodeText, and insVecArray must have the same length.)  It modifies newTextRep.mapping
-     * by adding and/or removing leading blanks to maintain any alignment necessary to preserve
-     * the meaning of the formula.  This requires modifying  newTextRep.mapping as well
-     * as newTextRep.nodeText.  I think there are just two essential kinds of alignment
-     * that must be preserved.
+     * This method assumes that newTextRep was obtained from oldTextRep by
+     * substitutions as are described by insVecArray, where insVecArray[i]
+     * describes the changes that produced newTextRep.nodeText[i] from
+     * oldTextRep.nodeText[i]. (The arrays newTextRep.nodeText,
+     * oldTextRep.nodeText, and insVecArray must have the same length.) It
+     * modifies newTextRep.mapping by adding and/or removing leading blanks to
+     * maintain any alignment necessary to preserve the meaning of the formula.
+     * This requires modifying newTextRep.mapping as well as
+     * newTextRep.nodeText. I think there are just two essential kinds of
+     * alignment that must be preserved.
      * 
-     * - If a /\ or \/ that begins a line L1 is part of a con/disjunction list beginning on
-     *   line L0, then the /\ or \/ beginning L1 must remain aligned with the corresponding
-     *   /\ or \/ on L0.
+     * - If a /\ or \/ that begins a line L1 is part of a con/disjunction list
+     * beginning on line L0, then the /\ or \/ beginning L1 must remain aligned
+     * with the corresponding /\ or \/ on L0.
      * 
-     * - If a token t that begins a line L1 is part of a con/disjunction-list item started
-     *   by a /\ or \/ on line L0, then t must remain to the right of that /\ or \/. 
+     * - If a token t that begins a line L1 is part of a con/disjunction-list
+     * item started by a /\ or \/ on line L0, then t must remain to the right of
+     * that /\ or \/.
      * 
      * Here is the what the method does.
      * 
-     *    LET startingPos[i] == The position of the 1st non-blank character of oldTextRep.node[i],
-     *                          or -1 if there is none.
-     *        coveringLine[i] == LET S == {j \in 0..(i-1) : startingPos[j] \leq startingPos[i]}
-     *                           IN  IF S = {} \/ startingPos[i] = -1
-     *                                 THEN -1 ELSE Maximum S 
-     *        newStartingPos[i] == IF coveringLine[i] = -1
-     *                               THEN startingPos[i]
-     *                               ELSE newVecInsertPos(startingPos[i], insVecArray[coveringLine[i]])
-     *        addSpace[i] == newStartingPos[i] - startingPos[i] ;
-     *    For each i, add addSpace[i] spaces to line i of newTextRep.
-     *    (Adding a negative number of spaces means deletion.)
-     *                                
+     * LET startingPos[i] == The position of the 1st non-blank character of
+     * oldTextRep.node[i], or -1 if there is none. coveringLine[i] == LET S ==
+     * {j \in 0..(i-1) : startingPos[j] \leq startingPos[i]} IN IF S = {} \/
+     * startingPos[i] = -1 THEN -1 ELSE Maximum S newStartingPos[i] == IF
+     * coveringLine[i] = -1 THEN startingPos[i] ELSE
+     * newVecInsertPos(startingPos[i], insVecArray[coveringLine[i]]) addSpace[i]
+     * == newStartingPos[i] - startingPos[i] ; For each i, add addSpace[i]
+     * spaces to line i of newTextRep. (Adding a negative number of spaces means
+     * deletion.)
+     * 
      * @param oldTextRep
      * @param newTextRep
      * @param insVecArray
      */
-    static void adjustIndentation(NodeTextRep oldTextRep, NodeTextRep newTextRep, Vector<Insertion>[] insVecArray) {
-        int numOfLines = insVecArray.length ;
-        int[] startingPos  = new int[numOfLines] ;
-        
-        for (int i = 0 ; i < numOfLines; i++) {
+    static void adjustIndentation(NodeTextRep oldTextRep,
+            NodeTextRep newTextRep, Vector<Insertion>[] insVecArray) {
+        int numOfLines = insVecArray.length;
+        int[] startingPos = new int[numOfLines];
+
+        for (int i = 0; i < numOfLines; i++) {
             // compute startingPos[i]
-            String str = oldTextRep.nodeText[i] ;
+            String str = oldTextRep.nodeText[i];
             startingPos[i] = StringHelper.leadingSpaces(str);
             if (startingPos[i] == str.length()) {
-                startingPos[i] = -1 ;
+                startingPos[i] = -1;
             }
-            
+
             // compute coveringLine[i]
-            int coveringLine ;
+            int coveringLine;
             if (startingPos[i] == -1) {
-                coveringLine = -1 ;
+                coveringLine = -1;
             } else {
-                int j = i-1 ;
-                while ((j >= 0) && 
-                        ((startingPos[j] > startingPos[i]) || (startingPos[j] == -1))) {
-                    j-- ;
+                int j = i - 1;
+                while ((j >= 0)
+                        && ((startingPos[j] > startingPos[i]) || (startingPos[j] == -1))) {
+                    j--;
                 }
-                coveringLine = j ;
+                coveringLine = j;
             }
-            
+
             // Compute addSpace[i]
             int addSpace;
             if (coveringLine == -1) {
                 addSpace = 0;
             } else {
-                addSpace = newVecInsertPos(startingPos[i], 
-                                           insVecArray[coveringLine])
-                                 - startingPos[i] ;
+                addSpace = newVecInsertPos(startingPos[i],
+                        insVecArray[coveringLine]) - startingPos[i];
             }
-            
+
             // Add or remove space
-            str = newTextRep.nodeText[i] ;
+            str = newTextRep.nodeText[i];
             if (addSpace > 0) {
-                newTextRep.nodeText[i] = StringHelper.copyString(" ", addSpace) + str ;
+                newTextRep.nodeText[i] = StringHelper.copyString(" ", addSpace)
+                        + str;
             } else if (addSpace < 0) {
                 newTextRep.nodeText[i] = str.substring(-addSpace);
             }
-            adjustMappingPairVector(1, addSpace, newTextRep.mapping[i]) ;
+            adjustMappingPairVector(1, addSpace, newTextRep.mapping[i]);
         }
     }
-    
+
     /******************** Some Methods for String Arrays *****************************/
     /**
      * Returns the array of strings as a single string, with the obvious
@@ -5402,7 +5565,7 @@ for (int i = 0 ; i < result.children.size(); i++) {
      */
 
     public static final int PROVE_BUTTON = 2;
-    public static final int BACK_BUTTON  = 1;
+    public static final int BACK_BUTTON = 1;
     public static final int TEST_BUTTON = 99;
 
     /**
@@ -5450,8 +5613,8 @@ for (int i = 0 ; i < result.children.size(); i++) {
         button.setLayoutData(gridData);
         // Change made by LL for NewDecomposeProofHandler on 21 Aug 2014:
         // nodeRep.nodeRepPath() instead of nodeRep is the object
-        // that is attached to the button, and whose value is  in 
-        // DecomposeProofButtonListener.object when 
+        // that is attached to the button, and whose value is in
+        // DecomposeProofButtonListener.object when
         // DecomposeProofButtonListener.widgetSelected is executed as the
         // result of clicking on the button.
         button.addSelectionListener(new DecomposeProofButtonListener(this,
@@ -5507,7 +5670,7 @@ for (int i = 0 ; i < result.children.size(); i++) {
                 switch (buttonId) {
                 case BACK_BUTTON:
                     state = state.previousState;
-                    raiseWindow() ;
+                    raiseWindow();
                     break;
                 case PROVE_BUTTON:
                     makeProof(null, false, true);
@@ -5531,21 +5694,22 @@ for (int i = 0 ; i < result.children.size(); i++) {
                 }
                 break;
             case ACTION:
-                // Clone the current state 
-                DecompositionState newState = state.clone() ;
-                newState.previousState = state ;
-                state = newState ;
+                // Clone the current state
+                DecompositionState newState = state.clone();
+                newState.previousState = state;
+                state = newState;
                 state.hasChanged = true;
-                NodeRepresentation nodeObj = 
-                          pathToNodeRep((Vector<Integer>) object);
-//                NodeRepresentation samenodeObj = pathToNodeRep(nodeObj.nodeRepPath()) ;
-// if (nodeObj == samenodeObj) {
-//     System.out.println("cool, man") ;
-// } else {
-//     System.out.println( nodeObj.toString() + "\n doesn't equal\n" +
-//       samenodeObj.toString()) ;
-//     
-// }
+                NodeRepresentation nodeObj = pathToNodeRep((Vector<Integer>) object);
+                // NodeRepresentation samenodeObj =
+                // pathToNodeRep(nodeObj.nodeRepPath()) ;
+                // if (nodeObj == samenodeObj) {
+                // System.out.println("cool, man") ;
+                // } else {
+                // System.out.println( nodeObj.toString() + "\n doesn't equal\n"
+                // +
+                // samenodeObj.toString()) ;
+                //
+                // }
                 if (nodeObj.nodeType == NodeRepresentation.OR_DECOMP) {
                     decomposeHandler.caseAction(nodeObj);
                     // this is the action that produces an or-split proof.
@@ -5614,7 +5778,7 @@ for (int i = 0 ; i < result.children.size(); i++) {
         public void widgetDisposed(DisposeEvent e) {
             commandHandler.location = windowShell.getLocation();
             // The following method was deprecated because it was actually
-            // possible to use it, so it had to be replaced by something 
+            // possible to use it, so it had to be replaced by something
             // that requires a PhD in Eclipse to figure out how to use.
             commandHandler.editorIFile.setReadOnly(false);
         }
@@ -5632,6 +5796,12 @@ for (int i = 0 ; i < result.children.size(); i++) {
         }
 
         public void widgetSelected(SelectionEvent e) {
+
+            // Clone the current state, so can go back from an arrow operation.
+            DecompositionState newState = state.clone();
+            newState.previousState = state;
+            state = newState;
+
             // SemanticNode node = handler.assumes.elementAt(index);
             NodeRepresentation rep = handler.state.assumeReps.elementAt(index);
             // handler.assumes.remove(index) ;
@@ -5691,7 +5861,7 @@ for (int i = 0 ; i < result.children.size(); i++) {
      * 
      * This method must not be called if nd is a DefStepNode or InstanceNode,
      * since for an unnumbered step (which such a step is likely to be), there
-     * is no way to find the level number.  See the comments to the one place
+     * is no way to find the level number. See the comments to the one place
      * where this method is called.
      * 
      * @param nd
@@ -5709,7 +5879,7 @@ for (int i = 0 ; i < result.children.size(); i++) {
      * Returns true if it may be necessary to put parentheses around the
      * expression represented by `node' in order to prime it. This is the case
      * if node is an OpApplNode whose operator is NOT a user-defined operator
-     * with an identifier as its name (so it returns truen if the operator is 
+     * with an identifier as its name (so it returns truen if the operator is
      * not in/prep/postfix) or if it's an OpApplNode with no arguments.
      * 
      * @param node
@@ -5720,7 +5890,7 @@ for (int i = 0 ; i < result.children.size(); i++) {
             return false;
         }
         if (((OpApplNode) node).getArgs().length == 0) {
-            return false ;
+            return false;
         }
         SymbolNode ops = ((OpApplNode) node).getOperator();
         if (ops instanceof OpDefNode) {
@@ -5766,132 +5936,101 @@ for (int i = 0 ; i < result.children.size(); i++) {
 }
 
 /**********************************
-The following module provides a number of random test cases for the 
-Decompose Proof command.
-
------------------ MODULE Test ------------------
-EXTENDS Integers, TLAPS
-
-Q3(a, b) == \E x \in Int : (x = a) /\ (x = b)
-Q2(a, b) == \E x \in Int : ((x = a) /\ (x = b)) \/ Q3(a, b+1)
-Q1(a, b) == \E x \in Int : ((x = a) /\ (x = b)) \/ Q2(a, b+1)
-THEOREM  TT == \A y \in Int : Q1(y, 1) => (y = 1) \/ (y = 2) \/ (y = 3)
- 
-THEOREM  ASSUME NEW y \in Int, Q1(y, 1) PROVE (y = 1) \/ (y = 2) \/ (y = 3)
-
-R3(b, a) == a = 3 \/ a = b
-R2(b, a) == a = 2 \/ \E x \in {b, a} : R3(x, a+1)
-R1(a) == a = 1 \/ \E x \in {a} : R2(x, a+1)
-THEOREM TT2 == \A y \in {1, 2, 3} : R1(y) => (y = 1)
-
-VARIABLES A, B, C, D, E, F
-
-T3 == \E x : D \/ E
-T2 == (C /\ A /\ T3)
-T1 == B /\ T2
-THEOREM T1 => A /\ B /\ C
-
-S1 == A \/ (\E x \in {y_1 \in {44} : y_1 > 0} : x \in {44}) 
-S1a == A \/ (\A x \in {y_1 \in {44} : y_1 > 0} : x \in {44}) 
-S1b == A \/ ({y_1 \in {44} : y_1 > 0} = {x \in {44} : x > 0})
-THEOREM ASSUME NEW x , NEW y_1, S1b
-        PROVE  \A x_1 : FALSE
-
-S2 == \E x \in {y \in {44} : y > 0} : x \in {44}
-S2a == \E x \in {y \in {44} : y > 0} : x \in {44}
-S2b == \E x \in {y \in {44} : y > 0} : x \in {44}
-THEOREM ASSUME NEW x, NEW y, S2, S2a, S2b, A \/ B
-        PROVE FALSE 
-
-S4 == \E x \in {y \in {44} : y > 0} : x \in {44}
-S3 == (\E x \in {y \in {44} : y > 0} : x \in {44}) \/ S4 
-THEOREM ASSUME NEW x, NEW y, NEW y_1, S3
-        PROVE  FALSE
-
-U1 == \A x \in {y \in {44} : y > 0} : (x > 0) /\ A
-THEOREM ASSUME NEW x , NEW y PROVE U1
-
-U2 == \E x : A \/ \E x_1 : x = x_1
-THEOREM ASSUME NEW x, U2 PROVE FALSE
-
-THEOREM ASSUME \E x \in {1} : TRUE, A \/ \E x : FALSE
-        PROVE  \A x : TRUE
-
-W3(a, b) == \E x : <<a, b>> \/ (x=1)
-W2(a) == \E x : W3(a, x)
-W1 == \E x : W2(x)
-THEOREM W1 => \A x : FALSE
- 
-C3 == \E x : (x=2) \/ (x=3)
-C2 == \E x : \E y : C3
-THEOREM (\E x : C2) => FALSE
-
-C5(y) == y /\ (B \/ C)
-C4(x) == x /\ \E y : C5(y) /\ x 
-THEOREM ASSUME NEW y, (\E x : C4(x) /\ A) PROVE FALSE
-
-C7(u, v) == \E y : <<u, v, y>> \/ (y=v)
-C6(a) == \E x : C7(a, x)
-THEOREM C6(42) => FALSE
-
-B2(a, b) == (a=1) \/ (b=1)
-B1(a) == \E y : B2(a, y)
-THEOREM (\E x : B1(x)) => FALSE
-  
-Bar(bb) == (bb \/ C)
-Foo(aaaa, bbbb) ==  Bar(aaaa) => bbbb \/ /\ aaaa
-
-                                         /\ bbbb => B
- 
-X(a, Op(_,_)) == \A x : Op(a, B) /\ a
-W(a) == (a 
-          \/ C)
-Z(a) == \E z \in {E} : W(a) => \/ D
-                               \/ D
-
-ABar(bb) == \E y , yy : (Z(C) 
-
-                           \/ D)
-AFoo(aaaa) == \E x : ( ABar(<<x, aaaa>>) )
-THEOREM AFoo(44) => FALSE
-
-Y == A \/ (Z(B) \/ D)
-AA == A
-BB == (\E yB, yBB \in {}, yBBB \in {} : B \/ (\E yC, yCCC : \E yCC : (C \/ (\E yD : D))))
-ZZ == AA /\ BB 
-ZZZ == A /\ (\E yy : B)
-
-THEOREM ZZ
-
-THEOREM XYZ == ASSUME NEW AAAA , ZZ, NEW BBBB PROVE FALSE
-
-THEOREM Y => FALSE
-
-THEOREM ASSUME NEW ZZ1, NEW ZZ123456 PROVE Foo(ZZ1, ZZ123456) 
-
-CONSTANT Z77777
-THEOREM Z(Z77777) => FALSE
-
-THEOREM ASSUME A \/ B PROVE C
-
-THEOREM ASSUME AFoo(F)
-        PROVE FALSE
-
-THEOREM ASSUME \E x : A \/ ABar(C)
-        PROVE  FALSE 
-
- 
-THEOREM ASSUME Z(F)
-        PROVE  Foo(A, B)
-
-THEOREM \A x \in 23 +
-                 24 : A
-  
-THEOREM \A x \in 23 +
-                    24, y \in E : A => Bar(11)
-
-THEOREM X(22+33, Foo)
-
-=====================================
-
-************************************/
+ * The following module provides a number of random test cases for the Decompose
+ * Proof command.
+ * 
+ * ----------------- MODULE Test ------------------ EXTENDS Integers, TLAPS
+ * 
+ * Q3(a, b) == \E x \in Int : (x = a) /\ (x = b) Q2(a, b) == \E x \in Int : ((x
+ * = a) /\ (x = b)) \/ Q3(a, b+1) Q1(a, b) == \E x \in Int : ((x = a) /\ (x =
+ * b)) \/ Q2(a, b+1) THEOREM TT == \A y \in Int : Q1(y, 1) => (y = 1) \/ (y = 2)
+ * \/ (y = 3)
+ * 
+ * THEOREM ASSUME NEW y \in Int, Q1(y, 1) PROVE (y = 1) \/ (y = 2) \/ (y = 3)
+ * 
+ * R3(b, a) == a = 3 \/ a = b R2(b, a) == a = 2 \/ \E x \in {b, a} : R3(x, a+1)
+ * R1(a) == a = 1 \/ \E x \in {a} : R2(x, a+1) THEOREM TT2 == \A y \in {1, 2, 3}
+ * : R1(y) => (y = 1)
+ * 
+ * VARIABLES A, B, C, D, E, F
+ * 
+ * T3 == \E x : D \/ E T2 == (C /\ A /\ T3) T1 == B /\ T2 THEOREM T1 => A /\ B
+ * /\ C
+ * 
+ * S1 == A \/ (\E x \in {y_1 \in {44} : y_1 > 0} : x \in {44}) S1a == A \/ (\A x
+ * \in {y_1 \in {44} : y_1 > 0} : x \in {44}) S1b == A \/ ({y_1 \in {44} : y_1 >
+ * 0} = {x \in {44} : x > 0}) THEOREM ASSUME NEW x , NEW y_1, S1b PROVE \A x_1 :
+ * FALSE
+ * 
+ * S2 == \E x \in {y \in {44} : y > 0} : x \in {44} S2a == \E x \in {y \in {44}
+ * : y > 0} : x \in {44} S2b == \E x \in {y \in {44} : y > 0} : x \in {44}
+ * THEOREM ASSUME NEW x, NEW y, S2, S2a, S2b, A \/ B PROVE FALSE
+ * 
+ * S4 == \E x \in {y \in {44} : y > 0} : x \in {44} S3 == (\E x \in {y \in {44}
+ * : y > 0} : x \in {44}) \/ S4 THEOREM ASSUME NEW x, NEW y, NEW y_1, S3 PROVE
+ * FALSE
+ * 
+ * U1 == \A x \in {y \in {44} : y > 0} : (x > 0) /\ A THEOREM ASSUME NEW x , NEW
+ * y PROVE U1
+ * 
+ * U2 == \E x : A \/ \E x_1 : x = x_1 THEOREM ASSUME NEW x, U2 PROVE FALSE
+ * 
+ * THEOREM ASSUME \E x \in {1} : TRUE, A \/ \E x : FALSE PROVE \A x : TRUE
+ * 
+ * W3(a, b) == \E x : <<a, b>> \/ (x=1) W2(a) == \E x : W3(a, x) W1 == \E x :
+ * W2(x) THEOREM W1 => \A x : FALSE
+ * 
+ * C3 == \E x : (x=2) \/ (x=3) C2 == \E x : \E y : C3 THEOREM (\E x : C2) =>
+ * FALSE
+ * 
+ * C5(y) == y /\ (B \/ C) C4(x) == x /\ \E y : C5(y) /\ x THEOREM ASSUME NEW y,
+ * (\E x : C4(x) /\ A) PROVE FALSE
+ * 
+ * C7(u, v) == \E y : <<u, v, y>> \/ (y=v) C6(a) == \E x : C7(a, x) THEOREM
+ * C6(42) => FALSE
+ * 
+ * B2(a, b) == (a=1) \/ (b=1) B1(a) == \E y : B2(a, y) THEOREM (\E x : B1(x)) =>
+ * FALSE
+ * 
+ * Bar(bb) == (bb \/ C) Foo(aaaa, bbbb) == Bar(aaaa) => bbbb \/ /\ aaaa
+ * 
+ * /\ bbbb => B
+ * 
+ * X(a, Op(_,_)) == \A x : Op(a, B) /\ a W(a) == (a \/ C) Z(a) == \E z \in {E} :
+ * W(a) => \/ D \/ D
+ * 
+ * ABar(bb) == \E y , yy : (Z(C)
+ * 
+ * \/ D) AFoo(aaaa) == \E x : ( ABar(<<x, aaaa>>) ) THEOREM AFoo(44) => FALSE
+ * 
+ * Y == A \/ (Z(B) \/ D) AA == A BB == (\E yB, yBB \in {}, yBBB \in {} : B \/
+ * (\E yC, yCCC : \E yCC : (C \/ (\E yD : D)))) ZZ == AA /\ BB ZZZ == A /\ (\E
+ * yy : B)
+ * 
+ * THEOREM ZZ
+ * 
+ * THEOREM XYZ == ASSUME NEW AAAA , ZZ, NEW BBBB PROVE FALSE
+ * 
+ * THEOREM Y => FALSE
+ * 
+ * THEOREM ASSUME NEW ZZ1, NEW ZZ123456 PROVE Foo(ZZ1, ZZ123456)
+ * 
+ * CONSTANT Z77777 THEOREM Z(Z77777) => FALSE
+ * 
+ * THEOREM ASSUME A \/ B PROVE C
+ * 
+ * THEOREM ASSUME AFoo(F) PROVE FALSE
+ * 
+ * THEOREM ASSUME \E x : A \/ ABar(C) PROVE FALSE
+ * 
+ * 
+ * THEOREM ASSUME Z(F) PROVE Foo(A, B)
+ * 
+ * THEOREM \A x \in 23 + 24 : A
+ * 
+ * THEOREM \A x \in 23 + 24, y \in E : A => Bar(11)
+ * 
+ * THEOREM X(22+33, Foo)
+ * 
+ * =====================================
+ ************************************/
