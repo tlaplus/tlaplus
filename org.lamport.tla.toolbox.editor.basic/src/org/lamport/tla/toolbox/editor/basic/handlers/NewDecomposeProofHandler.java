@@ -1049,11 +1049,17 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         && !(pfsteps[i] instanceof InstanceNode)) {
                     proofLevel = stepLevel(pfsteps[i]);
                 }
+                // XXXXXXX set currStepName
+                String currStepName = null ;
+                if (pfsteps[i] instanceof TheoremNode) {
+                  currStepName = getStepName((TheoremNode) pfsteps[i]) ;
+                }
+
                 if (EditorUtil.lineLocationContainment(selectedLocation,
                         pfsteps[i].stn.getLocation())) {
                     foundLevelNode = pfsteps[i];
 
-                    // pfsteps[i] is  is either the selected step
+                    // pfsteps[i] is is either the selected step
                     // or a step whose proof contains the selected step.
                     // In the latter case, pfsteps[i] = null and hence
                     // foundLevelNode will equal null.
@@ -1072,68 +1078,98 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     //       IF it's an ordinary formula, set goal to it.
                     //   For a SUFFICES step:
                     //       Set goal to null.
-                    if (!step.isSuffices()) {
-                        if (step.getTheorem() instanceof AssumeProveNode) {
-                           // ordinary ASSUME/PROVE
-                           SemanticNode[] assumptions = ((AssumeProveNode) step
-                                   .getTheorem()).getAssumes();
-                           for (int j = 0; j < assumptions.length; j++) {
-                               if (assumptions[j] instanceof NewSymbNode) {
-                                   declaredIdentifiers
-                                           .add(((NewSymbNode) assumptions[j])
-                                                   .getOpDeclNode().getName()
-                                                   .toString());
-                               } else {
-                                   if (foundLevelNode == null) {
-                                       assumes.addElement(assumptions[j]) ;
-                                   } else {
-                                       contextAssumptions.addElement(assumptions[j]);
-                                   }
-                               }
-                           }
+                    if (pfsteps[i] instanceof TheoremNode) {
+                       TheoremNode thmNode = (TheoremNode) pfsteps[i];
+                       if (!thmNode.isSuffices()) {
+                           if (thmNode.getTheorem() instanceof AssumeProveNode) {
+                              // ordinary ASSUME/PROVE
+                              SemanticNode[] assumptions = ((AssumeProveNode) thmNode
+                                      .getTheorem()).getAssumes();
+                              for (int j = 0; j < assumptions.length; j++) {
+                                  if (assumptions[j] instanceof NewSymbNode) {
+                                      declaredIdentifiers
+                                              .add(((NewSymbNode) assumptions[j])
+                                                      .getOpDeclNode().getName()
+                                                      .toString());
+                                  } else {
+                                      if (foundLevelNode == null) {
+                                          assumes.addElement(assumptions[j]) ;
+                                      } else {
+                                          contextAssumptions.addElement(assumptions[j]);
+                                          contextSources.addElement(currStepName);
+                                      }
+                                  }
+                              }
+                              goal = ((AssumeProveNode) thmNode.getTheorem()).getProve();
+                          } else {
+                            // not SUFFICES or ASSUME/PROVE
+                              SemanticNode newGoalSemNode = thmNode.getTheorem() ;
+                              if (newGoalSemNode instanceof OpApplNode) {
+                                  OpApplNode newGoal = (OpApplNode) newGoalSemNode ;
+                                  UniqueString goalOpName = newGoal.getOperator().getName();
+                                  if (goalOpName == ASTConstants.OP_pfcase) {
+                                      if (foundLevelNode == null) {
+                                          assumes.addElement(newGoal.getArgs()[0]) ;
+                                      } else {
+                                          contextAssumptions.addElement(newGoal.getArgs()[0]);
+                                          contextSources.addElement(currStepName);
+                                      }
+                                  } else if (goalOpName == ASTConstants.OP_pick) {
+                                      goal = null;
+                                      nullReason = "PICK";
+                                  } else if (goalOpName == null) {
+                                      // I don't know what this is, so it must be weird.
+                                      goal = null;
+                                      nullReason = "weird";
+                                  } else if (goalOpName == ASTConstants.OP_qed) {
+                                      // do nothing
+                                  }
+                                  else {
+                                      // an ordinary formula
+                                      goal = newGoal ; 
+                                  }                           
+                              } else {
+                                  // Not an OpApplNode, so it's something weird.
+                                  goal = null;
+                                  nullReason = "weird";
+                              }
+                           }                        
                        } else {
-                         // not SUFFICES or ASSUME/PROVE
-                           SemanticNode newGoalSemNode = step.getTheorem() ;
-                           if (newGoalSemNode instanceof OpApplNode) {
-                               OpApplNode newGoal = (OpApplNode) newGoalSemNode ;
-                               UniqueString goalOpName = newGoal.getOperator().getName();
-                               if (goalOpName == ASTConstants.OP_pfcase) {
-                                   goal = newGoal.getArgs()[0] ;
-                               } else if (goalOpName == ASTConstants.OP_pick) {
-                                   goal = null;
-                                   nullReason = "PICK";
-                               } else if (goalOpName == null) {
-                                   // I don't know what this is, so it must be weird.
-                                   goal = null;
-                                   nullReason = "weird";
-                               } else if (goalOpName == ASTConstants.OP_qed) {
-                                   // do nothing
-                               }
-                               else {
-                                   // an ordinary formula
-                                   goal = newGoal ; 
-                               }
-                           
-                           } else {
-                               // Not an OpApplNode, so it's something weird.
-                               goal = null;
-                               nullReason = "weird";
-                           }
-                        }                        
-                    } else {
-                        // A SUFFICES step.
-                        goal = null;
-                        nullReason = "SUFFICES";
+                           // A SUFFICES step.
+                           goal = null;
+                           nullReason = "SUFFICES";
+                         }
+                    } // end of if (pfsteps[i] instanceof TheoremNode)
+                    else { goal = null;
+                           nullReason = "weird" ;
                     }
                 } else {
-                    // Selected step must come after this step.
-                    // XXXXXXX set currStepName
-                    String currStepName = "" ;
-                    // If this step is a SUFFICES ASSUME step, must
-                    // add NEW declarations to declaredIdentifiers.
-                    // Bug fixed by LL on 24 June 2014:
-                    // If it's a PICK step, must add the introduced identifier
-                    // to declaredIdentifiers. Added the code to do that.
+                    // Selected step must come after this step.  Have the
+                    // following cases:
+                    // For a SUFFICES step:
+                    //   If it's an ASSUME/PROVE then:
+                    //     - Add its ASSUMEs to contextAssumptions
+                    //     - Add its NEW declarations to declaredIdentifiers.
+                    //     - Set goal to its PROVE formula
+                    //   If it's not a SUFFICES step:
+                    //     - Set goal to its formula.
+                    //  For a non-SUFFICES step:
+                    //    If it's a PICK step, then:
+                    //      - Add its declared formulas to declaredIdentifiers.
+                    //      - Add its body to contextAssumptions
+                    //    If it's a TAKE step, then:
+                    //      - Add its declared formulas to declaredIdentifiers.
+                    //      - Set goal to null.
+                    //    If it's a HAVE step, then:
+                    //      - Add its formula to contextAssumptions
+                    //      - Set goal to null.
+                    //    If it's a WITNESS step, then set goal to null.
+                    //    If it's a DEFINE step, then add its definitions
+                    //      to declaredIdentifiers.
+                    // 
+                    // Bug fixed by LL on 24 June 2014: Failed to PICK step's
+                    // introduced identifiers to declaredIdentifiers.
+                    // 
                     if (pfsteps[i] instanceof TheoremNode) {
                         TheoremNode node = (TheoremNode) pfsteps[i];
                         if (node.isSuffices()) {
@@ -1141,7 +1177,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                            // and add any non-NEW assumptions to contextAssumptions.
                            
                            if (node.getTheorem() instanceof AssumeProveNode) {
-                                 goal = ((AssumeProveNode) node .getTheorem()).getGoal() ;
+                                 goal = ((AssumeProveNode) node.getTheorem()).getProve() ;
                                  SemanticNode[] assumptions = ((AssumeProveNode) node
                                          .getTheorem()).getAssumes();
                                  for (int j = 0; j < assumptions.length; j++) {
@@ -1252,9 +1288,95 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 proof = step.getProof();
             }
         }
+        
+        /**************************************************************
+         * Check that the step has either no proof or a leaf proof.
+         *************************************************************/
+        if ((proof != null) && !(proof instanceof LeafProofNode)) {
+            MessageDialog
+                    .openError(UIHelper.getShellProvider().getShell(),
+                            "Decompose Proof Command",
+                            "You have selected a step that already has a non-leaf proof.");
+            return null;
+        }
 
         /**
-         * Found the step. Raise an error if the step's goal can't be handled.
+         * Because of the poor organization of the code, there are two
+         * edge cases not handled properly and must be handled here
+         * as special cases.  The first is the case of the statement of
+         * the theorem being the decomposed step.  The for this case  
+         * was cloned from the code executed above within the body 
+         * of the
+         * 
+         *    if (!step.isSuffices())
+         *    
+         * statement which handles setting goal and assumes for a
+         * decomposed step.
+         * 
+         * The second case not handled properly is that of the theorem 
+         * statement being an ASSUME/PROVE and is not itself being 
+         * decomposed.  In this cases, the theorem's ASSUMES must be 
+         * prepended to contextAssumptions.
+         */
+        if (step == theorem) {
+            if (step.getTheorem() instanceof AssumeProveNode) {
+                // ordinary ASSUME/PROVE
+                SemanticNode[] assumptions = ((AssumeProveNode) step
+                        .getTheorem()).getAssumes();
+                for (int j = 0; j < assumptions.length; j++) {
+                    if (assumptions[j] instanceof NewSymbNode) {
+                        declaredIdentifiers
+                                .add(((NewSymbNode) assumptions[j])
+                                        .getOpDeclNode().getName()
+                                        .toString());
+                    } else {
+                         assumes.addElement(assumptions[j]) ;
+                    }
+                }
+                goal = ((AssumeProveNode) step .getTheorem()).getProve();
+
+           } else {
+            // not  ASSUME/PROVE
+            SemanticNode newGoalSemNode = step.getTheorem() ;
+             if (newGoalSemNode instanceof OpApplNode) {
+                OpApplNode newGoal = (OpApplNode) newGoalSemNode ;
+                UniqueString goalOpName = newGoal.getOperator().getName();
+                if (goalOpName == ASTConstants.OP_pfcase) {
+                    goal = newGoal.getArgs()[0] ;
+                } else if (goalOpName == ASTConstants.OP_pick) {
+                    goal = null;
+                    nullReason = "PICK";
+                } else if (goalOpName == null) {
+                    // I don't know what this is, so it must be weird.
+                    goal = null;
+                    nullReason = "weird";
+                } else if (goalOpName == ASTConstants.OP_qed) {
+                    // do nothing
+                }
+                else {
+                    // an ordinary formula
+                    goal = newGoal ; 
+                }                           
+             } else {
+                // Not an OpApplNode, so it's something weird.
+                goal = null;
+                nullReason = "weird";
+             }
+           }
+        } else {
+            if (theorem.getTheorem() instanceof AssumeProveNode) {
+                SemanticNode[] thmAssumps = 
+                    ((AssumeProveNode) theorem.getTheorem()).getAssumes() ;
+                for (int j = 0; j < thmAssumps.length; j++) {
+                    contextAssumptions.insertElementAt(thmAssumps[j], j) ;
+                    contextSources.insertElementAt(null, j) ;
+                    
+                }
+            }
+        }
+        /**
+         * Found the and processed step. Raise an error if the step's goal can't 
+         * be handled.
          */
         if (goal == null) {
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
@@ -1302,16 +1424,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         }
         stepColumn = nd.getLocation().beginColumn();
 
-        /**************************************************************
-         * Check that the step has either no proof or a leaf proof.
-         *************************************************************/
-        if ((proof != null) && !(proof instanceof LeafProofNode)) {
-            MessageDialog
-                    .openError(UIHelper.getShellProvider().getShell(),
-                            "Decompose Proof Command",
-                            "You have selected a step that already has a non-leaf proof.");
-            return null;
-        }
 
         /**************************************************************
          * Set stepRep
@@ -1425,6 +1537,37 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         return null;
     }
 
+    /**
+     * Returns the name of a proof step, or null if it has no name (but only
+     * a level).  Thus for the step
+     * 
+     *     <3>4ax. 1+1=2
+     *     
+     * it returns "<3>4ax", but returns null for the step:
+     * 
+     *     <3> 2+2=5
+     * @param step
+     * @return
+     */
+    static String getStepName (TheoremNode step) {
+        SyntaxTreeNode nd = (SyntaxTreeNode) step.stn;
+        String result = nd.getHeirs()[0].image.toString();
+        if (result.indexOf('>') == result.length() - 1) {
+            result = null;
+        } else {
+            // Need to remove punctuation after the number:
+            int i = result.indexOf('>') + 1;
+            while ((i < result.length() && (Character
+                    .isLetterOrDigit(result.charAt(i)) || (result
+                    .charAt(i) == '_')))) {
+                i++;
+            }
+            if (i < result.length()) {
+                result = result.substring(0, i);
+            }
+        }
+        return result ;
+    }
     /**
      * This method is called when the user issues a the Decompose Proof command.
      * It launches a synchronous task that calls realExecute() to do most of the
