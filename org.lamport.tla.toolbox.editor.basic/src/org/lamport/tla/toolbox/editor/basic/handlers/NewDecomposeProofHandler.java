@@ -799,13 +799,115 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @return
      * @throws ExecutionException
      */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
+    /**
+     * @return
+     * @throws ExecutionException
+     */
     public Object realExecute() throws ExecutionException {
         // We will set assumes to the vector of SemanticNodes of the
         // assumptions, if there are any, and goal to the SemanticNode
         // of the goal.
         Activator.getDefault().logDebug("Decompose Proof Called");
-        Vector<SemanticNode> assumes;
-        SemanticNode goal;
+        
+        /**
+         * Is set to the set of ASSUMEs of the selected step/theorem.
+         */
+        Vector<SemanticNode> assumes = new Vector<SemanticNode>();
+    
+        /**
+         * Is set to the goal of the selected step or theorem, which
+         * may come from the context.  It is set to null if the goal
+         * cannot be handled.
+         */
+        SemanticNode  goal = null ;  
+        
+        /**
+         * If goal is set to null, this describes why not in an error
+         * message saying "Step has goal that comes from" + nullReason + "step".
+         */
+        String nullReason = "[This string should never be displayed]";
+        
+        /**
+         * Is set to all prior facts asserted by the theorem or its steps
+         * that could be used in proving the selected step.  (Empty if the
+         * theorem itself is selected.)
+         */
+        Vector <SemanticNode> contextAssumptions = new Vector<SemanticNode>() ;
+        
+        /**
+         * For each assumption in contextAssumptions, this is the name of
+         * the step from which the assumption comes, or "" if it comes from
+         * an unnamed step or the theorem itself.
+         */     
+        Vector <String> contextSources = new Vector<String> () ;
         // String[] blankLine = new String[] { "" };
         // String[] oneline = new String[] { "1" };
 
@@ -907,8 +1009,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
         /********************************************************************
          * Set the following fields: step, proofLevel, proof. Add the necessary
-         * declarations to this.declaredIdentifiers.
+         * declarations to this.declaredIdentifiers.  Also compute the following
+         * two values.
          *********************************************************************/
+        // ExprNode goal = null ;
+        
         step = theorem;
         boolean notDone = true;
         /*
@@ -947,22 +1052,83 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 if (EditorUtil.lineLocationContainment(selectedLocation,
                         pfsteps[i].stn.getLocation())) {
                     foundLevelNode = pfsteps[i];
-                    // If step is a (non-SUFFICES) ASSUME/PROVE, must add
-                    // its NEW declarations to declaredIdentifiers.
-                    if (!step.isSuffices()
-                            && (step.getTheorem() instanceof AssumeProveNode)) {
-                        SemanticNode[] assumptions = ((AssumeProveNode) step
-                                .getTheorem()).getAssumes();
-                        for (int j = 0; j < assumptions.length; j++) {
-                            if (assumptions[j] instanceof NewSymbNode) {
-                                declaredIdentifiers
-                                        .add(((NewSymbNode) assumptions[j])
-                                                .getOpDeclNode().getName()
-                                                .toString());
-                            }
-                        }
+
+                    // pfsteps[i] is  is either the selected step
+                    // or a step whose proof contains the selected step.
+                    // In the latter case, pfsteps[i] = null and hence
+                    // foundLevelNode will equal null.
+                    // Here's what must be done:
+                    //   For a non-SUFFICES step:  
+                    //     IF it's an ASSUME/PROVE:
+                    //      - Add its NEW declarations to declaredIdentifiers.
+                    //      - Add its other assumptions to either assumes or
+                    //        context assumptions, depending on whether this is the
+                    //        selected step.
+                    //      - set goal to its PROVE formula
+                    //     IF it's not an assume prove:
+                    //       IF it's a CASE, add its formula to assumes or contextAssumptions.
+                    //       IF it's a PICK, set goal to null.
+                    //       IF it's a QED step, do nothing.
+                    //       IF it's an ordinary formula, set goal to it.
+                    //   For a SUFFICES step:
+                    //       Set goal to null.
+                    if (!step.isSuffices()) {
+                        if (step.getTheorem() instanceof AssumeProveNode) {
+                           // ordinary ASSUME/PROVE
+                           SemanticNode[] assumptions = ((AssumeProveNode) step
+                                   .getTheorem()).getAssumes();
+                           for (int j = 0; j < assumptions.length; j++) {
+                               if (assumptions[j] instanceof NewSymbNode) {
+                                   declaredIdentifiers
+                                           .add(((NewSymbNode) assumptions[j])
+                                                   .getOpDeclNode().getName()
+                                                   .toString());
+                               } else {
+                                   if (foundLevelNode == null) {
+                                       assumes.addElement(assumptions[j]) ;
+                                   } else {
+                                       contextAssumptions.addElement(assumptions[j]);
+                                   }
+                               }
+                           }
+                       } else {
+                         // not SUFFICES or ASSUME/PROVE
+                           SemanticNode newGoalSemNode = step.getTheorem() ;
+                           if (newGoalSemNode instanceof OpApplNode) {
+                               OpApplNode newGoal = (OpApplNode) newGoalSemNode ;
+                               UniqueString goalOpName = newGoal.getOperator().getName();
+                               if (goalOpName == ASTConstants.OP_pfcase) {
+                                   goal = newGoal.getArgs()[0] ;
+                               } else if (goalOpName == ASTConstants.OP_pick) {
+                                   goal = null;
+                                   nullReason = "PICK";
+                               } else if (goalOpName == null) {
+                                   // I don't know what this is, so it must be weird.
+                                   goal = null;
+                                   nullReason = "weird";
+                               } else if (goalOpName == ASTConstants.OP_qed) {
+                                   // do nothing
+                               }
+                               else {
+                                   // an ordinary formula
+                                   goal = newGoal ; 
+                               }
+                           
+                           } else {
+                               // Not an OpApplNode, so it's something weird.
+                               goal = null;
+                               nullReason = "weird";
+                           }
+                        }                        
+                    } else {
+                        // A SUFFICES step.
+                        goal = null;
+                        nullReason = "SUFFICES";
                     }
                 } else {
+                    // Selected step must come after this step.
+                    // XXXXXXX set currStepName
+                    String currStepName = "" ;
                     // If this step is a SUFFICES ASSUME step, must
                     // add NEW declarations to declaredIdentifiers.
                     // Bug fixed by LL on 24 June 2014:
@@ -970,27 +1136,54 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     // to declaredIdentifiers. Added the code to do that.
                     if (pfsteps[i] instanceof TheoremNode) {
                         TheoremNode node = (TheoremNode) pfsteps[i];
-                        if (node.isSuffices()
-                                && (node.getTheorem() instanceof AssumeProveNode)) {
-                            SemanticNode[] assumptions = ((AssumeProveNode) node
-                                    .getTheorem()).getAssumes();
-                            for (int j = 0; j < assumptions.length; j++) {
-                                if (assumptions[j] instanceof NewSymbNode) {
-                                    declaredIdentifiers
-                                            .add(((NewSymbNode) assumptions[j])
-                                                    .getOpDeclNode().getName()
-                                                    .toString());
-                                }
-                            }
+                        if (node.isSuffices()) {
+                           // For SUFFICES, must set goal to this node's goal
+                           // and add any non-NEW assumptions to contextAssumptions.
+                           
+                           if (node.getTheorem() instanceof AssumeProveNode) {
+                                 goal = ((AssumeProveNode) node .getTheorem()).getGoal() ;
+                                 SemanticNode[] assumptions = ((AssumeProveNode) node
+                                         .getTheorem()).getAssumes();
+                                 for (int j = 0; j < assumptions.length; j++) {
+                                     if (assumptions[j] instanceof NewSymbNode) {
+                                         declaredIdentifiers
+                                                 .add(((NewSymbNode) assumptions[j])
+                                                         .getOpDeclNode().getName()
+                                                         .toString());
+                                     } else {
+                                         // Non-NEW assumptions added to contextAssumptions.
+                                         contextAssumptions.addElement(assumptions[j]) ;
+                                         contextSources.addElement(currStepName) ;
+                                     }
+                                 }
+                           } else {
+                               goal = (SemanticNode) node.getTheorem();
+                               if (! (goal instanceof OpApplNode)){
+                                   goal = null ;
+                                   nullReason = "some weird";
+                               }
+                           }
                         } else if (node.getTheorem() instanceof OpApplNode) {
-                            // Check if it's a $Pick step and add declared
-                            // identifiers if it is.
+                            // Check if it's a $Pick step and if it is, add declared
+                            // identifiers and add body to contextAssumptions.
                             OpApplNode oanode = (OpApplNode) node.getTheorem();
+                            String operatorName = oanode.getOperator().getName().toString();
 
-                            if (oanode.getOperator().getName().toString()
-                                    .equals("$Pick")) {
+                            if (   operatorName.equals("$Pick")
+                                || operatorName.equals("$Witness")) {
                                 FormalParamNode[] fp = oanode
                                         .getUnbdedQuantSymbols();
+                                
+                                // Add body of PICK to contextAssumptions
+                                if (operatorName.equals("$Pick")) {
+                                    contextAssumptions.addElement(oanode.getArgs()[0]) ;
+                                    contextSources.addElement(currStepName) ;
+                                } else {
+                                    goal = null ;
+                                    nullReason = "Witness" ;
+                                }
+                                
+
                                 if (fp != null) {
                                     // This is an unbounded PICK -- e.g., PICK
                                     // x, y : exp
@@ -998,7 +1191,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                         declaredIdentifiers.add(fp[j].getName()
                                                 .toString());
                                     }
-
                                 } else {
                                     // This is a bounded PICK -- e.g., PICK x, y
                                     // \in S, z \in T : exp
@@ -1011,7 +1203,19 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                         }
                                     }
                                 }
+                            } else if (operatorName.equals("$Take")) {
+                                goal = null ;
+                                nullReason = "Take" ;
+                            } else if (operatorName.equals("$Have")) {
+                                goal = null ;
+                                nullReason = "Have" ;
+                                contextAssumptions.addElement(oanode.getArgs()[0]) ;
+                                contextSources.addElement(currStepName) ;           
+                            } else if (operatorName.equals("$Pfcase")) {
+                                contextAssumptions.addElement(oanode.getArgs()[0]) ;
+                                contextSources.addElement(currStepName) ;           
                             }
+                            
                         }
                     }
 
@@ -1050,14 +1254,20 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         }
 
         /**
-         * Found the step. Raise an error if this is a SUFFICES step.
+         * Found the step. Raise an error if the step's goal can't be handled.
          */
-        if (step.isSuffices()) {
+        if (goal == null) {
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command",
-                    "Cannot decompose a SUFFICES step.");
+                    "Cannot decompose because goal is from a " + nullReason + " step.");
             return null;
         }
+//        if (step.isSuffices()) {
+//            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+//                    "Decompose Proof Command",
+//                    "Cannot decompose a SUFFICES step.");
+//            return null;
+//        }
         /*
          * set proofLevelString
          */
@@ -1113,6 +1323,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             System.out.println("threw exception");
         }
 
+        // MOVE THE SETTING OF assumes, goal to the main loop above.
         /**************************************************************
          * Set assumes, assumesRep, goal, and state.goalRep
          *************************************************************/
@@ -1157,14 +1368,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 }
                 state.assumeReps.add(nodeRep);
 
-                goal = ((AssumeProveNode) thm).getProve();
-                if (!(goal instanceof OpApplNode)) {
-                    MessageDialog
-                            .openError(UIHelper.getShellProvider().getShell(),
-                                    "Decompose Proof Command",
-                                    "This step has a weird goal that cannot\n be processed.");
-                    return null;
-                }
+//                goal = ((AssumeProveNode) thm).getProve();
+//                if (!(goal instanceof OpApplNode)) {
+//                    MessageDialog
+//                            .openError(UIHelper.getShellProvider().getShell(),
+//                                    "Decompose Proof Command",
+//                                    "This step has a weird goal that cannot\n be processed.");
+//                    return null;
+//                }
 
                 state.goalRep = stepRep
                         .subNodeRep(goal, null, null, null, null);
@@ -1191,20 +1402,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 goalOpName = ((OpApplNode) goal).getOperator().getName();
             }
 
-            // Abort if this is one of the following kinds of steps:
-            // QED, HAVE, PICK, WITNESS, SUFFICES
-            if ((goalOpName == null) || (goalOpName == ASTConstants.OP_qed)
-                    || (goalOpName == ASTConstants.OP_pfcase)
-                    || (goalOpName == ASTConstants.OP_have)
-                    || (goalOpName == ASTConstants.OP_pick)
-                    || (goalOpName == ASTConstants.OP_witness)
-                    || (goalOpName == ASTConstants.OP_suffices)) {
-                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                        "Decompose Proof Command",
-                        "Cannot decompose this kind of step.");
-                return null;
-            }
-            state.goalRep = stepRep.subNodeRep(goal, null, null, null, null);
+           state.goalRep = stepRep.subNodeRep(goal, null, null, null, null);
         }
 
         /***************************************************************************
@@ -3749,6 +3947,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         public int nodeSubtype = OTHER_TYPE;
 
         /**
+         * If this NodeRepresentation comes from an assumption in the step's context,
+         * then this is the name of that step, or "" if the step is unnamed
+         * (has only a level number or comes from an ASSUME of the theorem).
+         * If this NodeRepresentation comes from the step itself, then the field
+         * is null.
+         */
+        private String stepName = null ;
+
+        /**
          * If this NodeRepresentation object is of type NEW_NODE, then this is
          * the NEW identifier.
          */
@@ -4280,6 +4487,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
             result.nodeType = this.nodeType;
             result.nodeSubtype = this.nodeSubtype;
+            result.stepName = this.stepName ;
             result.newId = this.newId;
             result.parentNode = parNode;
             result.parentVector = parVector;
