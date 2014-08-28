@@ -1049,7 +1049,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         && !(pfsteps[i] instanceof InstanceNode)) {
                     proofLevel = stepLevel(pfsteps[i]);
                 }
-                // XXXXXXX set currStepName
+                // Set currStepName to name of the current step.
                 String currStepName = null ;
                 if (pfsteps[i] instanceof TheoremNode) {
                   currStepName = getStepName((TheoremNode) pfsteps[i]) ;
@@ -1164,18 +1164,17 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     //      - Add its formula to contextAssumptions
                     //      - Set goal to null.
                     //    If it's a WITNESS step, then set goal to null.
-                    //    If it's a DEFINE step, then add its definitions
+                    //    If it's a DEFINE or INSTANCE step, then add its definitions
                     //      to declaredIdentifiers.
                     // 
-                    // Bug fixed by LL on 24 June 2014: Failed to PICK step's
+                    // Bug fixed by LL on 24 June 2014: Failed to add PICK step's
                     // introduced identifiers to declaredIdentifiers.
                     // 
                     if (pfsteps[i] instanceof TheoremNode) {
                         TheoremNode node = (TheoremNode) pfsteps[i];
                         if (node.isSuffices()) {
                            // For SUFFICES, must set goal to this node's goal
-                           // and add any non-NEW assumptions to contextAssumptions.
-                           
+                           // and add any non-NEW assumptions to contextAssumptions.                           
                            if (node.getTheorem() instanceof AssumeProveNode) {
                                  goal = ((AssumeProveNode) node.getTheorem()).getProve() ;
                                  SemanticNode[] assumptions = ((AssumeProveNode) node
@@ -1196,7 +1195,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                goal = (SemanticNode) node.getTheorem();
                                if (! (goal instanceof OpApplNode)){
                                    goal = null ;
-                                   nullReason = "some weird";
+                                   nullReason = "weird";
                                }
                            }
                         } else if (node.getTheorem() instanceof OpApplNode) {
@@ -1206,7 +1205,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                             String operatorName = oanode.getOperator().getName().toString();
 
                             if (   operatorName.equals("$Pick")
-                                || operatorName.equals("$Witness")) {
+                                || operatorName.equals("$Witness")
+                                || operatorName.equals("$Take")) {
                                 FormalParamNode[] fp = oanode
                                         .getUnbdedQuantSymbols();
                                 
@@ -1214,44 +1214,45 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                 if (operatorName.equals("$Pick")) {
                                     contextAssumptions.addElement(oanode.getArgs()[0]) ;
                                     contextSources.addElement(currStepName) ;
+                                }
+                                if (! operatorName.equals("$Witness")) {
+                                    // add to declaredIdentifiers
+                                    if (fp != null) {
+                                        // This is an unbounded PICK or TAKE -- 
+                                        //  e.g., PICK  x, y : exp
+                                        for (int j = 0; j < fp.length; j++) {
+                                            declaredIdentifiers.add(fp[j].getName()
+                                                    .toString());
+                                        }
+                                    } else {
+                                        // This is a bounded PICK or TAKE -- e.g., 
+                                        // PICK x, y \in S, z \in T : exp
+                                        FormalParamNode[][] fpn = oanode
+                                                .getBdedQuantSymbolLists();
+                                        for (int j = 0; j < fpn.length; j++) {
+                                            for (int k = 0; k < fpn[j].length; k++) {
+                                                declaredIdentifiers.add(fpn[j][k]
+                                                        .getName().toString());
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (operatorName.equals("$Take")) {
+                                        goal = null ;
+                                        nullReason = "TAKE" ;
+                                    }
                                 } else {
                                     goal = null ;
-                                    nullReason = "Witness" ;
+                                    nullReason = "WITNESS" ;
                                 }
                                 
 
-                                if (fp != null) {
-                                    // This is an unbounded PICK -- e.g., PICK
-                                    // x, y : exp
-                                    for (int j = 0; j < fp.length; j++) {
-                                        declaredIdentifiers.add(fp[j].getName()
-                                                .toString());
-                                    }
-                                } else {
-                                    // This is a bounded PICK -- e.g., PICK x, y
-                                    // \in S, z \in T : exp
-                                    FormalParamNode[][] fpn = oanode
-                                            .getBdedQuantSymbolLists();
-                                    for (int j = 0; j < fpn.length; j++) {
-                                        for (int k = 0; k < fpn[j].length; k++) {
-                                            declaredIdentifiers.add(fpn[j][k]
-                                                    .getName().toString());
-                                        }
-                                    }
-                                }
-                            } else if (operatorName.equals("$Take")) {
-                                goal = null ;
-                                nullReason = "Take" ;
                             } else if (operatorName.equals("$Have")) {
                                 goal = null ;
-                                nullReason = "Have" ;
+                                nullReason = "HAVE" ;
                                 contextAssumptions.addElement(oanode.getArgs()[0]) ;
                                 contextSources.addElement(currStepName) ;           
-                            } else if (operatorName.equals("$Pfcase")) {
-                                contextAssumptions.addElement(oanode.getArgs()[0]) ;
-                                contextSources.addElement(currStepName) ;           
-                            }
-                            
+                            }                     
                         }
                     }
 
