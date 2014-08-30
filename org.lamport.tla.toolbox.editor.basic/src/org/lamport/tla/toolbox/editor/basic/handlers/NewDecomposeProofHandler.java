@@ -1,4 +1,26 @@
 /**
+ * THINGS TO DO:
+ *  - Check that what I've done so far works with definition expansion.
+ *  
+ *  - Figure out how to control displaying of context assumptions once some assumption
+ *    has been decomposed.  Perhaps the easiest thing to do is, once a context assumption has
+ *    been \E-decomposed, remove it's NodeRepresentations from  assumeReps and put its 
+ *    decomposition in the ASSUME section.  Once a CASE-decomposition is made, all context
+ *    assumptions should be removed from assumeReps and the decomposition should be moved
+ *    to the ASSUME section if it came from a context assumption.  What should be done
+ *    on /\ decompositions?  Should all other decompositions be disabled/removed?  Should
+ *    it depend on whether the /\ decomposition came from a \E.
+ *    
+ *  - Should original ASSUMEs that haven't been decomposed be removed from assumeReps
+ *    once they can no longer be decomposed?
+ *    
+ *  - Fix proof generation so it adds the necessary BY steps and DEF names.
+ *  
+ *  - Handle substitutions of multi-line formulas.
+ *  
+ *  - Handle decompositions of formulas that come from other modules.
+ *    
+ * 
  * NEW Decompose Proof Handler Command
  *   This class is the development version of the new Decompose Proof Handler
  *   command.  If I could get Eclipse/Git to work, I would be building it in
@@ -445,14 +467,18 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * The following fields are constants, some of which should perhaps be set
      * as preferences.
      */
-
     /**
-     * The default value of the useSufficesValue ;
+     * The default value of showContextValue
+     */
+    private static final boolean SHOW_CONTEXT_DEFAULT = true;
+    
+    /**
+     * The default value of useSufficesValue ;
      */
     private static final boolean USE_SUFFICES_DEFAULT = true;
 
     /**
-     * The default value of the useCaseValue ;
+     * The default value of useCaseValue ;
      */
     private static final boolean USE_CASE_DEFAULT = true;
 
@@ -562,8 +588,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     // boolean needsStepNumber; // TO BE MOVED TO DecompositionState
 
     /**
-     * True iff the step/theorem being decomposed is an ASSUME/PROVE. This is
-     * relevant for setting state.needsStepNumber.
+     * The original DecomposeProofHandler documentation said:
+     * 
+     *   True iff the step/theorem being decomposed is an ASSUME/PROVE. This is
+     *   relevant for setting state.needsStepNumber.
+     *   
+     * To try to maintain the meaning of this field, it is set true iff the step
+     * being decomposed is an ASSUME/PROOF (or CASE) that has an assumption other
+     * than a NEW.
+     * 
      */
     boolean hasAssumes;
 
@@ -750,6 +783,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      *****************************************/
     // NOT CLEAR IF THESE BUTTON VALUES SHOULD BE PUT IN DecompositionState
     // OR IF PERHAPS EVEN THE BUTTONS SHOULD BE PUT THERE.
+    
+    /**
+     * The showContextButton is true iff decomposible assumptions coming 
+     * from the context should be displayed.
+     */
+    private boolean showContextValue = SHOW_CONTEXT_DEFAULT;
+    private Button showContextButton;
+    
     /**
      * The useSufficesButton determines whether the created proof will use an
      * initial SUFFICES step to declare the newly created assumptions, or if
@@ -782,6 +823,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * Record the state of the top menu's check buttons.
      */
     private void readButtons() {
+        showContextValue = showContextButton.getSelection();
         useSufficesValue = useSufficesButton.getSelection();
         useCaseValue = useCaseButton.getSelection();
         subexpressionValue = subexpressionButton.getSelection();
@@ -878,7 +920,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         Activator.getDefault().logDebug("Decompose Proof Called");
         
         /**
-         * Is set to the set of ASSUMEs of the selected step/theorem.
+         * Is set to the set of ASSUMEs of the selected step/theorem,
+         * excluding inner ASSUME/PROVE assumptions.
          */
         Vector<SemanticNode> assumes = new Vector<SemanticNode>();
     
@@ -898,19 +941,22 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         /**
          * Is set to all prior facts asserted by the theorem or its steps
          * that could be used in proving the selected step.  (Empty if the
-         * theorem itself is selected.)
+         * theorem itself is selected.)  It does not contain inner
+         * ASSUME/PROVE assumptions
          */
         Vector <SemanticNode> contextAssumptions = new Vector<SemanticNode>() ;
         
         /**
-         * For each assumption in contextAssumptions, this is the name of
-         * the step from which the assumption comes, or "" if it comes from
-         * an unnamed step or the theorem itself.
+         * For each assumption in contextAssumptions, the following two vectors
+         * give the step from which the assumption comes and its name, which is
+         * "" if it comes from  an unnamed step or the theorem itself.
          */     
+        Vector <LevelNode> contextSteps = new Vector<LevelNode>() ;
         Vector <String> contextSources = new Vector<String> () ;
         // String[] blankLine = new String[] { "" };
         // String[] oneline = new String[] { "1" };
-
+        
+        
         /******************************************************************
          * Perform various checks to see if the command should be executed, and
          * possibly raise an error warning if it shouldn't.
@@ -1092,11 +1138,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                                       .getOpDeclNode().getName()
                                                       .toString());
                                   } else {
-                                      if (foundLevelNode == null) {
-                                          assumes.addElement(assumptions[j]) ;
-                                      } else {
-                                          contextAssumptions.addElement(assumptions[j]);
-                                          contextSources.addElement(currStepName);
+                                      if (! (assumptions[j] instanceof AssumeProveNode)) {
+                                        if (foundLevelNode != null) {
+                                            assumes.addElement(assumptions[j]) ;
+                                        } else {
+                                            contextAssumptions.addElement(assumptions[j]);
+                                            contextSteps.addElement(thmNode) ;
+                                            contextSources.addElement(currStepName);
+                                        }
                                       }
                                   }
                               }
@@ -1112,6 +1161,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                           assumes.addElement(newGoal.getArgs()[0]) ;
                                       } else {
                                           contextAssumptions.addElement(newGoal.getArgs()[0]);
+                                          contextSteps.addElement(thmNode) ;
                                           contextSources.addElement(currStepName);
                                       }
                                   } else if (goalOpName == ASTConstants.OP_pick) {
@@ -1164,6 +1214,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     //      - Add its formula to contextAssumptions
                     //      - Set goal to null.
                     //    If it's a WITNESS step, then set goal to null.
+                    //    If it's just a plain formula, add it to contextAssumptions.
                     //    If it's a DEFINE or INSTANCE step, then add its definitions
                     //      to declaredIdentifiers.
                     // 
@@ -1187,8 +1238,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                                          .toString());
                                      } else {
                                          // Non-NEW assumptions added to contextAssumptions.
-                                         contextAssumptions.addElement(assumptions[j]) ;
-                                         contextSources.addElement(currStepName) ;
+                                         if (! (assumptions[j] instanceof AssumeProveNode)) {
+                                           contextAssumptions.addElement(assumptions[j]) ;
+                                           contextSteps.addElement(node) ;
+                                           contextSources.addElement(currStepName) ;
+                                         }
                                      }
                                  }
                            } else {
@@ -1213,6 +1267,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                 // Add body of PICK to contextAssumptions
                                 if (operatorName.equals("$Pick")) {
                                     contextAssumptions.addElement(oanode.getArgs()[0]) ;
+                                    contextSteps.addElement(node) ;
                                     contextSources.addElement(currStepName) ;
                                 }
                                 if (! operatorName.equals("$Witness")) {
@@ -1251,8 +1306,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                 goal = null ;
                                 nullReason = "HAVE" ;
                                 contextAssumptions.addElement(oanode.getArgs()[0]) ;
+                                contextSteps.addElement(node) ;
                                 contextSources.addElement(currStepName) ;           
-                            }                     
+                            } else if (! operatorName.equals("$Pfcase"))  {
+                                // I think the only possibility left is for this to be 
+                                // an ordinary formula.
+                                contextAssumptions.addElement(oanode) ;
+                                contextSteps.addElement(node) ;
+                                contextSources.addElement(currStepName) ;
+                            }
                         }
                     }
 
@@ -1331,7 +1393,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                         .getOpDeclNode().getName()
                                         .toString());
                     } else {
+                        if (! (assumptions[j] instanceof AssumeProveNode)) {
                          assumes.addElement(assumptions[j]) ;
+                        }
                     }
                 }
                 goal = ((AssumeProveNode) step .getTheorem()).getProve();
@@ -1364,14 +1428,21 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 nullReason = "weird";
              }
            }
-        } else {
+        } else { // step != theorem
             if (theorem.getTheorem() instanceof AssumeProveNode) {
                 SemanticNode[] thmAssumps = 
                     ((AssumeProveNode) theorem.getTheorem()).getAssumes() ;
                 for (int j = 0; j < thmAssumps.length; j++) {
-                    contextAssumptions.insertElementAt(thmAssumps[j], j) ;
-                    contextSources.insertElementAt(null, j) ;
-                    
+                    if (thmAssumps[j] instanceof NewSymbNode) {
+                        declaredIdentifiers
+                                .add(((NewSymbNode) thmAssumps[j])
+                                        .getOpDeclNode().getName()
+                                        .toString());
+                    } else {
+                        contextAssumptions.insertElementAt(thmAssumps[j], j) ;
+                        contextSteps.insertElementAt(theorem.getTheorem(),j) ;
+                        contextSources.insertElementAt(null, j) ;
+                    }                    
                 }
             }
         }
@@ -1400,9 +1471,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         }
         proofLevelString = "<" + (level + 1) + ">";
 
-        /*********************************
-         * set stepNumber and stepColumn
-         *********************************/
+        /*************************************************************
+         * Set stepNumber and stepColumn.  
+         * 
+         * Most of this code has been cloned to implement the
+         * getStepName method.  It should be replaced by a call
+         * to that method, but if it ain't broke, why fix it?
+         ************************************************************/
         SyntaxTreeNode nd = (SyntaxTreeNode) step.stn;
         if (step == theorem) {
             stepNumber = null;
@@ -1433,90 +1508,60 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             stepRep = new NodeRepresentation(doc, step);
         } catch (BadLocationException e) {
             e.printStackTrace();
-            System.out.println("threw exception");
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    "Decompose Proof Command",
+                    "An error that should not happen has occurred in "
+                            + "line 1479 of NewDecomposeProofHandler.");
+            return null;
         }
 
-        // MOVE THE SETTING OF assumes, goal to the main loop above.
+        // MOVED THE SETTING OF assumes, goal to the main loop above.
         /**************************************************************
-         * Set assumes, assumesRep, goal, and state.goalRep
+         * Set state.assumeReps,  and state.goalRep
          *************************************************************/
-        LevelNode thm = step.getTheorem();
-        if (thm instanceof AssumeProveNode) {
-            /**************************************************************
-             * This is an ASSUME/PROVE.
-             *************************************************************/
-            hasAssumes = true;
-            SemanticNode[] assump = ((AssumeProveNode) thm).getAssumes();
-            assumes = new Vector<SemanticNode>();
             state.assumeReps = new Vector<NodeRepresentation>();
 
-            int rowOfLastNew = -1;
-            for (i = 0; i < assump.length; i++) {
-                /**************************************************************
-                 * Loop invariant: rowOfLastNew = n > -1 iff assumption i-1 is a
-                 * NEW statement that lies entirely on row n
-                 *************************************************************/
-                if (assump[i] instanceof AssumeProveNode) {
-                    MessageDialog
-                            .openError(UIHelper.getShellProvider().getShell(),
-                                    "Decompose Proof Command",
-                                    "Cannot decompose a step with a nested ASSUME/PROVE.");
+            // Add to state.assumeReps the decomposable context assumptions.
+            for (i = 0; i < contextAssumptions.size(); i++) {
+                NodeRepresentation contextStepRep = null ;
+                try {
+                    contextStepRep = new NodeRepresentation(doc, contextSteps.elementAt(i));
+                } catch (BadLocationException e) {
+                    e.printStackTrace();
+                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                            "Decompose Proof Command",
+                            "An error that should not happen has occurred in "
+                                    + "line 1504 of NewDecomposeProofHandler.");
                     return null;
                 }
-                assumes.add(assump[i]);
-                NodeRepresentation nodeRep = stepRep.subNodeRep(assump[i],
-                        state.assumeReps, null, null, null);
-                if (nodeRep.nodeType == NodeRepresentation.NEW_NODE) {
-                    Location loc = nodeRep.semanticNode.stn.getLocation();
-                    if (loc.beginLine() == loc.endLine()) {
-                        if (loc.beginLine() == rowOfLastNew) {
-                            state.assumeReps.elementAt(i - 1).onSameLineAsNext = true;
-                        }
-                        rowOfLastNew = loc.beginLine();
-                    } else {
-                        rowOfLastNew = -1;
-                    }
-                } else {
-                    rowOfLastNew = -1;
+                NodeRepresentation nodeRep = contextStepRep.subNodeRep(contextAssumptions.elementAt(i),
+                        state.assumeReps, null, null, null, true);
+                nodeRep.contextStepName = contextSources.elementAt(i) ;
+                if ((nodeRep.decomposition != null) && (nodeRep.nodeSubtype != NodeRepresentation.IMPLIES_TYPE)) {
+                    state.assumeReps.addElement(nodeRep);
+                    state.numberOfContextAssumptions++;                  
                 }
-                state.assumeReps.add(nodeRep);
-
-//                goal = ((AssumeProveNode) thm).getProve();
-//                if (!(goal instanceof OpApplNode)) {
-//                    MessageDialog
-//                            .openError(UIHelper.getShellProvider().getShell(),
-//                                    "Decompose Proof Command",
-//                                    "This step has a weird goal that cannot\n be processed.");
-//                    return null;
-//                }
-
-                state.goalRep = stepRep
-                        .subNodeRep(goal, null, null, null, null);
             }
 
-        } else {
-            /**************************************************************
-             * This is not an ASSUME/PROVE, so have to set assumes and
-             * assumesRep to null and check that this isn't something like a QED
-             * step that the command doesn't handle.
-             *************************************************************/
+            // Add to state.assumeReps the assumptions in assumes,
+            // which come from the step being decomposed that is either
+            // an ASSUME/PROVE or a CASE step.  Set hasAssumes true
+            // iff there is such an assumption
             hasAssumes = false;
-            assumes = new Vector<SemanticNode>();
-            state.assumeReps = new Vector<NodeRepresentation>();
-            if (!(thm instanceof OpApplNode)) {
-                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                        "Decompose Proof Command",
-                        "This is a weird step that cannot\n be processed.");
-                return null;
-            }
-            goal = thm;
-            UniqueString goalOpName = null;
-            if (goal instanceof OpApplNode) {
-                goalOpName = ((OpApplNode) goal).getOperator().getName();
+            for (i = 0; i < assumes.size(); i++) {
+                NodeRepresentation nodeRep = stepRep.subNodeRep(assumes.elementAt(i),
+                        state.assumeReps, null, null, null, true);
+                nodeRep.contextStepName = null ;
+// If we want to add an option not to show non-decomposible assumptions, here's
+// the code to implement it.
+//                if (nodeRep.decomposition != null) {
+                    state.assumeReps.addElement(nodeRep);                  
+//                }
             }
 
-           state.goalRep = stepRep.subNodeRep(goal, null, null, null, null);
-        }
+           
+           state.goalRep = stepRep.subNodeRep(goal, null, null, null, null, false);
+         // END OF SETTING state.assumeReps and state.goalRep
 
         /***************************************************************************
          * Make the editor read-only.
@@ -1547,6 +1592,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * it returns "<3>4ax", but returns null for the step:
      * 
      *     <3> 2+2=5
+     *     
+     * This code cloned from the code that sets the stepNumber and
+     * stepColumn fields.  That code should be replaced by a call
+     * of this method.
      * @param step
      * @return
      */
@@ -1765,6 +1814,17 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         /* && (state.andSplitEnd == -1) removed with 23 Aug 2014 changes. */
         );
 
+        
+        // Display "Show Context" checkbox.
+        showContextButton = new Button(topMenu, SWT.CHECK);
+        setupCheckButton(showContextButton, "Show Context");
+        showContextButton.setSelection(showContextValue);
+        // This checkbox needs a listener to toggle the display of the
+        // context assumptions.
+        showContextButton.addSelectionListener(new DecomposeProofButtonListener(this,
+                new Integer(SHOW_CONTEXT_BUTTON), MENU));
+
+
         // Display "Use SUFFICES" checkbox.
         useSufficesButton = new Button(topMenu, SWT.CHECK);
         setupCheckButton(useSufficesButton, "Use SUFFICES");
@@ -1805,13 +1865,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // Display the "ASSUME", which must be put in a
         // composite because it spans multiple rows, and it appears
         // that a Label can't do that.
-        gridData = new GridData();
-        gridData.horizontalSpan = 3;
-        Label assumeLabel = new Label(shell, SWT.NONE);
-        assumeLabel.setText("ASSUME");
-        assumeLabel.setFont(JFaceResources.getFontRegistry().get(
-                JFaceResources.HEADER_FONT));
-        assumeLabel.setLayoutData(gridData);
+        Label assumeLabel ;
+//        gridData = new GridData();
+//        gridData.horizontalSpan = 3;
+//        Label assumeLabel = new Label(shell, SWT.NONE);
+//        assumeLabel.setText("ASSUME");
+//        assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+//                JFaceResources.HEADER_FONT));
+//        assumeLabel.setLayoutData(gridData);
         if (state.assumeReps != null) {
             addAssumptionsToComposite(state.assumeReps, shell);
         }
@@ -1923,6 +1984,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         GridLayout gridLayout;
         Label assumeLabel;
 
+        
+
         /*************************************************************
          * Displaying the assumptions.
          * 
@@ -1941,6 +2004,38 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * Add the assumptions to the composite
          */
         for (int i = 0; i < nodeRepVector.size(); i++) {
+            if (i == 0) {
+                if (showContextValue) {
+                    if (state.numberOfContextAssumptions > 0) {
+                        // Add "CONTEXT ASSUMPTIONS" heading
+                        gridData = new GridData();
+                        gridData.horizontalSpan = 3;
+                        assumeLabel = new Label(composite, SWT.NONE);
+                        assumeLabel.setText("CONTEXT ASSUMPTIONS");
+                        assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+                                JFaceResources.HEADER_FONT));
+                        assumeLabel.setLayoutData(gridData);
+                    }
+                } else {
+                    i = state.numberOfContextAssumptions ;
+                }
+            }
+                
+            if (i == state.numberOfContextAssumptions) {
+                // ADD "ASSUME" heading
+                gridData = new GridData();
+                gridData.horizontalSpan = 3;
+                assumeLabel = new Label(composite, SWT.NONE);
+                assumeLabel.setText("ASSUME");
+                assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+                        JFaceResources.HEADER_FONT));
+                assumeLabel.setLayoutData(gridData);
+            }
+                
+            // WARNING: break is a horrible construct that should never be used.
+            // So, this code should be rewritten.
+            if (i >= nodeRepVector.size()) { break ;}
+            
             NodeRepresentation aRep = nodeRepVector.elementAt(i);
 
             if (aRep.nodeType != NodeRepresentation.OR_DECOMP) {
@@ -3086,7 +3181,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     /**
      * Returns the NodeRepresentation for a child in nodeRep's decomposition
      * when nodeRep's formula is decomposed. It is called when processing an
-     * AND-split, => Split, or OR split action.
+     * AND-split, => Split, or OR split action.  It assumes that the result
+     * is the goal iff vec = null ;
      * 
      * @param nodeRep
      *            The NodeRepresentation whose decomposition child's
@@ -3163,7 +3259,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // But a little thought reveals that this does what needs to be
                 // done.
                 result = res.subNodeRep(decomp.children.elementAt(i), vec,
-                        father, null, decomp);
+                        father, null, decomp, vec != null);
                 result.isPrimed = nodeRep.isPrimed;
                 if (!(decomp.children.elementAt(i) instanceof ExprNode)) {
                     MessageDialog.openError(UIHelper.getShellProvider()
@@ -3184,7 +3280,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         } else {
             // Call subNodeRep to construct the result.
             result = nodeRep.subNodeRep(decomp.children.elementAt(i), vec,
-                    father, newNodeText, decomp);
+                    father, newNodeText, decomp, vec != null);
         }
         // Set various fields whose values can be inferred from nodeRep and
         // decomp.
@@ -3267,8 +3363,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // the definition body consisting of the entire definition body.
                 // But a little thought reveals that this does what needs to be
                 // done.
+                // Note: I don't think the last argument of the subNodeRep call
+                // matters.
                 nodeRep = res.subNodeRep(sn, nodeRepArg.getParentVector(),
-                        nodeRepArg.parentNode, null, decomp);
+                        nodeRepArg.parentNode, null, decomp, !isForAll);
                 nodeRep.isPrimed = nodeRepArg.isPrimed;
 
                 // We now want to call decompSubstituteInNodeText using the
@@ -3457,7 +3555,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         }
         result.body = nodeRep.subNodeRep(decomp.children.elementAt(0),
                 nodeRep.getParentVector(), nodeRep.parentNode, newNodeText,
-                nodeRep.decomposition);
+                nodeRep.decomposition, !isForAll);
         result.body.isCreated = isForAll;
         result.body.isPrimed = result.body.isPrimed || decomp.primed;
         result.body.isSubexpressionName = nodeRep.isSubexpressionName
@@ -3923,6 +4021,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         private NodeRepresentation goalRep;
 
         /**
+         * The number of assumptions in assumeReps that are context assumptions.
+         */
+        private int numberOfContextAssumptions ;
+        /**
          * If the user has done an OR split on an assumption, then this is the
          * index of the assumption in assumes and state.assumeReps. Otherwise,
          * it equals -1.
@@ -3973,6 +4075,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             }
 
             result.goalRep = goalRep.deepClone(null, null);
+            result.numberOfContextAssumptions = numberOfContextAssumptions ;
             result.chosenSplit = chosenSplit;
             result.needsStepNumber = needsStepNumber;
             result.andSplitBegin = andSplitBegin;
@@ -4262,6 +4365,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * goal or by doing an AND-split on an assumption.
          */
         boolean isCreated = false;
+        
+        /**
+         * If this assumption came from a context assumption, then this is the
+         * step name of the step from which that assumption came.  It is null
+         * if the assumption came from an unnamed step (one with only a level number).
+         */
+        String contextStepName ;
 
         /**
          * True iff this is a NEW node that is to be displayed on the same line
@@ -4328,11 +4438,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          *            The Decomposition from which the identifier renamings for
          *            the result's decomposition field are to be obtained.
          * 
+         * @param isAssumption
+         *            True iff this is an assumption, rather than the goal,
+         *            whose NodeRepresentation is being constructed.
+         *            
          * @return
          */
         NodeRepresentation subNodeRep(SemanticNode sn,
                 Vector<NodeRepresentation> vec, NodeRepresentation father,
-                NodeTextRep setNodeText, Decomposition decomp) {
+                NodeTextRep setNodeText, Decomposition decomp, boolean isAssumption) {
 
             NodeRepresentation result = new NodeRepresentation();
             result.parentNode = father;
@@ -4365,7 +4479,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             case ASTConstants.OpApplKind:
                 result.nodeType = EXPR_NODE;
 
-                result.decomposition = decompose(result, decomp);
+                result.decomposition = decompose(result, decomp, isAssumption);
                 if (result.decomposition == null) {
                     result.nodeSubtype = OTHER_TYPE;
                 } else {
@@ -4633,6 +4747,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             result.nodeSubtype = this.nodeSubtype;
             result.stepName = this.stepName ;
             result.newId = this.newId;
+            result.contextStepName = this.contextStepName;
             result.parentNode = parNode;
             result.parentVector = parVector;
             result.isCreated = this.isCreated;
@@ -5182,6 +5297,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         case NodeRepresentation.SQSUB_TYPE:
             val = "SQSUB_TYPE";
             break;
+        case NodeRepresentation.MULTI_TYPE:
+            val = "MULTI_TYPE";
+            break;
         case NodeRepresentation.OTHER_TYPE:
             val = "OTHER_TYPE";
             break;
@@ -5227,7 +5345,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @return
      */
     private Decomposition decompose(NodeRepresentation nodeRep,
-            Decomposition decomp) {
+            Decomposition decomp, boolean isAssumption) {
         SemanticNode sn = nodeRep.semanticNode;
         if (!(sn instanceof OpApplNode)) {
             return null;
@@ -5343,7 +5461,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // Note: experimentation reveals that /\ and \/ are parsed
         // with operator names "\\land" and "\\lor".
         if (((opId == ASTConstants.OP_cl) || opName.equals("\\land"))
-                && conjIsDecomposable(node)) {
+                && ( (! isAssumption) || conjIsDecomposable(node))) {
             result.type = NodeRepresentation.AND_TYPE;
             if (opId == ASTConstants.OP_cl) {
                 isJunction = true;
@@ -5915,7 +6033,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     /*
      * The followingidentify the various menu buttons.
      */
-
+    public static final int SHOW_CONTEXT_BUTTON = 3;
     public static final int PROVE_BUTTON = 2;
     public static final int BACK_BUTTON = 1;
     public static final int TEST_BUTTON = 99;
@@ -6026,6 +6144,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     break;
                 case PROVE_BUTTON:
                     makeProof(null, false, true);
+                    break;
+                case SHOW_CONTEXT_BUTTON:
+                    System.out.println("button is " + showContextButton.getSelection()) ;
+                    readButtons();
+                    raiseWindow();
                     break;
                 case TEST_BUTTON:
                     windowShell = decomposeHandler.windowShell;
