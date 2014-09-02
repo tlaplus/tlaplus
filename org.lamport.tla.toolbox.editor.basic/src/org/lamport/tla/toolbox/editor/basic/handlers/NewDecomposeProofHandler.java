@@ -1559,7 +1559,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 //                }
             }
 
-           
+// BUG - XXXXXXXX shouldn't be stepRep, but rather the step that provides the soure
+// of the current goal, which should be saved in a new variable.
            state.goalRep = stepRep.subNodeRep(goal, null, null, null, null, false);
          // END OF SETTING state.assumeReps and state.goalRep
 
