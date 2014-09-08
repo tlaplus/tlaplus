@@ -43,157 +43,162 @@ import tla2sany.utilities.Vector;
 import util.UniqueString;
 import util.WrongInvocationException;
 
+import tla2sany.xml.XMLExportable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
   /**
-   * An OpDefNode can have one of the following kinds:                    
-   *                                                                      
-   *     ModuleInstanceKind                                               
-   *        Represents a module instantiation name, such as the M         
-   *        in  M(a, b) == INSTANCE ...                                   
-   *                                                                      
-   *     UserDefinedOpKind                                                
-   *        Represents a user definition, for example the definition      
-   *        of the symbol Foo in  Foo(A, B) == expr.                      
-   *                                                                      
-   *     BuiltInKind                                                      
-   *        An imaginary declaration for a built-in operator of TLA+      
-   *        such as \cup.                                                 
-   *                                                                      
+   * An OpDefNode can have one of the following kinds:
+   *
+   *     ModuleInstanceKind
+   *        Represents a module instantiation name, such as the M
+   *        in  M(a, b) == INSTANCE ...
+   *
+   *     UserDefinedOpKind
+   *        Represents a user definition, for example the definition
+   *        of the symbol Foo in  Foo(A, B) == expr.
+   *
+   *     BuiltInKind
+   *        An imaginary declaration for a built-in operator of TLA+
+   *        such as \cup.
+   *
    *     NumberedProofStepKind
    *        Represents a numbered proof step that is not an assertion
    *        (so it doesn't get represented as a theorem).  It seems
    *        useful to keep those step numbers in the appropriate
    *        symbol tables in case the user refers to them even
-   *        where inappropriate, if only to generate better error 
-   *        messages.  Currently, the only legal reference to a proof 
+   *        where inappropriate, if only to generate better error
+   *        messages.  Currently, the only legal reference to a proof
    *        number of such a step is to a definition step in
    *        the DEF clause of a USE or HIDE step or a BY proof.
-   *                                                                      
-   * All TLA+ constructs such as record constructors that produce an      
-   * expression are represented as OppApplNodes for special operators.    
-   * There is an OpDefNode of kind BuiltInKind for each of these special  
-   * operators.  The special operators are:                               
-   *                                                                      
-   *     $FcnApply                                                        
-   *        f[x] is represented as $FcnApply(f, x), and f[x,y]            
-   *        is represented as $FcnApply(f, <<x, y>>).                     
-   *                                                                      
-   *     $RcdSelect                                                       
-   *        r.c is represented as $RcdSelect(r, "c").  Note that,         
-   *        semantically, $RcdSelect(r, "c") is equivalent to             
-   *        $FcnApply(r, "c").  But, a tool might want to handle          
-   *        records differently from other functions for efficiency.      
-   *                                                                      
-   *     $NonRecursiveFcnSpec                                             
-   *        The definition  f[x \in S] == exp  is represented as          
-   *        $NonRecursiveFcnSpec(x, S, exp) if f does not appear in exp.  
-   *                                                                      
-   *     $RecursiveFcnSpec                                                
-   *        Similar to $NonRecursiveFcnSpec, except for recursive         
-   *        function definitions.                                         
-   *                                                                      
-   *     $Pair                                                            
-   *     $RcdConstructor                                                  
-   *        We represent [L1 |-> e1, L2 |-> e2] as                        
-   *        $RcdConstructor($Pair("L1", e1), $Pair("L2", e2))             
-   *                                                                      
-   *     $SetOfRcds                                                          
-   *        Used to represent [L1 : e1, L2 : e2] much like                
-   *        $RcdConstructor.                                              
-   *                                                                      
-   *     $Except                                                          
-   *     $Seq                                                             
-   *        We represent [f EXCEPT ![a].b[q] = c, ![d,u][v] = e]          
-   *        as $Except(f, $Pair( $Seq(a, "b", q), c ),                     
-   *                      $Pair( $Seq(<<d,u>>, v), e )).                   
-   *        We are representing the equivalent expressions                
-   *        [r EXCEPT !["a"] = b] and [r EXCEPT !.a = b] the same, even   
-   *        though we represent r["a"] and r.a differently.  This         
-   *        inconsistency resulted from a compromise between supporting   
-   *        efficient implementation and keeping the api simple.  If      
-   *        consistency is desired, we should probably eliminate          
-   *        $RcdSelect.                                                   
-   *                                                                      
-   *     $Tuple                                                           
-   *        We represent <<a, b, c>> as $Tuple(a, b, c).                  
-   *                                                                      
-   *     $CartesianProd                                                   
-   *        Represents  A \X B \X C  as  $CartesianProd(A, B, C)          
-   *                                                                      
-   *     $BoundedChoose                                                   
-   *        Represents CHOOSE x \in S : P                                 
-   *                                                                      
-   *     $UnboundedChoose                                                 
-   *        Represents CHOOSE x : P.                                      
-   *                                                                      
-   *     $BoundedForall                                                   
-   *        Represents \A x \in S : P.                                    
-   *                                                                      
-   *     $UnboundedForall                                                 
-   *        Represents \A x : P.                                          
-   *                                                                      
-   *     $BoundedExists                                                   
-   *        Represents \E x \in S : P.                                    
-   *                                                                      
-   *     $UnboundedExists                                                 
-   *        Represents \E x : P.                                          
-   *                                                                      
-   *     $SetEnumerate                                                    
-   *        Represents {a, b, c}.                                         
-   *                                                                      
-   *     $SubsetOf                                                        
-   *        Represents {x \in S : p}.                                     
-   *                                                                      
-   *     $SetOfAll                                                        
-   *        Represents {e : x \in S}.                                     
-   *                                                                      
-   *     $FcnConstructor                                                  
-   *        Represents [x \in S |-> e].                                   
-   *                                                                      
-   *     $SetOfFcns                                                       
-   *        Represents [S -> T].                                          
-   *                                                                      
-   *     $IfThenElse                                                      
-   *     $ConjList                                                        
-   *     $DisjList                                                        
-   *         These are fairly obvious.                                    
-   *                                                                      
-   *     $Case                                                            
-   *        We represent CASE p1 -> e1 [] p2 -> e2 as                     
-   *        $Case( $Pair(p1, e1), $Pair(p2, e2) ) and we represent        
-   *        CASE p1 -> e1 [] p2 -> e2 [] OTHER -> e3  as                  
-   *        $Case( $Pair(p1, e1), $Pair(p2, e2), $Pair(null, e3))         
-   *                                                                      
-   *     $SquareAct                                                       
-   *        We represent [A]_e as $SquareAct(A, e).                       
-   *                                                                      
-   *     $AngleAct                                                        
-   *        We represent <<A>>_e as $AngleAct(A, e).                      
-   *                                                                      
-   *     $WF(e, A)                                                        
-   *     $SF(e, A)                                                        
-   *        We represent WF_e(A) as $WF(e, A), etc.                       
-   *                                                                      
-   *     $TemporalExists                                                  
-   *     $TemporalForall                                                  
-   *        Represent \EE and \AA.        
-   *        
-   *  On 24 Oct 2012, LL added the AnyDefNode interface and made the OpDefNode 
+   *
+   * All TLA+ constructs such as record constructors that produce an
+   * expression are represented as OppApplNodes for special operators.
+   * There is an OpDefNode of kind BuiltInKind for each of these special
+   * operators.  The special operators are:
+   *
+   *     $FcnApply
+   *        f[x] is represented as $FcnApply(f, x), and f[x,y]
+   *        is represented as $FcnApply(f, <<x, y>>).
+   *
+   *     $RcdSelect
+   *        r.c is represented as $RcdSelect(r, "c").  Note that,
+   *        semantically, $RcdSelect(r, "c") is equivalent to
+   *        $FcnApply(r, "c").  But, a tool might want to handle
+   *        records differently from other functions for efficiency.
+   *
+   *     $NonRecursiveFcnSpec
+   *        The definition  f[x \in S] == exp  is represented as
+   *        $NonRecursiveFcnSpec(x, S, exp) if f does not appear in exp.
+   *
+   *     $RecursiveFcnSpec
+   *        Similar to $NonRecursiveFcnSpec, except for recursive
+   *        function definitions.
+   *
+   *     $Pair
+   *     $RcdConstructor
+   *        We represent [L1 |-> e1, L2 |-> e2] as
+   *        $RcdConstructor($Pair("L1", e1), $Pair("L2", e2))
+   *
+   *     $SetOfRcds
+   *        Used to represent [L1 : e1, L2 : e2] much like
+   *        $RcdConstructor.
+   *
+   *     $Except
+   *     $Seq
+   *        We represent [f EXCEPT ![a].b[q] = c, ![d,u][v] = e]
+   *        as $Except(f, $Pair( $Seq(a, "b", q), c ),
+   *                      $Pair( $Seq(<<d,u>>, v), e )).
+   *        We are representing the equivalent expressions
+   *        [r EXCEPT !["a"] = b] and [r EXCEPT !.a = b] the same, even
+   *        though we represent r["a"] and r.a differently.  This
+   *        inconsistency resulted from a compromise between supporting
+   *        efficient implementation and keeping the api simple.  If
+   *        consistency is desired, we should probably eliminate
+   *        $RcdSelect.
+   *
+   *     $Tuple
+   *        We represent <<a, b, c>> as $Tuple(a, b, c).
+   *
+   *     $CartesianProd
+   *        Represents  A \X B \X C  as  $CartesianProd(A, B, C)
+   *
+   *     $BoundedChoose
+   *        Represents CHOOSE x \in S : P
+   *
+   *     $UnboundedChoose
+   *        Represents CHOOSE x : P.
+   *
+   *     $BoundedForall
+   *        Represents \A x \in S : P.
+   *
+   *     $UnboundedForall
+   *        Represents \A x : P.
+   *
+   *     $BoundedExists
+   *        Represents \E x \in S : P.
+   *
+   *     $UnboundedExists
+   *        Represents \E x : P.
+   *
+   *     $SetEnumerate
+   *        Represents {a, b, c}.
+   *
+   *     $SubsetOf
+   *        Represents {x \in S : p}.
+   *
+   *     $SetOfAll
+   *        Represents {e : x \in S}.
+   *
+   *     $FcnConstructor
+   *        Represents [x \in S |-> e].
+   *
+   *     $SetOfFcns
+   *        Represents [S -> T].
+   *
+   *     $IfThenElse
+   *     $ConjList
+   *     $DisjList
+   *         These are fairly obvious.
+   *
+   *     $Case
+   *        We represent CASE p1 -> e1 [] p2 -> e2 as
+   *        $Case( $Pair(p1, e1), $Pair(p2, e2) ) and we represent
+   *        CASE p1 -> e1 [] p2 -> e2 [] OTHER -> e3  as
+   *        $Case( $Pair(p1, e1), $Pair(p2, e2), $Pair(null, e3))
+   *
+   *     $SquareAct
+   *        We represent [A]_e as $SquareAct(A, e).
+   *
+   *     $AngleAct
+   *        We represent <<A>>_e as $AngleAct(A, e).
+   *
+   *     $WF(e, A)
+   *     $SF(e, A)
+   *        We represent WF_e(A) as $WF(e, A), etc.
+   *
+   *     $TemporalExists
+   *     $TemporalForall
+   *        Represent \EE and \AA.
+   *
+   *  On 24 Oct 2012, LL added the AnyDefNode interface and made the OpDefNode
    *  class implement it.  He also added the getIsLeibnizArg method.  See
    *  the comments in AnyDefNode.java for an explanation.
    */
 
-public class OpDefNode extends OpDefOrDeclNode 
+public class OpDefNode extends OpDefOrDeclNode
          implements OpDefOrLabelNode, AnyDefNode {
 
 
 /*************************************************************************
 * The fields.                                                            *
 *************************************************************************/
-  private boolean           local  = false;  
+  private boolean           local  = false;
      // Is this definition local to the module?
-  private ExprNode          body   = null;   
+  private ExprNode          body   = null;
     // the expression that is the def'n of the operator
-  private FormalParamNode[] params = null;   
+  private FormalParamNode[] params = null;
     // Array of FormalParamNodes that this operator takes
 
   private LevelNode stepNode = null;
@@ -202,8 +207,8 @@ public class OpDefNode extends OpDefOrDeclNode
     * It can be a DefStepNode, UseOrHideNode, or InstanceNode.  Otherwise, *
     * it is null.                                                          *
     ***********************************************************************/
-  
-  /** 
+
+  /**
    * This is the module from which this definition is ultimately obtained.
    * The field originallyDefinedInModule purports to be that, but when the
    * definition is instantiated, this can create a new OpDefNode whose
@@ -211,19 +216,19 @@ public class OpDefNode extends OpDefOrDeclNode
    * case, the sourceModule field is the same as that of the OpDefNode of
    * the instantiated definition.  Hence, this really is the module containing
    * the ultimate source of the definition.
-   * 
-   * This field added by LL on 1 Nov 2012 to fix a bug in which the exact 
+   *
+   * This field added by LL on 1 Nov 2012 to fix a bug in which the exact
    * same definition imported by two different routes generated a warning.
    * (This warning was originally harmless, but it became a problem when
-   * it was decided that the Toolbox would regard warnings as errors.) 
-   * 
+   * it was decided that the Toolbox would regard warnings as errors.)
+   *
    */
 //  private ModuleNode sourceModule = null ;
 //
 //  public ModuleNode getSourceModule() {
 //      return sourceModule ;
 //  }
-  
+
   /*************************************************************************
   * The following fields state if an operator is recursively defined, and  *
   * give some potentially useful information having to do with recursive   *
@@ -241,7 +246,7 @@ public class OpDefNode extends OpDefOrDeclNode
     * True iff this node's operator appears in a RECURSIVE statement.      *
     ***********************************************************************/
   public boolean getInRecursive() { return inRecursive; }
-  
+
 /***************************************************************************
 * XXXXX The uses of "recursive section" in the names of the next two       *
 * fields do not have the same meaning.  Hence, one of these names should   *
@@ -304,7 +309,7 @@ public class OpDefNode extends OpDefOrDeclNode
     * A node n does not occur in a dependency cycle iff n.nextDependency   *
     * = null.                                                              *
     ***********************************************************************/
-  
+
   /*************************************************************************
   * The following fields are used in constructing the semantic tree.  They *
   * are of no use when the tree has been constructed, but we don't bother  *
@@ -381,7 +386,7 @@ public class OpDefNode extends OpDefOrDeclNode
     * the body that are not within the scope of an inner label or LET      *
     * definition.                                                          *
     ***********************************************************************/
-    private Hashtable labels = null ;    
+    private Hashtable labels = null ;
 
     private OpDefNode source = null ;
       /*********************************************************************
@@ -390,13 +395,13 @@ public class OpDefNode extends OpDefOrDeclNode
       * came.  Otherwise, it equals null.  It is accessed with             *
       * getSource().                                                       *
       *********************************************************************/
-      
+
 /***************************************************************************
 * The constructors.                                                        *
 ***************************************************************************/
   /* Used only for creating nullODN */
   public OpDefNode(UniqueString us) {
-    super(us, 0, -2, null, null, SyntaxTreeNode.nullSTN); 
+    super(us, 0, -2, null, null, SyntaxTreeNode.nullSTN);
     if (st != null) {
       st.addSymbol(us, this);
     }
@@ -408,7 +413,7 @@ public class OpDefNode extends OpDefOrDeclNode
                    SymbolTable symbolTable, TreeNode stn) {
     super(us, k, (parms == null ? -1 : parms.length), oModNode, symbolTable, stn);
     params = parms;
-   
+
     // Create phony FormalParamNodes for built-in operators
     if ( arity >= 0 ) {
       for (int i = 0; i < params.length; i++ ) {
@@ -423,7 +428,7 @@ public class OpDefNode extends OpDefOrDeclNode
       /*********************************************************************
       * All built-in operators are obviously defined.                      *
       *********************************************************************/
-  }   
+  }
 
   /* Invoked by ordinary operator definition. */
    /************************************************************************
@@ -455,18 +460,18 @@ public class OpDefNode extends OpDefOrDeclNode
    * See semantic/Generator.java/startOpDefNode, and its uses.  This       *
    * argument was added by LL on 7 Apr 2007.                               *
    ************************************************************************/
-   public OpDefNode(UniqueString us, 
+   public OpDefNode(UniqueString us,
                     int k,                   // The kind
-                    FormalParamNode[] parms, 
-                    boolean localness, 
+                    FormalParamNode[] parms,
+                    boolean localness,
                     ExprNode exp,             // The body
                     ModuleNode oModNode,      // Originally defining module.
-                    SymbolTable symbolTable, 
-                    TreeNode stn, 
+                    SymbolTable symbolTable,
+                    TreeNode stn,
                     boolean defined,
-                    OpDefNode src             // The source                 
+                    OpDefNode src             // The source
                    ) {
-    super(us, k, (parms != null ? parms.length : 0), 
+    super(us, k, (parms != null ? parms.length : 0),
           oModNode, symbolTable, stn);
     this.local = localness;
     this.params = (parms != null ? parms : new FormalParamNode[0]);
@@ -500,15 +505,15 @@ public class OpDefNode extends OpDefOrDeclNode
   *    body    - there is none                                             *
   *    defined - always true because it can't be declared RECURSIVE.       *
   *************************************************************************/
-  public OpDefNode(UniqueString us, 
-                   FormalParamNode[] parms, 
-                   boolean localness, 
-                   ModuleNode oModNode, 
-                   SymbolTable symbolTable, 
+  public OpDefNode(UniqueString us,
+                   FormalParamNode[] parms,
+                   boolean localness,
+                   ModuleNode oModNode,
+                   SymbolTable symbolTable,
                    TreeNode stn,
                    OpDefNode src  // the source
                   ) {
-    super(us, ModuleInstanceKind, (parms == null ? -1 : parms.length), 
+    super(us, ModuleInstanceKind, (parms == null ? -1 : parms.length),
           oModNode, symbolTable, stn);
     this.params = parms;
     this.local = localness;
@@ -522,32 +527,32 @@ public class OpDefNode extends OpDefOrDeclNode
   * Constructor for NumberedProofStepKind nodes.  It should never be       *
   * called with symbolTable null.                                          *
   *************************************************************************/
-  public OpDefNode(UniqueString us,  LevelNode step, ModuleNode oModNode, 
+  public OpDefNode(UniqueString us,  LevelNode step, ModuleNode oModNode,
                    SymbolTable symbolTable, TreeNode stn) {
     super(us, NumberedProofStepKind, 0, oModNode, symbolTable, stn) ;
     this.stepNode = step ;
     st.addSymbol(us, this);
-   } 
+   }
   /*************************************************************************
   * The methods that return or check properties of the node.               *
   *************************************************************************/
   /**
    * When applied to a user-defined op node or a built-in op
-   * with a fixed number of params, returns an array of the formal 
+   * with a fixed number of params, returns an array of the formal
    * parameter nodes associated with this operator.  For example,
    * with
    *
    *   F(A(_,_), b, c) == A(b,c)
    *
    * it returns an array of length 3.
-   * 
+   *
    * When applied to a module instance node, returns (new) parameter
    * nodes introduced by that module instance. For example, with
    *
    *   D(x,y) == INSTANCE FooMod WITH c <- +
    *
    * it returns an array of length 2.
-   * 
+   *
    * When applied to a builtin op with a variable number of args, returns null.
    */
   public final FormalParamNode[] getParams() { return this.params; }
@@ -562,19 +567,19 @@ public class OpDefNode extends OpDefOrDeclNode
 
   /**
    * For a UserDefinedOp node, the getBody() method returns the
-   * definition.  For other kinds of OpDefNodes, the method is 
-   * meaningless and should return null.  For example, if nOp is the    
-   * UserDefinedOp node for the operator Op defined by                  
-   *                                                                    
-   *    Op(a, b) == expr                                                
-   *                                                                    
-   * then nOp.getBody() is a ref to the ExprNode for expr.              
-   *                                                                    
+   * definition.  For other kinds of OpDefNodes, the method is
+   * meaningless and should return null.  For example, if nOp is the
+   * UserDefinedOp node for the operator Op defined by
+   *
+   *    Op(a, b) == expr
+   *
+   * then nOp.getBody() is a ref to the ExprNode for expr.
+   *
    * A tool can use the setBody method to change the definition of a
    * user-defined operator.  For example, TLC can implement the
    * replacement A <- B by setting the Body of A's UserDefinedOp node
    * to equal the Body of B's UserDefinedOp node.
-   *                                                                    
+   *
    * The setBody method checks that body.getParent() equals the
    * current node, and raises an exception if it doesn't.
    */
@@ -601,7 +606,7 @@ public class OpDefNode extends OpDefOrDeclNode
 
   /**
    * Returns true iff this definition is declared LOCAL; definitions
-   * that are in fact local, e.g. in LETs or inner modules, but that do not 
+   * that are in fact local, e.g. in LETs or inner modules, but that do not
    * get declared so using the LOCAL modifier are NOT
    * local for this purpose.
    */
@@ -611,9 +616,9 @@ public class OpDefNode extends OpDefOrDeclNode
    * Returns the arity of this operator, or -1 in the case of an operator
    * that takes a variable number of args.
    */
-  public final int getArity() { return this.arity; } 
+  public final int getArity() { return this.arity; }
 
-  public final LevelNode getStepNode() {return this.stepNode ;} 
+  public final LevelNode getStepNode() {return this.stepNode ;}
 
   /**
    * This method tests whether an operand is a legal instance of an
@@ -650,12 +655,12 @@ public class OpDefNode extends OpDefOrDeclNode
     boolean           result     = true;                 // Remains true unless an error is detected
     boolean           tempResult = true;
 
-    Location loc = (oanParent.getTreeNode() != null 
+    Location loc = (oanParent.getTreeNode() != null
                     ? oanParent.getTreeNode().getLocation()
                     : null);
 
     // If THIS OpDefNode defines a module instance, then something is clearly wrong
-    //   since a module instance node should not be under an OpApplNode 
+    //   since a module instance node should not be under an OpApplNode
     if (this.getKind() == ModuleInstanceKind) {
       errors.addError(loc, "Module instance identifier where operator should be.");
       result = false;
@@ -665,7 +670,7 @@ public class OpDefNode extends OpDefOrDeclNode
       if ( args != null ) { // args vector may have length zero, but should not be null
         for ( int i = 0; i < args.length; i++ ) {
           if (args[i] instanceof OpArgNode) {
-            errors.addError(loc, "Illegal expression used as argument " + (i+1) + 
+            errors.addError(loc, "Illegal expression used as argument " + (i+1) +
                             " to operator '" + this.getName() + "'.");
             result = false;
           }
@@ -679,11 +684,11 @@ public class OpDefNode extends OpDefOrDeclNode
     else {
       // It is an operator with a fixed number of params (possibly zero)
       if (args == null | params == null) { // args vector should never be null
-        errors.addAbort(loc, "Internal error: Null args or params vector for operator '" + 
+        errors.addAbort(loc, "Internal error: Null args or params vector for operator '" +
                         this.getName() + "'.", true);
       }
       else { // Normal case: params != null & args != null
-        // if the number of args does not match the number of params 
+        // if the number of args does not match the number of params
         if (params.length != args.length) {
           errors.addError(loc, "Wrong number of arguments (" + args.length +
                           ") given to operator '" + this.getName() + "', \nwhich requires " +
@@ -692,7 +697,7 @@ public class OpDefNode extends OpDefOrDeclNode
         }
         else {
           // we have the correct number of args
-          // if the operator is a built-in op... (We separate out the logic for the builtin ops 
+          // if the operator is a built-in op... (We separate out the logic for the builtin ops
           // because there are no FormalParamNodes in the semantic tree to describe their arguments
           if ( this.getKind() == BuiltInKind ) {
             // for each arg, check that an expression, not an operator, is used as argument,
@@ -700,7 +705,7 @@ public class OpDefNode extends OpDefOrDeclNode
             for ( int i = 0; i < params.length; i++ ) {
               if (args[i] instanceof OpArgNode) {
                 errors.addError(loc, "Non-expression used as argument number " + (i + 1)
-                                + " to BuiltIn operator '" 
+                                + " to BuiltIn operator '"
                                 + this.getName() + "'.");
                 result = false;
               }
@@ -713,7 +718,7 @@ public class OpDefNode extends OpDefOrDeclNode
               if (params[i].getArity() == 0) {
                 if (args[i] instanceof OpArgNode) {
                   // No ops can be passed in this parm position
-                  errors.addError(loc, "Operator used in argument number " + (i+1) 
+                  errors.addError(loc, "Operator used in argument number " + (i+1)
                                   + " has incorrect number of arguments.");
                   result = false;
                 }
@@ -721,8 +726,8 @@ public class OpDefNode extends OpDefOrDeclNode
               else if (params[i].getArity() > 0) {
                 // OpArgNode of correct arity must be passed in this arg position
                 if (! matchingOpArgOperand(args[i],i)) {
-                  errors.addError(loc, "Argument number " + (i+1) + " to operator '"  
-                                  + this.getName() + "' \nshould be a " + params[i].getArity() 
+                  errors.addError(loc, "Argument number " + (i+1) + " to operator '"
+                                  + this.getName() + "' \nshould be a " + params[i].getArity()
                                   + "-parameter operator.");
                   result = false;
                 }
@@ -756,14 +761,14 @@ public class OpDefNode extends OpDefOrDeclNode
     /***********************************************************************
     * Sets the set of labels.                                              *
     ***********************************************************************/
-    
+
   public LabelNode getLabel(UniqueString us) {
     /***********************************************************************
     * If the hashtable `labels' contains a LabelNode with name `us',       *
     * then that LabelNode is returned; otherwise null is returned.         *
     ***********************************************************************/
     if (labels == null) {return null;} ;
-    return (LabelNode) labels.get(us) ;    
+    return (LabelNode) labels.get(us) ;
    }
 
   public boolean addLabel(LabelNode odn) {
@@ -777,7 +782,7 @@ public class OpDefNode extends OpDefOrDeclNode
     labels.put(odn.getName(), odn) ;
     return true;
    }
-  
+
   public LabelNode[] getLabels() {
     /***********************************************************************
     * Returns an array containing the Label objects in the hashtable       *
@@ -788,7 +793,7 @@ public class OpDefNode extends OpDefOrDeclNode
     Enumeration e = labels.elements() ;
     while (e.hasMoreElements()) { v.addElement(e.nextElement()); } ;
     LabelNode[] retVal = new LabelNode[v.size()] ;
-    for (int i = 0 ; i < v.size() ; i++) 
+    for (int i = 0 ; i < v.size() ; i++)
       {retVal[i] = (LabelNode) v.elementAt(i); } ;
     return retVal ;
    }
@@ -833,17 +838,17 @@ public class OpDefNode extends OpDefOrDeclNode
     * isLeibniz = \A i : isLeibnizArg[i]                                   *
     ***********************************************************************/
   /**
-   * This "getters" for isLeibnizArg and isLeibniz were added by LL on 24 Oct 2012. 
+   * This "getters" for isLeibnizArg and isLeibniz were added by LL on 24 Oct 2012.
    *  See the comments in AnyDefNode.java for an explanation of why.
    */
   public boolean[] getIsLeibnizArg() {
-      return isLeibnizArg; 
+      return isLeibnizArg;
   }
   public boolean getIsLeibniz() {
-      return isLeibniz; 
+      return isLeibniz;
   }
-  
-  
+
+
   private boolean[][][] opLevelCond;
     /***********************************************************************
     * According to LevelSpec.tla, if this is the OpDefNode for the         *
@@ -853,11 +858,11 @@ public class OpDefNode extends OpDefOrDeclNode
     * parameter of the definition of op appears within the k-th argument   *
     * of opArg.                                                            *
     ***********************************************************************/
-    
+
   /* Set the level information for this builtin operator. */
   public final void setBuiltinLevel(BuiltInLevel.Data d) {
     if (d.arity == -1) {
-      if (d.argMaxLevels.length > 0) {     
+      if (d.argMaxLevels.length > 0) {
         /*******************************************************************
         * This test added on 3 Aug 2007 because the newly-introduced       *
         * $Witness builtin operator has arity -1 but no arguments.         *
@@ -866,7 +871,7 @@ public class OpDefNode extends OpDefOrDeclNode
         this.maxLevels[0] = d.argMaxLevels[0];
         this.weights = new int[1];
         this.weights[0] = d.argWeights[0];
-        
+
        }
       else {
         this.maxLevels = new int[0];
@@ -887,7 +892,7 @@ public class OpDefNode extends OpDefOrDeclNode
       this.isLeibnizArg[i] = (d.argWeights[i] > 0) ;
       this.isLeibniz = this.isLeibniz && isLeibnizArg[i] ;
      } ;
-    
+
     this.level              = d.opLevel;
     this.levelChecked       = 99 ;
       /*********************************************************************
@@ -900,10 +905,10 @@ public class OpDefNode extends OpDefOrDeclNode
 //    this.argLevelConstraints = EmptyALC;
 //    this.argLevelParams      = EmptySet;
   }
-  
+
   public final boolean levelCheck(int itr) {
     if (   (this.levelChecked >= itr)
-        || (    (! inRecursiveSection) 
+        || (    (! inRecursiveSection)
              && (this.levelChecked > 0))) return this.levelCorrect;
       /*********************************************************************
       * Need only level-check the definition once if not in a recursive    *
@@ -922,7 +927,7 @@ public class OpDefNode extends OpDefOrDeclNode
       this.levelCorrect = this.stepNode.levelCheck(itr);
       return this.levelCheckSubnodes(itr, subs) ;
      }
-    
+
     // Level check the body:
       this.levelCorrect = this.body.levelCheck(itr);
     /***********************************************************************
@@ -1047,17 +1052,17 @@ public class OpDefNode extends OpDefOrDeclNode
 //  }
 //
 //  public final SetOfLevelConstraints getLevelConstraints() {
-//    this.levelCheck();    
+//    this.levelCheck();
 //    return this.levelConstraints;
 //  }
 //
 //  public final SetOfArgLevelConstraints getArgLevelConstraints() {
-//    this.levelCheck();    
+//    this.levelCheck();
 //    return this.argLevelConstraints;
 //  }
 //
 //  public final HashSet getArgLevelParams() {
-//    this.levelCheck();    
+//    this.levelCheck();
 //    return this.argLevelParams;
 //  }
 
@@ -1065,21 +1070,21 @@ public class OpDefNode extends OpDefOrDeclNode
 * The following Asserts can be removed after debugging.                    *
 ***************************************************************************/
   public final int getMaxLevel(int i) {
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
       {throw new WrongInvocationException("getMaxLevel called before levelCheck");};
     int idx = (this.getArity() == -1) ? 0 : i;
     return this.maxLevels[idx];
   }
 
   public final int getWeight(int i) {
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
       {throw new WrongInvocationException("getWeight called before levelCheck");};
     int idx = (this.getArity() == -1) ? 0 : i;
     return this.weights[idx];
-  }  
+  }
 
   public final int getMinMaxLevel(int i, int j) {
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
       {throw new WrongInvocationException("getMinMaxLevel called before levelCheck");};
     if (this.minMaxLevel == null) {
       return ConstantLevel;
@@ -1088,7 +1093,7 @@ public class OpDefNode extends OpDefOrDeclNode
   }
 
   public final boolean getOpLevelCond(int i, int j, int k) {
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
       {throw new WrongInvocationException("getOpLevelCond called before levelCheck");};
     if (this.opLevelCond == null) {
       return false;
@@ -1100,7 +1105,7 @@ public class OpDefNode extends OpDefOrDeclNode
    * toString, levelDataToString, and walkGraph methods to implement
    * ExploreNode interface
    */
-  public final String levelDataToString() { 
+  public final String levelDataToString() {
     if (   (this.getKind() == ModuleInstanceKind)
         || (this.getKind() == NumberedProofStepKind)) {return "";} ;
         /*******************************************************************
@@ -1161,18 +1166,18 @@ public class OpDefNode extends OpDefOrDeclNode
     }
   }
 
-  
+
   /**
    * The body is the node's only child.
    */
-  
+
   public SemanticNode[] getChildren() {
     return new SemanticNode[] {this.body};
   }
-  
+
   /**
    * walkGraph finds all reachable nodes in the semantic graph
-   * and inserts them in the Hashtable semNodesTable for use by 
+   * and inserts them in the Hashtable semNodesTable for use by
    * the Explorer tool.
    */
   public final void walkGraph(Hashtable semNodesTable) {
@@ -1196,37 +1201,37 @@ public class OpDefNode extends OpDefOrDeclNode
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
-    String ret = "\n*OpDefNode: " + this.getName().toString() 
-                + "\n  " 
-                + super.toString(depth) 
+    String ret = "\n*OpDefNode: " + this.getName().toString()
+                + "\n  "
+                + super.toString(depth)
                 + "\n  local: " + local
                 + "\n  letInLevel: " + letInLevel
                 + "\n  inRecursive: " + inRecursive
                 + "\n  inRecursiveSection: " + inRecursiveSection
                 + "\n  recursiveSection: " + recursiveSection
-                + "\n  local: " + local 
-                + "\n  source: " + 
-                  ((source == null) ? "this" : 
-                       (source.getName().toString() + 
+                + "\n  local: " + local
+                + "\n  source: " +
+                  ((source == null) ? "this" :
+                       (source.getName().toString() +
                             " (uid: " + source.myUID + ")"))
-                + "\n  originallyDefinedInModule: " + 
+                + "\n  originallyDefinedInModule: " +
                      ((originallyDefinedInModule == null) ? "null" :
                        (originallyDefinedInModule.getName().toString() +
                           " (uid: " + originallyDefinedInModule.myUID + ")"))
-                + ((stepNode == null) ? "" : 
-                        ("\n  stepNode: " + 
-                          Strings.indent(4,stepNode.toString(depth-3)))) 
+                + ((stepNode == null) ? "" :
+                        ("\n  stepNode: " +
+                          Strings.indent(4,stepNode.toString(depth-3))))
                                                    ;
 
 //  nextDependency has been removed.
-//                + "\n  nextDependency: " ;  
+//                + "\n  nextDependency: " ;
 //    if(nextDependency == null) {ret = ret + "null";}
 //     else {ret = ret + nextDependency.getName().toString();} ;
     if (params != null) {
       String tempString = "\n  Formal params: " + params.length;
       for (int i = 0; i < params.length; i++) {
         tempString += Strings.indent(4, ((params[i] != null)
-                                         ? params[i].toString(depth-1) 
+                                         ? params[i].toString(depth-1)
                                          : "\nnull"));
       }
       ret += tempString;
@@ -1261,10 +1266,55 @@ public class OpDefNode extends OpDefOrDeclNode
        while (list.hasMoreElements()) {
           ret += ((UniqueString) list.nextElement()).toString() + "  " ;
          } ;
-      }  
+      }
     else {ret += "\n  Labels: null";};
 
     return ret;
   }
 
+  /**
+   * Here we distinct between expanded and unexpanded definitions.
+   * If an operator should be expanded, we export it as
+   * <operator where=user/builtin/proof name=nm><arguments?>..<?/><body?>..</></>
+   * Otherwise, we export it as
+   * <operatorname name=nm/>
+   *
+   * Note that this object is also responsible for lambda terms, which are operators
+   * with name LAMBDA
+   */
+  public Element getElement(Document doc, boolean expandDefinitions) {
+
+    Element e = null;
+    if (expandDefinitions) {
+      e = doc.createElement("operator");
+      switch (getKind()) {
+        case UserDefinedOpKind:
+          e.setAttribute("where","user");
+          Element arguments = doc.createElement("arguments");
+          XMLExportable[] params = getParams();
+          for (int i=0; i<params.length; i++) arguments.appendChild(params[i].export(doc));
+          e.appendChild(arguments);
+          Element body = doc.createElement("body");
+          body.appendChild(getBody().export(doc));
+          e.appendChild(body);
+          break;
+        case BuiltInKind:
+          e.setAttribute("where","builtin");
+          break;
+        case NumberedProofStepKind:
+          e.setAttribute("where","proof");
+          break;
+        default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
+      }
+
+      e.setAttribute("shape",""+getArity());
+      e.setAttribute("local",local ? "true" : "false");
+      e.setAttribute("recursive",getInRecursive() ? "true" : "false");
+    }
+    else {
+      e = doc.createElement("operatorname");
+    }
+    e.setAttribute("name", getName().toString());
+    return e;
+  }
 }

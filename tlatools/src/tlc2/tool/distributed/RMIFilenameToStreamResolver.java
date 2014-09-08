@@ -124,4 +124,9 @@ public class RMIFilenameToStreamResolver implements FilenameToStream {
 		}
 		return f;
 	}
+
+
+    public String getFullPath(){
+      throw new UnsupportedOperationException("method getFullPath is not supported for this class");
+    }
 }

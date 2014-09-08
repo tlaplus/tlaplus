@@ -7,16 +7,20 @@ import java.util.Hashtable;
 
 import tla2sany.st.TreeNode;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
- * Describes a numeral like 4095.  This number is represented by the     
- * values           
- *                
- *   int val()          = 4095         
- *   BigInteger bigVal() = null            
- *               
+ * Describes a numeral like 4095.  This number is represented by the
+ * values
+ *
+ *   int val()          = 4095
+ *   BigInteger bigVal() = null
+ *
  * However, if the number is too big to be represented as an
  * integer, then its value is bigVal() and the value of val() is
- * meaningless.   
+ * meaningless.
  */
 public class NumeralNode extends ExprNode {
 
@@ -27,7 +31,7 @@ public class NumeralNode extends ExprNode {
   /**
    * The following method was modified by LL on 20 Jul 2011 to handle
    * \b, \o, and \h numbers.
-   * 
+   *
    * @param s
    * @param stn
    * @throws AbortException
@@ -36,7 +40,7 @@ public class NumeralNode extends ExprNode {
     super(NumeralKind, stn);
     this.image = s;
     String num = s.toLowerCase();
-    int radix = 10; 
+    int radix = 10;
     if (num.charAt(0)=='\\') {
      if (num.charAt(1)=='b') {
     	 radix = 2;
@@ -44,13 +48,13 @@ public class NumeralNode extends ExprNode {
     	 radix = 8;
      } else if (num.charAt(1)=='h') {
     	 radix = 16;
-     } else { 
+     } else {
     	 throw new AbortException();  // This shouldn't happen.
      }
      num = num.substring(2);
     }
     try {
-      
+
       this.value = Integer.parseInt( num, radix );
     } catch ( NumberFormatException e ) {
       this.bigValue = new BigInteger( s, radix );
@@ -70,7 +74,7 @@ public class NumeralNode extends ExprNode {
 
   /* Level Checking */
   public final boolean levelCheck(int iter) {
-    levelChecked = iter; 
+    levelChecked = iter;
       /*********************************************************************
       * Set it just to show that levelCHeck was called.                    *
       *********************************************************************/
@@ -95,7 +99,7 @@ public class NumeralNode extends ExprNode {
    * toString, levelDataToString, and walkGraph methods to implement
    * ExploreNode interface
    */
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.getLevel()               + "\n" +
 //           "LevelParameters: "     + this.getLevelParams()         + "\n" +
 //           "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
@@ -118,5 +122,13 @@ public class NumeralNode extends ExprNode {
 	   "; image: " + image);
   }
 
+  /**
+   * a numeral is exported as <number value=num>
+   */
+  public Element getElement(Document doc) {
+    Element e = doc.createElement("number");
+    e.setAttribute("value",(bigValue != null) ? bigValue.toString() : (new Integer(value)).toString());
+    return e;
+  }
 }
 

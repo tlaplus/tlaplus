@@ -10,19 +10,23 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import util.UniqueString;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
  * An OpDeclNode can have one of the following kinds:
  *
- *     ConstantDeclKind                                                 
- *        Represents a constant declaration, such as the C in           
- *        CONSTANTS B, C, D 
+ *     ConstantDeclKind
+ *        Represents a constant declaration, such as the C in
+ *        CONSTANTS B, C, D
  *
- *     VariableDeclKind                                                 
- *        Represents a variable declaration, such as the y in           
+ *     VariableDeclKind
+ *        Represents a variable declaration, such as the y in
  *        VARIABLES x, y, z
  *
- *     BoundSymbolKind                                                  
- *        Represents a bound symbol such as the b in \E a, b \in S : P  
+ *     BoundSymbolKind
+ *        Represents a bound symbol such as the b in \E a, b \in S : P
  */
 /***************************************************************************
 * Additional kinds added by LL on 22 Mar 2007:                             *
@@ -40,12 +44,12 @@ public class OpDeclNode extends OpDefOrDeclNode {
 
 // Now a field in all subclasses of LevelNode
 //  private int level;
-    
+
   /*************************************************************************
   * The constructor.                                                       *
   *************************************************************************/
-  public OpDeclNode(UniqueString us, int kind, int level, 
-		    int arity, ModuleNode mn, SymbolTable symbolTable, 
+  public OpDeclNode(UniqueString us, int kind, int level,
+		    int arity, ModuleNode mn, SymbolTable symbolTable,
                     TreeNode stn) {
     super(us, kind, arity, mn, symbolTable, stn);
     this.level = level;
@@ -71,7 +75,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
     ExprOrOpArgNode[] args = oa.getArgs();
 
     if (args == null || arity != args.length) {
-      errors.addError(oa.getTreeNode().getLocation(), 
+      errors.addError(oa.getTreeNode().getLocation(),
 		      "Operator used with the wrong number of arguments.");
       return false;
     }
@@ -79,10 +83,10 @@ public class OpDeclNode extends OpDefOrDeclNode {
   }
 
   /* Level checking */
-  
+
 //  private HashSet levelParams;
 
-  public final boolean levelCheck(int iter) { 
+  public final boolean levelCheck(int iter) {
     /***********************************************************************
     * Level information set by constructor.                                *
     ***********************************************************************/
@@ -92,9 +96,9 @@ public class OpDeclNode extends OpDefOrDeclNode {
 //    * Note: level set by constructor.                                      *
 //    ***********************************************************************/
 //    if (this.getKind() == ConstantDeclKind) {this.levelParams.add(this);} ;
-    return true; 
+    return true;
    }
-  
+
 
 //  public final int getLevel() { return this.level; }
 //
@@ -115,17 +119,17 @@ public class OpDeclNode extends OpDefOrDeclNode {
 //    return EmptyLC;
 //  }
 //
-//  public final SetOfArgLevelConstraints getArgLevelConstraints() { 
+//  public final SetOfArgLevelConstraints getArgLevelConstraints() {
 //    return EmptyALC;
 //  }
 //
 //  public final HashSet getArgLevelParams() { return EmptySet; }
 
-  /**  
+  /**
    * walkGraph, levelDataToString, and toString methods to implement
    * ExploreNode interface
    */
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.level                    + "\n" +
 //           "LevelParameters: "     + this.getLevelParams()         + "\n" +
 //           "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
@@ -142,10 +146,53 @@ public class OpDeclNode extends OpDefOrDeclNode {
   public final String toString (int depth) {
     if (depth <= 0) return "";
     return "\n*OpDeclNode: " + this.getName() + "  " + super.toString(depth)
-           + "\n  originallyDefinedInModule: " + 
-                            (originallyDefinedInModule != null 
-                             ? originallyDefinedInModule.getName().toString() 
+           + "\n  originallyDefinedInModule: " +
+                            (originallyDefinedInModule != null
+                             ? originallyDefinedInModule.getName().toString()
                              : "<null>" ) ;
   }
 
+
+/**
+ * exporting constants as <constant name=nm shape=arity level=constant/>
+ * and variables as <variable name=nm level=constant/state/action/temporal/>
+ * not implemented for all possible "kinds" and throw an exception
+ */
+  public Element getElement(Document doc) {
+    Element e;
+    switch (getKind()) {
+      case ConstantDeclKind:
+      case NewConstantKind:
+        e = doc.createElement("constant");
+        e.setAttribute("name",getName().toString());
+        e.setAttribute("shape",""+getArity());
+            e.setAttribute("level","constant");
+        break;
+      case VariableDeclKind:
+      case NewVariableKind:
+      case NewStateKind:
+      case NewActionKind:
+      case NewTemporalKind:
+        e = doc.createElement("variable");
+        e.setAttribute("name",getName().toString());
+        switch (getKind()) {
+          case NewVariableKind:
+            e.setAttribute("level","constant");
+            break;
+          case VariableDeclKind:
+          case NewStateKind:
+            e.setAttribute("level","state");
+            break;
+          case NewActionKind:
+            e.setAttribute("level","action");
+            break;
+          case NewTemporalKind:
+            e.setAttribute("level","temporal");
+            break;
+        }
+        break;
+      default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
+    }
+    return e;
+  }
 }

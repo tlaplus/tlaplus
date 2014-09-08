@@ -15,7 +15,7 @@ import util.ToolIO;
 
 /**
  * RCP version of the name resolver for locating the TLA modules
- * 
+ *
  * @author zambrovski
  */
 public class RCPNameToFileIStream implements FilenameToStream
@@ -28,7 +28,7 @@ public class RCPNameToFileIStream implements FilenameToStream
     /**
      * Initialization of the name resolver <br>
      * <b>Note:</b> the last location searched is the build-in location with standard modules introduced in the book
-     * 
+     *
      * @param libraryPathEntries
      *            - directories where to look for modules, or null if no user locations should be searched
      */
@@ -78,9 +78,9 @@ public class RCPNameToFileIStream implements FilenameToStream
     }
 
     /**
-     * Tries to find the specified module. 
+     * Tries to find the specified module.
      * Starts in work directory and then looks up in to the library paths for modules.
-     * 
+     *
      * @see {@link util.FilenameResolver#resolve(java.lang.String, boolean)}
      */
     public File resolve(String name, boolean isModule)
@@ -92,22 +92,22 @@ public class RCPNameToFileIStream implements FilenameToStream
         }
 
         String sourceFileName;
-        if (isModule) 
+        if (isModule)
         {
-            // user/Foo => user/Foo.tla            
+            // user/Foo => user/Foo.tla
             sourceFileName = name + ".tla"; // could be Foo.tla or user/Foo.tla
         } else {
-            // user/Foo.cfg => user/Foo.cfg            
+            // user/Foo.cfg => user/Foo.cfg
             sourceFileName = name;
         }
-        
+
         File sourceFile = locate(sourceFileName);
         return sourceFile;
     }
 
     /**
      * Searches for the file in current directory (ToolIO.userDirectory) and in library paths
-     * 
+     *
      * @param name
      *            - name of the file to look for
      * @return a File handle. Even if the file does not exist, the handle is not null
@@ -140,14 +140,14 @@ public class RCPNameToFileIStream implements FilenameToStream
     }
 
 	/**
-	 * Returns true iff moduleName is the name of a standard module.  
+	 * Returns true iff moduleName is the name of a standard module.
 	 * Because we are in the Toolbox code, we can use ResourceHelper.isFromUserModule
 	 * to compute the result.  This is useful because the code from SimpleFileNameToStream
 	 * doesn't work because the libraryPathEntries entry for the StandardModules
 	 * directory appears as a URL rather than a path name--which means it has "/"
 	 * as a name separator so it can't easily be compared to the file path name, which
 	 * on Windows has "\\" as a name separator.
-	 * 
+	 *
 	 * Added by LL on 24 July 2013.
 	 */
 	public boolean isStandardModule(String moduleName) {
@@ -158,4 +158,7 @@ public class RCPNameToFileIStream implements FilenameToStream
 		return ! ResourceHelper.isFromUserModule(moduleNode) ;
 
 	}
+  public String getFullPath(){
+    throw new UnsupportedOperationException("method getFullPath is not supported for this class");
+  }
 }

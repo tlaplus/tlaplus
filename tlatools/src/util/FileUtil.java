@@ -277,6 +277,15 @@ public class FileUtil
                 ToolIO.out.println("***Internal error: Unable to create NamedInputStream" + " in toIStream method");
             }
         }
+        else if (sourceFile != null)
+        {
+          ToolIO.err.println("File does not exist: " + sourceFile.getAbsolutePath() +
+              " while looking in these directories: " + resolver.getFullPath());
+        }
+        else
+        {
+          ToolIO.err.println("Cannot locate " + sourceFileName + " in path: " + resolver.getFullPath());
+        }
         return null;
     }
 

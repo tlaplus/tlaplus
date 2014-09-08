@@ -48,11 +48,11 @@ public class SimpleFilenameToStream implements FilenameToStream {
   private String[] libraryPaths;
 
   public SimpleFilenameToStream() {
-	  libraryPaths = getLibraryPaths(getInstallationBasePath());
+	  libraryPaths = getLibraryPaths(getInstallationBasePath(), null);
   }
   
   public SimpleFilenameToStream(String[] anLibraryPaths) {
-	  libraryPaths = anLibraryPaths;
+	  libraryPaths = getLibraryPaths(getInstallationBasePath(), anLibraryPaths);
   }
   
   // Find the absolute path in the file system to the directory 
@@ -88,9 +88,33 @@ public class SimpleFilenameToStream implements FilenameToStream {
 	return aString.startsWith("jar:");
   }
 
-  private String[] getLibraryPaths(final String installationBasePath) {
+  public String getFullPath() {
+    StringBuffer buf = new StringBuffer();
+    String[] ar = libraryPaths;
+    for (int i=0; i<ar.length; i++)
+    {
+      buf.append(ar[i]);
+      if (i <ar.length-1) {
+        buf.append(", ");
+      }
+    }
+    return buf.toString();
+  }
+
+  private String[] getLibraryPaths(final String installationBasePath, String[] libraries) {
     String[] res;
-    String path = System.getProperty(TLA_LIBRARY);
+    String path = null;
+    if (libraries == null) path = System.getProperty(TLA_LIBRARY);
+    else {
+      StringBuffer buf = new StringBuffer();
+      for (int i=0; i<libraries.length; i++) {
+        buf.append(libraries[i]);
+        if (i < libraries.length-1) {
+          buf.append(FileUtil.pathSeparator);
+        }
+      }
+      path = buf.toString();
+    }
     if (path == null) {
       res = new String[1];
       res[0] = installationBasePath + FileUtil.separator + STANDARD_MODULES_FOLDER + FileUtil.separator;

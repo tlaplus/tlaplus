@@ -8,8 +8,13 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
+import tla2sany.xml.XMLExportable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
- * This class represents an assumption about the constants in a module. 
+ * This class represents an assumption about the constants in a module.
  */
 
 /***************************************************************************
@@ -32,7 +37,7 @@ public class AssumeNode extends LevelNode {
     * True iff this is an AXIOM rather than an ASSUME or ASSUMPTION.       *
     ***********************************************************************/
 
-  
+
   public boolean getIsAxiom() {
     return isAxiom;
   }
@@ -67,11 +72,11 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
   * Returns the definition, which is non-null iff this is a named          *
   * theorem.                                                               *
   *************************************************************************/
-  public final ThmOrAssumpDefNode getDef() {return this.def;};  
+  public final ThmOrAssumpDefNode getDef() {return this.def;};
 
 //  public final boolean isLocal() { return false; }
 
-   
+
   /* Level checking */
   int levelChecked = 0 ;
   public final boolean levelCheck(int iter) {
@@ -95,7 +100,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
      };
     return res;
   }
-  
+
   public final int getLevel() {
     return this.assumeExpr.getLevel();
   }
@@ -123,7 +128,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
   /**
    * toString(), levelDataToString(), and walkGraph() methods
    */
-  public final String levelDataToString() { 
+  public final String levelDataToString() {
     return "Level: "               + getLevel()               + "\n" +
            "LevelParameters: "     + getLevelParams()         + "\n" +
            "LevelConstraints: "    + getLevelConstraints()    + "\n" +
@@ -138,16 +143,16 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
    */
   public final String toString (int depth) {
     if (depth <= 0) return "";
-    String res = 
+    String res =
        Strings.indent(
-         2, 
-         "\n*AssumeNode " + super.toString( depth ) + 
+         2,
+         "\n*AssumeNode " + super.toString( depth ) +
 //                        "   local: " + localness +
-         ((assumeExpr != null)  ? 
+         ((assumeExpr != null)  ?
              Strings.indent(2,assumeExpr.toString(depth-1)) : "" ));
    if (def != null) {
       res = res + Strings.indent(
-                      4, 
+                      4,
                       "\n def: " +
                       Strings.indent(2, this.def.toString(depth-1)));
      } ;
@@ -157,7 +162,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
   /**
    * The assume expression is the node's only child.
    */
-  
+
   public SemanticNode[] getChildren() {
     return new SemanticNode[] {this.assumeExpr};
   }
@@ -176,4 +181,16 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
     if (assumeExpr != null) {assumeExpr.walkGraph(semNodesTable);} ;
   }
 
+  /**
+   * ASSUME df == expr if exported as
+   * <assumption>df_node<expression>expr</></>
+   */
+  public Element getElement(Document doc) {
+    Element e = doc.createElement("assumption");
+    if (getDef() != null) e.appendChild(getDef().export(doc));
+    Element expression = doc.createElement("expression");
+    expression.appendChild(getAssume().export(doc));
+    e.appendChild(expression);
+    return e;
+  }
 }

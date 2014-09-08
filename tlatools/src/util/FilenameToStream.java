@@ -27,6 +27,11 @@ public interface FilenameToStream
      */
     public File resolve(String filename, boolean isModule);
     
+	/**
+	 * This method returns all the path locations stored in the resolver
+	*/
+public String getFullPath();
+
     /**
      * Returns true iff moduleName is the name of a standard module, which
      * is identified by the directory in which its source file resides.

@@ -7,6 +7,11 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 
+import tla2sany.xml.XMLExportable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /***************************************************************************
 * This class represents a non-leaf node in the tree representing a         *
 * structured proof.                                                        *
@@ -116,7 +121,7 @@ public class NonLeafProofNode extends ProofNode {
     * INSTANCE ...").  They are needed for level checking those            *
     * instantiations.                                                      *
     ***********************************************************************/
-    
+
   private Context context;
     /***********************************************************************
     * This context contains entries for every step number and definition   *
@@ -127,18 +132,18 @@ public class NonLeafProofNode extends ProofNode {
     * step numbers.                                                        *
     ***********************************************************************/
 
-  public NonLeafProofNode(TreeNode stn, LevelNode[] stps, 
-                          InstanceNode[] inst, Context ctxt) { 
-     super(NonLeafProofKind, stn); 
+  public NonLeafProofNode(TreeNode stn, LevelNode[] stps,
+                          InstanceNode[] inst, Context ctxt) {
+     super(NonLeafProofKind, stn);
      this.steps   = stps ;
      this.insts   = inst;
      this.context = ctxt;
    }
 
-  public LevelNode[] getSteps()   {return steps ;} 
-  public Context     getContext() {return context ;} 
+  public LevelNode[] getSteps()   {return steps ;}
+  public Context     getContext() {return context ;}
 
-  public boolean levelCheck(int iter) { 
+  public boolean levelCheck(int iter) {
     /***********************************************************************
     * Level check the steps and the instantiated modules coming from       *
     * module definitions.                                                  *
@@ -181,7 +186,7 @@ public class NonLeafProofNode extends ProofNode {
       /*********************************************************************
       * Walk the ThmOrOpApplDef NumberedProofStepKind nodes.               *
       *********************************************************************/
-   }  
+   }
 
   public String toString(int depth) {
     if (depth <= 0) return "";
@@ -208,4 +213,19 @@ public class NonLeafProofNode extends ProofNode {
     return ret;
    }
 
+  /**
+   * a list of steps and their context is exported as:
+   * <steps><step>step_node</>..</>
+   */
+  public Element getElement(Document doc) {
+    Element e = doc.createElement("steps");
+    XMLExportable[] steps = getSteps();
+
+    for (int i=0; i< steps.length; i++) {
+      Element es = doc.createElement("step");
+      es.appendChild(steps[i].export(doc));
+      // TODO: check if the context is relevant here!
+    }
+    return e;
+  }
 }
