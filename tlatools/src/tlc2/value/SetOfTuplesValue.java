@@ -41,6 +41,11 @@ public class SetOfTuplesValue extends Value implements Enumerable {
   public final boolean equals(Object obj) {
     if (obj instanceof SetOfTuplesValue) {
       SetOfTuplesValue tvs = (SetOfTuplesValue)obj;
+
+      boolean isEmpty1 = this.isEmpty();
+      if (isEmpty1) return tvs.isEmpty();
+      if (tvs.isEmpty()) return isEmpty1;
+
       if (this.sets.length != tvs.sets.length) {
 	return false;
       }

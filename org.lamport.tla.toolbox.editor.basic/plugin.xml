@@ -300,6 +300,13 @@
             id="org.lamport.tla.toolbox.editor.basic.DecomposeProof"
             name="Decompose Proof">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.NewDecomposeProofHandler"
+            description="New Raise popup to create proof of selected step."
+            id="org.lamport.tla.toolbox.editor.basic.NewDecomposeProof"
+            name="New Decompose Proof">
+      </command>
 
    </extension>
    <extension
@@ -506,6 +513,12 @@
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+G M1+D">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.NewDecomposeProof"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+U">
       </key>
       
    </extension>

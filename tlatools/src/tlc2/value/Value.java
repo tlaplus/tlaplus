@@ -46,6 +46,70 @@ public abstract class Value implements ValueConstants, Serializable {
   public abstract boolean isNormalized();
   public abstract void normalize();
 
+  public final boolean isEmpty()
+  {
+    switch (this.getKind()) {
+    case SETENUMVALUE:
+      {
+        SetEnumValue set = (SetEnumValue)this;
+	return set.elems.size() == 0;
+      }
+    case INTERVALVALUE:
+      {
+        IntervalValue intv = (IntervalValue)this;
+        return intv.size() == 0;
+      }
+    case SETCAPVALUE:
+      {
+	SetCapValue cap = (SetCapValue)this;
+        return cap.elements().nextElement() == null;
+      }
+    case SETCUPVALUE:
+      {
+	SetCupValue cup = (SetCupValue)this;
+        return cup.elements().nextElement() == null;
+      }
+    case SETDIFFVALUE:
+      {
+	SetDiffValue diff = (SetDiffValue)this;
+        return diff.elements().nextElement() == null;
+      }
+    case SETOFFCNSVALUE:
+      {
+	SetOfFcnsValue fcns = (SetOfFcnsValue)this;
+        return fcns.elements().nextElement() == null;
+      }
+    case SETOFRCDSVALUE:
+      {
+	SetOfRcdsValue srv = (SetOfRcdsValue)this;
+        return srv.elements().nextElement() == null;
+      }
+    case SETOFTUPLESVALUE:
+      {
+	SetOfTuplesValue stv = (SetOfTuplesValue)this;
+        return stv.elements().nextElement() == null;
+      }
+    case SUBSETVALUE:
+      {
+        // SUBSET S is never empty.  (It always contains {}.)
+        return false;
+      }
+    case UNIONVALUE:
+      {
+	UnionValue uv = (UnionValue)this;
+        return uv.elements().nextElement() == null;
+      }
+    case SETPREDVALUE:
+      {
+	SetPredValue spv = (SetPredValue)this;
+        return spv.elements().nextElement() == null;
+      }
+    default:
+      Assert.fail("Shouldn't call isEmpty() on value " + Value.ppr(this.toString()));
+      return false;
+    }
+  }
+
   /* Fully normalize this (composite) value. */
   public final void deepNormalize() {
     switch (this.getKind()) {

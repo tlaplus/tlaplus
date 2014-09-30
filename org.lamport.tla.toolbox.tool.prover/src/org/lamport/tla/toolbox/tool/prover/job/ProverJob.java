@@ -541,13 +541,13 @@ public class ProverJob extends Job
                             && proverProcess.getExitValue() != 1)
                     {
                         return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID,
-                                "Error running tlapm. Report a bug with the error code to the developers at http://bugzilla.tlaplus.net/."
+                                "Error running tlapm. Report a bug with the error code to the developers at https://tlaplus.codeplex.com/workitem/list/basic."
                                         + "\n \n Error code: " + proverProcess.getExitValue());
                     }
                 } catch (DebugException e)
                 {
                     return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID,
-                            "Error getting exit code for tlapm process. This is a bug. Report it to the developers at http://bugzilla.tlaplus.net/");
+                            "Error getting exit code for tlapm process. This is a bug. Report it to the developers at https://tlaplus.codeplex.com/workitem/list/basic");
                 }
 
                 // successful termination

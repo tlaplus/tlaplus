@@ -1,10 +1,12 @@
 TO MAKE Revert to HEAD WORK
   After doing revert to HEAD, Eclipse reverts the file but still marks it as
-  changed.  To unmark it, open a Cygwin shell and perform the command
+  changed.  To unmark it, open a Cygwin shell, cd to ~/git/tlaplus2, and perform the command
 
       git checkout FileName
 
-  where FileName is the path from the current directory to ~/git/tlaplus2/FileNameEclipseShows
+  where FileName is the path to the file name Eclipse shows, which should be a copy
+  of the file in the branch currently selected in Eclipse.
+  
   
 OBSOLETE TO START SVC-LAMPORT-7 AS A TESTBED
   https://tla.msr-inria.inria.fr/build/computer/svc/
@@ -15,7 +17,6 @@ OBSOLETE TO START SVC-LAMPORT-7 AS A TESTBED
         must install Java jdk and add the environment variable JAVA_HOME 
         and set it to something like C:\Program Files\Java\jdk1.6.0_26
 
-CODEPLEX: tlaplus.codeplex.com
 
 TO PREPARE THE ZIP FILES FOR THE TOOLBOX RELEASE
 
@@ -206,6 +207,11 @@ TO GENERATE THE RELEASE:
   Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
+Version 1.4.9 - ??
+  - Fixed bug in TLC that caused infinite looping if a recursively
+    defined operator is used as an operator argument in its own
+    definition.
+  - Fixed minor bug in Decompose Proof command.
 Version 1.4.8 - 25 February 2014
   - Made module names case sensitive, so they must exactly match
     the name of the file containing them.

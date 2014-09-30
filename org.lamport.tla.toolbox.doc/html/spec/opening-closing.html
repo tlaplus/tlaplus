@@ -115,17 +115,30 @@ computer.&nbsp; 
 
 Copy all the spec's module files (the root-module file and its
 imported module files) and the folder (directory) named 
-<samp>SName.toolbox </samp> to the new location.&nbsp;  
+<samp> SName.toolbox </samp> to the new location.&nbsp;  
 
-If there is already a spec named  <samp>SName</samp> (which will be
+(If you're using TLAPS, also copy the directory <samp>SName.tlaps</samp>.)&nbsp; 
+</p>
+
+<p>
+If the folder where you're putting the new spec does not have exactly
+the same complete path name as the folder containing the original 
+spec, then you will have to edit the new copy of the file 
+<samp> SName.toolbox/.project </samp>.&nbsp;  That file contains complete
+path names of the spec's module files (including modules contained
+in libraries, but not standard modules).&nbsp;  Those path names must be
+modified in the obvious way to reflect the files' current locations.
+</p>
+<p>
+If there is already a spec named <samp>SName</samp> (which will be
 the case if you're moving the spec to a different place on the same
 computer), have the Toolbox forget or delete it.&nbsp;  
 
-Open a new specification named   <samp>SName</samp> using the new
+Open a new specification named <samp>SName</samp> using the new
 copy of the root-module file.
  </P>
 
-<h3>Keeping Copies of a Spec on Different Computers</h3> 
+<h3><A Name="multiple-copies">Keeping Copies of a Spec on Different Computers</A></h3> 
 
  <p> 
 You may want to run the Toolbox on different machines for the same
@@ -136,6 +149,48 @@ files and <samp>.toolbox</samp> directory to the other machine
 and use the instructions above to create a copy of the spec on that
 machine.&nbsp;
 
+The Toolbox can get confused if a spec or its models is modified from  
+from outside the Toolbox.&nbsp;  
+
+So, here's how to import changes to a spec or its models from another
+computer onto the computer you're now using.
+
+<p>
+<ol> <li> If the spec is open in the Toolbox, close it.
+      
+     <li> Move the spec's module files, its <samp>.toolbox</samp> directory,
+     and its <samp>.tlaps</samp> directory (if you're using TLAPS)
+      onto the current machine.&nbsp;  
+      
+      However, you should either not copy the <samp>.project</samp>
+      file from the <samp>.toolbox</samp> directory or else edit 
+      the new copy as described
+      above if the directories containing the two specifications
+      do not have the same complete path name.
+      
+      <li> Open the Toolbox's <a href="#spec-explorer">Spec Explorer</a>,
+         right-click on the spec, and execute
+         the <samp>Refresh</samp> command.
+</ol>
+  You can then open the new version of the spec in the Toolbox.&nbsp; 
+  If you change one or more of the spec's module
+  files--for example, by using an external text editor--close
+  the spec first and execute the <samp>Refresh</samp> command before
+  re-opening it.&nbsp;
+  Only the Toolbox (running on some computer) should modify  files in the 
+  <samp>.toolbox</samp> directory.&nbsp;  There's no problem running
+  TLAPS outside the Toolbox. 
+   
+</p>
+
+<p> If you forget to close the spec before externally modifying its
+files, closing the spec and refreshing it may solve the problem.&nbsp;
+If it doesn't,
+see 
+ <a href="../trouble/trouble.html#trouble">Getting Out of Trouble</a>.
+</p>
+
+<!-- 
 When you modify the spec or its models on one machine, just copy the
 module files and <samp>.toolbox</samp> directory to the other
 machine.&nbsp;
@@ -152,12 +207,9 @@ idea to right-click on the spec in the <a href="#spec-explorer">Spec Explorer</a
 the <samp>Refresh</samp> command.&nbsp;
 
 If strangeness still occurs, try closing and re-opening the
-Toolbox.&nbsp;
+Toolbox.&nbsp; -->
 
-If that doesn't fix the problem,
-see 
- <a href="../trouble/trouble.html#trouble">Getting Out of Trouble</a>.
-</p>
+
 
 <hr/> 
  

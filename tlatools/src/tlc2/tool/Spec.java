@@ -70,6 +70,11 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
     protected ModelConfig config; // The model configuration.
     protected ExternalModuleTable moduleTbl; // The external modules reachable from root
     protected ModuleNode rootModule; // The root module.
+    protected HashSet processedDefs ; 
+      // The set of OpDefNodes on which processSpec has been called.
+      // Added by LL & YY on 25 June 2014 to eliminate infinite
+      // loop when a recursively defined operator is used as an
+      // operator argument in its own definition.
     protected Defns defns; // Global definitions reachable from root
     // SZ 10.04.2009: changed the name of the variable to reflect its nature
     public OpDeclNode[] variablesNodes; // The state variables.
@@ -95,7 +100,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
 
     public Spec(String specDir, String file, FilenameToStream resolver)
     {
-
+        this.processedDefs = new HashSet();
         this.specDir = specDir;
         this.rootFile = file;
         this.rootModule = null;
@@ -515,6 +520,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 Object def = opDefs[i].getToolObject(TLCGlobals.ToolId);
                 if (def instanceof OpDefNode)
                 {
+                	this.processedDefs.add(def);
                     this.processConstants(((OpDefNode) def).getBody());
                 }
                 this.processConstants(opDefs[i].getBody());
@@ -644,8 +650,11 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         case OpArgKind: {
             SymbolNode opArgNode = ((OpArgNode) expr).getOp();
             if (opArgNode.getKind() == UserDefinedOpKind)
-            {
-                this.processConstants(((OpDefNode) opArgNode).getBody());
+            {   OpDefNode opdef = (OpDefNode) opArgNode ;
+                if (! processedDefs.contains(opdef)) {
+                	processedDefs.add(opdef) ;
+                	this.processConstants(opdef.getBody());
+                }
             }
             return;
         }
