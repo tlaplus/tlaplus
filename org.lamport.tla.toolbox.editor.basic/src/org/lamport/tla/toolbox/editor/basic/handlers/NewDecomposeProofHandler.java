@@ -933,6 +933,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         SemanticNode  goal = null ;  
         
         /**
+         * The step from which the goal comes.
+         */
+        LevelNode goalStep = null ;
+        
+        /**
          * If goal is set to null, this describes why not in an error
          * message saying "Step has goal that comes from" + nullReason + "step".
          */
@@ -1150,6 +1155,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                   }
                               }
                               goal = ((AssumeProveNode) thmNode.getTheorem()).getProve();
+                              goalStep = thmNode ;
                           } else {
                             // not SUFFICES or ASSUME/PROVE
                               SemanticNode newGoalSemNode = thmNode.getTheorem() ;
@@ -1177,6 +1183,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                   else {
                                       // an ordinary formula
                                       goal = newGoal ; 
+                                      goalStep = thmNode ;
                                   }                           
                               } else {
                                   // Not an OpApplNode, so it's something weird.
@@ -1228,6 +1235,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                            // and add any non-NEW assumptions to contextAssumptions.                           
                            if (node.getTheorem() instanceof AssumeProveNode) {
                                  goal = ((AssumeProveNode) node.getTheorem()).getProve() ;
+                                 goalStep = node ;
                                  SemanticNode[] assumptions = ((AssumeProveNode) node
                                          .getTheorem()).getAssumes();
                                  for (int j = 0; j < assumptions.length; j++) {
@@ -1247,6 +1255,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                  }
                            } else {
                                goal = (SemanticNode) node.getTheorem();
+                               goalStep = node ;
                                if (! (goal instanceof OpApplNode)){
                                    goal = null ;
                                    nullReason = "weird";
@@ -1367,7 +1376,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * Because of the poor organization of the code, there are two
          * edge cases not handled properly and must be handled here
          * as special cases.  The first is the case of the statement of
-         * the theorem being the decomposed step.  The for this case  
+         * the theorem being the decomposed step.  The code for this case  
          * was cloned from the code executed above within the body 
          * of the
          * 
@@ -1399,6 +1408,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     }
                 }
                 goal = ((AssumeProveNode) step .getTheorem()).getProve();
+                goalStep = step ;
 
            } else {
             // not  ASSUME/PROVE
@@ -1421,6 +1431,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 else {
                     // an ordinary formula
                     goal = newGoal ; 
+                    goalStep = step ;
                 }                           
              } else {
                 // Not an OpApplNode, so it's something weird.
@@ -1531,7 +1542,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                             "Decompose Proof Command",
                             "An error that should not happen has occurred in "
-                                    + "line 1504 of NewDecomposeProofHandler.");
+                                    + "line 1544 of NewDecomposeProofHandler.");
                     return null;
                 }
                 NodeRepresentation nodeRep = contextStepRep.subNodeRep(contextAssumptions.elementAt(i),
@@ -1559,9 +1570,21 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 //                }
             }
 
-// BUG - XXXXXXXX shouldn't be stepRep, but rather the step that provides the soure
-// of the current goal, which should be saved in a new variable.
-           state.goalRep = stepRep.subNodeRep(goal, null, null, null, null, false);
+           // Similarly to the handling of contextAssumptions, we create the NodeRepresentation
+           // of the current goal from the NodeRepresentation of goalStep.
+           NodeRepresentation goalStepRep = null;
+        try {
+            goalStepRep = new NodeRepresentation(doc, goalStep);
+        } catch (BadLocationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    "Decompose Proof Command",
+                    "An error that should not happen has occurred in "
+                            + "line 1583 of NewDecomposeProofHandler.");
+            return null;
+        }
+           state.goalRep = goalStepRep.subNodeRep(goal, null, null, null, null, false);
          // END OF SETTING state.assumeReps and state.goalRep
 
         /***************************************************************************
