@@ -210,6 +210,28 @@ FA77
 
 \end_layout
 
+\begin_layout Enumerate
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+set AWS_ACCESS_KEY_ID=AKIA7D89HCLJKHZASD7F
+\end_layout
+
+\begin_layout Plain Layout
+
+set AWS_SECRET_ACCESS_KEY=6FDASAIG7DAS976TYDKHCGQAS5D
+\backslash
+FA77
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \end_deeper
 \begin_layout Enumerate
 Create a specification and a model
@@ -764,6 +786,15 @@ Leslie
 \end_layout
 
 \begin_layout Itemize
+I noticed that there's a window named "Cloud TLC" that says "Clicking OK
+ opens a status page in a browser" but doesn't say what clicking Cancel
+ does.
+ I presume it just doesn't open the browser page, but I'm not positive that
+ it doesn't cancel the distributed TLC job.
+ You probably want to remove that ambiguity.
+\end_layout
+
+\begin_layout Itemize
 This says nothing about what to do if you're not using aws-ec2.
  I presume that's selected with the "ad hoc" choice in Figure 3.
  That needs to be documented.
@@ -810,5 +841,21 @@ Section 6.
 netcat/jna/ssh-agent/pageant native depedencies
 \end_layout
 
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+https://github.com/ymnk/jsch-agent-proxy/blob/master/README.md#dependencies
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
 \end_body
 \end_document

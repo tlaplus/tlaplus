@@ -736,7 +736,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 										Display.getDefault().getActiveShell(),
 										"Cloud TLC",
 										message
-										+ "\n\nClicking OK opens a status page in a browser");
+												+ "\n\nClick OK to open a status page in your browser. "
+												+ "Click Cancel to ignore the status page (you can still go there later).");
 						if (yesOpenBrowser) {
 							try {
 								PlatformUI.getWorkbench().getBrowserSupport()

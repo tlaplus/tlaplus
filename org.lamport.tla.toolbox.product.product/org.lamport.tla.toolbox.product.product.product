@@ -24,9 +24,14 @@ Please send us reports of problems or suggestions; see https://groups.google.com
    </configIni>
 
    <launcherArgs>
+      <programArgs>-console
+-consolelog
+      </programArgs>
       <vmArgs>-Xmx1000m
--Dorg.eclipse.equinox.http.jetty.http.port=10996</vmArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+-Dorg.eclipse.equinox.http.jetty.http.port=10996
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
    </launcherArgs>
 
    <windowImages i16="icons/full/etool16/tla_launch_check_wiz.gif"/>
@@ -58,17 +63,17 @@ Please send us reports of problems or suggestions; see https://groups.google.com
 
    <configurations>
       <plugin id="aws-ec2" autoStart="true" startLevel="4" />
-      <plugin id="ec2" autoStart="true" startLevel="4" />
-      <plugin id="sts" autoStart="true" startLevel="4" />
-      <plugin id="jclouds-core" autoStart="true" startLevel="4" />
       <plugin id="com.jcraft.jsch" autoStart="true" startLevel="4" />
+      <plugin id="ec2" autoStart="true" startLevel="4" />
+      <plugin id="jclouds-core" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.http.jetty" autoStart="true" startLevel="3" />
       <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
       <plugin id="org.lamport.tla.toolbox.jclouds" autoStart="true" startLevel="4" />
-       <property name="eclipse.buildId" value="1.4.2" />
+      <plugin id="sts" autoStart="true" startLevel="4" />
+      <property name="eclipse.buildId" value="1.4.2" />
    </configurations>
 
 </product>
