@@ -49,8 +49,10 @@ import tla2sany.utilities.Vector;
 import util.UniqueString;
 import util.WrongInvocationException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-public class LabelNode extends ExprNode 
+public class LabelNode extends ExprNode
                        implements ExploreNode, OpDefOrLabelNode {
 
   /*************************************************************************
@@ -60,14 +62,14 @@ public class LabelNode extends ExprNode
     /***********************************************************************
     * The name of the label                                                *
     ***********************************************************************/
-    
-  int arity;   
+
+  int arity;
     /***********************************************************************
     * The same as for an OpDefOrDeclNode--the number of arguments to the   *
     * label.                                                               *
     ***********************************************************************/
 
-  FormalParamNode[] params = null;    
+  FormalParamNode[] params = null;
     /***********************************************************************
     * The array of formal parameter nodes for this label.  These are all   *
     * FormalParamNode objects that were "declared" as bound symbols in     *
@@ -80,7 +82,7 @@ public class LabelNode extends ExprNode
     * True iff this node represents a labeled ASSUME/PROVE rather than a   *
     * labeled expression.                                                  *
     ***********************************************************************/
-    
+
   /* ExprNode */ LevelNode body   = null;
     /***********************************************************************
     * The expression being labeled.                                        *
@@ -90,7 +92,7 @@ public class LabelNode extends ExprNode
     * beginning of OpDefOrLabelNode.java for an explanation.               *
     ***********************************************************************/
 
-  private Hashtable labels = null ;    
+  private Hashtable labels = null ;
     /***********************************************************************
     * This field is used to implement the OpDefOrLabel interface.  It is   *
     * a hashtable of OpDefNode objects representing labels within the      *
@@ -125,10 +127,10 @@ public class LabelNode extends ExprNode
             UniqueString nm,       // name
             FormalParamNode[] pms, // params
             ThmOrAssumpDefNode gl, // goal
-            int  clause,           // goalClause 
+            int  clause,           // goalClause
             /* ExprNode */ LevelNode    bdy, // body
             boolean isAP           // isAssumeProve value
-) {    
+) {
     super(LabelKind, tn);
     this.name          = nm;
     this.params        = pms;
@@ -151,8 +153,8 @@ public class LabelNode extends ExprNode
     this.body   = bdy;
    }
 
-  
-  public UniqueString getName() {return this.name; } 
+
+  public UniqueString getName() {return this.name; }
 
   /*************************************************************************
   * The following methods implement the OpDefOrLabel interface.            *
@@ -172,7 +174,7 @@ public class LabelNode extends ExprNode
     * then that LabelNode is returned; otherwise null is returned.         *
     ***********************************************************************/
     if (labels == null) {return null;} ;
-    return (LabelNode) labels.get(us) ;    
+    return (LabelNode) labels.get(us) ;
    }
 
   public boolean addLabel(LabelNode odn) {
@@ -186,7 +188,7 @@ public class LabelNode extends ExprNode
     labels.put(odn.getName(), odn) ;
     return true;
    }
-  
+
   public LabelNode[] getLabels() {
     /***********************************************************************
     * Returns an array containing the Label objects in the hashtable       *
@@ -197,12 +199,12 @@ public class LabelNode extends ExprNode
     Enumeration e = labels.elements() ;
     while (e.hasMoreElements()) { v.addElement(e.nextElement()); } ;
     LabelNode[] retVal = new LabelNode[v.size()] ;
-    for (int i = 0 ; i < v.size() ; i++) 
+    for (int i = 0 ; i < v.size() ; i++)
       {retVal[i] = (LabelNode) v.elementAt(i); } ;
     return retVal ;
    }
 
-  public int getArity() {return arity; }   
+  public int getArity() {return arity; }
 
   public /* ExprNode */ LevelNode getBody() {return body; }
 
@@ -223,45 +225,45 @@ public class LabelNode extends ExprNode
   }
 
   public final int getLevel() {
-    if (levelChecked == 0) 
+    if (levelChecked == 0)
       {throw new WrongInvocationException("getLevel called for TheoremNode before levelCheck");};
     return this.body.getLevel();
   }
 
   public final HashSet getLevelParams() {
-    if (levelChecked == 0) 
+    if (levelChecked == 0)
       {throw new WrongInvocationException("getLevelParams called for ThmNode before levelCheck");};
     return this.body.getLevelParams();
   }
 
   public final HashSet getAllParams() {
-    if (levelChecked == 0) 
+    if (levelChecked == 0)
       {throw new WrongInvocationException("getAllParams called for ThmNode before levelCheck");};
     return this.body.getAllParams();
   }
 
   public final SetOfLevelConstraints getLevelConstraints() {
-    if (levelChecked == 0) 
+    if (levelChecked == 0)
        {throw new WrongInvocationException("getLevelConstraints called for ThmNode before levelCheck");};
     return this.body.getLevelConstraints();
   }
 
   public final SetOfArgLevelConstraints getArgLevelConstraints() {
-    if (levelChecked == 0) 
+    if (levelChecked == 0)
       {throw new WrongInvocationException("getArgLevelConstraints called for ThmNode before levelCheck");};
     return this.body.getArgLevelConstraints();
   }
 
   public final HashSet getArgLevelParams() {
-    if (levelChecked == 0) 
+    if (levelChecked == 0)
       {throw new WrongInvocationException("getArgLevelParams called for ThmNode before levelCheck");};
     return this.body.getArgLevelParams();
   }
 
-  /* 
+  /*
    * The following method was inexplicably missing until added by LL
    * on 16 October 2013.
-   * 
+   *
    * @see tla2sany.semantic.SemanticNode#getChildren()
    */
   public SemanticNode[] getChildren() {
@@ -279,19 +281,19 @@ public class LabelNode extends ExprNode
       params[i].walkGraph(semNodesTable);
      } ;
   }
-  
+
   public final String toString(int depth) {
     if (depth <= 0) return "";
     String ret = "\n*LabelNode: " + super.toString(depth);
     ret += Strings.indent(2, "\nname: " + name.toString()) ;
     for (int i = 0; i < params.length; i++) {
       ret += Strings.indent(2,
-                            "\nparam[" + i + "]:" + 
-                                 Strings.indent(2, 
+                            "\nparam[" + i + "]:" +
+                                 Strings.indent(2,
                                                 params[i].toString(depth-1)));
      } ;
     ret += Strings.indent(2, "\nisAssumeProve: " + isAssumeProve) ;
-    ret += Strings.indent(2, "\nBody:" + 
+    ret += Strings.indent(2, "\nBody:" +
                                Strings.indent(2, body.toString(depth-1)));
 
     /***********************************************************************
@@ -304,10 +306,10 @@ public class LabelNode extends ExprNode
        while (list.hasMoreElements()) {
           ret += ((UniqueString) list.nextElement()).toString() + "  " ;
          } ;
-      } 
+      }
     else {ret += "\n  Labels: null";} ;
-    if (this.subExpressionOf != null) { 
-       ret += Strings.indent(2, "\nsubExpressionOf: " + 
+    if (this.subExpressionOf != null) {
+       ret += Strings.indent(2, "\nsubExpressionOf: " +
                   Strings.indent(2, this.subExpressionOf.toString(1))) ;} ;
 
     if (goal != null) {
@@ -316,5 +318,15 @@ public class LabelNode extends ExprNode
      } ;
     return ret;
   }
-   
+
+    protected Element getLevelElement(Document doc) {
+      Element ret = doc.createElement("LabelNode");
+      ret.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
+      ret.appendChild(doc.createElement("arity").appendChild(doc.createTextNode(Integer.toString(getArity()))));
+      ret.appendChild(doc.createElement("body").appendChild(body.export(doc)));
+      Element arguments = doc.createElement("params");
+      for (int i=0; i<params.length; i++) arguments.appendChild(params[i].export(doc));
+      ret.appendChild(arguments);
+      return ret;
+    }
  }

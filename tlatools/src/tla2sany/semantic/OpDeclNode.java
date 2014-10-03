@@ -10,7 +10,6 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import util.UniqueString;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -153,46 +152,11 @@ public class OpDeclNode extends OpDefOrDeclNode {
   }
 
 
-/**
- * exporting constants as <constant name=nm shape=arity level=constant/>
- * and variables as <variable name=nm level=constant/state/action/temporal/>
- * not implemented for all possible "kinds" and throw an exception
- */
-  public Element getElement(Document doc) {
-    Element e;
-    switch (getKind()) {
-      case ConstantDeclKind:
-      case NewConstantKind:
-        e = doc.createElement("constant");
-        e.setAttribute("name",getName().toString());
-        e.setAttribute("shape",""+getArity());
-            e.setAttribute("level","constant");
-        break;
-      case VariableDeclKind:
-      case NewVariableKind:
-      case NewStateKind:
-      case NewActionKind:
-      case NewTemporalKind:
-        e = doc.createElement("variable");
-        e.setAttribute("name",getName().toString());
-        switch (getKind()) {
-          case NewVariableKind:
-            e.setAttribute("level","constant");
-            break;
-          case VariableDeclKind:
-          case NewStateKind:
-            e.setAttribute("level","state");
-            break;
-          case NewActionKind:
-            e.setAttribute("level","action");
-            break;
-          case NewTemporalKind:
-            e.setAttribute("level","temporal");
-            break;
-        }
-        break;
-      default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
-    }
+  protected Element getLevelElement(Document doc) {
+    Element e = doc.createElement("OpDeclNode");
+    e.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
+    e.appendChild(doc.createElement("arity").appendChild(doc.createTextNode(Integer.toString(getArity()))));
+    e.appendChild(doc.createElement("kind").appendChild(doc.createTextNode(Integer.toString(getKind()))));
     return e;
   }
 }

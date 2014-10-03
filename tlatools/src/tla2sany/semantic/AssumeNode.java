@@ -181,16 +181,10 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
     if (assumeExpr != null) {assumeExpr.walkGraph(semNodesTable);} ;
   }
 
-  /**
-   * ASSUME df == expr if exported as
-   * <assumption>df_node<expression>expr</></>
-   */
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("assumption");
+  protected Element getLevelElement(Document doc) {
+    Element e = doc.createElement("AssumeNode");
     if (getDef() != null) e.appendChild(getDef().export(doc));
-    Element expression = doc.createElement("expression");
-    expression.appendChild(getAssume().export(doc));
-    e.appendChild(expression);
+    e.appendChild(getAssume().export(doc));
     return e;
   }
 }

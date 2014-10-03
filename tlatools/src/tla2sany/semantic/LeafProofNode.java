@@ -6,8 +6,6 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -127,31 +125,28 @@ public class LeafProofNode extends ProofNode {
     return ret;
    }
 
-  /**
-   * OMITTED is exported as <omitted>
-   * OBVIOUS/BY <?ONLY> bys DEF dfs  are exported as
-   * <by only=?ONLY> <facts> fact_nodes </> <definitions> def_nodes </>
-   * */
-  public Element getElement(Document doc) {
-    Element e = null;
+  public Element getLevelElement(Document doc) {
+    Element e = doc.createElement("ProofNode");
 
     if (getOmitted()) {
-      e = doc.createElement("omitted");
+      e.appendChild(doc.createElement("omitted"));
+    }
+    else if (getFacts().length == 0 && getDefs().length == 0) {
+      e.appendChild(doc.createElement("obvious"));
     }
     else {
-      e = doc.createElement("by");
-      e.setAttribute("only", (getOnlyFlag() ? "true" : "false"));
-      XMLExportable[] facts = getFacts();
-      XMLExportable[] defs = getDefs();
+      Element e2 = doc.createElement("by");
 
       Element factse = doc.createElement("facts");
-      Element definitions = doc.createElement("definitions");
+      Element definitions = doc.createElement("defs");
 
       for (int i=0; i<facts.length; i++) factse.appendChild(facts[i].export(doc));
       for (int i=0; i<defs.length; i++) definitions.appendChild(defs[i].export(doc));
 
-      e.appendChild(factse);
-      e.appendChild(definitions);
+      e2.appendChild(factse);
+      e2.appendChild(definitions);
+      if(getOnlyFlag()) e2.appendChild(doc.createElement("only"));
+      e.appendChild(e2);
     }
 
     return e;

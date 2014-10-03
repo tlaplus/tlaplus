@@ -14,8 +14,6 @@ public interface XMLExportable {
    * These are wrapper methods calling the getElement in order to generate the actual element
    * and wrapping it inside general information such as location, which is common to all elements
    * @param doc is the Document used to generate elements
-   * @param expandDefinitions is used to tell nested node if we want to expand definitions. For example, we want to expand them when they are defined but only use their names when we use them.
    */
-  public Element export(Document doc, boolean expandDefinitions);
   public Element export(Document doc);
 }

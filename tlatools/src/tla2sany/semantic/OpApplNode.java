@@ -26,8 +26,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -88,6 +86,8 @@ public class OpApplNode extends ExprNode implements ExploreNode {
      **********************************************************************/
   protected boolean[]         tupleOrs;
      // true if bound variable is in a tuple
+     // T.L. it is not clear to me if this array ranges over either of the
+     // sets or over both of them. There can be a mixed set of bound variables.
 
   public SymbolNode subExpressionOf = null ;
     /***********************************************************************
@@ -1228,46 +1228,39 @@ public class OpApplNode extends ExprNode implements ExploreNode {
            + toStringBody(depth) + sEO ;
   }
 
-/**
- * applications are exported as <application><function>fun_node</><arguments>arg_nodes</>
- * if there are bound variables they are appended to the application the following:
- * <bound_variables><variable>var_node<domain?>range_node<?/></></>
- */
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("application");
+  protected Element getLevelElement(Document doc) {
+    Element e = doc.createElement("OpApplNode");
 
     // operator
-    Element op = doc.createElement("function");
-    op.appendChild(getOperator().export(doc));
+    Element op = doc.createElement("operator");
+    op.appendChild(operator.export(doc));
     e.appendChild(op);
 
-    // params
-    Element params = doc.createElement("arguments");
-    XMLExportable[] args = getArgs();
-    for (int i=0; i< args.length; i++) params.appendChild(args[i].export(doc));
-    e.appendChild(params);
+    // operands
+    Element ope = doc.createElement("operands");
+    for (int i=0; i< operands.length; i++) ope.appendChild(operands[i].export(doc));
+    e.appendChild(ope);
 
     // bound variables (optional)
     if (unboundedBoundSymbols != null | boundedBoundSymbols != null ) {
-      Element bvars = doc.createElement("bound_variables");
+      Element bvars = doc.createElement("boundSymbols");
       if (unboundedBoundSymbols != null) {
         for (int i=0; i< unboundedBoundSymbols.length; i++) {
-          Element bvar = doc.createElement("variable");
+          Element bvar = doc.createElement("unbound");
           bvar.appendChild(unboundedBoundSymbols[i].export(doc));
+          if (tupleOrs != null && tupleOrs[i]) bvar.appendChild(doc.createElement("tuple"));
           bvars.appendChild(bvar);
         }
       }
 
       if (boundedBoundSymbols != null) {
         for (int i=0; i< boundedBoundSymbols.length; i++) {
-          for (int j=0; j<boundedBoundSymbols[i].length; j++) {
-            Element bvar = doc.createElement("variable");
+          Element bvar = doc.createElement("bound");
+          for (int j=0; j<boundedBoundSymbols[i].length; j++)
             bvar.appendChild(boundedBoundSymbols[i][j].export(doc));
-            Element domain = doc.createElement("domain");
-            domain.appendChild(ranges[i].export(doc));
-            bvar.appendChild(domain);
-            bvars.appendChild(bvar);
-          }
+          if (tupleOrs != null && tupleOrs[i]) bvar.appendChild(doc.createElement("tuple"));
+          bvar.appendChild(ranges[i].export(doc));
+          bvars.appendChild(bvar);
         }
       }
       e.appendChild(bvars);

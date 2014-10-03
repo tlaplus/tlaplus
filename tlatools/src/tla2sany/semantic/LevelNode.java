@@ -7,6 +7,9 @@ import java.util.Iterator;
 import tla2sany.st.TreeNode;
 import util.WrongInvocationException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /***************************************************************************
 * Note: The SANY1 level checking algorithm is specified in the file        *
 * LevelSpec.tla.  The handling of recursive operators is explained in the  *
@@ -45,10 +48,10 @@ import util.WrongInvocationException;
 
 public class LevelNode extends SemanticNode {
 
-  LevelNode(int kind, TreeNode stn) { 
-    super(kind, stn); 
+  LevelNode(int kind, TreeNode stn) {
+    super(kind, stn);
    }
-  
+
 /***************************************************************************
 * The level parameters.                                                    *
 *                                                                          *
@@ -80,7 +83,7 @@ public HashSet                   argLevelParams      = new HashSet() ;
 public HashSet                   allParams           = new HashSet() ;
 public HashSet                   nonLeibnizParams    = new HashSet() ;
 
-public int levelChecked   = 0 ; 
+public int levelChecked   = 0 ;
   /*************************************************************************
   * The highest value of iter for which levelChecked(iter) has been        *
   * invoked on this object--except for an OpDefNode not in a recursive     *
@@ -123,7 +126,7 @@ public int levelChecked   = 0 ;
     ***********************************************************************/
       throw new WrongInvocationException("Level checking of " + kinds[this.getKind()] +
                  " node not implemented.");
-   } 
+   }
 
   public boolean levelCheckSubnodes(int iter, LevelNode[] sub) {
     /***********************************************************************
@@ -138,7 +141,7 @@ public int levelChecked   = 0 ;
     if (this.levelChecked >= iter) return this.levelCorrect;
     this.levelChecked = iter ;
     for (int i = 0; i < sub.length; i++ ) {
-      if (   (sub[i].getKind() != ModuleKind) 
+      if (   (sub[i].getKind() != ModuleKind)
 //          && (sub[i].getKind() != InstanceKind)
           && (sub[i].getKind() != ModuleInstanceKind)) {
         /*******************************************************************
@@ -190,7 +193,7 @@ public int levelChecked   = 0 ;
 * SANY2 is debugged.                                                       *
 ***************************************************************************/
   public int getLevel(){
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
       {throw new WrongInvocationException("getLevel called before levelCheck");};
     return this.level;
   }
@@ -201,7 +204,7 @@ public int levelChecked   = 0 ;
     * are the parameters from the local context that contribute to the     *
     * level of the object.                                                 *
     ***********************************************************************/
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
        {throw new WrongInvocationException("getLevelParams called before levelCheck");};
     return this.levelParams;
    }
@@ -211,7 +214,7 @@ public int levelChecked   = 0 ;
     * Returns a HashSet of OpDeclNode objects, which are the parameters    *
     * from the local context that appear within the object.                *
     ***********************************************************************/
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
        {throw new WrongInvocationException("getAllParams called before levelCheck");};
     return this.allParams;
    }
@@ -222,7 +225,7 @@ public int levelChecked   = 0 ;
     * parameters returned by getAllParams() that appear within a           *
     * nonLeibniz argument.                                                 *
     ***********************************************************************/
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
        {throw new WrongInvocationException("getAllParams called before levelCheck");};
     return this.nonLeibnizParams;
    }
@@ -233,7 +236,7 @@ public int levelChecked   = 0 ;
     * value is an int.  An entry in this table means that the              *
     * key/parameter must have a level <= the value/int.                    *
     ***********************************************************************/
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
        {throw new WrongInvocationException("getLevelConstraints called before levelCheck");};
     return this.levelConstraints;
    }
@@ -246,7 +249,7 @@ public int levelChecked   = 0 ;
     * must be able to accept an argument of level v in its argument        *
     * number k.position.                                                   *
     ***********************************************************************/
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
        {throw new WrongInvocationException("getArgLevelConstraints called before levelCheck");};
     return this.argLevelConstraints;
    }
@@ -256,10 +259,10 @@ public int levelChecked   = 0 ;
     * Seems to return a HashSet of ArgLevelParam objects.  (See            *
     * ArgLevelParam.java for an explanation of those objects.)             *
     ***********************************************************************/
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
        {throw new WrongInvocationException("getArgLevelParams called before levelCheck");};
     return this.argLevelParams;}
-    
+
   public String defaultLevelDataToString() {
     /***********************************************************************
     * A printable representation of levelData.  Used to print debugging    *
@@ -284,12 +287,12 @@ public int levelChecked   = 0 ;
     Iterator iter = hs.iterator();
     while (iter.hasNext()) {
       if (! first) {rval = rval + ", ";} ;
-      rval = rval + ((SymbolNode) iter.next()).getName() ;       
+      rval = rval + ((SymbolNode) iter.next()).getName() ;
       first = false ;
      } ;
     rval = rval + "}" ;
     return rval ;
-   } 
+   }
 
   public static String ALPHashSetToString(HashSet hs) {
     /***********************************************************************
@@ -301,27 +304,50 @@ public int levelChecked   = 0 ;
     while (iter.hasNext()) {
       if (! first) {rval = rval + ", ";} ;
       ArgLevelParam alp = (ArgLevelParam) iter.next();
-      rval = rval + "<" + alp.op.getName() + ", " + alp.i + ", " + 
+      rval = rval + "<" + alp.op.getName() + ", " + alp.i + ", " +
                      alp.param.getName() + ">" ;
       first = false;
      } ;
     rval = rval + "}" ;
     return rval ;
-   } 
+   }
   public String levelDataToString() {
     /***********************************************************************
     * Used to print out level information in debugging mode.  The default  *
     * implementation just prints defaultLevelDataToString().  However,     *
     * some nodes need to print additional level information.               *
     ***********************************************************************/
-    if (this.levelChecked == 0) 
+    if (this.levelChecked == 0)
        {throw new WrongInvocationException("levelDataToString called before levelCheck");};
     return this.defaultLevelDataToString() ;}
+
+
+    protected Element getSemanticElement(Document doc) {
+      // T.L. abstract method used to add data from subclasses
+      Element e = getLevelElement(doc);
+      try {
+        Element l = doc.createElement("level");
+        l.appendChild(doc.createTextNode(Integer.toString(getLevel())));
+        e.insertBefore(l,e.getFirstChild());
+      } catch (RuntimeException ee) {
+        // not sure it is legal for a LevelNode not to have level, debug it!
+      }
+      return e;
+    }
+
+    /**
+     * T.L. October 2014
+     * Abstract method for subclasses of LevelNode to add their information
+     * */
+    protected Element getLevelElement(Document doc) {
+      throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
+    }
+
 }
 
 
 // File LevelSpec.tla
-// 
+//
 // This module has been checked with TLC, but not fully tested.  I expect
 // that most simple "type errors" have been found, but that significant
 // logical errors remain.  (Note: to use TLC, the spec has to be
@@ -332,8 +358,8 @@ public int levelChecked   = 0 ;
 // but that's probably not worth the effort.  It's probably easiest to
 // debug SANY and, if errors are found, checking whether they also appear
 // in this spec.
-// 
-// 
+//
+//
 // ----------------------------- MODULE LevelSpec ------------------------------
 // (***************************************************************************)
 // (* This module specifies the level-checking for the TLA+ language.  See    *)
@@ -388,7 +414,7 @@ public int levelChecked   = 0 ;
 // (* expressions listed above, and complain only if the expression has       *)
 // (* explicit level 2.                                                       *)
 // (***************************************************************************)
-// 
+//
 // EXTENDS Integers, Sequences
 // -----------------------------------------------------------------------------
 //                         (****************************)
@@ -399,13 +425,13 @@ public int levelChecked   = 0 ;
 //   (*************************************************************************)
 //   (* The maximum of the number i and j.                                    *)
 //   (*************************************************************************)
-//   
-// SetMax(S) ==  IF S = {} THEN 0 
+//
+// SetMax(S) ==  IF S = {} THEN 0
 //                         ELSE CHOOSE x \in S : \A y \in S : x \geq y
 //   (*************************************************************************)
 //   (* The maximum of the set S of natural numbers.                          *)
 //   (*************************************************************************)
-// 
+//
 // RecordCombine(S, T) ==
 //   (*************************************************************************)
 //   (* If S and T are sets of records, then this equals the set of all       *)
@@ -413,12 +439,12 @@ public int levelChecked   = 0 ;
 //   (* obtained by "merging" s and t--that is, forming the record whose set  *)
 //   (* of fields is the union of the sets of fields of the two records.      *)
 //   (*************************************************************************)
-//   LET rc(s, t) == 
+//   LET rc(s, t) ==
 //        [i \in (DOMAIN s) \cup (DOMAIN t) |-> IF i \in DOMAIN s THEN s[i]
 //                                                                ELSE t[i]]
 //   IN  {rc(s, t) : s \in S, t \in T}
-// -----------------------------------------------------------------------------  
-// CONSTANT  NodeId, Node      
+// -----------------------------------------------------------------------------
+// CONSTANT  NodeId, Node
 //   (*************************************************************************)
 //   (* We represent a collection of TLA+ modules by a semantic forest,       *)
 //   (* composed of nodes that may contain references to other nodes.  Each   *)
@@ -428,7 +454,7 @@ public int levelChecked   = 0 ;
 //   (* nodes.  The constant Node is a function from NodeId to the set (type) *)
 //   (* of all possible semantic nodes.                                       *)
 //   (*************************************************************************)
-// 
+//
 // Null == CHOOSE n : n \notin NodeId
 //   (*************************************************************************)
 //   (* A value that is not a node id.                                        *)
@@ -475,7 +501,7 @@ public int levelChecked   = 0 ;
 // (* equal to "xxxNode".                                                     *)
 // (***************************************************************************)
 // Ref(str) == {id \in NodeId : Node[id].kind = str}
-// 
+//
 // ModuleNodeId        == Ref("ModuleNode")
 // InstanceNodeId      == Ref("InstanceNodeId")
 // OpDefNodeId         == Ref("OpDefNode")
@@ -488,14 +514,14 @@ public int levelChecked   = 0 ;
 // LetInNodeId         == Ref("LetInNode")
 // ValueNodeId         == Ref("ValueNode")
 // IdentifierNodeId    == Ref("IdentifierNode")
-// OpDefOrDeclNodeId   == OpDefNodeId \cup OpDeclNodeId  
-// ExprNodeId          == OpApplNodeId \cup LetInNodeId  \cup ValueNodeId 
-//                          \cup IdentifierNodeId     
+// OpDefOrDeclNodeId   == OpDefNodeId \cup OpDeclNodeId
+// ExprNodeId          == OpApplNodeId \cup LetInNodeId  \cup ValueNodeId
+//                          \cup IdentifierNodeId
 // -----------------------------------------------------------------------------
 //                      (**************************)
 //                      (* Level Data Structures  *)
 //                      (**************************)
-// 
+//
 // LevelValue == 0..3
 //   (*************************************************************************)
 //   (* The set of levels, where                                              *)
@@ -505,7 +531,7 @@ public int levelChecked   = 0 ;
 //   (*    3 = temporal formula                                               *)
 //   (* (See Section 17.2 of "Specifying Systems".)                           *)
 //   (*************************************************************************)
-// 
+//
 // (***************************************************************************)
 // (* To understand level checking, consider the following definition.        *)
 // (*                                                                         *)
@@ -590,37 +616,37 @@ public int levelChecked   = 0 ;
 // (* parameters.  For our less than ideal level-checking algorithm, this is  *)
 // (* done by keeping track of sets of objects of the following types.        *)
 // (***************************************************************************)
-// 
+//
 // LevelConstraint == [param : ConstantDeclNodeId, level : LevelValue]
 //   (*************************************************************************)
 //   (* A level constraint lc indicates that the parameter with id lc.param   *)
 //   (* can be instantiated only with an expression of level at most          *)
 //   (* lc.level.                                                             *)
 //   (*************************************************************************)
-// 
-// ArgLevelConstraint == 
+//
+// ArgLevelConstraint ==
 //   (*************************************************************************)
 //   (* An arg-level constraint alc indicates that the operator parameter     *)
 //   (* with id alc.param can be instantiated with an operator op only if the *)
 //   (* alc.idx-th argument of op can have level at least alc.level.  This    *)
 //   (* constraint is vacuous iff alc.level = 0.                              *)
 //   (*************************************************************************)
-//   [param : ConstantDeclNodeId,  idx : Nat \ {0},  level : LevelValue]  
-// 
-// ArgLevelParam == 
+//   [param : ConstantDeclNodeId,  idx : Nat \ {0},  level : LevelValue]
+//
+// ArgLevelParam ==
 //   (*************************************************************************)
 //   (* An arg-level parameter alp indicates that the parameter with id       *)
 //   (* alp.param appears in the alp.idx-th argument of the operator with id  *)
 //   (* alp.op.                                                               *)
 //   (*************************************************************************)
 //   [op : NodeId, idx : Nat \ {0}, param : NodeId]
-// 
-// 
+//
+//
 // (***************************************************************************)
 // (* For later use, we define the following two operators on these data      *)
 // (* types.                                                                  *)
 // (***************************************************************************)
-// 
+//
 // MinLevelConstraint(id, LC) ==
 //   (*************************************************************************)
 //   (* If LC is a set of level constraints and id a ConstantDeclNodeId, then *)
@@ -628,13 +654,13 @@ public int levelChecked   = 0 ;
 //   (* elements of LC. (This is 3 if there is none.)                         *)
 //   (*************************************************************************)
 //   IF \E lc \in LC : lc.param = id
-//     THEN LET minLC == CHOOSE lc \in LC : 
+//     THEN LET minLC == CHOOSE lc \in LC :
 //                         /\ lc.param = id
-//                         /\ \A olc \in LC : 
+//                         /\ \A olc \in LC :
 //                              (olc.param = id) => (olc.level \geq lc.level)
 //          IN  minLC.level
 //     ELSE 3
-// 
+//
 // MaxArgLevelConstraints(id, ALC) ==
 //   (*************************************************************************)
 //   (* If ALC is a set of arg-level constraints and id a ConstantDeclNodeId, *)
@@ -645,18 +671,18 @@ public int levelChecked   = 0 ;
 //   (* each i.                                                               *)
 //   (*************************************************************************)
 //   LET n == Node[id].numberOfArgs
-//       minALC(i) ==   
+//       minALC(i) ==
 //         LET isALC(lc) == (lc.param = id) /\ (lc.idx = i)
 //         IN  IF \E lc \in ALC : isALC(lc)
-//               THEN LET max == CHOOSE lc \in ALC : 
+//               THEN LET max == CHOOSE lc \in ALC :
 //                                 /\ isALC(lc)
-//                                 /\ \A olc \in ALC : 
+//                                 /\ \A olc \in ALC :
 //                                      isALC(olc) => (olc.level \leq lc.level)
 //                    IN  max.level
 //               ELSE 0
 //   IN [i \in 1..n |-> minALC(i)]
-// 
-// LevelConstraintFields == 
+//
+// LevelConstraintFields ==
 //   (*************************************************************************)
 //   (* A record whose fields consist of fields used for level computations.  *)
 //   (* These fields are common to all semantic nodes of type Expr that       *)
@@ -735,7 +761,7 @@ public int levelChecked   = 0 ;
 // (* to sets where their order of occurrence is not relevant to level        *)
 // (* checking (but is relevant to correctness of the module).                *)
 // (***************************************************************************)
-// 
+//
 // ModuleNode ==
 //   (*************************************************************************)
 //   (* A semantic node representing a module.                                *)
@@ -815,19 +841,19 @@ public int levelChecked   = 0 ;
 //      (*        THEN MinLevelConstraint(id, mod.levelConstraints)           *)
 //      (*        ELSE 0                                                      *)
 //      (**********************************************************************)
-//     
+//
 // OpDefOrDeclNodeFields ==
 //   (*************************************************************************)
 //   (* This defines the fields that are common to the OpDeclNode and         *)
 //   (* OpDefNode types.                                                      *)
 //   (*************************************************************************)
-//   [name : STRING, 
+//   [name : STRING,
 //      (**********************************************************************)
 //      (* The name of the operator.  (This isn't used in the level           *)
 //      (* computation, but it's convenient for keeping track of things when  *)
 //      (* running tests of the spec with TLC.)                               *)
 //      (**********************************************************************)
-//      
+//
 //    numberOfArgs : Nat,
 //      (**********************************************************************)
 //      (* The number of arguments of the operator.  Operators that can take  *)
@@ -844,15 +870,15 @@ public int levelChecked   = 0 ;
 //      (*                                                                    *)
 //      (* The meaning of op.level for an OpDefNode is described above.       *)
 //      (**********************************************************************)
-// 
-// OpDeclNode == 
+//
+// OpDeclNode ==
 //   (*************************************************************************)
 //   (* Represents a declared constant or variable.                           *)
 //   (*************************************************************************)
 //   RecordCombine([kind : {"ConstantDeclNode", "VariableDeclNode"}],
 //                 OpDefOrDeclNodeFields)
-// 
-// OpDefNode == 
+//
+// OpDefNode ==
 //   (*************************************************************************)
 //   (* Represents a definition, for example the definition of the symbol Foo *)
 //   (* in Foo(A, B) == expr.  We also assume imaginary definitions of        *)
@@ -952,8 +978,8 @@ public int levelChecked   = 0 ;
 //        (* the empty sequence.                                              *)
 //        (********************************************************************)
 //     RecordCombine(OpDefOrDeclNodeFields, LevelConstraintFields))
-// 
-// InstanceNode == 
+//
+// InstanceNode ==
 //   (*************************************************************************)
 //   (* Represents a statement of the form                                    *)
 //   (*                                                                       *)
@@ -983,7 +1009,7 @@ public int levelChecked   = 0 ;
 //        (* substitution with subFor and subWith fields equal to the empty   *)
 //        (* sequence.                                                        *)
 //        (********************************************************************)
-//    numberOfArgs : Nat,   
+//    numberOfArgs : Nat,
 //    levelConstraints    : SUBSET LevelConstraint,
 //    argLevelConstraints : SUBSET ArgLevelConstraint,
 //    argLevelParams      : SUBSET ArgLevelParam]
@@ -991,10 +1017,10 @@ public int levelChecked   = 0 ;
 //      (* The level constraints obtained from the instantiation.  (There are *)
 //      (* no level parameters for the InstanceNode itself.)                  *)
 //      (**********************************************************************)
-//      
+//
 // OpDefOrDeclNode == OpDefNode \cup OpDeclNode
-// 
-// OpApplNode == 
+//
+// OpApplNode ==
 //   (*************************************************************************)
 //   (* An OppApplNode represents an operator application.  Examples of       *)
 //   (* expressions that such a node can represent are:                       *)
@@ -1013,7 +1039,7 @@ public int levelChecked   = 0 ;
 //   (*   Here, we don't bother to distinguish \E x, y, z \in S : P           *)
 //   (*   from \E <<x, y, z>> \in S : P                                       *)
 //   (*************************************************************************)
-//   RecordCombine(  
+//   RecordCombine(
 //     [kind : {"OpApplNode"},
 //      operator : OpDefOrDeclNodeId,
 //        (********************************************************************)
@@ -1029,8 +1055,8 @@ public int levelChecked   = 0 ;
 //        (********************************************************************)
 //      level : LevelValue],
 //     LevelConstraintFields)
-// 
-// SubstitutionNode == 
+//
+// SubstitutionNode ==
 //   (*************************************************************************)
 //   (* The Substitution object s that represents the WITH clause             *)
 //   (*                                                                       *)
@@ -1052,8 +1078,8 @@ public int levelChecked   = 0 ;
 //   [kind    : {"SubstitutionNode"},
 //    subFor  : Seq(OpDeclNodeId),
 //    subWith : Seq(ExprNodeId)]
-// 
-// IdentifierNode == 
+//
+// IdentifierNode ==
 //    (************************************************************************)
 //    (* An IdentifierNode is an ExprNode with a ref field.  It represents an *)
 //    (* expression that consists of a single symbol.  For example, the       *)
@@ -1062,23 +1088,23 @@ public int levelChecked   = 0 ;
 //    (* subexpression A will be an IdentifierNode whose ref field returns    *)
 //    (* the OpDefOrDeclNode that declares or defines A.                      *)
 //    (************************************************************************)
-//    RecordCombine(  
+//    RecordCombine(
 //     [kind : {"IdentifierNode"},
 //      ref  : OpDefOrDeclNodeId \cup BoundSymbolNodeId,
 //      level : LevelValue],
 //     LevelConstraintFields)
-// 
-// BoundSymbolNode == 
+//
+// BoundSymbolNode ==
 //   (*************************************************************************)
 //   (* Represents a bounded identifier, like the x in {x \in S : x > 0}.  It *)
 //   (* has level 0 except for the bounded symbols introduced by \EE and \AA, *)
 //   (* which have level 1.                                                   *)
 //   (*************************************************************************)
-//   [kind  : {"BoundSymbolNode"}, 
+//   [kind  : {"BoundSymbolNode"},
 //    name  : STRING,
 //    level : {0,1}]
-//      
-// LetInNode == 
+//
+// LetInNode ==
 //   (*************************************************************************)
 //   (* This node represents a LET expression, for example                    *)
 //   (*                                                                       *)
@@ -1086,9 +1112,9 @@ public int levelChecked   = 0 ;
 //   (*        Bar == Foo(a) + a                                              *)
 //   (*    IN  body                                                           *)
 //   (*************************************************************************)
-//    RecordCombine(  
+//    RecordCombine(
 //     [kind : {"LetInNode"},
-//      opDefs    : SUBSET OpDefNodeId, 
+//      opDefs    : SUBSET OpDefNodeId,
 //      instances : SUBSET InstanceNodeId,
 //        (********************************************************************)
 //        (* The LET definitions and INSTANCE statements.                     *)
@@ -1096,8 +1122,8 @@ public int levelChecked   = 0 ;
 //      body : ExprNodeId,
 //      level: LevelValue],
 //     LevelConstraintFields)
-// 
-// ValueNode == RecordCombine(  
+//
+// ValueNode == RecordCombine(
 //   (*************************************************************************)
 //   (* This node type represents the NumeralNode, DecimalNode, and           *)
 //   (* StringNode, of the actual api.                                        *)
@@ -1105,16 +1131,16 @@ public int levelChecked   = 0 ;
 //     [kind  : {"ValueNode"},
 //      level : {0}],
 //     LevelConstraintFields)
-//   
+//
 // ExprNode == OpApplNode \cup LetInNode \cup ValueNode \cup IdentifierNode
-// 
+//
 // SemNode ==
 //   (*************************************************************************)
 //   (* The type (set of all possible) semantic nodes.                        *)
 //   (*************************************************************************)
-//   ModuleNode \cup OpDefOrDeclNode \cup InstanceNode \cup 
+//   ModuleNode \cup OpDefOrDeclNode \cup InstanceNode \cup
 //      ExprNode \cup SubstitutionNode \cup BoundSymbolNode
-// 
+//
 // -----------------------------------------------------------------------------
 // (***************************************************************************)
 // (*                            "Type Correctness"                           *)
@@ -1128,9 +1154,9 @@ public int levelChecked   = 0 ;
 //   /\ Node \in [NodeId -> SemNode]
 //   /\ \A id \in NodeId :
 //        LET n == Node[id]
-//        IN  /\ (n \in OpDefNode) => 
-//                 /\ Len(n.maxLevels) = n.numberOfArgs 
-//                 /\ Len(n.weights)   = n.numberOfArgs 
+//        IN  /\ (n \in OpDefNode) =>
+//                 /\ Len(n.maxLevels) = n.numberOfArgs
+//                 /\ Len(n.weights)   = n.numberOfArgs
 //                 /\ Len(n.params) = n.numberOfArgs
 //                 /\ Len(n.minMaxLevel) = n.numberOfArgs
 //                 /\ Len(n.opLevelCond) = n.numberOfArgs
@@ -1138,38 +1164,38 @@ public int levelChecked   = 0 ;
 //                      /\ Len(n.minMaxLevel[i]) = Node[n.params[i]].numberOfArgs
 //                      /\ Len(n.opLevelCond[i]) = n.numberOfArgs
 //                      /\ \A j \in 1..n.numberOfArgs :
-//                           Len(n.opLevelCond[i][j]) = 
+//                           Len(n.opLevelCond[i][j]) =
 //                              Node[n.params[i]].numberOfArgs
-// 
-//            /\ (n \in OpDeclNode) => 
+//
+//            /\ (n \in OpDeclNode) =>
 //                 /\ (n.kind = "ConstantDeclNode") => (n.level = 0)
 //                 /\ (n.kind = "VariableDeclNode") => /\ n.level = 1
 //                                                     /\ n.numberOfArgs = 0
-// 
-//            /\ (n \in OpApplNode) => 
+//
+//            /\ (n \in OpApplNode) =>
 //                 (Len(n.args) = Node[n.operator].numberOfArgs)
-//    
+//
 //            /\ (n \in SubstitutionNode) => (Len(n.subFor) = Len(n.subWith))
-// 
-//            /\ (n \in InstanceNode) => 
+//
+//            /\ (n \in InstanceNode) =>
 //                 /\ n.numberOfArgs = Len(n.params)
 //                 /\ (********************************************************)
 //                    (* There is a WITH substitution for every parameter of  *)
 //                    (* the instantiated module.                             *)
 //                    (********************************************************)
-//                    LET mparamid == 
+//                    LET mparamid ==
 //                          (**************************************************)
 //                          (* Defines the mparamid[i] to be the parameter    *)
 //                          (* ids of the WITH clause.                        *)
 //                          (**************************************************)
-//                          [i \in 1..Len(Node[n.substitution].subFor) |-> 
+//                          [i \in 1..Len(Node[n.substitution].subFor) |->
 //                              Node[n.substitution].subFor[i]]
 //                        M == Node[n.module]
 //                           (*************************************************)
 //                           (* The ModuleNode of the instantiated module.    *)
 //                           (*************************************************)
 //                    IN  M.opDecls = {mparamid[i] : i \in 1..Len(mparamid)}
-// 
+//
 // -----------------------------------------------------------------------------
 // (***************************************************************************)
 // (*                         Level Correctness Conditions                    *)
@@ -1183,13 +1209,13 @@ public int levelChecked   = 0 ;
 // (* node n of kind xxxNode.  The following operators are used in the        *)
 // (* definition of LevelCorrect.                                             *)
 // (***************************************************************************)
-// 
+//
 // IsOpArg(op, k) == Node[op.params[k]].numberOfArgs > 0
 //   (*************************************************************************)
 //   (* If op is an OpDefNode and k \in 1..op.numberOfArgs, then this is true *)
 //   (* iff the k-th argument of op is an operator argument.                  *)
 //   (*************************************************************************)
-// 
+//
 // SubstituteInLevelConstraint(rcd, subst) ==
 //   (*************************************************************************)
 //   (* If rcd is a record containing level-constraint fields and subst is a  *)
@@ -1204,7 +1230,7 @@ public int levelChecked   = 0 ;
 //         (*******************************************************************)
 //         (* The set of substitution parameter numbers.                      *)
 //         (*******************************************************************)
-// 
+//
 //       ParamSubst(id) ==
 //         (*******************************************************************)
 //         (* The set of "substitute parameters" of the parameter whose       *)
@@ -1215,19 +1241,19 @@ public int levelChecked   = 0 ;
 //         IF \E i \in paramNums : subst.subFor[i] = id
 //           THEN LET subExpNum == CHOOSE i \in paramNums : subst.subFor[i] = id
 //                IN  Node[subst.subWith[subExpNum]].levelParams
-//           ELSE {id}  
-// 
+//           ELSE {id}
+//
 //       IsOpParam(i) == Node[subst.subFor[i]].numberOfArgs > 0
 //         (*******************************************************************)
 //         (* True iff substitution parameter i is an operator parameter.     *)
 //         (*******************************************************************)
-// 
+//
 //       argNums == 1..Len(subst.subFor)
 //         (*******************************************************************)
 //         (* The set of parameter numbers.                                   *)
 //         (*******************************************************************)
-// 
-//       SubOp(opid) == 
+//
+//       SubOp(opid) ==
 //         (*******************************************************************)
 //         (* If opid is the NodeId of an operator parameter, then this       *)
 //         (* equals the NodeId of the operator with which this operator is   *)
@@ -1235,15 +1261,15 @@ public int levelChecked   = 0 ;
 //         (* not substitute for opid.                                        *)
 //         (*******************************************************************)
 //         IF \E i \in paramNums : subst.subFor[i] = opid
-//           THEN LET subExpNum == 
+//           THEN LET subExpNum ==
 //                      CHOOSE i \in paramNums : subst.subFor[i] = opid
 //                IN  Node[subst.subWith[subExpNum]].ref
 //           ELSE opid
-// 
-//   IN  [levelParams |-> 
+//
+//   IN  [levelParams |->
 //          UNION {ParamSubst(id) : id \in rcd.levelParams},
-// 
-//        levelConstraints |-> 
+//
+//        levelConstraints |->
 //          (******************************************************************)
 //          (* There are two kinds of level constraints obtained after        *)
 //          (* substitution: ones that come from rcd.levelConstraints via     *)
@@ -1253,55 +1279,55 @@ public int levelChecked   = 0 ;
 //          (* defOp.maxLevels[alp.idx] implies level constraints on some     *)
 //          (* parameter in the expression substituted for alp.param.         *)
 //          (******************************************************************)
-//          LET Sub(lc) == 
+//          LET Sub(lc) ==
 //                (************************************************************)
 //                (* If lc is a level constraint on a parameter param, then   *)
 //                (* this is the set of level constraints that implies        *)
 //                (* because param might be substituted for.                  *)
 //                (************************************************************)
-//                {[lc EXCEPT !.param = par] : 
+//                {[lc EXCEPT !.param = par] :
 //                    par \in ParamSubst(lc.param)}
-// 
-//              ALP(i) == 
+//
+//              ALP(i) ==
 //                (************************************************************)
 //                (* The set of arg-level parameters alp such that alp.op is  *)
 //                (* the substitution parameter i.                            *)
 //                (************************************************************)
 //                {alp \in rcd.argLevelParams : alp.op = subst.subFor[i]}
-// 
+//
 //             SubInALP(alp) ==
 //               (*************************************************************)
 //               (* The set of arg-level parameters obtained from arg-level   *)
 //               (* parameter alp by replacing alp.param with each of its     *)
 //               (* substitute parameters.                                    *)
 //               (*************************************************************)
-//                {[alp EXCEPT !.param = par] : 
+//                {[alp EXCEPT !.param = par] :
 //                    par \in ParamSubst(alp.param)}
-// 
-//              SubALP(i) == UNION {SubInALP(alp) : alp \in ALP(i)} 
+//
+//              SubALP(i) == UNION {SubInALP(alp) : alp \in ALP(i)}
 //                (************************************************************)
 //                (* The set of all SubInALP(alp) with alp in ALP(i).         *)
 //                (************************************************************)
-// 
+//
 //              LC(i, alp) ==
 //                (************************************************************)
 //                (* The level constraint implied by an element alp of        *)
 //                (* SubALP(i), if parameter i is an operator parameter       *)
 //                (* instantiated by a defined operator.                      *)
 //                (************************************************************)
-//                [param |-> alp.param, 
-//                 level |-> 
+//                [param |-> alp.param,
+//                 level |->
 //                   Node[Node[subst.subWith[i]].ref].maxLevels[alp.idx]]
-// 
-//              OpDefParams == 
-//                {i \in paramNums : /\ IsOpParam(i) 
-//                                   /\ Node[subst.subWith[i]].ref \in 
+//
+//              OpDefParams ==
+//                {i \in paramNums : /\ IsOpParam(i)
+//                                   /\ Node[subst.subWith[i]].ref \in
 //                                        OpDefNodeId}
 //          IN  UNION {Sub(lc) : lc \in rcd.levelConstraints}
 //                \cup
 //              UNION { {LC(i, alp) : alp \in SubALP(i)} : i \in OpDefParams },
-// 
-//        argLevelConstraints |-> 
+//
+//        argLevelConstraints |->
 //          (******************************************************************)
 //          (* There are two kinds of arg-level constraints produced by the   *)
 //          (* substitution: ones obtained by substitution from               *)
@@ -1323,23 +1349,23 @@ public int levelChecked   = 0 ;
 //                (* then subst.subWith[i] is an IdentifierNodeId.            *)
 //                (************************************************************)
 //                IF \E i \in 1..Len(subst.subFor) : subst.subFor[i] = alc.param
-//                  THEN LET subExpNum == 
-//                              CHOOSE i \in argNums : 
+//                  THEN LET subExpNum ==
+//                              CHOOSE i \in argNums :
 //                                         subst.subFor[i] = alc.param
-//                       IN  IF Node[subst.subWith[subExpNum]].ref \in 
+//                       IN  IF Node[subst.subWith[subExpNum]].ref \in
 //                                OpDeclNodeId
-//                             THEN {[alc EXCEPT !.param = 
+//                             THEN {[alc EXCEPT !.param =
 //                                         Node[subst.subWith[subExpNum]].ref]}
 //                             ELSE {}
 //                  ELSE {alc}
-// 
+//
 //             SubParamALP(i) ==
 //               (*************************************************************)
 //               (* The set of elements alp of rcd.argLevelParams such that   *)
 //               (* alp.param is substitution parameter number i.             *)
 //               (*************************************************************)
 //               {alp \in rcd.argLevelParams : alp.param = subst.subFor[i]}
-// 
+//
 //             ALC(alp, i) ==
 //               (*************************************************************)
 //               (* The set of arg-level constraints (containing 0 or one     *)
@@ -1349,22 +1375,22 @@ public int levelChecked   = 0 ;
 //               (* defined) operator.                                        *)
 //               (*************************************************************)
 //               IF SubOp(alp.op) \in OpDeclNodeId
-//                 THEN {[param |-> SubOp(alp.op), 
-//                        idx   |-> alp.idx, 
+//                 THEN {[param |-> SubOp(alp.op),
+//                        idx   |-> alp.idx,
 //                        level |-> Node[subst.subWith[i]].level]}
 //                 ELSE {}
-// 
+//
 //             ALCSet(i) == UNION {ALC(alp, i) : alp \in SubParamALP(i)}
 //               (*************************************************************)
 //               (* The set of all level constraints implied by elements of   *)
 //               (* SubParamALP(i).                                           *)
 //               (*************************************************************)
-// 
+//
 //          IN  UNION {Sub(alc) : alc \in rcd.argLevelConstraints}
 //                \cup
 //              UNION {ALCSet(i) : i \in paramNums},
-// 
-//        argLevelParams |-> 
+//
+//        argLevelParams |->
 //          (******************************************************************)
 //          (* The set of arg-level parameters implied by rcd.argLevelParams  *)
 //          (* after performing the substitution.  If arg-level parameter alp *)
@@ -1387,7 +1413,7 @@ public int levelChecked   = 0 ;
 //                           pId \in ParamSubst(alp.param)}
 //                  ELSE {}
 //          IN  UNION {Sub(alp) : alp \in rcd.argLevelParams} ]
-// 
+//
 // ReducedLevelConstraint(rcd, paramSet) ==
 //   (*************************************************************************)
 //   (* If rcd is a record with level-constraint fields, then this is the     *)
@@ -1400,8 +1426,8 @@ public int levelChecked   = 0 ;
 //     !.argLevelConstraints = {alc \in @ : alc.param \notin paramSet},
 //     !.argLevelParams = {alp \in @ : /\ alp.op \notin paramSet
 //                                     /\ alp.param \notin paramSet}]
-// 
-// 
+//
+//
 // -----------------------------------------------------------------------------
 // (***************************************************************************)
 // (* The predicate LevelCorrect is defined in terms of the following         *)
@@ -1412,7 +1438,7 @@ public int levelChecked   = 0 ;
 // (* level-correctness of the child nodes is assumed when expressing         *)
 // (* level-correctness of a node.                                            *)
 // (***************************************************************************)
-// ModuleNodeLevelCorrect(n) == 
+// ModuleNodeLevelCorrect(n) ==
 //   (*************************************************************************)
 //   (* We assume n is a ModuleNode.  It is level-correct iff all the         *)
 //   (* definitions, instances, theorems, and assumes are, and all the        *)
@@ -1427,40 +1453,40 @@ public int levelChecked   = 0 ;
 //         (* represented by the node with id opid.                           *)
 //         (*******************************************************************)
 //         {Node[opid].params[i] : i \in 1..Node[opid].numberOfArgs}
-// 
+//
 //       nonDefs == n.instances \cup n.theorems \cup n.assumes
 //         (*******************************************************************)
 //         (* All nodes contributing to the level constraints other than      *)
 //         (* OpDef nodes.                                                    *)
 //         (*******************************************************************)
-// 
+//
 //       allDefs == n.opDefs \cup nonDefs
-//         
+//
 //   IN  /\ (******************************************************************)
 //          (* Level correctness.                                             *)
 //          (******************************************************************)
 //          \A id \in n.assumes : Node[id].level = 0
-// 
+//
 //       /\ n.levelConstraints =
 //            UNION {Node[opid].levelConstraints : opid \in allDefs}
-// 
+//
 //       /\ n.argLevelConstraints =
 //            UNION {Node[opid].argLevelConstraints : opid \in allDefs}
-// 
+//
 //       /\ n.argLevelParams =
 //            (****************************************************************)
 //            (* We must remove the constraints on formal parameters of the   *)
 //            (* definitions.                                                 *)
 //            (****************************************************************)
 //            (UNION {ReducedLevelConstraint(
-//                        Node[opid], 
+//                        Node[opid],
 //                        defParams(opid)).argLevelParams :
 //                     opid \in n.opDefs})
 //             \cup
 //            UNION {Node[opid].argLevelParams : opid \in nonDefs}
-// 
-// 
-// InstanceNodeLevelCorrect(n) == 
+//
+//
+// InstanceNodeLevelCorrect(n) ==
 //   (*************************************************************************)
 //   (* We assume n is an InstanceNode representing                           *)
 //   (*                                                                       *)
@@ -1476,7 +1502,7 @@ public int levelChecked   = 0 ;
 //         (*******************************************************************)
 //         (* The set of node ids {param[1], ... , param[p]}.                 *)
 //         (*******************************************************************)
-//       redMexp == 
+//       redMexp ==
 //         (*******************************************************************)
 //         (* Defines redMexp[i] to be the record that's the same as mexp[i]  *)
 //         (* except with all constraints on the param[i] removed.            *)
@@ -1494,7 +1520,7 @@ public int levelChecked   = 0 ;
 //         (*******************************************************************)
 //         (* Defines mparam[i] to be the OpDeclNode for this parameter of M. *)
 //         (*******************************************************************)
-//       mOpArg(i) == Node[mexp[i].ref]        
+//       mOpArg(i) == Node[mexp[i].ref]
 //         (*******************************************************************)
 //         (* If mparam[i] is an operator argument, then mexp[i] is an        *)
 //         (* Identifier node for the OpDefOrDeclNode mOpArg(i).              *)
@@ -1511,8 +1537,8 @@ public int levelChecked   = 0 ;
 //         (*******************************************************************)
 //         SubstituteInLevelConstraint(
 //           [levelParams         |-> {op \in M.opDecls : Node[op].level = 0},
-//            levelConstraints    |-> M.levelConstraints, 
-//            argLevelConstraints |-> M.argLevelConstraints, 
+//            levelConstraints    |-> M.levelConstraints,
+//            argLevelConstraints |-> M.argLevelConstraints,
 //            argLevelParams      |-> M.argLevelParams],
 //           subst)
 //       redMSubConstraints ==
@@ -1521,7 +1547,7 @@ public int levelChecked   = 0 ;
 //         (* the param[i] removed.                                           *)
 //         (*******************************************************************)
 //         ReducedLevelConstraint(MSubConstraints, paramIds)
-// 
+//
 //   IN  (*********************************************************************)
 //       (* There are four level-correctness requirements on the              *)
 //       (* instantiation.  The first applies to nonconstant modules.  The    *)
@@ -1537,15 +1563,15 @@ public int levelChecked   = 0 ;
 //          (******************************************************************)
 //          ~M.isConstant =>
 //             \A i \in 1..r : mexp[i].level \leq mparam[i].level
-// 
+//
 //       /\ (******************************************************************)
 //          (* A level-constraint on mparam[i] implies a condition on         *)
 //          (* mexp[i].                                                       *)
 //          (******************************************************************)
-//          \A i \in 1..r : 
-//             mexp[i].level \leq 
+//          \A i \in 1..r :
+//             mexp[i].level \leq
 //                  MinLevelConstraint(mparamId[i], M.levelConstraints)
-// 
+//
 //       /\ (******************************************************************)
 //          (* If mexp[i] is a defined operator argument, then an arg-level   *)
 //          (* constraint on mparam[i] implies a condition on mexp[i].        *)
@@ -1562,8 +1588,8 @@ public int levelChecked   = 0 ;
 //                (* constraints on param[i].                                 *)
 //                (************************************************************)
 //                \A j \in 1..mOpArg(i).numberOfArgs :
-//                   mOpArg(i).maxLevels[j] \geq 
-//                      MaxArgLevelConstraints(mparamId[i], 
+//                   mOpArg(i).maxLevels[j] \geq
+//                      MaxArgLevelConstraints(mparamId[i],
 //                                             M.argLevelConstraints)[j]
 //       /\ (******************************************************************)
 //          (* An arg-level parameter of M asserting that param[j] appears in *)
@@ -1572,12 +1598,12 @@ public int levelChecked   = 0 ;
 //          (* mexp[j].                                                       *)
 //          (******************************************************************)
 //          \A alp \in M.argLevelParams :
-//            \A i, j \in 1..r : 
+//            \A i, j \in 1..r :
 //               /\ alp.op    = mparamId[i]
 //               /\ alp.param = mparamId[j]
 //               /\ mOpArg(i) \in OpDefNode
 //               => (mexp[j].level \leq mOpArg(i).maxLevels[alp.idx])
-// 
+//
 //       (*********************************************************************)
 //       (* The level constraints for InstanceNode n are the ones that come   *)
 //       (* from performing the substitution in the level constraints of M    *)
@@ -1593,8 +1619,8 @@ public int levelChecked   = 0 ;
 //       /\ n.argLevelParams =
 //            redMSubConstraints.argLevelParams \cup
 //              UNION {redMexp[i].argLevelParams : i \in 1..r}
-// 
-// OpDefNodeLevelCorrect(n) == 
+//
+// OpDefNodeLevelCorrect(n) ==
 //   (*************************************************************************)
 //   (* We assume that n is an OpDefNode that is represents the definition of *)
 //   (*   Op(param[1], ... , param[p]) == exp                                 *)
@@ -1625,7 +1651,7 @@ public int levelChecked   = 0 ;
 //   (*************************************************************************)
 //   LET p == n.numberOfArgs
 //       param == n.params
-//       paramIds == {param[i] : i \in 1..p} 
+//       paramIds == {param[i] : i \in 1..p}
 //         (*******************************************************************)
 //         (* The set of ids of the formal parameters param[i].               *)
 //         (*******************************************************************)
@@ -1635,7 +1661,7 @@ public int levelChecked   = 0 ;
 //         (*******************************************************************)
 //       subst == Node[n.substitution]
 //       r == Len(Node[n.substitution].subWith)
-//       iParamIds == {param[i] : i \in 1..r} 
+//       iParamIds == {param[i] : i \in 1..r}
 //         (*******************************************************************)
 //         (* The set of param[i] that come from the INSTANCE.                *)
 //         (*******************************************************************)
@@ -1657,8 +1683,8 @@ public int levelChecked   = 0 ;
 //         (* exp.  Of course, for the null substitution, these fields are    *)
 //         (* the same as the corresponding fields of exp.)                   *)
 //         (*******************************************************************)
-// 
-//   IN  /\ n.level = 
+//
+//   IN  /\ n.level =
 //            (****************************************************************)
 //            (* The level of Op is the maximum of                            *)
 //            (*   - The level of exp, and                                    *)
@@ -1669,7 +1695,7 @@ public int levelChecked   = 0 ;
 //                               THEN mexp[i].level
 //                               ELSE 0
 //            IN  NumMax(exp.level, SetMax({pLevel(i) : i \in 1..r}))
-// 
+//
 //       /\ n.maxLevels =
 //            (****************************************************************)
 //            (* n.maxLevels[i] is determined by the level constraints on     *)
@@ -1686,17 +1712,17 @@ public int levelChecked   = 0 ;
 //            (****************************************************************)
 //            [i \in 1..p |->
 //              MinLevelConstraint(
-//                param[i], 
-//                subExp.levelConstraints \cup 
+//                param[i],
+//                subExp.levelConstraints \cup
 //                   UNION {mexp[j].levelConstraints : j \in 1..r})]
-// 
+//
 //       /\ n.weights =
 //            (****************************************************************)
 //            (* n.weights[i] is 1 iff param[i] is a level parameter of       *)
 //            (* subExp.                                                      *)
 //            (****************************************************************)
 //            [i \in 1..p |-> IF param[i] \in subExp.levelParams THEN 1 ELSE 0]
-// 
+//
 //       /\ n.minMaxLevel =
 //            (****************************************************************)
 //            (* n.minMaxLevel[i] is deduced from the arg-level constraints   *)
@@ -1708,9 +1734,9 @@ public int levelChecked   = 0 ;
 //            [i \in 1..p |->
 //              MaxArgLevelConstraints(
 //                  param[i],
-//                  subExp.argLevelConstraints \cup 
+//                  subExp.argLevelConstraints \cup
 //                    UNION {mexp[j].argLevelConstraints : j \in 1..r})]
-//                
+//
 //       /\ n.opLevelCond =
 //            (****************************************************************)
 //            (* n.opLevelCond[i][j][k] is true iff there is an element of    *)
@@ -1722,19 +1748,19 @@ public int levelChecked   = 0 ;
 //            (* parameters.                                                  *)
 //            (****************************************************************)
 //            [i \in 1..p |->
-//              [j \in 1..p |-> 
+//              [j \in 1..p |->
 //                [k \in 1..Node[param[i]].numberOfArgs |->
-//                  [op |-> param[i], idx |-> k, param |-> param[j]] 
+//                  [op |-> param[i], idx |-> k, param |-> param[j]]
 //                   \in subExp.argLevelParams \cup
 //                        UNION {mexp[h].argLevelParams : h \in 1..r}]]]
-// 
+//
 //       /\ n.levelParams = subExp.levelParams \ paramIds
 //            (****************************************************************)
 //            (* The level parameters of Op are the ones that come from       *)
 //            (* subExp that are not formal parameters.                       *)
 //            (****************************************************************)
-// 
-//       /\ n.levelConstraints = 
+//
+//       /\ n.levelConstraints =
 //            (****************************************************************)
 //            (* The level constraints of Op are the ones from subExp that    *)
 //            (* don't constrain its formal parameters.  The level            *)
@@ -1742,8 +1768,8 @@ public int levelChecked   = 0 ;
 //            (* INSTANCE node.                                               *)
 //            (****************************************************************)
 //            {lc \in subExp.levelConstraints : lc.param \notin paramIds}
-// 
-//       /\ n.argLevelConstraints = 
+//
+//       /\ n.argLevelConstraints =
 //            (****************************************************************)
 //            (* The arg-level constraints of Op are the ones from subExp     *)
 //            (* that don't constraint its formal parameters.  Again, the     *)
@@ -1751,8 +1777,8 @@ public int levelChecked   = 0 ;
 //            (* the INSTANCE node.                                           *)
 //            (****************************************************************)
 //            {alc \in subExp.argLevelConstraints : alc.param \notin paramIds }
-// 
-//       /\ n.argLevelParams = 
+//
+//       /\ n.argLevelParams =
 //            (****************************************************************)
 //            (* The arg-level parameters of Op are the ones from subExp such *)
 //            (* that the op and params fields are not both formal parameters *)
@@ -1765,23 +1791,23 @@ public int levelChecked   = 0 ;
 //            (* parameters.  Such conservatism seems necessary--for example, *)
 //            (* in case the INSTANCE occurs within a LET.                    *)
 //            (****************************************************************)
-//            {alp \in subExp.argLevelParams : \/ alp.op    \notin paramIds 
+//            {alp \in subExp.argLevelParams : \/ alp.op    \notin paramIds
 //                                             \/ alp.param \notin paramIds }
 //              \cup
 //            {alp \in UNION {mexp[j].argLevelParams : j \in 1..r}:
-//               \/ /\ alp.op    \in    paramIds 
-//                  /\ alp.param \notin paramIds 
-//               \/ /\ alp.op    \notin paramIds 
+//               \/ /\ alp.op    \in    paramIds
+//                  /\ alp.param \notin paramIds
+//               \/ /\ alp.op    \notin paramIds
 //                  /\ alp.param \in    paramIds }
-// 
-// 
+//
+//
 // (***************************************************************************)
 // (* The definition of OpApplNodeLevelCorrect is rather complicated.  There  *)
 // (* are two cases: an application of a declared operator and of a defined   *)
 // (* operator.  These two cases are defined separately as                    *)
 // (* DeclaredOpApplNodeLevelCorrect and DefinedOpApplNodeLevelCorrect.       *)
 // (***************************************************************************)
-// DeclaredOpApplNodeLevelCorrect(n) == 
+// DeclaredOpApplNodeLevelCorrect(n) ==
 //   (*************************************************************************)
 //   (* This definition assumes that n is an OpApplNode representing the      *)
 //   (* expression Op(arg[1], ...  , arg[p]), where Op is a declared          *)
@@ -1818,22 +1844,22 @@ public int levelChecked   = 0 ;
 //            (*                                                              *)
 //            (* Corrected (I hope) on 24 Mar 2007 by LL to include op.level. *)
 //            (****************************************************************)
-//            
-//       /\ n.levelParams = 
+//
+//       /\ n.levelParams =
 //            (****************************************************************)
 //            (* The level parameters of n are the Op itself and the          *)
 //            (* LevelParams of all the arguments.                            *)
 //            (****************************************************************)
 //            {opid} \cup UNION {arg[i].levelParams : i \in 1..p}
-// 
-//       /\ n.levelConstraints = 
+//
+//       /\ n.levelConstraints =
 //            (****************************************************************)
 //            (* The LevelConstraints of n are all obtained from its          *)
 //            (* arguments.                                                   *)
 //            (****************************************************************)
 //            UNION {arg[i].levelConstraints : i \in 1..p}
-// 
-//       /\ n.argLevelConstraints = 
+//
+//       /\ n.argLevelConstraints =
 //            (****************************************************************)
 //            (* There are two source of arg-level constraints for n: the     *)
 //            (* ones it implies about Op, and the ones it inherits from its  *)
@@ -1841,9 +1867,9 @@ public int levelChecked   = 0 ;
 //            (****************************************************************)
 //            {[op |-> opid, idx |-> i, level |-> arg[i].level] : i \in 1..p}
 //             \cup
-//            UNION {arg[i].argLevelConstraints : i \in 1..p}     
-//            
-//       /\ n.argLevelParams = 
+//            UNION {arg[i].argLevelConstraints : i \in 1..p}
+//
+//       /\ n.argLevelParams =
 //            (****************************************************************)
 //            (* There are two source of arg-level parameters for n: the ones *)
 //            (* it implies about Op, and the ones it inherits from its       *)
@@ -1854,13 +1880,13 @@ public int levelChecked   = 0 ;
 //                   (* The arg-level parameters implied about Op by the i-th *)
 //                   (* argument of n.                                        *)
 //                   (*********************************************************)
-//                   {[op |-> opid, idx   |-> i, param |-> par] : 
+//                   {[op |-> opid, idx   |-> i, param |-> par] :
 //                       par \in arg[i].levelParams}
 //             IN  UNION {ALP(i) : i \in 1..p} )
 //               \cup
-//            UNION {arg[i].argLevelParams : i \in 1..p}     
-// 
-// DefinedOpApplNodeLevelCorrect(n) == 
+//            UNION {arg[i].argLevelParams : i \in 1..p}
+//
+// DefinedOpApplNodeLevelCorrect(n) ==
 //   (*************************************************************************)
 //   (* This definition assumes that n is an OpApplNode representing the      *)
 //   (* expression Op(arg[1], ...  , arg[p]), where Op is a defined operator. *)
@@ -1887,19 +1913,19 @@ public int levelChecked   = 0 ;
 //         (* If the i-th argument of op is an operator argument, then this   *)
 //         (* is the number of arguments that that operator argument takes.   *)
 //         (*******************************************************************)
-//       defOpArgs == 
+//       defOpArgs ==
 //         (*******************************************************************)
 //         (* The set of i such that param[i] is an operator argument and     *)
 //         (* arg[i] is a defined operator.                                   *)
 //         (*******************************************************************)
-//         {i \in 1..p : IsOpArg(op, i) /\ (arg[i].ref \in OpDefNodeId)} 
-//       declOpArgs == 
+//         {i \in 1..p : IsOpArg(op, i) /\ (arg[i].ref \in OpDefNodeId)}
+//       declOpArgs ==
 //         (*******************************************************************)
 //         (* The set of i such that param[i] is an operator argument and     *)
 //         (* arg[i] is an operator parameter.                                *)
 //         (*******************************************************************)
 //         {i \in 1..p : IsOpArg(op, i) /\ (arg[i].ref \in OpDeclNodeId)}
-//       OpLevelCondIdx(i,j) == 
+//       OpLevelCondIdx(i,j) ==
 //         (*******************************************************************)
 //         (* The set of k such that op.opLevelCond[i][j][k] is defined and   *)
 //         (* equals TRUE.                                                    *)
@@ -1918,7 +1944,7 @@ public int levelChecked   = 0 ;
 //                 (***********************************************************)
 //                 (* The level of arg[i] must be \leq op.maxLevels[i].       *)
 //                 (***********************************************************)
-//                 
+//
 //            /\ /\ IsOpArg(op, i)
 //                    (********************************************************)
 //                    (* IF arg[i] is an operator argument oparg ...          *)
@@ -1949,16 +1975,16 @@ public int levelChecked   = 0 ;
 //                       \A k \in 1..numOpArgs(i) :
 //                         op.opLevelCond[i][j][k] =>
 //                           arg[j].level \leq arg[i].maxLevels[k]
-// 
-//       /\ n.level = 
+//
+//       /\ n.level =
 //            (****************************************************************)
 //            (* The maximum of op.level and the levels of all the arguments  *)
 //            (* whose corresponding weights are 1.                           *)
 //            (****************************************************************)
 //            NumMax(op.level,
 //                   SetMax({arg[i].level * op.weights[i] : i \in 1..p}))
-// 
-//       /\ n.levelParams = 
+//
+//       /\ n.levelParams =
 //            (****************************************************************)
 //            (* The parameters that contribute to the level of expression n  *)
 //            (* are the ones contributing to the level of op, together with  *)
@@ -1969,8 +1995,8 @@ public int levelChecked   = 0 ;
 //              LET LP(i) == IF op.weights[i] = 1 THEN arg[i].levelParams
 //                                                ELSE { }
 //              IN  UNION {LP(i) : i \in 1..p}
-// 
-//       /\ n.levelConstraints = 
+//
+//       /\ n.levelConstraints =
 //            (****************************************************************)
 //            (* Level constraints obtained from the expression arise from    *)
 //            (* the following sources:                                       *)
@@ -1979,13 +2005,13 @@ public int levelChecked   = 0 ;
 //            (* 1. op.levelConstraints :                                     *)
 //            (*      Constraints inherited from the definition of op.        *)
 //            (****************************************************************)
-//            op.levelConstraints 
+//            op.levelConstraints
 //               \cup
 //            (****************************************************************)
 //            (* 2. arg[i].levelConstraints :                                 *)
 //            (*      Constraints inherited from each argument arg[i].        *)
 //            (****************************************************************)
-//            (UNION {arg[i].levelConstraints : i \in 1..p}) 
+//            (UNION {arg[i].levelConstraints : i \in 1..p})
 //               \cup
 //            (****************************************************************)
 //            (* 3. op.maxLevels[i] :                                         *)
@@ -2005,7 +2031,7 @@ public int levelChecked   = 0 ;
 //            (*      contributing to the level of arg[j] must have level at  *)
 //            (*      most opArg.maxlevels[k].                                *)
 //            (****************************************************************)
-//            (LET LC(i,j,k) == 
+//            (LET LC(i,j,k) ==
 //               (*************************************************************)
 //               (* The set of level constraints that would be implied if a   *)
 //               (* parameter contributes to the level of arg[j], and         *)
@@ -2032,7 +2058,7 @@ public int levelChecked   = 0 ;
 //            (*      opArg, then the level of op.param must be \leq          *)
 //            (*      opArg.maxLevels[alp.idx].                               *)
 //            (****************************************************************)
-//            (LET 
+//            (LET
 //                 ALP(i) ==
 //                   (*********************************************************)
 //                   (* The set of arg-level parameters in op.argLevelParams  *)
@@ -2044,12 +2070,12 @@ public int levelChecked   = 0 ;
 //                   (* The level constraints implied by the elements in      *)
 //                   (* ALP(i).                                               *)
 //                   (*********************************************************)
-//                   {[param |-> alp.param, 
-//                     level |-> Node[arg[i].ref].maxLevels[alp.idx]] : 
+//                   {[param |-> alp.param,
+//                     level |-> Node[arg[i].ref].maxLevels[alp.idx]] :
 //                       alp \in ALP(i)}
 //             IN  UNION {LC(i) : i \in defOpArgs} )
-// 
-//        /\ n.argLevelConstraints =  
+//
+//        /\ n.argLevelConstraints =
 //            (****************************************************************)
 //            (* Arg-level constraints implied by the expression arise from   *)
 //            (* the following sources:                                       *)
@@ -2061,7 +2087,7 @@ public int levelChecked   = 0 ;
 //            (****************************************************************)
 //             op.argLevelConstraints
 //               \cup
-// 
+//
 //            (****************************************************************)
 //            (* 2. arg[i].argLevelConstraints                                *)
 //            (*      Expression n inherits arg-level constraints from its    *)
@@ -2074,7 +2100,7 @@ public int levelChecked   = 0 ;
 //            (*     If arg[i] is a declared operator, then it must be able   *)
 //            (*     to take a k-th argument of level op.minMaxLevel[i][k].   *)
 //            (****************************************************************)
-//            (LET 
+//            (LET
 //                 ALC(i) ==
 //                   (*********************************************************)
 //                   (* If arg[i] is the IdentifierNode of a declared         *)
@@ -2083,9 +2109,9 @@ public int levelChecked   = 0 ;
 //                   (*********************************************************)
 //                  {[param |-> arg[i].ref,
 //                    idx   |-> k,
-//                    level |-> op.minMaxLevel[i][k]] : 
+//                    level |-> op.minMaxLevel[i][k]] :
 //                      k \in 1..numOpArgs(i)}
-//             IN  UNION {ALC(i) : i \in declOpArgs})  
+//             IN  UNION {ALC(i) : i \in declOpArgs})
 //               \cup
 //            (****************************************************************)
 //            (* 4. op.opLevelCond                                            *)
@@ -2100,12 +2126,12 @@ public int levelChecked   = 0 ;
 //                   (* set of arg-level constraints implied for that         *)
 //                   (* operator by arg[j].level.                             *)
 //                   (*********************************************************)
-//                   {[param |-> arg[i].ref, 
-//                     idx |-> k, 
+//                   {[param |-> arg[i].ref,
+//                     idx |-> k,
 //                     level |-> arg[j].level] : k \in OpLevelCondIdx(i,j)}
-//                  
+//
 //             IN  UNION {ALC(i,j) : i \in declOpArgs, j \in 1..p} )
-//               \cup           
+//               \cup
 //            (****************************************************************)
 //            (* 5. op.argLevelParams                                         *)
 //            (*      If an arg-level parameter alp indicates that param[i]   *)
@@ -2124,12 +2150,12 @@ public int levelChecked   = 0 ;
 //                   (* The set of arg-level constraints implied by the       *)
 //                   (* elements of ALP(i).                                   *)
 //                   (*********************************************************)
-//                   {[param |-> alp.param, 
+//                   {[param |-> alp.param,
 //                     idx   |-> alp.idx,
 //                     level |-> arg[i].level] : alp \in ALP(i)}
 //              IN  UNION {ALC(i) : i \in 1..p})
-//             
-//       /\ n.argLevelParams = 
+//
+//       /\ n.argLevelParams =
 //            (****************************************************************)
 //            (* Arg-level parameters implied by the expression arise from    *)
 //            (* the following sources:                                       *)
@@ -2145,10 +2171,10 @@ public int levelChecked   = 0 ;
 //            (* 2. Elements alp of op.argLevelParams with neither alp.op or  *)
 //            (*    alp.param a formal parameter of the definition of op.     *)
 //            (****************************************************************)
-//            {alp \in op.argLevelParams : 
+//            {alp \in op.argLevelParams :
 //              \A i \in 1..p : (alp.op # param[i]) /\ (alp.param # param[i])}
 //             \cup
-// 
+//
 //            (****************************************************************)
 //            (* 3. Elements alp of op.argLevelParams with alp.op = param[i]. *)
 //            (*      If arg[i] is a declared operator opArg, then this       *)
@@ -2193,7 +2219,7 @@ public int levelChecked   = 0 ;
 //                   (* replacing alp.param with an element of                *)
 //                   (* arg[i].levelParams.                                   *)
 //                   (*********************************************************)
-//                   {[alp EXCEPT !.param = par] : 
+//                   {[alp EXCEPT !.param = par] :
 //                      alp \in OLP(i), par \in arg[i].levelParams}
 //             IN  UNION {ALP(i) : i \in declOpArgs} )
 //              \cup
@@ -2214,13 +2240,13 @@ public int levelChecked   = 0 ;
 //                   {[op |-> arg[i].ref, idx |-> k, param |-> par] :
 //                       k \in OpLevelCondIdx(i,j), par \in arg[j].levelParams}
 //              IN  UNION {ALP(i,j) : i \in declOpArgs, j \in 1..p})
-// 
-// 
-// OpApplNodeLevelCorrect(n) == 
+//
+//
+// OpApplNodeLevelCorrect(n) ==
 //   IF n.operator \in OpDeclNodeId THEN DeclaredOpApplNodeLevelCorrect(n)
 //                                  ELSE DefinedOpApplNodeLevelCorrect(n)
-// 
-// LetInNodeLevelCorrect(n) == 
+//
+// LetInNodeLevelCorrect(n) ==
 //   (*************************************************************************)
 //   (* We assume n is a LetInNode.                                           *)
 //   (*                                                                       *)
@@ -2240,25 +2266,25 @@ public int levelChecked   = 0 ;
 //         (*******************************************************************)
 //         {Node[opid].params[i] : i \in 1..Node[opid].numberOfArgs}
 //   IN  /\ n.level = exp.level
-//       /\ n.levelParams = 
-//            exp.levelParams 
-//       /\ n.levelConstraints = 
+//       /\ n.levelParams =
+//            exp.levelParams
+//       /\ n.levelConstraints =
 //            exp.levelConstraints \cup
 //               UNION {Node[opid].levelConstraints : opid \in letIds}
-//       /\ n.argLevelConstraints = 
+//       /\ n.argLevelConstraints =
 //            exp.argLevelConstraints \cup
 //               UNION {Node[opid].argLevelConstraints : opid \in letIds}
 //       /\ n.argLevelParams =
-//            exp.argLevelParams 
+//            exp.argLevelParams
 //              \cup
-//            (UNION {ReducedLevelConstraint(Node[opid], 
-//                                          opParams(opid)).argLevelParams : 
+//            (UNION {ReducedLevelConstraint(Node[opid],
+//                                          opParams(opid)).argLevelParams :
 //                     opid \in n.opDefs})
 //              \cup
 //            UNION {Node[opid].argLevelParams : opid \in n.instances}
-// 
-// 
-// IdentifierNodeLevelCorrect(n) == 
+//
+//
+// IdentifierNodeLevelCorrect(n) ==
 //   (*************************************************************************)
 //   (* An IdentifierNode represents an expression that consists of a single  *)
 //   (* symbol, or else an operator argument appearing as the argument in the *)
@@ -2271,30 +2297,30 @@ public int levelChecked   = 0 ;
 //        (********************************************************************)
 //        (* The level is the level of the symbol's node.                     *)
 //        (********************************************************************)
-//   /\ IF n.ref \in OpDeclNodeId \cup BoundSymbolNodeId 
+//   /\ IF n.ref \in OpDeclNodeId \cup BoundSymbolNodeId
 //        THEN (***************************************************************)
 //             (* The symbol is a declared operator or a bound symbol.  In    *)
 //             (* this case, all the constraints are empty except for a       *)
 //             (* ConstantDeclNode, in which case the set of level parameters *)
 //             (* consists of the symbol itself.                              *)
 //             (***************************************************************)
-//             /\ n.levelParams         = IF n.ref \in ConstantDeclNodeId 
+//             /\ n.levelParams         = IF n.ref \in ConstantDeclNodeId
 //                                          THEN {n.ref}
 //                                          ELSE { }
 //             /\ n.levelConstraints    = { }
 //             /\ n.argLevelConstraints = { }
 //             /\ n.argLevelParams      = { }
-// 
+//
 //        ELSE (***************************************************************)
 //             (* The symbol is a defined operator (appearing as an argument  *)
 //             (* to a higher-order operator).  Its constraints are the       *)
 //             (* constraints of the symbol's OpDefNode.                      *)
 //             (***************************************************************)
-//             /\ n.levelParams         = Node[n.ref].levelParams 
-//             /\ n.levelConstraints    = Node[n.ref].levelConstraints 
-//             /\ n.argLevelConstraints = Node[n.ref].argLevelConstraints 
-//             /\ n.argLevelParams      = Node[n.ref].argLevelParams 
-// 
+//             /\ n.levelParams         = Node[n.ref].levelParams
+//             /\ n.levelConstraints    = Node[n.ref].levelConstraints
+//             /\ n.argLevelConstraints = Node[n.ref].argLevelConstraints
+//             /\ n.argLevelParams      = Node[n.ref].argLevelParams
+//
 // LevelCorrect ==
 //   (*************************************************************************)
 //   (* The following kinds of nodes are always level-correct, and any level  *)
@@ -2314,13 +2340,13 @@ public int levelChecked   = 0 ;
 //     LET n == Node[id]
 //     IN  /\ (n \in IdentifierNode) => IdentifierNodeLevelCorrect(n)
 //         /\ (n \in OpApplNode)     => OpApplNodeLevelCorrect(n)
-//         /\ n \in LetInNode        => LetInNodeLevelCorrect(n) 
-//         /\ n \in InstanceNode     => InstanceNodeLevelCorrect(n) 
-//         /\ n \in ModuleNode       => ModuleNodeLevelCorrect(n) 
+//         /\ n \in LetInNode        => LetInNodeLevelCorrect(n)
+//         /\ n \in InstanceNode     => InstanceNodeLevelCorrect(n)
+//         /\ n \in ModuleNode       => ModuleNodeLevelCorrect(n)
 //         /\ (n \in OpDefNode) /\ (n.body # Null) => OpDefNodeLevelCorrect(n)
-// 
-// 
-// 
+//
+//
+//
 // =============================================================================
 
 // Last modified on Sun  1 March 2009 at 14:12:07 PST by lamport
@@ -2329,7 +2355,7 @@ public int levelChecked   = 0 ;
 
 // File level-checking-proposal.txt
 //
-//                   A Primer on Level Checking 
+//                   A Primer on Level Checking
 //                   --------------------------
 //
 //Consider a definition
@@ -2348,18 +2374,18 @@ public int levelChecked   = 0 ;
 //     Equals 1 iff argument i contributes to the level of the
 //     an occurrence of Op.  For example, if
 //
-//       Op(A(_,_,_), b) == A(1,2,3) 
+//       Op(A(_,_,_), b) == A(1,2,3)
 //
-//     then Op.weights[1] = 1, Op.weights[2] = 0.  
+//     then Op.weights[1] = 1, Op.weights[2] = 0.
 //
 //  Op.maxLevels[i] (for i \in 1 .. number of arguments of Op):
 //    The maximum level of an operator or expression that can be
 //    used as the i-th argument of Op.  For example, if
-//   
+//
 //       Op(A(_,_,_), b) == A(x, y, z)' + b
-//   
-//    then 
-//   
+//
+//    then
+//
 //       Op.maxLevels[1] = state level (because A is primed)
 //       Op.maxLevels[2] = action level (because the ... + b
 //                         implies that b can't be a temporal
@@ -2373,11 +2399,11 @@ public int levelChecked   = 0 ;
 //    The minimum value of Q.maxLevels[j] that an operator Q may have
 //    for it to be level-correct to use Q as the i-th argument of Op.
 //    For example, if
-//   
+//
 //        Op(A(_,_,_), b) == A([]X, b', 0)
-//   
-//    Then  
-//   
+//
+//    Then
+//
 //       Op.minMaxLevel[1][1] = temporal level
 //       Op.minMaxLevel[1][2] = action level
 //       Op.minMaxLevel[1][3] = constant level
@@ -2397,7 +2423,7 @@ public int levelChecked   = 0 ;
 //     the j-th formal parameter that affects the level of exp.
 //     For example, in
 //
-//        Op(A(_,_,_), b) == A(b+1,2,b-1) 
+//        Op(A(_,_,_), b) == A(b+1,2,b-1)
 //
 //     Op.opLevelCond[i][j][k] equals TRUE iff i=1, j=2, and k=1 or 3.
 //
@@ -2405,10 +2431,10 @@ public int levelChecked   = 0 ;
 //computing the following sets for each subexpression exp in the
 //right-hand side of the definition of Op, and using the values for the
 //complete right-hand side expression.
-//           
+//
 //  exp.level: The level of the expression.  Used to compute Op.level.
 //
-//  exp.levelParams: 
+//  exp.levelParams:
 //    The set of all formal parameters within exp that contribute to
 //    the level of exp.  Used to compute Op.weights.
 //
@@ -2420,9 +2446,9 @@ public int levelChecked   = 0 ;
 //    Used to compute Op.maxLevels.
 //
 //  exp.argLevelConstraints:
-//    A set of elements of the form 
+//    A set of elements of the form
 //
-//       [param : An operator parameter, 
+//       [param : An operator parameter,
 //        idx   : 1.. number of arguments of param,
 //        lev   : level]
 //
@@ -2432,9 +2458,9 @@ public int levelChecked   = 0 ;
 //    Used to compute Op.inMaxLevel.
 //
 //  exp.argLevelParams:
-//    A set of elements of the form 
+//    A set of elements of the form
 //
-//       [op    : An operator parameter, 
+//       [op    : An operator parameter,
 //        idx   : 1 .. number of arguments of param,
 //        param : An ordinary parameter]
 //
@@ -2453,7 +2479,7 @@ public int levelChecked   = 0 ;
 //
 //  Op.weights[i] = 1.         (Any argument might contribute to the level.)
 //
-//  Op.maxLevels[i] = CONSTANT (No constraints on levels of Op's 
+//  Op.maxLevels[i] = CONSTANT (No constraints on levels of Op's
 //                              arguments.)
 //
 //The values of an operator parameter's other level parameters are not
@@ -2518,17 +2544,17 @@ public int levelChecked   = 0 ;
 //call an operator recursive if it is declared in a RECURSIVE
 //statement.
 //
-//1. The level-related fields of each recursive operator Op in the 
+//1. The level-related fields of each recursive operator Op in the
 //   section are set as follows:
-//       Op.level = Constant, Op.weights[i] = 1, 
+//       Op.level = Constant, Op.weights[i] = 1,
 //       Op.weights[i] = 1 for all i.  (We make a worst-case
 //          assumption that any argument can affect the level.)
-//       Op.maxLevels[i] = Action level for all i.  
-//          (We disallow temporal operators anywhere in the definitions.)  
+//       Op.maxLevels[i] = Action level for all i.
+//          (We disallow temporal operators anywhere in the definitions.)
 //       Op.minMaxLevel and Op.opLevelCond are null (Operators
-//          declared in a RECURSIVE statement may not have operator 
+//          declared in a RECURSIVE statement may not have operator
 //          arguments.)
-//       All fields like exp.levelParams are set equal to the empty set.  
+//       All fields like exp.levelParams are set equal to the empty set.
 //       levelChecked = 1.
 //
 //2. Op.levelChecked is set to 0 and levelCheck(1) is invoked on each
@@ -2573,7 +2599,7 @@ public int levelChecked   = 0 ;
 //
 //4. For each operator definition Op in the section, Op.level is
 //   set to the maximum of it current value and R.level for every
-//   recursive operator R, and Op.levelParams is set to the union 
+//   recursive operator R, and Op.levelParams is set to the union
 //   itself and of the sets R.levelParams for all recursive operators
 //   R in the section.
 //
@@ -2593,7 +2619,7 @@ public int levelChecked   = 0 ;
 //Assertion: If no error has occured, then the definitions in the
 //recursive section are level-correct and conservative approximations
 //have been computed for the level information of all the operator
-//definitions in the section.  
+//definitions in the section.
 //Proof: This follows from previous assertions, which imply that all
 //level checks are performed with conservative values of Op.level,
 //Op.levelParams, and Op.maxLevels[i] for all operators Op in the
@@ -2649,7 +2675,7 @@ public int levelChecked   = 0 ;
 // - An operator F is Leibniz in its i-th argument iff whenever
 //   d, e_1, ... , e_k are all Leibnitz, the formula
 //
-//     (e_i = d) => (F(e_1, ...  , e_k) = 
+//     (e_i = d) => (F(e_1, ...  , e_k) =
 //                    F(e_1, ...  , e_(i-1), d, e_(i+1), ...  , e_k)
 //
 //   is valid.
@@ -2702,19 +2728,19 @@ public int levelChecked   = 0 ;
 //of the level of F and the level of all the e_j.  The coloring of the
 //elements of N.allParams is determined by the following rules:
 //
-// - When forming the union of sets M.allParams (for subnodes M of 
-//   N), an element in the union is colored non-Leibniz iff it is 
-//   colored non-Leibniz in any of those allParam sets. 
+// - When forming the union of sets M.allParams (for subnodes M of
+//   N), an element in the union is colored non-Leibniz iff it is
+//   colored non-Leibniz in any of those allParam sets.
 //
-// - For an Expr node OA representing the expression 
-//   Op(arg_1, ...  , arg_n), an element p in the set OA.allParams 
+// - For an Expr node OA representing the expression
+//   Op(arg_1, ...  , arg_n), an element p in the set OA.allParams
 //   is colored non-Leibniz if p occurs in the set A_j.allParams,
 //   where A_j is the Expr node for the j-th argument arg_j, and:
 //
 //    * Op is not Leibniz in its j-th argument, or
 //
-//    * Op.opLevelCond[i][j][k] = true and the i-th argument of OA 
-//      (which must be an operator) is not Leibniz in its k-th 
+//    * Op.opLevelCond[i][j][k] = true and the i-th argument of OA
+//      (which must be an operator) is not Leibniz in its k-th
 //      argument.
 //
 //The field Op.opLevelCond of the OpDef node Op is computed by the

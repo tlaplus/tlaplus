@@ -8,8 +8,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -157,31 +155,24 @@ public class UseOrHideNode extends LevelNode {
     return ret;
    }
 
-  /**
-   * <1>1. USE/HIDE ONLY? facts defs is exported as
-   * <use/hide only=ONLY? step_name?=<1>1><facts>..</><definitions>..</></>
-   */
-  public Element getElement(Document doc) {
-    Element e = null;
-    if (getKind() == UseKind) {
-      e = doc.createElement("use");
-    }
-    else { // HideKind
-      e = doc.createElement("hide");
-    }
-    e.setAttribute("only", isOnly ? "true" : "false");
-
-    if (stepName != null)
-      e.setAttribute("step_name", stepName.toString());
+  public Element getLevelElement(Document doc) {
+    Element e = doc.createElement("UseOrHideNode");
 
     Element factse = doc.createElement("facts");
-    Element definitions = doc.createElement("definitions");
+    Element definitions = doc.createElement("defs");
 
-    for (int i=0; i< facts.length; i++) factse.appendChild(facts[i].export(doc));
-    for (int i=0; i< defs.length; i++) definitions.appendChild(defs[i].export(doc));
+    for (int i=0; i<facts.length; i++) factse.appendChild(facts[i].export(doc));
+    for (int i=0; i<defs.length; i++) definitions.appendChild(defs[i].export(doc));
 
     e.appendChild(factse);
     e.appendChild(definitions);
+    if(isOnly) e.appendChild(doc.createElement("only"));
+    if(getKind() == HideKind) e.appendChild(doc.createElement("hide"));
+
+
+/*    if (stepName != null)
+      e.setAttribute("step_name", stepName.toString());
+*/
 
     return e;
   }

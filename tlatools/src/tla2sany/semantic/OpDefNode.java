@@ -43,8 +43,6 @@ import tla2sany.utilities.Vector;
 import util.UniqueString;
 import util.WrongInvocationException;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -1275,46 +1273,50 @@ public class OpDefNode extends OpDefOrDeclNode
   /**
    * Here we distinct between expanded and unexpanded definitions.
    * If an operator should be expanded, we export it as
-   * <operator where=user/builtin/proof name=nm><arguments?>..<?/><body?>..</></>
-   * Otherwise, we export it as
-   * <operatorname name=nm/>
-   *
    * Note that this object is also responsible for lambda terms, which are operators
    * with name LAMBDA
    */
-  public Element getElement(Document doc, boolean expandDefinitions) {
-
-    Element e = null;
-    if (expandDefinitions) {
-      e = doc.createElement("operator");
-      switch (getKind()) {
-        case UserDefinedOpKind:
-          e.setAttribute("where","user");
-          Element arguments = doc.createElement("arguments");
-          XMLExportable[] params = getParams();
-          for (int i=0; i<params.length; i++) arguments.appendChild(params[i].export(doc));
-          e.appendChild(arguments);
-          Element body = doc.createElement("body");
-          body.appendChild(getBody().export(doc));
-          e.appendChild(body);
-          break;
-        case BuiltInKind:
-          e.setAttribute("where","builtin");
-          break;
-        case NumberedProofStepKind:
-          e.setAttribute("where","proof");
-          break;
-        default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
+    public Element getLevelElement(Document doc) {
+    Element ret = null;
+    switch (getKind()) {
+      case UserDefinedOpKind:
+        ret = doc.createElement("UserDefinedOpKind");
+        ret.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
+        ret.appendChild(doc.createElement("arity").appendChild(doc.createTextNode(Integer.toString(getArity()))));
+        ret.appendChild(doc.createElement("body").appendChild(body.export(doc)));
+        if (params != null) {
+          Element arguments = doc.createElement("params");
+          for (int i=0; i<params.length; i++) {
+            Element lp = doc.createElement("leibnizparam");
+            lp.appendChild(params[i].export(doc));
+            if (isLeibnizArg[i]) lp.appendChild(doc.createElement("leibniz"));
+            arguments.appendChild(lp);
+          }
+          ret.appendChild(arguments);
       }
-
-      e.setAttribute("shape",""+getArity());
-      e.setAttribute("local",local ? "true" : "false");
-      e.setAttribute("recursive",getInRecursive() ? "true" : "false");
+      if (inRecursive) ret.appendChild(doc.createElement("recursive"));
+      break;
+      case BuiltInKind:
+        ret = doc.createElement("BuiltInKind");
+        ret.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
+        ret.appendChild(doc.createElement("arity").appendChild(doc.createTextNode(Integer.toString(getArity()))));
+        Element arguments2 = doc.createElement("params");
+        if (params != null) {
+          for (int i=0; i<params.length; i++) {
+            Element lp = doc.createElement("leibnizparam");
+            lp.appendChild(params[i].export(doc));
+            if (isLeibnizArg[i]) lp.appendChild(doc.createElement("leibniz"));
+            arguments2.appendChild(lp);
+          }
+          ret.appendChild(arguments2);
+        }
+        break;
+      case ModuleInstanceKind:
+        ret = doc.createElement("ModuleInstanceKind");
+        ret.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
+        break;
+      default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
     }
-    else {
-      e = doc.createElement("operatorname");
-    }
-    e.setAttribute("name", getName().toString());
-    return e;
+    return ret;
   }
 }

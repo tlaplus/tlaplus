@@ -10,18 +10,21 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 public class InstanceNode extends LevelNode {
 
   /**
    * This class represents a TLA module instantiation whose general form is
    *
-   *    I(param[1], ... , param[p]) ==                                    
+   *    I(param[1], ... , param[p]) ==
    *       INSTANCE M WITH mparam[1] <- mexp[1], ... , mparam[r] <- mexp[r]
    *
    * or simply
    *
    *   INSTANCE M WITH mparam[1] <- mexp[1], ... , mparam[r] <- mexp[r]
-   * 
+   *
    *  where I         instance name
    *        param[i]  instance paramater
    *        M         module being instantiated
@@ -37,35 +40,35 @@ public class InstanceNode extends LevelNode {
    *  mexp[i] is a simply a reference to a constant or variable
    *  declared in the current module that has the same name as mparam[i]
    *  declared in M (or a module M extends).
-   *  
+   *
    *  On 30 Jan 2013, LL added some public get...() methods that
    *  return some fields.
-   */      
+   */
 
-  UniqueString      name;     
+  UniqueString      name;
      // The name of this instance, e.g. "I" in the example above;
      //   null if this is an unnamed instance.
-  
+
   public UniqueString getName() {
       return name ;
   }
-  FormalParamNode[] params;   
+  FormalParamNode[] params;
      // The instance parameters, e.g. param[1]  ... param[n] in the
      // example above. Has length zero if there is no param.
-  ModuleNode        module;   
+  ModuleNode        module;
      // Reference to the module, M, being instantiated
-  
+
   public ModuleNode getModule() {
       return module ;
   }
-  
-  Subst[]           substs;   
+
+  Subst[]           substs;
      // The substitutions mparam[1] <- mexp[1], ... , mparam[r] <- mexp[r]
      // This includes substitutions not explicitly mentioned in the
      // surface syntax because they are of the form c <- c or x <- x
      // Have length 0 if there is no substitution.
 
-  
+
   /*************************************************************************
   * The following field was added by LL on 29 Jul 2007.                    *
   *************************************************************************/
@@ -77,7 +80,7 @@ public class InstanceNode extends LevelNode {
   public boolean getLocal() {
       return this.local ;
   }
- 
+
   /**
    * If the InstanceNode is a proof step, this is the step number.  It
    * is made a UniqueString for consistency; there's no need to make
@@ -110,7 +113,7 @@ public class InstanceNode extends LevelNode {
     this.substs = (substs != null ? substs : new Subst[0]);
   }
 
-  public boolean isLocal() { return local ; } 
+  public boolean isLocal() { return local ; }
 
   /* Level checking */
 // These fields are now declared in all LevelNode subclasses
@@ -118,20 +121,20 @@ public class InstanceNode extends LevelNode {
 //  private SetOfLevelConstraints levelConstraints;
 //  private SetOfArgLevelConstraints argLevelConstraints;
 //  private HashSet argLevelParams;
-  
+
   public final boolean levelCheck(int itr) {
     /***********************************************************************
     * I believe this should only be called once, with itr = 1.            *
     ***********************************************************************/
     if (this.levelChecked >= itr) return this.levelCorrect ;
     levelChecked = itr ;
-    
+
 
     levelParams = new HashSet() ;
       /*********************************************************************
       * Added in SANY2.                                                    *
       *********************************************************************/
-      
+
     /***********************************************************************
     * Level check the components this.module and this.substs[i].getExpr(). *
     ***********************************************************************/
@@ -148,7 +151,7 @@ public class InstanceNode extends LevelNode {
     // Check constraints on the substitution.
     for (int i = 0; i < this.substs.length; i++ ) {
       SymbolNode mparam = substs[i].getOp();
-      ExprOrOpArgNode mexp = substs[i].getExpr();     
+      ExprOrOpArgNode mexp = substs[i].getExpr();
       mexp.levelCheck(itr) ;
       mparam.levelCheck(itr);
         /*****************************************************************
@@ -162,14 +165,14 @@ public class InstanceNode extends LevelNode {
         if (mexp.getLevel() > mparam.getLevel()) {
           if (mexp.levelCheck(itr) && mparam.levelCheck(itr)) {
             errors.addError(
-               this.stn.getLocation(), 
+               this.stn.getLocation(),
                "Level error in instantiating module '" + module.getName() +
-               "':\nThe level of the expression or operator substituted for '" 
-                   + mparam.getName() + 
+               "':\nThe level of the expression or operator substituted for '"
+                   + mparam.getName() +
                "' \nmust be at most " + mparam.getLevel() + ".");
           }
           this.levelCorrect = false;
-         } //  if (mexp.getLevel() > mparam.getLevel()) 
+         } //  if (mexp.getLevel() > mparam.getLevel())
        } // if (!this.module.isConstant())
 
         /*******************************************************************
@@ -182,16 +185,16 @@ public class InstanceNode extends LevelNode {
                 || (op.getKind() == BuiltInKind))
             && ( ! ((OpDefNode) op).isLeibniz)) {
           errors.addError(
-               this.stn.getLocation(), 
+               this.stn.getLocation(),
                "Error in instantiating module '" + module.getName() +
-               "':\n A non-Leibniz operator substituted for '" 
+               "':\n A non-Leibniz operator substituted for '"
                    + mparam.getName() + "'.");
             } // if ;
         } // if (mexp.getKind() == OpArgKind) ;
       } // for i
 
     SetOfLevelConstraints lcSet = this.module.getLevelConstraints();
-    SetOfArgLevelConstraints alcSet = this.module.getArgLevelConstraints();    
+    SetOfArgLevelConstraints alcSet = this.module.getArgLevelConstraints();
     for (int i = 0; i < this.substs.length; i++ ) {
       SymbolNode mparam = substs[i].getOp();
       ExprOrOpArgNode mexp = substs[i].getExpr();
@@ -202,14 +205,14 @@ public class InstanceNode extends LevelNode {
       if (plevel != null &&
           mexp.getLevel() > plevel.intValue()) {
         if (mexp.levelCheck(itr)) {
-          errors.addError(this.stn.getLocation(), 
+          errors.addError(this.stn.getLocation(),
             "Level error in instantiating module '" + module.getName() +
             "':\nThe level of the expression or operator substituted for '" +
             mparam.getName() + "' \nmust be at most " + plevel + ".");
         }
         this.levelCorrect = false;
       }
-      
+
       int alen = mparam.getArity();
       if (alen > 0 && ((OpArgNode)mexp).getOp() instanceof OpDefNode) {
         OpDefNode opDef = (OpDefNode)((OpArgNode)mexp).getOp();
@@ -229,7 +232,7 @@ public class InstanceNode extends LevelNode {
               * checking opDef didn't cause an error.                      *
               *************************************************************/
               errors.addError(
-                this.stn.getLocation(), 
+                this.stn.getLocation(),
                 "Level error in instantiating module '" + module.getName() +
                   "':\nThe level of the argument " + j + " of the operator " +
                   opDef.getName() + " \nmust be at least " + plevel + ".");
@@ -253,15 +256,15 @@ public class InstanceNode extends LevelNode {
                /************************************************************
                * Need to level check before calling op.getMaxLevel.        *
                ************************************************************/
-            if (op instanceof OpDefNode && 
-                this.substs[j].getExpr().getLevel() > 
+            if (op instanceof OpDefNode &&
+                this.substs[j].getExpr().getLevel() >
                    ((OpDefNode)op).getMaxLevel(alp.i)) {
               if (opLevelCheck &&
                   this.substs[j].getExpr().levelCheck(itr)) {
                 errors.addError(
-                   this.stn.getLocation(), 
-                   "Level error when instantiating module '" + 
-                      module.getName() + "':\nThe level of the argument " + 
+                   this.stn.getLocation(),
+                   "Level error when instantiating module '" +
+                      module.getName() + "':\nThe level of the argument " +
                       alp.i + " of the operator " +
                       pi.getName() + "' \nmust be at most " +
                       ((OpDefNode)op).getMaxLevel(alp.i) + ".");
@@ -272,10 +275,10 @@ public class InstanceNode extends LevelNode {
         } // for f
       } // for i
     } // while (iter.hasNext())
-    
+
     // Calculate level information.
 //    this.levelConstraints = new SetOfLevelConstraints();
-    lcSet = Subst.getSubLCSet(this.module, this.substs, 
+    lcSet = Subst.getSubLCSet(this.module, this.substs,
                               this.module.isConstant(), itr);
       /*********************************************************************
       * At this point, levelCheck(itr) has been called on this.module and  *
@@ -299,7 +302,7 @@ public class InstanceNode extends LevelNode {
         }
       }
     }
-    
+
 //    this.argLevelConstraints = new SetOfArgLevelConstraints();
     alcSet = Subst.getSubALCSet(this.module, this.substs, itr);
     iter = alcSet.keySet().iterator();
@@ -319,7 +322,7 @@ public class InstanceNode extends LevelNode {
         }
       }
     }
-    
+
 //    this.argLevelParams = new HashSet();
     HashSet alpSet = Subst.getSubALPSet(this.module, this.substs);
       /*********************************************************************
@@ -366,15 +369,15 @@ public class InstanceNode extends LevelNode {
 // Assert.fail("Internal Error: Should never call InstanceNode.getLevelParams().");
     return levelParams ; // make compiler happy
   }
-  
-  public final SetOfLevelConstraints getLevelConstraints() { 
+
+  public final SetOfLevelConstraints getLevelConstraints() {
     return this.levelConstraints;
   }
 
-//  public final SetOfArgLevelConstraints getArgLevelConstraints() { 
+//  public final SetOfArgLevelConstraints getArgLevelConstraints() {
 //    return this.argLevelConstraints;
 //  }
-//  
+//
 //  public final HashSet getArgLevelParams() { return this.argLevelParams; }
 
   public final String levelDataToString() {
@@ -393,7 +396,7 @@ public class InstanceNode extends LevelNode {
       }
       return res;
    }
-  
+
   public final void walkGaph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
@@ -409,7 +412,7 @@ public class InstanceNode extends LevelNode {
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
-    String ret = "\n*InstanceNode " + super.toString(depth) + 
+    String ret = "\n*InstanceNode " + super.toString(depth) +
                  "  InstanceName = " + (name == null ? "(none)" : name.toString()) +
                  Strings.indent(2, "\nModule: " + module.getName())
    +             Strings.indent(2, "\nlocal: " + this.local);
@@ -432,5 +435,27 @@ public class InstanceNode extends LevelNode {
     }
     return ret;
   }
+
+  protected Element getLevelElement(Document doc) {
+
+      Element us = doc.createElement("uniquename");
+      us.appendChild(doc.createTextNode(name.toString()));
+
+      Element sbts = doc.createElement("substs");
+      for (int i=0; i<substs.length; i++) {
+        sbts.appendChild(substs[i].export(doc));
+      }
+
+      Element prms = doc.createElement("params");
+      for (int i=0; i<params.length; i++) {
+        prms.appendChild(params[i].export(doc));
+      }
+
+      Element ret = doc.createElement("InstanceNode");
+      ret.appendChild(us);
+      ret.appendChild(sbts);
+      ret.appendChild(prms);
+      return ret;
+    }
 
 }

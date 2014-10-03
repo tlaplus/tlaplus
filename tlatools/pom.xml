@@ -93,6 +93,10 @@
         </dependency>
       </dependencies>
 
+      <!-- August 2014 - TL
+           added a non-default profile (must be called explicitly)
+           which creates a jar file and set XMLExporter as the main class.
+       -->
     <profiles>
       <profile>
         <id>exporter</id>

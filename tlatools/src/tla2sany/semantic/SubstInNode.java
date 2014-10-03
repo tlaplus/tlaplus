@@ -29,6 +29,9 @@ import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import util.UniqueString;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 public class SubstInNode extends ExprNode {
   /**
    * For a SubstInNode object s that has the WITH clause
@@ -37,29 +40,29 @@ public class SubstInNode extends ExprNode {
    * <p>
    *
    * The substitutions can be accessed as follows:
-   *                                                                 
+   *
    *    s.getSubFor(0)  = a ref to the ConstantDecl or VariableDecl
-   *                      node for A                               
+   *                      node for A
    *    s.getSubFor(1)  = a ref to the ConstantDecl or VariableDecl
-   *                      node for B                               
-   *    s.getSubWith(0) = a ref to the ExprNode for x+1            
+   *                      node for B
+   *    s.getSubWith(0) = a ref to the ExprNode for x+1
    *    s.getSubWith(1) = a ref to the ExprNode for x*r
    */
-  private Subst[]           substs;              
+  private Subst[]           substs;
      // List of explicit and implicit substitutions to be
      // applied to the body.  It should contain substitution
      // for all CONSTANTS and VARIABLES declared in the
      // module being instantiated (whether or not they appear
      // explicitly in the substitution list.
-  private ExprNode          body;                
+  private ExprNode          body;
      // The expression that the substitutions apply to
-  private ModuleNode        instantiatingModule; 
+  private ModuleNode        instantiatingModule;
      // The module doing the instantiating that resulted in
      //   THIS SubstInNode
-  private ModuleNode        instantiatedModule;  
+  private ModuleNode        instantiatedModule;
      // The module being instantiated
 
-  public SubstInNode(TreeNode treeNode, Subst[] subs, ExprNode expr, 
+  public SubstInNode(TreeNode treeNode, Subst[] subs, ExprNode expr,
 		     ModuleNode ingmn, ModuleNode edmn) {
     super(SubstInKind, treeNode);
     this.substs = subs;
@@ -164,15 +167,15 @@ public class SubstInNode extends ExprNode {
 	  // Create a new Subst for c <- c, where the c on the RHS is
 	  // an OpApplNode with zero arguments
           vtemp.addElement(
-             new Subst(decl, 
-		       new OpApplNode(symb, new ExprOrOpArgNode[0], treeNode, instantiatingModule), 
+             new Subst(decl,
+		       new OpApplNode(symb, new ExprOrOpArgNode[0], treeNode, instantiatingModule),
 		       null, true));
         }
 	else {
 	  // Create a new Subst for c <- c, where the c on the RHS is an OpArgNode
-          vtemp.addElement( 
-             new Subst(decl, 
-		       new OpArgNode(symb, treeNode, instantiatingModule), 
+          vtemp.addElement(
+             new Subst(decl,
+		       new OpArgNode(symb, treeNode, instantiatingModule),
 		       null, true));
         } // end else
       } // end if
@@ -193,7 +196,7 @@ public class SubstInNode extends ExprNode {
    * to this method can contain a mixture of explicit and implicit
    * substitutions
    */
-  final void addExplicitSubstitute(Context instanceeCtxt, UniqueString lhs, 
+  final void addExplicitSubstitute(Context instanceeCtxt, UniqueString lhs,
                                    TreeNode stn, ExprOrOpArgNode sub) {
     int index;
     for (index = 0; index < this.substs.length; index++) {
@@ -264,11 +267,11 @@ public class SubstInNode extends ExprNode {
       UniqueString opName = ((OpDeclNode)decls.elementAt(i)).getName();
 
       // See if it is represented in the substitutions array
-      int j;      
+      int j;
       for (j = 0; j < this.substs.length; j++) {
         if (this.substs[j].getOp().getName() == opName) break;
       }
-       
+
       // If not, then report an error
       if ( j >= this.substs.length ) {
         errors.addError(stn.getLocation(),
@@ -283,7 +286,7 @@ public class SubstInNode extends ExprNode {
 // These nodes are now part of all LevelNode subclasses.
 //  private boolean levelCorrect;
 //  private int level;
-//  private HashSet levelParams; 
+//  private HashSet levelParams;
 //  private SetOfLevelConstraints levelConstraints;
 //  private SetOfArgLevelConstraints argLevelConstraints;
 //  private HashSet argLevelParams;
@@ -324,7 +327,7 @@ public class SubstInNode extends ExprNode {
         * At this point, levelCheck(itr) has been invoked on              *
         * this.substs[i].getExpr() (which equals this.getSubWith(i)).      *
         *******************************************************************/
-    }   
+    }
 
     /***********************************************************************
     * The following code was added 22 May 2008 by LL. I had apparently     *
@@ -338,9 +341,9 @@ public class SubstInNode extends ExprNode {
     * parameters to this.nonLeibnizParams.                                 *
     ***********************************************************************/
 // XXXXX Here's the bug.  Need to clone these HashSets, not just
-//       set a ref to them.  
+//       set a ref to them.
 // Same bug seems to appear in LetInNode with levelParams & allParams
-//    (but may not be a bug)                                  
+//    (but may not be a bug)
 // To check: in APSubstInNode: this.argLevelParams = Subst...
 //           in OpDefNode: this.levelParams = EmptySet, ...
 //            also, make sure everything set to EmptySet, EmptyLC, EmptyALC
@@ -376,7 +379,7 @@ public class SubstInNode extends ExprNode {
 
          }; // if
        }; // if (bodyParams.contains(param))
-     }; // for    
+     }; // for
 
 
 //    /***********************************************************************
@@ -400,26 +403,26 @@ public class SubstInNode extends ExprNode {
 //        * If this param is non-Leibniz in the substitution body, then add  *
 //        * the substution's parameters to this.nonLeibnizParams             *
 //        *******************************************************************/
-//System.out.println("parameter is non-Leibniz") ;      
+//System.out.println("parameter is non-Leibniz") ;
 //        this.nonLeibnizParams.addAll(Subst.allParamSet(param, this.substs));
-//System.out.println("added: " + 
+//System.out.println("added: " +
 //HashSetToString(Subst.allParamSet(param, this.substs))) ;
 //       } // if
 //
-//    } // while   
+//    } // while
 
     boolean isConstant = this.instantiatedModule.isConstant();
       /*********************************************************************
       * It is not necessary to invoke levelCheck before invoking           *
       * isConstant.                                                        *
       *********************************************************************/
-    this.levelConstraints = Subst.getSubLCSet(this.body, this.substs, 
+    this.levelConstraints = Subst.getSubLCSet(this.body, this.substs,
                                               isConstant, itr);
       /*********************************************************************
       * levelCheck(itr) has been called on body and the                   *
       * substs[i].getExpr(), as required.                                  *
       *********************************************************************/
-    this.argLevelConstraints = 
+    this.argLevelConstraints =
         Subst.getSubALCSet(this.body, this.substs, itr);
     this.argLevelParams = Subst.getSubALPSet(this.body, this.substs);
       /*********************************************************************
@@ -433,23 +436,23 @@ public class SubstInNode extends ExprNode {
 //
 //  public final HashSet getLevelParams() { return this.levelParams; }
 //
-//  public final SetOfLevelConstraints getLevelConstraints() { 
-//    return this.levelConstraints; 
+//  public final SetOfLevelConstraints getLevelConstraints() {
+//    return this.levelConstraints;
 //  }
-//  
-//  public final SetOfArgLevelConstraints getArgLevelConstraints() { 
-//    return this.argLevelConstraints; 
+//
+//  public final SetOfArgLevelConstraints getArgLevelConstraints() {
+//    return this.argLevelConstraints;
 //  }
-//  
-//  public final HashSet getArgLevelParams() { 
-//    return this.argLevelParams; 
+//
+//  public final HashSet getArgLevelParams() {
+//    return this.argLevelParams;
 //  }
 
   /**
    * toString, levelDataToString, & walkGraph methods to implement
    * ExploreNode interface
    */
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.level               + "\n" +
 //           "LevelParameters: "     + this.levelParams         + "\n" +
 //           "LevelConstraints: "    + this.levelConstraints    + "\n" +
@@ -460,8 +463,8 @@ public class SubstInNode extends ExprNode {
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
-    String ret = "\n*SubstInNode: " 
-                 + super.toString(depth) 
+    String ret = "\n*SubstInNode: "
+                 + super.toString(depth)
 	         + "\n  instantiating module: " + instantiatingModule.getName()
                  + ", instantiated module: " + instantiatedModule.getName()
                  + Strings.indent(2, "\nSubstitutions:");
@@ -477,7 +480,7 @@ public class SubstInNode extends ExprNode {
     else {
       ret += Strings.indent(2, "<null>");
     }
-    ret += Strings.indent(2, "\nBody:" 
+    ret += Strings.indent(2, "\nBody:"
 			  + Strings.indent(2, (body == null ? "<null>" : body.toString(depth-1))));
     return ret;
   }
@@ -494,7 +497,7 @@ public class SubstInNode extends ExprNode {
      }
      return res;
   }
-  
+
   public final void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
@@ -510,6 +513,18 @@ public class SubstInNode extends ExprNode {
     return;
   }
 
+    protected Element getLevelElement(Document doc) {
+      Element sbts = doc.createElement("substs");
+      for (int i=0; i<substs.length; i++) {
+        sbts.appendChild(substs[i].export(doc));
+      }
+      Element bdy = doc.createElement("body");
+      bdy.appendChild(body.export(doc));
+      Element ret = doc.createElement("SubstInNode");
+      ret.appendChild(sbts);
+      ret.appendChild(bdy);
+      return ret;
+    }
 }
 
 

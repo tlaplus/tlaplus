@@ -7,8 +7,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -213,19 +211,13 @@ public class NonLeafProofNode extends ProofNode {
     return ret;
    }
 
-  /**
-   * a list of steps and their context is exported as:
-   * <steps><step>step_node</>..</>
-   */
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("steps");
-    XMLExportable[] steps = getSteps();
+  public Element getLevelElement(Document doc) {
+    Element e = doc.createElement("ProofNode");
 
     for (int i=0; i< steps.length; i++) {
-      Element es = doc.createElement("step");
-      es.appendChild(steps[i].export(doc));
-      // TODO: check if the context is relevant here!
+      e.appendChild(steps[i].export(doc));
     }
+
     return e;
   }
 }

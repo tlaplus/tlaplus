@@ -6,9 +6,12 @@ import java.util.Hashtable;
 
 import tla2sany.utilities.Strings;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 public class AtNode extends ExprNode {
 
-  private OpApplNode exceptRef;           // reference to OpApplNode for the innermost 
+  private OpApplNode exceptRef;           // reference to OpApplNode for the innermost
                                           //   enclosing $Except operator
   private OpApplNode exceptComponentRef;  // reference to OpApplNode for the innermost
                                           //   enclosing $Pair operator that represents the
@@ -21,7 +24,7 @@ public class AtNode extends ExprNode {
     this.exceptComponentRef = ecr;
   }
 
-  /** 
+  /**
    * Return reference to the OpApplNode for the $Except operator with
    * which this occurrence of @ is associated.  For @ on the RHS of
    * an ExceptionSpec, that is the immediately enclosing $Except; for
@@ -29,7 +32,7 @@ public class AtNode extends ExprNode {
    */
   public final OpApplNode getExceptRef() { return this.exceptRef; }
 
-  /** 
+  /**
    * Return reference to the OpApplNode for the $Pair operator with
    * which this occurrence of @ is associated.  For @ on the RHS of
    * an ExceptionSpec, that is the immediately enclosing ExceptSpec;
@@ -39,7 +42,7 @@ public class AtNode extends ExprNode {
     return this.exceptComponentRef;
   }
 
-  /** 
+  /**
    * Return the expression that is the "base" of the expression that
    * @ stands for.  In the example [ [ f[3] EXCEPT !.h[4] = (@ + @) ]
    * this expression is f[3].  Both AtNodes in this example refer to
@@ -64,7 +67,7 @@ public class AtNode extends ExprNode {
   /* Level check */
 // These nodes are now part of all LevelNode subclasses.
 //  private int level;
-//  private HashSet levelParams; 
+//  private HashSet levelParams;
 //  private SetOfLevelConstraints levelConstraints;
 //  private SetOfArgLevelConstraints argLevelConstraints;
 //  private HashSet argLevelParams;
@@ -72,7 +75,7 @@ public class AtNode extends ExprNode {
   public final boolean levelCheck(int iter) {
     if (this.levelChecked >= iter) return true;
     this.levelChecked = iter;
-    
+
     ExprOrOpArgNode[] args = this.exceptRef.getArgs();
     args[0].levelCheck(iter) ;
     this.level = args[0].getLevel();
@@ -118,21 +121,21 @@ public class AtNode extends ExprNode {
 //
 //  public final HashSet getLevelParams() { return this.levelParams; }
 //
-//  public final SetOfLevelConstraints getLevelConstraints() { 
-//    return this.levelConstraints; 
+//  public final SetOfLevelConstraints getLevelConstraints() {
+//    return this.levelConstraints;
 //  }
-//  
-//  public final SetOfArgLevelConstraints getArgLevelConstraints() { 
-//    return this.argLevelConstraints; 
+//
+//  public final SetOfArgLevelConstraints getArgLevelConstraints() {
+//    return this.argLevelConstraints;
 //  }
-//  
+//
 //  public final HashSet getArgLevelParams() { return this.argLevelParams; }
 
   /**
    * toString, levelDataToString, & walkGraph methods needed to
    * implement ExploreNode interface
    */
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.getLevel()               + "\n" +
 //           "LevelParameters: "     + this.getLevelParams()         + "\n" +
 //           "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
@@ -145,7 +148,7 @@ public class AtNode extends ExprNode {
    * and inserts them in the Hashtable semNodesTable for use by the Explorer tool.
    */
   public final void walkGraph(Hashtable h) {
-  // Empty because there are no nodes reachable through an AtNode that are not 
+  // Empty because there are no nodes reachable through an AtNode that are not
   // reachable by other paths through the semantic graph.
   } // end walkGraph()
 
@@ -157,8 +160,14 @@ public class AtNode extends ExprNode {
   public final String toString(int depth) {
     if (depth <= 0) return "";
     return "\n*AtNode: " + super.toString(depth) +
-           Strings.indent(2, "\nExceptRef: " + exceptRef.getUid() + 
+           Strings.indent(2, "\nExceptRef: " + exceptRef.getUid() +
                              "\nExceptComponent: " + exceptComponentRef.getUid());
   }
 
+  protected Element getLevelElement(Document doc) {
+    Element e = doc.createElement("AtNode");
+    e.appendChild(exceptRef.export(doc));
+    e.appendChild(exceptComponentRef.export(doc));
+    return e;
+  }
 }

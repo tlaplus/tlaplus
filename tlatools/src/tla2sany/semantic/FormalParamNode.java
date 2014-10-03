@@ -7,8 +7,6 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import util.UniqueString;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -126,14 +124,10 @@ public class FormalParamNode extends SymbolNode {
 	    "  " + super.toString(depth) + "  arity: " + arity);
   }
 
-  /**
-   *  the parameter p is exported as
-   *  <parameter name=p shape=arity</>
-   */
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("parameter");
-    e.setAttribute("name",getName().toString());
-    e.setAttribute("shape", ""+getArity());
+  public Element getLevelElement(Document doc) {
+    Element e = doc.createElement("FormalParamNode");
+    e.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
+    e.appendChild(doc.createElement("arity").appendChild(doc.createTextNode(Integer.toString(getArity()))));
     return e;
   }
 }

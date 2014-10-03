@@ -7,25 +7,28 @@ import java.util.Hashtable;
 
 import tla2sany.st.TreeNode;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
  * Describes a decimal like 1347.052.  This number is represented by the
- * values                    
- *                   
- *   long mantissa() = 1347052                  
- *   int  exponent() = -3                               
- *   BigDecimal bigVal() = null        
- *                               
- * so its value is mantissa() * 10^(exponent).  However, if the number  
- * can't be represented in this way, then bigVal() is the value as a    
- * BigDecimal and the other fields are meaningless.  
- *                             
+ * values
+ *
+ *   long mantissa() = 1347052
+ *   int  exponent() = -3
+ *   BigDecimal bigVal() = null
+ *
+ * so its value is mantissa() * 10^(exponent).  However, if the number
+ * can't be represented in this way, then bigVal() is the value as a
+ * BigDecimal and the other fields are meaningless.
+ *
  * If bigVal() equals null, then mantissa() is either a positive integer
  * not divisible by 10, or else it equals 0 and exponent() equals 0.
  */
 public class DecimalNode extends ExprNode {
 
-  private long       mantissa;                 
-  private int        exponent;                         
+  private long       mantissa;
+  private int        exponent;
   private BigDecimal bigVal = null;
   private String     image;
 
@@ -36,20 +39,20 @@ public class DecimalNode extends ExprNode {
     try {
       this.mantissa = Long.parseLong( a + b );
       this.exponent = - b.length();
-    }
-    catch (NumberFormatException e) {
+     }
+     catch (NumberFormatException e) {
       this.bigVal = new BigDecimal( image );
     }
-  }
+   }
 
   /**
    * Returns the mantissa of the decimal number, i.e its value after scaling
-   * by a power of 10 until the fractional part is zero; e.g. the mantissa of 
+   * by a power of 10 until the fractional part is zero; e.g. the mantissa of
    * 1.23 is 123.
    */
   public final long mantissa() { return this.mantissa; }
 
-  /** 
+  /**
    * The power of 10 which, when multiplied by the mantissa, yields the original number,
    * e.g. the exponent of 1.23 is -2.
    */
@@ -61,14 +64,14 @@ public class DecimalNode extends ExprNode {
   public final BigDecimal bigVal() { return this.bigVal; }
 
   /**
-   * Returns the value as a string, exactly the way the user typed it--e.g.,    
-   * without any normalization, removal of leading or trailing zero's, etc.                                      
+   * Returns the value as a string, exactly the way the user typed it--e.g.,
+   * without any normalization, removal of leading or trailing zero's, etc.
    */
   public final String toString() { return this.image; }
 
   /* Level checking */
   public final boolean levelCheck(int iter) {
-    levelChecked = iter; 
+    levelChecked = iter;
       /*********************************************************************
       * Set it just to show that levelCHeck was called.                    *
       *********************************************************************/
@@ -88,19 +91,19 @@ public class DecimalNode extends ExprNode {
 //  }
 //
 //  public final HashSet getArgLevelParams() { return EmptySet; }
-  
+
   /**
    *  toString, levelDataToString(), and walkGraph methods to implement
    *  ExploreNode interface
    */
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.getLevel()               + "\n" +
 //           "LevelParameters: "     + this.getLevelParams()         + "\n" +
 //           "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
 //           "ArgLevelConstraints: " + this.getArgLevelConstraints() + "\n" +
 //           "ArgLevelParams: "      + this.getArgLevelParams()      + "\n" ;
 //  }
-  
+
   /**
    * walkGraph finds all reachable nodes in the semantic graph and
    * inserts them in the Hashtable semNodesTable for use by the
@@ -120,11 +123,23 @@ public class DecimalNode extends ExprNode {
    */
   public final String toString(int depth) {
     if (depth <= 0) return "";
-    return( "\n*DecimalNode" + super.toString(depth) + "Mantissa: " 
-            + mantissa + "; exponent: " + exponent 
+    return( "\n*DecimalNode" + super.toString(depth) + "Mantissa: "
+            + mantissa + "; exponent: " + exponent
             + "; big value: " + (bigVal != null ? bigVal.toString() : "<null>")
-            + "\n; image = " + image 
+            + "\n; image = " + image
           );
   }
 
-}   
+  protected Element getLevelElement(Document doc) {
+    Element e = doc.createElement("DecimalNode");
+    if (bigVal != null) {
+      e.appendChild(doc.createElement("mantissa").appendChild(doc.createTextNode(bigVal.unscaledValue().toString())));
+      e.appendChild(doc.createElement("exponent").appendChild(doc.createTextNode(Integer.toString(bigVal.scale()))));
+    }
+    else {
+      e.appendChild(doc.createElement("mantissa").appendChild(doc.createTextNode(Long.toString(mantissa))));
+      e.appendChild(doc.createElement("exponent").appendChild(doc.createTextNode(Integer.toString(exponent))));
+    }
+    return e;
+  }
+}

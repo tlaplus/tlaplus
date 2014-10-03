@@ -48,7 +48,7 @@ public class FileUtil
     }
 
     /**
-     * Convenience method 
+     * Convenience method
      */
     public static boolean deleteDir(String filename, boolean recurse)
     {
@@ -111,7 +111,7 @@ public class FileUtil
             return new FileInputStream(file);
         }
     }
-    
+
     public static InputStream newZFileInputStream(String file) throws FileNotFoundException, IOException
     {
         return new GZIPInputStream(new FileInputStream(file));
@@ -139,7 +139,7 @@ public class FileUtil
      * @param useOBuffers
      * @param buffersize
      * @param append
-     * 
+     *
      * @return
      * @throws IOException
      */
@@ -159,7 +159,7 @@ public class FileUtil
     }
 
     /**
-     * Print array of big integers read from a input stream  
+     * Print array of big integers read from a input stream
      * @param in
      * @throws IOException
      */
@@ -171,10 +171,10 @@ public class FileUtil
             ToolIO.out.println(A[i]);
         }
     }
-    
+
     public static void printSizeArrayOfSizeBigIntegers(InputStream in) throws IOException {
         BigInteger[] A = ByteUtils.readSizeArrayOfSizeBigInts(in);
-        for (int i = 0; i < A.length; i++) 
+        for (int i = 0; i < A.length; i++)
         {
             ToolIO.out.println(A[i]);
         }
@@ -195,13 +195,13 @@ public class FileUtil
         fos.close();
     }
 
-    
+
     /**
      * The MetaDir is fromChkpt if it is not null. Otherwise, create a
      * new one based on the current time.
      * @param specDir the specification directory
      * @param fromChkpt, path of the checkpoints if recovering, or <code>null</code>
-     * 
+     *
      */
     public static String makeMetaDir(String specDir, String fromChkpt)
     {
@@ -219,45 +219,45 @@ public class FileUtil
         SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
         metadir += sdf.format(new Date());
         File filedir = new File(metadir);
-        
+
         // ensure the non-existence
         Assert.check(!filedir.exists(), EC.SYSTEM_METADIR_EXISTS, metadir);
 
         // ensure the dirs are created
         Assert.check(filedir.mkdirs(), EC.SYSTEM_METADIR_CREATION_ERROR, metadir);
-        
+
         return metadir;
     }
 
-    
+
     public static NamedInputStream createNamedInputStream(String name, FilenameToStream resolver)
     {
         // Strip off one NEWLINE and anything after it, if it is there
         int n;
         n = name.indexOf( '\n' );
         if ( n >= 0 ) {
-            // SZ Feb 20, 2009: the message adjusted to what is actually done 
+            // SZ Feb 20, 2009: the message adjusted to what is actually done
             ToolIO.out.println("*** Warning: module name '" + name + "' contained NEWLINE; "
                     + "Only the part before NEWLINE is considered.");
             name = name.substring( 0, n );     // Strip off the newline
         }
 
-        
+
         String sourceFileName;
         String sourceModuleName;
-        
-        
+
+
         // consider name=/frob/bar/somemod.tla
         // or name=/frob/bar/somemod
-        
+
         // Make sure the file name ends with ".tla".
-        if (name.toLowerCase().endsWith(".tla")) 
+        if (name.toLowerCase().endsWith(".tla"))
         {
             name = name.substring(0, name.length() - 4);
         }
-        
+
         // now name=/frob/bar/somemod
-        
+
         // filename is a path ending with .tla
         // sourceFilename=/frob/bar/somemod
         sourceFileName = name + ".tla";
@@ -277,6 +277,13 @@ public class FileUtil
                 ToolIO.out.println("***Internal error: Unable to create NamedInputStream" + " in toIStream method");
             }
         }
+        /**
+         * August 2014 - TL
+         * Added some breaking up of the error here.
+         * Before it just returned null, no matter, if the file doesn't exist
+         * or the file cannot be read and now some printouts into ToolIO.err is being done.
+         * Also, information about the actual path it is looking into is being added to the message.
+         */
         else if (sourceFile != null)
         {
           ToolIO.err.println("File does not exist: " + sourceFile.getAbsolutePath() +
@@ -286,6 +293,7 @@ public class FileUtil
         {
           ToolIO.err.println("Cannot locate " + sourceFileName + " in path: " + resolver.getFullPath());
         }
+        // TL - end of addition
         return null;
     }
 
@@ -320,7 +328,7 @@ public class FileUtil
         return null;
     }
 
-    
+
     /**
      * retrieves a new buffered file output stream
      * @param name
@@ -329,7 +337,7 @@ public class FileUtil
     public static OutputStream newBFOS(String name)
     {
         File file = new File(name);
-        
+
         // LL removed file.exists() test on 10 Nov 2012 because
         // it causes an error when TLC called with -dump option
         // for a file that doesn't already exist.  Also changed
@@ -347,14 +355,14 @@ public class FileUtil
         }
         return null;
     }
-    
+
     public static BufferedDataInputStream newBdFIS(boolean useGZIP, File file) throws IOException
     {
-        if (useGZIP) 
+        if (useGZIP)
         {
-            return new BufferedDataInputStream(new GZIPInputStream(new FileInputStream(file)));   
+            return new BufferedDataInputStream(new GZIPInputStream(new FileInputStream(file)));
         } else {
-            return new BufferedDataInputStream(new FileInputStream(file));    
+            return new BufferedDataInputStream(new FileInputStream(file));
         }
     }
 
@@ -362,7 +370,7 @@ public class FileUtil
      * @param useGZIP
      * @param string
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public static BufferedDataInputStream newBdFIS(boolean useGZIP, String filename) throws IOException
     {
@@ -373,16 +381,16 @@ public class FileUtil
      * @param b
      * @param poolFile
      * @return
-     * @throws IOException 
-     * @throws FileNotFoundException 
+     * @throws IOException
+     * @throws FileNotFoundException
      */
     public static BufferedDataOutputStream newBdFOS(boolean useGZIP, File file) throws FileNotFoundException, IOException
     {
-        if (useGZIP) 
+        if (useGZIP)
         {
-            return new BufferedDataOutputStream(new GZIPOutputStream(new FileOutputStream(file)));   
+            return new BufferedDataOutputStream(new GZIPOutputStream(new FileOutputStream(file)));
         } else {
-            return new BufferedDataOutputStream(new FileOutputStream(file));    
+            return new BufferedDataOutputStream(new FileOutputStream(file));
         }
     }
 
@@ -390,14 +398,14 @@ public class FileUtil
      * @param useGZIP
      * @param string
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public static BufferedDataOutputStream newBdFOS(boolean useGZIP, String filename) throws IOException
     {
         return newBdFOS(useGZIP, new File(filename));
     }
 
-    
+
     public static ObjectInputStream newOBFIS(File file) throws FileNotFoundException, IOException
     {
         return new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
@@ -406,20 +414,20 @@ public class FileUtil
     /**
      * @param chkptfile
      * @return
-     * @throws IOException 
-     * @throws FileNotFoundException 
+     * @throws IOException
+     * @throws FileNotFoundException
      */
     public static ObjectInputStream newOBFIS(String filename) throws FileNotFoundException, IOException
     {
         return newOBFIS(new File(filename));
     }
 
-    
+
     /**
      * @param poolFile
      * @return
-     * @throws IOException 
-     * @throws FileNotFoundException 
+     * @throws IOException
+     * @throws FileNotFoundException
      */
     public static ObjectOutputStream newOBFOS(File file) throws FileNotFoundException, IOException
     {
@@ -429,8 +437,8 @@ public class FileUtil
     /**
      * @param tmpfile
      * @return
-     * @throws IOException 
-     * @throws FileNotFoundException 
+     * @throws IOException
+     * @throws FileNotFoundException
      */
     public static ObjectOutputStream newOBFOS(String filename) throws FileNotFoundException, IOException
     {
@@ -441,7 +449,7 @@ public class FileUtil
      * @param b
      * @param chkptName
      * @return
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
      */
     public static DataInputStream newDFIS(String filename) throws FileNotFoundException
     {
@@ -451,7 +459,7 @@ public class FileUtil
     /**
      * @param chkptName
      * @return
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
      */
     public static DataOutputStream newDFOS(String filename) throws FileNotFoundException
     {

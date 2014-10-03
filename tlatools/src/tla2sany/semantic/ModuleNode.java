@@ -22,8 +22,6 @@ import tla2sany.utilities.Vector;
 import util.UniqueString;
 import util.WrongInvocationException;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -1152,72 +1150,52 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
  *  <module name=module_name><constants>..</><variables>..</><operators>expanded_operator_nodes</>
  *  <assumptions>..</><theorems>..</><extendees>..</><instancees>..</></>
  * */
-  public Element getElement(Document doc) {
-    Element parent = doc.createElement("module");
-    parent.setAttribute("name",getName().toString());
+  protected Element getLevelElement(Document doc) {
+    Element ret = doc.createElement("ModuleNode");
+    ret.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
 
+    SemanticNode[] nodes = null;
     // constants
     Element constants = doc.createElement("constants");
-    XMLExportable[] consts = getConstantDecls();
-    for (int i=0; i<consts.length; i++) {
-      constants.appendChild(consts[i].export(doc));
+    nodes = getConstantDecls();
+    for (int i=0; i<nodes.length; i++) {
+      constants.appendChild(nodes[i].export(doc));
     }
-    parent.appendChild(constants);
+    ret.appendChild(constants);
 
     // variables
     Element variables = doc.createElement("variables");
-    XMLExportable[] vars = getVariableDecls();
-    for (int i=0; i<vars.length; i++) {
-      variables.appendChild(vars[i].export(doc));
+    nodes = getVariableDecls();
+    for (int i=0; i<nodes.length; i++) {
+      variables.appendChild(nodes[i].export(doc));
     }
-    parent.appendChild(variables);
+    ret.appendChild(variables);
 
     //operators
-    Element operators = doc.createElement("operators");
-    XMLExportable[] ops = getOpDefs();
-    for (int i=0; i<ops.length; i++) {
-      operators.appendChild(ops[i].export(doc,true));
+    Element operators = doc.createElement("definitions");
+    nodes = getOpDefs();
+    for (int i=0; i<nodes.length; i++) {
+      operators.appendChild(nodes[i].export(doc)); //was with true to expand operators
     }
-    parent.appendChild(operators);
+    ret.appendChild(operators);
 
     //assumptions
-    Element assumptions = doc.createElement("assumptions");
-    XMLExportable[] assms = getAssumptions();
-    for (int i=0; i<assms.length; i++) {
-      assumptions.appendChild(assms[i].export(doc));
+    Element assums = doc.createElement("assumptions");
+    nodes = getAssumptions();
+    for (int i=0; i<nodes.length; i++) {
+      assums.appendChild(nodes[i].export(doc));
     }
-    parent.appendChild(assumptions);
+    ret.appendChild(assums);
 
     //theorems
-    Element theorems = doc.createElement("theorems");
-    XMLExportable[] thms = getTheorems();
-    for (int i=0; i<thms.length; i++) {
-      theorems.appendChild(thms[i].export(doc));
+    Element thms = doc.createElement("theorems");
+    nodes = getTheorems();
+    for (int i=0; i<nodes.length; i++) {
+      thms.appendChild(nodes[i].export(doc));
     }
-    parent.appendChild(theorems);
+    ret.appendChild(thms);
 
-    //exteendees
-    Element extendees = doc.createElement("extendees");
-    Iterator exts = getExtendedModuleSet().iterator();
-    while (exts.hasNext()) {
-      ModuleNode childNode = (ModuleNode)exts.next();
-      Element child = doc.createElement("extendee");
-      child.setAttribute("name",childNode.getName().toString());
-      extendees.appendChild(child);
-    }
-    parent.appendChild(extendees);
-
-    //instances
-    Element instances = doc.createElement("instancees");
-    InstanceNode[] insts = getInstances();
-    for (int i=0; i<insts.length; i++) {
-      Element child = doc.createElement("instancee");
-      child.setAttribute("name",insts[i].getName().toString());
-      instances.appendChild(child);
-    }
-    parent.appendChild(instances);
-
-    return parent;
+    return ret;
   }
 
 }

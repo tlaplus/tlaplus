@@ -14,7 +14,6 @@ import tla2sany.st.TreeNode;
 import util.ToolIO;
 
 import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -26,7 +25,7 @@ import org.w3c.dom.Element;
  * used to check for equality.
  */
 public abstract class SemanticNode
-implements ASTConstants, ExploreNode, LevelConstants, Comparable, XMLExportable {
+ implements ASTConstants, ExploreNode, LevelConstants, Comparable, XMLExportable /* interface for exporting into XML */ {
 
   private static final Object[] EmptyArr = new Object[0];
 
@@ -240,35 +239,69 @@ implements ASTConstants, ExploreNode, LevelConstants, Comparable, XMLExportable 
     return this.getLocation().toString();
   }
 
-    // this is required since otherwise we always expand each definition occurrence.
-    protected Element getElement(Document doc, boolean expandDefinitions) {
+    /**
+     * August 2014 - TL
+     * All nodes inherit from semantic node, which just attach location to the returned node
+     */
+
+    protected Element getSemanticElement(Document doc) {
       throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
     }
 
-    protected Element getElement(Document doc) {
-      return getElement(doc,false);
-    }
-
+    /**
+     * August 2014 - TL
+     * returns location information for XML exporting as attributes to
+     * the element returned by getElement
+     */
     private Element getLocationElement(Document doc) {
-      Element e = doc.createElement("location");
       Location loc = getLocation();
-      e.setAttribute("begin_line", Integer.toString(loc.beginLine()));
-      e.setAttribute("end_line", Integer.toString(loc.endLine()));
-      e.setAttribute("begin_column", Integer.toString(loc.beginColumn()));
-      e.setAttribute("end_column", Integer.toString(loc.endColumn()));
-      e.setAttribute("file_name", stn.getFilename());
+      Element e = doc.createElement("location");
+      Element ecol = doc.createElement("column");
+      Element eline = doc.createElement("line");
+      Element fname = doc.createElement("filename");
+
+      Element bl = doc.createElement("begin");
+      Element el = doc.createElement("end");
+      Element bc = doc.createElement("begin");
+      Element ec = doc.createElement("end");
+
+      bc.appendChild(doc.createTextNode(Integer.toString(loc.beginColumn())));
+      ec.appendChild(doc.createTextNode(Integer.toString(loc.endColumn())));
+      bl.appendChild(doc.createTextNode(Integer.toString(loc.beginLine())));
+      el.appendChild(doc.createTextNode(Integer.toString(loc.endLine())));
+
+      fname.appendChild(doc.createTextNode(stn.getFilename()));
+
+      ecol.appendChild(bc);
+      ecol.appendChild(ec);
+      eline.appendChild(bl);
+      eline.appendChild(el);
+
+      e.appendChild(ecol);
+      e.appendChild(eline);
+      e.appendChild(fname);
+
       return e;
     }
 
+    /** August 2014 - TL
+     * A location element is prepannded to an implementing element
+     */
     public Element export(Document doc) {
-      Element e = getElement(doc);
-      e.appendChild(getLocationElement(doc));
-      return e;
-    }
+      try {
+        Element e = getSemanticElement(doc);
+        try {
+          Element loc = getLocationElement(doc);
+          e.insertBefore(loc,e.getFirstChild());
+        } catch (RuntimeException ee) {
+          // do nothing if no location
+        }
+        return e;
+      } catch (RuntimeException ee) {
+        System.err.println("failed for node.toString(): " + toString() + "\n with error ");
+        ee.printStackTrace();
+        throw ee;
+      }
 
-    public Element export(Document doc, boolean expandDefinitions) {
-      Element e = getElement(doc, expandDefinitions);
-      e.appendChild(getLocationElement(doc));
-      return e;
     }
 }

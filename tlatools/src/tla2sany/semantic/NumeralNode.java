@@ -7,7 +7,6 @@ import java.util.Hashtable;
 
 import tla2sany.st.TreeNode;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -125,9 +124,9 @@ public class NumeralNode extends ExprNode {
   /**
    * a numeral is exported as <number value=num>
    */
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("number");
-    e.setAttribute("value",(bigValue != null) ? bigValue.toString() : (new Integer(value)).toString());
+  public Element getLevelElement(Document doc) {
+    Element e = doc.createElement("NumeralNode");
+    e.appendChild(doc.createTextNode((bigValue != null) ? bigValue.toString() : (Integer.toString(value))));
     return e;
   }
 }

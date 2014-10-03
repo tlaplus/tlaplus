@@ -8,8 +8,6 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import util.UniqueString;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -125,12 +123,9 @@ public class StringNode extends ExprNode implements ExploreNode {
                              "'" + " Length: " + value.length();
   }
 
-  /**
-   * exported as <string value=val/>
-   */
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("string");
-    e.setAttribute("value",value.toString());
+  protected Element getLevelElement(Document doc) {
+    Element e = doc.createElement("StringNode");
+    e.appendChild(doc.createTextNode(value.toString()));
     return e;
   }
 }

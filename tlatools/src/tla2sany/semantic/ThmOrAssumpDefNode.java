@@ -33,8 +33,6 @@ import tla2sany.utilities.Vector;
 import util.UniqueString;
 import util.WrongInvocationException;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -628,17 +626,10 @@ public class ThmOrAssumpDefNode extends SymbolNode
    * in the TheoremNode.
    *
    * We care to export only the name of the theorem (CHECK what hppens when instantiated).
-   *
-   * <definition name=nm shape=shape><arguments>..</></>
    */
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("definition");
-    e.setAttribute("name",getName().toString());
-    e.setAttribute("shape", new Integer(getArity()).toString());
-    Element arguments = doc.createElement("arguments");
-    XMLExportable[] params = getParams();
-    for (int i=0; i<params.length; i++) arguments.appendChild(params[i].export(doc));
-    e.appendChild(arguments);
+  protected Element getLevelElement(Document doc) {
+    Element e = doc.createElement("ThmOrAssumpDefNode");
+    e.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
 
     return e;
   }

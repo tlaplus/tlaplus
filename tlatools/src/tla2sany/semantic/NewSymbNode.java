@@ -24,8 +24,6 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -191,16 +189,12 @@ public class NewSymbNode extends LevelNode {
 
   /**
    * new symbols such as CONSTANT x \in S are exported as
-   * <fresh>dec_node<set?>set_node</></>
    */
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("fresh");
+  protected Element getLevelElement(Document doc) {
+    Element e = doc.createElement("NewSymbNode");
     e.appendChild(getOpDeclNode().export(doc));
-    if (getSet() != null)
-    {
-      Element se = doc.createElement("set");
-      se.appendChild(getSet().export(doc));
-      e.appendChild(se);
+    if (getSet() != null) {
+      e.appendChild(getSet().export(doc));
     }
     return e;
   }

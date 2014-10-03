@@ -19,8 +19,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -371,21 +369,13 @@ public final boolean levelCheck(int iter) {
     if (proof != null) {proof.walkGraph(semNodesTable);} ;
   }
 
-  /**
-   * Theorems THEOREM t? == SUFFICES? A PROOF? are exported as follows:
-   * <theorem suffices=SUFFICES?>t_node?<expression>A_node</><proof>PROOF?_node</></>
-   */
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("theorem");
-    e.setAttribute("suffices",(isSuffices() ? "true" : "false"));
+  protected Element getLevelElement(Document doc) {
+    Element e = doc.createElement("TheoremNode");
     if (getDef() != null) e.appendChild(getDef().export(doc));
-    Element expression = doc.createElement("expression");
-    expression.appendChild(getTheorem().export(doc));
-    e.appendChild(expression);
+    e.appendChild(getTheorem().export(doc));
     Element proof = doc.createElement("proof");
-    XMLExportable maybeProof = getProof();
-    if (maybeProof != null)  proof.appendChild(maybeProof.export(doc));
-    e.appendChild(proof);
+    if (getProof() != null)  e.appendChild(getProof().export(doc));
+    if (isSuffices()) e.appendChild(doc.createElement("suffices"));
     return e;
   }
 }

@@ -9,8 +9,6 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -387,23 +385,21 @@ public class AssumeProveNode extends LevelNode {
   * End fields and methods implementing the ExplorerNode interface:        *
   *************************************************************************/
 
+  public Element getLevelElement(Document doc) {
+    Element e = doc.createElement("AssumeProveNode");
+    Element antecedent = doc.createElement("assumes");
+    Element succedent = doc.createElement("prove");
 
-  /**
-   *  ASSUME A, B PROVE C is exported as
-   *  <sequent><antecedent>A_node B_node</><succedent>C_node</></>
-   */
-  public Element getElement(Document doc) {
-    Element e = doc.createElement("sequent");
-    Element antecedent = doc.createElement("antecedent");
-    Element succedent = doc.createElement("succedent");
-
-    XMLExportable[] assumes = getAssumes();
+    SemanticNode[] assumes = getAssumes();
     for (int i=0; i<assumes.length; i++) antecedent.appendChild(assumes[i].export(doc));
 
     succedent.appendChild(getProve().export(doc));
 
     e.appendChild(antecedent);
     e.appendChild(succedent);
+
+    if (isSuffices()) e.appendChild(doc.createElement("suffices"));
+    if (isBoxAssumeProve) e.appendChild(doc.createElement("boxed"));
 
     return e;
   }
