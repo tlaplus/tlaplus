@@ -187,6 +187,73 @@
  *     Decomposition object.
  */
 
+/***************************************************************************
+            A SPEC OF DECOMPOSITION
+
+The following decompositions are provided.
+
+   => decomposition:
+     The goal A => B is changed to the goal B by adding assumption A
+  
+   \A decomposition:
+      The goal \A x \in S : G is changed to the goal G by adding assumption
+      NEW x \in S.  (Unbounded \A is transformed similarly.)
+  
+   \E decomposition:
+       The assumption \E x \in S : A is changed to the two assumptions
+       NEW x \in S, A .  (A change of variable may occur to prevent name
+       clash.)
+  
+   \/ decomposition:
+        The assumption A_1 \/ ... \/ A_n is decomposed into n cases,
+        in each of which one A_i is assumed.  Only a single 
+        \/ decomposition of an assumption may be performed.  However,
+        a case may be further decomposed by \/ or \E decomposition.      
+  
+   /\ assumption decomposition:
+       The assumption A_1 /\ ... /\ A_n 
+  
+   /\ goal decomposition:
+       The goal A_1 /\ ... /\ A_n produces a decomposition of the proof 
+       into separate proofs of the A_i.  This is a final step that
+       produces the proof.
+
+Each of these decompositions can be performed if the goal or assumption
+has the indicated form, or if it consists of a single operator whose
+definition has that form.
+
+After an \/ decomposition has been performed, no further \/
+decomposition may be performed.
+
+An /\ decomposition can be performed only if it, or further /\
+decompositions of the assumptions it produces can lead to 
+  - a \E decomposition or 
+  - a \/ decomposition when no \/ decomposition has yet been
+    performed.
+
+Context assumptions that are not decomposible should not be shown.
+
+POSSIBLE OPTION: Whether or not non-decomposible assumptions from
+the statement being decomposed (either ASSUME clauses or a CASE
+assumption) should be shown.
+
+All case assumptions produced by \/ decomposition and any assumption
+created by =>, \A, or \E decomposition should be shown.  All of these
+assumptions will appear explicitly, in the appropriate ASSUME or CASE
+clauses, as assumptions in the proof that is generated.
+
+POSSIBLE OPTION: Whether or not non-decomposible assumptions produced
+by /\ decomposition should be shown.  This might depend on whether
+or not the decomposed assumption was a context assumption.
+
+POSSIBLE OPTION: Whether or not non-decomposed assumptions produced by
+/\ decomposition should appear as explicit assumptions in the
+generated proof.  They are not logically necessary because they are
+implied by assumptions in the generated proof's context (which
+includes the ASSUME clauses of the decomposed step).
+**************************************************************************/
+
+ 
 /*************************************************
  A SPEC OF PROOF GENERATION
 
@@ -1401,6 +1468,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                 .add(((NewSymbNode) assumptions[j])
                                         .getOpDeclNode().getName()
                                         .toString());
+                        assumes.addElement(assumptions[j]) ;
                     } else {
                         if (! (assumptions[j] instanceof AssumeProveNode)) {
                          assumes.addElement(assumptions[j]) ;
@@ -1774,6 +1842,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     // a Label or a Button, so I've been putting the Label or Button inside a
     // composite to do that.
     private void raiseWindow() {
+//if ((state.numberOfContextAssumptions > state.assumeReps.size())) {
+//    return ;
+//}
         if ((windowShell != null) && (!windowShell.isDisposed())) {
             location = windowShell.getLocation();
             windowShell.close();
@@ -1796,7 +1867,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          */
         // topMenu is a composite containing the stuff on the menu line.
         Composite topMenu = new Composite(shell, SWT.NONE);
-        gridLayout = new GridLayout(6, false); // was 5
+        gridLayout = new GridLayout(7, false); 
+           // was 5 then 6.  Needs to be 7 because of invisible subexpressionButton.
         gridLayout.marginBottom = 0;
         topMenu.setLayout(gridLayout);
         GridData gridData = new GridData();
@@ -1876,7 +1948,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // the right edge of the window. But it's been a mere 36
         // years since Knuth invented the idea of expandable glue,
         // so we can't expect the Eclipse people to have heard of it
-        // yet.
+        // yet.  However, this seems to produce a reasonable approximation.
         Button helpButton = HelpButton.helpButton(topMenu,
                 "prover/decompose.html");
         gridData = new GridData();
@@ -2008,8 +2080,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         GridLayout gridLayout;
         Label assumeLabel;
 
-        
-
         /*************************************************************
          * Displaying the assumptions.
          * 
@@ -2024,27 +2094,33 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             }
         }
 
-        /**
-         * Add the assumptions to the composite
+        
+         /**
+         * Add the assumptions to the composite.
          */
-        for (int i = 0; i < nodeRepVector.size(); i++) {
-            if (i == 0) {
-                if (showContextValue) {
-                    if (state.numberOfContextAssumptions > 0) {
-                        // Add "CONTEXT ASSUMPTIONS" heading
-                        gridData = new GridData();
-                        gridData.horizontalSpan = 3;
-                        assumeLabel = new Label(composite, SWT.NONE);
-                        assumeLabel.setText("CONTEXT ASSUMPTIONS");
-                        assumeLabel.setFont(JFaceResources.getFontRegistry().get(
-                                JFaceResources.HEADER_FONT));
-                        assumeLabel.setLayoutData(gridData);
-                    }
-                } else {
-                    i = state.numberOfContextAssumptions ;
-                }
-            }
-                
+        
+         // We first set haveContextAssumpsToDisplay to true
+         // iff there is at least one context assumption to be
+         // displayed, and then add the "CONTEXT ASSUMPTIONS" heading
+         // iff it is true.
+         boolean haveContextAssumpsToDisplay = false ;
+         for (int i = 0; i < state.numberOfContextAssumptions; i++) {
+             if (displayContextAssump(nodeRepVector.elementAt(i), i)) {
+                 haveContextAssumpsToDisplay = true ;
+             }
+         }
+         
+         if (haveContextAssumpsToDisplay) {
+           gridData = new GridData();
+           gridData.horizontalSpan = 3;
+           assumeLabel = new Label(composite, SWT.NONE);
+           assumeLabel.setText("CONTEXT ASSUMPTIONS");
+           assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+                   JFaceResources.HEADER_FONT));
+           assumeLabel.setLayoutData(gridData);
+         }
+        
+        for (int i = 0; i < nodeRepVector.size(); i++) {               
             if (i == state.numberOfContextAssumptions) {
                 // ADD "ASSUME" heading
                 gridData = new GridData();
@@ -2054,174 +2130,203 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 assumeLabel.setFont(JFaceResources.getFontRegistry().get(
                         JFaceResources.HEADER_FONT));
                 assumeLabel.setLayoutData(gridData);
-            }
-                
-            // WARNING: break is a horrible construct that should never be used.
-            // So, this code should be rewritten.
-            if (i >= nodeRepVector.size()) { break ;}
+            }     
             
             NodeRepresentation aRep = nodeRepVector.elementAt(i);
 
-            if (aRep.nodeType != NodeRepresentation.OR_DECOMP) {
-                // This is an ordinary assumption (and Expression or NEW
-                // node).
-                // assumeLabel = new Label(comp, SWT.NONE);
-                /*************************************************************
-                 * Add the button or blank area to the first column.
-                 *************************************************************/
-                String labelText = null;
-                // The null test is because created NEW nodes have null
-                // semanticNode fields.
-                if ((aRep.semanticNode != null)
-                        && (aRep.semanticNode.getKind() == ASTConstants.OpApplKind)) {
-                    switch (aRep.nodeSubtype) {
-                    case NodeRepresentation.AND_TYPE:
-                        labelText = "/\\";
-                        break;
-                    case NodeRepresentation.OR_TYPE:
-                    case NodeRepresentation.SQSUB_TYPE:
-                        labelText = "\\/";
-                        break;
-                    case NodeRepresentation.EXISTS_TYPE:
-                        labelText = "\\E";
-                        break;
-                    default:
-                        labelText = null;
-                    }
-                }
-                if (labelText != null) {
-                    /*************************************************************
-                     * Add a button
-                     *************************************************************/
-                    Button button = new Button(composite, SWT.PUSH);
-                    setupActionButton(button, nodeRepVector.elementAt(i),
-                            labelText);
-                    if (((state.chosenSplit != -1) && (i != state.chosenSplit))
-                            || ((state.andSplitBegin != -1) && ((i < state.andSplitBegin) || (i > state.andSplitEnd)))) {
-                        button.setEnabled(false);
-                    }
-                } else {
-                    /*************************************************************
-                     * Add a blank area.
-                     *************************************************************/
-                    comp = new Composite(composite, SWT.NONE);
-                    gridLayout = new GridLayout(1, false);
-                    comp.setLayout(gridLayout);
-                    assumeLabel = new Label(comp, SWT.NONE);
-                    assumeLabel.setText("  ");
-                    gridData = new GridData();
-                    gridData.horizontalIndent = 25;
-                    comp.setLayoutData(gridData);
-                }
-                comp = new Composite(composite, SWT.NONE);
-                gridLayout = new GridLayout(1, false);
-                comp.setLayout(gridLayout);
-                comp.setSize(0, 5);
-
-                /********************************************************************
-                 * Add the text of the clause, preceded by appropriate up/down
-                 * arrows for a node that comes from an AND-SPLIT. Combine it
-                 * with the next node if its onSameLineAsNext field is true
-                 * (which implies it and the next node are NEW nodes.
-                 ********************************************************************/
-                comp = new Composite(composite, SWT.NONE);
-                gridLayout = new GridLayout(3, false);
-                comp.setLayout(gridLayout);
-                // Add arrow buttons if necessary
-                if ((state.chosenSplit == -1) && (state.andSplitBegin <= i)
-                        && (i <= state.andSplitEnd)) {
-                    Button arrowButton = new Button(comp, SWT.ARROW | SWT.UP);
-                    arrowButton
-                            .addSelectionListener(new ArrowSelectionListener(i,
-                                    SWT.UP, this));
-                    gridData = new GridData();
-                    gridData.verticalAlignment = SWT.TOP;
-                    arrowButton.setLayoutData(gridData);
-                    if (i == state.andSplitBegin) {
-                        arrowButton.setEnabled(false);
-                    }
-                    arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
-                    arrowButton
-                            .addSelectionListener(new ArrowSelectionListener(i,
-                                    SWT.DOWN, this));
-
-                    gridData = new GridData();
-                    gridData.verticalAlignment = SWT.TOP;
-                    arrowButton.setLayoutData(gridData);
-                    if (i == state.andSplitEnd) {
-                        arrowButton.setEnabled(false);
-                    }
-                }
-
-                assumeLabel = new Label(comp, SWT.BORDER); // SWT.NONE);
-                String text = stringArrayToString(nodeRepVector.elementAt(i)
-                        .primedNodeText());
-                // Combine this with following NEW nodes if necessary
-                while (nodeRepVector.elementAt(i).onSameLineAsNext) {
-                    i++;
-                    text = text
-                            + ", "
-                            + stringArrayToString(nodeRepVector.elementAt(i).nodeText);
-
-                }
-                assumeLabel.setText(text);
-                // Set the font to be the editors main text font.
-                assumeLabel.setFont(JFaceResources.getFontRegistry().get(
-                        JFaceResources.TEXT_FONT));
-                gridData = new GridData();
-                // I have no idea why (undoubtedly a feature that no one has
-                // ever bothered to document), but the following statement did
-                // not have any effect before I added the new composite between
-                // the
-                // button and it. Now it can be used to add positive or negative
-                // space
-                // to the left of the label.
-                gridData.horizontalIndent = 0;
-                gridData.verticalAlignment = SWT.TOP;
-                gridData.horizontalAlignment = SWT.LEFT;
-                assumeLabel.setLayoutData(gridData);
-            } else {
-                // This is an OR_DECOMP node.
-                // Add a P button and a P
-                //
-                Button goalButton = new Button(composite, SWT.PUSH);
-                setupActionButton(goalButton, aRep, "P");
-                gridData = new GridData();
-                gridData.horizontalIndent = 15;
-                goalButton.setLayoutData(gridData);
-
-                goalButton.setFont(JFaceResources.getFontRegistry().get(
-                        JFaceResources.HEADER_FONT));
-
-                // Add a spacer between the button and the cases
-                comp = new Composite(composite, SWT.NONE);
-                gridLayout = new GridLayout(1, false);
-                comp.setLayout(gridLayout);
-
-                // inner is the composite that contains the CASEs
-                Composite inner = new Composite(composite, SWT.NONE);
-                gridLayout = new GridLayout(2, false);
-                inner.setLayout(gridLayout);
-
-                for (int j = 0; j < aRep.children.size(); j++) {
-                    assumeLabel = new Label(inner, SWT.NONE);
-                    assumeLabel.setText("CASE");
-                    assumeLabel.setFont(JFaceResources.getFontRegistry().get(
-                            JFaceResources.TEXT_FONT));
-                    Composite caseComp = new Composite(inner, SWT.BORDER); // SWT.NONE)
-                                                                           // ;
-                    gridLayout = new GridLayout(3, false);
-                    caseComp.setLayout(gridLayout);
-                    addCaseToComposite(aRep.children.elementAt(j), caseComp);
-                    gridData = new GridData();
-                    gridData.verticalAlignment = SWT.TOP;
-                    caseComp.setLayoutData(gridData);
-
-                }
-            }
+            // We display aRep iff it is not a context assumption or
+            // it is a context assumption that should be displayed.
+            if ( (i >= state.numberOfContextAssumptions)
+                 || displayContextAssump(aRep, i)) {
+              // We should display aRep  
+              //
+              if (aRep.nodeType != NodeRepresentation.OR_DECOMP) {
+                  // This is an ordinary assumption (and Expression or NEW
+                  // node).
+                  // assumeLabel = new Label(comp, SWT.NONE);
+                  /*************************************************************
+                   * Add the button or blank area to the first column.
+                   *************************************************************/
+                  String labelText = null;
+                  // The null test is because created NEW nodes have null
+                  // semanticNode fields.
+                  if ((aRep.semanticNode != null)
+                          && (aRep.semanticNode.getKind() == ASTConstants.OpApplKind)) {
+                      switch (aRep.nodeSubtype) {
+                      case NodeRepresentation.AND_TYPE:
+                          labelText = "/\\";
+                          break;
+                      case NodeRepresentation.OR_TYPE:
+                      case NodeRepresentation.SQSUB_TYPE:
+                          labelText = "\\/";
+                          break;
+                      case NodeRepresentation.EXISTS_TYPE:
+                          labelText = "\\E";
+                          break;
+                      default:
+                          labelText = null;
+                      }
+                  }
+                  if (labelText != null) {
+                      /*************************************************************
+                       * Add a button
+                       *************************************************************/
+                      Button button = new Button(composite, SWT.PUSH);
+                      setupActionButton(button, nodeRepVector.elementAt(i),
+                              labelText);
+                      if (((state.chosenSplit != -1) && (i != state.chosenSplit))
+                              || ((state.andSplitBegin != -1) && ((i < state.andSplitBegin) || (i > state.andSplitEnd)))) {
+                          button.setEnabled(false);
+                      }
+                  } else {
+                      /*************************************************************
+                       * Add a blank area.
+                       *************************************************************/
+                      comp = new Composite(composite, SWT.NONE);
+                      gridLayout = new GridLayout(1, false);
+                      comp.setLayout(gridLayout);
+                      assumeLabel = new Label(comp, SWT.NONE);
+                      assumeLabel.setText("  ");
+                      gridData = new GridData();
+                      gridData.horizontalIndent = 25;
+                      comp.setLayoutData(gridData);
+                  }
+                  comp = new Composite(composite, SWT.NONE);
+                  gridLayout = new GridLayout(1, false);
+                  comp.setLayout(gridLayout);
+                  comp.setSize(0, 5);
+              
+                  /********************************************************************
+                   * Add the text of the clause, preceded by appropriate up/down
+                   * arrows for a node that comes from an AND-SPLIT. Combine it
+                   * with the next node if its onSameLineAsNext field is true
+                   * (which implies it and the next node are NEW nodes.
+                   ********************************************************************/
+                  comp = new Composite(composite, SWT.NONE);
+                  gridLayout = new GridLayout(3, false);
+                  comp.setLayout(gridLayout);
+                  // Add arrow buttons if necessary
+                  if ((state.chosenSplit == -1) && (state.andSplitBegin <= i)
+                          && (i <= state.andSplitEnd)) {
+                      Button arrowButton = new Button(comp, SWT.ARROW | SWT.UP);
+                      arrowButton
+                              .addSelectionListener(new ArrowSelectionListener(i,
+                                      SWT.UP, this));
+                      gridData = new GridData();
+                      gridData.verticalAlignment = SWT.TOP;
+                      arrowButton.setLayoutData(gridData);
+                      if (i == state.andSplitBegin) {
+                          arrowButton.setEnabled(false);
+                      }
+                      arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
+                      arrowButton
+                              .addSelectionListener(new ArrowSelectionListener(i,
+                                      SWT.DOWN, this));
+              
+                      gridData = new GridData();
+                      gridData.verticalAlignment = SWT.TOP;
+                      arrowButton.setLayoutData(gridData);
+                      if (i == state.andSplitEnd) {
+                          arrowButton.setEnabled(false);
+                      }
+                  }
+              
+                  assumeLabel = new Label(comp, SWT.BORDER); // SWT.NONE);
+                  String text = stringArrayToString(nodeRepVector.elementAt(i)
+                          .primedNodeText());
+                  // Combine this with following NEW nodes if necessary
+                  while (nodeRepVector.elementAt(i).onSameLineAsNext) {
+                      i++;
+                      text = text
+                              + ", "
+                              + stringArrayToString(nodeRepVector.elementAt(i).nodeText);
+              
+                  }
+                  assumeLabel.setText(text);
+                  // Set the font to be the editors main text font.
+                  assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+                          JFaceResources.TEXT_FONT));
+                  gridData = new GridData();
+                  // I have no idea why (undoubtedly a feature that no one has
+                  // ever bothered to document), but the following statement did
+                  // not have any effect before I added the new composite between
+                  // the
+                  // button and it. Now it can be used to add positive or negative
+                  // space
+                  // to the left of the label.
+                  gridData.horizontalIndent = 0;
+                  gridData.verticalAlignment = SWT.TOP;
+                  gridData.horizontalAlignment = SWT.LEFT;
+                  assumeLabel.setLayoutData(gridData);
+              } else {
+                  // This is an OR_DECOMP node.
+                  // Add a P button and a P
+                  //
+                  Button goalButton = new Button(composite, SWT.PUSH);
+                  setupActionButton(goalButton, aRep, "P");
+                  gridData = new GridData();
+                  gridData.horizontalIndent = 15;
+                  goalButton.setLayoutData(gridData);
+              
+                  goalButton.setFont(JFaceResources.getFontRegistry().get(
+                          JFaceResources.HEADER_FONT));
+              
+                  // Add a spacer between the button and the cases
+                  comp = new Composite(composite, SWT.NONE);
+                  gridLayout = new GridLayout(1, false);
+                  comp.setLayout(gridLayout);
+              
+                  // inner is the composite that contains the CASEs
+                  Composite inner = new Composite(composite, SWT.NONE);
+                  gridLayout = new GridLayout(2, false);
+                  inner.setLayout(gridLayout);
+              
+                  for (int j = 0; j < aRep.children.size(); j++) {
+                      assumeLabel = new Label(inner, SWT.NONE);
+                      assumeLabel.setText("CASE");
+                      assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+                              JFaceResources.TEXT_FONT));
+                      Composite caseComp = new Composite(inner, SWT.BORDER); // SWT.NONE)
+                                                                             // ;
+                      gridLayout = new GridLayout(3, false);
+                      caseComp.setLayout(gridLayout);
+                      addCaseToComposite(aRep.children.elementAt(j), caseComp);
+                      gridData = new GridData();
+                      gridData.verticalAlignment = SWT.TOP;
+                      caseComp.setLayoutData(gridData);
+              
+                  }
+              }
+         } // end if (this should be displayed)
         }
     }
-
+    
+    /**
+     * This returns true iff we should display a context assumption 
+     * rep = state.assumeReps(i).  It equals:
+     *
+     *   \/ i = chosenSplit
+     *   \/ nrep.isCreated = true
+     *   \/ state.andSplitBegin =< i =< state.andSplitEnd
+     *   \/ /\ state.chosenSplit = state.andSplitBegin = -1
+     *      /\ showContextValue = true
+     *      
+     * Note that any of the first three disjunctions can be true when 
+     * showContextValue is false because it was set to false after 
+             * 
+     * @param rep
+     * @param i
+     * @return
+     */
+    boolean displayContextAssump(NodeRepresentation rep, int i) {
+        return     (i == state.chosenSplit)
+                || rep.isCreated
+                || (    (state.andSplitBegin <= i)
+                     && (i <= state.andSplitEnd) )
+                || (    (state.chosenSplit == -1)
+                     && (state.andSplitBegin == -1)
+                     && showContextValue ) ;
+    }
     /**
      * This method assumes that `composite' is a composite with a gridlayout
      * having 3 columns. It populates it with the buttons and stuff for an
@@ -2504,6 +2609,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             } else {
                 state.andSplitEnd = state.andSplitEnd + addedAssumps.size() - 1;
             }
+            
+            // Update state.numberOfContextAssumptions
+            if (idx < state.numberOfContextAssumptions) {
+                state.numberOfContextAssumptions = 
+                        state.numberOfContextAssumptions + (addedAssumps.size()-1) ;
+            }
             raiseWindow();
         }
     }
@@ -2586,6 +2697,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             state.andSplitEnd = state.andSplitEnd + qdc.news.size();
         }
 
+        // If this is a top-level context assumption, then
+        // increment state.numberOfContextAssumptions
+        if ((parentVec == state.assumeReps) 
+                && (idx < state.numberOfContextAssumptions)) {
+            state.numberOfContextAssumptions = state.numberOfContextAssumptions + qdc.news.size() ;
+        }
+        
         for (int i = 0; i < qdc.news.size(); i++) {
             parentVec.add(idx + i, qdc.news.elementAt(i));
             // parentVec.add(idx + i, qdc.news.elementAt(i).semanticNode) ;
@@ -3394,10 +3512,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 nodeRep.isPrimed = nodeRepArg.isPrimed;
 
                 // We now want to call decompSubstituteInNodeText using the
-                // substitutions
-                // in nodeRepArg.decomposition, rather than the one computed by
-                // this
-                // call to subNodeRep. So, we just set the necessary fields.
+                // substitutions in nodeRepArg.decomposition, rather than the
+                // one computed by this  call to subNodeRep. So, we just set 
+                // the necessary fields.
                 nodeRep.decomposition.formalParams = nodeRepArg.decomposition.formalParams;
                 nodeRep.decomposition.arguments = nodeRepArg.decomposition.arguments;
                 nodeRep.decomposition.argNodes = nodeRepArg.decomposition.argNodes;
@@ -3483,7 +3600,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             // lastRow != -1 iff
             // /\ i > 0
             // /\ \/ this is an unbounded quantifier
-            // \/ the i-1st NEW fits entirely on line lastLine
+            //    \/ the i-1st NEW fits entirely on line lastLine
             NodeRepresentation rep = new NodeRepresentation();
             rep.semanticNode = null;
             rep.nodeType = NodeRepresentation.NEW_NODE;
@@ -4048,6 +4165,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * The number of assumptions in assumeReps that are context assumptions.
          */
         private int numberOfContextAssumptions ;
+        
         /**
          * If the user has done an OR split on an assumption, then this is the
          * index of the assumption in assumes and state.assumeReps. Otherwise,
@@ -5592,7 +5710,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     /**
      * Assumes node represents a conjunction (either infix or bulleted list).
      * Returns true iff one of the conjuncts is a disjunction, a \E, or a
-     * conjunction c for which conjIsDecomsable(c) is true.
+     * conjunction c for which conjIsDecomposable(c) is true.
      * 
      * It assumes that a conjunct that is a SubstInNode is not decomposable.
      * This will have to be changed to allow decomposition of formulas imported
@@ -5627,6 +5745,56 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                             || (opId == ASTConstants.OP_ue)
                             || (((opId == ASTConstants.OP_cl) || opName
                                     .equals("\\land")) && conjIsDecomposable(curNode))) {
+                        return true;
+                    }
+                }
+            } // end if instanceof OpApplNode
+        }
+
+        return false;
+    }
+
+    /**
+     * Assumes node represents a conjunction (either infix or bulleted list).
+     * Returns true iff one of the conjuncts is a a \E, or a
+     * conjunction c for which conjContainsExists(c) is true.
+     * 
+     * It assumes that a conjunct that is a SubstInNode is not decomposable.
+     * This will have to be changed to allow decomposition of formulas imported
+     * by instantiation.
+     * 
+     * Note: This method obtained by cloning conjIsDecomposable.  A sensible 
+     * implementation of the Decompose Proof command would combine them into
+     * a single method that returns the type of decomposition possible.
+     * 
+     * @param node
+     * @return
+     */
+    private boolean conjContainsExists(OpApplNode node) {
+        ExprOrOpArgNode[] conjuncts = node.getArgs();
+        for (int i = 0; i < conjuncts.length; i++) {
+            // To be decomposable, the conjunct must be an OpApplNode
+            if (conjuncts[i] instanceof OpApplNode) {
+                OpApplNode curNode = (OpApplNode) conjuncts[i];
+
+                // if this is a user-defined operator application
+                // must examine its definition.
+                if ((curNode.getOperator().getKind() == ASTConstants.UserDefinedOpKind)
+                        && ((OpDefNode) curNode.getOperator()).getBody() instanceof OpApplNode) {
+                    curNode = (OpApplNode) ((OpDefNode) curNode.getOperator())
+                            .getBody();
+                }
+
+                if (curNode.getOperator() instanceof OpDefNode) {
+                    UniqueString opId = ((OpDefNode) curNode.getOperator())
+                            .getName();
+                    String opName = opId.toString();
+
+                    if (   (opId == ASTConstants.OP_be)
+                        || (opId == ASTConstants.OP_ue)
+                        || (   (   (opId == ASTConstants.OP_cl) 
+                                || opName.equals("\\land")) 
+                            && conjContainsExists(curNode))) {
                         return true;
                     }
                 }
@@ -6283,6 +6451,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         }
     }
 
+    /**
+     * Listener for arrows to move /\ conjunctions up or down.
+     * 
+     * @author lamport
+     *
+     */
     class ArrowSelectionListener implements SelectionListener {
         int index;
         int direction;
