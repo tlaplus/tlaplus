@@ -123,9 +123,7 @@ public class StringNode extends ExprNode implements ExploreNode {
                              "'" + " Length: " + value.length();
   }
 
-  protected Element getLevelElement(Document doc) {
-    Element e = doc.createElement("StringNode");
-    e.appendChild(doc.createTextNode(value.toString()));
-    return e;
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+    return appendText(doc,"StringNode",value.toString());
   }
 }

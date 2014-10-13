@@ -125,28 +125,30 @@ public class LeafProofNode extends ProofNode {
     return ret;
    }
 
-  public Element getLevelElement(Document doc) {
-    Element e = doc.createElement("ProofNode");
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+    Element e;
 
     if (getOmitted()) {
-      e.appendChild(doc.createElement("omitted"));
+      e = doc.createElement("omitted");
     }
     else if (getFacts().length == 0 && getDefs().length == 0) {
-      e.appendChild(doc.createElement("obvious"));
+      e = doc.createElement("obvious");
     }
     else {
-      Element e2 = doc.createElement("by");
+      //SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
+      e = doc.createElement("by");
 
       Element factse = doc.createElement("facts");
       Element definitions = doc.createElement("defs");
 
-      for (int i=0; i<facts.length; i++) factse.appendChild(facts[i].export(doc));
-      for (int i=0; i<defs.length; i++) definitions.appendChild(defs[i].export(doc));
+      for (int i=0; i<facts.length; i++) factse.appendChild(facts[i].export(doc,context));
+      for (int i=0; i<defs.length; i++) definitions.appendChild(defs[i].export(doc,context));
 
-      e2.appendChild(factse);
-      e2.appendChild(definitions);
-      if(getOnlyFlag()) e2.appendChild(doc.createElement("only"));
-      e.appendChild(e2);
+      e.appendChild(factse);
+      e.appendChild(definitions);
+      if(getOnlyFlag()) e.appendChild(doc.createElement("only"));
+      // at the end, we append the context of the symbols used in this node
+      //e.appendChild(context.getContextElement(doc));
     }
 
     return e;

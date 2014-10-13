@@ -240,10 +240,10 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
            "\nExpr: " + Strings.indent(2,(expr!=null ? expr.toString(depth-1) : "<null>"));
   }
 
-    public Element export(Document doc) {
+  public Element export(Document doc,SemanticNode.SymbolContext context) {
       Element ret = doc.createElement("Subst");
-      ret.appendChild(op.export(doc));
-      ret.appendChild(expr.export(doc));
+      ret.appendChild(op.export(doc,context));
+      ret.appendChild(expr.export(doc,context));
       return ret;
     }
 

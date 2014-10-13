@@ -1228,17 +1228,20 @@ public class OpApplNode extends ExprNode implements ExploreNode {
            + toStringBody(depth) + sEO ;
   }
 
-  protected Element getLevelElement(Document doc) {
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context2) {
+    // since we have parameters, we need to start a nested context
+    SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
+
     Element e = doc.createElement("OpApplNode");
 
     // operator
     Element op = doc.createElement("operator");
-    op.appendChild(operator.export(doc));
+    op.appendChild(operator.export(doc,context));
     e.appendChild(op);
 
     // operands
     Element ope = doc.createElement("operands");
-    for (int i=0; i< operands.length; i++) ope.appendChild(operands[i].export(doc));
+    for (int i=0; i< operands.length; i++) ope.appendChild(operands[i].export(doc,context));
     e.appendChild(ope);
 
     // bound variables (optional)
@@ -1247,7 +1250,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       if (unboundedBoundSymbols != null) {
         for (int i=0; i< unboundedBoundSymbols.length; i++) {
           Element bvar = doc.createElement("unbound");
-          bvar.appendChild(unboundedBoundSymbols[i].export(doc));
+          bvar.appendChild(unboundedBoundSymbols[i].export(doc,context));
           if (tupleOrs != null && tupleOrs[i]) bvar.appendChild(doc.createElement("tuple"));
           bvars.appendChild(bvar);
         }
@@ -1257,14 +1260,17 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         for (int i=0; i< boundedBoundSymbols.length; i++) {
           Element bvar = doc.createElement("bound");
           for (int j=0; j<boundedBoundSymbols[i].length; j++)
-            bvar.appendChild(boundedBoundSymbols[i][j].export(doc));
+            bvar.appendChild(boundedBoundSymbols[i][j].export(doc,context));
           if (tupleOrs != null && tupleOrs[i]) bvar.appendChild(doc.createElement("tuple"));
-          bvar.appendChild(ranges[i].export(doc));
+          bvar.appendChild(ranges[i].export(doc,context));
           bvars.appendChild(bvar);
         }
       }
       e.appendChild(bvars);
     }
+
+    // at the end, we append the context of the symbols used in this node
+    e.appendChild(context.getContextElement(doc));
 
     return e;
   }

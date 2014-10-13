@@ -17,6 +17,9 @@ import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import util.UniqueString;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 // A context contains def/declNodes only.
 // Implements a simple context for symbol decls and defs. Also
 // supports the intial (or global) context of built-in operators.
@@ -47,7 +50,7 @@ public class Context implements ExploreNode {
     Pair(Pair lnk, SymbolNode inf) {
       this.link = lnk;
       this.info = inf;
-    }     
+    }
 
     // Note: Does set lastPair
     Pair(SymbolNode inf) {
@@ -55,23 +58,23 @@ public class Context implements ExploreNode {
       this.info = inf;
       lastPair = this;
     }
-    
+
     public SymbolNode getSymbol() { return this.info; }
-    
+
     /**
      * For a Pair node pr, let List(pr) be the sequence of
-     * Pair nodes of length n defined by 
-     * 
+     * Pair nodes of length n defined by
+     *
      *   List(pr)[1] = pr
      *   List(pr)[n].link = null
      *   \A i \in 1..(n-1) : List(pr)[i+1] = List(pr)[i].link
-     *   
+     *
      * Then reversePairList() is a Pair node such that
      * List(reversePairList()) has the same length n as
      * List(this), and whose elements are new Pair nodes such
-     * that 
-     * 
-     *   \A i \in 1..n : List(reversePairList())[i].info = 
+     * that
+     *
+     *   \A i \in 1..n : List(reversePairList())[i].info =
      *                      List(this)[n-i+1].info
      */
     public Pair reversePairList() {
@@ -105,6 +108,20 @@ public class Context implements ExploreNode {
     public SymbolNode nextElement() {
       return ((Pair)(e.nextElement())).getSymbol();
     }
+
+   /* public Element export(Document doc) {
+      Element ret = doc.createElement("context");
+      while (hasMoreElements()) {
+        SymbolNode sn = nextElement();
+        Element en = doc.createElement("entry");
+        Element nm = doc.createElement("uniquename");
+        nm.appendChild(doc.createTextNode(sn.getName().toString()));
+        en.appendChild(nm);
+        en.appendChild(sn.exportDefinition(doc));
+        ret.appendChild(en);
+      }
+      return ret;
+    }*/
   }
 
   private static Context initialContext = new Context(null, new Errors());
@@ -122,8 +139,8 @@ public class Context implements ExploreNode {
    * exMT is the ExternalModuleTable containing the module whose
    * SymbolTable this Context is part of (or null).
    */
-  public Context(ExternalModuleTable mt, Errors errs) { 
-    table = new Hashtable(); 
+  public Context(ExternalModuleTable mt, Errors errs) {
+    table = new Hashtable();
     this.exMT = mt;
     this.errors = errs;
     this.lastPair = null;
@@ -143,14 +160,14 @@ public class Context implements ExploreNode {
    * declarations only of the built-in operators of TLA+.  This
    * context assigns no meanings to module names.
    */
-  public static Context getGlobalContext() { 
-    return initialContext; 
+  public static Context getGlobalContext() {
+    return initialContext;
   }
 
   public Errors getErrors() { return errors; }
 
   // Adds a symbol to the (unique) initialContext; aborts if already there
-  public static void addGlobalSymbol(UniqueString name, SymbolNode sn, Errors errors) 
+  public static void addGlobalSymbol(UniqueString name, SymbolNode sn, Errors errors)
   throws AbortException {
     if (initialContext.getSymbol(name) != null) {
       errors.addAbort(Location.nullLoc,
@@ -185,22 +202,22 @@ public class Context implements ExploreNode {
     table.put(name, new Pair(s));    // Links to & updates lastPair
   }
 
-  
+
   /**
    * Tests whether a name is present in this context
    * @param name the UniqueString representing the string, see {@link UniqueString#uniqueStringOf(String)}
-   * @return true iff the UniqueString provided occurs as a key in the symbol table 
+   * @return true iff the UniqueString provided occurs as a key in the symbol table
    */
-  public boolean occurSymbol(Object name) { 
-    return table.containsKey(name); 
+  public boolean occurSymbol(Object name) {
+    return table.containsKey(name);
   }
 
   /**
    * Returns Enumeration of the elements of the Hashtable "Table",
    * which are pair of the form (Pair link, SymbolNode sn)
    */
-  public Enumeration content() { 
-    return table.elements(); 
+  public Enumeration content() {
+    return table.elements();
   }
 
   /**
@@ -227,7 +244,7 @@ public class Context implements ExploreNode {
     return result;
   }
 
-  /** 
+  /**
    * Returns a Vector of those SymbolNodes in this Context that are
    * instances of class OpDefNode and that are NOT of kind BuiltInKind
    * or ModuleInstanceKind
@@ -267,8 +284,8 @@ public class Context implements ExploreNode {
     return result;
   }
 
-  /** 
-   * Returns vector of OpDeclNodes that represent CONSTANT declarations 
+  /**
+   * Returns vector of OpDeclNodes that represent CONSTANT declarations
    */
   public Vector getConstantDecls() {
     Class templateClass = OpDeclNode.class;
@@ -300,7 +317,7 @@ public class Context implements ExploreNode {
     return result;
   }
 
-  /** 
+  /**
    * Returns a Vector of those SymbolNodes in this Context that are
    * instances of class ModuleNode
    */
@@ -318,7 +335,7 @@ public class Context implements ExploreNode {
   }
 
   // The following is a revised version of mergeExendContext that
-  // fixes an apparent bug in the original in which elements of 
+  // fixes an apparent bug in the original in which elements of
   // Context ct are added to this context in the inverse order.
   // Corrected version written by LL on 12 Mar 2013
   /**
@@ -330,9 +347,9 @@ public class Context implements ExploreNode {
    * compatible) declarations, and there is only a warning.  Returns
    * true if there is no error or there are only warnings; returns
    * false if there is an error.
-   * 
+   *
    * The original implementation added the elements of Context ct to
-   * this context in the inverse order as they appear in ct.  It was 
+   * this context in the inverse order as they appear in ct.  It was
    * changed on 12 Mar 2013 by LL to add them in the same order.
    */
   public boolean mergeExtendContext(Context ct) {
@@ -365,32 +382,32 @@ public class Context implements ExploreNode {
           SymbolNode symbol = ((Pair)table.get(sName)).info;
           if (symbol != sn) {
 	    // if the two SymbolNodes with the same name are distinct nodes,
-	    // We issue a warning or do nothing if they are instances of the same Java 
+	    // We issue a warning or do nothing if they are instances of the same Java
         // class--i.e. FormalParamNode, OpDeclNode, OpDefNode, or ModuleNode--doing
         // nothing if they are both definitions coming from the same module.
 	    // otherwise, it is considered to be an error.
         // Option of doing nothing if from same module added by LL on 31 Oct 2012 to
-        // fix problem caused by the same module being both EXTENDed and imported with 
+        // fix problem caused by the same module being both EXTENDed and imported with
         // a LOCAL INSTANCE.  Previously, it always added the warning.
 	    if (symbol.getClass() == sn.getClass()) {
 	        if (! symbol.sameOriginallyDefinedInModule(sn)) {
               errors.addWarning( sn.getTreeNode().getLocation(),
-                                 "Warning: the " + kindOfNode(symbol) +  " of '" + 
-                                 sName.toString() + 
-                                 "' conflicts with \nits " + kindOfNode(symbol) + " at " + 
+                                 "Warning: the " + kindOfNode(symbol) +  " of '" +
+                                 sName.toString() +
+                                 "' conflicts with \nits " + kindOfNode(symbol) + " at " +
                                  symbol.getTreeNode().getLocation() + ".");
 	        }
          }
 	    else {
               errors.addError( sn.getTreeNode().getLocation(),
-                               "The " + kindOfNode(symbol) +  " of '" + 
-                               sName.toString() + 
-                               "' conflicts with \nits " + kindOfNode(symbol) + " at " + 
+                               "The " + kindOfNode(symbol) +  " of '" +
+                               sName.toString() +
+                               "' conflicts with \nits " + kindOfNode(symbol) + " at " +
                                symbol.getTreeNode().getLocation() + ".");
-                      
-//                               "Incompatible multiple definitions of symbol '" + 
-//                               sName.toString() + 
-//                               "'; \nthe conflicting declaration is at " + 
+
+//                               "Incompatible multiple definitions of symbol '" +
+//                               sName.toString() +
+//                               "'; \nthe conflicting declaration is at " +
 //                               symbol.getTreeNode().getLocation()+ ".");
               erc = false;
             } //end else
@@ -407,11 +424,11 @@ public class Context implements ExploreNode {
       if (symbol instanceof FormalParamNode) {return "definition";}
       return "declaration";
   }
-  
+
   /**
    * Returns a duplicate of this Context.  Called once from
    * SymbolTable class.  The tricky part is duplicating the
-   * linked-list of Pairs starting from this.lastpair. 
+   * linked-list of Pairs starting from this.lastpair.
    */
   public Context duplicate(ExternalModuleTable exMT) {    // Added argument exMT (DRJ)
     Context dup       = new Context(exMT, errors);
@@ -444,7 +461,7 @@ public class Context implements ExploreNode {
   public String toString(int depth) {
     return "Please use Context.getContextEntryStringVector()" +
       " instead of Context.toString()";
-  }  
+  }
 
   /* Returns a vector of strings */
 
@@ -456,7 +473,7 @@ public class Context implements ExploreNode {
   *************************************************************************/
   public Vector getContextEntryStringVector(int depth, boolean b) {
     Vector ctxtEntries = new Vector(100);  // vector of Strings
-    Context naturalsContext = 
+    Context naturalsContext =
                exMT.getContext(UniqueString.uniqueStringOf("Naturals"));
 
     if (depth <= 0) return ctxtEntries;
@@ -468,11 +485,11 @@ public class Context implements ExploreNode {
       // If b is false, don't bother printing the initialContext--too long--
       // and, don't bother printing elements of the Naturals module either
       if (b || (!initialContext.table.containsKey(key) &&
-		(naturalsContext == null || 
+		(naturalsContext == null ||
 		 !naturalsContext.table.containsKey(key)))) {
         SymbolNode symbNode  = ((Pair)(table.get(key))).info;
-	ctxtEntries.addElement("\nContext Entry: " + key.toString() + "  " 
-                    + String.valueOf(((SemanticNode)symbNode).myUID).toString() + " " 
+	ctxtEntries.addElement("\nContext Entry: " + key.toString() + "  "
+                    + String.valueOf(((SemanticNode)symbNode).myUID).toString() + " "
                     + Strings.indentSB(2,(symbNode.toString(depth-1))));
       }
       p = p.link;
@@ -510,16 +527,19 @@ public class Context implements ExploreNode {
       Object next = Enum.nextElement();
       if (next instanceof SymbolTable.ModuleName) {
          key = ((SymbolTable.ModuleName) next).name ;
-         System.out.println("Bug in debugging caused by inner module " + 
+         System.out.println("Bug in debugging caused by inner module " +
                              key.toString());
          System.out.println("SANY will throw a null pointer exception.");
         }
-      else { 
-        key = (UniqueString) next; 
+      else {
+        key = (UniqueString) next;
         ((Pair)table.get(key)).info.walkGraph(semNodesTable);
        } ;
     }
 
   }
 
+  /*public Element export(Document doc) {
+    return getContextSymbolEnumeration().export(doc);
+  }*/
 }

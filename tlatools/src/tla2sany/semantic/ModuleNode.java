@@ -1145,21 +1145,21 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     return ret;
   }
 
-/**
- * a  module is exported as
- *  <module name=module_name><constants>..</><variables>..</><operators>expanded_operator_nodes</>
- *  <assumptions>..</><theorems>..</><extendees>..</><instancees>..</></>
- * */
-  protected Element getLevelElement(Document doc) {
+  protected String getNodeRef() {
+    return "ModuleNodeRef";
+  }
+
+  protected Element getSymbolElement(Document doc,SemanticNode.SymbolContext context2) {
+    SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
     Element ret = doc.createElement("ModuleNode");
-    ret.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
+    ret.appendChild(appendText(doc, "uniquename", getName().toString()));
 
     SemanticNode[] nodes = null;
     // constants
     Element constants = doc.createElement("constants");
     nodes = getConstantDecls();
     for (int i=0; i<nodes.length; i++) {
-      constants.appendChild(nodes[i].export(doc));
+      constants.appendChild(nodes[i].export(doc,context));
     }
     ret.appendChild(constants);
 
@@ -1167,7 +1167,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     Element variables = doc.createElement("variables");
     nodes = getVariableDecls();
     for (int i=0; i<nodes.length; i++) {
-      variables.appendChild(nodes[i].export(doc));
+      variables.appendChild(nodes[i].export(doc,context));
     }
     ret.appendChild(variables);
 
@@ -1175,7 +1175,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     Element operators = doc.createElement("definitions");
     nodes = getOpDefs();
     for (int i=0; i<nodes.length; i++) {
-      operators.appendChild(nodes[i].export(doc)); //was with true to expand operators
+      operators.appendChild(nodes[i].export(doc,context)); //was with true to expand operators
     }
     ret.appendChild(operators);
 
@@ -1183,7 +1183,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     Element assums = doc.createElement("assumptions");
     nodes = getAssumptions();
     for (int i=0; i<nodes.length; i++) {
-      assums.appendChild(nodes[i].export(doc));
+      assums.appendChild(nodes[i].export(doc,context));
     }
     ret.appendChild(assums);
 
@@ -1191,9 +1191,12 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     Element thms = doc.createElement("theorems");
     nodes = getTheorems();
     for (int i=0; i<nodes.length; i++) {
-      thms.appendChild(nodes[i].export(doc));
+      thms.appendChild(nodes[i].export(doc,context));
     }
     ret.appendChild(thms);
+
+    // at the end, we append the context of the symbols used in this node
+    ret.appendChild(context.getContextElement(doc));
 
     return ret;
   }

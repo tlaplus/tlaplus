@@ -436,23 +436,20 @@ public class InstanceNode extends LevelNode {
     return ret;
   }
 
-  protected Element getLevelElement(Document doc) {
-
-      Element us = doc.createElement("uniquename");
-      us.appendChild(doc.createTextNode(name.toString()));
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
 
       Element sbts = doc.createElement("substs");
       for (int i=0; i<substs.length; i++) {
-        sbts.appendChild(substs[i].export(doc));
+        sbts.appendChild(substs[i].export(doc,context));
       }
 
       Element prms = doc.createElement("params");
       for (int i=0; i<params.length; i++) {
-        prms.appendChild(params[i].export(doc));
+        prms.appendChild(params[i].export(doc,context));
       }
 
       Element ret = doc.createElement("InstanceNode");
-      ret.appendChild(us);
+      ret.appendChild(appendText(doc,"uniquename",name.toString()));
       ret.appendChild(sbts);
       ret.appendChild(prms);
       return ret;

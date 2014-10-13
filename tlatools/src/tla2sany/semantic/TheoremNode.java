@@ -69,6 +69,7 @@ public class TheoremNode extends LevelNode {
     this.module = mn;
     this.def = opd;
     this.proof = pf;
+    if (opd != null) opd.thmOrAssump = this;
   }
 
   /* Returns the statement of the theorem  */
@@ -369,12 +370,20 @@ public final boolean levelCheck(int iter) {
     if (proof != null) {proof.walkGraph(semNodesTable);} ;
   }
 
-  protected Element getLevelElement(Document doc) {
+  public Element export(Document doc,SemanticNode.SymbolContext context) {
+    if (getDef() == null)
+      // we export the definition of the theorem
+      return super.export(doc,context);
+    else
+      // we export its name only, named theorem will be exported through the ThmOrAss..
+      return getDef().export(doc,context);
+  }
+
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
     Element e = doc.createElement("TheoremNode");
-    if (getDef() != null) e.appendChild(getDef().export(doc));
-    e.appendChild(getTheorem().export(doc));
-    Element proof = doc.createElement("proof");
-    if (getProof() != null)  e.appendChild(getProof().export(doc));
+    if (getDef() != null) e.appendChild(appendText(doc, "uniquename", getDef().getName().toString()));
+    e.appendChild(getTheorem().export(doc,context));
+    if (getProof() != null)  e.appendChild(getProof().export(doc,context));
     if (isSuffices()) e.appendChild(doc.createElement("suffices"));
     return e;
   }

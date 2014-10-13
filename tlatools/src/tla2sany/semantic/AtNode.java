@@ -164,10 +164,10 @@ public class AtNode extends ExprNode {
                              "\nExceptComponent: " + exceptComponentRef.getUid());
   }
 
-  protected Element getLevelElement(Document doc) {
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
     Element e = doc.createElement("AtNode");
-    e.appendChild(exceptRef.export(doc));
-    e.appendChild(exceptComponentRef.export(doc));
+    e.appendChild(exceptRef.export(doc,context));
+    e.appendChild(exceptComponentRef.export(doc,context));
     return e;
   }
 }

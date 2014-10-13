@@ -46,6 +46,11 @@ import org.w3c.dom.Element;
 public class ThmOrAssumpDefNode extends SymbolNode
          implements OpDefOrLabelNode, AnyDefNode {
 
+  // T.L. 2014 - the actual theorem or assumption associated with this def
+  // this is required in order to simplify presentation. After all normalizations
+  // we dont really need this def any more
+  // this field is being set by TheoremNode or AssumeNode
+  protected LevelNode thmOrAssump  = null;
   private LevelNode body        = null;
   private ModuleNode originallyDefinedInModule = null;
   private boolean theorem       = true;
@@ -627,10 +632,16 @@ public class ThmOrAssumpDefNode extends SymbolNode
    *
    * We care to export only the name of the theorem (CHECK what hppens when instantiated).
    */
-  protected Element getLevelElement(Document doc) {
-    Element e = doc.createElement("ThmOrAssumpDefNode");
-    e.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
+  protected String getNodeRef() {
+    if (theorem)
+      return "TheoremNodeRef";
+    else
+      return "AssumeNodeRef";
+  }
 
-    return e;
+  protected Element getSymbolElement(Document doc,SemanticNode.SymbolContext context) {
+    // since this element doesnt seem to contain any additional information
+    // over theorems or assumptions, we just refer to them
+    return thmOrAssump.getLevelElement(doc,context);
   }
 }

@@ -121,13 +121,8 @@ public class NumeralNode extends ExprNode {
 	   "; image: " + image);
   }
 
-  /**
-   * a numeral is exported as <number value=num>
-   */
-  public Element getLevelElement(Document doc) {
-    Element e = doc.createElement("NumeralNode");
-    e.appendChild(doc.createTextNode((bigValue != null) ? bigValue.toString() : (Integer.toString(value))));
-    return e;
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+    return appendText(doc,"NumeralNode",(bigValue != null) ? bigValue.toString() : (Integer.toString(value)));
   }
 }
 

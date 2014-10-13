@@ -16,6 +16,7 @@ import util.ToolIO;
 import tla2sany.xml.XMLExportable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * SemanticNode is the (abstract) superclass of all nodes in the
@@ -244,7 +245,7 @@ public abstract class SemanticNode
      * All nodes inherit from semantic node, which just attach location to the returned node
      */
 
-    protected Element getSemanticElement(Document doc) {
+  protected Element getSemanticElement(Document doc,SemanticNode.SymbolContext context) {
       throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
     }
 
@@ -253,7 +254,7 @@ public abstract class SemanticNode
      * returns location information for XML exporting as attributes to
      * the element returned by getElement
      */
-    private Element getLocationElement(Document doc) {
+    protected Element getLocationElement(Document doc) {
       Location loc = getLocation();
       Element e = doc.createElement("location");
       Element ecol = doc.createElement("column");
@@ -284,15 +285,88 @@ public abstract class SemanticNode
       return e;
     }
 
+    /**
+     * TL - auxiliary functions
+     */
+    protected Element appendElement(Document doc, String el, Element e2) {
+      Element e = doc.createElement(el);
+      e.appendChild(e2);
+      return e;
+    }
+    protected Element appendText(Document doc, String el, String txt) {
+      Element e = doc.createElement(el);
+      Node n = doc.createTextNode(txt);
+      e.appendChild(n);
+      return e;
+    }
+
+    /* TL
+     * This class is used to track the occurrence of SymbolNodes
+     * nodes which have a context (modules, nonleafproofs, etc.)
+     * create a new instance of this class and pass it over
+     * to be populated with values.
+     * The oldKeys set is used in order to prevent entering the
+     * same def twice
+     */
+    public class SymbolContext {
+      private java.util.Map<String,SymbolNode> context;
+      private java.util.Set<String> oldKeys;
+      private boolean mutable;
+
+      private SymbolContext() {
+        context = new java.util.HashMap<String,SymbolNode>();
+        mutable = true;
+      }
+
+      public SymbolContext(SymbolContext old) {
+        this();
+        if (old != null) oldKeys = old.getKeys();
+        else oldKeys = new java.util.HashSet<String>();
+      }
+
+      private java.util.Set<String> getKeys() {
+        java.util.Set<String> ret = new java.util.HashSet(context.keySet());
+        ret.addAll(oldKeys);
+        return ret;
+      }
+
+      public void put(String nm, SymbolNode nd) {
+        if (!oldKeys.contains(nm) && !context.keySet().contains(nm) && nd.getKind() != BuiltInKind) {
+          if (!mutable)
+            throw new UnsupportedOperationException("inserting elements into context without initializing a new one for symbol: " + nm
+              + " with class: " + nd.getClass().toString() + " and kind: " + Integer.toString(nd.getKind()));
+          context.put(nm,nd);
+        }
+      }
+
+      public Element getContextElement(Document doc) {
+        // once we start traversing the context, it must be immutable
+        mutable = false;
+        Element ret = doc.createElement("context");
+        for (java.util.Map.Entry<String, SymbolNode> entry : context.entrySet()) {
+          Element e = doc.createElement("entry");
+          e.appendChild(appendText(doc,"uniquename",entry.getKey()));
+          // if symbols should be added in the definition of a nested synmbol,
+          // they should be contained in a nested context
+          e.appendChild(entry.getValue().exportDefinition(doc,this));
+          ret.appendChild(e);
+        }
+        return ret;
+      }
+    }
+
     /** August 2014 - TL
      * A location element is prepannded to an implementing element
      */
-    public Element export(Document doc) {
+  public Element export(Document doc,SemanticNode.SymbolContext context) {
       try {
-        Element e = getSemanticElement(doc);
+        Element e = getSemanticElement(doc, context);
         try {
           Element loc = getLocationElement(doc);
           e.insertBefore(loc,e.getFirstChild());
+        } catch (UnsupportedOperationException uoe) {
+          uoe.printStackTrace();
+          throw uoe;
         } catch (RuntimeException ee) {
           // do nothing if no location
         }
@@ -302,6 +376,5 @@ public abstract class SemanticNode
         ee.printStackTrace();
         throw ee;
       }
-
     }
 }

@@ -130,15 +130,15 @@ public class DecimalNode extends ExprNode {
           );
   }
 
-  protected Element getLevelElement(Document doc) {
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
     Element e = doc.createElement("DecimalNode");
     if (bigVal != null) {
-      e.appendChild(doc.createElement("mantissa").appendChild(doc.createTextNode(bigVal.unscaledValue().toString())));
-      e.appendChild(doc.createElement("exponent").appendChild(doc.createTextNode(Integer.toString(bigVal.scale()))));
+      e.appendChild(appendText(doc,"mantissa",bigVal.unscaledValue().toString()));
+      e.appendChild(appendText(doc,"exponent",Integer.toString(bigVal.scale())));
     }
     else {
-      e.appendChild(doc.createElement("mantissa").appendChild(doc.createTextNode(Long.toString(mantissa))));
-      e.appendChild(doc.createElement("exponent").appendChild(doc.createTextNode(Integer.toString(exponent))));
+      e.appendChild(appendText(doc,"mantissa",Long.toString(mantissa)));
+      e.appendChild(appendText(doc,"exponent",Integer.toString(exponent)));
     }
     return e;
   }

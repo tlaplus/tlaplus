@@ -319,13 +319,13 @@ public class LabelNode extends ExprNode
     return ret;
   }
 
-    protected Element getLevelElement(Document doc) {
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
       Element ret = doc.createElement("LabelNode");
-      ret.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
-      ret.appendChild(doc.createElement("arity").appendChild(doc.createTextNode(Integer.toString(getArity()))));
-      ret.appendChild(doc.createElement("body").appendChild(body.export(doc)));
+      ret.appendChild(appendText(doc,"uniquename",getName().toString()));
+      ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
+      ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
       Element arguments = doc.createElement("params");
-      for (int i=0; i<params.length; i++) arguments.appendChild(params[i].export(doc));
+      for (int i=0; i<params.length; i++) arguments.appendChild(params[i].export(doc,context));
       ret.appendChild(arguments);
       return ret;
     }

@@ -187,14 +187,11 @@ public class NewSymbNode extends LevelNode {
              setString);
    }
 
-  /**
-   * new symbols such as CONSTANT x \in S are exported as
-   */
-  protected Element getLevelElement(Document doc) {
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
     Element e = doc.createElement("NewSymbNode");
-    e.appendChild(getOpDeclNode().export(doc));
+    e.appendChild(getOpDeclNode().export(doc,context));
     if (getSet() != null) {
-      e.appendChild(getSet().export(doc));
+      e.appendChild(getSet().export(doc,context));
     }
     return e;
   }

@@ -322,12 +322,11 @@ public int levelChecked   = 0 ;
     return this.defaultLevelDataToString() ;}
 
 
-    protected Element getSemanticElement(Document doc) {
+  protected Element getSemanticElement(Document doc,SemanticNode.SymbolContext context) {
       // T.L. abstract method used to add data from subclasses
-      Element e = getLevelElement(doc);
+      Element e = getLevelElement(doc, context);
       try {
-        Element l = doc.createElement("level");
-        l.appendChild(doc.createTextNode(Integer.toString(getLevel())));
+        Element l = appendText(doc,"level",Integer.toString(getLevel()));
         e.insertBefore(l,e.getFirstChild());
       } catch (RuntimeException ee) {
         // not sure it is legal for a LevelNode not to have level, debug it!
@@ -339,7 +338,7 @@ public int levelChecked   = 0 ;
      * T.L. October 2014
      * Abstract method for subclasses of LevelNode to add their information
      * */
-    protected Element getLevelElement(Document doc) {
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
       throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
     }
 

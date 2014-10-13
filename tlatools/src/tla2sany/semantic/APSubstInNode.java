@@ -445,17 +445,20 @@ public class APSubstInNode extends LevelNode {
     return;
   }
 
-
-    protected Element getLevelElement(Document doc) {
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
       Element sbts = doc.createElement("substs");
       for (int i=0; i<substs.length; i++) {
-        sbts.appendChild(substs[i].export(doc));
+        sbts.appendChild(substs[i].export(doc, context));
       }
       Element bdy = doc.createElement("body");
-      bdy.appendChild(body.export(doc));
+      bdy.appendChild(body.export(doc,context));
       Element ret = doc.createElement("APSubstInNode");
       ret.appendChild(sbts);
       ret.appendChild(bdy);
+
+      // at the end, we append the context of the symbols used in this node
+      //ret.appendChild(context.export(doc));
+
       return ret;
     }
 }

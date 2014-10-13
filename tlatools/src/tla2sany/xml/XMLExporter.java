@@ -53,6 +53,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Schema;
+import javax.xml.validation.Validator;
+import org.xml.sax.SAXException;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -60,9 +66,18 @@ import org.w3c.dom.Element;
 
 public class XMLExporter {
 
+  static final String JAXP_SCHEMA_LANGUAGE =
+        "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
+  static final String W3C_XML_SCHEMA =
+        "http://www.w3.org/2001/XMLSchema";
+  static final String TLA_SCHEMA = "http://tla.msr-inria.inria.fr/tlaps/sany.xsd";
+  static final String JAXP_SCHEMA_SOURCE =
+        "http://java.sun.com/xml/jaxp/properties/schemaSource";
+
   public static final void main(String[] args) throws XMLExportingException {
 
-    // parse arguments, possible flags
+    // parse arguments, possible flag
+    // s
     // -I (a modules path) can be repeated
     // then a list of top level modules to parse)
     if (args.length < 1) throw new IllegalArgumentException("at least one .tla file must be given");
@@ -109,9 +124,9 @@ public class XMLExporter {
           try {
               SANY.frontEndMain(specs[i], tlas[i], System.err);
               if (specs[i].getExternalModuleTable() == null)
-                throw new XMLExportingException("spec " + specs[i].getName() + " is malformed - does not have an external module table");
+                throw new XMLExportingException("spec " + specs[i].getName() + " is malformed - does not have an external module table", null);
               if (specs[i].getExternalModuleTable().getRootModule() == null)
-                throw new XMLExportingException("spec " + specs[i].getName() + " is malformed - does not have a root module");
+                throw new XMLExportingException("spec " + specs[i].getName() + " is malformed - does not have a root module", null);
             }
             catch (FrontEndException fe) {
               // For debugging
@@ -127,8 +142,16 @@ public class XMLExporter {
 
     try {
 
+      DocumentBuilderFactory docFactory =
+            DocumentBuilderFactory.newInstance();
+      /* validation is being done later
+      docFactory.setNamespaceAware(true);
+      docFactory.setValidating(true);
+      docFactory.setAttribute(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
+      docFactory.setAttribute(JAXP_SCHEMA_SOURCE, TLA_SCHEMA);
+      */
+
       // write XML
-      DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
       // root elements
@@ -136,23 +159,42 @@ public class XMLExporter {
       Element rootElement = doc.createElement("modules");
       doc.appendChild(rootElement);
       for (int i=0; i<specs.length; i++) {
-        Element e = specs[i].getExternalModuleTable().getRootModule().export(doc);
+        Element e = specs[i].getExternalModuleTable().getRootModule().exportDefinition(doc,null);
         rootElement.appendChild(e);
       }
 
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       Transformer transformer = transformerFactory.newTransformer();
       DOMSource source = new DOMSource(doc);
+
+      // validate the file, do not fail if there is a URL connection error
+      try {
+        SchemaFactory factory = SchemaFactory.newInstance(W3C_XML_SCHEMA);
+        Schema schema = factory.newSchema(new URL(TLA_SCHEMA));
+        // create a Validator instance, which can be used to validate an instance document
+        Validator validator = schema.newValidator();
+        //validate the DOM tree
+        validator.validate(source);
+      }
+      catch (java.io.IOException ioe) {
+        // do nothing if there is no internet connection
+        // but fail for other errors
+      }
+      catch (org.xml.sax.SAXParseException spe) {
+        // do nothing if there is no internet connection
+        // but fail for other errors
+      }
+
       StreamResult result = new StreamResult(out);
 
       transformer.transform(source, result);
     }
     catch (ParserConfigurationException pce) {
-      ToolIO.out.println("failed to write XML");
-      pce.printStackTrace();
+      throw new XMLExportingException("failed to write XML", pce);
     } catch (TransformerException tfe) {
-      ToolIO.out.println("failed to write XML");
-      tfe.printStackTrace();
-	  }
+      throw new XMLExportingException("failed to write XML", tfe);
+    } catch (SAXException se) {
+      throw new XMLExportingException("failed to validate XML", se);
+    }
   }
 }

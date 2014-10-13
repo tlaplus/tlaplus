@@ -152,11 +152,15 @@ public class OpDeclNode extends OpDefOrDeclNode {
   }
 
 
-  protected Element getLevelElement(Document doc) {
+  protected String getNodeRef() {
+    return "OpDeclNodeRef";
+  }
+
+  protected Element getSymbolElement(Document doc,SemanticNode.SymbolContext context) {
     Element e = doc.createElement("OpDeclNode");
-    e.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
-    e.appendChild(doc.createElement("arity").appendChild(doc.createTextNode(Integer.toString(getArity()))));
-    e.appendChild(doc.createElement("kind").appendChild(doc.createTextNode(Integer.toString(getKind()))));
+    e.appendChild(appendText(doc,"uniquename",getName().toString()));
+    e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
+    e.appendChild(appendText(doc,"kind", Integer.toString(getKind())));
     return e;
   }
 }

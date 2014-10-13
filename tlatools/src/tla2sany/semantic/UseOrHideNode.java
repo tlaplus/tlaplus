@@ -155,14 +155,15 @@ public class UseOrHideNode extends LevelNode {
     return ret;
    }
 
-  public Element getLevelElement(Document doc) {
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+    //SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
     Element e = doc.createElement("UseOrHideNode");
 
     Element factse = doc.createElement("facts");
     Element definitions = doc.createElement("defs");
 
-    for (int i=0; i<facts.length; i++) factse.appendChild(facts[i].export(doc));
-    for (int i=0; i<defs.length; i++) definitions.appendChild(defs[i].export(doc));
+    for (int i=0; i<facts.length; i++) factse.appendChild(facts[i].export(doc,context));
+    for (int i=0; i<defs.length; i++) definitions.appendChild(defs[i].export(doc,context));
 
     e.appendChild(factse);
     e.appendChild(definitions);
@@ -173,6 +174,9 @@ public class UseOrHideNode extends LevelNode {
 /*    if (stepName != null)
       e.setAttribute("step_name", stepName.toString());
 */
+
+    // at the end, we append the context of the symbols used in this node
+    //e.appendChild(context.getContextElement(doc));
 
     return e;
   }

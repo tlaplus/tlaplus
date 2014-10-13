@@ -287,12 +287,17 @@ implements ExploreNode, LevelConstants {
   }
 
 
-  protected Element getLevelElement(Document doc) {
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context2) {
+    SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
     Element ret = doc.createElement("LetInNode");
-    ret.appendChild(doc.createElement("body").appendChild(body.export(doc)));
+    ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
     Element arguments = doc.createElement("opDefs");
-    for (int i=0; i<opDefs.length; i++) arguments.appendChild(opDefs[i].export(doc));
+    for (int i=0; i<opDefs.length; i++) arguments.appendChild(opDefs[i].export(doc,context));
     ret.appendChild(arguments);
+
+    // at the end, we append the context of the symbols used in this node
+    ret.appendChild(context.getContextElement(doc));
+
     return ret;
   }
 }

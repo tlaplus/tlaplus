@@ -62,6 +62,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
     if(stn.heirs()[0].getImage().equals("AXIOM")){
         isAxiom = true;
     }
+    if (opd != null) opd.thmOrAssump = this;
 
    }
 
@@ -181,10 +182,18 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
     if (assumeExpr != null) {assumeExpr.walkGraph(semNodesTable);} ;
   }
 
-  protected Element getLevelElement(Document doc) {
+  public Element export(Document doc,SemanticNode.SymbolContext context) {
+    if (getDef() == null)
+      // we export the definition of the assumption
+      return super.export(doc,context);
+    else
+      // we export its name only, named assumptions will be exported through the ThmOrAss..
+      return getDef().export(doc,context);
+  }
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
     Element e = doc.createElement("AssumeNode");
-    if (getDef() != null) e.appendChild(getDef().export(doc));
-    e.appendChild(getAssume().export(doc));
+    if (getDef() != null) e.appendChild(appendText(doc, "uniquename", getDef().getName().toString()));
+    e.appendChild(getAssume().export(doc,context));
     return e;
   }
 }

@@ -124,10 +124,14 @@ public class FormalParamNode extends SymbolNode {
 	    "  " + super.toString(depth) + "  arity: " + arity);
   }
 
-  public Element getLevelElement(Document doc) {
+  protected String getNodeRef() {
+    return "FormalParamNodeRef";
+  }
+
+  protected Element getSymbolElement(Document doc,SemanticNode.SymbolContext context) {
     Element e = doc.createElement("FormalParamNode");
-    e.appendChild(doc.createElement("uniquename").appendChild(doc.createTextNode(getName().toString())));
-    e.appendChild(doc.createElement("arity").appendChild(doc.createTextNode(Integer.toString(getArity()))));
+    e.appendChild(appendText(doc,"uniquename",getName().toString()));
+    e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
     return e;
   }
 }

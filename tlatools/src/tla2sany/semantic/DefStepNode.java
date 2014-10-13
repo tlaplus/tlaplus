@@ -82,10 +82,10 @@ public class DefStepNode extends LevelNode {
     return ret;
    }
 
-    protected Element getLevelElement(Document doc) {
+  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
       Element e = doc.createElement("DefStepNode");
       for (int i=0; i<defs.length;i++) {
-        e.appendChild(defs[i].export(doc));
+        e.appendChild(defs[i].export(doc,context));
       }
       return e;
     }
