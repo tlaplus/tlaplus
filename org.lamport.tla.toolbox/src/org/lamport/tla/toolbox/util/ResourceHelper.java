@@ -1642,7 +1642,7 @@ public class ResourceHelper
      */
     public static HashSet<String> declaredSymbolsInScope(ModuleNode module, Location loc) {
         // result accumulates the return value.
-        HashSet<String> result = new HashSet<String>() ;
+        HashSet<String> result = new HashSet() ;
         addDeclaredSymbolsInScope(result, module, loc);
         return result ;
     }
@@ -1650,6 +1650,12 @@ public class ResourceHelper
     /**
      * Like declaredSymbolsInScope, except instead of returning the computed value as a result,
      * it adds it to the elements of the `result' argument.
+     * 
+     * Note added by LL on 8 Oct 2014: This implementation seems silly.  It is pulling in symbols
+     * defined or declared in all the modules EXTENDed by `module'.  However, all those symbols
+     * should already be included in the defined and declared symbols of `module'.  However,
+     * it appears that this doesn't cause the same string to be included multiple times
+     * in the returned result.
      * 
      * @param result
      * @param module
@@ -1659,7 +1665,11 @@ public class ResourceHelper
         // Set result to the set of all CONSTANT and VARIABLE declarations it should contain.
         // These are the ones from `module' that precede loc, and the ones from any extended
         // module.
-        HashSet extendees = module.getExtendedModuleSet();
+        //
+        // Testing on 9 Oct 2014 reveals that there is no need to look at EXTENDed modules
+        // because those are already returned by the GetConstant/VariableDecls calls of
+        // the module itself.
+        HashSet extendees = module.getExtendedModuleSet(); 
         extendees.add(module) ;
         Iterator iter = extendees.iterator() ;
         while (iter.hasNext()) {
@@ -1696,7 +1706,11 @@ public class ResourceHelper
             ModuleNode modNode = (ModuleNode) iter.next() ;
             
             // add definitions
-            OpDefNode[] decls = module.getOpDefs();
+            // On 8 Oct 2014, LL corrected a bug caused by the use of `module'
+            // instead of `modNode' in the following statement.  This caused
+            // all definitions and declarations from `module' to be returned
+            // rather than just the ones appearing earlier in the module.
+            OpDefNode[] decls = modNode.getOpDefs();
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
                     result.add(decls[i].getName().toString()) ;
@@ -1710,7 +1724,7 @@ public class ResourceHelper
                     result.add(tdecls[i].getName().toString()) ;
                 } 
             }
-        }
+        };
     }
     
     /**
@@ -1758,7 +1772,184 @@ public class ResourceHelper
                if (instances[i].getName() != null) {
                    symbols.add(instances[i].getName().toString()) ;
                } else {
-                   addImportedModules(modules, symbols, infiniteLoc, instances[i].getModule()) ;
+                  // Testing on 9 Oct 2014 revealed that the following is unnecessary because
+                  // the defined operators imported into a module M without renaming by an INSTANCE
+                  // are contained in M.getOpDefs().  Imported named theorems are similarly
+                  // contained in M.getThmOrAssDefs().
+                  
+                  addImportedModules(modules, symbols, infiniteLoc, instances[i].getModule()) ; 
+               }
+            }
+        }     
+
+    }
+
+    /*
+     * The following three methods are clones of the preceding three methods with HashSet<String>
+     * arguments replaced by StringSet arguments.  These clones were made because where the 
+     * original implementation of the Decompose Proof command used a HashSet<String> to hold a set
+     * of operator names, while the new implementation uses a StringSet.
+     */
+    
+    /**
+     * Returns a HashSet containing all user-definable names that are globally 
+     * defined or declared at Location loc of the module.  The returned
+     * value may or may not contain strings that are not user-definable names--in
+     * particular strings like "I!bar".  
+     * 
+     * If the statement at loc defines or declares a symbol, that symbol does
+     * not appear in the returned value.  However, the implementation assumes that
+     * there there is no declaration or definition that begins on the same line
+     * as the beginning of loc.  If there is, the symbol it defines will not 
+     * appear in the returned result. 
+     * 
+     * The method also assumes that loc is after any EXTENDS statement in the
+     * module.
+     * 
+     * @param module  The module.
+     * @param loc     The location.
+     * @return
+     */
+    public static StringSet declaredSymbolsInScopeSet(ModuleNode module, Location loc) {
+        // result accumulates the return value.
+        StringSet result = new StringSet() ;
+        addDeclaredSymbolsInScopeSet(result, module, loc);
+        return result ;
+    }
+    
+    /**
+     * Like declaredSymbolsInScope, except instead of returning the computed value as a result,
+     * it adds it to the elements of the `result' argument.
+     * 
+     * Note added by LL on 8 Oct 2014: This implementation seems silly.  It is pulling in symbols
+     * defined or declared in all the modules EXTENDed by `module'.  However, all those symbols
+     * should already be included in the defined and declared symbols of `module'.  However,
+     * it appears that this doesn't cause the same string to be included multiple times
+     * in the returned result.
+     * 
+     * @param result
+     * @param module
+     * @param loc
+     */
+    public static void addDeclaredSymbolsInScopeSet(StringSet result, ModuleNode module, Location loc) {
+        // Set result to the set of all CONSTANT and VARIABLE declarations it should contain.
+        // These are the ones from `module' that precede loc, and the ones from any extended
+        // module.
+        //
+        // Testing on 9 Oct 2014 reveals that there is no need to look at EXTENDed modules
+        // because those are already returned by the GetConstant/VariableDecls calls of
+        // the module itself.
+        HashSet extendees = module.getExtendedModuleSet(); 
+        extendees.add(module) ;
+        Iterator iter = extendees.iterator() ;
+        while (iter.hasNext()) {
+            ModuleNode modNode = (ModuleNode) iter.next() ;
+            // Get CONSTANTS
+            OpDeclNode[] decls = modNode.getConstantDecls() ;
+            for (int i = 0; i < decls.length; i++) {
+                if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
+                    result.add(decls[i].getName().toString()) ;
+                }
+            }
+            
+           // Get VARIABLES
+            decls = modNode.getVariableDecls() ;
+            for (int i = 0; i < decls.length; i++) {
+                if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
+                    result.add(decls[i].getName().toString()) ;
+                }
+            }
+        }
+        
+        // Set allModulesSet to the set of ModuleNodes containing module and all imported
+        // modules that can contribute definitions or declarations of user-typeable symbols.
+        // Add to `result' the set of all symbols sym that contribute to the final result from
+        // statements of the form
+        //
+        //    sym == INSTANCE ...
+        HashSet<ModuleNode> allModulesSet = new HashSet<ModuleNode>();
+        addImportedModulesSet(allModulesSet, result, loc, module) ;
+        
+        // Add defined operator and theorem names
+        iter = allModulesSet.iterator();
+        while (iter.hasNext()) {
+            ModuleNode modNode = (ModuleNode) iter.next() ;
+            
+            // add definitions
+            // On 8 Oct 2014, LL corrected a bug caused by the use of `module'
+            // instead of `modNode' in the following statement.  This caused
+            // all definitions and declarations from `module' to be returned
+            // rather than just the ones appearing earlier in the module.
+            OpDefNode[] decls = modNode.getOpDefs();
+            for (int i = 0; i < decls.length; i++) {
+                if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
+                    result.add(decls[i].getName().toString()) ;
+                } 
+            }
+            
+            // add theorems
+            ThmOrAssumpDefNode[] tdecls = module.getThmOrAssDefs();
+            for (int i = 0; i < tdecls.length; i++) {
+                if ((modNode != module) || earlierLine(tdecls[i].stn.getLocation(), loc)) {
+                    result.add(tdecls[i].getName().toString()) ;
+                } 
+            }
+        };
+    }
+    
+
+    
+    /**
+     * If node is an element of modules, it does nothing.  If it is then it
+     * adds to <code>modules</code> all modules imported (directly or indirectly)
+     * by module <code>node</code> by an EXTENDS statement or by an unnamed
+     * INSTANCE occurring before Location <code>loc</code>.  It adds to 
+     * <code>symbols</code> all symbols sym that occur in a
+     * 
+     *    sym == INSTANCE ...
+     *    
+     * statement that occurs in module <code>node</code> before location 
+     * <code>loc</code> or anywhere in one of the modules added to <code>modules</code>.
+     * 
+     * This procedure is called by declaredSymbolsInScope and by itself, the
+     * latter calls always with loc a Location beyond the end of any module.
+     * 
+     * @param modules
+     * @param symbols
+     * @param loc
+     * @param node
+     */
+    public static void addImportedModulesSet(HashSet<ModuleNode> modules, StringSet symbols, 
+                                   Location loc, ModuleNode node) {
+        if (modules.contains(node)) {
+            return ;
+        }
+        modules.add(node) ;
+        
+        HashSet extendees = node.getExtendedModuleSet();
+        Iterator iter = extendees.iterator() ;
+        while (iter.hasNext()) {
+            ModuleNode modNode = (ModuleNode) iter.next() ;
+            addImportedModulesSet(modules, symbols, infiniteLoc, modNode) ;
+        }
+        
+        InstanceNode[] instances = node.getInstances() ;
+        for (int i = 0; i < instances.length; i++) {
+            // We add the instance only if its comes before loc.
+            // For a LOCAL instance, we add the module to `module' or its name to `symbols'
+            // only if this is the initial call, which is the case iff  loc # infiniteLoc
+            if ( earlierLine(instances[i].stn.getLocation(), loc)
+                 && (   ! instances[i].getLocal()
+                     || earlierLine(loc, infiniteLoc))){
+               if (instances[i].getName() != null) {
+                   symbols.add(instances[i].getName().toString()) ;
+               } else {
+                  // Testing on 9 Oct 2014 revealed that the following is unnecessary because
+                  // the defined operators imported into a module M without renaming by an INSTANCE
+                  // are contained in M.getOpDefs().  Imported named theorems are similarly
+                  // contained in M.getThmOrAssDefs().
+                  
+                  addImportedModulesSet(modules, symbols, infiniteLoc, instances[i].getModule()) ; 
                }
             }
         }     

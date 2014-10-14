@@ -171,6 +171,17 @@
  *   have NodeRepresentation objects constructed by calling the 
  *   decompositionChildToNodeRep method (which calls the nrep.subNodeRep method).
  *   
+ *   The value of state.assumeReps is initially set to the sequence of 
+ *   decomposable context assumptions and all non-context assumptions.
+ *   When an assumption is decomposed by anything other than an /\ decomposition,
+ *   the newly created assumption is put in the section of state.assumeReps
+ *   that begins at position state.firstAddedAssumption.  The order of created
+ *   assumptions in that section is the same as the order of the original
+ *   assumptions from which they came, except that the NodeRepresentation created 
+ *   by \/ decomposition is always the last assumption.  An assumption added
+ *   as a result of decomposing the goal is made the last assumption in
+ *   state.assumeReps except for a node created by \/ decomposition.  (This
+ *   ordering is implemented using NodeRepresentation.initialPosition.)
  *   
  *   IMPLEMENTATION NOTE: substitution
  *   - When something is substituted for an operator argument, the substitution
@@ -211,7 +222,8 @@ The following decompositions are provided.
         a case may be further decomposed by \/ or \E decomposition.      
   
    /\ assumption decomposition:
-       The assumption A_1 /\ ... /\ A_n 
+       The assumption A_1 /\ ... /\ A_n is replaced by the n separate
+       assumptions A_1, ... , A_n
   
    /\ goal decomposition:
        The goal A_1 /\ ... /\ A_n produces a decomposition of the proof 
@@ -235,7 +247,7 @@ Context assumptions that are not decomposible should not be shown.
 
 POSSIBLE OPTION: Whether or not non-decomposible assumptions from
 the statement being decomposed (either ASSUME clauses or a CASE
-assumption) should be shown.
+assumption) should be shown.  Current choice: do not show.
 
 All case assumptions produced by \/ decomposition and any assumption
 created by =>, \A, or \E decomposition should be shown.  All of these
@@ -244,13 +256,15 @@ clauses, as assumptions in the proof that is generated.
 
 POSSIBLE OPTION: Whether or not non-decomposible assumptions produced
 by /\ decomposition should be shown.  This might depend on whether
-or not the decomposed assumption was a context assumption.
+or not the decomposed assumption was a context assumption.  Current
+choice: not to show.
 
 POSSIBLE OPTION: Whether or not non-decomposed assumptions produced by
 /\ decomposition should appear as explicit assumptions in the
 generated proof.  They are not logically necessary because they are
 implied by assumptions in the generated proof's context (which
-includes the ASSUME clauses of the decomposed step).
+includes the ASSUME clauses of the decomposed step).  Current choice
+(preferred by Damien, Stephan, and LL): not to appear.
 **************************************************************************/
 
  
@@ -425,6 +439,7 @@ import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.StringSet;
 
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ASTConstants;
@@ -667,15 +682,16 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      */
     boolean hasAssumes;
 
-    /**
-     * Once the user has performed an AND split on an assumption, then another
-     * AND split can be performed only on one of the results of that split. The
-     * indices of the nodes in <code>assumes</code> and
-     * <code>state.assumeReps</code> resulting from AND splits range from
-     * andSplitBegin through (including) andSplitEnd. If no AND split has been
-     * performed, then andSplitBegin and andSplitEnd equal -1.
-     * 
-     */
+// UP-DOWN ARROWS REMOVED
+//    /**
+//     * Once the user has performed an AND split on an assumption, then another
+//     * AND split can be performed only on one of the results of that split. The
+//     * indices of the nodes in <code>assumes</code> and
+//     * <code>state.assumeReps</code> resulting from AND splits range from
+//     * andSplitBegin through (including) andSplitEnd. If no AND split has been
+//     * performed, then andSplitBegin and andSplitEnd equal -1.
+//     * 
+//     */
     // int andSplitBegin; // moved to state
     // int andSplitEnd; // moved to state
     // private HashSet<String> goalDefinitions; // MOVED TO state
@@ -710,7 +726,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * - Definitions in DEFINE steps (represented by DefStepNode objects) in
      * whose scope the step lies.
      */
-    private HashSet<String> declaredIdentifiers;
+    private  StringSet declaredIdentifiers;
+    
 
     /********************************************************************
      * METHODS INVOLVED IN RENAMING
@@ -791,7 +808,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @return
      */
     private String getNewName(FormalParamNode node,
-            HashSet<String> currentlyDeclared, Renaming rename) {
+            StringSet currentlyDeclared, Renaming rename) {
 
         String curName = getCurrentName(node, rename);
         if (!currentlyDeclared.contains(curName)) {
@@ -843,6 +860,35 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         } else {
             return oldname + RENAMING_SUFFIX;
         }
+    }
+    
+    // 
+    /**
+     * Returns the index in state.assumeReps at which to put the new nodes
+     * obtained by decomposing a top-level node.  If the node being decomposed was in state.assumeReps,
+     * then we assume that it was at position oldIndex, has been removed, but state.firstAddedAssumption
+     * has not been changed.  In that case, state.firstAddedAssumption is updated appropriately.
+     * Otherwise, oldIndex should be set to -1 -- for example if the new nodes are obtained by
+     * decomposing the goal.
+     * 
+     * @param oldIndex
+     * @param initPos
+     * @return
+     */
+    private int newAssumeRepsIndex(int oldIndex, int initPos ) {
+        if (oldIndex >= state.firstAddedAssumption) {
+            return oldIndex ;
+        }
+        if (oldIndex != -1) {
+          state.firstAddedAssumption-- ;
+        }
+        int i = state.firstAddedAssumption ;
+        while (   (i < state.assumeReps.size() ) 
+               && (initPos >= state.assumeReps.elementAt(i).initialPosition) ) {
+            i++ ;
+        }
+        
+        return i;
     }
 
     /****************************************
@@ -1087,8 +1133,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         state.hasChanged = false;
         state.chosenSplit = -1;
         state.needsStepNumber = false;
-        state.andSplitBegin = -1;
-        state.andSplitEnd = -1;
+// UP-DOWN ARROWS REMOVED
+//        state.andSplitBegin = -1;
+//        state.andSplitEnd = -1;
         // assumeHasChanged = false;
         state.goalDefinitions = new HashSet<String>();
         state.assumpDefinitions = new HashSet<String>();
@@ -1122,7 +1169,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
         // Set declaredIdentifiers to all the defined or declared symbols
         // whose scope contains `theorem'
-        this.declaredIdentifiers = ResourceHelper.declaredSymbolsInScope(
+        this.declaredIdentifiers = 
+                ResourceHelper.declaredSymbolsInScopeSet(
                 this.moduleNode, theorem.stn.getLocation());
 
         /********************************************************************
@@ -1163,9 +1211,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             // highest-level of the proof.
             proofLevel = -1;
             while ((foundLevelNode == null) && (i < pfsteps.length)) {
-                if ((proofLevel == -1) && !(pfsteps[i] instanceof DefStepNode)
-                        && !(pfsteps[i] instanceof InstanceNode)) {
-                    proofLevel = stepLevel(pfsteps[i]);
+                if (    (proofLevel == -1) 
+                    && !(pfsteps[i] instanceof DefStepNode)
+                    && !(pfsteps[i] instanceof InstanceNode)) {
+                   proofLevel = stepLevel(pfsteps[i]);
                 }
                 // Set currStepName to name of the current step.
                 String currStepName = null ;
@@ -1176,11 +1225,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 if (EditorUtil.lineLocationContainment(selectedLocation,
                         pfsteps[i].stn.getLocation())) {
                     foundLevelNode = pfsteps[i];
+                    
 
-                    // pfsteps[i] is is either the selected step
+                    // pfsteps[i] is either the selected step
                     // or a step whose proof contains the selected step.
-                    // In the latter case, pfsteps[i] = null and hence
-                    // foundLevelNode will equal null.
                     // Here's what must be done:
                     //   For a non-SUFFICES step:  
                     //     IF it's an ASSUME/PROVE:
@@ -1198,6 +1246,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     //       Set goal to null.
                     if (pfsteps[i] instanceof TheoremNode) {
                        TheoremNode thmNode = (TheoremNode) pfsteps[i];
+                       ProofNode pfNode =  thmNode.getProof() ;
+                       // Set isChosenStep true if pfsteps[i] has no proof.
+                       // If pfsteps[i] is the chosen step, then either isChosenStep is true, 
+                       // or else the user has chosen a step with a proof and an error will
+                       // later be raised.
+                       boolean isChosenStep = (pfNode == null) || (pfNode instanceof LeafProofNode) ;
                        if (!thmNode.isSuffices()) {
                            if (thmNode.getTheorem() instanceof AssumeProveNode) {
                               // ordinary ASSUME/PROVE
@@ -1211,7 +1265,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                                       .toString());
                                   } else {
                                       if (! (assumptions[j] instanceof AssumeProveNode)) {
-                                        if (foundLevelNode != null) {
+                                        if (isChosenStep) {
                                             assumes.addElement(assumptions[j]) ;
                                         } else {
                                             contextAssumptions.addElement(assumptions[j]);
@@ -1230,7 +1284,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                   OpApplNode newGoal = (OpApplNode) newGoalSemNode ;
                                   UniqueString goalOpName = newGoal.getOperator().getName();
                                   if (goalOpName == ASTConstants.OP_pfcase) {
-                                      if (foundLevelNode == null) {
+                                      if (isChosenStep) {
                                           assumes.addElement(newGoal.getArgs()[0]) ;
                                       } else {
                                           contextAssumptions.addElement(newGoal.getArgs()[0]);
@@ -1406,7 +1460,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     // If its an INSTANCE step, must add the instantiated
                     // module's definitions.
                     if (pfsteps[i] instanceof InstanceNode) {
-                        ResourceHelper.addDeclaredSymbolsInScope(
+                        ResourceHelper.addDeclaredSymbolsInScopeSet(
                                 declaredIdentifiers,
                                 ((InstanceNode) pfsteps[i]).getModule(),
                                 ResourceHelper.infiniteLoc);
@@ -1518,9 +1572,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                         .getOpDeclNode().getName()
                                         .toString());
                     } else {
-                        contextAssumptions.insertElementAt(thmAssumps[j], j) ;
-                        contextSteps.insertElementAt(theorem.getTheorem(),j) ;
-                        contextSources.insertElementAt(null, j) ;
+                        contextAssumptions.addElement(thmAssumps[j]) ;  // Why did I originally use insertElementAt(...,j) ?
+                        contextSteps.addElement(theorem.getTheorem()) ;
+                        contextSources.addElement(null) ;
                     }                    
                 }
             }
@@ -1617,6 +1671,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         state.assumeReps, null, null, null, true);
                 nodeRep.contextStepName = contextSources.elementAt(i) ;
                 if ((nodeRep.decomposition != null) && (nodeRep.nodeSubtype != NodeRepresentation.IMPLIES_TYPE)) {
+                    nodeRep.initialPosition = state.assumeReps.size() ;
                     state.assumeReps.addElement(nodeRep);
                     state.numberOfContextAssumptions++;                  
                 }
@@ -1634,10 +1689,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 // If we want to add an option not to show non-decomposible assumptions, here's
 // the code to implement it.
 //                if (nodeRep.decomposition != null) {
+                    nodeRep.initialPosition = state.assumeReps.size() ;
                     state.assumeReps.addElement(nodeRep);                  
 //                }
             }
-
+            // Initially there are no added assumptions, so state.firstAddedAssumption
+            // points to the position after the end of state.assumeReps.
+            state.firstAddedAssumption = state.assumeReps.size();
+            
            // Similarly to the handling of contextAssumptions, we create the NodeRepresentation
            // of the current goal from the NodeRepresentation of goalStep.
            NodeRepresentation goalStepRep = null;
@@ -1653,6 +1712,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             return null;
         }
            state.goalRep = goalStepRep.subNodeRep(goal, null, null, null, null, false);
+           state.goalRep.initialPosition = Integer.MAX_VALUE - 42;
          // END OF SETTING state.assumeReps and state.goalRep
 
         /***************************************************************************
@@ -1999,7 +2059,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         case NodeRepresentation.AND_TYPE:
             labelText = "/\\";
             isProver = true;
-            disable = (state.chosenSplit != -1) || (state.andSplitBegin != -1);
+            disable = (state.chosenSplit != -1) 
+// UP-DOWN ARROWS REMOVED
+//               ||  (state.andSplitBegin != -1)
+                    ;
             break;
         case NodeRepresentation.FORALL_TYPE:
             labelText = "\\A";
@@ -2058,6 +2121,18 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // See the comments on the following command where it is used in the
         // execute method.
         editorIFile.setReadOnly(true);
+
+System.out.println("oof");
+for (int i=0; i< state.assumeReps.size(); i++) {
+    NodeRepresentation rep = state.assumeReps.elementAt(i) ;
+    if (rep.decomposition!=null) {
+        Renaming rn = rep.decomposition.renaming ;
+        if (rn!=null && rn.identifiers.size() != 0){
+            System.out.println("has renamings: " + rep.toString()) ;
+        }
+    }
+}
+        
     }
 
     /**
@@ -2130,14 +2205,29 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 assumeLabel.setFont(JFaceResources.getFontRegistry().get(
                         JFaceResources.HEADER_FONT));
                 assumeLabel.setLayoutData(gridData);
-            }     
+            }   
+            if (i == state.firstAddedAssumption) {
+                // ADD ----- splitting added assumptions from original ones.
+                gridData = new GridData();
+                gridData.horizontalSpan = 3;
+                assumeLabel = new Label(composite, SWT.NONE);
+                assumeLabel.setText("    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+                assumeLabel.setFont(JFaceResources.getFontRegistry().get(
+                        JFaceResources.HEADER_FONT));
+                assumeLabel.setLayoutData(gridData);
+             }
             
             NodeRepresentation aRep = nodeRepVector.elementAt(i);
 
-            // We display aRep iff it is not a context assumption or
-            // it is a context assumption that should be displayed.
-            if ( (i >= state.numberOfContextAssumptions)
-                 || displayContextAssump(aRep, i)) {
+            // We display aRep iff it is non-context assumption that
+            // should be displayed (which is a complicated decision)
+            // or it is a context assumption that should be displayed
+            // (which is simple because most of the context assumptions
+            // that shouldn't be displayed don't appear in nodeRepVector)
+            if (  ((i >= state.numberOfContextAssumptions) 
+                       && displayNonContextAssump(aRep, i))
+                || ((i < state.numberOfContextAssumptions) 
+                       && displayContextAssump(aRep, i))) {
               // We should display aRep  
               //
               if (aRep.nodeType != NodeRepresentation.OR_DECOMP) {
@@ -2175,7 +2265,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                       setupActionButton(button, nodeRepVector.elementAt(i),
                               labelText);
                       if (((state.chosenSplit != -1) && (i != state.chosenSplit))
-                              || ((state.andSplitBegin != -1) && ((i < state.andSplitBegin) || (i > state.andSplitEnd)))) {
+// UP-DOWN ARROWS REMOVED    || ((state.andSplitBegin != -1) && ((i < state.andSplitBegin) || (i > state.andSplitEnd)))
+                         && false     ) { // "&& false" added for testing LL-XXXXXX
                           button.setEnabled(false);
                       }
                   } else {
@@ -2206,30 +2297,31 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                   gridLayout = new GridLayout(3, false);
                   comp.setLayout(gridLayout);
                   // Add arrow buttons if necessary
-                  if ((state.chosenSplit == -1) && (state.andSplitBegin <= i)
-                          && (i <= state.andSplitEnd)) {
-                      Button arrowButton = new Button(comp, SWT.ARROW | SWT.UP);
-                      arrowButton
-                              .addSelectionListener(new ArrowSelectionListener(i,
-                                      SWT.UP, this));
-                      gridData = new GridData();
-                      gridData.verticalAlignment = SWT.TOP;
-                      arrowButton.setLayoutData(gridData);
-                      if (i == state.andSplitBegin) {
-                          arrowButton.setEnabled(false);
-                      }
-                      arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
-                      arrowButton
-                              .addSelectionListener(new ArrowSelectionListener(i,
-                                      SWT.DOWN, this));
-              
-                      gridData = new GridData();
-                      gridData.verticalAlignment = SWT.TOP;
-                      arrowButton.setLayoutData(gridData);
-                      if (i == state.andSplitEnd) {
-                          arrowButton.setEnabled(false);
-                      }
-                  }
+// UP-DOWN ARROWS REMOVED
+//                  if ((state.chosenSplit == -1) && (state.andSplitBegin <= i)
+//                          && (i <= state.andSplitEnd)) {
+//                      Button arrowButton = new Button(comp, SWT.ARROW | SWT.UP);
+//                      arrowButton
+//                              .addSelectionListener(new ArrowSelectionListener(i,
+//                                      SWT.UP, this));
+//                      gridData = new GridData();
+//                      gridData.verticalAlignment = SWT.TOP;
+//                      arrowButton.setLayoutData(gridData);
+//                      if (i == state.andSplitBegin) {
+//                          arrowButton.setEnabled(false);
+//                      }
+//                      arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
+//                      arrowButton
+//                              .addSelectionListener(new ArrowSelectionListener(i,
+//                                      SWT.DOWN, this));
+//              
+//                      gridData = new GridData();
+//                      gridData.verticalAlignment = SWT.TOP;
+//                      arrowButton.setLayoutData(gridData);
+//                      if (i == state.andSplitEnd) {
+//                          arrowButton.setEnabled(false);
+//                      }
+//                  }
               
                   assumeLabel = new Label(comp, SWT.BORDER); // SWT.NONE);
                   String text = stringArrayToString(nodeRepVector.elementAt(i)
@@ -2306,14 +2398,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * rep = state.assumeReps(i).  It equals:
      *
      *   \/ i = chosenSplit
-     *   \/ nrep.isCreated = true
-     *   \/ state.andSplitBegin =< i =< state.andSplitEnd
-     *   \/ /\ state.chosenSplit = state.andSplitBegin = -1
+     *   \/ rep.isCreated = true
+     *   \/ /\ state.chosenSplit =  -1
+     *      /\ 
      *      /\ showContextValue = true
      *      
      * Note that any of the first three disjunctions can be true when 
      * showContextValue is false because it was set to false after 
-             * 
+     * a context assumption was decomposed.
      * @param rep
      * @param i
      * @return
@@ -2321,11 +2413,37 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     boolean displayContextAssump(NodeRepresentation rep, int i) {
         return     (i == state.chosenSplit)
                 || rep.isCreated
-                || (    (state.andSplitBegin <= i)
-                     && (i <= state.andSplitEnd) )
+// UP-DOWN ARROWS REMOVED
+//                || (    (state.andSplitBegin <= i)
+//                     && (i <= state.andSplitEnd) )
                 || (    (state.chosenSplit == -1)
-                     && (state.andSplitBegin == -1)
+//                     && (state.andSplitBegin == -1)
                      && showContextValue ) ;
+    }
+    
+    /**
+     * This returns true iff we should display an assumption 
+     * rep = state.assumeReps(i) from the selected step.  Unlike for
+     * context assumptions, we display not only an assumption that
+     * is now decomposable, but also one that would be decomposable
+     * if an OR-decomposition had not already been chosen.  It equals:
+     * 
+     *   \/ rep.isCreated
+     *   \/ rep.nodeType = OR_DECOMP
+     *   \/ rep.nodeType = EXISTS_TYPE
+     *   \/ /\ rep.nodeType = AND_TYPE
+     *      /\ rep.nodeSubtype != OTHER_TYPE
+     *  
+     * @param rep
+     * @param i
+     * @return
+     */
+    boolean displayNonContextAssump(NodeRepresentation rep, int i) {
+        return    rep.isCreated
+               || (rep.nodeType == NodeRepresentation.OR_DECOMP)
+               || (rep.nodeType == NodeRepresentation.EXISTS_TYPE)
+               || (   (rep.nodeType == NodeRepresentation.AND_TYPE)
+                    && (rep.nodeSubtype != NodeRepresentation.OTHER_TYPE)  ) ;
     }
     /**
      * This method assumes that `composite' is a composite with a gridlayout
@@ -2444,31 +2562,32 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 comp = new Composite(composite, SWT.NONE);
                 gridLayout = new GridLayout(3, false);
                 comp.setLayout(gridLayout);
+             // UP-DOWN ARROWS REMOVED
                 // Add arrow buttons if necessary
-                if ((state.chosenSplit == -1) && (state.andSplitBegin <= i)
-                        && (i <= state.andSplitEnd)) {
-                    Button arrowButton = new Button(comp, SWT.ARROW | SWT.UP);
-                    arrowButton
-                            .addSelectionListener(new ArrowSelectionListener(i,
-                                    SWT.UP, this));
-                    gridData = new GridData();
-                    gridData.verticalAlignment = SWT.TOP;
-                    arrowButton.setLayoutData(gridData);
-                    if (i == state.andSplitBegin) {
-                        arrowButton.setEnabled(false);
-                    }
-                    arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
-                    arrowButton
-                            .addSelectionListener(new ArrowSelectionListener(i,
-                                    SWT.DOWN, this));
-
-                    gridData = new GridData();
-                    gridData.verticalAlignment = SWT.TOP;
-                    arrowButton.setLayoutData(gridData);
-                    if (i == state.andSplitEnd) {
-                        arrowButton.setEnabled(false);
-                    }
-                }
+//                if ((state.chosenSplit == -1) && (state.andSplitBegin <= i)
+//                        && (i <= state.andSplitEnd)) {
+//                    Button arrowButton = new Button(comp, SWT.ARROW | SWT.UP);
+//                    arrowButton
+//                            .addSelectionListener(new ArrowSelectionListener(i,
+//                                    SWT.UP, this));
+//                    gridData = new GridData();
+//                    gridData.verticalAlignment = SWT.TOP;
+//                    arrowButton.setLayoutData(gridData);
+//                    if (i == state.andSplitBegin) {
+//                        arrowButton.setEnabled(false);
+//                    }
+//                    arrowButton = new Button(comp, SWT.ARROW | SWT.DOWN);
+//                    arrowButton
+//                            .addSelectionListener(new ArrowSelectionListener(i,
+//                                    SWT.DOWN, this));
+//
+//                    gridData = new GridData();
+//                    gridData.verticalAlignment = SWT.TOP;
+//                    arrowButton.setLayoutData(gridData);
+//                    if (i == state.andSplitEnd) {
+//                        arrowButton.setEnabled(false);
+//                    }
+//                }
 
                 assumeLabel = new Label(comp, SWT.NONE);
                 String text = stringArrayToString(nodeRepVector.elementAt(i)
@@ -2537,11 +2656,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      ****************************************************************************/
     /**
      * The /\ action, both for a goal (which generates the proof) and for an
-     * assumption (which splits the assumption).
+     * assumption (which splits the assumption).  This action will only be
+     * enabled if the conjunction contains within it, or within one of its
+     * conjuncts, a \/ or \E formula.
      * 
-     * Precondition: if this is an AND-split of assumption state.assumeReps(i),
-     * then either state.andSplitBegin = -1 or state.andSplitBegin \leq i \leq
-     * state.andSplitEnd.
+     * Note that nodeRep must be either the goal or else a top-level assumption
+     * of state.assumeReps.
      * 
      * @param nodeRep
      */
@@ -2592,7 +2712,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // NodeRepresentation.
                 NodeRepresentation rep = decompositionChildToNodeRep(nodeRep,
                         i, this.state.assumeReps, null);
-                rep.isCreated = true;
+                rep.initialPosition = nodeRep.initialPosition ;
+                rep.isCreated = false;  // changed from true by LL on 8 Oct 2014
                 addedToAssumeReps.add(rep);
             }
             this.state.assumeReps.remove(idx);
@@ -2600,20 +2721,23 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 this.state.assumeReps.add(idx + i,
                         addedToAssumeReps.elementAt(i));
             }
-
-            // Update state.andSplitBegin & state.andSplitEnd. Recall the
-            // precondition.
-            if (state.andSplitBegin == -1) {
-                state.andSplitBegin = idx;
-                state.andSplitEnd = idx + addedAssumps.size() - 1;
-            } else {
-                state.andSplitEnd = state.andSplitEnd + addedAssumps.size() - 1;
-            }
+//         // UP-DOWN ARROWS REMOVED
+//            // Update state.andSplitBegin & state.andSplitEnd. Recall the
+//            // precondition.
+//            if (state.andSplitBegin == -1) {
+//                state.andSplitBegin = idx;
+//                state.andSplitEnd = idx + addedAssumps.size() - 1;
+//            } else {
+//                state.andSplitEnd = state.andSplitEnd + addedAssumps.size() - 1;
+//            }
             
             // Update state.numberOfContextAssumptions
             if (idx < state.numberOfContextAssumptions) {
                 state.numberOfContextAssumptions = 
                         state.numberOfContextAssumptions + (addedAssumps.size()-1) ;
+            }
+            if (idx < state.firstAddedAssumption) {
+                state.firstAddedAssumption = state.firstAddedAssumption + (addedAssumps.size()-1) ;
             }
             raiseWindow();
         }
@@ -2637,8 +2761,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // may be used in calling primingNeedsParens
         // this.goal = qdc.body.semanticNode ;
 
+        int newIdx = newAssumeRepsIndex(-1, nodeRep.initialPosition) ;
         for (int i = 0; i < qdc.news.size(); i++) {
-            this.state.assumeReps.add(qdc.news.elementAt(i));
+            this.state.assumeReps.add(newIdx+i, qdc.news.elementAt(i));
             // this.assumes.add(qdc.news.elementAt(i).semanticNode) ;
         }
         raiseWindow();
@@ -2691,19 +2816,24 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
         parentVec.remove(idx);
 
+// UP-DOWN ARROWS REMOVED
         // If this is a top-level assumption and an AND-split has been
         // performed, then increment state.andSplitEnd
-        if ((parentVec == state.assumeReps) && (state.andSplitBegin != -1)) {
-            state.andSplitEnd = state.andSplitEnd + qdc.news.size();
-        }
+//        if ((parentVec == state.assumeReps) && (state.andSplitBegin != -1)) {
+//            state.andSplitEnd = state.andSplitEnd + qdc.news.size();
+//        }
 
         // If this is a top-level context assumption, then
-        // increment state.numberOfContextAssumptions
-        if ((parentVec == state.assumeReps) 
-                && (idx < state.numberOfContextAssumptions)) {
-            state.numberOfContextAssumptions = state.numberOfContextAssumptions + qdc.news.size() ;
+        // decrement state.numberOfContextAssumptions, and set idx to the appropriate
+        // place to put the new assumptions
+        if (parentVec == state.assumeReps) {
+            int newIdx =  newAssumeRepsIndex(idx, nodeRep.initialPosition) ;            
+            if (idx < state.numberOfContextAssumptions) {
+               state.numberOfContextAssumptions = state.numberOfContextAssumptions-1  ;
+            }
+
+            idx = newIdx ;
         }
-        
         for (int i = 0; i < qdc.news.size(); i++) {
             parentVec.add(idx + i, qdc.news.elementAt(i));
             // parentVec.add(idx + i, qdc.news.elementAt(i).semanticNode) ;
@@ -2740,7 +2870,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
         nrep.isCreated = true;
         nrep.isPrimed = nrep.isPrimed || decomp.primed;
-        this.state.assumeReps.add(nrep);
+        int newIdx = newAssumeRepsIndex(-1, nodeRep.initialPosition) ;
+        this.state.assumeReps.add(newIdx, nrep);
         nrep = decompositionChildToNodeRep(nodeRep, 1,
                 nodeRep.getParentVector(), nodeRep.parentNode);
         nrep.isCreated = true;
@@ -2755,15 +2886,33 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @param nodeRep
      */
     void orAction(NodeRepresentation nodeRep) {
+        
         // Set decomp to nodeRep's decomposition and idx
         // and parentVec so that nodeRep = parentVec.elementAt(idx).
         // to the value such that
         int idx = nodeRep.getParentIndex();
         Vector<NodeRepresentation> parentVec = nodeRep.getParentVector();
         // If this is an OR-split of a top-level assumption, then
-        // set state.chosenSplit to idx.
+        // set state.chosenSplit to idx (NO LONGER NEEDED) and
+        // move the node to the end of assumeReps
         if (parentVec == this.state.assumeReps) {
-            this.state.chosenSplit = idx;
+           int oldIdx = nodeRep.getParentIndex() ;
+           if (oldIdx < state.numberOfContextAssumptions) {
+               state.numberOfContextAssumptions-- ;
+           }
+           if (oldIdx < state.firstAddedAssumption) {
+               state.firstAddedAssumption-- ;
+           }
+           state.assumeReps.remove(oldIdx) ;
+           this.state.chosenSplit = state.assumeReps.size() ;
+           state.assumeReps.add(nodeRep) ;
+// LL-XXXXX  Because nodeRep was moved in assumeReps, may need to rename bound identifiers.
+// nodeRep.semanticNode.operands[0].unboundedBoundSymbols[0]
+//FormalParamNode xNode = ((OpApplNode) ( (OpApplNode) nodeRep.semanticNode).getArgs()[0]).getUnbdedQuantSymbols()[0] ;
+//Renaming rn = nodeRep.decomposition.renaming ;
+//rn.identifiers.addElement(xNode) ;
+//rn.newNames.addElement("x_33") ;
+//System.out.println("x_33") ;
         }
 
         Decomposition decomp = nodeRep.decomposition;
@@ -2775,6 +2924,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         nodeRep.nodeType = NodeRepresentation.OR_DECOMP;
         nodeRep.nodeSubtype = NodeRepresentation.OTHER_TYPE;
         nodeRep.children = new Vector<Vector<NodeRepresentation>>();
+        nodeRep.initialPosition = Integer.MAX_VALUE ;
 
         for (int i = 0; i < decomp.children.size(); i++) {
             Vector<NodeRepresentation> repVec = new Vector<NodeRepresentation>();
@@ -2798,9 +2948,25 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         int idx = nodeRep.getParentIndex();
         Vector<NodeRepresentation> parentVec = nodeRep.getParentVector();
         // If this is an OR-split of a top-level assumption, then
-        // set state.chosenSplit to idx.
+        // set state.chosenSplit to idx. (NO LONGER NEEDED)
+        // and move the node to the end of state.assumeReps.
         if (parentVec == this.state.assumeReps) {
+         
+            
+            nodeRep.initialPosition = Integer.MAX_VALUE;
             this.state.chosenSplit = idx;
+            int oldIdx = nodeRep.getParentIndex() ;
+            if (oldIdx < state.numberOfContextAssumptions) {
+                state.numberOfContextAssumptions-- ;
+            }
+            if (oldIdx < state.firstAddedAssumption) {
+                state.firstAddedAssumption-- ;
+            }
+            state.assumeReps.remove(oldIdx) ;
+            state.assumeReps.add(nodeRep) ;
+// LL-XXXXX since nodeRep has been moved, may need to rename its bound variables..
+            
+
         }
 
         Decomposition decomp = nodeRep.decomposition;
@@ -2865,7 +3031,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * 
          * We also set proofIndentString to a string of that number of spaces.
          */
-        HashSet<String> aaTestSet = new HashSet<String>();
+        StringSet aaTestSet = new StringSet();
         addDeclaredSymbols(aaTestSet, state.goalRep);
 
         int proofIndent = PROOF_INDENT;
@@ -3421,8 +3587,20 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
         } else {
             // Call subNodeRep to construct the result.
+// LL-XXXX On 13 Oct 2014 Commented this stmt out for testing and added rest of 
+//  else clause.
+//            result = nodeRep.subNodeRep(decomp.children.elementAt(i), vec,
+//                    father, newNodeText, decomp, vec != null);
+// This seems to do the right thing to get necessary renaming done for OR-decomposition
+// because the assumption is being moved.
             result = nodeRep.subNodeRep(decomp.children.elementAt(i), vec,
-                    father, newNodeText, decomp, vec != null);
+                  father, newNodeText, decomp, vec != null);
+            NodeTextRep ntext = decompSubstituteInNodeText(nodeRep,
+                    (ExprNode) decomp.children.elementAt(i),
+                    new NodeTextRep(result.nodeText, result.mapping), nodeRep);
+            result.nodeText = ntext.nodeText;
+            result.mapping = ntext.mapping;
+            
         }
         // Set various fields whose values can be inferred from nodeRep and
         // decomp.
@@ -3432,6 +3610,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         result.isPrimed = result.isPrimed || decomp.primed;
         result.isSubexpressionName = nodeRep.isSubexpressionName
                 || newNodeText != null;
+        result.initialPosition = nodeRep.initialPosition ;
         return result;
     }
 
@@ -3460,7 +3639,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * changed to avoid name clashes with NEW variables or other bound variables
      * of later assumptions or of the goal. This is not a problem for a \A split
      * because, since the \A formula is the goal, there are no later items to
-     * clash with.
+     * clash with.  THE LATTER IS NO LONGER VALID WITH THE NEW METHOD FOR ORDERING
+     * ASSUMPTIONS.  IT LED TO BUGS IN THE OLD VERSION BECAUSE THE \A SPLIT NEW
+     * ASSUMPTION COULD APPEAR BEFORE CASE-SPLIT ASSUMPTIONS.
+     * 
      * 
      * @param nodeRepArg
      * @param isForAll
@@ -3549,8 +3731,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         if (!isForAll) {
             // Set prevDeclared to the set of all identifiers declared or
             // defined at the location of nodeRepArg.
-            HashSet<String> prevDeclared = (HashSet<String>) this.declaredIdentifiers
-                    .clone();
+            StringSet prevDeclared = this.declaredIdentifiers.clone();
             addDeclaredSymbols(prevDeclared, nodeRepArg);
 
             addSymbolsDeclaredLater(prevDeclared, nodeRepArg, true);
@@ -3602,6 +3783,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             // /\ \/ this is an unbounded quantifier
             //    \/ the i-1st NEW fits entirely on line lastLine
             NodeRepresentation rep = new NodeRepresentation();
+            rep.initialPosition = nodeRepArg.initialPosition ;
             rep.semanticNode = null;
             rep.nodeType = NodeRepresentation.NEW_NODE;
             rep.newId = getCurrentName(decomp.quantIds.elementAt(i),
@@ -3697,7 +3879,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         result.body = nodeRep.subNodeRep(decomp.children.elementAt(0),
                 nodeRep.getParentVector(), nodeRep.parentNode, newNodeText,
                 nodeRep.decomposition, !isForAll);
-        result.body.isCreated = isForAll;
+        result.body.isCreated = true ; // changed to true from isForAll by LL on 8 Oct 2014
         result.body.isPrimed = result.body.isPrimed || decomp.primed;
         result.body.isSubexpressionName = nodeRep.isSubexpressionName
                 || (newNodeText != null);
@@ -3711,6 +3893,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * or this is not an OR-DECOMP entry
      */
     String[] createdAssumptions() {
+// LL-XXXXX This now becomes easier to implement because all created assumptions are at the end of state.assumeReps.
         /**
          * Sets vec to a vector of string arrays such that applying
          * stringArrayToString to each of them produces the text of an
@@ -3774,7 +3957,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * 
      * produces the new goal
      * 
-     * ASSUME NEW x PROVE \/ C' <=> A \/ B --------- Assumes that nodeTextRep is
+     * ASSUME NEW x PROVE \/ C' <=> A \/ B 
+     * --------- 
+     * Assumes that nodeTextRep is
      * the NodeTextRep for the ExprNode sn (possibly after some substitutions
      * have been made). It returns the NodeTextRep object representing sn after
      * substituting arguments[i] for formalParams[i], for each i. It assumes
@@ -3999,8 +4184,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
         // Set prevDeclared to the set of all identifiers declared or defined at
         // the location of nodeRep.
-        HashSet<String> prevDeclared = (HashSet<String>) this.declaredIdentifiers
-                .clone();
+        StringSet prevDeclared =  this.declaredIdentifiers.clone();
         addDeclaredSymbols(prevDeclared, originalNodeRep);
 
         // Added by LL on 10 Feb 2013 because formulas that are being decomposed
@@ -4075,13 +4259,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @param expr
      * @return
      */
-    private void addToRenaming(Renaming renaming, HashSet<String> prevDeclared,
+    private void addToRenaming(Renaming renaming, StringSet prevDeclared,
             ExprNode expr) {
         if (!(expr instanceof OpApplNode)) {
             return;
         }
 
-        HashSet<String> newDeclared = (HashSet<String>) prevDeclared.clone();
+        StringSet newDeclared =  prevDeclared.clone();
 
         OpApplNode node = (OpApplNode) expr;
         if (node.getUnbdedQuantSymbols() != null) {
@@ -4167,6 +4351,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         private int numberOfContextAssumptions ;
         
         /**
+         * state.assumeReps.elementAt(firstAddedAssumption) through
+         * state.assumeReps.elementAt(state.assumeReps.size()-1) are
+         * all the added assumptions that must appear as assumptions in
+         * the decomposed proof.
+         *   
+         */
+        private int firstAddedAssumption ;
+        
+        /**
          * If the user has done an OR split on an assumption, then this is the
          * index of the assumption in assumes and state.assumeReps. Otherwise,
          * it equals -1.
@@ -4192,8 +4385,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * state.andSplitEnd equal -1.
          * 
          */
-        int andSplitBegin; // NOT CLEAR IF THESE WILL BE USED IN NEW VERSION.
-        int andSplitEnd; // NOT CLEAR IF THESE WILL BE USED IN NEW VERSION.
+// UP-DOWN ARROWS REMOVED
+//        int andSplitBegin; // NOT CLEAR IF THESE WILL BE USED IN NEW VERSION.
+//        int andSplitEnd; // NOT CLEAR IF THESE WILL BE USED IN NEW VERSION.
 
         /**
          * The set of Ids of user-defined operations that must appear in the DEF
@@ -4218,10 +4412,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
             result.goalRep = goalRep.deepClone(null, null);
             result.numberOfContextAssumptions = numberOfContextAssumptions ;
+            result.firstAddedAssumption = firstAddedAssumption ;
             result.chosenSplit = chosenSplit;
             result.needsStepNumber = needsStepNumber;
-            result.andSplitBegin = andSplitBegin;
-            result.andSplitEnd = andSplitEnd;
+// UP-DOWN ARROWS REMOVED
+//            result.andSplitBegin = andSplitBegin;
+//            result.andSplitEnd = andSplitEnd;
             result.goalDefinitions = (HashSet<String>) goalDefinitions.clone();
             result.assumpDefinitions = (HashSet<String>) assumpDefinitions
                     .clone();
@@ -4327,7 +4523,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         private static final int OR_TYPE = 1; // A disjunction
         private static final int EXISTS_TYPE = 4; // An \E
         private static final int SQSUB_TYPE = 5; // An [A]_v expression
-        private static final int MULTI_TYPE = 6;
+//        private static final int MULTI_TYPE = 6;
         // An assumption that is the conjunction of formulas, two or more
         // of which can be decomposed.
         // Subtype for something that can't be decomposed
@@ -4349,6 +4545,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * the NEW identifier.
          */
         public String newId = null;
+        
+        /**
+         * This NodeRepresentation object either was or was obtained from the
+         * assumption that was originally state.assumeReps.elementAt(initialPosition),
+         * except that initialPosition equals approximately Integer.MAX_VALUE - 42
+         * if it came from the goal and equals Integer.MAX_VALUE if it is the
+         * (only) object of type OR_DECOMP in state.assumeReps.
+         */
+        int initialPosition ;
 
         /********************************************************************
          * An OR-Split operation can be performed on a node of type EXPR_NODE
@@ -4889,6 +5094,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             result.nodeSubtype = this.nodeSubtype;
             result.stepName = this.stepName ;
             result.newId = this.newId;
+            result.initialPosition = this.initialPosition;
             result.contextStepName = this.contextStepName;
             result.parentNode = parNode;
             result.parentVector = parVector;
@@ -5144,7 +5350,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             Renaming result = new Renaming();
             result.identifiers = (Vector<FormalParamNode>) this.identifiers
                     .clone();
-            result.newNames = (Vector<String>) this.newNames;
+            result.newNames = (Vector<String>) this.newNames.clone();
             return result;
         }
     }
@@ -5327,7 +5533,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @param result
      * @param node
      */
-    private void addDeclaredSymbols(HashSet<String> result,
+    private void addDeclaredSymbols(StringSet result,
             NodeRepresentation node) {
         Vector<NodeRepresentation> parentVec = node.getParentVector();
         // node.parentVector = null iff node is the goal, the case we
@@ -5371,7 +5577,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @param nodeRepArg
      * @param includeGoal
      */
-    private void addSymbolsDeclaredLater(HashSet<String> prevDeclared,
+    private void addSymbolsDeclaredLater(StringSet prevDeclared,
             NodeRepresentation nodeRepArg, boolean includeGoal) {
         // Set assumpRepNode to the NodeRepresentation and
         // set idx to the number such that assumpRepNode equals
@@ -5439,9 +5645,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         case NodeRepresentation.SQSUB_TYPE:
             val = "SQSUB_TYPE";
             break;
-        case NodeRepresentation.MULTI_TYPE:
-            val = "MULTI_TYPE";
-            break;
+//        case NodeRepresentation.MULTI_TYPE:
+//            val = "MULTI_TYPE";
+//            break;
         case NodeRepresentation.OTHER_TYPE:
             val = "OTHER_TYPE";
             break;
@@ -6450,46 +6656,47 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             commandHandler.editorIFile.setReadOnly(false);
         }
     }
-
-    /**
-     * Listener for arrows to move /\ conjunctions up or down.
-     * 
-     * @author lamport
-     *
-     */
-    class ArrowSelectionListener implements SelectionListener {
-        int index;
-        int direction;
-        NewDecomposeProofHandler handler;
-
-        ArrowSelectionListener(int idx, int dir, NewDecomposeProofHandler han) {
-            index = idx;
-            direction = dir;
-            handler = han;
-        }
-
-        public void widgetSelected(SelectionEvent e) {
-
-            // Clone the current state, so can go back from an arrow operation.
-            DecompositionState newState = state.clone();
-            newState.previousState = state;
-            state = newState;
-
-            // SemanticNode node = handler.assumes.elementAt(index);
-            NodeRepresentation rep = handler.state.assumeReps.elementAt(index);
-            // handler.assumes.remove(index) ;
-            handler.state.assumeReps.remove(index);
-            int inc = (direction == SWT.DOWN) ? 1 : -1;
-            // handler.assumes.add(index + inc, node) ;
-            handler.state.assumeReps.add(index + inc, rep);
-            handler.raiseWindow();
-        }
-
-        public void widgetDefaultSelected(SelectionEvent e) {
-            widgetSelected(e);
-        }
-
-    }
+    
+// UP-DOWN ARROWS REMOVED
+//    /**
+//     * Listener for arrows to move /\ conjunctions up or down.
+//     * 
+//     * @author lamport
+//     *
+//     */
+//    class ArrowSelectionListener implements SelectionListener {
+//        int index;
+//        int direction;
+//        NewDecomposeProofHandler handler;
+//
+//        ArrowSelectionListener(int idx, int dir, NewDecomposeProofHandler han) {
+//            index = idx;
+//            direction = dir;
+//            handler = han;
+//        }
+//
+//        public void widgetSelected(SelectionEvent e) {
+//
+//            // Clone the current state, so can go back from an arrow operation.
+//            DecompositionState newState = state.clone();
+//            newState.previousState = state;
+//            state = newState;
+//
+//            // SemanticNode node = handler.assumes.elementAt(index);
+//            NodeRepresentation rep = handler.state.assumeReps.elementAt(index);
+//            // handler.assumes.remove(index) ;
+//            handler.state.assumeReps.remove(index);
+//            int inc = (direction == SWT.DOWN) ? 1 : -1;
+//            // handler.assumes.add(index + inc, node) ;
+//            handler.state.assumeReps.add(index + inc, rep);
+//            handler.raiseWindow();
+//        }
+//
+//        public void widgetDefaultSelected(SelectionEvent e) {
+//            widgetSelected(e);
+//        }
+//
+//    }
 
     /**
      * A convenience method that returns the first line of a semantic node's
@@ -6605,7 +6812,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         return (dirtyEditors.size() > 0);
 
     }
-
+    
 }
 
 /**********************************
