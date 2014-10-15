@@ -1131,7 +1131,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          **********************************************/
         this.state = new DecompositionState();
         state.hasChanged = false;
-        state.chosenSplit = -1;
+        // state.chosenSplit = -1;
         state.needsStepNumber = false;
 // UP-DOWN ARROWS REMOVED
 //        state.andSplitBegin = -1;
@@ -1966,7 +1966,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         setupMenuButton(replaceButton, PROVE_BUTTON, "P");
         replaceButton.setFont(JFaceResources.getFontRegistry().get(
                 JFaceResources.HEADER_FONT));
-        replaceButton.setEnabled(state.hasChanged && (state.chosenSplit == -1)
+        replaceButton.setEnabled(state.hasChanged && (! state.splitChosen())
         /* && (state.andSplitEnd == -1) removed with 23 Aug 2014 changes. */
         );
 
@@ -2059,13 +2059,23 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         case NodeRepresentation.AND_TYPE:
             labelText = "/\\";
             isProver = true;
-            disable = (state.chosenSplit != -1) 
+            disable = (state.splitChosen()) 
 // UP-DOWN ARROWS REMOVED
 //               ||  (state.andSplitBegin != -1)
                     ;
             break;
         case NodeRepresentation.FORALL_TYPE:
             labelText = "\\A";
+            // LL-XXXXX We disable \A decomposition when
+            // an OR-split has been made because it will
+            // produce a name conflict if one of the
+            // \A variables occurs (bound) in the OR-split.
+            // This could be avoided by making the forAllAction()
+            // method smart enough to do the necessary renaming.
+            // A simpler thing to implement would be to
+            // add code here that sets disable true only
+            // if there actually is such a name conflict.
+            disable = state.splitChosen() ;
             break;
         case NodeRepresentation.IMPLIES_TYPE:
             labelText = "=>";
@@ -2122,16 +2132,16 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // execute method.
         editorIFile.setReadOnly(true);
 
-System.out.println("oof");
-for (int i=0; i< state.assumeReps.size(); i++) {
-    NodeRepresentation rep = state.assumeReps.elementAt(i) ;
-    if (rep.decomposition!=null) {
-        Renaming rn = rep.decomposition.renaming ;
-        if (rn!=null && rn.identifiers.size() != 0){
-            System.out.println("has renamings: " + rep.toString()) ;
-        }
-    }
-}
+//System.out.println("oof");
+//for (int i=0; i< state.assumeReps.size(); i++) {
+//    NodeRepresentation rep = state.assumeReps.elementAt(i) ;
+//    if (rep.decomposition!=null) {
+//        Renaming rn = rep.decomposition.renaming ;
+//        if (rn!=null && rn.identifiers.size() != 0){
+//            System.out.println("has renamings: " + rep.toString()) ;
+//        }
+//    }
+//}
         
     }
 
@@ -2264,9 +2274,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                       Button button = new Button(composite, SWT.PUSH);
                       setupActionButton(button, nodeRepVector.elementAt(i),
                               labelText);
-                      if (((state.chosenSplit != -1) && (i != state.chosenSplit))
-// UP-DOWN ARROWS REMOVED    || ((state.andSplitBegin != -1) && ((i < state.andSplitBegin) || (i > state.andSplitEnd)))
-                         && false     ) { // "&& false" added for testing LL-XXXXXX
+                     // I'm not sure if this is right LL-XXXXXX
+                      if (false) { 
                           button.setEnabled(false);
                       }
                   } else {
@@ -2411,12 +2420,12 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      * @return
      */
     boolean displayContextAssump(NodeRepresentation rep, int i) {
-        return     (i == state.chosenSplit)
-                || rep.isCreated
+        return   //  (i == state.chosenSplit) ||
+                   rep.isCreated
 // UP-DOWN ARROWS REMOVED
 //                || (    (state.andSplitBegin <= i)
 //                     && (i <= state.andSplitEnd) )
-                || (    (state.chosenSplit == -1)
+                || (    (! state.splitChosen())
 //                     && (state.andSplitBegin == -1)
                      && showContextValue ) ;
     }
@@ -2904,7 +2913,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                state.firstAddedAssumption-- ;
            }
            state.assumeReps.remove(oldIdx) ;
-           this.state.chosenSplit = state.assumeReps.size() ;
+           // this.state.chosenSplit = state.assumeReps.size() ;
            state.assumeReps.add(nodeRep) ;
 // LL-XXXXX  Because nodeRep was moved in assumeReps, may need to rename bound identifiers.
 // nodeRep.semanticNode.operands[0].unboundedBoundSymbols[0]
@@ -2954,7 +2963,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
          
             
             nodeRep.initialPosition = Integer.MAX_VALUE;
-            this.state.chosenSplit = idx;
+            // this.state.chosenSplit = idx;
             int oldIdx = nodeRep.getParentIndex() ;
             if (oldIdx < state.numberOfContextAssumptions) {
                 state.numberOfContextAssumptions-- ;
@@ -4360,11 +4369,16 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         private int firstAddedAssumption ;
         
         /**
-         * If the user has done an OR split on an assumption, then this is the
-         * index of the assumption in assumes and state.assumeReps. Otherwise,
-         * it equals -1.
+         * On 15 Oct 2014 the field chosenSplit was removed.  It contained
+         * the index of an OR-split entry in assumeReps, if there is one.
+         * Now, such an OR-split entry must be the last one in assumeReps,
+         * so the splitChosen() method replaces it.
          */
-        int chosenSplit;
+        boolean splitChosen() {
+            return    (assumeReps.size() > 0)
+                   && (assumeReps.elementAt(assumeReps.size()-1).nodeType 
+                           == NodeRepresentation.OR_DECOMP) ;
+        }
 
         /**
          * True if the proof of a SUFFICES step (or of the QED step if there is
@@ -4413,7 +4427,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             result.goalRep = goalRep.deepClone(null, null);
             result.numberOfContextAssumptions = numberOfContextAssumptions ;
             result.firstAddedAssumption = firstAddedAssumption ;
-            result.chosenSplit = chosenSplit;
+            // result.chosenSplit = chosenSplit;
             result.needsStepNumber = needsStepNumber;
 // UP-DOWN ARROWS REMOVED
 //            result.andSplitBegin = andSplitBegin;
