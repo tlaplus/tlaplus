@@ -38,7 +38,7 @@ public class TheoremNode extends LevelNode {
     /***********************************************************************
     * This can be either an ExprNode or an AssumeProveNode object.         *
     ***********************************************************************/
-  ThmOrAssumpDefNode   def;
+  private ThmOrAssumpDefNode   def;
     /***********************************************************************
     * For a named theorem, that is one of the form                         *
     * "THEOREM foo == ...", this is the ThmOrAssumpDefNode for the         *

@@ -25,7 +25,7 @@ public class AssumeNode extends LevelNode {
 
   ModuleNode  module;
   ExprNode    assumeExpr;
-  ThmOrAssumpDefNode   def;
+  private ThmOrAssumpDefNode   def;
     /***********************************************************************
     * For a named assumption, that is one of the form                      *
     * "ASSUME foo == ...", this is the ThmOrAssumpDefNode for the          *

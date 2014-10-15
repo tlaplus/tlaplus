@@ -310,7 +310,7 @@ public abstract class SemanticNode
      */
     public class SymbolContext {
       private java.util.Map<String,SymbolNode> context;
-      private java.util.Set<String> oldKeys;
+      private java.util.Map<String,SymbolNode> oldKeys;
       private boolean mutable;
 
       private SymbolContext() {
@@ -318,20 +318,21 @@ public abstract class SemanticNode
         mutable = true;
       }
 
-      public SymbolContext(SymbolContext old) {
+      public SymbolContext(SymbolContext old)  {
         this();
         if (old != null) oldKeys = old.getKeys();
-        else oldKeys = new java.util.HashSet<String>();
+        else oldKeys = new java.util.HashMap<String,SymbolNode>();
       }
 
-      private java.util.Set<String> getKeys() {
-        java.util.Set<String> ret = new java.util.HashSet(context.keySet());
-        ret.addAll(oldKeys);
+      private java.util.Map<String,SymbolNode> getKeys() {
+        java.util.Map<String,SymbolNode> ret = new java.util.HashMap(context);
+        ret.putAll(oldKeys);
         return ret;
       }
 
       public void put(String nm, SymbolNode nd) {
-        if (!oldKeys.contains(nm) && !context.keySet().contains(nm) && nd.getKind() != BuiltInKind) {
+        if (!context.keySet().contains(nm) && nd.getKind() != BuiltInKind &&
+            (!oldKeys.keySet().contains(nm) || !oldKeys.get(nm).toString().equals(nd.toString()))) {
           if (!mutable)
             throw new UnsupportedOperationException("inserting elements into context without initializing a new one for symbol: " + nm
               + " with class: " + nd.getClass().toString() + " and kind: " + Integer.toString(nd.getKind()));
