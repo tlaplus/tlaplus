@@ -1048,8 +1048,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         /**
          * The step from which the goal comes.
          */
-        LevelNode goalStep = null ;
         
+        LevelNode goalStep = null ;
         /**
          * If goal is set to null, this describes why not in an error
          * message saying "Step has goal that comes from" + nullReason + "step".
@@ -1167,14 +1167,24 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             return null;
         }
 
+        /****************************************************************
+         * Initialize goal to the theorem's goal
+         ****************************************************************/
+        goal = theorem.getTheorem() ;
+        if (goal instanceof AssumeProveNode) {
+            goal = ((AssumeProveNode) goal).getProve();            
+        }
+        goalStep = theorem ;
+        
         // Set declaredIdentifiers to all the defined or declared symbols
         // whose scope contains `theorem'
         this.declaredIdentifiers = 
                 ResourceHelper.declaredSymbolsInScopeSet(
                 this.moduleNode, theorem.stn.getLocation());
 
+        
         /********************************************************************
-         * Set the following fields: step, proofLevel, proof. Add the necessary
+         * Set the following fields: step,  proofLevel, proof. Add the necessary
          * declarations to this.declaredIdentifiers.  Also compute the following
          * two values.
          *********************************************************************/
@@ -1565,6 +1575,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             if (theorem.getTheorem() instanceof AssumeProveNode) {
                 SemanticNode[] thmAssumps = 
                     ((AssumeProveNode) theorem.getTheorem()).getAssumes() ;
+                // assumption inserted as the k-th assumption in contextAssumptions
+                int k = 0 ;
                 for (int j = 0; j < thmAssumps.length; j++) {
                     if (thmAssumps[j] instanceof NewSymbNode) {
                         declaredIdentifiers
@@ -1572,9 +1584,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                         .getOpDeclNode().getName()
                                         .toString());
                     } else {
-                        contextAssumptions.addElement(thmAssumps[j]) ;  // Why did I originally use insertElementAt(...,j) ?
-                        contextSteps.addElement(theorem.getTheorem()) ;
-                        contextSources.addElement(null) ;
+                        contextAssumptions.insertElementAt(thmAssumps[j], k) ;  
+                        contextSteps.insertElementAt(theorem.getTheorem(), k) ;
+                        contextSources.insertElementAt(null, k) ;
+                        k++ ;
                     }                    
                 }
             }
@@ -2132,6 +2145,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // execute method.
         editorIFile.setReadOnly(true);
 
+// FOR TESTING LL-XXXXXX
+for (int i=0; i< state.assumeReps.size(); i++) {
+    if(state.assumeReps.elementAt(i).initialPosition == -1){
+        System.out.println("initialPosition not set for assumeReps(" + i + ")") ;
+    }
+    if (state.goalRep.initialPosition == -1) {
+        System.out.println("initialPosition not set for goal") ;
+    }
+}
 //System.out.println("oof");
 //for (int i=0; i< state.assumeReps.size(); i++) {
 //    NodeRepresentation rep = state.assumeReps.elementAt(i) ;
@@ -2248,6 +2270,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                    * Add the button or blank area to the first column.
                    *************************************************************/
                   String labelText = null;
+                  
+                  // set false if button to be disabled
+                  boolean enable = true ;
                   // The null test is because created NEW nodes have null
                   // semanticNode fields.
                   if ((aRep.semanticNode != null)
@@ -2255,10 +2280,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                       switch (aRep.nodeSubtype) {
                       case NodeRepresentation.AND_TYPE:
                           labelText = "/\\";
+                          enable = conjIsDecomposable((OpApplNode) aRep.semanticNode) ;
                           break;
                       case NodeRepresentation.OR_TYPE:
                       case NodeRepresentation.SQSUB_TYPE:
                           labelText = "\\/";
+                          enable = ! state.splitChosen() ;
                           break;
                       case NodeRepresentation.EXISTS_TYPE:
                           labelText = "\\E";
@@ -2275,7 +2302,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                       setupActionButton(button, nodeRepVector.elementAt(i),
                               labelText);
                      // I'm not sure if this is right LL-XXXXXX
-                      if (false) { 
+                      if (!enable) { 
                           button.setEnabled(false);
                       }
                   } else {
@@ -3018,7 +3045,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     }
 
     /**
-     * Creates the proof, which is a Suffices Only proof if sufficesONly = true,
+     * Creates the proof, which is a Suffices Only proof if sufficesOnly = true,
      * and otherwise is an and-split proof if isAndProof is true, and a
      * case-split proof otherwise.
      * 
@@ -3892,6 +3919,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         result.body.isPrimed = result.body.isPrimed || decomp.primed;
         result.body.isSubexpressionName = nodeRep.isSubexpressionName
                 || (newNodeText != null);
+        result.body.initialPosition = nodeRepArg.initialPosition ;
         return result;
     }
 
@@ -4567,7 +4595,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * if it came from the goal and equals Integer.MAX_VALUE if it is the
          * (only) object of type OR_DECOMP in state.assumeReps.
          */
-        int initialPosition ;
+        int initialPosition = -1 ;  // -1 indicates that value not set.
 
         /********************************************************************
          * An OR-Split operation can be performed on a node of type EXPR_NODE
@@ -5929,14 +5957,17 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
     /**
      * Assumes node represents a conjunction (either infix or bulleted list).
-     * Returns true iff one of the conjuncts is a disjunction, a \E, or a
-     * conjunction c for which conjIsDecomposable(c) is true.
+     * Returns true iff one of the conjuncts is either
+     *   - a \E  or 
+     *   - a disjunction and this.state.splitChosen() = false 
+     * or a conjunction c for which conjIsDecomposable(c) is true.
      * 
      * It assumes that a conjunct that is a SubstInNode is not decomposable.
      * This will have to be changed to allow decomposition of formulas imported
-     * by instantiation.
+     * by instantiation.  LL-XXXXXX
      * 
      * @param node
+     * @param allowOr
      * @return
      */
     private boolean conjIsDecomposable(OpApplNode node) {
@@ -5959,12 +5990,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                             .getName();
                     String opName = opId.toString();
 
-                    if ((opId == ASTConstants.OP_dl)
-                            || opName.equals("\\lor")
-                            || (opId == ASTConstants.OP_be)
-                            || (opId == ASTConstants.OP_ue)
-                            || (((opId == ASTConstants.OP_cl) || opName
-                                    .equals("\\land")) && conjIsDecomposable(curNode))) {
+                    if (   (   (! this.state.splitChosen())
+                            && (   (opId == ASTConstants.OP_dl)
+                                || opName.equals("\\lor")
+                                || (opId == ASTConstants.OP_sa)))
+                        || (opId == ASTConstants.OP_be)
+                        || (opId == ASTConstants.OP_ue)
+                        || (    (   (opId == ASTConstants.OP_cl) 
+                                 || opName.equals("\\land")) 
+                             && conjIsDecomposable(curNode))) {
                         return true;
                     }
                 }
