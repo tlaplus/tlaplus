@@ -1301,8 +1301,9 @@ public class OpDefNode extends OpDefOrDeclNode
           }
           ret.appendChild(arguments);
       }
-      if (inRecursive) ret.appendChild(doc.createElement("recursive"));
-      ret.appendChild(context.getContextElement(doc));
+        if (inRecursive) ret.appendChild(doc.createElement("recursive"));
+        // at the beginning, we append the context of the symbols used in this node
+        ret.insertBefore(context.getContextElement(doc), ret.getFirstChild());
       break;
       case BuiltInKind:
         ret = doc.createElement("BuiltInKind");
@@ -1318,7 +1319,8 @@ public class OpDefNode extends OpDefOrDeclNode
           }
           ret.appendChild(arguments2);
         }
-        ret.appendChild(context.getContextElement(doc));
+        // at the beginning, we append the context of the symbols used in this node
+        ret.insertBefore(context.getContextElement(doc), ret.getFirstChild());
         break;
       case ModuleInstanceKind:
         ret = doc.createElement("ModuleInstanceKind");

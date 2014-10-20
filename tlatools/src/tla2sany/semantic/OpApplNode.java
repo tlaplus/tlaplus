@@ -1269,8 +1269,8 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       e.appendChild(bvars);
     }
 
-    // at the end, we append the context of the symbols used in this node
-    e.appendChild(context.getContextElement(doc));
+    // at the beginning, we append the context of the symbols used in this node
+    e.insertBefore(context.getContextElement(doc), e.getFirstChild());
 
     return e;
   }

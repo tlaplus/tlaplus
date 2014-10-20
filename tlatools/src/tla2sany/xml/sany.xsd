@@ -289,10 +289,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element minOccurs="0" ref="uniquename"/>
-        <xs:choice>
-          <xs:group ref="ExprNode"/>
-          <xs:element ref="AssumeProveNode"/>
+        <xs:group ref="ExprNode"/>
         </xs:choice>
       </xs:sequence>
     </xs:complexType>
@@ -303,7 +300,6 @@
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element minOccurs="0" ref="uniquename"/>
         <xs:choice>
           <xs:group ref="ExprNode"/>
           <xs:element ref="AssumeProveNode"/>
@@ -313,7 +309,6 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  
   <xs:element name="suffices">
     <xs:complexType/>
   </xs:element>
@@ -323,6 +318,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
+        <xs:element ref="context"/>        
         <xs:element name="assumes">
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
@@ -339,7 +335,6 @@
         </xs:element>   
         <xs:element minOccurs="0" ref="suffices"/>
         <xs:element minOccurs="0" ref="boxed"/>
-        <xs:element ref="context"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -384,8 +379,9 @@
   <!-- An operator and its definition, arity and list of arguments -->
   <xs:element name="UserDefinedOpKind">
     <xs:complexType>
-      <xs:sequence>
+      <xs:sequence>      
         <xs:group ref="node"/>
+        <xs:element ref="context"/>        
         <xs:element ref="uniquename"/>
         <xs:element ref="arity"/>
         <xs:element name="body">
@@ -401,7 +397,6 @@
           </xs:complexType>
         </xs:element>
         <xs:element minOccurs="0" ref="recursive"/>
-        <xs:element ref="context"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -430,6 +425,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
+        <xs:element ref="context"/>              
         <xs:element ref="uniquename"/>
         <xs:element ref="arity"/>
         <xs:element minOccurs="0" name="params">
@@ -439,7 +435,6 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element ref="context"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -504,10 +499,10 @@
           <xs:complexType>
             <xs:sequence>
               <xs:group ref="node"/>
+              <xs:element ref="context"/>                          
               <xs:sequence maxOccurs="unbounded">
                 <xs:group ref="step"/>
               </xs:sequence>
-              <xs:element ref="context"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
@@ -675,6 +670,7 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
+        <xs:element ref="context"/>              
         <xs:element name="body">
           <xs:complexType>        
             <xs:group ref="ExprNode"/>
@@ -691,7 +687,6 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
             </xs:choice>
           </xs:complexType>
         </xs:element>
-        <xs:element ref="context"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -715,6 +710,7 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
+        <xs:element ref="context"/>              
         <xs:element name="operator">
           <xs:complexType>
             <xs:choice>
@@ -743,7 +739,6 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
             </xs:choice>
           </xs:complexType>
         </xs:element>
-        <xs:element ref="context"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -776,6 +771,7 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
+        <xs:element ref="context"/>              
         <xs:element ref="uniquename"/>
         <xs:element name="constants">
           <xs:complexType>
@@ -814,7 +810,6 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
             </xs:choice>
           </xs:complexType>
         </xs:element>
-        <xs:element ref="context"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

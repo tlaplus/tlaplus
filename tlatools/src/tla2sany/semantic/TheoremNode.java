@@ -381,7 +381,6 @@ public final boolean levelCheck(int iter) {
 
   protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
     Element e = doc.createElement("TheoremNode");
-    if (getDef() != null) e.appendChild(appendText(doc, "uniquename", getDef().getName().toString()));
     e.appendChild(getTheorem().export(doc,context));
     if (getProof() != null)  e.appendChild(getProof().export(doc,context));
     if (isSuffices()) e.appendChild(doc.createElement("suffices"));

@@ -1195,8 +1195,8 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     }
     ret.appendChild(thms);
 
-    // at the end, we append the context of the symbols used in this node
-    ret.appendChild(context.getContextElement(doc));
+    // at the beginning, we append the context of the symbols used in this node
+    ret.insertBefore(context.getContextElement(doc), ret.getFirstChild());
 
     return ret;
   }

@@ -295,8 +295,8 @@ implements ExploreNode, LevelConstants {
     for (int i=0; i<opDefs.length; i++) arguments.appendChild(opDefs[i].export(doc,context));
     ret.appendChild(arguments);
 
-    // at the end, we append the context of the symbols used in this node
-    ret.appendChild(context.getContextElement(doc));
+    // at the beginning, we append the context of the symbols used in this node
+    ret.insertBefore(context.getContextElement(doc), ret.getFirstChild());
 
     return ret;
   }

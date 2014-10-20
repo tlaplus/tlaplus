@@ -192,7 +192,6 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
   }
   protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
     Element e = doc.createElement("AssumeNode");
-    if (getDef() != null) e.appendChild(appendText(doc, "uniquename", getDef().getName().toString()));
     e.appendChild(getAssume().export(doc,context));
     return e;
   }

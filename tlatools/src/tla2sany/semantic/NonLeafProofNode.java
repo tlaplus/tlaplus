@@ -219,8 +219,8 @@ public class NonLeafProofNode extends ProofNode {
       e.appendChild(steps[i].export(doc,context));
     }
 
-    // at the end, we append the context of the symbols used in this node
-    e.appendChild(context.getContextElement(doc));
+    // at the beginning, we append the context of the symbols used in this node
+    e.insertBefore(context.getContextElement(doc), e.getFirstChild());
 
     return e;
   }

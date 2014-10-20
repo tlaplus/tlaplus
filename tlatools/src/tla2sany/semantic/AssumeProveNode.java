@@ -402,8 +402,8 @@ public class AssumeProveNode extends LevelNode {
     if (isSuffices()) e.appendChild(doc.createElement("suffices"));
     if (isBoxAssumeProve) e.appendChild(doc.createElement("boxed"));
 
-    // at the end, we append the context of the symbols used in this node
-    e.appendChild(context.getContextElement(doc));
+    // at the beginning, we append the context of the symbols used in this node
+    e.insertBefore(context.getContextElement(doc), e.getFirstChild());
 
     return e;
   }
