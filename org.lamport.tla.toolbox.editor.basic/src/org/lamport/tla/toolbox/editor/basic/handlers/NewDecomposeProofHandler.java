@@ -3065,18 +3065,128 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      * 
      *  - isAndProof = true /\ sufficesOnly = false
      *      The user has selected /\ decomposition
+     *      
      *  - isAndProof = false /\ sufficesOnly = true
      *      The user has selected the top "P" button, which
      *      is enabled if only \E decompositions and/or =>
      *      decompositions have been chosen.
+     *      
      *  - isAndProof =  sufficesOnly = false
      *      The user has chosen a case split.
      *      
-     * Here is how (I think) a proof should be constructed.  
-     *  userProof = a BY proof of the decomposed step.  (OBVIOUS is a
-     *              null BY proof.)
-     *  createdAssumps = ...  
-     *  LL-XXXX should complete this spec.
+     * Here is how (I think) a proof should be constructed. 
+     *  
+     *  userProof = a BY proof of the decomposed step, with BY and DEF clauses
+     *              userProof.BY and userProof.DEF.  (Obvious representations if
+     *              either or both of those clauses are empty--e.g. OBVIOUS if
+     *              both are empty.)
+     *              
+     *  createdAssumps = Seqence of all new assumptions added by decomposition,
+     *                   except for assumption on which case split is being done (if any).
+     *                   
+     *  caseSplitAssump = Disjunction on which case split being done, or null if none.
+     *   
+     *  createdAssumps.defs = 
+     *    Sequence of names of operators expanded to obtain assumptions
+     *    in createdAssumps, including assumptions that were originally
+     *    part of the goal.
+     * 
+     *  createdAssumps.stepNames =
+     *    Sequence of names of all named steps from which assumptions
+     *    in createdAssumps were obtained, excluding ones from assumptions
+     *    that were originally part of the goal (but including the decomposed
+     *    steps name for assumptions coming from its assumptions).
+     * 
+     *  caseSplitAssump.defs =
+     *    Sequence of names of operators expanded to obtain the top-level caseSplitAssump
+     * 
+     *  caseSplitDefs =
+     *     Sequence of names of operators expanded to obtain all the case splits from
+     *     caseSplitAssump.
+     *     
+     *  caseSplitAssump.stepName =
+     *    Sequence containing name of step from which 
+     *    caseSplitAssump came, or empty seq if either: 
+     *        - caseSplitAssump = null 
+     *        - that step is unnamed
+     *        - the case split formula came from the original goal.
+     *    
+     *  decompGoal = The goal created by the decomposition.
+     *  
+     * Here are the proofs created for different cases (assuming a level <1> statement):
+     *    
+     * CASE 1: \/ sufficesOnly = true
+     *         \/ /\ isAndProof = true
+     *            /\ "Use SUFFICES" chosen ->
+     * 
+     *   <2> SUFFICES ASSUME createdAssumps
+     *                PROVE  decompGoal
+     *      BY createdAssumps.stepNames DEF createdAssumps.defs
+     * 
+     *   IF isAndProof = true 
+     *      THEN ... 
+     *           <2>i. conjunct i of decompGoal
+     *             BY userProof
+     *           ...
+     * 
+     *   <2>n. QED
+     *    IF sufficesOnly = true
+     *      THEN userProof
+     * 
+     * CASE 2: /\ isAndProof = true
+     *         /\ "Use SUFFICES" not chosen ->
+     * 
+     *   ...
+     *   <2>i. ASSUME createdAssumps
+     *         PROVE  conjunct i of decompGoal
+     *     BY userProof.BY, <2>i DEF userProof.DEF
+     *   ...
+     * 
+     *   <2>n. QED
+     *     BY <2>1, ... , <2>n-1, createdAssumps.stepNames
+     *     DEF caseSplitAssump.defs \o
+     *           IF decompGoal is a defined op THEN the operator name
+     *                                         ELSE << >>
+     *  
+     * CASE 3: /\ isAndProof = sufficesOnly = FALSE
+     *         /\ "Use SUFFICES" chosen  -> 
+     * 
+     *   <2> SUFFICES ASSUME createdAssumps \o
+     *                       IF case-split came from original goal
+     *                         THEN , top-level caseSplitAssump formula (possibly an operator name)
+     *                PROVE  decompGoal
+     *      BY createdAssumps.stepNames 
+     *      DEF createdAssumps.defs \o IF case-split came from original goal
+     *                                   THEN , caseSplitAssump.defs
+     *      NOTE: IF the ASSUMES is empty, then SUFFICES step is eliminated and 
+     *            the BY and DEF clauses are made part of the QED step's proof.
+     *   ...
+     *   <2>i. ASSUME case i of caseSplitAssump
+     *         PROVE  decompGoal
+     *              [This ASSUME/PROVE should be replaced by a CASE
+     *               statement if "Use CASE" chosen and all of the ASSUME
+     *               clauses are formulas.]
+     *           BY userProof.BY, <2>i DEF userProof.DEF
+     *   ...
+     *   <2>n. QED
+     *     BY <2>1, ... , <2>n-1, caseSplitAssump.stepNames 
+     *     DEF caseSplitDefs \o  IF case-split not from original goal
+     *                             THEN caseSplitAssump.defs
+     * 
+     * CASE 4: /\ isAndProof = sufficesOnly = FALSE
+     *         /\ "Use SUFFICES" not chosen   ->
+     * 
+     *   ...
+     *   <2>i. ASSUME case i of caseSplitAssump
+     *         PROVE  decompGoal
+     *               [This ASSUME/PROVE should be replaced by a CASE
+     *                statement if "Use CASE" chosen and all of the ASSUME
+     *                clauses are formulas.]
+     *           BY userProof.BY, <2>i,  DEF userProof.DEF
+     *   ...
+     *   <2>n. QED
+     *     BY createdAssumps.stepNames, caseSplitAssump.stepName 
+     *     DEF createdAssumps.defs, caseSplitAssump.defs
      * 
      * @param nodeRep
      * @param isAndProof
@@ -3139,6 +3249,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         String addedStepNumbers = "" ;
         StringSet aSNSet = new StringSet() ;
         for (int i = state.firstAddedAssumption ; i < state.assumeReps.size(); i++) {
+          //  LL-XXXXX stopped coding and started specifying
           //  xxxx ZZZZZZZZZZZZZZZZZYYYYYYYYYYYYYYXXXXXXXXXXXX
         }
 
