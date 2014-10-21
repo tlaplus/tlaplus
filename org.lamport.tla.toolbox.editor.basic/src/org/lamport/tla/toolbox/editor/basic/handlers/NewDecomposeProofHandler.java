@@ -438,8 +438,8 @@ import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
-import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.StringSet;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ASTConstants;
@@ -1695,6 +1695,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             // an ASSUME/PROVE or a CASE step.  Set hasAssumes true
             // iff there is such an assumption
             hasAssumes = false;
+            if (assumes.size() > 0) {
+                hasAssumes = true ;
+            }
             for (i = 0; i < assumes.size(); i++) {
                 NodeRepresentation nodeRep = stepRep.subNodeRep(assumes.elementAt(i),
                         state.assumeReps, null, null, null, true);
@@ -2280,8 +2283,21 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                       switch (aRep.nodeSubtype) {
                       case NodeRepresentation.AND_TYPE:
                           labelText = "/\\";
-                          enable = conjIsDecomposable((OpApplNode) aRep.semanticNode) ;
-                          break;
+                          
+                          // In an attempt to allow /\ decompositions to occur for
+                          // \E after a case-split had been chosen, the following
+                          // statement was originally
+                          //    enabled == conjIsDecomposable((OpApplNode) aRep.semanticNode) ;
+                          // However, this didn't work because conjIsDecomposible assumes
+                          // that its input is a conjunction and not an occurrence of
+                          // a defined operator whose definition is a conjunction,
+                          // which may be the case here.  So, we just disable
+                          // /\-decomposition after a case-split is chosen.  The user
+                          // can just do the /\-decomposition before the case split.
+                          //
+                          enable = ! state.splitChosen() ;
+                  
+                           break;
                       case NodeRepresentation.OR_TYPE:
                       case NodeRepresentation.SQSUB_TYPE:
                           labelText = "\\/";
@@ -3045,10 +3061,22 @@ for (int i=0; i< state.assumeReps.size(); i++) {
     }
 
     /**
-     * Creates the proof, which is a Suffices Only proof if sufficesOnly = true,
-     * and otherwise is an and-split proof if isAndProof is true, and a
-     * case-split proof otherwise.
+     * Creates the proof.  It is called three ways:
      * 
+     *  - isAndProof = true /\ sufficesOnly = false
+     *      The user has selected /\ decomposition
+     *  - isAndProof = false /\ sufficesOnly = true
+     *      The user has selected the top "P" button, which
+     *      is enabled if only \E decompositions and/or =>
+     *      decompositions have been chosen.
+     *  - isAndProof =  sufficesOnly = false
+     *      The user has chosen a case split.
+     *      
+     * Here is how (I think) a proof should be constructed.  
+     *  userProof = a BY proof of the decomposed step.  (OBVIOUS is a
+     *              null BY proof.)
+     *  createdAssumps = ...  
+     *  LL-XXXX should complete this spec.
      * 
      * @param nodeRep
      * @param isAndProof
@@ -3074,13 +3102,14 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         String proofIndentString = StringHelper.copyString(" ", proofIndent);
 
         // Get the assumptions, goal, and proof as string arrays.
-        //
+        // Note that assumptionsText is not used if these assumptions are
+        // to be turned into a single formula because "Use CASES" is chosen
+        // and "Use SUFFICES" is not and this is a case-split proof.
         String[] assumptionsText = createdAssumptions();
         String[] proofText = null;
 
         // If there is a proof, set proofText to its string array
-        // representation,
-        // with indentation prepended to it, and delete it.
+        // representation, with indentation prepended to it, and delete it.
         if (this.proof != null) {
             proofText = this.stepRep.subNodeText(this.proof).nodeText;
             proofText = prependToStringArray(proofText, proofIndentString);
@@ -3093,15 +3122,25 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "An error that should not happen has occurred in "
-                                + "line 1266 of NewDecomposeProofHandler.");
+                                + "line 3097 of NewDecomposeProofHandler.");
                 e.printStackTrace();
             }
         }
 
         // Set addStepNumber true iff we need to add the step number to the
         // BY clause of a SUFFICES step or of the QED step.
+        // LL-XXXXXX now may have to add multiple step numbers
         boolean addStepNumber = (stepNumber != null)
                 && this.state.needsStepNumber;
+
+        // Set addedStepNumbers to the comma-separated list of step
+        // numbers of steps whose assumptions are being used in the
+        // decomposition.
+        String addedStepNumbers = "" ;
+        StringSet aSNSet = new StringSet() ;
+        for (int i = state.firstAddedAssumption ; i < state.assumeReps.size(); i++) {
+          //  xxxx ZZZZZZZZZZZZZZZZZYYYYYYYYYYYYYYXXXXXXXXXXXX
+        }
 
         // Set sufficesStep to the string array of the suffices step,
         // or null if there is none. There is a suffices step iff the
@@ -3147,12 +3186,12 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 
         // Set
         // - mainProofSteps to be an array of string arrays for the
-        // steps of the proof other than the SUFFICES and QED steps. ,
+        //   steps of the proof other than the SUFFICES and QED steps. ,
         // - numberOfSteps to the number of those steps (which
-        // should equal mainProofSteps.length;
-        // - proofDefto be the name of the operator whose definition
-        // is the current goal, if this is an and-split proof.
-        // It is null otherwise.
+        //   should equal mainProofSteps.length;
+        // - proofDef to be the name of the operator whose definition
+        //   is the current goal, if this is an and-split proof.
+        //   It is null otherwise.
 
         String[][] mainProofSteps = null;
         int numberOfSteps = 0;
@@ -3647,6 +3686,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         result.isSubexpressionName = nodeRep.isSubexpressionName
                 || newNodeText != null;
         result.initialPosition = nodeRep.initialPosition ;
+        result.contextStepName = nodeRep.contextStepName ;
         return result;
     }
 
@@ -3748,7 +3788,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "An error that should not happen has occurred in "
-                                + "line 2624 of NewDecomposeProofHandler.");
+                                + "line 3787 of NewDecomposeProofHandler.");
                 return null;
             }
         }
@@ -3889,7 +3929,11 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             }
             rep.nodeText = ntrep.nodeText;
             rep.mapping = ntrep.mapping;
-            result.news.add(rep);
+            
+            // Set node's contextStepName to be that of nodeRepArg
+            rep.contextStepName = nodeRepArg.contextStepName ;
+
+            result.news.add(rep) ;
             if ((beginLine != -1) && (beginLine == lastLine)) {
                 result.news.elementAt(i - 1).onSameLineAsNext = true;
             }
@@ -3920,17 +3964,21 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         result.body.isSubexpressionName = nodeRep.isSubexpressionName
                 || (newNodeText != null);
         result.body.initialPosition = nodeRepArg.initialPosition ;
+        // set contextStepName for the body.
+        result.body.contextStepName = nodeRepArg.contextStepName ;
         return result;
     }
 
     /**
      * Returns string array such that applying stringArrayToString to it
      * produces the text of a list of of assumptions in this.state.assumeReps
-     * for which - isCreated field equals true, and - "use Suffices" is chosen
-     * or this is not an OR-DECOMP entry
+     * for which 
+     *  - isCreated field equals true, and 
+     *  - "use Suffices" is chosen or this is not an OR-DECOMP entry
      */
+// LL-XXXXX  needs to re re-thought to handle case in which "Use Case" and not
+// "Use SUFFICES" are chosen.
     String[] createdAssumptions() {
-// LL-XXXXX This now becomes easier to implement because all created assumptions are at the end of state.assumeReps.
         /**
          * Sets vec to a vector of string arrays such that applying
          * stringArrayToString to each of them produces the text of an
@@ -3940,10 +3988,18 @@ for (int i=0; i< state.assumeReps.size(); i++) {
          */
         Boolean sufficesSelected = useSufficesButton.getSelection();
         Vector<String[]> vec = new Vector<String[]>();
-        for (int i = 0; i < this.state.assumeReps.size(); i++) {
+        
+        // Set lastAddedAssump so that state.firstAddedAssumption .. lastAddedAssump-1
+        // are the added non-case-split assumptions of state.assumeReps.
+        int lastAddedAssump = state.assumeReps.size() ;
+        if (state.splitChosen()) {
+            lastAddedAssump--;
+        }
+        
+        for (int i = state.firstAddedAssumption; i < lastAddedAssump; i++) {
             NodeRepresentation rep = state.assumeReps.elementAt(i);
-            if (rep.isCreated
-                    && (sufficesSelected || (rep.nodeType != NodeRepresentation.OR_DECOMP))) {
+//            if (rep.isCreated
+//                    && (sufficesSelected || (rep.nodeType != NodeRepresentation.OR_DECOMP))) {
                 String newDecls = null;
                 while (rep.onSameLineAsNext) {
                     if (newDecls != null) {
@@ -3960,7 +4016,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 } else {
                     vec.add(new String[] { newDecls + ", " + rep.nodeText[0] });
                 }
-            }
+//            }
         }
 
         /**
