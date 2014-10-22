@@ -1030,9 +1030,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // We will set assumes to the vector of SemanticNodes of the
         // assumptions, if there are any, and goal to the SemanticNode
         // of the goal.
-        Activator.getDefault().logDebug("Decompose Proof Called");
         
-        /**
+        // Activator.getDefault().logDebug("Decompose Proof Called");
+// LL-XXXXX for testing 
+StringSet.test() ;
+StringSet ss = StringSet.CommaSeparatedListToStringSet(" c, a ,c, d,b") ;
+System.out.println(ss.toCommaSeparatedString());
+
+         /**
          * Is set to the set of ASSUMEs of the selected step/theorem,
          * excluding inner ASSUME/PROVE assumptions.
          */
@@ -1137,7 +1142,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 //        state.andSplitBegin = -1;
 //        state.andSplitEnd = -1;
         // assumeHasChanged = false;
-        state.goalDefinitions = new HashSet<String>();
+        state.goalDefinitions = new StringSet();
         state.assumpDefinitions = new HashSet<String>();
 
         // selectedLocation is Location of selected region.
@@ -1701,9 +1706,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             for (i = 0; i < assumes.size(); i++) {
                 NodeRepresentation nodeRep = stepRep.subNodeRep(assumes.elementAt(i),
                         state.assumeReps, null, null, null, true);
-                nodeRep.contextStepName = null ;
+                nodeRep.contextStepName = this.stepNumber ;
+// I THINK THE FOLLOWING COMMENT IS OBSOLETE:
 // If we want to add an option not to show non-decomposible assumptions, here's
-// the code to implement it.
+// the code to implement it. 
 //                if (nodeRep.decomposition != null) {
                     nodeRep.initialPosition = state.assumeReps.size() ;
                     state.assumeReps.addElement(nodeRep);                  
@@ -1729,6 +1735,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         }
            state.goalRep = goalStepRep.subNodeRep(goal, null, null, null, null, false);
            state.goalRep.initialPosition = Integer.MAX_VALUE - 42;
+           state.goalRep.fromGoal = true ;
          // END OF SETTING state.assumeReps and state.goalRep
 
         /***************************************************************************
@@ -2726,8 +2733,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         } else {
             /**
              * This is an AND-SPLIT of an assumption, so nodeRep equals
-             * state.assumeReps(i) for some i and parentNode = null (should be #
-             * null?). We set idx to i, and we set decomp to the Decomposition
+             * state.assumeReps(i) for some i and parentNode = null.
+             * We set idx to i, and we set decomp to the Decomposition
              * object.
              * 
              */
@@ -3061,7 +3068,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
     }
 
     /**
-     * Creates the proof.  It is called three ways:
+     * makeProof(nodeRep, isAndProof, sufficesOnly) creates the proof.  
+     * It is called three ways:
      * 
      *  - isAndProof = true /\ sufficesOnly = false
      *      The user has selected /\ decomposition
@@ -3082,7 +3090,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *              both are empty.)
      *              
      *  createdAssumps = Seqence of all new assumptions added by decomposition,
-     *                   except for assumption on which case split is being done (if any).
+     *                   except for assumption on which case split is being done (if any)
      *                   
      *  caseSplitAssump = Disjunction on which case split being done, or null if none.
      *   
@@ -3095,12 +3103,12 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *    Sequence of names of all named steps from which assumptions
      *    in createdAssumps were obtained, excluding ones from assumptions
      *    that were originally part of the goal (but including the decomposed
-     *    steps name for assumptions coming from its assumptions).
+     *    step's name for assumptions coming from its assumptions).
      * 
-     *  caseSplitAssump.defs =
+     *  caseSplitAssump.defs =  
      *    Sequence of names of operators expanded to obtain the top-level caseSplitAssump
      * 
-     *  caseSplitDefs =
+     *  caseSplitDefs (originally implemented as state.goalDefinitions) =
      *     Sequence of names of operators expanded to obtain all the case splits from
      *     caseSplitAssump.
      *     
@@ -3122,7 +3130,9 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *   <2> SUFFICES ASSUME createdAssumps
      *                PROVE  decompGoal
      *      BY createdAssumps.stepNames DEF createdAssumps.defs
-     * 
+     *      [NOTE: IF createdAssumps is empty, then the SUFFICES
+     *             step is eliminated.  This can 
+     *             be the case only if sufficesOnly = false.]
      *   IF isAndProof = true 
      *      THEN ... 
      *           <2>i. conjunct i of decompGoal
@@ -3130,8 +3140,12 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *           ...
      * 
      *   <2>n. QED
-     *    IF sufficesOnly = true
-     *      THEN userProof
+     *     IF sufficesOnly = true
+     *       THEN userProof
+     *       ELSE BY userProof.BY 
+     *            DEF userProof.DEF \o IF decompGoal is a defined op 
+     *                                   THEN <<the operator name>>
+     *                                   ELSE << >>
      * 
      * CASE 2: /\ isAndProof = true
      *         /\ "Use SUFFICES" not chosen ->
@@ -3145,7 +3159,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *   <2>n. QED
      *     BY <2>1, ... , <2>n-1, createdAssumps.stepNames
      *     DEF caseSplitAssump.defs \o
-     *           IF decompGoal is a defined op THEN the operator name
+     *           IF decompGoal is a defined op THEN <<the operator name>>
      *                                         ELSE << >>
      *  
      * CASE 3: /\ isAndProof = sufficesOnly = FALSE
@@ -3185,7 +3199,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *           BY userProof.BY, <2>i,  DEF userProof.DEF
      *   ...
      *   <2>n. QED
-     *     BY createdAssumps.stepNames, caseSplitAssump.stepName 
+     *     BY createdAssumps.s, caseSplitAssump.stepName 
      *     DEF createdAssumps.defs, caseSplitAssump.defs
      * 
      * @param nodeRep
@@ -3205,9 +3219,30 @@ for (int i=0; i< state.assumeReps.size(); i++) {
          * 
          * We also set proofIndentString to a string of that number of spaces.
          */
-        StringSet aaTestSet = new StringSet();
-        addDeclaredSymbols(aaTestSet, state.goalRep);
+        // StringSet aaTestSet = new StringSet();
+        // addDeclaredSymbols(aaTestSet, state.goalRep);
 
+        // Compute createdAssumps.defs and createdAssump.stepNames, defined
+        // in the spec above.
+        StringSet createdAssumpsDefs = new StringSet();
+        StringSet createdAssumpStepNames = new StringSet();
+        for (int i=state.firstAddedAssumption; i < state.assumeReps.size() ; i++) {
+           NodeRepresentation rep = state.assumeReps.elementAt(i);
+           if (rep.contextStepName != null) {
+               if (rep.nodeType != NodeRepresentation.OR_DECOMP) {
+                   createdAssumpStepNames.add(rep.contextStepName);
+               }             
+               else if (rep != nodeRep) {
+                       MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                               "Decompose Proof Command",
+                               "Something unexpected is going on at "
+                                       + "line 3244 of NewDecomposeProofHandler.");
+               }
+           }
+         }
+           
+
+        
         int proofIndent = PROOF_INDENT;
         String proofIndentString = StringHelper.copyString(" ", proofIndent);
 
@@ -3215,11 +3250,12 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         // Note that assumptionsText is not used if these assumptions are
         // to be turned into a single formula because "Use CASES" is chosen
         // and "Use SUFFICES" is not and this is a case-split proof.
+        // LL-XXXXXX this should not be used.
         String[] assumptionsText = createdAssumptions();
-        String[] proofText = null;
 
         // If there is a proof, set proofText to its string array
         // representation, with indentation prepended to it, and delete it.
+        String[] proofText = null;
         if (this.proof != null) {
             proofText = this.stepRep.subNodeText(this.proof).nodeText;
             proofText = prependToStringArray(proofText, proofIndentString);
@@ -3232,26 +3268,17 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "An error that should not happen has occurred in "
-                                + "line 3097 of NewDecomposeProofHandler.");
+                                + "line 3275 of NewDecomposeProofHandler.");
                 e.printStackTrace();
             }
         }
 
         // Set addStepNumber true iff we need to add the step number to the
         // BY clause of a SUFFICES step or of the QED step.
-        // LL-XXXXXX now may have to add multiple step numbers
+        // LL-XXXXXX  this should now not be needed.
         boolean addStepNumber = (stepNumber != null)
                 && this.state.needsStepNumber;
 
-        // Set addedStepNumbers to the comma-separated list of step
-        // numbers of steps whose assumptions are being used in the
-        // decomposition.
-        String addedStepNumbers = "" ;
-        StringSet aSNSet = new StringSet() ;
-        for (int i = state.firstAddedAssumption ; i < state.assumeReps.size(); i++) {
-          //  LL-XXXXX stopped coding and started specifying
-          //  xxxx ZZZZZZZZZZZZZZZZZYYYYYYYYYYYYYYXXXXXXXXXXXX
-        }
 
         // Set sufficesStep to the string array of the suffices step,
         // or null if there is none. There is a suffices step iff the
@@ -3311,6 +3338,10 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         if (!sufficesOnly) {
 
             if (isAndProof) {
+                // LL-XXXXXX nodeRep could be an operator application
+                // that hasn't been expanded yet.  In that case,
+                // must use the name of that operator in the right
+                // place.  See spec of CASE 1b and CASE 2
                 /**
                  * This is an and-decomposition proof
                  */
@@ -3367,6 +3398,10 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             } else {
                 /**
                  * This is a case-split proof.
+                 * Note that caseSplitAssumpDefs = nodeRep.fromDefs()
+                 * caseSplitDefs = union of nd.fromDefs() for all
+                 * descendant nodes (via the child field) nd of nodeRep
+                 * 
                  */
                 // Set pfStepVec to a Vector of proof steps.
                 Vector<String[]> pfStepVec = new Vector<String[]>();
@@ -3424,7 +3459,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         String goalAndAssumeDefs = (hasGoalDefs ? setOfStringsToList(this.state.assumpDefinitions)
                 : "")
                 + ((hasGoalDefs && hasAssumeDefs) ? ", " : "")
-                + (hasAssumeDefs ? setOfStringsToList(this.state.goalDefinitions)
+                + (hasAssumeDefs ? this.state.goalDefinitions.toCommaSeparatedString()
                         : "");
         if (sufficesOnly) {
             if (this.proof != null) {
@@ -3798,6 +3833,11 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 || newNodeText != null;
         result.initialPosition = nodeRep.initialPosition ;
         result.contextStepName = nodeRep.contextStepName ;
+        result.fromGoal = nodeRep.fromGoal ;
+        result.fromDefs = nodeRep.fromDefs.clone();
+        if (decomp.definedOp != null) {
+            result.fromDefs.add(decomp.definedOp) ;
+        }
         return result;
     }
 
@@ -3839,8 +3879,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
     QuantifierDecomposition decomposeQuantifier(NodeRepresentation nodeRepArg,
             boolean isForAll) {
         QuantifierDecomposition result = new QuantifierDecomposition();
-        NodeRepresentation nodeRep = nodeRepArg;
         result.news = new Vector<NodeRepresentation>();
+        NodeRepresentation nodeRep = nodeRepArg;
         Decomposition decomp = nodeRep.decomposition;
 
         // If this is within the subexpression-name expansion of a definition,
@@ -3879,6 +3919,11 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 nodeRep = res.subNodeRep(sn, nodeRepArg.getParentVector(),
                         nodeRepArg.parentNode, null, decomp, !isForAll);
                 nodeRep.isPrimed = nodeRepArg.isPrimed;
+                nodeRep.fromGoal = nodeRepArg.fromGoal ;
+                nodeRep.fromDefs = nodeRepArg.fromDefs.clone() ;
+                if (decomp.definedOp != null) {
+                    nodeRep.fromDefs.add(decomp.definedOp) ;
+                }
 
                 // We now want to call decompSubstituteInNodeText using the
                 // substitutions in nodeRepArg.decomposition, rather than the
@@ -4043,6 +4088,12 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             
             // Set node's contextStepName to be that of nodeRepArg
             rep.contextStepName = nodeRepArg.contextStepName ;
+            rep.fromGoal = nodeRepArg.fromGoal ;
+            // nodeRep.fromDefs = 
+            // IF nodeRep obtained from nodeRepArg  by expanding def of Op
+            //   THEN nodeRepArg.fromDefs \cup {Op}
+            //   ELSE nodeRepArg.fromDefs
+            rep.fromDefs = nodeRep.fromDefs ;
 
             result.news.add(rep) ;
             if ((beginLine != -1) && (beginLine == lastLine)) {
@@ -4077,6 +4128,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         result.body.initialPosition = nodeRepArg.initialPosition ;
         // set contextStepName for the body.
         result.body.contextStepName = nodeRepArg.contextStepName ;
+        result.body.fromGoal = nodeRep.fromGoal ;
+        result.body.fromDefs = nodeRep.fromDefs.clone() ;
         return result;
     }
 
@@ -4603,7 +4656,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
          * clause of the QED step's proof. They are definitions that were
          * expanded in decomposing non-top level \E assumptions.
          */
-        private HashSet<String> goalDefinitions;
+        private StringSet goalDefinitions;
 
         private HashSet<String> assumpDefinitions;
 
@@ -4627,7 +4680,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 // UP-DOWN ARROWS REMOVED
 //            result.andSplitBegin = andSplitBegin;
 //            result.andSplitEnd = andSplitEnd;
-            result.goalDefinitions = (HashSet<String>) goalDefinitions.clone();
+            result.goalDefinitions = goalDefinitions.clone();
             result.assumpDefinitions = (HashSet<String>) assumpDefinitions
                     .clone();
 
@@ -4741,13 +4794,17 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         public int nodeSubtype = OTHER_TYPE;
 
         /**
+         * LL-XXXX I seem to have first added stepName, then effectively
+         * replaced most of its use with contextStepName.  So I've eliminated
+         * this in favor of contextStepName.
+         * 
          * If this NodeRepresentation comes from an assumption in the step's context,
          * then this is the name of that step, or "" if the step is unnamed
          * (has only a level number or comes from an ASSUME of the theorem).
          * If this NodeRepresentation comes from the step itself, then the field
          * is null.
          */
-        private String stepName = null ;
+        // private String stepName = null ;
 
         /**
          * If this NodeRepresentation object is of type NEW_NODE, then this is
@@ -4918,17 +4975,34 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         /**
          * True iff this is a NEW assumption that was not in the original
          * obligation, or it is an ExprNode that was created by splitting the
-         * goal or by doing an AND-split on an assumption.
+         * goal or by doing an AND-split on an assumption.  Its only function
+         * in the displayContextAssump() method, where it causes a node
+         * created by an /\ split to be displayed even if the user has
+         * unchecked the "Show Context" option.
          */
         boolean isCreated = false;
         
         /**
-         * If this assumption came from a context assumption, then this is the
-         * step name of the step from which that assumption came.  It is null
-         * if the assumption came from an unnamed step (one with only a level number).
+         * Despite the name, this is the step name of the assumption from
+         * which this assumption came, whether it is a context assumption
+         * or an assumption from the step being decomposed.  However,
+         * it is null if this NodeRepresentation is the goal, or an assumption
+         * that came by decomposing the node.  It is also null if it comes from
+         * an unnamed step (one with only a level number).
          */
         String contextStepName ;
-
+        
+        /**
+         * True iff this NodeRepresentation came from a (sub)formula of the goal.
+         */
+        boolean fromGoal = false ;
+        
+        /**
+         * The names of operators whose definitions were expanded to produce this
+         * NodeRepresentation.
+         */
+        StringSet fromDefs = new StringSet();
+        
         /**
          * True iff this is a NEW node that is to be displayed on the same line
          * as the next node, which is also a NEW node. For nodes that come from
@@ -5301,10 +5375,11 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 
             result.nodeType = this.nodeType;
             result.nodeSubtype = this.nodeSubtype;
-            result.stepName = this.stepName ;
+            // result.stepName = this.stepName ;
             result.newId = this.newId;
             result.initialPosition = this.initialPosition;
             result.contextStepName = this.contextStepName;
+            result.fromGoal = this.fromGoal;
             result.parentNode = parNode;
             result.parentVector = parVector;
             result.isCreated = this.isCreated;
@@ -5312,6 +5387,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             result.isPrimed = this.isPrimed;
             result.isSubexpressionName = this.isSubexpressionName;
 
+            result.fromDefs = this.fromDefs.clone() ;
             result.decomposition = null;
             if (this.decomposition != null) {
                 result.decomposition = this.decomposition.clone();
