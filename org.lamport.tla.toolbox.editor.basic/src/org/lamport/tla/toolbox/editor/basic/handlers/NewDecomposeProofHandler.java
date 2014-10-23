@@ -1033,10 +1033,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         
         // Activator.getDefault().logDebug("Decompose Proof Called");
 // LL-XXXXX for testing 
-StringSet.test() ;
-StringSet ss = StringSet.CommaSeparatedListToStringSet(" c, a ,c, d,b") ;
-System.out.println(ss.toCommaSeparatedString());
-
+// StringSet.test() ;
+System.out.println(concatCommaSeparatedLists("a, b", "c")) ;
+System.out.println(concatCommaSeparatedLists("", "a, b, c")) ;
+System.out.println(concatCommaSeparatedLists(null, "a, b, c")) ;
+System.out.println(concatCommaSeparatedLists("a, b, c", null)) ;
+System.out.println(concatCommaSeparatedLists("a, b, c", "")) ;
          /**
          * Is set to the set of ASSUMEs of the selected step/theorem,
          * excluding inner ASSUME/PROVE assumptions.
@@ -3105,7 +3107,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *    that were originally part of the goal (but including the decomposed
      *    step's name for assumptions coming from its assumptions).
      * 
-     *  caseSplitAssump.defs =  
+     *  caseSplitAssump.defs (implemented by the case-split nodes fromDefs) = 
      *    Sequence of names of operators expanded to obtain the top-level caseSplitAssump
      * 
      *  caseSplitDefs (originally implemented as state.goalDefinitions) =
@@ -3222,26 +3224,46 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         // StringSet aaTestSet = new StringSet();
         // addDeclaredSymbols(aaTestSet, state.goalRep);
 
-        // Compute createdAssumps.defs and createdAssump.stepNames, defined
-        // in the spec above.
+        // Compute createdAssumps, createdAssumps.defs and createdAssump.stepNames, 
+        // defined in the spec above.  Also, set createdAssumpsNodeTexts to
+        // the vector of the String arrays representing createdAssumps.
+        
+        Vector<NodeRepresentation> createdAssumps = new Vector<NodeRepresentation>();
         StringSet createdAssumpsDefs = new StringSet();
         StringSet createdAssumpStepNames = new StringSet();
         for (int i=state.firstAddedAssumption; i < state.assumeReps.size() ; i++) {
            NodeRepresentation rep = state.assumeReps.elementAt(i);
-           if (rep.contextStepName != null) {
-               if (rep.nodeType != NodeRepresentation.OR_DECOMP) {
-                   createdAssumpStepNames.add(rep.contextStepName);
-               }             
-               else if (rep != nodeRep) {
-                       MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                               "Decompose Proof Command",
-                               "Something unexpected is going on at "
-                                       + "line 3244 of NewDecomposeProofHandler.");
+           if (rep.nodeType != NodeRepresentation.OR_DECOMP) {
+               createdAssumps.add(rep) ;
+               if ((rep.contextStepName != null) && ! rep.fromGoal) {
+                   createdAssumpStepNames.add(rep.contextStepName);           
                }
+               createdAssumpsDefs.addAll(rep.fromDefs) ;
+           }  
+           else {
+               if (rep != nodeRep) {
+                   MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                           "Decompose Proof Command",
+                           "Something unexpected is going on at "
+                                   + "line 3247 of NewDecomposeProofHandler.");
+               }
+
            }
          }
-           
-
+        
+        Vector<String[]> createdAssumpsNodeTexts = new Vector<String[]>() ;
+        for (int i =0; i < createdAssumps.size(); i++) {
+            createdAssumpsNodeTexts.add(createdAssumps.elementAt(i).nodeText) ;
+        }
+        
+        // Sanity check
+        if (sufficesOnly && (createdAssumps.size() == 0)) {
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    "Decompose Proof Command",
+                    "Sanity check failed at "
+                            + "line 3255 of NewDecomposeProofHandler.");
+        }
+        
         
         int proofIndent = PROOF_INDENT;
         String proofIndentString = StringHelper.copyString(" ", proofIndent);
@@ -3250,12 +3272,15 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         // Note that assumptionsText is not used if these assumptions are
         // to be turned into a single formula because "Use CASES" is chosen
         // and "Use SUFFICES" is not and this is a case-split proof.
-        // LL-XXXXXX this should not be used.
+        // LL-XXXXXX assumptionsText should not be used.
         String[] assumptionsText = createdAssumptions();
 
         // If there is a proof, set proofText to its string array
         // representation, with indentation prepended to it, and delete it.
+        // Set proofBY and proofDEF to the sets of BY and DEF elements.
         String[] proofText = null;
+        StringSet proofBY = null;
+        StringSet proofDEF = null ;
         if (this.proof != null) {
             proofText = this.stepRep.subNodeText(this.proof).nodeText;
             proofText = prependToStringArray(proofText, proofIndentString);
@@ -3271,8 +3296,94 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                                 + "line 3275 of NewDecomposeProofHandler.");
                 e.printStackTrace();
             }
+            proofBY = new StringSet();
+            proofDEF = new StringSet();
+            
+            
+            // Set proofBY and proofDEF
+            // line = current line in proofText, trimmed
+            // lineNum = line number of line
+            // idx = current index in current line
+            String line = "";
+            int lineNum = 0;
+            int idx = 0;
+            boolean notfound = true ;
+            // find "BY" 
+            while (notfound && lineNum < proofText.length) {
+               line = proofText[lineNum].trim();
+               if (line.startsWith("BY")) {
+                   idx = proofText[lineNum].indexOf("BY") + 2;
+                   notfound = false;
+               }
+               else if (line.equals("")){
+                   lineNum++ ;
+               }
+               else {
+                   // Must be an OBVIOUS proof
+                   lineNum = Integer.MAX_VALUE ;
+               }  
+            }
+            
+            if (!notfound) {
+                // Do nothing if there is no BY step.  
+                // Otherwise, first set stringBY to comma separated list of BY clauses
+                // and set notfound false if there is a DEF 
+                String stringBY = "" ;
+                boolean defNotfound = true ;
+                while (defNotfound && lineNum < proofText.length) {
+                    line = proofText[lineNum].substring(idx, proofText[lineNum].length()) ;
+                    // If line contains "DEF"
+                    //   THEN set defIdx to its index and notfound to false
+                    //   ELSE set defIdx to line.length()
+                    int defIdx = 0 ;
+                    while ((defIdx < line.length()) && defNotfound) {
+                       defIdx = line.indexOf("DEF", defIdx) ; 
+                       if (defIdx == -1) {
+                            defIdx = line.length() ;
+                       }
+                       else if (   ((defIdx == 0) || 
+                                            Character.isWhitespace(line.charAt(defIdx-1)))
+                                    && ((defIdx+3 == line.length()) || 
+                                            Character.isWhitespace(line.charAt(defIdx+3)))
+                              ) {
+                          defNotfound = false ;
+                         // defIdx = defIdx;
+                       }
+                       else {
+                           defIdx = defIdx+3 ;
+                       }
+                    }
+                    
+                    stringBY = stringBY + line.substring(0, defIdx) ; 
+                    
+                   if (defNotfound) {
+                       lineNum ++;
+                       idx = 0;
+                   }
+                   else {
+                       idx = idx + defIdx+3 ;
+                   }
+                }
+                
+                proofBY.addAll(StringSet.CommaSeparatedListToStringSet(stringBY)) ;
+                
+
+                if (!defNotfound) {
+                    // A DEF was found, so we have to add everything after it to
+                    // proofDEF
+                    String stringDEF = "" ;
+                    while (lineNum < proofText.length) {
+                        line = proofText[lineNum].substring(idx, proofText[lineNum].length()) ;
+                        stringDEF = stringDEF + line ;
+                        lineNum++ ;
+                        idx = 0 ;
+                    }
+                    proofDEF.addAll(StringSet.CommaSeparatedListToStringSet(stringDEF)) ;  
+                }
+            }
         }
 
+        
         // Set addStepNumber true iff we need to add the step number to the
         // BY clause of a SUFFICES step or of the QED step.
         // LL-XXXXXX  this should now not be needed.
@@ -3286,18 +3397,46 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         // decomposition of the goal has created an assumption.
         String[] sufficesStep = null;
         boolean hasSufficesStep = useSufficesButton.getSelection()
-                && (assumptionsText.length != 0);
-        if (hasSufficesStep || sufficesOnly) {
+                && (createdAssumps.size() != 0);
+        if (hasSufficesStep) {           
+            // CASE 1 or CASE 3
             String sufficesProof = null;
 
+            String[] sufficesAssumeText = new String[0] ;
+            
+            for (int i = 0; i < createdAssumpsNodeTexts.size(); i++) {
+                sufficesAssumeText = concatStringArrays
+                                       (sufficesAssumeText, 
+                                        createdAssumpsNodeTexts.elementAt(i));
+                if (i != createdAssumpsNodeTexts.size() - 1) {
+                    sufficesAssumeText = appendToStringArray(sufficesAssumeText, ",") ;
+                }
+            }
+                    
+            StringSet sufficesDEF = createdAssumpsDefs.clone();
+
+            if (    (nodeRep != null)
+                 && (nodeRep.nodeType == NodeRepresentation.OR_DECOMP) 
+                 && nodeRep.fromGoal) {
+                // CASE 3 with case-split from original goal
+                if (createdAssumps.size() != 0) {
+                    sufficesAssumeText = appendToStringArray(sufficesAssumeText, ",") ;
+                }
+                sufficesAssumeText = concatStringArrays(sufficesAssumeText, nodeRep.nodeText);
+                
+                sufficesDEF.addAll(nodeRep.fromDefs) ;
+            }
+            
             String[] suffices = prependToStringArray(
                     concatStringArrays(
-                            prependToStringArray(assumptionsText, "ASSUME "),
+                            prependToStringArray(sufficesAssumeText, "ASSUME "),
                             prependToStringArray(
                                     this.state.goalRep.primedNodeText(),
                                     "PROVE  ")), proofLevelString
                             + " SUFFICES ");
 
+            
+            
             if (state.assumpDefinitions.isEmpty() && !addStepNumber) {
                 // No goal definitions were expanded; the proof is obvious.
                 if (OBVIOUS_HAS_PROOF) {
@@ -3309,19 +3448,32 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 // Need a BY proof, with a DEF if there are expanded
                 // definitions
                 sufficesProof = "BY ";
-                if (addStepNumber) {
-                    sufficesProof = sufficesProof + this.stepNumber + " ";
+                
+                if (!createdAssumpStepNames.isEmpty()) {
+                    sufficesProof = sufficesProof + 
+                                     createdAssumpStepNames.toCommaSeparatedString() + " ";
                 }
-                if (!state.assumpDefinitions.isEmpty()) {
-                    sufficesProof = sufficesProof + "DEF "
-                            + setOfStringsToList(state.assumpDefinitions);
+                
+                if (!sufficesDEF.isEmpty()) {
+                    sufficesProof = sufficesProof + "DEF " + sufficesDEF.toCommaSeparatedString();
                 }
+                
+                
+//                if (addStepNumber) {
+//                    sufficesProof = sufficesProof + this.stepNumber + " ";
+//                }
+//                if (!state.assumpDefinitions.isEmpty()) {
+//                    sufficesProof = sufficesProof + "DEF "
+//                            + setOfStringsToList(state.assumpDefinitions);
+//                }
             }
 
             sufficesStep = concatStringArrays(suffices,
                     new String[] { proofIndentString + sufficesProof });
         }
 
+// LL-XXXX finished revising down to here on 23 Oct 2014
+        
         // Set
         // - mainProofSteps to be an array of string arrays for the
         //   steps of the proof other than the SUFFICES and QED steps. ,
@@ -5595,6 +5747,27 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             result[i + array1.length] = array2[i];
         }
         return result;
+    }
+    
+    /**
+     * returns the comma separated list obtained by concatening two
+     * (possibly empty) comma separated lists.
+     * 
+     * @param str1
+     * @param str2
+     * @return
+     */
+    static String concatCommaSeparatedLists(String str1, String str2) {
+        if (str1 == null || (str1.trim().equals(""))) {
+            return str2 ;
+        }
+        String result = str1.trim();
+        
+        if (str2 == null || (str2.trim().equals(""))) {
+            return result ;
+        }
+        
+        return result + ", " + str2.trim();
     }
 
     /**
