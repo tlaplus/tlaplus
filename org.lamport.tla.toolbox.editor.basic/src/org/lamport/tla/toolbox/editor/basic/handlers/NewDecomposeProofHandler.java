@@ -3110,7 +3110,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *  caseSplitAssump.defs (implemented by the case-split nodes fromDefs) = 
      *    Sequence of names of operators expanded to obtain the top-level caseSplitAssump
      * 
-     *  caseSplitDefs (originally implemented as state.goalDefinitions) =
+     *  caseSplitDefs (implemented as state.goalDefinitions) =
      *     Sequence of names of operators expanded to obtain all the case splits from
      *     caseSplitAssump.
      *     
@@ -3201,7 +3201,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *           BY userProof.BY, <2>i,  DEF userProof.DEF
      *   ...
      *   <2>n. QED
-     *     BY createdAssumps.s, caseSplitAssump.stepName 
+     *     BY createdAssumps.stepNames, caseSplitAssump.stepName 
      *     DEF createdAssumps.defs, caseSplitAssump.defs
      * 
      * @param nodeRep
@@ -3268,13 +3268,37 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         int proofIndent = PROOF_INDENT;
         String proofIndentString = StringHelper.copyString(" ", proofIndent);
 
-        // Get the assumptions, goal, and proof as string arrays.
-        // Note that assumptionsText is not used if these assumptions are
-        // to be turned into a single formula because "Use CASES" is chosen
-        // and "Use SUFFICES" is not and this is a case-split proof.
-        // LL-XXXXXX assumptionsText should not be used.
+        // Set assumptionsText to a string array such that applying 
+        // stringArrayToString to it produces the text of the list of 
+        // assumptions in createdAssumps.
         String[] assumptionsText = createdAssumptions();
-
+        
+        // If createdAssumps contains only formulas (and no NEW assumptions),
+        // the set assumptionsAsConjText to a string array such that applying 
+        // stringArrayToString to it produces the text of the conjunction of
+        // all the assumptions in createdAssumps.  Otherwise, assumptionsAsConjText
+        // is set to null
+        String[] assumptionsAsConjText = new String[createdAssumps.size()] ;
+        
+        int k = 0 ;
+        while ((assumptionsAsConjText) != null && (k < createdAssumps.size())){
+            NodeRepresentation rep = createdAssumps.elementAt(k) ;
+            if (rep.nodeType == NodeRepresentation.NEW_NODE){
+                assumptionsAsConjText = null ;
+            }
+            else {
+                if (createdAssumps.size() > 1) {
+                    assumptionsAsConjText[k] = 
+                      stringArrayToString(prependToStringArray(rep.nodeText, "/\\ ")) ;
+                }
+                else {
+                    assumptionsAsConjText[k] = stringArrayToString(rep.nodeText) ;
+                }
+            }
+            k++ ;
+        }
+            
+            
         // If there is a proof, set proofText to its string array
         // representation, with indentation prepended to it, and delete it.
         // Set proofBY and proofDEF to the sets of BY and DEF elements.
@@ -3402,16 +3426,16 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             // CASE 1 or CASE 3
             String sufficesProof = null;
 
-            String[] sufficesAssumeText = new String[0] ;
-            
-            for (int i = 0; i < createdAssumpsNodeTexts.size(); i++) {
-                sufficesAssumeText = concatStringArrays
-                                       (sufficesAssumeText, 
-                                        createdAssumpsNodeTexts.elementAt(i));
-                if (i != createdAssumpsNodeTexts.size() - 1) {
-                    sufficesAssumeText = appendToStringArray(sufficesAssumeText, ",") ;
-                }
-            }
+//            String[] sufficesAssumeText = new String[0] ;
+//            
+//            for (int i = 0; i < createdAssumpsNodeTexts.size(); i++) {
+//                sufficesAssumeText = concatStringArrays
+//                                       (sufficesAssumeText, 
+//                                        createdAssumpsNodeTexts.elementAt(i));
+//                if (i != createdAssumpsNodeTexts.size() - 1) {
+//                    sufficesAssumeText = appendToStringArray(sufficesAssumeText, ",") ;
+//                }
+//            }
                     
             StringSet sufficesDEF = createdAssumpsDefs.clone();
 
@@ -3420,23 +3444,21 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                  && nodeRep.fromGoal) {
                 // CASE 3 with case-split from original goal
                 if (createdAssumps.size() != 0) {
-                    sufficesAssumeText = appendToStringArray(sufficesAssumeText, ",") ;
+                    assumptionsText = appendToStringArray(assumptionsText, ",") ;
                 }
-                sufficesAssumeText = concatStringArrays(sufficesAssumeText, nodeRep.nodeText);
+                assumptionsText = concatStringArrays(assumptionsText, nodeRep.nodeText);
                 
                 sufficesDEF.addAll(nodeRep.fromDefs) ;
             }
             
             String[] suffices = prependToStringArray(
                     concatStringArrays(
-                            prependToStringArray(sufficesAssumeText, "ASSUME "),
+                            prependToStringArray(assumptionsText, "ASSUME "),
                             prependToStringArray(
                                     this.state.goalRep.primedNodeText(),
                                     "PROVE  ")), proofLevelString
                             + " SUFFICES ");
 
-            
-            
             if (state.assumpDefinitions.isEmpty() && !addStepNumber) {
                 // No goal definitions were expanded; the proof is obvious.
                 if (OBVIOUS_HAS_PROOF) {
@@ -3472,7 +3494,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                     new String[] { proofIndentString + sufficesProof });
         }
 
-// LL-XXXX finished revising down to here on 23 Oct 2014
         
         // Set
         // - mainProofSteps to be an array of string arrays for the
@@ -3495,7 +3516,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 // must use the name of that operator in the right
                 // place.  See spec of CASE 1b and CASE 2
                 /**
-                 * This is an and-decomposition proof
+                 * This is an and-decomposition proof (CASES 1b and 2)
                  */
                 Decomposition decomp = nodeRep.decomposition;
                 numberOfSteps = decomp.children.size();
@@ -3503,7 +3524,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 proofDef = decomp.definedOp;
 
                 for (int i = 0; i < numberOfSteps; i++) {
-
                     // Set goalArray to the String array of the goal.
                     NodeRepresentation stepGoalRep = decompositionChildToNodeRep(
                             nodeRep, i, null, null);
@@ -3518,7 +3538,22 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                     // If there is no SUFFICES step but the goal decomposition
                     // created new ASSUME clauses, then they must be the ASSUME
                     // of an ASSUME / PROVE
-                    if ((sufficesStep == null && assumptionsText != null && assumptionsText.length != 0)) {
+                    if ((sufficesStep == null && createdAssumps.size() != 0)) {
+                        
+                        // The following code cloned from above.  Should make a subroutine
+                        // if used again.  LL-XXXXXX
+//                        String[] createdAssumeText = new String[0] ;
+//                        
+//                        for (int j = 0; j < createdAssumpsNodeTexts.size(); j++) {
+//                            createdAssumeText = concatStringArrays
+//                                                   (createdAssumeText, 
+//                                                    createdAssumpsNodeTexts.elementAt(j));
+//                            if (j != createdAssumpsNodeTexts.size() - 1) {
+//                                createdAssumeText = appendToStringArray(createdAssumeText, ",") ;
+//                            }
+//                        }
+                        // end of cloned code. LL-XXXXX
+                        
                         step = concatStringArrays(
                                 prependToStringArray(assumptionsText, "ASSUME "),
                                 prependToStringArray(goalArray, "PROVE  "));
@@ -3551,8 +3586,9 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 /**
                  * This is a case-split proof.
                  * Note that caseSplitAssumpDefs = nodeRep.fromDefs()
-                 * caseSplitDefs = union of nd.fromDefs() for all
-                 * descendant nodes (via the child field) nd of nodeRep
+                 * caseSplitDefs = state.goalDefinitions = 
+                 *   union of nd.fromDefs() for all descendant nodes 
+                 *   (via the child field) nd of nodeRep.
                  * 
                  */
                 // Set pfStepVec to a Vector of proof steps.
@@ -3569,7 +3605,16 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                     } else {
                         assumpArray = new String[0];
                     }
-                    addCaseProofs(pfStepVec, childVec, assumpArray, proofText);
+                    
+                    boolean assumpArrayOnlyFormulas = true ;
+                    for (int j = 0; j < createdAssumps.size(); j++) {
+                        assumpArrayOnlyFormulas = 
+                          assumpArrayOnlyFormulas && 
+                            (createdAssumps.elementAt(j).nodeType != NodeRepresentation.NEW_NODE) ;
+               
+                    }
+                    addCaseProofs(pfStepVec, childVec, assumpArray,
+                            proofText, assumptionsAsConjText);
                 }
 
                 // turn pfStepVec into the array mainProofSteps
@@ -3705,10 +3750,16 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *            The assumptions that must be prepended to each case.
      * @param proofText
      *            The user's proof, or null if none.
+     *            
+     * @param assumpArrayAsFormula
+     *            Non-null iff all the assumptions in assumpArray are formulas,
+     *            (so none are NEW declarations), in which case it is assumpArray
+     *            written as a single formula (which is a conjunction if assumpArray
+     *            has length > 1).
      */
     void addCaseProofs(Vector<String[]> pfStepVec,
             Vector<NodeRepresentation> childVec, String[] assumpArray,
-            String[] proofText) {
+            String[] proofText, String[] assumpArrayAsFormula) {
 
         // Set newAssumpArray to the concatenation of assumpArray and
         // the NEW assumptions of childVec --- which must be all the elements of
@@ -3718,6 +3769,11 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         // OR_DECOMP
         // node.
         int newAssumpCount = assumpArray.length;
+
+        String[] newAssumpArrayAsFormula = assumpArrayAsFormula ;
+                if (childVec.elementAt(0).nodeType == NodeRepresentation.NEW_NODE){
+                    newAssumpArrayAsFormula = null ;
+                }
 
         NodeRepresentation lastChildNode = childVec
                 .elementAt(childVec.size() - 1);
@@ -3732,6 +3788,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         for (int i = 0; i < lenOfChildAssumps; i++) {
             newAssumpCount = newAssumpCount
                     + childVec.elementAt(i).primedNodeText().length;
+            
         }
         String[] newAssumpArray = new String[newAssumpCount];
         for (int i = 0; i < assumpArray.length; i++) {
@@ -3759,7 +3816,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             // Need to recurse through the children
             for (int i = 0; i < lastChildNode.children.size(); i++) {
                 addCaseProofs(pfStepVec, lastChildNode.children.elementAt(i),
-                        newAssumpArray, proofText);
+                        newAssumpArray, proofText, newAssumpArrayAsFormula);
             }
         } else {
             // This is a terminal node. Construct the proof step.
@@ -3767,10 +3824,22 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             String[] step;
             // We use a CASE step if there's just a single new assumption
             // and "use CASE" is selected.
-            if (newAssumpArray.length == 1 && useCaseButton.getSelection()) {
+            if ((assumpArrayAsFormula != null) && useCaseButton.getSelection()) {
                 // This is a CASE step.
-                step = prependToStringArray(lastChildNode.primedNodeText(),
-                        "CASE ");
+                if (assumpArrayAsFormula.length == 0) {
+                   // There are no assumptions to add.
+                   step = prependToStringArray(lastChildNode.primedNodeText(),
+                           "CASE ");
+                } 
+                else {
+                  // 
+                    step = prependToStringArray(
+                            concatStringArrays(assumpArrayAsFormula, 
+                                               prependToStringArray(
+                                                     lastChildNode.primedNodeText(),
+                                                     "/\\ "))  ,
+                            "CASE ");
+                }
             } else {
                 // This is an ASSUME/PROVE step.
                 step = concatStringArrays(
@@ -4287,13 +4356,9 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 
     /**
      * Returns string array such that applying stringArrayToString to it
-     * produces the text of a list of of assumptions in this.state.assumeReps
-     * for which 
-     *  - isCreated field equals true, and 
-     *  - "use Suffices" is chosen or this is not an OR-DECOMP entry
+     * produces the text of the list of assumptions in createdAssumps of
+     * the spec of MakeProof.
      */
-// LL-XXXXX  needs to re re-thought to handle case in which "Use Case" and not
-// "Use SUFFICES" are chosen.
     String[] createdAssumptions() {
         /**
          * Sets vec to a vector of string arrays such that applying
@@ -4314,8 +4379,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         
         for (int i = state.firstAddedAssumption; i < lastAddedAssump; i++) {
             NodeRepresentation rep = state.assumeReps.elementAt(i);
-//            if (rep.isCreated
-//                    && (sufficesSelected || (rep.nodeType != NodeRepresentation.OR_DECOMP))) {
                 String newDecls = null;
                 while (rep.onSameLineAsNext) {
                     if (newDecls != null) {
@@ -4806,7 +4869,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         /**
          * The set of Ids of user-defined operations that must appear in the DEF
          * clause of the QED step's proof. They are definitions that were
-         * expanded in decomposing non-top level \E assumptions.
+         * expanded in decomposing non-top level \E and/or \/ assumptions.
          */
         private StringSet goalDefinitions;
 
