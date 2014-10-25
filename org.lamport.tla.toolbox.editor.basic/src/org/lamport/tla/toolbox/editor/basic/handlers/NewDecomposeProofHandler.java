@@ -2874,6 +2874,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 
         // This added by LL on 11 Feb 2013
         qdc.body.isCreated = true;
+        
+        qdc.body.fromExists = true ;
 
         parentVec.remove(idx);
 
@@ -3091,7 +3093,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *              either or both of those clauses are empty--e.g. OBVIOUS if
      *              both are empty.)
      *              
-     *  createdAssumps = Seqence of all new assumptions added by decomposition,
+     *  createdAssumps = Sequence of all new assumptions added by decomposition,
      *                   except for assumption on which case split is being done (if any)
      *                   
      *  caseSplitAssump = Disjunction on which case split being done, or null if none.
@@ -3125,8 +3127,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *  
      * Here are the proofs created for different cases (assuming a level <1> statement):
      *    
-     * CASE 1: \/ sufficesOnly = true
-     *         \/ /\ isAndProof = true
+     * CASE 1: \/ sufficesOnly = true         \* CASE 1a
+     *         \/ /\ isAndProof = true        \* CASE 1b
      *            /\ "Use SUFFICES" chosen ->
      * 
      *   <2> SUFFICES ASSUME createdAssumps
@@ -3144,10 +3146,10 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *   <2>n. QED
      *     IF sufficesOnly = true
      *       THEN userProof
-     *       ELSE BY userProof.BY 
-     *            DEF userProof.DEF \o IF decompGoal is a defined op 
-     *                                   THEN <<the operator name>>
-     *                                   ELSE << >>
+     *       ELSE BY <2>1, ... , <2>n-1, createdAssumps.stepNames 
+     *          \o IF there is no SUFFICES 
+     *               THEN DEF decompGoal.fromDefs
+     * 
      * 
      * CASE 2: /\ isAndProof = true
      *         /\ "Use SUFFICES" not chosen ->
@@ -3160,7 +3162,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      * 
      *   <2>n. QED
      *     BY <2>1, ... , <2>n-1, createdAssumps.stepNames
-     *     DEF caseSplitAssump.defs \o
+     *     DEF createdAssump.defs \o
      *           IF decompGoal is a defined op THEN <<the operator name>>
      *                                         ELSE << >>
      *  
@@ -3168,7 +3170,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *         /\ "Use SUFFICES" chosen  -> 
      * 
      *   <2> SUFFICES ASSUME createdAssumps \o
-     *                       IF case-split came from original goal
+     *                       IF case-split came from original goal or was the body of a \E
      *                         THEN , top-level caseSplitAssump formula (possibly an operator name)
      *                PROVE  decompGoal
      *      BY createdAssumps.stepNames 
@@ -3176,6 +3178,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *                                   THEN , caseSplitAssump.defs
      *      NOTE: IF the ASSUMES is empty, then SUFFICES step is eliminated and 
      *            the BY and DEF clauses are made part of the QED step's proof.
+     *            (However, in that case BY clause should be empty.)
      *   ...
      *   <2>i. ASSUME case i of caseSplitAssump
      *         PROVE  decompGoal
@@ -3186,7 +3189,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *   ...
      *   <2>n. QED
      *     BY <2>1, ... , <2>n-1, caseSplitAssump.stepNames 
-     *     DEF caseSplitDefs \o  IF case-split not from original goal
+     *     DEF caseSplitDefs \o  IF case-split not from original goal 
+     *                              and not from the body of a \E
      *                             THEN caseSplitAssump.defs
      * 
      * CASE 4: /\ isAndProof = sufficesOnly = FALSE
@@ -3201,8 +3205,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *           BY userProof.BY, <2>i,  DEF userProof.DEF
      *   ...
      *   <2>n. QED
-     *     BY createdAssumps.stepNames, caseSplitAssump.stepName 
-     *     DEF createdAssumps.defs, caseSplitAssump.defs
+     *     BY <2>1, ... , <2>n-1, createdAssumps.stepNames, caseSplitAssump.stepName 
+     *     DEF createdAssumps.defs, caseSplitAssump.defs, caseSplitDefs
      * 
      * @param nodeRep
      * @param isAndProof
@@ -3274,10 +3278,11 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         String[] assumptionsText = createdAssumptions();
         
         // If createdAssumps contains only formulas (and no NEW assumptions),
-        // the set assumptionsAsConjText to a string array such that applying 
+        // then set assumptionsAsConjText to a string array such that applying 
         // stringArrayToString to it produces the text of the conjunction of
         // all the assumptions in createdAssumps.  Otherwise, assumptionsAsConjText
-        // is set to null
+        // is set to null.
+        
         String[] assumptionsAsConjText = new String[createdAssumps.size()] ;
         
         int k = 0 ;
@@ -3416,12 +3421,14 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 
 
         // Set sufficesStep to the string array of the suffices step,
-        // or null if there is none. There is a suffices step iff the
-        // user has selected the Use SUFFICES option, and the
-        // decomposition of the goal has created an assumption.
+        // or null if there is none. There is a suffices step iff either
+        //  - the user has selected the Use SUFFICES option, and the
+        //    decomposition of the goal has created an assumption, or
+        //  - sufficesOnly = true
         String[] sufficesStep = null;
-        boolean hasSufficesStep = useSufficesButton.getSelection()
-                && (createdAssumps.size() != 0);
+        boolean hasSufficesStep = 
+                       (useSufficesButton.getSelection() && (createdAssumps.size() != 0))
+                    || sufficesOnly ;
         if (hasSufficesStep) {           
             // CASE 1 or CASE 3
             String sufficesProof = null;
@@ -3441,7 +3448,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 
             if (    (nodeRep != null)
                  && (nodeRep.nodeType == NodeRepresentation.OR_DECOMP) 
-                 && nodeRep.fromGoal) {
+                 && (nodeRep.fromGoal || nodeRep.fromExists) ) {
                 // CASE 3 with case-split from original goal
                 if (createdAssumps.size() != 0) {
                     assumptionsText = appendToStringArray(assumptionsText, ",") ;
@@ -3604,6 +3611,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                         }
                     } else {
                         assumpArray = new String[0];
+                        assumptionsAsConjText = new String[0] ;
                     }
                     
                     boolean assumpArrayOnlyFormulas = true ;
@@ -3625,6 +3633,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 numberOfSteps = mainProofSteps.length;
             }
         }
+        
         /*
          * The following is much too complicated in the sufficesOnly case. In
          * that case, hasGoalDefs and hasAssumeDefs will all be set to false, so
@@ -3637,51 +3646,118 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                     + STEP_NUMBER_PUNCTUATION;
         }
         qedStep[0] = qedStep[0] + " QED";
-        qedStep[1] = proofIndentString + "BY "
-                + ((numberOfSteps > 0) ? (proofLevelString + 1) : "");
-        for (int i = 2; i <= numberOfSteps; i++) {
-            qedStep[1] = qedStep[1] + ", " + proofLevelString + i;
-        }
-
-        // Add step number if necessary.
-        if ((sufficesStep == null) && state.needsStepNumber
-                && (this.stepNumber != null)) {
-            qedStep[1] = qedStep[1] + ", " + this.stepNumber;
-        }
-
-        boolean hasGoalDefs = (!this.state.assumpDefinitions.isEmpty())
-                && (sufficesStep == null);
-        boolean hasAssumeDefs = !this.state.goalDefinitions.isEmpty();
-
-        String goalAndAssumeDefs = (hasGoalDefs ? setOfStringsToList(this.state.assumpDefinitions)
-                : "")
-                + ((hasGoalDefs && hasAssumeDefs) ? ", " : "")
-                + (hasAssumeDefs ? this.state.goalDefinitions.toCommaSeparatedString()
-                        : "");
+        
         if (sufficesOnly) {
-            if (this.proof != null) {
-                qedStep = concatStringArrays(new String[] { qedStep[0] },
-                        prependToStringArray(proofText, proofIndentString));
-            } else {
-                qedStep[1] = "";
+            // CASE 1a
+            if (proofText != null) {
+                qedStep[1] = stringArrayToString(proofText) ;
+            } 
+            else {
+                qedStep = new String[] {qedStep[0]} ;
             }
-        } else {
-            // Either not a suffices only proof, or proof = null. In
-            // either case, can construct the QED step as if it
-            boolean hasDEF = false;
-            if (hasGoalDefs || hasAssumeDefs) {
-                hasDEF = true;
-                qedStep[1] = qedStep[1] + " DEF " + goalAndAssumeDefs;
+
+        }
+        else {
+            // not CASE 1a
+            // Set qedBY and qedDEF to the BY and DEF clauses
+            StringSet qedBY = new StringSet() ;
+            StringSet qedDEF = new StringSet() ;
+            
+            // Add the names of mainProofSteps to qedBY
+            for (int i = 1; i <= numberOfSteps; i++) {
+                qedBY.add(proofLevelString + i) ;
             }
-            if (proofDef != null) {
-                if (hasDEF) {
-                    qedStep[1] = qedStep[1] + ", " + proofDef;
-                } else {
-                    qedStep[1] = qedStep[1] + " DEF " + proofDef;
+            
+            if (isAndProof) {
+                // CASES 1b and 2
+                qedBY.addAll(createdAssumpStepNames) ;
+                if (! hasSufficesStep) {
+                    qedDEF.addAll(nodeRep.fromDefs) ;
                 }
             }
+            else {
+                // CASES 3 and 4
+                if (useSufficesButton.getSelection()) {
+                    // CASE 3
+                    if (nodeRep.contextStepName != null) {
+                        qedBY.add(nodeRep.contextStepName) ;
+                    }
+                    
+                    qedDEF.addAll(state.goalDefinitions) ;
+                    
+                    if (!hasSufficesStep && nodeRep.fromGoal) {
+                        qedDEF.addAll(nodeRep.fromDefs) ;
+                    }
+                    
+                }
+                else {
+                    // CASE 4
+                    qedBY.addAll(createdAssumpStepNames) ;
+                    if (nodeRep.contextStepName != null) {
+                        qedBY.add(nodeRep.contextStepName) ;
+                    }
+                    qedDEF.addAll(createdAssumpsDefs) ;
+                    qedDEF.addAll(nodeRep.fromDefs) ;
+                    qedDEF.addAll(state.goalDefinitions) ;
+                }
+            }
+            
+            qedStep[1] = proofIndentString + "BY "
+                    + qedBY.toCommaSeparatedString() ;
+            if (! qedDEF.isEmpty()) {
+                qedStep[1] = qedStep[1] + " DEF " 
+                    + qedDEF.toCommaSeparatedString() ;
+            }
         }
-
+        
+        
+        
+        
+                
+//        qedStep[1] = proofIndentString + "BY "   
+//                + ((numberOfSteps > 0) ? (proofLevelString + 1) : "");
+//        for (int i = 2; i <= numberOfSteps; i++) {
+//            qedStep[1] = qedStep[1] + ", " + proofLevelString + i;
+//        }
+//        // Add step number if necessary.
+//        if ((sufficesStep == null) && state.needsStepNumber
+//                && (this.stepNumber != null)) {
+//            qedStep[1] = qedStep[1] + ", " + this.stepNumber;
+//        }
+//
+//        boolean hasGoalDefs = (!this.state.assumpDefinitions.isEmpty())
+//                && (sufficesStep == null);
+//        boolean hasAssumeDefs = !this.state.goalDefinitions.isEmpty();
+//
+//        String goalAndAssumeDefs = (hasGoalDefs ? setOfStringsToList(this.state.assumpDefinitions)
+//                : "")
+//                + ((hasGoalDefs && hasAssumeDefs) ? ", " : "")
+//                + (hasAssumeDefs ? this.state.goalDefinitions.toCommaSeparatedString()
+//                        : "");
+//        if (sufficesOnly) {
+//            if (this.proof != null) {
+//                qedStep = concatStringArrays(new String[] { qedStep[0] },
+//                        prependToStringArray(proofText, proofIndentString));
+//            } else {
+//                qedStep[1] = "";
+//            }
+//        } else {
+//            // Either not a suffices only proof, or proof = null. In
+//            // either case, can construct the QED step as if it
+//            boolean hasDEF = false;
+//            if (hasGoalDefs || hasAssumeDefs) {
+//                hasDEF = true;
+//                qedStep[1] = qedStep[1] + " DEF " + goalAndAssumeDefs;
+//            }
+//            if (proofDef != null) {
+//                if (hasDEF) {
+//                    qedStep[1] = qedStep[1] + ", " + proofDef;
+//                } else {
+//                    qedStep[1] = qedStep[1] + " DEF " + proofDef;
+//                }
+//            }
+//        }
+// Here's where we can stop changing things (I hope) 
         String[] blankLine = new String[] { "" };
         String[] completeProof = new String[0];
         if (sufficesStep != null) {
@@ -3774,6 +3850,9 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 if (childVec.elementAt(0).nodeType == NodeRepresentation.NEW_NODE){
                     newAssumpArrayAsFormula = null ;
                 }
+                else {
+                    newAssumpArrayAsFormula = new String[0] ;
+                }
 
         NodeRepresentation lastChildNode = childVec
                 .elementAt(childVec.size() - 1);
@@ -3822,9 +3901,10 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             // This is a terminal node. Construct the proof step.
             // Set step to the step's obligation.
             String[] step;
-            // We use a CASE step if there's just a single new assumption
-            // and "use CASE" is selected.
-            if ((assumpArrayAsFormula != null) && useCaseButton.getSelection()) {
+            // We use a CASE step if there's just a single new assumption,
+            //  assumpArrayAsFormula != false, and "use CASE" is selected.
+
+            if ((assumpArrayAsFormula != null) && useCaseButton.getSelection() && (childVec.size() == 1)) {
                 // This is a CASE step.
                 if (assumpArrayAsFormula.length == 0) {
                    // There are no assumptions to add.
@@ -5213,6 +5293,10 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         boolean fromGoal = false ;
         
         /**
+         * True iff this NodeRepresentation came from decomposing a \E .
+         */
+        boolean fromExists = false ;
+        /**
          * The names of operators whose definitions were expanded to produce this
          * NodeRepresentation.
          */
@@ -5595,6 +5679,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             result.initialPosition = this.initialPosition;
             result.contextStepName = this.contextStepName;
             result.fromGoal = this.fromGoal;
+            result.fromExists = this.fromExists ;
             result.parentNode = parNode;
             result.parentVector = parVector;
             result.isCreated = this.isCreated;
