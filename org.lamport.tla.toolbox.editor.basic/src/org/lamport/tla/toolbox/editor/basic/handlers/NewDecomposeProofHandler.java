@@ -3149,6 +3149,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *       ELSE BY <2>1, ... , <2>n-1, createdAssumps.stepNames 
      *          \o IF there is no SUFFICES 
      *               THEN DEF decompGoal.fromDefs
+     *           \o IF is a defined op THEN <<the operator name>>
+     *                                 ELSE << >>
      * 
      * 
      * CASE 2: /\ isAndProof = true
@@ -3170,7 +3172,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
      *         /\ "Use SUFFICES" chosen  -> 
      * 
      *   <2> SUFFICES ASSUME createdAssumps \o
-     *                       IF case-split came from original goal or was the body of a \E
+     *                       IF case-split came from original goal or was in the body of a \E
      *                         THEN , top-level caseSplitAssump formula (possibly an operator name)
      *                PROVE  decompGoal
      *      BY createdAssumps.stepNames 
@@ -3419,7 +3421,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         boolean addStepNumber = (stepNumber != null)
                 && this.state.needsStepNumber;
 
-
         // Set sufficesStep to the string array of the suffices step,
         // or null if there is none. There is a suffices step iff either
         //  - the user has selected the Use SUFFICES option, and the
@@ -3466,6 +3467,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                                     "PROVE  ")), proofLevelString
                             + " SUFFICES ");
 
+            // LL-XXXXX the following is the only use of addStepNumber
+            // it should probably be replaced by something else.
             if (state.assumpDefinitions.isEmpty() && !addStepNumber) {
                 // No goal definitions were expanded; the proof is obvious.
                 if (OBVIOUS_HAS_PROOF) {
@@ -3513,6 +3516,10 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 
         String[][] mainProofSteps = null;
         int numberOfSteps = 0;
+        
+        // For /\ proof whose conjunction comes from
+        // a defined operator, proofDef equals that operator.
+        // otherwise it equals null ;
         String proofDef = null;
 
         if (!sufficesOnly) {
@@ -3535,6 +3542,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                     NodeRepresentation stepGoalRep = decompositionChildToNodeRep(
                             nodeRep, i, null, null);
                     String[] goalArray = stepGoalRep.primedNodeText();
+                    
 
                     // Set step to step number + the step's obligation.
                     String[] step;
@@ -3634,10 +3642,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             }
         }
         
-        /*
-         * The following is much too complicated in the sufficesOnly case. In
-         * that case, hasGoalDefs and hasAssumeDefs will all be set to false, so
-         */
         // Set qedStep to the QED step (with its step number and proof).
         String[] qedStep = new String[2];
         qedStep[0] = proofLevelString;
@@ -3671,6 +3675,9 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             if (isAndProof) {
                 // CASES 1b and 2
                 qedBY.addAll(createdAssumpStepNames) ;
+                if (proofDef != null) {
+                    qedDEF.add(proofDef) ;
+                }
                 if (! hasSufficesStep) {
                     qedDEF.addAll(nodeRep.fromDefs) ;
                 }
@@ -3713,7 +3720,11 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         
         
         
-                
+//        /*
+//         * The following is much too complicated in the sufficesOnly case. In
+//         * that case, hasGoalDefs and hasAssumeDefs will all be set to false, so
+//         */
+//                
 //        qedStep[1] = proofIndentString + "BY "   
 //                + ((numberOfSteps > 0) ? (proofLevelString + 1) : "");
 //        for (int i = 2; i <= numberOfSteps; i++) {
@@ -4135,6 +4146,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         result.initialPosition = nodeRep.initialPosition ;
         result.contextStepName = nodeRep.contextStepName ;
         result.fromGoal = nodeRep.fromGoal ;
+        result.fromExists = nodeRep.fromExists ;
         result.fromDefs = nodeRep.fromDefs.clone();
         if (decomp.definedOp != null) {
             result.fromDefs.add(decomp.definedOp) ;
@@ -4221,6 +4233,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                         nodeRepArg.parentNode, null, decomp, !isForAll);
                 nodeRep.isPrimed = nodeRepArg.isPrimed;
                 nodeRep.fromGoal = nodeRepArg.fromGoal ;
+                nodeRep.fromExists = nodeRepArg.fromExists ;
                 nodeRep.fromDefs = nodeRepArg.fromDefs.clone() ;
                 if (decomp.definedOp != null) {
                     nodeRep.fromDefs.add(decomp.definedOp) ;
@@ -4430,6 +4443,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         // set contextStepName for the body.
         result.body.contextStepName = nodeRepArg.contextStepName ;
         result.body.fromGoal = nodeRep.fromGoal ;
+        result.body.fromExists = nodeRep.fromExists ;
         result.body.fromDefs = nodeRep.fromDefs.clone() ;
         return result;
     }
