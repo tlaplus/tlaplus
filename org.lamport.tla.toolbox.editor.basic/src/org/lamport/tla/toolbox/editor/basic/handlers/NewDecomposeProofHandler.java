@@ -1027,18 +1027,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @throws ExecutionException
      */
     public Object realExecute() throws ExecutionException {
-        // We will set assumes to the vector of SemanticNodes of the
-        // assumptions, if there are any, and goal to the SemanticNode
-        // of the goal.
-        
         // Activator.getDefault().logDebug("Decompose Proof Called");
-// LL-XXXXX for testing 
-// StringSet.test() ;
-System.out.println(concatCommaSeparatedLists("a, b", "c")) ;
-System.out.println(concatCommaSeparatedLists("", "a, b, c")) ;
-System.out.println(concatCommaSeparatedLists(null, "a, b, c")) ;
-System.out.println(concatCommaSeparatedLists("a, b, c", null)) ;
-System.out.println(concatCommaSeparatedLists("a, b, c", "")) ;
          /**
          * Is set to the set of ASSUMEs of the selected step/theorem,
          * excluding inner ASSUME/PROVE assumptions.
@@ -2084,22 +2073,17 @@ System.out.println(concatCommaSeparatedLists("a, b, c", "")) ;
         case NodeRepresentation.AND_TYPE:
             labelText = "/\\";
             isProver = true;
-            disable = (state.splitChosen()) 
-// UP-DOWN ARROWS REMOVED
-//               ||  (state.andSplitBegin != -1)
-                    ;
+            disable = (state.splitChosen()) ;
             break;
         case NodeRepresentation.FORALL_TYPE:
             labelText = "\\A";
-            // LL-XXXXX We disable \A decomposition when
-            // an OR-split has been made because it will
-            // produce a name conflict if one of the
-            // \A variables occurs (bound) in the OR-split.
-            // This could be avoided by making the forAllAction()
-            // method smart enough to do the necessary renaming.
-            // A simpler thing to implement would be to
-            // add code here that sets disable true only
-            // if there actually is such a name conflict.
+            // We disable \A decomposition when an OR-split has been 
+            // made because it will produce a name conflict if one of 
+            // the \A variables occurs (bound) in the OR-split.  This 
+            // could be avoided by making the forAllAction() method 
+            // smart enough to do the necessary renaming.  A simpler 
+            // thing to implement would be to add code here that sets 
+            // disable true only if there actually is such a name conflict.
             disable = state.splitChosen() ;
             break;
         case NodeRepresentation.IMPLIES_TYPE:
@@ -2156,27 +2140,6 @@ System.out.println(concatCommaSeparatedLists("a, b, c", "")) ;
         // See the comments on the following command where it is used in the
         // execute method.
         editorIFile.setReadOnly(true);
-
-// FOR TESTING LL-XXXXXX
-for (int i=0; i< state.assumeReps.size(); i++) {
-    if(state.assumeReps.elementAt(i).initialPosition == -1){
-        System.out.println("initialPosition not set for assumeReps(" + i + ")") ;
-    }
-    if (state.goalRep.initialPosition == -1) {
-        System.out.println("initialPosition not set for goal") ;
-    }
-}
-//System.out.println("oof");
-//for (int i=0; i< state.assumeReps.size(); i++) {
-//    NodeRepresentation rep = state.assumeReps.elementAt(i) ;
-//    if (rep.decomposition!=null) {
-//        Renaming rn = rep.decomposition.renaming ;
-//        if (rn!=null && rn.identifiers.size() != 0){
-//            System.out.println("has renamings: " + rep.toString()) ;
-//        }
-//    }
-//}
-        
     }
 
     /**
@@ -2326,7 +2289,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                       Button button = new Button(composite, SWT.PUSH);
                       setupActionButton(button, nodeRepVector.elementAt(i),
                               labelText);
-                     // I'm not sure if this is right LL-XXXXXX
                       if (!enable) { 
                           button.setEnabled(false);
                       }
@@ -2861,11 +2823,15 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 
         // Set state.needsStepNumber if necessary. (See that field's
         // documentation.)
+        //
         // Bug discovered by LL 19 Aug 2014. The spec of isCreated indicates
         // that nodeRep.isCreated is true if this exists was created by an
         // AND-split on an assumption, in which case the documentation of
         // state.needsStepNumber implies that state.needsStepNumber should be
         // set true.
+        //
+        // This bug was apparently fixed in the new version.
+        //
         if (!nodeRep.isCreated && this.hasAssumes) {
             state.needsStepNumber = true;
         }
@@ -2969,13 +2935,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
            state.assumeReps.remove(oldIdx) ;
            // this.state.chosenSplit = state.assumeReps.size() ;
            state.assumeReps.add(nodeRep) ;
-// LL-XXXXX  Because nodeRep was moved in assumeReps, may need to rename bound identifiers.
-// nodeRep.semanticNode.operands[0].unboundedBoundSymbols[0]
-//FormalParamNode xNode = ((OpApplNode) ( (OpApplNode) nodeRep.semanticNode).getArgs()[0]).getUnbdedQuantSymbols()[0] ;
-//Renaming rn = nodeRep.decomposition.renaming ;
-//rn.identifiers.addElement(xNode) ;
-//rn.newNames.addElement("x_33") ;
-//System.out.println("x_33") ;
         }
 
         Decomposition decomp = nodeRep.decomposition;
@@ -3027,9 +2986,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             }
             state.assumeReps.remove(oldIdx) ;
             state.assumeReps.add(nodeRep) ;
-// LL-XXXXX since nodeRep has been moved, may need to rename its bound variables..
-            
-
         }
 
         Decomposition decomp = nodeRep.decomposition;
@@ -3416,8 +3372,9 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 
         
         // Set addStepNumber true iff we need to add the step number to the
-        // BY clause of a SUFFICES step or of the QED step.
-        // LL-XXXXXX  this should now not be needed.
+        // BY clause of a SUFFICES step or of the QED step.  This should not
+        // be needed any more, but it has one use and it seems safest to just
+        // let sleeping code lie.
         boolean addStepNumber = (stepNumber != null)
                 && this.state.needsStepNumber;
 
@@ -3467,8 +3424,9 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                                     "PROVE  ")), proofLevelString
                             + " SUFFICES ");
 
-            // LL-XXXXX the following is the only use of addStepNumber
+            // Fhe following is the only use of addStepNumber
             // it should probably be replaced by something else.
+            // See comments for declaration of addStepNumber.
             if (state.assumpDefinitions.isEmpty() && !addStepNumber) {
                 // No goal definitions were expanded; the proof is obvious.
                 if (OBVIOUS_HAS_PROOF) {
@@ -3525,10 +3483,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         if (!sufficesOnly) {
 
             if (isAndProof) {
-                // LL-XXXXXX nodeRep could be an operator application
-                // that hasn't been expanded yet.  In that case,
-                // must use the name of that operator in the right
-                // place.  See spec of CASE 1b and CASE 2
                 /**
                  * This is an and-decomposition proof (CASES 1b and 2)
                  */
@@ -3554,21 +3508,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                     // created new ASSUME clauses, then they must be the ASSUME
                     // of an ASSUME / PROVE
                     if ((sufficesStep == null && createdAssumps.size() != 0)) {
-                        
-                        // The following code cloned from above.  Should make a subroutine
-                        // if used again.  LL-XXXXXX
-//                        String[] createdAssumeText = new String[0] ;
-//                        
-//                        for (int j = 0; j < createdAssumpsNodeTexts.size(); j++) {
-//                            createdAssumeText = concatStringArrays
-//                                                   (createdAssumeText, 
-//                                                    createdAssumpsNodeTexts.elementAt(j));
-//                            if (j != createdAssumpsNodeTexts.size() - 1) {
-//                                createdAssumeText = appendToStringArray(createdAssumeText, ",") ;
-//                            }
-//                        }
-                        // end of cloned code. LL-XXXXX
-                        
                         step = concatStringArrays(
                                 prependToStringArray(assumptionsText, "ASSUME "),
                                 prependToStringArray(goalArray, "PROVE  "));
@@ -4055,6 +3994,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                     nodeRep.mapping), decomp.namePath.elementAt(i));
         }
 
+        // LL-XXXX stuff related to imported definitiions.
         // Added by LL on 15 Aug 2014 to handle a case of a definition from
         // another module that gets this far--which will not be the case if
         // the definition is from a module instantiated with substitutions.
@@ -4120,12 +4060,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
 
         } else {
             // Call subNodeRep to construct the result.
-// LL-XXXX On 13 Oct 2014 Commented this stmt out for testing and added rest of 
-//  else clause.
-//            result = nodeRep.subNodeRep(decomp.children.elementAt(i), vec,
-//                    father, newNodeText, decomp, vec != null);
-// This seems to do the right thing to get necessary renaming done for OR-decomposition
-// because the assumption is being moved.
             result = nodeRep.subNodeRep(decomp.children.elementAt(i), vec,
                   father, newNodeText, decomp, vec != null);
             NodeTextRep ntext = decompSubstituteInNodeText(nodeRep,
@@ -4222,6 +4156,8 @@ for (int i=0; i< state.assumeReps.size(); i++) {
                 }
 
                 ExprNode sn = ((OpDefNode) oan.getOperator()).getBody();
+                // LL-XXXXX following needs changing to handle definitions
+                // from another module.
                 NodeRepresentation res = new NodeRepresentation(this.doc, sn);
                 // This is a hack, calling subNodeRep for the subnode of
                 // the definition body consisting of the entire definition body.
@@ -5101,19 +5037,6 @@ for (int i=0; i< state.assumeReps.size(); i++) {
         private static final int OTHER_TYPE = 99; // anything else
 
         public int nodeSubtype = OTHER_TYPE;
-
-        /**
-         * LL-XXXX I seem to have first added stepName, then effectively
-         * replaced most of its use with contextStepName.  So I've eliminated
-         * this in favor of contextStepName.
-         * 
-         * If this NodeRepresentation comes from an assumption in the step's context,
-         * then this is the name of that step, or "" if the step is unnamed
-         * (has only a level number or comes from an ASSUME of the theorem).
-         * If this NodeRepresentation comes from the step itself, then the field
-         * is null.
-         */
-        // private String stepName = null ;
 
         /**
          * If this NodeRepresentation object is of type NEW_NODE, then this is
@@ -6349,6 +6272,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
             OpDefNode definition = (OpDefNode) node.getOperator();
             String operatorName = definition.getName().toString();
             ExprNode opDef = definition.getBody();
+            // LL-XXXXX
             // The following commented out by LL on 24 April 2013.
             // For some reason, definitions that came from an INSTANCE
             // weren't being recognized as such and were creating
@@ -6534,7 +6458,7 @@ for (int i=0; i< state.assumeReps.size(); i++) {
     }
 
     /**
-     * Assumes node represents a conjunction (either infix or bulleted list).
+     * This method ssumes node represents a conjunction (either infix or bulleted list).
      * Returns true iff one of the conjuncts is either
      *   - a \E  or 
      *   - a disjunction and this.state.splitChosen() = false 
