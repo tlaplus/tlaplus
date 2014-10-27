@@ -391,6 +391,7 @@ includes the ASSUME clauses of the decomposed step).  Current choice
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -476,6 +477,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      */
     private IDocument doc;
 
+    /**
+     * A mapping from module names to IDocuments, containing IDocuments for
+     * all modules that have been encountered in the course of expanding
+     * imported definitions.
+     * 
+     */
+    private Hashtable<String, IDocument> moduleNameToDoc ;
+    
     /**
      * Some Eclipse thingee that seems to be needed.
      */
@@ -1129,10 +1138,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         state.hasChanged = false;
         // state.chosenSplit = -1;
         state.needsStepNumber = false;
-// UP-DOWN ARROWS REMOVED
-//        state.andSplitBegin = -1;
-//        state.andSplitEnd = -1;
-        // assumeHasChanged = false;
         state.goalDefinitions = new StringSet();
         state.assumpDefinitions = new HashSet<String>();
 
@@ -1598,12 +1603,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     "Cannot decompose because goal is from a " + nullReason + " step.");
             return null;
         }
-//        if (step.isSuffices()) {
-//            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-//                    "Decompose Proof Command",
-//                    "Cannot decompose a SUFFICES step.");
-//            return null;
-//        }
         /*
          * set proofLevelString
          */
@@ -1823,6 +1822,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // Get the module.
         String moduleName = editor.getModuleName();
         this.moduleNode = ResourceHelper.getModuleNode(moduleName);
+
+        // Initialize moduleNameToDoc
+        moduleNameToDoc = new Hashtable<String, IDocument>() ;
+        moduleNameToDoc.put(this.moduleNode.getName().toString(), this.doc) ;
 
         /**
          * The Following code copied from ProverHelper.
@@ -3976,6 +3979,20 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      *            The result's parentNode field.
      * @return
      */
+    /**
+     * @param nodeRep
+     * @param i
+     * @param vec
+     * @param father
+     * @return
+     */
+    /**
+     * @param nodeRep
+     * @param i
+     * @param vec
+     * @param father
+     * @return
+     */
     NodeRepresentation decompositionChildToNodeRep(NodeRepresentation nodeRep,
             int i, Vector<NodeRepresentation> vec, NodeRepresentation father) {
         // decomp is the nodeRep's decomposition
@@ -4001,24 +4018,28 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // Set childDoc to the IDocument in which the children are to
         // be found. The following code was copied from the jumpToLocation
         // method in UIHelper.java
+       
         IDocument childDoc = this.doc;
-        if ((decomp.moduleName != null)
-                && !this.moduleNode.getName().toString()
-                        .equals(decomp.moduleName)) {
-            IFile moduleIFile = (IFile) ResourceHelper
-                    .getResourceByModuleName(decomp.moduleName);
-            FileEditorInput fileEditorInput = new FileEditorInput(moduleIFile);
-            FileDocumentProvider moduleFileDocProvider = new FileDocumentProvider();
-
-            try {
-                moduleFileDocProvider.connect(fileEditorInput);
-            } catch (CoreException e1) { // I don't know what to do here
-                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                        "Decompose Proof Command",
-                        "An error that should not happen has occurred in "
-                                + "line 2737 of NewDecomposeProofHandler.");
-            }
-            childDoc = moduleFileDocProvider.getDocument(fileEditorInput);
+        String moduleName = this.moduleNode.getName().toString() ;
+//        if (decomp.moduleName != null)
+//                && !moduleName.equals(decomp.moduleName)) {
+//            IFile moduleIFile = (IFile) ResourceHelper
+//                    .getResourceByModuleName(decomp.moduleName);
+//            FileEditorInput fileEditorInput = new FileEditorInput(moduleIFile);
+//            FileDocumentProvider moduleFileDocProvider = new FileDocumentProvider();
+//
+//            try {
+//                moduleFileDocProvider.connect(fileEditorInput);
+//            } catch (CoreException e1) { // I don't know what to do here
+//                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+//                        "Decompose Proof Command",
+//                        "An error that should not happen has occurred in "
+//                                + "line 2737 of NewDecomposeProofHandler.");
+//            }
+//            childDoc = moduleFileDocProvider.getDocument(fileEditorInput);
+//        }
+        if (decomp.moduleName != null) {
+            childDoc = moduleNameToIDocument(moduleName) ;
         }
 
         // Set result to the node representation.
@@ -4087,6 +4108,29 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         }
         return result;
     }
+    
+    // The following code was copied from the jumpToLocation
+    // method in UIHelper.java
+    IDocument moduleNameToIDocument(String moduleName) {
+        IDocument result = this.moduleNameToDoc.get(moduleName) ;
+        if (result == null ) {
+            IFile moduleIFile = (IFile) ResourceHelper
+                    .getResourceByModuleName(moduleName);
+            FileEditorInput fileEditorInput = new FileEditorInput(moduleIFile);
+            FileDocumentProvider moduleFileDocProvider = new FileDocumentProvider();
+
+            try {
+                moduleFileDocProvider.connect(fileEditorInput);
+            } catch (CoreException e1) { // I don't know what to do here
+                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                        "Decompose Proof Command",
+                        "An error that should not happen has occurred in "
+                                + "line 2737 of NewDecomposeProofHandler.");
+            }
+            result = moduleFileDocProvider.getDocument(fileEditorInput);
+        }
+        return result ;
+    }
 
     /**
      * Since Java doesn't allow structs, this is a class whose sole purpose is
@@ -4154,11 +4198,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     }
                     oan = (OpApplNode) oan.getArgs()[0];
                 }
-
                 ExprNode sn = ((OpDefNode) oan.getOperator()).getBody();
                 // LL-XXXXX following needs changing to handle definitions
                 // from another module.
-                NodeRepresentation res = new NodeRepresentation(this.doc, sn);
+                String moduleName = sn.getLocation().source() ;
+                IDocument idoc = moduleNameToIDocument(moduleName);
+                NodeRepresentation res = new NodeRepresentation(idoc, sn);
                 // This is a hack, calling subNodeRep for the subnode of
                 // the definition body consisting of the entire definition body.
                 // But a little thought reveals that this does what needs to be
@@ -6272,23 +6317,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             OpDefNode definition = (OpDefNode) node.getOperator();
             String operatorName = definition.getName().toString();
             ExprNode opDef = definition.getBody();
-            // LL-XXXXX
-            // The following commented out by LL on 24 April 2013.
-            // For some reason, definitions that came from an INSTANCE
-            // weren't being recognized as such and were creating
-            // weird results. Rather than trying to debug what was going on,
-            // I just returned null if opDef is a SubstInNode. This class
-            // will have to be completely rewritten to expand formulas
-            // obtained by instantiation.
-
-            // If the definition comes from an INSTANCE, it may be a
-            // SubstInNode. If so, we strip off the top-level SubstInNode
-            // object(s).
-            // while (opDef instanceof SubstInNode) {
-            // opDef = ((SubstInNode) opDef).getBody();
-            // }
-            if (opDef instanceof SubstInNode) {
-                return null;
+            // LL-XXXXX  The following must be enhanced to create the necessary
+            // data structures to deal with substitution in instantiated formulas.
+            // However, for now, let's get things to work in the case when
+            // the definition doesn't contain any of the instantiated parameters.
+            //
+            while (opDef instanceof SubstInNode) {
+               opDef = ((SubstInNode) opDef).getBody();
             }
 
             if (opDef instanceof OpApplNode) {
