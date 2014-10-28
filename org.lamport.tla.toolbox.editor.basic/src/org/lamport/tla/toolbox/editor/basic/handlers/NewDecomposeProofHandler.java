@@ -49,6 +49,7 @@
  * CURRENT BUGS AND MISSING FEATURES:
  * 
  *  - Bug reported 16 Jan 2014 by Jael, fixed on 23 Aug 2014 by LL. 
+ *    STILL FIXED IN NEW VERSION
  *    Decomposing
  *  
  *       THEOREM \A x, y : x /\ y => TRUE
@@ -63,16 +64,25 @@
  *       
  *    Leaves the Prove button disabled
  * 
- *  - Bug discovered 19 Aug 2014 by LL: Decomposing
+ *    
+ *    
+ *    
+ *  - Bug discovered 19 Aug 2014 by LL.  FIXED IN NEW VERSION
+ *    Decomposing
  *    
  *       <1>3. ASSUME (\E x : D) /\ (A \/ D)
  *             PROVE  FALSE
  *             
  *    by /\ then \E then \/ does not add the necessary assumption <1>3 to
  *    the BY of the SUFFICES (or QED if USE SUFFICES not chosen).
+ *    
+ *    
  *
- *  - Bug discovered 23 Aug 2014 by LL:  The following
- *    Produces parse error on decomposition by \/ then \A then Prove.
+ *  - Bug discovered 23 Aug 2014 by LL:  
+ *    FIXED IN NEW VERSION by not allowing a \A decomposition after 
+ *    a \/ decomposition,
+ *    The following produces a parse error on decomposition by \/ 
+ *    then \A then Prove.
  *    Note especially what happens with USE SUFFICES option, where
  *    a NEW declaration is moved before a previous assumption in the
  *    proof.  (Without the SUFFICES option, the problem can be solved
@@ -83,10 +93,11 @@
  *              PROVE  \A x_1 : FALSE   
  *      <1>3. ASSUME (\E x : D) /\ (A \/ D)
  *            PROVE  FALSE
+ *            
  *    
  *  - The command does renaming of bound variables when necessary to avoid
- *    name clashes but not of symbols defined in a LET.
- *    THIS SHOULD BE FIXED
+ *    name clashes, but not of symbols defined in a LET.
+ *    
  *    
  *  - The implementation contains code written to implement a "use Subexpression Names"
  *    feature that allowed the user to specify that decomposition that involved 
@@ -104,7 +115,7 @@
  *  - If "use CASE" is chosen, an ASSUME / PROVE with multiple assumptions should be turned
  *    into a case if it contains no NEWs, with the assumptions being turned into a 
  *    conjunction.  Currently, it only is if there is a single assumption.
- *    THIS RESTRICTION SHOULD BE REMOVED
+ *    FIXED IN NEW VERSION 
  *    
  *  - The decomposition will not expand definitions imported from other modules
  *    (except with the unfinished and hidden "Use subexpression names" option). 
@@ -118,7 +129,8 @@
  *    performed only if each argument of the defined operator appears on a 
  *    single line of the source text.  (Different arguments may appear on 
  *    different lines.)
- *    THIS RESTRICTION WILL BE REMOVED
+ *    THIS RESTRICTION MAY SOME DAY BE REMOVED.  See MODULE Substitution,
+ *    appended below, for a spec of the necessary code.
  *    
  *  - Decomposition will never be performed on any decomposable formula that
  *    appears as an operator argument.  For example, in
@@ -137,6 +149,17 @@
  *    all the renaming it should.  In particular, it does not rename operators defined in
  *    a LET clause or their definition parameters.  See ResourceHelper.getBoundIdentifiers
  *    to get a start on fixing this.
+ *    
+ *  - Bug discovered by LL on 28 October 2014 
+ *    If an operator argument contains a bound variable, as in Op(\E x : F(x)), and
+ *    a decomposition is performed that expands the definition of Op, then decomposing
+ *    other formulas can produce a decomposition that doesn't parse because of name
+ *    conflicts with x in the expression \E x : F(x).  Fixing this would require
+ *    major changes to the code, since the design is based on the assumption that
+ *    substitutions will never have to be done in an expression that is substituted
+ *    for some identifier.  One way to fix this would be to make a NodeRepresentation
+ *    maintain with its NodeText the information about all substitutions that have
+ *    been done in NodeText.
  * 
  * HOW THE COMMAND WORKS
  * 
@@ -456,13 +479,17 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NewSymbNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
+import tla2sany.semantic.SymbolTable;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
+import tla2sany.st.TreeNode;
 import util.UniqueString;
 
 public class NewDecomposeProofHandler extends AbstractHandler implements
@@ -4011,33 +4038,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     nodeRep.mapping), decomp.namePath.elementAt(i));
         }
 
-        // LL-XXXX stuff related to imported definitiions.
-        // Added by LL on 15 Aug 2014 to handle a case of a definition from
-        // another module that gets this far--which will not be the case if
-        // the definition is from a module instantiated with substitutions.
         // Set childDoc to the IDocument in which the children are to
-        // be found. The following code was copied from the jumpToLocation
-        // method in UIHelper.java
-       
+        // be found. 
         IDocument childDoc = this.doc;
         String moduleName = this.moduleNode.getName().toString() ;
-//        if (decomp.moduleName != null)
-//                && !moduleName.equals(decomp.moduleName)) {
-//            IFile moduleIFile = (IFile) ResourceHelper
-//                    .getResourceByModuleName(decomp.moduleName);
-//            FileEditorInput fileEditorInput = new FileEditorInput(moduleIFile);
-//            FileDocumentProvider moduleFileDocProvider = new FileDocumentProvider();
-//
-//            try {
-//                moduleFileDocProvider.connect(fileEditorInput);
-//            } catch (CoreException e1) { // I don't know what to do here
-//                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-//                        "Decompose Proof Command",
-//                        "An error that should not happen has occurred in "
-//                                + "line 2737 of NewDecomposeProofHandler.");
-//            }
-//            childDoc = moduleFileDocProvider.getDocument(fileEditorInput);
-//        }
         if (decomp.moduleName != null) {
             childDoc = moduleNameToIDocument(moduleName) ;
         }
@@ -4163,6 +4167,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * 
      * 
      * @param nodeRepArg
+     *            The node being decomposed.
      * @param isForAll
      *            True iff this is called for a \A split
      * @return
@@ -4199,8 +4204,21 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     oan = (OpApplNode) oan.getArgs()[0];
                 }
                 ExprNode sn = ((OpDefNode) oan.getOperator()).getBody();
-                // LL-XXXXX following needs changing to handle definitions
-                // from another module.
+                
+                // LL-XXXX  -- doing some testing
+                // (We are in decomposeQuantifier(nodeRepArg, isForAll)
+                // 
+                while (sn instanceof SubstInNode) {
+                    Renaming rn = substInNodeToRenaming((SubstInNode) sn, nodeRep) ;
+                    sn = ((SubstInNode)sn).getBody() ;
+                    
+                }
+                
+                // Need to create the NodeRepresentation using the
+                // module in which the definition occurs.  
+                // LL-XXXX  If the definition
+                // comes from a model that is instantiated with substition,
+                // should those substitions be done here?
                 String moduleName = sn.getLocation().source() ;
                 IDocument idoc = moduleNameToIDocument(moduleName);
                 NodeRepresentation res = new NodeRepresentation(idoc, sn);
@@ -4705,6 +4723,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
         return result;
     }
+    
+    
 
     /**
      * Calls substituteInNodeText to perform the substitution of arguments for
@@ -4792,6 +4812,102 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         decomp.renaming = rename;
 
         return result;
+    }
+    
+    /**
+     * Creates a Renaming object that represents the renamings
+     * of the SubstInNode node, where the substituting expression
+     * nodes are assumed to be subexpressions of the semantic node
+     * represented by contextNodeRep (and hence need to be renamed
+     * according to contextNodeRep.instantiationSubstitutions).
+     * Returns null if any of the expressions being substituted
+     * for identifiers are multi-line, or if it fails for any
+     * other reason because the code doesn't know what to do with
+     * some substitution the node.
+     * 
+     * @param node
+     * @param currRenaming
+     * @return
+     */
+    private Renaming substInNodeToRenaming(SubstInNode node, 
+                                           NodeRepresentation contextNodeRep) {
+        
+        Renaming result = new Renaming() ;
+        
+        // Construct the arguments to substituteInNodeText for performing
+        // the substitutions in contextNodeRep.instantiationSubstitutions.
+        
+        Renaming contextRenaming = contextNodeRep.instantiationSubstitutions ;
+        int clen = contextRenaming.identifiers.size() ;
+        FormalParamNode[] formalParams = new FormalParamNode[clen] ;
+        SemanticNode[] argNodes = new SemanticNode[clen] ;
+        String[] arguments = new String[clen] ;
+        boolean[] isBoundedIdRenaming = new boolean[clen] ;
+        for(int i=0; i < clen; i++) {
+          isBoundedIdRenaming[i] = false ;
+            // I'm hoping that substituteInNodeText does the right thing with 
+            // a substituting expression if it pretends that it's an identifier.
+          formalParams[i] = contextRenaming.identifiers.elementAt(i) ;
+          argNodes[i] = null ;
+          arguments[i] = contextRenaming.newNames.elementAt(i) ;
+        }
+        
+        Subst[] subst = node.getSubsts() ;
+
+        for (int i = 0; i < subst.length; i++ ) {
+            // SubstInNode substitutions substitute for OpDeclNodes.
+            // substituteInNodeText substitutes for FormalParamNodes.
+            // As a Kludge to connect them, we construct a FormalParamNode
+            // from an OpDeclNode and hope that it looks enough like one
+            // to work.
+            OpDeclNode opdec = subst[i].getOp() ;
+            FormalParamNode fpn =
+                new FormalParamNode(opdec.getName(), 
+                                    opdec.getArity(), 
+                                    opdec.stn,  
+                                    opdec.getSymbolTable(),
+                                    opdec.getOriginallyDefinedInModuleNode()
+                                    ) ;
+            result.identifiers.add(fpn) ;
+            if (!(subst[i].getExpr() instanceof ExprNode)) {
+                return null ;
+            }
+            ExprNode sn = (ExprNode) subst[i].getExpr() ;
+            
+            // LL-XXXX This is wrong because sn is the semantic node
+            // of an expression in the INSTANCE statement, so it's
+            // not a subnode of contextNodeRep.
+            IDocument idoc = 
+                    moduleNameToIDocument(sn.getLocation().source());
+            NodeRepresentation randomNodeRep;
+            try {
+                randomNodeRep = new NodeRepresentation(idoc, sn);
+            } catch (BadLocationException e) {
+                // TODO Auto-generated catch block
+                return null ;
+            }
+            NodeTextRep snNodeText = new NodeTextRep(randomNodeRep.nodeText, 
+                                                     randomNodeRep.mapping) ;            
+            NodeTextRep nrep = 
+                    substituteInNodeText(formalParams,
+                          arguments, isBoundedIdRenaming,
+                          argNodes, sn,  snNodeText,
+                          new Decomposition()) ;
+                   // note: the Decomposition argument is just used to do some
+                   // renamings, which I think are irrelevant here because I
+                   // think any of the renamings have already been performed
+                   // when we construct the NodeTextRep argument.
+                   // LL-XXXXX This may be wrong, in which case we need to
+                   // add another argument to this method.  Check that it works
+                   // in a decomposition of \E x : Foo!Bar(x) that requires
+                   // renaming of the x.
+            if (nrep.nodeText.length != 1) {
+                return null ;
+            }
+            result.newNames.add(nrep.nodeText[0]) ;
+        }
+
+        return result ;
     }
 
     /**
@@ -5054,6 +5170,44 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // MappingPair class for a definition of mapping[j](c).
         Vector<MappingPair>[] mapping;
 
+        // Suppose that we are decomposing a proof in module M, and 
+        // this NodeRepresentation nr represents an expression in module N.
+        // Thus, nr.semanticNode is a node in the semantic tree of N,
+        // so the name op and definition expr of a defined operator used in 
+        // nr are expressions that make sense in module N, not in the
+        // proof's module M.  Then operator op is known in module m
+        // by the name instantiatedNamePrefix + op, and the definition
+        // expr is imported into M by performing the substitutions
+        // instantiationSubstitutions in expr.  Example:
+        //
+        //   MODULE M contains  IP == INSTANCE P WITH CP <- expM
+        //                      ... ASSUME IP!POp(argM), ...
+        //   MODULE P contains  IN == INSTANCE N WITH CN <- expP
+        //                      POp(a) == ... \/ IN!NOp(a, argP) 
+        //   MODULE N contains  NOp(b, c) == expr(b, c)
+        //   
+        // Then decomposing IP!Pop(argM) produces the following
+        // assumption, where exp WITH C <- sub means with the expression
+        // sub for all instances of the node C with the expr sub.
+        //      
+        //   ... \/ IN!NOp(argM, argP WITH CP <- expM)
+        //
+        // Decomposing that disjunction produces a case
+        //
+        //   expr(argM, argP WITH CP <- expM)  
+        //                    WITH   CN <- (expP WITH CP <- expM)
+        //
+        // Note that argM is equivalent to argM WITH CP <- expM
+        // which is equivalent to (argM WITH CP <- expM) WITH CN <- expP
+        // because neither CP (which is declared in module P) nor
+        // CN (which is declared in module N) can occur in argM (which
+        // is an expression module M.  Note that CP and CN denote semantic
+        // nodes, not the strings that represent those nodes (which
+        // could be the same string for both of them).
+        //
+        Renaming instantiationSubstitutions = new Renaming() ;
+        String   instantiatedNamePrefix = "" ;
+        
         // The nodeType is the type of node.
         private static final int EXPR_NODE = 0; // An OpApplNode
         private static final int NEW_NODE = 1; // A NewSymbNode
@@ -5191,7 +5345,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     MessageDialog.openError(UIHelper.getShellProvider()
                             .getShell(), "Decompose Proof Command",
                             "An error that should not happen has occurred in "
-                                    + "line 3750 of NewDecomposeProofHandler.");
+                                    + "line 5208 of NewDecomposeProofHandler.");
                     return null;
                 }
 
@@ -5227,27 +5381,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             return -2; // this shouldn't happen
         }
 
-        // The following method seems to duplicate getParentIndex, and was
-        // apparently
-        // never used.
-        // /**
-        // * If parentNode is non-null (which implies parentVector is non-null),
-        // * and parentNode is an OR-SPLIT node, then parentVector =
-        // * parentNode.children.elementAt(getParentVectorIndex).
-        // *
-        // * @return
-        // */
-        // int getParentVectorIndex() {
-        // for (int i = 0; i < parentNode.children.size(); i++) {
-        // if (this.getParentVector() == parentNode.children.elementAt(i)) {
-        // return i;
-        // }
-        // }
-        // return -1; // this shouldn't happen
-        //
-        // }
-
-        // State information about this clause.
+           // State information about this clause.
 
         /**
          * True iff this is a NEW assumption that was not in the original
@@ -5654,6 +5788,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 }
             }
 
+            result.instantiationSubstitutions = this.instantiationSubstitutions.clone() ;
+            result.instantiatedNamePrefix = this.instantiatedNamePrefix ;
             result.nodeType = this.nodeType;
             result.nodeSubtype = this.nodeSubtype;
             // result.stepName = this.stepName ;
@@ -5922,6 +6058,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     /**
      * A renaming object indicates that the name of each node
      * identifiers.elementAt(i) has been renamed to newNames.elementAt(i).
+     * More generally, it indicates that instances of the node have
+     * been replaced by the corresponding string, which may be an expression.
+     * It is used both for recording the renaming of identifiers to 
+     * avoid name clashes and the substitution of expressions for
+     * module parameters in an instantiation.  (It does not seem to be
+     * used to represent the substitution of arguments for operator-definition
+     * expansion.)
      * 
      * @author lamport
      */
@@ -5940,6 +6083,18 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     .clone();
             result.newNames = (Vector<String>) this.newNames.clone();
             return result;
+        }
+        
+        public String toString() {
+            String result = "[" ;
+            for (int i=0; i < newNames.size(); i++) {
+                if (i > 0) {
+                    result = result + ", " ;
+                } 
+                result = result + identifiers.elementAt(i).getName() +
+                           " <- " + "\"" + newNames.elementAt(i) + "\"" ;
+            }
+            return result + "]" ;
         }
     }
 
@@ -5988,11 +6143,24 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         /**
          * If definedOp != null, then `renaming' indicates the renaming of bound
          * identifiers that have been performed in the definition of definedOp
-         * to avoid name clashes.
-         * 
-         * I suspect that this field always contains an empty renaming.
+         * to avoid name clashes.  For example, if \E decomposition is performed
+         * on the assumption  \E x : A \/ B , which results in renaming x
+         * to x_1, then the decomposition.renaming field for the  A \/ B
+         * node will record the renaming of the bound symbol x to x_1.
          */
         Renaming renaming = new Renaming();
+
+        /**
+         * If instantiationSubstitutionsD and instantiatedNamePrefixD
+         * are non-null, then they are the values that the 
+         * instantiationSubstitutions and instantiatedNamePrefix fields
+         * should equal for the NodeRepresentations of the decomposition's
+         * children.  If null, then those fields of the children should
+         * be the same as the NodeRepresentation containing this
+         * Decomposition.
+         */
+        Renaming instantiationSubstitutionsD = new Renaming() ;
+        String   instantiatedNamePrefixD = "" ;
 
         /**
          * If definedOp is not null, then this is the name of the module
@@ -6057,6 +6225,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             if (this.renaming != null) {
                 result.renaming = this.renaming.clone();
             }
+            
+            result.instantiationSubstitutionsD =
+                        this.instantiationSubstitutionsD.clone() ;
+            result.instantiatedNamePrefixD = 
+                        this.instantiatedNamePrefixD ;            
             result.type = this.type;
             result.definedOp = this.definedOp;
             result.formalParams = this.formalParams;
@@ -6321,6 +6494,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             // data structures to deal with substitution in instantiated formulas.
             // However, for now, let's get things to work in the case when
             // the definition doesn't contain any of the instantiated parameters.
+            // (we are inside decompose(nodeRep, decomp, isAssumption))
             //
             while (opDef instanceof SubstInNode) {
                opDef = ((SubstInNode) opDef).getBody();
@@ -6500,6 +6674,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * or a conjunction c for which conjIsDecomposable(c) is true.
      * 
      * It assumes that a conjunct that is a SubstInNode is not decomposable.
+     * This should be valid because
      * This will have to be changed to allow decomposition of formulas imported
      * by instantiation.  LL-XXXXXX
      * 
@@ -7499,3 +7674,797 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
  * 
  * =====================================
  ************************************/
+
+
+/*   The following module is a specification for code to enhance the 
+     current module by allowing decomposition of operator applications
+     whose arguments may span multiple lines.  It would replace the
+     current method of performing substitions using MappingPair objects.
+
+
+---------------------------- MODULE Substitution ----------------------------
+(***************************************************************************)
+(* This spec handles substitution under the assumption that when an        *)
+(* expression e has been substituted for an identifier id, no later        *)
+(* substitution will be performed within e.  However, one case arises in   *)
+(* the Decompose Proof command in which this is not true: namely, when e   *)
+(* itself is an identifier and a later substitution substitutes another    *)
+(* identifier for it.  The NodeWithSubst object defined here is general    *)
+(* enough to make that substitution easy to perform.  (Note that in this   *)
+(* case, e lies on a single line.)                                         *)
+(***************************************************************************)
+(***************************************************************************)
+(* A task that the DecomposeProof command must perform is to display to    *)
+(* the user and insert into the spec formulas obtained from a formula F in *)
+(* the spec by substituting expressions for identifiers.  One instance of  *)
+(* this is replacing a formula Op(x+y+z) by the formula obtained from it   *)
+(* by expanding the definition                                             *)
+(*                                                                         *)
+(*    Op(p) == expr                                                        *)
+(*                                                                         *)
+(* of Op.  This requires constructing a representation of the formula      *)
+(* obtained from expr by substituting x+y+z for every instance of p in     *)
+(* expr.  We write this substitution as p <- x+y+z.  However, note that p  *)
+(* actually denotes a semantic node representing a declaration of the      *)
+(* identifier "p", and the substitution is performed on an occurrence of   *)
+(* that identifier that refers to that semantic node--not to any           *)
+(* identifier "p" that that refers to a different semantic declaration     *)
+(* node.                                                                   *)
+(*                                                                         *)
+(* Given the semantic node nd that represents expr, it's easy to construct *)
+(* the semantic node produced by the substitution.  So, one way to perform *)
+(* this task is to use a general procedure for "pretty-printing" a         *)
+(* semantic node.  This is what TLAPS does.  However, our goal here is to  *)
+(* maintain as much as possible the formatting of expr by the user.  So,   *)
+(* this task will be performed by substituting the string "x+y+z" for all  *)
+(* instances of the string "p" in the text of expr typed by the user.      *)
+(* Those instances can be found using the semantic node nd for expr, from  *)
+(* which all semantic nodes for instances of p can be found--since a       *)
+(* semantic node points to the location of the user input corresponding to *)
+(* that node.                                                              *)
+(*                                                                         *)
+(* This substitution task poses the following problems:                    *)
+(*                                                                         *)
+(* 1.  Suppose the definition of Op is                                     *)
+(*                                                                         *)
+(*     Op(p) == -p                                                         *)
+(*                                                                         *)
+(* Simply replacing "p" by "x+y+z" in the definition yields "-x+y+z"       *)
+(* instead of the correct "-(x+y+z)".  We can solve this problem by always *)
+(* putting parentheses around the expression being substituted, but it     *)
+(* seems best to do this only when necessary.                              *)
+(*                                                                         *)
+(* 2.  Suppose now that expr is Op(x+y>z) and Op is defined by             *)
+(*                                                                         *)
+(*    Op(p) == p => /\ x=y                                                 *)
+(*                  /\ y>4                                                 *)
+(*                                                                         *)
+(* Naive substitution would yield the expression                           *)
+(*                                                                         *)
+(*    x+y+z => /\ x=y                                                      *)
+(*         /\ y>4                                                          *)
+(*                                                                         *)
+(* which is parsed as (x+y>z => /\ x=y) /\ (y>4), which is not equivalent  *)
+(* to Op(x+y>z).                                                           *)
+(*                                                                         *)
+(* Another case in which substitution is needed is to avoid identifier     *)
+(* conflict.  Suppose the expression `\A j : expr' is to be put into the   *)
+(* spec in a location where the identifier j already has a meaning.  In    *)
+(* that case j must be replaced as the quantifier variable and everywhere  *)
+(* it occurs in expr by a new identifier.  (TLAPS uses a new identifier    *)
+(* such as j_1, which seems like a good choice to use here.)               *)
+(*                                                                         *)
+(* Multiple substitutions may have to be done in an expression.  Clearly,  *)
+(* if a operator has multiple arguments, or if both j and k have to be     *)
+(* renamed in \A j, k : expr, then there will be substitutions for all the *)
+(* arguments or all the renamed variables.  Such a multiple substitution   *)
+(* poses no problem because in no matter what order the substitutions are  *)
+(* done, the following is true:                                            *)
+(*                                                                         *)
+(*    Single-Substitution Property:  A substitution is never performed on  *)
+(*    text that was inserted by a substitution.                            *)
+(*                                                                         *)
+(* However, this property is not true for all multiple substitutions--for  *)
+(* example if we first perform the substitution p <- x+y+z and then the    *)
+(* substitution y <- a-b in expr.  However, observe that the sequence of   *)
+(* substitutions                                                           *)
+(*                                                                         *)
+(*    Substitute y <- a-b in Substitute p <- x+y>z in expr                 *)
+(*                                                                         *)
+(* is equivalent to the                                                    *)
+(*                                                                         *)
+(*    Substitute p <- x+(a-b)>z in Substitute y <- a-b in expr             *)
+(*                                                                         *)
+(* Those two substitutions satisfy the single-substitution property, no    *)
+(* matter in which order they are performed because neither of the         *)
+(* expressions being inserted by the substitutions contain either of the   *)
+(* identifiers being substituted for.                                      *)
+(*                                                                         *)
+(* To maintain the single-substitution property, a sequences of            *)
+(* substitutions                                                           *)
+(*                                                                         *)
+(*    Substitute p_1 <- exp_1 in Substitute p_2 <- exp_2 in                *)
+(*        ...  p_n <- exp_n  Substitute expr                               *)
+(*                                                                         *)
+(* must satisfy the                                                        *)
+(*                                                                         *)
+(*    Hierarchical Substitution Property: The  p_i are all different, and  *)
+(*    each p_j cannot occur in any expression exp_k with k < j.            *)
+(*                                                                         *)
+(* In that case, let                                                       *)
+(*                                                                         *)
+(*      xexp_1 == exp_1                                                    *)
+(*      xexp_2 == Substitute p_1 <- xexp_1 in exp2                         *)
+(*      xexp_3 == Substitute p_2 <- xexp_2                                 *)
+(*                   in Substitute p_1 <- xexp_1 in exp_3                  *)
+(*      ...                                                                *)
+(*      xexp_n == Substitute p_(n-1) <- xexp_(n-1) in ... in exp_n         *)
+(*                                                                         *)
+(* and the result of the original sequence of substitutions is             *)
+(*                                                                         *)
+(*    Substitute p_1 <- xexp_1 in Substitute p_2 <- xexp_2 in              *)
+(*        ...  p_n <- xexp_n  Substitute expr                              *)
+(*                                                                         *)
+(* The hierarchical substitution property implies that the substitutions   *)
+(* in this sequence and all the substitutions in constructing the xexp_i   *)
+(* satisfy the single-substitution property.                               *)
+(*                                                                         *)
+(* The hierarchical substitution property is maintained in the             *)
+(* substitutions done by the DecomposeProof command for the following      *)
+(* reason.  There are two types of substitutions performed:                *)
+(*                                                                         *)
+(* 1.  Replacing an operator use Op(e), where Op is defined by             *)
+(*                                                                         *)
+(*    Op(p) == expr                                                        *)
+(*                                                                         *)
+(* with the expression                                                     *)
+(*                                                                         *)
+(*    Substitute [p <- e] in expr                                          *)
+(*                                                                         *)
+(* This replacement is done only when Op(p) is the entire expression.      *)
+(* Hence the expression cannot contain any identifiers declared in the     *)
+(* resulting expression--or the parameters in the definitions of any any   *)
+(* operator used in that expression.                                       *)
+(*                                                                         *)
+(* 2.  Replacing a declaration of an identifier in an expression by a      *)
+(* brand new identifier.  This brand new identifier must be different from *)
+(* (have a different semantic declaration node) than that of any           *)
+(* identifier appearing in an expression that has already been substituted *)
+(* for some identifier.                                                    *)
+(***************************************************************************)
+
+EXTENDS Integers, Sequences, FiniteSets, TLC
+
+(***************************************************************************)
+(* LOCATIONS.                                                              *)
+(*                                                                         *)
+(* A Location describes the line & column coordinates of the first and     *)
+(* last characters of some semantic unit.  These coordinates are 1-based,  *)
+(* the first line of a module being line 1 and the first column of a line  *)
+(* being column 1.                                                         *)
+(*                                                                         *)
+(* A POSITION is a pair of positive integers representing line and column  *)
+(* coordinates of a character.                                             *)
+(***************************************************************************)
+PosNat == Nat \ {0}
+
+PairPrecedes(pair1, pair2) ==
+  (*************************************************************************)
+  (* True iff pair1 represents a position that precedes the position       *)
+  (* represented by pair2.                                                 *)
+  (*************************************************************************)
+  \/ pair1[1] < pair2[1]
+  \/ (pair1[1] = pair2[1]) /\ (pair1[1] < pair2[2])
+
+PairPrecedesOrEq(pair1, pair2) == PairPrecedes(pair1, pair2) \/ (pair1 = pair2)
+
+(***************************************************************************)
+(* A Location is a record with fields:                                     *)
+(*    bLine, bColumn : The position of the first character.                *)
+(*    eLine, eColumn : The position of the last character.                 *)
+(***************************************************************************)
+Location == { loc \in [bLine : PosNat, bColumn : PosNat, 
+                       eLine : PosNat, eColumn : PosNat] :
+                PairPrecedesOrEq(<<loc.bLine, loc.bColumn>>, 
+                                 <<loc.eLine, loc.eColumn>>) }
+
+(***************************************************************************)
+(* For some reason that I have forgotten, location loc1 is defined to      *)
+(* precede location loc2 iff the end position of loc1 precedes OR EQUALS   *)
+(* the beginning position of loc2.  In particular, a 1-character location  *)
+(* precedes itself.                                                        *)
+(***************************************************************************)
+LocationPrecedes(loc1, loc2) == 
+   PairPrecedesOrEq(<<loc1.eLine, loc1.eColumn>>, 
+                    <<loc2.bLine, loc2.bColumn>>)
+
+(***************************************************************************)
+(* Note LocationContainedIn is defined so a location is contained in       *)
+(* itself.                                                                 *)
+(***************************************************************************)
+LocationContainedIn(loc1, loc2) == 
+  /\ PairPrecedesOrEq(<<loc2.bLine, loc2.bColumn>>, 
+                      <<loc1.bLine, loc1.bColumn>>)
+  /\ PairPrecedesOrEq(<<loc1.eLine, loc1.eColumn>>, 
+                      <<loc2.bLine, loc2.bColumn>>)  
+
+(***************************************************************************)
+(* ++ is coordinate-wise addition of two positions.                        *)
+(***************************************************************************)
+pair1 ++ pair2 == <<pair1[1] + pair2[1], pair1[2] + pair2[2]>>
+
+(***************************************************************************)
+(* PosSum(f, i) == f[0] ++ f[1] ++ ...  ++ f[i] where                      *)
+(* PosSum(f, -1) = <<0, 0>> .                                              *)
+(***************************************************************************)
+RECURSIVE PosSum(_, _)
+PosSum(f, i) == IF i = -1 THEN <<0, 0>>
+                          ELSE f[i] ++ PosSum(f, i-1)
+
+(***************************************************************************)
+(* We define the Max and Min of a set S of array indices, which will be    *)
+(* non-negative integers.  Max of the empty set is defined to be -1; Min   *)
+(* of the empty set is undefined.                                          *)
+(***************************************************************************)
+IndexMax(S) == IF S = {} THEN -1
+                         ELSE CHOOSE x \in S : \A y \in S : x >= y
+IndexMin(S) == CHOOSE x \in S : \A y \in S : x =< y
+
+(***************************************************************************)
+(* (Semantic) Nodes                                                        *)
+(***************************************************************************)
+IsSeq(s) == /\ Len(s) \in Nat
+            /\ s = [i \in 1..Len(s) |-> s[i]]
+  (*************************************************************************)
+  (* True iff s is a sequence.                                             *)
+  (*************************************************************************)
+
+IsSeqOf(seq, IsElem(_)) ==
+  (*************************************************************************)
+  (* True iff seq is a sequence of elements e_i, with IsElem(e_i) true for *)
+  (* all i.                                                                *)
+  (*************************************************************************)
+  /\ IsSeq(seq)
+  /\ \A i \in 1..Len(seq) : IsElem(seq[i])
+
+(***************************************************************************)
+(* We define a JArray to be a function with domain 0..n for some integer   *)
+(* n, which is the mathematical representation of a Java array.  We define *)
+(* some operators on JArrays corresponding to operators on sequences.      *)
+(* Note that an array of length 0 is the function whose domain is the      *)
+(* empty set--the function that can be written << >>.                      *)
+(***************************************************************************)
+JArray(S) == {<< >>} \cup UNION {[0..n -> S] : n \in Nat}
+JLen(A) == 1 + IndexMax(DOMAIN A)
+JConcat(s, t) == [i \in 0 .. (JLen(s) + JLen(t)-1) |-> 
+                    IF i < JLen(s) THEN s[i] ELSE t[i-JLen(s)]] 
+JSubArray(A, m, n) ==
+  (*************************************************************************)
+  (* The JArray A[m], A[m+1], ...  , A[n].                                 *)
+  (*************************************************************************)
+  [i \in 0 .. n-m |-> A[i+m]]
+
+IsJArray(A) == DOMAIN A = 0 .. IndexMax(DOMAIN A)
+
+IsJArrayOf(A, S) == /\ IsJArray(A)
+                    /\ \A x \in DOMAIN A : A[x] \in S
+
+(***************************************************************************)
+(* The operator StoJ maps from sequences to JArrays, and JtoS maps from    *)
+(* JArrays to sequences.                                                   *)
+(***************************************************************************)
+StoJ(seq) == [i \in 0..(Len(seq)-1) |-> seq[i+1]]
+JtoS(A) == [i \in 1..JLen(A) |-> A[i-1]]
+
+
+(***************************************************************************)
+(* Assume some set S of records, each element of which has a `children'    *)
+(* field that is a sequence of elements of S called the node's children.   *)
+(* The descendants of a node nd consists of it and its children and its    *)
+(* children's children, and its children's children's children, etc.  The  *)
+(* following defines Descendants(nd) to be the set of all descendants of   *)
+(* nd.  Note that its possible for this set to be infinite if there is an  *)
+(* infinite sequence seq of elements of S each of which is a child of the  *)
+(* preceding one.  It's also possible for this set to be finite if there   *)
+(* is such an infinite sequence seq--for example, if all the elements of   *)
+(* the infinite sequence are the same.  To understand how this is          *)
+(* possible, observe that if z is an infinite sequence of zeroes, then the *)
+(* tail of z (obtained by removing the first zero in the sequence) equals  *)
+(* z.                                                                      *)
+(***************************************************************************)
+Descendants(nd) ==
+  LET RangeOfFcn(f) == {f[i] : i \in DOMAIN f}
+      RECURSIVE D(_)
+      D(n) == IF n.children = << >>
+                   THEN {n}
+                   ELSE {n} \cup
+                          UNION {D(n.children[i]) 
+                                   : i \in DOMAIN n.children}
+  IN  D(nd)
+
+(***************************************************************************)
+(* Because TLC doesn't treat Strings as first-class sequences, we          *)
+(* represent a String as an array of Chars, where a Char is a string of    *)
+(* length 1.  Also, to simplify translation to Java, we use 0-based        *)
+(* addressing of Chars in a String, and for vectors of Strings.  Note that *)
+(* the empty string "" is the function whose domain is the empty set,      *)
+(* which can be written as << >>.                                          *)
+(***************************************************************************)
+Char == {s \in STRING : Len(s) = 1}
+String == UNION {[0..n -> Char] : n \in Nat \cup {-1}}
+StringVector == UNION {[0..n -> String] : n \in Nat \cup {-1}}
+IsString(s) == IsJArrayOf(s, Char)
+IsStringVector(v) == /\ IsJArray(v)
+                     /\ \A x \in DOMAIN v : IsString(v[x])
+
+SpaceChar == " "
+NSpaces(n) == [i \in 0..(n-1) |-> SpaceChar]
+
+(***************************************************************************)
+(* A node has nd has the following fields                                  *)
+(*   uid : A unique number                                                 *)
+(*   loc : A Location                                                      *)
+(*   image : Like a StringVector, except its 0th line is numbered          *)
+(*           nd.loc.bLine and its contents are the portion of the module   *)
+(*           occupied by the text that produced the node.  (Enclosing      *)
+(*           parentheses are not included in the image.                    *)
+(*   children : The sequence of subnodes, ordered by their loc fields.     *)
+(***************************************************************************)
+RECURSIVE IsNode(_)
+IsNode(nd) ==
+   /\ nd = [uid |-> nd.uid, loc |-> nd.loc, image |-> nd.image, 
+            children |-> nd.children]
+   /\ /\ nd.uid \in Int
+      /\ \A d1, d2 \in Descendants(nd) : (d1 # d2) => (d1.uid # d2.uid)
+           \* uid's are unique.
+   /\ nd.loc \in Location
+   /\ /\ /\ DOMAIN nd.image = nd.loc.bLine .. nd.loc.eLine 
+         /\ \A i \in DOMAIN nd.image : IsString(nd.image[i])
+      /\ IF nd.loc.bLine = nd.loc.eLine 
+           THEN JLen(nd.image[nd.loc.bLine]) = nd.loc.eColumn - nd.loc.bColumn + 1
+           ELSE JLen(nd.image[nd.loc.eLine]) = nd.loc.eColumn
+      /\ nd.image[nd.loc.bLine][1] # SpaceChar
+      /\ nd.image[nd.loc.eLine][JLen(nd.image[nd.loc.eLine])-1] # SpaceChar
+   /\ /\ IsSeqOf(nd.children, IsNode)
+      /\ \A i \in DOMAIN nd.children :
+            /\ LocationContainedIn(nd.children[i].loc, nd.loc)
+            /\ (i = 1) => /\ nd.children[i].loc.bLine = nd.loc.bLine
+                          /\ nd.children[i].loc.bColumn = nd.loc.bColumn
+            /\ (i = Len(nd.children)) => /\ nd.children[i].loc.eLine = nd.loc.eLine
+                                         /\ nd.children[i].loc.eColumn = nd.loc.eColumn
+            /\ (i > 1) => LocationPrecedes(nd.children[i-1].loc, nd.children[i].loc)
+
+IsIdentifier(nd) == /\ IsNode(nd)
+                    /\ nd.children = << >>
+                    /\ nd.loc.bLine = nd.loc.eLine           
+
+(***************************************************************************)
+(* A TLA+ semantic unit (such as an expression) will be represented (for   *)
+(* display on the screen or insertion into a specification) by an array of *)
+(* STRINGs, where the array is indexed by 0..i for some i in Nat.          *)
+(***************************************************************************)
+
+(***************************************************************************)
+(* An insertion ins describes the replacement of a token node t, that is a *)
+(* descendant of a semantic node nd, in the StringVector representing nd   *)
+(* by a StringVector rep, where                                            *)
+(*                                                                         *)
+(*    ins.col = t.loc.bColumn                                              *)
+(*    ins.oldLen = t.loc.eColumn - t.loc.bColumn + 1                       *)
+(*    DOMAIN rep = 0..ins.linesAdded                                       *)
+(*    newLen = JLen(rep[ins.linesAdded])                                   *)
+(***************************************************************************)
+Insertion == [col : Nat, oldLen : Nat, newLen : Nat, linesAdded : Nat]
+
+(***************************************************************************)
+(* A NodeWithSubst nws consists of the following fields                    *)
+(*                                                                         *)
+(*     node : Node -- The original node that was substituted into.         *)
+(*                                                                         *)
+(*     repr : StringVector -- The representation of the node after         *)
+(*                            substitutions.                               *)
+(*                                                                         *)
+(*     startInc : Int \X Int --                                            *)
+(*                  equals the pair <<ln, col>> such that                  *)
+(*                    -- ln = -nws.node.loc.bLine                          *)
+(*                    -- the position <<nws.node.loc.beginLine,            *)
+(*                                      nws.node.loc.beginColumn>>         *)
+(*                       in nws.node corresponds to nws.repr character     *)
+(*                       nws.repr[0][nd.loc.beginColumn + col]             *)
+(*                                                                         *)
+(*     lineInc : JArray(Int \X Int) --                                     *)
+(*                 -- JLen(nws.lineInc) equals                             *)
+(*                       nws.node.loc.eLine - nws.loc.bLine + 1 and        *)
+(*                 -- nws.lineInc[i] equals the pair <<ln, col>> such      *)
+(*                    that the first descendant d of nws.node with         *)
+(*                      d.loc.bLine + nws.startInc[1] = i                  *)
+(*                   (or the expression substituted for d) begins in repr  *)
+(*                   at character                                          *)
+(*                     repr[i + lineInc[i][1]]                             *)
+(*                            [d.loc.bColumn + lineInc[i][2]]              *)
+(*                 Note that for each i \in DOMAIN lineInc,                *)
+(*                   lines in                                              *)
+(*                      (nws.lineInc[i] + 1)                               *)
+(*                        .. (IF i+1 = JLen(lineInc)                       *)
+(*                              THEN JLen(nws.repr) - 1                    *)
+(*                              ELSE nws.lineInc[i+1] - 1)                 *)
+(*                   consist of lines added to nws.node.image, where the   *)
+(*                   last of those lines ends with tokens that were        *)
+(*                   originally to the right of a replaced token that      *)
+(*                   would have been on line nws.lineInc[i] had it not     *)
+(*                   been replaced.                                        *)
+(*                                                                         *)
+(*     inserts : JArray(JArray(Insertion)) --                              *)
+(*                  inserts[i] equals the Insertions that represent        *)
+(*                  substitutions made to tokens t in                      *)
+(*                  Descendants(nws.node) with                             *)
+(*                     t.loc.bLine + startInc[1] = i                       *)
+(*                  The elements ins of inserts[i] are ordered by ins.col. *)
+(***************************************************************************)
+IsNodeWithSubst(nws) ==
+  /\ DOMAIN nws = {"node", "repr", "startInc", "lineInc", "inserts"}
+  /\ IsNode(nws.node)
+  /\ IsStringVector(nws.repr)
+  /\ nws.startInc \in Int \X Int
+  /\ IsJArrayOf(nws.lineInc, Int \X Int)
+  /\ /\ IsJArray(nws.inserts)
+     /\ \A x \in DOMAIN nws.inserts : IsJArrayOf(nws.inserts[x], Insertion)
+
+
+LeadingSpaces(str) == 
+  (*************************************************************************)
+  (* The number of space characters at the beginning of String str.        *)
+  (*************************************************************************)
+  1 + IndexMax({i \in DOMAIN str : \A j \in 0..i : str[j] = SpaceChar})
+
+AddSpaces(n, sv) ==
+  (*************************************************************************)
+  (* The String obtained by adding n SpaceChars to the beginning of String *)
+  (* sv.  If n < 0, adding n Space characters means deleting -n            *)
+  (* characters.                                                           *)
+  (*************************************************************************) 
+  [i \in 0..(JLen(sv)+n-1) |-> 
+     IF n >= 0 THEN IF i < n THEN " " ELSE sv[i-n]
+                             ELSE sv[i-n] ]
+      
+(***************************************************************************)
+(* NodeToNodeWithSubst(nd) is the NodeWithSubst representing node nd after *)
+(* no substitutions have been performed.                                   *)
+(***************************************************************************)
+NodeToNodeWithSubst(nd) == 
+  LET Lines == 0..(nd.loc.eLine - nd.loc.bLine)
+      image == [i \in Lines 
+                       |-> IF i = 0 THEN AddSpaces(nd.loc.bColumn - 1, 
+                                                   nd.image[nd.loc.bLine])
+                                    ELSE nd.image[i + nd.loc.bLine]]
+      BlankLines == {i \in Lines : \A j \in DOMAIN image[i] : image[i][j] = SpaceChar}
+      trim == IndexMin({LeadingSpaces(image[i]) : i \in Lines \ BlankLines}) 
+      trimVec(strVec) == [i \in 0..(JLen(strVec)-1-trim) |-> strVec[i+trim]]
+      repr == [i \in Lines |-> IF i \in BlankLines THEN ""
+                                                   ELSE trimVec(image[i])]
+      
+  IN  [node     |-> nd,
+       repr     |-> repr,
+       startInc |-> <<-nd.loc.bLine, -trim - 1>>,
+       lineInc  |-> [j \in Lines |-> <<0, 0>>],
+       inserts  |-> [j \in Lines |-> << >>] ]
+  
+(***************************************************************************)
+(* ReprPos(pos, nws) is defined to be the pair <<i, j>> so that if nws is  *)
+(* a NodeWithSubstitution and pos is a <<line number, column number>> pair *)
+(* that represents a position in nws.node that does not lie within a token *)
+(* that has been substituted for, then the character at position pos       *)
+(* appears is at nws.repr[i][j].                                           *)
+(***************************************************************************)
+ReprPos(pos, nws) == 
+   pos ++ nws.startInc
+       ++ nws.lineInc[pos[1] + nws.startInc[1]]
+       ++ LET inserts == nws.inserts[pos[1] + nws.startInc[1]]
+              ipos == [i \in DOMAIN inserts |->
+                        <<inserts[i].linesAdded,
+                          inserts[i].newLen - inserts[i].oldLen>>]
+          IN  PosSum(ipos,
+                     IndexMax({i \in DOMAIN inserts :
+                                inserts[i].col < pos[2]}))
+
+(***************************************************************************)
+(* The NodeWithSubstitution produced by replacing the token with Location  *)
+(* tokLoc by the StringVector sVec in NodeWithSubstitution nws.  The       *)
+(* expression in sVec is parenthesized iff parens = TRUE.                  *)
+(***************************************************************************)
+SubstForToken(tokLoc, sVec, nws, parens) == 
+  LET (*********************************************************************)
+      (* sV is sVec with parentheses added iff parens = TRUE               *)
+      (*********************************************************************)
+      sV == 
+        (*******************************************************************)
+        (* sVec with parentheses added iff parens = TRUE                   *)
+        (*******************************************************************)
+        IF parens
+          THEN [[i \in DOMAIN sVec |->
+                  [j \in 0..JLen(sVec[i]) |-> 
+                     IF j = 0 THEN IF i = 0 THEN "(" ELSE " "
+                              ELSE  sVec[i][j-1]]]
+                  EXCEPT ![JLen(sVec)-1] = 
+                             [j \in 0..JLen(@) |-> 
+                                IF j = JLen(@) THEN ")" ELSE @[j]]]
+          ELSE sVec
+      insert == 
+        (*******************************************************************)
+        (* The Insertion describing the parameters of the substitution.    *)
+        (*******************************************************************)
+        [col        |-> tokLoc.bColumn, 
+         oldLen     |-> tokLoc.eColumn - tokLoc.bColumn + 1,
+         linesAdded |-> JLen(sV) - 1,
+         newLen     |-> JLen(sV[JLen(sV) - 1])]
+
+      beginPos == ReprPos(<<tokLoc.bLine, tokLoc.bColumn>>, nws)
+
+      repr1 ==
+        (*******************************************************************)
+        (* nws.repr with the substitution of the first line of sV for the  *)
+        (* token                                                           *)
+        (*******************************************************************)
+        [nws.repr EXCEPT 
+           ![beginPos[1]] = 
+              [i \in 0..(JLen(@)-1 + JLen(sV[0]) - insert.oldLen) |->
+                 IF i < beginPos[2] THEN @[i]
+                                    ELSE IF i < beginPos[2] + JLen(sV[0])
+                                           THEN sV[0][i-beginPos[2]]
+                                           ELSE @[i-JLen(sV[0])+insert.oldLen] ] ]                      
+
+      repr2 ==
+       (********************************************************************)
+       (* repr2 with the substitutions made for the rest of the lines of   *)
+       (* sV.                                                              *)
+       (********************************************************************)
+     IF JLen(sV) = 1 
+       THEN repr1
+       ELSE [i \in 0..(JLen(repr1) + JLen(sV) -2) |->
+              CASE i < beginPos[1] -> repr1[i] 
+                [] i = beginPos[1] -> 
+                     JSubArray(repr1[i], 0, beginPos[2] + JLen(sV[0])-1)
+                [] i \in (beginPos[1]+1) .. (beginPos[1] + JLen(sV)-2) ->
+                     AddSpaces(beginPos[2], sV[i - beginPos[1]])   
+                [] i = beginPos[1] + insert.linesAdded -> 
+                        AddSpaces(beginPos[2], 
+                                  JConcat(sV[JLen(sV)-1],
+                                          JSubArray(repr1[beginPos[1]],
+                                                    beginPos[2]+JLen(sV[0]),
+                                                    JLen(repr1[beginPos[1]])-1)))
+                [] OTHER ->  repr1[i-insert.linesAdded] ]
+ 
+      affectedRepLines ==
+        (*******************************************************************)
+        (* The numbers of the contiguous set of lines in repr2 following   *)
+        (* tokLoc's line that begin (have first non-space character) in    *)
+        (* the same column or to the right of the first character in the   *)
+        (* replaced token's representation in repr2.  These lines must be  *)
+        (* shifted left or right to maintain the alignment if its tokens   *)
+        (* with tokens that originally appeared to the right of the        *)
+        (* replaced token.                                                 *)
+        (*******************************************************************)
+        {i \in (beginPos[1] + insert.linesAdded + 1) .. (JLen(repr2)-1) :
+           \A j \in (beginPos[1] + insert.linesAdded + 1) .. i :
+              LeadingSpaces(repr2[i]) >= beginPos[2]}
+
+      repr ==
+        (*******************************************************************)
+        (* The repr component of the result, obtained by adding or         *)
+        (* removing spaces to the lines of affectedRepLines.               *)
+        (*******************************************************************)
+        [i \in DOMAIN repr2 |->
+           IF i \in affectedRepLines 
+             THEN AddSpaces(insert.newLen - insert.oldLen, repr2[i])    
+             ELSE repr2[i]]  
+      
+      insertIndex == tokLoc.bLine + nws.startInc[1]
+        (*******************************************************************)
+        (* The index in repr and lineInc at which the insertion is being   *)
+        (* made.                                                           *)
+        (*******************************************************************)
+                 
+      lineInc1 ==
+        (*******************************************************************)
+        (* nws.lineInc with line increments (first components) adjusted.   *)
+        (*******************************************************************)
+        [i \in DOMAIN nws.lineInc |->
+           IF i =< insertIndex
+             THEN nws.lineInc[i]
+             ELSE [nws.lineInc[i] EXCEPT ![1] = @ + insert.linesAdded]]   
+
+      affectedNodeLines ==
+        (*******************************************************************)
+        (* These are the numbers of lines in the domains of startInc and   *)
+        (* lineInc that correspond to line numbers of repr that are in     *)
+        (* affectedRepLines.                                               *)
+        (*******************************************************************)
+        {i \in DOMAIN lineInc1 :
+          i + lineInc1[i][1] \in affectedRepLines}   
+          
+     lineInc ==
+        (*******************************************************************)
+        (* The lineInc component of the result, which equals lineInc1 with *)
+        (* column increments (second components) adjusted to reflect the   *)
+        (* spaces added or removed from lines in affectedNodeLines.        *)
+        (*******************************************************************)
+        [i \in DOMAIN lineInc1 |->
+           IF i \in affectedNodeLines
+             THEN [lineInc1[i] EXCEPT ![2] = @ + insert.newLen - insert.oldLen]
+             ELSE lineInc1[i] ] 
+     inserts ==
+       (********************************************************************)
+       (* The inserts component of the result, obtained by adding `insert' *)
+       (* to nws.inserts[insertIndex].                                     *)
+       (********************************************************************)
+       LET ins == nws.inserts[insertIndex] \* nws.inserts[beginPos[1]]
+           insertPos == IndexMax({i \in DOMAIN ins : ins[i].col < insert.col})
+       IN  [i \in DOMAIN nws.inserts |->
+             IF i = insertIndex 
+               THEN [j \in 0 .. JLen(ins) |->
+                      CASE j =< insertPos -> ins[j]
+                        [] j = insertPos+1 -> insert     
+                        [] OTHER -> ins[j-1] ] 
+               ELSE nws.inserts[i]  ]
+      
+  IN [node     |-> nws.node,
+      repr     |-> repr,
+      startInc |-> nws.startInc,
+      lineInc  |-> lineInc,
+      inserts  |-> inserts]
+----------------------------------------------------------------------------
+(***************************************************************************)
+(* Operators for writing test cases.                                       *)
+(***************************************************************************)
+(***************************************************************************)
+(* S("abcd") is the String corresponding to "abcd".  SV(<<"abc", "def ",   *)
+(* "g">>) is the StringVector corresponding to                             *)
+(*     "abc\nde f\ng"                                                      *)
+(***************************************************************************)
+S(str) == 
+  LET RECURSIVE seq(_)
+      seq(s) == IF Len(s) = 0 THEN << >> ELSE <<SubSeq(s,1,1)>> \o seq(Tail(s))
+  IN StoJ(seq(str))
+SV(strSeq) == StoJ([i \in 1..Len(strSeq) |-> S(strSeq[i])])
+
+JJtoSS(jaOfJa) == JtoS([i \in DOMAIN jaOfJa |-> JtoS(jaOfJa[i])])
+
+(****************************************************************************
+The expression bcd + ...  - hh in this "module"
+
+   q == uu 
+   foo == a + (bcdd + ef
+                       g - hq) + ijk
+   12345678901234567890123456789012345
+****************************************************************************)
+Module1 == SV(
+<<
+"q  == uu",
+"foo == a + (bcdd + ef",
+"                    g - hh) + ijk" >>)
+
+node1 == 
+ [uid |-> 1,
+  loc |-> [bLine |-> 2, bColumn |-> 13, eLine |-> 3, eColumn |-> 25],
+  image |-> 
+  (2 :> S("bcdd + ef") @@ 3 :> 
+        S("                    g - hh") ),
+  children |-> << >>]
+
+nws1 == NodeToNodeWithSubst(node1)
+tokLoc1 == [bLine |-> 2, bColumn |-> 15, eLine |-> 2, eColumn |-> 16]
+tokLoc1a == [bLine |-> 2, bColumn |-> 20, eLine |-> 2, eColumn |-> 20]
+tokLoc1b == [bLine |-> 3, bColumn |-> 21, eLine |-> 3, eColumn |-> 21]
+sub1 == SV(<<"xxx", "yyyy", "ZZZZZZ">>) \* for dd
+sub1a == SV(<<"[222", "22]">>)   \* for e
+sub1b == SV(<<"GGG", "GG">>)            \* for g
+
+Subst1 == SubstForToken(tokLoc1, sub1, nws1, FALSE)
+\*Subst1a == SubstForToken(tokLoc1a, sub1a, Subst1, FALSE)
+\*Subst1b == SubstForToken(tokLoc1b, sub1b, Subst1a, FALSE)
+Subst1b == SubstForToken(tokLoc1b, sub1b, Subst1, FALSE)
+Subst1a == SubstForToken(tokLoc1a, sub1a, Subst1b, FALSE)
+Result1x == JJtoSS(nws1.repr)
+Result1 ==  JJtoSS(Subst1.repr)
+Result1a ==  JJtoSS(Subst1a.repr)
+Result1b ==  JJtoSS(Subst1b.repr)
+(***************************************************************************)
+(* The expression bcd + ...  - hh in this "module"                         *)
+(*                                                                         *)
+(*    q == uu                                                              *)
+(*    foo == a + (bcd + ef - EF                                            *)
+(*             g - hq) + ijk                                               *)
+(*    123456789012345678901234567890                                       *)
+(***************************************************************************)
+Module2 == SV(
+<<
+"q  == uu",
+"foo == a + (bcd + ef - EF",
+"         g - hq) + ijk" >>)
+
+
+node2 == 
+ [uid |-> 1,
+  loc |-> [bLine |-> 2, bColumn |-> 13, eLine |-> 3, eColumn |-> 15],
+  image |-> 
+  (2 :> S("bcd + ef - EF") @@ 3 :> S("         g - hq")),
+  children |-> << >>]
+
+nws2 == NodeToNodeWithSubst(node2)
+tokLoc2 ==  [bLine |-> 2, bColumn |-> 19, eLine |-> 2, eColumn |-> 20] \* ef
+tokLoc2b ==  [bLine |-> 2, bColumn |-> 13, eLine |-> 2, eColumn |-> 15] \*bcd
+
+sub2a == SV(<<"x", "xxxx">>)
+sub2b == SV(<<"Y","YYYY">>)
+Subst2a == SubstForToken(tokLoc2, sub2a, nws2, FALSE)
+Subst2b == SubstForToken(tokLoc2b, sub2b, Subst2a, FALSE)
+Result2x == JJtoSS(nws2.repr)
+Result2a == JJtoSS(Subst2a.repr)
+Result2b == JJtoSS(Subst2b.repr)
+(****************************************************************************
+The expression b12345 + ...  - hh in this "module"
+
+   q == uu 
+   foo == a + (b12345 + ef
+                    g - hq) + ijk
+   12345678901234567890123456789012345
+****************************************************************************)
+Module3 == SV(
+<<
+"q  == uu",
+"foo == a + (b12345 + ef",
+"                 g - hh) + ijk" >>)
+
+node3 == 
+ [uid |-> 1,
+  loc |-> [bLine |-> 2, bColumn |-> 13, eLine |-> 3, eColumn |-> 23],
+  image |-> 
+  (2 :> S("b12345 + ef") @@ 3 :> S("                 g - hq") ),
+  children |-> << >>]
+
+nws3 == NodeToNodeWithSubst(node3)
+tokLoc3a == [bLine |-> 2, bColumn |-> 14, eLine |-> 2, eColumn |-> 18] \* 12345
+tokLoc3b == [bLine |-> 2, bColumn |-> 22, eLine |-> 2, eColumn |-> 22] \* e
+sub3a == SV(<<"XX", "XXXXX", "XXXXXXXXXXXX">>)
+sub3b == SV(<<"YYYYY",  "YY">>)
+\*Subst3a == SubstForToken(tokLoc3a, sub3a, nws3, TRUE)
+\*Subst3b == SubstForToken(tokLoc3b, sub3b, Subst3a, TRUE)
+
+Subst3b == SubstForToken(tokLoc3b, sub3b, nws3, FALSE)
+Subst3a == SubstForToken(tokLoc3a, sub3a, Subst3b, FALSE)
+
+
+Result3x == JJtoSS(nws3.repr)
+Result3a == JJtoSS(Subst3a.repr)
+Result3b == JJtoSS(Subst3b.repr)
+=====
+
+(***************************************************************************
+NEED TO RECORD The mapping from coordinates in Node to 
+coordinates in StringVector.
+ ***************************************************************************)
+RECURSIVE NTail(_, _)
+NTail(n, seq) == IF n = 0 THEN seq ELSE NTail(n-1, Tail(seq))
+
+StringVectorOfNode(nd) ==
+  IF nd.loc.bLine = nd.loc.eLine
+    THEN [i \in {0} |-> nd.image[nd.loc.bLine]]
+    ELSE LET Lines == 0..(nd.loc.eLine - nd.loc.bLine)
+             SVN == [i \in Lines 
+                       |-> IF i = 0 THEN NSpaces(nd.loc.bColumn - 1) 
+                                           \o nd.image[nd.loc.bLine]
+                                    ELSE nd.image[i + nd.loc.bLine]]
+             BlankLines == {i \in Lines : \A j \in 1..Len(SVN[i]) :
+                                             SVN[i][j] = SpaceChar}
+             LeadingSpaces(str) == SetMax({i \in DOMAIN str :
+                                            \A j \in 1..i : str[j] = SpaceChar})
+             trim == IndexMin({LeadingSpaces(SVN[i]) : i \in Lines \ BlankLines})   
+         IN [i \in Lines |-> IF i \in BlankLines THEN ""
+                                                 ELSE NTail(trim, SVN[i])]
+        
+=============================================================================
+\* Modification History
+\* Last modified Thu Aug 21 18:41:11 PDT 2014 by lamport
+\* Created Fri Jul 04 17:30:53 PDT 2014 by lamport
+
+*/
