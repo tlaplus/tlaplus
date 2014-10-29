@@ -4208,16 +4208,39 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // LL-XXXX  -- doing some testing
                 // (We are in decomposeQuantifier(nodeRepArg, isForAll)
                 // 
+                // If sn is a SubstInNode, then the definition has been
+                // instantiated with renaming, so we must set the decomposition's
+                // instantiationSubstitutionsD field to the substitutions
+                // implied by the chain of SubstInNodes.  If sn is not a SubstInNode,
+                // then we set instantiationSubstitutionsD to 
+                // nodeRepArg.instantiationSubstitutions--even if sn is in a 
+                // different module than nodeRepArg came from.  This is because
+                // that other module might be one EXTENDed by nodeRepArg's
+                // module, so it might have contributed module parameters
+                // to sn's module, and those parameters might be instantiated
+                // by a substitution in nodeRepArg.instantiationSubstitutions.
+                // (We should add a test checking this situation.)
+                // This isn't possible if sn's module was instantiated (but
+                // has no module parameters), but there's no harm in trying to
+                // do the instantiations from nodeRepArg.instantiationSubstitutions
+                // because sn's module won't contain any of the nodes
+                // being substituted for.  
                 while (sn instanceof SubstInNode) {
                     Renaming rn = substInNodeToRenaming((SubstInNode) sn, nodeRep) ;
+                    // Remem
                     sn = ((SubstInNode)sn).getBody() ;
                     
                 }
                 
+                // LL-XXXX We have to set instantiatedNamePrefixD to the
+                // concatenation of nodeRepArg.instantiatedNamePrefix
+                // and all the text through the last "!" in the operator's
+                // name.
+                
                 // Need to create the NodeRepresentation using the
                 // module in which the definition occurs.  
                 // LL-XXXX  If the definition
-                // comes from a model that is instantiated with substition,
+                // comes from a model that is instantiated with substitution,
                 // should those substitions be done here?
                 String moduleName = sn.getLocation().source() ;
                 IDocument idoc = moduleNameToIDocument(moduleName);
@@ -4241,7 +4264,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // We now want to call decompSubstituteInNodeText using the
                 // substitutions in nodeRepArg.decomposition, rather than the
                 // one computed by this  call to subNodeRep. So, we just set 
-                // the necessary fields.
+                // the necessary fields. LL-XXXX do we have to set the
+                // instantiatedNamePrefix and instantiationSubstitutions
+                // fields?  
                 nodeRep.decomposition.formalParams = nodeRepArg.decomposition.formalParams;
                 nodeRep.decomposition.arguments = nodeRepArg.decomposition.arguments;
                 nodeRep.decomposition.argNodes = nodeRepArg.decomposition.argNodes;
