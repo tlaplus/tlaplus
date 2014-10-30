@@ -65,8 +65,6 @@
  *    Leaves the Prove button disabled
  * 
  *    
- *    
- *    
  *  - Bug discovered 19 Aug 2014 by LL.  FIXED IN NEW VERSION
  *    Decomposing
  *    
@@ -2802,22 +2800,26 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @param nodeRep
      */
     void forAllAction(NodeRepresentation nodeRep) {
-        Decomposition decomp = nodeRep.decomposition;
-        state.hasChanged = true;
-        if (decomp.definedOp != null) {
-            state.assumpDefinitions.add(decomp.definedOp);
-        }
-
         QuantifierDecomposition qdc = decomposeQuantifier(nodeRep, true);
-        this.state.goalRep = qdc.body;
-        // I think that, once we start decomposing things, goal
-        // may be used in calling primingNeedsParens
-        // this.goal = qdc.body.semanticNode ;
 
-        int newIdx = newAssumeRepsIndex(-1, nodeRep.initialPosition) ;
-        for (int i = 0; i < qdc.news.size(); i++) {
-            this.state.assumeReps.add(newIdx+i, qdc.news.elementAt(i));
-            // this.assumes.add(qdc.news.elementAt(i).semanticNode) ;
+        // abort operation if decomposeQuantifier call failed.
+        if (qdc != null) {
+            Decomposition decomp = nodeRep.decomposition;
+            state.hasChanged = true;
+            if (decomp.definedOp != null) {
+                state.assumpDefinitions.add(decomp.definedOp);
+            }
+
+            this.state.goalRep = qdc.body;
+            // I think that, once we start decomposing things, goal
+            // may be used in calling primingNeedsParens
+            // this.goal = qdc.body.semanticNode ;
+
+            int newIdx = newAssumeRepsIndex(-1, nodeRep.initialPosition) ;
+            for (int i = 0; i < qdc.news.size(); i++) {
+                this.state.assumeReps.add(newIdx+i, qdc.news.elementAt(i));
+                // this.assumes.add(qdc.news.elementAt(i).semanticNode) ;
+            } 
         }
         raiseWindow();
     }
@@ -2868,37 +2870,34 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
         QuantifierDecomposition qdc = decomposeQuantifier(nodeRep, false);
 
-        // This added by LL on 11 Feb 2013
-        qdc.body.isCreated = true;
-        
-        qdc.body.fromExists = true ;
+        // Abort operation if qdc is null
+        if (qdc != null) {
+            // This added by LL on 11 Feb 2013
+            qdc.body.isCreated = true;
+            
+            qdc.body.fromExists = true ;
 
-        parentVec.remove(idx);
+            parentVec.remove(idx);
 
-// UP-DOWN ARROWS REMOVED
-        // If this is a top-level assumption and an AND-split has been
-        // performed, then increment state.andSplitEnd
-//        if ((parentVec == state.assumeReps) && (state.andSplitBegin != -1)) {
-//            state.andSplitEnd = state.andSplitEnd + qdc.news.size();
-//        }
+            // If this is a top-level context assumption, then
+            // decrement state.numberOfContextAssumptions, and set idx to the appropriate
+            // place to put the new assumptions
+            if (parentVec == state.assumeReps) {
+                int newIdx =  newAssumeRepsIndex(idx, nodeRep.initialPosition) ;            
+                if (idx < state.numberOfContextAssumptions) {
+                   state.numberOfContextAssumptions = state.numberOfContextAssumptions-1  ;
+                }
 
-        // If this is a top-level context assumption, then
-        // decrement state.numberOfContextAssumptions, and set idx to the appropriate
-        // place to put the new assumptions
-        if (parentVec == state.assumeReps) {
-            int newIdx =  newAssumeRepsIndex(idx, nodeRep.initialPosition) ;            
-            if (idx < state.numberOfContextAssumptions) {
-               state.numberOfContextAssumptions = state.numberOfContextAssumptions-1  ;
+                idx = newIdx ;
             }
+            for (int i = 0; i < qdc.news.size(); i++) {
+                parentVec.add(idx + i, qdc.news.elementAt(i));
+                // parentVec.add(idx + i, qdc.news.elementAt(i).semanticNode) ;
+            }
+            parentVec.add(idx + qdc.news.size(), qdc.body);
+            // parentVec.add(idx + qdc.news.size(), qdc.body.semanticNode) ;
 
-            idx = newIdx ;
         }
-        for (int i = 0; i < qdc.news.size(); i++) {
-            parentVec.add(idx + i, qdc.news.elementAt(i));
-            // parentVec.add(idx + i, qdc.news.elementAt(i).semanticNode) ;
-        }
-        parentVec.add(idx + qdc.news.size(), qdc.body);
-        // parentVec.add(idx + qdc.news.size(), qdc.body.semanticNode) ;
         raiseWindow();
     }
 
@@ -4165,6 +4164,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * ASSUMPTIONS.  IT LED TO BUGS IN THE OLD VERSION BECAUSE THE \A SPLIT NEW
      * ASSUMPTION COULD APPEAR BEFORE CASE-SPLIT ASSUMPTIONS.
      * 
+     * If the node cannot be decomposed--for example, if an operator is
+     * instantiated with an multi-line expression--then null is returned.
+     * 
      * 
      * @param nodeRepArg
      *            The node being decomposed.
@@ -4225,17 +4227,50 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // do the instantiations from nodeRepArg.instantiationSubstitutions
                 // because sn's module won't contain any of the nodes
                 // being substituted for.  
-                while (sn instanceof SubstInNode) {
-                    Renaming rn = substInNodeToRenaming((SubstInNode) sn, nodeRep) ;
-                    // Remem
-                    sn = ((SubstInNode)sn).getBody() ;
-                    
+                
+                // set instSubs to the new Renaming for the decomposition nodes.
+                // and sn to the (OpArgNode) at the bottom of the SubstInNode chain.
+                // LL-XXXXX this code isn't correct because substitutions required
+                // by higher-level SubstInNodes (and in the module containing
+                // the defined operator being decomposed) must be done in the
+                // substituting expressions of a SubstInNode.  Also, there may
+                // be operator renaming required, but we have no way of
+                // finding the appropriate renamings.  This seems to be a
+                // problem that can be resolved only by adding to a SubstInNode
+                // a pointer to the INSTANCE that created it.
+                Renaming instSubs ; 
+                if (sn instanceof SubstInNode) {
+                    instSubs = new Renaming() ;
+                    while (sn instanceof SubstInNode) {
+                        Renaming rn = substInNodeToRenaming((SubstInNode) sn, nodeRep) ;
+                        if (rn == null) {
+                            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                                    "Decompose Proof Command",
+                                    "Decomposing an instantiated definition whose\n"
+                                    + "instantiation cannot be handled.");
+                            return null;
+
+                        }
+                        instSubs = instSubs.addAll(rn) ;
+                        sn = ((SubstInNode)sn).getBody() ;                        
+                    }
+ 
+                }
+                else {
+                    instSubs = nodeRepArg.instantiationSubstitutions ;
                 }
                 
                 // LL-XXXX We have to set instantiatedNamePrefixD to the
                 // concatenation of nodeRepArg.instantiatedNamePrefix
                 // and all the text through the last "!" in the operator's
-                // name.
+                // name.  Set instNamePrefix to that value.
+                String instNamePrefix = nodeRepArg.instantiatedNamePrefix ;
+                String restOfName = decomp.definedOp ;
+                while (restOfName.indexOf("!") != -1) {
+                    instNamePrefix = instNamePrefix + 
+                                        restOfName.substring(0, restOfName.indexOf("!")+1) ;
+                    restOfName = restOfName.substring(restOfName.indexOf("!")+1) ;
+                }
                 
                 // Need to create the NodeRepresentation using the
                 // module in which the definition occurs.  
@@ -6097,6 +6132,19 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         Vector<FormalParamNode> identifiers = new Vector<FormalParamNode>();
         Vector<String> newNames = new Vector<String>();
 
+        /**
+         * Returns a new Renaming object that is the concatenation of
+         * the renamings of this object with the argument.
+         * 
+         * @param renaming
+         * @return
+         */
+        public Renaming addAll(Renaming renaming) {
+            Renaming result = this.clone() ;
+            result.identifiers.addAll(renaming.identifiers) ;
+            result.newNames.addAll(renaming.newNames) ;
+            return result ;
+        }
         /**
          * Returns a new Renaming object whose fields are clones of this
          * object's fields (meaning that they are new Vector objects containing
