@@ -6,10 +6,10 @@
 package tlc2.tool.liveness;
 
 public class PossibleErrorModel {
-	int[] EAAction; // <>[]act's
-	int[] AEState; // []<>state's
-	int[] AEAction; // []<>act's
-
+	int[] EAAction; // <>[]act's (Eventually Always actions)
+	int[] AEState; // []<>state's (Infinitely Often states)
+	int[] AEAction; // []<>act's (Infinitely Often actions)
+	
 	public final boolean isEmpty() {
 		return (this.EAAction.length == 0 && this.AEState.length == 0 && this.AEAction.length == 0);
 	}

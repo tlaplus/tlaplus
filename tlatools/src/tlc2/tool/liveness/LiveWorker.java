@@ -63,8 +63,12 @@ public class LiveWorker extends IdThread {
 	}
 
 	/**
-	 * The main routine that computes strongely connected components, and checks
-	 * each of them to see if it contains a counterexample.
+	 * The main routine that computes strongly connected components (SCCs)
+	 * (see http://en.wikipedia.org/wiki/Strongly_connected_component),
+	 * and checks each of them to see if it contains a counterexample.
+	 * <p>
+	 * It seems to be using the Path-based strong component algorithm.
+	 * (http://en.wikipedia.org/wiki/Path-based_strong_component_algorithm)
 	 */
 	public final void checkSccs() throws IOException {
 		// Initialize this.dg:
