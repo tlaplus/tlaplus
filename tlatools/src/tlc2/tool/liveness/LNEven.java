@@ -12,43 +12,37 @@ import util.Assert;
 
 /**
  * Handles evantually (<>)
+ * 
  * @author Leslie Lamport, Yuan Yu, Simon Zambrovski
  * @version $Id$
  */
-class LNEven extends LiveExprNode
-{
-    private static final String EVENTUALLY = "<>";
-    protected LiveExprNode body;
+class LNEven extends LiveExprNode {
+	private static final String EVENTUALLY = "<>";
+	protected LiveExprNode body;
 
-    public LNEven(LiveExprNode body)
-    {
-        this.body = body;
-    }
+	public LNEven(LiveExprNode body) {
+		this.body = body;
+	}
 
-    public final LiveExprNode getBody()
-    {
-        return this.body;
-    }
+	public final LiveExprNode getBody() {
+		return this.body;
+	}
 
-    public final int getLevel()
-    {
-        return 3;
-    }
+	public final int getLevel() {
+		return 3;
+	}
 
-    public final boolean containAction()
-    {
-        return this.body.containAction();
-    }
+	public final boolean containAction() {
+		return this.body.containAction();
+	}
 
-    public final boolean eval(Tool tool, TLCState s1, TLCState s2)
-    {
-        Assert.fail(EC.TLC_LIVE_CANNOT_EVAL_FORMULA, EVENTUALLY);
-        return false; // make compiler happy
-    }
+	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+		Assert.fail(EC.TLC_LIVE_CANNOT_EVAL_FORMULA, EVENTUALLY);
+		return false; // make compiler happy
+	}
 
-    public final void toString(StringBuffer sb, String padding)
-    {
-        sb.append(EVENTUALLY);
-        this.getBody().toString(sb, padding + "  ");
-    }
+	public final void toString(StringBuffer sb, String padding) {
+		sb.append(EVENTUALLY);
+		this.getBody().toString(sb, padding + "  ");
+	}
 }

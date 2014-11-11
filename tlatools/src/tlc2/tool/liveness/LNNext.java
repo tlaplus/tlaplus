@@ -9,23 +9,30 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 
 class LNNext extends LiveExprNode {
-  protected LiveExprNode body;
+	protected LiveExprNode body;
 
-  public LNNext(LiveExprNode body) { this.body = body;}
+	public LNNext(LiveExprNode body) {
+		this.body = body;
+	}
 
-  public final LiveExprNode getBody() { return this.body; }
+	public final LiveExprNode getBody() {
+		return this.body;
+	}
 
-  public final int getLevel() { return 2; }
+	public final int getLevel() {
+		return 2;
+	}
 
-  public final boolean containAction() { return this.body.containAction(); }
-  
-  public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
-    return this.body.eval(tool, s2, TLCState.Empty);
-  }
+	public final boolean containAction() {
+		return this.body.containAction();
+	}
 
-  public final void toString(StringBuffer sb, String padding) {
-    sb.append("()");
-    this.getBody().toString(sb, padding + "  ");
-  }
+	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+		return this.body.eval(tool, s2, TLCState.Empty);
+	}
+
+	public final void toString(StringBuffer sb, String padding) {
+		sb.append("()");
+		this.getBody().toString(sb, padding + "  ");
+	}
 }
-
