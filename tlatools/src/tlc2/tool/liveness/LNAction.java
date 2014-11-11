@@ -17,7 +17,7 @@ import util.Assert;
 
 /**
  * Handles actions
- * 
+ *
  * @author Leslie Lamport, Yuan Yu, Simon Zambrovski
  * @version $Id$
  */
@@ -64,11 +64,13 @@ public class LNAction extends LiveExprNode {
 			Value v2 = tool.eval(this.subscript, con, s2, null, EvalControl.Clear);
 			boolean isStut = v1.equals(v2);
 			if (this.isBox) {
-				if (isStut)
+				if (isStut) {
 					return true;
+				}
 			} else {
-				if (isStut)
+				if (isStut) {
 					return false;
+				}
 			}
 		}
 		Value val = tool.eval(this.body, con, s1, s2, EvalControl.Clear);

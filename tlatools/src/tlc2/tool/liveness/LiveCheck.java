@@ -107,8 +107,9 @@ public class LiveCheck {
 					// if there is tableau ...
 					int loc0 = dgraph.setDone(fp0);
 					int[] nodes = dgraph.getNodesByLoc(loc0);
-					if (nodes == null)
+					if (nodes == null) {
 						continue;
+					}
 					for (int nidx = 2; nidx < nodes.length; nidx += 3) {
 						int tidx0 = nodes[nidx];
 						TBGraphNode tnode0 = oos.tableau.getNode(tidx0);
@@ -228,7 +229,7 @@ public class LiveCheck {
 								}
 								node.addTransition(fp1, tidx1, slen, alen, checkActionRes);
 								// Record that we have seen <fp1, tnode1>. If
-								// fp1 is done, we have to compute the next 
+								// fp1 is done, we have to compute the next
 								// states for <fp1, tnode1>.
 								dgraph.recordNode(fp1, tidx1);
 								if (isDone) {
@@ -273,8 +274,9 @@ public class LiveCheck {
 			}
 		}
 
-		if (LiveWorker.hasErrFound())
+		if (LiveWorker.hasErrFound()) {
 			return false;
+		}
 
 		// Reset after checking:
 		for (int soln = 0; soln < slen; soln++) {

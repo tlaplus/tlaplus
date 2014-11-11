@@ -30,8 +30,9 @@ public class TBPar extends Vect {
 	 */
 	public final boolean member(LiveExprNode e) {
 		for (int i = 0; i < this.size(); i++) {
-			if (e.equals(this.exprAt(i)))
+			if (e.equals(this.exprAt(i))) {
 				return true;
+			}
 		}
 		return false;
 	}
@@ -41,8 +42,9 @@ public class TBPar extends Vect {
 	 */
 	public final boolean contains(TBPar par) {
 		for (int i = 0; i < par.size(); i++) {
-			if (!this.member(par.exprAt(i)))
+			if (!this.member(par.exprAt(i))) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -51,8 +53,9 @@ public class TBPar extends Vect {
 	public final TBPar union(TBPar par) {
 		TBPar res = new TBPar(this.size() + par.size());
 		for (int i = 0; i < this.size(); i++) {
-			if (!par.member(this.exprAt(i)))
+			if (!par.member(this.exprAt(i))) {
 				res.addElement(this.exprAt(i));
+			}
 		}
 		for (int i = 0; i < par.size(); i++) {
 			res.addElement(par.exprAt(i));
@@ -137,8 +140,9 @@ public class TBPar extends Vect {
 		}
 		// If any positive is in the negative bin, that's a clash.
 		for (int i = 0; i < pos.size(); i++) {
-			if (neg.member(pos.exprAt(i)))
+			if (neg.member(pos.exprAt(i))) {
 				return false;
+			}
 		}
 		return true;
 	}

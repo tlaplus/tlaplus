@@ -50,7 +50,7 @@ public class TBGraphNode {
 		}
 		this.statePreds = new LiveExprNode[preds.size()];
 		for (int i = 0; i < preds.size(); i++) {
-			this.statePreds[i] = (LiveExprNode) preds.exprAt(i);
+			this.statePreds[i] = preds.exprAt(i);
 		}
 	}
 
@@ -69,8 +69,9 @@ public class TBGraphNode {
 	public final boolean hasLink(TBGraphNode target) {
 		int sz = this.nexts.size();
 		for (int i = 0; i < sz; i++) {
-			if (this.nexts.elementAt(i) == target)
+			if (this.nexts.elementAt(i) == target) {
 				return true;
+			}
 		}
 		return false;
 	}

@@ -40,8 +40,9 @@ public class OrderOfSolution {
 	}
 
 	public final String toString() {
-		if (this.pems.length == 0)
+		if (this.pems.length == 0) {
 			return "";
+		}
 		StringBuffer sb = new StringBuffer();
 		this.toString(sb);
 		return sb.toString();

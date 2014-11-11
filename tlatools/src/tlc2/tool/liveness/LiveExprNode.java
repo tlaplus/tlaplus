@@ -16,18 +16,18 @@ import util.WrongInvocationException;
  * LNNeg - Negation: -e LNState - State predicate. Concrete types: LNStateAST,
  * LNStateEnabled LNAction - Transition predicate. LNNext - next. ()e. Only used
  * for tableau construction. Not part of TLA
- * 
+ *
  * LNState and LNAction have tags. When constructing the tableau, we will have
  * to check whether two primitives are equal to each other, to distinguish
  * atoms. We could do it just by checking the object pointers to the Act and
  * State ASTNodes. But to make it absolutely explicit, I will use integer tags.
  * These are initialized to distinct values immediately before tableau
  * construction, used during tableau construction, and not used any more.
- * 
+ *
  * There's a little bit of a hierarchy for the LNState. That's because
  * LNStateAST (which has just an ASTNode for the state predicate) must be
  * evaluated differently from LNStateEnabled (which has ENABLED ast in it)
- * 
+ *
  * We are going to end up evaluating LNState and LNAction when we come to
  * construct the tableau graph. That's for the EAs, the EAs, and for local
  * consistency. Therefore LNState and LNAction have appropriate eval functions.
@@ -79,28 +79,34 @@ abstract class LiveExprNode {
 			return ((exp instanceof LNAction) && ((LNAction) this).getTag() == ((LNAction) exp).getTag());
 		}
 		if (this instanceof LNConj) {
-			if (!(exp instanceof LNConj))
+			if (!(exp instanceof LNConj)) {
 				return false;
+			}
 			LNConj exp1 = (LNConj) this;
 			LNConj exp2 = (LNConj) exp;
-			if (exp1.getCount() != exp2.getCount())
+			if (exp1.getCount() != exp2.getCount()) {
 				return false;
+			}
 			for (int i = 0; i < exp1.getCount(); i++) {
-				if (!exp1.getBody(i).equals(exp2.getBody(i)))
+				if (!exp1.getBody(i).equals(exp2.getBody(i))) {
 					return false;
+				}
 			}
 			return true;
 		}
 		if (this instanceof LNDisj) {
-			if (!(exp instanceof LNDisj))
+			if (!(exp instanceof LNDisj)) {
 				return false;
+			}
 			LNDisj exp1 = (LNDisj) this;
 			LNDisj exp2 = (LNDisj) exp;
-			if (exp1.getCount() != exp2.getCount())
+			if (exp1.getCount() != exp2.getCount()) {
 				return false;
+			}
 			for (int i = 0; i < exp1.getCount(); i++) {
-				if (!exp1.getBody(i).equals(exp2.getBody(i)))
+				if (!exp1.getBody(i).equals(exp2.getBody(i))) {
 					return false;
+				}
 			}
 			return true;
 		}
@@ -136,23 +142,27 @@ abstract class LiveExprNode {
 	public final boolean isGeneralTF() {
 		if (this instanceof LNAll) {
 			LiveExprNode allBody = ((LNAll) this).getBody();
-			if (allBody instanceof LNEven)
+			if (allBody instanceof LNEven) {
 				return false;
+			}
 		} else if (this instanceof LNEven) {
 			LiveExprNode evenBody = ((LNEven) this).getBody();
-			if (evenBody instanceof LNAll)
+			if (evenBody instanceof LNAll) {
 				return false;
+			}
 		} else if (this instanceof LNDisj) {
 			LNDisj lnd = (LNDisj) this;
 			for (int i = 0; i < lnd.getCount(); i++) {
-				if (!lnd.getBody(i).isGeneralTF())
+				if (!lnd.getBody(i).isGeneralTF()) {
 					return false;
+				}
 			}
 		} else if (this instanceof LNConj) {
 			LNConj lnc = (LNConj) this;
 			for (int i = 0; i < lnc.getCount(); i++) {
-				if (!lnc.getBody(i).isGeneralTF())
+				if (!lnc.getBody(i).isGeneralTF()) {
 					return false;
+				}
 			}
 		} else if (this instanceof LNNeg) {
 			return ((LNNeg) this).getBody().isGeneralTF();
@@ -288,16 +298,19 @@ abstract class LiveExprNode {
 			for (int i = 0; i < lnd.getCount(); i++) {
 				LiveExprNode elem = lnd.getBody(i).simplify();
 				if (elem instanceof LNBool) {
-					if (((LNBool) elem).b)
+					if (((LNBool) elem).b) {
 						return LNBool.TRUE;
+					}
 				} else {
 					lnd1.addDisj(elem);
 				}
 			}
-			if (lnd1.getCount() == 0)
+			if (lnd1.getCount() == 0) {
 				return LNBool.FALSE;
-			if (lnd1.getCount() == 1)
+			}
+			if (lnd1.getCount() == 1) {
 				return lnd1.getBody(0);
+			}
 			return lnd1;
 		}
 		if (this instanceof LNConj) {
@@ -306,16 +319,19 @@ abstract class LiveExprNode {
 			for (int i = 0; i < lnc.getCount(); i++) {
 				LiveExprNode elem = lnc.getBody(i).simplify();
 				if (elem instanceof LNBool) {
-					if (!((LNBool) elem).b)
+					if (!((LNBool) elem).b) {
 						return LNBool.FALSE;
+					}
 				} else {
 					lnc1.addConj(elem);
 				}
 			}
-			if (lnc1.getCount() == 0)
+			if (lnc1.getCount() == 0) {
 				return LNBool.TRUE;
-			if (lnc1.getCount() == 1)
+			}
+			if (lnc1.getCount() == 1) {
 				return lnc1.getBody(0);
+			}
 			return lnc1;
 		}
 		// for the remaining types, simply negate:
@@ -496,16 +512,18 @@ abstract class LiveExprNode {
 			return new LNAll(((LNAll) this).getBody().makeBinary());
 		} else if (this instanceof LNConj) {
 			LNConj lnc = (LNConj) this;
-			if (lnc.getCount() == 1)
+			if (lnc.getCount() == 1) {
 				return lnc.getBody(0).makeBinary();
+			}
 			int mid = lnc.getCount() / 2;
 			LNConj left = new LNConj(0);
 			LNConj right = new LNConj(0);
 			for (int i = 0; i < lnc.getCount(); i++) {
-				if (i < mid)
+				if (i < mid) {
 					left.addConj(lnc.getBody(i));
-				else
+				} else {
 					right.addConj(lnc.getBody(i));
+				}
 			}
 			return new LNConj(left.makeBinary(), right.makeBinary());
 		} else if (this instanceof LNDisj) {

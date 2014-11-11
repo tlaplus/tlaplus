@@ -69,7 +69,7 @@ public class BEGraph {
 		} else {
 			boolean unseen = start.getVisited();
 			MemObjectQueue queue = new MemObjectQueue(null); // bomb if
-																// checkpoint
+			// checkpoint
 			start.flipVisited();
 			queue.enqueue(new NodeAndParent(start, null));
 			boolean found = false;

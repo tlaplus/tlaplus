@@ -12,7 +12,7 @@ import util.Assert;
 
 /**
  * Handles evantually (<>)
- * 
+ *
  * @author Leslie Lamport, Yuan Yu, Simon Zambrovski
  * @version $Id$
  */

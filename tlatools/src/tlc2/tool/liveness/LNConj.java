@@ -80,8 +80,9 @@ class LNConj extends LiveExprNode {
 		int sz = this.conjs.size();
 		for (int i = 0; i < sz; i++) {
 			LiveExprNode item = (LiveExprNode) this.conjs.elementAt(i);
-			if (!item.eval(tool, s1, s2))
+			if (!item.eval(tool, s1, s2)) {
 				return false;
+			}
 		}
 		return true;
 	}

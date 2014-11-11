@@ -340,7 +340,9 @@ public class LiveCheck1 {
 				// if there is tableau ...
 				BTGraphNode[] srcNodes = bgraph.allNodes.getBTNode(fp1);
 				if (srcNodes == null)
+				{
 					continue; // nothing to add
+				}
 				boolean[] checkStateRes = null;
 				// Add edges induced by s1 --> s2:
 				boolean[] checkActionRes = new boolean[alen];
@@ -493,8 +495,9 @@ public class LiveCheck1 {
 	 */
 	public synchronized static void check() {
 		int slen = solutions.length;
-		if (slen == 0)
+		if (slen == 0) {
 			return;
+		}
 
 		for (int soln = 0; soln < slen; soln++) {
 			OrderOfSolution oos = solutions[soln];
@@ -581,8 +584,9 @@ public class LiveCheck1 {
 						cnt--;
 					}
 				}
-				if (cnt <= 0)
+				if (cnt <= 0) {
 					break;
+				}
 				// Check AEAction:
 				BEGraphNode nextNode1 = null;
 				BEGraphNode nextNode2 = null;
@@ -606,8 +610,9 @@ public class LiveCheck1 {
 						thirdNum++;
 						break _next;
 					}
-					if (lowNum <= num && num < thirdNum)
+					if (lowNum <= num && num < thirdNum) {
 						nextNode2 = node1;
+					}
 				}
 				if (cnt < cnt0) {
 					cycleStack.push(curNode);
@@ -775,16 +780,19 @@ public class LiveCheck1 {
 
 		// We find a counterexample if all three conditions are satisfied.
 		for (int i = 0; i < currentPEM.AEState.length; i++) {
-			if (!AEStateRes[i])
+			if (!AEStateRes[i]) {
 				return;
+			}
 		}
 		for (int i = 0; i < currentPEM.AEAction.length; i++) {
-			if (!AEActionRes[i])
+			if (!AEActionRes[i]) {
 				return;
+			}
 		}
 		for (int i = 0; i < currentOOS.promises.length; i++) {
-			if (!promiseRes[i])
+			if (!promiseRes[i]) {
 				return;
+			}
 		}
 		// This component must contain a counter-example because all three
 		// conditions are satisfied. So, print a counter-example!
@@ -792,11 +800,11 @@ public class LiveCheck1 {
 			printErrorTrace(node);
 		} catch (IOException e) {
 			MP.printError(EC.GENERAL, "printing an error trace", e); // LL
-																		// changed
-																		// call
-																		// 7
-																		// April
-																		// 2012
+			// changed
+			// call
+			// 7
+			// April
+			// 2012
 		}
 		throw new LiveException("LiveCheck: Found error trace.");
 	}
@@ -818,8 +826,9 @@ public class LiveCheck1 {
 			if (destNum == 0) {
 				destNum = checkSccs(destNode);
 			}
-			if (destNum < lowlink)
+			if (destNum < lowlink) {
 				lowlink = destNum;
+			}
 		}
 
 		if (lowlink == node.getNumber()) {
@@ -894,8 +903,9 @@ public class LiveCheck1 {
 				if ((destNum < startSecondNum) || (numSecondCom <= destNum && destNum < startThirdNum)) {
 					destNum = checkSccs1(destNode);
 				}
-				if (destNum < lowlink)
+				if (destNum < lowlink) {
 					lowlink = destNum;
+				}
 			}
 		}
 		if (lowlink == node.getNumber()) {

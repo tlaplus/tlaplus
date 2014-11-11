@@ -26,8 +26,9 @@ class LNStateEnabled extends LNState {
 
 	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
 		// Note that s2 is useless.
-		if (this.isBox && this.subscript != null)
+		if (this.isBox && this.subscript != null) {
 			return true;
+		}
 
 		ActionItemList acts = ActionItemList.Empty;
 		TLCState sfun = TLCStateFun.Empty;

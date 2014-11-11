@@ -12,14 +12,14 @@ import util.Assert;
 
 /**
  * Handles always ([])
- * 
+ *
  * @author Leslie Lamport, Yuan Yu, Simon Zambrovski
  * @version $Id$
  */
 class LNAll extends LiveExprNode {
 	/**
-     * 
-     */
+	 *
+	 */
 	private static final String ALWAYS = "[]";
 	protected LiveExprNode body;
 

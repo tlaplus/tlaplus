@@ -16,7 +16,7 @@ import util.Assert;
 
 /**
  * Handles states
- * 
+ *
  * @author Leslie Lamport, Yuan Yu, Simon Zambrovski
  * @version $Id$
  */

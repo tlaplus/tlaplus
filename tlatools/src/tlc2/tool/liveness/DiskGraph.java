@@ -156,24 +156,27 @@ public class DiskGraph {
 		this.nodeRAF.seek(curPtr);
 
 		GraphNode gnode1 = new GraphNode(stateFP, tidx, nnodes, checks);
-		if (gnode == null)
+		if (gnode == null) {
 			this.gnodes[idx] = gnode1;
+		}
 		return gnode1;
 	}
 
 	/* Get the graph node. Return null if the node is not in this. */
 	public final GraphNode getNode(long stateFP) throws IOException {
 		long ptr = this.nodePtrTbl.get(stateFP);
-		if (ptr < 0)
+		if (ptr < 0) {
 			return null;
+		}
 		return this.getNode(stateFP, -1, ptr);
 	}
 
 	/* Get the graph node. Return null if the node is not in this. */
 	public final GraphNode getNode(long fp, int tidx) throws IOException {
 		long ptr = this.nodePtrTbl.get(fp, tidx);
-		if (ptr < 0)
+		if (ptr < 0) {
 			return null;
+		}
 		return this.getNode(fp, tidx, ptr);
 	}
 
@@ -246,14 +249,16 @@ public class DiskGraph {
 			int[] node = this.nodePtrTbl.getNodes(state);
 			int cloc = NodePtrTable.getIdx(node, tidx);
 			long oldLink = NodePtrTable.getElem(node, cloc);
-			if (!isFilePointer(oldLink))
+			if (!isFilePointer(oldLink)) {
 				return oldLink;
+			}
 			NodePtrTable.putElem(node, link, cloc);
 		} else {
 			int loc = this.nodePtrTbl.getLoc(state);
 			long oldLink = this.nodePtrTbl.getByLoc(loc);
-			if (!isFilePointer(oldLink))
+			if (!isFilePointer(oldLink)) {
 				return oldLink;
+			}
 			this.nodePtrTbl.putByLoc(state, link, loc);
 		}
 		return -1;
@@ -327,11 +332,13 @@ public class DiskGraph {
 							long ploc = -1;
 							for (int j = 2; j < nodes.length; j += 3) {
 								ploc = NodePtrTable.getElem(nodes, j);
-								if (!isFilePointer(ploc))
+								if (!isFilePointer(ploc)) {
 									break;
+								}
 							}
-							if (ploc == MAX_PTR)
+							if (ploc == MAX_PTR) {
 								break;
+							}
 							curLoc = (int) (ploc - offset);
 							nodes = this.nodePtrTbl.getNodesByLoc(curLoc);
 							curState = NodePtrTable.getKey(nodes);
@@ -381,8 +388,9 @@ public class DiskGraph {
 						while (true) {
 							res.addElement(curState);
 							long ploc = this.nodePtrTbl.getByLoc(curLoc);
-							if (ploc == MAX_PTR)
+							if (ploc == MAX_PTR) {
 								break;
+							}
 							curLoc = (int) (ploc - offset);
 							curState = this.nodePtrTbl.getKeyByLoc(curLoc);
 						}

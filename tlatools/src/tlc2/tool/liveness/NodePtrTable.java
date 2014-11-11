@@ -76,16 +76,18 @@ public final class NodePtrTable {
 			}
 			for (int i = 0; i < oldElems.length; i++) {
 				long elem = oldElems[i];
-				if (elem != -1)
+				if (elem != -1) {
 					this.put(oldKeys[i], elem);
+				}
 			}
 		} else {
 			int[][] oldNodes = this.nodes;
 			this.nodes = new int[this.length][];
 			for (int i = 0; i < oldNodes.length; i++) {
 				int[] node = oldNodes[i];
-				if (node != null)
+				if (node != null) {
 					this.put(node);
+				}
 			}
 		}
 	}
@@ -112,8 +114,9 @@ public final class NodePtrTable {
 	 * overwrite the old value.
 	 */
 	public final void put(long k, long elem) {
-		if (this.count >= this.thresh)
+		if (this.count >= this.thresh) {
 			this.grow();
+		}
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
 		while (true) {
 			if (this.elems[loc] == -1) {
@@ -135,8 +138,9 @@ public final class NodePtrTable {
 	 * tidx>, overwrite the old value.
 	 */
 	public final void put(long k, int tidx, long elem) {
-		if (this.count >= this.thresh)
+		if (this.count >= this.thresh) {
 			this.grow();
+		}
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
 		while (true) {
 			int[] node = this.nodes[loc];
@@ -161,14 +165,17 @@ public final class NodePtrTable {
 
 	/* Return the value with key k. Otherwise, return -1. */
 	public final long get(long k) {
-		if (count >= thresh)
+		if (count >= thresh) {
 			this.grow();
+		}
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
 		while (true) {
-			if (this.elems[loc] == -1)
+			if (this.elems[loc] == -1) {
 				return -1;
-			if (this.keys[loc] == k)
+			}
+			if (this.keys[loc] == k) {
 				return this.elems[loc];
+			}
 			loc = (loc + 1) % this.length;
 		}
 	}
@@ -178,17 +185,20 @@ public final class NodePtrTable {
 	 * <k, tidx>. Otherwise, return -1.
 	 */
 	public final long get(long k, int tidx) {
-		if (count >= thresh)
+		if (count >= thresh) {
 			this.grow();
+		}
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
 		while (true) {
 			int[] node = this.nodes[loc];
-			if (node == null)
+			if (node == null) {
 				return -1;
+			}
 			if (getKey(node) == k) {
 				int idx = getIdx(node, tidx);
-				if (idx == -1)
+				if (idx == -1) {
 					return -1;
+				}
 				return getElem(node, idx);
 			}
 			loc = (loc + 1) % this.length;
@@ -197,14 +207,17 @@ public final class NodePtrTable {
 
 	/* Return k's location if the table contains k. Otherwise, return -1. */
 	public final int getLoc(long k) {
-		if (count >= thresh)
+		if (count >= thresh) {
 			this.grow();
+		}
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
 		while (true) {
-			if (this.elems[loc] == -1)
+			if (this.elems[loc] == -1) {
 				return -1;
-			if (this.keys[loc] == k)
+			}
+			if (this.keys[loc] == k) {
 				return loc;
+			}
 			loc = (loc + 1) % this.length;
 		}
 	}
@@ -214,16 +227,19 @@ public final class NodePtrTable {
 	 * -1.
 	 */
 	public final int getLoc(long k, int tidx) {
-		if (count >= thresh)
+		if (count >= thresh) {
 			this.grow();
+		}
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
 		while (true) {
 			int[] node = this.nodes[loc];
-			if (node == null)
+			if (node == null) {
 				return -1;
+			}
 			if (getKey(node) == k) {
-				if (getIdx(node, tidx) == -1)
+				if (getIdx(node, tidx) == -1) {
 					return -1;
+				}
 				return loc;
 			}
 			loc = (loc + 1) % this.length;
@@ -232,30 +248,36 @@ public final class NodePtrTable {
 
 	/* Return all nodes with key k. Return null if this does not contain k. */
 	public final int[] getNodes(long k) {
-		if (count >= thresh)
+		if (count >= thresh) {
 			this.grow();
+		}
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
 		while (true) {
 			int[] node = this.nodes[loc];
-			if (node == null)
+			if (node == null) {
 				return null;
-			if (getKey(node) == k)
+			}
+			if (getKey(node) == k) {
 				return this.nodes[loc];
+			}
 			loc = (loc + 1) % this.length;
 		}
 	}
 
 	/* Return k's location. Return -1 if this does not contain k. */
 	public final int getNodesLoc(long k) {
-		if (count >= thresh)
+		if (count >= thresh) {
 			this.grow();
+		}
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
 		while (true) {
 			int[] node = this.nodes[loc];
-			if (node == null)
+			if (node == null) {
 				return -1;
-			if (getKey(node) == k)
+			}
+			if (getKey(node) == k) {
 				return loc;
+			}
 			loc = (loc + 1) % this.length;
 		}
 	}
@@ -288,16 +310,19 @@ public final class NodePtrTable {
 	 */
 	public final boolean isDone(long k) {
 		int[] node = this.getNodes(k);
-		if (node == null)
+		if (node == null) {
 			return false;
-		if (node.length == 2)
+		}
+		if (node.length == 2) {
 			return true;
+		}
 		return node[3] != -2;
 	}
 
 	public final int setDone(long k) {
-		if (this.count >= this.thresh)
+		if (this.count >= this.thresh) {
 			this.grow();
+		}
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
 		while (true) {
 			int[] node = this.nodes[loc];
@@ -317,14 +342,16 @@ public final class NodePtrTable {
 	}
 
 	public final boolean isGood() {
-		if (this.nodes == null)
+		if (this.nodes == null) {
 			return true;
+		}
 		for (int i = 0; i < this.nodes.length; i++) {
 			int[] node = this.nodes[i];
 			if (node != null) {
 				for (int j = 3; j < node.length; j += 3) {
-					if (node[j] < 0)
+					if (node[j] < 0) {
 						return false;
+					}
 				}
 			}
 		}
@@ -388,8 +415,9 @@ public final class NodePtrTable {
 	public static int getIdx(int[] node, int tidx) {
 		int len = node.length;
 		for (int i = 2; i < len; i += 3) {
-			if (node[i] == tidx)
+			if (node[i] == tidx) {
 				return i;
+			}
 		}
 		return -1;
 	}

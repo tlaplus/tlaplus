@@ -119,12 +119,14 @@ public class LiveWorker extends IdThread {
 						// a SCC.
 						// Check for "bad" cycle.
 						boolean isOK = this.checkComponent(curState, curTidx, comStack);
-						if (!isOK)
+						if (!isOK) {
 							return;
+						}
 					}
 					long plowLink = dfsStack.popLong();
-					if (lowLink < plowLink)
+					if (lowLink < plowLink) {
 						plowLink = lowLink;
+					}
 					dfsStack.pushLong(plowLink);
 				} else {
 					// Assign newLink to curState:
@@ -168,8 +170,9 @@ public class LiveWorker extends IdThread {
 						}
 						dfsStack.pushLong(nextLowLink);
 					} else {
-						if (link < lowLink)
+						if (link < lowLink) {
 							lowLink = link;
+						}
 						dfsStack.pushLong(lowLink);
 					}
 				}
@@ -207,8 +210,9 @@ public class LiveWorker extends IdThread {
 			this.dg.setMaxLink(state1, tidx1);
 
 			// Get the next node of the component:
-			if (state == state1 && tidx == tidx1)
+			if (state == state1 && tidx == tidx1) {
 				break;
+			}
 
 			state1 = comStack.popLong();
 			tidx1 = comStack.popInt();
@@ -228,8 +232,9 @@ public class LiveWorker extends IdThread {
 		int tsz = com.getSize();
 		for (int ci = 0; ci < tsz; ci++) {
 			int[] nodes = com.getNodesByLoc(ci);
-			if (nodes == null)
+			if (nodes == null) {
 				continue;
+			}
 
 			state1 = NodePtrTable.getKey(nodes);
 			for (int nidx = 2; nidx < nodes.length; nidx += 3) {
@@ -275,16 +280,19 @@ public class LiveWorker extends IdThread {
 
 		// We find a counterexample if all three conditions are satisfied.
 		for (int i = 0; i < aeslen; i++) {
-			if (!AEStateRes[i])
+			if (!AEStateRes[i]) {
 				return true;
+			}
 		}
 		for (int i = 0; i < aealen; i++) {
-			if (!AEActionRes[i])
+			if (!AEActionRes[i]) {
 				return true;
+			}
 		}
 		for (int i = 0; i < plen; i++) {
-			if (!promiseRes[i])
+			if (!promiseRes[i]) {
 				return true;
+			}
 		}
 		// This component must contain a counter-example because all three
 		// conditions are satisfied. So, print a counter-example!
@@ -362,8 +370,9 @@ public class LiveWorker extends IdThread {
 						cnt--;
 					}
 				}
-				if (cnt <= 0)
+				if (cnt <= 0) {
 					break;
+				}
 
 				// Check AEAction:
 				long nextState1 = 0, nextState2 = 0;
@@ -596,8 +605,9 @@ public class LiveWorker extends IdThread {
 			while (true) {
 				// Get next OOS, and work on it:
 				int idx = getNextOOS();
-				if (idx == -1 || hasErrFound())
+				if (idx == -1 || hasErrFound()) {
 					break;
+				}
 
 				this.oos = LiveCheck.solutions[idx];
 				this.dg = LiveCheck.dgraphs[idx];
@@ -613,8 +623,8 @@ public class LiveWorker extends IdThread {
 			}
 		} catch (Exception e) {
 			MP.printError(EC.GENERAL, "checking liveness", e); // LL changed
-																// call 7 April
-																// 2012
+			// call 7 April
+			// 2012
 			// Assert.printStack(e);
 			return;
 		}

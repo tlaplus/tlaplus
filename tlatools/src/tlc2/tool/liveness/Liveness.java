@@ -113,8 +113,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 						}
 						LiveExprNode res = astToLive(tool, opDef.getBody(), con1);
 						int level = res.getLevel();
-						if (level > 2)
+						if (level > 2) {
 							return res;
+						}
 						return astToLive(tool, expr, con, level);
 					} catch (Exception e) { /* SKIP */
 					}
@@ -145,8 +146,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 					res.addDisj(kid);
 				}
 				int level = res.getLevel();
-				if (level > 2)
+				if (level > 2) {
 					return res;
+				}
 				return astToLive(tool, expr, con, level);
 			} catch (Exception e) {
 				// Assert.printStack(e);
@@ -170,8 +172,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 					res.addConj(kid);
 				}
 				int level = res.getLevel();
-				if (level > 2)
+				if (level > 2) {
 					return res;
+				}
 				return astToLive(tool, expr, con, level);
 			} catch (Exception e) {
 				// Assert.printStack(e);
@@ -191,8 +194,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				lnConj.addConj(kid);
 			}
 			int level = lnConj.getLevel();
-			if (level > 2)
+			if (level > 2) {
 				return lnConj;
+			}
 			return astToLive(tool, expr, con, level);
 		}
 		case OPCODE_dl: // DisjList
@@ -203,8 +207,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				lnDisj.addDisj(kid);
 			}
 			int level = lnDisj.getLevel();
-			if (level > 2)
+			if (level > 2) {
 				return lnDisj;
+			}
 			return astToLive(tool, expr, con, level);
 		}
 		case OPCODE_fa: // FcnApply
@@ -240,15 +245,17 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			LiveExprNode conj2 = new LNConj(new LNNeg(guard), e2);
 			LiveExprNode res = new LNDisj(conj1, conj2);
 			int level = res.getLevel();
-			if (level > 2)
+			if (level > 2) {
 				return res;
+			}
 			return astToLive(tool, expr, con, level);
 		}
 		case OPCODE_lnot: {
 			LiveExprNode lnArg = astToLive(tool, (ExprNode) args[0], con);
 			int level = lnArg.getLevel();
-			if (level > 2)
+			if (level > 2) {
 				return new LNNeg(lnArg);
+			}
 			return astToLive(tool, expr, con, level);
 		}
 		case OPCODE_implies: {
@@ -357,8 +364,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	static TBGraphNode findOrCreateNode(Vect allnodes, TBPar par) {
 		for (int i = 0; i < allnodes.size(); i++) {
 			TBGraphNode gn = (TBGraphNode) allnodes.elementAt(i);
-			if (par.equals(gn.getPar()))
+			if (par.equals(gn.getPar())) {
 				return gn;
+			}
 		}
 		TBGraphNode gn = new TBGraphNode(par);
 		allnodes.addElement(gn);
@@ -486,8 +494,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				LiveExprNode ln = astToLive(tool, (ExprNode) checks[i].pred, checks[i].con);
 				lnd.addDisj(new LNNeg(ln));
 			}
-			if (lnc.getCount() == 0)
+			if (lnc.getCount() == 0) {
 				return lnd;
+			}
 			lnc.addConj(lnd);
 		}
 		return lnc;
@@ -637,8 +646,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * returns an array of index of the checks in the bin.
 	 */
 	static int addToBin(LiveExprNode check, Vect bin) {
-		if (check == null)
+		if (check == null) {
 			return -1;
+		}
 		int len = bin.size();
 		int idx;
 		for (idx = 0; idx < len; idx++) {

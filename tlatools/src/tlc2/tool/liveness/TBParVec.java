@@ -20,8 +20,9 @@ public class TBParVec extends Vect {
 	/* This method tests whether a particle is in a list of other particles */
 	public final boolean contains(TBPar par) {
 		for (int i = 0; i < this.size(); i++) {
-			if (par.equals(this.parAt(i)))
+			if (par.equals(this.parAt(i))) {
 				return true;
+			}
 		}
 		return false;
 	}
@@ -30,8 +31,9 @@ public class TBParVec extends Vect {
 	public final TBParVec union(TBParVec ps) {
 		TBParVec res = new TBParVec(this.size() + ps.size());
 		for (int i = 0; i < this.size(); i++) {
-			if (!ps.contains(this.parAt(i)))
+			if (!ps.contains(this.parAt(i))) {
 				res.addElement(this.parAt(i));
+			}
 		}
 		for (int i = 0; i < ps.size(); i++) {
 			res.addElement(ps.parAt(i));

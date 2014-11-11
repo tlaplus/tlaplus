@@ -80,8 +80,9 @@ class LNDisj extends LiveExprNode {
 		int sz = disjs.size();
 		for (int i = 0; i < sz; i++) {
 			LiveExprNode item = (LiveExprNode) disjs.elementAt(i);
-			if (item.eval(tool, s1, s2))
+			if (item.eval(tool, s1, s2)) {
 				return true;
+			}
 		}
 		return false;
 	}

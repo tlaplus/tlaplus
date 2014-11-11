@@ -70,8 +70,9 @@ public class GraphNode {
 		int len = is.length;
 		for (int i = 0; i < len; i++) {
 			int pos = slen + alen * nodeIdx + is[i];
-			if (!this.checks.get(pos))
+			if (!this.checks.get(pos)) {
 				return false;
+			}
 		}
 		return true;
 	}
