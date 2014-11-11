@@ -1388,10 +1388,7 @@ public class ResourceHelper
      */
     public static SemanticNode[] getUsesOfSymbol(SymbolNode symbol, SemanticNode module)
     {
-        Vector<SemanticNode> found = new Vector<SemanticNode>(20); // For some reason, Eclipse doesn't let me use a List here.
-        // If I write
-        // List found = new List(20);
-        // Eclipse mysteriously complains that it can't find the second "List".
+        Vector<SemanticNode> found = new Vector<SemanticNode>(20); 
         innerGetUsesOfSymbol(symbol, module, found);
         SemanticNode[] value = new SemanticNode[found.size()];
         for (int i = 0; i < value.length; i++)

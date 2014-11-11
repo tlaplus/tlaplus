@@ -1067,7 +1067,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * excluding inner ASSUME/PROVE assumptions.
          */
         Vector<SemanticNode> assumes = new Vector<SemanticNode>();
-    
+
         /**
          * Is set to the goal of the selected step or theorem, which
          * may come from the context.  It is set to null if the goal
@@ -4238,33 +4238,49 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // finding the appropriate renamings.  This seems to be a
                 // problem that can be resolved only by adding to a SubstInNode
                 // a pointer to the INSTANCE that created it.
-                Renaming instSubs ; 
-                if (sn instanceof SubstInNode) {
-                    instSubs = new Renaming() ;
-                    while (sn instanceof SubstInNode) {
-                        Renaming rn = substInNodeToRenaming((SubstInNode) sn, nodeRep) ;
-                        if (rn == null) {
-                            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                                    "Decompose Proof Command",
-                                    "Decomposing an instantiated definition whose\n"
-                                    + "instantiation cannot be handled.");
-                            return null;
+                InstanceSubstitution instSubs = nodeRepArg.instantiationSubstitutions.clone(); 
+                while (sn instanceof SubstInNode) {
+                    // LL-XXXXXX  The following call is wrong because decomp.definedOp
+                    // is something like foo!bar!op and we need it to be the actual
+                    // prefix of the occurrence of that operator, which could be something
+                    // like foo(x+y)!bar(z, w)!.  This has to be obtained from 
+                    // nodeRepArg--though we may need to strip a prime from it.  (Or
+                    // has that already been done at this point?)  
+                    //
+                    // PROBLEM: it looks like we may have to do some renaming of bound
+                    // variables before we do any renaming of user-defined operators.
+                    // For example, suppose we are decomposing
+                    //    Foo(\E x : P(x))!Op
+                    // where 
+                    //    Foo!Op(a) == \E x : a => G(x)
+                    // Then it looks like we want to rename the x in the argument
+                    // of the expression before doing the definition expansion.
+                    // (We could rename the x in the def of Foo!Op, but that wouldn't
+                    // suffice if we are moving the assumption inside a later NEW x.)
+                    // Or we could ignore the problem and simply let it produce
+                    // something that doesn't parse.  It's rare enough that we should
+                    // be able to live with that bug.
+                    //   
+                    instSubs = substInNodeToInstanceSub(instSubs, decomp.definedOp, (SubstInNode) sn) ;
+                    Renaming rn = substInNodeToRenaming((SubstInNode) sn, nodeRep) ;
+                    if (rn == null) {
+                        MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                                "Decompose Proof Command",
+                                "Decomposing an instantiated definition whose\n"
+                                + "instantiation cannot be handled.");
+                        return null;
 
-                        }
-                        instSubs = instSubs.addAll(rn) ;
-                        sn = ((SubstInNode)sn).getBody() ;                        
                     }
- 
+                    // instSubs = instSubs.addAll(rn) ;
+                    sn = ((SubstInNode)sn).getBody() ;                        
                 }
-                else {
-                    instSubs = nodeRepArg.instantiationSubstitutions ;
-                }
+                
                 
                 // LL-XXXX We have to set instantiatedNamePrefixD to the
                 // concatenation of nodeRepArg.instantiatedNamePrefix
                 // and all the text through the last "!" in the operator's
                 // name.  Set instNamePrefix to that value.
-                String instNamePrefix = nodeRepArg.instantiatedNamePrefix ;
+                String instNamePrefix = null ; //nodeRepArg.instantiatedNamePrefix ;
                 String restOfName = decomp.definedOp ;
                 while (restOfName.indexOf("!") != -1) {
                     instNamePrefix = instNamePrefix + 
@@ -4815,7 +4831,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         addDeclaredSymbols(prevDeclared, originalNodeRep);
 
         // Added by LL on 10 Feb 2013 because formulas that are being decomposed
-        // may wind up added in the scope later NEW declarations.
+        // may wind up added in the scope of later NEW declarations.
         addSymbolsDeclaredLater(prevDeclared, originalNodeRep, false);
 
         // Set rename to a new Renaming object containing the renamings
@@ -4875,6 +4891,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     }
     
     /**
+     * LL-XXXXX Remove this and have it create an InstanceSubstitution 
      * Creates a Renaming object that represents the renamings
      * of the SubstInNode node, where the substituting expression
      * nodes are assumed to be subexpressions of the semantic node
@@ -4883,7 +4900,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * Returns null if any of the expressions being substituted
      * for identifiers are multi-line, or if it fails for any
      * other reason because the code doesn't know what to do with
-     * some substitution the node.
+     * some substitution node.
      * 
      * @param node
      * @param currRenaming
@@ -4897,7 +4914,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // Construct the arguments to substituteInNodeText for performing
         // the substitutions in contextNodeRep.instantiationSubstitutions.
         
-        Renaming contextRenaming = contextNodeRep.instantiationSubstitutions ;
+        Renaming contextRenaming = null ; // contextNodeRep.instantiationSubstitutions ;
         int clen = contextRenaming.identifiers.size() ;
         FormalParamNode[] formalParams = new FormalParamNode[clen] ;
         SemanticNode[] argNodes = new SemanticNode[clen] ;
@@ -4920,6 +4937,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             // As a Kludge to connect them, we construct a FormalParamNode
             // from an OpDeclNode and hope that it looks enough like one
             // to work.
+            // LL-XXXXXX this couldn't possibly work because substituteInNodeText
+            // looks for FormalParamNodes in the semantic node to do the 
+            // substitution, and those faux FormalParamNodes aren't going
+            // to be in the semantic tree.
             OpDeclNode opdec = subst[i].getOp() ;
             FormalParamNode fpn =
                 new FormalParamNode(opdec.getName(), 
@@ -4936,7 +4957,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             
             // LL-XXXX This is wrong because sn is the semantic node
             // of an expression in the INSTANCE statement, so it's
-            // not a subnode of contextNodeRep.
+            // not a subnode of contextNodeRep.  (This comment seems
+            // to be obsolete, and the problem fixed.)
             IDocument idoc = 
                     moduleNameToIDocument(sn.getLocation().source());
             NodeRepresentation randomNodeRep;
@@ -4970,6 +4992,25 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         return result ;
     }
 
+    /**
+     * Assume that we are decomposing a definition of an operator
+     * named opName in a context with isub the InstanceSubstitution,
+     * 
+     * @param isub
+     * @param opName
+     * @param sn
+     * @return
+     */
+    InstanceSubstitution substInNodeToInstanceSub(
+            InstanceSubstitution isub,
+            String opName,
+            SubstInNode sn
+            ) {
+        InstanceSubstitution result = isub ;
+        
+        return result ;
+    }
+    
     /**
      * Adds to `renaming' all the renamings to bound identifiers in expr that
      * are necessary to eliminate clashes with names in the set prevDeclared.
@@ -5265,8 +5306,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // nodes, not the strings that represent those nodes (which
         // could be the same string for both of them).
         //
-        Renaming instantiationSubstitutions = new Renaming() ;
-        String   instantiatedNamePrefix = "" ;
+        InstanceSubstitution instantiationSubstitutions = new InstanceSubstitution() ;
         
         // The nodeType is the type of node.
         private static final int EXPR_NODE = 0; // An OpApplNode
@@ -5849,7 +5889,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             }
 
             result.instantiationSubstitutions = this.instantiationSubstitutions.clone() ;
-            result.instantiatedNamePrefix = this.instantiatedNamePrefix ;
+            // result.instantiatedNamePrefix = this.instantiatedNamePrefix ;
             result.nodeType = this.nodeType;
             result.nodeSubtype = this.nodeSubtype;
             // result.stepName = this.stepName ;
@@ -5996,6 +6036,149 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
             return val;
         }
+    }
+    
+    /**
+     * An InstanceSubstitution object provides the necessary data to handle an
+     * expression obtained by expanding a definitios imported into a module by 
+     * instantiation.
+     * 
+     * In general, a definition in the current module comes from by a usually empty
+     * sequence of instantiations.  When expanding the definition, two kinds of
+     * substitutions may have to be performed when that sequence is non-empty.
+     * 
+     * - The WITH clause of an instantiation specifies substitutions of expressions
+     *   for module parameters.  
+     *   
+     * - Instantiation with renaming requires renaming of user-defined operators
+     *   that appear in the body of the definition expansion.  For example,
+     *   suppose an operator Op is defined in module M terms of operator
+     *   DOp.  If an occurrence of Foo(x+y,z)!Bar!Op(a) occurring in the current
+     *   module is expanded, then each instance of DOp in the definition of Op
+     *   must be replaced by Foo(x+y,z)!Bar!DOp.
+     *   
+     * The following issues arise in implementing these substitutions.
+     * 
+     * - When a definition is imported by a sequence of instantiations, these two
+     *   kinds of substitutions may have to be made in the WITH expressions
+     *   in all the INSTANCE statements in the sequence.  The substitution
+     *   for module parameters in these WITH expressions is straightforward,
+     *   indicated in the semantic tree by a sequence of SubstInNode objects. 
+     *   (For example, it need not be done in the first WITH expressions
+     *   in the first SubstInNode in the sequence.)  However, the substitution 
+     *   for user-defined operators necessitated by renaming is not straightforward.  
+     *   Consider the expression Foo(x+y,z)!Bar!Op(a).  We know that the sequence
+     *   of INSTANCEs importing the definition of Foo!Bar!Op contains two instantiations
+     *   with renaming.  It could contain any number of INSTANCEs with WITH
+     *   clauses, which is the number of SubstInNode objects in the imported
+     *   definition.  A user-defined operator POp appearing in one of those
+     *   WITH clauses might have to be replaced by any one of these three possible
+     *   names:
+     *   
+     *      POp    Foo(x+y,z)!POp   Foo(x+y,z)!Bar!POp
+     *   
+     *   The only way to determine which one it is is to look up all three of these
+     *   names in the current module and choose the one whose semantic node
+     *   leads to the same definition as does the semantic node of the occurrence
+     *   of POp in the SubstInNode.  If its definition, or one of the INSTANCEs
+     *   in the importing sequence is LOCAL, then no expansion of the expression
+     *   Foo(x+y,z)!Bar!Op(a) in the current module is possible.  
+     *   
+     *   NOTE: TLAPS has this problem when expanding definitions.  If there is no 
+     *   name for the importation of POp into the current module, TLAPS gives 
+     *   it an untypable name--something like Foo!POp_$--that indicates what
+     *   name the operator would have if its definition/importation were not LOCAL.
+     *   When TLAPS is modified to use SANY's parse tree instead of its own parser,
+     *   then it will not be able to provide this kind of name unless SANY is
+     *   modified to add the necessary information.  It's probably not worth
+     *   doing this, since a name like POp_$ is probably good enough.
+     *   
+     *   WARNING: This issue is an example of why a program should not be implemented
+     *   incrementally, by handling the "important" cases first.  Probably about
+     *   .01% of the definitions that TLAPS will have to expand come from instantiation.
+     *   However, all definition expansion has to be able to handle that .01% 
+     *   correctly, so the correct handling it has to be designed in from the beginning
+     *   because it will be much harder to add it as an afterthought.
+     *   
+     * - 
+     *  
+     * @author lamport
+     *
+     */
+    public class InstanceSubstitution {
+        
+        /**
+         * Invariant: params.size() = substs.size()
+         * 
+         * params.elementAt(i) = opdecl, substs.elementAt(i) = expr
+         * denotes the substitution of the string expr for the OpDeclNode opdecl,
+         * where opdecl is a CONSTANT or VARIABLE declared in an instantiated model.
+         */
+        Vector<OpDeclNode> params = new Vector<OpDeclNode>();
+        Vector<String> substs = new Vector<String>() ;
+        
+        /**
+         * prefix is a string such as Foo(x+y)!Bar! indicating that any operator Op
+         * defined in the instantiated module is known to the instantiating module
+         * as Foo(x+y)!Bar!Op.
+         */
+        String prefix = "";
+        
+        /**
+         * If this.prefix equals "Foo(x+y)!Bar!", then this.defPrefixes() equals
+         * the 3-element array {"", "Foo!", "Foo!Bar!"}, then an operator Op that
+         * appears in an expression substituted for one of the parameters in params
+         * could be imported into the instantiating module as Op, Foo!Op, or Foo!Bar!Op.
+         */
+        String[] defPrefixes() { 
+            String[] split = prefix.split("!") ;
+            String[] result = new String[split.length+1] ;
+            for (int i=0 ; i < result.length; i++) {
+                if (i == 0) {
+                    result[i] = "" ;
+                 }
+                 else {
+                     result[i] = result[i-1] + split[i-1] ;
+                 }
+                if (result[i].indexOf("(") != -1) {
+                    result[i] = result[i].substring(0, result[i].indexOf("(")) ;
+                }
+                if (i != 0) {
+                    result[i] = result[i] + "!" ;
+                 }
+            }
+            return result ;
+        }
+        
+        /**
+         * If this.prefix equals "Foo(x+y)!Bar!", then this.subPrefixes() equals
+         * the 3-element array {"", "Foo(x+y)!", "Foo(x+y)!Bar!"}, then an operator Op that
+         * appears in an expression substituted for one of the parameters in params
+         * should be replaced by Op, Foo(x+y)!Op, or Foo(x+y)!Bar!Op.
+         */
+        String[] subPrefixes() {
+            String[] split = prefix.split("!") ;
+            String[] result = new String[split.length+1] ;
+            for (int i=0 ; i < result.length; i++) {
+                if (i == 0) {
+                   result[i] = "" ;
+                }
+                else {
+                    result[i] = result[i-1] + split[i-1] + "!" ;
+                }
+            }
+            return result ;
+        }
+        
+      public InstanceSubstitution clone() {
+          InstanceSubstitution result = new InstanceSubstitution() ;
+          for (int i=0 ; i < this.params.size() ; i++) {
+              result.params.add(this.params.elementAt(i)) ;
+              result.substs.add(this.substs.elementAt(i)) ; 
+          }
+          result.prefix = this.prefix ;
+          return result ;
+      }
     }
 
     /**
@@ -6178,7 +6361,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @author lamport
      * 
      */
-    static class Decomposition {
+    class Decomposition {
         /**
          * The type of decomposition. Its value is any of the first six possible
          * nodeSubtype values of a NodeRepresentation object. This is redundant
@@ -6224,16 +6407,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         Renaming renaming = new Renaming();
 
         /**
-         * If instantiationSubstitutionsD and instantiatedNamePrefixD
-         * are non-null, then they are the values that the 
-         * instantiationSubstitutions and instantiatedNamePrefix fields
-         * should equal for the NodeRepresentations of the decomposition's
-         * children.  If null, then those fields of the children should
-         * be the same as the NodeRepresentation containing this
-         * Decomposition.
+         * The instantiationSubstitutions field of the decomposition's
+         * children's NodeRepresentation objects.  If definedOpRep = null
+         * or definedOpRep is not an operator imported by instantiation, then
+         * this will be the as the instantiationSubstitutions field of
+         * the NodeRepresentation whose decomposition field this Decomposition 
+         * object is.
          */
-        Renaming instantiationSubstitutionsD = new Renaming() ;
-        String   instantiatedNamePrefixD = "" ;
+        InstanceSubstitution instantiationSubstitutionsD = new InstanceSubstitution() ;
+        // String   instantiatedNamePrefixD = "" ;
 
         /**
          * If definedOp is not null, then this is the name of the module
@@ -6301,8 +6483,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             
             result.instantiationSubstitutionsD =
                         this.instantiationSubstitutionsD.clone() ;
-            result.instantiatedNamePrefixD = 
-                        this.instantiatedNamePrefixD ;            
+//            result.instantiatedNamePrefixD = 
+//                      this.instantiatedNamePrefixD ;            
             result.type = this.type;
             result.definedOp = this.definedOp;
             result.formalParams = this.formalParams;
