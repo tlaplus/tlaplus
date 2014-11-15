@@ -157,7 +157,8 @@
  *    substitutions will never have to be done in an expression that is substituted
  *    for some identifier.  One way to fix this would be to make a NodeRepresentation
  *    maintain with its NodeText the information about all substitutions that have
- *    been done in NodeText.
+ *    been done in NodeText.  But that's just a vague idea and it's not clear how
+ *    easy it would be to do it, if it's even possible.
  * 
  * HOW THE COMMAND WORKS
  * 
@@ -4993,20 +4994,35 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     }
 
     /**
-     * Assume that we are decomposing a definition of an operator
-     * named opName in a context with isub the InstanceSubstitution,
+     * Assume that we are decomposing a use opUse of a user-defined operator
+     * in a context with isub the InstanceSubstitution.
      * 
      * @param isub
-     * @param opName
+     * @param opUse
      * @param sn
      * @return
      */
     InstanceSubstitution substInNodeToInstanceSub(
             InstanceSubstitution isub,
-            String opName,
+            String opUse,
             SubstInNode sn
             ) {
         InstanceSubstitution result = isub ;
+        
+        return result ;
+    }
+    
+    /**
+     * The NodeTextRep obtained by performing the substitutions indicated by
+     * isub in the nodeText and mapping fields of nodeRep.
+     * 
+     * @param isub
+     * @param nodeRep
+     * @return
+     */
+     NodeTextRep instanceSubstitute(
+            InstanceSubstitution isub, NodeRepresentation nodeRep) {
+        NodeTextRep result = (new NodeTextRep(nodeRep.nodeText, nodeRep.mapping)).clone() ;
         
         return result ;
     }
@@ -6118,9 +6134,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         Vector<String> substs = new Vector<String>() ;
         
         /**
-         * prefix is a string such as Foo(x+y)!Bar! indicating that any operator Op
-         * defined in the instantiated module is known to the instantiating module
-         * as Foo(x+y)!Bar!Op.
+         * prefix is a string such as Foo(x+y)!Bar! indicating that any use Op(...)
+         * of an operator Op defined in the instantiated module is instantiated 
+         * as the expression Foo(x+y)!Bar!Op(...) in the instantiating module.
          */
         String prefix = "";
         
