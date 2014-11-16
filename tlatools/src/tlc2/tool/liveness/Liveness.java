@@ -57,7 +57,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * the predicate body with []p. For the moment, we require that arguments to
 	 * predicates be computable from its context.
 	 */
-	static LiveExprNode astToLive(Tool tool, ExprNode expr, Context con) {
+	private static LiveExprNode astToLive(Tool tool, ExprNode expr, Context con) {
 		switch (expr.getKind()) {
 		case OpApplKind: {
 			OpApplNode expr1 = (OpApplNode) expr;
@@ -327,7 +327,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * it. Read MP for details. It returns a list of all the nodes in the
 	 * tableau graph.
 	 */
-	static TBGraph constructTableau(LiveExprNode tf, int idx) {
+	private static TBGraph constructTableau(LiveExprNode tf, int idx) {
 		TBGraph allnodes = new TBGraph(tf);
 		TBPar initTerms = new TBPar(1);
 		initTerms.addElement(tf);
@@ -361,7 +361,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * particle in that list, or creates a new one and puts it in the list. If
 	 * it does create a node, then it also sticks that node into allnodes.
 	 */
-	static TBGraphNode findOrCreateNode(Vect allnodes, TBPar par) {
+	private static TBGraphNode findOrCreateNode(Vect allnodes, TBPar par) {
 		for (int i = 0; i < allnodes.size(); i++) {
 			TBGraphNode gn = (TBGraphNode) allnodes.elementAt(i);
 			if (par.equals(gn.getPar())) {
@@ -378,14 +378,14 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * single term), returns a list of all particles containing those terms.
 	 * It's a recursive tree search.
 	 */
-	static TBParVec particleClosure(TBPar terms) {
+	private static TBParVec particleClosure(TBPar terms) {
 		TBPar positive_closure = terms.positiveClosure();
 		Vect alphas = positive_closure.alphaTriples();
 		Vect betas = positive_closure.betaTriples();
 		return particleClosure(terms, alphas, betas);
 	}
 
-	static TBParVec particleClosure(TBPar terms, Vect alphas, Vect betas) {
+	private static TBParVec particleClosure(TBPar terms, Vect alphas, Vect betas) {
 		// if terms is not locally consistent, then terminate.
 		if (!terms.isLocallyConsistent()) {
 			return new TBParVec(0);
@@ -434,7 +434,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		return particleClosureBeta(terms1, alphas, betas);
 	}
 
-	static TBParVec particleClosureBeta(TBPar terms, Vect alphas, Vect betas) {
+	private static TBParVec particleClosureBeta(TBPar terms, Vect alphas, Vect betas) {
 		// try a beta expansion
 		for (int i = 0; i < terms.size(); i++) {
 			LiveExprNode ln = terms.exprAt(i);
@@ -470,7 +470,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * Parse the temporals and impliedTemporals given in the config file. It
 	 * returns null if there is nothing to check.
 	 */
-	public static LiveExprNode parseLiveness(Tool tool) {
+	private static LiveExprNode parseLiveness(Tool tool) {
 		Action[] fairs = tool.getTemporals();
 		LNConj lnc = new LNConj(fairs.length);
 		for (int i = 0; i < fairs.length; i++) {
@@ -645,7 +645,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * Given a list of checks, ensures that the checks are in the bin. It
 	 * returns an array of index of the checks in the bin.
 	 */
-	static int addToBin(LiveExprNode check, Vect bin) {
+	private static int addToBin(LiveExprNode check, Vect bin) {
 		if (check == null) {
 			return -1;
 		}
@@ -663,7 +663,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		return idx;
 	}
 
-	static int[] addToBin(Vect checks, Vect bin) {
+	private static int[] addToBin(Vect checks, Vect bin) {
 		int[] index = new int[checks.size()];
 		for (int i = 0; i < checks.size(); i++) {
 			LiveExprNode check = (LiveExprNode) checks.elementAt(i);
@@ -678,7 +678,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * tests. This method classifies an expression into <>[]act, []<>act,
 	 * []<>state, temporal formulas (without actions), or erroneous things.
 	 */
-	static void classifyExpr(LiveExprNode ln, OSExprPem pem) {
+	private static void classifyExpr(LiveExprNode ln, OSExprPem pem) {
 		if (ln instanceof LNEven) {
 			LiveExprNode ln1 = ((LNEven) ln).getBody();
 			if (ln1 instanceof LNAll) {

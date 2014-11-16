@@ -126,7 +126,7 @@ public class BEGraph {
 		return buf.toString();
 	}
 
-	static class NodeAndParent {
+	private static class NodeAndParent {
 		BEGraphNode node;
 		BEGraphNode parent;
 
