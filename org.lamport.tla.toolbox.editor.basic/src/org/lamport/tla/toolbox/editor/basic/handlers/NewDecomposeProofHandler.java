@@ -159,6 +159,47 @@
  *    maintain with its NodeText the information about all substitutions that have
  *    been done in NodeText.  But that's just a vague idea and it's not clear how
  *    easy it would be to do it, if it's even possible.
+ *    
+ *  - Major implementation problem realized by LL on 16 Nov 2014.
+ *    The semantic tree for the expression  a ++ b  produced by SANY does not
+ *    contain the necessary information to find the "++" in the source.  In general,
+ *    The OpApplNode object for an expression  Op(exp1, ... , expN)  does not
+ *    contain any pointer to the "Op" in the source.  It contains only a pointer
+ *    to the OpDef node for Op, which contains the name "++", but not the pointer
+ *    to that particular use of Op.  (For a built-in operator like \cup with synonyms,
+ *    the OpDef node probably contains the name used in that particular occurrence.)
+ *    This makes it impossible to perform textual substitution correctly for Op 
+ *    in all cases.  And for expanding definitions instantiated with renaming,
+ *    we may have to substitute something like Foo!Op for Op.  For the DecomposeProof
+ *    command to be able to decompose instantiated definitions, we have two choices:
+ *      1. Re-implement everything so instead of trying to preserve the formatting
+ *         of the user input, we perform the necessary substitutions in a clone
+ *         of the appropriate part of the semantic tree, and pretty-print the resulting
+ *         formulas directly from the new semantic tree.  This has two advantages:
+ *          - It will greatly simplify the implementation of the command and will
+ *            remove most of its limitations.
+ *          - Having a pretty-printer will make it possible to add some sort
+ *            of Toolbox commands to reformat expressions.
+ *         It has three disadvantages:
+ *          - It requires implementing a pretty-printer, which is a fair amount
+ *            of work.  
+ *          - It also requires making one or two (simple) changes to SANY to
+ *            provide the information needed to pretty-print the semantic
+ *            trees created by instantiation with renaming.
+ *          - It makes the decomposed proof's formulas harder for the user
+ *            to recognize.  However, the user now has to deal with TLAPS's
+ *            reformatting of the formulas when it displays failed obligations.
+ *            And we can use the same pretty-printing algorithm as TLAPS.
+ *            
+ *       2. Kludge something that works most of the time.  This would be done
+ *          by searching for the operator name Op in the text of the expression
+ *          Op(...).  A quick and dirty approach would cover all except weird cases
+ *          like  "++" ++ "abc".  The major restriction is that it would not handle
+ *          parametrized renaming--e.g., Foo(a+b)!Op(...)--since that would requiring
+ *          being able to find the "a+b", which would require modifying SANY.
+ *          This is ugly, but the easiest approach.
+ *         
+ *    
  * 
  * HOW THE COMMAND WORKS
  * 
@@ -3892,9 +3933,17 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                            "CASE ");
                 } 
                 else {
-                  // 
+                  // Bug fixed 16 Nov 2014: Forgot that we need to prepend
+                  // /\ to assumpArrayAsFormula if it is not a conjunction list.
+                  // Rather than looking to see if we can just modify asssumpArrayAsFormula
+                  // outside the loop, we re-add the /\ if necessary for each
+                  // proof step.
+                    String[] aarrayAsForm = assumpArrayAsFormula.clone() ;
+                    if (assumpArrayAsFormula.length == 1) {
+                        aarrayAsForm[0] = "/\\ " + aarrayAsForm[0] ;
+                    }
                     step = prependToStringArray(
-                            concatStringArrays(assumpArrayAsFormula, 
+                            concatStringArrays(aarrayAsForm, 
                                                prependToStringArray(
                                                      lastChildNode.primedNodeText(),
                                                      "/\\ "))  ,
@@ -4260,11 +4309,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     // suffice if we are moving the assumption inside a later NEW x.)
                     // Or we could ignore the problem and simply let it produce
                     // something that doesn't parse.  It's rare enough that we should
-                    // be able to live with that bug.
+                    // be able to live with that bug.  The same problem exists even without
+                    // instantiation and was present in the original DecomposeProof command.
+                    // We lived with it there, we can live with it in the current version.
                     //   
                     instSubs = substInNodeToInstanceSub(instSubs, decomp.definedOp, (SubstInNode) sn) ;
-                    Renaming rn = substInNodeToRenaming((SubstInNode) sn, nodeRep) ;
-                    if (rn == null) {
+                    // Renaming rn = substInNodeToRenaming((SubstInNode) sn, nodeRep) ;
+                    if (instSubs == null) {
                         MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                                 "Decompose Proof Command",
                                 "Decomposing an instantiated definition whose\n"
@@ -5014,14 +5065,18 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     
     /**
      * The NodeTextRep obtained by performing the substitutions indicated by
-     * isub in the nodeText and mapping fields of nodeRep.
+     * isub in the nodeText and mapping fields of nodeRep.  The expression
+     * nodeRep.semanticNode comes from a module that is imported into the
+     * current module with renaming described that contains isub.prefix as
+     * a prefix and is a prefix of isub.prefix + newPrefix.
      * 
      * @param isub
+     * @param newPrefix
      * @param nodeRep
      * @return
      */
      NodeTextRep instanceSubstitute(
-            InstanceSubstitution isub, NodeRepresentation nodeRep) {
+            InstanceSubstitution isub, String newPrefix, NodeRepresentation nodeRep) {
         NodeTextRep result = (new NodeTextRep(nodeRep.nodeText, nodeRep.mapping)).clone() ;
         
         return result ;
