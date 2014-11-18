@@ -15,13 +15,13 @@ public class WindowUtils
      * @param window a window to be checked
      * @return true, if the window is considered to be a root window
      */
-    public static boolean isRootWindow(IWorkbenchWindow window)
-    {
-        // HACK: note this could change in future
-        if (window instanceof WorkbenchWindow  && ((WorkbenchWindow)window).getNumber() == 1 ) 
-        {
-            return true;
-        }
-        return false;
-    }
+//    public static boolean isRootWindow(IWorkbenchWindow window)
+//    {
+//        // HACK: note this could change in future
+//        if (window instanceof WorkbenchWindow  && ((WorkbenchWindow)window).getNumber() == 1 ) 
+//        {
+//            return true;
+//        }
+//        return false;
+//    }
 }

@@ -1,38 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="TLA+ Toolbox 3.6" sequenceNumber="56">
+<?pde version="3.8"?><target name="TLA+ Toolbox 3.6" sequenceNumber="60">
 <locations>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.2.e42x-RELEASE-20130220-1400"/>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.3.e42x-RELEASE-20130625-1400"/>
+<unit id="org.aspectj.weaver" version="1.7.3.20130613144500-a"/>
 <repository location="http://download.eclipse.org/tools/ajdt/42/update"/>
 </location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.swtbot.feature.group" version="2.1.0.201302221524"/>
-<unit id="org.eclipse.swtbot.eclipse.gef.feature.group" version="2.1.0.201302221524"/>
-<unit id="org.eclipse.swtbot.forms.feature.group" version="2.1.0.201302221524"/>
-<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.1.0.201302221524"/>
-<repository location="http://download.eclipse.org/technology/swtbot/releases/latest/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.equinox.executable" version="3.6.0.v20121119-201001-7P7OG2BFLWUl7UnqBnO8V4Of"/>
-<unit id="org.eclipse.platform.ide" version="4.2.2.M20130204-1200"/>
-<unit id="org.eclipse.e4.rcp.feature.group" version="1.1.2.v20130130-191718-91FUvGP7GIX2Kgz-z-gvjMvXV1NS"/>
-<unit id="org.eclipse.equinox.p2.core.feature.feature.group" version="1.1.0.v20121211-153934-8297FndFWmE7h7Bpz-vcqkxyKz0"/>
-<unit id="org.eclipse.emf.ecore.feature.group" version="2.8.3.v20130125-0546"/>
-<unit id="org.eclipse.sdk.ide" version="4.2.2.M20130204-1200"/>
-<unit id="org.eclipse.rcp.feature.group" version="4.2.2.v20130129-152330-7IARAABrMQkGSvMgQnUlz-DQz00h"/>
-<unit id="org.eclipse.help.feature.group" version="1.4.1.v20120912-144938-8R7xFOXFLWUl7PpNBh_HIGkb4"/>
-<unit id="org.eclipse.rcp.id" version="4.2.2.M20130204-1200"/>
-<unit id="org.eclipse.equinox.executable.feature.group" version="3.6.0.v20121119-201001-7P7OG2BFLWUl7UnqBnO8V4Of"/>
-<unit id="org.eclipse.platform.feature.group" version="4.2.1.v20130118-173121-9MF7GHYdG0B5kx4E_SkfZV-1mNjVATf67ZAb7"/>
-<unit id="org.eclipse.platform.sdk" version="4.2.2.M20130204-1200"/>
-<unit id="org.eclipse.emf.common.feature.group" version="2.8.0.v20130125-0546"/>
-<unit id="org.eclipse.equinox.sdk.feature.group" version="3.8.0.v20121212-203907-7M7fA78g4_y-gDvtH0ZcFvhMPDZJ"/>
-<unit id="org.eclipse.rcp.sdk.id" version="4.2.2.M20130204-1200"/>
-<repository location="http://download.eclipse.org/eclipse/updates/4.2/R-4.2.2-201302041200/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="1.0.1.201202162201"/>
 <repository location="http://tla.msr-inria.inria.fr/pdf4eclipse/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.apache.log4j" version="1.2.15.v201012070815"/>
+<unit id="org.hamcrest" version="1.1.0.v20090501071000"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.rcp.id" version="4.4.1.M20140925-0400"/>
+<unit id="org.eclipse.help.feature.group" version="2.0.102.v20140925-0400"/>
+<unit id="org.eclipse.equinox.core.sdk.feature.group" version="3.10.0.v20140909-1633"/>
+<unit id="org.eclipse.rcp.sdk.id" version="4.4.1.M20140925-0400"/>
+<unit id="org.eclipse.platform.ide" version="4.4.1.M20140925-0400"/>
+<unit id="org.eclipse.rcp.configuration.feature.group" version="1.0.2.v20140925-0251"/>
+<unit id="org.eclipse.emf.ecore.feature.group" version="2.10.1.v20140901-1043"/>
+<unit id="org.eclipse.equinox.executable" version="3.6.100.v20140819-1617"/>
+<unit id="org.eclipse.ecf.core.feature.feature.group" version="1.1.0.v20140827-1444"/>
+<unit id="org.eclipse.e4.rcp.feature.group" version="1.3.100.v20140909-1633"/>
+<unit id="org.eclipse.platform.sdk" version="4.4.1.M20140925-0400"/>
+<unit id="org.eclipse.emf.common.feature.group" version="2.10.1.v20140901-1043"/>
+<unit id="org.eclipse.equinox.sdk.feature.group" version="3.10.0.v20140909-1633"/>
+<unit id="org.eclipse.core.runtime.feature.feature.group" version="1.1.1.v20140909-1633"/>
+<unit id="org.eclipse.sdk.ide" version="4.4.1.M20140925-0400"/>
+<repository location="http://download.eclipse.org/eclipse/updates/4.4/R-4.4.1-201409250400/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.swtbot.ide.feature.group" version="2.2.1.201402241301"/>
+<unit id="org.eclipse.swtbot.eclipse.test.junit.feature.group" version="2.2.1.201402241301"/>
+<unit id="org.eclipse.swtbot.feature.group" version="2.2.1.201402241301"/>
+<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.2.1.201402241301"/>
+<repository location="http://download.eclipse.org/technology/swtbot/releases/latest/"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
