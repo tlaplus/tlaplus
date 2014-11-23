@@ -1812,6 +1812,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         raiseWindow();
         // Activator.getDefault().logDebug(
         // "Finished Decompose Proof Handler execute");
+
+NodeTextRep ntr = state.goalRep.toNodeTextRep() ;
+OpApplNode oan = (OpApplNode) state.goalRep.semanticNode.getChildren()[0] ;
+ntr = prependToOpName(ntr, state.goalRep.semanticNode, 
+        oan, "Foo!Bar!") ;
+System.out.println(ntr.toString()) ;
         return null;
     }
 
@@ -4750,8 +4756,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         result.mapping[useIdx]);
                 String thisReplaceText = replacementText;
                 if (mayNeedParens) {
-                    // Define text that, if it surrounds the replaced text,
-                    // implies
+                    // Define text that, if it surrounds the replaced text, implies
                     // that no parentheses are needed.
                     String[] precedingSafe = new String[] { "(", "[", "{", ",",
                             "<<", "->", ":" };
@@ -4759,10 +4764,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                             ">>", "->", "~>" };
 
                     // Because we assume that the formula we're substituting
-                    // into is a complete
-                    // assumption or goal, the end of the formula is also a safe
-                    // preceding
-                    // or following "string".
+                    // into is a complete assumption or goal, the end of the 
+                    // formula is also a safe preceding or following "string".
                     String testString = result.nodeText[useIdx].substring(0,
                             offset).trim();
                     int line = useIdx;
@@ -5342,6 +5345,17 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // MappingPair class for a definition of mapping[j](c).
         Vector<MappingPair>[] mapping;
 
+        
+        /**
+         * Returns just the NodeTextRep part of this NodeRepresentation object.
+         * Note that there is no cloning involved.
+         * 
+         * @return
+         */
+        NodeTextRep toNodeTextRep() {
+            return new NodeTextRep(nodeText, mapping) ;
+        }
+        
         // Suppose that we are decomposing a proof in module M, and 
         // this NodeRepresentation nr represents an expression in module N.
         // Thus, nr.semanticNode is a node in the semantic tree of N,
@@ -6189,14 +6203,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         Vector<String> substs = new Vector<String>() ;
         
         /**
-         * prefix is a string such as Foo(x+y)!Bar! indicating that any use Op(...)
+         * prefix is a string such as Foo!Bar! indicating that any use Op(...)
          * of an operator Op defined in the instantiated module is instantiated 
-         * as the expression Foo(x+y)!Bar!Op(...) in the instantiating module.
+         * as the expression Foo!Bar!Op(...) in the instantiating module.
          */
         String prefix = "";
         
         /**
-         * If this.prefix equals "Foo(x+y)!Bar!", then this.defPrefixes() equals
+         * If this.prefix equals "Foo!Bar!", then this.defPrefixes() equals
          * the 3-element array {"", "Foo!", "Foo!Bar!"}, then an operator Op that
          * appears in an expression substituted for one of the parameters in params
          * could be imported into the instantiating module as Op, Foo!Op, or Foo!Bar!Op.
@@ -6211,36 +6225,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                  else {
                      result[i] = result[i-1] + split[i-1] ;
                  }
-                if (result[i].indexOf("(") != -1) {
-                    result[i] = result[i].substring(0, result[i].indexOf("(")) ;
-                }
                 if (i != 0) {
                     result[i] = result[i] + "!" ;
                  }
             }
             return result ;
         }
-        
-        /**
-         * If this.prefix equals "Foo(x+y)!Bar!", then this.subPrefixes() equals
-         * the 3-element array {"", "Foo(x+y)!", "Foo(x+y)!Bar!"}, then an operator Op that
-         * appears in an expression substituted for one of the parameters in params
-         * should be replaced by Op, Foo(x+y)!Op, or Foo(x+y)!Bar!Op.
-         */
-        String[] subPrefixes() {
-            String[] split = prefix.split("!") ;
-            String[] result = new String[split.length+1] ;
-            for (int i=0 ; i < result.length; i++) {
-                if (i == 0) {
-                   result[i] = "" ;
-                }
-                else {
-                    result[i] = result[i-1] + split[i-1] + "!" ;
-                }
-            }
-            return result ;
-        }
-        
+                
       public InstanceSubstitution clone() {
           InstanceSubstitution result = new InstanceSubstitution() ;
           for (int i=0 ; i < this.params.size() ; i++) {
@@ -6252,6 +6243,147 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
       }
     }
 
+    /**
+     * Assumes that ntRep is a representation of the expression represented by
+     * ntRepNode.  It assumes oaNode represents a subexpression of ntRepNode
+     * whose principal operator is a user-defined operator.  It returns a clone
+     * of ntRep modified by adding the String prefix immediately 
+     * before that principal operator.  If it can't find the operator, 
+     * the method returns null.  It will not find the operator if:
+     * 
+     *   - It was obtained by parametrized instantiation--for example if the
+     *     operator's name is Foo!bar but the expression contains Foo(42)!bar.
+     *     
+     *   - The name is spread across multiple lines (which is possible if it
+     *     contains "!").
+     *     
+     *   - It is an infix or postfix operator like ++ or Foo!++ and there are 
+     *     multiple occurrences of ++ in the expression--even inside a string.
+     *     The initial implemenentation handles only ordinary user-defined
+     *     operators with alphanumeric names.
+     *     
+     *     The initial implementation returns null for any such infix or
+     *     postfix operator.
+     *  
+     * 
+     * @param ntRep
+     * @param ntRepNode
+     * @param oaNode
+     * @param prefix
+     * @return
+     */
+    static NodeTextRep prependToOpName(
+              NodeTextRep ntRep, 
+              SemanticNode ntRepNode, 
+              OpApplNode oaNode, 
+              String prefix) {
+        
+        NodeTextRep result = ntRep.clone() ;
+        SymbolNode opSym = oaNode.getOperator();
+        if (! (opSym instanceof OpDefNode))  {
+            // This should not happen
+            return null ;
+        }
+        
+        OpDefNode opDef = (OpDefNode) opSym ;
+        if (opDef.getKind() != OpDefNode.UserDefinedOpKind) {
+            // This should not happen
+            return null ;
+        }
+        
+        // For an operator named Foo!Bar!Op, sets split to the
+        // 3-element array {"Foo", "Bar", "Op"}.  Let's call "Op"
+        // the PRINCIPAL PART of the operator name.
+        String[] split = opDef.getName().toString().split("!") ;
+
+        Location ntLoc = ntRepNode.getLocation() ;
+        Location opApplLoc = oaNode.getLocation() ;
+        
+        // set isAlphaNum true iff the principal part of the operator
+        // name is an ordinary identifier.
+        boolean isAlphaNum = true ;
+        String ppart = split[split.length - 1] ;
+        int i = 0 ;
+        while ((i < ppart.length()) && isAlphaNum) {
+            Character ch = ppart.charAt(i) ;
+            if(! (Character.isLetterOrDigit(ch) || (ch=='_'))) {
+                isAlphaNum = false ;
+            }
+            i++ ;
+        }
+        
+        if (!isAlphaNum) {
+            MessageDialog.openError(UIHelper.getShellProvider()
+                    .getShell(), "Decompose Proof Command",
+                    "Cannot rename infix or prefix operator " + opDef.getName());
+            return null ;
+        }
+        
+        // Set oaBeginLine, oaBeginCol, oaEndLine, oaEndCol to the (0-based)
+        // positions of the beginning and end of oaNode's representation
+        // in ntRep.
+        int oaBeginLine = opApplLoc.beginLine() - ntLoc.beginLine() ;
+        int oaBeginCol = colToLoc(opApplLoc.beginColumn(),result.mapping[oaBeginLine]) ;
+        int oaEndLine = opApplLoc.endLine() - ntLoc.beginLine() ;
+        int oaEndCol = colToLoc(opApplLoc.endColumn(), result.mapping[oaEndLine]) ;
+        
+        // Set bLine to the line that should contain the operator name
+        // within positions bPos to (excluding) ePos.
+        int bLine = oaBeginLine ;
+        int bPos  = oaBeginCol  ;
+        int ePos  = result.nodeText[bLine].length() ;
+        if (oaEndLine == oaBeginLine) {
+            ePos = oaEndCol+1 ;
+        }
+        
+        // skip initial white space
+        while ((bPos < ePos) && 
+                 Character.isWhitespace(result.nodeText[bLine].charAt(bPos))){
+            bPos++ ;
+        }
+        
+        // Check that bPos is at the beginning of the operator name.
+        String[] aSplit = result.nodeText[bLine].substring(bPos).split("!") ;
+        for (i = 0; i < aSplit.length; i++) {
+            aSplit[i] = aSplit[i].trim() ;
+        }
+        boolean OK = aSplit.length >= split.length ;
+        i = 0 ;
+        while (OK && i < split.length) {
+            OK = split[i].equals(aSplit[i]) 
+                   || ((i == split.length - 1) 
+                         && ! (Character.isLetterOrDigit(aSplit[i].charAt(split[i].length()))
+                                 || (aSplit[i].charAt(split[i].length())=='_') ));
+                
+            i++ ;
+        }        
+        if (!OK) {
+            MessageDialog.openError(UIHelper.getShellProvider()
+                    .getShell(), "Decompose Proof Command",
+                    "Cannot rename use of " + opDef.getName());
+            return null ;
+        }
+        
+        // Do the renaming.
+        result.nodeText[bLine] =
+         result.nodeText[bLine].substring(0,bPos) + prefix + 
+           result.nodeText[bLine].substring(bPos) ;
+        adjustMappingPairVector(bPos, prefix.length(), result.mapping[bLine]) ;  
+        
+        // correct the indentation
+        Vector<Insertion>[] insVecArray = new Vector[result.nodeText.length] ;
+        
+        for (i=0; i < result.nodeText.length; i++) {
+            insVecArray[i] = new Vector<Insertion>() ;
+            if (i == bLine) {
+                insVecArray[i].add(new Insertion(bPos, 0, prefix.length())) ;
+            }
+        }
+        
+        adjustIndentation(ntRep, result, insVecArray) ;
+        return result ;
+    }
+    
     /**
      * Returns a brand new NodeTextRep that's equal to the nodeRep argument
      * except that the String str has been appended to the last line.
@@ -7204,7 +7336,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @param vec
      * @return
      */
-    private int colToLoc(int col, Vector<MappingPair> vec) {
+    private static int colToLoc(int col, Vector<MappingPair> vec) {
         int loc = col;
         for (int i = 0; (i < vec.size()) && (vec.elementAt(i).col <= col); i++) {
             loc = loc + vec.elementAt(i).inc;
@@ -7407,15 +7539,18 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * 
      * Here is the what the method does.
      * 
-     * LET startingPos[i] == The position of the 1st non-blank character of
-     * oldTextRep.node[i], or -1 if there is none. coveringLine[i] == LET S ==
-     * {j \in 0..(i-1) : startingPos[j] \leq startingPos[i]} IN IF S = {} \/
-     * startingPos[i] = -1 THEN -1 ELSE Maximum S newStartingPos[i] == IF
-     * coveringLine[i] = -1 THEN startingPos[i] ELSE
-     * newVecInsertPos(startingPos[i], insVecArray[coveringLine[i]]) addSpace[i]
-     * == newStartingPos[i] - startingPos[i] ; For each i, add addSpace[i]
-     * spaces to line i of newTextRep. (Adding a negative number of spaces means
-     * deletion.)
+     *    LET startingPos[i] == The position of the 1st non-blank character of oldTextRep.node[i],
+     *                          or -1 if there is none.
+     *        coveringLine[i] == LET S == {j \in 0..(i-1) : startingPos[j] \leq startingPos[i]}
+     *                           IN  IF S = {} \/ startingPos[i] = -1
+     *                                 THEN -1 ELSE Maximum S 
+     *        newStartingPos[i] == IF coveringLine[i] = -1
+     *                               THEN startingPos[i]
+     *                               ELSE newVecInsertPos(startingPos[i], insVecArray[coveringLine[i]])
+     *        addSpace[i] == newStartingPos[i] - startingPos[i] ;
+     *    For each i, add addSpace[i] spaces to line i of newTextRep.
+     *    (Adding a negative number of spaces means deletion.)
+     *                                
      * 
      * @param oldTextRep
      * @param newTextRep
