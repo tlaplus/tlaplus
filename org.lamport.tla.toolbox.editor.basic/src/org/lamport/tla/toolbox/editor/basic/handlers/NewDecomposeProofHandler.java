@@ -1813,11 +1813,22 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // Activator.getDefault().logDebug(
         // "Finished Decompose Proof Handler execute");
 
-NodeTextRep ntr = state.goalRep.toNodeTextRep() ;
-OpApplNode oan = (OpApplNode) state.goalRep.semanticNode.getChildren()[0] ;
-ntr = prependToOpName(ntr, state.goalRep.semanticNode, 
-        oan, "Foo!Bar!") ;
-System.out.println(ntr.toString()) ;
+//NodeTextRep ntr = state.goalRep.toNodeTextRep() ;
+//OpApplNode oan = (OpApplNode) state.goalRep.semanticNode.getChildren()[0] ;
+//ntr = prependToOpName(ntr, state.goalRep.semanticNode, 
+//        oan, "Foo!Bar!") ;
+//System.out.println(ntr.toString()) ;
+
+//NodeTextRep ntr = state.goalRep.toNodeTextRep() ;
+//OpDeclNode[] formalParams = new OpDeclNode[] 
+//   { (OpDeclNode) ((OpApplNode)
+//         state.goalRep.semanticNode.getChildren()[0]).getOperator()  };
+//String[] arguments = new String[] {"SubForA_x"};  
+//ExprNode sn = (ExprNode) state.goalRep.semanticNode ;
+//SemanticNode[] argNodes = new SemanticNode[] { null };
+//NodeTextRep newNtr = instantiateInNodeText(
+//   formalParams, arguments, argNodes, sn, ntr) ;
+//System.out.println(newNtr.toString());
         return null;
     }
 
@@ -4652,7 +4663,8 @@ System.out.println(ntr.toString()) ;
     /**
      * The following bug fixed by LL on 3 July 2014: Decomposing
      * 
-     * foo(p) == \A x : p <=> A \/ B THEOREM foo(\/ C')
+     * foo(p) == \A x : p <=> A \/ B 
+     * THEOREM foo(\/ C')
      * 
      * produces the new goal
      * 
@@ -4856,6 +4868,199 @@ System.out.println(ntr.toString()) ;
     }
     
     
+    /**
+     * This method is a clone of substituteInNodeText.
+     * 
+     * Assumes that nodeTextRep is
+     * the NodeTextRep for the ExprNode sn (possibly after some substitutions
+     * have been made). It returns the NodeTextRep object representing sn after
+     * substituting arguments[i] for formalParams[i], for each i. It assumes
+     * that argNodes[i] is the semantic node whose string representation is
+     * arguments[i]. That string representation must be a single-line string (no
+     * line breaks).
+     * 
+     * Note: this assumes that none of the substitutions made before this one
+     * have added any of the formal parameter symbols being substituted for. We
+     * also assume that the node sn is being used as a complete assume clause or
+     * goal.
+     * 
+     * @param formalParams
+     *            The formal parameters to be substituted for.
+     * @param arguments
+     *            The String representations of argNodes, which must be a
+     *            single-line expression.
+     * @param argNodes
+     *            The semantic nodes of the expressions to be substituted,
+     *            except that argNodes[i] is not used and may be null if
+     *            isBoundedIdRenaming[i] = true.
+     * @param sn
+     *            SemanticNode in which the substitutions are being made.
+     * @param nodeTextRep
+     *            Representation of sn (perhaps after other substitutions).
+     * @return
+     */
+    NodeTextRep  instantiateInNodeText(OpDeclNode[] formalParams,
+            String[] arguments, // boolean[] isBoundedIdRenaming,
+            SemanticNode[] argNodes, ExprNode sn, NodeTextRep nodeTextRep
+            /* , Decomposition decomp */ ) {
+        NodeTextRep result = nodeTextRep.clone();
+
+        int numOfLines = result.nodeText.length;
+
+        // We set inserts to an array of Insertion vectors that describe the modification made
+        // to nodeTextRep to get result.  This is used to call adjustIndentation to fix the
+        // indentation of result.
+        Vector<Insertion>[] inserts = new Vector[numOfLines];
+        for (int i = 0; i < numOfLines; i++) {
+            inserts[i] = new Vector();
+        }
+        // Line of first token of sn, used to translate from Location line numbers to
+        // indices in noteTextRep.nodeText.
+        int beginLine = sn.stn.getLocation().beginLine();
+
+        for (int i = 0; i < arguments.length; i++) {
+            SemanticNode[] uses = ResourceHelper.getUsesOfSymbol(
+                    formalParams[i], sn);
+
+            String replacementText = arguments[i];
+
+            // NOTE: If we were substituting for a formal parameter for which a
+            // different identifier had been substituted, we have to use as
+            // sourceTextLength the length of the new identifier.
+            int sourceTextLength = formalParams[i].getName().toString().length();
+            // Set mayNeedParens true if replacementText doesn't end in ' and
+            // would need parentheses around it in order to prime it.
+            boolean mayNeedParens = false;
+      /* commented out for testing
+            if (primingNeedsParens(argNodes[i])
+                    && ((replacementText.charAt(replacementText.length() - 1) != '\'')
+                            // Following disjuncts added on 3 July 2014 to fix
+                            // bug
+                            // described above.
+                            || replacementText.startsWith("\\/") || replacementText
+                                .startsWith("/\\"))) {
+                mayNeedParens = true;
+            }
+       */
+            for (int j = 0; j < uses.length; j++) {
+                if (!(uses[j] instanceof OpApplNode)) {
+                    MessageDialog.openError(UIHelper.getShellProvider()
+                            .getShell(), "Decompose Proof Command",
+                            "An error that should not happen has occurred in "
+                                    + "line 2842 of NewDecomposeProofHandler.");
+                    return result;
+                }
+                // Note: the following code outside the if (mayNeedParens) has
+                // been cloned below for renaming the FormalParamNode
+                // declaration  if isBoundedIdRenaming[i] is true.
+                Location useLocation = uses[j].stn.getLocation();
+                int useIdx = useLocation.beginLine() - beginLine;
+                int offset = colToLoc(useLocation.beginColumn(),
+                        result.mapping[useIdx]);
+                String thisReplaceText = replacementText;
+                if (mayNeedParens) {
+                    // Define text that, if it surrounds the replaced text, implies
+                    // that no parentheses are needed.
+                    String[] precedingSafe = new String[] { "(", "[", "{", ",",
+                            "<<", "->", ":" };
+                    String[] followingSafe = new String[] { ")", "]", "}", ",",
+                            ">>", "->", "~>" };
+
+                    // Because we assume that the formula we're substituting
+                    // into is a complete assumption or goal, the end of the 
+                    // formula is also a safe preceding or following "string".
+                    String testString = result.nodeText[useIdx].substring(0,
+                            offset).trim();
+                    int line = useIdx;
+                    while (testString.equals("") && line > 0) {
+                        line--;
+                        testString = result.nodeText[line];
+                    }
+                    boolean terminated = testString.equals("");
+                    int k = 0;
+                    while (!terminated && k < precedingSafe.length) {
+                        terminated = testString.endsWith(precedingSafe[k]);
+                        k++;
+                    }
+                    if (terminated) {
+                        testString = result.nodeText[useIdx].substring(
+                                offset + sourceTextLength).trim();
+                        line = useIdx;
+                        while (testString.equals("")
+                                && line < result.nodeText.length - 1) {
+                            line++;
+                            testString = result.nodeText[line];
+                        }
+                        terminated = testString.equals("");
+                        k = 0;
+                        while (!terminated && k < precedingSafe.length) {
+                            terminated = testString
+                                    .startsWith(followingSafe[k]);
+                            k++;
+                        }
+                    }
+                    if (!terminated) {
+                        thisReplaceText = "(" + replacementText + ")";
+                    }
+                }
+                result.nodeText[useIdx] = result.nodeText[useIdx].substring(0,
+                        offset)
+                        + thisReplaceText
+                        + result.nodeText[useIdx].substring(offset
+                                + sourceTextLength);
+                adjustMappingPairVector(useLocation.beginColumn()
+                        + sourceTextLength, thisReplaceText.length()
+                        - sourceTextLength, result.mapping[useIdx]);
+
+                // Update inserts
+                inserts[useIdx].add(new Insertion(offset, sourceTextLength,
+                        thisReplaceText.length()));
+            }
+//
+//            // if isBoundedIdRenaming[i] is true, then rename the occurrence of
+//            // the FormalParamNode. The code was cloned for the code above that
+//            // renames uses.
+//            //
+//            // This can be called with decomp.renaming containing renamings for
+//            // bounded identifiers that occur in a different part of the spec
+//            // because we're now inside an expanded definition. We therefore
+//            // have to not try to do the renaming in that case.
+//            if (isBoundedIdRenaming[i]) {
+//                Location useLocation = formalParams[i].stn.getLocation();
+//                // We do this replacement iff the identifier declaration is
+//                // contained
+//                // in the location in which the renaming is being performed.
+//                if (EditorUtil.locationContainment(useLocation,
+//                        sn.stn.getLocation())) {
+//                    int useIdx = useLocation.beginLine() - beginLine;
+//                    int offset = colToLoc(useLocation.beginColumn(),
+//                            result.mapping[useIdx]);
+//                    result.nodeText[useIdx] = result.nodeText[useIdx]
+//                            .substring(0, offset)
+//                            + replacementText
+//                            + result.nodeText[useIdx].substring(offset
+//                                    + sourceTextLength);
+//                    adjustMappingPairVector(useLocation.beginColumn()
+//                            + sourceTextLength, replacementText.length()
+//                            - sourceTextLength, result.mapping[useIdx]);
+//
+//                    // Update inserts
+//                    inserts[useIdx].add(new Insertion(offset, sourceTextLength,
+//                            replacementText.length()));
+//                }
+//            }
+
+        }
+
+        // Adjust the indentation.
+        adjustIndentation(nodeTextRep, result, inserts);
+
+        return result;
+    }
+    
+
+    
+    
 
     /**
      * Calls substituteInNodeText to perform the substitution of arguments for
@@ -5050,6 +5255,7 @@ System.out.println(ntr.toString()) ;
     /**
      * Assume that we are decomposing a use opUse of a user-defined operator
      * in a context with isub the InstanceSubstitution.
+     *  LL-XXXX this is work in progress
      * 
      * @param isub
      * @param opUse
