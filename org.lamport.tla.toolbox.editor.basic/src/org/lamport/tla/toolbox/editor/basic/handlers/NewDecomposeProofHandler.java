@@ -1829,6 +1829,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 //NodeTextRep newNtr = instantiateInNodeText(
 //   formalParams, arguments, argNodes, sn, ntr) ;
 //System.out.println(newNtr.toString());
+
+//SemanticNode sn = state.goalRep.semanticNode;
+//ExprOrOpArgNode[] ean = ResourceHelper.getUsesOfUserDefinedOps(sn);
         return null;
     }
 

@@ -66,8 +66,10 @@ import tla2sany.parser.ParseException;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.parser.TLAplusParserConstants;
+import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.DefStepNode;
 import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LeafProofNode;
@@ -1566,6 +1568,105 @@ public class ResourceHelper
         }
         return;
     }
+    
+    /**
+     * Return all the <code>OpApplNode</code>s and <code>OpArgNode</code>s in the 
+     * expression or OpArgNode <code>expr</code> whose operator node is a 
+     * user-defined operator.
+     * 
+     * @param symbol
+     * @param expr
+     * @return
+     */
+    public static ExprOrOpArgNode[] getUsesOfUserDefinedOps(SemanticNode expr)
+    {
+        Vector<ExprOrOpArgNode> found = new Vector<ExprOrOpArgNode>(20); 
+        innerGetUsesOfUserDefinedOps(expr, found);
+        ExprOrOpArgNode[] value = new ExprOrOpArgNode[found.size()];
+        for (int i = 0; i < value.length; i++)
+        {
+            value[i] =  found.elementAt(i);
+        }
+        return value;
+    }
+
+    /** 
+     * Returns true iff node is an OpApplNode or ExprOrOpArgNode whose operator 
+     * is a user-defined operator.
+     * 
+     * @param node
+     * @param symbol
+     * @return
+     */
+    private static boolean hasUserDefinedOp(SemanticNode node)
+    {
+        if (! (node instanceof ExprOrOpArgNode)) {
+            return false ;
+        }
+        
+        SymbolNode sym ;
+        
+        if (node instanceof OpApplNode) {
+            sym = ((OpApplNode) node).getOperator() ;
+        } 
+        else if (node instanceof OpArgNode) {
+            sym = ((OpArgNode) node).getOp() ;
+        }
+        else {
+            return false ;
+        }
+                      
+        if (! (sym instanceof OpDefNode)) {
+            return false ;
+        }
+        
+        OpDefNode op = (OpDefNode) sym ;
+        return op.getKind() == ASTConstants.UserDefinedOpKind ;
+    }
+
+    /**
+     * The inner recursive method used by getUsesOfUserDefinedOps. It appends all the appropriate
+     * OpApplNodes  to <code>found</code>.
+     * 
+     * @param node
+     * @param found
+     * @return
+     */
+    private static void innerGetUsesOfUserDefinedOps(SemanticNode node, Vector<ExprOrOpArgNode> found)
+    {
+        SymbolNode[] defs = null;
+
+        // We have to detect the following instances in which we get a use directly from
+        // this node. There are three basic cases:
+        // 1. This is an OpApplNode and the operator is a user-defined OpDef node. 
+        // 2. This is an OpArgNode whose operator is a user-defined OpDef node.
+        if (hasUserDefinedOp(node)) {
+          found.add((ExprOrOpArgNode) node);
+
+        } 
+        SemanticNode[] children = node.getChildren();
+        if (children == null)
+        {
+            return;
+        }
+        for (int i = 0; i < children.length; i++)
+        {
+            // The following null pointer test added by LL on 4 Dec 2011 to fix
+            // bug 233, which occurs because the OTHER clause in a CASE statement
+            // is indicated by the presence of a null instead of a test expression.
+            final SemanticNode sn = children[i];
+            if (sn != null) 
+            {
+               if (node.getLocation().source().equals(sn.getLocation().source()))
+               {
+                   innerGetUsesOfUserDefinedOps(sn, found);
+               }
+            }
+        }
+        return;
+    }
+
+
 
     /**
      * Returns an array of all the user modules of the current 
