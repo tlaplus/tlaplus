@@ -75,7 +75,6 @@
  *    the BY of the SUFFICES (or QED if USE SUFFICES not chosen).
  *    
  *    
- *
  *  - Bug discovered 23 Aug 2014 by LL:  
  *    FIXED IN NEW VERSION by not allowing a \A decomposition after 
  *    a \/ decomposition,
@@ -115,21 +114,26 @@
  *    conjunction.  Currently, it only is if there is a single assumption.
  *    FIXED IN NEW VERSION 
  *    
- *  - The decomposition will not expand definitions imported from other modules
- *    (except with the unfinished and hidden "Use subexpression names" option). 
- *    THIS HAS BEEN FIXED IN THE OLD VERSION only for imported definitions that
- *    don't come from an INSTANCE of a module with CONSTANT or VARIABLE 
- *    declarations.  The general case will be handled in the new version. 
- *    However, it probably will have the following bug for instantiation with 
- *    renaming:  
- *    
  *  - If decomposition requires expanding a definition, the decomposition will be
  *    performed only if each argument of the defined operator appears on a 
  *    single line of the source text.  (Different arguments may appear on 
  *    different lines.)
- *    THIS RESTRICTION MAY SOME DAY BE REMOVED.  See MODULE Substitution,
- *    appended below, for a spec of the necessary code.
  *    
+ *    Also, expanding of definitions obtained by instantiation will be performed
+ *    only if the expressions substituted for the parameters of the instantiated
+ *    module are single-line expressions.
+ *    
+ *    THESE RESTRICTIONS MAY SOME DAY BE REMOVED.  See MODULE Substitution,
+ *    appended below, for a spec of the necessary code.
+ * 
+ *  - Decomposition will not be performed if it requires expanding the definition of
+ *    an operator instantiated with parametrized renaming--that is, an operator
+ *    whose name is something like Foo(x+y,z)!Bar.  (The definition of an operator
+ *    named Foo!Bar can be expanded.)  The problem is that from the semantic tree,
+ *    it is impossible whether an operator application is written Foo(x+y,z)!Bar(42)
+ *    or Foo!Bar(x+y,z,42).  Fixing this will require modifying SANY to add the
+ *    necessary disambiguating information to the semantic tree.
+ *  
  *  - Decomposition will never be performed on any decomposable formula that
  *    appears as an operator argument.  For example, in
  *    
@@ -160,45 +164,6 @@
  *    been done in NodeText.  But that's just a vague idea and it's not clear how
  *    easy it would be to do it, if it's even possible.
  *    
- *  - Major implementation problem realized by LL on 16 Nov 2014.
- *    The semantic tree for the expression  a ++ b  produced by SANY does not
- *    contain the necessary information to find the "++" in the source.  In general,
- *    The OpApplNode object for an expression  Op(exp1, ... , expN)  does not
- *    contain any pointer to the "Op" in the source.  It contains only a pointer
- *    to the OpDef node for Op, which contains the name "++", but not the pointer
- *    to that particular use of Op.  (For a built-in operator like \cup with synonyms,
- *    the OpDef node probably contains the name used in that particular occurrence.)
- *    This makes it impossible to perform textual substitution correctly for Op 
- *    in all cases.  And for expanding definitions instantiated with renaming,
- *    we may have to substitute something like Foo!Op for Op.  For the DecomposeProof
- *    command to be able to decompose instantiated definitions, we have two choices:
- *      1. Re-implement everything so instead of trying to preserve the formatting
- *         of the user input, we perform the necessary substitutions in a clone
- *         of the appropriate part of the semantic tree, and pretty-print the resulting
- *         formulas directly from the new semantic tree.  This has two advantages:
- *          - It will greatly simplify the implementation of the command and will
- *            remove most of its limitations.
- *          - Having a pretty-printer will make it possible to add some sort
- *            of Toolbox commands to reformat expressions.
- *         It has three disadvantages:
- *          - It requires implementing a pretty-printer, which is a fair amount
- *            of work.  
- *          - It also requires making one or two (simple) changes to SANY to
- *            provide the information needed to pretty-print the semantic
- *            trees created by instantiation with renaming.
- *          - It makes the decomposed proof's formulas harder for the user
- *            to recognize.  However, the user now has to deal with TLAPS's
- *            reformatting of the formulas when it displays failed obligations.
- *            And we can use the same pretty-printing algorithm as TLAPS.
- *            
- *       2. Kludge something that works most of the time.  This would be done
- *          by searching for the operator name Op in the text of the expression
- *          Op(...).  A quick and dirty approach would cover all except weird cases
- *          like  "++" ++ "abc".  The major restriction is that it would not handle
- *          parametrized renaming--e.g., Foo(a+b)!Op(...)--since that would requiring
- *          being able to find the "a+b", which would require modifying SANY.
- *          This is ugly, but the easiest approach.
- *         
  *    
  * 
  * HOW THE COMMAND WORKS
@@ -519,6 +484,7 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NewSymbNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpArgNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
@@ -1027,78 +993,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
      *      ExecutionEvent)
      * 
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
-     * @return
-     * @throws ExecutionException
-     */
-    /**
      * @return
      * @throws ExecutionException
      */
@@ -1832,6 +1726,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
 //SemanticNode sn = state.goalRep.semanticNode;
 //ExprOrOpArgNode[] ean = ResourceHelper.getUsesOfUserDefinedOps(sn);
+        
+ // String[] s = DefPrefixes("foo!bar!") ;
+ 
+NodeTextRep ntr = state.goalRep.toNodeTextRep() ;
+OpApplNode oan = (OpApplNode) state.goalRep.semanticNode ;
+ntr = renameInNodeText (oan, ntr, "", "foo!bar!" ) ;
+System.out.println(ntr.toString()) ;
+
         return null;
     }
 
@@ -4287,16 +4189,16 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // then we set instantiationSubstitutionsD to 
                 // nodeRepArg.instantiationSubstitutions--even if sn is in a 
                 // different module than nodeRepArg came from.  This is because
-                // that other module might be one EXTENDed by nodeRepArg's
+                // that other module might been one EXTENDed by nodeRepArg's
                 // module, so it might have contributed module parameters
                 // to sn's module, and those parameters might be instantiated
                 // by a substitution in nodeRepArg.instantiationSubstitutions.
                 // (We should add a test checking this situation.)
                 // This isn't possible if sn's module was instantiated (but
-                // has no module parameters), but there's no harm in trying to
-                // do the instantiations from nodeRepArg.instantiationSubstitutions
-                // because sn's module won't contain any of the nodes
-                // being substituted for.  
+                // has no module parameters, so theres no SubstInNode), but there's 
+                // no harm in trying to // do the instantiations from 
+                // nodeRepArg.instantiationSubstitutions because sn's module 
+                // won't contain any of the nodes being substituted for.
                 
                 // set instSubs to the new Renaming for the decomposition nodes.
                 // and sn to the (OpArgNode) at the bottom of the SubstInNode chain.
@@ -4390,6 +4292,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // the necessary fields. LL-XXXX do we have to set the
                 // instantiatedNamePrefix and instantiationSubstitutions
                 // fields?  
+// For Testing
+//NodeTextRep ntr = renameInNodeText((OpApplNode) nodeRep.semanticNode, nodeRep.toNodeTextRep(), 
+//                           "I!", "foo!bar!");
+
                 nodeRep.decomposition.formalParams = nodeRepArg.decomposition.formalParams;
                 nodeRep.decomposition.arguments = nodeRepArg.decomposition.arguments;
                 nodeRep.decomposition.argNodes = nodeRepArg.decomposition.argNodes;
@@ -4405,7 +4311,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "An error that should not happen has occurred in "
-                                + "line 3787 of NewDecomposeProofHandler.");
+                                + "line 4336 of NewDecomposeProofHandler.");
                 return null;
             }
         }
@@ -4882,20 +4788,19 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * arguments[i]. That string representation must be a single-line string (no
      * line breaks).
      * 
-     * Note: this assumes that none of the substitutions made before this one
-     * have added any of the formal parameter symbols being substituted for. We
-     * also assume that the node sn is being used as a complete assume clause or
-     * goal.
+     * The code being cloned has this note:
+     *   This assumes that none of the substitutions made before this one
+     *   have added any of the formal parameter symbols being substituted for.
+     * I don't understand why, or if this applies to this method which is
+     * to be used to substitute in the expressions in SubstInNodes--but only
+     * under the assumption that they are single-line expressions. 
      * 
      * @param formalParams
      *            The formal parameters to be substituted for.
      * @param arguments
-     *            The String representations of argNodes, which must be a
-     *            single-line expression.
+     *            The Strings to be substituted for the formalParams.
      * @param argNodes
-     *            The semantic nodes of the expressions to be substituted,
-     *            except that argNodes[i] is not used and may be null if
-     *            isBoundedIdRenaming[i] = true.
+     *            The semantic nodes of the expressions to be substituted.
      * @param sn
      *            SemanticNode in which the substitutions are being made.
      * @param nodeTextRep
@@ -4903,9 +4808,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * @return
      */
     NodeTextRep  instantiateInNodeText(OpDeclNode[] formalParams,
-            String[] arguments, // boolean[] isBoundedIdRenaming,
-            SemanticNode[] argNodes, ExprNode sn, NodeTextRep nodeTextRep
-            /* , Decomposition decomp */ ) {
+            String[] arguments, ExprOrOpArgNode sn, NodeTextRep nodeTextRep) {
         NodeTextRep result = nodeTextRep.clone();
 
         int numOfLines = result.nodeText.length;
@@ -5061,6 +4964,147 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         return result;
     }
     
+    /**
+     * Assumes that noteTextRep is a representation of sn, possibly after substitutions.
+     * It assumes that prefix and postPrefix have the form [id!]* where id is an 
+     * identifier.  For example, suppose prefix = "Foo!Bar" and postPrefix = "X!Y!Z!".
+     * Then for each instance of a user-defined operator Op in sn, the method looks 
+     * for operator Op in the current module under the names Foo!Bar!Op, Foo!Bar!X!Op,
+     * Foo!Bar!X!Y!Op, Foo!Bar!X!Y!Z!Op.  It then substitutes for Op in that instance in 
+     * nodeTextRep the name under which it was found.  I think the name should always
+     * be found in any case, and I don't know what to do if it isn't--so, I'll raise
+     * an error window once.
+     * 
+     *  
+     * @param sn
+     * @param nodeTextRep
+     * @param prefix
+     * @param postPrefix
+     */
+    NodeTextRep renameInNodeText (ExprOrOpArgNode sn, NodeTextRep nodeTextRep, 
+                           String prefix, String postPrefix) {
+        
+        NodeTextRep result = nodeTextRep ;
+        
+        // errorFound is set true when a user error is raised.
+        boolean errorFound = false ;
+               
+        String [] trialPrefixes = DefPrefixes(postPrefix) ;
+        for (int i=0 ; i < trialPrefixes.length; i++) {
+            trialPrefixes[i] = prefix + trialPrefixes[i] ;
+        }
+        
+        ExprOrOpArgNode[] opUses = ResourceHelper.getUsesOfUserDefinedOps(sn) ;
+        
+        for (int i = 0; i < opUses.length; i++) {
+            if (opUses[i] instanceof OpApplNode) {
+                OpDefNode opDef = (OpDefNode) ((OpApplNode) opUses[i]).getOperator() ;
+                String opDefName = opDef.getName().toString() ;
+                ExprNode opDefBody = opDef.getBody() ;
+                boolean notFound = true ;
+                
+                // Set j such that trialPrefixes[j]+opDefName is the correct operator name.
+                int j = 0 ;
+                while (notFound && j < trialPrefixes.length ) {
+                    OpDefNode symNode = stringToOpDef(trialPrefixes[j]+opDefName) ; 
+                    if (symNode != null) {
+                         // Have to check if foundOpDef is really an instantiation
+                         // of opDef.  To do that, we see if the definition of opDef
+                         // is the same node as the definition of foundOpDef after
+                         // peeling off some number of SubstInNodes
+                        ExprNode foundOpDefBody = symNode.getBody() ;  
+                        ExprNode body = opDefBody ;
+                        while (notFound && (body instanceof SubstInNode)) {
+                            notFound = body != foundOpDefBody ;
+                            body = ((SubstInNode) body).getBody() ;
+                        }
+                        if (notFound) {
+                            notFound = body != foundOpDefBody ;
+                        }
+                    } 
+                    
+                    if (notFound) {
+                        j++ ;
+                    }
+                }
+                
+                if (notFound) {
+                    if (!errorFound) {
+                        MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                                "Decompose Proof Command",
+                                "Something that should not happen has occurred in "
+                                        + "line 4991 of NewDecomposeProofHandler.");
+                        errorFound = true ;
+                    }
+                }
+                else {
+                    result = prependToOpName(result, sn, (OpApplNode) opUses[i], trialPrefixes[j]) ;
+                }
+                    
+                
+            }
+            
+            else if (opUses[i] instanceof OpArgNode) {
+                // Not implemented yet LL-XXXXXX
+            }
+            
+            else {
+                if (!errorFound) {
+                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                            "Decompose Proof Command",
+                            "Something that should not happen has occurred in "
+                                    + "line 4991 of NewDecomposeProofHandler.");
+                    errorFound = true ;
+                }
+            }
+              
+        }
+       // 
+        return result ;  
+    }
+    
+    /**
+     * Looks up a user-defined operator with name str in the current module and 
+     * returns its OpDef node, else null if the operator isn't defined.
+     */
+    OpDefNode stringToOpDef(String str) {
+        OpDefNode result = null ;
+        OpDefNode[] allDefs = moduleNode.getOpDefs() ;
+        int i = 0 ;
+        while ((result == null) && (i < allDefs.length) ) {
+            if (str.equals(allDefs[i].getName().toString())) {
+                result = allDefs[i];
+            }
+            i++ ;
+        }
+        return result ;
+    }
+    /**
+     * If prefix = "Foo!Bar!", then it returns the three-element array 
+     * ["", "Foo!", "Foo!Bar!"] .
+     * 
+     * @param prefix
+     * @return
+     */
+    static String[] DefPrefixes(String prefix) { 
+        if (prefix.equals("")) {
+            return new String[] {""} ;
+        }
+        String[] split = prefix.split("!") ;
+        String[] result = new String[split.length+1] ;
+        for (int i=0 ; i < result.length; i++) {
+            if (i == 0) {
+                result[i] = "" ;
+             }
+             else {
+                 result[i] = result[i-1] + split[i-1] ;
+             }
+            if (i != 0) {
+                result[i] = result[i] + "!" ;
+             }
+        }
+        return result ;
+    }
 
     
     
@@ -6465,15 +6509,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      *     
      *   - The name is spread across multiple lines (which is possible if it
      *     contains "!").
-     *     
-     *   - It is an infix or postfix operator like ++ or Foo!++ and there are 
-     *     multiple occurrences of ++ in the expression--even inside a string.
-     *     The initial implemenentation handles only ordinary user-defined
-     *     operators with alphanumeric names.
-     *     
-     *     The initial implementation returns null for any such infix or
-     *     postfix operator.
-     *  
      * 
      * @param ntRep
      * @param ntRepNode
@@ -6521,12 +6556,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             i++ ;
         }
         
-        if (!isAlphaNum) {
-            MessageDialog.openError(UIHelper.getShellProvider()
-                    .getShell(), "Decompose Proof Command",
-                    "Cannot rename infix or prefix operator " + opDef.getName());
-            return null ;
-        }
+//        if (!isAlphaNum) {
+//            MessageDialog.openError(UIHelper.getShellProvider()
+//                    .getShell(), "Decompose Proof Command",
+//                    "Cannot rename infix or prefix operator " + opDef.getName());
+//            return null ;
+//        }
         
         // Set oaBeginLine, oaBeginCol, oaEndLine, oaEndCol to the (0-based)
         // positions of the beginning and end of oaNode's representation
@@ -6536,23 +6571,57 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         int oaEndLine = opApplLoc.endLine() - ntLoc.beginLine() ;
         int oaEndCol = colToLoc(opApplLoc.endColumn(), result.mapping[oaEndLine]) ;
         
-        // Set bLine to the line that should contain the operator name
-        // within positions bPos to (excluding) ePos.
+        // Set bLine, bPos, ePos so that the operator name (which is assumed to
+        // be on a single line) is between positions bPos to (excluding) ePos on
+        // line bLine.
         int bLine = oaBeginLine ;
         int bPos  = oaBeginCol  ;
-        int ePos  = result.nodeText[bLine].length() ;
-        if (oaEndLine == oaBeginLine) {
-            ePos = oaEndCol+1 ;
+        if (!isAlphaNum) {
+            // In this case, set bLine, bPos to be right after the
+            // first argument of the operator.
+            SemanticNode[] oaArgs = oaNode.getArgs() ;
+            if (oaArgs.length == 0) {
+              MessageDialog.openError(UIHelper.getShellProvider() .getShell(), 
+                      "Decompose Proof Command",
+                       "Something unexpected is going on at "
+                           + "line 6477 of NewDecomposeProofHandler.");
+               return null ;  
+            }
+            Location firstArgLoc = oaArgs[0].getLocation() ;
+            bLine = firstArgLoc.endLine() - ntLoc.beginLine();
+            bPos  = colToLoc(firstArgLoc.endColumn() + 1, result.mapping[bLine]);
         }
         
         // skip initial white space
-        while ((bPos < ePos) && 
-                 Character.isWhitespace(result.nodeText[bLine].charAt(bPos))){
-            bPos++ ;
+        boolean notDone = true ;
+        while (notDone) {
+            while (notDone && bPos < result.nodeText[bLine].length()) {
+               if (! Character.isWhitespace(result.nodeText[bLine].charAt(bPos))) {
+                   notDone = false ;
+               }
+               else {
+                   bPos ++ ;
+               }
+            }
+            if (notDone) {
+                bLine ++ ;
+                bPos = 0 ;
+                if (bLine >= result.nodeText[bLine].length()) {
+                    MessageDialog.openError(UIHelper.getShellProvider() .getShell(), 
+                            "Decompose Proof Command",
+                             "Something unexpected is going on at "
+                                 + "line 6506 of NewDecomposeProofHandler.");
+                     return null ; 
+                }
+            }
         }
-        
+        int ePos  = result.nodeText[bLine].length() ;
+        if (oaEndLine == bLine) {
+            ePos = oaEndCol + 1 ;
+        }
+                
         // Check that bPos is at the beginning of the operator name.
-        String[] aSplit = result.nodeText[bLine].substring(bPos).split("!") ;
+        String[] aSplit = result.nodeText[bLine].substring(bPos, ePos).split("!") ;
         for (i = 0; i < aSplit.length; i++) {
             aSplit[i] = aSplit[i].trim() ;
         }
@@ -6561,9 +6630,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         while (OK && i < split.length) {
             OK = split[i].equals(aSplit[i]) 
                    || ((i == split.length - 1) 
-                         && ! (Character.isLetterOrDigit(aSplit[i].charAt(split[i].length()))
-                                 || (aSplit[i].charAt(split[i].length())=='_') ));
-                
+                         && aSplit[i].startsWith(split[i])
+                         && ! (isAlphaNum &&  (Character.isLetterOrDigit(aSplit[i].charAt(split[i].length()))
+                                 || (aSplit[i].charAt(split[i].length())=='_') )));    
             i++ ;
         }        
         if (!OK) {
