@@ -1,4 +1,5 @@
 /**
+ * CURRENTLY BEING WORKED ON:  substInNodeToInstanceSub
  * THINGS TO DO:
  *  - Check that what I've done so far works with definition expansion.
  *  
@@ -1729,11 +1730,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         
  // String[] s = DefPrefixes("foo!bar!") ;
  
-NodeTextRep ntr = state.goalRep.toNodeTextRep() ;
-OpApplNode oan = (OpApplNode) state.goalRep.semanticNode ;
-ntr = renameInNodeText (oan, ntr, "", "foo!bar!" ) ;
-System.out.println(ntr.toString()) ;
+//NodeTextRep ntr = state.goalRep.toNodeTextRep() ;
+//OpApplNode oan = (OpApplNode) state.goalRep.semanticNode ;
+//ntr = renameInNodeText (oan, ntr, "", "foo!bar!" ) ;
+//System.out.println(ntr.toString()) ;
 
+//String[] ss = "foo".split("!") ;
         return null;
     }
 
@@ -4183,7 +4185,7 @@ System.out.println(ntr.toString()) ;
                 // (We are in decomposeQuantifier(nodeRepArg, isForAll)
                 // 
                 // If sn is a SubstInNode, then the definition has been
-                // instantiated with renaming, so we must set the decomposition's
+                // instantiated with substitution, so we must set the decomposition's
                 // instantiationSubstitutionsD field to the substitutions
                 // implied by the chain of SubstInNodes.  If sn is not a SubstInNode,
                 // then we set instantiationSubstitutionsD to 
@@ -4200,52 +4202,19 @@ System.out.println(ntr.toString()) ;
                 // nodeRepArg.instantiationSubstitutions because sn's module 
                 // won't contain any of the nodes being substituted for.
                 
-                // set instSubs to the new Renaming for the decomposition nodes.
-                // and sn to the (OpArgNode) at the bottom of the SubstInNode chain.
-                // LL-XXXXX this code isn't correct because substitutions required
-                // by higher-level SubstInNodes (and in the module containing
-                // the defined operator being decomposed) must be done in the
-                // substituting expressions of a SubstInNode.  Also, there may
-                // be operator renaming required, but we have no way of
-                // finding the appropriate renamings.  This seems to be a
-                // problem that can be resolved only by adding to a SubstInNode
-                // a pointer to the INSTANCE that created it.
+                // set instSubs to the new InstanceSubstitution for the decomposition 
+                // nodes and sn to the (OpArgNode) at the bottom of the SubstInNode chain.
                 InstanceSubstitution instSubs = nodeRepArg.instantiationSubstitutions.clone(); 
                 while (sn instanceof SubstInNode) {
-                    // LL-XXXXXX  The following call is wrong because decomp.definedOp
-                    // is something like foo!bar!op and we need it to be the actual
-                    // prefix of the occurrence of that operator, which could be something
-                    // like foo(x+y)!bar(z, w)!.  This has to be obtained from 
-                    // nodeRepArg--though we may need to strip a prime from it.  (Or
-                    // has that already been done at this point?)  
-                    //
-                    // PROBLEM: it looks like we may have to do some renaming of bound
-                    // variables before we do any renaming of user-defined operators.
-                    // For example, suppose we are decomposing
-                    //    Foo(\E x : P(x))!Op
-                    // where 
-                    //    Foo!Op(a) == \E x : a => G(x)
-                    // Then it looks like we want to rename the x in the argument
-                    // of the expression before doing the definition expansion.
-                    // (We could rename the x in the def of Foo!Op, but that wouldn't
-                    // suffice if we are moving the assumption inside a later NEW x.)
-                    // Or we could ignore the problem and simply let it produce
-                    // something that doesn't parse.  It's rare enough that we should
-                    // be able to live with that bug.  The same problem exists even without
-                    // instantiation and was present in the original DecomposeProof command.
-                    // We lived with it there, we can live with it in the current version.
-                    //   
-                    instSubs = substInNodeToInstanceSub(instSubs, decomp.definedOp, (SubstInNode) sn) ;
-                    // Renaming rn = substInNodeToRenaming((SubstInNode) sn, nodeRep) ;
-                    if (instSubs == null) {
+                    instSubs = substInNodeToInstanceSub(
+                            instSubs, decomp.definedOp, (SubstInNode) sn) ;
+                   if (instSubs == null) {
                         MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                                 "Decompose Proof Command",
                                 "Decomposing an instantiated definition whose\n"
                                 + "instantiation cannot be handled.");
                         return null;
-
                     }
-                    // instSubs = instSubs.addAll(rn) ;
                     sn = ((SubstInNode)sn).getBody() ;                        
                 }
                 
@@ -4254,26 +4223,24 @@ System.out.println(ntr.toString()) ;
                 // concatenation of nodeRepArg.instantiatedNamePrefix
                 // and all the text through the last "!" in the operator's
                 // name.  Set instNamePrefix to that value.
-                String instNamePrefix = null ; //nodeRepArg.instantiatedNamePrefix ;
+                String instNamePrefix = nodeRepArg.instantiationSubstitutions.prefix ;
                 String restOfName = decomp.definedOp ;
                 while (restOfName.indexOf("!") != -1) {
                     instNamePrefix = instNamePrefix + 
                                         restOfName.substring(0, restOfName.indexOf("!")+1) ;
                     restOfName = restOfName.substring(restOfName.indexOf("!")+1) ;
                 }
+                instSubs.prefix = instNamePrefix ;
                 
                 // Need to create the NodeRepresentation using the
                 // module in which the definition occurs.  
-                // LL-XXXX  If the definition
-                // comes from a model that is instantiated with substitution,
-                // should those substitions be done here?
                 String moduleName = sn.getLocation().source() ;
                 IDocument idoc = moduleNameToIDocument(moduleName);
                 NodeRepresentation res = new NodeRepresentation(idoc, sn);
                 // This is a hack, calling subNodeRep for the subnode of
                 // the definition body consisting of the entire definition body.
-                // But a little thought reveals that this does what needs to be
-                // done.
+                // But a little thought reveals that this does what needs to be 
+                // done. 
                 // Note: I don't think the last argument of the subNodeRep call
                 // matters.
                 nodeRep = res.subNodeRep(sn, nodeRepArg.getParentVector(),
@@ -4282,20 +4249,26 @@ System.out.println(ntr.toString()) ;
                 nodeRep.fromGoal = nodeRepArg.fromGoal ;
                 nodeRep.fromExists = nodeRepArg.fromExists ;
                 nodeRep.fromDefs = nodeRepArg.fromDefs.clone() ;
+                nodeRep.instantiationSubstitutions = instSubs ;
                 if (decomp.definedOp != null) {
                     nodeRep.fromDefs.add(decomp.definedOp) ;
                 }
+                
 
-                // We now want to call decompSubstituteInNodeText using the
-                // substitutions in nodeRepArg.decomposition, rather than the
-                // one computed by this  call to subNodeRep. So, we just set 
-                // the necessary fields. LL-XXXX do we have to set the
-                // instantiatedNamePrefix and instantiationSubstitutions
-                // fields?  
-// For Testing
-//NodeTextRep ntr = renameInNodeText((OpApplNode) nodeRep.semanticNode, nodeRep.toNodeTextRep(), 
-//                           "I!", "foo!bar!");
-
+                // We now perform the substitutions in nodeRep
+                // based on its instantiationSubstitutions field.
+                NodeTextRep ntr = nodeRep.toNodeTextRep() ;
+                ntr = instantiateInNodeText(
+                        OpDeclNodeVectorToArray(nodeRep.instantiationSubstitutions.params), 
+                        StringVectorToArray(nodeRep.instantiationSubstitutions.substs), 
+                        (OpApplNode) nodeRep.semanticNode, 
+                        ntr);
+                ntr = renameInNodeText((OpApplNode) nodeRep.semanticNode, 
+                                       ntr, nodeRep.instantiationSubstitutions.prefix, 
+                                       "") ;
+                nodeRep.nodeText = ntr.nodeText ;
+                nodeRep.mapping = ntr.mapping ;
+                
                 nodeRep.decomposition.formalParams = nodeRepArg.decomposition.formalParams;
                 nodeRep.decomposition.arguments = nodeRepArg.decomposition.arguments;
                 nodeRep.decomposition.argNodes = nodeRepArg.decomposition.argNodes;
@@ -4727,6 +4700,8 @@ System.out.println(ntr.toString()) ;
                         + result.nodeText[useIdx].substring(offset
                                 + sourceTextLength);
                 adjustMappingPairVector(useLocation.beginColumn()
+                        // LL-XXXXX I believe the "+ sourceTextLength"
+                        // in the next line should be removed.
                         + sourceTextLength, thisReplaceText.length()
                         - sourceTextLength, result.mapping[useIdx]);
 
@@ -4837,8 +4812,7 @@ System.out.println(ntr.toString()) ;
             // Set mayNeedParens true if replacementText doesn't end in ' and
             // would need parentheses around it in order to prime it.
             boolean mayNeedParens = false;
-      /* commented out for testing
-            if (primingNeedsParens(argNodes[i])
+            if (primingNeedsParens(formalParams[i])
                     && ((replacementText.charAt(replacementText.length() - 1) != '\'')
                             // Following disjuncts added on 3 July 2014 to fix
                             // bug
@@ -4847,7 +4821,6 @@ System.out.println(ntr.toString()) ;
                                 .startsWith("/\\"))) {
                 mayNeedParens = true;
             }
-       */
             for (int j = 0; j < uses.length; j++) {
                 if (!(uses[j] instanceof OpApplNode)) {
                     MessageDialog.openError(UIHelper.getShellProvider()
@@ -4915,7 +4888,7 @@ System.out.println(ntr.toString()) ;
                         + result.nodeText[useIdx].substring(offset
                                 + sourceTextLength);
                 adjustMappingPairVector(useLocation.beginColumn()
-                        + sourceTextLength, thisReplaceText.length()
+                   /* + sourceTextLength */, thisReplaceText.length()
                         - sourceTextLength, result.mapping[useIdx]);
 
                 // Update inserts
@@ -5014,9 +4987,9 @@ System.out.println(ntr.toString()) ;
                          // peeling off some number of SubstInNodes
                         ExprNode foundOpDefBody = symNode.getBody() ;  
                         ExprNode body = opDefBody ;
-                        while (notFound && (body instanceof SubstInNode)) {
+                        while (notFound && (foundOpDefBody instanceof SubstInNode)) {
                             notFound = body != foundOpDefBody ;
-                            body = ((SubstInNode) body).getBody() ;
+                            foundOpDefBody = ((SubstInNode) foundOpDefBody).getBody() ;
                         }
                         if (notFound) {
                             notFound = body != foundOpDefBody ;
@@ -5033,7 +5006,7 @@ System.out.println(ntr.toString()) ;
                         MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                                 "Decompose Proof Command",
                                 "Something that should not happen has occurred in "
-                                        + "line 4991 of NewDecomposeProofHandler.");
+                                        + "line 5008 of NewDecomposeProofHandler.");
                         errorFound = true ;
                     }
                 }
@@ -5053,7 +5026,7 @@ System.out.println(ntr.toString()) ;
                     MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                             "Decompose Proof Command",
                             "Something that should not happen has occurred in "
-                                    + "line 4991 of NewDecomposeProofHandler.");
+                                    + "line 5028 of NewDecomposeProofHandler.");
                     errorFound = true ;
                 }
             }
@@ -5213,109 +5186,155 @@ System.out.println(ntr.toString()) ;
      * @param currRenaming
      * @return
      */
-    private Renaming substInNodeToRenaming(SubstInNode node, 
-                                           NodeRepresentation contextNodeRep) {
-        
-        Renaming result = new Renaming() ;
-        
-        // Construct the arguments to substituteInNodeText for performing
-        // the substitutions in contextNodeRep.instantiationSubstitutions.
-        
-        Renaming contextRenaming = null ; // contextNodeRep.instantiationSubstitutions ;
-        int clen = contextRenaming.identifiers.size() ;
-        FormalParamNode[] formalParams = new FormalParamNode[clen] ;
-        SemanticNode[] argNodes = new SemanticNode[clen] ;
-        String[] arguments = new String[clen] ;
-        boolean[] isBoundedIdRenaming = new boolean[clen] ;
-        for(int i=0; i < clen; i++) {
-          isBoundedIdRenaming[i] = false ;
-            // I'm hoping that substituteInNodeText does the right thing with 
-            // a substituting expression if it pretends that it's an identifier.
-          formalParams[i] = contextRenaming.identifiers.elementAt(i) ;
-          argNodes[i] = null ;
-          arguments[i] = contextRenaming.newNames.elementAt(i) ;
-        }
-        
-        Subst[] subst = node.getSubsts() ;
-
-        for (int i = 0; i < subst.length; i++ ) {
-            // SubstInNode substitutions substitute for OpDeclNodes.
-            // substituteInNodeText substitutes for FormalParamNodes.
-            // As a Kludge to connect them, we construct a FormalParamNode
-            // from an OpDeclNode and hope that it looks enough like one
-            // to work.
-            // LL-XXXXXX this couldn't possibly work because substituteInNodeText
-            // looks for FormalParamNodes in the semantic node to do the 
-            // substitution, and those faux FormalParamNodes aren't going
-            // to be in the semantic tree.
-            OpDeclNode opdec = subst[i].getOp() ;
-            FormalParamNode fpn =
-                new FormalParamNode(opdec.getName(), 
-                                    opdec.getArity(), 
-                                    opdec.stn,  
-                                    opdec.getSymbolTable(),
-                                    opdec.getOriginallyDefinedInModuleNode()
-                                    ) ;
-            result.identifiers.add(fpn) ;
-            if (!(subst[i].getExpr() instanceof ExprNode)) {
-                return null ;
-            }
-            ExprNode sn = (ExprNode) subst[i].getExpr() ;
-            
-            // LL-XXXX This is wrong because sn is the semantic node
-            // of an expression in the INSTANCE statement, so it's
-            // not a subnode of contextNodeRep.  (This comment seems
-            // to be obsolete, and the problem fixed.)
-            IDocument idoc = 
-                    moduleNameToIDocument(sn.getLocation().source());
-            NodeRepresentation randomNodeRep;
-            try {
-                randomNodeRep = new NodeRepresentation(idoc, sn);
-            } catch (BadLocationException e) {
-                // TODO Auto-generated catch block
-                return null ;
-            }
-            NodeTextRep snNodeText = new NodeTextRep(randomNodeRep.nodeText, 
-                                                     randomNodeRep.mapping) ;            
-            NodeTextRep nrep = 
-                    substituteInNodeText(formalParams,
-                          arguments, isBoundedIdRenaming,
-                          argNodes, sn,  snNodeText,
-                          new Decomposition()) ;
-                   // note: the Decomposition argument is just used to do some
-                   // renamings, which I think are irrelevant here because I
-                   // think any of the renamings have already been performed
-                   // when we construct the NodeTextRep argument.
-                   // LL-XXXXX This may be wrong, in which case we need to
-                   // add another argument to this method.  Check that it works
-                   // in a decomposition of \E x : Foo!Bar(x) that requires
-                   // renaming of the x.
-            if (nrep.nodeText.length != 1) {
-                return null ;
-            }
-            result.newNames.add(nrep.nodeText[0]) ;
-        }
-
-        return result ;
-    }
+//    private Renaming substInNodeToRenaming(SubstInNode node, 
+//                                           NodeRepresentation contextNodeRep) {
+//        
+//        Renaming result = new Renaming() ;
+//        
+//        // Construct the arguments to substituteInNodeText for performing
+//        // the substitutions in contextNodeRep.instantiationSubstitutions.
+//        
+//        Renaming contextRenaming = null ; // contextNodeRep.instantiationSubstitutions ;
+//        int clen = contextRenaming.identifiers.size() ;
+//        FormalParamNode[] formalParams = new FormalParamNode[clen] ;
+//        SemanticNode[] argNodes = new SemanticNode[clen] ;
+//        String[] arguments = new String[clen] ;
+//        boolean[] isBoundedIdRenaming = new boolean[clen] ;
+//        for(int i=0; i < clen; i++) {
+//          isBoundedIdRenaming[i] = false ;
+//            // I'm hoping that substituteInNodeText does the right thing with 
+//            // a substituting expression if it pretends that it's an identifier.
+//          formalParams[i] = contextRenaming.identifiers.elementAt(i) ;
+//          argNodes[i] = null ;
+//          arguments[i] = contextRenaming.newNames.elementAt(i) ;
+//        }
+//        
+//        Subst[] subst = node.getSubsts() ;
+//
+//        for (int i = 0; i < subst.length; i++ ) {
+//            // SubstInNode substitutions substitute for OpDeclNodes.
+//            // substituteInNodeText substitutes for FormalParamNodes.
+//            // As a Kludge to connect them, we construct a FormalParamNode
+//            // from an OpDeclNode and hope that it looks enough like one
+//            // to work.
+//            // LL-XXXXXX this couldn't possibly work because substituteInNodeText
+//            // looks for FormalParamNodes in the semantic node to do the 
+//            // substitution, and those faux FormalParamNodes aren't going
+//            // to be in the semantic tree.
+//            OpDeclNode opdec = subst[i].getOp() ;
+//            FormalParamNode fpn =
+//                new FormalParamNode(opdec.getName(), 
+//                                    opdec.getArity(), 
+//                                    opdec.stn,  
+//                                    opdec.getSymbolTable(),
+//                                    opdec.getOriginallyDefinedInModuleNode()
+//                                    ) ;
+//            result.identifiers.add(fpn) ;
+//            if (!(subst[i].getExpr() instanceof ExprNode)) {
+//                return null ;
+//            }
+//            ExprNode sn = (ExprNode) subst[i].getExpr() ;
+//            
+//            // LL-XXXX This is wrong because sn is the semantic node
+//            // of an expression in the INSTANCE statement, so it's
+//            // not a subnode of contextNodeRep.  (This comment seems
+//            // to be obsolete, and the problem fixed.)
+//            IDocument idoc = 
+//                    moduleNameToIDocument(sn.getLocation().source());
+//            NodeRepresentation randomNodeRep;
+//            try {
+//                randomNodeRep = new NodeRepresentation(idoc, sn);
+//            } catch (BadLocationException e) {
+//                // TODO Auto-generated catch block
+//                return null ;
+//            }
+//            NodeTextRep snNodeText = new NodeTextRep(randomNodeRep.nodeText, 
+//                                                     randomNodeRep.mapping) ;            
+//            NodeTextRep nrep = 
+//                    substituteInNodeText(formalParams,
+//                          arguments, isBoundedIdRenaming,
+//                          argNodes, sn,  snNodeText,
+//                          new Decomposition()) ;
+//                   // note: the Decomposition argument is just used to do some
+//                   // renamings, which I think are irrelevant here because I
+//                   // think any of the renamings have already been performed
+//                   // when we construct the NodeTextRep argument.
+//                   // LL-XXXXX This may be wrong, in which case we need to
+//                   // add another argument to this method.  Check that it works
+//                   // in a decomposition of \E x : Foo!Bar(x) that requires
+//                   // renaming of the x.
+//            if (nrep.nodeText.length != 1) {
+//                return null ;
+//            }
+//            result.newNames.add(nrep.nodeText[0]) ;
+//        }
+//
+//        return result ;
+//    }
 
     /**
-     * Assume that we are decomposing a use opUse of a user-defined operator
-     * in a context with isub the InstanceSubstitution.
+     * Assume that we are decomposing a use of a user-defined operator
+     * named opName in a context with isub the InstanceSubstitution, and 
+     * subIn is a SubstInNode which begins the definition of opName.
+     * Then this returns a new InstanceSubstitution obtained by appending
+     * to isub the substitutions for the parameters being renamed by subIn.
+     * Note that if opName is something like Foo!Bar!Op, then user-defined
+     * operators in the expressions being substituted for parameters by subIn
+     * will have to have their names prepended by isub.prefix and perhaps
+     * also with "Foo!" or "Foo!Bar!".
+     * 
+     * In case of error, returns null.
+     * 
+     * 
      *  LL-XXXX this is work in progress
      * 
      * @param isub
-     * @param opUse
-     * @param sn
+     * @param opName
+     * @param subIn
      * @return
      */
     InstanceSubstitution substInNodeToInstanceSub(
             InstanceSubstitution isub,
-            String opUse,
-            SubstInNode sn
+            String opName,
+            SubstInNode subIn
             ) {
-        InstanceSubstitution result = isub ;
+        InstanceSubstitution result = isub.clone() ;
+        int lastBang = opName.lastIndexOf('!') ;
+        String postPrefix = "";
+        if (lastBang != -1) {
+            postPrefix = opName.substring(0, lastBang + 1) ;
+        }
+        // Set doc to the document of the SubstInNode's module
+        IDocument doc = moduleNameToIDocument(subIn.getLocation().source()) ;
         
+        Subst[] substitutes = subIn.getSubsts() ;
+        OpDeclNode[] paramsArray = OpDeclNodeVectorToArray(isub.params) ;
+        String[] subsArray = StringVectorToArray(isub.substs) ;
+        for (int i = 0; i < substitutes.length; i++) {
+            Subst subst = substitutes[i] ;
+            result.params.add(subst.getOp()) ;
+            NodeRepresentation nodeRep ;
+            try {
+                 nodeRep = new NodeRepresentation(doc, subst.getExpr()) ;
+            } catch (BadLocationException e) {
+                // This shouldn't happen.
+                return null ;
+            }
+            
+           if (nodeRep.nodeText.length != 1) {
+               MessageDialog.openError(UIHelper.getShellProvider()
+                       .getShell(), "Decompose Proof Command",
+                       "Cannot handle instantiation of module parameter\n " 
+                               + "with multi-line formula.");
+               return null;              
+           }
+           
+           NodeTextRep ntRep = nodeRep.toNodeTextRep() ;
+           
+           ntRep = instantiateInNodeText(paramsArray, subsArray, subst.getExpr(), ntRep) ;
+           ntRep = renameInNodeText(subst.getExpr(), ntRep, isub.prefix, postPrefix) ;
+           result.substs.add(ntRep.nodeText[0]) ;
+        }      
         return result ;
     }
     
@@ -5954,6 +5973,8 @@ System.out.println(ntr.toString()) ;
             }
             result.nodeText = nodeTextRep.nodeText;
             result.mapping = nodeTextRep.mapping;
+            
+            result.instantiationSubstitutions = this.instantiationSubstitutions;
 
             /*
              * Compute the type, subType, and decomposition fields.
@@ -6567,15 +6588,16 @@ System.out.println(ntr.toString()) ;
         // positions of the beginning and end of oaNode's representation
         // in ntRep.
         int oaBeginLine = opApplLoc.beginLine() - ntLoc.beginLine() ;
-        int oaBeginCol = colToLoc(opApplLoc.beginColumn(),result.mapping[oaBeginLine]) ;
+        int bCol = opApplLoc.beginColumn() ;
+        int oaBeginLoc = colToLoc(bCol,result.mapping[oaBeginLine]) ;
         int oaEndLine = opApplLoc.endLine() - ntLoc.beginLine() ;
-        int oaEndCol = colToLoc(opApplLoc.endColumn(), result.mapping[oaEndLine]) ;
+        int oaEndLoc = colToLoc(opApplLoc.endColumn(), result.mapping[oaEndLine]) ;
         
         // Set bLine, bPos, ePos so that the operator name (which is assumed to
         // be on a single line) is between positions bPos to (excluding) ePos on
         // line bLine.
         int bLine = oaBeginLine ;
-        int bPos  = oaBeginCol  ;
+        int bPos  = oaBeginLoc  ;
         if (!isAlphaNum) {
             // In this case, set bLine, bPos to be right after the
             // first argument of the operator.
@@ -6589,6 +6611,7 @@ System.out.println(ntr.toString()) ;
             }
             Location firstArgLoc = oaArgs[0].getLocation() ;
             bLine = firstArgLoc.endLine() - ntLoc.beginLine();
+            bCol = firstArgLoc.endColumn() + 1 ;
             bPos  = colToLoc(firstArgLoc.endColumn() + 1, result.mapping[bLine]);
         }
         
@@ -6600,6 +6623,7 @@ System.out.println(ntr.toString()) ;
                    notDone = false ;
                }
                else {
+                   bCol ++ ;
                    bPos ++ ;
                }
             }
@@ -6617,7 +6641,7 @@ System.out.println(ntr.toString()) ;
         }
         int ePos  = result.nodeText[bLine].length() ;
         if (oaEndLine == bLine) {
-            ePos = oaEndCol + 1 ;
+            ePos = oaEndLoc + 1 ;
         }
                 
         // Check that bPos is at the beginning of the operator name.
@@ -6646,7 +6670,7 @@ System.out.println(ntr.toString()) ;
         result.nodeText[bLine] =
          result.nodeText[bLine].substring(0,bPos) + prefix + 
            result.nodeText[bLine].substring(bPos) ;
-        adjustMappingPairVector(bPos, prefix.length(), result.mapping[bLine]) ;  
+        adjustMappingPairVector(bCol, prefix.length(), result.mapping[bLine]) ;  
         
         // correct the indentation
         Vector<Insertion>[] insVecArray = new Vector[result.nodeText.length] ;
@@ -8310,6 +8334,26 @@ System.out.println(ntr.toString()) ;
 
         return (dirtyEditors.size() > 0);
 
+    }
+    
+    /*
+     * Because Java's generics are so stupid, need to define a new method
+     * to convert a Vector<T> to a T[] for every type T.
+     */
+    static OpDeclNode[] OpDeclNodeVectorToArray(Vector<OpDeclNode> vec) {
+        OpDeclNode[] result = new OpDeclNode[vec.size()] ;
+        for (int i = 0; i < vec.size(); i++) {
+            result[i] = vec.elementAt(i) ;
+        }
+        return result ;
+    }
+    
+    static String[] StringVectorToArray(Vector<String> vec) {
+        String[] result = new String[vec.size()] ;
+        for (int i = 0; i < vec.size(); i++) {
+            result[i] = vec.elementAt(i) ;
+        }
+        return result ;
     }
     
 }
