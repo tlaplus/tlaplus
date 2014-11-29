@@ -1,5 +1,7 @@
 /**
- * CURRENTLY BEING WORKED ON:  substInNodeToInstanceSub
+ * CURRENTLY BEING WORKED ON:  decompositionChildToNodeRep, having
+ * added the instantiationSubstitutions field to the Decomposition object.
+ * 
  * THINGS TO DO:
  *  - Check that what I've done so far works with definition expansion.
  *  
@@ -64,7 +66,6 @@
  *       PROVE   TRUE
  *       
  *    Leaves the Prove button disabled
- * 
  *    
  *  - Bug discovered 19 Aug 2014 by LL.  FIXED IN NEW VERSION
  *    Decomposing
@@ -106,15 +107,10 @@
  *    code that was written remains; only the button for choosing the feature
  *    was made invisible.  This means that there is a lot of dead code 
  *    that was executed only when the option was chosen.
- *    THE DEAD CODE WILL PROBABLY BE REMOVED, PERHAPS LEAVING HOOKS INDICATING
- *    HOW USE OF SUBEXPRESSION NAMES CAN BE IMPLEMENTED, BUT THEY PROBABLY
- *    WON'T BE ALLOWED IN THE NEW RELEASE.
+ *    THE DEAD CODE IS BEING LEFT IN JUST IN CASE SOMEONE WANTS TO IMPLEMENT
+ *    THAT FEATURE.
  *
- *  - If "use CASE" is chosen, an ASSUME / PROVE with multiple assumptions should be turned
- *    into a case if it contains no NEWs, with the assumptions being turned into a 
- *    conjunction.  Currently, it only is if there is a single assumption.
- *    FIXED IN NEW VERSION 
- *    
+ *
  *  - If decomposition requires expanding a definition, the decomposition will be
  *    performed only if each argument of the defined operator appears on a 
  *    single line of the source text.  (Different arguments may appear on 
@@ -144,6 +140,11 @@
  *    decomposition into the subcases G and H will not.
  *    THIS RESTRICTION WILL PROBABLY REMAIN.  IT DOESN'T SEEM LIKELY TO OCCUR OFTEN.
  *    
+ *  - When definitions obtained by instantiation are expanded, operator names
+ *    may need to be changed--e.g., replacing Op with Foo!Bar!Op.  This will
+ *    not be done if Op is used as an operator argument, and a warning will
+ *    be raised if an operator that might need renaming is encountered.
+ *  
  *  - It would be useful to have the option of expanding an assumption or goal
  *    that is a LET formula.  This would create an initial DEFINE step in the proof.
  *    THIS RESTRICTION WILL PROBABLY REMAIN.  IT DOESN'T SEEM LIKELY TO OCCUR OFTEN.
@@ -4016,11 +4017,12 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         IDocument childDoc = this.doc;
         String moduleName = this.moduleNode.getName().toString() ;
         if (decomp.moduleName != null) {
-            childDoc = moduleNameToIDocument(moduleName) ;
+            childDoc = moduleNameToIDocument(decomp.moduleName) ;
         }
 
         // Set result to the node representation.
         NodeRepresentation result;
+        
         if ((decomp.definedOp != null) && (newNodeText == null)) {
             // Have to expand nodeRep's definition node.
             try {
@@ -4139,7 +4141,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * ASSUMPTION COULD APPEAR BEFORE CASE-SPLIT ASSUMPTIONS.
      * 
      * If the node cannot be decomposed--for example, if an operator is
-     * instantiated with an multi-line expression--then null is returned.
+     * instantiated with a multi-line expression--then null is returned.
      * 
      * 
      * @param nodeRepArg
@@ -4172,66 +4174,56 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // NEED TO SUBSTITUTE FOR DEFINITION'S FORMAL PARAMETERS
 
                 // Strip prime from nodeRepArg.semanticNode if it has one.
+                if (!(nodeRepArg.semanticNode instanceof OpApplNode)) {
+                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                            "Decompose Proof Command",
+                            "Something unexpected is going on at "
+                                    + "line 4178 of NewDecomposeProofHandler.");
+                    return null;
+                }
                 OpApplNode oan = (OpApplNode) nodeRepArg.semanticNode;
                 if (oan.getOperator().getName() == ASTConstants.OP_prime) {
-                    if (!(oan instanceof OpApplNode)) {
-                        return null;
-                    }
                     oan = (OpApplNode) oan.getArgs()[0];
                 }
-                ExprNode sn = ((OpDefNode) oan.getOperator()).getBody();
-                
-                // LL-XXXX  -- doing some testing
-                // (We are in decomposeQuantifier(nodeRepArg, isForAll)
-                // 
-                // If sn is a SubstInNode, then the definition has been
-                // instantiated with substitution, so we must set the decomposition's
-                // instantiationSubstitutionsD field to the substitutions
-                // implied by the chain of SubstInNodes.  If sn is not a SubstInNode,
-                // then we set instantiationSubstitutionsD to 
-                // nodeRepArg.instantiationSubstitutions--even if sn is in a 
-                // different module than nodeRepArg came from.  This is because
-                // that other module might been one EXTENDed by nodeRepArg's
-                // module, so it might have contributed module parameters
-                // to sn's module, and those parameters might be instantiated
-                // by a substitution in nodeRepArg.instantiationSubstitutions.
-                // (We should add a test checking this situation.)
-                // This isn't possible if sn's module was instantiated (but
-                // has no module parameters, so theres no SubstInNode), but there's 
-                // no harm in trying to // do the instantiations from 
-                // nodeRepArg.instantiationSubstitutions because sn's module 
-                // won't contain any of the nodes being substituted for.
-                
-                // set instSubs to the new InstanceSubstitution for the decomposition 
+                              
+                // Set instSubs to the new InstanceSubstitution for the decomposition 
                 // nodes and sn to the (OpArgNode) at the bottom of the SubstInNode chain.
-                InstanceSubstitution instSubs = nodeRepArg.instantiationSubstitutions.clone(); 
+                InstanceSubstitution instSubs = decomp.instantiationSubstitutions.clone(); 
+                ExprNode sn = ((OpDefNode) oan.getOperator()).getBody();
                 while (sn instanceof SubstInNode) {
-                    instSubs = substInNodeToInstanceSub(
-                            instSubs, decomp.definedOp, (SubstInNode) sn) ;
-                   if (instSubs == null) {
-                        MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                                "Decompose Proof Command",
-                                "Decomposing an instantiated definition whose\n"
-                                + "instantiation cannot be handled.");
-                        return null;
-                    }
-                    sn = ((SubstInNode)sn).getBody() ;                        
+                    sn = ((SubstInNode)sn).getBody() ; 
                 }
-                
-                
-                // LL-XXXX We have to set instantiatedNamePrefixD to the
-                // concatenation of nodeRepArg.instantiatedNamePrefix
-                // and all the text through the last "!" in the operator's
-                // name.  Set instNamePrefix to that value.
-                String instNamePrefix = nodeRepArg.instantiationSubstitutions.prefix ;
-                String restOfName = decomp.definedOp ;
-                while (restOfName.indexOf("!") != -1) {
-                    instNamePrefix = instNamePrefix + 
-                                        restOfName.substring(0, restOfName.indexOf("!")+1) ;
-                    restOfName = restOfName.substring(restOfName.indexOf("!")+1) ;
-                }
-                instSubs.prefix = instNamePrefix ;
-                
+
+// THE FOLLOWING CODE WAS WRITTEN BEFORE THE InstantiationSubstitutions WERE
+// ADDED TO THE Decomposition NODE
+//                InstanceSubstitution instSubs = nodeRepArg.instantiationSubstitutions.clone(); 
+//                while (sn instanceof SubstInNode) {
+//                    instSubs = substInNodeToInstanceSub(
+//                            instSubs, decomp.definedOp, (SubstInNode) sn) ;
+//                   if (instSubs == null) {
+//                        MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+//                                "Decompose Proof Command",
+//                                "Decomposing an instantiated definition whose\n"
+//                                + "instantiation cannot be handled.");
+//                        return null;
+//                    }
+//                    sn = ((SubstInNode)sn).getBody() ;                        
+//                }
+//                
+//               
+//                // Set instSubs.prefix to the concatenation of 
+//                // instantiationSubstitutions.prefix of nodeRepArg with the
+//                // prefix of the operator whose definition we're decomposing.
+//                // 
+//                String instNamePrefix = nodeRepArg.instantiationSubstitutions.prefix ;
+//                String restOfName = decomp.definedOp ;
+//                while (restOfName.indexOf("!") != -1) {
+//                    instNamePrefix = instNamePrefix + 
+//                                        restOfName.substring(0, restOfName.indexOf("!")+1) ;
+//                    restOfName = restOfName.substring(restOfName.indexOf("!")+1) ;
+//                }
+//                instSubs.prefix = instNamePrefix ;
+//                
                 // Need to create the NodeRepresentation using the
                 // module in which the definition occurs.  
                 String moduleName = sn.getLocation().source() ;
@@ -4241,8 +4233,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // the definition body consisting of the entire definition body.
                 // But a little thought reveals that this does what needs to be 
                 // done. 
-                // Note: I don't think the last argument of the subNodeRep call
-                // matters.
+                // Note: I don't know if the last argument of the subNodeRep call
+                // matters.  But it may affect whether the resulting assumption
+                // is displayed.
                 nodeRep = res.subNodeRep(sn, nodeRepArg.getParentVector(),
                         nodeRepArg.parentNode, null, decomp, !isForAll);
                 nodeRep.isPrimed = nodeRepArg.isPrimed;
@@ -4251,7 +4244,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 nodeRep.fromDefs = nodeRepArg.fromDefs.clone() ;
                 nodeRep.instantiationSubstitutions = instSubs ;
                 if (decomp.definedOp != null) {
-                    nodeRep.fromDefs.add(decomp.definedOp) ;
+                    nodeRep.fromDefs.add(
+                        nodeRepArg.instantiationSubstitutions.prefix + decomp.definedOp) ;
                 }
                 
 
@@ -4266,6 +4260,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 ntr = renameInNodeText((OpApplNode) nodeRep.semanticNode, 
                                        ntr, nodeRep.instantiationSubstitutions.prefix, 
                                        "") ;
+                if (ntr == null) {
+                    return null ;
+                }
                 nodeRep.nodeText = ntr.nodeText ;
                 nodeRep.mapping = ntr.mapping ;
                 
@@ -4699,10 +4696,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         + thisReplaceText
                         + result.nodeText[useIdx].substring(offset
                                 + sourceTextLength);
-                adjustMappingPairVector(useLocation.beginColumn()
+                adjustMappingPairVector(useLocation.beginColumn() + 1 // +1 added 28 Nov 2014
                         // LL-XXXXX I believe the "+ sourceTextLength"
                         // in the next line should be removed.
-                        + sourceTextLength, thisReplaceText.length()
+                        /* + sourceTextLength */, thisReplaceText.length()
                         - sourceTextLength, result.mapping[useIdx]);
 
                 // Update inserts
@@ -4733,8 +4730,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                             + replacementText
                             + result.nodeText[useIdx].substring(offset
                                     + sourceTextLength);
-                    adjustMappingPairVector(useLocation.beginColumn()
-                            + sourceTextLength, replacementText.length()
+                    adjustMappingPairVector(useLocation.beginColumn() + 1 // +1 added 28 Nov 2014
+                            // LL-XXXXX commented out "+ sourceTextLength"
+                            // because it looks funny
+                            /* + sourceTextLength */, replacementText.length()
                             - sourceTextLength, result.mapping[useIdx]);
 
                     // Update inserts
@@ -4887,7 +4886,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         + thisReplaceText
                         + result.nodeText[useIdx].substring(offset
                                 + sourceTextLength);
-                adjustMappingPairVector(useLocation.beginColumn()
+                adjustMappingPairVector(useLocation.beginColumn() +1 // +1 added 28 Nov 2014
                    /* + sourceTextLength */, thisReplaceText.length()
                         - sourceTextLength, result.mapping[useIdx]);
 
@@ -4895,40 +4894,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 inserts[useIdx].add(new Insertion(offset, sourceTextLength,
                         thisReplaceText.length()));
             }
-//
-//            // if isBoundedIdRenaming[i] is true, then rename the occurrence of
-//            // the FormalParamNode. The code was cloned for the code above that
-//            // renames uses.
-//            //
-//            // This can be called with decomp.renaming containing renamings for
-//            // bounded identifiers that occur in a different part of the spec
-//            // because we're now inside an expanded definition. We therefore
-//            // have to not try to do the renaming in that case.
-//            if (isBoundedIdRenaming[i]) {
-//                Location useLocation = formalParams[i].stn.getLocation();
-//                // We do this replacement iff the identifier declaration is
-//                // contained
-//                // in the location in which the renaming is being performed.
-//                if (EditorUtil.locationContainment(useLocation,
-//                        sn.stn.getLocation())) {
-//                    int useIdx = useLocation.beginLine() - beginLine;
-//                    int offset = colToLoc(useLocation.beginColumn(),
-//                            result.mapping[useIdx]);
-//                    result.nodeText[useIdx] = result.nodeText[useIdx]
-//                            .substring(0, offset)
-//                            + replacementText
-//                            + result.nodeText[useIdx].substring(offset
-//                                    + sourceTextLength);
-//                    adjustMappingPairVector(useLocation.beginColumn()
-//                            + sourceTextLength, replacementText.length()
-//                            - sourceTextLength, result.mapping[useIdx]);
-//
-//                    // Update inserts
-//                    inserts[useIdx].add(new Insertion(offset, sourceTextLength,
-//                            replacementText.length()));
-//                }
-//            }
-
         }
 
         // Adjust the indentation.
@@ -5017,8 +4982,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 
             }
             
-            else if (opUses[i] instanceof OpArgNode) {
-                // Not implemented yet LL-XXXXXX
+            else if ((opUses[i] instanceof OpArgNode) && (trialPrefixes.length > 1)) {
+                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                        "Decompose Proof Command",
+                        "A use of " + ((OpArgNode) opUses[i]).getName() + 
+                        " as an operator name may require manual renaming.");
             }
             
             else {
@@ -5029,8 +4997,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                     + "line 5028 of NewDecomposeProofHandler.");
                     errorFound = true ;
                 }
-            }
-              
+            }             
         }
        // 
         return result ;  
@@ -5317,7 +5284,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             try {
                  nodeRep = new NodeRepresentation(doc, subst.getExpr()) ;
             } catch (BadLocationException e) {
-                // This shouldn't happen.
+                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                        "Decompose Proof Command",
+                        "Something unexpected is going on at "
+                                + "line 5277 of NewDecomposeProofHandler.");
                 return null ;
             }
             
@@ -5333,6 +5303,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
            
            ntRep = instantiateInNodeText(paramsArray, subsArray, subst.getExpr(), ntRep) ;
            ntRep = renameInNodeText(subst.getExpr(), ntRep, isub.prefix, postPrefix) ;
+           if (ntRep == null) {
+               return null ;
+           }
            result.substs.add(ntRep.nodeText[0]) ;
         }      
         return result ;
@@ -6015,7 +5988,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         NodeTextRep subNodeText(SemanticNode sn) {
             NodeTextRep result = new NodeTextRep();
             // result.semanticNode = sn ;
-            // set beginId to be the index in this.nodeText representing the
+            // set beginIdx to be the index in this.nodeText representing the
             // first line of the source of SemanticNode node sn.
             int beginIdx = getBeginLine(sn) - getBeginLine(this.semanticNode);
             result.nodeText = new String[getEndLine(sn) - getBeginLine(sn) + 1];
@@ -6546,13 +6519,19 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         NodeTextRep result = ntRep.clone() ;
         SymbolNode opSym = oaNode.getOperator();
         if (! (opSym instanceof OpDefNode))  {
-            // This should not happen
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    "Decompose Proof Command",
+                    "Something unexpected is going on at "
+                            + "line 6509 of NewDecomposeProofHandler.");
             return null ;
         }
         
         OpDefNode opDef = (OpDefNode) opSym ;
         if (opDef.getKind() != OpDefNode.UserDefinedOpKind) {
-            // This should not happen
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                    "Decompose Proof Command",
+                    "Something unexpected is going on at "
+                            + "line 6518 of NewDecomposeProofHandler.");
             return null ;
         }
         
@@ -6576,14 +6555,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             }
             i++ ;
         }
-        
-//        if (!isAlphaNum) {
-//            MessageDialog.openError(UIHelper.getShellProvider()
-//                    .getShell(), "Decompose Proof Command",
-//                    "Cannot rename infix or prefix operator " + opDef.getName());
-//            return null ;
-//        }
-        
+       
         // Set oaBeginLine, oaBeginCol, oaEndLine, oaEndCol to the (0-based)
         // positions of the beginning and end of oaNode's representation
         // in ntRep.
@@ -6670,7 +6642,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         result.nodeText[bLine] =
          result.nodeText[bLine].substring(0,bPos) + prefix + 
            result.nodeText[bLine].substring(bPos) ;
-        adjustMappingPairVector(bCol, prefix.length(), result.mapping[bLine]) ;  
+        // First argument below changed from bCol to bCol+1 on 28 Nov 2014
+        // because we have effectively replaced the name in bCol by a
+        // longer name.
+        adjustMappingPairVector(bCol + 1, prefix.length(), result.mapping[bLine]) ;  
         
         // correct the indentation
         Vector<Insertion>[] insVecArray = new Vector[result.nodeText.length] ;
@@ -6915,12 +6890,15 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * The instantiationSubstitutions field of the decomposition's
          * children's NodeRepresentation objects.  If definedOpRep = null
          * or definedOpRep is not an operator imported by instantiation, then
-         * this will be the as the instantiationSubstitutions field of
+         * this will be the same as the instantiationSubstitutions field of
          * the NodeRepresentation whose decomposition field this Decomposition 
-         * object is.
+         * object is.  
+         * 
+         * A null value of this field indicates that it couldn't be computed
+         * because the instantiated definition can't be decomposed because
+         * the instantiation substitutes a multi-line formula for a parameter. 
          */
-        InstanceSubstitution instantiationSubstitutionsD = new InstanceSubstitution() ;
-        // String   instantiatedNamePrefixD = "" ;
+        InstanceSubstitution instantiationSubstitutions = new InstanceSubstitution() ;
 
         /**
          * If definedOp is not null, then this is the name of the module
@@ -6986,8 +6964,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 result.renaming = this.renaming.clone();
             }
             
-            result.instantiationSubstitutionsD =
-                        this.instantiationSubstitutionsD.clone() ;
+//            result.instantiationSubstitutionsD =
+//                        this.instantiationSubstitutionsD.clone() ;
 //            result.instantiatedNamePrefixD = 
 //                      this.instantiatedNamePrefixD ;            
             result.type = this.type;
@@ -7002,6 +6980,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             result.quantBounds = this.quantBounds;
             result.quantBoundsubexpNames = this.quantBoundsubexpNames;
             result.primed = this.primed;
+            result.instantiationSubstitutions = 
+                    this.instantiationSubstitutions.clone();
             return result;
         }
 
@@ -7230,6 +7210,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             result.renaming.newNames = (Vector<String>) decomp.renaming.newNames
                     .clone();
         }
+        
+        // LL-XXXXXXX  I'm not sure if the following is correct or necessary.
+        // The field gets overwritten if the decomposition requires expanding
+        // a definition.
+        result.instantiationSubstitutions = nodeRep.instantiationSubstitutions ;
 
         // Check if primed expression.
         if (node.getOperator().getName() == ASTConstants.OP_prime) {
@@ -7249,16 +7234,38 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             // This is a user-defined operator
             OpDefNode definition = (OpDefNode) node.getOperator();
             String operatorName = definition.getName().toString();
+            
+            // Set opDef to the (OpArgNode) at the bottom of the SubstInNode chain
+            // and instSubs to the new InstanceSubstitution for the decomposition
+            // nodes.
             ExprNode opDef = definition.getBody();
-            // LL-XXXXX  The following must be enhanced to create the necessary
-            // data structures to deal with substitution in instantiated formulas.
-            // However, for now, let's get things to work in the case when
-            // the definition doesn't contain any of the instantiated parameters.
-            // (we are inside decompose(nodeRep, decomp, isAssumption))
-            //
+            InstanceSubstitution instSubs = nodeRep.instantiationSubstitutions.clone(); 
             while (opDef instanceof SubstInNode) {
-               opDef = ((SubstInNode) opDef).getBody();
+                instSubs = substInNodeToInstanceSub(
+                        instSubs, operatorName, (SubstInNode) opDef) ;
+               if (instSubs == null) {
+                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                            "Decompose Proof Command",
+                            "Decomposing an instantiated definition whose\n"
+                            + "instantiation cannot be handled.");
+                    return null;
+                }
+                opDef = ((SubstInNode)opDef).getBody() ;                        
             }
+            
+            // Set instSubs.prefix to the concatenation of 
+            // instantiationSubstitutions.prefix of nodeRepArg with the
+            // prefix of the operator whose definition we're decomposing.
+            // 
+            String instNamePrefix = nodeRep.instantiationSubstitutions.prefix ;
+            String restOfName = operatorName ;
+            while (restOfName.indexOf("!") != -1) {
+                instNamePrefix = instNamePrefix + 
+                                    restOfName.substring(0, restOfName.indexOf("!")+1) ;
+                restOfName = restOfName.substring(restOfName.indexOf("!")+1) ;
+            }
+            instSubs.prefix = instNamePrefix ;
+
 
             if (opDef instanceof OpApplNode) {
                 // This is a user-defined operator. We can handle it iff
@@ -7281,6 +7288,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 // be expanded by subexpression naming or by actual expansion.
                 // (Initially, we don't deal with expansion of names from
                 // another module.)
+                result.instantiationSubstitutions = instSubs ;
                 result.definedOp = operatorName;
                 result.definedOpRep = nodeRep.subNodeText(unprimedNode);
                 result.formalParams = definition.getParams();
@@ -7649,7 +7657,16 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     /**
      * Modify vec so the line mapping nl it represents is related to the
      * original line mapping ol by nl[c] = IF c < col THEN ol[c] ELSE ol[c] +
-     * incr
+     * incr.  In other words, if adding n characters (or removing -incr 
+     * characters) before the character in column c, then call
+     * adjustMappingPairVector(c, n, ...).  However, if replacing 
+     * a token of length blen at column c by an expression of length nlen,
+     * then call adjustMappingPairVector(c+1, nlen - olen, ...)
+     * because: (a) the beginning position of the expression is the
+     * same as that of the token, and (b) one should never be
+     * looking at or modifying anything inside the expression,
+     * so we can call adjustMappingPairVector with any first
+     * argument between c+1 and c+(length of original token).
      * 
      * @param col
      * @param incr
