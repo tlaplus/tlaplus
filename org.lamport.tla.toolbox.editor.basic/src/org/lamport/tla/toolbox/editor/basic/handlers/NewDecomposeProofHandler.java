@@ -2814,9 +2814,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         state.hasChanged = true;
         if (decomp.definedOp != null) {
             if (parentVec == state.assumeReps) {
-                state.assumpDefinitions.add(decomp.definedOp);
+                // Note that it doesn't seem to matter what values are put into assumpDefinitions.
+                // See comment on this field.
+                state.assumpDefinitions.add(nodeRep.instantiationSubstitutions.prefix + decomp.definedOp);
             } else {
-                state.goalDefinitions.add(decomp.definedOp);
+                // I think this assignment does nothing because an \E decomposition
+                // doesn't appear in the goal.  However, I'm not at all sure of this.
+                state.goalDefinitions.add(nodeRep.instantiationSubstitutions.prefix + decomp.definedOp);
             }
         }
 
@@ -2936,7 +2940,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         Decomposition decomp = nodeRep.decomposition;
         state.hasChanged = true;
         if (decomp.definedOp != null) {
-            state.goalDefinitions.add(decomp.definedOp);
+            state.goalDefinitions.add(nodeRep.instantiationSubstitutions.prefix + decomp.definedOp);
         }
 
         nodeRep.nodeType = NodeRepresentation.OR_DECOMP;
@@ -2987,7 +2991,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         Decomposition decomp = nodeRep.decomposition;
         state.hasChanged = true;
         if (decomp.definedOp != null) {
-            state.goalDefinitions.add(decomp.definedOp);
+            state.goalDefinitions.add(nodeRep.instantiationSubstitutions.prefix + decomp.definedOp);
         }
 
         nodeRep.nodeType = NodeRepresentation.OR_DECOMP;
@@ -3104,7 +3108,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      *           \o IF is a defined op THEN <<the operator name>>
      *                                 ELSE << >>
      * 
-     * 
      * CASE 2: /\ isAndProof = true
      *         /\ "Use SUFFICES" not chosen ->
      * 
@@ -3119,6 +3122,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      *     DEF createdAssump.defs \o
      *           IF decompGoal is a defined op THEN <<the operator name>>
      *                                         ELSE << >>
+     *           \o createdAssumps.defs
      *  
      * CASE 3: /\ isAndProof = sufficesOnly = FALSE
      *         /\ "Use SUFFICES" chosen  -> 
@@ -3423,7 +3427,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             // Fhe following is the only use of addStepNumber
             // it should probably be replaced by something else.
             // See comments for declaration of addStepNumber.
-            if (state.assumpDefinitions.isEmpty() && !addStepNumber) {
+            //LL-XXXXX:  On 29 Nov 2014, LL tried just commenting it out,
+            // hoping that any step numbers now needed are added
+            // using the contextStepName field of the NodeRepresentation 
+            // objects
+            if (state.assumpDefinitions.isEmpty() /* && !addStepNumber */) {
                 // No goal definitions were expanded; the proof is obvious.
                 if (OBVIOUS_HAS_PROOF) {
                     sufficesProof = "PROOF OBVIOUS";
@@ -3444,7 +3452,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     sufficesProof = sufficesProof + "DEF " + sufficesDEF.toCommaSeparatedString();
                 }
                 
-                
+                // The following code was commented out.  However, it produced an empty BY
+                // because we were here and shouldn't have 
 //                if (addStepNumber) {
 //                    sufficesProof = sufficesProof + this.stepNumber + " ";
 //                }
@@ -3615,6 +3624,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 }
                 if (! hasSufficesStep) {
                     qedDEF.addAll(nodeRep.fromDefs) ;
+                    qedDEF.addAll(createdAssumpsDefs) ;
                 }
             }
             else {
@@ -4034,6 +4044,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         new NodeTextRep(res.nodeText, res.mapping), nodeRep);
                 res.nodeText = ntext.nodeText;
                 res.mapping = ntext.mapping;
+                res.instantiationSubstitutions = decomp.instantiationSubstitutions.clone();
 
                 // This is a hack, calling subNodeRep for the subnode of
                 // the definition body consisting of the entire definition body.
@@ -4057,6 +4068,29 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                 + "line 2714 of NewDecomposeProofHandler.");
                 return null;
             }
+            // We now perform the substitutions in result
+            // based on its instantiationSubstitutions field.
+            // If it's not an OpApplNode, then there should be
+            // not substitutions to be made.  (This can happen
+            // if it's something weird like a number.  I don't
+            // know if there are any non-weird cases.)
+            if (result.semanticNode instanceof OpApplNode) {
+                NodeTextRep ntr = result.toNodeTextRep() ;
+                ntr = instantiateInNodeText(
+                        OpDeclNodeVectorToArray(decomp.instantiationSubstitutions.params), 
+                        StringVectorToArray(decomp.instantiationSubstitutions.substs), 
+                        (OpApplNode) result.semanticNode, 
+                        ntr);
+                ntr = renameInNodeText((OpApplNode) result.semanticNode, 
+                                       ntr, decomp.instantiationSubstitutions.prefix, 
+                                       "") ;
+                if (ntr == null) {
+                    return null ;
+                }
+                result.nodeText = ntr.nodeText ;
+                result.mapping = ntr.mapping ;    
+            }
+   
 
         } else {
             // Call subNodeRep to construct the result.
@@ -4082,8 +4116,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         result.fromGoal = nodeRep.fromGoal ;
         result.fromExists = nodeRep.fromExists ;
         result.fromDefs = nodeRep.fromDefs.clone();
+        result.instantiationSubstitutions = decomp.instantiationSubstitutions ;
         if (decomp.definedOp != null) {
-            result.fromDefs.add(decomp.definedOp) ;
+            result.fromDefs.add(nodeRep.instantiationSubstitutions.prefix + decomp.definedOp) ;
         }
         return result;
     }
@@ -4924,6 +4959,17 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         
         NodeTextRep result = nodeTextRep ;
         
+        // If there's nothing to append, then there's nothing to do.  In
+        // addition to this being an optimization of the normal case, it
+        // simplifies matters because any operators we're renaming have to
+        // be globally defined in their module, so they can be found in
+        // that module's list of definitions.  That's not true for defined
+        // operators in the current module, which can use locally defined
+        // operators.
+        if (prefix.equals("") && postPrefix.equals("")) {
+            return result ;
+        }
+        
         // errorFound is set true when a user error is raised.
         boolean errorFound = false ;
                
@@ -5484,6 +5530,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          */
         private StringSet goalDefinitions;
 
+        // It appears that the only use made of assumpDefinitions is to
+        // test whether or not it is empty.
         private HashSet<String> assumpDefinitions;
 
         // PERHAPS CAN BE COMBINED WITH goalDefinitions
