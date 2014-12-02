@@ -4082,6 +4082,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         new NodeTextRep(res.nodeText, res.mapping), nodeRep);
                 res.nodeText = ntext.nodeText;
                 res.mapping = ntext.mapping;
+                // Following added 2 Dec 2014
+                if (res.decomposition != null) {
+                    res.decomposition.renaming = ntext.renaming;
+                }
                 res.instantiationSubstitutions = decomp.instantiationSubstitutions.clone();
 
                 // This is a hack, calling subNodeRep for the subnode of
@@ -4139,6 +4143,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     new NodeTextRep(result.nodeText, result.mapping), nodeRep);
             result.nodeText = ntext.nodeText;
             result.mapping = ntext.mapping;
+            // Following added 2 Dec 2014
+            if (result.decomposition != null) {
+                result.decomposition.renaming = ntext.renaming;
+            }
+             
             
         }
         // Set various fields whose values can be inferred from nodeRep and
@@ -4318,6 +4327,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         nodeRepArg);
                 nodeRep.nodeText = ntext.nodeText;
                 nodeRep.mapping = ntext.mapping;
+                // Following added 2 Dec 2014
+                if (nodeRep.decomposition != null) {
+                   nodeRep.decomposition.renaming = ntext.renaming;
+                }
             } catch (BadLocationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -4343,6 +4356,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         if (!isForAll) {
             // Set prevDeclared to the set of all identifiers declared or
             // defined at the location of nodeRepArg.
+            // Bug discovered 2 Dec 2014: need also add to prevDeclared
+            // all later uses of bound identifiers that could cause a conflict
+            // that requires renaming of the NEW declaration(s) to be added.
             StringSet prevDeclared = this.declaredIdentifiers.clone();
             addDeclaredSymbols(prevDeclared, nodeRepArg);
 
@@ -5186,112 +5202,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // Add the renamings to decomp.renaming
         // On 10 Feb 2013, LL realized that seems to be wrong, because some
         // bounded id renaming is getting lost.
-        decomp.renaming = rename;
-
+        // On 2 Dec 2014 LL realized that things are getting screwed up
+        // because it should be the NodeText that's keeping track of
+        // these renamings.
+        // decomp.renaming = rename;
+        result.renaming = rename;
         return result;
     }
     
-    /**
-     * LL-XXXXX Remove this and have it create an InstanceSubstitution 
-     * Creates a Renaming object that represents the renamings
-     * of the SubstInNode node, where the substituting expression
-     * nodes are assumed to be subexpressions of the semantic node
-     * represented by contextNodeRep (and hence need to be renamed
-     * according to contextNodeRep.instantiationSubstitutions).
-     * Returns null if any of the expressions being substituted
-     * for identifiers are multi-line, or if it fails for any
-     * other reason because the code doesn't know what to do with
-     * some substitution node.
-     * 
-     * @param node
-     * @param currRenaming
-     * @return
-     */
-//    private Renaming substInNodeToRenaming(SubstInNode node, 
-//                                           NodeRepresentation contextNodeRep) {
-//        
-//        Renaming result = new Renaming() ;
-//        
-//        // Construct the arguments to substituteInNodeText for performing
-//        // the substitutions in contextNodeRep.instantiationSubstitutions.
-//        
-//        Renaming contextRenaming = null ; // contextNodeRep.instantiationSubstitutions ;
-//        int clen = contextRenaming.identifiers.size() ;
-//        FormalParamNode[] formalParams = new FormalParamNode[clen] ;
-//        SemanticNode[] argNodes = new SemanticNode[clen] ;
-//        String[] arguments = new String[clen] ;
-//        boolean[] isBoundedIdRenaming = new boolean[clen] ;
-//        for(int i=0; i < clen; i++) {
-//          isBoundedIdRenaming[i] = false ;
-//            // I'm hoping that substituteInNodeText does the right thing with 
-//            // a substituting expression if it pretends that it's an identifier.
-//          formalParams[i] = contextRenaming.identifiers.elementAt(i) ;
-//          argNodes[i] = null ;
-//          arguments[i] = contextRenaming.newNames.elementAt(i) ;
-//        }
-//        
-//        Subst[] subst = node.getSubsts() ;
-//
-//        for (int i = 0; i < subst.length; i++ ) {
-//            // SubstInNode substitutions substitute for OpDeclNodes.
-//            // substituteInNodeText substitutes for FormalParamNodes.
-//            // As a Kludge to connect them, we construct a FormalParamNode
-//            // from an OpDeclNode and hope that it looks enough like one
-//            // to work.
-//            // LL-XXXXXX this couldn't possibly work because substituteInNodeText
-//            // looks for FormalParamNodes in the semantic node to do the 
-//            // substitution, and those faux FormalParamNodes aren't going
-//            // to be in the semantic tree.
-//            OpDeclNode opdec = subst[i].getOp() ;
-//            FormalParamNode fpn =
-//                new FormalParamNode(opdec.getName(), 
-//                                    opdec.getArity(), 
-//                                    opdec.stn,  
-//                                    opdec.getSymbolTable(),
-//                                    opdec.getOriginallyDefinedInModuleNode()
-//                                    ) ;
-//            result.identifiers.add(fpn) ;
-//            if (!(subst[i].getExpr() instanceof ExprNode)) {
-//                return null ;
-//            }
-//            ExprNode sn = (ExprNode) subst[i].getExpr() ;
-//            
-//            // LL-XXXX This is wrong because sn is the semantic node
-//            // of an expression in the INSTANCE statement, so it's
-//            // not a subnode of contextNodeRep.  (This comment seems
-//            // to be obsolete, and the problem fixed.)
-//            IDocument idoc = 
-//                    moduleNameToIDocument(sn.getLocation().source());
-//            NodeRepresentation randomNodeRep;
-//            try {
-//                randomNodeRep = new NodeRepresentation(idoc, sn);
-//            } catch (BadLocationException e) {
-//                // TODO Auto-generated catch block
-//                return null ;
-//            }
-//            NodeTextRep snNodeText = new NodeTextRep(randomNodeRep.nodeText, 
-//                                                     randomNodeRep.mapping) ;            
-//            NodeTextRep nrep = 
-//                    substituteInNodeText(formalParams,
-//                          arguments, isBoundedIdRenaming,
-//                          argNodes, sn,  snNodeText,
-//                          new Decomposition()) ;
-//                   // note: the Decomposition argument is just used to do some
-//                   // renamings, which I think are irrelevant here because I
-//                   // think any of the renamings have already been performed
-//                   // when we construct the NodeTextRep argument.
-//                   // LL-XXXXX This may be wrong, in which case we need to
-//                   // add another argument to this method.  Check that it works
-//                   // in a decomposition of \E x : Foo!Bar(x) that requires
-//                   // renaming of the x.
-//            if (nrep.nodeText.length != 1) {
-//                return null ;
-//            }
-//            result.newNames.add(nrep.nodeText[0]) ;
-//        }
-//
-//        return result ;
-//    }
 
     /**
      * Assume that we are decomposing a use of a user-defined operator
@@ -5305,10 +5223,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * also with "Foo!" or "Foo!Bar!".
      * 
      * In case of error, returns null.
-     * 
-     * 
-     *  LL-XXXX this is work in progress
-     * 
      * @param isub
      * @param opName
      * @param subIn
@@ -5654,7 +5568,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * @return
          */
         NodeTextRep toNodeTextRep() {
-            return new NodeTextRep(nodeText, mapping) ;
+            NodeTextRep result = new NodeTextRep(nodeText, mapping) ;
+            if (decomposition != null) {
+                result.renaming = decomposition.renaming ;
+            }
+            return result ;
         }
         
         // Suppose that we are decomposing a proof in module M, and 
@@ -6373,12 +6291,16 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * A NodeTextRep object contains only the nodeText, and mapping fields of a
      * NodeRepresentation object. I should probably refactor things so that
      * instead of having those two fields, a NodeRepresentation object contains
-     * a NodeText field
+     * a NodeText field.
+     * 
+     * 2 Dec 2014: Added a renaming field.  See the field of the same
+     * name of a Decomposition object.
      */
     static class NodeTextRep {
         // SemanticNode semanticNode = null ;
         String[] nodeText = null;
         Vector<MappingPair>[] mapping = null;
+        Renaming renaming = new Renaming() ;
 
         public NodeTextRep(String[] text, Vector<MappingPair>[] map) {
             // semanticNode = node ;
@@ -6405,10 +6327,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 for (int i = 0; i < result.mapping.length; i++) {
                     result.mapping[i] = new Vector<MappingPair>();
                     for (int j = 0; j < this.mapping[i].size(); j++) {
-                        result.mapping[i].add(this.mapping[i].elementAt(j));
+                        result.mapping[i].add(this.mapping[i].elementAt(j).clone());
                     }
                 }
             }
+            result.renaming = this.renaming.clone() ;
             return result;
         }
 
@@ -6864,6 +6787,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             result.newNames.addAll(renaming.newNames) ;
             return result ;
         }
+        
         /**
          * Returns a new Renaming object whose fields are clones of this
          * object's fields (meaning that they are new Vector objects containing
@@ -8169,16 +8093,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 state = newState;
                 state.hasChanged = true;
                 NodeRepresentation nodeObj = pathToNodeRep((Vector<Integer>) object);
-                // NodeRepresentation samenodeObj =
-                // pathToNodeRep(nodeObj.nodeRepPath()) ;
-                // if (nodeObj == samenodeObj) {
-                // System.out.println("cool, man") ;
-                // } else {
-                // System.out.println( nodeObj.toString() + "\n doesn't equal\n"
-                // +
-                // samenodeObj.toString()) ;
-                //
-                // }
                 if (nodeObj.nodeType == NodeRepresentation.OR_DECOMP) {
                     decomposeHandler.caseAction(nodeObj);
                     // this is the action that produces an or-split proof.
