@@ -1,7 +1,4 @@
 /**
- * CURRENTLY BEING WORKED ON:  decompositionChildToNodeRep, having
- * added the instantiationSubstitutions field to the Decomposition object.
- * 
  * THINGS TO DO:
  *  - Check that what I've done so far works with definition expansion.
  *  
@@ -166,6 +163,33 @@
  *    been done in NodeText.  But that's just a vague idea and it's not clear how
  *    easy it would be to do it, if it's even possible.
  *    
+ *  - Bug discovered by LL on 1 December 2014
+ *    Renaming of bound identifiers can be done in an /\ decomposition of an assumption
+ *    before it's necessary.  Repeated /\ decompositions can yield an expression
+ *    like \E x_2_2_1 : exp(x_2_2_1) .   When such an expression is decomposed, the
+ *    quantifier bound is given a reasonable name like x_2, but the instances of
+ *    that bound keep their silly name, so this expression can yield the assumption
+ *    clauses:  NEW x_2, exp(x_2_2_1) .  
+ *    
+ *    As a concrete example, consider:
+ *    
+ *      THEOREM ASSUME ( (\E x : x \subseteq x) /\ ((\E x : x = {x}) 
+ *                         /\ ((\E x : x \ {x} = {})) /\ (A \/ \A x : x = <<x>>))),
+ *                      NEW x
+ *              PROVE  FALSE
+ *          
+ *    As of 1 December 2014, the decomposition of this theorem can
+ *    produce:
+ *    
+ *       <1> SUFFICES ASSUME NEW x_1,
+ *                           x_1_1 \subseteq x_1_1,
+ *                           NEW x_2,
+ *                           x_2_2_1 = {x_2_2_1}
+ *                    PROVE  FALSE
+ *         OBVIOUS
+ *       <1> QED  
+ *    
+ *    Note: => decomposition doesn't seem to have this problem.
  *    
  * 
  * HOW THE COMMAND WORKS
@@ -1268,7 +1292,13 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                   } else if (goalOpName == ASTConstants.OP_pick) {
                                       goal = null;
                                       nullReason = "PICK";
-                                  } else if (goalOpName == null) {
+                                  } else if (goalOpName == ASTConstants.OP_have) {
+                                      goal = null;
+                                      nullReason = "HAVE";
+                                  }else if (goalOpName == ASTConstants.OP_take) {
+                                      goal = null;
+                                      nullReason = "TAKE";
+                                  }else if (goalOpName == null) {
                                       // I don't know what this is, so it must be weird.
                                       goal = null;
                                       nullReason = "weird";
@@ -2758,6 +2788,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 state.firstAddedAssumption = state.firstAddedAssumption + (addedAssumps.size()-1) ;
             }
             raiseWindow();
+            return ;
         }
     }
 
@@ -3424,14 +3455,20 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                                     "PROVE  ")), proofLevelString
                             + " SUFFICES ");
 
-            // Fhe following is the only use of addStepNumber
+            // The following is the only use of addStepNumber
             // it should probably be replaced by something else.
             // See comments for declaration of addStepNumber.
-            //LL-XXXXX:  On 29 Nov 2014, LL tried just commenting it out,
+            // LL-XXXXX:  On 29 Nov 2014, LL tried just commenting it out,
             // hoping that any step numbers now needed are added
             // using the contextStepName field of the NodeRepresentation 
-            // objects
-            if (state.assumpDefinitions.isEmpty() /* && !addStepNumber */) {
+            // objects.  That caused a bug to appear.  However, that bug
+            // was actually orthogonal and this use of addStepNumber
+            // just fixed it in one case.  The root cause was fixed
+            // on 1 Dec 2014 by adding the createdAssumpStepNames.isEmpty()
+            // clause, and the use of addStepNumber remains commented out.
+            if (state.assumpDefinitions.isEmpty() 
+                    && createdAssumpStepNames.isEmpty()
+                    /* && !addStepNumber */) {
                 // No goal definitions were expanded; the proof is obvious.
                 if (OBVIOUS_HAS_PROOF) {
                     sufficesProof = "PROOF OBVIOUS";
@@ -3453,7 +3490,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 }
                 
                 // The following code was commented out.  However, it produced an empty BY
-                // because we were here and shouldn't have 
+                // because we were here and shouldn't have been.  However, the reason for
+                // being here have been fixed on 1 Dec 2014.
 //                if (addStepNumber) {
 //                    sufficesProof = sufficesProof + this.stepNumber + " ";
 //                }
@@ -4229,36 +4267,6 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     sn = ((SubstInNode)sn).getBody() ; 
                 }
 
-// THE FOLLOWING CODE WAS WRITTEN BEFORE THE InstantiationSubstitutions WERE
-// ADDED TO THE Decomposition NODE
-//                InstanceSubstitution instSubs = nodeRepArg.instantiationSubstitutions.clone(); 
-//                while (sn instanceof SubstInNode) {
-//                    instSubs = substInNodeToInstanceSub(
-//                            instSubs, decomp.definedOp, (SubstInNode) sn) ;
-//                   if (instSubs == null) {
-//                        MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-//                                "Decompose Proof Command",
-//                                "Decomposing an instantiated definition whose\n"
-//                                + "instantiation cannot be handled.");
-//                        return null;
-//                    }
-//                    sn = ((SubstInNode)sn).getBody() ;                        
-//                }
-//                
-//               
-//                // Set instSubs.prefix to the concatenation of 
-//                // instantiationSubstitutions.prefix of nodeRepArg with the
-//                // prefix of the operator whose definition we're decomposing.
-//                // 
-//                String instNamePrefix = nodeRepArg.instantiationSubstitutions.prefix ;
-//                String restOfName = decomp.definedOp ;
-//                while (restOfName.indexOf("!") != -1) {
-//                    instNamePrefix = instNamePrefix + 
-//                                        restOfName.substring(0, restOfName.indexOf("!")+1) ;
-//                    restOfName = restOfName.substring(restOfName.indexOf("!")+1) ;
-//                }
-//                instSubs.prefix = instNamePrefix ;
-//                
                 // Need to create the NodeRepresentation using the
                 // module in which the definition occurs.  
                 String moduleName = sn.getLocation().source() ;
@@ -6247,7 +6255,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 for (int i = 0; i < result.mapping.length; i++) {
                     result.mapping[i] = new Vector<MappingPair>();
                     for (int j = 0; j < this.mapping[i].size(); j++) {
-                        result.mapping[i].add(this.mapping[i].elementAt(j));
+                        result.mapping[i].add(this.mapping[i].elementAt(j).clone());
                     }
                 }
             }
@@ -7680,7 +7688,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             return new MappingPair(this.col, this.inc);
 
         }
-
+        
         public String toString() {
             return "<" + col + ", " + inc + ">";
         }
@@ -8201,6 +8209,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
                 break;
             }
+            return; // Just a convenient place to put a breakpoint.
         }
 
         /**
