@@ -1,4 +1,18 @@
 /**
+ * IN MIDDLE OF
+ * Fixing bug on line 428 of Test.tla.  Will try the approach of adding
+ * a global Renaming to the decomposition state to keep track of all renaming in
+ * all formulas.  This should obviate the need for any other renamings in the state, but
+ * now just using it to get renamings that are missed.  It's been added to getCurrentName,
+ * though I don't know if that's necessary.  The renamings needed to fix the bug on 
+ * line 428 of Test.tla are the
+ * ones being returned by ResoureHelper.getBoundIdentifiers in addSymbolsDeclaredLater.
+ * That method returns the original names, but should return the new names of any
+ * identifiers that have been renamed.  This requires copying that method into
+ * this module and rewriting it appropriately.
+ * 
+ *  
+ *  
  * THINGS TO DO:
  *  - Check that what I've done so far works with definition expansion.
  *  
@@ -805,6 +819,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * renamed, then this name is found in rename.newNames. Otherwise, it is the
      * original name.
      * 
+     * Added 3 Dec 2014.  If not found in rename, then look for it in state.renaming.
+     * 
      * @param node
      * @param rename
      * @return
@@ -818,7 +834,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             }
             i++;
         }
-
+        if (newName == null) {
+            while ((i < state.renaming.identifiers.size()) && (newName == null)) {
+                if (state.renaming.identifiers.elementAt(i) == node) {
+                    newName = state.renaming.newNames.elementAt(i);
+                }
+                i++;
+            }
+        }
         if (newName == null) {
             return node.getName().toString();
         } else {
@@ -1124,7 +1147,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         this.state = new DecompositionState();
         state.hasChanged = false;
         // state.chosenSplit = -1;
-        state.needsStepNumber = false;
+        // state.needsStepNumber = false;
         state.goalDefinitions = new StringSet();
         state.assumpDefinitions = new HashSet<String>();
 
@@ -2865,10 +2888,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // set true.
         //
         // This bug was apparently fixed in the new version.
-        //
-        if (!nodeRep.isCreated && this.hasAssumes) {
-            state.needsStepNumber = true;
-        }
+        // Removed this code on 3 Dec 2014
+//        if (!nodeRep.isCreated && this.hasAssumes) {
+//            state.needsStepNumber = true;
+//        }
 
         QuantifierDecomposition qdc = decomposeQuantifier(nodeRep, false);
 
@@ -2885,7 +2908,18 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             // decrement state.numberOfContextAssumptions, and set idx to the appropriate
             // place to put the new assumptions
             if (parentVec == state.assumeReps) {
-                int newIdx =  newAssumeRepsIndex(idx, nodeRep.initialPosition) ;            
+                // Was 
+                //   int newIdx =  newAssumeRepsIndex(idx, nodeRep.initialPosition) ; 
+                // Changed on 3 Dec 2014 to the following code so new top-level NEWs
+                // are added to the end of the created assumptions.  This should make
+                // it unnecessary to worry about renamings required because of bound
+                // variables in the bounding exprssions (if any) of NEW variables 
+                // being added.  
+                int newIdx = idx ;
+                if (idx < state.firstAddedAssumption) {
+                    state.firstAddedAssumption-- ;
+                    newIdx = state.firstAddedAssumption ;
+                }
                 if (idx < state.numberOfContextAssumptions) {
                    state.numberOfContextAssumptions = state.numberOfContextAssumptions-1  ;
                 }
@@ -3406,8 +3440,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // BY clause of a SUFFICES step or of the QED step.  This should not
         // be needed any more, but it has one use and it seems safest to just
         // let sleeping code lie.
-        boolean addStepNumber = (stepNumber != null)
-                && this.state.needsStepNumber;
+        // Removed it on 3 Dec 2014
+        // boolean addStepNumber = (stepNumber != null)
+        //        && this.state.needsStepNumber;
 
         // Set sufficesStep to the string array of the suffices step,
         // or null if there is none. There is a suffices step iff either
@@ -4095,6 +4130,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 result = res.subNodeRep(decomp.children.elementAt(i), vec,
                         father, null, decomp, vec != null);
                 result.isPrimed = nodeRep.isPrimed;
+                result.decomposition.renaming = 
+                        result.decomposition.renaming.addAll(ntext.renaming);
                 if (!(decomp.children.elementAt(i) instanceof ExprNode)) {
                     MessageDialog.openError(UIHelper.getShellProvider()
                             .getShell(), "Decompose Proof Command",
@@ -4400,6 +4437,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             for (int i = 0; i < idsToRename.size(); i++) {
                 addCurrentName(idsToRename.elementAt(i),
                         idNewNames.elementAt(i), nodeRep.decomposition.renaming);
+                addCurrentName(idsToRename.elementAt(i),
+                        idNewNames.elementAt(i), state.renaming); // added 3 Dec 2014
             }
         }
 
@@ -4478,6 +4517,8 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
 
             if (decomp.quantBounds != null) {
                 ntrep = prependToNodeText(ntrep, id);
+                // Following added 3 Dec 2014
+                rep.semanticNode = decomp.quantBounds.elementAt(i) ;
             }
             rep.nodeText = ntrep.nodeText;
             rep.mapping = ntrep.mapping;
@@ -5326,6 +5367,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     String newname = getNewName(id, newDeclared, renaming);
                     newDeclared.add(newname);
                     addCurrentName(id, newname, renaming);
+                    addCurrentName(id, newname, state.renaming) ; // added 3 Dec 2014
                 }
             }
         }
@@ -5341,6 +5383,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         String newname = getNewName(id, newDeclared, renaming);
                         newDeclared.add(newname);
                         addCurrentName(id, newname, renaming);
+                        addCurrentName(id, newname, state.renaming) ; // added 3 Dec 2014
                     }
                 }
             }
@@ -5428,8 +5471,9 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          * BY clause if that step has a name. I believe this is the case iff an
          * \E-split has been done on an assumption that was not moved from the
          * goal.
+         * Removed 3 Dec 2014
          */
-        boolean needsStepNumber;
+        // boolean needsStepNumber;
 
         /**
          * Once the user has performed an AND split on an assumption, then
@@ -5457,6 +5501,17 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         private HashSet<String> assumpDefinitions;
 
         // PERHAPS CAN BE COMBINED WITH goalDefinitions
+        
+        /**
+         * The set of renamings made in all the assumptions
+         * and in the goal.  This should be used to replace the
+         * renaming fields in the Decomposition and NodeTextRep objects.
+         * But that would require work.  Instead, this is being used to
+         * find renamings that are currently being missed.  In particular,
+         * it's only used to 
+         *  Added 3 Dec 2014
+         */
+        Renaming renaming = new Renaming() ;
 
         public DecompositionState clone() {
             DecompositionState result = new DecompositionState();
@@ -5472,13 +5527,14 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             result.numberOfContextAssumptions = numberOfContextAssumptions ;
             result.firstAddedAssumption = firstAddedAssumption ;
             // result.chosenSplit = chosenSplit;
-            result.needsStepNumber = needsStepNumber;
+            // result.needsStepNumber = needsStepNumber;
 // UP-DOWN ARROWS REMOVED
 //            result.andSplitBegin = andSplitBegin;
 //            result.andSplitEnd = andSplitEnd;
             result.goalDefinitions = goalDefinitions.clone();
             result.assumpDefinitions = (HashSet<String>) assumpDefinitions
                     .clone();
+            result.renaming = renaming.clone(); // added 3 Dec 2014
 
             return result;
         }
@@ -6775,7 +6831,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         Vector<String> newNames = new Vector<String>();
 
         /**
-         * Returns a new Renaming object that is the concatenation of
+         * Returns a new Renaming object that is the union of
          * the renamings of this object with the argument.
          * 
          * @param renaming
@@ -6783,8 +6839,21 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
          */
         public Renaming addAll(Renaming renaming) {
             Renaming result = this.clone() ;
-            result.identifiers.addAll(renaming.identifiers) ;
-            result.newNames.addAll(renaming.newNames) ;
+            for (int i=0; i < renaming.identifiers.size(); i++) {
+                int j = 0;
+                boolean notFound = true ;
+                while ((j < this.identifiers.size()) && notFound) {
+                    if (renaming.identifiers.elementAt(i) == 
+                            this.identifiers.elementAt(j)) {
+                        notFound = false;
+                    }
+                    j++;
+                }
+                if (notFound) {
+                    result.identifiers.add(renaming.identifiers.elementAt(i)) ;
+                    result.newNames.add(renaming.newNames.elementAt(i)) ;
+                }
+            }
             return result ;
         }
         
@@ -7054,6 +7123,10 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
      * It can be called only when `nodeRepArg' is in this.state.assumeReps, is a
      * descendant of a node in this.state.assumeReps, or is the goal.
      * 
+     * Change made 3 Dec 2014: when includeGoal = true, also add all bound
+     * identifiers introduced in created assumptions that will follow the current
+     * assumption in state.assumeReps.
+     * 
      * @param prevDeclared
      * @param nodeRepArg
      * @param includeGoal
@@ -7087,6 +7160,21 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             NodeRepresentation anode = state.assumeReps.elementAt(i);
             if (anode.nodeType == NodeRepresentation.NEW_NODE) {
                 prevDeclared.add(anode.newId);
+            }
+            // Following if added 3 Dec 2014            
+            if (includeGoal && anode.isCreated) {
+                ExprNode snode = null ;
+                if ((anode.semanticNode != null) && (anode.semanticNode instanceof ExprNode)) {
+                    snode = (ExprNode) anode.semanticNode; 
+                }
+                if (snode != null) {
+                    FormalParamNode[] goalIdents = ResourceHelper
+                            .getBoundIdentifiers(snode);
+                    for (int j = 0; j < goalIdents.length; j++) {
+                        prevDeclared.add(goalIdents[j].getName().toString());
+                    }
+                }
+    
             }
         }
 
