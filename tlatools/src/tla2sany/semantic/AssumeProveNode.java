@@ -385,8 +385,7 @@ public class AssumeProveNode extends LevelNode {
   * End fields and methods implementing the ExplorerNode interface:        *
   *************************************************************************/
 
-  public Element getLevelElement(Document doc,SemanticNode.SymbolContext context2) {
-    SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
+  public Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("AssumeProveNode");
     Element antecedent = doc.createElement("assumes");
     Element succedent = doc.createElement("prove");
@@ -401,9 +400,6 @@ public class AssumeProveNode extends LevelNode {
 
     if (isSuffices()) e.appendChild(doc.createElement("suffices"));
     if (isBoxAssumeProve) e.appendChild(doc.createElement("boxed"));
-
-    // at the beginning, we append the context of the symbols used in this node
-    e.insertBefore(context.getContextElement(doc), e.getFirstChild());
 
     return e;
   }

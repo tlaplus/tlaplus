@@ -1282,8 +1282,7 @@ public class OpDefNode extends OpDefOrDeclNode
     }
   }
 
-  protected Element getSymbolElement(Document doc,SemanticNode.SymbolContext context2) {
-    SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
+  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element ret = null;
     switch (getKind()) {
       case UserDefinedOpKind:
@@ -1302,8 +1301,6 @@ public class OpDefNode extends OpDefOrDeclNode
           ret.appendChild(arguments);
       }
         if (inRecursive) ret.appendChild(doc.createElement("recursive"));
-        // at the beginning, we append the context of the symbols used in this node
-        ret.insertBefore(context.getContextElement(doc), ret.getFirstChild());
       break;
       case BuiltInKind:
         ret = doc.createElement("BuiltInKind");
@@ -1319,8 +1316,6 @@ public class OpDefNode extends OpDefOrDeclNode
           }
           ret.appendChild(arguments2);
         }
-        // at the beginning, we append the context of the symbols used in this node
-        ret.insertBefore(context.getContextElement(doc), ret.getFirstChild());
         break;
       case ModuleInstanceKind:
         ret = doc.createElement("ModuleInstanceKind");

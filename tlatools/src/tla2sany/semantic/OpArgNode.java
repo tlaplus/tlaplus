@@ -134,7 +134,7 @@ public class OpArgNode extends ExprOrOpArgNode {
       "  op: " + (op != null ? "" + ((SemanticNode)op).getUid() : "null" );
   }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("OpArgNode");
 
     e.appendChild(appendText(doc,"uniquename",getName().toString()));

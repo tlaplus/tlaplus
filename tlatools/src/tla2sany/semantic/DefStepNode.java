@@ -82,7 +82,7 @@ public class DefStepNode extends LevelNode {
     return ret;
    }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
       Element e = doc.createElement("DefStepNode");
       for (int i=0; i<defs.length;i++) {
         e.appendChild(defs[i].export(doc,context));

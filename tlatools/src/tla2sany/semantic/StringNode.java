@@ -123,7 +123,7 @@ public class StringNode extends ExprNode implements ExploreNode {
                              "'" + " Length: " + value.length();
   }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     return appendText(doc,"StringNode",value.toString());
   }
 }

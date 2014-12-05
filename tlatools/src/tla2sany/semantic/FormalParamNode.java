@@ -128,7 +128,7 @@ public class FormalParamNode extends SymbolNode {
     return "FormalParamNodeRef";
   }
 
-  protected Element getSymbolElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("FormalParamNode");
     e.appendChild(appendText(doc,"uniquename",getName().toString()));
     e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));

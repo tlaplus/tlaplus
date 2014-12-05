@@ -155,7 +155,7 @@ public class UseOrHideNode extends LevelNode {
     return ret;
    }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     //SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
     Element e = doc.createElement("UseOrHideNode");
 

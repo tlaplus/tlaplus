@@ -158,10 +158,13 @@ public class XMLExporter {
       Document doc = docBuilder.newDocument();
       Element rootElement = doc.createElement("modules");
       doc.appendChild(rootElement);
+      SymbolContext context = new SymbolContext();
       for (int i=0; i<specs.length; i++) {
-        Element e = specs[i].getExternalModuleTable().getRootModule().exportDefinition(doc,null);
+        Element e = specs[i].getExternalModuleTable().getRootModule().exportDefinition(doc,context);
         rootElement.appendChild(e);
       }
+      // at the beginning, we append the context of the symbols used in this node
+      rootElement.insertBefore(context.getContextElement(doc), rootElement.getFirstChild());
 
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       Transformer transformer = transformerFactory.newTransformer();
@@ -180,10 +183,10 @@ public class XMLExporter {
         // do nothing if there is no internet connection
         // but fail for other errors
       }
-      catch (org.xml.sax.SAXParseException spe) {
+      /*catch (org.xml.sax.SAXParseException spe) {
         // do nothing if there is no internet connection
         // but fail for other errors
-      }
+      }*/
 
       StreamResult result = new StreamResult(out);
 

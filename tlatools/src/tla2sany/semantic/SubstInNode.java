@@ -513,7 +513,7 @@ public class SubstInNode extends ExprNode {
     return;
   }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
       Element sbts = doc.createElement("substs");
       for (int i=0; i<substs.length; i++) {
         sbts.appendChild(substs[i].export(doc,context));

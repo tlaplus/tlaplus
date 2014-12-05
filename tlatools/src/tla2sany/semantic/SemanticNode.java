@@ -245,7 +245,7 @@ public abstract class SemanticNode
      * All nodes inherit from semantic node, which just attach location to the returned node
      */
 
-  protected Element getSemanticElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getSemanticElement(Document doc, tla2sany.xml.SymbolContext context) {
       throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
     }
 
@@ -300,66 +300,11 @@ public abstract class SemanticNode
       return e;
     }
 
-    /* TL
-     * This class is used to track the occurrence of SymbolNodes
-     * nodes which have a context (modules, nonleafproofs, etc.)
-     * create a new instance of this class and pass it over
-     * to be populated with values.
-     * The oldKeys set is used in order to prevent entering the
-     * same def twice
-     */
-    public class SymbolContext {
-      private java.util.Map<String,SymbolNode> context;
-      private java.util.Map<String,SymbolNode> oldKeys;
-      private boolean mutable;
-
-      private SymbolContext() {
-        context = new java.util.HashMap<String,SymbolNode>();
-        mutable = true;
-      }
-
-      public SymbolContext(SymbolContext old)  {
-        this();
-        if (old != null) oldKeys = old.getKeys();
-        else oldKeys = new java.util.HashMap<String,SymbolNode>();
-      }
-
-      private java.util.Map<String,SymbolNode> getKeys() {
-        java.util.Map<String,SymbolNode> ret = new java.util.HashMap(context);
-        ret.putAll(oldKeys);
-        return ret;
-      }
-
-      public void put(String nm, SymbolNode nd) {
-        if (!context.keySet().contains(nm) && nd.getKind() != BuiltInKind &&
-            (!oldKeys.keySet().contains(nm) || !oldKeys.get(nm).toString().equals(nd.toString()))) {
-          if (!mutable)
-            throw new UnsupportedOperationException("inserting elements into context without initializing a new one for symbol: " + nm
-              + " with class: " + nd.getClass().toString() + " and kind: " + Integer.toString(nd.getKind()));
-          context.put(nm,nd);
-        }
-      }
-
-      public Element getContextElement(Document doc) {
-        // once we start traversing the context, it must be immutable
-        mutable = false;
-        Element ret = doc.createElement("context");
-        for (java.util.Map.Entry<String, SymbolNode> entry : context.entrySet()) {
-          Element e = doc.createElement("entry");
-          e.appendChild(appendText(doc,"uniquename",entry.getKey()));
-          // if symbols should be added in the definition of a nested synmbol,
-          // they should be contained in a nested context
-          e.appendChild(entry.getValue().exportDefinition(doc,this));
-          ret.appendChild(e);
-        }
-        return ret;
-      }
-    }
 
     /** August 2014 - TL
      * A location element is prepannded to an implementing element
      */
-  public Element export(Document doc,SemanticNode.SymbolContext context) {
+  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
       try {
         Element e = getSemanticElement(doc, context);
         try {

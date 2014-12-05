@@ -287,16 +287,12 @@ implements ExploreNode, LevelConstants {
   }
 
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context2) {
-    SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element ret = doc.createElement("LetInNode");
     ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
     Element arguments = doc.createElement("opDefs");
     for (int i=0; i<opDefs.length; i++) arguments.appendChild(opDefs[i].export(doc,context));
     ret.appendChild(arguments);
-
-    // at the beginning, we append the context of the symbols used in this node
-    ret.insertBefore(context.getContextElement(doc), ret.getFirstChild());
 
     return ret;
   }

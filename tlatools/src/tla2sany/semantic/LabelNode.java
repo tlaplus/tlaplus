@@ -319,7 +319,7 @@ public class LabelNode extends ExprNode
     return ret;
   }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
       Element ret = doc.createElement("LabelNode");
       ret.appendChild(appendText(doc,"uniquename",getName().toString()));
       ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));

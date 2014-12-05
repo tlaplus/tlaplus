@@ -370,7 +370,7 @@ public final boolean levelCheck(int iter) {
     if (proof != null) {proof.walkGraph(semNodesTable);} ;
   }
 
-  public Element export(Document doc,SemanticNode.SymbolContext context) {
+  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
     if (getDef() == null)
       // we export the definition of the theorem
       return super.export(doc,context);
@@ -379,7 +379,7 @@ public final boolean levelCheck(int iter) {
       return getDef().export(doc,context);
   }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("TheoremNode");
     e.appendChild(getTheorem().export(doc,context));
     if (getProof() != null)  e.appendChild(getProof().export(doc,context));

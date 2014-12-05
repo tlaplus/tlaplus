@@ -322,7 +322,7 @@ public int levelChecked   = 0 ;
     return this.defaultLevelDataToString() ;}
 
 
-  protected Element getSemanticElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getSemanticElement(Document doc, tla2sany.xml.SymbolContext context) {
       // T.L. abstract method used to add data from subclasses
       Element e = getLevelElement(doc, context);
       try {
@@ -338,7 +338,7 @@ public int levelChecked   = 0 ;
      * T.L. October 2014
      * Abstract method for subclasses of LevelNode to add their information
      * */
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
       throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
     }
 

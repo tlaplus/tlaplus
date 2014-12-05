@@ -211,16 +211,12 @@ public class NonLeafProofNode extends ProofNode {
     return ret;
    }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context2) {
-    SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("steps");
 
     for (int i=0; i< steps.length; i++) {
       e.appendChild(steps[i].export(doc,context));
     }
-
-    // at the beginning, we append the context of the symbols used in this node
-    e.insertBefore(context.getContextElement(doc), e.getFirstChild());
 
     return e;
   }

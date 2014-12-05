@@ -639,7 +639,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
       return "AssumeNodeRef";
   }
 
-  protected Element getSymbolElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
     // since this element doesnt seem to contain any additional information
     // over theorems or assumptions, we just refer to them
     return thmOrAssump.getLevelElement(doc,context);

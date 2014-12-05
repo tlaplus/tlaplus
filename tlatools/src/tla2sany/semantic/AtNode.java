@@ -164,10 +164,12 @@ public class AtNode extends ExprNode {
                              "\nExceptComponent: " + exceptComponentRef.getUid());
   }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("AtNode");
-    e.appendChild(exceptRef.export(doc,context));
-    e.appendChild(exceptComponentRef.export(doc,context));
+    SemanticNode exceptObj = exceptRef.getArgs()[0];
+    SemanticNode exceptComponents = exceptComponentRef.getArgs()[0];
+    e.appendChild(exceptObj.export(doc,context));
+    e.appendChild(exceptComponents.export(doc,context));
     return e;
   }
 }

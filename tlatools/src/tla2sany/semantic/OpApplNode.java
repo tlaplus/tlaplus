@@ -1228,10 +1228,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
            + toStringBody(depth) + sEO ;
   }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context2) {
-    // since we have parameters, we need to start a nested context
-    SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
-
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("OpApplNode");
 
     // operator
@@ -1268,9 +1265,6 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       }
       e.appendChild(bvars);
     }
-
-    // at the beginning, we append the context of the symbols used in this node
-    e.insertBefore(context.getContextElement(doc), e.getFirstChild());
 
     return e;
   }

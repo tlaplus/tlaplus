@@ -182,7 +182,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
     if (assumeExpr != null) {assumeExpr.walkGraph(semNodesTable);} ;
   }
 
-  public Element export(Document doc,SemanticNode.SymbolContext context) {
+  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
     if (getDef() == null)
       // we export the definition of the assumption
       return super.export(doc,context);
@@ -190,7 +190,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
       // we export its name only, named assumptions will be exported through the ThmOrAss..
       return getDef().export(doc,context);
   }
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("AssumeNode");
     e.appendChild(getAssume().export(doc,context));
     return e;

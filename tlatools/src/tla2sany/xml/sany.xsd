@@ -9,8 +9,11 @@
 
   <xs:element name="modules">
     <xs:complexType>
-      <xs:sequence maxOccurs="unbounded">
-        <xs:element ref="ModuleNode"/>
+      <xs:sequence>
+        <xs:element ref="context"/> 
+        <xs:sequence maxOccurs="unbounded">
+          <xs:element ref="ModuleNode"/>
+        </xs:sequence>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -24,7 +27,7 @@
         <xs:element name="entry">
           <xs:complexType>
             <xs:sequence>
-              <xs:element ref="uniquename"/>
+              <xs:element ref="UID"/>
               <xs:choice>
                 <xs:element ref="FormalParamNode"/>
                 <xs:element ref="ModuleNode"/>
@@ -50,21 +53,21 @@
   <xs:element name="ModuleInstanceKindRef">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="uniquename"/>
+        <xs:element ref="UID"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="UserDefinedOpKindRef">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="uniquename"/>
+        <xs:element ref="UID"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="BuiltInKindRef">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="uniquename"/>
+        <xs:element ref="UID"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -72,7 +75,7 @@
   <xs:element name="FormalParamNodeRef">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="uniquename"/>
+        <xs:element ref="UID"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -80,7 +83,7 @@
   <xs:element name="ModuleNodeRef">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="uniquename"/>
+        <xs:element ref="UID"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -88,7 +91,7 @@
   <xs:element name="TheoremNodeRef">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="uniquename"/>
+        <xs:element ref="UID"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -96,7 +99,7 @@
   <xs:element name="AssumeNodeRef">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="uniquename"/>
+        <xs:element ref="UID"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -104,7 +107,7 @@
   <xs:element name="OpDeclNodeRef">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="uniquename"/>
+        <xs:element ref="UID"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -279,9 +282,11 @@
     </xs:complexType>
   </xs:element>
   
-  <!-- This is a unique name in the system -->
+  <!-- This is a unique name in the hierarchy -->
   <xs:element name="uniquename" type="xs:string"/>
   
+  <!-- This is a unique ID in the system -->
+  <xs:element name="UID" type="xs:integer"/>
   
   <!-- Assumptions and Theorems -->
   <!-- An assumption named by name and described by ExprNode -->
@@ -290,7 +295,6 @@
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:group ref="ExprNode"/>
-        </xs:choice>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -317,8 +321,7 @@
   <xs:element name="AssumeProveNode">
     <xs:complexType>
       <xs:sequence>
-        <xs:group ref="node"/>
-        <xs:element ref="context"/>        
+        <xs:group ref="node"/>       
         <xs:element name="assumes">
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
@@ -380,8 +383,7 @@
   <xs:element name="UserDefinedOpKind">
     <xs:complexType>
       <xs:sequence>      
-        <xs:group ref="node"/>
-        <xs:element ref="context"/>        
+        <xs:group ref="node"/>    
         <xs:element ref="uniquename"/>
         <xs:element ref="arity"/>
         <xs:element name="body">
@@ -424,8 +426,7 @@
   <xs:element name="BuiltInKind">
     <xs:complexType>
       <xs:sequence>
-        <xs:group ref="node"/>
-        <xs:element ref="context"/>              
+        <xs:group ref="node"/>              
         <xs:element ref="uniquename"/>
         <xs:element ref="arity"/>
         <xs:element minOccurs="0" name="params">
@@ -498,8 +499,7 @@
         <xs:element name="steps">
           <xs:complexType>
             <xs:sequence>
-              <xs:group ref="node"/>
-              <xs:element ref="context"/>                          
+              <xs:group ref="node"/>                       
               <xs:sequence maxOccurs="unbounded">
                 <xs:group ref="step"/>
               </xs:sequence>
@@ -547,7 +547,6 @@
           </xs:complexType>
         </xs:element>        
         <xs:element minOccurs="0" ref="only"/>
-<!--        <xs:element ref="context"/> -->
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -605,7 +604,6 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
         <xs:element minOccurs="0" ref="hide"/>
 <!--        <xs:element minOccurs="0" ref="stepnumber"/> this is cancelled out as it is not clear what exactly is referenced by USE facts (or BY proofs) 
 when the xml is generated, check what for the stepnumber take (maybe as simple strings? then we need to return this field)--> 
-<!--        <xs:element ref="context"/> -->
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -623,13 +621,19 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element ref="OpApplNode"/> <!-- exceptRef -->
-        <xs:element ref="OpApplNode"/> <!-- exceptComponentRef -->
+        <xs:choice> <!-- expression -->
+          <xs:group ref="ExprNode"/>
+          <xs:element ref="OpArgNode"/>
+        </xs:choice>
+        <xs:choice> <!-- component sequence -->
+          <xs:group ref="ExprNode"/>
+          <xs:element ref="OpArgNode"/>
+        </xs:choice>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   
-  <!-- A decimal number (read Java code and java API for more information-->
+  <!-- A decimal number (read Java code and java API for more information)-->
   <xs:element name="DecimalNode">
     <xs:complexType>
       <xs:sequence>
@@ -669,8 +673,7 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
   <xs:element name="LetInNode">
     <xs:complexType>
       <xs:sequence>
-        <xs:group ref="node"/>
-        <xs:element ref="context"/>              
+        <xs:group ref="node"/>           
         <xs:element name="body">
           <xs:complexType>        
             <xs:group ref="ExprNode"/>
@@ -709,8 +712,7 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
   <xs:element name="OpApplNode">
     <xs:complexType>
       <xs:sequence>
-        <xs:group ref="node"/>
-        <xs:element ref="context"/>              
+        <xs:group ref="node"/>            
         <xs:element name="operator">
           <xs:complexType>
             <xs:choice>
@@ -770,8 +772,7 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
   <xs:element name="ModuleNode">
     <xs:complexType>
       <xs:sequence>
-        <xs:group ref="node"/>
-        <xs:element ref="context"/>              
+        <xs:group ref="node"/>             
         <xs:element ref="uniquename"/>
         <xs:element name="constants">
           <xs:complexType>

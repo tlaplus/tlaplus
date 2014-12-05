@@ -126,7 +126,7 @@ public abstract class SymbolNode extends LevelNode {
    * we want to expand their whole definitions and are using this method
    * we need to add location and level information here.
    */
-  public Element exportDefinition(Document doc,SemanticNode.SymbolContext context) {
+  public Element exportDefinition(Document doc, tla2sany.xml.SymbolContext context) {
     try {
       Element e = getSymbolElement(doc, context);
       // level
@@ -151,13 +151,13 @@ public abstract class SymbolNode extends LevelNode {
     }
   }
 
-  protected abstract Element getSymbolElement(Document doc,SemanticNode.SymbolContext context);
+  protected abstract Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context);
   protected abstract String getNodeRef();
 
   /** TL
    * we also override getLevelElement as it should never be called
    */
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     throw new UnsupportedOperationException("This should not be possible and therefore a bug");
   }
 
@@ -165,11 +165,11 @@ public abstract class SymbolNode extends LevelNode {
    * We override export in order not to export location and level.
    * We only export names.
    */
-  public Element export(Document doc,SemanticNode.SymbolContext context) {
+  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
     // first add symbol to context
-    context.put(getName().toString(),this);
+    context.put(this, doc);
     Element e = doc.createElement(getNodeRef());
-    e.appendChild(appendText(doc,"uniquename",getName().toString()));
+    e.appendChild(appendText(doc,"UID",Integer.toString(myUID)));
     return e;
   }
 }

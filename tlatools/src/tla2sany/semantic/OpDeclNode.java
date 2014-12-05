@@ -156,7 +156,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
     return "OpDeclNodeRef";
   }
 
-  protected Element getSymbolElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("OpDeclNode");
     e.appendChild(appendText(doc,"uniquename",getName().toString()));
     e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));

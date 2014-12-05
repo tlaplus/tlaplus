@@ -130,7 +130,7 @@ public class DecimalNode extends ExprNode {
           );
   }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("DecimalNode");
     if (bigVal != null) {
       e.appendChild(appendText(doc,"mantissa",bigVal.unscaledValue().toString()));

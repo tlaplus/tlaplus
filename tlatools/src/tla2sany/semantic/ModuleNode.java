@@ -1149,8 +1149,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     return "ModuleNodeRef";
   }
 
-  protected Element getSymbolElement(Document doc,SemanticNode.SymbolContext context2) {
-    SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
+  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element ret = doc.createElement("ModuleNode");
     ret.appendChild(appendText(doc, "uniquename", getName().toString()));
 
@@ -1194,9 +1193,6 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       thms.appendChild(nodes[i].export(doc,context));
     }
     ret.appendChild(thms);
-
-    // at the beginning, we append the context of the symbols used in this node
-    ret.insertBefore(context.getContextElement(doc), ret.getFirstChild());
 
     return ret;
   }

@@ -187,7 +187,7 @@ public class NewSymbNode extends LevelNode {
              setString);
    }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("NewSymbNode");
     e.appendChild(getOpDeclNode().export(doc,context));
     if (getSet() != null) {

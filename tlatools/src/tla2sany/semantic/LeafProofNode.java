@@ -125,7 +125,7 @@ public class LeafProofNode extends ProofNode {
     return ret;
    }
 
-  protected Element getLevelElement(Document doc,SemanticNode.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e;
 
     if (getOmitted()) {
