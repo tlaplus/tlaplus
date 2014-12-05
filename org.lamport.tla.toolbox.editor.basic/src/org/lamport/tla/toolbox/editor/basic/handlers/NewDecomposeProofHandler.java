@@ -6,7 +6,7 @@
  * now just using it to get renamings that are missed.  It's been added to getCurrentName,
  * though I don't know if that's necessary.  The renamings needed to fix the bug on 
  * line 428 of Test.tla are the
- * ones being returned by ResoureHelper.getBoundIdentifiers in addSymbolsDeclaredLater.
+ * ones being returned by ResourceHelper.getBoundIdentifiers in addSymbolsDeclaredLater.
  * That method returns the original names, but should return the new names of any
  * identifiers that have been renamed.  This requires copying that method into
  * this module and rewriting it appropriately.
@@ -4130,8 +4130,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                 result = res.subNodeRep(decomp.children.elementAt(i), vec,
                         father, null, decomp, vec != null);
                 result.isPrimed = nodeRep.isPrimed;
-                result.decomposition.renaming = 
-                        result.decomposition.renaming.addAll(ntext.renaming);
+                if (result.decomposition != null) { // null test added 4 Dec 2014
+                    result.decomposition.renaming = 
+                            result.decomposition.renaming.addAll(ntext.renaming);  
+                }
+                
                 if (!(decomp.children.elementAt(i) instanceof ExprNode)) {
                     MessageDialog.openError(UIHelper.getShellProvider()
                             .getShell(), "Decompose Proof Command",
@@ -5248,6 +5251,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
         // these renamings.
         // decomp.renaming = rename;
         result.renaming = rename;
+        // Have to add the renamings just done to state.renaming.  Must do
+        // it here, after substituteInNodeText has been called to do those
+        // renamings.
+        addToRenaming(this.state.renaming, prevDeclared, sn) ; // added 4 Dec 2014
+
         return result;
     }
     
@@ -5367,7 +5375,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     String newname = getNewName(id, newDeclared, renaming);
                     newDeclared.add(newname);
                     addCurrentName(id, newname, renaming);
-                    addCurrentName(id, newname, state.renaming) ; // added 3 Dec 2014
+                    // addCurrentName(id, newname, state.renaming) ; // added 3 Dec 2014
                 }
             }
         }
@@ -5383,7 +5391,7 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                         String newname = getNewName(id, newDeclared, renaming);
                         newDeclared.add(newname);
                         addCurrentName(id, newname, renaming);
-                        addCurrentName(id, newname, state.renaming) ; // added 3 Dec 2014
+                        // addCurrentName(id, newname, state.renaming) ; // added 3 Dec 2014
                     }
                 }
             }
@@ -7171,7 +7179,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
                     FormalParamNode[] goalIdents = ResourceHelper
                             .getBoundIdentifiers(snode);
                     for (int j = 0; j < goalIdents.length; j++) {
-                        prevDeclared.add(goalIdents[j].getName().toString());
+                        // 4 Dec 2014: In following statement, changed
+                        //    goalIdents[j].getName().toString()
+                        // to
+                        //   getCurrentName(goalIdents[j], this.state.renaming)
+                        prevDeclared.add(getCurrentName(goalIdents[j], this.state.renaming));
                     }
                 }
     
@@ -7182,7 +7194,11 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
             FormalParamNode[] goalIdents = ResourceHelper
                     .getBoundIdentifiers((ExprNode) this.state.goalRep.semanticNode);
             for (int i = 0; i < goalIdents.length; i++) {
-                prevDeclared.add(goalIdents[i].getName().toString());
+                // 4 Dec 2014: In following statement, changed
+                //    goalIdents[i].getName().toString()
+                // to
+                //   getCurrentName(goalIdents[i], this.state.renaming)
+                prevDeclared.add(getCurrentName(goalIdents[i], this.state.renaming));
             }
         }
     }
@@ -8434,105 +8450,821 @@ public class NewDecomposeProofHandler extends AbstractHandler implements
     
 }
 
-/**********************************
- * The following module provides a number of random test cases for the Decompose
- * Proof command.
- * 
- * ----------------- MODULE Test ------------------ EXTENDS Integers, TLAPS
- * 
- * Q3(a, b) == \E x \in Int : (x = a) /\ (x = b) Q2(a, b) == \E x \in Int : ((x
- * = a) /\ (x = b)) \/ Q3(a, b+1) Q1(a, b) == \E x \in Int : ((x = a) /\ (x =
- * b)) \/ Q2(a, b+1) THEOREM TT == \A y \in Int : Q1(y, 1) => (y = 1) \/ (y = 2)
- * \/ (y = 3)
- * 
- * THEOREM ASSUME NEW y \in Int, Q1(y, 1) PROVE (y = 1) \/ (y = 2) \/ (y = 3)
- * 
- * R3(b, a) == a = 3 \/ a = b R2(b, a) == a = 2 \/ \E x \in {b, a} : R3(x, a+1)
- * R1(a) == a = 1 \/ \E x \in {a} : R2(x, a+1) THEOREM TT2 == \A y \in {1, 2, 3}
- * : R1(y) => (y = 1)
- * 
- * VARIABLES A, B, C, D, E, F
- * 
- * T3 == \E x : D \/ E T2 == (C /\ A /\ T3) T1 == B /\ T2 THEOREM T1 => A /\ B
- * /\ C
- * 
- * S1 == A \/ (\E x \in {y_1 \in {44} : y_1 > 0} : x \in {44}) S1a == A \/ (\A x
- * \in {y_1 \in {44} : y_1 > 0} : x \in {44}) S1b == A \/ ({y_1 \in {44} : y_1 >
- * 0} = {x \in {44} : x > 0}) THEOREM ASSUME NEW x , NEW y_1, S1b PROVE \A x_1 :
- * FALSE
- * 
- * S2 == \E x \in {y \in {44} : y > 0} : x \in {44} S2a == \E x \in {y \in {44}
- * : y > 0} : x \in {44} S2b == \E x \in {y \in {44} : y > 0} : x \in {44}
- * THEOREM ASSUME NEW x, NEW y, S2, S2a, S2b, A \/ B PROVE FALSE
- * 
- * S4 == \E x \in {y \in {44} : y > 0} : x \in {44} S3 == (\E x \in {y \in {44}
- * : y > 0} : x \in {44}) \/ S4 THEOREM ASSUME NEW x, NEW y, NEW y_1, S3 PROVE
- * FALSE
- * 
- * U1 == \A x \in {y \in {44} : y > 0} : (x > 0) /\ A THEOREM ASSUME NEW x , NEW
- * y PROVE U1
- * 
- * U2 == \E x : A \/ \E x_1 : x = x_1 THEOREM ASSUME NEW x, U2 PROVE FALSE
- * 
- * THEOREM ASSUME \E x \in {1} : TRUE, A \/ \E x : FALSE PROVE \A x : TRUE
- * 
- * W3(a, b) == \E x : <<a, b>> \/ (x=1) W2(a) == \E x : W3(a, x) W1 == \E x :
- * W2(x) THEOREM W1 => \A x : FALSE
- * 
- * C3 == \E x : (x=2) \/ (x=3) C2 == \E x : \E y : C3 THEOREM (\E x : C2) =>
- * FALSE
- * 
- * C5(y) == y /\ (B \/ C) C4(x) == x /\ \E y : C5(y) /\ x THEOREM ASSUME NEW y,
- * (\E x : C4(x) /\ A) PROVE FALSE
- * 
- * C7(u, v) == \E y : <<u, v, y>> \/ (y=v) C6(a) == \E x : C7(a, x) THEOREM
- * C6(42) => FALSE
- * 
- * B2(a, b) == (a=1) \/ (b=1) B1(a) == \E y : B2(a, y) THEOREM (\E x : B1(x)) =>
- * FALSE
- * 
- * Bar(bb) == (bb \/ C) Foo(aaaa, bbbb) == Bar(aaaa) => bbbb \/ /\ aaaa
- * 
- * /\ bbbb => B
- * 
- * X(a, Op(_,_)) == \A x : Op(a, B) /\ a W(a) == (a \/ C) Z(a) == \E z \in {E} :
- * W(a) => \/ D \/ D
- * 
- * ABar(bb) == \E y , yy : (Z(C)
- * 
- * \/ D) AFoo(aaaa) == \E x : ( ABar(<<x, aaaa>>) ) THEOREM AFoo(44) => FALSE
- * 
- * Y == A \/ (Z(B) \/ D) AA == A BB == (\E yB, yBB \in {}, yBBB \in {} : B \/
- * (\E yC, yCCC : \E yCC : (C \/ (\E yD : D)))) ZZ == AA /\ BB ZZZ == A /\ (\E
- * yy : B)
- * 
- * THEOREM ZZ
- * 
- * THEOREM XYZ == ASSUME NEW AAAA , ZZ, NEW BBBB PROVE FALSE
- * 
- * THEOREM Y => FALSE
- * 
- * THEOREM ASSUME NEW ZZ1, NEW ZZ123456 PROVE Foo(ZZ1, ZZ123456)
- * 
- * CONSTANT Z77777 THEOREM Z(Z77777) => FALSE
- * 
- * THEOREM ASSUME A \/ B PROVE C
- * 
- * THEOREM ASSUME AFoo(F) PROVE FALSE
- * 
- * THEOREM ASSUME \E x : A \/ ABar(C) PROVE FALSE
+/**
+ * The following module provide a fairly good set of tests for the Decompose
+ * Proof command.  It imports the two following modules
  * 
  * 
- * THEOREM ASSUME Z(F) PROVE Foo(A, B)
- * 
- * THEOREM \A x \in 23 + 24 : A
- * 
- * THEOREM \A x \in 23 + 24, y \in E : A => Bar(11)
- * 
- * THEOREM X(22+33, Foo)
- * 
- * =====================================
- ************************************/
+ --------- MODULE Test ----------
+\* Everything in the file checked on 4 Dec 2014 
+
+EXTENDS Integers, TLAPS
+
+
+CONSTANTS Ax, Bx, Cx, Dx, Ex, Fx, Gx, Hx, Ix, Jx, Kx, Lx, Mx, Nx, Ox,
+Px, Qx, Rx, Sx
+
+A == Ax = "A"
+B == Bx = "B"
+C == Cx = "C"
+D == Dx = "D"
+E == Ex = "E"
+F == Fx = "F"
+G == Gx = "G"
+H == Hx = "H"
+I == Ix = "I"
+J == Jx = "J"
+K == Kx = "K"
+L == Lx = "L"
+M == Mx = "M"
+N == Nx = "N"
+O == Ox = "O"
+P == Px = "P"
+Q == Qx = "Q"
+R == Rx = "R"
+S == Sx = "S"
+
+(***************************************************************************)
+(* Tests of instantiated \A and \E decompositions.                         *)
+(***************************************************************************)
+I1 == INSTANCE Test1 WITH C1 <- "C1Inst"
+
+THEOREM I1!T2I!T2Def("argument")
+
+THEOREM I1!T12Def("argT12Def")
+
+THEOREM I1!T2Def("argT2Def")  \* \A
+
+THEOREM ASSUME \E x : I1!T123Def
+        PROVE  FALSE
+
+THEOREM FALSE
+<1>1. ASSUME \E x : I1!T123Def
+        PROVE  FALSE
+  
+<1> QED
+
+THEOREM ASSUME I1!T1EA
+        PROVE  FALSE
+
+THEOREM FALSE
+<1>1. ASSUME I1!T1EA
+        PROVE  FALSE
+<1> QED
+        
+THEOREM I1!T1AA
+
+        
+THEOREM  I1!T1EA =>  FALSE
+        
+THEOREM ASSUME I1!T1Or 
+        PROVE  FALSE
+
+THEOREM FALSE
+<1>2. ASSUME I1!T1Or 
+        PROVE  FALSE
+<1> QED    
+
+THEOREM ASSUME I1!T1OrA 
+        PROVE  FALSE
+
+THEOREM FALSE
+<1>1. ASSUME I1!T1OrA 
+        PROVE  FALSE
+<1> QED
+
+THEOREM ASSUME I1!T2I!T2Other(O) 
+        PROVE  FALSE
+
+THEOREM FALSE 
+<1>1. ASSUME I1!T2I!T2Other(O) 
+        PROVE  FALSE
+  
+<1> QED
+
+-------------------------------------------
+FF(a, b) == a \/ b
+
+Apply(GG(_,_), a, b) == GG(a, b)
+
+THEOREM Apply(FF, 42, 55)
+
+THEOREM A /\ B => Ax \/ C
+
+
+THEOREM ASSUME \E x : TRUE, \E x : FALSE \/ FALSE
+        PROVE   Ax => ( Ax => \/ Ax
+                              \/ B
+                      )
+
+THEOREM FALSE
+<1>1. ASSUME \E x : TRUE, \E x : FALSE \/ FALSE
+        PROVE   Ax => ( Ax => \/ Ax
+                              \/ B
+                      )
+<1> QED
+                     
+THEOREM ASSUME \E x : x => /\ A
+                           /\ B
+        PROVE  \A x : FALSE
+
+THEOREM FALSE
+<1>1. ASSUME \E x : x => /\ A
+                         /\ B
+        PROVE  \A x : FALSE
+<1> QED
+      
+MP2 == (\E x : A # "MP2")
+MP1 == (\E mp1 : B # "MP1") /\ MP2 
+MP3 == (C # "MP3") => (D # "MP3")
+MP4 == (E # "MP4") \/ (F # "MP4") => (A # "MP4") 
+MP5 == (G # "MP5") \/ (H # "MP5")
+MP6a == (I # "MP6a") \/ (K # "MP6a")
+MP6 == (J # "MP6") \/ MP6a
+MP7 ==  MP6 => (K # "MP7")
+MP10 == (O # "MP8") /\ (P # "MP8")
+MP11 ==  (Q # "MP9") => MP10
+MP12 == (R # MP11) /\ MP11
+MP13 == MP4 /\ MP5
+
+
+FooT == INSTANCE Test1 WITH C1 <- 42
+THEOREM ASSUME A \/ B
+        PROVE   FooT ! T2Def( "(") => /\ 43
+                                      /\ 44
+BY 1=1         
+
+THEOREM ASSUME  (B \/ C)
+        PROVE  A => (D => FALSE)
+        
+
+THEOREM FALSE
+<1>1. ASSUME  (B \/ C)
+        PROVE  A => (D => FALSE)
+  BY 2=2 
+  
+<1> QED
+
+
+
+
+Id(a) == a \/ a
+
+(***************************************************************************)
+(* The followings examples used to demonstrate a known bug, caused by not  *)
+(* renaming bound identifiers in operator arguments.  Apparently that bug, *)
+(* which still exists, isn't manifested because the order of assumptions   *)
+(* in the decomposition has changed.                                       *)
+(***************************************************************************)
+THEOREM ASSUME \E x : MP5, Id(\E x: x # 1)
+        PROVE  FALSE
+
+THEOREM FALSE
+<1>1. ASSUME \E x : MP5, Id(\E x: x # 1)
+        PROVE  FALSE
+
+<1> QED
+
+
+THEOREM ASSUME MP6a
+        PROVE  A => MP11
+
+THEOREM FALSE
+<1>1. ASSUME MP6a
+        PROVE  A => MP11
+
+<1> QED
+
+THEOREM ASSUME \E i, j \in {14}, k \in {15} : TRUE
+        PROVE  FALSE
+BY 4=4
+
+THEOREM FALSE
+<1>0. MP7
+<1>1. ASSUME MP2
+      PROVE  MP12
+     
+<1>2. ASSUME \E xxxxxxxxxxxxxx1, xxxxxxxxxxxxxxxxx2, xxxxxxxxxxxxxxxxxxxxxxxxxxxxx3, xxxxxxxxxxxxxxxxxxxxxx4, xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx5 : TRUE
+      PROVE TRUE  
+      
+<1>3. ASSUME \E x1 : TRUE, \E x2 : TRUE
+      PROVE FALSE  
+<1> QED
+
+
+THEOREM MP7
+<1>x. TRUE
+<1>0. ASSUME MP2 
+      PROVE  MP12
+  
+ 
+<1>a. MP6
+<1>1. ASSUME MP2
+      PROVE MP13  
+       
+<1>2. ASSUME \E x, y : MP2
+      PROVE MP6 => MP4 /\ MP5  
+
+  
+<1> QED
+
+THEOREM FALSE
+<1>0. C # 3
+<1>1. SUFFICES  ASSUME MP1
+                PROVE  \A x : A # 3
+<1>2. CASE MP2
+  
+  <2>1. MP3 \* CASE 1a
+
+  <2>1_case2. MP12  
+
+ <2>1x. MP3 \* CASE 1a -     
+
+   
+  <2>2. MP11  \* Case 1b
+
+  <2> DEFINE DEFDEF == TRUE
+
+  <2>3xx. A => B
+     
+     
+  <2>_case1_with_obvious_suffices. ASSUME MP3
+                                   PROVE  MP4 => MP5    
+    
+  
+  \* Case 1b without SUFFICES  
+  <2>2a. MP10 
+    
+   <2>2b. MP11 \* CASE 2     
+ 
+   <2>3a. SUFFICES ASSUME MP5
+                   PROVE  MP4 
+                   
+   <2>3b. MP3   \* Case 3, with case-split not from goal
+    
+   <2>3b2. MP3 \* Case 4, with case-split not from goal - 
+       
+    <2> DEFINE MP8 == (A # "MP8") \/ (B # "MP8")
+              MP9 == (C # "MP9") /\ MP8
+   <2> HIDE DEF MP8, MP9
+
+   <2>3c. ASSUME MP9
+          PROVE  D    \* Case 3, with case-split not from goal
+
+
+   <2>3d. ASSUME MP9
+          PROVE  FALSE    \* Case 4, with case-split not from goal
+
+  
+   <2>3. MP4 \* Case 3 from goal
+ 
+  <2>3e. MP4 \* Case 4 from goal
+             
+  <2>4. MP7 \* Case 3 from goal
+      
+  <2>5. CASE MP6 \* Case 3, empty ASSUME for SUFFICES
+
+ <2>6. TRUE  \* Not checking anything interesting.
+   <2> QED
+<1> QED
+
+
+THEOREM ASSUME \E x : A, B \/ C
+        PROVE  FALSE
+
+THEOREM ASSUME A /\ [B]_C, D \/ E
+        PROVE \A x \in {44} : F
+<1>1. CASE \E x \in {} : H 
+
+    
+<1> QED
+THEOREM ASSUME (A \/ B) /\ E PROVE \A x : C
+<1>1. ASSUME C \/ D PROVE FALSE 
+<1> QED
+
+
+AQ1(a) == \E x \in {} : (x = a)
+THEOREM ASSUME NEW x , \E x_1 : AQ1(x_1)
+        PROVE FALSE
+
+THEOREM ASSUME \E a : A, B \/ C
+        PROVE FALSE
+<1> ASSUME \E d : D, \E e : E, F \/ G , \E h : H
+    PROVE  \A x : FALSE
+
+<1> QED
+
+THEOREM ASSUME \E x : TRUE, (A \/ B) /\ E, C\/ D
+        PROVE \A x : FALSE
+        
+THEOREM ASSUME ((A \/ A) /\ B /\ (C \/ C)) 
+        PROVE  \A x : \A y \in {x} : E \/ F => G
+
+        
+THEOREM \A x, y : \A z \in x : x /\ y => FALSE
+
+foo == (\E x : A) \/ B
+
+THEOREM ASSUME A \/ (\E x : B \/ (\E y : C \/ D))
+        PROVE FALSE
+  
+THEOREM ASSUME E \* (A \/ B) 
+        PROVE TRUE
+<1>1. ASSUME (C /\ (D \/ E))
+      PROVE  TRUE
+ <1> QED
+
+THEOREM A 
+<1>1. CASE B \/ C
+  <2>1. CASE D \/ E
+   <2> QED
+
+<1>2. QED
+   
+
+THEOREM ASSUME A, \E x : B
+        PROVE  FALSE
+
+
+
+\* ERROR: Decomposing the two \Es in either order fails to rename
+\* the y in {x \in {y} : TRUE}  (This was a bug in the old version
+\* of Decompose Proof as well.
+\* FIXED 3 Dec 2014
+THEOREM ASSUME \E y : y # {}, \E x \in {y \in {} : TRUE} : x # 0
+        PROVE  FALSE
+
+\* ERROR: Decomposing the two \Es in either order fails to rename
+\* the x in {x \in {} : TRUE}  (This was a bug in the old version
+\* of Decompose Proof as well.
+\* FIXED 3 Dec 2014
+\* 
+THEOREM ASSUME \E x : x = <<x>>, \E y : ({x \in {y} : TRUE} = {} ) 
+        PROVE  FALSE
+
+THEOREM ASSUME \E x : x = {y \in {} : TRUE}, \E y : ({x \in {y} : TRUE} = {} ) 
+        PROVE  FALSE
+        
+THEOREM (\E x : x = <<x>>) =>  \A y : ({x \in {y} : TRUE} = {} => FALSE )
+
+THEOREM ASSUME \E x, y \in {32}, z \in {44} : TRUE
+        PROVE   FALSE
+
+THEOREM ASSUME \E x : "top-level"
+        PROVE   FALSE
+<1>1. ASSUME \E x : 1, \E x : 2, \E x : 3, \E x: 4
+      PROVE FALSE
+
+<1> QED
+
+THEOREM ASSUME (A /\ (B \/ (\E x : D \/ E))) /\ (C /\ \E x : B), \E x: D , 
+              NEW x33
+        PROVE  \A x : E
+ 
+  <1>a SUFFICES ASSUME NEW xxxxxx1, E \/ F,
+                      ASSUME E    PROVE Dx = 4321
+               PROVE  \A xxxxx : Cx  => Gx
+    OBVIOUS
+    
+   \* Produced an empty BY for SUFFICES with \E  with Use Suffices chosen
+   \* where the empty BY should have been OBVIOUS.  
+   \* FIXED on 1 Dec 2014
+  <1>xxx. ASSUME 3242 /\ 34255  PROVE FALSE
+    
+     <1>6. ASSUME \E x : FALSE
+         PROVE  FALSE
+  
+  <1>b. \E x : x = <<x>>
+  
+  \* ERROR: Choosing the bottom \E on this produces a proof
+  \* that failed.
+  \* FIXED on 1 Dec 2014 
+  <1>c. ~A
+ 
+  \* bottom \E - mid \E - top /\ - mid /\ shows \E x_2_2
+  \* FIXED 2 Dec 2014
+  <1>d. ASSUME TRUE PROVE ~A
+    
+  
+  <1>1. SUFFICES ASSUME NEW zzz, A \/ \A x : B, 44444
+                 PROVE  C
+  
+  <1>2. PICK zzzzzz \in A : 333 \/ 444
+  
+  <1>3. ASSUME NEW x_2 PROVE \A x \in {} : FALSE
+    <2>1. TAKE x \in {}
+    <2>2 QED
+  
+  
+  <1>4. HAVE 444 \/ 445
+
+  \* Proof failed without SUFFICES, but I believe
+  \* Obligation was true.  Unable to reproduce,
+  \* But didn't try hard.
+  <1>5. ASSUME NEW yyy, yyy = 13, 345
+        PROVE  R \/ S
+
+  <1> ASSUME F \/ G, 
+             NEW newvar,
+             ASSUME I PROVE J
+      PROVE  H 
+  
+<1> QED
+ \* FIXED BUG IN THIS EXAMPLE 2 Dec 2014
+ THEOREM ASSUME ( (\E x : x \subseteq x) /\ ((\E x : x = {x}) /\ ((\E x : x \ {x} = {})) /\ (A \/ \A x : x = <<x>>))),
+                NEW x
+         PROVE  FALSE
+   
+  THEOREM (\E x : x \subseteq x) => ((\E x : x = {x}) => ((\E x : x \ {x} = {}) => (A \/ \A x : x = <<x>>)))  
+         
+ 
+ xzy3 == ((\E x : x \ {x} = {}) => (A \/ \A x : x = <<x>>))
+ xzy2 == (\E x : x = {x})
+ xzy1 ==  \E x : x \subseteq x    
+ xzy == xzy1 => (xzy2 => xzy3)
+  
+THEOREM FALSE
+\* ERROR: => \E => \E => \E failes to rename a previously renamed x_2 to avoid conflict.
+\* FIXED 4 Dec 2014
+<1>2 xzy
+ 
+ <1> QED
+THEOREM \* ASSUME  666 \/ 777, NEW newvar,
+         \*    ASSUME 7651 PROVE 6543
+        \* PROVE  
+          A => 333 
+  
+
+THEOREM D
+<1>1. ASSUME \E x : (A = 33 + 4) \/ ((\E y : B \/ C)) ,
+             foo              
+      PROVE  \A x \in F : G /\ C
+<1> QED
+
+THEOREM ASSUME A, B \/ C
+        PROVE D
+
+\* ERROR: Decomposing the two \Es in either order fails to rename
+\* the x in {x \in {} : TRUE}
+\* FIXED 3 Dec 2014
+THEOREM ASSUME \E x : A, \E y : ({x \in {} : TRUE} = {} /\ FALSE)
+        PROVE  FALSE
+
+
+\*==============================
+Q3(a, b) == \E x \in Int : (x = a) /\ (x = b)
+Q2(a, b) == \E x \in Int : ((x = a) /\ (x = b)) \/ Q3(a, b+1)
+Q1(a, b) == \E x \in Int: (* \E y \in {x} : *) ((x = a) /\ (x = b)) \/ Q2(a, b+1)
+
+THEOREM  TT == \A y \in Int : Q1(y, 1) => (y = 1) \/ (y = 2) \/ (y = 3)
+  <1> SUFFICES ASSUME NEW y \in Int,
+                      NEW x \in Int,
+                      NEW y_1 \in {x},
+                      ((x = y) /\ (x = 1)) \/ Q2(y, 1+1)
+               PROVE  (y = 1) \/ (y = 2) \/ (y = 3)
+    BY DEF Q1
+  <1>1. ASSUME (x = y) /\ (x = 1)
+        PROVE  (y = 1) \/ (y = 2) \/ (y = 3)
+  <1>2. ASSUME NEW x_1 \in Int,
+               (x_1 = y) /\ (x_1 = (1+1))
+        PROVE  (y = 1) \/ (y = 2) \/ (y = 3)
+  <1>3. ASSUME NEW x_1 \in Int,
+               NEW x_2 \in Int,
+               (x_2 = y) /\ (x_2 = ((1+1)+1))
+        PROVE  (y = 1) \/ (y = 2) \/ (y = 3)
+  <1>4. QED
+    
+
+
+THEOREM  ASSUME NEW y \in Int, Q1(y, 1) PROVE (y = 1) \/ (y = 2) \/ (y = 3)
+  <1> SUFFICES ASSUME NEW x \in Int,
+                      ((x = y) /\ (x = 1)) \/ Q2(y, 1+1)
+               PROVE  (y = 1) \/ (y = 2) \/ (y = 3)
+    BY DEF Q1
+  <1>1. CASE (x = y) /\ (x = 1)
+  <1>2. ASSUME NEW x_1 \in Int,
+               (x_1 = y) /\ (x_1 = (1+1))
+        PROVE  (y = 1) \/ (y = 2) \/ (y = 3)
+  <1>3. ASSUME NEW x_1 \in Int,
+               NEW x_2 \in Int,
+               (x_2 = y) /\ (x_2 = ((1+1)+1))
+        PROVE  (y = 1) \/ (y = 2) \/ (y = 3)
+  <1>4. QED
+    
+ 
+
+THEOREM ASSUME NEW a1(_), NEW a2(_, _), NEW b1(_), NEW b2(_), NEW Goal
+        PROVE  FALSE
+<1> DEFINE a(x) == \E y : a1(y) \/ \E z : a2(y, z) 
+           b(x) == b1(x) \/ b2(x)
+           Next ==  \E x : a(x) \/ b(x) 
+           Thm == Next => Goal
+<1>1.  ASSUME Next PROVE Goal
+  <2> SUFFICES ASSUME NEW x,
+                      a(x) \/ b(x)
+               PROVE  Goal
+    BY <1>1 DEF Next
+  <2>1. ASSUME NEW y,
+               a1(y)
+        PROVE  Goal
+  <2>2. ASSUME NEW y,
+               NEW z,
+               a2(y, z)
+        PROVE  Goal
+  <2>3. CASE b1(x)
+  <2>4. CASE b2(x)
+  <2>5. QED
+    
+
+
+ 
+<1> QED 
+
+THEOREM  ASSUME NEW y \in Int, Q1(y, 1) PROVE (y = 1) \/ (y = 2) \/ (y = 3)
+
+\* The following was produced by the old version.
+\*  <1> SUFFICES ASSUME NEW x \in Int,
+\*                      ((x = y) /\ (x = 1)) \/ Q2(y, 1+1)
+\*               PROVE  (y = 1) \/ (y = 2) \/ (y = 3)
+\*    BY DEF Q1
+\*  <1>1. CASE (x = y) /\ (x = 1)
+\*  <1>2. ASSUME NEW x_1 \in Int,
+\*               (x_1 = y) /\ (x_1 = (1+1))
+\*        PROVE  (y = 1) \/ (y = 2) \/ (y = 3)
+\*  <1>3. ASSUME NEW x_1 \in Int,
+\*               NEW x_2 \in Int,
+\*               (x_2 = y) /\ (x_2 = ((1+1)+1))
+\*        PROVE  (y = 1) \/ (y = 2) \/ (y = 3)
+\*  <1>4. QED
+\*   BY <1>1, <1>2, <1>3 DEF Q2, Q3
+\*
+
+R3(b, a) == a = 3 \/ a = b
+R2(b, a) == a = 2 \/ \E x \in {b, a} : R3(x, a+1)
+R1(a) == a = 1 \/ \E x \in {a} : R2(x, a+1)
+THEOREM TT2 == \A y \in {1, 2, 3} : R1(y) => (y = 1)
+
+
+
+\*VARIABLES A, B, C, D, E, F
+
+T3 == \E x : D \/ E
+T2 == (C /\ A /\ T3)
+T1 == B /\ T2
+THEOREM T1 => A /\ B /\ H
+
+
+
+S1 == A \/ (\E x \in {y_1 \in {44} : y_1 > 0} : x \in {44}) 
+S1a == A \/ (\A x \in {y_1 \in {44} : y_1 > 0} : x \in {44}) 
+S1b == A \/ ({y_1 \in {44} : y_1 > 0} = {x \in {44} : x > 0})
+S1c == \E z : ({y_1 \in {44} : y_1 > 0} = {x \in {44} : x > 0})
+\* Produces parse error on decomposition by \/ then \A then Prove,
+\* with Suffices/Case options (and other options too)
+\* Bug fixed by disallowing \/ then \A
+THEOREM ASSUME NEW x , S1b  
+        PROVE  \A x_1 : FALSE     
+
+THEOREM ASSUME NEW x, [S1b]_x
+        PROVE  \A x_1 : FALSE     
+                               
+\* If you do first \A then \E, an x is renamed to x_2
+\* although x_1 would be an OK renaming.  This is 
+\* acceptable.                                 
+THEOREM ASSUME NEW x , NEW y_1, S1c  
+        PROVE  \A x_1 : FALSE     
+
+
+SS1 == (\E x \in {y_1 \in {41} : y_1 > 0} : x \in {411}) 
+SS1a == (\A x \in {y_1 \in {42} : y_1 > 0} : x \in {421}) 
+SS1b == ({y_1 \in {43} : y_1 > 0} = {x \in {431} : x > 0})
+SS1c == \E z : ({y_1 \in {44} : y_1 > 0} = {x \in {441} : x > 0}) 
+SS1d == B /\ \E q : A              
+THEOREM ASSUME SS1c
+        PROVE  FALSE
+
+
+THEOREM ASSUME SS1d, \E x : E
+        PROVE FALSE
+
+THEOREM ASSUME \E x : A
+        PROVE  C => A /\ B
+
+P1 == \A x : A
+P2 == \A x : P1
+THEOREM P2
+
+
+P3 == A \/ B
+THEOREM FALSE
+<1>0. TRUE
+
+<1>1. SUFFICES ASSUME \E x \in A : A
+               PROVE  F => \A x \in G : G
+
+<1>a.  A => P1
+
+
+\* \E decomposition (of step's \E formula) followed by \/ decomposition
+\* with "Use SUFFICES" checked produces an invalid proof in both the old 
+\* and new versions.
+\* Bug fixed.
+<1>1x. ASSUME \E a : D, P3
+       PROVE  C
+
+
+<1>2. CASE  A /\ \E x \in B : B
+  <2>1. ASSUME \E x \in C : C
+        PROVE  G => \A x \in H : H
+
+    
+  <2> QED
+<1> QED
+
+THEOREM ASSUME \E x \in {y \in {44} : y > 0} : x \in {41},
+               \E x_1 \in {y \in {44} : y > 0} : \E x : x_1 \in {42},
+               \E x \in {y \in {44} : y > 0} : x \in {43},
+               NEW x
+        PROVE  FALSE
+
+S2 == \E x \in {y \in {44} : y > 0} : x \in {41}
+S2a == \E x \in {y \in {44} : y > 0} : x \in {42}
+S2b == \E x \in {y \in {44} : y > 0} : x \in {43}
+THEOREM ASSUME NEW x, NEW y, S2, S2a, S2b, A \/ B
+        PROVE FALSE 
+
+THEOREM ASSUME S2, S2a, S2b, A \/ (\E x : B)
+        PROVE FALSE 
+\*<1>1. TRUE
+\*<1> QED
+
+THEOREM ASSUME (\E x : (TRUE \/ \E y : B)) \/ FALSE, NEW x, NEW y
+        PROVE  TRUE
+
+S22 == (\E x : TRUE) \/ FALSE
+THEOREM ASSUME S22, NEW x
+        PROVE  TRUE
+
+        
+
+S4 == \E x \in {y \in {44} : y > 0} : x \in {44}
+S3 == (\E x \in {y \in {44} : y > 0} : x \in {44}) \/ S4 
+\* Expanding all the way down with Use CASE checked produces cases with bogus variable x_1 
+\* Fixed n now.
+THEOREM ASSUME NEW x, NEW y, NEW y_1, S3
+        PROVE  FALSE
+
+U1 == \A x \in {y \in {44} : y > 0} : (x > 0) /\ A
+THEOREM ASSUME NEW x , NEW y PROVE U1
+
+U2 == \E x : A \/ \E x_1 : x = x_1
+
+THEOREM ASSUME NEW x, U2 PROVE FALSE
+
+
+
+THEOREM ASSUME \E x \in {1} : TRUE, A \/ \E x : FALSE
+        PROVE  \A x : TRUE
+
+W3(a, b) == \E x : <<a, b>> = A  \/ (x=1)
+W2(a) == \E x : W3(a, x)
+W1 == \E x : W2(x)
+THEOREM W1 => \A x : FALSE
+ 
+
+ 
+C3 == \E x : (x=2) \/ (x=3)
+C2 == \E x : \E y : C3
+THEOREM (\E x : C2) => FALSE
+
+C5(y) == y /\ (B \/ C)
+C4(x) == x /\ \E y : C5(y) /\ x 
+
+\* QED proof used to fails with everything expanded and Use SUFFICE & with or without CASE
+\* Seems to be fixed now
+THEOREM ASSUME NEW y, (\E x : C4(x) /\ A) PROVE FALSE
+
+
+THEOREM ASSUME NEW y, NEW x,  C4(x) /\ A PROVE FALSE
+ 
+
+
+C7(u, v) == \E y : <<u, v, y>> \/ (y=v)
+C6(a) == \E x : C7(a, x)
+THEOREM C6(42) => FALSE
+
+B2(a, b) == (a=1) \/ (b=1)
+B1(a) == \E y : B2(a, y)
+THEOREM (\E x : B1(x)) => FALSE
+  
+Bar(bb) == (bb \/ C)
+Foo(aaaa, bbbb) ==  Bar(aaaa) => bbbb \/ /\ aaaa
+
+                                         /\ bbbb => B
+ 
+X(a, Op(_,_)) == \A x : Op(a, B) /\ a
+W(a) == (a 
+          \/ C)
+Z(a) == \E z \in {E} : W(a) => \/ D
+                               \/ D
+
+ABar(bb) == \E y , yy : (Z(C) 
+
+                           \/ D)
+AFoo(aaaa) == \E x : ( ABar(<<x, aaaa>>) )
+THEOREM AFoo(44) => FALSE
+
+Y == A \/ (Z(B) \/ D)
+AA == A
+BB == (\E yB, yBB \in {}, yBBB \in {} : B \/ (\E yC, yCCC : \E yCC : (C \/ (\E yD : D))))
+ZZ == AA /\ BB 
+ZZZ == A /\ (\E yy : B)
+
+THEOREM ZZ
+
+THEOREM AA => ZZ
+
+THEOREM XYZ == ASSUME NEW AAAA , ZZ, NEW BBBB PROVE FALSE
+
+THEOREM Y => FALSE
+
+THEOREM ASSUME NEW ZZ1, NEW ZZ123456 PROVE Foo(ZZ1, ZZ123456) 
+
+CONSTANT Z77777
+THEOREM Z(Z77777) => FALSE
+
+THEOREM ASSUME A \/ B PROVE C
+
+THEOREM ASSUME AFoo(F)
+        PROVE FALSE
+
+THEOREM ASSUME \E x : A \/ ABar(C)
+        PROVE  FALSE 
+
+ 
+THEOREM ASSUME Z(F)
+        PROVE  Foo(A, B)
+
+THEOREM \A x \in 23 +
+                 24 : A
+  
+THEOREM \A x \in 23 +
+                    24, y \in E : A => Bar(11)
+
+THEOREM X(22+33, Foo)
+
+\* Checking completed through here on 4 Dec 2014
+===============================
+
+------------ MODULE Test1 ----------
+CONSTANT C1  
+
+T2I == INSTANCE Test2 WITH C2 <- <<C1, "C2exp">>
+
+T1D == TRUE
+T1Oper == T2I!T2Other(T1D)
+T1Or == C1 \/ T1Oper
+
+T1OperA == C1 \/ ~C1
+T1OrA == C1 \/ T1OperA
+
+T1EA2(a) == \E x \in T1D : a = 0
+T1EA == \E x \in C1 : T1EA2(x)
+
+T1AA2(a) == \A x \in T1D : a = 0
+T1AA == \A x \in C1 : T1AA2(x)
+
+T2IDef(x) == x
+T2Def(a) == \A y : (a = T2IDef(a))
+T1Def(a) ==  \A y : <<C1, T2IDef(42), a>>
+T12Def(a) == \A y \in <<C1, a>> : T2I!T2Def(<<C1, a>>)
+T123Def == \E x \in C1 : T2I!T3Def(<<"somearg", x>>)
+========================================
+
+-------------- MODULE Test2 ---------------
+CONSTANTS C2
+
+T2Other3(a) == a
+T2Other2(a) == C2 \/ T2Other3(C2)
+T2Other(a) == T2Other2(a) \/ C2
+T2Def(a) == \A x \in C2 : C2 = <<a, T2Other(a)>>
+
+I3 == INSTANCE Test3 WITH C3 <- {C2, "C3"}
+T3Def(a) == \E x \in C2 : I3!T3Def({C2, "T3DefArg1", x, a}, "T3DefArg2")
+===========================================
+ 
+------------------------------- MODULE Test3 -------------------------------
+CONSTANT C3
+
+T3Def(a, b) == \A x \in C3 : <<a, C3, b, x>>
+=============================================================================
+\* Modification History
+\* Last modified Fri Nov 28 15:23:36 PST 2014 by lamport
+\* Created Tue Jan 21 13:27:39 PST 2014 by lamport
+
+
+ */
+
 
 
 /*   The following module is a specification for code to enhance the 
