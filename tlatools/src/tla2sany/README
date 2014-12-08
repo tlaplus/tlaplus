@@ -1,0 +1,12 @@
+Author: Tomer Libal (2014)
+
+Here are some instructions of how to use SANY from the command line
+-------------------------------------------------------------------
+
+- In order t0 run SANY: java -cp <tools-jar> tla2sany.SANY <tla-file>
+
+- In order to include the library modules (Standard modules like Sequences are contained in the jar but other modules like TLAPS are not).
+add the following flag to the java command: -DTLA-Library=<my-library-loc>
+
+- In order to run it in explorer mode, which allows you to see the semantic tree of the specification
+check source of explorer/Explorer.java
