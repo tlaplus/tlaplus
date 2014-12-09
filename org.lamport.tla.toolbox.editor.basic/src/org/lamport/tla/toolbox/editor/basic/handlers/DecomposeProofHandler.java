@@ -1694,7 +1694,10 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 NodeRepresentation nodeRep = contextStepRep.subNodeRep(contextAssumptions.elementAt(i),
                         state.assumeReps, null, null, null, true);
                 nodeRep.contextStepName = contextSources.elementAt(i) ;
-                if ((nodeRep.decomposition != null) && (nodeRep.nodeSubtype != NodeRepresentation.IMPLIES_TYPE)) {
+                if ((nodeRep.decomposition != null) 
+                        && (nodeRep.nodeSubtype != NodeRepresentation.IMPLIES_TYPE)
+                        // Following conjunct added 9 Dec 2014
+                        && (nodeRep.nodeSubtype != NodeRepresentation.FORALL_TYPE)) {
                     nodeRep.initialPosition = state.assumeReps.size() ;
                     state.assumeReps.addElement(nodeRep);
                     state.numberOfContextAssumptions++;                  
