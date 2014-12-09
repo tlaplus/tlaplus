@@ -14,7 +14,7 @@ import java.util.Vector;
  *   add(elt) : Adds the element elt to the set (no-op if elt is
  *              already in the set.
  *              
-  *   addAll(sset) : Adds all the elements of the StringSet sset to the 
+ *   addAll(sset) : Adds all the elements of the StringSet sset to the 
  *                 set represented by this object.
  *   
  *   contains(elt) : Returns true iff the element is in the set.

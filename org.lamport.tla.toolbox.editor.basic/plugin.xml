@@ -295,17 +295,17 @@
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.OldDecomposeProofHandler"
+            description="Raise popup to create proof of selected step."
+            id="org.lamport.tla.toolbox.editor.basic.OldDecomposeProof"
+            name="Old Decompose Proof">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
             defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.DecomposeProofHandler"
             description="Raise popup to create proof of selected step."
             id="org.lamport.tla.toolbox.editor.basic.DecomposeProof"
             name="Decompose Proof">
-      </command>
-      <command
-            categoryId="org.eclipse.ui.category.textEditor"
-            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.NewDecomposeProofHandler"
-            description="New Raise popup to create proof of selected step."
-            id="org.lamport.tla.toolbox.editor.basic.NewDecomposeProof"
-            name="New Decompose Proof">
       </command>
 
    </extension>
@@ -515,7 +515,7 @@
             sequence="M1+G M1+D">
       </key>
       <key
-            commandId="org.lamport.tla.toolbox.editor.basic.NewDecomposeProof"
+            commandId="org.lamport.tla.toolbox.editor.basic.OldDecomposeProof"
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+U">
