@@ -1231,6 +1231,24 @@ public class OpApplNode extends ExprNode implements ExploreNode {
   protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("OpApplNode");
 
+    // TL 2014 - A fix for detecting null representing OTHER inside a case (please refrain from using null as a semantical object),
+    // its form is
+    // OpApplNode: Operator: $Case - Operands: 3(_,_,OpApplNode: Operator: $Pair - Operands: 2(null,_))
+    if (operator.getName().toString().equals("$Case") && operands.length > 1 /* OTHER cannot occur alone in a CASE */) {
+      // OTHER should be last operand
+       ExprOrOpArgNode lastOperand = operands[operands.length-1];
+       if (lastOperand instanceof tla2sany.semantic.OpApplNode) {
+          OpApplNode other = (OpApplNode)lastOperand;
+          // indeed the OTHER case
+          if (other.getOperator().getName().toString().equals("$Pair") && other.getArgs()[0] == null) {
+            // we pass a flag that tells any future OpApplNode that a null operand in 0 position should be replaced by the string $Other
+            context = new tla2sany.xml.SymbolContext(context);
+            context.setFlag(tla2sany.xml.SymbolContext.OTHER_BUG);
+          }
+       }
+
+    }
+
     // operator
     Element op = doc.createElement("operator");
     op.appendChild(operator.export(doc,context));
@@ -1238,7 +1256,15 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 
     // operands
     Element ope = doc.createElement("operands");
-    for (int i=0; i< operands.length; i++) ope.appendChild(operands[i].export(doc,context));
+    for (int i=0; i< operands.length; i++) {
+      // dealing with the $Case OTHER null bug
+      if (i == 0 && operands[0] == null && context.hasFlag(tla2sany.xml.SymbolContext.OTHER_BUG)) {
+        ope.appendChild(appendText(doc,"StringNode","$Other"));
+      }
+      else {
+        ope.appendChild(operands[i].export(doc,context));
+      }
+    }
     e.appendChild(ope);
 
     // bound variables (optional)

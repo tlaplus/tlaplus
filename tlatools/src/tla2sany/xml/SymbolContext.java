@@ -17,9 +17,32 @@ public class SymbolContext {
   private java.util.Map<Integer,Element> context;
   private java.util.Set<Integer> keys; // we need this set since the generated element might spawn new keys
 
+  // flags list
+  public static final int OTHER_BUG = 0;
+
+  // some semantic objects are represented using null. this flags array
+  // is used to tell nodes tio expect them so xml exporting will be done properly
+  private boolean[] flagArray;
+
   public SymbolContext() {
     context = new java.util.HashMap<Integer,Element>();
     keys = new java.util.HashSet<Integer>();
+    flagArray = new boolean[1];
+  }
+
+  // copy concstructor
+  public SymbolContext(SymbolContext other) {
+    context = other.context;
+    keys = other.keys;
+    flagArray = other.flagArray;
+  }
+
+  public void setFlag(int flag) {
+    flagArray[flag] = true;
+  }
+
+  public boolean hasFlag(int flag) {
+    return flagArray[flag];
   }
 
   public void put(SymbolNode nd, Document doc) {
