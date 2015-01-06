@@ -212,8 +212,50 @@
 
 					</environments>
 				</configuration>
+					</plugin>
+		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>1.3.1</version>
+				<executions>
+					<!-- Newer maven versions (e.g. 3.2) fail with a cyclic dependency error 
+						during resolution -->
+					<!-- Read http://maven.apache.org/enforcer/enforcer-rules/versionRanges.html 
+						on version range syntax -->
+					<execution>
+						<id>enforce-maven-3</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>[3.0.0,3.1)</version>
+								</requireMavenVersion>
+							</rules>
+							<fail>true</fail>
+						</configuration>
+					</execution>
+					<!-- The toolbox's build is broken with Java 1.8 right now due to an older 
+						AspectJ dependency. Upgrading to a newer aspectJ is probably going to fix 
+						this problem by creating a new one. -->
+					<!-- http://maven.apache.org/enforcer/enforcer-rules/requireJavaVersion.html -->
+					<execution>
+						<id>enforce-java</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireJavaVersion>
+									<version>[1.5,1.8)</version>
+								</requireJavaVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
 
