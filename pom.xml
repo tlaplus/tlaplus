@@ -169,7 +169,15 @@
 					    <version>1.4.0-SNAPSHOT</version>
 					    <classifier>TLAToolbox</classifier>
 					 </artifact>
-					</target> 
+					</target>
+					
+					<!-- Need to specify miminum Java version. This defines what
+					     java.* packages are available during dependency resolution. The default
+					     is Java 1.4 which e.g. does not come with "java.security.sasl", a
+					     package that is indirectly referenced by the toolbox (indirectly via
+					     org.apache.mina.core).
+					     see http://dev.eclipse.org/mhonarc/lists/cbi-dev/msg00166.html --> 
+		 			<executionEnvironment>J2SE-1.5</executionEnvironment>
 
 					<!-- configure the p2 target environments for multi-platform build -->
 					<environments>
