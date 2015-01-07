@@ -69,8 +69,13 @@
           <products>
             <product>
               <id>org.lamport.tla.toolbox.product.product</id>
-              <zipFileName>TLAToolbox</zipFileName>
-              <includeVersion>true</includeVersion>
+              <!-- archiveFileName sets the prefix of the resulting toolbox
+                   zip files. It also has to contain the version because the
+                   Tycho developers choose adherence to administrative processes
+                   over features. The version segment has to be manually increment
+                   upon a release.  
+                   see https://bugs.eclipse.org/bugs/show_bug.cgi?id=357503#c22 -->
+              <archiveFileName>TLAToolbox-1.4.8</archiveFileName>
               <rootFolder>toolbox</rootFolder>
             </product>
           </products>
