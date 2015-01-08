@@ -108,6 +108,11 @@
 							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
 							<version>1.0.0.v20100108</version>
 						</dependency>
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.eclipse.equinox.event</artifactId>
+							<version>0.0.0</version>
+						</dependency>
 					</dependencies>
 
 					<!-- Enable JDT weaving -->
@@ -133,6 +138,11 @@
 						<bundle>
 							<id>org.aspectj.runtime</id>
 							<level>3</level>
+							<autoStart>true</autoStart>
+						</bundle>
+						<bundle>
+							<id>org.eclipse.equinox.event</id>
+							<level>4</level>
 							<autoStart>true</autoStart>
 						</bundle>
 					</bundleStartLevel>
