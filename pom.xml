@@ -63,6 +63,7 @@
 		<module>org.lamport.tla.toolbox.feature.prover</module>
 		<module>org.lamport.tla.toolbox.feature.tla2tex</module>
 		<module>org.lamport.tla.toolbox.feature.tlc</module>
+		<module>org.lamport.tla.toolbox.feature.branding</module>
 		<module>org.lamport.tla.toolbox.feature.standalone</module>
 
 		<!-- p2 repository for updates -->
