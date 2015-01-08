@@ -20,6 +20,14 @@
             <artifactId>aspectjrt</artifactId>
             <version>1.8.2</version>
         </dependency>
+        <!-- Down below we manually install the standalone feature. Maven/Tycho isn't
+        	 smart enough to figure this out by itself. Thus, we have to tell Tycho
+        	 explicitly. -->
+  		<dependency>
+            <groupId>tlatoolbox</groupId>
+            <artifactId>org.lamport.tla.toolbox.feature.standalone</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
    	</dependencies>
 
 	<build>
