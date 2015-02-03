@@ -13,7 +13,7 @@ TO MAKE REVERT TO HEAD WORK
   After doing revert to HEAD, Eclipse reverts the file but still marks it as
   changed.  To unmark it, open a Cygwin shell and perform the command
 
-      git checkout FileName
+       git checkout FileName
 
   where FileName is the path from the current directory to ~/git/tlaplus2/FileNameEclipseShows
 
