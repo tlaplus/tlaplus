@@ -6899,7 +6899,11 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
           Selector sel = genIdToSelector((SyntaxTreeNode) heirs[nextTok]) ;
           SemanticNode selToNd = selectorToNode(sel, -1, false, true, cm);
           if (   (selToNd instanceof OpDefNode)
-              || (selToNd instanceof ThmOrAssumpDefNode)) { 
+              || (  (selToNd instanceof ThmOrAssumpDefNode)
+                  && // This conjunct added 4 Feb 2015 by LL to forbid step
+                     // names in a DEF clause.
+                     (((ThmOrAssumpDefNode) selToNd).getName().toString().charAt(0) != '<' )
+                  )) { 
             SymbolNode def = (SymbolNode) selToNd;
             vec.addElement(def) ;
            } 
