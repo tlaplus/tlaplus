@@ -79,23 +79,32 @@ public class XMLExporter {
     // parse arguments, possible flag
     // s
     // -I (a modules path) can be repeated
+    // -o offline mode (no validation) //TODO: use a resolver to do offline validation
     // then a list of top level modules to parse)
     if (args.length < 1) throw new IllegalArgumentException("at least one .tla file must be given");
-
     LinkedList pathsLs = new LinkedList();
-    int ind = 0;
-    while (args[ind].equals("-I")) {
-      ind++;
-      if (ind > args.length-2) throw new IllegalArgumentException("the -I flag must be followed by a directory and at least one .tla file");
-      pathsLs.addLast(args[ind++]);
-      if (ind > args.length-1) throw new IllegalArgumentException("at least one .tla file must be given");
+
+    boolean offline_mode = false;
+    int lastarg = -1; // lastarg will be incremented, initialize at -1
+    for (int i = 0; i<args.length-1; i++) {
+        if ("-o".equals(args[i])) {
+            offline_mode = true;
+            lastarg = i;
+        } else if ("-I".equals(args[i])) {
+            i++;
+            if (i > args.length-2) throw new IllegalArgumentException("the -I flag must be followed by a directory and at least one .tla file");
+            pathsLs.addLast(args[i]);
+            lastarg = i;
+        }
     }
+
+    lastarg++;
 
     String[] paths = new String[pathsLs.size()];
     for (int i=0; i<paths.length; i++) paths[i] = (String)pathsLs.get(i);
 
-    String[] tlas = new String[args.length - ind];
-    for (int i=0; i<args.length-ind; i++) tlas[i] = args[ind++];
+    String[] tlas = new String[args.length - lastarg];
+    for (int i=0; i<args.length-lastarg; i++) tlas[i] = args[lastarg++];
 
     FilenameToStream fts = new SimpleFilenameToStream(paths);
 
@@ -171,23 +180,23 @@ public class XMLExporter {
       DOMSource source = new DOMSource(doc);
 
       // validate the file, do not fail if there is a URL connection error
-      try {
-        SchemaFactory factory = SchemaFactory.newInstance(W3C_XML_SCHEMA);
-        Schema schema = factory.newSchema(new URL(TLA_SCHEMA));
-        // create a Validator instance, which can be used to validate an instance document
-        Validator validator = schema.newValidator();
-        //validate the DOM tree
-        validator.validate(source);
+      if (! offline_mode) { //skip validation in offline mode
+          try {
+              SchemaFactory factory = SchemaFactory.newInstance(W3C_XML_SCHEMA);
+              Schema schema = factory.newSchema(new URL(TLA_SCHEMA));
+              // create a Validator instance, which can be used to validate an instance document
+              Validator validator = schema.newValidator();
+              //validate the DOM tree
+              validator.validate(source);
+          } catch (java.io.IOException ioe) {
+              // do nothing if there is no internet connection
+              // but fail for other errors
+          }
+          /*catch (org.xml.sax.SAXParseException spe) {
+            // do nothing if there is no internet connection
+            // but fail for other errors
+          }*/
       }
-      catch (java.io.IOException ioe) {
-        // do nothing if there is no internet connection
-        // but fail for other errors
-      }
-      /*catch (org.xml.sax.SAXParseException spe) {
-        // do nothing if there is no internet connection
-        // but fail for other errors
-      }*/
-
       StreamResult result = new StreamResult(out);
 
       transformer.transform(source, result);

@@ -10,6 +10,8 @@ import util.UniqueString;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 
 
 /**
@@ -124,6 +126,10 @@ public class StringNode extends ExprNode implements ExploreNode {
   }
 
   protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
-    return appendText(doc,"StringNode",value.toString());
+      Element e = doc.createElement("StringValue");
+      Node n = doc.createTextNode(value.toString());
+      e.appendChild(n);
+      return appendElement(doc, "StringNode", e);
+   // return appendText(doc,"StringNode",value.toString());
   }
 }

@@ -9,6 +9,7 @@ import tla2sany.st.TreeNode;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Describes a numeral like 4095.  This number is represented by the
@@ -122,7 +123,12 @@ public class NumeralNode extends ExprNode {
   }
 
   protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
-    return appendText(doc,"NumeralNode",(bigValue != null) ? bigValue.toString() : (Integer.toString(value)));
+      String v = (bigValue != null) ? bigValue.toString() : (Integer.toString(value));
+      Element e = doc.createElement("IntValue");
+      Node n = doc.createTextNode(v);
+      e.appendChild(n);
+      return appendElement(doc, "NumeralNode", e);
+    //return appendText(doc,"NumeralNode",(bigValue != null) ? bigValue.toString() : (Integer.toString(value)));
   }
 }
 
