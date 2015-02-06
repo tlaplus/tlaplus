@@ -49,7 +49,7 @@ Step 1: Get the right version numbers to appear:
         create zip file names.)
      Overview: update version.  (I don't know if this is used anywhere.)
 
--- In org.lamport.tla.toolbox/welcome/welcomeView.html
+-- In org.lamport.tla.toolbox/src/org/lamport/tla/toolbox/ui/view/ToolboxWelcomeView.java
    Update date and version
 
 -- In org.lamport.tla.toolbox.product.product/pom.xml around line 73 change the archiveFileName
