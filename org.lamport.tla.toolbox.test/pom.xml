@@ -15,6 +15,41 @@
   <packaging>eclipse-test-plugin</packaging>
 	<build>
 		<plugins>
+			<!-- Pro tip for Linux developers: Use a different display for UI tests -->
+			<plugin>
+			    <artifactId>maven-antrun-plugin</artifactId>
+			    <executions>
+			        <execution>
+			            <phase>generate-resources</phase>
+			            <goals>
+			                <goal>run</goal>
+			            </goals>
+			            <configuration>
+			                <tasks>
+			                	<echo>[ProTip] ====================================</echo>
+			                	<echo>[ProTip] = Use another DISPLAY for UI tests =</echo>
+			                	<echo>[ProTip] ====================================</echo>
+			                	<echo>[ProTip] </echo>
+								<echo>[ProTip] UI tests require the tested application to have focus in</echo>
+								<echo>[ProTip] order to work well. If it happens on the DISPLAY you're working on,</echo>
+								<echo>[ProTip] then you have to wait for tests to end before you can go on working.</echo>
+								<echo>[ProTip] It's a waste of time. On Linux (and possibly Mac), you can run your</echo>
+								<echo>[ProTip] test on another DISPLAY, so you can keep on working while tests are</echo>
+								<echo>[ProTip] running. You can use Xephyr for that, since it allows you to see</echo>
+								<echo>[ProTip] what is happening in another window. You'll also need to have a Window</echo>
+								<echo>[ProTip] Manager started on this Xephyr. We recommand to run metacity.</echo>
+			                	<echo>[ProTip] </echo>
+			                	<echo>[ProTip]  &amp; Xephyr -screen 1024x768 :51 &amp;</echo>
+			                	<echo>[ProTip]  &amp; export DISPLAY=:51</echo>
+			                	<echo>[ProTip]  &amp; metacity --sm-disable --replace &amp;</echo>
+			                	<echo>[ProTip]  &amp; ...command that runs mvn..</echo>
+			                	<echo>[ProTip] </echo>
+			                    <echo>[ProTip] (https://wiki.eclipse.org/SWTBot/Automate_test_execution#use_another_DISPLAY_to_save_time)</echo>
+			                </tasks>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>
 			<!-- Run JUnit tests -->
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
