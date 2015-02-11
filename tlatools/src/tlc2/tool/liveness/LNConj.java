@@ -102,4 +102,178 @@ class LNConj extends LiveExprNode {
 			}
 		}
 	}
+
+	public void extractPromises(TBPar promises) {
+		getBody(0).extractPromises(promises);
+		getBody(1).extractPromises(promises);
+	}
+
+	public int tagExpr(int tag) {
+		for (int i = 0; i < getCount(); i++) {
+			tag = getBody(i).tagExpr(tag);
+		}
+		return tag;
+	}
+
+	public final LiveExprNode makeBinary() {
+		if (getCount() == 1) {
+			return getBody(0).makeBinary();
+		}
+		int mid = getCount() / 2;
+		LNConj left = new LNConj(0);
+		LNConj right = new LNConj(0);
+		for (int i = 0; i < getCount(); i++) {
+			if (i < mid) {
+				left.addConj(getBody(i));
+			} else {
+				right.addConj(getBody(i));
+			}
+		}
+		return new LNConj(left.makeBinary(), right.makeBinary());
+	}
+
+	public LiveExprNode flattenSingleJunctions() {
+		if (getCount() == 1) {
+			return getBody(0).flattenSingleJunctions();
+		}
+		LNConj lnc2 = new LNConj(getCount());
+		for (int i = 0; i < getCount(); i++) {
+			lnc2.addConj(getBody(i).flattenSingleJunctions());
+		}
+		return lnc2;
+	}
+
+	/**
+	 * The method toDNF turns a LiveExprNode into disjunctive normal form.
+	 */
+	public final LiveExprNode toDNF() {
+		int count = getCount();
+		LiveExprNode[] temp = new LiveExprNode[count];
+		for (int i = 0; i < count; i++) {
+			temp[i] = getBody(i).toDNF();
+		}
+
+		// We now construct the cross product:
+		Vect nes = new Vect(count);
+		int total = 1;
+		for (int i = 0; i < count; i++) {
+			LiveExprNode elem = temp[i];
+			if (elem instanceof LNDisj) {
+				nes.addElement(elem);
+				total *= ((LNDisj) elem).getCount();
+			} else if (elem instanceof LNConj) {
+				// Flatten when elem is also a LNConj:
+				LNConj elem1 = (LNConj) elem;
+				int count1 = elem1.getCount();
+				for (int j = 0; j < count1; j++) {
+					nes.addElement(elem1.getBody(j));
+				}
+			} else {
+				nes.addElement(elem);
+			}
+		}
+
+		if (total == 1) {
+			return new LNConj(nes);
+		}
+		int nesSize = nes.size();
+		Vect res = new Vect(total);
+		for (int i = 0; i < total; i++) {
+			res.addElement(new LNConj(nesSize));
+		}
+		int num = 1;
+		int rCount = total;
+		for (int i = 0; i < nesSize; i++) {
+			LiveExprNode ln = (LiveExprNode) nes.elementAt(i);
+			if (ln instanceof LNDisj) {
+				LNDisj disj = (LNDisj) ln;
+				rCount = rCount / disj.getCount();
+				int idx = 0;
+				for (int j = 0; j < num; j++) {
+					for (int k = 0; k < disj.getCount(); k++) {
+						LiveExprNode elem = disj.getBody(k);
+						for (int l = 0; l < rCount; l++) {
+							((LNConj) res.elementAt(idx++)).addConj(elem);
+						}
+					}
+				}
+				num = num * disj.getCount();
+			} else {
+				for (int j = 0; j < total; j++) {
+					((LNConj) res.elementAt(j)).addConj(ln);
+				}
+			}
+		}
+		return new LNDisj(res);
+	}
+
+	public LiveExprNode simplify() {
+		LNConj lnc1 = new LNConj(getCount());
+		for (int i = 0; i < getCount(); i++) {
+			LiveExprNode elem = getBody(i).simplify();
+			if (elem instanceof LNBool) {
+				if (!((LNBool) elem).b) {
+					return LNBool.FALSE;
+				}
+			} else {
+				lnc1.addConj(elem);
+			}
+		}
+		if (lnc1.getCount() == 0) {
+			return LNBool.TRUE;
+		}
+		if (lnc1.getCount() == 1) {
+			return lnc1.getBody(0);
+		}
+		return lnc1;
+	}
+
+	public boolean isGeneralTF() {
+		for (int i = 0; i < getCount(); i++) {
+			if (!getBody(i).isGeneralTF()) {
+				return false;
+			}
+		}
+		return super.isGeneralTF();
+	}
+
+	public LiveExprNode pushNeg() {
+		LNDisj lnd = new LNDisj(getCount());
+		for (int i = 0; i < getCount(); i++) {
+			lnd.addDisj(getBody(i).pushNeg());
+		}
+		return lnd;
+	}
+
+	public LiveExprNode pushNeg(boolean hasNeg) {
+		if (hasNeg) {
+			LNDisj lnd = new LNDisj(getCount());
+			for (int i = 0; i < getCount(); i++) {
+				lnd.addDisj(getBody(i).pushNeg(true));
+			}
+			return lnd;
+		} else {
+			LNConj lnc1 = new LNConj(getCount());
+			for (int i = 0; i < getCount(); i++) {
+				lnc1.addConj(getBody(i).pushNeg(false));
+			}
+			return lnc1;
+		}
+	}
+
+	public boolean equals(LiveExprNode exp) {
+		if (exp instanceof LNConj) {
+			LNConj exp2 = (LNConj) exp;
+			if (getCount() != exp2.getCount()) {
+				return false;
+			}
+			for (int i = 0; i < getCount(); i++) {
+				if (!getBody(i).equals(exp2.getBody(i))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 }

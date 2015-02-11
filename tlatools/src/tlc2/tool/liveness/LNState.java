@@ -41,4 +41,15 @@ abstract class LNState extends LiveExprNode {
 		this.tag = t;
 	}
 
+	public int tagExpr(int tag) {
+		setTag(tag);
+		return tag + 1;
+	}
+
+	public boolean equals(LiveExprNode exp) {
+		if (exp instanceof LNState) {
+			return getTag() == ((LNState) exp).getTag();
+		}
+		return false;
+	}
 }

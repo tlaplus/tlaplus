@@ -35,4 +35,23 @@ class LNNext extends LiveExprNode {
 		sb.append("()");
 		this.getBody().toString(sb, padding + "  ");
 	}
+
+	public void extractPromises(TBPar promises) {
+		getBody().extractPromises(promises);
+	}
+
+	public final LiveExprNode makeBinary() {
+		return new LNNext(getBody().makeBinary());
+	}
+
+	public LiveExprNode flattenSingleJunctions() {
+		return new LNNext(getBody().flattenSingleJunctions());
+	}
+
+	public boolean equals(LiveExprNode exp) {
+		if (exp instanceof LNNext) {
+			return getBody().equals(((LNNext) exp).getBody());
+		}
+		return false;
+	}
 }

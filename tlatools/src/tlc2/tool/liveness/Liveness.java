@@ -290,9 +290,12 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			return new LNAll(new LNEven(disj));
 		}
 		case OPCODE_leadto: {
+			// F ~> G equals [](F => <>G), however TLC does not have an
+			// implementation for logical implication. Thus, the rule of material
+			// implication is used to transform it into a disjunct.
 			LiveExprNode lnLeft = astToLive(tool, (ExprNode) args[0], con);
 			LiveExprNode lnRight = astToLive(tool, (ExprNode) args[1], con);
-			// expand a ~> b into [](-a \/ <>b)
+			// expand a ~> b into [](-a \/ <>b) 
 			LNDisj lnd = new LNDisj(new LNNeg(lnLeft), new LNEven(lnRight));
 			return new LNAll(lnd);
 		}
@@ -519,14 +522,19 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	public static OrderOfSolution[] processLiveness(Tool tool, String metadir) {
 		LiveExprNode lexpr = parseLiveness(tool);
 
+		lexpr.toString();
+		
 		if (lexpr == null) {
 			return new OrderOfSolution[0];
 		}
 
 		// Give tags to all action and state predicates, for equality
-		// checking. We tag them here so that, if disjunct normal form (DNF) should happen to
+		// checking (tlc2.tool.liveness.LiveExprNode.equals(LiveExprNode)).
+		// We tag them here so that, if disjunct normal form (DNF) should happen to
 		// duplicate exprs, then they will still have the same tag.
 		lexpr.tagExpr(1);
+		
+		
 		lexpr = lexpr.simplify().toDNF();
 		if ((lexpr instanceof LNBool) && !((LNBool) lexpr).b) {
 			return new OrderOfSolution[0]; // must be unsatisfiable

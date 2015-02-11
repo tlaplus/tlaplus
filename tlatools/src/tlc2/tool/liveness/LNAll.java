@@ -48,4 +48,64 @@ class LNAll extends LiveExprNode {
 		sb.append(ALWAYS);
 		this.getBody().toString(sb, padding + "  ");
 	}
+	
+	/* Return A if this expression is of form []<>A. */
+	public LiveExprNode getAEBody() {
+		LiveExprNode allBody = getBody();
+		if (allBody instanceof LNEven) {
+			return ((LNEven) allBody).getBody();
+		}
+		return super.getAEBody();
+	}
+
+	public void extractPromises(TBPar promises) {
+		getBody().extractPromises(promises);
+	}
+
+	public int tagExpr(int tag) {
+		return getBody().tagExpr(tag);
+	}
+
+	public final LiveExprNode makeBinary() {
+		return new LNAll(getBody().makeBinary());
+	}
+
+	public LiveExprNode flattenSingleJunctions() {
+		return new LNAll(getBody().flattenSingleJunctions());
+	}
+
+	public LiveExprNode simplify() {
+		LiveExprNode body1 = getBody().simplify();
+		if (body1 instanceof LNAll) {
+			body1 = ((LNAll) body1).getBody();
+		}
+		return new LNAll(body1);
+	}
+
+	public boolean isGeneralTF() {
+		LiveExprNode allBody = getBody();
+		if (allBody instanceof LNEven) {
+			return false;
+		}
+		return super.isGeneralTF();
+	}
+
+	public LiveExprNode pushNeg() {
+		return new LNEven(getBody().pushNeg());
+	}
+
+	public LiveExprNode pushNeg(boolean hasNeg) {
+		if (hasNeg) {
+			return new LNEven(getBody().pushNeg(true));
+		} else {
+			return new LNAll(getBody().pushNeg(false));
+		}
+	}
+
+	public boolean equals(LiveExprNode exp) {
+		if (exp instanceof LNAll) {
+			return getBody().equals(((LNAll) exp).getBody());
+		}
+		return false;
+	}
 }

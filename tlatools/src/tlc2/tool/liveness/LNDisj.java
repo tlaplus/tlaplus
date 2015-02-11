@@ -102,4 +102,153 @@ class LNDisj extends LiveExprNode {
 			}
 		}
 	}
+
+	public void extractPromises(TBPar promises) {
+		getBody(0).extractPromises(promises);
+		getBody(1).extractPromises(promises);
+	}
+
+	public int tagExpr(int tag) {
+		for (int i = 0; i < getCount(); i++) {
+			tag = getBody(i).tagExpr(tag);
+		}
+		return tag;
+	}
+
+	public final LiveExprNode makeBinary() {
+		if (getCount() == 1) {
+			return getBody(0).makeBinary();
+		}
+		int mid = getCount() / 2;
+		LNDisj left = new LNDisj(0);
+		LNDisj right = new LNDisj(0);
+		for (int i = 0; i < getCount(); i++) {
+			if (i < mid) {
+				left.addDisj(getBody(i));
+			} else {
+				right.addDisj(getBody(i));
+			}
+		}
+		return new LNDisj(left.makeBinary(), right.makeBinary());
+	}
+
+	public LiveExprNode flattenSingleJunctions() {
+		if (getCount() == 1) {
+			return getBody(0).flattenSingleJunctions();
+		}
+		LNDisj lnd2 = new LNDisj(getCount());
+		for (int i = 0; i < getCount(); i++) {
+			lnd2.addDisj(getBody(i).flattenSingleJunctions());
+		}
+		return lnd2;
+	}
+
+	// Apply []<>A1 \/ []<>A2 = []<>(A1 \/ A2) when possible.
+	public final LiveExprNode toDNF() {
+		LNDisj aeRes = new LNDisj(0);
+		LNDisj res = new LNDisj(0);
+		for (int i = 0; i < getCount(); i++) {
+			LiveExprNode elem = getBody(i).toDNF();
+			if (elem instanceof LNDisj) {
+				LNDisj disj1 = (LNDisj) elem;
+				for (int j = 0; j < disj1.getCount(); j++) {
+					LiveExprNode elem1 = disj1.getBody(j);
+					LiveExprNode elemBody = elem1.getAEBody();
+					if (elemBody == null) {
+						res.addDisj(elem1);
+					} else {
+						aeRes.addDisj(elemBody);
+					}
+				}
+			} else {
+				LiveExprNode elemBody = elem.getAEBody();
+				if (elemBody == null) {
+					res.addDisj(elem);
+				} else {
+					aeRes.addDisj(elemBody);
+				}
+			}
+		}
+		// Add aeRes to res before returning.
+		if (aeRes.getCount() == 1) {
+			res.addDisj(new LNAll(new LNEven(aeRes.getBody(0))));
+		} else if (aeRes.getCount() > 1) {
+			res.addDisj(new LNAll(new LNEven(aeRes)));
+		}
+		return res;
+	}
+
+	public LiveExprNode simplify() {
+		LNDisj lnd1 = new LNDisj(getCount());
+		for (int i = 0; i < getCount(); i++) {
+			LiveExprNode elem = getBody(i).simplify();
+			if (elem instanceof LNBool) {
+				if (((LNBool) elem).b) {
+					return LNBool.TRUE;
+				}
+			} else {
+				lnd1.addDisj(elem);
+			}
+		}
+		if (lnd1.getCount() == 0) {
+			return LNBool.FALSE;
+		}
+		if (lnd1.getCount() == 1) {
+			return lnd1.getBody(0);
+		}
+		return lnd1;
+	}
+
+	public boolean isGeneralTF() {
+		for (int i = 0; i < getCount(); i++) {
+			if (!getBody(i).isGeneralTF()) {
+				return false;
+			}
+		}
+		return super.isGeneralTF();
+	}
+
+	public LiveExprNode pushNeg() {
+		LNConj lnc = new LNConj(getCount());
+		for (int i = 0; i < getCount(); i++) {
+			lnc.addConj(getBody(i).pushNeg());
+		}
+		return lnc;
+	}
+
+	public LiveExprNode pushNeg(boolean hasNeg) {
+		if (hasNeg) {
+			LNConj lnc = new LNConj(getCount());
+			for (int i = 0; i < getCount(); i++) {
+				lnc.addConj(getBody(i).pushNeg(true));
+			}
+			return lnc;
+		} else {
+			LNDisj lnd1 = new LNDisj(getCount());
+			for (int i = 0; i < getCount(); i++) {
+				lnd1.addDisj(getBody(i).pushNeg(false));
+			}
+			return lnd1;
+		}
+	}
+
+	/**
+	 * This method returns true or false for whether two LiveExprNodes are
+	 * syntactically equal.
+	 */
+	public boolean equals(LiveExprNode exp) {
+		if (exp instanceof LNDisj) {
+			LNDisj exp2 = (LNDisj) exp;
+			if (getCount() != exp2.getCount()) {
+				return false;
+			}
+			for (int i = 0; i < getCount(); i++) {
+				if (!getBody(i).equals(exp2.getBody(i))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 }

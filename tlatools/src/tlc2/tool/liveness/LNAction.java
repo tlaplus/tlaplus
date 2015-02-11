@@ -14,6 +14,7 @@ import tlc2.util.Context;
 import tlc2.value.BoolValue;
 import tlc2.value.Value;
 import util.Assert;
+import util.WrongInvocationException;
 
 /**
  * Handles actions
@@ -90,4 +91,20 @@ public class LNAction extends LiveExprNode {
 		}
 	}
 
+	public int tagExpr(int tag) {
+		setTag(tag);
+		return tag + 1;
+	}
+
+	public LiveExprNode makeBinary() {
+		// We do not deal with actions:
+		throw new WrongInvocationException("LiveExprNode.makeBinary: TLC encounters actions.");
+	}
+
+	public boolean equals(LiveExprNode exp) {
+		if (exp instanceof LNAction) {
+			return getTag() == ((LNAction) exp).getTag();
+		}
+		return false;
+	}
 }

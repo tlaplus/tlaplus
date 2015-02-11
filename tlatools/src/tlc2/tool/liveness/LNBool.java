@@ -34,4 +34,26 @@ class LNBool extends LiveExprNode {
 		sb.append(this.b ? "TRUE" : "FALSE");
 	}
 
+	public LiveExprNode pushNeg() {
+		return new LNBool(!b);
+	}
+
+	/**
+	 * This method pushes a negation all the way down to the atoms. It is
+	 * currently not used.
+	 */
+	public LiveExprNode pushNeg(boolean hasNeg) {
+		// for the remaining types, negate when needed:
+		if (hasNeg) {
+			return new LNBool(!b);
+		}
+		return super.pushNeg(hasNeg);
+	}
+
+	public boolean equals(LiveExprNode exp) {
+		if (exp instanceof LNBool) {
+			return b == ((LNBool) exp).b;
+		}
+		return false;
+	}
 }
