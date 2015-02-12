@@ -21,7 +21,7 @@ import util.Assert;
  * @version $Id$
  */
 class LNStateAST extends LNState {
-	protected ExprNode body;
+	private ExprNode body;
 
 	public LNStateAST(ExprNode body, Context con) {
 		super(con);
@@ -33,7 +33,7 @@ class LNStateAST extends LNState {
 	}
 
 	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
-		Value val = tool.eval(this.body, con, s1);
+		Value val = tool.eval(this.body, getContext(), s1);
 		if (!(val instanceof BoolValue)) {
 			Assert.fail(EC.TLC_LIVE_STATE_PREDICATE_NON_BOOL);
 		}

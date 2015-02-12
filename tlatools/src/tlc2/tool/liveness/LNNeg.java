@@ -9,7 +9,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 
 public class LNNeg extends LiveExprNode {
-	protected LiveExprNode body;
+	private LiveExprNode body;
 
 	public LNNeg(LiveExprNode body) {
 		this.body = body;

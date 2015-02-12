@@ -10,8 +10,8 @@ import tlc2.tool.Tool;
 import tlc2.util.Vect;
 
 class LNDisj extends LiveExprNode {
-	protected Vect disjs; // The disjuncts
-	protected int info;
+	private Vect disjs; // The disjuncts
+	private int info;
 
 	public LNDisj(int size) {
 		this.disjs = new Vect(size);

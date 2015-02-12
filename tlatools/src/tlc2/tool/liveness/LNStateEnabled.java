@@ -27,9 +27,9 @@ import tlc2.util.Context;
  * 
  */
 class LNStateEnabled extends LNState {
-	protected ExprNode pred;
-	protected ExprNode subscript;
-	protected boolean isBox;
+	private ExprNode pred;
+	private ExprNode subscript;
+	private boolean isBox;
 
 	public LNStateEnabled(ExprNode pred, Context con, ExprNode subscript, boolean isBox) {
 		super(con);
@@ -46,7 +46,7 @@ class LNStateEnabled extends LNState {
 
 		ActionItemList acts = ActionItemList.Empty;
 		TLCState sfun = TLCStateFun.Empty;
-		Context c1 = Context.branch(this.con);
+		Context c1 = Context.branch(getContext());
 		if (this.subscript != null) {
 			acts = acts.cons(this.subscript, c1, -3);
 		}

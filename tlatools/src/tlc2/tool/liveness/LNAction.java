@@ -23,11 +23,11 @@ import util.WrongInvocationException;
  * @version $Id$
  */
 public class LNAction extends LiveExprNode {
-	protected ExprNode body;
-	protected ExprNode subscript;
-	protected boolean isBox; // <A>_v: A /\ v'!=v or [A]_v: A \/ v'=v
-	protected Context con;
-	protected int tag;
+	private ExprNode body;
+	private ExprNode subscript;
+	private boolean isBox; // <A>_v: A /\ v'!=v or [A]_v: A \/ v'=v
+	private Context con;
+	private int tag;
 
 	public LNAction(ExprNode body, Context con, ExprNode subscript, boolean isBox) {
 		this.body = body;
