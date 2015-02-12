@@ -50,25 +50,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
         configurer.configureEditorAreaDropListener(dtl);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#preWindowShellClose()
-     */
-    public boolean preWindowShellClose()
-    {
-
-        IWorkbench workbench = getWindowConfigurer().getWorkbenchConfigurer().getWorkbench();
-        /*
-         * if more than one window is opened and currently the root window is being closed, exit the application
-         */
-        if (workbench.getWorkbenchWindowCount() > 1 && WindowUtils.isRootWindow(workbench.getActiveWorkbenchWindow()))
-        {
-            return workbench.close();
-        } else
-        {
-            return super.preWindowShellClose();
-        }
-    }
-
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#postWindowOpen()
 	 */

@@ -49,9 +49,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.nature.ParserHelper;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
-import org.lamport.tla.toolbox.tool.IParseResult;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 
@@ -249,10 +248,7 @@ public class LibraryPathComposite {
 
 					final Job j = new ToolboxJob("") {
 						protected IStatus run(IProgressMonitor monitor) {
-							final IParseResult parseModule = ToolboxHandle.parseModule(spec.getRootFile(),
-									monitor, true, true);
-							// update the spec parse status
-							spec.setStatus(parseModule.getStatus());
+							ParserHelper.rebuildSpec(monitor);
 							return Status.OK_STATUS;
 						}
 					};

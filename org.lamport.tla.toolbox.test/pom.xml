@@ -16,6 +16,7 @@
 	<build>
 		<plugins>
 			<!-- Pro tip for Linux developers: Use a different display for UI tests -->
+			<!-- Known eclipse defect -->
 			<plugin>
 			    <artifactId>maven-antrun-plugin</artifactId>
 			    <executions>
@@ -45,6 +46,24 @@
 			                	<echo>[ProTip]  &amp; ...command that runs mvn..</echo>
 			                	<echo>[ProTip] </echo>
 			                    <echo>[ProTip] (https://wiki.eclipse.org/SWTBot/Automate_test_execution#use_another_DISPLAY_to_save_time)</echo>
+			                    <echo></echo>
+			                    <echo></echo>
+			                    <echo></echo>
+			                	<echo>[Known Bug] ============================</echo>
+			                	<echo>[Known Bug] = Known Eclipse bug 449485 =</echo>
+			                	<echo>[Known Bug] ============================</echo>
+			                	<echo>[Known Bug] </echo>
+								<echo>[Known Bug] !ENTRY org.eclipse.e4.ui.workbench.swt 4 2 2015-02-09 11:29:57.483</echo>
+								<echo>[Known Bug] !MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.e4.ui.workbench.swt".</echo>
+								<echo>[Known Bug] !STACK 0</echo>
+								<echo>[Known Bug] org.eclipse.e4.core.di.InjectionException: org.eclipse.swt.SWTException: Widget is disposed</echo>
+								<echo>[Known Bug] ...</echo>
+								<echo>[Known Bug] Caused by: org.eclipse.swt.SWTException: Widget is disposed</echo>
+								<echo>[Known Bug] ...</echo>							
+			                    <echo>[Known Bug] (see https://bugs.eclipse.org/449485)</echo>
+			                    <echo></echo>
+			                    <echo></echo>
+			                    <echo></echo>
 			                </tasks>
 			            </configuration>
 			        </execution>
@@ -61,6 +80,20 @@
 					<useUIHarness>true</useUIHarness>
 					<useUIThread>${tycho.test.vm.useUiThread}</useUIThread>
 					<argLine>${tycho.test.vm.argline}</argLine>
+					<dependencies>
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.eclipse.equinox.event</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+					</dependencies>
+					<bundleStartLevel>
+						<bundle>
+							<id>org.eclipse.equinox.event</id>
+							<level>4</level>
+							<autoStart>true</autoStart>
+						</bundle>
+					</bundleStartLevel>
 				</configuration>
 			</plugin>
 		</plugins>

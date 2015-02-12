@@ -44,9 +44,10 @@
                minimized="false"
                moveable="false"
                ratio="0.25"
-               relationship="fast"
+               relationship="left"
+               relative="org.eclipse.ui.editorss"
                showTitle="true"
-               visible="false">
+               visible="true">
          </view>
       </perspectiveExtension>
       <perspectiveExtension
@@ -69,19 +70,20 @@
                minimized="false"
                moveable="false"
                ratio="0.25"
-               relationship="fast"
+               relationship="left"
+               relative="org.eclipse.ui.editorss"
                showTitle="true"
-               visible="false">
+               visible="true">
          </view>
          <view
                closeable="false"
                id="toolbox.view.ToolboxWelcomeView"
                minimized="false"
                moveable="false"
-               ratio="1.0"
-               relationship="left"
+               ratio="0.75"
+               relationship="right"
+               relative="org.eclipse.ui.editorss"
                showTitle="true"
-               standalone="true"
                visible="true">
          </view>
       </perspectiveExtension>
