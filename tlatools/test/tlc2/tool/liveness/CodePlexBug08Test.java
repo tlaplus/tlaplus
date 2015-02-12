@@ -1,101 +1,90 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Markus Alexander Kuppe - initial API and implementation
+ ******************************************************************************/
+
 package tlc2.tool.liveness;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import java.util.List;
 
-import org.junit.Assert;
-
-import junit.framework.TestCase;
-import tlc2.TLC;
-import tlc2.TLCGlobals;
-import util.ToolIO;
+import tlc2.output.EC;
+import tlc2.tool.TLCStateInfo;
 
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
  */
-public class CodePlexBug08Test extends TestCase {
+public class CodePlexBug08Test extends ModelCheckerTestCase {
 
-	private static final String TEST_MODEL = "test-model/CodePlexBug08";
-
+	public CodePlexBug08Test() {
+		super("MC", "CodePlexBug08");
+	}
+	
 	public void testSpec() {
-		try {
-			// TEST_MODEL is where TLC should look for user defined .tla files
-			ToolIO.setUserDir(TEST_MODEL);
-			
-			// Make output "easily" parsable.
-			TLCGlobals.tool = true;
+		// ModelChecker has finished and generated the expected amount of states
+		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "18", "11"));
+		
+		// Assert it has found the temporal violation and also a counter example
+		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+		
+		// Assert the error trace
+		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
 
-			// Intercept the ModelChecker's stdout and stderr output.
-			final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			ToolIO.out = new PrintStream(stream);
-			ToolIO.err = ToolIO.out;
-			
-			final TLC tlc = new TLC();
-			// * We want *no* deadlock checking to find the violation of the
-			// temporal formula
-			// * We use a single worker to simplify debugging by taking out
-			// threading
-			// * MC is the name of the TLA+ specification to be checked (the file
-			// is placed in TEST_MODEL
-			final String[] args = { "-deadlock", "-workers", "1", "MC" };
-			tlc.handleParameters(args);
-			
-			// Run the ModelChecker
-			tlc.process();
-			
-			// Retrieve what has been written to stdout/stderror
-			ToolIO.out.flush(); // flush just in case
-			final String output = stream.toString();
-			
-			// No output can't mean anything good
-			Assert.assertTrue("No TLC output", output.length() > 0);
-			
-			// Assert that TLC found a temporal violation
-			Assert.assertTrue("Failed to find temporal violation", 
-					output.contains("@!@!@STARTMSG 2116:1 @!@!@\n" +
-									"Temporal properties were violated.\n" + 
-									"\n" + "@!@!@ENDMSG 2116 @!@!@\n"));
+		/*
+		 * !!! IMPORTANT !!!
+		 * Below is the currently reported state graph, which is invalid. This
+		 * has to be replace with the correct one for the test to make sense.
+		 */
+		
+		int i = 0; // State's position in records
+		Object[] objs = (Object[]) records.get(i++);
+		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
+		assertEquals("/\\ b = FALSE\n/\\ x = 3", stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
+		assertEquals(i, objs[1]);
 
-			// Assert that TLC did not find an invalid counter example. (This
-			// check is obviously very brittle. If a single char changes, the invalid
-			// counterexample won't be detected.)
-			Assert.assertFalse("Found invalid counter example", 
-					output.contains("@!@!@STARTMSG 2264:1 @!@!@\n" +
-									"The following behavior constitutes a counter-example:\n" +
-									"\n" +
-									"@!@!@ENDMSG 2264 @!@!@\n" +
-									"@!@!@STARTMSG 2217:4 @!@!@\n" +
-									"1: <Initial predicate>\n" +
-									"/\\ b = FALSE\n" +
-									"/\\ x = 3\n" +
-									"\n" +
-									"@!@!@ENDMSG 2217 @!@!@\n" +
-									"@!@!@STARTMSG 2217:4 @!@!@\n" +
-									"2: <Action line 11, col 6 to line 13, col 18 of module CodeplexBug8>\n" +
-									"/\\ b = TRUE\n" +
-									"/\\ x = 4\n" +
-									"\n" +
-									"@!@!@ENDMSG 2217 @!@!@\n" +
-									"@!@!@STARTMSG 2217:4 @!@!@\n" +
-									"3: <Action line 6, col 6 to line 9, col 19 of module CodeplexBug8>\n" +
-									"/\\ b = FALSE\n" +
-									"/\\ x = 4\n" +
-									"\n" +
-									"@!@!@ENDMSG 2217 @!@!@\n" +
-									"@!@!@STARTMSG 2217:4 @!@!@\n" +
-									"4: <Action line 11, col 6 to line 13, col 18 of module CodeplexBug8>\n" +
-									"/\\ b = TRUE\n" +
-									"/\\ x = 5\n" +
-									"\n" +
-									"@!@!@ENDMSG 2217 @!@!@\n" +
-									"@!@!@STARTMSG 2218:4 @!@!@\n" +
-									"5: Stuttering\n" +
-									"@!@!@ENDMSG 2218 @!@!@"));
-			
-			System.out.println(output);
-		} catch (Exception e) {
-			fail();
-		}
+		objs = (Object[]) records.get(i++);
+		stateInfo = (TLCStateInfo) objs[0];
+		assertEquals("/\\ b = TRUE\n/\\ x = 4", stateInfo.toString().trim());
+		assertEquals(i, objs[1]);
+		
+		objs = (Object[]) records.get(i++);
+		stateInfo = (TLCStateInfo) objs[0];
+		assertEquals("/\\ b = FALSE\n/\\ x = 4", stateInfo.toString().trim());
+		assertEquals(i, objs[1]);
+
+		objs = (Object[]) records.get(i++);
+		stateInfo = (TLCStateInfo) objs[0];
+		assertEquals("/\\ b = TRUE\n/\\ x = 5", stateInfo.toString().trim());
+		assertEquals(i, objs[1]);
+		
+		// Assert the error trace contains a stuttering step at position 5
+		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
+		records = recorder.getRecords(EC.TLC_STATE_PRINT3);
+		objs = (Object[]) records.get(0);
+		assertEquals(++i, objs[1]);
 	}
 }

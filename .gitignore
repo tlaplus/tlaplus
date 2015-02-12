@@ -12,6 +12,7 @@ org.lamport.tla.toolbox.uitest/farsite/DistributedSystemModule.toolbox/
 tlatools/TLA+ Tools
 tlatools/test-reports
 tlatools/ByteUtilsTest*.bin
+tlatools/states/
 *.csv
 examples/*/states/
 general/performance/states/

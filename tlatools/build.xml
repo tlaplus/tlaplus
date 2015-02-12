@@ -144,7 +144,7 @@
 		</copy>
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
-		<junit printsummary="yes" haltonfailure="no" haltonerror="no">
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -152,9 +152,11 @@
 				<pathelement path="${test.class.dir}" />
 			</classpath>
 			<formatter type="xml" />
-			<batchtest fork="yes" todir="${test.reports}">
+			<batchtest todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
+					<exclude name="**/ModelCheckerTestCase.java" />
+					<exclude name="**/TestMPRecorder.java" />
 					<exclude name="**/Abstract*Test.java" />
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />
@@ -186,7 +188,7 @@
 		</copy>
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJar" />
-		<junit printsummary="yes" haltonfailure="no" haltonerror="no">
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no" forkmode="perTest" fork="yes" >
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -196,9 +198,11 @@
 
 			<formatter type="xml" />
 
-			<batchtest fork="yes" todir="${test.reports}/onJar">
+			<batchtest todir="${test.reports}/onJar">
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
+					<exclude name="**/ModelCheckerTestCase.java" />
+					<exclude name="**/TestMPRecorder.java" />
 					<exclude name="**/Abstract*Test.java" />
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />

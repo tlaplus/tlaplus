@@ -593,7 +593,7 @@ public class LiveWorker extends IdThread {
 				throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 			}
 			if (TLCGlobals.tool) {
-				MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + cyclePos });
+				MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + cyclePos }, (TLCState) null, -1);
 			} else {
 				StatePrinter.printState(sinfo, null, (++stateNum));
 				// SZ Jul 10, 2009: replaced with state printer
