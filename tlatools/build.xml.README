@@ -1,0 +1,6 @@
+If you are looking for an ant build.xml file, look no further. The customBuild.xml is 
+our build.xml except it has a different name to prevent clashes with a dynamically 
+generated build.xml file by Eclipse PDE build.
+To run ant with customBuild.xml instead of build.xml, use the "-f" flag:
+
+ant -f customBuild.xml ...
