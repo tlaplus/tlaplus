@@ -36,6 +36,7 @@ import util.ToolIO;
 
 public abstract class ModelCheckerTestCase extends TestCase {
 
+	private static final String BASE_DIR = System.getProperty("basedir", "");
 	private static final String TEST_MODEL = "test-model" + File.separator;
 	
 	private String path = "";
@@ -55,7 +56,7 @@ public abstract class ModelCheckerTestCase extends TestCase {
 	public void setUp() {
 		try {
 			// TEST_MODEL is where TLC should look for user defined .tla files
-			ToolIO.setUserDir(TEST_MODEL + path);
+			ToolIO.setUserDir(BASE_DIR + TEST_MODEL + path);
 			
 			MP.setRecorder(recorder);
 			
