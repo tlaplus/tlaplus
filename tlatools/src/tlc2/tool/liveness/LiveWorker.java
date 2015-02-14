@@ -73,33 +73,60 @@ public class LiveWorker extends IdThread {
 	public final void checkSccs() throws IOException {
 		// Initialize this.dg:
 		this.dg.makeNodePtrTbl();
-
-		// Initialize nodeQueue with initial states.
-		MemIntQueue nodeQueue = new MemIntQueue(LiveCheck.metadir, "root");
-		LongVec initNodes = this.dg.getInitNodes();
-		int numOfInits = initNodes.size();
+		
+		// Initialize nodeQueue with initial states. The initial states stored 
+		// separately in the DiskGraph are resolved to their pointer location
+		// in the on-disk part of the DiskGraph.
+		// The pointer location is obviously used to:
+		// * Speed up disk lookups in the RandomAccessFile(s) backing up the DiskGraph
+		// * Seems to serve as a marker for when a node during SCCs is fully explored //VERIFY assumption!
+		// 
+		final MemIntQueue nodeQueue = new MemIntQueue(LiveCheck.metadir, "root");
+		final LongVec initNodes = this.dg.getInitNodes();
+		final int numOfInits = initNodes.size();
 		for (int j = 0; j < numOfInits; j += 2) {
-			long state = initNodes.elementAt(j);
-			int tidx = (int) initNodes.elementAt(j + 1);
-			long ptr = this.dg.getLink(state, tidx);
-			if (ptr >= 0) {
+			final long state = initNodes.elementAt(j);
+			final int tidx = (int) initNodes.elementAt(j + 1);
+			final long ptr = this.dg.getLink(state, tidx);
+			if (ptr >= 0) { //QUESTION When is a ptr < 0?
 				nodeQueue.enqueueLong(state);
 				nodeQueue.enqueueInt(tidx);
 				nodeQueue.enqueueLong(ptr);
 			}
 		}
 
-		int[] eaaction = this.pem.EAAction;
-		int slen = this.oos.checkState.length;
-		int alen = this.oos.checkAction.length;
-		MemIntStack dfsStack = new MemIntStack(LiveCheck.metadir, "dfs");
-		MemIntStack comStack = new MemIntStack(LiveCheck.metadir, "com");
+		final int[] eaaction = this.pem.EAAction;
+		final int slen = this.oos.checkState.length;
+		final int alen = this.oos.checkAction.length;
+		
+		// Tarjan's stack
+		final MemIntStack dfsStack = new MemIntStack(LiveCheck.metadir, "dfs");
+		
+		// comStack is only being added to during the deep first search. It is passed
+		// to the checkComponent method while in DFS though.
+		//
+		// An Eclipse detailed formatter:
+		// StringBuffer buf = new StringBuffer(this.size);
+		// for (int i = 1; i < this.size; i+=5) {
+		// 	buf.append("state: ");
+		// 	buf.append(peakLong(size - i));
+		// 	buf.append("\n");
+		// 	buf.append(" Tableaux idx: ");
+		// 	buf.append(peakInt(size - i - 2));
+		// 	buf.append("\n");
+		// 	buf.append(" ptr loc: ");
+		// 	buf.append(peakLong(size - i - 3));
+		// 	buf.append("\n");
+		// }
+		// return buf.toString();
+		//
+		final MemIntStack comStack = new MemIntStack(LiveCheck.metadir, "com");
 
 		// Generate the SCCs and check if they contain any "bad" cycle.
 		while (nodeQueue.length() > 0) {
-			long state = nodeQueue.dequeueLong();
-			int tidx = nodeQueue.dequeueInt();
-			long loc = nodeQueue.dequeueLong();
+			final long state = nodeQueue.dequeueLong();
+			final int tidx = nodeQueue.dequeueInt();
+			final long loc = nodeQueue.dequeueLong();
 
 			// Start computing SCCs with <state, tidx> as the root node:
 			dfsStack.reset();
@@ -112,18 +139,23 @@ public class LiveWorker extends IdThread {
 
 			while (dfsStack.size() > 2) {
 				long lowLink = dfsStack.popLong();
-				long curLoc = dfsStack.popLong();
-				int curTidx = dfsStack.popInt();
-				long curState = dfsStack.popLong();
+				final long curLoc = dfsStack.popLong();
+				final int curTidx = dfsStack.popInt();
+				final long curState = dfsStack.popLong();
+				
+				
+				// The current node is explored iff curLoc < 0. If it is indeed fully explored,
+				// it means it has potentially found an SCC. Thus, check if this is the case
+				// for the current GraphNode.
 				if (curLoc < 0) {
-					// The current node is explored iff curLoc < 0.
-					long curLink = this.dg.getLink(curState, curTidx);
+					final long curLink = this.dg.getLink(curState, curTidx);
 					if (curLink == lowLink) {
 						// The states on the comStack from top to curState form
 						// a SCC.
 						// Check for "bad" cycle.
-						boolean isOK = this.checkComponent(curState, curTidx, comStack);
+						final boolean isOK = this.checkComponent(curState, curTidx, comStack);
 						if (!isOK) {
+							// Found a "bad" cycle, no point in searching for more SCCs. 
 							return;
 						}
 					}
@@ -132,9 +164,11 @@ public class LiveWorker extends IdThread {
 						plowLink = lowLink;
 					}
 					dfsStack.pushLong(plowLink);
+					
+				// No SCC found yet	
 				} else {
 					// Assign newLink to curState:
-					long link = this.dg.putLink(curState, curTidx, newLink);
+					final long link = this.dg.putLink(curState, curTidx, newLink);
 					if (link == -1) {
 						// Push curState back onto dfsStack, but make curState
 						// explored:
@@ -147,15 +181,15 @@ public class LiveWorker extends IdThread {
 						comStack.pushLong(curLoc);
 						comStack.pushInt(curTidx);
 						comStack.pushLong(curState);
-
+						
 						// Look at all the successors of curState:
-						GraphNode gnode = this.dg.getNode(curState, curTidx, curLoc);
-						int succCnt = gnode.succSize();
+						final GraphNode gnode = this.dg.getNode(curState, curTidx, curLoc);
+						final int succCnt = gnode.succSize();
 						long nextLowLink = newLink++;
 						for (int i = 0; i < succCnt; i++) {
-							long nextState = gnode.getStateFP(i);
-							int nextTidx = gnode.getTidx(i);
-							long nextLink = this.dg.getLink(nextState, nextTidx);
+							final long nextState = gnode.getStateFP(i);
+							final int nextTidx = gnode.getTidx(i);
+							final long nextLink = this.dg.getLink(nextState, nextTidx);
 							if (nextLink >= 0) {
 								if (gnode.getCheckAction(slen, alen, i, eaaction)) {
 									if (DiskGraph.isFilePointer(nextLink)) {

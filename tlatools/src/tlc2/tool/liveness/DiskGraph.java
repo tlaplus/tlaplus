@@ -19,6 +19,30 @@ import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
 import util.FileUtil;
 
+/*
+ * Notes Markus 02/13/2015
+ * 
+ * - A {@link DiskGraph} has a 1:1 relationship with {@link OrderOfSolution}
+ * 
+ * - Logically stores the triple of state, tableaux, link (transitions)
+ * -- Technically does *not* store States, but only a state's fingerprints
+ * --- Stores a fingerprint split into 2 ints (low & high part of a fingerprint)
+ * -- Stores the index of the tableaux, not the tableaux itself
+ * --- The TableauGraphNode (TBGraphNode) instance can be obtained by reading
+ *     the DiskGraph triple into a GraphNode instance and calling 
+ *     GraphNode#getTNode(TBGraph). One obviously has to have access to the TBGraph
+ * -- Link(s) are kept in GraphNode#nnodes
+ *
+ * - {@link DiskGraph#toString()} does not print init nodes. They never get 
+ *   written to the {@link BufferedRandomAccessFile}s {@link DiskGraph#nodePtrRAF}
+ *   & {@link DiskGraph#nodeRAF} 
+ * - {@link DiskGraph#toString()} only prints the part of the DiskGraph that is on
+ *   disk. It ignores the in-memory part. This means toString produces *no* output
+ *   for as long as the graph has *not* been flushed to disk
+ * 
+ * - On disk, the {@link BufferedRandomAccessFile}s are suffixed by the ID of the
+ *   {@link DiskGraph} (we can have >1 when there are more {@link OrderOfSolution})
+ */
 public class DiskGraph {
 	/**
 	 * DiskGraph stores a graph on disk. We use two disk files to store the
@@ -411,6 +435,16 @@ public class DiskGraph {
 	}
 
 	public final String toString() {
+
+		// The following code relies on gnodes not being null, thus safeguard
+		// against accidental invocations.
+		// Essentially one has to wrap the toString call with
+		// createCache/destroyCache
+		// for gnodes to be initialized.
+		if (this.gnodes == null) {
+			return "";
+		}
+
 		StringBuffer sb = new StringBuffer();
 		try {
 			long nodePtr = this.nodeRAF.getFilePointer();
@@ -444,6 +478,73 @@ public class DiskGraph {
 					sb.append("\n");
 				}
 			}
+			this.nodeRAF.seek(nodePtr);
+			this.nodePtrRAF.seek(nodePtrPtr);
+		} catch (IOException e) {
+			MP.printError(EC.SYSTEM_DISKGRAPH_ACCESS, e);
+
+			System.exit(1);
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Only useful for debugging.
+	 * 
+	 * No-OP when not wrapped inside {@link DiskGraph#createCache()} and
+	 * {@link DiskGraph#destroyCache()}
+	 * 
+	 * Copy&Paste output "digraph DiskGraph {...} to a file called graphviz.txt
+	 * and call something similar to: 'dot -T svg graphviz.txt -o
+	 * "Graphviz.svg"'. It obviously needs Graphviz (http://www.graphviz.org).
+	 */
+	public final String toDotViz() {
+
+		// The following code relies on gnodes not being null, thus safeguard
+		// against accidental invocations.
+		// Essentially one has to wrap the toDotViz call with
+		// createCache/destroyCache
+		// for gnodes to be initialized.
+		if (this.gnodes == null) {
+			return "";
+		}
+
+		StringBuffer sb = new StringBuffer();
+		try {
+			sb.append("digraph DiskGraph {\n");
+			sb.append("nodesep = 0.7\n");
+			long nodePtr = this.nodeRAF.getFilePointer();
+			long nodePtrPtr = this.nodePtrRAF.getFilePointer();
+			long len = this.nodePtrRAF.length();
+			this.nodePtrRAF.seek(0);
+			if (this.hasTableau) {
+				while (this.nodePtrRAF.getFilePointer() < len) {
+					long fp = nodePtrRAF.readLong();
+					int tidx = nodePtrRAF.readInt();
+					long loc = nodePtrRAF.readLongNat();
+					GraphNode gnode = this.getNode(fp, tidx, loc);
+					int sz = gnode.succSize();
+					for (int i = 0; i < sz; i++) {
+						sb.append(("" + fp).substring(0, 3) + "." + tidx + " -> ");
+						sb.append(("" + gnode.getStateFP(i)).substring(0, 3) + "." + gnode.getTidx(i));
+						sb.append("\n");
+					}
+				}
+			} else {
+				while (this.nodePtrRAF.getFilePointer() < len) {
+					long fp = nodePtrRAF.readLong();
+					int tidx = nodePtrRAF.readInt();
+					long loc = nodePtrRAF.readLongNat();
+					sb.append(fp + " -> ");
+					GraphNode gnode = this.getNode(fp, tidx, loc);
+					int sz = gnode.succSize();
+					for (int i = 0; i < sz; i++) {
+						sb.append(gnode.getStateFP(i) + " ");
+					}
+					sb.append("\n");
+				}
+			}
+			sb.append("}");
 			this.nodeRAF.seek(nodePtr);
 			this.nodePtrRAF.seek(nodePtrPtr);
 		} catch (IOException e) {
