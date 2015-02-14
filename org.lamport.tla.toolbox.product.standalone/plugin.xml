@@ -33,7 +33,7 @@
          </property>
          <property
                name="aboutImage"
-               value="splash_small.bmp">
+               value="images/splash_small.png">
          </property>
          <property
                name="appName"
