@@ -51,15 +51,39 @@
          version="0.0.0"/>
 
    <includes
-         id="de.vonloesch.pdf4eclipse.feature"
-         version="0.0.0"/>
-
-   <includes
          id="org.lamport.tlatools.feature"
          version="0.0.0"/>
 
    <includes
          id="org.lamport.tla.toolbox.feature.branding"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.e4.rcp"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf.common"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf.ecore"
+         version="0.0.0"/>
+
+   <includes
+         id="de.vonloesch.pdf4eclipse.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.equinox.p2.core.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.ecf.core.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.ecf.filetransfer.feature"
          version="0.0.0"/>
 
    <plugin
