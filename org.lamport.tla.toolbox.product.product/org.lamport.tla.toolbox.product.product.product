@@ -25,8 +25,10 @@ Please send us reports of problems or suggestions; see https://groups.google.com
 
    <launcherArgs>
       <vmArgs>-Xmx1000m
--Dorg.eclipse.equinox.http.jetty.http.port=10996</vmArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+-Dorg.eclipse.equinox.http.jetty.http.port=10996
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
    </launcherArgs>
 
    <windowImages i16="icons/full/etool16/tla_launch_check_wiz.gif"/>
@@ -65,5 +67,9 @@ Please send us reports of problems or suggestions; see https://groups.google.com
       <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
       <property name="eclipse.buildId" value="1.4.2" />
    </configurations>
+
+   <repositories>
+      <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
+   </repositories>
 
 </product>
