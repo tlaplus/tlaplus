@@ -13,5 +13,8 @@ tlatools/TLA+ Tools
 tlatools/test-reports
 tlatools/ByteUtilsTest*.bin
 *.csv
+org.lamport.tla.toolbox.product.product/plugin_customization.ini
 examples/*/states/
 general/performance/states/
+workspace/
+states/
