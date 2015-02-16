@@ -330,11 +330,30 @@ public class Activator extends AbstractTLCActivator
         // remember: Nulling specManager might cause the initialization of a new
         // specManager object during shutdown if this method nulls it and subsequent
         // calls to getSpecManager() occur. This might potentially leave an inconsistent 
-        // spec manager on which terminate() might never has been called.
+        // spec manager on which terminate() might never be called.
 
 //        specManager = null;
 //        plugin = null;
 
+    	// In case of a clean shutdown explicitly do a *full* workspace save. If omitted,
+    	// the Eclipse foundation's default is to just trigger a *snapshot* save.
+    	// The default snapshot save is apparently insufficient when the Eclipse foundation
+    	// itself gets updated to a newer version (from 3.x to 4.x in the current case)
+    	// (The assumption being that the on-disk format of the *.snap files changed causing 
+    	// a subsequent startup to crash the whole Toolbox). 
+    	final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        final Job saveJob = new WorkspaceJob("Saving workspace...") {
+			/* (non-Javadoc)
+			 * @see org.eclipse.core.resources.WorkspaceJob#runInWorkspace(org.eclipse.core.runtime.IProgressMonitor)
+			 */
+			public IStatus runInWorkspace(final IProgressMonitor monitor)
+					throws CoreException {
+		        return workspace.save(true, monitor);
+			}
+        };
+        saveJob.setRule(workspace.getRuleFactory().buildRule());
+        saveJob.schedule();
+    	
         super.stop(context);
     }
 
