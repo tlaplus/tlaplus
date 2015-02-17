@@ -26,6 +26,7 @@ Please send us reports of problems or suggestions; see https://groups.google.com
    <launcherArgs>
       <vmArgs>-Xmx1000m
 -Dorg.eclipse.equinox.http.jetty.http.port=10996
+-Dosgi.splashPath=platform:/base/
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
@@ -33,9 +34,7 @@ Please send us reports of problems or suggestions; see https://groups.google.com
 
    <windowImages i16="icons/full/etool16/tla_launch_check_wiz.gif"/>
 
-   <splash
-      location="org.lamport.tla.toolbox.product.standalone"
-      startupProgressRect="5,275,445,15" />
+
    <launcher name="toolbox">
       <solaris/>
       <win useIco="false">
