@@ -43,7 +43,7 @@ TwoPhase
    correctness that has been checked by the TLAPS proof system.
    
 TransitiveClosure
-   Someone on posted on TLAPlus.net a question asking how the
+   Someone once posted on TLAPlus.net a question asking how the
    transitive closure of a relation can be defined in TLA+.
    This answers the question by giving several equivalent 
    definitions.  Reading them might help you when you have
