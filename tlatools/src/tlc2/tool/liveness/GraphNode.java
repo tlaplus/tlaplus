@@ -143,4 +143,17 @@ public class GraphNode {
 		return buf.toString();
 	}
 
+	public String toDotViz() {
+		StringBuffer buf = new StringBuffer();
+		int size = this.nnodes.length;
+		for (int i = 0; i < size; i += 3) {
+			buf.append(("" + this.stateFP).substring(0, 3) + "." + this.tindex + " -> ");
+			long high = this.nnodes[i];
+			long low = this.nnodes[i + 1];
+			long fp = (high << 32) | (low & 0xFFFFFFFFL);
+			buf.append(("" + fp).substring(0, 3) + "." + this.nnodes[i + 2]);
+			buf.append("\n");
+		}
+		return buf.toString();
+	}
 }

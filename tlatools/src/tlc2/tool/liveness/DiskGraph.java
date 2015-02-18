@@ -525,9 +525,7 @@ public class DiskGraph {
 					GraphNode gnode = this.getNode(fp, tidx, loc);
 					int sz = gnode.succSize();
 					for (int i = 0; i < sz; i++) {
-						sb.append(("" + fp).substring(0, 3) + "." + tidx + " -> ");
-						sb.append(("" + gnode.getStateFP(i)).substring(0, 3) + "." + gnode.getTidx(i));
-						sb.append("\n");
+						sb.append(gnode.toDotViz());
 					}
 				}
 			} else {
