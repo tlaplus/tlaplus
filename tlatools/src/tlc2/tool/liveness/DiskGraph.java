@@ -345,6 +345,12 @@ public class DiskGraph {
 
 				for (int i = 0; i < succCnt; i++) {
 					long nextState = curNode.getStateFP(i);
+					if (nextState == curState) {
+						// No point to explore a successor state
+						// that is the current state. It is a successor
+						// due to a direct cycle in the graph.
+						continue;
+					}
 					int nextTidx = curNode.getTidx(i);
 					if (nextState == state) {
 						// found a path to state:
