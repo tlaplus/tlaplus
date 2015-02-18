@@ -134,14 +134,14 @@ public class GraphNode {
 			long high = this.nnodes[0];
 			long low = this.nnodes[1];
 			long fp = (high << 32) | (low & 0xFFFFFFFFL);
-			buf.append("<" + fp + "," + this.nnodes[0] + ">");
+			buf.append("<" + fp + "," + this.nnodes[2] + ">");
 		}
-		for (int i = 1; i < size; i += 3) {
+		for (int i = 3; i < size; i += 3) {
 			buf.append(", ");
 			long high = this.nnodes[i];
 			long low = this.nnodes[i + 1];
 			long fp = (high << 32) | (low & 0xFFFFFFFFL);
-			buf.append("<" + fp + "," + this.nnodes[i] + ">");
+			buf.append("<" + fp + "," + this.nnodes[i + 2] + ">");
 		}
 		return buf.toString();
 	}
