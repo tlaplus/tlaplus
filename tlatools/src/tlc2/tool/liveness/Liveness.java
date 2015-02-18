@@ -31,6 +31,7 @@ import tlc2.value.BoolValue;
 import tlc2.value.FcnLambdaValue;
 import tlc2.value.Value;
 import util.Assert;
+import util.ToolIO;
 
 public class Liveness implements ToolGlobals, ASTConstants {
 
@@ -717,18 +718,13 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		pem.tfs.addElement(ln);
 	}
 
-	// SZ Jul 28, 2009: not used
-	// /**
-	// * @deprecated not used
-	// */
-	// public static void printTBGraph(TBGraph tableau) {
-	// if (tableau == null)
-	// {
-	// ToolIO.out.println("No tableau.");
-	// } else {
-	// ToolIO.out.println(tableau.toString());
-	// }
-	// }
+	public static void printTBGraph(TBGraph tableau) {
+		if (tableau == null) {
+			ToolIO.out.println("No tableau.");
+		} else {
+			ToolIO.out.println(tableau.toString());
+		}
+	}
 
 	/**
 	 * OSExprPem is a temporary data structure for producing the
