@@ -180,6 +180,7 @@ public class DiskGraph {
 		this.nodeRAF.seek(curPtr);
 
 		GraphNode gnode1 = new GraphNode(stateFP, tidx, nnodes, checks);
+		// Add to in-memory cache
 		if (gnode == null) {
 			this.gnodes[idx] = gnode1;
 		}

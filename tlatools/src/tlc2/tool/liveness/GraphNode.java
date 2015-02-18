@@ -20,10 +20,13 @@ public class GraphNode {
 	 */
 	private final static int[] emptyIntArr = new int[0];
 
-	public long stateFP; // fingerprint of the state
-	public int[] nnodes; // outgoing links
-	public BitVector checks; // truth values for state and action preds
-	public int tindex;
+	long stateFP; // fingerprint of the state
+	/**
+	 * Next nodes are the successor {@link GraphNode}s of the current {@link GraphNode}
+	 */
+	int[] nnodes; // outgoing links
+	BitVector checks; // truth values for state and action preds
+	int tindex;
 
 	public GraphNode(long fp, int tindex) {
 		this.stateFP = fp;
