@@ -696,15 +696,21 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
   
   <!-- An integer number -->
   <xs:element name="NumeralNode">
-    <xs:complexType mixed="true">
-      <xs:group ref="node"/>
+    <xs:complexType>
+        <xs:sequence>
+            <xs:group ref="node"/>
+            <xs:element name="IntValue" type="xs:integer"/>
+        </xs:sequence>
     </xs:complexType>
   </xs:element>
   
   <!-- An string -->
   <xs:element name="StringNode">
-    <xs:complexType mixed="true">
-      <xs:group ref="node"/>
+    <xs:complexType>
+        <xs:sequence>
+            <xs:group ref="node"/>
+            <xs:element name="StringValue"/>
+        </xs:sequence>
     </xs:complexType>
   </xs:element>
   
@@ -763,7 +769,8 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  
+
+  <!-- this is just a flag signaling that the referenced parameter is a tuple -->
   <xs:element name="tuple">
     <xs:complexType/>
   </xs:element>

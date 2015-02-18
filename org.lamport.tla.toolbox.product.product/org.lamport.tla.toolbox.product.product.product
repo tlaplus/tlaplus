@@ -4,11 +4,11 @@
 <product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.4.8" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
-      <image path="splash_small.bmp"/>
+      <image path="/org.lamport.tla.toolbox.product.standalone/images/splash_small.png"/>
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
 
-This is Version 1.4.8 of (unreleased)l 2013 and includes:
+This is Version 1.4.8 of 25 February 2014 and includes:
   - SANY Version 2.1 of 24 February 2014
   - TLC Version 2.05 of 25 June 2014
   - PlusCal Version 1.8 of 2 April 2013
@@ -25,15 +25,16 @@ Please send us reports of problems or suggestions; see https://groups.google.com
 
    <launcherArgs>
       <vmArgs>-Xmx1000m
--Dorg.eclipse.equinox.http.jetty.http.port=10996</vmArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+-Dorg.eclipse.equinox.http.jetty.http.port=10996
+-Dosgi.splashPath=platform:/base/
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
    </launcherArgs>
 
    <windowImages i16="icons/full/etool16/tla_launch_check_wiz.gif"/>
 
-   <splash
-      location="org.lamport.tla.toolbox.product.standalone"
-      startupProgressRect="5,275,445,15" />
+
    <launcher name="toolbox">
       <solaris/>
       <win useIco="false">
@@ -44,9 +45,10 @@ Please send us reports of problems or suggestions; see https://groups.google.com
    <intro introId="org.lamport.tla.toolbox.product.standalone.intro"/>
 
    <vm>
-      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5</linux>
-      <macos include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5</macos>
-      <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5</windows>
+      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6</linux>
+      <macos include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6</macos>
+      <solaris include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6</solaris>
+      <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6</windows>
    </vm>
 
    <plugins>
@@ -64,5 +66,9 @@ Please send us reports of problems or suggestions; see https://groups.google.com
       <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
       <property name="eclipse.buildId" value="1.4.2" />
    </configurations>
+
+   <repositories>
+      <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
+   </repositories>
 
 </product>
