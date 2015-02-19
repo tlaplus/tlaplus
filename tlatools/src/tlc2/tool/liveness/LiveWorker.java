@@ -63,12 +63,15 @@ public class LiveWorker extends IdThread {
 	}
 
 	/**
-	 * The main routine that computes strongly connected components (SCCs)
-	 * (see http://en.wikipedia.org/wiki/Strongly_connected_component),
-	 * and checks each of them to see if it contains a counterexample.
+	 * The main routine that computes strongly connected components (SCCs) (see
+	 * http://en.wikipedia.org/wiki/Strongly_connected_component), and checks
+	 * each of them to see if it contains a counterexample.
 	 * <p>
-	 * It seems to be using the Path-based strong component algorithm.
-	 * (http://en.wikipedia.org/wiki/Path-based_strong_component_algorithm)
+	 * It seems to be using the Path-based strong component algorithm
+	 * (http://en.wikipedia.org/wiki/Path-based_strong_component_algorithm).
+	 * This assumption however is incorrect! The second stack is not related to
+	 * the SCC algorithm. Thus, it is Tarjan's SCC algorithm at work
+	 * (http://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm).
 	 */
 	public final void checkSccs() throws IOException {
 		// Initialize this.dg:
