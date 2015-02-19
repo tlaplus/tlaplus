@@ -24,6 +24,8 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class NewSymbNode extends LevelNode {
 
@@ -39,9 +41,9 @@ public class NewSymbNode extends LevelNode {
     /***********************************************************************
     * The ExprNode for expression S in "CONSTANT id \in S".                *
     ***********************************************************************/
-// There's now a level field for all LevelNode subclasses, and this.levelChecked 
+// There's now a level field for all LevelNode subclasses, and this.levelChecked
 // indicates if levelCheck has been callsed
-//  private int       level = -1;  
+//  private int       level = -1;
 //    /***********************************************************************
 //    * The level.  The value of -1 indicates that levelCheck has not yet    *
 //    * been called.                                                         *
@@ -53,20 +55,20 @@ public class NewSymbNode extends LevelNode {
 //    * Set by this.levelCheck to the value to be returned on subsequent     *
 //    * calls.                                                               *
 //    ***********************************************************************/
-    
+
   /*************************************************************************
   * The Constructor.                                                       *
   *************************************************************************/
   public NewSymbNode(
            OpDeclNode   opDeclNode, // The OpDeclNode for the declaration.
-           ExprNode     set,        // Expression S in "CONSTANT x \in S", 
+           ExprNode     set,        // Expression S in "CONSTANT x \in S",
                                     //   null for other kinds of declaration.
            TreeNode stn             // The syntax node.
           ) {
     super(NewSymbKind, stn) ;
     this.set        = set;
     this.opDeclNode = opDeclNode ;
-  }   
+  }
 
 
   /*************************************************************************
@@ -74,7 +76,7 @@ public class NewSymbNode extends LevelNode {
   *************************************************************************/
   public final ExprNode   getSet()         {return set;}
   public final OpDeclNode getOpDeclNode() {return opDeclNode;}
-  
+
   /*************************************************************************
   * The implementation of the LevelNode abstract methods.                  *
   *                                                                        *
@@ -95,28 +97,28 @@ public class NewSymbNode extends LevelNode {
       levelChecked = iter ;
       boolean opDeclLevelCheck = opDeclNode.levelCheck(iter) ;
       level = opDeclNode.getLevel() ;
-      if (set != null) { 
+      if (set != null) {
         levelCorrect = set.levelCheck(iter) ;
         level = Math.max(set.getLevel(), level);
         if (level == TemporalLevel) {
-          levelCorrect = false; 
+          levelCorrect = false;
           errors.addError(this.stn.getLocation(),
-                          "Level error:\n" + 
+                          "Level error:\n" +
                           "Temporal formula used as set.");
           }
        }  ;
       levelCorrect = levelCorrect && opDeclLevelCheck;
       if (set != null) {
-        levelParams = set.getLevelParams(); 
-        allParams = set.getAllParams(); 
-        levelConstraints = set.getLevelConstraints(); 
+        levelParams = set.getLevelParams();
+        allParams = set.getAllParams();
+        levelConstraints = set.getLevelConstraints();
         argLevelConstraints = set.getArgLevelConstraints();
         argLevelParams      = set.getArgLevelParams();
-       }; // if (set != null) 
+       }; // if (set != null)
       }; // if (levelChecked < iter)
     return levelCorrect;
    }
-    
+
 //  public int getLevel()             {return this.level; }
 //
 //  public HashSet getLevelParams()   {
@@ -139,11 +141,11 @@ public class NewSymbNode extends LevelNode {
 //    else return set.getArgLevelParams();
 //   }
 
-  /** 
+  /**
    * toString, levelDataToString and walkGraph methods to implement
    * ExploreNode interface
    */
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.level                    + "\n" +
 //           "LevelParameters: "     + this.getLevelParams()         + "\n" +
 //           "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
@@ -154,7 +156,7 @@ public class NewSymbNode extends LevelNode {
   /**
    * The body is the node's only child.
    */
-  
+
   public SemanticNode[] getChildren() {
     if (this.set == null) {
         return null;
@@ -162,7 +164,7 @@ public class NewSymbNode extends LevelNode {
       return new SemanticNode[] {this.set};
     }
   }
- 
+
   public final void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
@@ -174,14 +176,23 @@ public class NewSymbNode extends LevelNode {
     if (depth <= 0) return "";
     String setString = "" ;
     if (this.set != null) {
-      setString = Strings.indent(2, 
+      setString = Strings.indent(2,
                    "\nSet:" + Strings.indent(2, this.set.toString(depth-1)));
      }
-    return "\n*NewSymbNode: " + 
-	    "  " + super.toString(depth) + 
+    return "\n*NewSymbNode: " +
+	    "  " + super.toString(depth) +
              Strings.indent(2, "\nKind: " + this.getKind() +
-                          "\nopDeclNode:" + Strings.indent(2, 
+                          "\nopDeclNode:" + Strings.indent(2,
                                 this.opDeclNode.toString(depth-1)) +
              setString);
    }
+
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+    Element e = doc.createElement("NewSymbNode");
+    e.appendChild(getOpDeclNode().export(doc,context));
+    if (getSet() != null) {
+      e.appendChild(getSet().export(doc,context));
+    }
+    return e;
+  }
 }

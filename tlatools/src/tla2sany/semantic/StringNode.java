@@ -8,6 +8,12 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import util.UniqueString;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+
+
 /**
  * This node represents a string literal in the specification--for
  * example "abc".  The only information added to the SemanticNode
@@ -20,7 +26,7 @@ public class StringNode extends ExprNode implements ExploreNode {
   private UniqueString value;
 
   public StringNode(TreeNode stn, boolean strip) {
-    super(StringKind, stn); 
+    super(StringKind, stn);
 
     this.value = stn.getUS();
     if (strip) {
@@ -42,7 +48,7 @@ public class StringNode extends ExprNode implements ExploreNode {
 
   /* Level Checking */
   public final boolean levelCheck(int iter) {
-    levelChecked = iter; 
+    levelChecked = iter;
       /*********************************************************************
       * Set it just to show that levelCHeck was called.                    *
       *********************************************************************/
@@ -67,7 +73,7 @@ public class StringNode extends ExprNode implements ExploreNode {
    * toString, levelDataToString, & walkGraph methods to implement
    * ExploreNode interface
    */
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.getLevel()               + "\n" +
 //           "LevelParameters: "     + this.getLevelParams()         + "\n" +
 //           "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
@@ -114,9 +120,16 @@ public class StringNode extends ExprNode implements ExploreNode {
 
   public final String toString(int depth) {
     if (depth <= 0) return "";
-    return "\n*StringNode: " + super.toString(depth) 
-                             + "Value: '" + PrintVersion(value.toString()) + 
+    return "\n*StringNode: " + super.toString(depth)
+                             + "Value: '" + PrintVersion(value.toString()) +
                              "'" + " Length: " + value.length();
   }
 
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+      Element e = doc.createElement("StringValue");
+      Node n = doc.createTextNode(value.toString());
+      e.appendChild(n);
+      return appendElement(doc, "StringNode", e);
+   // return appendText(doc,"StringNode",value.toString());
+  }
 }

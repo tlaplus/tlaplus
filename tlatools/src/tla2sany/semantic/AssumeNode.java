@@ -8,8 +8,13 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
+import tla2sany.xml.XMLExportable;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
- * This class represents an assumption about the constants in a module. 
+ * This class represents an assumption about the constants in a module.
  */
 
 /***************************************************************************
@@ -20,7 +25,7 @@ public class AssumeNode extends LevelNode {
 
   ModuleNode  module;
   ExprNode    assumeExpr;
-  ThmOrAssumpDefNode   def;
+  private ThmOrAssumpDefNode   def;
     /***********************************************************************
     * For a named assumption, that is one of the form                      *
     * "ASSUME foo == ...", this is the ThmOrAssumpDefNode for the          *
@@ -32,7 +37,7 @@ public class AssumeNode extends LevelNode {
     * True iff this is an AXIOM rather than an ASSUME or ASSUMPTION.       *
     ***********************************************************************/
 
-  
+
   public boolean getIsAxiom() {
     return isAxiom;
   }
@@ -57,6 +62,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
     if(stn.heirs()[0].getImage().equals("AXIOM")){
         isAxiom = true;
     }
+    if (opd != null) opd.thmOrAssump = this;
 
    }
 
@@ -67,11 +73,11 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
   * Returns the definition, which is non-null iff this is a named          *
   * theorem.                                                               *
   *************************************************************************/
-  public final ThmOrAssumpDefNode getDef() {return this.def;};  
+  public final ThmOrAssumpDefNode getDef() {return this.def;};
 
 //  public final boolean isLocal() { return false; }
 
-   
+
   /* Level checking */
   int levelChecked = 0 ;
   public final boolean levelCheck(int iter) {
@@ -95,7 +101,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
      };
     return res;
   }
-  
+
   public final int getLevel() {
     return this.assumeExpr.getLevel();
   }
@@ -123,7 +129,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
   /**
    * toString(), levelDataToString(), and walkGraph() methods
    */
-  public final String levelDataToString() { 
+  public final String levelDataToString() {
     return "Level: "               + getLevel()               + "\n" +
            "LevelParameters: "     + getLevelParams()         + "\n" +
            "LevelConstraints: "    + getLevelConstraints()    + "\n" +
@@ -138,16 +144,16 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
    */
   public final String toString (int depth) {
     if (depth <= 0) return "";
-    String res = 
+    String res =
        Strings.indent(
-         2, 
-         "\n*AssumeNode " + super.toString( depth ) + 
+         2,
+         "\n*AssumeNode " + super.toString( depth ) +
 //                        "   local: " + localness +
-         ((assumeExpr != null)  ? 
+         ((assumeExpr != null)  ?
              Strings.indent(2,assumeExpr.toString(depth-1)) : "" ));
    if (def != null) {
       res = res + Strings.indent(
-                      4, 
+                      4,
                       "\n def: " +
                       Strings.indent(2, this.def.toString(depth-1)));
      } ;
@@ -157,7 +163,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
   /**
    * The assume expression is the node's only child.
    */
-  
+
   public SemanticNode[] getChildren() {
     return new SemanticNode[] {this.assumeExpr};
   }
@@ -176,4 +182,17 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
     if (assumeExpr != null) {assumeExpr.walkGraph(semNodesTable);} ;
   }
 
+  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+    if (getDef() == null)
+      // we export the definition of the assumption
+      return super.export(doc,context);
+    else
+      // we export its name only, named assumptions will be exported through the ThmOrAss..
+      return getDef().export(doc,context);
+  }
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+    Element e = doc.createElement("AssumeNode");
+    e.appendChild(getAssume().export(doc,context));
+    return e;
+  }
 }

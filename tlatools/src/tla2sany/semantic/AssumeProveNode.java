@@ -9,6 +9,9 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /***************************************************************************
 * An assume prove node represents something like                           *
 *                                                                          *
@@ -118,8 +121,8 @@ public class AssumeProveNode extends LevelNode {
   * This field is used only in Generator.selectorToNode.                   *
   *************************************************************************/
   protected boolean suffices = false ;
-  protected boolean isSuffices()  {return this.suffices ;}; 
-            void    setSuffices() {this.suffices = true;}; 
+  protected boolean isSuffices()  {return this.suffices ;};
+            void    setSuffices() {this.suffices = true;};
   public boolean getSuffices() {
       return suffices;
   }
@@ -146,7 +149,7 @@ public class AssumeProveNode extends LevelNode {
     * This comment was wrong until LL added the code to                    *
     * Generator.generateAssumeProve to make it true on 9 Nov 2009.         *
     ***********************************************************************/
-    
+
   /*************************************************************************
   * The Constructor.                                                       *
   *************************************************************************/
@@ -194,7 +197,7 @@ public class AssumeProveNode extends LevelNode {
     * invoked for i >= iter.                                               *
     ***********************************************************************/
     if (levelChecked >= iter) return this.levelCorrect;
-    levelChecked = iter ;    
+    levelChecked = iter ;
 
     this.levelCorrect = true;
 
@@ -202,7 +205,7 @@ public class AssumeProveNode extends LevelNode {
     * Level check assumptions.                                             *
     ***********************************************************************/
     for (int i = 0; i < this.assumes.length; i++) {
-      if (this.assumes[i] != null && !this.assumes[i].levelCheck(iter)) 
+      if (this.assumes[i] != null && !this.assumes[i].levelCheck(iter))
        {this.levelCorrect = false;};
       }; // end for
 
@@ -222,7 +225,7 @@ public class AssumeProveNode extends LevelNode {
         *******************************************************************/
       if (this.assumes[i].getLevel() > level)
         { level = this.assumes[i].getLevel() ;} ;
-     } ;    
+     } ;
 
     /***********************************************************************
     * Calculate levelParams and allParams.                                 *
@@ -230,9 +233,9 @@ public class AssumeProveNode extends LevelNode {
 //    this.levelParams = new HashSet();
     this.levelParams.addAll(this.prove.getLevelParams());
     this.allParams.addAll(this.prove.getAllParams());
-    for (int i = 0; i < this.assumes.length; i++) { 
-      this.levelParams.addAll(this.assumes[i].getLevelParams()); 
-      this.allParams.addAll(this.assumes[i].getAllParams()); 
+    for (int i = 0; i < this.assumes.length; i++) {
+      this.levelParams.addAll(this.assumes[i].getLevelParams());
+      this.allParams.addAll(this.assumes[i].getAllParams());
      }; // for i
 
     /***********************************************************************
@@ -240,7 +243,7 @@ public class AssumeProveNode extends LevelNode {
     ***********************************************************************/
 //    this.levelConstraints = new SetOfLevelConstraints();
     this.levelConstraints.putAll(this.prove.getLevelConstraints());
-    for (int i = 0; i < this.assumes.length; i++) 
+    for (int i = 0; i < this.assumes.length; i++)
       { this.levelConstraints.putAll(this.assumes[i].getLevelConstraints());
       } ;
 
@@ -252,7 +255,7 @@ public class AssumeProveNode extends LevelNode {
     for (int i = 0; i < this.assumes.length; i++) {
        this.argLevelConstraints.putAll(this.assumes[i].getArgLevelConstraints());
      } ;
-    
+
     /***********************************************************************
     * Calculate argLevelParamams.                                          *
     ***********************************************************************/
@@ -265,7 +268,7 @@ public class AssumeProveNode extends LevelNode {
     * The following added on 1 Mar 2009.  See                              *
     * LevelNode.addTemporalLevelConstraintToConstants.                     *
     ***********************************************************************/
-    if (this.levelCorrect) { 
+    if (this.levelCorrect) {
       addTemporalLevelConstraintToConstants(this.levelParams,
                                             this.levelConstraints);
      };
@@ -280,7 +283,7 @@ public class AssumeProveNode extends LevelNode {
 //
 //  public HashSet getLevelParams() {
 //     return levelParams ;
-//   } 
+//   }
 //    /***********************************************************************
 //    * Seems to return a HashSet of OpDeclNode objects.  Presumably, these  *
 //    * are the parameters from the local context that contribute to the     *
@@ -306,7 +309,7 @@ public class AssumeProveNode extends LevelNode {
 //    * must be able to accept an argument of level v in its argument        *
 //    * number k.position.                                                   *
 //    ***********************************************************************/
-//    
+//
 //
 //  public  HashSet getArgLevelParams() {
 //     return argLevelParams;
@@ -322,7 +325,7 @@ public class AssumeProveNode extends LevelNode {
   /*************************************************************************
   * Fields and methods implementing the ExplorerNode  interface:           *
   *************************************************************************/
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.getLevel()               + "\n" +
 //           "LevelParameters: "     + this.getLevelParams()         + "\n" +
 //           "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
@@ -330,7 +333,7 @@ public class AssumeProveNode extends LevelNode {
 //           "ArgLevelParams: "      + this.getArgLevelParams()      + "\n";
 //  }
 
-  
+
   /**
    * The children of this node are the assumes and prove expressions.
    */
@@ -370,18 +373,37 @@ public class AssumeProveNode extends LevelNode {
      } ;
     String goalStr = "null" ;
     if (goal != null) {goalStr = Strings.indent(4, goal.toString(1));};
-    return "\n*AssumeProveNode: " 
-             + super.toString(depth)  // Seems to print stn.getLocation() where stn is the 
+    return "\n*AssumeProveNode: "
+             + super.toString(depth)  // Seems to print stn.getLocation() where stn is the
                                       // corresponding syntax tree node.
              + "\n  " + (isBoxAssumeProve ? "[]" : "") + "Assumes: " + assumeStr
              + "\n  " + (isBoxAssumeProve ? "[]" : "") + "Prove: " + Strings.indent(4, prove.toString(depth-1))
-             + "\n  Goal: "  + goalStr 
+             + "\n  Goal: "  + goalStr
              + ((suffices) ? "\n  SUFFICES" : "") ;
   }
   /*************************************************************************
   * End fields and methods implementing the ExplorerNode interface:        *
   *************************************************************************/
+
+  public Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+    Element e = doc.createElement("AssumeProveNode");
+    Element antecedent = doc.createElement("assumes");
+    Element succedent = doc.createElement("prove");
+
+    SemanticNode[] assumes = getAssumes();
+    for (int i=0; i<assumes.length; i++) antecedent.appendChild(assumes[i].export(doc,context));
+
+    succedent.appendChild(getProve().export(doc,context));
+
+    e.appendChild(antecedent);
+    e.appendChild(succedent);
+
+    if (isSuffices()) e.appendChild(doc.createElement("suffices"));
+    if (isBoxAssumeProve) e.appendChild(doc.createElement("boxed"));
+
+    return e;
+  }
 }
 
-  
+
 

@@ -7,72 +7,8 @@
       plugin="org.lamport.tla.toolbox.product.standalone">
 
    <description>
-      This feature defines is a top feature included in the stand-alone product definition. It refers to other feauter required in runtime and uses as an assembly point for the stand-alone TLA+ Toolbox.
+      This feature is a top feature included in the stand-alone product definition. It refers to other featuers required in runtime and uses as an assembly point for the stand-alone TLA+ Toolbox.
    </description>
-
-   <license url="">
-      Unless otherwise indicated, the TLA Toolbox is made available by Microsoft Corporation under the terms and conditions of the Microsoft Research License Agreement provided below.  The Compaq Corporation license below governs some of the code located in subdirectories tla2sany, tla2tex, tlc2, and util of the file tla2tools.jar.  
-  
-IT IS YOUR OBLIGATION TO READ AND ACCEPT ALL SUCH TERMS AND CONDITIONS PRIOR TO USE
-Microsoft Research License Agreement
-TLA Toolbox
-
-This Microsoft Research License Agreement (&quot;MSR-LA&quot;) is a legal agreement between you and Microsoft Corporation (Microsoft or we) for the software or data identified above, which may include source code, and any associated materials, text or speech files, associated media and &quot;online&quot; or electronic documentation and any updates we provide in our discretion (together, the &quot;Software&quot;). 
-
-By installing, copying, or otherwise using this Software, found at http://research.microsoft.com/downloads, you agree to be bound by the terms of this MSR-LA.  If you do not agree, do not install copy or use the Software. The Software is protected by copyright and other intellectual property laws and is licensed, not sold.    
-SCOPE OF RIGHTS:
-You may use, copy, reproduce, and distribute this Software for any non-commercial purpose, subject to the restrictions in this MSR-LA. Some purposes which can be non-commercial are teaching, academic research, public demonstrations and personal experimentation. You may also distribute this Software with books or other teaching materials, or publish the Software on websites, that are intended to teach the use of the Software for academic or other non-commercial purposes.
-You may not use or distribute this Software or any derivative works in any form for commercial purposes. Examples of commercial purposes would be running business operations, licensing, leasing, or selling the Software, distributing the Software for use with commercial products, or any other activity which purpose is to procure a commercial gain to you or others.  Notwithstanding the foregoing, if you are a commercial entity, you may use this software solely for your own internal use.
-If the Software includes source code or data, you may create derivative works of such portions of the Software and distribute the modified Software for non-commercial purposes, as provided herein.  
-If you distribute the Software or any derivative works of the Software, you will distribute them under the same terms and conditions as in this license, and you will not grant other rights to the Software or derivative works that are different from those provided by this MSR-LA. 
-If you have created derivative works of the Software, and distribute such derivative works, you will cause the modified files to carry prominent notices so that recipients know that they are not receiving the original Software. Such notices must state: (i) that you have changed the Software; and (ii) the date of any changes.
-In return, we simply require that you agree: 
-1. That you will not remove any copyright or other notices from the Software.
-2. That if any of the Software is in binary format, you will not attempt to modify such portions of the Software, or to reverse engineer or decompile them, except and only to the extent authorized by applicable law. 
-3. That you will not use the Software in a live operating environment where it may be relied upon to perform in the same manner as a commercially released product, or with data that has not been sufficiently backed up.
-4. That Microsoft is granted back, without any restrictions or limitations, a non-exclusive, perpetual, irrevocable, royalty-free, assignable and sub-licensable license, to reproduce, publicly perform or display, install, use, modify, post, distribute, make and have made, sell and transfer your modifications to and/or derivative works of the Software source code or data, for any purpose.  
-5. That any feedback about the Software provided by you to us is voluntarily given, and Microsoft shall be free to use the feedback as it sees fit without obligation or restriction of any kind, even if the feedback is designated by you as confidential. 
-6. THAT THE SOFTWARE COMES &quot;AS IS&quot;, WITH NO WARRANTIES. THIS MEANS NO EXPRESS, IMPLIED OR STATUTORY WARRANTY, INCLUDING WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ANY WARRANTY AGAINST INTERFERENCE WITH YOUR ENJOYMENT OF THE SOFTWARE OR ANY WARRANTY OF TITLE OR NON-INFRINGEMENT. THERE IS NO WARRANTY THAT THIS SOFTWARE WILL FULFILL ANY OF YOUR PARTICULAR PURPOSES OR NEEDS. ALSO, YOU MUST PASS THIS DISCLAIMER ON WHENEVER YOU DISTRIBUTE THE SOFTWARE OR DERIVATIVE WORKS.
-7. THAT NEITHER MICROSOFT NOR ANY CONTRIBUTOR TO THE SOFTWARE WILL BE LIABLE FOR ANY DAMAGES RELATED TO THE SOFTWARE OR THIS MSR-LA, INCLUDING DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL OR INCIDENTAL DAMAGES, TO THE MAXIMUM EXTENT THE LAW PERMITS, NO MATTER WHAT LEGAL THEORY IT IS BASED ON. ALSO, YOU MUST PASS THIS LIMITATION OF LIABILITY ON WHENEVER YOU DISTRIBUTE THE SOFTWARE OR DERIVATIVE WORKS.
-8. That we have no duty of reasonable care or lack of negligence, and we are not obligated to (and will not) provide technical support for the Software.
-9. That if you breach this MSR-LA or if you sue anyone over patents that you think may apply to or read on the Software or anyone&apos;s use of the Software, this MSR-LA (and your license and rights obtained herein) terminate automatically.  Upon any such termination, you shall destroy all of your copies of the Software immediately.  Sections 4, 5, 6, 7, 8, 9, 12 and 13 of this MSR-LA shall survive any termination of this MSR-LA.
-10. That the patent rights, if any, granted to you in this MSR-LA only apply to the Software, not to any derivative works you make.
-11. That the Software may be subject to U.S. export jurisdiction at the time it is licensed to you, and it may be subject to additional export or import laws in other places.  You agree to comply with all such laws and regulations that may apply to the Software after delivery of the software to you.
-12. That all rights not expressly granted to you in this MSR-LA are reserved.
-13. That this MSR-LA shall be construed and controlled by the laws of the State of Washington, USA, without regard to conflicts of law.  If any provision of this MSR-LA shall be deemed unenforceable or contrary to law, the rest of this MSR-LA shall remain in full effect and interpreted in an enforceable manner that most nearly captures the intent of the original language. 
-
-The following license applies to code marked with the following notice:
-Copyright (c) 2003  
-Compaq Corporation.  All rights reserved.
-
-Compaq Computer Corporation, a Delaware corporation with offices at
-20555 SH 249, Houston, TX, (COMPAQ) and you the CUSTOMER agree as
-follows:
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-&quot;Software&quot;), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL COMPAQ BE LIABLE FOR ANY CLAIM,
-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Except as contained in this notice, the name of COMPAQ shall not be
-used in advertising or otherwise to promote the sale, use or other
-dealings in this Software without prior written authorization from
-COMPAQ.
-   </license>
 
    <includes
          id="org.lamport.tla.toolbox.feature.base"
@@ -99,10 +35,6 @@ COMPAQ.
          version="0.0.0"/>
 
    <includes
-         id="org.eclipse.equinox.p2.user.ui"
-         version="0.0.0"/>
-
-   <includes
          id="org.lamport.tla.toolbox.feature.tla2tex"
          version="0.0.0"/>
 
@@ -115,11 +47,55 @@ COMPAQ.
          version="0.0.0"/>
 
    <includes
+         id="org.lamport.tlatools.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.lamport.tla.toolbox.feature.branding"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.e4.rcp"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf.common"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf.ecore"
+         version="0.0.0"/>
+
+   <includes
          id="de.vonloesch.pdf4eclipse.feature"
          version="0.0.0"/>
 
    <includes
-         id="org.lamport.tlatools.feature"
+         id="org.eclipse.ecf.core.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.ecf.filetransfer.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.equinox.p2.rcp.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.ecf.core.ssl.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.ecf.filetransfer.httpclient4.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.ecf.filetransfer.httpclient4.ssl.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.ecf.filetransfer.ssl.feature"
          version="0.0.0"/>
 
    <includes
@@ -188,6 +164,13 @@ COMPAQ.
 
    <plugin
          id="org.eclipse.compare"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.concurrent"
          download-size="0"
          install-size="0"
          version="0.0.0"

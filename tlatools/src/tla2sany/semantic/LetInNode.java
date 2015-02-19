@@ -11,15 +11,18 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 public class LetInNode extends ExprNode
 implements ExploreNode, LevelConstants {
 
   /**
-   * This node represents a LET expression, for example 
+   * This node represents a LET expression, for example
    *
-   * LET Foo(a) == a + x 
-   *     Bar == Foo(a) + a 
-   * IN body 
+   * LET Foo(a) == a + x
+   *     Bar == Foo(a) + a
+   * IN body
    */
 
   private SymbolNode[] opDefs;
@@ -44,10 +47,10 @@ implements ExploreNode, LevelConstants {
   private ExprNode body;
 
   /* Constructor */
-  public LetInNode(TreeNode             treeNode, 
-                   SymbolNode[]          defs, 
+  public LetInNode(TreeNode             treeNode,
+                   SymbolNode[]          defs,
                    InstanceNode[]       insts,
-                   ExprNode bdy, 
+                   ExprNode bdy,
                    Context ctext) {
     super(LetInKind, treeNode);
     this.opDefs = defs;
@@ -69,7 +72,7 @@ implements ExploreNode, LevelConstants {
   * OpDefNode objects, it must be reimplemented.                           *
   *************************************************************************/
   private OpDefNode[] gottenLets = null ;
-  public final OpDefNode[] getLets() { 
+  public final OpDefNode[] getLets() {
     if (gottenLets == null) {
       /*********************************************************************
       * First count how many UserDefinedOpKind OpDefNode objects are in    *
@@ -86,9 +89,9 @@ implements ExploreNode, LevelConstants {
           gottenLets [cnt] = (OpDefNode) opDefs[i] ;
           cnt++;} ;
        }
-      
-     }  
-    return this.gottenLets; 
+
+     }
+    return this.gottenLets;
     }
 
   /* Return the body of the LET expression (the IN expression). */
@@ -98,7 +101,7 @@ implements ExploreNode, LevelConstants {
 // These fields are now part of all LevelNode subclasses.
 //  private boolean levelCorrect;
 //  private int level;
-//  private HashSet levelParams; 
+//  private HashSet levelParams;
 //  private SetOfLevelConstraints levelConstraints;
 //  private SetOfArgLevelConstraints argLevelConstraints;
 //  private HashSet argLevelParams;
@@ -192,23 +195,23 @@ implements ExploreNode, LevelConstants {
 //
 //  public final HashSet getLevelParams() { return this.levelParams; }
 //
-//  public final SetOfLevelConstraints getLevelConstraints() { 
-//    return this.levelConstraints; 
+//  public final SetOfLevelConstraints getLevelConstraints() {
+//    return this.levelConstraints;
 //  }
-//  
-//  public final SetOfArgLevelConstraints getArgLevelConstraints() { 
-//    return this.argLevelConstraints; 
+//
+//  public final SetOfArgLevelConstraints getArgLevelConstraints() {
+//    return this.argLevelConstraints;
 //  }
-//  
-//  public final HashSet getArgLevelParams() { 
-//    return this.argLevelParams; 
+//
+//  public final HashSet getArgLevelParams() {
+//    return this.argLevelParams;
 //  }
 
   /**
    * toString, levelDataToString, and walkGraph methods to implement
    * ExploreNode interface
    */
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.level               + "\n" +
 //           "LevelParameters: "     + this.levelParams         + "\n" +
 //           "LevelConstraints: "    + this.levelConstraints    + "\n" +
@@ -217,7 +220,7 @@ implements ExploreNode, LevelConstants {
 //  }
 
   public SemanticNode[] getChildren() {
-      SemanticNode[] res = 
+      SemanticNode[] res =
          new SemanticNode[this.opDefs.length + this.insts.length + 1];
       res[res.length-1] = this.body;
       int i;
@@ -229,7 +232,7 @@ implements ExploreNode, LevelConstants {
       }
       return res;
    }
-  
+
   public final void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
 
@@ -283,4 +286,14 @@ implements ExploreNode, LevelConstants {
     return ret;
   }
 
+
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+    Element ret = doc.createElement("LetInNode");
+    ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
+    Element arguments = doc.createElement("opDefs");
+    for (int i=0; i<opDefs.length; i++) arguments.appendChild(opDefs[i].export(doc,context));
+    ret.appendChild(arguments);
+
+    return ret;
+  }
 }

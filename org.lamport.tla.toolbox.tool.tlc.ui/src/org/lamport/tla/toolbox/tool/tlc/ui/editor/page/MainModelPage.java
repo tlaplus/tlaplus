@@ -301,8 +301,25 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         /*
          * Distributed mode
          */
-        final String cloud = getConfig().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
-        //TODO re-select the cloud from the previous model run
+        String cloud = "off";
+        try {
+			cloud = getConfig().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        } catch (CoreException e) {
+        	// LAUNCH_DISTRIBUTED might still be stored in a legacy format. The user is
+        	// opening an old model.
+        	boolean distributed = getConfig().getAttribute(LAUNCH_DISTRIBUTED, false);
+        	if (distributed) {
+        		cloud = "ad hoc";
+        	}
+        }
+        final String[] items = distributedCombo.getItems();
+        for (int i = 0; i < items.length; i++) {
+			final String string = items[i];
+			if (cloud.equals(string)) {
+				distributedCombo.select(i);
+				break;
+			}
+		}
        
         final String distributedScript = getConfig().getAttribute(LAUNCH_DISTRIBUTED_SCRIPT, LAUNCH_DISTRIBUTED_SCRIPT_DEFAULT);
         this.distributedScriptText.setText(distributedScript);

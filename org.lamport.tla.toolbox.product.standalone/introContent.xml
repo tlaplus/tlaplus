@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<introContent>
-    <page id="root" content="intro/root.xhtml"/>
-<!--  
-    <page id="concept1" content="intro/concept1.xhtml"/>
-    <page id="concept2" content="intro/concept2.xhtml"/>
-    <page id="concept25" content="intro/concept25.xhtml"/>
--->
-</introContent>

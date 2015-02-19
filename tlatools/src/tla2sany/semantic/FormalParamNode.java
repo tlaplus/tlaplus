@@ -7,11 +7,14 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import util.UniqueString;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
- * A FormalParamNode represents a formal parameter in a user            
- * definition--for example, p and q in                                  
- *                                                                      
- *    Foo(p, q(_)) == expr                                                 
+ * A FormalParamNode represents a formal parameter in a user
+ * definition--for example, p and q in
+ *
+ *    Foo(p, q(_)) == expr
  */
 /***************************************************************************
 * The constructor adds the node to the SymbolTable specified as an         *
@@ -19,9 +22,9 @@ import util.UniqueString;
 ***************************************************************************/
 public class FormalParamNode extends SymbolNode {
 
-  private int          arity;      
+  private int          arity;
     // arity of the parameter; 0 for ordinary param; >0 for operator param
-  private ModuleNode   moduleNode; 
+  private ModuleNode   moduleNode;
     // the module in which this formal param was declared
 
   // Constructor
@@ -34,7 +37,7 @@ public class FormalParamNode extends SymbolNode {
        symbolTable.addSymbol(us, (SymbolNode)this );
   }
 
-  /** 
+  /**
    * Returns the number of arguments this paramter takes when used in
    * an expression.
    */
@@ -52,7 +55,7 @@ public class FormalParamNode extends SymbolNode {
     ***********************************************************************/
     SymbolNode odn = test.getOperator();
     return odn.getArity() == this.arity;
-  } 
+  }
 
   public final boolean match(SemanticNode test) {
     /***********************************************************************
@@ -63,9 +66,9 @@ public class FormalParamNode extends SymbolNode {
 
   /* Level checking */
 //  private HashSet levelParams;
-  
-  public final boolean levelCheck(int iter) { 
-    if (levelChecked == 0) { 
+
+  public final boolean levelCheck(int iter) {
+    if (levelChecked == 0) {
       /*********************************************************************
       * There's never any need to do this more than once.                  *
       *********************************************************************/
@@ -73,7 +76,7 @@ public class FormalParamNode extends SymbolNode {
       this.levelParams.add(this);
       this.allParams.add(this);
      } ;
-    return true; 
+    return true;
    }
 
 //  public final int getLevel() { return ConstantLevel; }
@@ -86,21 +89,21 @@ public class FormalParamNode extends SymbolNode {
 //    return this.levelParams;
 //  }
 //
-//  public final SetOfLevelConstraints getLevelConstraints() { 
+//  public final SetOfLevelConstraints getLevelConstraints() {
 //    return EmptyLC;
 //  }
 //
-//  public final SetOfArgLevelConstraints getArgLevelConstraints() { 
+//  public final SetOfArgLevelConstraints getArgLevelConstraints() {
 //    return EmptyALC;
 //  }
 //
 //  public final HashSet getArgLevelParams() { return EmptySet; }
 
-  /** 
+  /**
    * toString, levelDataToString and walkGraph methods to implement
    * ExploreNode interface
    */
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.getLevel()               + "\n" +
 //           "LevelParameters: "     + this.getLevelParams()         + "\n" +
 //           "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
@@ -121,4 +124,14 @@ public class FormalParamNode extends SymbolNode {
 	    "  " + super.toString(depth) + "  arity: " + arity);
   }
 
+  protected String getNodeRef() {
+    return "FormalParamNodeRef";
+  }
+
+  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
+    Element e = doc.createElement("FormalParamNode");
+    e.appendChild(appendText(doc,"uniquename",getName().toString()));
+    e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
+    return e;
+  }
 }

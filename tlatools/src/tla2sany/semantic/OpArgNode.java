@@ -11,7 +11,10 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import util.UniqueString;
 
-/** 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+/**
  * This class represents operators of arity > 0 used as arguments to
  * other operators.  Such operator instances are used in syntactic
  * positions where expressions would usually occur, i.e. as arguments
@@ -21,10 +24,10 @@ import util.UniqueString;
 
 public class OpArgNode extends ExprOrOpArgNode {
 
-  private SymbolNode   op;      // The OpDefNode, OpDeclNode, or 
-                                // FormalParamNode corresponding to 
+  private SymbolNode   op;      // The OpDefNode, OpDeclNode, or
+                                // FormalParamNode corresponding to
                                 // THIS OpArgNode
-  private UniqueString name;    // The string name of the full compound 
+  private UniqueString name;    // The string name of the full compound
                                 // name of this operator
   private int          arity;   // The correct arity for this operator
   private ModuleNode   mn;      // the Module in which THIS OpArgNode appears
@@ -36,7 +39,7 @@ public class OpArgNode extends ExprOrOpArgNode {
     this.arity = -2;
   }
 
-  /** 
+  /**
    * The primary constructor; we allow for the case that op may be
    * null because in the case of some kind of semantic error
    * (unresolved symbol) we want to be able to continue semantic
@@ -45,7 +48,7 @@ public class OpArgNode extends ExprOrOpArgNode {
   public OpArgNode(SymbolNode op, TreeNode stn, ModuleNode mn)
   throws AbortException {
     super(OpArgKind, stn);
-    
+
     // if op is an OpDefNode, OpDeclNode, or FormalParamNode
     this.op        = op;
     this.name      = op.getName();
@@ -76,7 +79,7 @@ public class OpArgNode extends ExprOrOpArgNode {
   }
 
 //  public final int getLevel() { return this.op.getLevel(); }
-//  
+//
 //  public final HashSet getLevelParams() {
 //    return this.op.getLevelParams();
 //  }
@@ -93,11 +96,11 @@ public class OpArgNode extends ExprOrOpArgNode {
 //    return this.op.getArgLevelParams();
 //  }
 
-  /**  
+  /**
    * walkGraph, levelDataToString, and toString methods to implement
    * ExploreNode interface
    */
-//  public final String levelDataToString() { 
+//  public final String levelDataToString() {
 //    return "Level: "               + this.getLevel()               + "\n" +
 //           "LevelParameters: "     + this.getLevelParams()         + "\n" +
 //           "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
@@ -120,15 +123,23 @@ public class OpArgNode extends ExprOrOpArgNode {
     * operator.                                                            *
     ***********************************************************************/
     if (op != null) {op.walkGraph(semNodesTable) ;} ;
-  } 
+  }
 
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
-    return "\n*OpArgNode: " + ( name != null ? name.toString() : "null") + 
-      "  " + super.toString(depth) + 
+    return "\n*OpArgNode: " + ( name != null ? name.toString() : "null") +
+      "  " + super.toString(depth) +
       "  arity: " + arity +
       "  op: " + (op != null ? "" + ((SemanticNode)op).getUid() : "null" );
   }
 
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+    Element e = doc.createElement("OpArgNode");
+
+    e.appendChild(appendText(doc,"uniquename",getName().toString()));
+    e.appendChild(appendText(doc,"arity", Integer.toString(getArity())));
+
+    return e;
+  }
 }

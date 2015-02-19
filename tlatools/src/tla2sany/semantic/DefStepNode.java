@@ -7,6 +7,9 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /***************************************************************************
 * This class represents definition step of a proof, which consists of a    *
 * sequence of operator-, function-, or module-definition steps.  (A        *
@@ -24,7 +27,7 @@ public class DefStepNode extends LevelNode {
     * not a numbered step.                                                 *
     ***********************************************************************/
 
-  private OpDefNode[] defs ;    
+  private OpDefNode[] defs ;
     /***********************************************************************
     * The sequence of definitions.                                         *
     ***********************************************************************/
@@ -34,17 +37,17 @@ public class DefStepNode extends LevelNode {
   *************************************************************************/
   public DefStepNode(TreeNode stn, UniqueString stepNum, OpDefNode[] theDefs){
     super(DefStepKind, stn);
-    this.stepNumber = stepNum; 
+    this.stepNumber = stepNum;
     this.defs = theDefs;
    }
-    
+
   /*************************************************************************
   * The methods just return the field values.                              *
   *************************************************************************/
   public UniqueString getStepNumber() {return stepNumber ;}
-  public OpDefNode[] getDefs() {return defs;}   
+  public OpDefNode[] getDefs() {return defs;}
 
-  public boolean levelCheck(int iter) { 
+  public boolean levelCheck(int iter) {
     /***********************************************************************
     * Level check the steps and the instantiated modules coming from       *
     * module definitions.                                                  *
@@ -79,4 +82,11 @@ public class DefStepNode extends LevelNode {
     return ret;
    }
 
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+      Element e = doc.createElement("DefStepNode");
+      for (int i=0; i<defs.length;i++) {
+        e.appendChild(defs[i].export(doc,context));
+      }
+      return e;
+    }
 }

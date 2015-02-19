@@ -43,5 +43,9 @@
 	    <topic label="Definition Override" href="../org.lamport.tla.toolbox.doc/html/model/advanced-page.html#override" />
 		
 	</context>
+  <context id="GettingStarted" title="Getting Started">
+     <description>Click &quot;Getting Started&quot; below</description>
+     <topic href="../org.lamport.tla.toolbox.doc/html/gettingstarted/gettingstarted.html" label="Getting Started"/>
+  </context>
  
 </contexts>

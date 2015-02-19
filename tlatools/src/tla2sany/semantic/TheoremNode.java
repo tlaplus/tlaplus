@@ -19,6 +19,9 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
  * This class represents a theorem
  */
@@ -35,7 +38,7 @@ public class TheoremNode extends LevelNode {
     /***********************************************************************
     * This can be either an ExprNode or an AssumeProveNode object.         *
     ***********************************************************************/
-  ThmOrAssumpDefNode   def;
+  private ThmOrAssumpDefNode   def;
     /***********************************************************************
     * For a named theorem, that is one of the form                         *
     * "THEOREM foo == ...", this is the ThmOrAssumpDefNode for the         *
@@ -46,17 +49,17 @@ public class TheoremNode extends LevelNode {
      * If the node represents a proof step, then this is true iff that     *
      * step is a SUFFICES step.                                            *
      **********************************************************************/
-     
-  
+
+
    ProofNode proof;
      /**********************************************************************
      * The proof, if there is one; else null.                              *
      **********************************************************************/
 //  Theorems can no longer be local.
 //  boolean     localness;
-  
-  /** 
-   * Constructor -- expr is the statement (i.e. expression or assume/prove) 
+
+  /**
+   * Constructor -- expr is the statement (i.e. expression or assume/prove)
      of the theorem.
    */
   public TheoremNode(TreeNode stn, LevelNode theorem, ModuleNode mn,
@@ -65,7 +68,8 @@ public class TheoremNode extends LevelNode {
     this.theoremExprOrAssumeProve = theorem;
     this.module = mn;
     this.def = opd;
-    this.proof = pf;  
+    this.proof = pf;
+    if (opd != null) opd.thmOrAssump = this;
   }
 
   /* Returns the statement of the theorem  */
@@ -95,8 +99,8 @@ public class TheoremNode extends LevelNode {
   public final UniqueString getName() {
     if (def == null) {return null;} ;
     return def.getName() ;
-    } 
- 
+    }
+
   /* Level checking */
 
   int levelChecked = 0 ;
@@ -114,7 +118,7 @@ public final boolean levelCheck(int iter) {
     else { sub = new LevelNode[1];} ;
     if (this.def != null) {sub[0] = this.def;}
     else {sub[0] = this.theoremExprOrAssumeProve;} ;
-    boolean retVal = levelCheckSubnodes(iter, sub);    
+    boolean retVal = levelCheckSubnodes(iter, sub);
 
     if  (this.theoremExprOrAssumeProve == null) { return retVal; } ;
       /*********************************************************************
@@ -154,7 +158,7 @@ public final boolean levelCheck(int iter) {
     * the levelCheck method of the LeafProofNode so it set's that node's   *
     * level to zero.                                                       *
     ***********************************************************************/
-//    if (   (this.proof != null)  
+//    if (   (this.proof != null)
 //           /****************************************************************
 //           * Must not check if this is a QED or CASE.                      *
 //           ****************************************************************/
@@ -197,9 +201,9 @@ public final boolean levelCheck(int iter) {
    * Added 3 Mar 2009.                                                     *
    ************************************************************************/
    if (this.theoremExprOrAssumeProve.level == TemporalLevel){
-       LevelCheckTemporal(this.proof);  
+       LevelCheckTemporal(this.proof);
    };
-   return retVal; 
+   return retVal;
   }
 
   /*************************************************************************
@@ -233,9 +237,9 @@ public final boolean levelCheck(int iter) {
        * then set tnode and oanode to those nodes, otherwise set them to   *
        * null.                                                             *
        ********************************************************************/
-       LevelNode node = pnode.getSteps()[i]; 
-       OpApplNode  oanode = null; 
-       TheoremNode tnode = null; 
+       LevelNode node = pnode.getSteps()[i];
+       OpApplNode  oanode = null;
+       TheoremNode tnode = null;
        if (node.getKind() == TheoremKind) {
           tnode = (TheoremNode) node;
           if (tnode.theoremExprOrAssumeProve instanceof OpApplNode) {
@@ -245,15 +249,15 @@ public final boolean levelCheck(int iter) {
        if (oanode != null) {
          UniqueString name = oanode.operator.getName();
 
-         if (   (   (name == OP_take) 
+         if (   (   (name == OP_take)
                  || (name == OP_witness)
-                 || (name == OP_have) ) 
+                 || (name == OP_have) )
              && (oanode.getLevel() != ConstantLevel)) {
                    errors.addError(
                      oanode.stn.getLocation(),
                      "Non-constant TAKE, WITNESS, or HAVE " +
                      "for temporal goal.");
-         } else 
+         } else
          if (name == OP_pfcase) {
            /****************************************************************
            * This is a CASE, check that its argument is constant and then  *
@@ -262,12 +266,12 @@ public final boolean levelCheck(int iter) {
            if (oanode.getLevel() != ConstantLevel){
                errors.addError(
                  oanode.stn.getLocation(),
-                 "Non-constant CASE for temporal goal.") ; 
+                 "Non-constant CASE for temporal goal.") ;
              };
            LevelCheckTemporal(tnode.getProof()) ;
-         } else 
+         } else
          if (name == OP_qed) {
-           LevelCheckTemporal(tnode.getProof()) ;  
+           LevelCheckTemporal(tnode.getProof()) ;
          }
        }; // if (oanode != null)
 
@@ -275,41 +279,41 @@ public final boolean levelCheck(int iter) {
   } // LevelCheckTemporal
 
 //  public final int getLevel() {
-//    if (levelChecked == 0) 
+//    if (levelChecked == 0)
 //      {Assert.fail("getLevel called for TheoremNode before levelCheck");};
 //    return this.theoremExprOrAssumeProve.getLevel();
 //  }
 //
 //  public final HashSet getLevelParams() {
-//    if (levelChecked == 0) 
+//    if (levelChecked == 0)
 //      {Assert.fail("getLevelParams called for ThmNode before levelCheck");};
 //    return this.theoremExprOrAssumeProve.getLevelParams();
 //  }
 //
 //  public final SetOfLevelConstraints getLevelConstraints() {
-//    if (levelChecked == 0) 
+//    if (levelChecked == 0)
 //     {Assert.fail("getLevelConstraints called for ThmNode before levelCheck");};
 //    return this.theoremExprOrAssumeProve.getLevelConstraints();
 //  }
 //
 //  public final SetOfArgLevelConstraints getArgLevelConstraints() {
-//    if (levelChecked == 0) 
+//    if (levelChecked == 0)
 //      {Assert.fail(
 //        "getArgLevelConstraints called for ThmNode before levelCheck");};
 //    return this.theoremExprOrAssumeProve.getArgLevelConstraints();
 //  }
 //
 //  public final HashSet getArgLevelParams() {
-//    if (levelChecked == 0) 
+//    if (levelChecked == 0)
 //      {Assert.fail("getArgLevelParams called for ThmNode before levelCheck");};
 //    return this.theoremExprOrAssumeProve.getArgLevelParams();
 //  }
-  
+
   /**
    * toString, levelDataToString, and walkGraph methods to implement
    * ExploreNode interface
    */
-  public final String levelDataToString() { 
+  public final String levelDataToString() {
     return "Level: "               + this.getLevel()               + "\n" +
            "LevelParameters: "     + this.getLevelParams()         + "\n" +
            "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
@@ -319,26 +323,26 @@ public final boolean levelCheck(int iter) {
 
   public final String toString(int depth) {
     if (depth <= 0) return "";
-    String res = 
+    String res =
              "\n*TheoremNode " + super.toString( depth ) +
             ((theoremExprOrAssumeProve != null)  ?
               Strings.indent(2, theoremExprOrAssumeProve.toString(depth-1))
                : "");
     if (def != null) {
       res = res + Strings.indent(
-                      2, 
+                      2,
                       "\n def: " +
                       Strings.indent(2, this.def.toString(depth-1)));
      } ;
     if (suffices) {
       res = res + Strings.indent(
-                      2, 
+                      2,
                       "\n SUFFICES step");
      } ;
 
     if (proof != null) {
       res = res + Strings.indent(
-                      2, 
+                      2,
                       "\n proof: " +
                       Strings.indent(2, this.proof.toString(depth-1)));
      } ;
@@ -348,12 +352,12 @@ public final boolean levelCheck(int iter) {
   /**
    * The children are the statement and the proof (if there is one).
    */
-  
+
   public SemanticNode[] getChildren() {
     if (this.proof == null) {
     return new SemanticNode[] {this.theoremExprOrAssumeProve};
     }
-    return new SemanticNode[] {this.theoremExprOrAssumeProve, 
+    return new SemanticNode[] {this.theoremExprOrAssumeProve,
                                this.proof};
   }
 
@@ -361,10 +365,26 @@ public final boolean levelCheck(int iter) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
-    if (theoremExprOrAssumeProve != null) 
+    if (theoremExprOrAssumeProve != null)
       {theoremExprOrAssumeProve.walkGraph(semNodesTable);} ;
     if (proof != null) {proof.walkGraph(semNodesTable);} ;
   }
 
+  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+    if (getDef() == null)
+      // we export the definition of the theorem
+      return super.export(doc,context);
+    else
+      // we export its name only, named theorem will be exported through the ThmOrAss..
+      return getDef().export(doc,context);
+  }
+
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+    Element e = doc.createElement("TheoremNode");
+    e.appendChild(getTheorem().export(doc,context));
+    if (getProof() != null)  e.appendChild(getProof().export(doc,context));
+    if (isSuffices()) e.appendChild(doc.createElement("suffices"));
+    return e;
+  }
 }
 

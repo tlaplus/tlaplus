@@ -1,1 +1,1 @@
-Expect this folder to disappear soon once this content has to be transferred into the proper HTML documentation.
+Expect this folder to disappear soon once this content has been transferred into the proper HTML documentation.

@@ -24,6 +24,13 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.utilities.Vector;
 import util.UniqueString;
 
+/*
+ * TL - 2014
+ * Executing the SANY jar with the -d flag enters debugging mode (which is the explorer)
+ * Here one can type mt to see all semantical objects parsed and one can enter the object id to see
+ * a more elaborated output
+ *
+ */
 
 // This class implements the explorer tool for traversing
 // and examining the semantic graph and associated data structures
@@ -39,7 +46,7 @@ public class Explorer {
     private StringBuffer      input = new StringBuffer(inCapacity);
     private int               lineLength;
 
-    // semNodesTable contains various nodes in the semantic graph keyed 
+    // semNodesTable contains various nodes in the semantic graph keyed
     // by their UIDs
     private Hashtable         semNodesTable = new Hashtable();
 
@@ -70,13 +77,13 @@ public class Explorer {
       try {
         lineLength=0;
         input.setLength(inCapacity);
-	do { 
-          input.setCharAt(lineLength,(char)inStream.read()); 
+	do {
+          input.setCharAt(lineLength,(char)inStream.read());
           lineLength++;
 	}
 	while (input.charAt(lineLength-1) != '\n' & lineLength < inCapacity );
         input.setLength(lineLength);
-      } 
+      }
       catch (EOFException e) {
 	  return false;
       }
@@ -103,8 +110,8 @@ public class Explorer {
 	//Print tree to depth of icmd2
         System.out.println(((ExploreNode)obj).toString(depth));
         System.out.print("\n" + ((ExploreNode)obj).levelDataToString());
-      } else { 
-        // object requested is not in semNodesTable 
+      } else {
+        // object requested is not in semNodesTable
         System.out.println("No such node encountered yet");
       }
     } // end method
@@ -121,7 +128,7 @@ public class Explorer {
 
         Object semNode = Enum.nextElement();
 
-        if ( semNode instanceof SymbolNode && 
+        if ( semNode instanceof SymbolNode &&
              ((SymbolNode)semNode).getName() == UniqueString.uniqueStringOf(symbName) ) {
 
           symbolVect.addElement(semNode);
@@ -150,7 +157,7 @@ public class Explorer {
 
         Object semNode = Enum.nextElement();
 
-        if ( semNode instanceof SymbolNode && 
+        if ( semNode instanceof SymbolNode &&
              ((SymbolNode)semNode).getName() == UniqueString.uniqueStringOf(symbName) ) {
 
           symbolVect.addElement(semNode);
@@ -187,7 +194,7 @@ public class Explorer {
 
         Object semNode = Enum.nextElement();
 
-        if ( semNode instanceof SymbolNode && 
+        if ( semNode instanceof SymbolNode &&
              ((SymbolNode)semNode).getName() == UniqueString.uniqueStringOf(symbName) ) {
 
           symbolVect.addElement(semNode);
@@ -216,12 +223,12 @@ public class Explorer {
 
     private void executeCommand() throws ExplorerQuitException {
 
-      // At this point icmd (firsToken) may be null, but icmd2 
+      // At this point icmd (firsToken) may be null, but icmd2
       // (second token) is always non-null
 
-      // Integers as commands start printing at the node having icmd == UID; 
+      // Integers as commands start printing at the node having icmd == UID;
       // non-integer commands do something else
-        
+
       if (icmd != null) { // first token is an integer
 
         printNode(icmd2.intValue());
@@ -229,7 +236,7 @@ public class Explorer {
       } else {      // the first token is not an integer
 
         // non-integer commands
-        if (firstToken.toLowerCase().startsWith("qu")) { 
+        if (firstToken.toLowerCase().startsWith("qu")) {
           // "quit" command
           throw new ExplorerQuitException();
 
@@ -237,7 +244,7 @@ public class Explorer {
 
           // Print the semantic graph, rooted in the Module Table
 	  // excluding built-ins and ops defined in module Naturals
-	  if (icmd2 != null) { 
+	  if (icmd2 != null) {
             mt.printExternalModuleTable(icmd2.intValue(),false);
           } else {
             mt.printExternalModuleTable(2, false);
@@ -247,7 +254,7 @@ public class Explorer {
 
           // Print the semantic graph, rooted in the Module Table
 	  // including builtins and ops defined in Naturals
-	  if (icmd2 != null) { 
+	  if (icmd2 != null) {
             mt.printExternalModuleTable(icmd2.intValue(),true);
           } else {
             mt.printExternalModuleTable(2,true);
@@ -311,7 +318,7 @@ public class Explorer {
       if (inputTokens.hasMoreElements()) {
         ntokens++;
         secondToken = (String)(inputTokens.nextElement());
-  
+
         // Try parsing second token as an Integer
         try {
           icmd2 = Integer.valueOf(secondToken);
@@ -347,7 +354,7 @@ public class Explorer {
       Iterator modules = mt.moduleHashTable.values().iterator();
       ExternalModuleTable.ExternalModuleTableEntry mte;
 
-      // For each entry ExternalModuleTableEntry mte in the ExternalModuleTable mt ... 
+      // For each entry ExternalModuleTableEntry mte in the ExternalModuleTable mt ...
       while (modules.hasNext()) {
         key = new Integer(-1);
 
@@ -367,7 +374,7 @@ public class Explorer {
             tla2sany.st.TreeNode stn = mte.getModuleNode().getTreeNode();
             stn.printST(0);    // Zero indentation level
 
-            System.out.println("\n*** End of concrete syntax tree for Module " 
+            System.out.println("\n*** End of concrete syntax tree for Module "
                                + key);
           } else {
             System.out.println("\n*** Null ExternalModuleTableEntry.  " +
@@ -394,7 +401,7 @@ public class Explorer {
 
       // Print initial user input prompt
       System.out.println("\n\n*** TLA+ semantic graph exploration tool v 1.0 (DRJ)");
-      System.out.print("\n>>");  
+      System.out.print("\n>>");
 
       // Main command interpreter loop
       while (getLine()) {

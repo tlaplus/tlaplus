@@ -22,6 +22,9 @@ import tla2sany.utilities.Vector;
 import util.UniqueString;
 import util.WrongInvocationException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 public class ModuleNode extends SymbolNode {
 
 /***************************************************************************
@@ -149,7 +152,7 @@ public class ModuleNode extends SymbolNode {
 *    an ExprNode[] array.                                                  *
 ***************************************************************************/
 
-  private Context      ctxt;     
+  private Context      ctxt;
     // The (flat) context with all names known in this module, including
     // builtin ops, and ops declared as CONSTANT or VARIABLE, ops
     // imported and made visible via EXTENDS, and ops created through
@@ -162,7 +165,7 @@ public class ModuleNode extends SymbolNode {
     // formal params, nor names bound by quantifier, CHOOSE, or recursive
     // function definition.
 
-  private ModuleNode[]  extendees    = new ModuleNode[0]; 
+  private ModuleNode[]  extendees    = new ModuleNode[0];
     // Modules directly extended by this one.
     /***********************************************************************
     * This is set by createExtendeeArray, which is called by               *
@@ -176,15 +179,15 @@ public class ModuleNode extends SymbolNode {
     * The set of all modules that are extended by this module--either      *
     * directly or indirectly.  Returned by getExtendModules                *
     ***********************************************************************/
-    
-  private OpDeclNode[] constantDecls = null; 
+
+  private OpDeclNode[] constantDecls = null;
     // CONSTANTs declared in this module
 
-  private OpDeclNode[] variableDecls = null; 
+  private OpDeclNode[] variableDecls = null;
     // VARIABLEs declared in this module
 
 
-  private Vector definitions         = new Vector(8); 
+  private Vector definitions         = new Vector(8);
     // AssumeNodes, internal ModuleNodes, OpDefNodes, and TheoremNodes, in
     // the exact order they were defined in this module
     /***********************************************************************
@@ -207,7 +210,7 @@ public class ModuleNode extends SymbolNode {
     *                                                                      *
     * It appears that this field is never used in SANY1.                   *
     ***********************************************************************/
-    
+
   Vector recursiveDecls = new Vector(8);
     /***********************************************************************
     * Contains the list of OpDefNode objects created by processing         *
@@ -228,18 +231,18 @@ public class ModuleNode extends SymbolNode {
     * "----- MODULE" token is at the outer level of an outer-level         *
     * module, and so on.                                                   *
     ***********************************************************************/
-    
-  private OpDefNode[]    opDefs         = null; 
+
+  private OpDefNode[]    opDefs         = null;
     // operators defined in this module, in order defined
-  private ThmOrAssumpDefNode[] thmOrAssDefs = null; 
+  private ThmOrAssumpDefNode[] thmOrAssDefs = null;
     // theorems or assumptions defined in this module, in order defined
-  private ModuleNode[]   modDefs        = null; 
+  private ModuleNode[]   modDefs        = null;
     // inner modules defined in this module
-  private InstanceNode[] instantiations = null; 
-    // top level module instantiations in this module  
-  private AssumeNode[]   assumptions    = null; 
+  private InstanceNode[] instantiations = null;
+    // top level module instantiations in this module
+  private AssumeNode[]   assumptions    = null;
     // assumptions in this module
-  private TheoremNode[]  theorems       = null; 
+  private TheoremNode[]  theorems       = null;
     // theorems in this module
   private LevelNode[] topLevel = null;
     /***********************************************************************
@@ -252,7 +255,7 @@ public class ModuleNode extends SymbolNode {
     * statement--that is, one not inside a proof.  It is set when          *
     * processing the INSTANCE statement in the Generator class.            *
     ***********************************************************************/
-  
+
   private boolean isStandard = false ;
     /***********************************************************************
     * True iff this module is a standard module.  It is set in the SANY    *
@@ -264,7 +267,7 @@ public class ModuleNode extends SymbolNode {
     * It is possible that this field is never set when the parser is       *
     * called by distributed TLC.                                           *
     ***********************************************************************/
-  
+
     /***********************************************************************
     * The "unnamed" in the comments above is meaningless, because the      *
     * semantic analysis in SANY1 never handled named theorems and          *
@@ -274,7 +277,7 @@ public class ModuleNode extends SymbolNode {
     * foo == body), a TheoremNode for body is added to theorems and an     *
     * OpDefNode for foo is added to opDefs.                                *
     ***********************************************************************/
-    
+
   /*************************************************************************
   * The next three vectors hold the ASSUMEs, THEOREMs, and top-level       *
   * INSTANCEs (ones not in LETs) declared in this module or inherited via  *
@@ -306,11 +309,11 @@ public class ModuleNode extends SymbolNode {
     * A vector of all OpDefNodes for operators declared in RECURSIVE       *
     * statements--even within LET expressions.                             *
     ***********************************************************************/
-    
+
   // Invoked only in Generator
   public ModuleNode(UniqueString us, Context ct, TreeNode stn) {
-    super(ModuleKind, stn, us); 
-    this.ctxt = ct; 
+    super(ModuleKind, stn, us);
+    this.ctxt = ct;
   }
 
   // Required for SymbolNode interface.
@@ -345,7 +348,7 @@ public class ModuleNode extends SymbolNode {
       extendees[i] = (ModuleNode)extendeeVec.elementAt(i);
     }
   }
-    
+
   /**
    * Returns vector of the OpDeclNode's in the current module
    * representing CONSTANT declarations, including operator constants
@@ -409,14 +412,14 @@ public class ModuleNode extends SymbolNode {
     if (thmOrAssDefs != null) return thmOrAssDefs;
     Vector contextVec = ctxt.getThmOrAssDefs();
     thmOrAssDefs = new ThmOrAssumpDefNode[contextVec.size()];
-    for (int i = 0, j = thmOrAssDefs.length - 1; 
+    for (int i = 0, j = thmOrAssDefs.length - 1;
                            i < thmOrAssDefs.length; i++) {
         thmOrAssDefs[j--] = (ThmOrAssumpDefNode) contextVec.elementAt(i);
     }
     return thmOrAssDefs;
-  }  
+  }
 
-  /** 
+  /**
    * Appends to vector of definitions in this module; should only be
    * called with AssumeNodes, ModuleNodes, OpDefNodes and TheoremNodes
    * as arguments.
@@ -441,7 +444,7 @@ public class ModuleNode extends SymbolNode {
     return instantiations;
   }
 
-  /** 
+  /**
    * Appends to vector of instantiations in this module
    */
   public final void appendInstance(InstanceNode s) {
@@ -538,7 +541,7 @@ public void setStandard(boolean isStandard) {
 	this.isStandard = isStandard;
 }
 
-final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st, 
+final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
                            ThmOrAssumpDefNode tadn) {
     /***********************************************************************
     * Create a new assumption node and add it to assumptionVec and         *
@@ -564,13 +567,13 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
   }
 
   final void addTopLevel(LevelNode nd) {
-    topLevelVec.addElement(nd) ;  
+    topLevelVec.addElement(nd) ;
    }
 
   final void copyAssumes(ModuleNode extendee) {
     for (int i = 0; i < extendee.assumptionVec.size(); i++) {
       AssumeNode assume = (AssumeNode)extendee.assumptionVec.elementAt(i);
-      assumptionVec.addElement(assume);    
+      assumptionVec.addElement(assume);
     }
   }
 
@@ -584,7 +587,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
   final void copyTopLevel(ModuleNode extendee) {
     for (int i = 0; i < extendee.topLevelVec.size(); i++) {
       LevelNode node = (LevelNode)extendee.topLevelVec.elementAt(i);
-      topLevelVec.addElement(node);    
+      topLevelVec.addElement(node);
     }
   }
 
@@ -614,56 +617,56 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
   } ;
 
 
-  /** 
+  /**
    * Just a stub method; one cannot resolve against a ModuleNode.
    * This method is here only to satisfy the SymbolNode interface.
    */
-  public final boolean match( OpApplNode sn, ModuleNode mn ) { return false; } 
+  public final boolean match( OpApplNode sn, ModuleNode mn ) { return false; }
 
   /**
-   * Returns an array of all the theorems that appear in this module,   
-   * along with their proofs (if they have them).  It includes theorems 
-   * obtained from extended and instantiated modules.  Note that if     
-   * module M has ASSUME statements A and B, then                       
-   *                                                                    
-   *    Foo(x, y) == INSTANCE M WITH ...                                
-   *                                                                    
-   * introduces, for each theorem T in module M, the theorem            
-   *                                                                    
-   *    ASSUME 1. LEVELDECL x                                           
-   *           2. LEVELDECL y                                           
-   *           3. A                                                     
-   *           4. B                                                     
-   *    PROVE  T                                                        
-   *                                                                    
-   * where LEVELDECL denotes some appropriate level declaration based   
-   * on the maximum levels of expressions that can be substituted       
-   * for the formal parameters x and y.   
+   * Returns an array of all the theorems that appear in this module,
+   * along with their proofs (if they have them).  It includes theorems
+   * obtained from extended and instantiated modules.  Note that if
+   * module M has ASSUME statements A and B, then
    *
-   * Not implemented -- see getTheorems()                              
+   *    Foo(x, y) == INSTANCE M WITH ...
+   *
+   * introduces, for each theorem T in module M, the theorem
+   *
+   *    ASSUME 1. LEVELDECL x
+   *           2. LEVELDECL y
+   *           3. A
+   *           4. B
+   *    PROVE  T
+   *
+   * where LEVELDECL denotes some appropriate level declaration based
+   * on the maximum levels of expressions that can be substituted
+   * for the formal parameters x and y.
+   *
+   * Not implemented -- see getTheorems()
    */
   public final TheoremNode[] getThms() { return null; }
 
   /**
-   * Returns an array of all the assumptions (the expressions in ASSUME 
-   * statements).  An assumption in an ordinary specification has the   
-   * form                                                               
-   *                                                                    
-   *    ASSUME A == expr                                                
-   *                                                                    
-   * where expr is a constant-level expression.  However, the grammar   
-   * allows assumptions such as                                         
-   *                                                                    
-   *    ASSUME A == ASSUME B                                            
-   *                PROVE  C                                            
-   *                                                                    
-   * Hence, an assumption must be represented by an AssumeProveNode.    
-   *                                                                    
-   * An assumption like this produces a ref in getAssumes() to the      
-   * AssumeProveNode that represents the assumption, and a ref in       
-   * getOpDefs to the OpDefNode that represents the definition of A. 
+   * Returns an array of all the assumptions (the expressions in ASSUME
+   * statements).  An assumption in an ordinary specification has the
+   * form
    *
-   * Not implemented -- see getAssumptions()   
+   *    ASSUME A == expr
+   *
+   * where expr is a constant-level expression.  However, the grammar
+   * allows assumptions such as
+   *
+   *    ASSUME A == ASSUME B
+   *                PROVE  C
+   *
+   * Hence, an assumption must be represented by an AssumeProveNode.
+   *
+   * An assumption like this produces a ref in getAssumes() to the
+   * AssumeProveNode that represents the assumption, and a ref in
+   * getOpDefs to the OpDefNode that represents the definition of A.
+   *
+   * Not implemented -- see getAssumptions()
    */
   public final AssumeProveNode[] getAssumes() { return null; }
 
@@ -676,7 +679,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 //  private SetOfLevelConstraints levelConstraints;
 //  private SetOfArgLevelConstraints argLevelConstraints;
 //  private HashSet argLevelParams;
-  
+
   public final boolean levelCheck(int itr) {
 
     if (levelChecked >= itr) return this.levelCorrect;
@@ -690,31 +693,31 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 // for (int i = 0; i < definitions.size(); i++) {
 // if (definitions.elementAt(i) instanceof OpDefNode) {
 // OpDefNode foo = (OpDefNode) definitions.elementAt(i) ;
-// System.out.println("definitions, module " + this.getName() + ": " 
+// System.out.println("definitions, module " + this.getName() + ": "
 //    + foo.getName() + " rec sec: " + foo.recursiveSection) ;
 // }
 // else
-// { System.out.println("definitions, module " + this.getName() + 
+// { System.out.println("definitions, module " + this.getName() +
 //    ": non-OpDefNode "   + ((SymbolNode) definitions.elementAt(i)).getName()) ;
 // }
 // };
-// 
+//
 // for (int i = 0; i < opDefsInRecursiveSection.size(); i++) {
-// System.out.println("opDefsInRecursiveSection, module " + this.getName() + ": " 
+// System.out.println("opDefsInRecursiveSection, module " + this.getName() + ": "
 //    + ((SymbolNode) opDefsInRecursiveSection.elementAt(i)).getName()) ;
 // };
 
 // XXXXXXX Testing
 // System.out.println("theoremVec: ") ;
 // for (int i = 0 ; i < theoremVec.size(); i++) {
-// System.out.println("Theorem at " + 
-//     ((SemanticNode) theoremVec.elementAt(i)).stn.getLocation().toString()); 
+// System.out.println("Theorem at " +
+//     ((SemanticNode) theoremVec.elementAt(i)).stn.getLocation().toString());
 // } ;
-// 
+//
 // System.out.println("instanceVec: ") ;
 // for (int i = 0 ; i < instanceVec.size(); i++) {
-// System.out.println("Instance at " + 
-//   ((SemanticNode) instanceVec.elementAt(i)).stn.getLocation().toString()); 
+// System.out.println("Instance at " +
+//   ((SemanticNode) instanceVec.elementAt(i)).stn.getLocation().toString());
 // } ;
 
 /***************************************************************************
@@ -730,7 +733,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       * opDefsInRecursiveSection vector.                                   *
       *********************************************************************/
       int curNodeIdx = firstInSectIdx ;
-      OpDefNode curNode = 
+      OpDefNode curNode =
           (OpDefNode) opDefsInRecursiveSection.elementAt(curNodeIdx);
       int curSection = curNode.recursiveSection ;
       boolean notDone = true ;
@@ -755,14 +758,14 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
          else {curNode.levelChecked = 0 ;};
         curNodeIdx++ ;
         if (curNodeIdx < opDefsInRecursiveSection.size()) {
-          curNode = (OpDefNode) 
+          curNode = (OpDefNode)
                         opDefsInRecursiveSection.elementAt(curNodeIdx);
           notDone = (curNode.recursiveSection == curSection) ;
          }
         else {notDone = false ;} ;
        }; // while (notDone)
 
-      
+
       /*********************************************************************
       * Do the level checking for each operator in the recursive section,  *
       * and set maxRecursiveLevel to the maximum level and                 *
@@ -789,13 +792,13 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
                errors.addError(curNode.getTreeNode().getLocation(),
                              "Argument " + (j+1) + " of recursive operator "
                                + curNode.getName() + " is primed") ;
-            } ; // if 
-           } ; // for j 
+            } ; // if
+           } ; // for j
           maxRecursiveLevel = Math.max(maxRecursiveLevel, curNode.level) ;
           recursiveLevelParams.addAll(curNode.levelParams) ;
           recursiveAllParams.addAll(curNode.allParams) ;
-         }; // if (curNode.inRecursive) 
-       }; // for i 
+         }; // if (curNode.inRecursive)
+       }; // for i
 
       /*********************************************************************
       * Reset the level, levelParams, allParams, and levelChecked fields   *
@@ -807,7 +810,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
         curNode.level = Math.max(curNode.level, maxRecursiveLevel) ;
         curNode.levelParams.addAll(recursiveLevelParams) ;
         curNode.allParams.addAll(recursiveAllParams) ;
-       }; // for i       
+       }; // for i
 
       /*********************************************************************
       * Perform the level checking again on the operators in the           *
@@ -817,10 +820,10 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
         curNode = (OpDefNode) opDefsInRecursiveSection.elementAt(i) ;
         if (curNode.inRecursive) {curNode.levelChecked = 1;} ;
         curNode.levelCheck(2) ;
-       }; // for i            
+       }; // for i
 
       firstInSectIdx = curNodeIdx ;
-     } // while (firstInSectIdx < ...) 
+     } // while (firstInSectIdx < ...)
 
     /***********************************************************************
     * We now do level checking as in SANY1 for everything in the module    *
@@ -842,16 +845,16 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       * to make any difference, so I've left it.                           *
       *********************************************************************/
     for (int i = 0; i < opDefs.length; i++) {
-// System.out.println("opDef, module " + this.getName() + ": "  
-// + opDefs[i].getName()); 
+// System.out.println("opDef, module " + this.getName() + ": "
+// + opDefs[i].getName());
       if (!opDefs[i].levelCheck(1)) {
         this.levelCorrect = false;
       }
     }
     thmOrAssDefs = this.getThmOrAssDefs();
     for (int i = 0; i < thmOrAssDefs.length; i++) {
-// System.out.println("opDef, module " + this.getName() + ": "  
-// + opDefs[i].getName()); 
+// System.out.println("opDef, module " + this.getName() + ": "
+// + opDefs[i].getName());
       if (!thmOrAssDefs[i].levelCheck(1)) {
         this.levelCorrect = false;
       }
@@ -888,7 +891,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 //      this.levelCorrect = false;
 //      }
 //    }
-  
+
     // Calculate level and Leibniz information.
 //    this.levelParams = new HashSet();
     OpDeclNode[] decls = this.getConstantDecls();
@@ -896,7 +899,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       this.levelParams.add(decls[i]);
       this.allParams.add(decls[i]);
     }
-    
+
 //    this.levelConstraints = new SetOfLevelConstraints();
 //    this.argLevelConstraints = new SetOfArgLevelConstraints();
 //    this.argLevelParams = new HashSet();
@@ -924,13 +927,13 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     for (int i = 0; i < tpLev.length; i++) {
       this.levelConstraints.putAll(tpLev[i].getLevelConstraints());
       this.argLevelConstraints.putAll(tpLev[i].getArgLevelConstraints());
-      this.argLevelParams.addAll(tpLev[i].getArgLevelParams());      
+      this.argLevelParams.addAll(tpLev[i].getArgLevelParams());
     }
 
 //    for (int i = 0; i < thms.length; i++) {
 //      this.levelConstraints.putAll(thms[i].getLevelConstraints());
 //      this.argLevelConstraints.putAll(thms[i].getArgLevelConstraints());
-//      this.argLevelParams.addAll(thms[i].getArgLevelParams());      
+//      this.argLevelParams.addAll(thms[i].getArgLevelParams());
 //    }
 //    for (int i = 0; i < insts.length; i++) {
 //      this.levelConstraints.putAll(insts[i].getLevelConstraints());
@@ -940,7 +943,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 //    for (int i = 0; i < assumps.length; i++) {
 //      this.levelConstraints.putAll(assumps[i].getLevelConstraints());
 //      this.argLevelConstraints.putAll(assumps[i].getArgLevelConstraints());
-//      this.argLevelParams.addAll(assumps[i].getArgLevelParams());      
+//      this.argLevelParams.addAll(assumps[i].getArgLevelParams());
 //    }
     return this.levelCorrect;
   }
@@ -948,16 +951,16 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
   public final int getLevel() {
       throw new WrongInvocationException("Internal Error: Should never call ModuleNode.getLevel()");
   }
-  
+
 
 //  public final HashSet getLevelParams() { return this.levelParams; }
-//  
-//  public final SetOfLevelConstraints getLevelConstraints() { 
-//    return this.levelConstraints; 
+//
+//  public final SetOfLevelConstraints getLevelConstraints() {
+//    return this.levelConstraints;
 //  }
 //
-//  public final SetOfArgLevelConstraints getArgLevelConstraints() { 
-//    return this.argLevelConstraints; 
+//  public final SetOfArgLevelConstraints getArgLevelConstraints() {
+//    return this.argLevelConstraints;
 //  }
 //
 //  public final HashSet getArgLevelParams() { return this.argLevelParams; }
@@ -970,7 +973,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
    * satisfied:
    *
    * 1. It contains no VARIABLE declarations (or other nonCONSTANT
-   *    declarations in an ASSUME). 
+   *    declarations in an ASSUME).
    *
    * 2. It contains no nonconstant operators such as prime ('),
    *    ENABLED, or [].
@@ -1016,11 +1019,11 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     return true;
   }
 
-  /**  
+  /**
    * walkGraph, levelDataToString, and toString methods to implement
    * ExploreNode interface
    */
-  public final String levelDataToString() { 
+  public final String levelDataToString() {
     return "LevelParams: "         + getLevelParams()         + "\n" +
            "LevelConstraints: "    + getLevelConstraints()    + "\n" +
            "ArgLevelConstraints: " + getArgLevelConstraints() + "\n" +
@@ -1032,7 +1035,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       if (children != null) {
           return children;
       }
-      children = 
+      children =
          new SemanticNode[this.opDefs.length + this.topLevel.length];
       int i;
       for (i = 0; i < this.opDefs.length; i++) {
@@ -1071,11 +1074,11 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     if (depth <= 0) return;
 
     System.out.print(
-      "*ModuleNode: " + name + "  " + super.toString(depth) 
-      + "  errors: " + (errors == null 
-                           ? "null" 
-                           : (errors.getNumErrors() == 0 
-                                 ? "none" 
+      "*ModuleNode: " + name + "  " + super.toString(depth)
+      + "  errors: " + (errors == null
+                           ? "null"
+                           : (errors.getNumErrors() == 0
+                                 ? "none"
                                  : "" +errors.getNumErrors())));
 
     Vector contextEntries = ctxt.getContextEntryStringVector(depth-1, b);
@@ -1088,12 +1091,12 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     if (depth <= 0) return "";
 
     String ret =
-      "\n*ModuleNode: " + name + "  " + super.toString(depth) + 
+      "\n*ModuleNode: " + name + "  " + super.toString(depth) +
       "  constant module: " + this.isConstant() +
-      "  errors: " + (errors == null 
-                        ? "null" 
-                        : (errors.getNumErrors() == 0 
-                              ? "none" 
+      "  errors: " + (errors == null
+                        ? "null"
+                        : (errors.getNumErrors() == 0
+                              ? "none"
                               : "" + errors.getNumErrors()));
 
     Vector contextEntries = ctxt.getContextEntryStringVector(depth-1,false);
@@ -1107,8 +1110,8 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
         }
       }
     }
-    ret += Strings.indent(2, 
-                          "\nAllExtended: " + 
+    ret += Strings.indent(2,
+                          "\nAllExtended: " +
                           LevelNode.HashSetToString(
                              this.getExtendedModuleSet()));
 
@@ -1139,6 +1142,58 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
         ret += Strings.indent(4, ((LevelNode) topLevelVec.elementAt(i)).toString(1));
         }
       };
+    return ret;
+  }
+
+  protected String getNodeRef() {
+    return "ModuleNodeRef";
+  }
+
+  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
+    Element ret = doc.createElement("ModuleNode");
+    ret.appendChild(appendText(doc, "uniquename", getName().toString()));
+
+    SemanticNode[] nodes = null;
+    // constants
+    Element constants = doc.createElement("constants");
+    nodes = getConstantDecls();
+    for (int i=0; i<nodes.length; i++) {
+      constants.appendChild(nodes[i].export(doc,context));
+    }
+    ret.appendChild(constants);
+
+    // variables
+    Element variables = doc.createElement("variables");
+    nodes = getVariableDecls();
+    for (int i=0; i<nodes.length; i++) {
+      variables.appendChild(nodes[i].export(doc,context));
+    }
+    ret.appendChild(variables);
+
+    //operators
+    Element operators = doc.createElement("definitions");
+    nodes = getOpDefs();
+    for (int i=0; i<nodes.length; i++) {
+      operators.appendChild(nodes[i].export(doc,context)); //was with true to expand operators
+    }
+    ret.appendChild(operators);
+
+    //assumptions
+    Element assums = doc.createElement("assumptions");
+    nodes = getAssumptions();
+    for (int i=0; i<nodes.length; i++) {
+      assums.appendChild(nodes[i].export(doc,context));
+    }
+    ret.appendChild(assums);
+
+    //theorems
+    Element thms = doc.createElement("theorems");
+    nodes = getTheorems();
+    for (int i=0; i<nodes.length; i++) {
+      thms.appendChild(nodes[i].export(doc,context));
+    }
+    ret.appendChild(thms);
+
     return ret;
   }
 

@@ -5,7 +5,7 @@
       version="1.0.0.qualifier"
       provider-name="Markus Alexander Kuppe"
       plugin="org.lamport.tla.toolbox.jclouds"
-      license-feature="org.lamport.tla.toolbox.feature.standalone"
+      license-feature="org.lamport.tla.toolbox.feature.branding"
       license-feature-version="1.0.0.qualifier">
 
    <description>

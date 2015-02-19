@@ -10,9 +10,13 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
-public class Subst implements LevelConstants, ASTConstants, ExploreNode {
+import tla2sany.xml.XMLExportable;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-  /** 
+public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExportable /* interface for exporting into XML */ {
+
+  /**
    * This class represents a single substitution of the form
    * op <- expr such as appears in module instantiations.
    */
@@ -140,7 +144,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode {
           * check it first, which is why we need the iteration number      *
           * argument of this method.                                       *
           *****************************************************************/
-	Integer mlevel = new Integer(subDef.getMaxLevel(alp.i)); 
+	Integer mlevel = new Integer(subDef.getMaxLevel(alp.i));
 	Iterator iter1 = paramSet(alp.param, subs).iterator();
 	while (iter1.hasNext()) {
 	  res.put(iter1.next(), mlevel);
@@ -222,7 +226,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode {
     }
     return res;
   }
-  
+
   public final String levelDataToString() { return "Dummy level string"; }
 
   public final void walkGraph(Hashtable semNodesTable) {
@@ -231,9 +235,16 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode {
   }
 
   public final String toString(int depth) {
-    return "\nOp: " + Strings.indent(2,(op!=null ? op.toString(depth-1) : 
-                                           "<null>" )) + 
+    return "\nOp: " + Strings.indent(2,(op!=null ? op.toString(depth-1) :
+                                           "<null>" )) +
            "\nExpr: " + Strings.indent(2,(expr!=null ? expr.toString(depth-1) : "<null>"));
   }
+
+  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+      Element ret = doc.createElement("Subst");
+      ret.appendChild(op.export(doc,context));
+      ret.appendChild(expr.export(doc,context));
+      return ret;
+    }
 
 }

@@ -1,5 +1,5 @@
 // Copyright (c) 2007 Microsoft Corporation.  All rights reserved.
-// last modified on Fri  3 July 2009 at 12:41:45 PST by lamport 
+// last modified on Fri  3 July 2009 at 12:41:45 PST by lamport
 package tla2sany.semantic;
 
 import java.util.Hashtable;
@@ -7,6 +7,9 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /***************************************************************************
 * This class represents a USE or HIDE statement.  It is of kind            *
@@ -20,7 +23,7 @@ public class UseOrHideNode extends LevelNode {
   * A use or hide has the syntax USE/HIDE [facts] [DEF[S] defs].  The      *
   * following two fields are the semantic nodes for the facts and defs.    *
   *************************************************************************/
-  public LevelNode[]  facts = null ;  
+  public LevelNode[]  facts = null ;
     /***********************************************************************
     * For each i, facts[i] will be either an ExprNode, a ModuleNode, or    *
     * an OpDefNode of type ModuleInstanceKind (with no parameters).  A     *
@@ -44,7 +47,7 @@ public class UseOrHideNode extends LevelNode {
     * temporarily constructed for making a LeafProofNode for a "BY ONLY"   *
     * proof.  However, the "ONLY BY" construct might be disabled.          *
     ***********************************************************************/
-    
+
   /**
    * If the UseOrHideNode is a proof step, this is the step number.  It
    * is made a UniqueString for consistency; there's no need to make
@@ -68,14 +71,14 @@ public class UseOrHideNode extends LevelNode {
   /*************************************************************************
   * The constructor.                                                       *
   *************************************************************************/
-  public UseOrHideNode(int kind, TreeNode stn, LevelNode[] theFacts, 
+  public UseOrHideNode(int kind, TreeNode stn, LevelNode[] theFacts,
                    SymbolNode[] theDefs, boolean only) {
     super(kind, stn) ;
     this.facts = theFacts ;
     this.defs = theDefs ;
     this.isOnly = only ;
   } ;
-  
+
   /*************************************************************************
   * The following method was added 4 Mar 2009 to check the restriction     *
   * that only the names of facts (and of modules) can be used as facts in  *
@@ -87,8 +90,8 @@ public class UseOrHideNode extends LevelNode {
   public void factCheck() {
     if (this.facts == null || this.getKind() == UseKind) { return; };
     for (int i = 0; i < this.facts.length; i++) {
-      if (    (this.facts[i].getKind() == OpApplKind) 
-           && (((OpApplNode) this.facts[i]).operator.getKind() 
+      if (    (this.facts[i].getKind() == OpApplKind)
+           && (((OpApplNode) this.facts[i]).operator.getKind()
                    != ThmOrAssumpDefKind)) {
           errors.addError(
              this.facts[i].stn.getLocation(),
@@ -98,7 +101,7 @@ public class UseOrHideNode extends LevelNode {
     } // for
   }
 
-  public boolean levelCheck(int iter) { 
+  public boolean levelCheck(int iter) {
     /***********************************************************************
     * Level checking is performed by level-checking the facts.  Since the  *
     * defs should be defined operators, they have already been level       *
@@ -135,12 +138,12 @@ public class UseOrHideNode extends LevelNode {
       }
       return res;
    }
-  
+
   public String toString(int depth) {
     if (depth <= 0) return "";
     String ret = "\n*UseOrHideNode:\n"
                   + super.toString(depth)
-                  + Strings.indent(2, "\nisOnly: " + this.isOnly) 
+                  + Strings.indent(2, "\nisOnly: " + this.isOnly)
                   + Strings.indent(2, "\nfacts:") ;
     for (int i = 0 ; i < this.facts.length; i++) {
         ret += Strings.indent(4, this.facts[i].toString(1)) ;
@@ -152,4 +155,29 @@ public class UseOrHideNode extends LevelNode {
     return ret;
    }
 
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+    //SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
+    Element e = doc.createElement("UseOrHideNode");
+
+    Element factse = doc.createElement("facts");
+    Element definitions = doc.createElement("defs");
+
+    for (int i=0; i<facts.length; i++) factse.appendChild(facts[i].export(doc,context));
+    for (int i=0; i<defs.length; i++) definitions.appendChild(defs[i].export(doc,context));
+
+    e.appendChild(factse);
+    e.appendChild(definitions);
+    if(isOnly) e.appendChild(doc.createElement("only"));
+    if(getKind() == HideKind) e.appendChild(doc.createElement("hide"));
+
+
+/*    if (stepName != null)
+      e.setAttribute("step_name", stepName.toString());
+*/
+
+    // at the end, we append the context of the symbols used in this node
+    //e.appendChild(context.getContextElement(doc));
+
+    return e;
+  }
 }

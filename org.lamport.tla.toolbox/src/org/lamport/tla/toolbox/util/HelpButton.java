@@ -2,23 +2,16 @@ package org.lamport.tla.toolbox.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.eclipse.swt.*;
-import org.eclipse.swt.browser.*;
-import org.eclipse.swt.custom.*;
-import org.eclipse.swt.layout.*;
-import org.eclipse.swt.widgets.*;
-
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -33,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
@@ -41,7 +35,6 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 //import org.lamport.tla.toolbox.editor.basic.handlers.DecomposeProofHandler;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
 
 /**
  * This class implements a help button that takes the user to a specified location
@@ -128,21 +121,31 @@ public class HelpButton {
                 fileName = fileName.substring(0, idx) ;
             }
             Bundle bundle = Platform.getBundle("org.lamport.tla.toolbox.doc");
-            URL fileURL = bundle.getEntry("html/" + fileName);
-            File theFile = null;
-            try {
-                theFile = new File(FileLocator.resolve(fileURL).toURI());
-            } catch (URISyntaxException e1) {
-                e1.printStackTrace();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-            if (theFile != null) {
-              url = theFile.getPath() + suffix;
-            } ;
-            if ((theFile == null) || (url == null)) {
+            /* 
+             * The bundle .tla.toolbox does not explicitly depend on .toolbox.doc.
+             * Thus, it's possible that the application is running without documentation
+             * which results in the variable bundle being null.
+             */
+            if (bundle == null) {
                 url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file ;
                 System.out.println("Could not find local copy of help file.");
+            } else {
+            	URL fileURL = bundle.getEntry("html/" + fileName);
+            	File theFile = null;
+            	try {
+            		theFile = new File(FileLocator.resolve(fileURL).toURI());
+            	} catch (URISyntaxException e1) {
+            		e1.printStackTrace();
+            	} catch (IOException e1) {
+            		e1.printStackTrace();
+            	}
+            	if (theFile != null) {
+            		url = theFile.getPath() + suffix;
+            	} ;
+            	if ((theFile == null) || (url == null)) {
+            		url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file ;
+            		System.out.println("Could not find local copy of help file.");
+            	}
             }
         }
         

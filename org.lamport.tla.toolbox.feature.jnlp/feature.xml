@@ -5,7 +5,7 @@
       version="1.0.0.qualifier"
       provider-name="Leslie Lamport, Markus Alexander Kuppe"
       plugin="org.lamport.tla.toolbox.jnlp"
-      license-feature="org.lamport.tla.toolbox.feature.standalone"
+      license-feature="org.lamport.tla.toolbox.feature.branding"
       license-feature-version="1.0.0.qualifier">
 
    <description>

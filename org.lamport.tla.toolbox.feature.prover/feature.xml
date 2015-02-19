@@ -5,7 +5,7 @@
       version="1.0.0.qualifier"
       provider-name="Daniel Ricketts"
       plugin="org.lamport.tla.toolbox.tool.prover"
-      license-feature="org.lamport.tla.toolbox.feature.standalone"
+      license-feature="org.lamport.tla.toolbox.feature.branding"
       license-feature-version="1.0.0.qualifier">
 
    <description>

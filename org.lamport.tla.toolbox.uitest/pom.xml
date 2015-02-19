@@ -18,7 +18,15 @@
   		<dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.6.11</version>
+            <version>1.8.2</version>
+        </dependency>
+        <!-- Down below we manually install the standalone feature. Maven/Tycho isn't
+        	 smart enough to figure this out by itself. Thus, we have to tell Tycho
+        	 explicitly. -->
+  		<dependency>
+            <groupId>tlatoolbox</groupId>
+            <artifactId>org.lamport.tla.toolbox.feature.standalone</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
    	</dependencies>
 
@@ -40,7 +48,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.3.1</version>
+                <version>1.7</version>
                 <configuration>
                     <ajdtBuildDefFile>build.ajproperties</ajdtBuildDefFile>
                 </configuration>
@@ -95,7 +103,19 @@
 							<artifactId>org.lamport.tla.toolbox.product.standalone</artifactId>
 							<version>0.0.0</version>
 						</dependency>
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.eclipse.equinox.event</artifactId>
+							<version>0.0.0</version>
+						</dependency>
 					</dependencies>
+					<bundleStartLevel>
+						<bundle>
+							<id>org.eclipse.equinox.event</id>
+							<level>4</level>
+							<autoStart>true</autoStart>
+						</bundle>
+					</bundleStartLevel>
 
 				</configuration>
 			</plugin>

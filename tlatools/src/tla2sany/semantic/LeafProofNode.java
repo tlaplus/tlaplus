@@ -6,6 +6,9 @@ import java.util.Hashtable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /***************************************************************************
 * This class represents a leaf proof.  It is of kind LeafProffKind         *
 ***************************************************************************/
@@ -23,7 +26,7 @@ public class LeafProofNode extends ProofNode {
   * The following two fields are the semantic nodes for the facts and      *
   * defs.                                                                  *
   *************************************************************************/
-  LevelNode[]  facts = null ;  
+  LevelNode[]  facts = null ;
     /***********************************************************************
     * For each i, facts[i] will be either an ExprNode, a ModuleNode, or    *
     * an OpDefNode of type ModuleInstanceKind (with no parameters).  A     *
@@ -45,11 +48,11 @@ public class LeafProofNode extends ProofNode {
     /***********************************************************************
     * True iff this is a "BY ONLY" proof.                                  *
     ***********************************************************************/
-    
+
   /*************************************************************************
   * The constructor.                                                       *
   *************************************************************************/
-  public LeafProofNode(TreeNode stn, LevelNode[] theFacts, 
+  public LeafProofNode(TreeNode stn, LevelNode[] theFacts,
                    SymbolNode[] theDefs, boolean omit, boolean only) {
     super(LeafProofKind, stn) ;
     this.facts   = theFacts ;
@@ -66,8 +69,8 @@ public class LeafProofNode extends ProofNode {
   public SymbolNode[] getDefs() {return defs ;} ;
   public boolean getOmitted() {return omitted ;} ;
   public boolean getOnlyFlag() {return isOnly ;} ;
-  
-  public boolean levelCheck(int iter) { 
+
+  public boolean levelCheck(int iter) {
     /***********************************************************************
     * Level checking is performed by level-checking the facts.  Since the  *
     * defs should be defined operators, they have already been level       *
@@ -76,7 +79,7 @@ public class LeafProofNode extends ProofNode {
     if (this.levelChecked >= iter) return this.levelCorrect;
     return this.levelCheckSubnodes(iter, facts) ;
    }
-  
+
   /*
    * The children are the facts.
    * @see tla2sany.semantic.SemanticNode#getChildren()
@@ -121,5 +124,34 @@ public class LeafProofNode extends ProofNode {
             + Strings.indent(2, "\nonlyFlag: " + this.isOnly);
     return ret;
    }
+
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+    Element e;
+
+    if (getOmitted()) {
+      e = doc.createElement("omitted");
+    }
+    else if (getFacts().length == 0 && getDefs().length == 0) {
+      e = doc.createElement("obvious");
+    }
+    else {
+      //SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
+      e = doc.createElement("by");
+
+      Element factse = doc.createElement("facts");
+      Element definitions = doc.createElement("defs");
+
+      for (int i=0; i<facts.length; i++) factse.appendChild(facts[i].export(doc,context));
+      for (int i=0; i<defs.length; i++) definitions.appendChild(defs[i].export(doc,context));
+
+      e.appendChild(factse);
+      e.appendChild(definitions);
+      if(getOnlyFlag()) e.appendChild(doc.createElement("only"));
+      // at the end, we append the context of the symbols used in this node
+      //e.appendChild(context.getContextElement(doc));
+    }
+
+    return e;
+  }
 
 }

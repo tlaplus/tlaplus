@@ -654,8 +654,22 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         // number of workers
         int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
 
-        // distributed launch
-        String cloud = config.getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        // distributed launch (legacy launch configurations pre-dating TLC distributed functionality 
+        // do not have the LAUNCH_DISTRIBUTED attribute. Then, it obviously defaults to distribution turned off.
+        // Trying to lookup a non-existing attribute would cause a runtime exception.)
+        // Then it could also be true or false. The legacy flag showing if "ad hoc" distribution is turned
+        // on or not. Simply map it to "ad hoc" or "off".
+        String cloud = "off";
+        if (config.hasAttribute(LAUNCH_DISTRIBUTED)) {
+        	try {
+        		cloud = config.getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        	} catch (CoreException e) {
+        		boolean distributed = config.getAttribute(LAUNCH_DISTRIBUTED, false);
+        		if (distributed) {
+        			cloud = "ad hoc";
+        		}
+        	}
+        }
         
         // TLC job
         Job job = null;

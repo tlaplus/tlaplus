@@ -69,32 +69,19 @@
           <products>
             <product>
               <id>org.lamport.tla.toolbox.product.product</id>
-              <zipFileName>TLAToolbox</zipFileName>
-              <includeVersion>true</includeVersion>
+              <!-- archiveFileName sets the prefix of the resulting toolbox
+                   zip files. It also has to contain the version because the
+                   Tycho developers choose adherence to administrative processes
+                   over features. The version segment has to be manually increment
+                   upon a release.  
+                   see https://bugs.eclipse.org/bugs/show_bug.cgi?id=357503#c22 -->
+              <archiveFileName>TLAToolbox-1.4.8</archiveFileName>
               <rootFolder>toolbox</rootFolder>
             </product>
           </products>
         </configuration>
       </plugin>
-      
-		<!-- Eclispe ini patcher repo (remove when bug TYCHO-595 fixed) -->
-		<!-- here and in tla2-inria/pom.xml -->
-		<!-- see https://tla.msr-inria.inria.fr/build/job/eclipse-ini-patcher/ -->
-		<plugin>
-			<groupId>com.xored.tycho</groupId>
-			<artifactId>eclipse-ini-patcher</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
-			<executions>
-				<execution>
-					<id>materialize-products</id>
-					<phase>package</phase>
-					<goals>
-						<goal>patch-ini-file</goal>
-					</goals>
-				</execution>
-			</executions>
-	</plugin>
-      
+
     </plugins>
   </build>
 </project>
