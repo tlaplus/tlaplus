@@ -103,8 +103,12 @@ public class XMLExporter {
     String[] paths = new String[pathsLs.size()];
     for (int i=0; i<paths.length; i++) paths[i] = (String)pathsLs.get(i);
 
-    String[] tlas = new String[args.length - lastarg];
-    for (int i=0; i<args.length-lastarg; i++) tlas[i] = args[lastarg++];
+    int tla_args = args.length - lastarg;
+    String[] tlas = new String[tla_args];
+    for (int i=0; i< tla_args; i++) {
+        //ToolIO.out.println("Argument "+i+"/"+tla_args+" = "+args[lastarg]);
+        tlas[i] = args[lastarg++];
+    }
 
     FilenameToStream fts = new SimpleFilenameToStream(paths);
 
@@ -128,6 +132,7 @@ public class XMLExporter {
       // file Filename leaving the result (normally) in Specification
       // spec.
       // check if file exists
+      //ToolIO.out.println("Processing: "+tlas[i]+"\n"+(tlas[i] == null));
       if (FileUtil.createNamedInputStream(tlas[i], specs[i].getResolver()) != null)
       {
           try {

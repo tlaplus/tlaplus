@@ -35,6 +35,7 @@
                 <xs:group ref="OpDefNode"/>
                 <xs:element ref="TheoremNode"/>
                 <xs:element ref="AssumeNode"/>
+                <xs:element ref="APSubstInNode"/>
               </xs:choice>
             </xs:sequence>
           </xs:complexType>

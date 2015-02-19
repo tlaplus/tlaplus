@@ -642,6 +642,11 @@ public class ThmOrAssumpDefNode extends SymbolNode
   protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
     // since this element doesnt seem to contain any additional information
     // over theorems or assumptions, we just refer to them
-    return thmOrAssump.getLevelElement(doc,context);
+      /*TODO: for now we just return an invalid element if thmOrAssump is null. if there are some valid calls with null after
+              bug-fixing, change the Dummy solution */
+    if (thmOrAssump != null) return thmOrAssump.getLevelElement(doc,context);
+    if (body != null) return body.getLevelElement(doc, context);
+
+    return doc.createElement("DummyThmOrAssumpDefNode"); //if the body element is null, export something invalid
   }
 }
