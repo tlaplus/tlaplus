@@ -209,7 +209,13 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static ILaunchConfiguration getModelByName(String modelName)
     {
-        return getModelByName(ToolboxHandle.getCurrentSpec().getProject(), modelName);
+    	Assert.isNotNull(modelName);
+        final Spec currentSpec = ToolboxHandle.getCurrentSpec();
+        if (currentSpec != null) {
+        	return getModelByName(currentSpec.getProject(), modelName);
+        } else {
+        	throw new NullPointerException();
+        }
     }
 
     /**
