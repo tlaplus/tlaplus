@@ -77,7 +77,7 @@ public class StringHelper
         return str.substring(position, str.length());
         
         // Alternatively
-        //return s.replaceAll("\\s+$", "");
+        //return s.replaceAll("^\\s+", "");
     }
     
     /**
