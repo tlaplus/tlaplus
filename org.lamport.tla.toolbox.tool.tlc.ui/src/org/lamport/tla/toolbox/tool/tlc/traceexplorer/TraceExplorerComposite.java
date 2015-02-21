@@ -3,7 +3,11 @@ package org.lamport.tla.toolbox.tool.tlc.traceexplorer;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -439,7 +443,7 @@ public class TraceExplorerComposite
             // save the launch configuration
             ILaunchConfiguration modelConfig = saveInput();
 
-            ILaunchConfigurationWorkingCopy workingCopy = modelConfig.getWorkingCopy();
+            final ILaunchConfigurationWorkingCopy workingCopy = modelConfig.getWorkingCopy();
 
             List trace = view.getTrace();
 
@@ -447,8 +451,19 @@ public class TraceExplorerComposite
             if (trace.size() > 0)
             {
                 // TraceExplorerHelper.serializeTrace(modelConfig);
-                workingCopy.doSave().launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, null, true);
-
+            	
+            	// Wrap the launch in a WorkspaceRunnable to guarantee that the
+            	// operation is executed atomically from the workspace perspective.
+            	// If the runnable would be omitted, the launch can become interleaved with
+            	// workspace (autobuild) jobs triggered by IResourceChange events.
+            	// The Toolbox's IResourceChangeListeners reacting to resource change events
+            	// run the SANY parser and SANY does not support concurrent execution.
+            	final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+            	workspace.run(new IWorkspaceRunnable() {
+					public void run(IProgressMonitor monitor) throws CoreException {
+						workingCopy.doSave().launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, monitor, true);
+					}
+				}, new NullProgressMonitor());
             }
 
         } catch (CoreException e)
