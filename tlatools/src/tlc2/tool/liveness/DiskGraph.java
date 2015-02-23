@@ -10,6 +10,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -79,8 +82,11 @@ public class DiskGraph {
 	private boolean hasTableau;
 	private GraphNode[] gnodes;
 
-	public DiskGraph(String metadir, int soln, boolean hasTableau) throws IOException {
+	private final GraphStats outDegreeGraphStats;
+
+	public DiskGraph(String metadir, int soln, boolean hasTableau, GraphStats graphStats) throws IOException {
 		this.metadir = metadir;
+		this.outDegreeGraphStats = graphStats;
 		this.chkptName = metadir + FileUtil.separator + "dgraph_" + soln;
 		String fnameForNodes = metadir + FileUtil.separator + "nodes_" + soln;
 		this.nodeRAF = new BufferedRandomAccessFile(fnameForNodes, "rw");
@@ -136,6 +142,8 @@ public class DiskGraph {
 	 * node in the node file.
 	 */
 	public final long addNode(GraphNode node) throws IOException {
+		outDegreeGraphStats.addNodeEdgeCount(node.succSize());
+		
 		long ptr = this.nodeRAF.getFilePointer();
 
 		// Write node to nodePtrTbl:
@@ -593,4 +601,128 @@ public class DiskGraph {
 		this.nodePtrRAF.seek(nodePtrRAFPos);
 	}
 
+	// This method is not called anywhere because *out degree* graph statistics are collected
+	// during liveness checking with negligible overhead (see DiskGraph#addNode).
+	public void calculateOutDegreeDiskGraph(final GraphStats outDegreeGraphStats) throws IOException {
+		try {
+			this.nodePtrRAF.flush();
+			this.nodeRAF.flush();
+			this.nodePtrRAF.seek(0); // rewind to start
+			long len = this.nodePtrRAF.length();
+			while (this.nodePtrRAF.getFilePointer() < len) {
+				// skip fingerprint a tableaux id
+				nodePtrRAF.seek(nodePtrRAF.getFilePointer() + 8 + 4);
+
+				final long ptr = nodePtrRAF.readLongNat();
+				nodeRAF.seek(ptr);
+				int outArcCount = nodeRAF.readNat() / 3;
+				outDegreeGraphStats.addNodeEdgeCount(outArcCount);
+			}
+		} catch (IOException e) {
+			MP.printError(EC.SYSTEM_DISKGRAPH_ACCESS, e);
+			System.exit(1);
+		}
+	}
+	
+	public void calculateInDegreeDiskGraph(final GraphStats inDegreeGraphStats) throws IOException {
+		//TODO This only supports 2^31 map elements and thus less of what TLC can handle. A
+		// longlong FPSet with a user defined mask could be used to store 2^63.
+		final Map<NodeRAFRecord, Integer> nodes2count = new HashMap<NodeRAFRecord, Integer>();
+		
+		// One-pass (start to end) through the nodeRAF file reading all "records".
+		// A record is a combination of a state's fingerprint and a tableaux id.
+		// Together they uniquely identify a vertex in the graph.
+		// The nodeRAF is the secondary disk storage file of the disk graph. It
+		// contains vertices that are successors of a vertex stored in the nodePtrRAF.
+		// The nodePtrRAF is the primary disk storage file with a fingerprint & 
+		// tableaux id and a pointer to the successor nodes in nodeRAF. While 
+		// a node appears only once in the nodePtrRAF, the same node is potentially
+		// listed in nodeRAF multiple times.
+		try {
+			this.nodeRAF.flush();
+			this.nodeRAF.seek(0); // rewind to start
+			long len = this.nodeRAF.length();
+			while (this.nodeRAF.getFilePointer() < len) {
+				// Get the next cnt nodes from disk:
+				int cnt = nodeRAF.readNat() / 3;
+				// for each node increment the in arc counter
+				for (int i = 0; i < cnt; i++) {
+					NodeRAFRecord record = new NodeRAFRecord();
+					record.read(this.nodeRAF);
+					Integer inArcCounter = nodes2count.get(record);
+					if (inArcCounter == null) {
+						inArcCounter = new Integer(0);
+					}
+					nodes2count.put(record, inArcCounter + 1);
+				}
+				// Skip checks
+				// (we don't care for the checks) 
+				int checksLen = nodeRAF.readNat();
+				nodeRAF.seek(nodeRAF.getFilePointer() + (checksLen * 8)); // 8 bytes is long
+			}
+		} catch (IOException e) {
+			MP.printError(EC.SYSTEM_DISKGRAPH_ACCESS, e);
+			System.exit(1);
+		}
+		
+		final Collection<Integer> values = nodes2count.values();
+		for (Integer integer : values) {
+			inDegreeGraphStats.addNodeEdgeCount(integer);
+		}
+	}
+	
+	/**
+	 * A {@link NodeRAFRecord} is the technical representation of each
+	 * record in the NodeRAF file
+	 */
+	private class NodeRAFRecord {
+
+		private long fp;
+		private int tidx;
+
+		public void read(BufferedRandomAccessFile nodeRAF) throws IOException {
+			long high = nodeRAF.readInt();
+			long low = nodeRAF.readInt();
+			fp = (high << 32) | (low & 0xFFFFFFFFL);
+			
+			tidx = nodeRAF.readInt();
+		}
+
+		@Override
+		public String toString() {
+			return "NodeRAFRecord [fp=" + fp + ", tidx=" + tidx + "]";
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getOuterType().hashCode();
+			result = prime * result + (int) (fp ^ (fp >>> 32));
+			result = prime * result + tidx;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			NodeRAFRecord other = (NodeRAFRecord) obj;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
+			if (fp != other.fp)
+				return false;
+			if (tidx != other.tidx)
+				return false;
+			return true;
+		}
+
+		private DiskGraph getOuterType() {
+			return DiskGraph.this;
+		}
+	}
 }

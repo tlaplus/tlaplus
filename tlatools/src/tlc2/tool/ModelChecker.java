@@ -16,6 +16,8 @@ import tlc2.output.MP;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
+import tlc2.tool.liveness.GraphStats;
+import tlc2.tool.liveness.GraphStats.Direction;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
@@ -238,7 +240,17 @@ public class ModelChecker extends AbstractChecker
             MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
         } finally
         {
-            this.printSummary(success, startTime);
+        	
+        	if (this.checkLiveness) {
+        		// Reclaim memory for in-degree calculation
+        		System.gc();
+
+        		final GraphStats inDegree = new GraphStats(Direction.IN);
+        		LiveCheck.calculateInDegreeDiskGraphs(inDegree);
+        		MP.printStats(inDegree, LiveCheck.outDegreeGraphStats);
+        	}
+
+			this.printSummary(success, startTime);
             this.cleanup(success);
         }
 
@@ -701,8 +713,8 @@ public class ModelChecker extends AbstractChecker
             LiveCheck.close();
         if (this.allStateWriter != null)
             this.allStateWriter.close();
-        FileUtil.deleteDir(this.metadir, success);
-    }
+			FileUtil.deleteDir(this.metadir, success);
+		}
 
     public final void printSummary(boolean success, final long startTime) throws IOException
     {

@@ -13,6 +13,7 @@ import tlc2.tool.Action;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
+import tlc2.tool.liveness.GraphStats.Direction;
 import tlc2.util.LongVec;
 
 public class LiveCheck {
@@ -22,7 +23,8 @@ public class LiveCheck {
 	protected static String metadir;
 	protected static OrderOfSolution[] solutions;
 	protected static DiskGraph[] dgraphs;
-
+	public static GraphStats outDegreeGraphStats;
+	
 	// SZ: fields not read localy
 	// private static OrderOfSolution currentOOS;
 	// private static DiskGraph currentDG;
@@ -34,9 +36,10 @@ public class LiveCheck {
 		metadir = mdir;
 		solutions = Liveness.processLiveness(myTool, metadir);
 		dgraphs = new DiskGraph[solutions.length];
+		outDegreeGraphStats = new GraphStats(Direction.OUT);
 		for (int soln = 0; soln < solutions.length; soln++) {
 			boolean hasTableau = (solutions[soln].tableau != null);
-			dgraphs[soln] = new DiskGraph(metadir, soln, hasTableau);
+			dgraphs[soln] = new DiskGraph(metadir, soln, hasTableau, outDegreeGraphStats);
 			// System.err.println(solutions[soln]);
 		}
 	}
@@ -312,4 +315,17 @@ public class LiveCheck {
 		}
 	}
 
+	public static void calculateInDegreeDiskGraphs(final GraphStats aGraphStats) throws IOException {
+		for (int i = 0; i < dgraphs.length; i++) {
+			final DiskGraph diskGraph = dgraphs[i];
+			diskGraph.calculateInDegreeDiskGraph(aGraphStats);
+		}
+	}
+	
+	public static void calculateOutDegreeDiskGraphs(final GraphStats aGraphStats) throws IOException {
+		for (int i = 0; i < dgraphs.length; i++) {
+			final DiskGraph diskGraph = dgraphs[i];
+			diskGraph.calculateOutDegreeDiskGraph(aGraphStats);
+		}
+	}
 }

@@ -10,6 +10,8 @@ import java.util.Date;
 import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
+import tlc2.tool.liveness.GraphStats;
+import tlc2.tool.liveness.SCCStats;
 import util.DebugPrinter;
 import util.Set;
 import util.ToolIO;
@@ -1361,6 +1363,19 @@ public class MP
             e.printStackTrace(ToolIO.out);
         }
         DebugPrinter.print("leaving printWarning(int, String[])"); //$NON-NLS-1$
+    }
+    
+    public static void printStats(final GraphStats inDegree, final GraphStats outDegree) {
+    	// Out degree
+        ToolIO.out.println(outDegree);
+        
+        // In Degree
+		ToolIO.out.println(inDegree);
+
+		// SCC size and count
+		ToolIO.out.println(SCCStats.print());
+		ToolIO.out.println(String.format("%s SCC%s found during liveness checking.",
+				SCCStats.getAmountOfSCCs(), SCCStats.getAmountOfSCCs() > 1 ? "s" : ""));
     }
 
     /**
