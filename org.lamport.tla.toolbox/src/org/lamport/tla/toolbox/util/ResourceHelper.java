@@ -2284,4 +2284,17 @@ public class ResourceHelper
 		}
 		return true;
 	}
+
+	/**
+	 * Projects can have linked files (resources more generally). Linked resources a listed in the
+	 * project's .project metadata.
+	 * 
+	 * @param project The project of which the given file (name) is assumed to be a linked file
+	 * @param name The name of the link
+	 * @return true iff the given name is indeed a *linked* file of the given project.
+	 */
+	public static boolean isLinkedFile(IProject project, String name) throws CoreException {
+        final IFile file = project.getFile(new Path(new Path(name).lastSegment()));
+        return file.isLinked(IResource.CHECK_ANCESTORS);
+	}
 }

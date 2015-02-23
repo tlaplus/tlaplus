@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -64,6 +65,7 @@ import tla2sany.semantic.OpDeclNode;
  * @version $Id$
  * Modified on 10 Sep 2009 to add No Spec TLC launch option.
  */
+@SuppressWarnings("restriction")
 public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implements IModelConfigurationConstants,
         IModelConfigurationDefaults
 {
@@ -285,18 +287,44 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             for (int i = 0; i < extendedModules.size(); i++)
             {
                 String module = (String) extendedModules.get(i);
-                // only take care of user modules
-                if (ToolboxHandle.isUserModule(module))
+				// Only take care of user modules and actually *linked* files
+				// (not files defined via TLA_LIBRARY_PATH)
+                if (ToolboxHandle.isUserModule(module) && ResourceHelper.isLinkedFile(project, module))
                 {
                     moduleFile = ResourceHelper.getLinkedFile(project, module, false);
                     if (moduleFile != null)
                     {
+                    	try {
                         moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
                                 | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
+                    	} catch (ResourceException re) {
+                    		// Trying to copy the file to the targetFolderPath produces an exception.
+                    		// The most common cause is a dangling linked file in the .project metadata 
+                    		// of the Toolbox project. Usually, a dangling link is the effect of copying
+                    		// a single Toolbox project from one machine to the other missing modules 
+                    		// extended (EXTENDS in TLA+) by a spec. The missing modules are part of
+                    		// another spec which does not exist on the current machine.
+                    		// We log the full exception to the Toolbox's error log (not directly visible
+                    		// to the user) and raise an error dialog (see org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor).
+                    		// We hint at how this problem can be addressed most of the time.
+							TLCActivator.logError(
+									String.format(
+											"Error copying file %s to %s. Please correct the path to %s. \n(The first place to check is in the %s/.project file. Restart the Toolbox when you change the .project file.)",
+											moduleFile.getLocation(), targetFolderPath, moduleFile.getName(),
+											modelFolder.getRawLocation().removeLastSegments(1)), re);
+							throw new CoreException(
+									new Status(
+											Status.ERROR,
+											"org.lamport.tlc.toolbox.tool.tlc",
+											String.format(
+													"Error copying file %s to %s. Please correct the path to %s. \n(The first place to check is in the %s/.project file. Restart the Toolbox when you change the .project file.)",
+													moduleFile.getLocation(), targetFolderPath, moduleFile.getName(),
+													modelFolder.getRawLocation().removeLastSegments(1))));
                     }
 
                     // TODO check the existence of copied files
                 }
+            }
             }
 
             // get the scheduling rule
