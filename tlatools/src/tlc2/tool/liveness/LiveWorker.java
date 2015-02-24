@@ -153,8 +153,10 @@ public class LiveWorker extends IdThread {
 				if (curLoc < 0) {
 					final long curLink = this.dg.getLink(curState, curTidx);
 					if (curLink == lowLink) {
-						// Found an SSC, maintain statistics
-						SCCStats.addSCCWithSize(comStack.size());
+						// Found a non-trivial SSC, maintain statistics.
+						// Div 5, because a logical node record in the 
+						// comStack has a length of five (ints).
+						SCCStats.addSCCWithSize(comStack.size() / 5);
 						// The states on the comStack from top to curState form
 						// a SCC.
 						// Check for "bad" cycle.
