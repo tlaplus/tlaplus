@@ -235,19 +235,32 @@ public class LiveWorker extends IdThread {
 	 * satisfiable, this pem contains a counterexample, and this method then
 	 * calls printErrorTrace to print an error trace and returns false.
 	 */
-	public boolean checkComponent(long state, int tidx, MemIntStack comStack) throws IOException {
+	public boolean checkComponent(final long state, final int tidx, final MemIntStack comStack) throws IOException {
+//		final int comStackSize = comStack.size();
+//		Assert.check(comStackSize > 0, EC.GENERAL);
+		
 		long state1 = comStack.popLong();
 		int tidx1 = comStack.popInt();
 		long loc1 = comStack.popLong();
 
-		// Simply return if the component is trivial:
+		// Simply return if the component is trivial: It is trivial iff the component
+		// has a single node AND this node is *no* stuttering node.
 		if (state1 == state && tidx1 == tidx && !isStuttering(state1, tidx1, loc1)) {
 			this.dg.setMaxLink(state, tidx);
 			return true;
 		}
 
 		// Now, we know we are working on a non-trivial component
-		// We first put all the nodes in this component in a hashtable:
+		// We first put all the nodes in this component in a hashtable. 
+		// The nodes in this component do not correspond to
+		// all elements on the comStack though. Only the nodes up to
+		// the given one are copied to NodePtrTable.
+		//
+		// The NodePtrTable would ideally be initialized with the number of
+		// nodes in the comStack. This is the upper limit of elements going
+		// to be kept in com. However, it would destroy NodePtrTable's
+		// collision handling. NodePtrTable uses open addressing (see
+		// http://en.wikipedia.org/wiki/Open_addressing).
 		NodePtrTable com = new NodePtrTable(128, true);
 		while (true) {
 			// Add <state1, tidx1> into com:
@@ -263,21 +276,30 @@ public class LiveWorker extends IdThread {
 			tidx1 = comStack.popInt();
 			loc1 = comStack.popLong();
 		}
+		// Just parameter node in com OR com subset of comStack
+//		Assert.check(com.size() <= (comStackSize / 5), EC.GENERAL);
 
 		// Check this component:
-		int slen = this.oos.checkState.length;
-		int alen = this.oos.checkAction.length;
-		int aeslen = this.pem.AEState.length;
-		int aealen = this.pem.AEAction.length;
-		int plen = this.oos.promises.length;
-		boolean[] AEStateRes = new boolean[aeslen];
-		boolean[] AEActionRes = new boolean[aealen];
-		boolean[] promiseRes = new boolean[plen];
+		final int slen = this.oos.checkState.length;
+		final int alen = this.oos.checkAction.length;
+		final int aeslen = this.pem.AEState.length;
+		final int aealen = this.pem.AEAction.length;
+		final int plen = this.oos.promises.length;
+		final boolean[] AEStateRes = new boolean[aeslen];
+		final boolean[] AEActionRes = new boolean[aealen];
+		final boolean[] promiseRes = new boolean[plen];
 
+		// Extract a node from the nodePtrTable "com".
+		// Note the upper limit is NodePtrTable#getSize() instead of
+		// the more obvious NodePtrTable#size().
+		// NodePtrTable internally hashes the elements to buckets
+		// and isn't filled start to end. Thus, the code
+		// below iterates NodePtrTable front to end skipping null buckets.
 		int tsz = com.getSize();
 		for (int ci = 0; ci < tsz; ci++) {
 			int[] nodes = com.getNodesByLoc(ci);
 			if (nodes == null) {
+				// miss in NotePtrTable (null bucket)
 				continue;
 			}
 
@@ -296,7 +318,11 @@ public class LiveWorker extends IdThread {
 					}
 				}
 
-				// Check AEAction:
+				// Check AEAction: A TLA+ action represents the relationship
+				// between the current node and a successor state. The current
+				// node has n successor states. For each pair, see iff the 
+				// successor is in the "com" NodePtrTablecheck, check actions
+				// and store the results in AEActionRes(ult).
 				int succCnt = curNode.succSize();
 				for (int i = 0; i < succCnt; i++) {
 					long nextState = curNode.getStateFP(i);
