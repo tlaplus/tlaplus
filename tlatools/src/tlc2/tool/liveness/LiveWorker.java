@@ -17,9 +17,12 @@ import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
 import tlc2.util.MemIntStack;
+import tlc2.util.statistics.BucketStatistics;
 
 public class LiveWorker extends IdThread {
 
+	public static final BucketStatistics STATS = new BucketStatistics("Histogram SCC sizes");
+	
 	private static int nextOOS = 0;
 	private static int errFoundByThread = -1;
 	private static Object workerLock = new Object();
@@ -156,7 +159,7 @@ public class LiveWorker extends IdThread {
 						// Found a non-trivial SSC, maintain statistics.
 						// Div 5, because a logical node record in the 
 						// comStack has a length of five (ints).
-						SCCStats.addSCCWithSize(comStack.size() / 5);
+						STATS.addSample(comStack.size() / 5);
 						// The states on the comStack from top to curState form
 						// a SCC.
 						// Check for "bad" cycle.

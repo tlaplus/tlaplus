@@ -10,8 +10,8 @@ import java.util.Date;
 import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
-import tlc2.tool.liveness.GraphStats;
-import tlc2.tool.liveness.SCCStats;
+import tlc2.tool.liveness.LiveWorker;
+import tlc2.util.statistics.BucketStatistics;
 import util.DebugPrinter;
 import util.Set;
 import util.ToolIO;
@@ -1365,7 +1365,7 @@ public class MP
         DebugPrinter.print("leaving printWarning(int, String[])"); //$NON-NLS-1$
     }
     
-    public static void printStats(final GraphStats inDegree, final GraphStats outDegree) {
+    public static void printStats(final BucketStatistics inDegree, final BucketStatistics outDegree) {
     	// Out degree
         ToolIO.out.println(outDegree);
         
@@ -1373,9 +1373,9 @@ public class MP
 		ToolIO.out.println(inDegree);
 
 		// SCC size and count
-		ToolIO.out.println(SCCStats.print());
+		ToolIO.out.println(LiveWorker.STATS.toString());
 		ToolIO.out.println(String.format("%s SCC%s found during liveness checking.",
-				SCCStats.getAmountOfSCCs(), SCCStats.getAmountOfSCCs() > 1 ? "s" : ""));
+				LiveWorker.STATS.getObservations(), LiveWorker.STATS.getObservations() > 1 ? "s" : ""));
     }
 
     /**

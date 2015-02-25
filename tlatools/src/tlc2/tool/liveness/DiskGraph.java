@@ -20,6 +20,7 @@ import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
+import tlc2.util.statistics.BucketStatistics;
 import util.FileUtil;
 
 /*
@@ -82,9 +83,9 @@ public class DiskGraph {
 	private boolean hasTableau;
 	private GraphNode[] gnodes;
 
-	private final GraphStats outDegreeGraphStats;
+	private final BucketStatistics outDegreeGraphStats;
 
-	public DiskGraph(String metadir, int soln, boolean hasTableau, GraphStats graphStats) throws IOException {
+	public DiskGraph(String metadir, int soln, boolean hasTableau, BucketStatistics graphStats) throws IOException {
 		this.metadir = metadir;
 		this.outDegreeGraphStats = graphStats;
 		this.chkptName = metadir + FileUtil.separator + "dgraph_" + soln;
@@ -142,7 +143,7 @@ public class DiskGraph {
 	 * node in the node file.
 	 */
 	public final long addNode(GraphNode node) throws IOException {
-		outDegreeGraphStats.addNodeEdgeCount(node.succSize());
+		outDegreeGraphStats.addSample(node.succSize());
 		
 		long ptr = this.nodeRAF.getFilePointer();
 
@@ -603,7 +604,7 @@ public class DiskGraph {
 
 	// This method is not called anywhere because *out degree* graph statistics are collected
 	// during liveness checking with negligible overhead (see DiskGraph#addNode).
-	public void calculateOutDegreeDiskGraph(final GraphStats outDegreeGraphStats) throws IOException {
+	public void calculateOutDegreeDiskGraph(final BucketStatistics outDegreeGraphStats) throws IOException {
 		try {
 			this.nodePtrRAF.flush();
 			this.nodeRAF.flush();
@@ -616,7 +617,7 @@ public class DiskGraph {
 				final long ptr = nodePtrRAF.readLongNat();
 				nodeRAF.seek(ptr);
 				int outArcCount = nodeRAF.readNat() / 3;
-				outDegreeGraphStats.addNodeEdgeCount(outArcCount);
+				outDegreeGraphStats.addSample(outArcCount);
 			}
 		} catch (IOException e) {
 			MP.printError(EC.SYSTEM_DISKGRAPH_ACCESS, e);
@@ -624,7 +625,7 @@ public class DiskGraph {
 		}
 	}
 	
-	public void calculateInDegreeDiskGraph(final GraphStats inDegreeGraphStats) throws IOException {
+	public void calculateInDegreeDiskGraph(final BucketStatistics inDegreeGraphStats) throws IOException {
 		//TODO This only supports 2^31 map elements and thus less of what TLC can handle. A
 		// longlong FPSet with a user defined mask could be used to store 2^63.
 		final Map<NodeRAFRecord, Integer> nodes2count = new HashMap<NodeRAFRecord, Integer>();
@@ -667,7 +668,7 @@ public class DiskGraph {
 		
 		final Collection<Integer> values = nodes2count.values();
 		for (Integer integer : values) {
-			inDegreeGraphStats.addNodeEdgeCount(integer);
+			inDegreeGraphStats.addSample(integer);
 		}
 	}
 	

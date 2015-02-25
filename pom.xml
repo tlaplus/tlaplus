@@ -178,7 +178,7 @@
 					     package that is indirectly referenced by the toolbox (indirectly via
 					     org.apache.mina.core).
 					     see http://dev.eclipse.org/mhonarc/lists/cbi-dev/msg00166.html --> 
-		 			<executionEnvironment>J2SE-1.5</executionEnvironment>
+		 			<executionEnvironment>JavaSE-1.6</executionEnvironment>
 
 					<!-- configure the p2 target environments for multi-platform build -->
 					<environments>

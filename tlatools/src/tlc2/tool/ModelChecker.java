@@ -16,14 +16,13 @@ import tlc2.output.MP;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
-import tlc2.tool.liveness.GraphStats;
-import tlc2.tool.liveness.GraphStats.Direction;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
+import tlc2.util.statistics.BucketStatistics;
 import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
@@ -245,7 +244,7 @@ public class ModelChecker extends AbstractChecker
         		// Reclaim memory for in-degree calculation
         		System.gc();
 
-        		final GraphStats inDegree = new GraphStats(Direction.IN);
+        		final BucketStatistics inDegree = new BucketStatistics("Histogram vertex in-degree");
         		LiveCheck.calculateInDegreeDiskGraphs(inDegree);
         		MP.printStats(inDegree, LiveCheck.outDegreeGraphStats);
         	}
