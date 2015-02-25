@@ -68,15 +68,16 @@ public class StringHelper
     /**
      * Returns str with any leading whitespace removed. 
      */
-    /*
-     * This implementation was the result of testing what
-     * String.split does.  The documentation doesn't
-     * give a clue.
-     */
     public static final String trimFront(String str) {
-        String[] split = str.split("\\s*", 2);
-        if (split.length < 2) {return "" ; }
-        return split[1];
+        int position = 0;
+        while ((position < str.length()) && 
+                Character.isWhitespace(str.charAt(position))) {
+          position++;
+        }
+        return str.substring(position, str.length());
+        
+        // Alternatively
+        //return s.replaceAll("^\\s+", "");
     }
     
     /**
@@ -89,6 +90,9 @@ public class StringHelper
           position--;
         }
         return str.substring(0, position);
+        
+        // Alternatively
+        //return s.replaceAll("\\s+$", "");
     }
     
     /**

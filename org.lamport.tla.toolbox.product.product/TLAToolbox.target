@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="TLA+ Toolbox 3.6" sequenceNumber="60">
+<?pde version="3.8"?><target name="TLA+ Toolbox 3.6" sequenceNumber="61">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.3.e42x-RELEASE-20130625-1400"/>
@@ -7,7 +7,7 @@
 <repository location="http://download.eclipse.org/tools/ajdt/42/update"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="1.0.1.201202162201"/>
+<unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="1.0.1.201502251926"/>
 <repository location="http://tla.msr-inria.inria.fr/pdf4eclipse/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">

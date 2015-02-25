@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -719,6 +720,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             } catch (CoreException e)
             {
                 TLCUIActivator.getDefault().logError("Error launching the configuration " + getConfig().getName(), e);
+                MessageDialog.openError(getSite().getShell(), "Model processing failed", e.getMessage());
             }
         }
 

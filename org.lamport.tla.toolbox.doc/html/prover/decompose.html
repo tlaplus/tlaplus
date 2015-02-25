@@ -51,7 +51,7 @@ Often, a proof obligation must be transformed into a different one in order to b
 obligations, where the decomposition may be done manually or by the Decompose Proof command.&nbsp;  The command
 provides the following two such transformations that can be
 applied to the goal of an obligation.  The goal is the <code>PROVE</code> formula of an <code>ASSUME</code>/<code>PROVE</code>
-obligation or the entire obligation, if it is a single formula.  For a <code>CASE</code> or <code>QED</code>step, it is the 
+obligation or the entire obligation, if it is a single formula.  For a <code>CASE</code> or <code>QED</code> step, it is the 
 proof's current goal.
 
 <DL> <DT> <b><code>=></code> splitting</b> </DT>
@@ -77,7 +77,6 @@ There are two such transformations that can be applied to an assumption of an <c
 <DD>An assumption &nbsp;<code>\E x \in S : P</code>&nbsp; is transformed to the two assumptions 
  &nbsp;<code>NEW&nbsp;x&nbsp;\in&nbsp;S,&nbsp;P</code>&nbsp;.
 
-The goal &nbsp;<code>\E x&nbsp;:&nbsp;P</code>&nbsp; is similarly split.
 </DD>
 
 <BR> </BR>
