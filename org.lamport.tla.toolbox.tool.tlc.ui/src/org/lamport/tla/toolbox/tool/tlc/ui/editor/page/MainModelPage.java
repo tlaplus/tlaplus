@@ -181,6 +181,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	 * Used to interpolate y-values for memory scale
 	 */
 	private final Interpolator linearInterpolator;
+	private Composite distributedOptions;
 	
     /**
      * constructs the main model page 
@@ -320,7 +321,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				break;
 			}
 		}
-       
+
+		if (cloud.equalsIgnoreCase("aws-ec2")) {
+			MainModelPage.this.putOnTopOfStack("aws-ec2", false, false);
+		} else if(cloud.equalsIgnoreCase("ad hoc")) {
+			MainModelPage.this.putOnTopOfStack("ad hoc", false, true);
+		} else {
+			MainModelPage.this.putOnTopOfStack("off", true, true);
+		}
+        
         final String distributedScript = getConfig().getAttribute(LAUNCH_DISTRIBUTED_SCRIPT, LAUNCH_DISTRIBUTED_SCRIPT_DEFAULT);
         this.distributedScriptText.setText(distributedScript);
         
@@ -1355,12 +1364,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		distributedCombo.setToolTipText("If other than 'off' selected, state computation will be performed by (remote) workers.");
 		distributedCombo.addFocusListener(focusListener);
 		
-		// Need stack layout to switch between distribution specific controls
-        final Composite distributedOptions = new Composite(howToRunArea, SWT.NONE) ;
+		distributedOptions = new Composite(howToRunArea, SWT.NONE);
 		final StackLayout stackLayout = new StackLayout();
 		distributedOptions.setLayout(stackLayout);
-		distributedOptions.setVisible(false); // by default invisible because default is "off"
         
+		// No distribution has no options
+		final Composite offComposite = new Composite(distributedOptions, SWT.NONE);
+		distributedOptions.setData("off", offComposite);
+		stackLayout.topControl = offComposite;
+		
 		/*
 		 * Composite wrapping number of distributed FPSet and iface when ad hoc selected
 		 */
@@ -1370,8 +1382,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd = new GridData();
         gd.horizontalSpan = 2;
         builtInOptions.setLayoutData(gd);
-
-        builtInOptions.setVisible(false); // by default off
+		distributedOptions.setData("ad hoc", builtInOptions);
 		
 		/*
 		 * Server interface/hostname (This text shows the hostname detected by the Toolbox under which TLCServer will listen
@@ -1493,27 +1504,19 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.widthHint = 200;
         resultMailAddressText.setLayoutData(gd);
 		
-		resultAddress.setVisible(false);
+		distributedOptions.setData("aws-ec2", resultAddress);
 
         distributedCombo.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent e) {
 				int selectionIndex = distributedCombo.getSelectionIndex();
 				String item = distributedCombo.getItem(selectionIndex);
 				if (item.equalsIgnoreCase("aws-ec2")) {
-					workers.setEnabled(false);
-					maxHeapSize.setEnabled(false);
-					distributedOptions.setVisible(true);
-					stackLayout.topControl = resultAddress;
+					MainModelPage.this.putOnTopOfStack("aws-ec2", false, false);
 				} else if(item.equalsIgnoreCase("ad hoc")) {
-					workers.setEnabled(false);
-					distributedOptions.setVisible(true);
-					stackLayout.topControl = builtInOptions;
+					MainModelPage.this.putOnTopOfStack("ad hoc", false, true);
 				} else {
-					distributedOptions.setVisible(false);
-					workers.setEnabled(true);
-					maxHeapSize.setEnabled(true);
+					MainModelPage.this.putOnTopOfStack("off", true, true);
 				}
-				distributedOptions.layout();
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -1615,6 +1618,16 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dirtyPartListeners.add(whatIsTheSpecListener);
         dirtyPartListeners.add(whatToCheckListener);
         dirtyPartListeners.add(howToRunListener);
+    }
+
+    private void putOnTopOfStack(final String id, boolean enableWorker, boolean enableMaxHeap) {
+		workers.setEnabled(enableWorker);
+		maxHeapSize.setEnabled(enableMaxHeap);
+		
+		final Composite composite = (Composite) distributedOptions.getData(id);
+		final StackLayout stackLayout = (StackLayout) distributedOptions.getLayout();
+		stackLayout.topControl = composite;
+		distributedOptions.layout();
     }
 
     /**
