@@ -125,13 +125,17 @@ public class RMIFilenameToStreamResolver implements FilenameToStream {
 		return f;
 	}
 
-/**
- * August 2014 - TL
- * added a stub for the interface method "getFullPath".
- * This is an informative method which upt to this point in time
- * is not used using this implementation of the resolver
- */
-    public String getFullPath(){
-      throw new UnsupportedOperationException("method getFullPath is not supported for this class");
-    }
+	public String getFullPath() {
+		StringBuffer buf = new StringBuffer();
+
+		String[] strings = fileCache.keySet().toArray(new String[fileCache.size()]);
+		for (int i = 0; i < strings.length; i++) {
+			String string = strings[i];
+			buf.append(string);
+			if (i < string.length() - 1) {
+				buf.append(", ");
+			}
+		}
+		return buf.toString();
+	}
 }

@@ -6,10 +6,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -104,7 +102,7 @@ public class Spec implements IAdaptable {
     private int currentSelection = 0;
 
     /* project handle */
-    private IProject project;
+    private final IProject project;
 
     /* root module handle */
     private IFile rootFile;
@@ -124,6 +122,7 @@ public class Spec implements IAdaptable {
      *            project handle
      */
     public Spec(IProject project) {
+    	Assert.isNotNull(project);
         this.project = project;
         initProjectProperties();
     }

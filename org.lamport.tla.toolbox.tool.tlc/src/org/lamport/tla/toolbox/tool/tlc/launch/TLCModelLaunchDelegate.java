@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -77,6 +78,7 @@ import tla2sany.semantic.OpDeclNode;
  * @version $Id$
  * Modified on 10 Sep 2009 to add No Spec TLC launch option.
  */
+@SuppressWarnings("restriction")
 public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implements IModelConfigurationConstants,
         IModelConfigurationDefaults
 {
@@ -202,7 +204,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
             IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
 
-            TLCActivator.getDefault().logDebug("Writing files to: " + targetFolderPath.toOSString());
+            TLCActivator.logDebug("Writing files to: " + targetFolderPath.toOSString());
 
             final IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 
@@ -260,7 +262,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                         // ignore this fact
                                         // FIXME this should be fixed at
                                         // some later point in time
-                                        TLCActivator.getDefault().logError("Error deleting a file " + members[i].getLocation(), e);
+                                        TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
                                     }
                                 }
                             }
@@ -298,16 +300,41 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             for (int i = 0; i < extendedModules.size(); i++)
             {
                 String module = (String) extendedModules.get(i);
-                // only take care of user modules
-                if (ToolboxHandle.isUserModule(module))
+				// Only take care of user modules and actually *linked* files
+				// (not files defined via TLA_LIBRARY_PATH)
+                if (ToolboxHandle.isUserModule(module) && ResourceHelper.isLinkedFile(project, module))
                 {
                     moduleFile = ResourceHelper.getLinkedFile(project, module, false);
                     if (moduleFile != null)
                     {
+                    	try {
                         moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
                                 | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
+                    	} catch (ResourceException re) {
+                    		// Trying to copy the file to the targetFolderPath produces an exception.
+                    		// The most common cause is a dangling linked file in the .project metadata 
+                    		// of the Toolbox project. Usually, a dangling link is the effect of copying
+                    		// a single Toolbox project from one machine to the other missing modules 
+                    		// extended (EXTENDS in TLA+) by a spec. The missing modules are part of
+                    		// another spec which does not exist on the current machine.
+                    		// We log the full exception to the Toolbox's error log (not directly visible
+                    		// to the user) and raise an error dialog (see org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor).
+                    		// We hint at how this problem can be addressed most of the time.
+							TLCActivator.logError(
+									String.format(
+											"Error copying file %s to %s. Please correct the path to %s. \n(The first place to check is in the %s/.project file. Restart the Toolbox when you change the .project file.)",
+											moduleFile.getLocation(), targetFolderPath, moduleFile.getName(),
+											modelFolder.getRawLocation().removeLastSegments(1)), re);
+							throw new CoreException(
+									new Status(
+											Status.ERROR,
+											"org.lamport.tlc.toolbox.tool.tlc",
+											String.format(
+													"Error copying file %s to %s. Please correct the path to %s. \n(The first place to check is in the %s/.project file. Restart the Toolbox when you change the .project file.)",
+													moduleFile.getLocation(), targetFolderPath, moduleFile.getName(),
+													modelFolder.getRawLocation().removeLastSegments(1))));
+                    	}
                     }
-
                     // TODO check the existence of copied files
                 }
             }
@@ -515,7 +542,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
         if (!detectedErrors.isEmpty())
         {
-            TLCActivator.getDefault().logDebug("Errors in model file found " + rootModule.getLocation());
+            TLCActivator.logDebug("Errors in model file found " + rootModule.getLocation());
         }
 
         FileEditorInput fileEditorInput = new FileEditorInput((IFile) rootModule);
@@ -592,7 +619,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             return false;
         } else
         {
-            TLCActivator.getDefault().logDebug("Final check for the " + mode + " mode. The result of the check is " + status);
+            TLCActivator.logDebug("Final check for the " + mode + " mode. The result of the check is " + status);
             return status;
         }
     }
@@ -851,7 +878,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 ModelHelper.setModelRunning(config, false);
             } catch (CoreException e)
             {
-                TLCActivator.getDefault().logError("Error setting lock and running markers on the model", e);
+                TLCActivator.logError("Error setting lock and running markers on the model", e);
             }
         }
     }
@@ -884,7 +911,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                     break;
                 }
             }
-            TLCActivator.getDefault().logDebug("Job '" + jobName + "' terminated with status: { " + status + " }");
+            TLCActivator.logDebug("Job '" + jobName + "' terminated with status: { " + status + " }");
         }
     };
 

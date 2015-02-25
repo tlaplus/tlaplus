@@ -336,7 +336,7 @@ public class ModuleParserLauncher
                                 .currentTimeMillis()));
                     }
                 }
-            }, new NullProgressMonitor());
+            }, monitor);
         } catch (CoreException e)
         {
             Activator.getDefault().logError("Error while setting build timestamp on resource.", e);

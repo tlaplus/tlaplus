@@ -158,14 +158,21 @@ public class RCPNameToFileIStream implements FilenameToStream
 		return ! ResourceHelper.isFromUserModule(moduleNode) ;
 
 	}
-  /**
-   * August 2014 - TL
-   * added a stub for this informative interface method.
-   * All the usages of this class were written before the
-   * addition of this interface method and therefore this
-   * method is not being called up to this point in time.
-   */
-  public String getFullPath(){
-    throw new UnsupportedOperationException("method getFullPath is not supported for this class");
-  }
+
+	/**
+	 * August 2014 - TL added a stub for this informative interface method. All
+	 * the usages of this class were written before the addition of this
+	 * interface method and therefore this method is not being called up to this
+	 * point in time.
+	 */
+	public String getFullPath() {
+		StringBuffer buf = new StringBuffer();
+		for (int i = 0; i < libraryPathEntries.size(); i++) {
+			buf.append(libraryPathEntries.elementAt(i));
+			if (i < libraryPathEntries.size() - 1) {
+				buf.append(", ");
+			}
+		}
+		return buf.toString();
+	}
 }
