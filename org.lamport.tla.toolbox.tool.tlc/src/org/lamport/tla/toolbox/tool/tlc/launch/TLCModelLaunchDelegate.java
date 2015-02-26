@@ -732,6 +732,26 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 					job.addJobChangeListener(new WithStatusJobChangeListener(config));
 					break;
 				}
+				// Notify the user that something went wrong and ask him to report it. This code path
+				// is usually taken if the Toolbox distribution is incomplete. Thus, the exception should
+				// never happen at the user's end. Anyway, try to give a clue what might be wrong.
+                throw new CoreException(
+						new Status(
+								IStatus.ERROR,
+								TLCActivator.PLUGIN_ID,
+								String.format(
+										"The distribution mode '%s' selected in the \"How to run?\" section caused "
+										+ "an error. Check the Toolbox's \"Installation Details\" if the "
+										+ "'JCloud distributed TLC provider' is installed. If not, this is a bug "
+										+ "and should be reported to the Toolbox authors. Thank you for "
+										+ "your help and sorry for the inconvenience."
+										+ "\n\n"
+										+ "In the meantime, try running the Toolbox in non-distributed mode "
+										+ "by setting \"Run in distributed mode\" to 'off'. "
+										+ "You might have to 'Repair' your model via the \"Spec Explorer\" first.",
+										cloud)));
+                	// "Repairing" the model here with ModelHelper.recoverModel(config) does not work. The 
+                	// markers indicating a broken model have not been installed at this point.
         	}
         }
         job.setPriority(Job.LONG);
