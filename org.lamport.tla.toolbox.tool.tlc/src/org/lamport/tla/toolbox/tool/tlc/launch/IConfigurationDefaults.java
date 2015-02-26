@@ -27,6 +27,11 @@ public interface IConfigurationDefaults
 	 */
 	public static final String LAUNCH_DISTRIBUTED_DEFAULT = "off";
 	
+    /**
+     * Launch distributed version of TLC and send result to this address
+     */
+	public static final String LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT = "";
+	
 	/**
 	 * Distributed FPSet default count
 	 */

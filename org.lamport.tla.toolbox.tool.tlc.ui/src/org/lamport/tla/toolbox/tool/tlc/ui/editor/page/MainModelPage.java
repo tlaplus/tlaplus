@@ -324,6 +324,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		if (cloud.equalsIgnoreCase("aws-ec2")) {
 			MainModelPage.this.putOnTopOfStack("aws-ec2", false, false);
+			String email = getConfig().getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
+			resultMailAddressText.setText(email);
 		} else if(cloud.equalsIgnoreCase("ad hoc")) {
 			MainModelPage.this.putOnTopOfStack("ad hoc", false, true);
 		} else {
@@ -1503,6 +1505,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.horizontalIndent = 10;
         gd.widthHint = 200;
         resultMailAddressText.setLayoutData(gd);
+        resultMailAddressText.addModifyListener(howToRunListener);
+        dm.bindAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddressText, howToRunPart);
 		
 		distributedOptions.setData("aws-ec2", resultAddress);
 
