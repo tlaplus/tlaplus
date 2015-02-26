@@ -176,4 +176,13 @@ public class BucketStatisticsTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}
+	
+	public void testMaximum() {
+		final BucketStatistics gs = new BucketStatistics("test title", 8);
+		gs.addSample(16);
+		gs.addSample(16);
+		gs.addSample(16);
+		assertEquals(8, gs.getMedian());
+		assertEquals(3, gs.getObservations());
+	}
 }

@@ -54,12 +54,26 @@ public class BucketStatistics {
 	 */
 	private final String title;
 
+	/**
+	 * Upper limit for the number of buckets available for sampling. If a sample
+	 * exceeds maximum, it will go into the very last bucket. It serves as an
+	 * "overflow" bucket.
+	 * Useful if samples flatten out to the right and at many buckets with just
+	 * a single sample would be added.
+	 */
+	private final int maximum;
+
 	public BucketStatistics() {
 		this("Historgram");
 	}
 	
 	public BucketStatistics(final String aTitle) {
+		this(aTitle, Integer.MAX_VALUE);
+	}
+	
+	public BucketStatistics(final String aTitle, final int aMaxmimum) {
 		this.title = aTitle;
+		this.maximum  = aMaxmimum;
 	}
 	
 	/**
@@ -72,9 +86,13 @@ public class BucketStatistics {
 			throw new IllegalArgumentException("Negative amount invalid");
 		}
 		
-		final AtomicLong atomicLong = buckets.get(amount);
+		// If the amount exceeds the fixed maximum, increment the overflow
+		// bucket. The overflow bucket is the very last bucket. 
+		final int idx = Math.min(maximum, amount);
+		
+		final AtomicLong atomicLong = buckets.get(idx);
 		if(atomicLong == null) {
-			buckets.putIfAbsent(amount, new AtomicLong(1));
+			buckets.putIfAbsent(idx, new AtomicLong(1));
 		} else {
 			atomicLong.incrementAndGet();
 		}
