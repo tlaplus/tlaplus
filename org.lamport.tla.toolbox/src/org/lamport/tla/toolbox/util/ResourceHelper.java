@@ -2186,6 +2186,13 @@ public class ResourceHelper
      * @return true if the given spec name is a valid identifier
      */
 	public static boolean isValidSpecName(final String aSpecName) {
+		String identifier = getIdentifier(aSpecName);
+		// verify given spec name and parsed spec name are the same
+		return aSpecName.equals(identifier);
+	}
+	
+
+	public static String getIdentifier(String aSpecName) {
 		// in memory stream of spec name
 		final ByteArrayInputStream stream = new ByteArrayInputStream(
 				aSpecName.getBytes());
@@ -2197,18 +2204,13 @@ public class ResourceHelper
 		tlaParser.token_source.SwitchTo(TLAplusParserConstants.SPEC);
 
 		// try to consume an identifier
-		String identifier;
 		try {
-			identifier = tlaParser.Identifier().getImage();
+			return tlaParser.Identifier().getImage();
 		} catch (ParseException e) {
 			// not expected to happen but handle anyway
-			return false;
+			return "";
 		}
-		
-		// verify given spec name and parsed spec name are the same
-		return aSpecName.equals(identifier);
 	}
-	
 
 	public static boolean isValidLibraryLocation(final String location) {
 		if (location != null && location.length() > 0) {
