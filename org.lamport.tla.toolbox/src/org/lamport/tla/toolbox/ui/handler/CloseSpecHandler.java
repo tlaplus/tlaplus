@@ -7,6 +7,9 @@ import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
+import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -43,20 +46,31 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
         UIHelper.hideView(ProblemView.ID);
         // switch perspective
         UIHelper.switchPerspective(InitialPerspective.ID);
+        
+        // Refresh the CommonViewer to causes it to align the icon shown in the SpecExplorer
+        // with the state of the spec. E.g. if the spec is closed, make sure it shows the closed
+        // project icon.
+        final WorkspaceSpecManager specManager = Activator.getSpecManager();
+        final ToolboxExplorer toolboxExplorer = (ToolboxExplorer) UIHelper.findView(ToolboxExplorer.VIEW_ID);
+        if (toolboxExplorer != null) {
+			final Spec specClosed = specManager.getSpecLoaded();
+			toolboxExplorer.getCommonViewer().refresh(specClosed);
+        }
+
         // unset the spec
-        Activator.getSpecManager().setSpecLoaded(null);
+        specManager.setSpecLoaded(null);
         return null;
     }
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
 	 */
-	@Override
-	public boolean isEnabled() {
-		if (Activator.getSpecManager().getSpecLoaded() == null) {
-			return false;
-		}
-		return super.isEnabled();
-	}
+//	@Override
+//	public boolean isEnabled() {
+//		if (Activator.getSpecManager().getSpecLoaded() == null) {
+//			return false;
+//		}
+//		return super.isEnabled();
+//	}
 
 }
