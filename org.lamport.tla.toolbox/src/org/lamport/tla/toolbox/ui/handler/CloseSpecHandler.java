@@ -34,6 +34,10 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
         try
         {
             specClosed = Activator.getSpecManager().getSpecLoaded();
+            // Cannot close specs if none is open
+            if (specClosed == null) {
+            	return null;
+            }
             specClosed.getProject().setPersistentProperty(
                LAST_CLOSED_DATE, "" + System.currentTimeMillis());
         } catch (CoreException e)
@@ -69,12 +73,12 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
 	 */
-//	@Override
-//	public boolean isEnabled() {
-//		if (Activator.getSpecManager().getSpecLoaded() == null) {
-//			return false;
-//		}
-//		return super.isEnabled();
-//	}
+	@Override
+	public boolean isEnabled() {
+		if (Activator.getSpecManager().getSpecLoaded() == null) {
+			return false;
+		}
+		return super.isEnabled();
+	}
 
 }
