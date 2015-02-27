@@ -708,6 +708,7 @@
             locationURI="popup:toolbox.explorer.popup?after=group.open">
          <command
                commandId="toolbox.command.cnf.open.delegate"
+               icon="icons/full/obj16/spec_obj.gif"
                id="toolbox.popupmenu.open.delegate"
                label="Open"
                mnemonic="O"
