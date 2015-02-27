@@ -422,6 +422,7 @@ public class ResourceHelper
             newLocationParent.addTrailingSeparator();
         }
 
+
         try
         {
         	final Map<IResource, IPath> failures = new HashMap<IResource, IPath>();
@@ -436,7 +437,7 @@ public class ResourceHelper
                     // the linked file points to a file that does not exist.
                     String name = members[i].getName();
                     IPath newLocation = newLocationParent.append(name);
-
+                    
                     members[i].delete(true, new SubProgressMonitor(monitor, 1));
                     if (newLocation.toFile().exists())
                     {
@@ -531,7 +532,7 @@ public class ResourceHelper
             prefStr = PreferenceStoreHelper.getInstancePreferenceStore()
                     .getString(
                             LibraryPathComposite.LIBRARY_PATH_LOCATION_PREFIX);
-    }
+        }
 
         if (!"".equals(prefStr)) {
             // final Set<String> locationList = new HashSet<String>();
@@ -1726,8 +1727,6 @@ public class ResourceHelper
      */
     private static void innerGetUsesOfUserDefinedOps(SemanticNode node, Vector<ExprOrOpArgNode> found)
     {
-        SymbolNode[] defs = null;
-
         // We have to detect the following instances in which we get a use directly from
         // this node. There are three basic cases:
         // 1. This is an OpApplNode and the operator is a user-defined OpDef node. 
@@ -1832,7 +1831,7 @@ public class ResourceHelper
      */
     public static HashSet<String> declaredSymbolsInScope(ModuleNode module, Location loc) {
         // result accumulates the return value.
-        HashSet<String> result = new HashSet() ;
+        HashSet<String> result = new HashSet<String>() ;
         addDeclaredSymbolsInScope(result, module, loc);
         return result ;
     }
@@ -1859,11 +1858,11 @@ public class ResourceHelper
         // Testing on 9 Oct 2014 reveals that there is no need to look at EXTENDed modules
         // because those are already returned by the GetConstant/VariableDecls calls of
         // the module itself.
-        HashSet extendees = module.getExtendedModuleSet(); 
+        HashSet<ModuleNode> extendees = module.getExtendedModuleSet(); 
         extendees.add(module) ;
-        Iterator iter = extendees.iterator() ;
+        Iterator<ModuleNode> iter = extendees.iterator() ;
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             // Get CONSTANTS
             OpDeclNode[] decls = modNode.getConstantDecls() ;
             for (int i = 0; i < decls.length; i++) {
@@ -1893,7 +1892,7 @@ public class ResourceHelper
         // Add defined operator and theorem names
         iter = allModulesSet.iterator();
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             
             // add definitions
             // On 8 Oct 2014, LL corrected a bug caused by the use of `module'
@@ -1944,10 +1943,10 @@ public class ResourceHelper
         }
         modules.add(node) ;
         
-        HashSet extendees = node.getExtendedModuleSet();
-        Iterator iter = extendees.iterator() ;
+        HashSet<ModuleNode> extendees = node.getExtendedModuleSet();
+        Iterator<ModuleNode> iter = extendees.iterator() ;
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             addImportedModules(modules, symbols, infiniteLoc, modNode) ;
         }
         
@@ -2029,11 +2028,11 @@ public class ResourceHelper
         // Testing on 9 Oct 2014 reveals that there is no need to look at EXTENDed modules
         // because those are already returned by the GetConstant/VariableDecls calls of
         // the module itself.
-        HashSet extendees = module.getExtendedModuleSet(); 
+        HashSet<ModuleNode> extendees = module.getExtendedModuleSet(); 
         extendees.add(module) ;
-        Iterator iter = extendees.iterator() ;
+        Iterator<ModuleNode> iter = extendees.iterator() ;
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             // Get CONSTANTS
             OpDeclNode[] decls = modNode.getConstantDecls() ;
             for (int i = 0; i < decls.length; i++) {
@@ -2063,7 +2062,7 @@ public class ResourceHelper
         // Add defined operator and theorem names
         iter = allModulesSet.iterator();
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             
             // add definitions
             // On 8 Oct 2014, LL corrected a bug caused by the use of `module'
@@ -2116,10 +2115,10 @@ public class ResourceHelper
         }
         modules.add(node) ;
         
-        HashSet extendees = node.getExtendedModuleSet();
-        Iterator iter = extendees.iterator() ;
+        HashSet<ModuleNode> extendees = node.getExtendedModuleSet();
+        Iterator<ModuleNode> iter = extendees.iterator() ;
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             addImportedModulesSet(modules, symbols, infiniteLoc, modNode) ;
         }
         
