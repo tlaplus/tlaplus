@@ -72,11 +72,15 @@ public class SpecContentProvider implements ITreeContentProvider
             return null;
         }
 
-        public boolean hasChildren(Object element)
-        {
-            return (element instanceof WorkspaceSpecManager 
-                    /* || element instanceof Spec */ );
-        }
+		public boolean hasChildren(Object element) {
+			// A Spec only has children (visually indicated by a triangle in the
+			// Spec Explorer) if it is open.
+			if (element instanceof Spec) {
+				return Activator.getSpecManager().isSpecLoaded((Spec) element);
+			}
+			return (element instanceof WorkspaceSpecManager
+			/* || element instanceof Spec */);
+		}
 
         public Object[] getElements(Object inputElement)
         {

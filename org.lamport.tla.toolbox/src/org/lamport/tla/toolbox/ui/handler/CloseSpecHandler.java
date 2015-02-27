@@ -30,9 +30,11 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         // Set the project's last closed time to the current time.
+    	Spec specClosed = null;
         try
         {
-            Activator.getSpecManager().getSpecLoaded().getProject().setPersistentProperty(
+            specClosed = Activator.getSpecManager().getSpecLoaded();
+            specClosed.getProject().setPersistentProperty(
                LAST_CLOSED_DATE, "" + System.currentTimeMillis());
         } catch (CoreException e)
         {
@@ -47,18 +49,20 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
         // switch perspective
         UIHelper.switchPerspective(InitialPerspective.ID);
         
+        // unset the spec
+        final WorkspaceSpecManager specManager = Activator.getSpecManager();
+        specManager.setSpecLoaded(null);
+
         // Refresh the CommonViewer to causes it to align the icon shown in the SpecExplorer
         // with the state of the spec. E.g. if the spec is closed, make sure it shows the closed
-        // project icon.
-        final WorkspaceSpecManager specManager = Activator.getSpecManager();
+        // project icon. It also re-evaluates the navigators SpecContentProvider#hasChildren. No children
+        // means that the expand triangle isn't shown for the tree icon (spec). For that
+        // WorkspaceSpecManager#setSpecLoaded(null) has to be called first (see above).
         final ToolboxExplorer toolboxExplorer = (ToolboxExplorer) UIHelper.findView(ToolboxExplorer.VIEW_ID);
         if (toolboxExplorer != null) {
-			final Spec specClosed = specManager.getSpecLoaded();
 			toolboxExplorer.getCommonViewer().refresh(specClosed);
         }
 
-        // unset the spec
-        specManager.setSpecLoaded(null);
         return null;
     }
 
