@@ -2330,6 +2330,7 @@ public class ResourceHelper
 				final ObjectInputStream inputStream = new ObjectInputStream(
 						new FileInputStream(file.getLocation().toOSString()));
 				final Object object = inputStream.readObject();
+				inputStream.close();
 				if (object instanceof TLAtoPCalMapping) {
 					return (TLAtoPCalMapping) object;
 				}
