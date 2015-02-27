@@ -32,6 +32,13 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.management.NotCompliantMBeanException;
+
+import tlc2.output.EC;
+import tlc2.output.MP;
+import tlc2.tool.management.TLCStandardMBean;
+import tlc2.util.statistics.management.BucketStatisticsMXWrapper;
+
 public class BucketStatistics {
 	
 	/**
@@ -63,17 +70,63 @@ public class BucketStatistics {
 	 */
 	private final int maximum;
 
-	public BucketStatistics() {
+	// Used for unit testing only
+	BucketStatistics() {
 		this("Historgram");
 	}
 	
+	/**
+	 * @see {@link BucketStatistics#BucketStatistics(String, int)}
+	 */
 	public BucketStatistics(final String aTitle) {
 		this(aTitle, Integer.MAX_VALUE);
 	}
 	
+	/**
+	 * @see {@link BucketStatistics#BucketStatistics(String, int, String, String)}
+	 */
+	public BucketStatistics(final String aTitle, final String pkg, final String name) {
+		this(aTitle, Integer.MAX_VALUE, pkg, name);
+	}
+	
+	/**
+	 * @param aTitle
+	 *            A title for console pretty printing
+	 * @param aMaxmimum
+	 *            see {@link BucketStatistics#maximum}
+	 */
 	public BucketStatistics(final String aTitle, final int aMaxmimum) {
 		this.title = aTitle;
 		this.maximum  = aMaxmimum;
+	}
+
+	/**
+	 * @param aTitle
+	 *            A title for console pretty printing
+	 * @param aMaxmimum
+	 *            see {@link BucketStatistics#maximum}
+	 * @param pkg
+	 *            A package name for this statistics, e.g. tlc2.tool.liveness
+	 *            for stats are from classes in the liveness package.
+	 * @param name
+	 *            The (class) name of the source of the statistics.
+	 */
+	public BucketStatistics(final String aTitle, final int aMaxmimum, final String pkg, final String name) {
+		this(aTitle, aMaxmimum);
+		
+		TLCStandardMBean graphStatsMXWrapper;
+		try {
+			//TODO unregister somehow
+			graphStatsMXWrapper = new BucketStatisticsMXWrapper(this, name, pkg);
+		} catch (NotCompliantMBeanException e) {
+			// not expected to happen
+			// would cause JMX to be broken, hence just log and continue
+			MP.printWarning(
+					EC.GENERAL,
+					"Failed to create MBean wrapper for BucketStatistics. No statistics/metrics will be avaiable.",
+					e);
+			graphStatsMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
+		}
 	}
 	
 	/**
@@ -148,7 +201,7 @@ public class BucketStatistics {
 	/**
 	 * @return The median
 	 */
-	int getMedian() {
+	public int getMedian() {
 		long l = observations.get();
 		if (l <= 0) {
 			return -1;
@@ -171,7 +224,7 @@ public class BucketStatistics {
 	/**
 	 * @return The mean
 	 */
-	double getMean() {
+	public double getMean() {
 		long sum = 0L;
 		// Sum up values and count
 		final Iterator<Entry<Integer, AtomicLong>> iterator = buckets.entrySet().iterator();
@@ -192,7 +245,7 @@ public class BucketStatistics {
 	/**
 	 * @return The minimum
 	 */
-	int getMin() {
+	public int getMin() {
 		if (observations.get() <= 0) {
 			return -1;
 		}
@@ -202,7 +255,7 @@ public class BucketStatistics {
 	/**
 	 * @return The maximum
 	 */
-	int getMax() {
+	public int getMax() {
 		if (observations.get() <= 0) {
 			return -1;
 		}
@@ -212,7 +265,7 @@ public class BucketStatistics {
 	/**
 	 * @return The standard deviation
 	 */
-	double getStdDev() {
+	public double getStdDev() {
 		final long N = observations.get();
 		if (N <= 0) {
 			return -1.0d;
@@ -235,7 +288,7 @@ public class BucketStatistics {
 	 * @param quantile 0 <= d <= 1.0 (adjusted to closet limit if smaller or larger)
 	 * @return The given percentile
 	 */
-	double getPercentile(double quantile) {
+	public double getPercentile(double quantile) {
 		if (Double.isNaN(quantile)) {
 			throw new IllegalArgumentException("NaN");
 		}

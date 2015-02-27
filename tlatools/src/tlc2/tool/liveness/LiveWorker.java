@@ -21,7 +21,8 @@ import tlc2.util.statistics.BucketStatistics;
 
 public class LiveWorker extends IdThread {
 
-	public static final BucketStatistics STATS = new BucketStatistics("Histogram SCC sizes");
+	public static final BucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
+			.getPackage().getName(), "StronglyConnectedComponent sizes");
 	
 	private static int nextOOS = 0;
 	private static int errFoundByThread = -1;

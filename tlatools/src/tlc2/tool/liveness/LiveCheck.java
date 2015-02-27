@@ -36,7 +36,8 @@ public class LiveCheck {
 		metadir = mdir;
 		solutions = Liveness.processLiveness(myTool, metadir);
 		dgraphs = new DiskGraph[solutions.length];
-		outDegreeGraphStats = new BucketStatistics("Histogram vertex out-degree");
+		outDegreeGraphStats = new BucketStatistics("Histogram vertex out-degree", LiveCheck.class.getPackage()
+				.getName(), "DiskGraphsOutDegree");
 		for (int soln = 0; soln < solutions.length; soln++) {
 			boolean hasTableau = (solutions[soln].tableau != null);
 			dgraphs[soln] = new DiskGraph(metadir, soln, hasTableau, outDegreeGraphStats);

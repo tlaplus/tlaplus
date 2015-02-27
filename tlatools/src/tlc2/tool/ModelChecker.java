@@ -244,7 +244,8 @@ public class ModelChecker extends AbstractChecker
         		// Reclaim memory for in-degree calculation
         		System.gc();
 
-        		final BucketStatistics inDegree = new BucketStatistics("Histogram vertex in-degree");
+				final BucketStatistics inDegree = new BucketStatistics("Histogram vertex in-degree", LiveCheck.class
+						.getPackage().getName(), "DiskGraphsInDegree");
         		LiveCheck.calculateInDegreeDiskGraphs(inDegree);
         		MP.printStats(inDegree, LiveCheck.outDegreeGraphStats);
         	}

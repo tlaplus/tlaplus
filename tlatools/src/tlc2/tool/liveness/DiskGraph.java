@@ -85,7 +85,7 @@ public class DiskGraph {
 
 	private final BucketStatistics outDegreeGraphStats;
 
-	public DiskGraph(String metadir, int soln, boolean hasTableau, BucketStatistics graphStats) throws IOException {
+	public DiskGraph(String metadir, int soln, boolean hasTableau, final BucketStatistics graphStats) throws IOException {
 		this.metadir = metadir;
 		this.outDegreeGraphStats = graphStats;
 		this.chkptName = metadir + FileUtil.separator + "dgraph_" + soln;
