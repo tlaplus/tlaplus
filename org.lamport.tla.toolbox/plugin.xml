@@ -714,6 +714,14 @@
                style="push"
                >
          </command>
+         <command
+               commandId="toolbox.command.spec.close"
+               id="toolbox.popupmenu.close"
+               label="Close"
+               mnemonic="C"
+               style="push"
+               >
+         </command>
       </menuContribution>
 
       <menuContribution
@@ -860,6 +868,24 @@
       <handler
             class="org.lamport.tla.toolbox.ui.handler.OpenSpecHandlerDelegate"
             commandId="toolbox.command.cnf.open.delegate">
+		    <enabledWhen>
+		            <count value="1" />
+		    </enabledWhen>
+		    <activeWhen>
+         <with
+               variable="selection">
+            <iterate
+                  operator="or">
+               <instanceof
+                     value="org.lamport.tla.toolbox.spec.Spec">
+               </instanceof>
+            </iterate>
+         </with>
+		    </activeWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.CloseSpecHandler"
+            commandId="toolbox.command.spec.close">
 		    <enabledWhen>
 		            <count value="1" />
 		    </enabledWhen>
