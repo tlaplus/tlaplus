@@ -109,6 +109,7 @@ public class DiskGraph {
 	}
 
 	public final void createCache() {
+		// Make array length a function of the available (heap) memory
 		this.gnodes = new GraphNode[65536];
 	}
 
@@ -170,6 +171,7 @@ public class DiskGraph {
 	/* Get the graph node at the file location ptr. */
 	public final GraphNode getNode(long stateFP, int tidx, long ptr) throws IOException {
 		// Get from memory cache if cached:
+		//TODO Adapt mask to array length iff array length is a func of available memory
 		int idx = (int) (stateFP + tidx) & 0xFFFF;
 		GraphNode gnode = this.gnodes[idx];
 		if (gnode != null && gnode.stateFP == stateFP && gnode.tindex == tidx) {
