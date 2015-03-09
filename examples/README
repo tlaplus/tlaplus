@@ -6,13 +6,16 @@ allocator
    Specification of a resource allocator, written by Stephan
    Merz.
 
-dijkstra-mutex
-   A PlusCal version of the first published mutual exclusion
-   algorithm, written by Edsger Dijkstra.
-
+CarTalkPuzzle
+   A TLA+ specification of the solution to a nice puzzle.
+   
 DieHard
    A very elementary example based on a puzzle from a movie.
    It provides a good first introduction to TLA+.
+
+dijkstra-mutex
+   A PlusCal version of the first published mutual exclusion
+   algorithm, written by Edsger Dijkstra.
 
 N-Queens
    TLA+ and PlusCal descriptions of a solution to the N queens
@@ -32,8 +35,12 @@ Prisoners
    why the solution is correct.
       
 SpecifyingSystems
-  Examples to accompany the book Specifying Systems
+  Examples to accompany the book Specifying Systems.
  
+Stones
+   Another specification that solves the same proble as
+   CarTalkPuzzle.
+   
 TwoPhase
    A specification of a very simple hardware protocol and of 
    the problem it solves.  This is a nice example of the use

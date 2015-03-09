@@ -241,8 +241,22 @@ public class NewSpecWizardPage extends WizardPage
                 // make sure module name does not violate valid spec name rules
                 // see http://bugzilla.tlaplus.net/show_bug.cgi?id=112
             } else if(!ResourceHelper.isValidSpecName(ResourceHelper.getModuleNameChecked(rootfilePath, false))) {
-                	reportError("Module name is not valid. The module name '" + ResourceHelper.getModuleNameChecked(rootfilePath, false) + "' is not a valid identifier");
-                	return;
+            	// Give the user a hint what a valid spec name might be. E.g. if "Foo.tla" is given,
+            	// a valid spec name is "Foo" (without the ".tla" file extension).
+            	final String moduleNameChecked = ResourceHelper.getModuleNameChecked(rootfilePath, false);
+            	final String validIdenfier = ResourceHelper.getIdentifier(moduleNameChecked);
+				if ("".equals(validIdenfier)) {
+					reportError("Module name is not valid. The module name '"
+							+ ResourceHelper.getModuleNameChecked(rootfilePath, false) + "' is not a valid identifier.");
+					reportError(String.format(
+							"Module name is not valid. The module name '%s' is not a valid identifier.",
+							moduleNameChecked));
+				} else {
+					reportError(String
+							.format("Module name is not valid. The module name '%s' is not a valid identifier. Did you mean '%s' instead?",
+									moduleNameChecked, validIdenfier));
+				}
+                return;
             } else
             {
                 Spec existingSpec = Activator.getSpecManager().getSpecByRootModule(rootfilePath);
@@ -263,7 +277,18 @@ public class NewSpecWizardPage extends WizardPage
                 reportError("Please provide a specification name");
                 return;
             } else if(!ResourceHelper.isValidSpecName(specName)) {
-            	reportError("Specification name is not valid. The specification name '" + specName + "' is not a valid identifier");
+            	// Give the user a hint what a valid spec name might be. E.g. if "Foo.tla" is given,
+            	// a valid spec name is "Foo" (without the ".tla" file extension).
+            	final String validIdenfier = ResourceHelper.getIdentifier(specName);
+				if ("".equals(validIdenfier)) {
+					reportError(String.format(
+							"Specification name is not valid. The specification name '%s' is not a valid identifier.",
+							specName, validIdenfier));
+				} else {
+					reportError(String
+							.format("Specification name is not valid. The specification name '%s' is not a valid identifier. Did you mean '%s' instead?",
+									specName, validIdenfier));
+				}
                 return;
             } else
             {

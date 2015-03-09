@@ -99,6 +99,15 @@ public class ModelEditorPartListener implements IPartListener2
      */
     public void partVisible(IWorkbenchPartReference partRef)
     {
+		// TODO The ModelEditor and TLC Errors part might be stacked on the same
+		// part view. This triggers a StackOverflow due to cyclic part
+		// activation.
+    	// 0) Model with errors
+    	// 1) Drag the model editor on top of the TLC error view
+    	// 2) Change focus from model editor, to TLC error and spec editor a couple of times
+    	// 3) Run the model
+    	// 4) Cycle focus
+    	System.out.println(String.format("Part has become visislbe: %s", partRef.getTitle()));
         IWorkbenchPart part = partRef.getPart(false);
 
         if (part != null && part instanceof ModelEditor)

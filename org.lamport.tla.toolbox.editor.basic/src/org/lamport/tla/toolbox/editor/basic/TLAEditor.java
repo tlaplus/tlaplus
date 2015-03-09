@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -197,7 +198,9 @@ public class TLAEditor extends TextEditor
         }
         // grab context service and activate the context on editor load
         this.contextService = (IContextService) getSite().getService(IContextService.class);
+        Assert.isNotNull(contextService);
         this.contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
+        Assert.isNotNull(contextActivation);
 
         /*
          * This resource change listener listens to changes
