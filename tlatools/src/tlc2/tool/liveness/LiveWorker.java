@@ -54,7 +54,7 @@ public class LiveWorker extends IdThread {
 	 * Returns true iff either an error has not found or the error is found by
 	 * this thread.
 	 */
-	public/* static synchronized */boolean setErrFound() {
+	private/* static synchronized */boolean setErrFound() {
 		synchronized (workerLock) {
 			if (errFoundByThread == -1) {
 				errFoundByThread = this.myGetId(); // GetId();
@@ -77,7 +77,7 @@ public class LiveWorker extends IdThread {
 	 * the SCC algorithm. Thus, it is Tarjan's SCC algorithm at work
 	 * (http://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm).
 	 */
-	public final void checkSccs() throws IOException {
+	private final void checkSccs() throws IOException {
 		// Initialize this.dg:
 		this.dg.makeNodePtrTbl();
 		
@@ -235,7 +235,7 @@ public class LiveWorker extends IdThread {
 	 * satisfiable, this pem contains a counterexample, and this method then
 	 * calls printErrorTrace to print an error trace and returns false.
 	 */
-	public boolean checkComponent(final long state, final int tidx, final MemIntStack comStack) throws IOException {
+	private boolean checkComponent(final long state, final int tidx, final MemIntStack comStack) throws IOException {
 //		final int comStackSize = comStack.size();
 //		Assert.check(comStackSize > 0, EC.GENERAL);
 		
