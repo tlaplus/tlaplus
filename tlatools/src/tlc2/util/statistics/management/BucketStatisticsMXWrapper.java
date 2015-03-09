@@ -49,7 +49,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getObjectName()
 	 */
-	@Override
 	public String getObjectName() {
 		return objectName;
 	}
@@ -57,7 +56,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getObservations()
 	 */
-	@Override
 	public long getObservations() {
 		return graphStats.getObservations();
 	}
@@ -65,7 +63,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getMedian()
 	 */
-	@Override
 	public int getMedian() {
 		return graphStats.getMedian();
 	}
@@ -73,7 +70,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getMean()
 	 */
-	@Override
 	public double getMean() {
 		return graphStats.getMean();
 	}
@@ -81,7 +77,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getMin()
 	 */
-	@Override
 	public int getMin() {
 		return graphStats.getMin();
 	}
@@ -89,7 +84,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getMax()
 	 */
-	@Override
 	public int getMax() {
 		return graphStats.getMax();
 	}
@@ -97,7 +91,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getStdDev()
 	 */
-	@Override
 	public double getStdDev() {
 		return graphStats.getStdDev();
 	}
@@ -105,7 +98,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#get75Percentile()
 	 */
-	@Override
 	public double get75Percentile() {
 		return graphStats.getPercentile(0.75d);
 	}
@@ -113,7 +105,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#get95Percentile()
 	 */
-	@Override
 	public double get95Percentile() {
 		return graphStats.getPercentile(0.95d);
 	}
@@ -121,7 +112,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#get98Percentile()
 	 */
-	@Override
 	public double get98Percentile() {
 		return graphStats.getPercentile(0.98d);
 	}
@@ -129,7 +119,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#get99Percentile()
 	 */
-	@Override
 	public double get99Percentile() {
 		return graphStats.getPercentile(0.99d);
 	}
@@ -137,7 +126,6 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#get999Percentile()
 	 */
-	@Override
 	public double get999Percentile() {
 		return graphStats.getPercentile(0.999d);
 	}
