@@ -523,8 +523,6 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	public static OrderOfSolution[] processLiveness(Tool tool, String metadir) {
 		LiveExprNode lexpr = parseLiveness(tool);
 
-		lexpr.toString();
-		
 		if (lexpr == null) {
 			return new OrderOfSolution[0];
 		}
