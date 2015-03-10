@@ -7,6 +7,18 @@ package tlc2.tool.liveness;
 
 import java.io.PrintStream;
 
+/*
+ * Roughly speaking, each temporal formula maps 1:1 to OrderOfSolution. Say TLC is set to check
+ * the three temporal formulas A, B, C, there will be three OrderOfSolution instances 
+ * (one for each of formula). More precisely, each conjunct is represented by an OOS.
+ * 
+ * For details, see page 405 to 408 of "Temporal verification of Reactive Systems * safety *"
+ * by Manna and Pnueli (abbreviated to "MP book" in most of TLC's code comments).
+ *  
+ * Note that TLC does *not* check if A, B or C are identical formulas. If TLC is set to
+ * check A, A, A (it will still create three OrderOfSolutions). It is up to the
+ * user to prevent this.
+ */
 public class OrderOfSolution {
 	/**
 	 * The algorithm will decompose the fairness spec /\ ~check into a
@@ -27,6 +39,10 @@ public class OrderOfSolution {
 	 * closure.
 	 */
 
+	/*
+	 * The size of the tableaux graph is a function of the amount of 
+	 * disjuncts in the temporal formuals.
+	 */
 	public TBGraph tableau; // tableau graph
 	public LNEven[] promises; // promises in the tableau
 	public LiveExprNode[] checkState; // state subformula
