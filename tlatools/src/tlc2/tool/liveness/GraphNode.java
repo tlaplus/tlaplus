@@ -89,6 +89,17 @@ public class GraphNode {
 		}
 	}
 
+	private int offset = -1;
+	
+	public final void grow(int records) {
+		final int len = this.nnodes.length;
+		int[] newNodes = new int[len + (3 * records)];
+		System.arraycopy(this.nnodes, 0, newNodes, 0, len);
+		this.nnodes = newNodes;
+		
+		this.offset = len;
+	}
+	
 	/* Add a new transition to the node target. */
 	public final void addTransition(long fp, int tidx, int slen, int alen, boolean[] acts) {
 		// Grows BitVector "checks" and sets the corresponding field to true if
@@ -101,14 +112,34 @@ public class GraphNode {
 				}
 			}
 		}
-		// Increase nnodes size by one node "record"
-		int len = this.nnodes.length;
-		int[] newNodes = new int[len + 3];
-		System.arraycopy(this.nnodes, 0, newNodes, 0, len);
-		newNodes[len] = (int) (fp >>> 32);
-		newNodes[len + 1] = (int) (fp & 0xFFFFFFFFL);
-		newNodes[len + 2] = tidx;
-		this.nnodes = newNodes;
+		// Increase nnodes size by one node "record"#
+		final int len = this.nnodes.length;
+		if (this.offset == -1) {
+			int[] newNodes = new int[len + 3];
+			System.arraycopy(this.nnodes, 0, newNodes, 0, len);
+			newNodes[len] = (int) (fp >>> 32);
+			newNodes[len + 1] = (int) (fp & 0xFFFFFFFFL);
+			newNodes[len + 2] = tidx;
+			this.nnodes = newNodes;
+		} else {
+			this.nnodes[this.offset] = (int) (fp >>> 32);
+			this.nnodes[this.offset + 1] = (int) (fp & 0xFFFFFFFFL);
+			this.nnodes[this.offset + 2] = tidx;
+			this.offset = this.offset + 3;
+			if (this.offset == this.nnodes.length) {
+				this.offset = -1;
+			}
+		}
+	}
+	
+	public void align() {
+		if (this.offset != -1) {
+			// shrink newNodes to correct size
+			int[] newNodes = new int[this.offset];
+			System.arraycopy(this.nnodes, 0, newNodes, 0, newNodes.length);
+			this.nnodes = newNodes;
+			this.offset = -1;
+		}
 	}
 	
 	/* Return true iff there is an outgoing edge to target. */

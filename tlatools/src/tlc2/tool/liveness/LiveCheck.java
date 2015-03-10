@@ -71,6 +71,9 @@ public class LiveCheck {
 			}
 		}
 	}
+	
+	private static long knownTransitions = 0L;
+	private static long newTransitions = 0L;
 
 	/**
 	 * This method adds new nodes into the behavior graph induced by s0. It is
@@ -93,7 +96,9 @@ public class LiveCheck {
 					// if there is no tableau ...
 					GraphNode node0 = new GraphNode(fp0, -1);
 					node0.setCheckState(checkStateRes);
+//					node0.addTransitions(nextStates, nextFPs, slen, alen, oos.checkAction);
 					int succCnt = nextStates.size();
+					node0.grow(succCnt);
 					for (int sidx = 0; sidx < succCnt; sidx++) {
 						TLCState s1 = nextStates.elementAt(sidx);
 						long fp1 = nextFPs.elementAt(sidx);
@@ -103,8 +108,12 @@ public class LiveCheck {
 								checkActionRes[i] = oos.checkAction[i].eval(myTool, s0, s1);
 							}
 							node0.addTransition(fp1, -1, slen, alen, checkActionRes);
+							newTransitions++;
+						} else {
+							knownTransitions++;
 						}
 					}
+					node0.align();
 					// Add a node for the current state:
 					dgraph.addNode(node0);
 				} else {
