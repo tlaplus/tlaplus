@@ -16,7 +16,6 @@ import java.util.Map;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
-import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
@@ -159,12 +158,7 @@ public class DiskGraph {
 		this.nodePtrRAF.writeInt(node.tindex);
 		this.nodePtrRAF.writeLongNat(ptr);
 		// Write fields of node to nodeRAF:
-		int cnt = node.nnodes.length;
-		this.nodeRAF.writeNat(cnt);
-		for (int i = 0; i < cnt; i++) {
-			this.nodeRAF.writeInt(node.nnodes[i]);
-		}
-		node.checks.write(this.nodeRAF);
+		node.write(this.nodeRAF);
 		return ptr;
 	}
 
@@ -181,16 +175,12 @@ public class DiskGraph {
 		// Have to get the node from disk:
 		long curPtr = this.nodeRAF.getFilePointer();
 		this.nodeRAF.seek(ptr);
-		int cnt = this.nodeRAF.readNat();
-		int[] nnodes = new int[cnt];
-		for (int i = 0; i < cnt; i++) {
-			nnodes[i] = this.nodeRAF.readInt();
-		}
-		BitVector checks = new BitVector();
-		checks.read(this.nodeRAF);
+
+		GraphNode gnode1 = new GraphNode(stateFP, tidx);
+		gnode1.read(this.nodeRAF);
+		
 		this.nodeRAF.seek(curPtr);
 
-		GraphNode gnode1 = new GraphNode(stateFP, tidx, nnodes, checks);
 		// Add to in-memory cache
 		if (gnode == null) {
 			this.gnodes[idx] = gnode1;

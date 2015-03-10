@@ -5,7 +5,10 @@
 
 package tlc2.tool.liveness;
 
+import java.io.IOException;
+
 import tlc2.util.BitVector;
+import tlc2.util.BufferedRandomAccessFile;
 
 public class GraphNode {
 	/**
@@ -24,22 +27,19 @@ public class GraphNode {
 	/**
 	 * Next nodes are the successor {@link GraphNode}s of the current {@link GraphNode}
 	 */
-	int[] nnodes; // outgoing links
-	BitVector checks; // truth values for state and action preds
+	private int[] nnodes; // outgoing links
+	private BitVector checks; // truth values for state and action preds
 	int tindex;
 
 	public GraphNode(long fp, int tindex) {
-		this.stateFP = fp;
-		this.nnodes = emptyIntArr;
-		this.checks = new BitVector(0);
-		this.tindex = tindex;
+		this(fp, tindex, emptyIntArr, new BitVector(0));
 	}
 
 	public GraphNode(long fp, int tindex, int[] nnodes, BitVector checks) {
 		this.stateFP = fp;
+		this.tindex = tindex;
 		this.nnodes = nnodes;
 		this.checks = checks;
-		this.tindex = tindex;
 	}
 
 	public final boolean equals(Object obj) {
@@ -91,6 +91,8 @@ public class GraphNode {
 
 	/* Add a new transition to the node target. */
 	public final void addTransition(long fp, int tidx, int slen, int alen, boolean[] acts) {
+		// Grows BitVector "checks" and sets the corresponding field to true if
+		// acts is true (false is default and thus can be ignored).
 		if (acts != null) {
 			int pos = slen + alen * this.succSize();
 			for (int i = 0; i < acts.length; i++) {
@@ -99,6 +101,7 @@ public class GraphNode {
 				}
 			}
 		}
+		// Increase nnodes size by one node "record"
 		int len = this.nnodes.length;
 		int[] newNodes = new int[len + 3];
 		System.arraycopy(this.nnodes, 0, newNodes, 0, len);
@@ -107,7 +110,7 @@ public class GraphNode {
 		newNodes[len + 2] = tidx;
 		this.nnodes = newNodes;
 	}
-
+	
 	/* Return true iff there is an outgoing edge to target. */
 	public final boolean transExists(long fp, int tidx) {
 		int len = this.nnodes.length;
@@ -126,6 +129,35 @@ public class GraphNode {
 		return tableau.getNode(this.tindex);
 	}
 
+	/**
+	 * Writes this {@link GraphNode} into the given {@link BufferedRandomAccessFile}
+	 * @param nodeRAF
+	 * @throws IOException
+	 */
+	void write(final BufferedRandomAccessFile nodeRAF) throws IOException {
+		// Write nnodes
+		final int cnt = nnodes.length;
+		nodeRAF.writeNat(cnt);
+		for (int i = 0; i < cnt; i++) {
+			nodeRAF.writeInt(nnodes[i]);
+		}
+		// Write checks
+		checks.write(nodeRAF);
+	}
+
+	void read(final BufferedRandomAccessFile nodeRAF) throws IOException {
+		// Read nnodes
+		final int cnt = nodeRAF.readNat();
+		nnodes = new int[cnt];
+		for (int i = 0; i < cnt; i++) {
+			nnodes[i] = nodeRAF.readInt();
+		}
+		// Read checks
+		checks = new BitVector();
+		checks.read(nodeRAF);
+	}
+
+	
 	public final String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("<" + this.stateFP + "," + this.tindex + "> --> ");
