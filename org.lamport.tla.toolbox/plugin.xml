@@ -336,14 +336,12 @@
             name="Open Parsing Errors view">
       </command>
       <command
-            defaultHandler="org.lamport.tla.toolbox.ui.handler.ForgetSpecHandler"
             description="Removes spec from list of specs known to Toolbox."
             helpContextId="Remove from list of specs known to the Toolbox."
             id="org.lamport.tla.toolbox.forget"
             name="Forget Specification">
       </command>
       <command
-            defaultHandler="org.lamport.tla.toolbox.ui.handler.RefreshSpecHandler"
             description="Refresh selected specification."
             id="org.lamport.tla.toolbox.refresh"
             name="Refresh Specification">
@@ -970,6 +968,29 @@
       <handler
             class="org.lamport.tla.toolbox.ui.handler.ForgetSpecHandler"
             commandId="org.lamport.tla.toolbox.forget">
+         <enabledWhen>
+            <not>
+               <count
+                     value="0">
+               </count>
+            </not>
+         </enabledWhen>
+         <activeWhen>
+            <with
+                  variable="selection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof
+                        value="org.lamport.tla.toolbox.spec.Spec">
+                  </instanceof>
+               </iterate>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.RefreshSpecHandler"
+            commandId="org.lamport.tla.toolbox.refresh">
          <enabledWhen>
             <not>
                <count
