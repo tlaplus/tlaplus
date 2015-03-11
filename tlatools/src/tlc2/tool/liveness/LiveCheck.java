@@ -106,7 +106,7 @@ public class LiveCheck {
 							node0.addTransition(fp1, -1, slen, alen, checkActionRes);
 						}
 					}
-					node0.realign();
+					node0.realign(succCnt);
 					// Add a node for the current state:
 					dgraph.addNode(node0);
 				} else {
@@ -122,6 +122,7 @@ public class LiveCheck {
 						GraphNode node0 = new GraphNode(fp0, tidx0);
 						node0.setCheckState(checkStateRes);
 						int succCnt = nextStates.size();
+						node0.allocate(succCnt * tnode0.nextSize());
 						for (int sidx = 0; sidx < succCnt; sidx++) {
 							TLCState s1 = nextStates.elementAt(sidx);
 							long fp1 = nextFPs.elementAt(sidx);
@@ -159,6 +160,7 @@ public class LiveCheck {
 								}
 							}
 						}
+						node0.realign(succCnt * tnode0.nextSize());
 						dgraph.addNode(node0);
 					}
 				}

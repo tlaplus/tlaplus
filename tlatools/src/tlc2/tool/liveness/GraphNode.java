@@ -182,6 +182,20 @@ public class GraphNode {
 		}
 	}
 	
+	public void realign(int transitionsAllocated) {
+		if (this.offset != -1) {
+			// Could have fitted this many extra transitions into 
+			// memory
+			int transitionsRemaining = (this.nnodes.length - this.offset) / 3;
+			// Raise warning of overhead has been > 50%
+			if((this.offset / transitionsAllocated) < 0.5d) {
+				System.out.println(String.format("WARNING: overhead > 50%%. Still free: %s of %s", transitionsRemaining, transitionsAllocated));
+			}
+		}
+		realign();
+	}
+
+	
 	/* Return true iff there is an outgoing edge to target. */
 	public final boolean transExists(long fp, int tidx) {
 		int len = this.nnodes.length;
