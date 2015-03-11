@@ -89,11 +89,44 @@ public class GraphNode {
 		}
 	}
 
+	/**
+	 * Points to the first available slot in {@link GraphNode#nnodes} iff free
+	 * slots are available. "-1" indicates no free slots are available.
+	 * @see GraphNode#allocate(int)
+	 */
 	private int offset = -1;
 	
-	public final void grow(int records) {
+	/**
+	 * Allocates memory for subsequent
+	 * {@link GraphNode#addTransition(long, int, int, int, boolean[])} calls.
+	 * This is useful if
+	 * {@link GraphNode#addTransition(long, int, int, int, boolean[])} gets
+	 * invoked from within a loop when the approximate number of invocations is
+	 * known in advance. In this case {@link GraphNode} can reserve the memory
+	 * for the number of transitions in advance which greatly improves the
+	 * insertion time of
+	 * {@link GraphNode#addTransition(long, int, int, int, boolean[])}. Once all
+	 * transitions have been added to via
+	 * {@link GraphNode#addTransition(long, int, int, int, boolean[])},
+	 * optionally call the {@link GraphNode#realign()} method to discard of
+	 * unused memory.
+	 * <p>
+	 * Technically this essentially grows GraphNode's internal data structure.
+	 * <p>
+	 * Do note that you can call addTransition <em>without</em> calling allocate
+	 * first. It then automatically allocates a memory for a <em>single</em>
+	 * transition.
+	 * 
+	 * @param transitions
+	 *            The approximate number of transitions that will be added
+	 *            subsequently.
+	 *            
+	 * @see GraphNode#addTransition(long, int, int, int, boolean[])
+	 * @see GraphNode#realign()           
+	 */
+	public final void allocate(int transitions) {
 		final int len = this.nnodes.length;
-		int[] newNodes = new int[len + (3 * records)];
+		int[] newNodes = new int[len + (3 * transitions)];
 		System.arraycopy(this.nnodes, 0, newNodes, 0, len);
 		this.nnodes = newNodes;
 		
@@ -113,8 +146,8 @@ public class GraphNode {
 			}
 		}
 		// Increase nnodes size by one node "record"#
-		final int len = this.nnodes.length;
 		if (this.offset == -1) {
+			final int len = this.nnodes.length;
 			int[] newNodes = new int[len + 3];
 			System.arraycopy(this.nnodes, 0, newNodes, 0, len);
 			newNodes[len] = (int) (fp >>> 32);
@@ -132,7 +165,14 @@ public class GraphNode {
 		}
 	}
 	
-	public void align() {
+	/**
+	 * Trims {@link GraphNode}'s internal data structure to its current real
+	 * memory requirement.
+	 * 
+	 * @see GraphNode#allocate(int)
+	 */
+	public void realign() {
+		// It is a noop iff offset == -1
 		if (this.offset != -1) {
 			// shrink newNodes to correct size
 			int[] newNodes = new int[this.offset];
