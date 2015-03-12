@@ -25,7 +25,7 @@ public class LiveCheck {
 	protected static DiskGraph[] dgraphs;
 	public static BucketStatistics outDegreeGraphStats;
 	
-	// SZ: fields not read localy
+	// SZ: fields not read locally
 	// private static OrderOfSolution currentOOS;
 	// private static DiskGraph currentDG;
 	// private static PossibleErrorModel currentPEM;
@@ -88,13 +88,13 @@ public class LiveCheck {
 			for (int i = 0; i < slen; i++) {
 				checkStateRes[i] = oos.checkState[i].eval(myTool, s0, null);
 			}
+			int cnt = 0;
 			synchronized (oos) {
 				if (oos.tableau == null) {
 					// if there is no tableau ...
 					GraphNode node0 = new GraphNode(fp0, -1);
 					node0.setCheckState(checkStateRes);
 					int succCnt = nextStates.size();
-					node0.allocate(succCnt);
 					for (int sidx = 0; sidx < succCnt; sidx++) {
 						TLCState s1 = nextStates.elementAt(sidx);
 						long fp1 = nextFPs.elementAt(sidx);
@@ -103,10 +103,26 @@ public class LiveCheck {
 							for (int i = 0; i < alen; i++) {
 								checkActionRes[i] = oos.checkAction[i].eval(myTool, s0, s1);
 							}
-							node0.addTransition(fp1, -1, slen, alen, checkActionRes);
+							// Eagerly allocate as many (N) transitions (outgoing arcs)
+							// as we are maximally going to add within the for
+							// loop. This reduces GraphNode's internal and
+							// *performance-wise expensive* System.arraycopy calls
+							// from N invocations to one (best case) or two (worst
+							// case). It has been found empirically (VoteProof) that
+							// the best case is used most of the time (99%).
+							// It should also minimize the work created for Garbage
+							// Collection to clean up even in the worst-case (two invocations)
+							// when the pre-allocated memory has to be freed (see
+							// realign call).
+							// Rather than allocating N memory regions and freeing
+							// N-1 immediately after, it now just has to free a
+							// single one (and only iff we over-allocated).
+							node0.addTransition(fp1, -1, slen, alen, checkActionRes, (succCnt - cnt++));
+						} else {
+							cnt++;
 						}
 					}
-					node0.realign(succCnt);
+					node0.realign(); // see node0.addTransition() hint
 					// Add a node for the current state:
 					dgraph.addNode(node0);
 				} else {
@@ -116,13 +132,14 @@ public class LiveCheck {
 					if (nodes == null) {
 						continue;
 					}
+					final int succCnt = nextStates.size();
+					// See node0.addTransition(..) of previous case.
+					final int allocationHint = ((nodes.length / 3) * succCnt);
 					for (int nidx = 2; nidx < nodes.length; nidx += 3) {
 						int tidx0 = nodes[nidx];
 						TBGraphNode tnode0 = oos.tableau.getNode(tidx0);
 						GraphNode node0 = new GraphNode(fp0, tidx0);
 						node0.setCheckState(checkStateRes);
-						int succCnt = nextStates.size();
-						node0.allocate(succCnt * tnode0.nextSize());
 						for (int sidx = 0; sidx < succCnt; sidx++) {
 							TLCState s1 = nextStates.elementAt(sidx);
 							long fp1 = nextFPs.elementAt(sidx);
@@ -139,7 +156,7 @@ public class LiveCheck {
 											}
 											noActionRes = false;
 										}
-										node0.addTransition(fp1, tnode1.index, slen, alen, checkActionRes);
+										node0.addTransition(fp1, tnode1.index, slen, alen, checkActionRes, allocationHint - cnt++);
 										// Record that we have seen <fp1,
 										// tnode1>. If fp1 is done, we have
 										// to compute the next states for <fp1,
@@ -156,11 +173,15 @@ public class LiveCheck {
 										}
 										noActionRes = false;
 									}
-									node0.addTransition(fp1, tnode1.index, slen, alen, checkActionRes);
+									node0.addTransition(fp1, tnode1.index, slen, alen, checkActionRes, allocationHint - cnt++);
+								} else {
+									// Increment cnt even if addTrasition is not called. After all, 
+									// the for loop has completed yet another iteration.
+									cnt++;
 								}
 							}
 						}
-						node0.realign(succCnt * tnode0.nextSize());
+						node0.realign(); // see node0.addTransition() hint
 						dgraph.addNode(node0);
 					}
 				}
@@ -184,9 +205,13 @@ public class LiveCheck {
 		GraphNode node = new GraphNode(fp, tnode.index);
 		node.setCheckState(checkStateRes);
 
+		// see allocationHint of node.addTransition() invocations below
+		int cnt = 0;
+		
 		// Add edges induced by s -> s:
 		boolean[] checkActionRes = null;
-		for (int i = 0; i < tnode.nextSize(); i++) {
+		final int nextSize = tnode.nextSize();
+		for (int i = 0; i < nextSize; i++) {
 			TBGraphNode tnode1 = tnode.nextAt(i);
 			int tidx1 = tnode1.index;
 			long ptr1 = dgraph.getPtr(fp, tidx1);
@@ -198,9 +223,11 @@ public class LiveCheck {
 							checkActionRes[m] = oos.checkAction[m].eval(myTool, s, s);
 						}
 					}
-					node.addTransition(fp, tidx1, slen, alen, checkActionRes);
+					node.addTransition(fp, tidx1, slen, alen, checkActionRes, (nextSize - cnt++));
 					dgraph.recordNode(fp, tnode1.index);
 					addNextState(s, fp, tnode1, oos, dgraph);
+				} else {
+					cnt++;
 				}
 			} else {
 				if (checkActionRes == null) {
@@ -209,11 +236,12 @@ public class LiveCheck {
 						checkActionRes[m] = oos.checkAction[m].eval(myTool, s, s);
 					}
 				}
-				node.addTransition(fp, tidx1, slen, alen, checkActionRes);
+				node.addTransition(fp, tidx1, slen, alen, checkActionRes, (nextSize - cnt++));
 			}
 		}
 
 		// Add edges induced by s -> s1:
+		cnt = 0;
 		for (int i = 0; i < actions.length; i++) {
 			StateVec nextStates = myTool.getNextStates(actions[i], s);
 			int nextCnt = nextStates.size();
@@ -227,6 +255,7 @@ public class LiveCheck {
 						TBGraphNode tnode1 = tnode.nextAt(k);
 						int tidx1 = tnode1.index;
 						long ptr1 = dgraph.getPtr(fp1, tidx1);
+						final int total = actions.length * nextCnt * tnode.nextSize();
 						if (ptr1 == -1) {
 							if (tnode1.isConsistent(s1, myTool)) {
 								if (checkActionRes == null) {
@@ -235,7 +264,7 @@ public class LiveCheck {
 										checkActionRes[m] = oos.checkAction[m].eval(myTool, s, s1);
 									}
 								}
-								node.addTransition(fp1, tidx1, slen, alen, checkActionRes);
+								node.addTransition(fp1, tidx1, slen, alen, checkActionRes, (total - cnt++));
 								// Record that we have seen <fp1, tnode1>. If
 								// fp1 is done, we have to compute the next
 								// states for <fp1, tnode1>.
@@ -251,12 +280,17 @@ public class LiveCheck {
 									checkActionRes[m] = oos.checkAction[m].eval(myTool, s, s1);
 								}
 							}
-							node.addTransition(fp1, tidx1, slen, alen, checkActionRes);
+							node.addTransition(fp1, tidx1, slen, alen, checkActionRes, (total - cnt++));
+						} else {
+							cnt++;
 						}
 					}
+				} else {
+					cnt++;
 				}
 			}
 		}
+		node.realign(); // see node.addTransition() hint
 		dgraph.addNode(node);
 	}
 

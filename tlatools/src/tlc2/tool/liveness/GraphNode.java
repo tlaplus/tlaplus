@@ -124,7 +124,7 @@ public class GraphNode {
 	 * @see GraphNode#addTransition(long, int, int, int, boolean[])
 	 * @see GraphNode#realign()           
 	 */
-	public final void allocate(int transitions) {
+	private final void allocate(final int transitions) {
 		final int len = this.nnodes.length;
 		int[] newNodes = new int[len + (3 * transitions)];
 		System.arraycopy(this.nnodes, 0, newNodes, 0, len);
@@ -133,8 +133,29 @@ public class GraphNode {
 		this.offset = len;
 	}
 	
-	/* Add a new transition to the node target. */
-	public final void addTransition(long fp, int tidx, int slen, int alen, boolean[] acts) {
+	/**
+	 * Add a new transition to the node target.
+	 * 
+	 * @param fp
+	 *            fingerprint to add
+	 * @param tidx
+	 *            tableau index to add
+	 * @param slen
+	 *            number of solutions
+	 * @param alen
+	 *            number of actions
+	 * @param acts
+	 *            actions
+	 * @param allocationHint
+	 *            A (Naturals \ {0}) hint telling the method's implementation
+	 *            how many memory to allocate for subsequent transition
+	 *            additions (used when called from within for loop). Zero or
+	 *            negative hints are ignored. Negative hints are the result of
+	 *            nested for loop where the 1. iteration produces a bad average
+	 *            of how many additions are made across all iterations.
+	 * @see GraphNode#allocate(int)
+	 */
+	public final void addTransition(long fp, int tidx, int slen, int alen, boolean[] acts, final int allocationHint) {
 		// Grows BitVector "checks" and sets the corresponding field to true if
 		// acts is true (false is default and thus can be ignored).
 		if (acts != null) {
@@ -145,23 +166,17 @@ public class GraphNode {
 				}
 			}
 		}
-		// Increase nnodes size by one node "record"#
 		if (this.offset == -1) {
-			final int len = this.nnodes.length;
-			int[] newNodes = new int[len + 3];
-			System.arraycopy(this.nnodes, 0, newNodes, 0, len);
-			newNodes[len] = (int) (fp >>> 32);
-			newNodes[len + 1] = (int) (fp & 0xFFFFFFFFL);
-			newNodes[len + 2] = tidx;
-			this.nnodes = newNodes;
-		} else {
-			this.nnodes[this.offset] = (int) (fp >>> 32);
-			this.nnodes[this.offset + 1] = (int) (fp & 0xFFFFFFFFL);
-			this.nnodes[this.offset + 2] = tidx;
-			this.offset = this.offset + 3;
-			if (this.offset == this.nnodes.length) {
-				this.offset = -1;
-			}
+			// Have to create a new slot regardless of 0 or negative hint, thus
+			// Math.max...
+			this.allocate(Math.max(allocationHint, 1));
+		}
+		this.nnodes[this.offset] = (int) (fp >>> 32);
+		this.nnodes[this.offset + 1] = (int) (fp & 0xFFFFFFFFL);
+		this.nnodes[this.offset + 2] = tidx;
+		this.offset = this.offset + 3;
+		if (this.offset == this.nnodes.length) {
+			this.offset = -1;
 		}
 	}
 	
@@ -169,32 +184,24 @@ public class GraphNode {
 	 * Trims {@link GraphNode}'s internal data structure to its current real
 	 * memory requirement.
 	 * 
+	 * @return The number of over allocated memory of zero if memory allocated
+	 *         by corresponding allocate call has been used up.
+	 * 
 	 * @see GraphNode#allocate(int)
 	 */
-	public void realign() {
+	public int realign() {
+		int result = 0;
 		// It is a noop iff offset == -1
 		if (this.offset != -1) {
+			result = (this.nnodes.length - this.offset) / 3;
 			// shrink newNodes to correct size
 			int[] newNodes = new int[this.offset];
 			System.arraycopy(this.nnodes, 0, newNodes, 0, newNodes.length);
 			this.nnodes = newNodes;
 			this.offset = -1;
 		}
+		return result;
 	}
-	
-	public void realign(int transitionsAllocated) {
-		if (this.offset != -1) {
-			// Could have fitted this many extra transitions into 
-			// memory
-			int transitionsRemaining = (this.nnodes.length - this.offset) / 3;
-			// Raise warning of overhead has been > 50%
-			if((this.offset / transitionsAllocated) < 0.5d) {
-				System.out.println(String.format("WARNING: overhead > 50%%. Still free: %s of %s", transitionsRemaining, transitionsAllocated));
-			}
-		}
-		realign();
-	}
-
 	
 	/* Return true iff there is an outgoing edge to target. */
 	public final boolean transExists(long fp, int tidx) {
