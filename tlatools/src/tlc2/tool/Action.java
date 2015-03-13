@@ -12,8 +12,8 @@ public final class Action implements ToolGlobals, Serializable {
   /* A TLA+ action.   */
 
   /* Fields  */
-  public SemanticNode pred;     // Expression of the action
-  public Context con;           // Context of the action
+  public final SemanticNode pred;     // Expression of the action
+  public final Context con;           // Context of the action
 
   /* Constructors */
   public Action(SemanticNode pred, Context con) {

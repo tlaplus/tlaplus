@@ -10,7 +10,7 @@ import tlc2.tool.Tool;
 import tlc2.util.Context;
 
 abstract class LNState extends LiveExprNode {
-	private Context con;
+	private final Context con;
 	private int tag;
 
 	public LNState(Context con) {

@@ -27,9 +27,9 @@ import tlc2.util.Context;
  * 
  */
 class LNStateEnabled extends LNState {
-	private ExprNode pred;
-	private ExprNode subscript;
-	private boolean isBox;
+	private final ExprNode pred;
+	private final ExprNode subscript;
+	private final boolean isBox;
 
 	public LNStateEnabled(ExprNode pred, Context con, ExprNode subscript, boolean isBox) {
 		super(con);
