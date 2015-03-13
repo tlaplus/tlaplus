@@ -31,7 +31,7 @@ public abstract class SymbolNode extends LevelNode {
 
   protected final UniqueString name;    // the name of this symbol
 
-  SymbolNode(int kind, TreeNode stn, UniqueString name) {
+  protected SymbolNode(int kind, TreeNode stn, UniqueString name) {
     super(kind, stn);
     this.name = name;
   }
