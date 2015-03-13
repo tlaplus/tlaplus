@@ -50,11 +50,11 @@ public final class Context {
 		// to the searched for var. Stop if the Empty context (the base of all
 		// Context "chains") has been reached.
 		while (cur != Empty) {
-			// Check identity of value if not empty or branching
-			if (cur.name != null) {
-				if (var == cur.name) {
-					return cur.value;
-				}
+			// Check identity of value if match (this is slightly simpler
+			// compared to the second lookup method. Here we can ignore the else
+			// if branch since there is no cutoff.
+			if (var == cur.name) {
+				return cur.value;
 			}
 			cur = cur.next;
 		}
@@ -70,7 +70,7 @@ public final class Context {
 	 * @return value associated with the {@link SymbolNode} var or null if var
 	 *         could not be found in the search along the Context "chain"
 	 */
-	public final Object lookup(SymbolNode var, boolean cutoff) {
+	public final Object lookup(final SymbolNode var, final boolean cutoff) {
 		Context cur = this;
 		// Follow the linked list of Contexts (chain) starting at this context until a Context has been
 		// reached whose name (SymbolNode) is identical to the searched for var. Stop if the Context's
