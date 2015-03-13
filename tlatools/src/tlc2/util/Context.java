@@ -18,7 +18,7 @@ public final class Context {
 	private final Context next;
 
 	public final static Context Empty = new Context(null, null, null);
-
+	
 	private Context(SymbolNode name, Object value, Context next) {
 		this.name = name;
 		this.value = value;
@@ -38,42 +38,52 @@ public final class Context {
 	 * context does not contain var.
 	 */
 	public final Object lookup(SymbolNode var) {
-		Context cur;
-		for (cur = this; cur.name != null; cur = cur.next) {
-			if (var == cur.name) {
-				return cur.value;
+		Context cur = this;
+		// Follow the linked list of Contexts (chain) starting at this context
+		// until a Context has been reached whose name (SymbolNode) is identical
+		// to the searched for var. Stop if the Empty context (the base of all
+		// Context "chains") has been reached.
+		while (cur != Empty) {
+			// Check identity of value if not empty or branching
+			if (cur.name != null) {
+				if (var == cur.name) {
+					return cur.value;
+				}
 			}
+			cur = cur.next;
 		}
-		if (cur == Empty) {
-			return null;
-		}
-		return cur.next.lookup(var);
+		return null; // On Empty Context (end of chain), return null value
 	}
 
+	/**
+	 * @param var
+	 *            The SymbolNode to lookup
+	 * @param cutoff
+	 *            Iff true, lookup stops at a branching Context. Follows
+	 *            complete chain if false.
+	 * @return value associated with the {@link SymbolNode} var or null if var
+	 *         could not be found in the search along the Context "chain"
+	 */
 	public final Object lookup(SymbolNode var, boolean cutoff) {
-		Context cur;
+		Context cur = this;
 		// Follow the linked list of Contexts (chain) starting at this context until a Context has been
-		// reached whose name is identical to the searched for var. Stop if the Context
-		// has no name which is the case for a branching Context (see branch(..)
-		// above) and the Empty context (the base of all Context "chains").
-		for (cur = this; cur.name != null; cur = cur.next) {
-			if (var == cur.name) {
-				return cur.value;
+		// reached whose name (SymbolNode) is identical to the searched for var. Stop if the Context's
+		// name is null, which is the case for a branching Context (see branch(..)
+		// above) or the Empty context (the base of all Context "chains") has been reached.
+		while (cur != Empty) {
+			// Check identity of value if not empty or branching
+			if (cur.name != null) {
+				if (var == cur.name) {
+					return cur.value;
+				}
+			} else if (cutoff == true) {
+				// reached a branching context (value is null)
+				assert cur.value == null;
+				return null;
 			}
+			cur = cur.next;
 		}
-		// Following the Context chain has not produced a match and the end (the
-		// Empty context) has been reached.
-		if (cur == Empty || cutoff) {
-			return null;
-		}
-		// Make the next Context the first node and start all over again.
-		//
-		// TODO How can this ever lead to a match if the previous for loop has
-		// not found a match? Note it moves past the cur.name != null check if
-		// the cur's name is null (which undoubtedly is the case due to the for
-		// loop), but the next C. isn't. Logically it moves past a branching
-		// Context.
-		return cur.next.lookup(var);
+		return null; // On Empty Context (end of chain), return null value
 	}
 
 	public final StringBuffer toString(StringBuffer sb) {
