@@ -18,14 +18,20 @@ public final class Context {
 	private final Context next;
 
 	public final static Context Empty = new Context(null, null, null);
+	public final static Context BaseBranch = new Context(null, null, Empty);
 	
-	private Context(SymbolNode name, Object value, Context next) {
+	private Context(SymbolNode name, Object value, final Context next) {
 		this.name = name;
 		this.value = value;
 		this.next = next;
 	}
 
 	public static Context branch(Context base) {
+		if (base == Empty) {
+			// Avoid new instance if the next context in the chain is the Empty
+			// one (Branch -> Empty).
+			return BaseBranch;
+		}
 		return new Context(null, null, base);
 	}
 
