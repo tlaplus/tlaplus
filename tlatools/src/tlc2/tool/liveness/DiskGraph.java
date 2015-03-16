@@ -73,13 +73,16 @@ public class DiskGraph {
 		return loc < MAX_PTR;
 	}
 
-	private String metadir;
-	private String chkptName;
-	private BufferedRandomAccessFile nodeRAF;
-	private BufferedRandomAccessFile nodePtrRAF;
-	private NodePtrTable nodePtrTbl;
-	private LongVec initNodes;
-	private boolean hasTableau;
+	private final String metadir;
+	private final String chkptName;
+	private final BufferedRandomAccessFile nodeRAF;
+	private final BufferedRandomAccessFile nodePtrRAF;
+	private final NodePtrTable nodePtrTbl;
+	private final LongVec initNodes;
+	private final boolean hasTableau;
+	/**
+	 * In-memory cache
+	 */
 	private GraphNode[] gnodes;
 
 	private final BucketStatistics outDegreeGraphStats;
@@ -214,7 +217,7 @@ public class DiskGraph {
 		return this.nodePtrTbl.get(fp, tidx);
 	}
 
-	public final int[] getNodes(long stateFP) {
+	private final int[] getNodes(long stateFP) {
 		return this.nodePtrTbl.getNodes(stateFP);
 	}
 
@@ -230,7 +233,7 @@ public class DiskGraph {
 		this.nodePtrRAF.seek(ptr);
 	}
 
-	public final void makeNodePtrTbl(long ptr) throws IOException {
+	private final void makeNodePtrTbl(long ptr) throws IOException {
 		this.nodePtrRAF.seek(0);
 		if (this.hasTableau) {
 			while (this.nodePtrRAF.getFilePointer() < ptr) {
@@ -252,7 +255,7 @@ public class DiskGraph {
 		}
 	}
 
-	public final boolean isGood() {
+	private final boolean isGood() {
 		return this.nodePtrTbl.isGood();
 	}
 

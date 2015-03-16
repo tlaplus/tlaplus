@@ -12,7 +12,7 @@ class LNBool extends LiveExprNode {
 	public static final LNBool TRUE = new LNBool(true);
 	public static final LNBool FALSE = new LNBool(false);
 
-	protected boolean b;
+	protected final boolean b;
 
 	public LNBool(boolean b) {
 		this.b = b;

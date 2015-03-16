@@ -9,7 +9,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 
 class LNNext extends LiveExprNode {
-	private LiveExprNode body;
+	private final LiveExprNode body;
 
 	public LNNext(LiveExprNode body) {
 		this.body = body;

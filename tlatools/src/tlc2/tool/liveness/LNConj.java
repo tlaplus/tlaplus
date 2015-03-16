@@ -10,7 +10,7 @@ import tlc2.tool.Tool;
 import tlc2.util.Vect;
 
 class LNConj extends LiveExprNode {
-	private Vect conjs; // The conjuncts
+	private final Vect conjs; // The conjuncts
 	private int info;
 
 	public LNConj(int size) {

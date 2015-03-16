@@ -23,13 +23,13 @@ public class GraphNode {
 	 */
 	private final static int[] emptyIntArr = new int[0];
 
-	long stateFP; // fingerprint of the state
+	final long stateFP; // fingerprint of the state
 	/**
 	 * Next nodes are the successor {@link GraphNode}s of the current {@link GraphNode}
 	 */
 	private int[] nnodes; // outgoing links
 	private BitVector checks; // truth values for state and action preds
-	int tindex;
+	final int tindex;
 
 	public GraphNode(long fp, int tindex) {
 		this(fp, tindex, emptyIntArr, new BitVector(0));

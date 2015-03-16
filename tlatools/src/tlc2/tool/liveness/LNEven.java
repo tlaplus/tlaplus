@@ -18,7 +18,7 @@ import util.Assert;
  */
 class LNEven extends LiveExprNode {
 	private static final String EVENTUALLY = "<>";
-	private LiveExprNode body;
+	private final LiveExprNode body;
 
 	public LNEven(LiveExprNode body) {
 		this.body = body;

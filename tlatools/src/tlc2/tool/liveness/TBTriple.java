@@ -11,9 +11,9 @@ public class TBTriple {
 	 * triples. The alpha triples are (p/\q, p, q) and ([]p, p, O[]p). The beta
 	 * triples are (p\/q, p, q) and (<>p, p, O<>q).
 	 */
-	private LiveExprNode fa;
-	private LiveExprNode fb;
-	private LiveExprNode fc;
+	private final LiveExprNode fa;
+	private final LiveExprNode fb;
+	private final LiveExprNode fc;
 
 	public TBTriple(LiveExprNode a, LiveExprNode b, LiveExprNode c) {
 		this.fa = a;

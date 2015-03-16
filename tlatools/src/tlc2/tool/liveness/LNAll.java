@@ -21,7 +21,7 @@ class LNAll extends LiveExprNode {
 	 *
 	 */
 	private static final String ALWAYS = "[]";
-	private LiveExprNode body;
+	private final LiveExprNode body;
 
 	public LNAll(LiveExprNode body) {
 		this.body = body;

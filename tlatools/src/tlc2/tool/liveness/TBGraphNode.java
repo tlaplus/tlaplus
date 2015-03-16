@@ -18,10 +18,10 @@ public class TBGraphNode {
 	 * the particle at the moment of creation. They are later used in checking
 	 * if a state-node is consistent with a tableau-node.
 	 */
-	private TBPar par; // particle
-	public Vect nexts; // outlinks
+	private final TBPar par; // particle
+	public final Vect nexts; // outlinks
 	public int index; // unique id for this node
-	private LiveExprNode[] statePreds; // state predicates in the particle
+	private final LiveExprNode[] statePreds; // state predicates in the particle
 
 	public static TBGraphNode dummyNode = new TBGraphNode();
 

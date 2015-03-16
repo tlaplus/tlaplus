@@ -21,7 +21,7 @@ import util.Assert;
  * @version $Id$
  */
 class LNStateAST extends LNState {
-	private ExprNode body;
+	private final ExprNode body;
 
 	public LNStateAST(ExprNode body, Context con) {
 		super(con);

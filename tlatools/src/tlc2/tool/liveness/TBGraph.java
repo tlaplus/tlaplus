@@ -11,7 +11,7 @@ public class TBGraph extends Vect {
 	/**
 	 * TBGraph represents the nodes in the tableau graph.
 	 */
-	public LiveExprNode tf;
+	public final LiveExprNode tf;
 	private int initCnt;
 
 	public TBGraph(LiveExprNode tf) {
