@@ -601,20 +601,17 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		// We then create an OrderOfSolution for each tf in tfbin.
 		OrderOfSolution[] oss = new OrderOfSolution[tfbin.size()];
 		for (int i = 0; i < tfbin.size(); i++) {
-			oss[i] = new OrderOfSolution();
 			LiveExprNode tf = tfbin.exprAt(i);
 
 			if (tf == null) {
-				oss[i].tableau = null;
-				oss[i].promises = new LNEven[0];
+				oss[i] = new OrderOfSolution(new LNEven[0], tool);
 			} else {
 				LiveExprNode tf1 = tf.makeBinary();
-				oss[i].tableau = constructTableau(tf1, 0);
 				TBPar promises = new TBPar(10);
 				tf1.extractPromises(promises);
-				oss[i].promises = new LNEven[promises.size()];
+				oss[i] = new OrderOfSolution(constructTableau(tf1, 0), new LNEven[promises.size()], tool);
 				for (int j = 0; j < promises.size(); j++) {
-					oss[i].promises[j] = (LNEven) promises.exprAt(j);
+					oss[i].getPromises()[j] = (LNEven) promises.exprAt(j);
 				}
 			}
 
@@ -623,22 +620,22 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			Vect stateBin = new Vect();
 			Vect actionBin = new Vect();
 			Vect tfPems = (Vect) pembin.elementAt(i);
-			oss[i].pems = new PossibleErrorModel[tfPems.size()];
+			oss[i].setPems(new PossibleErrorModel[tfPems.size()]);
 			for (int j = 0; j < tfPems.size(); j++) {
 				OSExprPem pem = (OSExprPem) tfPems.elementAt(j);
-				oss[i].pems[j] = new PossibleErrorModel();
-				oss[i].pems[j].AEAction = addToBin(pem.AEAction, actionBin);
-				oss[i].pems[j].AEState = addToBin(pem.AEState, stateBin);
-				oss[i].pems[j].EAAction = addToBin(pem.EAAction, actionBin);
+				oss[i].getPems()[j] = new PossibleErrorModel();
+				oss[i].getPems()[j].AEAction = addToBin(pem.AEAction, actionBin);
+				oss[i].getPems()[j].AEState = addToBin(pem.AEState, stateBin);
+				oss[i].getPems()[j].EAAction = addToBin(pem.EAAction, actionBin);
 			}
 			// Finally, store the bins with the order of solution.
-			oss[i].checkState = new LiveExprNode[stateBin.size()];
+			oss[i].setCheckState(new LiveExprNode[stateBin.size()]);
 			for (int j = 0; j < stateBin.size(); j++) {
-				oss[i].checkState[j] = (LiveExprNode) stateBin.elementAt(j);
+				oss[i].getCheckState()[j] = (LiveExprNode) stateBin.elementAt(j);
 			}
-			oss[i].checkAction = new LiveExprNode[actionBin.size()];
+			oss[i].setCheckAction(new LiveExprNode[actionBin.size()]);
 			for (int j = 0; j < actionBin.size(); j++) {
-				oss[i].checkAction[j] = (LiveExprNode) actionBin.elementAt(j);
+				oss[i].getCheckAction()[j] = (LiveExprNode) actionBin.elementAt(j);
 			}
 		}
 		MP.printMessage(EC.TLC_LIVE_IMPLIED, String.valueOf(oss.length));

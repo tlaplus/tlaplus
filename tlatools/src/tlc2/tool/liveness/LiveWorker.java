@@ -103,8 +103,8 @@ public class LiveWorker extends IdThread {
 		}
 
 		final int[] eaaction = this.pem.EAAction;
-		final int slen = this.oos.checkState.length;
-		final int alen = this.oos.checkAction.length;
+		final int slen = this.oos.getCheckState().length;
+		final int alen = this.oos.getCheckAction().length;
 		
 		// Tarjan's stack
 		final MemIntStack dfsStack = new MemIntStack(LiveCheck.metadir, "dfs");
@@ -282,11 +282,11 @@ public class LiveWorker extends IdThread {
 		STATS.addSample(com.size());
 
 		// Check this component:
-		final int slen = this.oos.checkState.length;
-		final int alen = this.oos.checkAction.length;
+		final int slen = this.oos.getCheckState().length;
+		final int alen = this.oos.getCheckAction().length;
 		final int aeslen = this.pem.AEState.length;
 		final int aealen = this.pem.AEAction.length;
-		final int plen = this.oos.promises.length;
+		final int plen = this.oos.getPromises().length;
 		final boolean[] AEStateRes = new boolean[aeslen];
 		final boolean[] AEActionRes = new boolean[aealen];
 		final boolean[] promiseRes = new boolean[plen];
@@ -342,8 +342,8 @@ public class LiveWorker extends IdThread {
 				// Check that the component is fulfilling. (See MP page 453.)
 				// Note that the promises are precomputed and stored in oos.
 				for (int i = 0; i < plen; i++) {
-					LNEven promise = this.oos.promises[i];
-					TBPar par = curNode.getTNode(this.oos.tableau).getPar();
+					LNEven promise = this.oos.getPromises()[i];
+					TBPar par = curNode.getTNode(this.oos.getTableau()).getPar();
 					if (par.isFulfilling(promise)) {
 						promiseRes[i] = true;
 					}
@@ -377,8 +377,8 @@ public class LiveWorker extends IdThread {
 
 	/* Check if the node <state, tidx> stutters. */
 	private boolean isStuttering(long state, int tidx, long loc) throws IOException {
-		int slen = this.oos.checkState.length;
-		int alen = this.oos.checkAction.length;
+		int slen = this.oos.getCheckState().length;
+		int alen = this.oos.getCheckAction().length;
 
 		GraphNode gnode = this.dg.getNode(state, tidx, loc);
 		int succCnt = gnode.succSize();
@@ -404,11 +404,11 @@ public class LiveWorker extends IdThread {
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
 
 		// First, find a "bad" cycle from the "bad" scc.
-		int slen = this.oos.checkState.length;
-		int alen = this.oos.checkAction.length;
+		int slen = this.oos.getCheckState().length;
+		int alen = this.oos.getCheckAction().length;
 		boolean[] AEStateRes = new boolean[this.pem.AEState.length];
 		boolean[] AEActionRes = new boolean[this.pem.AEAction.length];
-		boolean[] promiseRes = new boolean[this.oos.promises.length];
+		boolean[] promiseRes = new boolean[this.oos.getPromises().length];
 		int cnt = AEStateRes.length + AEActionRes.length + promiseRes.length;
 
 		MemIntStack cycleStack = new MemIntStack(LiveCheck.metadir, "cycle");
@@ -435,9 +435,9 @@ public class LiveWorker extends IdThread {
 
 				// Check if the component is fulfilling. (See MP page 453.)
 				// Note that the promises are precomputed and stored in oos.
-				for (int i = 0; i < this.oos.promises.length; i++) {
-					LNEven promise = this.oos.promises[i];
-					TBPar par = curNode.getTNode(this.oos.tableau).getPar();
+				for (int i = 0; i < this.oos.getPromises().length; i++) {
+					LNEven promise = this.oos.getPromises()[i];
+					TBPar par = curNode.getTNode(this.oos.getTableau()).getPar();
 					if (!promiseRes[i] && par.isFulfilling(promise)) {
 						promiseRes[i] = true;
 						cnt--;
@@ -685,7 +685,7 @@ public class LiveWorker extends IdThread {
 				this.oos = LiveCheck.solutions[idx];
 				this.dg = LiveCheck.dgraphs[idx];
 				this.dg.createCache();
-				PossibleErrorModel[] pems = this.oos.pems;
+				PossibleErrorModel[] pems = this.oos.getPems();
 				for (int i = 0; i < pems.length; i++) {
 					if (!hasErrFound()) {
 						this.pem = pems[i];

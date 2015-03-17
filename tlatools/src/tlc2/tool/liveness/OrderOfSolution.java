@@ -7,6 +7,9 @@ package tlc2.tool.liveness;
 
 import java.io.PrintStream;
 
+import tlc2.tool.TLCState;
+import tlc2.tool.Tool;
+
 /*
  * Roughly speaking, each temporal formula maps 1:1 to OrderOfSolution. Say TLC is set to check
  * the three temporal formulas A, B, C, there will be three OrderOfSolution instances 
@@ -40,23 +43,34 @@ public class OrderOfSolution {
 	 */
 
 	/*
-	 * The size of the tableaux graph is a function of the amount of 
-	 * disjuncts in the temporal formuals.
+	 * The size of the tableau graph is a function of the amount of disjuncts
+	 * in the temporal formulas.
 	 */
-	public TBGraph tableau; // tableau graph
-	public LNEven[] promises; // promises in the tableau
-	public LiveExprNode[] checkState; // state subformula
-	public LiveExprNode[] checkAction; // action subformula
-	public PossibleErrorModel[] pems;
+	private final TBGraph tableau; // tableau graph
+	private final LNEven[] promises; // promises in the tableau
+	private LiveExprNode[] checkState; // state subformula
+	private LiveExprNode[] checkAction; // action subformula
+	private PossibleErrorModel[] pems;
+	private final Tool tool;
+
+	public OrderOfSolution(final LNEven[] livenessEventually, Tool aTool) {
+		this(null, livenessEventually, aTool);
+	}
+
+	public OrderOfSolution(final TBGraph aTableau, final LNEven[] livenessEventually, Tool aTool) {
+		tableau = aTableau;
+		promises = livenessEventually;
+		this.tool = aTool;
+	}
 
 	public final void printPromises(PrintStream ps) {
-		for (int i = 0; i < this.promises.length; i++) {
-			ps.println(this.promises[i].toString());
+		for (int i = 0; i < this.getPromises().length; i++) {
+			ps.println(this.getPromises()[i].toString());
 		}
 	}
 
 	public final String toString() {
-		if (this.pems.length == 0) {
+		if (this.getPems().length == 0) {
 			return "";
 		}
 		StringBuffer sb = new StringBuffer();
@@ -66,31 +80,83 @@ public class OrderOfSolution {
 
 	public final void toString(StringBuffer sb) {
 		String padding = "";
-		int plen = this.pems.length;
+		int plen = this.getPems().length;
 
-		if (this.tableau != null) {
-			if (plen == 1 && this.pems[0].isEmpty()) {
-				this.tableau.tf.toString(sb, "   ");
+		if (this.hasTableau()) {
+			if (plen == 1 && this.getPems()[0].isEmpty()) {
+				this.getTableau().tf.toString(sb, "   ");
 				return;
 			} else {
 				sb.append("/\\ ");
-				this.tableau.tf.toString(sb, "   ");
+				this.getTableau().tf.toString(sb, "   ");
 				sb.append("\n/\\ ");
 				padding = "   ";
 			}
 		}
 
 		if (plen == 1) {
-			this.pems[0].toString(sb, padding, this.checkState, this.checkAction);
+			this.getPems()[0].toString(sb, padding, checkState, this.getCheckAction());
 		} else {
 			sb.append("\\/ ");
 			String padding1 = padding + "   ";
-			this.pems[0].toString(sb, padding1, this.checkState, this.checkAction);
+			this.getPems()[0].toString(sb, padding1, checkState, this.getCheckAction());
 			for (int i = 1; i < plen; i++) {
 				sb.append(padding + "\\/ ");
-				this.pems[i].toString(sb, padding1, this.checkState, this.checkAction);
+				this.getPems()[i].toString(sb, padding1, checkState, this.getCheckAction());
 			}
 		}
 	}
 
+	public TBGraph getTableau() {
+		return tableau;
+	}
+
+	public boolean hasTableau() {
+		return tableau != null;
+	}
+
+	public LNEven[] getPromises() {
+		return promises;
+	}
+
+	public LiveExprNode[] getCheckState() {
+		return checkState;
+	}
+	
+	public boolean[] checkState(final TLCState state) {
+		final boolean[] result = new boolean[checkState.length];
+		for (int i = 0; i < checkState.length; i++) {
+			result[i] = checkState[i].eval(tool, state, null);
+		}
+		return result;
+	}
+
+	void setCheckState(LiveExprNode[] checkState) {
+		this.checkState = checkState;
+	}
+
+
+	public boolean[] checkAction(final TLCState state0, final TLCState state1) {
+		final boolean[] result = new boolean[checkAction.length];
+		for (int i = 0; i < checkAction.length; i++) {
+			result[i] = checkAction[i].eval(tool, state0, state1);
+		}
+		return result;
+	}
+	
+	public LiveExprNode[] getCheckAction() {
+		return checkAction;
+	}
+
+	void setCheckAction(LiveExprNode[] checkAction) {
+		this.checkAction = checkAction;
+	}
+
+	public PossibleErrorModel[] getPems() {
+		return pems;
+	}
+
+	void setPems(PossibleErrorModel[] pems) {
+		this.pems = pems;
+	}
 }
