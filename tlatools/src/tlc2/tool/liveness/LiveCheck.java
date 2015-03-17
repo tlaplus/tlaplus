@@ -5,6 +5,7 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import tlc2.tool.Action;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
+import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import tlc2.util.statistics.BucketStatistics;
 
@@ -98,17 +100,21 @@ public class LiveCheck {
 			}
 			
 			int cnt = 0;
-			synchronized (oos) {
-				if (!oos.hasTableau()) {
-					// if there is no tableau ...
-					final GraphNode node0 = new GraphNode(fp0, -1);
-					node0.setCheckState(checkStateRes);
-					final int succCnt = nextStates.size();
+			if (!oos.hasTableau()) {
+				// if there is no tableau ...
+				final GraphNode node0 = new GraphNode(fp0, -1);
+				node0.setCheckState(checkStateRes);
+				final int succCnt = nextStates.size();
+				synchronized (oos) {
 					for (int sidx = 0; sidx < succCnt; sidx++) {
 						final TLCState s1 = nextStates.elementAt(sidx);
-						final long fp1 = nextFPs.elementAt(sidx);
-						final long ptr1 = dgraph.getPtr(fp1);
-						if (ptr1 == -1 || !node0.transExists(fp1, -1)) {
+						final long successor = nextFPs.elementAt(sidx);
+						// Only add the transition if:
+						// a) The successor itself has not been written to disk
+						//    TODO Why is an existing successor ignored?
+						// b) The successor is a new outgoing transition for s0 
+						final long ptr1 = dgraph.getPtr(successor);
+						if (ptr1 == -1 || !node0.transExists(successor, -1)) {
 							// Eagerly allocate as many (N) transitions (outgoing arcs)
 							// as we are maximally going to add within the for
 							// loop. This reduces GraphNode's internal and
@@ -123,51 +129,88 @@ public class LiveCheck {
 							// Rather than allocating N memory regions and freeing
 							// N-1 immediately after, it now just has to free a
 							// single one (and only iff we over-allocated).
-							node0.addTransition(fp1, -1, slen, alen, checkActionResults.get(s1), (succCnt - cnt++));
+							node0.addTransition(successor, -1, slen, alen, checkActionResults.get(s1), (succCnt - cnt++));
 						} else {
 							cnt++;
 						}
 					}
 					node0.realign(); // see node0.addTransition() hint
-					// Add a node for the current state:
+					// Add a node for the current state. It gets added *after*
+					// all transitions have been added because addNode
+					// immediately writes the GraphNode to disk including its
+					// transitions.
 					dgraph.addNode(node0);
-				} else {
+				}
+			} else {
+				final int succCnt = nextStates.size();
+				
+				// Pre-compute the consistency of the successor states for all
+				// nodes in the tableau. This is an expensive operation which is
+				// also dependent on the amount of nodes in the tableau times
+				// the number of successors. This used to be done within the the
+				// global oos lock which caused huge thread contention. It
+				// trades speed for additional memory usage (BitVector).
+				final TBGraph tableau = oos.getTableau();
+				final BitVector consistency = new BitVector(tableau.size() * succCnt);
+				@SuppressWarnings("unchecked")
+				final Enumeration<TBGraphNode> elements = tableau.elements();
+				while(elements.hasMoreElements()) {
+					final TBGraphNode tableauNode = elements.nextElement();
+					for (int sidx = 0; sidx < succCnt; sidx++) {
+						final TLCState s1 = nextStates.elementAt(sidx);
+						if(tableauNode.isConsistent(s1, myTool)) {
+							// BitVector is divided into a segment for each
+							// tableau node. Inside each segment, addressing is done
+							// via each state. Use identical addressing below
+							// where the lookup is done (plus 1 accounts for
+							// zero-based addressing).
+							consistency.set((tableauNode.index * succCnt) + sidx);
+						}
+					}
+				}
+				
+				// At this point only constant time operations are allowed =>
+				// Shortly lock the graph
+				synchronized (oos) {
+
 					// if there is tableau ...
 					final int loc0 = dgraph.setDone(fp0);
 					final int[] nodes = dgraph.getNodesByLoc(loc0);
 					if (nodes == null) {
 						continue;
 					}
-					final int succCnt = nextStates.size();
+					
 					// See node0.addTransition(..) of previous case.
 					final int allocationHint = ((nodes.length / 3) * succCnt);
+					
 					for (int nidx = 2; nidx < nodes.length; nidx += 3) {
 						final int tidx0 = nodes[nidx];
 						final TBGraphNode tnode0 = oos.getTableau().getNode(tidx0);
 						final GraphNode node0 = new GraphNode(fp0, tidx0);
 						node0.setCheckState(checkStateRes);
 						for (int sidx = 0; sidx < succCnt; sidx++) {
-							TLCState s1 = nextStates.elementAt(sidx);
-							long fp1 = nextFPs.elementAt(sidx);
-							boolean isDone = dgraph.isDone(fp1);
+							final TLCState s1 = nextStates.elementAt(sidx);
+							final long successor = nextFPs.elementAt(sidx);
+							final boolean isDone = dgraph.isDone(successor);
 							for (int k = 0; k < tnode0.nextSize(); k++) {
-								TBGraphNode tnode1 = tnode0.nextAt(k);
-								long ptr1 = dgraph.getPtr(fp1, tnode1.index);
+								final TBGraphNode tnode1 = tnode0.nextAt(k);
+								// Check if the successor is new
+								long ptr1 = dgraph.getPtr(successor, tnode1.index);
 								if (ptr1 == -1) {
-									if (tnode1.isConsistent(s1, myTool)) {
-										node0.addTransition(fp1, tnode1.index, slen, alen, checkActionResults.get(s1),
+									if (consistency.get((tnode1.index * succCnt) + sidx)) { // see note on addressing above
+										node0.addTransition(successor, tnode1.index, slen, alen, checkActionResults.get(s1),
 												allocationHint - cnt++);
 										// Record that we have seen <fp1,
 										// tnode1>. If fp1 is done, we have
 										// to compute the next states for <fp1,
 										// tnode1>.
-										dgraph.recordNode(fp1, tnode1.index);
+										dgraph.recordNode(successor, tnode1.index);
 										if (isDone) {
-											addNextState(s1, fp1, tnode1, oos, dgraph);
+											addNextState(s1, successor, tnode1, oos, dgraph);
 										}
 									}
-								} else if (!node0.transExists(fp1, tnode1.index)) {
-									node0.addTransition(fp1, tnode1.index, slen, alen, checkActionResults.get(s1),
+								} else if (!node0.transExists(successor, tnode1.index)) {
+									node0.addTransition(successor, tnode1.index, slen, alen, checkActionResults.get(s1),
 											allocationHint - cnt++);
 								} else {
 									// Increment cnt even if addTrasition is not called. After all, 
