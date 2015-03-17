@@ -5,6 +5,8 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -82,8 +84,19 @@ public class LiveCheck {
 			final boolean[] checkStateRes = oos.checkState(s0);
 			final int slen = checkStateRes.length;
 			final int alen = oos.getCheckAction().length;
-			boolean[] checkActionRes = new boolean[alen];
 
+			// Check the actions *before* the solution lock is acquired. This
+			// increase concurrency as the lock on the OrderOfSolution is pretty
+			// coarse grained. It essentially means we lock the complete
+			// behavior graph (DiskGraph) just to add a single node. The
+			// drawback is obviously, that we create a short-lived HashMap to
+			// hold the result.
+			final Map<TLCState, boolean[]> checkActionResults = new HashMap<TLCState, boolean[]>(nextStates.size());
+			for (int sidx = 0; sidx < nextStates.size(); sidx++) {
+				final TLCState s1 = nextStates.elementAt(sidx);
+				checkActionResults.put(s1, oos.checkAction(s0, s1));
+			}
+			
 			int cnt = 0;
 			synchronized (oos) {
 				if (!oos.hasTableau()) {
@@ -96,7 +109,6 @@ public class LiveCheck {
 						final long fp1 = nextFPs.elementAt(sidx);
 						final long ptr1 = dgraph.getPtr(fp1);
 						if (ptr1 == -1 || !node0.transExists(fp1, -1)) {
-							checkActionRes = oos.checkAction(s0, s1);
 							// Eagerly allocate as many (N) transitions (outgoing arcs)
 							// as we are maximally going to add within the for
 							// loop. This reduces GraphNode's internal and
@@ -111,7 +123,7 @@ public class LiveCheck {
 							// Rather than allocating N memory regions and freeing
 							// N-1 immediately after, it now just has to free a
 							// single one (and only iff we over-allocated).
-							node0.addTransition(fp1, -1, slen, alen, checkActionRes, (succCnt - cnt++));
+							node0.addTransition(fp1, -1, slen, alen, checkActionResults.get(s1), (succCnt - cnt++));
 						} else {
 							cnt++;
 						}
@@ -138,17 +150,13 @@ public class LiveCheck {
 							TLCState s1 = nextStates.elementAt(sidx);
 							long fp1 = nextFPs.elementAt(sidx);
 							boolean isDone = dgraph.isDone(fp1);
-							boolean noActionRes = true;
 							for (int k = 0; k < tnode0.nextSize(); k++) {
 								TBGraphNode tnode1 = tnode0.nextAt(k);
 								long ptr1 = dgraph.getPtr(fp1, tnode1.index);
 								if (ptr1 == -1) {
 									if (tnode1.isConsistent(s1, myTool)) {
-										if (noActionRes) {
-											checkActionRes = oos.checkAction(s0, s1);
-											noActionRes = false;
-										}
-										node0.addTransition(fp1, tnode1.index, slen, alen, checkActionRes, allocationHint - cnt++);
+										node0.addTransition(fp1, tnode1.index, slen, alen, checkActionResults.get(s1),
+												allocationHint - cnt++);
 										// Record that we have seen <fp1,
 										// tnode1>. If fp1 is done, we have
 										// to compute the next states for <fp1,
@@ -159,11 +167,8 @@ public class LiveCheck {
 										}
 									}
 								} else if (!node0.transExists(fp1, tnode1.index)) {
-									if (noActionRes) {
-										checkActionRes = oos.checkAction(s0, s1);
-										noActionRes = false;
-									}
-									node0.addTransition(fp1, tnode1.index, slen, alen, checkActionRes, allocationHint - cnt++);
+									node0.addTransition(fp1, tnode1.index, slen, alen, checkActionResults.get(s1),
+											allocationHint - cnt++);
 								} else {
 									// Increment cnt even if addTrasition is not called. After all, 
 									// the for loop has completed yet another iteration.
