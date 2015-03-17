@@ -184,8 +184,8 @@ public class GraphNode {
 	 * Trims {@link GraphNode}'s internal data structure to its current real
 	 * memory requirement.
 	 * 
-	 * @return The number of over allocated memory of zero if memory allocated
-	 *         by corresponding allocate call has been used up.
+	 * @return The number of over allocated memory or zero if memory allocated
+	 *         by corresponding allocate call has been used up completely.
 	 * 
 	 * @see GraphNode#allocate(int)
 	 */
@@ -206,6 +206,14 @@ public class GraphNode {
 	/* Return true iff there is an outgoing edge to target. */
 	public final boolean transExists(long fp, int tidx) {
 		int len = this.nnodes.length;
+		// Stop linear search on internal nnodes buffer when a free slot has been
+		// reached. The free slot detection work with the allocation offset that
+		// points to the end of the filled slots (slots are filled in ascending
+		// order). If offset is marked invalid ("-1"), the nnodes buffer is
+		// completely occupied and has to be searched to the end.
+		if (this.offset != -1) {
+			len = offset;
+		}
 		int high = (int) (fp >>> 32);
 		int low = (int) (fp & 0xFFFFFFFFL);
 		for (int i = 0; i < len; i += 3) {

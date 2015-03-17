@@ -26,6 +26,8 @@
 
 package tlc2.tool.liveness;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import junit.framework.TestCase;
@@ -94,22 +96,23 @@ public class GraphNodeTest extends TestCase {
 		final GraphNode node = new GraphNode(0, 0);
 		final Random rnd = new Random(4711);
 
+		final List<Integer> verificationSet = new ArrayList<Integer>();
+		
 		int cnt = 0;
 		for (int i = 0; i < 5; i++) {
 			int x = rnd.nextInt(10);
 			for (int j = 0; j < x; j++) {
-//				int y = rnd.nextInt(15);
-//				for (int k = 0; k < y; k++) {
-					int l = (5 * x /** y*/);
+				int y = rnd.nextInt(15);
+				for (int k = 0; k < y; k++) {
+					int l = (5 * x * y);
 					int allocationHint = l - cnt++;
 					node.addTransition(cnt, -1, -1, -1, null, allocationHint);
-//				}
+					verificationSet.add(cnt);
+				}
 			}
 		}
-		int overallocated = node.realign();
-		assertTrue("Nested allocation overallocated", overallocated == 0);
 
-		for (int i = 0; i < cnt; i++) {
+		for (Integer i : verificationSet) {
 			assertTrue("Lost a transition during this allocation business", node.transExists(i, -1));
 		}
 	}
