@@ -6,8 +6,6 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -89,14 +87,16 @@ public class LiveCheck {
 
 			// Check the actions *before* the solution lock is acquired. This
 			// increase concurrency as the lock on the OrderOfSolution is pretty
-			// coarse grained. It essentially means we lock the complete
-			// behavior graph (DiskGraph) just to add a single node. The
-			// drawback is obviously, that we create a short-lived HashMap to
-			// hold the result.
-			final Map<TLCState, boolean[]> checkActionResults = new HashMap<TLCState, boolean[]>(nextStates.size());
+			// coarse grained (it essentially means we lock the complete
+			// behavior graph (DiskGraph) just to add a single node). The
+			// drawback is obviously, that we create a short-lived BitVector
+			// to hold the result and loop over actions x successors twice
+			// (here and down below). This is a little price to pay for significantly
+			// increased concurrency.
+			final BitVector checkActionResults = new BitVector(alen * nextStates.size());
 			for (int sidx = 0; sidx < nextStates.size(); sidx++) {
 				final TLCState s1 = nextStates.elementAt(sidx);
-				checkActionResults.put(s1, oos.checkAction(s0, s1));
+				oos.checkAction(s0, s1, checkActionResults, alen * sidx);
 			}
 			
 			int cnt = 0;
@@ -107,7 +107,6 @@ public class LiveCheck {
 				final int succCnt = nextStates.size();
 				synchronized (oos) {
 					for (int sidx = 0; sidx < succCnt; sidx++) {
-						final TLCState s1 = nextStates.elementAt(sidx);
 						final long successor = nextFPs.elementAt(sidx);
 						// Only add the transition if:
 						// a) The successor itself has not been written to disk
@@ -129,7 +128,7 @@ public class LiveCheck {
 							// Rather than allocating N memory regions and freeing
 							// N-1 immediately after, it now just has to free a
 							// single one (and only iff we over-allocated).
-							node0.addTransition(successor, -1, slen, alen, checkActionResults.get(s1), (succCnt - cnt++));
+							node0.addTransition(successor, -1, slen, alen, checkActionResults, sidx * succCnt, (succCnt - cnt++));
 						} else {
 							cnt++;
 						}
@@ -198,8 +197,7 @@ public class LiveCheck {
 								long ptr1 = dgraph.getPtr(successor, tnode1.index);
 								if (ptr1 == -1) {
 									if (consistency.get((tnode1.index * succCnt) + sidx)) { // see note on addressing above
-										node0.addTransition(successor, tnode1.index, slen, alen, checkActionResults.get(s1),
-												allocationHint - cnt++);
+										node0.addTransition(successor, tnode1.index, slen, alen, checkActionResults, sidx * succCnt, 												allocationHint - cnt++);
 										// Record that we have seen <fp1,
 										// tnode1>. If fp1 is done, we have
 										// to compute the next states for <fp1,
@@ -210,7 +208,7 @@ public class LiveCheck {
 										}
 									}
 								} else if (!node0.transExists(successor, tnode1.index)) {
-									node0.addTransition(successor, tnode1.index, slen, alen, checkActionResults.get(s1),
+									node0.addTransition(successor, tnode1.index, slen, alen, checkActionResults, sidx * succCnt,
 											allocationHint - cnt++);
 								} else {
 									// Increment cnt even if addTrasition is not called. After all, 
@@ -234,72 +232,55 @@ public class LiveCheck {
 	 */
 	private static void addNextState(TLCState s, long fp, TBGraphNode tnode, OrderOfSolution oos, DiskGraph dgraph)
 			throws IOException {
-		boolean[] checkStateRes = oos.checkState(s);
-		int slen = checkStateRes.length;
-		int alen = oos.getCheckAction().length;
-		GraphNode node = new GraphNode(fp, tnode.index);
+		final boolean[] checkStateRes = oos.checkState(s);
+		final int slen = checkStateRes.length;
+		final int alen = oos.getCheckAction().length;
+		final GraphNode node = new GraphNode(fp, tnode.index);
 		node.setCheckState(checkStateRes);
 
 		// see allocationHint of node.addTransition() invocations below
 		int cnt = 0;
 		
 		// Add edges induced by s -> s:
-		boolean[] checkActionRes = null;
+		final BitVector checkActionResults = oos.checkAction(s, s, new BitVector(alen), 0);
+		
 		final int nextSize = tnode.nextSize();
 		for (int i = 0; i < nextSize; i++) {
-			TBGraphNode tnode1 = tnode.nextAt(i);
-			int tidx1 = tnode1.index;
-			long ptr1 = dgraph.getPtr(fp, tidx1);
+			final TBGraphNode tnode1 = tnode.nextAt(i);
+			final int tidx1 = tnode1.index;
+			final long ptr1 = dgraph.getPtr(fp, tidx1);
 			if (ptr1 == -1) {
 				if (tnode1.isConsistent(s, myTool)) {
-					if (checkActionRes == null) {
-						checkActionRes = new boolean[alen];
-						for (int m = 0; m < alen; m++) {
-							checkActionRes[m] = oos.getCheckAction()[m].eval(myTool, s, s);
-						}
-					}
-					node.addTransition(fp, tidx1, slen, alen, checkActionRes, (nextSize - cnt++));
+					node.addTransition(fp, tidx1, slen, alen, checkActionResults, 0, (nextSize - cnt++));
 					dgraph.recordNode(fp, tnode1.index);
 					addNextState(s, fp, tnode1, oos, dgraph);
 				} else {
 					cnt++;
 				}
 			} else {
-				if (checkActionRes == null) {
-					checkActionRes = new boolean[alen];
-					for (int m = 0; m < alen; m++) {
-						checkActionRes[m] = oos.getCheckAction()[m].eval(myTool, s, s);
-					}
-				}
-				node.addTransition(fp, tidx1, slen, alen, checkActionRes, (nextSize - cnt++));
+				node.addTransition(fp, tidx1, slen, alen, checkActionResults, 0, (nextSize - cnt++));
 			}
 		}
 
 		// Add edges induced by s -> s1:
 		cnt = 0;
 		for (int i = 0; i < actions.length; i++) {
-			StateVec nextStates = myTool.getNextStates(actions[i], s);
-			int nextCnt = nextStates.size();
+			final StateVec nextStates = myTool.getNextStates(actions[i], s);
+			final int nextCnt = nextStates.size();
 			for (int j = 0; j < nextCnt; j++) {
-				TLCState s1 = nextStates.elementAt(j);
+				final TLCState s1 = nextStates.elementAt(j);
 				if (myTool.isInModel(s1) && myTool.isInActions(s, s1)) {
-					long fp1 = s1.fingerPrint();
-					checkActionRes = null;
+					final long fp1 = s1.fingerPrint();
+					final BitVector checkActionRes = oos.checkAction(s, s1, new BitVector(alen), 0);
 					boolean isDone = dgraph.isDone(fp1);
 					for (int k = 0; k < tnode.nextSize(); k++) {
-						TBGraphNode tnode1 = tnode.nextAt(k);
-						int tidx1 = tnode1.index;
+						final TBGraphNode tnode1 = tnode.nextAt(k);
+						final int tidx1 = tnode1.index;
 						long ptr1 = dgraph.getPtr(fp1, tidx1);
 						final int total = actions.length * nextCnt * tnode.nextSize();
 						if (ptr1 == -1) {
 							if (tnode1.isConsistent(s1, myTool)) {
-								if (checkActionRes == null) {
-									checkActionRes = new boolean[alen];
-									for (int m = 0; m < alen; m++) {
-										checkActionRes[m] = oos.getCheckAction()[m].eval(myTool, s, s1);
-									}
-								}
-								node.addTransition(fp1, tidx1, slen, alen, checkActionRes, (total - cnt++));
+								node.addTransition(fp1, tidx1, slen, alen, checkActionRes, 0, (total - cnt++));
 								// Record that we have seen <fp1, tnode1>. If
 								// fp1 is done, we have to compute the next
 								// states for <fp1, tnode1>.
@@ -309,13 +290,7 @@ public class LiveCheck {
 								}
 							}
 						} else if (!node.transExists(fp1, tidx1)) {
-							if (checkActionRes == null) {
-								checkActionRes = new boolean[alen];
-								for (int m = 0; m < alen; m++) {
-									checkActionRes[m] = oos.getCheckAction()[m].eval(myTool, s, s1);
-								}
-							}
-							node.addTransition(fp1, tidx1, slen, alen, checkActionRes, (total - cnt++));
+							node.addTransition(fp1, tidx1, slen, alen, checkActionRes, 0, (total - cnt++));
 						} else {
 							cnt++;
 						}

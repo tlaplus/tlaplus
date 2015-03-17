@@ -155,13 +155,14 @@ public class GraphNode {
 	 *            of how many additions are made across all iterations.
 	 * @see GraphNode#allocate(int)
 	 */
-	public final void addTransition(long fp, int tidx, int slen, int alen, boolean[] acts, final int allocationHint) {
+	public final void addTransition(long fp, int tidx, int slen, int alen, final BitVector acts, final int offset,
+			final int allocationHint) {
 		// Grows BitVector "checks" and sets the corresponding field to true if
 		// acts is true (false is default and thus can be ignored).
 		if (acts != null) {
 			int pos = slen + alen * this.succSize();
-			for (int i = 0; i < acts.length; i++) {
-				if (acts[i]) {
+			for (int i = 0; i < alen; i++) {
+				if (acts.get(offset + i)) {
 					this.checks.set(pos + i);
 				}
 			}

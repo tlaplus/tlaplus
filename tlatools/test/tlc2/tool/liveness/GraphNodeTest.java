@@ -39,11 +39,11 @@ public class GraphNodeTest extends TestCase {
 		final GraphNode node = new GraphNode(0, 0);
 
 		int sizeHint = 5;
-		node.addTransition(1, -1, -1, -1, null, sizeHint--);
-		node.addTransition(2, -1, -1, -1, null, sizeHint--);
-		node.addTransition(3, -1, -1, -1, null, sizeHint--);
-		node.addTransition(4, -1, -1, -1, null, sizeHint--);
-		node.addTransition(5, -1, -1, -1, null, sizeHint--);
+		node.addTransition(1, -1, -1, -1, null, 0, sizeHint--);
+		node.addTransition(2, -1, -1, -1, null, 0, sizeHint--);
+		node.addTransition(3, -1, -1, -1, null, 0, sizeHint--);
+		node.addTransition(4, -1, -1, -1, null, 0, sizeHint--);
+		node.addTransition(5, -1, -1, -1, null, 0, sizeHint--);
 
 		int overallocated = node.realign();
 		assertTrue("Allocation overallocated", overallocated == 0);
@@ -59,7 +59,7 @@ public class GraphNodeTest extends TestCase {
 		// Create a random graph node (fingerprint/tableau don't matter)
 		final GraphNode node = new GraphNode(0, 0);
 
-		node.addTransition(1, -1, -1, -1, null, 64);
+		node.addTransition(1, -1, -1, -1, null, 0, 64);
 
 		int overallocated = node.realign();
 		assertTrue("Allocation overallocated", overallocated == 63);
@@ -79,7 +79,7 @@ public class GraphNodeTest extends TestCase {
 			for (int j = 0; j < 10; j++) {
 				for (int k = 0; k < 15; k++) {
 					int l = (5 * 10 * 15);
-					node.addTransition(cnt, -1, -1, -1, null, l - cnt++);
+					node.addTransition(cnt, -1, -1, -1, null, 0, l - cnt++);
 				}
 			}
 		}
@@ -106,7 +106,7 @@ public class GraphNodeTest extends TestCase {
 				for (int k = 0; k < y; k++) {
 					int l = (5 * x * y);
 					int allocationHint = l - cnt++;
-					node.addTransition(cnt, -1, -1, -1, null, allocationHint);
+					node.addTransition(cnt, -1, -1, -1, null, 0, allocationHint);
 					verificationSet.add(cnt);
 				}
 			}
@@ -120,7 +120,7 @@ public class GraphNodeTest extends TestCase {
 	public void testAllocateNegative() {
 		// Create a random graph node (fingerprint/tableau don't matter)
 		final GraphNode node = new GraphNode(0, 0);
-		node.addTransition(0, 0, 0, 0, null, -1);
+		node.addTransition(0, 0, 0, 0, null, 0, -1);
 		assertTrue("verallocated", node.realign() == 0);
 	}
 }

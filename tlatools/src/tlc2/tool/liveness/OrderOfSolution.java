@@ -9,6 +9,7 @@ import java.io.PrintStream;
 
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
+import tlc2.util.BitVector;
 
 /*
  * Roughly speaking, each temporal formula maps 1:1 to OrderOfSolution. Say TLC is set to check
@@ -135,11 +136,20 @@ public class OrderOfSolution {
 		this.checkState = checkState;
 	}
 
-
+	// legacy LiveCheck1
 	public boolean[] checkAction(final TLCState state0, final TLCState state1) {
 		final boolean[] result = new boolean[checkAction.length];
 		for (int i = 0; i < checkAction.length; i++) {
 			result[i] = checkAction[i].eval(tool, state0, state1);
+		}
+		return result;
+	}
+	
+	public BitVector checkAction(final TLCState state0, final TLCState state1, final BitVector result, final int offset) {
+		for (int i = 0; i < checkAction.length; i++) {
+			if (checkAction[i].eval(tool, state0, state1)) {
+				result.set(offset + i);
+			}
 		}
 		return result;
 	}
@@ -159,4 +169,5 @@ public class OrderOfSolution {
 	void setPems(PossibleErrorModel[] pems) {
 		this.pems = pems;
 	}
+
 }
