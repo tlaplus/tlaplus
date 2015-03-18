@@ -153,6 +153,6 @@ public class ProblemView extends ViewPart
      */
     public void setFocus()
     {
-        bar.setFocus();
-    }
+		bar.setFocus();
+	}
 }
