@@ -221,7 +221,7 @@ public class Activator extends AbstractTLCActivator
                                 }
 
                                 // not shown, show
-                                UIHelper.openView(ProblemView.ID);
+                                UIHelper.openViewNoFocus(ProblemView.ID);
                             } else
                             {
                                 // hide
