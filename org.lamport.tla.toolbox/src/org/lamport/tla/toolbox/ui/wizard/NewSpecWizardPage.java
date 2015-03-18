@@ -198,6 +198,7 @@ public class NewSpecWizardPage extends WizardPage
         openFileDialog.setFilterPath(rootPath);
 
         openFileDialog.setFilterExtensions(ACCEPTED_EXTENSIONS);
+        openFileDialog.setFilterNames(new String[]{"TLA+ files", "All files"});
         String selected = openFileDialog.open();
         if (selected != null)
         {
