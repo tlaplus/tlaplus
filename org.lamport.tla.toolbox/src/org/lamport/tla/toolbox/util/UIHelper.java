@@ -621,24 +621,30 @@ public class UIHelper
     {
         FileDialog openFileDialog = null;
 
-        // platform dependent code
-        // on mac, we need a Save dialog in order to allow
-        // the user to type in a file name as well as select one
-        // on other platforms, an open dialog is sufficient
-        if (Platform.getOS().equals(Platform.OS_MACOSX))
-        {
-            // Mac
-            openFileDialog = new FileDialog(shell, SWT.SAVE);
-            // since this could be a save as dialog trying
-            // to act as an open dialog, the default will be
-            // to not prompt the user to overwrite a file because
-            // that would not make any sense in an open file dialog.
-            openFileDialog.setOverwrite(false);
-        } else
-        {
-            // all other operating systems
-            openFileDialog = new FileDialog(shell, SWT.OPEN);
-        }
+		// platform dependent code!
+		if (Platform.getOS().equals(Platform.OS_MACOSX)) {
+			// On Mac, we need a Save dialog in order to allow
+			// the user to type in a file name as well as select one.
+			//
+			// Mac: SWT.OPEN and SWT.MULTI styles do *not* support file creation
+			// (contrary to Linux/Win). However, the Toolbox uses a single
+			// FileDialog to open existing *and* to create new specifications.
+			// SWT.SAVE is the only FileDialog style that supports this use
+			// case, but it comes at a price. The FileDialog's label is
+			// rather unintuitive ("Save" and not "Open"). The filter extensions
+			// doesn't work either. Even files matching the filter (*.tla) are
+			// greyed out (see org.eclipse.swt.internal.cocoa.NSSavePanel).
+			openFileDialog = new FileDialog(shell, SWT.SAVE);
+			// since this could be a save as dialog trying
+			// to act as an open dialog, the default will be
+			// to not prompt the user to overwrite a file because
+			// that would not make any sense in an open file dialog.
+			openFileDialog.setOverwrite(false);
+		} else {
+			// On other platforms, an open dialog is sufficient as it
+			// supports opening existing as well as creating new files.
+			openFileDialog = new FileDialog(shell, SWT.OPEN);
+		}
 
         return openFileDialog;
     }
