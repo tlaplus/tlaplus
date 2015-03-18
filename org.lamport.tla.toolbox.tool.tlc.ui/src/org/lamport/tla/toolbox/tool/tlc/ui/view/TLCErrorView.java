@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.view;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -13,6 +14,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
@@ -34,6 +36,8 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
@@ -53,6 +57,7 @@ import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ViewPart;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFcnElementVariableValue;
@@ -90,7 +95,10 @@ import tlc2.output.MP;
 
 public class TLCErrorView extends ViewPart
 {
-    public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
+	private static final String INNER_WEIGHTS_KEY = "INNER_WEIGHTS_KEY";
+	private static final String OUTER_WEIGHTS_KEY = "OUTER_WEIGHTS_KEY";
+
+	public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
 
     private static final String TOOLTIP = "Click on a row to see in viewer, double-click to go to action in spec.";
 
@@ -100,6 +108,7 @@ public class TLCErrorView extends ViewPart
      */
     private static final Pattern CONSTANT_EXPRESSION_ERROR_PATTERN = Pattern.compile("Evaluating assumption PrintT\\("
             + TLCModelLaunchDataProvider.CONSTANT_EXPRESSION_OUTPUT_PATTERN.toString() + "\\)", Pattern.DOTALL);
+
 
     private static final IDocument EMPTY_DOCUMENT()
     {
@@ -252,7 +261,7 @@ public class TLCErrorView extends ViewPart
         getViewSite().getPage().hideView(TLCErrorView.this);
     }
 
-    /**
+	/**
      * Creates the layout and fill it with data
      */
     public void createPartControl(Composite parent)
@@ -279,7 +288,7 @@ public class TLCErrorView extends ViewPart
          * trace viewer inside a SashForm to permit the user to adjust their
          * heights.
          */
-        SashForm outerSashForm = new SashForm(body, SWT.VERTICAL);
+        final SashForm outerSashForm = new SashForm(body, SWT.VERTICAL);
         toolkit.adapt(outerSashForm);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         outerSashForm.setLayoutData(gd);
@@ -393,7 +402,7 @@ public class TLCErrorView extends ViewPart
         // Modified on 30 Aug 2009 as part of putting error viewer inside a
         // sash.
         // SashForm sashForm = new SashForm(body, SWT.VERTICAL); //
-        SashForm sashForm = new SashForm(errorTraceSectionClientArea/*belowErrorViewerComposite*/, SWT.VERTICAL);
+        final SashForm sashForm = new SashForm(errorTraceSectionClientArea/*belowErrorViewerComposite*/, SWT.VERTICAL);
         toolkit.adapt(sashForm);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -484,13 +493,40 @@ public class TLCErrorView extends ViewPart
         gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
         valueViewer.getControl().setLayoutData(gd);
 
-        /*
-         * Following statement added by LL on 30 Aug 2009 to make the trace
-         * viewer sash higher than the error viewer sash.
-         */
-        int[] weights = { 1, 4 };
-        outerSashForm.setWeights(weights);
+ 
+		// Restore the sash ratio from the persistent disk storage. Unfortunately it
+		// doesn't support storing int[] directly, thus have to convert the string
+		// representation back to an int[] manually.
+		// It also sets the default ratio if the dialogsettings return null.
+		// This is the case with a fresh workspace or when the dialog settings
+		// have never been written before.
+        final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+        final String innerWeights = dialogSettings.get(INNER_WEIGHTS_KEY);
+        if (innerWeights != null) {
+        	sashForm.setWeights(stringToIntArray(innerWeights));
+        } else {
+        	sashForm.setWeights(new int[] {1,1});
+        }
+        final String outerWeights = dialogSettings.get(OUTER_WEIGHTS_KEY);
+        if (outerWeights != null) {
+        	outerSashForm.setWeights(stringToIntArray(outerWeights));
+        } else {
+        	outerSashForm.setWeights(new int[] {1,4});
+        }
 
+        sashForm.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+		        dialogSettings.put(INNER_WEIGHTS_KEY, Arrays.toString(sashForm.getWeights()));
+			}
+		});
+        outerSashForm.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+		        dialogSettings.put(OUTER_WEIGHTS_KEY, Arrays.toString(outerSashForm.getWeights()));
+			}
+        });
+        
         form.getToolBarManager().add(new HelpAction());
         form.getToolBarManager().update(true);
 
@@ -506,7 +542,17 @@ public class TLCErrorView extends ViewPart
         JFaceResources.getFontRegistry().addListener(fontChangeListener);
 
         TLCUIHelper.setHelp(parent, IHelpConstants.TLC_ERROR_VIEW);
+
     }
+    
+	private int[] stringToIntArray(final String str) {
+		final String[] strings = str.replace("[", "").replace("]", "").split(", ");
+		int result[] = new int[strings.length];
+		for (int i = 0; i < result.length; i++) {
+			result[i] = Integer.parseInt(strings[i]);
+		}
+		return result;
+	}
 
     public void setFocus()
     {
@@ -606,7 +652,7 @@ public class TLCErrorView extends ViewPart
             TLCErrorView errorView;
             if (provider.getErrors().size() > 0)
             {
-                errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
+				errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
             } else
             {
                 errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
@@ -1518,5 +1564,4 @@ public class TLCErrorView extends ViewPart
             valueViewer.setDocument(EMPTY_DOCUMENT());
         }
     }
-
 }
