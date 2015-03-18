@@ -169,7 +169,12 @@ public class LiveCheck {
 				}
 				
 				// At this point only constant time operations are allowed =>
-				// Shortly lock the graph
+				// Shortly lock the graph.
+				//
+				// Tests revealed that "synchronized" provides better performance
+				// compared to "java.util.concurrent.locks.Lock" even for high 
+				// thread numbers (up to 32 threads). The actual numbers for EWD840
+				// with N=11 and 32 threads were ~75% compared to ~55% thread concurrency.
 				synchronized (oos) {
 
 					// if there is tableau ...

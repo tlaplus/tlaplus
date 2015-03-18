@@ -25,7 +25,8 @@ public class GraphNode {
 
 	final long stateFP; // fingerprint of the state
 	/**
-	 * Next nodes are the successor {@link GraphNode}s of the current {@link GraphNode}
+	 * Next nodes are the successor {@link GraphNode}s of the current
+	 * {@link GraphNode}
 	 */
 	private int[] nnodes; // outgoing links
 	private BitVector checks; // truth values for state and action preds
@@ -92,10 +93,11 @@ public class GraphNode {
 	/**
 	 * Points to the first available slot in {@link GraphNode#nnodes} iff free
 	 * slots are available. "-1" indicates no free slots are available.
+	 * 
 	 * @see GraphNode#allocate(int)
 	 */
 	private int offset = -1;
-	
+
 	/**
 	 * Allocates memory for subsequent
 	 * {@link GraphNode#addTransition(long, int, int, int, boolean[])} calls.
@@ -120,19 +122,19 @@ public class GraphNode {
 	 * @param transitions
 	 *            The approximate number of transitions that will be added
 	 *            subsequently.
-	 *            
+	 * 
 	 * @see GraphNode#addTransition(long, int, int, int, boolean[])
-	 * @see GraphNode#realign()           
+	 * @see GraphNode#realign()
 	 */
 	private final void allocate(final int transitions) {
 		final int len = this.nnodes.length;
 		int[] newNodes = new int[len + (3 * transitions)];
 		System.arraycopy(this.nnodes, 0, newNodes, 0, len);
 		this.nnodes = newNodes;
-		
+
 		this.offset = len;
 	}
-	
+
 	/**
 	 * Add a new transition to the node target.
 	 * 
@@ -180,7 +182,7 @@ public class GraphNode {
 			this.offset = -1;
 		}
 	}
-	
+
 	/**
 	 * Trims {@link GraphNode}'s internal data structure to its current real
 	 * memory requirement.
@@ -203,11 +205,20 @@ public class GraphNode {
 		}
 		return result;
 	}
-	
+
 	/* Return true iff there is an outgoing edge to target. */
 	public final boolean transExists(long fp, int tidx) {
+		// TODO Switch to a more efficient transExists implementation to handle
+		// large numbers of transitions. The current implementation below uses a
+		// linear search over all transitions.
+		// The fact that the given fp is used as an index for hash-based lookup
+		// methods in various places of TLC, makes it the obvious candidate as a
+		// improved strategy. One behavioral difference a hash has, is that the
+		// sequential iteration of all nnodes produces a different (yet stable)
+		// order.
 		int len = this.nnodes.length;
-		// Stop linear search on internal nnodes buffer when a free slot has been
+		// Stop linear search on internal nnodes buffer when a free slot has
+		// been
 		// reached. The free slot detection work with the allocation offset that
 		// points to the end of the filled slots (slots are filled in ascending
 		// order). If offset is marked invalid ("-1"), the nnodes buffer is
@@ -231,7 +242,9 @@ public class GraphNode {
 	}
 
 	/**
-	 * Writes this {@link GraphNode} into the given {@link BufferedRandomAccessFile}
+	 * Writes this {@link GraphNode} into the given
+	 * {@link BufferedRandomAccessFile}
+	 * 
 	 * @param nodeRAF
 	 * @throws IOException
 	 */
@@ -258,7 +271,6 @@ public class GraphNode {
 		checks.read(nodeRAF);
 	}
 
-	
 	public final String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("<" + this.stateFP + "," + this.tindex + "> --> ");
