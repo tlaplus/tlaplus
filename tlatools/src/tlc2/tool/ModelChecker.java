@@ -17,12 +17,14 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.liveness.LiveCheck;
+import tlc2.tool.liveness.Liveness;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
 import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
@@ -39,6 +41,8 @@ import util.UniqueString;
 // the name resolver and support for the external specification object has been added
 public class ModelChecker extends AbstractChecker
 {
+    private static final boolean LIVENESS_STATS = Boolean.getBoolean(Liveness.class.getPackage().getName() + ".statistics");
+
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
     public IStateQueue theStateQueue; // the state queue
     public TLCTrace trace; // the trace file
@@ -99,7 +103,12 @@ public class ModelChecker extends AbstractChecker
         if (this.checkLiveness)
         {
             report("initializing liveness checking");
-            LiveCheck.init(this.tool, this.actions, this.metadir);
+			BucketStatistics stats = new DummyBucketStatistics();
+			if (LIVENESS_STATS) {
+				stats = new BucketStatistics("Histogram vertex out-degree", LiveCheck.class.getPackage().getName(),
+						"DiskGraphsOutDegree");
+			}
+			LiveCheck.init(this.tool, this.actions, this.metadir, stats);
             report("liveness checking initialized");
         }
 
@@ -240,17 +249,20 @@ public class ModelChecker extends AbstractChecker
         } finally
         {
         	
-        	if (this.checkLiveness) {
-        		// Reclaim memory for in-degree calculation
-        		System.gc();
+        	this.printSummary(success, startTime);
 
-				final BucketStatistics inDegree = new BucketStatistics("Histogram vertex in-degree", LiveCheck.class
-						.getPackage().getName(), "DiskGraphsInDegree");
-        		LiveCheck.calculateInDegreeDiskGraphs(inDegree);
-        		MP.printStats(inDegree, LiveCheck.outDegreeGraphStats);
+        	if (this.checkLiveness) {
+				if (LIVENESS_STATS) {
+					// Reclaim memory for in-degree calculation
+					System.gc();
+
+					MP.printStats(LiveCheck
+							.calculateInDegreeDiskGraphs(new BucketStatistics("Histogram vertex in-degree",
+									LiveCheck.class.getPackage().getName(), "DiskGraphsInDegree")),
+							LiveCheck.outDegreeGraphStats);
+				}
         	}
 
-			this.printSummary(success, startTime);
             this.cleanup(success);
         }
 

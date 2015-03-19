@@ -32,14 +32,13 @@ public class LiveCheck {
 	// private static DiskGraph currentDG;
 	// private static PossibleErrorModel currentPEM;
 
-	public static void init(Tool tool, Action[] acts, String mdir) throws IOException {
+	public static void init(Tool tool, Action[] acts, String mdir, BucketStatistics bucketStatistics) throws IOException {
 		myTool = tool;
 		actions = acts;
 		metadir = mdir;
 		solutions = Liveness.processLiveness(myTool, metadir);
 		dgraphs = new DiskGraph[solutions.length];
-		outDegreeGraphStats = new BucketStatistics("Histogram vertex out-degree", LiveCheck.class.getPackage()
-				.getName(), "DiskGraphsOutDegree");
+		outDegreeGraphStats = bucketStatistics;
 		for (int soln = 0; soln < solutions.length; soln++) {
 			dgraphs[soln] = new DiskGraph(metadir, soln, solutions[soln].hasTableau(), outDegreeGraphStats);
 			// System.err.println(solutions[soln]);
@@ -369,17 +368,19 @@ public class LiveCheck {
 		}
 	}
 
-	public static void calculateInDegreeDiskGraphs(final BucketStatistics aGraphStats) throws IOException {
+	public static BucketStatistics calculateInDegreeDiskGraphs(final BucketStatistics aGraphStats) throws IOException {
 		for (int i = 0; i < dgraphs.length; i++) {
 			final DiskGraph diskGraph = dgraphs[i];
 			diskGraph.calculateInDegreeDiskGraph(aGraphStats);
 		}
+		return aGraphStats;
 	}
 	
-	public static void calculateOutDegreeDiskGraphs(final BucketStatistics aGraphStats) throws IOException {
+	public static BucketStatistics calculateOutDegreeDiskGraphs(final BucketStatistics aGraphStats) throws IOException {
 		for (int i = 0; i < dgraphs.length; i++) {
 			final DiskGraph diskGraph = dgraphs[i];
 			diskGraph.calculateOutDegreeDiskGraph(aGraphStats);
 		}
+		return aGraphStats;
 	}
 }

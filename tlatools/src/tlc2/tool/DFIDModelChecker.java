@@ -17,6 +17,7 @@ import tlc2.tool.liveness.LiveException;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
+import tlc2.util.statistics.DummyBucketStatistics;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.UniqueString;
@@ -66,7 +67,7 @@ public class DFIDModelChecker extends AbstractChecker
         // Initialization for liveness checking:
         if (this.checkLiveness)
         {
-            LiveCheck.init(this.tool, this.actions, this.metadir);
+            LiveCheck.init(this.tool, this.actions, this.metadir, new DummyBucketStatistics());
         }
 
         boolean recovered = this.recover();
