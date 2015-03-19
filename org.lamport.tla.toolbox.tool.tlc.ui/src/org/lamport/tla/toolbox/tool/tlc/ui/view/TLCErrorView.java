@@ -624,7 +624,11 @@ public class TLCErrorView extends ViewPart
      * @param errors
      *            a list of {@link TLCError}
      */
-    public static void updateErrorView(ILaunchConfiguration config)
+    public static void updateErrorView(ILaunchConfiguration config) {
+    	updateErrorView(config, true);
+    }
+
+    public static void updateErrorView(ILaunchConfiguration config, boolean openErrorView)
     {
 
         try
@@ -650,9 +654,9 @@ public class TLCErrorView extends ViewPart
                 return;
             }
             TLCErrorView errorView;
-            if (provider.getErrors().size() > 0)
+            if (provider.getErrors().size() > 0 && openErrorView == true)
             {
-				errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
+           		errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
             } else
             {
                 errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);

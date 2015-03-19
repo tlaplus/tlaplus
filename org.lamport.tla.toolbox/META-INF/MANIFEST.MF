@@ -60,4 +60,9 @@ Export-Package: org.lamport.tla.toolbox,
    util",
  org.lamport.tla.toolbox.util.pref
 Eclipse-BundleShape: dir
+Import-Package: org.eclipse.e4.core.contexts,
+ org.eclipse.e4.ui.model.application,
+ org.eclipse.e4.ui.model.application.ui,
+ org.eclipse.e4.ui.model.application.ui.basic,
+ org.eclipse.e4.ui.workbench.modeling
 
