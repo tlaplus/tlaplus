@@ -1014,12 +1014,11 @@
       <handler
             class="org.lamport.tla.toolbox.ui.handler.OpenParseErrorViewHandler"
             commandId="toolbox.command.openParseErrorView">
-         <activeWhen>
+         <enabledWhen>
             <test
-                  forcePluginActivation="false"
                   property="toolbox.property.hasParseErrors">
             </test>
-         </activeWhen>
+         </enabledWhen>
       </handler>
    </extension>
    <extension

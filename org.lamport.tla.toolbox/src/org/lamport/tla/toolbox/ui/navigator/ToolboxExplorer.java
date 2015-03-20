@@ -20,8 +20,8 @@ public class ToolboxExplorer extends CommonNavigator
 {
     public final static String VIEW_ID = "toolbox.view.ToolboxExplorer";
     public static final String COMMAND_ID = "toolbox.command.cnf.open.delegate";
-
-    /**
+    
+	/**
      * Override the method to deliver the root object for the NCE activation
      */
     protected Object getInitialInput()

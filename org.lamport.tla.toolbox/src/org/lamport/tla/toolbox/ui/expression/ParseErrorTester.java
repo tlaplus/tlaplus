@@ -12,6 +12,8 @@ import org.lamport.tla.toolbox.util.AdapterFactory;
  */
 public class ParseErrorTester extends PropertyTester {
 
+	public static final String PROPERTY_ID = "toolbox.property.hasParseErrors"; 
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.expressions.IPropertyTester#test(java.lang.Object, java.lang.String, java.lang.Object[], java.lang.Object)
 	 */
