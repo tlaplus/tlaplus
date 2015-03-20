@@ -915,26 +915,36 @@ public class TLCErrorView extends ViewPart
     }
 
     static class StateViewerSorter extends ViewerSorter {
+    	
+    	private static final String STATESORTORDER = "STATESORTORDER";
+
         /**
          * Sort order in which states are sorted in the variable viewer
          */
-        private boolean stateSortDirection = true; // default is first to last
+		private boolean stateSortDirection;
 
+		private final IDialogSettings dialogSettings;
+
+		public StateViewerSorter() {
+			dialogSettings = Activator.getDefault().getDialogSettings();
+			stateSortDirection = dialogSettings.getBoolean(STATESORTORDER);
+		}
+		
         public void reverseStateSortDirection() {
         	stateSortDirection = !stateSortDirection;
+        	dialogSettings.put(STATESORTORDER, stateSortDirection);
         }
     	
 		public int compare(final Viewer viewer, final Object e1, final Object e2) {
 			// The error trace has to be sorted on the number of the state. An
-			// unordered state sequence is rather incomprehensible. The question
-			// is, if we want to provide a reversed state graph because - generally
-			// - the user is interested in the last states rather than the initial
-			// state. The initial state does not change much whereas the last
-			// state is where the problem usually is.
+			// unordered state sequence is rather incomprehensible. The default
+			// is ordering the state trace first to last for educational reasons.
+			// Advanced users are free to click the table column headers to permanently
+			// change the order.
 			if (e1 instanceof TLCState && e2 instanceof TLCState) {
 				final TLCState s1 = (TLCState) e1;
 				final TLCState s2 = (TLCState) e2;
-				if(stateSortDirection) {
+				if(!stateSortDirection) { // negated because the default coming from DialogSettings is false
 					return Integer.valueOf(s1.getStateNumber()).compareTo(s2.getStateNumber());
 				} else {
 					return Integer.valueOf(s2.getStateNumber()).compareTo(s1.getStateNumber());
