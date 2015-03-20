@@ -752,7 +752,8 @@ public class MP
             b.append("Finished computing initial states: %1% states generated, with %2% of them distinct.");
             break;
         case EC.TLC_CHECKING_TEMPORAL_PROPS:
-            b.append("Checking temporal properties for the %1% state space...");
+			b.append("Checking temporal properties for the %1% state space with %2% distinct states at (")
+					.append(SDF.format(new Date())).append(")");
             break;
 
         case EC.TLC_SUCCESS:

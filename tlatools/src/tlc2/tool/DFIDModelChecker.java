@@ -136,7 +136,8 @@ public class DFIDModelChecker extends AbstractChecker
                         // Always check liveness properties at the end:
                         if (this.checkLiveness)
                         {
-                            MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, "complete");
+							MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS,
+									new String[] { "complete", Long.toString(this.theFPSet.size()) });
                             // SZ Jul 10, 2009: what for?
                             // ToolIO.out.flush();
                             success = LiveCheck.check();
@@ -629,7 +630,7 @@ public class DFIDModelChecker extends AbstractChecker
             boolean doCheck = this.checkLiveness && (stateNum >= nextLiveCheck);
             if (doCheck)
             {
-                MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, "current");
+                MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, new String[] {"current", Long.toString(stateNum)});
                 if (!LiveCheck.check())
                 {
                     return false;
