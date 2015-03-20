@@ -23,6 +23,7 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.tool.SpecEvent;
+import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
 import org.lamport.tla.toolbox.tool.SpecRenameEvent;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -458,5 +459,13 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
 	@SuppressWarnings("rawtypes")
 	public Class[] getAdapterList() {
 		return new Class[] { Spec.class };
+	}
+
+	public void addSpecLifecycleParticipant(SpecLifecycleParticipant specLifecycleParticipant) {
+		this.lifecycleManager.addSpecLifecycleParticipant(specLifecycleParticipant);
+	}
+
+	public void removeSpecLifecycleParticipant(SpecLifecycleParticipant specLifecycleParticipant) {
+		this.lifecycleManager.removeSpecLifecycleParticipant(specLifecycleParticipant);
 	}
 }
