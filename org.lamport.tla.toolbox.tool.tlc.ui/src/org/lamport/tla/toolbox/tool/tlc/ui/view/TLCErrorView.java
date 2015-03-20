@@ -31,6 +31,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
@@ -40,6 +41,8 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -430,15 +433,21 @@ public class TLCErrorView extends ViewPart
         resizer.comp = sashForm;
         resizer.tree = tree;
 
-        for (int i = 0; i < StateLabelProvider.COLUMN_TEXTS.length; i++)
-        {
-            TreeColumn column = new TreeColumn(tree, SWT.LEFT);
-            column.setText(StateLabelProvider.COLUMN_TEXTS[i]);
-            column.setWidth(StateLabelProvider.COLUMN_WIDTH[i]);
-            resizer.column[i] = column; // set up the resizer.
-            column.setToolTipText(TOOLTIP);
-        }
-
+        final StateViewerSorter sorter = new StateViewerSorter();
+		for (int i = 0; i < StateLabelProvider.COLUMN_TEXTS.length; i++) {
+			TreeColumn column = new TreeColumn(tree, SWT.LEFT);
+			column.setText(StateLabelProvider.COLUMN_TEXTS[i]);
+			column.setWidth(StateLabelProvider.COLUMN_WIDTH[i]);
+			resizer.column[i] = column; // set up the resizer.
+			column.setToolTipText(TOOLTIP);
+			column.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					sorter.reverseStateSortDirection();
+					variableViewer.refresh();
+				}
+			});
+		}
+        
         tree.addControlListener(resizer);
 
         // I need to add a listener for size changes to column[0] to
@@ -453,6 +462,7 @@ public class TLCErrorView extends ViewPart
         variableViewer.setContentProvider(new StateContentProvider());
         variableViewer.setFilters(new ViewerFilter[] { new StateFilter() });
         variableViewer.setLabelProvider(new StateLabelProvider());
+		variableViewer.setSorter(sorter);
         getSite().setSelectionProvider(variableViewer);
 
         variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer));
@@ -904,6 +914,37 @@ public class TLCErrorView extends ViewPart
 
     }
 
+    static class StateViewerSorter extends ViewerSorter {
+        /**
+         * Sort order in which states are sorted in the variable viewer
+         */
+        private boolean stateSortDirection = true; // default is first to last
+
+        public void reverseStateSortDirection() {
+        	stateSortDirection = !stateSortDirection;
+        }
+    	
+		public int compare(final Viewer viewer, final Object e1, final Object e2) {
+			// The error trace has to be sorted on the number of the state. An
+			// unordered state sequence is rather incomprehensible. The question
+			// is, if we want to provide a reversed state graph because - generally
+			// - the user is interested in the last states rather than the initial
+			// state. The initial state does not change much whereas the last
+			// state is where the problem usually is.
+			if (e1 instanceof TLCState && e2 instanceof TLCState) {
+				final TLCState s1 = (TLCState) e1;
+				final TLCState s2 = (TLCState) e2;
+				if(stateSortDirection) {
+					return Integer.valueOf(s1.getStateNumber()).compareTo(s2.getStateNumber());
+				} else {
+					return Integer.valueOf(s2.getStateNumber()).compareTo(s1.getStateNumber());
+				}
+			}
+			// Sort just on the label provided by the label provider
+			return super.compare(viewer, e1, e2);
+		}
+    }
+    
     /**
      * Label provider for the tree table. Modified on 30 Aug 2009 by LL to
      * implement ITableColorProvider instead of IColorProvider. This allows
