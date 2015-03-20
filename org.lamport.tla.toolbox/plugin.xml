@@ -1011,9 +1011,7 @@
             </with>
          </activeWhen>
       </handler>
-
-      <!-- This handler is now created programmatically in WorkspaceSpecManager-->
-      <!-- handler
+      <handler
             class="org.lamport.tla.toolbox.ui.handler.OpenParseErrorViewHandler"
             commandId="toolbox.command.openParseErrorView">
          <activeWhen>
@@ -1022,7 +1020,7 @@
                   property="toolbox.property.hasParseErrors">
             </test>
          </activeWhen>
-      </handler-->
+      </handler>
    </extension>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
