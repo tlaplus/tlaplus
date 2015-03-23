@@ -313,6 +313,16 @@ public class LiveCheck {
 	 * true iff it finds no errors.
 	 */
 	public static boolean check() throws Exception {
+		return check(false);
+	}
+	
+	public static boolean finalCheck() throws Exception {
+		// Do *not* re-create the nodePtrTable after the check which takes a
+		// while for larger disk graphs.
+		return check(true);
+	}
+	
+	private static boolean check(final boolean finalCheck) throws Exception {
 		int slen = solutions.length;
 		int wNum = Math.min(slen, TLCGlobals.getNumWorkers());
 
@@ -334,9 +344,11 @@ public class LiveCheck {
 			return false;
 		}
 
-		// Reset after checking:
-		for (int soln = 0; soln < slen; soln++) {
-			dgraphs[soln].makeNodePtrTbl();
+		// Reset after checking unless it's the final check:
+		if (finalCheck == false) {
+			for (int soln = 0; soln < slen; soln++) {
+				dgraphs[soln].makeNodePtrTbl();
+			}
 		}
 		return true;
 	}

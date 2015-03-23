@@ -140,7 +140,7 @@ public class DFIDModelChecker extends AbstractChecker
 									new String[] { "complete", Long.toString(this.theFPSet.size()) });
                             // SZ Jul 10, 2009: what for?
                             // ToolIO.out.flush();
-                            success = LiveCheck.check();
+                            success = LiveCheck.finalCheck();
                             if (!success)
                                 return;
                         }
