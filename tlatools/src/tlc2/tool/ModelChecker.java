@@ -41,6 +41,12 @@ import util.UniqueString;
 // the name resolver and support for the external specification object has been added
 public class ModelChecker extends AbstractChecker
 {
+
+	/**
+	 * If the state/ dir should be cleaned up after a successful model run
+	 */
+	private static final boolean VETO_CLEANUP = Boolean.getBoolean(ModelChecker.class.getName() + ".vetoCleanup");
+	
     private static final boolean LIVENESS_STATS = Boolean.getBoolean(Liveness.class.getPackage().getName() + ".statistics");
 
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
@@ -726,7 +732,9 @@ public class ModelChecker extends AbstractChecker
             LiveCheck.close();
         if (this.allStateWriter != null)
             this.allStateWriter.close();
-			FileUtil.deleteDir(this.metadir, success);
+        	if (!VETO_CLEANUP) {
+        		FileUtil.deleteDir(this.metadir, success);
+        	}
 		}
 
     public final void printSummary(boolean success, final long startTime) throws IOException
