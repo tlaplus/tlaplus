@@ -147,24 +147,36 @@ public class GraphNode {
 	 * @param alen
 	 *            number of actions
 	 * @param acts
-	 *            actions
+	 *            A {@link BitVector} of action results. Each bit in the vector
+	 *            represents the result of the corresponding action (true or
+	 *            false) returned by
+	 *            tlc2.tool.liveness.OrderOfSolution.checkAction(TLCState,
+	 *            TLCState, BitVector, int). <code>null</code> if no action 
+	 *            constraints to check.
+	 * @param actsOffset
+	 *            The offset into the {@link BitVector} acts. acts may hold
+	 *            action results for more than just the currently added
+	 *            transition. In this case, provide an zero-based offset for
+	 *            where the action results in BitVector start. 0 if the given
+	 *            {@link BitVector} is exclusively used for the current
+	 *            transition.
 	 * @param allocationHint
 	 *            A (Naturals \ {0}) hint telling the method's implementation
 	 *            how many memory to allocate for subsequent transition
 	 *            additions (used when called from within for loop). Zero or
-	 *            negative hints are ignored. Negative hints are the result of
+	 *            negative hints are ignored (negative hints are the result of
 	 *            nested for loop where the 1. iteration produces a bad average
-	 *            of how many additions are made across all iterations.
+	 *            of how many additions are made across all iterations).
 	 * @see GraphNode#allocate(int)
 	 */
-	public final void addTransition(long fp, int tidx, int slen, int alen, final BitVector acts, final int offset,
+	public final void addTransition(long fp, int tidx, int slen, int alen, final BitVector acts, final int actsOffset,
 			final int allocationHint) {
 		// Grows BitVector "checks" and sets the corresponding field to true if
 		// acts is true (false is default and thus can be ignored).
 		if (acts != null) {
 			int pos = slen + alen * this.succSize();
 			for (int i = 0; i < alen; i++) {
-				if (acts.get(offset + i)) {
+				if (acts.get(actsOffset + i)) {
 					this.checks.set(pos + i);
 				}
 			}
