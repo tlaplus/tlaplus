@@ -15,8 +15,11 @@ import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.util.BitVector;
+import tlc2.util.FP64;
 import tlc2.util.LongVec;
 import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.DummyBucketStatistics;
+import util.SimpleFilenameToStream;
 
 public class LiveCheck {
 
@@ -394,5 +397,45 @@ public class LiveCheck {
 			diskGraph.calculateOutDegreeDiskGraph(aGraphStats);
 		}
 		return aGraphStats;
+	}
+	
+	// Intended to be used in unit tests only!!! This is not part of the API!!!
+	static class TestHelper {
+		
+		// The Eclipse Launch configuration has to set the working directory
+		// (Arguments tab) to the parent directory of the folder containing the
+		// nodes_* and ptrs_* files. The parent folder has to contain the spec
+		// and config file both named "MC".
+		// metadir is the the name of the folder with the nodes_* and ptrs_*
+		// relative to the parent directory. It does *not* need to contain the
+		// backing file of the fingerprint set or the state queue files.
+		public static void recreateFromDisk(final String path) throws Exception {
+			// Don't know with with Polynominal the FP64 has been initialized, but
+			// the default is 0.
+			FP64.Init(0);
+			
+			// Most models won't need this, but let's increase this anyway.
+			TLCGlobals.setBound = 9000000;
+
+			// Re-create the tool to do the init states down below (LiveCheck#init
+			// doesn't really need tool).
+	        final Tool tool = new Tool("", "MC", "MC", new SimpleFilenameToStream());
+	        tool.init(true, null);
+	        
+			LiveCheck.init(tool, null, path, new DummyBucketStatistics());
+			
+			// Calling recover requires a .chkpt file to be able to re-create the
+			// internal data structures to continue with model checking. However, we
+			// only want to execute liveness checks on the current static disk
+			// graph. Thus, we don't need the .chkpt file.
+			//recover();
+			
+			// After recovery, one has to redo the init states
+			final StateVec initStates = tool.getInitStates();
+			for (int i = 0; i < initStates.size(); i++) {
+				TLCState state = initStates.elementAt(i);
+				LiveCheck.addInitState(state, state.fingerPrint());
+			}
+		}
 	}
 }
