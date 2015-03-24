@@ -348,7 +348,7 @@ public class DiskGraph {
 			}
 
 			// While queue has elements, but not longer! while(true)... can get stuck 
-			while (true) {
+			while (queue.hasElements()) {
 				long curState = queue.dequeueLong();
 				final int curTidx = queue.dequeueInt();
 				final long curPtr = queue.dequeueLong();
@@ -414,7 +414,7 @@ public class DiskGraph {
 				this.nodePtrTbl.put(state0, MAX_PTR);
 			}
 
-			while (true) {
+			while (queue.hasElements()) {
 				long curState = queue.dequeueLong();
 				final long curPtr = queue.dequeueLong();
 				final GraphNode curNode = this.getNode(curState, -1, curPtr);
@@ -450,6 +450,7 @@ public class DiskGraph {
 				}
 			}
 		}
+		throw new RuntimeException("Couldn't re-create liveness trace (path) starting at: " + state);
 	}
 
 	public final String toString() {

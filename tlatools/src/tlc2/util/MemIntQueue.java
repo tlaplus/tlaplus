@@ -7,6 +7,7 @@ package tlc2.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
@@ -35,7 +36,9 @@ public final class MemIntQueue {
   }
 
   public final int length() { return this.len; }
-    
+  
+  public final boolean hasElements() { return this.len > 0; }
+  
   public final void enqueueInt(int elem) {
     if (this.len == this.elems.length) {
       // grow the array
@@ -59,6 +62,9 @@ public final class MemIntQueue {
     
   public final int dequeueInt() {
     // Assert.check(this.len > 0);
+	if (this.len < 1) {
+		throw new NoSuchElementException();
+	}
     int res = this.elems[this.start];
     this.len--;
     this.start = (this.start + 1) % this.elems.length;
