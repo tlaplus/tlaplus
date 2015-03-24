@@ -633,12 +633,12 @@ public class DiskGraph {
 		final Map<NodeRAFRecord, Integer> nodes2count = new HashMap<NodeRAFRecord, Integer>();
 		
 		// One-pass (start to end) through the nodeRAF file reading all "records".
-		// A record is a combination of a state's fingerprint and a tableaux id.
+		// A record is a combination of a state's fingerprint and a tableau id.
 		// Together they uniquely identify a vertex in the graph.
 		// The nodeRAF is the secondary disk storage file of the disk graph. It
 		// contains vertices that are successors of a vertex stored in the nodePtrRAF.
 		// The nodePtrRAF is the primary disk storage file with a fingerprint & 
-		// tableaux id and a pointer to the successor nodes in nodeRAF. While 
+		// tableau id and a pointer to the successor nodes in nodeRAF. While 
 		// a node appears only once in the nodePtrRAF, the same node is potentially
 		// listed in nodeRAF multiple times.
 		try {
