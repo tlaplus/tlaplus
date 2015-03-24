@@ -2,6 +2,7 @@
 package tlc2.tool.fp.generator;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 import tlc2.tool.fp.FPSet;
@@ -21,7 +22,7 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
-		LongVec predecessors = new LongVec(batch);
+		TestLongVec predecessors = new TestLongVec(batch);
 		boolean initialized = false;
 		while (fpSet.size() < insertions) {
 			try {
@@ -54,5 +55,26 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 			}
 		}
 		latch.countDown();
+	}
+	
+	// This implementation adds two methods that should be used with caution as
+	// they mess with the internal capacity checks of LongVec. We don't want to
+	// make them API.
+	private class TestLongVec extends LongVec {
+
+		private static final long serialVersionUID = -720614225756936980L;
+
+		public TestLongVec(int batch) {
+			super(batch);
+		}
+
+		public final void sort() {
+			Arrays.sort(elementData);
+		}
+		  
+		public final void setElement(int index, long x) {
+			this.elementData[index] = x;
+			this.elementCount = ++elementCount % elementData.length + 1;
+		}
 	}
 }
