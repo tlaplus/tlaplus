@@ -315,57 +315,58 @@ public class DiskGraph {
 	 * transition.
 	 */
 	public final LongVec getPath(long state) throws IOException {
-		int numOfInits = this.initNodes.size();
+		// If path requested just consists of an init node, return the single
+		// init node. This is the trivial case.
+		final int numOfInits = this.initNodes.size();
 		for (int i = 0; i < numOfInits; i += 2) {
-			long state0 = this.initNodes.elementAt(i);
-			// SZ Jul 13, 2009: removed to kill the warning
-			// SZ Feb 20, 2009: variable never read locally
-			// int tidx0 = (int)
+			final long state0 = this.initNodes.elementAt(i);
 			this.initNodes.elementAt(i + 1);
 			if (state0 == state) {
-				LongVec res = new LongVec(1);
+				final LongVec res = new LongVec(1);
 				res.addElement(state0);
 				return res;
 			}
 		}
+		// ...the path consists of more than just a single init node:
 
 		// Restore the nodePtrTbl:
 		this.makeNodePtrTbl();
 
 		// Do breath-first search:
-		long offset = MAX_PTR + 1;
-		MemIntQueue queue = new MemIntQueue(this.metadir, null);
+		final long offset = MAX_PTR + 1;
+		final MemIntQueue queue = new MemIntQueue(this.metadir, null);
 
 		if (this.hasTableau) {
 			// Initialize queue with initial states:
 			for (int i = 0; i < numOfInits; i += 2) {
-				long state0 = this.initNodes.elementAt(i);
-				int tidx0 = (int) this.initNodes.elementAt(i + 1);
+				final long state0 = this.initNodes.elementAt(i);
+				final int tidx0 = (int) this.initNodes.elementAt(i + 1);
 				queue.enqueueLong(state0);
 				queue.enqueueInt(tidx0);
 				queue.enqueueLong(this.nodePtrTbl.get(state0, tidx0));
 				this.nodePtrTbl.put(state0, tidx0, MAX_PTR);
 			}
 
+			// While queue has elements, but not longer! while(true)... can get stuck 
 			while (true) {
 				long curState = queue.dequeueLong();
-				int curTidx = queue.dequeueInt();
-				long curPtr = queue.dequeueLong();
-				GraphNode curNode = this.getNode(curState, curTidx, curPtr);
-				int succCnt = curNode.succSize();
+				final int curTidx = queue.dequeueInt();
+				final long curPtr = queue.dequeueLong();
+				final GraphNode curNode = this.getNode(curState, curTidx, curPtr);
+				final int succCnt = curNode.succSize();
 
 				for (int i = 0; i < succCnt; i++) {
-					long nextState = curNode.getStateFP(i);
+					final long nextState = curNode.getStateFP(i);
 					if (nextState == curState) {
 						// No point to explore a successor state
 						// that is the current state. It is a successor
 						// due to a direct cycle in the graph.
 						continue;
 					}
-					int nextTidx = curNode.getTidx(i);
+					final int nextTidx = curNode.getTidx(i);
 					if (nextState == state) {
 						// found a path to state:
-						LongVec res = new LongVec(2);
+						final LongVec res = new LongVec(2);
 						res.addElement(nextState);
 						int curLoc = this.nodePtrTbl.getNodesLoc(curState);
 						int[] nodes = this.nodePtrTbl.getNodesByLoc(curLoc);
@@ -388,19 +389,18 @@ public class DiskGraph {
 						return res;
 					}
 
-					int nextLoc = this.nodePtrTbl.getNodesLoc(nextState);
-					int[] nextNodes = this.nodePtrTbl.getNodesByLoc(nextLoc);
-					int cloc = NodePtrTable.getIdx(nextNodes, nextTidx);
-					long nextPtr = NodePtrTable.getElem(nextNodes, cloc);
+					final int nextLoc = this.nodePtrTbl.getNodesLoc(nextState);
+					final int[] nextNodes = this.nodePtrTbl.getNodesByLoc(nextLoc);
+					final int cloc = NodePtrTable.getIdx(nextNodes, nextTidx);
+					final long nextPtr = NodePtrTable.getElem(nextNodes, cloc);
 
 					if (isFilePointer(nextPtr)) {
 						// nextState is not visited: enqueue it, mark it
-						// visited, and
-						// memorize its parent.
+						// visited, and memorize its parent.
 						queue.enqueueLong(nextState);
 						queue.enqueueInt(nextTidx);
 						queue.enqueueLong(nextPtr);
-						int curLoc = this.nodePtrTbl.getNodesLoc(curState);
+						final int curLoc = this.nodePtrTbl.getNodesLoc(curState);
 						NodePtrTable.putElem(nextNodes, offset + curLoc, cloc);
 					}
 				}
@@ -408,7 +408,7 @@ public class DiskGraph {
 		} else {
 			// Initialize queue with initial states:
 			for (int i = 0; i < numOfInits; i += 2) {
-				long state0 = this.initNodes.elementAt(i);
+				final long state0 = this.initNodes.elementAt(i);
 				queue.enqueueLong(state0);
 				queue.enqueueLong(this.nodePtrTbl.get(state0));
 				this.nodePtrTbl.put(state0, MAX_PTR);
@@ -416,20 +416,20 @@ public class DiskGraph {
 
 			while (true) {
 				long curState = queue.dequeueLong();
-				long curPtr = queue.dequeueLong();
-				GraphNode curNode = this.getNode(curState, -1, curPtr);
-				int succCnt = curNode.succSize();
+				final long curPtr = queue.dequeueLong();
+				final GraphNode curNode = this.getNode(curState, -1, curPtr);
+				final int succCnt = curNode.succSize();
 
 				for (int i = 0; i < succCnt; i++) {
-					long nextState = curNode.getStateFP(i);
+					final long nextState = curNode.getStateFP(i);
 					if (nextState == state) {
 						// found a path to state: construct the path and return.
-						LongVec res = new LongVec(2);
+						final LongVec res = new LongVec(2);
 						res.addElement(nextState);
 						int curLoc = this.nodePtrTbl.getLoc(curState);
 						while (true) {
 							res.addElement(curState);
-							long ploc = this.nodePtrTbl.getByLoc(curLoc);
+							final long ploc = this.nodePtrTbl.getByLoc(curLoc);
 							if (ploc == MAX_PTR) {
 								break;
 							}
@@ -438,13 +438,13 @@ public class DiskGraph {
 						}
 						return res;
 					}
-					int nextLoc = this.nodePtrTbl.getLoc(nextState);
-					long nextPtr = this.nodePtrTbl.getByLoc(nextLoc);
+					final int nextLoc = this.nodePtrTbl.getLoc(nextState);
+					final long nextPtr = this.nodePtrTbl.getByLoc(nextLoc);
 					if (isFilePointer(nextPtr)) {
 						// nextState is not visited:
 						queue.enqueueLong(nextState);
 						queue.enqueueLong(nextPtr);
-						int curLoc = this.nodePtrTbl.getLoc(curState);
+						final int curLoc = this.nodePtrTbl.getLoc(curState);
 						this.nodePtrTbl.putByLoc(nextState, offset + curLoc, nextLoc);
 					}
 				}
