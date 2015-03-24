@@ -166,13 +166,20 @@ public class DiskGraph {
 	}
 
 	/* Get the graph node at the file location ptr. */
-	public final GraphNode getNode(long stateFP, int tidx, long ptr) throws IOException {
+	public final GraphNode getNode(final long stateFP, final int tidx, final long ptr) throws IOException {
 		// Get from memory cache if cached:
 		//TODO Adapt mask to array length iff array length is a func of available memory
 		int idx = (int) (stateFP + tidx) & 0xFFFF;
 		GraphNode gnode = this.gnodes[idx];
 		if (gnode != null && gnode.stateFP == stateFP && gnode.tindex == tidx) {
 			return gnode;
+		}
+
+		// If the node is not found in the in-memory cache, the ptr has to be
+		// positive. BufferedRandomAccessFile#seek will throw an IOException due
+		// to "negative seek offset" anyway. Lets catch it early on!
+		if (ptr < 0) {
+			throw new IllegalArgumentException("Invalid negative file pointer: " + ptr);
 		}
 
 		// Have to get the node from disk:
