@@ -605,6 +605,9 @@ public class LiveWorker extends IdThread {
 		TLCStateInfo[] states = new TLCStateInfo[plen];
 
 		// Recover the initial state:
+		//TODO This throws an ArrayIndexOutOfBounds if getPath returned a
+		// LongVec with just a single element. This happens when the parameter
+		// state is one of the init states already.
 		long fp = prefix.elementAt(plen - 1);
 		TLCStateInfo sinfo = LiveCheck.myTool.getState(fp);
 		if (sinfo == null) {
@@ -613,6 +616,7 @@ public class LiveWorker extends IdThread {
 		states[stateNum++] = sinfo;
 
 		// Recover the successor states:
+		//TODO Check if path.size has elements
 		for (int i = plen - 2; i >= 0; i--) {
 			long curFP = prefix.elementAt(i);
 			if (curFP != fp) {
