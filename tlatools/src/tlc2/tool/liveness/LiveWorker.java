@@ -29,7 +29,7 @@ public class LiveWorker extends IdThread {
 	private static Object workerLock = new Object();
 
 	private OrderOfSolution oos = null;
-	private DiskGraph dg = null;
+	private AbstractDiskGraph dg = null;
 	private PossibleErrorModel pem = null;
 
 	public LiveWorker(int id) {
@@ -37,7 +37,7 @@ public class LiveWorker extends IdThread {
 	}
 
 	public synchronized static int getNextOOS() {
-		if (nextOOS < LiveCheck.solutions.length) {
+		if (nextOOS < LiveCheck.getNumChecker()) {
 			return nextOOS++;
 		}
 		return -1;
@@ -261,7 +261,7 @@ public class LiveWorker extends IdThread {
 		// to be kept in com. However, it would destroy NodePtrTable's
 		// collision handling. NodePtrTable uses open addressing (see
 		// http://en.wikipedia.org/wiki/Open_addressing).
-		NodePtrTable com = new NodePtrTable(128, true);
+		TableauNodePtrTable com = new TableauNodePtrTable(128);
 		while (true) {
 			// Add <state1, tidx1> into com:
 			com.put(state1, tidx1, loc1);
@@ -305,10 +305,10 @@ public class LiveWorker extends IdThread {
 				continue;
 			}
 
-			state1 = NodePtrTable.getKey(nodes);
+			state1 = TableauNodePtrTable.getKey(nodes);
 			for (int nidx = 2; nidx < nodes.length; nidx += 3) {
-				tidx1 = NodePtrTable.getTidx(nodes, nidx);
-				loc1 = NodePtrTable.getElem(nodes, nidx);
+				tidx1 = TableauNodePtrTable.getTidx(nodes, nidx);
+				loc1 = TableauNodePtrTable.getElem(nodes, nidx);
 
 				GraphNode curNode = this.dg.getNode(state1, tidx1, loc1);
 
@@ -398,7 +398,7 @@ public class LiveWorker extends IdThread {
 	 * state to the "bad" cycle in the state graph. The prefix path and the
 	 * "bad" cycle together forms a counter-example.
 	 */
-	private void printTrace(long state, int tidx, NodePtrTable nodeTbl) throws IOException {
+	private void printTrace(long state, int tidx, TableauNodePtrTable nodeTbl) throws IOException {
 
 		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
@@ -415,9 +415,9 @@ public class LiveWorker extends IdThread {
 
 		// Mark state as visited:
 		int[] nodes = nodeTbl.getNodes(state);
-		int tloc = NodePtrTable.getIdx(nodes, tidx);
-		long ptr = NodePtrTable.getElem(nodes, tloc);
-		NodePtrTable.setSeen(nodes, tloc);
+		int tloc = TableauNodePtrTable.getIdx(nodes, tidx);
+		long ptr = TableauNodePtrTable.getElem(nodes, tloc);
+		TableauNodePtrTable.setSeen(nodes, tloc);
 
 		GraphNode curNode = this.dg.getNode(state, tidx, ptr);
 		while (cnt > 0) {
@@ -460,7 +460,7 @@ public class LiveWorker extends IdThread {
 					int nextTidx = curNode.getTidx(i);
 					nodes = nodeTbl.getNodes(nextState);
 					if (nodes != null) {
-						tloc = NodePtrTable.getIdx(nodes, nextTidx);
+						tloc = TableauNodePtrTable.getIdx(nodes, nextTidx);
 						if (tloc != -1) {
 							// <nextState, nextTidx> is in nodeTbl.
 							nextState1 = nextState;
@@ -481,13 +481,13 @@ public class LiveWorker extends IdThread {
 						// Take curNode -> <nextState, nextTidx>:
 						cycleStack.pushInt(curNode.tindex);
 						cycleStack.pushLong(curNode.stateFP);
-						long nextPtr = NodePtrTable.getPtr(NodePtrTable.getElem(nodes, tloc));
+						long nextPtr = TableauNodePtrTable.getPtr(TableauNodePtrTable.getElem(nodes, tloc));
 						curNode = this.dg.getNode(nextState, nextTidx, nextPtr);
 						nodeTbl.resetElems();
 						break _next;
 					}
 
-					if (nodes != null && tloc != -1 && !NodePtrTable.isSeen(nodes, tloc)) {
+					if (nodes != null && tloc != -1 && !TableauNodePtrTable.isSeen(nodes, tloc)) {
 						// <nextState, nextTidx> is an unvisited successor of
 						// curNode:
 						hasUnvisitedSucc = true;
@@ -502,7 +502,7 @@ public class LiveWorker extends IdThread {
 					// Take curNode -> <nextState1, nextTidx1>:
 					cycleStack.pushInt(curNode.tindex);
 					cycleStack.pushLong(curNode.stateFP);
-					long nextPtr = NodePtrTable.getPtr(NodePtrTable.getElem(nodes1, tloc1));
+					long nextPtr = TableauNodePtrTable.getPtr(TableauNodePtrTable.getElem(nodes1, tloc1));
 					curNode = this.dg.getNode(nextState1, nextTidx1, nextPtr);
 					nodeTbl.resetElems();
 					break;
@@ -513,7 +513,7 @@ public class LiveWorker extends IdThread {
 				while (!hasUnvisitedSucc) {
 					long curState = cycleStack.popLong();
 					int curTidx = cycleStack.popInt();
-					long curPtr = NodePtrTable.getPtr(nodeTbl.get(curState, curTidx));
+					long curPtr = TableauNodePtrTable.getPtr(nodeTbl.get(curState, curTidx));
 					curNode = this.dg.getNode(curState, curTidx, curPtr);
 					succCnt = curNode.succSize();
 					for (int i = 0; i < succCnt; i++) {
@@ -521,8 +521,8 @@ public class LiveWorker extends IdThread {
 						nextTidx2 = curNode.getTidx(i);
 						nodes2 = nodeTbl.getNodes(nextState2);
 						if (nodes2 != null) {
-							tloc2 = NodePtrTable.getIdx(nodes2, nextTidx2);
-							if (tloc2 != -1 && !NodePtrTable.isSeen(nodes2, tloc2)) {
+							tloc2 = TableauNodePtrTable.getIdx(nodes2, nextTidx2);
+							if (tloc2 != -1 && !TableauNodePtrTable.isSeen(nodes2, tloc2)) {
 								hasUnvisitedSucc = true;
 								break;
 							}
@@ -534,9 +534,9 @@ public class LiveWorker extends IdThread {
 				// visited.
 				cycleStack.pushInt(curNode.tindex);
 				cycleStack.pushLong(curNode.stateFP);
-				long nextPtr = NodePtrTable.getPtr(NodePtrTable.getElem(nodes2, tloc2));
+				long nextPtr = TableauNodePtrTable.getPtr(TableauNodePtrTable.getElem(nodes2, tloc2));
 				curNode = this.dg.getNode(nextState2, nextTidx2, nextPtr);
-				NodePtrTable.setSeen(nodes2, tloc2);
+				TableauNodePtrTable.setSeen(nodes2, tloc2);
 			}
 		}
 
@@ -554,13 +554,13 @@ public class LiveWorker extends IdThread {
 			int ploc = -1;
 			int curLoc = nodeTbl.getNodesLoc(curState);
 			nodes = nodeTbl.getNodesByLoc(curLoc);
-			NodePtrTable.setSeen(nodes);
+			TableauNodePtrTable.setSeen(nodes);
 
 			_done: while (true) {
-				tloc = NodePtrTable.startLoc(nodes);
+				tloc = TableauNodePtrTable.startLoc(nodes);
 				while (tloc != -1) {
-					int curTidx = NodePtrTable.getTidx(nodes, tloc);
-					long curPtr = NodePtrTable.getPtr(NodePtrTable.getElem(nodes, tloc));
+					int curTidx = TableauNodePtrTable.getTidx(nodes, tloc);
+					long curPtr = TableauNodePtrTable.getPtr(TableauNodePtrTable.getElem(nodes, tloc));
 					curNode = this.dg.getNode(curState, curTidx, curPtr);
 					int succCnt = curNode.succSize();
 
@@ -572,23 +572,23 @@ public class LiveWorker extends IdThread {
 							while (curState != startState) {
 								postfix.addElement(curState);
 								nodes = nodeTbl.getNodesByLoc(ploc);
-								curState = NodePtrTable.getKey(nodes);
-								ploc = NodePtrTable.getParent(nodes);
+								curState = TableauNodePtrTable.getKey(nodes);
+								ploc = TableauNodePtrTable.getParent(nodes);
 							}
 							postfix.addElement(startState);
 							break _done;
 						}
 
 						int[] nodes1 = nodeTbl.getNodes(nextState);
-						if (nodes1 != null && !NodePtrTable.isSeen(nodes1)) {
-							NodePtrTable.setSeen(nodes1);
+						if (nodes1 != null && !TableauNodePtrTable.isSeen(nodes1)) {
+							TableauNodePtrTable.setSeen(nodes1);
 							queue.enqueueLong(nextState);
 							queue.enqueueInt(curLoc);
 						}
 					}
-					tloc = NodePtrTable.nextLoc(nodes, tloc);
+					tloc = TableauNodePtrTable.nextLoc(nodes, tloc);
 				}
-				NodePtrTable.setParent(nodes, ploc);
+				TableauNodePtrTable.setParent(nodes, ploc);
 				curState = queue.dequeueLong();
 				ploc = queue.dequeueInt();
 				curLoc = nodeTbl.getNodesLoc(curState);
@@ -686,8 +686,8 @@ public class LiveWorker extends IdThread {
 					break;
 				}
 
-				this.oos = LiveCheck.solutions[idx];
-				this.dg = LiveCheck.dgraphs[idx];
+				this.oos = LiveCheck.getChecker(idx).getSolution();
+				this.dg = LiveCheck.getChecker(idx).getDiskGraph();
 				this.dg.createCache();
 				PossibleErrorModel[] pems = this.oos.getPems();
 				for (int i = 0; i < pems.length; i++) {

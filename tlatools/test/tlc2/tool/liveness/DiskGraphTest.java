@@ -44,7 +44,7 @@ public class DiskGraphTest extends TestCase {
 	
 	// No init node makes DiskGraph#getPath never break from the while loop
 	public void testGetPathWithoutInitNoTableau() throws IOException {
-		final DiskGraph dg = new DiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS, false, GRAPH_STATS);
+		final DiskGraph dg = new DiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS,  GRAPH_STATS);
 		dg.addNode(new GraphNode(1L, NO_TABLEAU));
 		dg.createCache();
 		try {
@@ -58,7 +58,7 @@ public class DiskGraphTest extends TestCase {
 	// Create a linear minimal graph (2 nodes) and check if the graph is
 	// returned by getPath afterwards.
 	public void testGetMinimalPathWithoutTableau() throws IOException {
-		final DiskGraph dg = new DiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS, false, GRAPH_STATS);
+		final DiskGraph dg = new DiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS, GRAPH_STATS);
 
 		final long initFP = 1L;
 		final long successorFP = 2L;
