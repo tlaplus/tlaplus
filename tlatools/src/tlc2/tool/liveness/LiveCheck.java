@@ -249,6 +249,7 @@ public class LiveCheck {
 			final GraphNode node0 = new GraphNode(fp0, -1);
 			node0.setCheckState(checkStateResults);
 			final int succCnt = nextStates.size();
+			final int alen = oos.getCheckAction().length;
 			synchronized (oos) {
 				for (int sidx = 0; sidx < succCnt; sidx++) {
 					final long successor = nextFPs.elementAt(sidx);
@@ -272,8 +273,8 @@ public class LiveCheck {
 						// Rather than allocating N memory regions and freeing
 						// N-1 immediately after, it now just has to free a
 						// single one (and only iff we over-allocated).
-						node0.addTransition(successor, -1, checkStateResults.length, oos.getCheckAction().length,
-								checkActionResults, sidx * succCnt, (succCnt - cnt++));
+						node0.addTransition(successor, -1, checkStateResults.length, alen,
+								checkActionResults, sidx * alen, (succCnt - cnt++));
 					} else {
 						cnt++;
 					}
@@ -367,6 +368,8 @@ public class LiveCheck {
 					return;
 				}
 				
+				final int alen = oos.getCheckAction().length;
+				
 				// See node0.addTransition(..) of previous case.
 				final int allocationHint = ((nodes.length / 3) * succCnt);
 				
@@ -386,7 +389,7 @@ public class LiveCheck {
 							if (ptr1 == -1) {
 								if (consistency.get((tnode1.index * succCnt) + sidx)) { // see note on addressing above
 									node0.addTransition(successor, tnode1.index, checkStateResults.length,
-											oos.getCheckAction().length, checkActionResults, sidx * succCnt,
+											alen, checkActionResults, sidx * alen,
 											allocationHint - cnt++);
 									// Record that we have seen <fp1,
 									// tnode1>. If fp1 is done, we have
@@ -399,7 +402,7 @@ public class LiveCheck {
 								}
 							} else if (!node0.transExists(successor, tnode1.index)) {
 								node0.addTransition(successor, tnode1.index, checkStateResults.length,
-										oos.getCheckAction().length, checkActionResults, sidx * succCnt, allocationHint
+										alen, checkActionResults, sidx * alen, allocationHint
 												- cnt++);
 							} else {
 								// Increment cnt even if addTrasition is not called. After all, 
