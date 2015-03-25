@@ -39,6 +39,10 @@ public class LongVec implements Cloneable, Serializable {
 		rangeCheck(index);
 		return this.elementData[index];
 	}
+	
+	public final long lastElement() {
+		return this.elementData[elementCount - 1];
+	}
 
 	public final void removeElement(int index) {
 		rangeCheck(index);
@@ -65,7 +69,7 @@ public class LongVec implements Cloneable, Serializable {
 	public final int size() {
 		return this.elementCount;
 	}
-
+	
 	private final void ensureCapacity(int minCapacity) {
 		if (elementData.length < minCapacity) {
 			int newCapacity = elementData.length + elementData.length;

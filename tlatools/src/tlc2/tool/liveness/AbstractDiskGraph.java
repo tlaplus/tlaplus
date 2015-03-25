@@ -206,7 +206,10 @@ public abstract class AbstractDiskGraph {
 	 * where s1 is state, sn is an initial state, and si -> si-1 is a state
 	 * transition.
 	 */
-	public abstract LongVec getPath(final long state) throws IOException;
+	public LongVec getPath(final long state, final int tidx) throws IOException {
+		throw new RuntimeException("Couldn't re-create liveness trace (path) starting at: " + state + " and tidx: "
+				+ tidx);
+	}
 
 	/**
 	 * Only useful for debugging.

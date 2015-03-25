@@ -371,9 +371,9 @@ public class LiveCheck {
 				final int alen = oos.getCheckAction().length;
 				
 				// See node0.addTransition(..) of previous case.
-				final int allocationHint = ((nodes.length / 3) * succCnt);
+				final int allocationHint = ((nodes.length / dgraph.getElemLength()) * succCnt);
 				
-				for (int nidx = 2; nidx < nodes.length; nidx += 3) {
+				for (int nidx = 2; nidx < nodes.length; nidx += dgraph.getElemLength()) {
 					final int tidx0 = nodes[nidx];
 					final TBGraphNode tnode0 = oos.getTableau().getNode(tidx0);
 					final GraphNode node0 = new GraphNode(fp0, tidx0);

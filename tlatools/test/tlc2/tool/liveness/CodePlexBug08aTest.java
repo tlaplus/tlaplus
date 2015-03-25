@@ -34,10 +34,10 @@ import tlc2.tool.TLCStateInfo;
 /**
  * see http://tlaplus.codeplex.com/workitem/8
  */
-public class CodePlexBug08Test extends ModelCheckerTestCase {
+public class CodePlexBug08aTest extends ModelCheckerTestCase {
 
-	public CodePlexBug08Test() {
-		super("MC", "CodePlexBug08");
+	public CodePlexBug08aTest() {
+		super("MCa", "CodePlexBug08");
 	}
 	
 	public void testSpec() {
@@ -56,7 +56,17 @@ public class CodePlexBug08Test extends ModelCheckerTestCase {
 		int i = 0; // State's position in records
 		Object[] objs = (Object[]) records.get(i++);
 		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = FALSE\n/\\ x = 2", stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
+		assertEquals("/\\ b = FALSE\n/\\ x = 1", stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
+		assertEquals(i, objs[1]);
+		
+		objs = (Object[]) records.get(i++);
+		stateInfo = (TLCStateInfo) objs[0];
+		assertEquals("/\\ b = TRUE\n/\\ x = 2", stateInfo.toString().trim());
+		assertEquals(i, objs[1]);
+		
+		objs = (Object[]) records.get(i++);
+		stateInfo = (TLCStateInfo) objs[0];
+		assertEquals("/\\ b = FALSE\n/\\ x = 2", stateInfo.toString().trim());
 		assertEquals(i, objs[1]);
 		
 		objs = (Object[]) records.get(i++);

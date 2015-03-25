@@ -78,7 +78,7 @@ public class TableauNodePtrTable {
 	 * Add <tidx, elem> into the table. If the table has already contained <k,
 	 * tidx>, overwrite the old value.
 	 */
-	public void put(long k, int tidx, long elem) {
+	public final void put(long k, int tidx, long elem) {
 		if (this.count >= this.thresh) {
 			this.grow();
 		}
@@ -239,7 +239,7 @@ public class TableauNodePtrTable {
 		for (int i = 0; i < this.nodes.length; i++) {
 			int[] node = this.nodes[i];
 			if (node != null) {
-				for (int j = 3; j < node.length; j += 3) {
+				for (int j = 3; j < node.length; j += getElemLength()) {
 					if (node[j] < 0) {
 						return false;
 					}
@@ -249,11 +249,11 @@ public class TableauNodePtrTable {
 		return true;
 	}
 	
-	public void resetElems() {
+	public final void resetElems() {
 		for (int i = 0; i < this.nodes.length; i++) {
 			int[] node = this.nodes[i];
 			if (node != null) {
-				for (int j = 3; j < node.length; j += 3) {
+				for (int j = 3; j < node.length; j += getElemLength()) {
 					node[j] &= 0x7FFFFFFF;
 				}
 			}
@@ -273,6 +273,13 @@ public class TableauNodePtrTable {
 			}
 		}
 	}
+	
+	/**
+	 * @return The length of an elem "record" in nodes[]
+	 */
+	public int getElemLength() {
+		return 3;
+	}
 
 	/*
 	 * Private static helper methods below
@@ -285,8 +292,8 @@ public class TableauNodePtrTable {
 		return node;
 	}
 
-	private static int[] addElem(long key, int tidx, long elem) {
-		int[] node = new int[5];
+	protected int[] addElem(long key, int tidx, long elem) {
+		int[] node = new int[3 + getElemLength() - 1];
 		node[0] = (int) (key >>> 32);
 		node[1] = (int) (key & 0xFFFFFFFFL);
 		node[2] = tidx;
@@ -295,9 +302,9 @@ public class TableauNodePtrTable {
 		return node;
 	}
 
-	private static int[] addElem(int[] node, int tidx, long elem) {
+	protected int[] addElem(int[] node, int tidx, long elem) {
 		int len = node.length;
-		int[] newNode = new int[len + 3];
+		int[] newNode = new int[len + getElemLength()];
 		System.arraycopy(node, 0, newNode, 0, len);
 		newNode[len] = tidx;
 		newNode[len + 1] = (int) (elem >>> 32);
@@ -315,20 +322,32 @@ public class TableauNodePtrTable {
 		return (high << 32) | (low & 0xFFFFFFFFL);
 	}
 
-	public static int getIdx(int[] node, int tidx) {
+	public static long getElem(int[] node, int loc) {
+		long high = node[loc + 1];
+		long low = node[loc + 2];
+		return (high << 32) | (low & 0xFFFFFFFFL);
+	}
+	
+
+	public final int getIdx(int[] node, int tidx) {
 		int len = node.length;
-		for (int i = 2; i < len; i += 3) {
+		for (int i = 2; i < len; i += getElemLength()) {
 			if (node[i] == tidx) {
 				return i;
 			}
 		}
 		return -1;
 	}
+	
+	public int getElemTidx(int[] node, int loc) {
+		// This implementation does not store the tableau index.
+		return -1;
+	}
 
-	public static long getElem(int[] node, int loc) {
-		long high = node[loc + 1];
-		long low = node[loc + 2];
-		return (high << 32) | (low & 0xFFFFFFFFL);
+	public void putElem(int[] node, long elem, int tableauIdx, int loc) {
+		node[loc + 1] = (int) (elem >>> 32);
+		node[loc + 2] = (int) (elem & 0xFFFFFFFFL);
+		// ignores tableau index
 	}
 
 	public static void putElem(int[] node, long elem, int loc) {
@@ -400,7 +419,7 @@ public class TableauNodePtrTable {
   					// A node maintains n records. Each record logically contains information about a node's successor.
   					// fingerprint
   					int j = 2;
-  					for (; j < node.length - 1; j+=3) { // don't miss the ptr at the end
+  					for (; j < node.length - 1; j+=table.getElemLength()) { // don't miss the ptr at the end
   						buf.append("\t");
   						// tableau index
   						final int tidx = node[j];
@@ -415,6 +434,8 @@ public class TableauNodePtrTable {
   							final long offset = AbstractDiskGraph.MAX_PTR + 1;
   							buf.append(" pred: " + (elem - offset));
   						}
+  						final int predTidx = table.getElemTidx(node, j);
+  						buf.append(" predtidx: " + predTidx);
   						buf.append(", isSeen: " + isSeen(node, j));
   						buf.append("\n");
   					}

@@ -34,16 +34,16 @@ import tlc2.tool.TLCStateInfo;
 /**
  * see http://tlaplus.codeplex.com/workitem/8
  */
-public class CodePlexBug08Test extends ModelCheckerTestCase {
+public class CodePlexBug08AgentRingTest extends ModelCheckerTestCase {
 
-	public CodePlexBug08Test() {
-		super("MC", "CodePlexBug08");
+	public CodePlexBug08AgentRingTest() {
+		super("AgentRingMC", "CodePlexBug08");
 	}
 	
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "18", "11"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "361", "120"));
 		
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
@@ -56,38 +56,59 @@ public class CodePlexBug08Test extends ModelCheckerTestCase {
 		int i = 0; // State's position in records
 		Object[] objs = (Object[]) records.get(i++);
 		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = FALSE\n/\\ x = 2", stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
+		assertEquals("/\\ Agent = [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0]\n"
+				   + "/\\ CanCreate = TRUE\n"
+				   + "/\\ Nodes = (0 :> [Load |-> 0] @@ 1 :> [Load |-> 0])", 
+				   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
 		assertEquals(i, objs[1]);
 		
 		objs = (Object[]) records.get(i++);
 		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = TRUE\n/\\ x = 3", stateInfo.toString().trim());
-		assertEquals(i, objs[1]);
-		
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = FALSE\n/\\ x = 3", stateInfo.toString().trim());
+		assertEquals("/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
+				   + "/\\ CanCreate = TRUE\n"
+				   + "/\\ Nodes = (0 :> [Load |-> 0] @@ 1 :> [Load |-> 0])", 
+				   stateInfo.toString().trim());
 		assertEquals(i, objs[1]);
 
 		objs = (Object[]) records.get(i++);
 		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = TRUE\n/\\ x = 4", stateInfo.toString().trim());
-		assertEquals(i, objs[1]);
-		
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = FALSE\n/\\ x = 4", stateInfo.toString().trim());
+		assertEquals("/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
+				   + "/\\ CanCreate = TRUE\n"
+				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0])", 
+				   stateInfo.toString().trim());
 		assertEquals(i, objs[1]);
 
 		objs = (Object[]) records.get(i++);
 		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = TRUE\n/\\ x = 5", stateInfo.toString().trim());
+		assertEquals("/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
+				   + "/\\ CanCreate = TRUE\n"
+				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])", 
+				   stateInfo.toString().trim());
+		assertEquals(i, objs[1]);
+
+		// The two states below violate the liveness property [](~CanCreate /\
+		// (\A i,j \in NodeRange : Nodes[i].Load = Nodes[j].Load) =>
+		// [](Agent.Task = 0)). State 5 has CanCreate = FALSE and Task=0 and
+		// state six changes Task back to 1.
+		
+		// state 5
+		objs = (Object[]) records.get(i++);
+		stateInfo = (TLCStateInfo) objs[0];
+		assertEquals("/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
+				   + "/\\ CanCreate = FALSE\n"
+				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])", 
+				   stateInfo.toString().trim());
+		assertEquals(i, objs[1]);
+
+		// state 6
+		objs = (Object[]) records.get(i++);
+		stateInfo = (TLCStateInfo) objs[0];
+		assertEquals("/\\ Agent = [Loc |-> 1, LastLoad |-> 1, ReadyToMove |-> TRUE, Task |-> 1]\n"
+				   + "/\\ CanCreate = FALSE\n"
+				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])", 
+				   stateInfo.toString().trim());
 		assertEquals(i, objs[1]);
 		
-		// Assert the error trace contains a stuttering step at position 5
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
-		records = recorder.getRecords(EC.TLC_STATE_PRINT3);
-		objs = (Object[]) records.get(0);
-		assertEquals(++i, objs[1]);
+		// ...more states to follow
 	}
 }

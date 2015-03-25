@@ -181,9 +181,9 @@ public class DiskGraph extends AbstractDiskGraph {
 	}
 	
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.AbstractDiskGraph#getPath(long)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#getPath(long, int)
 	 */
-	public final LongVec getPath(final long state) throws IOException {
+	public final LongVec getPath(final long state, final int tidxIgnored) throws IOException {
 		// If path requested just consists of an init node, return the single
 		// init node. This is the trivial case.
 		final int numOfInits = this.initNodes.size();
@@ -228,9 +228,15 @@ public class DiskGraph extends AbstractDiskGraph {
 					while (true) {
 						res.addElement(curState);
 						final long ploc = this.nodePtrTbl.getByLoc(curLoc);
+						// MAX_PTR indicates that this is an init state. Since
+						// getPath is looking for the shortest path from the
+						// given state back to *an* initial state, we are done.
 						if (ploc == MAX_PTR) {
 							break;
 						}
+						// Lookup the predecessor in the ptr table. (ploc -
+						// offset) is the index of the predecessor in the
+						// nodePtrTbl. See offset below at putByLoc(..).
 						curLoc = (int) (ploc - offset);
 						curState = this.nodePtrTbl.getKeyByLoc(curLoc);
 					}
@@ -247,6 +253,6 @@ public class DiskGraph extends AbstractDiskGraph {
 				}
 			}
 		}
-		throw new RuntimeException("Couldn't re-create liveness trace (path) starting at: " + state);
+		return super.getPath(state, tidxIgnored);
 	}
 }

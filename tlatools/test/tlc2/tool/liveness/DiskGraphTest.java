@@ -48,7 +48,7 @@ public class DiskGraphTest extends TestCase {
 		dg.addNode(new GraphNode(1L, NO_TABLEAU));
 		dg.createCache();
 		try {
-			dg.getPath(1L);
+			dg.getPath(1L, -1);
 		} catch (RuntimeException e) {
 			return;
 		}
@@ -76,7 +76,7 @@ public class DiskGraphTest extends TestCase {
 
 		// Can only lookup/get a node, if there is a cache
 		dg.createCache();
-		final LongVec path = dg.getPath(successorFP);
+		final LongVec path = dg.getPath(successorFP, -1);
 		dg.destroyCache();
 
 		assertFalse("Length or path returned is too short", path.size() < 2);

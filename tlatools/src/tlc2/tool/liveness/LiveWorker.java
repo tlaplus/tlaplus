@@ -310,7 +310,7 @@ public class LiveWorker extends IdThread {
 			}
 
 			state1 = TableauNodePtrTable.getKey(nodes);
-			for (int nidx = 2; nidx < nodes.length; nidx += 3) {
+			for (int nidx = 2; nidx < nodes.length; nidx += com.getElemLength()) {
 				tidx1 = TableauNodePtrTable.getTidx(nodes, nidx);
 				loc1 = TableauNodePtrTable.getElem(nodes, nidx);
 
@@ -419,7 +419,7 @@ public class LiveWorker extends IdThread {
 
 		// Mark state as visited:
 		int[] nodes = nodeTbl.getNodes(state);
-		int tloc = TableauNodePtrTable.getIdx(nodes, tidx);
+		int tloc = nodeTbl.getIdx(nodes, tidx);
 		long ptr = TableauNodePtrTable.getElem(nodes, tloc);
 		TableauNodePtrTable.setSeen(nodes, tloc);
 
@@ -464,7 +464,7 @@ public class LiveWorker extends IdThread {
 					int nextTidx = curNode.getTidx(i);
 					nodes = nodeTbl.getNodes(nextState);
 					if (nodes != null) {
-						tloc = TableauNodePtrTable.getIdx(nodes, nextTidx);
+						tloc = nodeTbl.getIdx(nodes, nextTidx);
 						if (tloc != -1) {
 							// <nextState, nextTidx> is in nodeTbl.
 							nextState1 = nextState;
@@ -525,7 +525,7 @@ public class LiveWorker extends IdThread {
 						nextTidx2 = curNode.getTidx(i);
 						nodes2 = nodeTbl.getNodes(nextState2);
 						if (nodes2 != null) {
-							tloc2 = TableauNodePtrTable.getIdx(nodes2, nextTidx2);
+							tloc2 = nodeTbl.getIdx(nodes2, nextTidx2);
 							if (tloc2 != -1 && !TableauNodePtrTable.isSeen(nodes2, tloc2)) {
 								hasUnvisitedSucc = true;
 								break;
@@ -604,7 +604,7 @@ public class LiveWorker extends IdThread {
 		// led to the bad cycle. The nodes on prefix and cycleStack then
 		// form the complete counter example.
 		int stateNum = 0;
-		LongVec prefix = this.dg.getPath(state);
+		LongVec prefix = this.dg.getPath(state, tidx);
 		int plen = prefix.size();
 		TLCStateInfo[] states = new TLCStateInfo[plen];
 
