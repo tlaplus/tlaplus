@@ -53,7 +53,7 @@ public class TableauNodePtrTable {
 	 * Return the value associated with the key <k, tidx> if the table contains
 	 * <k, tidx>. Otherwise, return -1.
 	 */
-	public final long get(long k, int tidx) {
+	public final long get(final long k, final int tidx) {
 		if (count >= thresh) {
 			this.grow();
 		}
@@ -90,12 +90,25 @@ public class TableauNodePtrTable {
 				this.count++;
 				return;
 			}
+			// Verify that the node at position loc has the correct key. Due to
+			// hash collisions, it might be a different node that hashes to the
+			// same bucket. If this is the case, increment the location to check
+			// the next bucket (loc + 1 below).
 			if (getKey(node) == k) {
+				// Iff this is the correct key, search through the nodes and get
+				// the one with the matching tableau index.
 				int cloc = getIdx(node, tidx);
 				if (cloc == -1) {
+					// The list of nodes does not contain the give tableau idx
+					// yet, thus add a new element. Technically, it means we
+					// grow the nodes array by three and insert the tableau idx
+					// and its element.
 					this.nodes[loc] = addElem(node, tidx, elem);
-					// this.count++;
 				} else {
+					// Nodes already contains an entry for the given tableau.
+					// Update its element. The element is either a pointer
+					// location, MAX_LINK, MAX_PTR or a REACHABLE mark. The
+					// previous value is overwritten.
 					putElem(this.nodes[loc], elem, cloc);
 				}
 				return;
@@ -262,23 +275,17 @@ public class TableauNodePtrTable {
 	}
 
 	/*
-	 * Static helper methods below
+	 * Private static helper methods below
 	 */
 
-	public static long getKey(int[] node) {
-		long high = node[0];
-		long low = node[1];
-		return (high << 32) | (low & 0xFFFFFFFFL);
-	}
-
-	public static int[] addKey(long key) {
+	private static int[] addKey(long key) {
 		int[] node = new int[2];
 		node[0] = (int) (key >>> 32);
 		node[1] = (int) (key & 0xFFFFFFFFL);
 		return node;
 	}
 
-	public static int[] addElem(long key, int tidx, long elem) {
+	private static int[] addElem(long key, int tidx, long elem) {
 		int[] node = new int[5];
 		node[0] = (int) (key >>> 32);
 		node[1] = (int) (key & 0xFFFFFFFFL);
@@ -288,7 +295,7 @@ public class TableauNodePtrTable {
 		return node;
 	}
 
-	public static int[] addElem(int[] node, int tidx, long elem) {
+	private static int[] addElem(int[] node, int tidx, long elem) {
 		int len = node.length;
 		int[] newNode = new int[len + 3];
 		System.arraycopy(node, 0, newNode, 0, len);
@@ -296,6 +303,16 @@ public class TableauNodePtrTable {
 		newNode[len + 1] = (int) (elem >>> 32);
 		newNode[len + 2] = (int) (elem & 0xFFFFFFFFL);
 		return newNode;
+	}
+
+	/*
+	 * Static helper methods below
+	 */
+	
+	public static long getKey(int[] node) {
+		long high = node[0];
+		long low = node[1];
+		return (high << 32) | (low & 0xFFFFFFFFL);
 	}
 
 	public static int getIdx(int[] node, int tidx) {
