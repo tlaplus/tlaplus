@@ -31,16 +31,20 @@ public class LiveWorker extends IdThread {
 	private OrderOfSolution oos = null;
 	private AbstractDiskGraph dg = null;
 	private PossibleErrorModel pem = null;
+	private final LiveCheck liveCheck;
 
-	public LiveWorker(int id) {
+	public LiveWorker(int id, final LiveCheck liveCheck) {
 		super(id);
+		this.liveCheck = liveCheck;
 	}
 
-	public synchronized static int getNextOOS() {
-		if (nextOOS < LiveCheck.getNumChecker()) {
-			return nextOOS++;
+	public int getNextOOS() {
+		synchronized (LiveWorker.class) {
+			if (nextOOS < liveCheck.getNumChecker()) {
+				return nextOOS++;
+			}
+			return -1;
 		}
-		return -1;
 	}
 
 	// Returns true iff an error has already found.
@@ -88,7 +92,7 @@ public class LiveWorker extends IdThread {
 		// * Speed up disk lookups in the RandomAccessFile(s) backing up the DiskGraph
 		// * Seems to serve as a marker for when a node during SCCs is fully explored //VERIFY assumption!
 		// 
-		final MemIntQueue nodeQueue = new MemIntQueue(LiveCheck.metadir, "root");
+		final MemIntQueue nodeQueue = new MemIntQueue(liveCheck.getMetaDir(), "root");
 		final LongVec initNodes = this.dg.getInitNodes();
 		final int numOfInits = initNodes.size();
 		for (int j = 0; j < numOfInits; j += 2) {
@@ -107,7 +111,7 @@ public class LiveWorker extends IdThread {
 		final int alen = this.oos.getCheckAction().length;
 		
 		// Tarjan's stack
-		final MemIntStack dfsStack = new MemIntStack(LiveCheck.metadir, "dfs");
+		final MemIntStack dfsStack = new MemIntStack(liveCheck.getMetaDir(), "dfs");
 		
 		// comStack is only being added to during the deep first search. It is passed
 		// to the checkComponent method while in DFS though.
@@ -127,7 +131,7 @@ public class LiveWorker extends IdThread {
 		// }
 		// return buf.toString();
 		//
-		final MemIntStack comStack = new MemIntStack(LiveCheck.metadir, "com");
+		final MemIntStack comStack = new MemIntStack(liveCheck.getMetaDir(), "com");
 
 		// Generate the SCCs and check if they contain any "bad" cycle.
 		while (nodeQueue.length() > 0) {
@@ -411,7 +415,7 @@ public class LiveWorker extends IdThread {
 		boolean[] promiseRes = new boolean[this.oos.getPromises().length];
 		int cnt = AEStateRes.length + AEActionRes.length + promiseRes.length;
 
-		MemIntStack cycleStack = new MemIntStack(LiveCheck.metadir, "cycle");
+		MemIntStack cycleStack = new MemIntStack(liveCheck.getMetaDir(), "cycle");
 
 		// Mark state as visited:
 		int[] nodes = nodeTbl.getNodes(state);
@@ -549,7 +553,7 @@ public class LiveWorker extends IdThread {
 		long startState = curNode.stateFP;
 
 		if (startState != state) {
-			MemIntQueue queue = new MemIntQueue(LiveCheck.metadir, null);
+			MemIntQueue queue = new MemIntQueue(liveCheck.getMetaDir(), null);
 			long curState = startState;
 			int ploc = -1;
 			int curLoc = nodeTbl.getNodesLoc(curState);
@@ -609,7 +613,7 @@ public class LiveWorker extends IdThread {
 		// LongVec with just a single element. This happens when the parameter
 		// state is one of the init states already.
 		long fp = prefix.elementAt(plen - 1);
-		TLCStateInfo sinfo = LiveCheck.myTool.getState(fp);
+		TLCStateInfo sinfo = liveCheck.getTool().getState(fp);
 		if (sinfo == null) {
 			throw new EvalException(EC.TLC_FAILED_TO_RECOVER_INIT);
 		}
@@ -620,7 +624,7 @@ public class LiveWorker extends IdThread {
 		for (int i = plen - 2; i >= 0; i--) {
 			long curFP = prefix.elementAt(i);
 			if (curFP != fp) {
-				sinfo = LiveCheck.myTool.getState(curFP, sinfo.state);
+				sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
 				if (sinfo == null) {
 					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 				}
@@ -648,7 +652,7 @@ public class LiveWorker extends IdThread {
 		for (int i = postfix.size() - 1; i >= 0; i--) {
 			long curFP = postfix.elementAt(i);
 			if (curFP != fp) {
-				sinfo = LiveCheck.myTool.getState(curFP, sinfo.state);
+				sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
 				if (sinfo == null) {
 					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 				}
@@ -661,7 +665,7 @@ public class LiveWorker extends IdThread {
 		if (fp == cycleFP) {
 			StatePrinter.printStutteringState(++stateNum);
 		} else {
-			sinfo = LiveCheck.myTool.getState(cycleFP, sinfo.state);
+			sinfo = liveCheck.getTool().getState(cycleFP, sinfo.state);
 			if (sinfo == null) {
 				throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 			}
@@ -686,8 +690,8 @@ public class LiveWorker extends IdThread {
 					break;
 				}
 
-				this.oos = LiveCheck.getChecker(idx).getSolution();
-				this.dg = LiveCheck.getChecker(idx).getDiskGraph();
+				this.oos = liveCheck.getChecker(idx).getSolution();
+				this.dg = liveCheck.getChecker(idx).getDiskGraph();
 				this.dg.createCache();
 				PossibleErrorModel[] pems = this.oos.getPems();
 				for (int i = 0; i < pems.length; i++) {

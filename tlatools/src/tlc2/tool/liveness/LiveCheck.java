@@ -23,18 +23,18 @@ import util.SimpleFilenameToStream;
 
 public class LiveCheck {
 
-	private static Action[] actions;
-	protected static Tool myTool;
-	protected static String metadir;
-	public static BucketStatistics outDegreeGraphStats;
-	private static AbstractLiveChecker[] checker;
+	private final Action[] actions;
+	private final Tool myTool;
+	private final String metadir;
+	private final BucketStatistics outDegreeGraphStats;
+	private final AbstractLiveChecker[] checker;
 	
 	// SZ: fields not read locally
 	// private static OrderOfSolution currentOOS;
 	// private static DiskGraph currentDG;
 	// private static PossibleErrorModel currentPEM;
 
-	public static void init(Tool tool, Action[] acts, String mdir, BucketStatistics bucketStatistics) throws IOException {
+	public LiveCheck(Tool tool, Action[] acts, String mdir, BucketStatistics bucketStatistics) throws IOException {
 		myTool = tool;
 		actions = acts;
 		metadir = mdir;
@@ -54,7 +54,7 @@ public class LiveCheck {
 	 * This method records that state is an initial state in the behavior graph.
 	 * It is called when a new initial state is generated.
 	 */
-	public static void addInitState(TLCState state, long stateFP) {
+	public void addInitState(TLCState state, long stateFP) {
 		for (int i = 0; i < checker.length; i++) {
 			checker[i].addInitState(state, stateFP);
 		}
@@ -64,7 +64,7 @@ public class LiveCheck {
 	 * This method adds new nodes into the behavior graph induced by s0. It is
 	 * called after the successors of s0 are computed.
 	 */
-	public static void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs) throws IOException {
+	public void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs) throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			final AbstractLiveChecker check = checker[i];
 			final OrderOfSolution oos = check.getSolution();
@@ -91,27 +91,27 @@ public class LiveCheck {
 	 * Check liveness properties for the current partial state graph. Returns
 	 * true iff it finds no errors.
 	 */
-	public static boolean check() throws Exception {
+	public boolean check() throws Exception {
 		return check(false);
 	}
 	
-	public static boolean finalCheck() throws Exception {
+	public boolean finalCheck() throws Exception {
 		// Do *not* re-create the nodePtrTable after the check which takes a
 		// while for larger disk graphs.
 		return check(true);
 	}
 	
-	private static boolean check(final boolean finalCheck) throws Exception {
+	private boolean check(final boolean finalCheck) throws Exception {
 		int slen = checker.length;
 		int wNum = Math.min(slen, TLCGlobals.getNumWorkers());
 
 		if (wNum == 1) {
-			LiveWorker worker = new LiveWorker(0);
+			LiveWorker worker = new LiveWorker(0, this);
 			worker.run();
 		} else {
 			LiveWorker[] workers = new LiveWorker[wNum];
 			for (int i = 0; i < wNum; i++) {
-				workers[i] = new LiveWorker(i);
+				workers[i] = new LiveWorker(i, this);
 				workers[i].start();
 			}
 			for (int i = 0; i < wNum; i++) {
@@ -131,43 +131,55 @@ public class LiveCheck {
 		}
 		return true;
 	}
+
+	public String getMetaDir() {
+		return metadir;
+	}
+
+	public Tool getTool() {
+		return myTool;
+	}
+
+	public BucketStatistics getOutDegreeStatistics() {
+		return outDegreeGraphStats;
+	}
 	
-	public static AbstractLiveChecker getChecker(final int idx) {
+	public AbstractLiveChecker getChecker(final int idx) {
 		return checker[idx];
 	}
 	
-	public static int getNumChecker() {
+	public int getNumChecker() {
 		return checker.length;
 	}
 
 	/* Close all the files for disk graphs. */
-	public static void close() throws IOException {
+	public void close() throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			checker[i].getDiskGraph().close();
 		}
 	}
 
 	/* Checkpoint. */
-	public static synchronized void beginChkpt() throws IOException {
+	public synchronized void beginChkpt() throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			checker[i].getDiskGraph().beginChkpt();
 		}
 	}
 
-	public static void commitChkpt() throws IOException {
+	public void commitChkpt() throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			checker[i].getDiskGraph().commitChkpt();
 		}
 	}
 
-	public static void recover() throws IOException {
+	public void recover() throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			MP.printMessage(EC.TLC_AAAAAAA);
 			checker[i].getDiskGraph().recover();
 		}
 	}
 
-	public static BucketStatistics calculateInDegreeDiskGraphs(final BucketStatistics aGraphStats) throws IOException {
+	public BucketStatistics calculateInDegreeDiskGraphs(final BucketStatistics aGraphStats) throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
 			diskGraph.calculateInDegreeDiskGraph(aGraphStats);
@@ -175,7 +187,7 @@ public class LiveCheck {
 		return aGraphStats;
 	}
 	
-	public static BucketStatistics calculateOutDegreeDiskGraphs(final BucketStatistics aGraphStats) throws IOException {
+	public BucketStatistics calculateOutDegreeDiskGraphs(final BucketStatistics aGraphStats) throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
 			diskGraph.calculateOutDegreeDiskGraph(aGraphStats);
@@ -210,7 +222,7 @@ public class LiveCheck {
 		}
 	}
 	
-	private static class LiveChecker extends AbstractLiveChecker {
+	private class LiveChecker extends AbstractLiveChecker {
 
 		private final DiskGraph dgraph;
 
@@ -280,7 +292,7 @@ public class LiveCheck {
 		}
 	}
 
-	private static class TableauLiveChecker extends AbstractLiveChecker {
+	private class TableauLiveChecker extends AbstractLiveChecker {
 
 		private final TableauDiskGraph dgraph;
 
@@ -499,7 +511,7 @@ public class LiveCheck {
 		// metadir is the the name of the folder with the nodes_* and ptrs_*
 		// relative to the parent directory. It does *not* need to contain the
 		// backing file of the fingerprint set or the state queue files.
-		public static void recreateFromDisk(final String path) throws Exception {
+		public static LiveCheck recreateFromDisk(final String path) throws Exception {
 			// Don't know with with Polynominal the FP64 has been initialized, but
 			// the default is 0.
 			FP64.Init(0);
@@ -512,7 +524,7 @@ public class LiveCheck {
 	        final Tool tool = new Tool("", "MC", "MC", new SimpleFilenameToStream());
 	        tool.init(true, null);
 	        
-			LiveCheck.init(tool, null, path, new DummyBucketStatistics());
+			final LiveCheck liveCheck = new LiveCheck(tool, null, path, new DummyBucketStatistics());
 			
 			// Calling recover requires a .chkpt file to be able to re-create the
 			// internal data structures to continue with model checking. However, we
@@ -524,8 +536,10 @@ public class LiveCheck {
 			final StateVec initStates = tool.getInitStates();
 			for (int i = 0; i < initStates.size(); i++) {
 				TLCState state = initStates.elementAt(i);
-				LiveCheck.addInitState(state, state.fingerPrint());
+				liveCheck.addInitState(state, state.fingerPrint());
 			}
+			
+			return liveCheck; 
 		}
 	}
 }
