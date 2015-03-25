@@ -235,7 +235,7 @@ public class TableauNodePtrTable {
 		}
 		return true;
 	}
-
+	
 	public void resetElems() {
 		for (int i = 0; i < this.nodes.length; i++) {
 			int[] node = this.nodes[i];
@@ -360,4 +360,50 @@ public class TableauNodePtrTable {
 	public static void setParent(int[] nodes, int loc) {
 		nodes[4] = loc;
 	}
+
+  	/*
+	 * The detailed formatter below can be activated in Eclipse's variable view
+	 * by choosing "New detailed formatter" from the MemIntQueue context menu.
+	 * Insert "TableauNodePtrTable.DetailedFormatter.toString(this);".
+	 */
+  	public static class DetailedFormatter {
+  		public static String toString(final TableauNodePtrTable table) {
+  			final StringBuffer buf = new StringBuffer(table.count);
+  			for (int i = 0; i < table.nodes.length; i++) {
+  				if (table.nodes[i] != null) {
+  					final int[] node = table.nodes[i];
+  					
+  					// fingerprint
+  					final long fp = ((long) node[0] << 32) | ((long) node[1] & 0xFFFFFFFFL);
+  					buf.append("fp (key): " + fp);
+  					buf.append(" (idx: " + i + ")");
+  					buf.append(" isDone: " + (node.length == 2 || node.length > 2 && node[3] == -2));
+  					buf.append("\n");
+  					
+  					// A node maintains n records. Each record logically contains information about a node's successor.
+  					// fingerprint
+  					int j = 2;
+  					for (; j < node.length - 1; j+=3) { // don't miss the ptr at the end
+  						buf.append("\t");
+  						// tableau index
+  						final int tidx = node[j];
+  						buf.append(" tidx: " + tidx);
+  						// element
+  						final long elem = getElem(node, j);
+  						if (AbstractDiskGraph.isFilePointer(elem)) {
+  							buf.append("  ptr: " + elem);
+  						} else if (AbstractDiskGraph.MAX_PTR == elem){
+  							buf.append(" elem: Init State");
+  						} else {
+  							final long offset = AbstractDiskGraph.MAX_PTR + 1;
+  							buf.append(" pred: " + (elem - offset));
+  						}
+  						buf.append(", isSeen: " + isSeen(node, j));
+  						buf.append("\n");
+  					}
+  				}
+  			}
+  			return buf.toString();
+  		}
+  	}
 }
