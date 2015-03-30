@@ -70,12 +70,10 @@ public class Simulator implements Cancelable {
 		this.impliedActions = this.tool.getImpliedActions();
 		this.numOfGenStates = 0;
 		if (traceDepth != -1) {
-			this.stateTrace = new TLCState[traceDepth];
 			// this.actionTrace = new Action[traceDepth]; // SZ: never read
 			// locally
 			this.traceDepth = traceDepth;
 		} else {
-			this.stateTrace = new TLCState[0];
 			// this.actionTrace = new Action[0]; // SZ: never read locally
 			this.traceDepth = Long.MAX_VALUE;
 		}
@@ -106,7 +104,6 @@ public class Simulator implements Cancelable {
 	private boolean checkDeadlock; // check deadlock?
 	private boolean checkLiveness; // check liveness?
 	private long numOfGenStates;
-	private TLCState[] stateTrace;
 	// private Action[] actionTrace; // SZ: never read locally
 	private String traceFile;
 	private long traceDepth;
@@ -175,7 +172,7 @@ public class Simulator implements Cancelable {
 		report.start();
 
 		// Start simulating:
-		int traceIdx = 0;
+		final StateVec stateTrace = new StateVec((int) traceDepth);
 		int idx = 0;
 		try {
 			// The two loops essentially do:
@@ -184,20 +181,17 @@ public class Simulator implements Cancelable {
 			// c) Check all of the generated successors for their validity
 			// d) Randomly pick a generated successor and make it curState
 			for (int traceCnt = 1; traceCnt <= this.traceNum; traceCnt++) {
-				traceIdx = 0;
 				this.aril = rng.getAril();
+				stateTrace.clear();
 
 				// a) Randomly select a state from the set of init states.
 				curState = this.randomState(theInitStates);
 				boolean inConstraints = this.tool.isInModel(curState);
 
-				while (traceIdx < this.traceDepth) {
+				for (int traceIdx = 0; traceIdx < this.traceDepth; traceIdx++) {
 					// Add the curState to the trace regardless of its inModel
 					// property.
-					if (traceIdx < this.stateTrace.length) {
-						this.stateTrace[traceIdx] = curState;
-						traceIdx++;
-					}
+					stateTrace.addElement(curState);
 
 					if (!inConstraints) {
 						break;
@@ -208,7 +202,7 @@ public class Simulator implements Cancelable {
 					if (nextStates == null) {
 						if (this.checkDeadlock) {
 							// We get here because of deadlock:
-							this.printBehavior(EC.TLC_DEADLOCK_REACHED, null, curState, traceIdx);
+							this.printBehavior(EC.TLC_DEADLOCK_REACHED, null, curState, stateTrace);
 							if (!TLCGlobals.continuation) {
 								return;
 							}
@@ -227,7 +221,7 @@ public class Simulator implements Cancelable {
 						}
 
 						if (!this.tool.isGoodState(state)) {
-							this.printBehavior(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, null, state, traceIdx);
+							this.printBehavior(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, null, state, stateTrace);
 							return;
 						} else {
 							try {
@@ -236,7 +230,7 @@ public class Simulator implements Cancelable {
 										// We get here because of invariant
 										// violation:
 										this.printBehavior(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
-												new String[] { this.tool.getInvNames()[idx] }, state, traceIdx);
+												new String[] { this.tool.getInvNames()[idx] }, state, stateTrace);
 										if (!TLCGlobals.continuation) {
 											return;
 										}
@@ -245,7 +239,7 @@ public class Simulator implements Cancelable {
 							} catch (Exception e) {
 								// Assert.printStack(e);
 								this.printBehavior(EC.TLC_INVARIANT_EVALUATION_FAILED,
-										new String[] { this.tool.getInvNames()[idx], e.getMessage() }, state, traceIdx);
+										new String[] { this.tool.getInvNames()[idx], e.getMessage() }, state, stateTrace);
 								return;
 							}
 
@@ -256,7 +250,7 @@ public class Simulator implements Cancelable {
 										// violation:
 
 										this.printBehavior(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
-												new String[] { this.tool.getImpliedActNames()[idx] }, state, traceIdx);
+												new String[] { this.tool.getImpliedActNames()[idx] }, state, stateTrace);
 										if (!TLCGlobals.continuation) {
 											return;
 										}
@@ -266,7 +260,7 @@ public class Simulator implements Cancelable {
 								// Assert.printStack(e);
 								this.printBehavior(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
 										new String[] { this.tool.getImpliedActNames()[idx], e.getMessage() }, state,
-										traceIdx);
+										stateTrace);
 								return;
 							}
 						}
@@ -283,13 +277,11 @@ public class Simulator implements Cancelable {
 				// Check if the current trace satisfies liveness properties.
 				if (liveCheck instanceof LiveCheck1) {
 					// legacy implementation supports checking the trace directly
-					((LiveCheck1) liveCheck).checkTrace(stateTrace, traceIdx);
+					((LiveCheck1) liveCheck).checkTrace(stateTrace);
 				} else {
-					final StateVec nextStates = new StateVec(traceIdx);
-					final LongVec nextFps = new LongVec(traceIdx);
-					for (int i = 0; i < traceIdx; i++) {
-						final TLCState tlcState = stateTrace[i];
-						nextStates.addElement(tlcState);
+					final LongVec nextFps = new LongVec(stateTrace.size());
+					for (int i = 0; i < stateTrace.size(); i++) {
+						final TLCState tlcState = stateTrace.elementAt(i);
 						nextFps.addElement(tlcState.fingerPrint());
 					}
 					liveCheck.addNextState(curState, curState.fingerPrint(), theInitStates, nextFps);
@@ -309,9 +301,9 @@ public class Simulator implements Cancelable {
 					// TODO is it ok here?
 					PrintWriter pw = new PrintWriter(FileUtil.newBFOS(fileName));
 					pw.println("---------------- MODULE " + fileName + " -----------------");
-					for (idx = 0; idx < traceIdx; idx++) {
+					for (idx = 0; idx < stateTrace.size(); idx++) {
 						pw.println("STATE_" + (idx + 1) + " == ");
-						pw.println(this.stateTrace[idx] + "\n");
+						pw.println(stateTrace.elementAt(idx) + "\n");
 					}
 					pw.println("=================================================");
 					pw.close();
@@ -323,7 +315,7 @@ public class Simulator implements Cancelable {
 				this.printSummary();
 			} else {
 				// LL modified error message on 7 April 2012
-				this.printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", e) }, curState, traceIdx);
+				this.printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", e) }, curState, stateTrace);
 			}
 		}
 	}
@@ -332,7 +324,7 @@ public class Simulator implements Cancelable {
 	 * Prints out the simulation behavior, in case of an error. (unless we're at
 	 * maximum depth, in which case don't!)
 	 */
-	public final void printBehavior(int errorCode, String[] parameters, TLCState state, int traceIdx) {
+	public final void printBehavior(int errorCode, String[] parameters, TLCState state, final StateVec stateTrace) {
 
 		MP.printError(errorCode, parameters);
 		if (this.traceDepth == Long.MAX_VALUE) {
@@ -341,11 +333,11 @@ public class Simulator implements Cancelable {
 		} else {
 			MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
 			TLCState lastState = null;
-			for (int i = 0; i < traceIdx; i++) {
-				StatePrinter.printState(this.stateTrace[i], lastState, i + 1);
-				lastState = this.stateTrace[i];
+			for (int i = 0; i < stateTrace.size(); i++) {
+				StatePrinter.printState(stateTrace.elementAt(i), lastState, i + 1);
+				lastState = stateTrace.elementAt(i);
 			}
-			StatePrinter.printState(state, null, traceIdx + 1);
+			StatePrinter.printState(state, null, stateTrace.size() + 1);
 		}
 		this.printSummary();
 	}

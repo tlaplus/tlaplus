@@ -35,8 +35,7 @@ public class LiveCheck1 implements ILiveCheck {
 	private OrderOfSolution[] solutions;
 	private BEGraph[] bgraphs;
 
-	private TLCState[] stateTrace = null;
-	private int stateTraceLen = -1;
+	private StateVec stateTrace = null;
 
 	/* The following are the data needed in the scc search. */
 	private static final long MAX_FIRST = 0x2000000000000000L;
@@ -119,7 +118,7 @@ public class LiveCheck1 implements ILiveCheck {
 		Vect initNodes = new Vect(1);
 		int slen = os.getCheckState().length;
 		int alen = os.getCheckAction().length;
-		TLCState srcState = stateTrace[0]; // the initial state
+		TLCState srcState = stateTrace.elementAt(0); // the initial state
 		long srcFP = srcState.fingerPrint();
 		boolean[] checkStateRes = os.checkState(srcState);
 		boolean[] checkActionRes = os.checkAction(srcState, srcState);
@@ -131,8 +130,8 @@ public class LiveCheck1 implements ILiveCheck {
 			srcNode.addTransition(srcNode, slen, alen, checkActionRes);
 			allNodes.put(srcFP, srcNode);
 			initNodes.addElement(srcNode);
-			for (int i = 1; i < stateTraceLen; i++) {
-				TLCState destState = stateTrace[i];
+			for (int i = 1; i < stateTrace.size(); i++) {
+				TLCState destState = stateTrace.elementAt(i);
 				long destFP = destState.fingerPrint();
 				BEGraphNode destNode = (BEGraphNode) allNodes.get(destFP);
 				if (destNode == null) {
@@ -174,9 +173,9 @@ public class LiveCheck1 implements ILiveCheck {
 					}
 				}
 			}
-			for (int i = 1; i < stateTraceLen; i++) {
+			for (int i = 1; i < stateTrace.size(); i++) {
 				Vect destNodes = new Vect();
-				TLCState destState = stateTrace[i];
+				TLCState destState = stateTrace.elementAt(i);
 				long destStateFP = destState.fingerPrint();
 				checkStateRes = os.checkState(destState);
 				checkActionRes = os.checkAction(srcState, destState);
@@ -476,9 +475,8 @@ public class LiveCheck1 implements ILiveCheck {
 	 * Checks if the behavior graph constructed from a state trace contains any
 	 * "bad" cycle.
 	 */
-	public void checkTrace(TLCState[] trace, int traceLen) {
+	public void checkTrace(final StateVec trace) {
 		stateTrace = trace;
-		stateTraceLen = traceLen;
 		for (int soln = 0; soln < solutions.length; soln++) {
 			OrderOfSolution os = solutions[soln];
 			Vect initNodes = constructBEGraph(os);
