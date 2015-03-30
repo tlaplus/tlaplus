@@ -39,7 +39,7 @@ import tlc2.output.MP;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.statistics.management.BucketStatisticsMXWrapper;
 
-public class BucketStatistics {
+public class BucketStatistics implements IBucketStatistics {
 	
 	/**
 	 * The amount of samples seen by this statistics. It's identical
@@ -129,11 +129,10 @@ public class BucketStatistics {
 		}
 	}
 	
-	/**
-	 * @param amount
-	 *            Add a sample to the stastics. Allowed range is 0 <= sample <=
-	 *            Integer.MAX_VALUE
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#addSample(int)
 	 */
+	@Override
 	public void addSample(final int amount) {
 		if (amount < 0) {
 			throw new IllegalArgumentException("Negative amount invalid");
@@ -152,9 +151,10 @@ public class BucketStatistics {
 		observations.getAndIncrement();
 	}
 	
-	/**
-	 * @return The sum of all values in all buckets (might exceed int)
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getObservations()
 	 */
+	@Override
 	public long getObservations() {
 		return observations.get();
 	}
@@ -198,9 +198,10 @@ public class BucketStatistics {
 		return buf.toString();
 	}
 
-	/**
-	 * @return The median
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getMedian()
 	 */
+	@Override
 	public int getMedian() {
 		long l = observations.get();
 		if (l <= 0) {
@@ -221,9 +222,10 @@ public class BucketStatistics {
 		throw new RuntimeException("bug, shoud not get here");
 	}
 
-	/**
-	 * @return The mean
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getMean()
 	 */
+	@Override
 	public double getMean() {
 		long sum = 0L;
 		// Sum up values and count
@@ -242,9 +244,10 @@ public class BucketStatistics {
 		}
 	}
 
-	/**
-	 * @return The minimum
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getMin()
 	 */
+	@Override
 	public int getMin() {
 		if (observations.get() <= 0) {
 			return -1;
@@ -252,9 +255,10 @@ public class BucketStatistics {
 		return buckets.firstKey();
 	}
 
-	/**
-	 * @return The maximum
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getMax()
 	 */
+	@Override
 	public int getMax() {
 		if (observations.get() <= 0) {
 			return -1;
@@ -262,9 +266,10 @@ public class BucketStatistics {
 		return buckets.lastKey();
 	}
 
-	/**
-	 * @return The standard deviation
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getStdDev()
 	 */
+	@Override
 	public double getStdDev() {
 		final long N = observations.get();
 		if (N <= 0) {
@@ -284,10 +289,10 @@ public class BucketStatistics {
 		return stdDev;
 	}
 
-	/**
-	 * @param quantile 0 <= d <= 1.0 (adjusted to closet limit if smaller or larger)
-	 * @return The given percentile
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getPercentile(double)
 	 */
+	@Override
 	public double getPercentile(double quantile) {
 		if (Double.isNaN(quantile)) {
 			throw new IllegalArgumentException("NaN");

@@ -27,11 +27,64 @@
 package tlc2.util.statistics;
 
 /**
- * Doesn't really do a thing
+ * Doesn't really do a thing. Can be instantiated multiple times contrary to
+ * BucketStatistics which registers itself via JMX.
  */
-public class DummyBucketStatistics extends BucketStatistics {
+public class DummyBucketStatistics implements IBucketStatistics {
 
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#addSample(int)
+	 */
 	public void addSample(int amount) {
 		// ignore
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getObservations()
+	 */
+	public long getObservations() {
+		return 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getMedian()
+	 */
+	public int getMedian() {
+		return 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getMean()
+	 */
+	public double getMean() {
+		return 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getMin()
+	 */
+	public int getMin() {
+		return 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getMax()
+	 */
+	public int getMax() {
+		return 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getStdDev()
+	 */
+	public double getStdDev() {
+		return 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getPercentile(double)
+	 */
+	public double getPercentile(double quantile) {
+		return 0;
 	}
 }

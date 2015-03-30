@@ -29,15 +29,15 @@ package tlc2.util.statistics.management;
 import javax.management.NotCompliantMBeanException;
 
 import tlc2.tool.management.TLCStandardMBean;
-import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
 
 public class BucketStatisticsMXWrapper extends TLCStandardMBean implements BucketStatisticsMXBean {
 
-	private BucketStatistics graphStats;
+	private IBucketStatistics graphStats;
 
 	private final String objectName;
 
-	public BucketStatisticsMXWrapper(final BucketStatistics graphStats, final String graphName, final String pkg)
+	public BucketStatisticsMXWrapper(final IBucketStatistics graphStats, final String graphName, final String pkg)
 			throws NotCompliantMBeanException {
 		super(BucketStatisticsMXBean.class);
 		this.graphStats = graphStats;

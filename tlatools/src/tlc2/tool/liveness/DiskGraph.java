@@ -10,7 +10,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
-import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
 
 /**
  * A {@link DiskGraph} is an implementation of {@link AbstractDiskGraph}. It has
@@ -25,7 +25,7 @@ public class DiskGraph extends AbstractDiskGraph {
 
 	private final NodePtrTable nodePtrTbl;
 	
-	public DiskGraph(String metadir, int soln, BucketStatistics graphStats) throws IOException {
+	public DiskGraph(String metadir, int soln, IBucketStatistics graphStats) throws IOException {
 		super(metadir, soln, graphStats);
 		nodePtrTbl = new NodePtrTable(255);
 	}

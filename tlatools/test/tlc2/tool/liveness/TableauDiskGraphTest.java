@@ -32,11 +32,12 @@ import junit.framework.TestCase;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
 
 public class TableauDiskGraphTest extends TestCase {
 
 	private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
-	private static final BucketStatistics GRAPH_STATS = new BucketStatistics("Test Dummy", 16);
+	private static final IBucketStatistics GRAPH_STATS = new BucketStatistics("Test Dummy", 16);
 	private static final int NUMBER_OF_SOLUTIONS = 1;
 	private static final int NUMBER_OF_ACTIONS = 0;
 	private static final BitVector NO_ACTIONS = null;

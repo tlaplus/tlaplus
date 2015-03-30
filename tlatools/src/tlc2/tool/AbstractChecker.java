@@ -15,6 +15,7 @@ import tlc2.util.ObjLongTable;
 import tlc2.util.StateWriter;
 import tlc2.util.statistics.BucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -105,7 +106,7 @@ public abstract class AbstractChecker implements Cancelable
         if (this.checkLiveness) {
             // Initialization for liveness checking:
             report("initializing liveness checking");
-			BucketStatistics stats = new DummyBucketStatistics();
+			IBucketStatistics stats = new DummyBucketStatistics();
 			if (LIVENESS_STATS) {
 				stats = new BucketStatistics("Histogram vertex out-degree", LiveCheck.class.getPackage().getName(),
 						"DiskGraphsOutDegree");

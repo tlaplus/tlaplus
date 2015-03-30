@@ -11,7 +11,7 @@ import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.liveness.LiveWorker;
-import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
 import util.DebugPrinter;
 import util.Set;
 import util.ToolIO;
@@ -1366,7 +1366,7 @@ public class MP
         DebugPrinter.print("leaving printWarning(int, String[])"); //$NON-NLS-1$
     }
     
-    public static void printStats(final BucketStatistics inDegree, final BucketStatistics outDegree) {
+    public static void printStats(final IBucketStatistics inDegree, final IBucketStatistics outDegree) {
     	// Out degree
         ToolIO.out.println(outDegree);
         

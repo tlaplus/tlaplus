@@ -18,10 +18,11 @@ import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
 import tlc2.util.MemIntStack;
 import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
 
 public class LiveWorker extends IdThread {
 
-	public static final BucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
+	public static final IBucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
 			.getPackage().getName(), "StronglyConnectedComponent sizes");
 	
 	private static int nextOOS = 0;

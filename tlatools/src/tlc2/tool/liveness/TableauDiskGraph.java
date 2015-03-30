@@ -6,7 +6,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
-import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
 
 public class TableauDiskGraph extends AbstractDiskGraph {
 	
@@ -14,7 +14,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 
 	private final TableauNodePtrTable nodePtrTbl;
 	
-	public TableauDiskGraph(String metadir, int soln, BucketStatistics graphStats) throws IOException {
+	public TableauDiskGraph(String metadir, int soln, IBucketStatistics graphStats) throws IOException {
 		super(metadir, soln, graphStats);
 		this.nodePtrTbl = new TableauNodePtrTable(255);
 	}

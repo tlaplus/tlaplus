@@ -33,7 +33,7 @@ public class BucketStatisticsTest extends TestCase {
 	
 	public void testInvalidArgument() {
 		try {
-			final BucketStatistics gs = new BucketStatistics();
+			final IBucketStatistics gs = new BucketStatistics();
 			gs.addSample(-1);
 		} catch (IllegalArgumentException e) {
 			return;
@@ -42,7 +42,7 @@ public class BucketStatisticsTest extends TestCase {
 	}
 	
 	public void testMean() {
-		final BucketStatistics gs = new BucketStatistics();
+		final IBucketStatistics gs = new BucketStatistics();
 		assertEquals(-1.0d, gs.getMean());
 
 		gs.addSample(0);
@@ -58,7 +58,7 @@ public class BucketStatisticsTest extends TestCase {
 	}
 
 	public void testMedian() {
-		final BucketStatistics gs = new BucketStatistics();
+		final IBucketStatistics gs = new BucketStatistics();
 		assertEquals(-1, gs.getMedian());
 
 		gs.addSample(0);
@@ -74,7 +74,7 @@ public class BucketStatisticsTest extends TestCase {
 	}
 
 	public void testMin() {
-		final BucketStatistics gs = new BucketStatistics();
+		final IBucketStatistics gs = new BucketStatistics();
 		assertEquals(-1, gs.getMin());
 
 		gs.addSample(0);
@@ -89,7 +89,7 @@ public class BucketStatisticsTest extends TestCase {
 	}
 	
 	public void testMax() {
-		final BucketStatistics gs = new BucketStatistics();
+		final IBucketStatistics gs = new BucketStatistics();
 		assertEquals(-1, gs.getMax());
 
 		gs.addSample(0);
@@ -106,7 +106,7 @@ public class BucketStatisticsTest extends TestCase {
 	}
 
 	public void testStandardDeviation() {
-		final BucketStatistics gs = new BucketStatistics();
+		final IBucketStatistics gs = new BucketStatistics();
 		assertEquals(-1.0, gs.getStdDev());
 
 		gs.addSample(0);
@@ -123,7 +123,7 @@ public class BucketStatisticsTest extends TestCase {
 	}
 
 	public void testGetPercentile() {
-		final BucketStatistics gs = new BucketStatistics();
+		final IBucketStatistics gs = new BucketStatistics();
 		assertEquals(-1.0, gs.getPercentile(1));
 		
 		try {
@@ -147,7 +147,7 @@ public class BucketStatisticsTest extends TestCase {
 	// NaN test
 	public void testGetPercentileNaN() {
 		try {
-			final BucketStatistics gs = new BucketStatistics();
+			final IBucketStatistics gs = new BucketStatistics();
 			gs.getPercentile(Double.NaN);
 		} catch (IllegalArgumentException e) {
 			return;
@@ -158,7 +158,7 @@ public class BucketStatisticsTest extends TestCase {
 	public void testToString() {
 		try {
 			//just invoke to check for exceptions
-			final BucketStatistics gs = new BucketStatistics();
+			final IBucketStatistics gs = new BucketStatistics();
 			gs.toString();
 			
 			gs.addSample(0);
@@ -178,7 +178,7 @@ public class BucketStatisticsTest extends TestCase {
 	}
 	
 	public void testMaximum() {
-		final BucketStatistics gs = new BucketStatistics("test title", 8);
+		final IBucketStatistics gs = new BucketStatistics("test title", 8);
 		gs.addSample(16);
 		gs.addSample(16);
 		gs.addSample(16);

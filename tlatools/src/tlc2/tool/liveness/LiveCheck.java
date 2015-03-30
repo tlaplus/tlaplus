@@ -17,8 +17,8 @@ import tlc2.tool.Tool;
 import tlc2.util.BitVector;
 import tlc2.util.FP64;
 import tlc2.util.LongVec;
-import tlc2.util.statistics.BucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
 import util.SimpleFilenameToStream;
 
 public class LiveCheck {
@@ -26,7 +26,7 @@ public class LiveCheck {
 	private final Action[] actions;
 	private final Tool myTool;
 	private final String metadir;
-	private final BucketStatistics outDegreeGraphStats;
+	private final IBucketStatistics outDegreeGraphStats;
 	private final AbstractLiveChecker[] checker;
 	
 	// SZ: fields not read locally
@@ -34,7 +34,7 @@ public class LiveCheck {
 	// private static DiskGraph currentDG;
 	// private static PossibleErrorModel currentPEM;
 
-	public LiveCheck(Tool tool, Action[] acts, String mdir, BucketStatistics bucketStatistics) throws IOException {
+	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics) throws IOException {
 		myTool = tool;
 		actions = acts;
 		metadir = mdir;
@@ -140,7 +140,7 @@ public class LiveCheck {
 		return myTool;
 	}
 
-	public BucketStatistics getOutDegreeStatistics() {
+	public IBucketStatistics getOutDegreeStatistics() {
 		return outDegreeGraphStats;
 	}
 	
@@ -179,7 +179,7 @@ public class LiveCheck {
 		}
 	}
 
-	public BucketStatistics calculateInDegreeDiskGraphs(final BucketStatistics aGraphStats) throws IOException {
+	public IBucketStatistics calculateInDegreeDiskGraphs(final IBucketStatistics aGraphStats) throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
 			diskGraph.calculateInDegreeDiskGraph(aGraphStats);
@@ -187,7 +187,7 @@ public class LiveCheck {
 		return aGraphStats;
 	}
 	
-	public BucketStatistics calculateOutDegreeDiskGraphs(final BucketStatistics aGraphStats) throws IOException {
+	public IBucketStatistics calculateOutDegreeDiskGraphs(final IBucketStatistics aGraphStats) throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
 			diskGraph.calculateOutDegreeDiskGraph(aGraphStats);
@@ -226,7 +226,7 @@ public class LiveCheck {
 
 		private final DiskGraph dgraph;
 
-		public LiveChecker(OrderOfSolution oos, int soln, BucketStatistics bucketStatistics)
+		public LiveChecker(OrderOfSolution oos, int soln, IBucketStatistics bucketStatistics)
 			throws IOException {
 			super(oos);
 			this.dgraph = new DiskGraph(metadir, soln, bucketStatistics);
@@ -297,7 +297,7 @@ public class LiveCheck {
 
 		private final TableauDiskGraph dgraph;
 
-		public TableauLiveChecker(OrderOfSolution oos, int soln, BucketStatistics statistics)
+		public TableauLiveChecker(OrderOfSolution oos, int soln, IBucketStatistics statistics)
 				throws IOException {
 			super(oos);
 			this.dgraph = new TableauDiskGraph(metadir, soln, statistics);
