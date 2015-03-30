@@ -144,7 +144,7 @@
 		</copy>
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
-		<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes">
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes" timeout="10000">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -192,7 +192,7 @@
 		</copy>
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJar" />
-		<junit printsummary="yes" haltonfailure="no" haltonerror="no" forkmode="perTest" fork="yes">
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no" forkmode="perTest" fork="yes" timeout="10000">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />

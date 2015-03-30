@@ -28,7 +28,7 @@ import util.FilenameToStream;
 
 public class Simulator implements Cancelable {
 
-	private static final boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
+	public static boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
 	
 	private ILiveCheck liveCheck;
 
