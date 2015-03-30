@@ -21,13 +21,13 @@ import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import util.SimpleFilenameToStream;
 
-public class LiveCheck {
+public class LiveCheck implements ILiveCheck {
 
 	private final Action[] actions;
 	private final Tool myTool;
 	private final String metadir;
 	private final IBucketStatistics outDegreeGraphStats;
-	private final AbstractLiveChecker[] checker;
+	private final ILiveChecker[] checker;
 	
 	// SZ: fields not read locally
 	// private static OrderOfSolution currentOOS;
@@ -40,7 +40,7 @@ public class LiveCheck {
 		metadir = mdir;
 		outDegreeGraphStats = bucketStatistics;
 		final OrderOfSolution[] solutions = Liveness.processLiveness(myTool, metadir);
-		checker = new AbstractLiveChecker[solutions.length];
+		checker = new ILiveChecker[solutions.length];
 		for (int soln = 0; soln < solutions.length; soln++) {
 			if (!solutions[soln].hasTableau()) {
 				checker[soln] = new LiveChecker(solutions[soln], soln, bucketStatistics);
@@ -50,9 +50,8 @@ public class LiveCheck {
 		}
 	}
 
-	/**
-	 * This method records that state is an initial state in the behavior graph.
-	 * It is called when a new initial state is generated.
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#addInitState(tlc2.tool.TLCState, long)
 	 */
 	public void addInitState(TLCState state, long stateFP) {
 		for (int i = 0; i < checker.length; i++) {
@@ -60,13 +59,12 @@ public class LiveCheck {
 		}
 	}
 
-	/**
-	 * This method adds new nodes into the behavior graph induced by s0. It is
-	 * called after the successors of s0 are computed.
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.tool.StateVec, tlc2.util.LongVec)
 	 */
 	public void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs) throws IOException {
 		for (int i = 0; i < checker.length; i++) {
-			final AbstractLiveChecker check = checker[i];
+			final ILiveChecker check = checker[i];
 			final OrderOfSolution oos = check.getSolution();
 			final int alen = oos.getCheckAction().length;
 
@@ -87,14 +85,16 @@ public class LiveCheck {
 		}
 	}
 
-	/**
-	 * Check liveness properties for the current partial state graph. Returns
-	 * true iff it finds no errors.
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#check()
 	 */
 	public boolean check() throws Exception {
 		return check(false);
 	}
 	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#finalCheck()
+	 */
 	public boolean finalCheck() throws Exception {
 		// Do *not* re-create the nodePtrTable after the check which takes a
 		// while for larger disk graphs.
@@ -132,27 +132,45 @@ public class LiveCheck {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#getMetaDir()
+	 */
 	public String getMetaDir() {
 		return metadir;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#getTool()
+	 */
 	public Tool getTool() {
 		return myTool;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#getOutDegreeStatistics()
+	 */
 	public IBucketStatistics getOutDegreeStatistics() {
 		return outDegreeGraphStats;
 	}
 	
-	public AbstractLiveChecker getChecker(final int idx) {
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#getChecker(int)
+	 */
+	public ILiveChecker getChecker(final int idx) {
 		return checker[idx];
 	}
 	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#getNumChecker()
+	 */
 	public int getNumChecker() {
 		return checker.length;
 	}
 
 	/* Close all the files for disk graphs. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#close()
+	 */
 	public void close() throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			checker[i].getDiskGraph().close();
@@ -160,18 +178,27 @@ public class LiveCheck {
 	}
 
 	/* Checkpoint. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#beginChkpt()
+	 */
 	public synchronized void beginChkpt() throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			checker[i].getDiskGraph().beginChkpt();
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#commitChkpt()
+	 */
 	public void commitChkpt() throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			checker[i].getDiskGraph().commitChkpt();
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#recover()
+	 */
 	public void recover() throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			MP.printMessage(EC.TLC_AAAAAAA);
@@ -179,6 +206,9 @@ public class LiveCheck {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#calculateInDegreeDiskGraphs(tlc2.util.statistics.IBucketStatistics)
+	 */
 	public IBucketStatistics calculateInDegreeDiskGraphs(final IBucketStatistics aGraphStats) throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
@@ -187,6 +217,9 @@ public class LiveCheck {
 		return aGraphStats;
 	}
 	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#calculateOutDegreeDiskGraphs(tlc2.util.statistics.IBucketStatistics)
+	 */
 	public IBucketStatistics calculateOutDegreeDiskGraphs(final IBucketStatistics aGraphStats) throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
@@ -195,7 +228,7 @@ public class LiveCheck {
 		return aGraphStats;
 	}
 	
-	static abstract class AbstractLiveChecker {
+	static abstract class AbstractLiveChecker implements ILiveChecker {
 
 		protected final OrderOfSolution oos;
 
@@ -203,20 +236,9 @@ public class LiveCheck {
 			this.oos = oos;
 		}
 
-		/**
-		 * This method records that state is an initial state in the behavior graph.
-		 * It is called when a new initial state is generated.
+		/* (non-Javadoc)
+		 * @see tlc2.tool.liveness.ILiveChecker#getSolution()
 		 */
-		public abstract void addInitState(TLCState state, long stateFP);
-
-		/**
-		 * This method adds new nodes into the behavior graph induced by s0. It is
-		 * called after the successors of s0 are computed.
-		 */
-		public abstract void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs, BitVector checkActionResults, boolean[] checkStateResults) throws IOException;
-		
-		public abstract AbstractDiskGraph getDiskGraph();
-
 		public OrderOfSolution getSolution() {
 			return oos;
 		}
@@ -514,7 +536,7 @@ public class LiveCheck {
 		// metadir is the the name of the folder with the nodes_* and ptrs_*
 		// relative to the parent directory. It does *not* need to contain the
 		// backing file of the fingerprint set or the state queue files.
-		public static LiveCheck recreateFromDisk(final String path) throws Exception {
+		public static ILiveCheck recreateFromDisk(final String path) throws Exception {
 			// Don't know with with Polynominal the FP64 has been initialized, but
 			// the default is 0.
 			FP64.Init(0);
@@ -527,7 +549,7 @@ public class LiveCheck {
 	        final Tool tool = new Tool("", "MC", "MC", new SimpleFilenameToStream());
 	        tool.init(true, null);
 	        
-			final LiveCheck liveCheck = new LiveCheck(tool, null, path, new DummyBucketStatistics());
+			final ILiveCheck liveCheck = new LiveCheck(tool, null, path, new DummyBucketStatistics());
 			
 			// Calling recover requires a .chkpt file to be able to re-create the
 			// internal data structures to continue with model checking. However, we

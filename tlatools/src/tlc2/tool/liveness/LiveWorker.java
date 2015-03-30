@@ -32,9 +32,9 @@ public class LiveWorker extends IdThread {
 	private OrderOfSolution oos = null;
 	private AbstractDiskGraph dg = null;
 	private PossibleErrorModel pem = null;
-	private final LiveCheck liveCheck;
+	private final ILiveCheck liveCheck;
 
-	public LiveWorker(int id, final LiveCheck liveCheck) {
+	public LiveWorker(int id, final ILiveCheck liveCheck) {
 		super(id);
 		this.liveCheck = liveCheck;
 	}

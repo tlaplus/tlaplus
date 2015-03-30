@@ -8,8 +8,10 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.Liveness;
+import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.util.StateWriter;
@@ -47,7 +49,7 @@ public abstract class AbstractChecker implements Cancelable
     public Action[] actions;
     protected StateWriter allStateWriter;
     protected boolean cancellationFlag;
-	protected final LiveCheck liveCheck;
+	protected final ILiveCheck liveCheck;
 
     /**
      * Constructor of the abstract model checker
@@ -114,8 +116,7 @@ public abstract class AbstractChecker implements Cancelable
 			this.liveCheck = new LiveCheck(this.tool, this.actions, this.metadir, stats);
             report("liveness checking initialized");
         } else {
-        	//TODO Instantiate dummy instance?
-        	this.liveCheck = null;
+        	this.liveCheck = new NoOpLiveCheck(this.tool, this.metadir);
         }
     }
 
