@@ -207,6 +207,15 @@ public class LiveCheck implements ILiveCheck {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#reset()
+	 */
+	public void reset() throws IOException {
+		for (int i = 0; i < checker.length; i++) {
+			checker[i].getDiskGraph().reset();
+		}
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#calculateInDegreeDiskGraphs(tlc2.util.statistics.IBucketStatistics)
 	 */
 	public IBucketStatistics calculateInDegreeDiskGraphs(final IBucketStatistics aGraphStats) throws IOException {

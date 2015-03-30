@@ -18,11 +18,14 @@ import tlc2.tool.TLCStateInfo;
 import tlc2.tool.Tool;
 import tlc2.util.FP64;
 import tlc2.util.LongObjTable;
+import tlc2.util.LongVec;
 import tlc2.util.MemObjectStack;
 import tlc2.util.ObjectStack;
 import tlc2.util.Vect;
+import tlc2.util.statistics.DummyBucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
 
-public class LiveCheck1 {
+public class LiveCheck1 implements ILiveCheck {
 	/**
 	 * Implementation of liveness checking based on MP book.
 	 */
@@ -72,6 +75,7 @@ public class LiveCheck1 {
 	public LiveCheck1(Tool tool) {
 		myTool = tool;
 		solutions = Liveness.processLiveness(myTool, metadir);
+		bgraphs = new BEGraph[0];
 	}
 
 	public void init(Tool tool, Action[] acts, String mdir) {
@@ -265,6 +269,17 @@ public class LiveCheck1 {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.tool.StateVec, tlc2.util.LongVec)
+	 */
+	public void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs) throws IOException {
+		for (int i = 0; i < nextStates.size(); i++) {
+			final TLCState s2 = nextStates.elementAt(i);
+			final long fp2 = nextFPs.elementAt(i);
+			addNextState(s0, fp0, s2, fp2);
+		}
+	}
+
 	/**
 	 * This method adds new nodes into the behavior graph when a new state is
 	 * generated. The argument s2 is the new state. The argument s1 is parent
@@ -427,10 +442,10 @@ public class LiveCheck1 {
 	 * "bad" cycle. A "bad" cycle gives rise to a violation of liveness
 	 * property.
 	 */
-	public synchronized void check() {
+	public synchronized boolean check() {
 		int slen = solutions.length;
 		if (slen == 0) {
-			return;
+			return true;
 		}
 
 		for (int soln = 0; soln < slen; soln++) {
@@ -452,6 +467,9 @@ public class LiveCheck1 {
 				}
 			}
 		}
+		// Previous for loop with throw LivenessException anyway, thus no harm
+		// returning true regardless.
+		return true;
 	}
 
 	/**
@@ -878,6 +896,90 @@ public class LiveCheck1 {
 			}
 		}
 		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#finalCheck()
+	 */
+	public boolean finalCheck() throws Exception {
+		return check();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#getMetaDir()
+	 */
+	public String getMetaDir() {
+		return metadir;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#getTool()
+	 */
+	public Tool getTool() {
+		return myTool;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#getOutDegreeStatistics()
+	 */
+	public IBucketStatistics getOutDegreeStatistics() {
+		return new DummyBucketStatistics();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#getChecker(int)
+	 */
+	public ILiveChecker getChecker(int idx) {
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#getNumChecker()
+	 */
+	public int getNumChecker() {
+		return 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#close()
+	 */
+	public void close() throws IOException {
+		// Intentional no op - LiveCheck1 has no disk files.
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#beginChkpt()
+	 */
+	public void beginChkpt() throws IOException {
+		// Intentional no op - LiveCheck1 has no disk files.
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#commitChkpt()
+	 */
+	public void commitChkpt() throws IOException {
+		// Intentional no op - LiveCheck1 has no disk files.
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#recover()
+	 */
+	public void recover() throws IOException {
+		// Intentional no op - LiveCheck1 has no disk files.
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#calculateInDegreeDiskGraphs(tlc2.util.statistics.IBucketStatistics)
+	 */
+	public IBucketStatistics calculateInDegreeDiskGraphs(IBucketStatistics aGraphStats) throws IOException {
+		return new DummyBucketStatistics();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#calculateOutDegreeDiskGraphs(tlc2.util.statistics.IBucketStatistics)
+	 */
+	public IBucketStatistics calculateOutDegreeDiskGraphs(IBucketStatistics aGraphStats) throws IOException {
+		return new DummyBucketStatistics();
 	}
 
 }

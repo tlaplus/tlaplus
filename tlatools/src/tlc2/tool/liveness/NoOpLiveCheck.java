@@ -145,4 +145,10 @@ public class NoOpLiveCheck implements ILiveCheck {
 	public IBucketStatistics calculateOutDegreeDiskGraphs(IBucketStatistics aGraphStats) throws IOException {
 		return stats;
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#reset()
+	 */
+	public void reset() throws IOException {
+	}
 }

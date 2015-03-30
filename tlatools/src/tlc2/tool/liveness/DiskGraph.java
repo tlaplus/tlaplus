@@ -23,7 +23,7 @@ import tlc2.util.statistics.IBucketStatistics;
 // positions that need changing.
 public class DiskGraph extends AbstractDiskGraph {
 
-	private final NodePtrTable nodePtrTbl;
+	private NodePtrTable nodePtrTbl;
 	
 	public DiskGraph(String metadir, int soln, IBucketStatistics graphStats) throws IOException {
 		super(metadir, soln, graphStats);
@@ -43,6 +43,13 @@ public class DiskGraph extends AbstractDiskGraph {
 		return this.nodePtrTbl.get(fp);
 	}
 
+
+	public void reset() throws IOException {
+		this.nodePtrRAF.setLength(0);
+		this.nodeRAF.setLength(0);
+		this.nodePtrTbl = new NodePtrTable(255);
+	}
+	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.DiskGraph#putNode(tlc2.tool.liveness.GraphNode, long)
 	 */

@@ -54,4 +54,5 @@ public interface ILiveCheck {
 
 	IBucketStatistics calculateOutDegreeDiskGraphs(IBucketStatistics aGraphStats) throws IOException;
 
+	void reset() throws IOException;
 }

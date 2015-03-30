@@ -12,7 +12,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	
 	private static final long INIT_STATE = MAX_PTR + 1;
 
-	private final TableauNodePtrTable nodePtrTbl;
+	private TableauNodePtrTable nodePtrTbl;
 	
 	public TableauDiskGraph(String metadir, int soln, IBucketStatistics graphStats) throws IOException {
 		super(metadir, soln, graphStats);
@@ -90,6 +90,12 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	public void setMaxLink(long state, int tidx) {
 		this.nodePtrTbl.put(state, tidx, MAX_LINK);
 	}
+
+	public final void reset() throws IOException {
+		this.nodePtrRAF.setLength(0);
+		this.nodeRAF.setLength(0);
+		this.nodePtrTbl = new TableauNodePtrTable(255);
+	 }
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.DiskGraph#makeNodePtrTbl(long)

@@ -5,6 +5,7 @@
 
 package tlc2.tool;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -13,35 +14,43 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.StatePrinter;
+import tlc2.tool.liveness.ILiveCheck;
+import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.LiveCheck1;
 import tlc2.tool.liveness.LiveException;
+import tlc2.tool.liveness.NoOpLiveCheck;
+import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
 import tlc2.util.RandomGenerator;
+import tlc2.util.statistics.DummyBucketStatistics;
 import util.FileUtil;
 import util.FilenameToStream;
 
 public class Simulator implements Cancelable {
 
-	private LiveCheck1 liveCheck;
+	private static final boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
+	
+	private ILiveCheck liveCheck;
 
 	/* Constructors */
 	/**
 	 * SZ Feb 20, 2009: added the possibility to pass the SpecObject, this is
 	 * compatibility constructor
+	 * @throws IOException 
 	 *
 	 * @deprecated use
 	 *             {@link Simulator#Simulator(String, String, String, boolean, int, long, RandomGenerator, long, boolean, FilenameToStream, SpecObj)}
 	 *             instead and pass the <code>null</code> as SpecObj
 	 */
 	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
-			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver) {
+			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver) throws IOException {
 		this(specFile, configFile, traceFile, deadlock, traceDepth, traceNum, rng, seed, preprocess, resolver, null);
 	}
 
 	// SZ Feb 20, 2009: added the possibility to pass the SpecObject
 	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
 			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver,
-			SpecObj specObj) {
+			SpecObj specObj) throws IOException {
 		int lastSep = specFile.lastIndexOf(FileUtil.separatorChar);
 		String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep + 1);
 		specFile = specFile.substring(lastSep + 1);
@@ -78,7 +87,14 @@ public class Simulator implements Cancelable {
 		this.astCounts = new ObjLongTable(10);
 		// Initialization for liveness checking
 		if (this.checkLiveness) {
-			liveCheck = new LiveCheck1(this.tool);
+			if (EXPERIMENTAL_LIVENESS_SIMULATION) {
+				final String tmpDir = System.getProperty("java.io.tmpdir");
+				liveCheck = new LiveCheck(this.tool, new Action[0], tmpDir, new DummyBucketStatistics());
+			} else {
+				liveCheck = new LiveCheck1(this.tool);
+			}
+		} else {
+			liveCheck = new NoOpLiveCheck(tool, specDir);
 		}
 	}
 
@@ -265,8 +281,25 @@ public class Simulator implements Cancelable {
 				}
 
 				// Check if the current trace satisfies liveness properties.
-				if (this.checkLiveness) {
-					liveCheck.checkTrace(stateTrace, traceIdx);
+				if (liveCheck instanceof LiveCheck1) {
+					// legacy implementation supports checking the trace directly
+					((LiveCheck1) liveCheck).checkTrace(stateTrace, traceIdx);
+				} else {
+					final StateVec nextStates = new StateVec(traceIdx);
+					final LongVec nextFps = new LongVec(traceIdx);
+					for (int i = 0; i < traceIdx; i++) {
+						final TLCState tlcState = stateTrace[i];
+						nextStates.addElement(tlcState);
+						nextFps.addElement(tlcState.fingerPrint());
+					}
+					liveCheck.addNextState(curState, curState.fingerPrint(), theInitStates, nextFps);
+					if (!liveCheck.finalCheck()) { //HACK Calling finalCheck here to prevent code from re-creating the nodeptrtable from a non existant file.
+						throw new LiveException();
+					}
+					
+					// We are done with the current subsequence of the behavior. Reset LiveCheck
+					// for the next behavior simulation is going to create.
+					liveCheck.reset();
 				}
 
 				// Write the trace out if desired. The trace is printed in the

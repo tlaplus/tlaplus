@@ -256,6 +256,8 @@ public abstract class AbstractDiskGraph {
 		this.nodePtrRAF.seek(nodePtrRAFPos);
 	}
 
+	public abstract void reset() throws IOException;
+
 	// This method is not called anywhere because *out degree* graph statistics are collected
 	// during liveness checking with negligible overhead (see DiskGraph#addNode).
 	public void calculateOutDegreeDiskGraph(final IBucketStatistics outDegreeGraphStats) throws IOException {
