@@ -23,7 +23,9 @@ import util.FilenameToStream;
 public class Simulator implements Cancelable 
 {
 
-    /* Constructors  */
+    private LiveCheck1 liveCheck;
+
+	/* Constructors  */
     /**
      * SZ Feb 20, 2009: added the possibility to pass the SpecObject, this is compatibility constructor
      * @deprecated use {@link Simulator#Simulator(String, String, String, boolean, int, long, RandomGenerator, long, boolean, FilenameToStream, SpecObj)} instead
@@ -75,7 +77,7 @@ public class Simulator implements Cancelable
     this.astCounts = new ObjLongTable(10);
     // Initialization for liveness checking
     if (this.checkLiveness) {
-      LiveCheck1.initSim(this.tool);
+    	liveCheck = new LiveCheck1(this.tool);
     }
   }
 
@@ -235,7 +237,7 @@ public class Simulator implements Cancelable
 
 	// Check if the current trace satisfies liveness properties.
         if (this.checkLiveness) {
-          LiveCheck1.checkTrace(stateTrace, traceIdx);
+          liveCheck.checkTrace(stateTrace, traceIdx);
         }
 
     	// Write the trace out if desired.  The trace is printed in the

@@ -26,50 +26,55 @@ public class LiveCheck1 {
 	/**
 	 * Implementation of liveness checking based on MP book.
 	 */
-	private static Tool myTool;
-	private static String metadir;
-	private static Action[] actions;
-	private static OrderOfSolution[] solutions;
-	private static BEGraph[] bgraphs;
+	private Tool myTool;
+	private String metadir;
+	private Action[] actions;
+	private OrderOfSolution[] solutions;
+	private BEGraph[] bgraphs;
 
-	private static TLCState[] stateTrace = null;
-	private static int stateTraceLen = -1;
+	private TLCState[] stateTrace = null;
+	private int stateTraceLen = -1;
 
 	/* The following are the data needed in the scc search. */
 	private static final long MAX_FIRST = 0x2000000000000000L;
 	private static final long MAX_SECOND = 0x5000000000000000L;
 
-	private static OrderOfSolution currentOOS = null;
-	private static PossibleErrorModel currentPEM = null;
-	private static ObjectStack comStack = null;
+	private OrderOfSolution currentOOS = null;
+	private PossibleErrorModel currentPEM = null;
+	private ObjectStack comStack = null;
 
 	/* firstNum ranges from 1 to MAX_FIRST. */
-	private static long firstNum = 1;
+	private long firstNum = 1;
 
 	/* secondNum ranges from MAX_FIRST+1 to MAX_SECOND. */
-	private static long secondNum = MAX_FIRST + 1;
-	private static long startSecondNum = secondNum;
+	private long secondNum = MAX_FIRST + 1;
+	private long startSecondNum = secondNum;
 
 	/* thirdNum ranges from MAX_SECOND+1 to MAX_VALUE. */
-	private static long thirdNum = MAX_SECOND + 1;
-	private static long startThirdNum = thirdNum;
+	private long thirdNum = MAX_SECOND + 1;
+	private long startThirdNum = thirdNum;
 
 	/* The number assigned to a new component found by checkSccs. */
-	private static long numFirstCom = secondNum;
+	private long numFirstCom = secondNum;
 
 	/**
 	 * The starting number assigned to new components found by the many
 	 * checkSccs1 calls.
 	 */
-	private static long numSecondCom = thirdNum;
+	private long numSecondCom = thirdNum;
 
 	/**
 	 * The initial state used for the current checking. It is used in generating
 	 * the error trace.
 	 */
-	private static BEGraphNode initNode = null;
+	private BEGraphNode initNode = null;
 
-	public static void init(Tool tool, Action[] acts, String mdir) {
+	public LiveCheck1(Tool tool) {
+		myTool = tool;
+		solutions = Liveness.processLiveness(myTool, metadir);
+	}
+
+	public void init(Tool tool, Action[] acts, String mdir) {
 		myTool = tool;
 		metadir = mdir;
 		actions = acts;
@@ -80,22 +85,16 @@ public class LiveCheck1 {
 		}
 	}
 
-	public static void initSim(Tool tool) {
-		myTool = tool;
-		actions = null;
-		solutions = Liveness.processLiveness(myTool, metadir);
-	}
-
 	/**
 	 * This method resets the behavior graph so that we can recompute the SCCs.
 	 */
-	public static void reset() {
+	public void reset() {
 		for (int i = 0; i < bgraphs.length; i++) {
 			bgraphs[i].resetNumberField();
 		}
 	}
 
-	private static void initSccParams(OrderOfSolution os) {
+	private void initSccParams(OrderOfSolution os) {
 		currentOOS = os;
 		comStack = new MemObjectStack(metadir, "comstack");
 		firstNum = 1;
@@ -112,7 +111,7 @@ public class LiveCheck1 {
 	 * state trace (a sequence of states). Assume trace.length > 0. It returns
 	 * the set of initial states.
 	 */
-	static Vect constructBEGraph(OrderOfSolution os) {
+	Vect constructBEGraph(OrderOfSolution os) {
 		Vect initNodes = new Vect(1);
 		int slen = os.getCheckState().length;
 		int alen = os.getCheckAction().length;
@@ -229,7 +228,7 @@ public class LiveCheck1 {
 	 * This method adds new nodes into the behavior graph when a new initial
 	 * state is generated.
 	 */
-	public static void addInitState(TLCState state, long stateFP) {
+	public void addInitState(TLCState state, long stateFP) {
 		for (int soln = 0; soln < solutions.length; soln++) {
 			OrderOfSolution os = solutions[soln];
 			BEGraph bgraph = bgraphs[soln];
@@ -271,7 +270,7 @@ public class LiveCheck1 {
 	 * generated. The argument s2 is the new state. The argument s1 is parent
 	 * state of s2.
 	 */
-	public synchronized static void addNextState(TLCState s1, long fp1, TLCState s2, long fp2) {
+	public synchronized void addNextState(TLCState s1, long fp1, TLCState s2, long fp2) {
 		for (int soln = 0; soln < solutions.length; soln++) {
 			OrderOfSolution os = solutions[soln];
 			BEGraph bgraph = bgraphs[soln];
@@ -342,7 +341,7 @@ public class LiveCheck1 {
 	 * This method is called for each new node created. It generates nodes
 	 * induced by a stuttering state transition.
 	 */
-	private static void addNodesForStut(TLCState state, long fp, BTGraphNode node, boolean[] checkState,
+	private void addNodesForStut(TLCState state, long fp, BTGraphNode node, boolean[] checkState,
 			boolean[] checkAction, OrderOfSolution os, BEGraph bgraph) {
 		int slen = os.getCheckState().length;
 		int alen = os.getCheckAction().length;
@@ -369,7 +368,7 @@ public class LiveCheck1 {
 	 * after s has been done. So, we still have to compute the children of (s,
 	 * t). Hopefully, this case will not occur very frequently.
 	 */
-	private static void addNextState(TLCState s, long fp, BTGraphNode node, OrderOfSolution os, BEGraph bgraph) {
+	private void addNextState(TLCState s, long fp, BTGraphNode node, OrderOfSolution os, BEGraph bgraph) {
 		TBGraphNode tnode = node.getTNode(os.getTableau());
 		int slen = os.getCheckState().length;
 		int alen = os.getCheckAction().length;
@@ -417,7 +416,7 @@ public class LiveCheck1 {
 		}
 	}
 
-	public synchronized static void setDone(long fp) {
+	public synchronized void setDone(long fp) {
 		for (int soln = 0; soln < solutions.length; soln++) {
 			bgraphs[soln].allNodes.setDone(fp);
 		}
@@ -428,7 +427,7 @@ public class LiveCheck1 {
 	 * "bad" cycle. A "bad" cycle gives rise to a violation of liveness
 	 * property.
 	 */
-	public synchronized static void check() {
+	public synchronized void check() {
 		int slen = solutions.length;
 		if (slen == 0) {
 			return;
@@ -459,7 +458,7 @@ public class LiveCheck1 {
 	 * Checks if the behavior graph constructed from a state trace contains any
 	 * "bad" cycle.
 	 */
-	public static void checkTrace(TLCState[] trace, int traceLen) {
+	public void checkTrace(TLCState[] trace, int traceLen) {
 		stateTrace = trace;
 		stateTraceLen = traceLen;
 		for (int soln = 0; soln < solutions.length; soln++) {
@@ -484,7 +483,7 @@ public class LiveCheck1 {
 	}
 
 	/* Print out the error state trace. */
-	static void printErrorTrace(BEGraphNode node) throws IOException {
+	void printErrorTrace(BEGraphNode node) throws IOException {
 		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
 		// First, find a "bad" cycle from the "bad" scc.
@@ -663,7 +662,7 @@ public class LiveCheck1 {
 	 * current PEM, and is fulfilling. The subcomponents are those after pruning
 	 * EAs. When a counterexample is found, it throws a LiveException exception.
 	 */
-	static void checkSubcomponent(BEGraphNode node) {
+	void checkSubcomponent(BEGraphNode node) {
 		int slen = currentOOS.getCheckState().length;
 		int alen = currentOOS.getCheckAction().length;
 		boolean[] AEStateRes = new boolean[currentPEM.AEState.length];
@@ -750,7 +749,7 @@ public class LiveCheck1 {
 	 * "Depth-First Search and Linear Graph Algorithms" to compute the strongly
 	 * connected components.
 	 */
-	static long checkSccs(BEGraphNode node) {
+	long checkSccs(BEGraphNode node) {
 		long lowlink = firstNum++;
 		node.setNumber(lowlink);
 		comStack.push(node);
@@ -775,7 +774,7 @@ public class LiveCheck1 {
 	}
 
 	/* This method checks whether a scc satisfies currentPEM. */
-	static void checkComponent(BEGraphNode node) {
+	void checkComponent(BEGraphNode node) {
 		Vect nodes = extractComponent(node);
 		if (nodes != null) {
 			PossibleErrorModel[] pems = currentOOS.getPems();
@@ -805,7 +804,7 @@ public class LiveCheck1 {
 	 * trivial one. It also assigns a new number to all the nodes in the
 	 * component.
 	 */
-	static Vect extractComponent(BEGraphNode node) {
+	Vect extractComponent(BEGraphNode node) {
 		BEGraphNode node1 = (BEGraphNode) comStack.pop();
 		if (node == node1 && !node.transExists(node)) {
 			node.setNumber(MAX_FIRST);
@@ -824,7 +823,7 @@ public class LiveCheck1 {
 		return nodes;
 	}
 
-	static long checkSccs1(BEGraphNode node) {
+	long checkSccs1(BEGraphNode node) {
 		long lowlink = secondNum++;
 		node.setNumber(lowlink);
 		comStack.push(node);
@@ -853,7 +852,7 @@ public class LiveCheck1 {
 		return lowlink;
 	}
 
-	static boolean extractComponent1(BEGraphNode node) {
+	boolean extractComponent1(BEGraphNode node) {
 		BEGraphNode node1 = (BEGraphNode) comStack.pop();
 		if (node == node1 && !canStutter(node)) {
 			node.setNumber(thirdNum++);
@@ -867,7 +866,7 @@ public class LiveCheck1 {
 		return true;
 	}
 
-	static boolean canStutter(BEGraphNode node) {
+	boolean canStutter(BEGraphNode node) {
 		int slen = currentOOS.getCheckState().length;
 		int alen = currentOOS.getCheckAction().length;
 
