@@ -159,6 +159,7 @@
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
 					<exclude name="**/ModelCheckerTestCase.java" />
+					<exclude name="**/AbstractExampleTestCase.java" />
 					<exclude name="**/TestMPRecorder.java" />
 					<exclude name="**/Abstract*Test.java" />
 					<exclude name="**/TestDriver.java" />
@@ -206,6 +207,7 @@
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
 					<exclude name="**/ModelCheckerTestCase.java" />
+					<exclude name="**/AbstractExampleTestCase.java" />
 					<exclude name="**/TestMPRecorder.java" />
 					<exclude name="**/Abstract*Test.java" />
 					<exclude name="**/TestDriver.java" />

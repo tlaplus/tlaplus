@@ -27,6 +27,9 @@
 package tlc2.tool.liveness;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import junit.framework.TestCase;
 import tlc2.TLC;
@@ -42,6 +45,7 @@ public abstract class ModelCheckerTestCase extends TestCase {
 	private String path = "";
 	private final String spec;
 	protected final TestMPRecorder recorder = new TestMPRecorder();
+	private String[] extraArguments = new String[0];
 
 
 	public ModelCheckerTestCase(String spec) {
@@ -51,6 +55,11 @@ public abstract class ModelCheckerTestCase extends TestCase {
 	public ModelCheckerTestCase(String spec, String path) {
 		this(spec);
 		this.path = path;
+	}
+	
+	public ModelCheckerTestCase(String spec, String path, String[] extraArguments) {
+		this(spec, path);
+		this.extraArguments  = extraArguments; 
 	}
 	
 	public void setUp() {
@@ -67,8 +76,13 @@ public abstract class ModelCheckerTestCase extends TestCase {
 			// threading
 			// * MC is the name of the TLA+ specification to be checked (the file
 			// is placed in TEST_MODEL
-			final String[] args = { "-deadlock", "-workers", "1", spec };
-			tlc.handleParameters(args);
+			final List<String> args = new ArrayList<String>(4);
+			args.add("-deadlock");
+			args.add("-workers");
+			args.add("1");
+			args.addAll(Arrays.asList(extraArguments));
+			args.add(spec);
+			tlc.handleParameters(args.toArray(new String[args.size()]));
 			
 			// Run the ModelChecker
 			tlc.process();
