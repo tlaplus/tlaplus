@@ -132,7 +132,6 @@ public class BucketStatistics implements IBucketStatistics {
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#addSample(int)
 	 */
-	@Override
 	public void addSample(final int amount) {
 		if (amount < 0) {
 			throw new IllegalArgumentException("Negative amount invalid");
@@ -154,7 +153,6 @@ public class BucketStatistics implements IBucketStatistics {
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getObservations()
 	 */
-	@Override
 	public long getObservations() {
 		return observations.get();
 	}
@@ -201,7 +199,6 @@ public class BucketStatistics implements IBucketStatistics {
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getMedian()
 	 */
-	@Override
 	public int getMedian() {
 		long l = observations.get();
 		if (l <= 0) {
@@ -225,7 +222,6 @@ public class BucketStatistics implements IBucketStatistics {
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getMean()
 	 */
-	@Override
 	public double getMean() {
 		long sum = 0L;
 		// Sum up values and count
@@ -247,7 +243,6 @@ public class BucketStatistics implements IBucketStatistics {
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getMin()
 	 */
-	@Override
 	public int getMin() {
 		if (observations.get() <= 0) {
 			return -1;
@@ -258,7 +253,6 @@ public class BucketStatistics implements IBucketStatistics {
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getMax()
 	 */
-	@Override
 	public int getMax() {
 		if (observations.get() <= 0) {
 			return -1;
@@ -269,7 +263,6 @@ public class BucketStatistics implements IBucketStatistics {
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getStdDev()
 	 */
-	@Override
 	public double getStdDev() {
 		final long N = observations.get();
 		if (N <= 0) {
@@ -292,7 +285,6 @@ public class BucketStatistics implements IBucketStatistics {
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getPercentile(double)
 	 */
-	@Override
 	public double getPercentile(double quantile) {
 		if (Double.isNaN(quantile)) {
 			throw new IllegalArgumentException("NaN");
