@@ -174,6 +174,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 		try {
 			sb.append("digraph DiskGraph {\n");
 			sb.append("nodesep = 0.7\n");
+			sb.append("rankdir=LR;"); // Left to right rather than top to bottom
 			long nodePtr = this.nodeRAF.getFilePointer();
 			long nodePtrPtr = this.nodePtrRAF.getFilePointer();
 			long len = this.nodePtrRAF.length();
