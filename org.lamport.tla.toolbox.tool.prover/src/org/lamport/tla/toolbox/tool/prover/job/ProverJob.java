@@ -53,8 +53,6 @@ import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
-import tla2sany.semantic.DefStepNode;
-import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.TheoremNode;
@@ -252,13 +250,29 @@ public class ProverJob extends Job
              * If it does exist, that is the path. Else, the path is "tlapm". Setting
              * the path to "tlapm" assumes that it is in the system path.
              */
-            IPath defaultPath = new Path("C:/cygwin/usr/local/bin/tlapm.exe");
+            final IPath defaultPath = new Path("C:/cygwin/usr/local/bin/tlapm.exe");
+            final IPath defaultPath64 = new Path("C:/cygwin64/usr/local/bin/tlapm.exe");
 
             if (defaultPath.toFile().exists())
             {
                 this.tlapmPath = defaultPath;
-            }
 
+                /*
+                 * If cygwin path is specified, use that. If not
+                 * use the default cygwin path : 
+                 * "C:\cygwin\bin"
+                 */
+                this.cygwinPath = new Path("C:\\cygwin\\bin");
+            }
+            /*
+             * Nowadays 64bit systems are common, thus also check c:/cygwin64/...
+             */
+            else if (defaultPath64.toFile().exists())
+            {
+                this.tlapmPath = defaultPath64;
+                this.cygwinPath = new Path("C:\\cygwin64\\bin");
+            }
+            
         } else if (Platform.getOS().equals(Platform.OS_MACOSX) || Platform.getOS().equals(Platform.OS_LINUX))
         {
 
@@ -278,13 +292,6 @@ public class ProverJob extends Job
         {
             // TODO indicate that the operating system is unsupported
         }
-
-        /*
-         * If cygwin path is specified, use that. If not
-         * use the default cygwin path : 
-         * "C:\cygwin\bin"
-         */
-        this.cygwinPath = new Path("C:\\cygwin\\bin");
 
         /*
          * We create a useless launch object. It is
