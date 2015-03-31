@@ -1,10 +1,6 @@
 package org.lamport.tla.toolbox.tool.prover.ui;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.lamport.tla.toolbox.AbstractTLCActivator;
-import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
-import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
-import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -32,33 +28,39 @@ public class ProverUIActivator extends AbstractTLCActivator
         super.start(context);
         plugin = this;
 
-        UIHelper.runUIAsync(new Runnable() {
-			
-			public void run() {
-	            // Using somebody's else PreferenceStore is not a good idea!
-	        	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
-	            // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
-		        IPreferenceStore store = getDefault().getPreferenceStore();
-
-		        /*
-		         * The following sets the default color predicates for the colors. First argument
-		         * is the key for each predicate for the logical color, and the second argument is
-		         * the predicate string (not the macro name).
-		         */
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(1), ColorPredicate.PREDICATE_NONE);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(2), ColorPredicate.PREDICATE_NONE);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(3), ColorPredicate.PREDICATE_BEING_PROVED);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(4), ColorPredicate.PREDICATE_STOPPED);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(5), ColorPredicate.PREDICATE_FAILED);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(6), ColorPredicate.PREDICATE_PROVED);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(7), ColorPredicate.PREDICATE_PROVED_OR_OMITTED);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(8), ColorPredicate.PREDICATE_PROVED_OR_OMITTED_OR_MISSING);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(9), ColorPredicate.PREDICATE_NONE);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(10), ColorPredicate.PREDICATE_NONE);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(11), ColorPredicate.PREDICATE_NONE);
-		        store.setDefault(ProverPreferencePage.getColorPredPrefName(12), ColorPredicate.PREDICATE_NONE);
-			}
-		});
+		// Moved the code below to ProverPreferenceInitializer. Calling
+		// UIHElper.runUIAsync(..) from within the bundle activator can lead to
+		// the unintended behavior or creating the SWT Display too early
+		// *before* the regular Application has a chance to do so. If this
+		// happens, the Display has no app name set causing the Toolbox to be
+		// named "Swt" on Mac and Gnome (WM_CLASS)
+//        UIHelper.runUIAsync(new Runnable() {
+//			
+//			public void run() {
+//	            // Using somebody's else PreferenceStore is not a good idea!
+//	        	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
+//	            // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
+//		        IPreferenceStore store = getDefault().getPreferenceStore();
+//
+//		        /*
+//		         * The following sets the default color predicates for the colors. First argument
+//		         * is the key for each predicate for the logical color, and the second argument is
+//		         * the predicate string (not the macro name).
+//		         */
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(1), ColorPredicate.PREDICATE_NONE);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(2), ColorPredicate.PREDICATE_NONE);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(3), ColorPredicate.PREDICATE_BEING_PROVED);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(4), ColorPredicate.PREDICATE_STOPPED);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(5), ColorPredicate.PREDICATE_FAILED);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(6), ColorPredicate.PREDICATE_PROVED);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(7), ColorPredicate.PREDICATE_PROVED_OR_OMITTED);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(8), ColorPredicate.PREDICATE_PROVED_OR_OMITTED_OR_MISSING);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(9), ColorPredicate.PREDICATE_NONE);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(10), ColorPredicate.PREDICATE_NONE);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(11), ColorPredicate.PREDICATE_NONE);
+//		        store.setDefault(ProverPreferencePage.getColorPredPrefName(12), ColorPredicate.PREDICATE_NONE);
+//			}
+//		});
          /*
          * DR commented out the following because default colors are now set in the plugin.xml file for this
          * plug-in.
