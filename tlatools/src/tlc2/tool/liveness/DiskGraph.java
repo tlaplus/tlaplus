@@ -168,13 +168,8 @@ public class DiskGraph extends AbstractDiskGraph {
 				long fp = nodePtrRAF.readLong();
 				int tidx = nodePtrRAF.readInt();
 				long loc = nodePtrRAF.readLongNat();
-				sb.append(fp + " -> ");
 				GraphNode gnode = this.getNode(fp, tidx, loc);
-				int sz = gnode.succSize();
-				for (int i = 0; i < sz; i++) {
-					sb.append(gnode.getStateFP(i) + " ");
-				}
-				sb.append("\n");
+				sb.append(gnode.toDotViz());
 			}
 			sb.append("}");
 			this.nodeRAF.seek(nodePtr);
