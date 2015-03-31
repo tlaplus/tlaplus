@@ -42,8 +42,27 @@ public class TableauDiskGraphTest extends TestCase {
 	private static final int NUMBER_OF_ACTIONS = 0;
 	private static final BitVector NO_ACTIONS = null;
 	
-	// Tests that the path is correctly reconstructed when a node's predecessors
-	// have an identical fingerprint but different tableau idxs.
+	/* 
+	 * Tests that the path is correctly reconstructed when a node's predecessors
+	 * have an identical fingerprint but different tableau indices.
+	 * 
+	 *                  +------+                          
+	 *	+-------+       |      |                          
+	 *	|       |       |second+---------+                
+	 *	| init  +-----> |0     |         |                
+	 *	|       |       +------+         ^                
+	 *	+-------+       +------+     +---+--+     +------+
+	 *	                |(init)|     |      |     |      |
+	 *	                |second+----->third +----->final |
+	 *	+-------+       |1     |     |      |     |      |
+	 *	|       |       +------+     +---+--+     +------+
+	 *	| init  |       +------+         ^                
+	 *	|       +-----> |      |         |                
+	 *	+-------+       |second+---------+                
+	 *	                |2     |                          
+	 *	                +------+                           
+	 *
+	 */
 	public void testGetShortestPath() throws IOException {
 		final TableauDiskGraph dg = new TableauDiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS, GRAPH_STATS);
 
@@ -108,5 +127,184 @@ public class TableauDiskGraphTest extends TestCase {
 		assertEquals(finalState, path.elementAt(0));
 		assertEquals(thirdState, path.elementAt(1));
 		assertEquals(secondState, path.elementAt(2));
+	}
+
+	/*
+	 *                       +---------+                        
+	 *	                     |         |                        
+	 *	     +--------------->  second +------------------+     
+	 *	     |               |         |                  |     
+	 *	     |               +---------+                  |     
+	 *	     |                                            |     
+	 *	+----+---+                                   +----v----+
+	 *	|        |                                   |         |
+	 *	| init   |                                   | final   |
+	 *	|        |                                   |         |
+	 *	+----+---+                                   +----+----+
+	 *	     |                                            ^     
+	 *	     |                +---------+                 |     
+	 *	     |                |         |                 |     
+	 *	     +---------------->  third  +-----------------+     
+	 *	                      |         |                       
+	 *	                      +---------+                        
+ 	 *
+	 * (Drawn with http://asciiflow.com/)
+	 */
+	public void testUnifyingNodeInPath() throws IOException {
+		final TableauDiskGraph dg = new TableauDiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS, GRAPH_STATS);
+
+		long initState = 1L;
+		int initTableauIdx = 0;
+		
+		long secondState = 2L;
+		int secondTableauIdx = 0;
+
+		long thirdState = 3L;
+		int thirdTableauIdx = 0;
+				
+		long finalState = 4L;
+		int finalTableauIdx = 0;
+		
+		// Init
+		dg.addInitNode(initState, initTableauIdx);
+		
+		// Init
+		GraphNode node = new GraphNode(initState, initTableauIdx);
+		
+		/*
+		 * The *order* in which the transitions are added to the init node define,
+		 * which one of the two possible pathes is later found. Since we add
+		 * the second state first, the path will be final -> second -> init
+		 */
+		node.addTransition(secondState, secondTableauIdx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 1);
+		node.addTransition(thirdState, thirdTableauIdx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 1);
+		
+		dg.addNode(node);
+		
+		// second
+		node = new GraphNode(secondState, secondTableauIdx);
+		node.addTransition(finalState, finalTableauIdx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 1);
+		dg.addNode(node);
+		
+		// third
+		node = new GraphNode(thirdState, thirdTableauIdx);
+		node.addTransition(finalState, finalTableauIdx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 1);
+		dg.addNode(node);
+		
+		// final
+		node = new GraphNode(finalState, finalTableauIdx);
+		dg.addNode(node);
+		
+		dg.createCache();
+		final LongVec path = dg.getPath(finalState, finalTableauIdx);
+		dg.destroyCache();
+		
+		// There are now two path with identical length:
+		// init -> second -> final & init -> third -> final
+		// and both are correct path.
+		assertEquals(3, path.size());
+		assertEquals(finalState, path.elementAt(0));
+		assertEquals(secondState, path.elementAt(1));
+		assertEquals(initState, path.elementAt(2));
+	}
+
+	/*
+	 * Similar to testUnifiyingNodeInPath except that the upper path has one
+	 * extra node. This should mean that the search returns init -> third ->
+	 * final because it is shorter regardless of second being added as a
+	 * transition first.
+	 *
+	 *              +---------+       +---------+                        
+	 *	            |         |       |         |                        
+	 *	     +------>  frob   +------->  second +---------+     
+	 *	     |      |         |       |         |         |     
+	 *	     |      +---------+       +---------+         |     
+	 *	     |                                            |     
+	 *	+----+---+                                   +----v----+
+	 *	|        |                                   |         |
+	 *	| init   |                                   | final   |
+	 *	|        |                                   |         |
+	 *	+----+---+                                   +----+----+
+	 *	     |                                            ^     
+	 *	     |                +---------+                 |     
+	 *	     |                |         |                 |     
+	 *	     +---------------->  third  +-----------------+     
+	 *	                      |         |                       
+	 *	                      +---------+                        
+	 */
+	public void testUnifyingNodeShortestPath() throws IOException {
+		final TableauDiskGraph dg = new TableauDiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS, GRAPH_STATS);
+
+		long initState = 1L;
+		int initTableauIdx = 0;
+		
+		long frob = 5;
+		int frobTableauIdx = 0;
+		
+		long secondState = 2L;
+		int secondTableauIdx = 0;
+
+		long thirdState = 3L;
+		int thirdTableauIdx = 0;
+				
+		long finalState = 4L;
+		int finalTableauIdx = 0;
+		
+		// Init
+		dg.addInitNode(initState, initTableauIdx);
+		
+		// Init
+		GraphNode node = new GraphNode(initState, initTableauIdx);
+		
+		/*
+		 * The *order* in which the transitions are added to the init node define,
+		 * which one of the two possible pathes is later found. Since we add
+		 * the second state first, the path will be final -> second -> init
+		 */
+		node.addTransition(frob, frobTableauIdx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 1);
+		node.addTransition(thirdState, thirdTableauIdx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 1);
+		
+		dg.addNode(node);
+		
+		// frob
+		node = new GraphNode(frob, frobTableauIdx);
+		node.addTransition(secondState, secondTableauIdx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 1);
+		dg.addNode(node);
+		
+		
+		// second
+		node = new GraphNode(secondState, secondTableauIdx);
+		node.addTransition(finalState, finalTableauIdx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 1);
+		dg.addNode(node);
+		
+		// third
+		node = new GraphNode(thirdState, thirdTableauIdx);
+		node.addTransition(finalState, finalTableauIdx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 1);
+		dg.addNode(node);
+		
+		// final
+		node = new GraphNode(finalState, finalTableauIdx);
+		dg.addNode(node);
+		
+		dg.createCache();
+		final LongVec path = dg.getPath(finalState, finalTableauIdx);
+		dg.destroyCache();
+		
+		// There are now two path with identical length:
+		// init -> second -> final & init -> third -> final
+		// and both are correct path.
+		assertEquals(3, path.size());
+		assertEquals(finalState, path.elementAt(0));
+		assertEquals(thirdState, path.elementAt(1));
+		assertEquals(initState, path.elementAt(2));
 	}
 }
