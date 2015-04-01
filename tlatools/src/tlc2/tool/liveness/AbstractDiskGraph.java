@@ -143,6 +143,22 @@ public abstract class AbstractDiskGraph {
 		return ptr;
 	}
 	
+	/**
+	 * @return true iff the given GraphNode belongs to the set of initial
+	 *         states.
+	 */
+	protected boolean isInitState(final GraphNode gnode) {
+		final int numOfInits = initNodes.size();
+		for (int j = 0; j < numOfInits; j += 2) {
+			final long state = initNodes.elementAt(j);
+			final int tidx = (int) initNodes.elementAt(j + 1);
+			if (gnode.stateFP == state && gnode.tindex == tidx) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	protected abstract void putNode(GraphNode node, long ptr);
 
 	/* Get the graph node at the file location ptr. */

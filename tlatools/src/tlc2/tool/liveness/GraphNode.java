@@ -303,11 +303,16 @@ public class GraphNode {
 		return buf.toString();
 	}
 
-	public String toDotViz() {
-		StringBuffer buf = new StringBuffer();
+	public String toDotViz(final boolean isInitState) {
+		final String id = (""+this.stateFP).substring(0,3) + "." + this.tindex;
+		
+		final StringBuffer buf = new StringBuffer();
+		if (isInitState) {
+			buf.append(id + " [style = filled]\n"); // node's label
+		}
 		int size = this.nnodes.length;
 		for (int i = 0; i < size; i += 3) {
-			buf.append(("" + this.stateFP).substring(0, 3) + "." + this.tindex + " -> ");
+			buf.append(id + " -> ");
 			long high = this.nnodes[i];
 			long low = this.nnodes[i + 1];
 			long fp = (high << 32) | (low & 0xFFFFFFFFL);
