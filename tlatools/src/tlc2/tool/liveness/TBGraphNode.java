@@ -106,4 +106,19 @@ public class TBGraphNode {
 		}
 	}
 
+	/**
+	 * @see TBGraph#toDotViz()
+	 */
+	public String toDotViz() {
+		final String label = this.index + "";
+		final StringBuffer buf = new StringBuffer(nextSize());
+		buf.append(this.index + " [label=" + label + "]\n"); // nodes label
+		for (int i = 0; i < nextSize(); i++) {
+			final TBGraphNode successor = nextAt(i);
+			buf.append(this.index + " -> " + successor.index);
+			buf.append("\n");
+		}
+		return buf.toString();
+	}
 }
+

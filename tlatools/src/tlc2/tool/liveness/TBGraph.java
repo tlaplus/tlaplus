@@ -51,4 +51,18 @@ public class TBGraph extends Vect {
 		return sb.toString();
 	}
 
+	/**
+	 * @see AbstractDiskGraph#toDotViz()
+	 */
+	public String toDotViz() {
+		final StringBuffer sb = new StringBuffer();
+		sb.append("digraph TableauGraph {\n");
+		sb.append("nodesep = 0.7\n");
+		sb.append("rankdir=LR;\n"); // Left to right rather than top to bottom
+		for(int i = 0; i < size(); i++) {
+			sb.append(getNode(i).toDotViz());
+		}
+		sb.append("}");
+		return sb.toString();
+	}
 }
