@@ -9,6 +9,24 @@ import tlc2.output.EC;
 import tlc2.util.Vect;
 import util.Assert;
 
+/**
+ * See Section 5.5 "Particle Tableaux" in Temporal Verification of Reactive
+ * Systems *Safety* by Zohar Manna and Amir Pnueli.
+ * <p>
+ * A {@link TBPar} means Tableau Particle. A particle is an incomplete atom
+ * because it only adheres to a relaxed version of atoms. Due to its
+ * incompleteness, it results in a more efficient tableau since its size is less
+ * than that with complete atoms. However, it does not loose generality.
+ * <p>
+ * The formulas are in positive form, meaning negation
+ * is only applied to state formulas. The state formulas are not keep in
+ * {@link TBPar}, but in {@link TBGraphNode#statePreds} instead. There is also where the
+ * successors of the particle are held.
+ * <p>
+ * TLA+ supports only future formulas and no past temporal operators (compare
+ * with p. 43 fig. 0.15), thus it uses the PART-TAB algorithm (p. 456) for the
+ * tableau construction.
+ */
 public class TBPar extends Vect {
 
 	public TBPar(int i) {
