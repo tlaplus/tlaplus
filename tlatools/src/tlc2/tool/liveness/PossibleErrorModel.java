@@ -6,9 +6,9 @@
 package tlc2.tool.liveness;
 
 public class PossibleErrorModel {
-	int[] EAAction; // <>[]act's (Eventually Always actions)
+	int[] EAAction; // <>[]act's (Eventually Always actions) (Strong fairness)
 	int[] AEState; // []<>state's (Infinitely Often states)
-	int[] AEAction; // []<>act's (Infinitely Often actions)
+	int[] AEAction; // []<>act's (Infinitely Often actions) (Weak fairness)
 	
 	public final boolean isEmpty() {
 		return (this.EAAction.length == 0 && this.AEState.length == 0 && this.AEAction.length == 0);

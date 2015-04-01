@@ -361,8 +361,8 @@ public class LiveCheck implements ILiveCheck {
 			// Pre-compute the consistency of the successor states for all
 			// nodes in the tableau. This is an expensive operation which is
 			// also dependent on the amount of nodes in the tableau times
-			// the number of successors. This used to be done within the the
-			// global oos lock which caused huge thread contention. It
+			// the number of successors. This used to be done within the
+			// global oos lock which caused huge thread contention. This variant
 			// trades speed for additional memory usage (BitVector).
 			final TBGraph tableau = oos.getTableau();
 			final BitVector consistency = new BitVector(tableau.size() * succCnt);
@@ -401,7 +401,8 @@ public class LiveCheck implements ILiveCheck {
 				
 				final int alen = oos.getCheckAction().length;
 				
-				// See node0.addTransition(..) of previous case.
+				// See node0.addTransition(..) of previous case for what the
+				// allocation hint is used for.
 				final int allocationHint = ((nodes.length / dgraph.getElemLength()) * succCnt);
 				
 				for (int nidx = 2; nidx < nodes.length; nidx += dgraph.getElemLength()) {
