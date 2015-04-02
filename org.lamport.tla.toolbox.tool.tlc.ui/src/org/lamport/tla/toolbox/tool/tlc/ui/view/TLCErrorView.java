@@ -944,10 +944,25 @@ public class TLCErrorView extends ViewPart
 			if (e1 instanceof TLCState && e2 instanceof TLCState) {
 				final TLCState s1 = (TLCState) e1;
 				final TLCState s2 = (TLCState) e2;
+				Integer is1 = s1.getStateNumber();
+				Integer is2 = s2.getStateNumber();
+
+				// If either is a back state, make sure they are smaller/larger
+				// than any regular state. If both are back states, simply
+				// compare their state number. The latter case is AFAICT not
+				// possible.
+				if (s1.isBackToState() && !s2.isBackToState()) {
+					is1 = Integer.MIN_VALUE;
+				}
+				else if (s2.isBackToState() && !s1.isBackToState()) {
+					is2 = Integer.MAX_VALUE;
+				}
+				
+				// Two regular states, delegate to state number
 				if(!stateSortDirection) { // negated because the default coming from DialogSettings is false
-					return Integer.valueOf(s1.getStateNumber()).compareTo(s2.getStateNumber());
+					return Integer.valueOf(is1).compareTo(is2);
 				} else {
-					return Integer.valueOf(s2.getStateNumber()).compareTo(s1.getStateNumber());
+					return Integer.valueOf(is2).compareTo(is1);
 				}
 			}
 			// Sort just on the label provided by the label provider
