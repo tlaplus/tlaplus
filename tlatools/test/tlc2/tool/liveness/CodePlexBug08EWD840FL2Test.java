@@ -26,6 +26,8 @@
 
 package tlc2.tool.liveness;
 
+import java.util.List;
+
 import tlc2.output.EC;
 
 /**
@@ -49,6 +51,11 @@ public class CodePlexBug08EWD840FL2Test extends ModelCheckerTestCase {
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		
-		fail("not yet implemented!");
+		// last state points back to state 1
+		assertTrue(recorder.recorded(EC.TLC_BACK_TO_STATE));
+		List<Object> stutter = recorder.getRecords(EC.TLC_BACK_TO_STATE);
+		assertTrue(stutter.size() > 0);
+		Object[] object = (Object[]) stutter.get(0);
+		assertEquals("1", object[0]);
 	}
 }
