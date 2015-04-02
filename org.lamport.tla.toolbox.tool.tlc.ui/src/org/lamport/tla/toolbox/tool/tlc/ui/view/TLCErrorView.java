@@ -952,10 +952,10 @@ public class TLCErrorView extends ViewPart
 				// compare their state number. The latter case is AFAICT not
 				// possible.
 				if (s1.isBackToState() && !s2.isBackToState()) {
-					is1 = Integer.MIN_VALUE;
+					is1 = Integer.MAX_VALUE;
 				}
 				else if (s2.isBackToState() && !s1.isBackToState()) {
-					is2 = Integer.MAX_VALUE;
+					is2 = Integer.MIN_VALUE;
 				}
 				
 				// Two regular states, delegate to state number
