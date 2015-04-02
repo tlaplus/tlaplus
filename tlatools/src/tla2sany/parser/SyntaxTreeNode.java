@@ -19,7 +19,6 @@
 package tla2sany.parser;
 
 import tla2sany.semantic.ASTConstants;
-import tla2sany.semantic.Errors;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
@@ -412,6 +411,36 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     //System.out.println( image);
     if (zero != null) return zero[0]; else return one[0]; 
   }
+  
+	public String getHumanReadableImage() {
+		if (zero != null && zero.length > 0) {
+			final StringBuffer buf = new StringBuffer(zero.length);
+			for (SyntaxTreeNode z : zero) {
+				buf.append(z.getHumanReadableImage());
+			}
+			if (one != null && one.length > 0) {
+				for (SyntaxTreeNode o : one) {
+					buf.append(o.getHumanReadableImage());
+				}
+			}
+			return buf.toString();
+		} else {
+			final String string = image.toString();
+			// See SyntaxTreeNodeConstants. The strings below are the ones with
+			// which non-human-readable images start.
+			if (string.startsWith("N_")) {
+				return "";
+			}
+			if (string.startsWith("Not a node")) {
+				return "";
+			}
+			if (string.startsWith("Token")) {
+				return "";
+			}
+			return string;
+		}
+	}
+  
   /******************
  * Bogus old version
  */

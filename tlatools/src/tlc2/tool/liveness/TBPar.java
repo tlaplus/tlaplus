@@ -257,4 +257,20 @@ public class TBPar extends Vect {
 		return sb.toString();
 	}
 
+	public String toDotViz() {
+		final StringBuffer sb = new StringBuffer();
+		sb.append("{");
+		if (this.size() != 0) {
+			LiveExprNode liveExprNode = (LiveExprNode) this.elementAt(0);
+			sb.append(liveExprNode.toDotViz());
+		}
+		for (int i = 1; i < this.size(); i++) {
+			sb.append(",\n");
+			LiveExprNode liveExprNode = (LiveExprNode) this.elementAt(i);
+			sb.append(liveExprNode.toDotViz());
+		}
+		sb.append("}");
+		// properly escape the "/\" to "/\\" or "\A" to "\\A"
+		return sb.toString().replace("\\", "\\\\");
+	}
 }

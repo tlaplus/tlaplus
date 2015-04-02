@@ -110,7 +110,8 @@ public class TBGraphNode {
 	 * @see TBGraph#toDotViz()
 	 */
 	public String toDotViz() {
-		final String label = this.index + "";
+		final String label = "\"Id: " + this.index + "\n" + par.toDotViz() + "\"";
+		
 		final StringBuffer buf = new StringBuffer(nextSize());
 		buf.append(this.index + " [label=" + label + "]\n"); // nodes label
 		for (int i = 0; i < nextSize(); i++) {

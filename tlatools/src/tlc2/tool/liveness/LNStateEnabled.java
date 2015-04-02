@@ -5,7 +5,10 @@
 
 package tlc2.tool.liveness;
 
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.OpApplNode;
+import tla2sany.st.TreeNode;
 import tlc2.tool.ActionItemList;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
@@ -64,4 +67,36 @@ class LNStateEnabled extends LNState {
 			sb.append(((this.isBox) ? "]_" : ">_") + this.subscript);
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.LiveExprNode#toDotViz()
+	 */
+	public String toDotViz() {
+		final StringBuffer sb = new StringBuffer();
+		if (this.pred instanceof OpApplNode) {
+			final OpApplNode oan = (OpApplNode) this.pred;
+			sb.append("(");
+			// Zeros
+			final TreeNode[] zero = oan.getTreeNode().zero();
+			for (TreeNode treeNode : zero) {
+				// TreeNode is interface with only STN being impl => unchecked
+				// cast is safe.
+				SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
+				sb.append(stn.getHumanReadableImage());
+			}
+			// Ones
+			final TreeNode[] one = oan.getTreeNode().one();
+			if (one != null) {
+				for (TreeNode treeNode : one) {
+					SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
+					sb.append(stn.getHumanReadableImage());
+				}
+			}
+			sb.append(")");
+		} else {
+			toString(sb, "");
+		}
+		return sb.toString();
+	}
+
 }

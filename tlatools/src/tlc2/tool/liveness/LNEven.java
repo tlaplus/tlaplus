@@ -116,4 +116,11 @@ class LNEven extends LiveExprNode {
 		}
 		return false;
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.LiveExprNode#toDotViz()
+	 */
+	public String toDotViz() {
+		return EVENTUALLY + getBody().toDotViz();
+	}
 }

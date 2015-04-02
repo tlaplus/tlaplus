@@ -102,6 +102,23 @@ class LNConj extends LiveExprNode {
 			}
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.LiveExprNode#toDotViz()
+	 */
+	public String toDotViz() {
+		int len = this.getCount();
+		final StringBuffer sb = new StringBuffer(len);
+		for (int i = 0; i < len; i++) {
+			sb.append("/\\ (");
+			sb.append(this.getBody(i).toDotViz());
+			sb.append(")");
+			if (i != len - 1) {
+				sb.append("\n");
+			}
+		}
+		return sb.toString();
+	}
 
 	public void extractPromises(TBPar promises) {
 		getBody(0).extractPromises(promises);

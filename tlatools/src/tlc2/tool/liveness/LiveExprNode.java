@@ -154,4 +154,8 @@ abstract class LiveExprNode {
 		return;
 	}
 
+	public String toDotViz() {
+		// By default just return the regular toString rep.
+		return toString();
+	}
 }
