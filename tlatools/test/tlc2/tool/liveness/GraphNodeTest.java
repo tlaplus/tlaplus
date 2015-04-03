@@ -121,6 +121,14 @@ public class GraphNodeTest extends TestCase {
 		// Create a random graph node (fingerprint/tableau don't matter)
 		final GraphNode node = new GraphNode(0, 0);
 		node.addTransition(0, 0, 0, 0, null, 0, -1);
-		assertTrue("verallocated", node.realign() == 0);
+		assertTrue("overallocated", node.realign() == 0);
+	}
+	
+	public void testAllocateAndSuccessorSize() {
+		// Hint to allocate 100 transitions and make sure the actual number of
+		// transitions is 1.
+		final GraphNode node = new GraphNode(0, 0);
+		node.addTransition(0, 0, 0, 0, null, 0, 100);
+		assertEquals(1, node.succSize());
 	}
 }

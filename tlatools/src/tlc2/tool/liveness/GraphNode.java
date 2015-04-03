@@ -58,6 +58,13 @@ public class GraphNode {
 	}
 
 	public final int succSize() {
+		// offset being != -1 indicates that the nnodes array has been
+		// overallocated in preparation to batch-insert transitions but the
+		// transitions have not been added yet. In this case the nnodes.length /
+		// 3 is *not* the actual number of transitions, offset / 3 is!
+		if (this.offset != -1) {
+			return this.offset / 3;
+		}
 		return this.nnodes.length / 3;
 	}
 
