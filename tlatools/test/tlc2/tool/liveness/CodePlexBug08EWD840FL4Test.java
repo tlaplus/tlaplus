@@ -57,20 +57,25 @@ public class CodePlexBug08EWD840FL4Test extends ModelCheckerTestCase {
 		Object[] objs = (Object[]) records.get(i++);
 		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
 		assertEquals("/\\ tpos = 0\n"
-				   + "/\\ active = (0 :> TRUE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> FALSE)\n"
+				   + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
 				   + "/\\ tcolor = \"black\"\n"
 				   + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")", 
 				   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
 		assertEquals(i, objs[1]);
 		
-		// Omitted check of 4 in-between states, just make sure four more states exist
-		assertEquals("Expect five states prior to stuttering", 5, records.size());
+		objs = (Object[]) records.get(i++);
+		stateInfo = (TLCStateInfo) objs[0];
+		assertEquals("/\\ tpos = 3\n"
+				   + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+				   + "/\\ tcolor = \"white\"\n"
+				   + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")", 
+				   stateInfo.toString().trim());
 		
-		// state six is stuttering
+		// state 3 is stuttering
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
 		List<Object> stutter = recorder.getRecords(EC.TLC_STATE_PRINT3);
 		assertTrue(stutter.size() > 0);
 		Object[] object = (Object[]) stutter.get(0);
-		assertEquals(6, object[1]);
+		assertEquals(3, object[1]);
 	}
 }
