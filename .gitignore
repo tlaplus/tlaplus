@@ -19,3 +19,4 @@ general/performance/states/
 org.lamport.tla.toolbox.jnlp/files/dist-tlc.zip
 workspace/
 states/
+.DS_Store
