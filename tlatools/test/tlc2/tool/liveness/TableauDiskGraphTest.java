@@ -377,4 +377,37 @@ public class TableauDiskGraphTest extends DiskGraphTest {
 		assertEquals(1, path.size());
 		assertEquals(noSuccessorInitState, path.elementAt(0));
 	}
+	
+	/*
+	 * Test that getPath returns the correct init state if the graph contains
+	 * multiple initial states with the same fingerprint but different tableau idxs.
+	 */
+	public void testGetPathWithTwoInits() throws IOException {
+		final AbstractDiskGraph dg = getDiskGraph();
+		
+		final long fingerprint = 1L;
+		
+		dg.addInitNode(fingerprint, 0);
+		dg.addInitNode(fingerprint, 1);
+		
+		try {
+			// Requesting path to node with tidx 2 is supposed to fail when no
+			// such node is in the graph.
+			dg.createCache();
+			dg.getPath(fingerprint, 2);
+			dg.destroyCache();
+		} catch (RuntimeException e) {
+			// Now that it has been added, it should be found.
+			dg.addInitNode(fingerprint, 2);
+			
+			dg.createCache();
+			LongVec path = dg.getPath(fingerprint, 2);
+			dg.destroyCache();
+			
+			assertEquals(1, path.size());
+			assertEquals(fingerprint, path.elementAt(0));
+			return;
+		}
+		fail("Returned path to non-existing node");
+	}
 }

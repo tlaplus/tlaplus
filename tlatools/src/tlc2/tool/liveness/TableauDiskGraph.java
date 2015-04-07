@@ -1,3 +1,29 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Markus Alexander Kuppe - initial API and implementation
+ ******************************************************************************/
+
 package tlc2.tool.liveness;
 
 import java.io.IOException;
@@ -206,7 +232,12 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 		final int numOfInits = this.initNodes.size();
 		for (int i = 0; i < numOfInits; i += 2) {
 			final long state0 = this.initNodes.elementAt(i);
-			if (state0 == state) {
+			// Comparing the tidx here makes sure we only return a path iff the
+			// node matches what is actually requested (the returned path of
+			// just the initial state's fingerprint would be indistinguishable
+			// anyway).
+			final int tidx0 = (int) this.initNodes.elementAt(i + 1);
+			if (state0 == state && tidx0 == tidx) {
 				final LongVec res = new LongVec(1);
 				res.addElement(state0);
 				return res;
