@@ -11,9 +11,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import org.eclipse.core.resources.ICommand;
@@ -45,6 +48,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.job.NewTLAModuleCreationOperation;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -57,6 +61,7 @@ import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
+import org.lamport.tla.toolbox.ui.preference.LibraryPathComposite;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
@@ -90,6 +95,7 @@ import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
+import util.FilenameToStream;
 import util.UniqueString;
 
 /**
@@ -347,7 +353,7 @@ public class ResourceHelper
                 // relocate files (fix the links)
                 if (performImport)
                 {
-                    relocateFiles(project, new Path(parentDirectory), new NullProgressMonitor());
+                    relocateFiles(project, new Path(parentDirectory), monitor);
                 }
 
             } catch (CoreException e)
@@ -416,8 +422,10 @@ public class ResourceHelper
             newLocationParent.addTrailingSeparator();
         }
 
+
         try
         {
+        	final Map<IResource, IPath> failures = new HashMap<IResource, IPath>();
             IResource[] members = project.members();
 
             monitor.beginTask("Relocating Files", members.length * 2);
@@ -429,20 +437,20 @@ public class ResourceHelper
                     // the linked file points to a file that does not exist.
                     String name = members[i].getName();
                     IPath newLocation = newLocationParent.append(name);
+                    
+                    members[i].delete(true, new SubProgressMonitor(monitor, 1));
                     if (newLocation.toFile().exists())
                     {
-
-                        members[i].delete(true, new SubProgressMonitor(monitor, 1));
-
                         getLinkedFile(project, newLocation.toOSString(), true);
                         monitor.worked(1);
 
                         Activator.getDefault().logDebug("File found " + newLocation.toOSString());
                     } else
                     {
-                        throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error relocating file "
+                    	failures.put(members[i], newLocation);
+						Activator.getDefault().logError("Error relocating files in " + project.getName(), new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error relocating file "
                                 + name + ". The specified location " + newLocation.toOSString()
-                                + " did not contain the file."));
+                                + " did not contain the file.")));
                     }
                 } else
                 {
@@ -450,7 +458,49 @@ public class ResourceHelper
                 }
 
             }
+        	if (!failures.isEmpty()) {
+        		
+        		// Inform the user that the Toolbox failed to "relocate" files (we are going to call it
+        		// "find" though, in hope that it's more meaningful).
+        		// 
+        		final StringBuffer buf = new StringBuffer(failures.size());
+				buf.append(String.format("The Toolbox failed to find %s %s while opening the %s spec:",
+						failures.size(), failures.size() > 1 ? "files" : "file", project.getName()));
+				buf.append("\n\n");
 
+				// Use the standard resolver to try and resolve the missing file. If it resolves
+				// successfully, we assume it is a standard module. Note, that there is still the
+				// possibility that the user decided to overwrite the standard module. In this
+				// case, TLC will use the wrong version. Thus, still inform the user about what
+				// we have done here.
+				final FilenameToStream resolver = new RCPNameToFileIStream(
+						getTLALibraryPath(project));
+        		for (Entry<IResource, IPath> entry : failures.entrySet()) {
+        			final String moduleName = entry.getKey().getName();
+        			
+        			// resolve and check if the File object really exists
+        			final File resolve = resolver.resolve(moduleName, false);
+					boolean assumedStandardModule = resolve.exists();
+        			
+					final String path = entry.getValue().toOSString();
+					buf.append(String.format("%s %s", path, assumedStandardModule == true ? "(standard module)" : ""));
+        			buf.append("\n\n");
+        		}
+				buf.append("Files marked as standard modules will not cause the spec parser to fail. "
+						+ "If you intended to provide an overwrite of a standard module, it is up to you now to provide the module.\n"
+						+ "Missing user modules will result in a parser failure and have to be manually created.");
+
+        		// Finally raise a warning dialog showing the user what we have done to her spec. 
+        		final UIJob job = new UIJob("Warning relocating files") {
+        			@Override
+        			public IStatus runInUIThread(IProgressMonitor monitor) {
+						MessageDialog.openWarning(UIHelper.getShell(),
+								String.format("Failed to find %s spec files!", failures.size(), failures.size() > 1 ? "files" : "file"), buf.toString());
+        				return Status.OK_STATUS;
+        			}
+        		};
+        		job.schedule();
+        	}
         } catch (CoreException e)
         {
             Activator.getDefault().logError("Error relocating files in " + project.getName(), e);
@@ -458,7 +508,50 @@ public class ResourceHelper
         {
             monitor.done();
         }
+    }
+    
 
+    /**
+     * Modified by LL on 28 Nov 2012 to make locationList a Vector instead of a
+     * HashSet. With a HashSet, it returned the library paths in an order that
+     * was mostly independent of the order of the paths specified by the user.
+     * 
+     * @return an Array of {@link String}s each set by the user as additional
+     *         TLA+ library lookup path locations. Returns and empty array if
+     *         none set, not <code>null</code>.
+     */
+    public static String[] getTLALibraryPath(final IProject project) {
+        final IPreferenceStore store = PreferenceStoreHelper
+                .getProjectPreferenceStore(project);
+
+        // Read project specific and general preferences (project take
+        // precedence over general ones)
+        String prefStr = store
+                .getString(LibraryPathComposite.LIBRARY_PATH_LOCATION_PREFIX);
+        if ("".equals(prefStr)) {
+            prefStr = PreferenceStoreHelper.getInstancePreferenceStore()
+                    .getString(
+                            LibraryPathComposite.LIBRARY_PATH_LOCATION_PREFIX);
+        }
+
+        if (!"".equals(prefStr)) {
+            // final Set<String> locationList = new HashSet<String>();
+            final Vector<String> locationList = new Vector<String>();
+            // convert UI string into an array
+            final String[] locations = prefStr
+                    .split(LibraryPathComposite.ESCAPE_REGEX
+                            + LibraryPathComposite.LOCATION_DELIM);
+            for (String location : locations) {
+                final String[] split = location
+                        .split(LibraryPathComposite.ESCAPE_REGEX
+                                + LibraryPathComposite.STATE_DELIM);
+                if (Boolean.parseBoolean(split[1])) {
+                    locationList.add(split[0]);
+                }
+            }
+            return locationList.toArray(new String[locationList.size()]);
+        }
+        return new String[0];
     }
 
     /**
@@ -1634,8 +1727,6 @@ public class ResourceHelper
      */
     private static void innerGetUsesOfUserDefinedOps(SemanticNode node, Vector<ExprOrOpArgNode> found)
     {
-        SymbolNode[] defs = null;
-
         // We have to detect the following instances in which we get a use directly from
         // this node. There are three basic cases:
         // 1. This is an OpApplNode and the operator is a user-defined OpDef node. 
@@ -1740,7 +1831,7 @@ public class ResourceHelper
      */
     public static HashSet<String> declaredSymbolsInScope(ModuleNode module, Location loc) {
         // result accumulates the return value.
-        HashSet<String> result = new HashSet() ;
+        HashSet<String> result = new HashSet<String>() ;
         addDeclaredSymbolsInScope(result, module, loc);
         return result ;
     }
@@ -1767,11 +1858,11 @@ public class ResourceHelper
         // Testing on 9 Oct 2014 reveals that there is no need to look at EXTENDed modules
         // because those are already returned by the GetConstant/VariableDecls calls of
         // the module itself.
-        HashSet extendees = module.getExtendedModuleSet(); 
+        HashSet<ModuleNode> extendees = module.getExtendedModuleSet(); 
         extendees.add(module) ;
-        Iterator iter = extendees.iterator() ;
+        Iterator<ModuleNode> iter = extendees.iterator() ;
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             // Get CONSTANTS
             OpDeclNode[] decls = modNode.getConstantDecls() ;
             for (int i = 0; i < decls.length; i++) {
@@ -1801,7 +1892,7 @@ public class ResourceHelper
         // Add defined operator and theorem names
         iter = allModulesSet.iterator();
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             
             // add definitions
             // On 8 Oct 2014, LL corrected a bug caused by the use of `module'
@@ -1852,10 +1943,10 @@ public class ResourceHelper
         }
         modules.add(node) ;
         
-        HashSet extendees = node.getExtendedModuleSet();
-        Iterator iter = extendees.iterator() ;
+        HashSet<ModuleNode> extendees = node.getExtendedModuleSet();
+        Iterator<ModuleNode> iter = extendees.iterator() ;
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             addImportedModules(modules, symbols, infiniteLoc, modNode) ;
         }
         
@@ -1937,11 +2028,11 @@ public class ResourceHelper
         // Testing on 9 Oct 2014 reveals that there is no need to look at EXTENDed modules
         // because those are already returned by the GetConstant/VariableDecls calls of
         // the module itself.
-        HashSet extendees = module.getExtendedModuleSet(); 
+        HashSet<ModuleNode> extendees = module.getExtendedModuleSet(); 
         extendees.add(module) ;
-        Iterator iter = extendees.iterator() ;
+        Iterator<ModuleNode> iter = extendees.iterator() ;
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             // Get CONSTANTS
             OpDeclNode[] decls = modNode.getConstantDecls() ;
             for (int i = 0; i < decls.length; i++) {
@@ -1971,7 +2062,7 @@ public class ResourceHelper
         // Add defined operator and theorem names
         iter = allModulesSet.iterator();
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             
             // add definitions
             // On 8 Oct 2014, LL corrected a bug caused by the use of `module'
@@ -2024,10 +2115,10 @@ public class ResourceHelper
         }
         modules.add(node) ;
         
-        HashSet extendees = node.getExtendedModuleSet();
-        Iterator iter = extendees.iterator() ;
+        HashSet<ModuleNode> extendees = node.getExtendedModuleSet();
+        Iterator<ModuleNode> iter = extendees.iterator() ;
         while (iter.hasNext()) {
-            ModuleNode modNode = (ModuleNode) iter.next() ;
+            ModuleNode modNode = iter.next() ;
             addImportedModulesSet(modules, symbols, infiniteLoc, modNode) ;
         }
         
@@ -2186,6 +2277,13 @@ public class ResourceHelper
      * @return true if the given spec name is a valid identifier
      */
 	public static boolean isValidSpecName(final String aSpecName) {
+		String identifier = getIdentifier(aSpecName);
+		// verify given spec name and parsed spec name are the same
+		return aSpecName.equals(identifier);
+	}
+	
+
+	public static String getIdentifier(String aSpecName) {
 		// in memory stream of spec name
 		final ByteArrayInputStream stream = new ByteArrayInputStream(
 				aSpecName.getBytes());
@@ -2197,18 +2295,13 @@ public class ResourceHelper
 		tlaParser.token_source.SwitchTo(TLAplusParserConstants.SPEC);
 
 		// try to consume an identifier
-		String identifier;
 		try {
-			identifier = tlaParser.Identifier().getImage();
+			return tlaParser.Identifier().getImage();
 		} catch (ParseException e) {
 			// not expected to happen but handle anyway
-			return false;
+			return "";
 		}
-		
-		// verify given spec name and parsed spec name are the same
-		return aSpecName.equals(identifier);
 	}
-	
 
 	public static boolean isValidLibraryLocation(final String location) {
 		if (location != null && location.length() > 0) {
@@ -2236,6 +2329,7 @@ public class ResourceHelper
 				final ObjectInputStream inputStream = new ObjectInputStream(
 						new FileInputStream(file.getLocation().toOSString()));
 				final Object object = inputStream.readObject();
+				inputStream.close();
 				if (object instanceof TLAtoPCalMapping) {
 					return (TLAtoPCalMapping) object;
 				}

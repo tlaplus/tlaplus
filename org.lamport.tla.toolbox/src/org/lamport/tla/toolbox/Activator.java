@@ -154,7 +154,12 @@ public class Activator extends AbstractTLCActivator
         // job.schedule();
 
         // install the parse status widget
-        UIHelper.runUIAsync(parseStatusUpdateRunable);
+		// Omitting this call as it causes an initial display to be created.
+		// This has to be left to Application which correctly sets app name and
+		// other display properties. The ParseStatusUpdateRunnable is a no-op
+        // anyway due to the is null check and the contribution item being null
+        // for as long as there is no display.
+        //UIHelper.runUIAsync(parseStatusUpdateRunable);
 
         /*
          * Since the any re-parsing will update the status inside of the spec and
@@ -221,7 +226,7 @@ public class Activator extends AbstractTLCActivator
                                 }
 
                                 // not shown, show
-                                UIHelper.openView(ProblemView.ID);
+                                UIHelper.openViewNoFocus(ProblemView.ID);
                             } else
                             {
                                 // hide

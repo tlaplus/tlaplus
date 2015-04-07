@@ -22,24 +22,6 @@
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.rcp.id" version="4.4.1.M20140925-0400"/>
-<unit id="org.eclipse.help.feature.group" version="2.0.102.v20140925-0400"/>
-<unit id="org.eclipse.equinox.core.sdk.feature.group" version="3.10.0.v20140909-1633"/>
-<unit id="org.eclipse.rcp.sdk.id" version="4.4.1.M20140925-0400"/>
-<unit id="org.eclipse.platform.ide" version="4.4.1.M20140925-0400"/>
-<unit id="org.eclipse.rcp.configuration.feature.group" version="1.0.2.v20140925-0251"/>
-<unit id="org.eclipse.emf.ecore.feature.group" version="2.10.1.v20140901-1043"/>
-<unit id="org.eclipse.equinox.executable" version="3.6.100.v20140819-1617"/>
-<unit id="org.eclipse.ecf.core.feature.feature.group" version="1.1.0.v20140827-1444"/>
-<unit id="org.eclipse.e4.rcp.feature.group" version="1.3.100.v20140909-1633"/>
-<unit id="org.eclipse.platform.sdk" version="4.4.1.M20140925-0400"/>
-<unit id="org.eclipse.emf.common.feature.group" version="2.10.1.v20140901-1043"/>
-<unit id="org.eclipse.equinox.sdk.feature.group" version="3.10.0.v20140909-1633"/>
-<unit id="org.eclipse.core.runtime.feature.feature.group" version="1.1.1.v20140909-1633"/>
-<unit id="org.eclipse.sdk.ide" version="4.4.1.M20140925-0400"/>
-<repository location="http://download.eclipse.org/eclipse/updates/4.4/R-4.4.1-201409250400/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.ide.feature.group" version="2.2.1.201402241301"/>
 <unit id="org.eclipse.swtbot.eclipse.test.junit.feature.group" version="2.2.1.201402241301"/>
 <unit id="org.eclipse.swtbot.feature.group" version="2.2.1.201402241301"/>
@@ -49,6 +31,24 @@
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.jclouds.feature.feature.group" version="0.0.0"/>
 <repository location="http://tla.msr-inria.inria.fr/jclouds2p2/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.rcp.id" version="4.4.2.M20150204-1700"/>
+<unit id="org.eclipse.help.feature.group" version="2.0.103.v20150204-1700"/>
+<unit id="org.eclipse.equinox.core.sdk.feature.group" version="3.10.2.v20150203-1939"/>
+<unit id="org.eclipse.rcp.sdk.id" version="4.4.2.M20150204-1700"/>
+<unit id="org.eclipse.platform.ide" version="4.4.2.M20150204-1700"/>
+<unit id="org.eclipse.rcp.configuration.feature.group" version="1.0.3.v20150204-1745"/>
+<unit id="org.eclipse.emf.ecore.feature.group" version="2.10.2.v20150123-0348"/>
+<unit id="org.eclipse.equinox.executable" version="3.6.102.v20150204-1316"/>
+<unit id="org.eclipse.ecf.core.feature.feature.group" version="1.1.0.v20141221-2352"/>
+<unit id="org.eclipse.e4.rcp.feature.group" version="1.3.101.v20150204-1353"/>
+<unit id="org.eclipse.platform.sdk" version="4.4.2.M20150204-1700"/>
+<unit id="org.eclipse.emf.common.feature.group" version="2.10.1.v20150123-0348"/>
+<unit id="org.eclipse.equinox.sdk.feature.group" version="3.10.2.v20150204-1316"/>
+<unit id="org.eclipse.core.runtime.feature.feature.group" version="1.1.2.v20150203-1939"/>
+<unit id="org.eclipse.sdk.ide" version="4.4.2.M20150204-1700"/>
+<repository location="http://download.eclipse.org/eclipse/updates/4.4/R-4.4.2-201502041700"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>

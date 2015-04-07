@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.editor.basic;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -10,15 +11,22 @@ import java.util.Map;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.operations.IOperationHistory;
+import org.eclipse.core.commands.operations.IOperationHistoryListener;
+import org.eclipse.core.commands.operations.IUndoContext;
+import org.eclipse.core.commands.operations.IUndoableOperation;
+import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
@@ -31,6 +39,9 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.ITextViewerExtension6;
+import org.eclipse.jface.text.IUndoManager;
+import org.eclipse.jface.text.IUndoManagerExtension;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextViewer;
@@ -54,6 +65,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -105,6 +117,9 @@ public class TLAEditor extends TextEditor
     private ProjectionAnnotationModel annotationModel;
     // proof structure provider
     private TLAProofFoldingStructureProvider proofStructureProvider;
+	// keeps hold of the IUndoableOperations caused by the programmatically
+	// executed doc.replace changes in doSave()
+    private final List<IUndoableOperation> lastUndoOperations = new ArrayList<IUndoableOperation>(2);
     /**
      * Listener to TLAPM output for adding status
      * coloring to proofs.
@@ -197,7 +212,9 @@ public class TLAEditor extends TextEditor
         }
         // grab context service and activate the context on editor load
         this.contextService = (IContextService) getSite().getService(IContextService.class);
+        Assert.isNotNull(contextService);
         this.contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
+        Assert.isNotNull(contextActivation);
 
         /*
          * This resource change listener listens to changes
@@ -228,8 +245,35 @@ public class TLAEditor extends TextEditor
         };
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(moduleFileChangeListener);
-
+        
+		// See end of doSave() for information.
+		PlatformUI.getWorkbench().getOperationSupport()
+				.getOperationHistory().addOperationHistoryListener(new IOperationHistoryListener() {
+			public void historyNotification(final OperationHistoryEvent event) {
+				if (event.getEventType() == OperationHistoryEvent.UNDONE) {
+					final IUndoableOperation currentUndoOperation = event.getOperation();
+					if (lastUndoOperations.contains(currentUndoOperation)) {
+						try {
+							// Undo the previous IUndoableOperation too. It is what the user actually wanted.
+							PlatformUI.getWorkbench().getOperationSupport()
+									.getOperationHistory().undo(getUndoContext(), new NullProgressMonitor(), null);
+						} catch (final ExecutionException e) {
+							lastUndoOperations.clear();
+						}
+					}
+				}
+			}
+		});
     }
+
+	private IUndoContext getUndoContext() {
+		if (getSourceViewer() instanceof ITextViewerExtension6) {
+			IUndoManager undoManager = ((ITextViewerExtension6) getSourceViewer()).getUndoManager();
+			if (undoManager instanceof IUndoManagerExtension)
+				return ((IUndoManagerExtension) undoManager).getUndoContext();
+		}
+		return null;
+	}
 
     /*
      * @see org.eclipse.ui.texteditor.ExtendedTextEditor#createSourceViewer(org.eclipse.swt.widgets.Composite, org.eclipse.jface.text.source.IVerticalRuler, int)
@@ -464,6 +508,25 @@ public class TLAEditor extends TextEditor
                     doc.replace(nextEntry, endOfLine - nextEntry, "");
                 }
                 doc.replace(newEntryStart, 0, ResourceHelper.lastModified + (new Date()) + searchString);
+                
+    			// Save the last one to two (depending on boolean "found")
+    			// IUndoableOperations created by the previous two doc.replace(...)
+    			// calls to the empty list of IUndoableOperations. The
+    			// IOperationHistoryListener in init(..) checks this list if the
+    			// currently undone IUndoableOp. is in the list. If yes, it also
+    			// undoes the operation preceding the currently undone one.
+    			//
+    			// The above stunt makes sure that a single user triggered undo does
+    			// not only undo the programmatically created footer change, but the
+    			// actual change made by the user.
+    			lastUndoOperations.clear(); // no need to keep old IUndoableOps created by earlier footer changes
+    			final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport()
+    					.getOperationHistory();
+    			final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(getUndoContext());
+    			if (found) {
+    				lastUndoOperations.add(undoHistory[undoHistory.length - 2]);
+    			}
+    			lastUndoOperations.add(undoHistory[undoHistory.length - 1]);
             } catch (BadLocationException e)
             { // TLAEditorActivator.getDefault().logDebug("Exception.");
 

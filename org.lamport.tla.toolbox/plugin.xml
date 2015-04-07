@@ -336,14 +336,12 @@
             name="Open Parsing Errors view">
       </command>
       <command
-            defaultHandler="org.lamport.tla.toolbox.ui.handler.ForgetSpecHandler"
             description="Removes spec from list of specs known to Toolbox."
             helpContextId="Remove from list of specs known to the Toolbox."
             id="org.lamport.tla.toolbox.forget"
             name="Forget Specification">
       </command>
       <command
-            defaultHandler="org.lamport.tla.toolbox.ui.handler.RefreshSpecHandler"
             description="Refresh selected specification."
             id="org.lamport.tla.toolbox.refresh"
             name="Refresh Specification">
@@ -708,9 +706,18 @@
             locationURI="popup:toolbox.explorer.popup?after=group.open">
          <command
                commandId="toolbox.command.cnf.open.delegate"
+               icon="icons/full/obj16/spec_obj.gif"
                id="toolbox.popupmenu.open.delegate"
                label="Open"
                mnemonic="O"
+               style="push"
+               >
+         </command>
+         <command
+               commandId="toolbox.command.spec.close"
+               id="toolbox.popupmenu.close"
+               label="Close"
+               mnemonic="C"
                style="push"
                >
          </command>
@@ -875,6 +882,24 @@
          </with>
 		    </activeWhen>
       </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.CloseSpecHandler"
+            commandId="toolbox.command.spec.close">
+		    <enabledWhen>
+		            <count value="1" />
+		    </enabledWhen>
+		    <activeWhen>
+         <with
+               variable="selection">
+            <iterate
+                  operator="or">
+               <instanceof
+                     value="org.lamport.tla.toolbox.spec.Spec">
+               </instanceof>
+            </iterate>
+         </with>
+		    </activeWhen>
+      </handler>
      <handler
            class="org.lamport.tla.toolbox.ui.handler.RenameSpecHandler"
            commandId="org.eclipse.ui.edit.rename">
@@ -963,18 +988,38 @@
             </with>
          </activeWhen>
       </handler>
-
-      <!-- This handler is now created programmatically in WorkspaceSpecManager-->
-      <!-- handler
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.RefreshSpecHandler"
+            commandId="org.lamport.tla.toolbox.refresh">
+         <enabledWhen>
+            <not>
+               <count
+                     value="0">
+               </count>
+            </not>
+         </enabledWhen>
+         <activeWhen>
+            <with
+                  variable="selection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof
+                        value="org.lamport.tla.toolbox.spec.Spec">
+                  </instanceof>
+               </iterate>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
             class="org.lamport.tla.toolbox.ui.handler.OpenParseErrorViewHandler"
             commandId="toolbox.command.openParseErrorView">
-         <activeWhen>
+         <enabledWhen>
             <test
-                  forcePluginActivation="false"
                   property="toolbox.property.hasParseErrors">
             </test>
-         </activeWhen>
-      </handler-->
+         </enabledWhen>
+      </handler>
    </extension>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">

@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -25,12 +24,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextSelection;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
-import org.lamport.tla.toolbox.ui.preference.LibraryPathComposite;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.compare.ResourceNameComparator;
@@ -432,46 +429,10 @@ public class Spec implements IAdaptable {
     }
 
     /**
-     * Modified by LL on 28 Nov 2012 to make locationList a Vector instead of a
-     * HashSet. With a HashSet, it returned the library paths in an order that
-     * was mostly independent of the order of the paths specified by the user.
-     * 
-     * @return an Array of {@link String}s each set by the user as additional
-     *         TLA+ library lookup path locations. Returns and empty array if
-     *         none set, not <code>null</code>.
+     * @see ResourceHelper#getTLALibraryPath(IProject)
      */
     public String[] getTLALibraryPath() {
-        final IPreferenceStore store = PreferenceStoreHelper
-                .getProjectPreferenceStore(getProject());
-
-        // Read project specific and general preferences (project take
-        // precedence over general ones)
-        String prefStr = store
-                .getString(LibraryPathComposite.LIBRARY_PATH_LOCATION_PREFIX);
-        if ("".equals(prefStr)) {
-            prefStr = PreferenceStoreHelper.getInstancePreferenceStore()
-                    .getString(
-                            LibraryPathComposite.LIBRARY_PATH_LOCATION_PREFIX);
-        }
-
-        if (!"".equals(prefStr)) {
-            // final Set<String> locationList = new HashSet<String>();
-            final Vector<String> locationList = new Vector<String>();
-            // convert UI string into an array
-            final String[] locations = prefStr
-                    .split(LibraryPathComposite.ESCAPE_REGEX
-                            + LibraryPathComposite.LOCATION_DELIM);
-            for (String location : locations) {
-                final String[] split = location
-                        .split(LibraryPathComposite.ESCAPE_REGEX
-                                + LibraryPathComposite.STATE_DELIM);
-                if (Boolean.parseBoolean(split[1])) {
-                    locationList.add(split[0]);
-                }
-            }
-            return locationList.toArray(new String[locationList.size()]);
-        }
-        return new String[0];
+    	return ResourceHelper.getTLALibraryPath(project);
     }
 
     /**

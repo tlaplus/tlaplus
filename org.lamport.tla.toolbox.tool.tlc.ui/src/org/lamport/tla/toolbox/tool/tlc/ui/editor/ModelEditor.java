@@ -6,6 +6,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
@@ -15,7 +17,6 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -350,7 +351,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         if (revalidate)
         {
             // run SANY
-            launchModel(TLCModelLaunchDelegate.MODE_GENERATE, false /*
+            launchModel(TLCModelLaunchDelegate.MODE_GENERATE, false, monitor /*
                                                                      * the SANY
                                                                      * will run
                                                                      * only if
@@ -533,198 +534,195 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /* --------------------------------------------------------------------- */
+    
+	public void launchModel(final String mode, final boolean userPased) {
+		launchModel(mode, userPased, new NullProgressMonitor());
+	}
+	
+	/**
+	 * Launch TLC or SANY
+	 * 
+	 * @param mode
+	 * @param userPased
+	 *            true, if the action is performed on behalf of the user action
+	 *            (explicit click on the launch button)
+	 * @throws CoreException
+	 */
+	public void launchModel(final String mode, final boolean userPased, final IProgressMonitor monitor) {
+		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		try {
+			workspace.run(new IWorkspaceRunnable() {
+				public void run(IProgressMonitor monitor) throws CoreException {
 
-    /**
-     * Launch TLC or SANY
-     * @param mode
-     * @param userPased true, if the action is performed on behalf of the user action (explicit click on the launch button)
-     */
-    public void launchModel(String mode, boolean userPased)
-    {
-        final IProgressMonitor monitor = new NullProgressMonitor();
-
-        /*
-         * The user should not be able to run the model checker
-         * or generate MC files if the spec is unparsed.
-         * Right now, the user will simply see an message dialog
-         * that has a different message depending on whether
-         * the mode is model check or generate. If the mode is
-         * generate, there will be a different message depending
-         * on whether the user explicitly clicked generate or
-         * the generation is occurring because the preference
-         * to automatically revalidate on save is selected.
-         * The messages appear below.
-         * 
-         * It would be nice to eventually add a button
-         * that allows the user to parse the spec from that dialog,
-         * and if parsing succeeds, to run TLC, but right now, that
-         * is not implemented.
-         */
-        if (Activator.isSpecManagerInstantiated())
-        {
-            Spec spec = Activator.getSpecManager().getSpecLoaded();
-            if (spec == null || spec.getStatus() != IParseConstants.PARSED)
-            {
-                if (mode == TLCModelLaunchDelegate.MODE_MODELCHECK)
-                {
-                    MessageDialog
-                            .openError(getSite().getShell(), "Model checking not allowed",
-                                    "The spec status is not \"parsed\". The status must be \"parsed\" before model checking is allowed.");
-                } else if (mode == TLCModelLaunchDelegate.MODE_GENERATE)
-                {
-                    if (userPased)
-                    {
-                        MessageDialog
-                                .openError(getSite().getShell(), "Revalidation not allowed",
-                                        "The spec status is not \"parsed\". The status must be \"parsed\" before model revalidation is allowed.");
-                    } else
-                    {
-                        MessageDialog
-                                .openError(getSite().getShell(), "Revalidation not allowed",
-                                        "The model can be saved, but since the spec status is not \"parsed\" model revalidation is not allowed.");
-                    }
-                }
-                return;
-            } else
-            {
-                /*
-                 * The spec cannot be model checked if it contains a module named
-                 * MC or a module named TE. Pop-up an error message to the user
-                 * and do not run TLC.
-                 */
-                String rootModuleName = spec.getRootModule().getName();
-                if (ModelHelper.containsModelCheckingModuleConflict(rootModuleName))
-                {
-                    MessageDialog.openError(getSite().getShell(), "Illegal module name",
-                            "Model validation and checking is not allowed on a spec containing a module named "
-                                    + ModelHelper.MC_MODEL_NAME + "."
-                                    + (userPased ? "" : " However, the model can still be saved."));
-                    return;
-                }
-                if (ModelHelper.containsTraceExplorerModuleConflict(rootModuleName))
-                {
-                    MessageDialog.openError(getSite().getShell(), "Illegal module name",
-                            "Model validation and checking is not allowed on a spec containing a module named "
-                                    + ModelHelper.TE_MODEL_NAME + "."
-                                    + (userPased ? "" : " However, the model can still be saved."));
-                    return;
-                }
-            }
-        } else
-        {
-            Activator.getDefault().logDebug("The spec manager has not been instantiated. This is a bug.");
-            return;
-        }
-        
-        /*
-         * Ask and save _spec_ editor if it's dirty
-         */
-        final IEditorReference[] editors = getSite().getPage().getEditorReferences();
-        for (IEditorReference ref : editors) {
-			if (OpenSpecHandler.TLA_EDITOR_CURRENT.equals(ref.getId())) {
-				if (ref.isDirty()) {
-					final String title = ref.getName();
-					boolean save = MessageDialog.openQuestion(getSite().getShell(), "Save " + title + " spec?",
-							"The spec " + title + " has not been saved, should the spec be saved prior to launching?");
-					if (save) {
-						// TODO decouple from ui thread
-						ref.getEditor(true).doSave(monitor);
+					/*
+					 * The user should not be able to run the model checker or
+					 * generate MC files if the spec is unparsed. Right now, the
+					 * user will simply see an message dialog that has a
+					 * different message depending on whether the mode is model
+					 * check or generate. If the mode is generate, there will be
+					 * a different message depending on whether the user
+					 * explicitly clicked generate or the generation is
+					 * occurring because the preference to automatically
+					 * revalidate on save is selected. The messages appear
+					 * below.
+					 * 
+					 * It would be nice to eventually add a button that allows
+					 * the user to parse the spec from that dialog, and if
+					 * parsing succeeds, to run TLC, but right now, that is not
+					 * implemented.
+					 */
+					if (Activator.isSpecManagerInstantiated()) {
+						Spec spec = Activator.getSpecManager().getSpecLoaded();
+						if (spec == null || spec.getStatus() != IParseConstants.PARSED) {
+							if (mode == TLCModelLaunchDelegate.MODE_MODELCHECK) {
+								MessageDialog
+										.openError(getSite().getShell(), "Model checking not allowed",
+												"The spec status is not \"parsed\". The status must be \"parsed\" before model checking is allowed.");
+							} else if (mode == TLCModelLaunchDelegate.MODE_GENERATE) {
+								if (userPased) {
+									MessageDialog
+											.openError(getSite().getShell(), "Revalidation not allowed",
+													"The spec status is not \"parsed\". The status must be \"parsed\" before model revalidation is allowed.");
+								} else {
+									MessageDialog
+											.openError(getSite().getShell(), "Revalidation not allowed",
+													"The model can be saved, but since the spec status is not \"parsed\" model revalidation is not allowed.");
+								}
+							}
+							return;
+						} else {
+							/*
+							 * The spec cannot be model checked if it contains a
+							 * module named MC or a module named TE. Pop-up an
+							 * error message to the user and do not run TLC.
+							 */
+							String rootModuleName = spec.getRootModule().getName();
+							if (ModelHelper.containsModelCheckingModuleConflict(rootModuleName)) {
+								MessageDialog.openError(getSite().getShell(), "Illegal module name",
+										"Model validation and checking is not allowed on a spec containing a module named "
+												+ ModelHelper.MC_MODEL_NAME + "."
+												+ (userPased ? "" : " However, the model can still be saved."));
+								return;
+							}
+							if (ModelHelper.containsTraceExplorerModuleConflict(rootModuleName)) {
+								MessageDialog.openError(getSite().getShell(), "Illegal module name",
+										"Model validation and checking is not allowed on a spec containing a module named "
+												+ ModelHelper.TE_MODEL_NAME + "."
+												+ (userPased ? "" : " However, the model can still be saved."));
+								return;
+							}
+						}
 					} else {
+						Activator.getDefault().logDebug("The spec manager has not been instantiated. This is a bug.");
 						return;
 					}
+
+					/*
+					 * Ask and save _spec_ editor if it's dirty
+					 */
+					final IEditorReference[] editors = getSite().getPage().getEditorReferences();
+					for (IEditorReference ref : editors) {
+						if (OpenSpecHandler.TLA_EDITOR_CURRENT.equals(ref.getId())) {
+							if (ref.isDirty()) {
+								final String title = ref.getName();
+								boolean save = MessageDialog.openQuestion(getSite().getShell(), "Save " + title
+										+ " spec?", "The spec " + title
+										+ " has not been saved, should the spec be saved prior to launching?");
+								if (save) {
+									// TODO decouple from ui thread
+									ref.getEditor(true).doSave(monitor);
+								} else {
+									return;
+								}
+							}
+						}
+					}
+
+					/*
+					 * The pages should be validated one last time before TLC is
+					 * run. This is currently necessary when auto-parse spec is
+					 * disabled. In such cases, if the user removes a constant
+					 * or a definition from the spec, saves, and then later
+					 * parses the spec, the model pages will not be validated on
+					 * parsing. The removed constant should cause a validation
+					 * error as should the removed definition if there is an
+					 * override for that definition. However, validation is not
+					 * called, so no error is displayed to the user and the
+					 * pages are all complete, so the toolbox attempts to run
+					 * TLC. This is incorrect, so validation must occur here.
+					 * This is a quick fix. A better fix would be to revalidate
+					 * the pages when the spec is parsed.
+					 * 
+					 * This must be run synchronously so that it finishes before
+					 * this method checks if the pages are complete.
+					 */
+					UIHelper.runUISync(validateRunable);
+
+					// save the model editor if not saved
+					if (isDirty()) {
+						// TODO decouple from ui thread
+						doSave(new SubProgressMonitor(monitor, 1));
+					}
+
+					if (!isComplete()) {
+						// user clicked launch
+						if (userPased) {
+							MessageDialog.openError(getSite().getShell(), "Model processing not allowed",
+									"The model contains errors, which should be corrected before further processing");
+							return;
+						}
+					} else {
+						// launching the config
+						if (mode.equals(TLCModelLaunchDelegate.MODE_MODELCHECK)) {
+							// if model checking, the length of time that
+							// tlc
+							// should run before the model is automatically
+							// locked
+							// must be saved from the preferences
+							int autoLockTime = TLCUIActivator.getDefault().getPreferenceStore()
+									.getInt(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME);
+							getConfig().setAttribute(IConfigurationConstants.LAUNCH_AUTO_LOCK_MODEL_TIME, autoLockTime);
+							getConfig().doSave();
+						}
+						getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
+
+						/*
+						 * Close any tabs in this editor containing read-only
+						 * versions of modules. They will be changed by the
+						 * launch, regardless of the mode. We could do something
+						 * more sophisticated like listening to resource changes
+						 * and updating the editors when the underlying files
+						 * change, but the doesn't seem worth the effort.
+						 */
+						for (int i = 0; i < getPageCount(); i++) {
+							/*
+							 * The normal form pages (main model page, advanced
+							 * options, results) are not text editors. We leave
+							 * those pages but remove all text editors.
+							 */
+							if (pages.get(i) instanceof ITextEditor) {
+								removePage(i);
+							}
+						}
+
+						// clear the error view when launching the model
+						// checker
+						// but not when validating
+						if (mode.equals(TLCModelLaunchDelegate.MODE_MODELCHECK)) {
+							TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
+							if (errorView != null) {
+								errorView.clear();
+							}
+						}
+					}
 				}
-			}
+			}, monitor);
+		} catch (CoreException e) {
+			TLCUIActivator.getDefault().logError(
+					"Error launching the configuration " + getConfig().getName(), e);
+			MessageDialog.openError(getSite().getShell(), "Model processing failed", e.getMessage());
 		}
-
-        /* The pages should be validated one last time before TLC
-         * is run. This is currently necessary when auto-parse spec
-         * is disabled. In such cases, if the user removes a constant
-         * or a definition from the spec, saves, and then later parses
-         * the spec, the model pages will not be validated on parsing.
-         * The removed constant should cause a validation error as should
-         * the removed definition if there is an override for that
-         * definition. However, validation is not called, so no error
-         * is displayed to the user and the pages are all complete, so
-         * the toolbox attempts to run TLC. This is incorrect, so
-         * validation must occur here. This is a quick fix. A better
-         * fix would be to revalidate the pages when the spec is parsed.
-         * 
-         * This must be run synchronously so that it finishes before
-         * this method checks if the pages are complete.
-         */
-        UIHelper.runUISync(validateRunable);
-
-        // save the model editor if not saved
-        if (isDirty())
-        {
-			// TODO decouple from ui thread
-            doSave(new SubProgressMonitor(monitor, 1));
-        }
-
-        if (!isComplete())
-        {
-            // user clicked launch
-            if (userPased)
-            {
-                MessageDialog.openError(getSite().getShell(), "Model processing not allowed",
-                        "The model contains errors, which should be corrected before further processing");
-                return;
-            }
-        } else
-        {
-
-            try
-            {
-                // launching the config
-                if (mode.equals(TLCModelLaunchDelegate.MODE_MODELCHECK))
-                {
-                    // if model checking, the length of time that tlc
-                    // should run before the model is automatically locked
-                    // must be saved from the preferences
-                    int autoLockTime = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                            ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME);
-                    getConfig().setAttribute(IConfigurationConstants.LAUNCH_AUTO_LOCK_MODEL_TIME, autoLockTime);
-                    getConfig().doSave();
-                }
-                getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
-
-                /*
-                 * Close any tabs in this editor containing read-only
-                 * versions of modules. They will be changed by the launch,
-                 * regardless of the mode. We could do something more sophisticated
-                 * like listening to resource changes and updating the editors
-                 * when the underlying files change, but the doesn't seem worth
-                 * the effort.
-                 */
-                for (int i = 0; i < getPageCount(); i++)
-                {
-                    /*
-                     * The normal form pages (main model page, advanced options, results)
-                     * are not text editors. We leave those pages but remove all text editors.
-                     */
-                    if (pages.get(i) instanceof ITextEditor)
-                    {
-                        removePage(i);
-                    }
-                }
-
-                // clear the error view when launching the model checker but not when validating
-                if (mode.equals(TLCModelLaunchDelegate.MODE_MODELCHECK))
-                {
-                    TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
-                    if (errorView != null)
-                    {
-                        errorView.clear();
-                    }
-                }
-            } catch (CoreException e)
-            {
-                TLCUIActivator.getDefault().logError("Error launching the configuration " + getConfig().getName(), e);
-                MessageDialog.openError(getSite().getShell(), "Model processing failed", e.getMessage());
-            }
-        }
-
-    }
+	}
 
     /**
      * Stops TLC

@@ -1,5 +1,9 @@
 package org.lamport.tla.toolbox.util;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -19,7 +23,7 @@ public class SpecLifecycleManager
     private static final String POINT = "org.lamport.tla.toolbox.spec";
     private static final String CLASS_ATTR_NAME = "class";
 
-    private final SpecLifecycleParticipant[] extensions;
+	private final List<SpecLifecycleParticipant> extensions = new CopyOnWriteArrayList<SpecLifecycleParticipant>();
 
     /**
      * Simple strategy calling the method
@@ -37,11 +41,10 @@ public class SpecLifecycleManager
      */
     public SpecLifecycleManager() {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
-        SpecLifecycleParticipant[] specExtensions = new SpecLifecycleParticipant[0];
+        List<SpecLifecycleParticipant> specExtensions = new ArrayList<SpecLifecycleParticipant>();
         if (extensionRegistry != null)
         {
             IConfigurationElement[] decls = extensionRegistry.getConfigurationElementsFor(POINT);
-            specExtensions = new SpecLifecycleParticipant[decls.length];
             for (int i = 0; i < decls.length; i++)
             {
                 try
@@ -50,15 +53,15 @@ public class SpecLifecycleManager
                 	// e.g. ProverUI which registers a SpecLifecycleParticipant
                     SpecLifecycleParticipant extension = (SpecLifecycleParticipant) decls[i].createExecutableExtension(CLASS_ATTR_NAME);
                     assert extension != null;
-                    specExtensions[i] = extension;
-                    specExtensions[i].initialize();
+                    specExtensions.add(extension);
+                    extension.initialize();
                 } catch (CoreException e)
                 {
                     Activator.getDefault().logError("Error retrieving the registered participants", e);
                 }
             }
         }
-       	extensions = specExtensions;
+       	extensions.addAll(specExtensions);
     }
 
     /**
@@ -80,9 +83,7 @@ public class SpecLifecycleManager
     {
         boolean responseAll = true;
         boolean response;
-        for (int i = 0; i < extensions.length; i++)
-        {
-            SpecLifecycleParticipant target = extensions[i];
+        for (SpecLifecycleParticipant target : extensions) {
             assert target != null;
             
             // local response
@@ -105,9 +106,8 @@ public class SpecLifecycleManager
      */
     public void terminate()
     {
-        for (int i = 0; i < extensions.length; i++)
-        {
-            extensions[i].terminate();
+    	for (SpecLifecycleParticipant extension : extensions) {
+            extension.terminate();
         }
     }
 
@@ -126,4 +126,12 @@ public class SpecLifecycleManager
          */
         public abstract boolean invoke(SpecLifecycleParticipant target, SpecEvent event);
     }
+
+	public void addSpecLifecycleParticipant(SpecLifecycleParticipant specLifecycleParticipant) {
+		extensions.add(specLifecycleParticipant);
+	}
+
+	public void removeSpecLifecycleParticipant(SpecLifecycleParticipant specLifecycleParticipant) {
+		extensions.remove(specLifecycleParticipant);
+	}
 }

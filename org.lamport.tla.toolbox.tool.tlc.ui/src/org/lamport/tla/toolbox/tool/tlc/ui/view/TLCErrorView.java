@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.view;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -13,6 +14,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
@@ -29,13 +31,18 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -53,6 +60,7 @@ import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ViewPart;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFcnElementVariableValue;
@@ -90,7 +98,10 @@ import tlc2.output.MP;
 
 public class TLCErrorView extends ViewPart
 {
-    public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
+	private static final String INNER_WEIGHTS_KEY = "INNER_WEIGHTS_KEY";
+	private static final String OUTER_WEIGHTS_KEY = "OUTER_WEIGHTS_KEY";
+
+	public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
 
     private static final String TOOLTIP = "Click on a row to see in viewer, double-click to go to action in spec.";
 
@@ -100,6 +111,7 @@ public class TLCErrorView extends ViewPart
      */
     private static final Pattern CONSTANT_EXPRESSION_ERROR_PATTERN = Pattern.compile("Evaluating assumption PrintT\\("
             + TLCModelLaunchDataProvider.CONSTANT_EXPRESSION_OUTPUT_PATTERN.toString() + "\\)", Pattern.DOTALL);
+
 
     private static final IDocument EMPTY_DOCUMENT()
     {
@@ -252,7 +264,7 @@ public class TLCErrorView extends ViewPart
         getViewSite().getPage().hideView(TLCErrorView.this);
     }
 
-    /**
+	/**
      * Creates the layout and fill it with data
      */
     public void createPartControl(Composite parent)
@@ -279,7 +291,7 @@ public class TLCErrorView extends ViewPart
          * trace viewer inside a SashForm to permit the user to adjust their
          * heights.
          */
-        SashForm outerSashForm = new SashForm(body, SWT.VERTICAL);
+        final SashForm outerSashForm = new SashForm(body, SWT.VERTICAL);
         toolkit.adapt(outerSashForm);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         outerSashForm.setLayoutData(gd);
@@ -393,7 +405,7 @@ public class TLCErrorView extends ViewPart
         // Modified on 30 Aug 2009 as part of putting error viewer inside a
         // sash.
         // SashForm sashForm = new SashForm(body, SWT.VERTICAL); //
-        SashForm sashForm = new SashForm(errorTraceSectionClientArea/*belowErrorViewerComposite*/, SWT.VERTICAL);
+        final SashForm sashForm = new SashForm(errorTraceSectionClientArea/*belowErrorViewerComposite*/, SWT.VERTICAL);
         toolkit.adapt(sashForm);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -421,15 +433,21 @@ public class TLCErrorView extends ViewPart
         resizer.comp = sashForm;
         resizer.tree = tree;
 
-        for (int i = 0; i < StateLabelProvider.COLUMN_TEXTS.length; i++)
-        {
-            TreeColumn column = new TreeColumn(tree, SWT.LEFT);
-            column.setText(StateLabelProvider.COLUMN_TEXTS[i]);
-            column.setWidth(StateLabelProvider.COLUMN_WIDTH[i]);
-            resizer.column[i] = column; // set up the resizer.
-            column.setToolTipText(TOOLTIP);
-        }
-
+        final StateViewerSorter sorter = new StateViewerSorter();
+		for (int i = 0; i < StateLabelProvider.COLUMN_TEXTS.length; i++) {
+			TreeColumn column = new TreeColumn(tree, SWT.LEFT);
+			column.setText(StateLabelProvider.COLUMN_TEXTS[i]);
+			column.setWidth(StateLabelProvider.COLUMN_WIDTH[i]);
+			resizer.column[i] = column; // set up the resizer.
+			column.setToolTipText(TOOLTIP);
+			column.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					sorter.reverseStateSortDirection();
+					variableViewer.refresh();
+				}
+			});
+		}
+        
         tree.addControlListener(resizer);
 
         // I need to add a listener for size changes to column[0] to
@@ -444,6 +462,7 @@ public class TLCErrorView extends ViewPart
         variableViewer.setContentProvider(new StateContentProvider());
         variableViewer.setFilters(new ViewerFilter[] { new StateFilter() });
         variableViewer.setLabelProvider(new StateLabelProvider());
+		variableViewer.setSorter(sorter);
         getSite().setSelectionProvider(variableViewer);
 
         variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer));
@@ -484,13 +503,40 @@ public class TLCErrorView extends ViewPart
         gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
         valueViewer.getControl().setLayoutData(gd);
 
-        /*
-         * Following statement added by LL on 30 Aug 2009 to make the trace
-         * viewer sash higher than the error viewer sash.
-         */
-        int[] weights = { 1, 4 };
-        outerSashForm.setWeights(weights);
+ 
+		// Restore the sash ratio from the persistent disk storage. Unfortunately it
+		// doesn't support storing int[] directly, thus have to convert the string
+		// representation back to an int[] manually.
+		// It also sets the default ratio if the dialogsettings return null.
+		// This is the case with a fresh workspace or when the dialog settings
+		// have never been written before.
+        final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+        final String innerWeights = dialogSettings.get(INNER_WEIGHTS_KEY);
+        if (innerWeights != null) {
+        	sashForm.setWeights(stringToIntArray(innerWeights));
+        } else {
+        	sashForm.setWeights(new int[] {1,1});
+        }
+        final String outerWeights = dialogSettings.get(OUTER_WEIGHTS_KEY);
+        if (outerWeights != null) {
+        	outerSashForm.setWeights(stringToIntArray(outerWeights));
+        } else {
+        	outerSashForm.setWeights(new int[] {1,4});
+        }
 
+        sashForm.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+		        dialogSettings.put(INNER_WEIGHTS_KEY, Arrays.toString(sashForm.getWeights()));
+			}
+		});
+        outerSashForm.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+		        dialogSettings.put(OUTER_WEIGHTS_KEY, Arrays.toString(outerSashForm.getWeights()));
+			}
+        });
+        
         form.getToolBarManager().add(new HelpAction());
         form.getToolBarManager().update(true);
 
@@ -506,7 +552,17 @@ public class TLCErrorView extends ViewPart
         JFaceResources.getFontRegistry().addListener(fontChangeListener);
 
         TLCUIHelper.setHelp(parent, IHelpConstants.TLC_ERROR_VIEW);
+
     }
+    
+	private int[] stringToIntArray(final String str) {
+		final String[] strings = str.replace("[", "").replace("]", "").split(", ");
+		int result[] = new int[strings.length];
+		for (int i = 0; i < result.length; i++) {
+			result[i] = Integer.parseInt(strings[i]);
+		}
+		return result;
+	}
 
     public void setFocus()
     {
@@ -578,7 +634,11 @@ public class TLCErrorView extends ViewPart
      * @param errors
      *            a list of {@link TLCError}
      */
-    public static void updateErrorView(ILaunchConfiguration config)
+    public static void updateErrorView(ILaunchConfiguration config) {
+    	updateErrorView(config, true);
+    }
+
+    public static void updateErrorView(ILaunchConfiguration config, boolean openErrorView)
     {
 
         try
@@ -604,9 +664,9 @@ public class TLCErrorView extends ViewPart
                 return;
             }
             TLCErrorView errorView;
-            if (provider.getErrors().size() > 0)
+            if (provider.getErrors().size() > 0 && openErrorView == true)
             {
-                errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
+           		errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
             } else
             {
                 errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
@@ -854,6 +914,62 @@ public class TLCErrorView extends ViewPart
 
     }
 
+    static class StateViewerSorter extends ViewerSorter {
+    	
+    	private static final String STATESORTORDER = "STATESORTORDER";
+
+        /**
+         * Sort order in which states are sorted in the variable viewer
+         */
+		private boolean stateSortDirection;
+
+		private final IDialogSettings dialogSettings;
+
+		public StateViewerSorter() {
+			dialogSettings = Activator.getDefault().getDialogSettings();
+			stateSortDirection = dialogSettings.getBoolean(STATESORTORDER);
+		}
+		
+        public void reverseStateSortDirection() {
+        	stateSortDirection = !stateSortDirection;
+        	dialogSettings.put(STATESORTORDER, stateSortDirection);
+        }
+    	
+		public int compare(final Viewer viewer, final Object e1, final Object e2) {
+			// The error trace has to be sorted on the number of the state. An
+			// unordered state sequence is rather incomprehensible. The default
+			// is ordering the state trace first to last for educational reasons.
+			// Advanced users are free to click the table column headers to permanently
+			// change the order.
+			if (e1 instanceof TLCState && e2 instanceof TLCState) {
+				final TLCState s1 = (TLCState) e1;
+				final TLCState s2 = (TLCState) e2;
+				Integer is1 = s1.getStateNumber();
+				Integer is2 = s2.getStateNumber();
+
+				// If either is a back state, make sure they are smaller/larger
+				// than any regular state. If both are back states, simply
+				// compare their state number. The latter case is AFAICT not
+				// possible.
+				if (s1.isBackToState() && !s2.isBackToState()) {
+					is1 = Integer.MAX_VALUE;
+				}
+				else if (s2.isBackToState() && !s1.isBackToState()) {
+					is2 = Integer.MIN_VALUE;
+				}
+				
+				// Two regular states, delegate to state number
+				if(!stateSortDirection) { // negated because the default coming from DialogSettings is false
+					return Integer.valueOf(is1).compareTo(is2);
+				} else {
+					return Integer.valueOf(is2).compareTo(is1);
+				}
+			}
+			// Sort just on the label provided by the label provider
+			return super.compare(viewer, e1, e2);
+		}
+    }
+    
     /**
      * Label provider for the tree table. Modified on 30 Aug 2009 by LL to
      * implement ITableColorProvider instead of IColorProvider. This allows
@@ -1518,5 +1634,4 @@ public class TLCErrorView extends ViewPart
             valueViewer.setDocument(EMPTY_DOCUMENT());
         }
     }
-
 }
