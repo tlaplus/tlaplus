@@ -235,13 +235,26 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 		for (int i = 0; i < numOfInits; i += 2) {
 			final long state0 = this.initNodes.elementAt(i);
 			final int tidx0 = (int) this.initNodes.elementAt(i + 1);
-			queue.enqueueLong(state0);
-			queue.enqueueInt(tidx0);
-			queue.enqueueLong(reversablePtrTable.get(state0, tidx0));
-			// Marker the node as an init state in nodePtrTable. This is used
-			// below when the reverse path gets reconstructed as a termination
-			// condition.
-			reversablePtrTable.put(state0, tidx0, MAX_PTR);
+			// Can get from reversablePtrTable because at this point it is an
+			// exact copy of nodePtrTable
+			final long ptr = reversablePtrTable.get(state0, tidx0);
+			// Skip initial states without successors:
+			// An initial state with a -1 (disk) pointer means that is has *no*
+			// successors. Thus, it can safely be omitted from the path search
+			// below. If the init state is the very state searched for, the
+			// previous for loop will have caught it already.
+			// Adding an init with negative pointer to the queue manifests in
+			// an exception in the while loop below. This is because the
+			// DiskGraph won't be able to return a GraphNode instance.
+			if (ptr != -1) {
+				queue.enqueueLong(state0);
+				queue.enqueueInt(tidx0);
+				queue.enqueueLong(ptr);
+				// Marker the node as an init state in nodePtrTable. This is used
+				// below when the reverse path gets reconstructed as a termination
+				// condition.
+				reversablePtrTable.put(state0, tidx0, MAX_PTR);
+			}
 		}
 
 		// While queue has elements, but not longer! while(true)... can get stuck 

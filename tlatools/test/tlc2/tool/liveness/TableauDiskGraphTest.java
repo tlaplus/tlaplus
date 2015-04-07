@@ -28,20 +28,27 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 
-import junit.framework.TestCase;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import tlc2.util.statistics.BucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 
-public class TableauDiskGraphTest extends TestCase {
+public class TableauDiskGraphTest extends DiskGraphTest {
 
-	private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
 	private static final IBucketStatistics GRAPH_STATS = new BucketStatistics("Test Dummy", 16);
 	private static final int NUMBER_OF_SOLUTIONS = 1;
 	private static final int NUMBER_OF_ACTIONS = 0;
 	private static final BitVector NO_ACTIONS = null;
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.DiskGraphTest#getDiskGraph()
+	 */
+	protected AbstractDiskGraph getDiskGraph() throws IOException {
+		return new TableauDiskGraph(createTempDirectory().getAbsolutePath(), NUMBER_OF_SOLUTIONS, GRAPH_STATS);
+	}
+
 	/* 
 	 * Tests that the path is correctly reconstructed when a node's predecessors
 	 * have an identical fingerprint but different tableau indices.
@@ -64,7 +71,7 @@ public class TableauDiskGraphTest extends TestCase {
 	 *
 	 */
 	public void testGetShortestPath() throws IOException {
-		final TableauDiskGraph dg = new TableauDiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS, GRAPH_STATS);
+		final AbstractDiskGraph dg = getDiskGraph();
 
 		long initState = 1L;
 		int initTableauIdx = 0;
@@ -151,7 +158,7 @@ public class TableauDiskGraphTest extends TestCase {
 	 * (Drawn with http://asciiflow.com/)
 	 */
 	public void testUnifyingNodeInPath() throws IOException {
-		final TableauDiskGraph dg = new TableauDiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS, GRAPH_STATS);
+		final AbstractDiskGraph dg = getDiskGraph();
 
 		long initState = 1L;
 		int initTableauIdx = 0;
@@ -237,7 +244,7 @@ public class TableauDiskGraphTest extends TestCase {
 	 *	                      +---------+                        
 	 */
 	public void testUnifyingNodeShortestPath() throws IOException {
-		final TableauDiskGraph dg = new TableauDiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS, GRAPH_STATS);
+		final AbstractDiskGraph dg = getDiskGraph();
 
 		long initState = 1L;
 		int initTableauIdx = 0;
@@ -306,5 +313,68 @@ public class TableauDiskGraphTest extends TestCase {
 		assertEquals(finalState, path.elementAt(0));
 		assertEquals(thirdState, path.elementAt(1));
 		assertEquals(initState, path.elementAt(2));
+	}
+
+	/*
+	 * +----------+                   
+	 * |          |                   
+	 * | init     |                   
+	 * |          |                   
+	 * |          |                   
+	 * +----------+                   
+	 *                                
+	 * +----------+       +----------+
+	 * |          |       |          |
+	 * | second   +------->  final   |
+	 * | init     |       |          |
+	 * |          |       |          |
+	 * +----------+       +----------+
+	 * 
+	 * The specialty here is that there are *two* init nodes and one them has *no* successors.
+	 * 
+	 * @see https://bugzilla.tlaplus.net/show_bug.cgi?id=293
+	 */
+	public void testPathWithTwoInitNodesWithTableau() throws IOException {
+		final AbstractDiskGraph dg = getDiskGraph();
+
+		long noSuccessorInitState = 1L;
+
+		long regularInitState = 2L;
+		
+		long finalState = 3L;
+
+		// Init
+		dg.addInitNode(noSuccessorInitState, 0);
+		
+		/*
+		 * Intentionally *NOT* adding the init via dg.addNode(init)
+		 */
+		
+		// second init (this one gets added via addNode
+		dg.addInitNode(regularInitState, 0);
+		GraphNode node = new GraphNode(regularInitState, 0);
+		node.addTransition(finalState, 0, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 0);
+		dg.addNode(node);
+		
+		// final
+		node = new GraphNode(finalState, 0);
+		dg.addNode(node);
+		
+		dg.createCache();
+		LongVec path = dg.getPath(finalState, 0);
+		dg.destroyCache();
+		
+		assertEquals(2, path.size());
+		assertEquals(finalState, path.elementAt(0));
+		assertEquals(regularInitState, path.elementAt(1));
+		
+		// Make sure it also returns a path if init is searched
+		dg.createCache();
+		path = dg.getPath(noSuccessorInitState, 0);
+		dg.destroyCache();
+
+		assertEquals(1, path.size());
+		assertEquals(noSuccessorInitState, path.elementAt(0));
 	}
 }

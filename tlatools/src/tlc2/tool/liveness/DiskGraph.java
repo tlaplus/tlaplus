@@ -210,9 +210,20 @@ public class DiskGraph extends AbstractDiskGraph {
 		// Initialize queue with initial states:
 		for (int i = 0; i < numOfInits; i += 2) {
 			final long state0 = this.initNodes.elementAt(i);
-			queue.enqueueLong(state0);
-			queue.enqueueLong(this.nodePtrTbl.get(state0));
-			this.nodePtrTbl.put(state0, MAX_PTR);
+			long ptr = this.nodePtrTbl.get(state0);
+			// Skip initial states without successors:
+			// An initial state with a -1 (disk) pointer means that is has *no*
+			// successors. Thus, it can safely be omitted from the path search
+			// below. If the init state is the very state searched for, the
+			// previous for loop will have caught it already.
+			// Adding an init with negative pointer to the queue manifests in
+			// an exception in the while loop below. This is because the
+			// DiskGraph won't be able to return a GraphNode instance.
+			if (ptr != -1) {
+				queue.enqueueLong(state0);
+				queue.enqueueLong(ptr);
+				this.nodePtrTbl.put(state0, MAX_PTR);
+			}
 		}
 
 		while (queue.hasElements()) {

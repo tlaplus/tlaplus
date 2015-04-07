@@ -26,6 +26,7 @@
 
 package tlc2.tool.liveness;
 
+import java.io.File;
 import java.io.IOException;
 
 import junit.framework.TestCase;
@@ -36,16 +37,33 @@ import tlc2.util.statistics.IBucketStatistics;
 
 public class DiskGraphTest extends TestCase {
 
-	private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
 	private static final IBucketStatistics GRAPH_STATS = new BucketStatistics("Test Dummy", 16);
 	private static final int NUMBER_OF_SOLUTIONS = 1;
 	private static final int NO_TABLEAU = -1;
 	private static final int NUMBER_OF_ACTIONS = 0;
 	private static final BitVector NO_ACTIONS = null;
 	
+	protected AbstractDiskGraph getDiskGraph() throws IOException {
+		// Have to use dedicated folder for each test. Otherwise tests interfere
+		// with each other (e.g. test A reads the disk file of test B)
+		return new DiskGraph(createTempDirectory().getAbsolutePath(), NUMBER_OF_SOLUTIONS, GRAPH_STATS);
+	}
+
+	protected File createTempDirectory() throws IOException {
+		final File temp;
+		temp = File.createTempFile("temp", Long.toString(System.nanoTime()));
+		if (!(temp.delete())) {
+			throw new IOException("Could not delete temp file: " + temp.getAbsolutePath());
+		}
+		if (!(temp.mkdir())) {
+			throw new IOException("Could not create temp directory: " + temp.getAbsolutePath());
+		}
+		return temp;
+	}
+	
 	// No init node makes DiskGraph#getPath never break from the while loop
 	public void testGetPathWithoutInitNoTableau() throws IOException {
-		final DiskGraph dg = new DiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS,  GRAPH_STATS);
+		final AbstractDiskGraph dg = getDiskGraph();
 		dg.addNode(new GraphNode(1L, NO_TABLEAU));
 		dg.createCache();
 		try {
@@ -59,7 +77,7 @@ public class DiskGraphTest extends TestCase {
 	// Create a linear minimal graph (2 nodes) and check if the graph is
 	// returned by getPath afterwards.
 	public void testGetMinimalPathWithoutTableau() throws IOException {
-		final DiskGraph dg = new DiskGraph(TMP_DIR, NUMBER_OF_SOLUTIONS, GRAPH_STATS);
+		final AbstractDiskGraph dg = getDiskGraph();
 
 		final long initFP = 1L;
 		final long successorFP = 2L;
@@ -82,5 +100,68 @@ public class DiskGraphTest extends TestCase {
 
 		assertFalse("Length or path returned is too short", path.size() < 2);
 		assertFalse("Length or path returned is too long", path.size() > 2);
+	}
+	
+	/*
+	 * +----------+                   
+	 * |          |                   
+	 * | init     |                   
+	 * |          |                   
+	 * |          |                   
+	 * +----------+                   
+	 *                                
+	 * +----------+       +----------+
+	 * |          |       |          |
+	 * | second   +------->  final   |
+	 * | init     |       |          |
+	 * |          |       |          |
+	 * +----------+       +----------+
+	 * 
+	 * The specialty here is that there are *two* init nodes and one them has *no* successors.
+	 * 
+	 * @see https://bugzilla.tlaplus.net/show_bug.cgi?id=293
+	 */
+	public void testPathWithTwoInitNodes() throws IOException {
+		final AbstractDiskGraph dg = getDiskGraph();
+
+		long noSuccessorInitState = 1L;
+
+		long regularInitState = 2L;
+		
+		long finalState = 3L;
+
+		// Init
+		dg.addInitNode(noSuccessorInitState, NO_TABLEAU);
+		
+		/*
+		 * Intentionally *NOT* adding the init via dg.addNode(init)
+		 */
+		
+		// second init (this one gets added via addNode
+		dg.addInitNode(regularInitState, NO_TABLEAU);
+		GraphNode node = new GraphNode(regularInitState, NO_TABLEAU);
+		node.addTransition(finalState, NO_TABLEAU, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 0);
+		dg.addNode(node);
+		
+		// final
+		node = new GraphNode(finalState, NO_TABLEAU);
+		dg.addNode(node);
+		
+		dg.createCache();
+		LongVec path = dg.getPath(finalState, NO_TABLEAU);
+		dg.destroyCache();
+		
+		assertEquals(2, path.size());
+		assertEquals(finalState, path.elementAt(0));
+		assertEquals(regularInitState, path.elementAt(1));
+
+		// Make sure it also returns a path if init is searched
+		dg.createCache();
+		path = dg.getPath(noSuccessorInitState, NO_TABLEAU);
+		dg.destroyCache();
+
+		assertEquals(1, path.size());
+		assertEquals(noSuccessorInitState, path.elementAt(0));
 	}
 }
