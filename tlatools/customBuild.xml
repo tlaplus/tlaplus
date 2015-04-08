@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="TLA+ Tools" default="default">
+<project name="TLA+ Tools" default="default" xmlns:jacoco="antlib:org.jacoco.ant">
 
 	<!-- load property file -->
 	<loadproperties srcfile="project.properties" />
@@ -16,6 +16,11 @@
 	<tstamp>
 		<format property="TODAY" pattern="yyyy-MM-dd" locale="en,US" />
 	</tstamp>
+
+	<!-- JaCoCo code coverage -->
+    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+        <classpath path="lib/jacocoant.jar"/>
+    </taskdef>
 
 	<taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
 		<classpath>
@@ -144,30 +149,32 @@
 		</copy>
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
-		<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes" timeout="10000">
-			<classpath refid="project.classpath" />
-			<classpath>
-				<pathelement location="lib/junit-4.8.2.jar" />
-				<pathelement path="${ws.class.dir}" />
-				<pathelement path="${test.class.dir}" />
-			</classpath>
-			<formatter type="xml" />
-
-			<!-- Pass the base path of the tlatools project to unit tests in case they need it to locate TLA+ specs or configs -->
-			<sysproperty key="basedir" value="${basedir}/"/>
-			<batchtest fork="yes" todir="${test.reports}">
-				<fileset dir="${test.dir}">
-					<include name="**/*Test*.java" />
-					<exclude name="**/ModelCheckerTestCase.java" />
-					<exclude name="**/AbstractExampleTestCase.java" />
-					<exclude name="**/TestMPRecorder.java" />
-					<exclude name="**/Abstract*Test.java" />
-					<exclude name="**/TestDriver.java" />
-					<exclude name="**/TestDriver2.java" />
-					<exclude name="**/AllTests.java" />
-				</fileset>
-			</batchtest>
-		</junit>
+		<jacoco:coverage destfile="target/code-coverage.exec">
+			<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes" timeout="10000">
+				<classpath refid="project.classpath" />
+				<classpath>
+					<pathelement location="lib/junit-4.8.2.jar" />
+					<pathelement path="${ws.class.dir}" />
+					<pathelement path="${test.class.dir}" />
+				</classpath>
+				<formatter type="xml" />
+	
+				<!-- Pass the base path of the tlatools project to unit tests in case they need it to locate TLA+ specs or configs -->
+				<sysproperty key="basedir" value="${basedir}/"/>
+				<batchtest fork="yes" todir="${test.reports}">
+					<fileset dir="${test.dir}">
+						<include name="**/*Test*.java" />
+						<exclude name="**/ModelCheckerTestCase.java" />
+						<exclude name="**/AbstractExampleTestCase.java" />
+						<exclude name="**/TestMPRecorder.java" />
+						<exclude name="**/Abstract*Test.java" />
+						<exclude name="**/TestDriver.java" />
+						<exclude name="**/TestDriver2.java" />
+						<exclude name="**/AllTests.java" />
+					</fileset>
+				</batchtest>
+			</junit>
+		</jacoco:coverage>
 
 		<!-- remove copied class.dir -->
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
