@@ -150,7 +150,7 @@
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
 		<jacoco:coverage destfile="target/code-coverage.exec">
-			<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes" timeout="10000">
+			<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes">
 				<classpath refid="project.classpath" />
 				<classpath>
 					<pathelement location="lib/junit-4.8.2.jar" />
