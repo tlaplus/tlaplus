@@ -307,7 +307,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 				}
 				if (nextState == state && nextTidx == tidx) {
 					// Stop BFS (see MemIntQUEUE above), we found a path to state.
-					return reconstructReversePath(reversablePtrTable, curState, curTidx, nextState);
+					return reconstructReversePath(reversablePtrTable, curState, curTidx, nextState, nextTidx);
 				}
 
 				// Lookup the successor nodes of nextState (curState -> nextState ->
@@ -336,7 +336,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	}
 
 	private LongVec reconstructReversePath(final TableauNodePtrTable reversablePtrTable, final long startState,
-			final int startTidx, final long finalState) {
+			final int startTidx, final long finalState, final int finalTidx) {
 		// Add the target/final state to the result. Reverse path construction
 		// does not start at the final state that the getPath(..) is searching
 		// for, but at its immediate predecessor alias startState. 
@@ -346,6 +346,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 		// Traverse the graph backwards from currentState using
 		// the NodePtrTable. The NodePtrTable contains the back
 		// pointers from a successor to its predecessor.
+		int lastTidx = finalTidx;
 		long currentState = startState;
 		int currentTidx = startTidx;
 		int currentLoc = reversablePtrTable.getNodesLoc(currentState);
@@ -353,12 +354,16 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 		while (true) {
 			// res never empty due to addElement call with final
 			// state.
-			if (res.lastElement() == currentState) {
+			// The tableau index has to be taken into account if the predecessor
+			// of res.lastElement() happens to be a state with an identical
+			// fingerprint and only differ in the tableau idx.
+			if (res.lastElement() == currentState && lastTidx == currentTidx) {
 				// The new state is the last state in res, we are about
 				// to follow a cycle, thus exit.
 				throw new RuntimeException("Self loop in trace path reconstruction");
 			}
 			res.addElement(currentState);
+			lastTidx = currentTidx;
 			long predecessorLocation = -1;
 			int predecessorTidx = -1;
 			for (int j = 2; j < nodes.length; j += reversablePtrTable.getElemLength()) {

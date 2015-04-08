@@ -624,6 +624,10 @@ public class LiveWorker extends IdThread {
 		//TODO Check if path.size has elements
 		for (int i = plen - 2; i >= 0; i--) {
 			long curFP = prefix.elementAt(i);
+			// The prefix might contain duplicates if the path happens to walk
+			// along two distinct states which differ in the tableau idx only
+			// (same fingerprint). From the counterexample perspective, this is
+			// irrelevant.
 			if (curFP != fp) {
 				sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
 				if (sinfo == null) {

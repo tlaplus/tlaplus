@@ -410,4 +410,34 @@ public class TableauDiskGraphTest extends DiskGraphTest {
 		}
 		fail("Returned path to non-existing node");
 	}
+	
+	/*
+	 * Tests a path where both states have an identical fingerprint and only
+	 * differ in the tableau idx.
+	 */
+	public void testGetPathWithTwoNodesWithSameFingerprint() throws IOException {
+		final AbstractDiskGraph dg = getDiskGraph();
+
+		final long fingerprint = 1L;
+
+		// first
+		dg.addInitNode(fingerprint, 0);
+		GraphNode node = new GraphNode(fingerprint, 0);
+		node.addTransition(fingerprint, 1, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 0);
+		dg.addNode(node);
+		
+		// second
+		node = new GraphNode(fingerprint, 1);
+		dg.addNode(node);
+
+		
+		dg.createCache();
+		final LongVec path = dg.getPath(fingerprint, 1);
+		dg.destroyCache();
+
+		assertEquals(2, path.size());
+		assertEquals(fingerprint, path.elementAt(0));
+		assertEquals(fingerprint, path.elementAt(1));
+	}
 }
