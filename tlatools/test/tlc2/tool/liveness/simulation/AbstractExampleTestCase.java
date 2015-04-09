@@ -37,13 +37,13 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 	public AbstractExampleTestCase(final String cfg) {
 		// Checks the depth parameter too. Depth <= 100 will cause simluation to
 		// go on forever.
-		super(cfg, "simulation", new String[] {"-simulate", "-depth", "101"});
+		super(cfg, "simulation", new String[] {"-simulate", "-depth", "11"});
 	}
 	
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_STATS_SIMU, "102"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_STATS_SIMU, "12"));
 		
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
@@ -53,7 +53,7 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
 		
-		assertEquals(100, records.size());
+		assertEquals(10, records.size());
 
 		int i = 0; // State's position in records
 		Object[] objs = (Object[]) records.get(i++);
@@ -61,14 +61,14 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 		assertEquals("x = 0", stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
 		assertEquals(i, objs[1]);
 		
-		objs = (Object[]) records.get(99);
+		objs = (Object[]) records.get(9);
 		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("x = 99", stateInfo.toString().trim());
+		assertEquals("x = 9", stateInfo.toString().trim());
 		
 		// Assert the error trace contains a stuttering step at position 5
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
 		records = recorder.getRecords(EC.TLC_STATE_PRINT3);
 		objs = (Object[]) records.get(0);
-		assertEquals(101, objs[1]);
+		assertEquals(11, objs[1]);
 	}
 }
