@@ -28,6 +28,8 @@ package tlc2.tool.liveness;
 
 public class TableauNodePtrTable {
 
+	public static final long UNDONE = 0xFFFFFFFE00000000L;
+	
 	private int count;
 	private int length;
 	private int thresh;
@@ -194,6 +196,7 @@ public class TableauNodePtrTable {
 		if (node.length == 2) {
 			return true;
 		}
+		// see NOT_DONE constant".
 		return node[3] != -2;
 	}
 
@@ -211,6 +214,7 @@ public class TableauNodePtrTable {
 			}
 			if (getKey(node) == k) {
 				if (node.length > 2 && node[3] == -2) {
+					// Set this to something other than -2 (see NOT_DONE).
 					node[3] = -3;
 				}
 				return loc;
@@ -229,24 +233,6 @@ public class TableauNodePtrTable {
 			}
 			loc = (loc + 1) % this.length;
 		}
-	}
-
-	public final void putNodesByLoc(int[] node, int loc) {
-		this.nodes[loc] = node;
-	}
-
-	public final boolean isGood() {
-		for (int i = 0; i < this.nodes.length; i++) {
-			int[] node = this.nodes[i];
-			if (node != null) {
-				for (int j = 3; j < node.length; j += getElemLength()) {
-					if (node[j] < 0) {
-						return false;
-					}
-				}
-			}
-		}
-		return true;
 	}
 	
 	public final void resetElems() {
@@ -413,7 +399,7 @@ public class TableauNodePtrTable {
   					final long fp = ((long) node[0] << 32) | ((long) node[1] & 0xFFFFFFFFL);
   					buf.append("fp (key): " + fp);
   					buf.append(" (idx: " + i + ")");
-  					buf.append(" isDone: " + (node.length == 2 || node.length > 2 && node[3] == -2));
+  					buf.append(" isDone: " + (node.length == 2 || (node.length > 2 && node[3] != -2)));
   					buf.append("\n");
   					
   					// A node maintains n records. Each record logically contains information about a node's successor.

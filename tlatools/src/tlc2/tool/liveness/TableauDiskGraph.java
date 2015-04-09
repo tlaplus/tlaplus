@@ -45,14 +45,6 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 		this.nodePtrTbl = new TableauNodePtrTable(255);
 	}
 	
-	public final boolean isDone(long fp) {
-		return this.nodePtrTbl.isDone(fp);
-	}
-
-	public final int setDone(long fp) {
-		return this.nodePtrTbl.setDone(fp);
-	}
-
 	public final long getPtr(long fp, int tidx) {
 		return this.nodePtrTbl.get(fp, tidx);
 	}
@@ -62,14 +54,60 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	}
 
 	/**
-	 * This method records that the node, whose fingerprint is fp, is reachable.
-	 * The node itself is not added into the graph.
+	 * @param fp The fingerprint which should be checked for its done state. 
+	 * @return true iff the node is done, false otherwise.
+	 *  
+	 * @see TableauDiskGraph#setDone(long)
+	 * @see TableauDiskGraph#recordNode(long, int)
 	 */
-	public final void recordNode(long fp, int tidx) {
-		this.nodePtrTbl.put(fp, tidx, 0xFFFFFFFE00000000L);
+	public final boolean isDone(final long fp) {
+		return this.nodePtrTbl.isDone(fp);
+	}
+	
+	/**
+	 * Mark the fingerprint fp as being done. A fingerprint is undone for as
+	 * long as it has been recorded with recordNode().
+	 * <p>
+	 * A node is logically undone when it's an initial state and added via
+	 * {@link LiveCheck#addInitState(tlc2.tool.TLCState, long)} but not yet
+	 * added via
+	 * {@link LiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.tool.StateVec, LongVec)}
+	 * . A second case is when a successor node in the behavior graph is added
+	 * via
+	 * {@link LiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.tool.StateVec, LongVec)}
+	 * . However, in this case it can happen that the successor in fact has
+	 * already been done. Then adding the successor node requires computing the
+	 * children (see private TableauLiveChecker#addNextNode(..)).
+	 * 
+	 * @param fp
+	 *            The fingerprint to mark as done
+	 * @return The location at which the corresponding node can be looked up
+	 *         with {@link TableauDiskGraph#getNodesByLoc(int)}.
+	 * 
+	 * @see TableauDiskGraph#recordNode(long, int)
+	 * @see TableauDiskGraph#isDone(long)
+	 * @see TableauDiskGraph#getNodesByLoc(int)
+	 */
+	public final int setDone(final long fp) {
+		return this.nodePtrTbl.setDone(fp);
+	}
+	
+	/**
+	 * This method records that the node, whose fingerprint is fp, is reachable.
+	 * The node itself is not added into the graph (see
+	 * {@link LiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.tool.StateVec, LongVec)}.
+	 * 
+	 * @see TableauDiskGraph#isDone(long)
+	 * @see TableauDiskGraph#setDone(long)
+	 */
+	public final void recordNode(final long fp, final int tidx) {
+		this.nodePtrTbl.put(fp, tidx, TableauNodePtrTable.UNDONE);
 	}
 
-	public final int[] getNodesByLoc(int loc) {
+	/**
+	 * @see TableauDiskGraph#setDone(long) 
+	 */
+	public final int[] getNodesByLoc(final int loc) {
 		return this.nodePtrTbl.getNodesByLoc(loc);
 	}
 

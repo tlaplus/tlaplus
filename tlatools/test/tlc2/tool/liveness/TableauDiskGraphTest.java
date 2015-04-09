@@ -412,6 +412,27 @@ public class TableauDiskGraphTest extends DiskGraphTest {
 	}
 	
 	/*
+	 * Test how an initial node transitions through the done state
+	 */
+	public void testNodeSetDone() throws IOException {
+		final TableauDiskGraph dg = (TableauDiskGraph) getDiskGraph();
+		final long fingerprint = 1L;
+
+		// Adding as init leaves the node in the undone state
+		dg.addInitNode(fingerprint, 0);
+		assertFalse(dg.isDone(fingerprint));
+
+		// Adding it with addNextState changes the done state to being done.
+		GraphNode node = new GraphNode(fingerprint, 0);
+		node.addTransition(fingerprint, 1, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 0);
+		dg.addNode(node);
+
+		// It is done now
+		assertTrue(dg.isDone(fingerprint));
+	}
+	
+	/*
 	 * Tests a path where both states have an identical fingerprint and only
 	 * differ in the tableau idx.
 	 */
