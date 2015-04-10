@@ -228,6 +228,14 @@ public abstract class AbstractDiskGraph {
 	}
 
 	/**
+	 * @return The amount of distinguishable GraphNodes in this graph. Note that
+	 *         the size can be incorrect if an initial state has only been added
+	 *         via {@link AbstractDiskGraph#addInitNode(long, int)} only but not
+	 *         via {@link AbstractDiskGraph#addNode(GraphNode)}.
+	 */
+	public abstract long size();
+	
+	/**
 	 * Only useful for debugging.
 	 * 
 	 * No-OP when not wrapped inside {@link DiskGraph#createCache()} and

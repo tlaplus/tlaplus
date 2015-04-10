@@ -162,6 +162,13 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	 }
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#size()
+	 */
+	public long size() {
+		return this.nodePtrTbl.size();
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.DiskGraph#makeNodePtrTbl(long)
 	 */
 	protected void makeNodePtrTbl(final long ptr) throws IOException  {

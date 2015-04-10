@@ -164,4 +164,14 @@ public class DiskGraphTest extends TestCase {
 		assertEquals(1, path.size());
 		assertEquals(noSuccessorInitState, path.elementAt(0));
 	}
+	
+	/*
+	 * Make sure the same logical node isn't counted twice.
+	 */
+	public void testAddSameGraphNodeTwice() throws IOException {
+		final AbstractDiskGraph dg = getDiskGraph();
+		dg.addNode(new GraphNode(1L, 1));
+		dg.addNode(new GraphNode(1L, 1));
+		assertEquals(1, dg.size());
+	}
 }

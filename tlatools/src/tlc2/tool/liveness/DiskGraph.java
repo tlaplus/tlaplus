@@ -101,6 +101,13 @@ public class DiskGraph extends AbstractDiskGraph {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#size()
+	 */
+	public long size() {
+		return this.nodePtrTbl.size();
+	}
+
+	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	public final String toString() {
