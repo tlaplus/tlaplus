@@ -174,4 +174,35 @@ public class DiskGraphTest extends TestCase {
 		dg.addNode(new GraphNode(1L, 1));
 		assertEquals(1, dg.size());
 	}
+	
+	/*
+	 * Test that adding an GraphNode twice (same fingerprint & tableau idx) but
+	 * with different successors later yields the union of the successors.
+	 */
+//	public void testAddSameGraphNodeTwiceCorrectSuccessors() throws IOException {
+//		final AbstractDiskGraph dg = getDiskGraph();
+//
+//		// Add a graphnode to DiskGraph with a single transition
+//		final GraphNode graphNode = new GraphNode(1, NO_TABLEAU);
+//		graphNode.addTransition(2, NO_TABLEAU, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+//				NUMBER_OF_ACTIONS, 0);
+//		dg.addNode(graphNode);
+//		
+//		// Update the same graph node with another transition
+//		final GraphNode graphNodeSecondInstance = new GraphNode(1, NO_TABLEAU);
+//		graphNodeSecondInstance.addTransition(3, NO_TABLEAU, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+//				NUMBER_OF_ACTIONS, 0);
+//		dg.addNode(graphNodeSecondInstance);
+//		
+//		assertEquals(1, dg.size());
+//		
+//		dg.createCache();
+//		long ptr = dg.getLink(1, NO_TABLEAU);
+//		final GraphNode node = dg.getNode(1, NO_TABLEAU, ptr);
+//		assertEquals(3, node.getStateFP(0));
+//		// This fails because the second
+//		// GraphNode instance overwrote the
+//		// first one.
+//		assertEquals(2, node.succSize());
+//	}
 }

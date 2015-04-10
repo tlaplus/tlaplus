@@ -123,6 +123,22 @@ public abstract class AbstractDiskGraph {
 	/**
 	 * Add the given graph node into this graph. Return the location of this
 	 * node in the node file.
+	 * <p>
+	 * Technically adding the same (fingerprint and tableau idx) node *again*
+	 * creates a second node in the graph, overwrites the record in the
+	 * {@link NodePtrTable}, and writes a second time to the
+	 * {@link BufferedRandomAccessFile}s. The reason why it simply writes a new
+	 * entry regardless of the node's existence is for performance reasons and
+	 * because in regular model checking (not simulation) the set of successors
+	 * is identical no matter how often the node is re-written. A file lookup
+	 * and a potentially expensive file update (re-align all records due to the
+	 * new nnodes count) is thus avoided. The number of distinguishable
+	 * {@link GraphNode}s in the graph is therefore stored in the internal
+	 * {@link NodePtrTable}. The {@link BufferedRandomAccessFile} length does
+	 * not allow to draw a conclusion about the graph's node count.
+	 * 
+	 * @see commented tlc2.tool.liveness.DiskGraphTest#
+	 *      testAddSameGraphNodeTwiceCorrectSuccessors
 	 */
 	public final long addNode(GraphNode node) throws IOException {
 		outDegreeGraphStats.addSample(node.succSize());

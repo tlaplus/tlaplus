@@ -392,10 +392,14 @@ public class LiveCheck implements ILiveCheck {
 			// with N=11 and 32 threads were ~75% compared to ~55% thread concurrency.
 			synchronized (oos) {
 
-				// if there is tableau ...
+				// Mark the current fingerprint as done. Internally it creates
+				// or updates a record in the TableauNodePtrTable.
 				final int loc0 = dgraph.setDone(fp0);
 				final int[] nodes = dgraph.getNodesByLoc(loc0);
 				if (nodes == null) {
+					// There seems to be no case where nodes can end up as null.
+					// setDone(fp0) creates an int[] in dgraph and
+					// getNodesByLoc(loc0) returns it.
 					return;
 				}
 				

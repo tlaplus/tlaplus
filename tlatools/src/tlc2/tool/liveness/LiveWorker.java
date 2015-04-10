@@ -403,7 +403,7 @@ public class LiveWorker extends IdThread {
 	 * state to the "bad" cycle in the state graph. The prefix path and the
 	 * "bad" cycle together forms a counter-example.
 	 */
-	private void printTrace(long state, int tidx, TableauNodePtrTable nodeTbl) throws IOException {
+	private void printTrace(final long state, final int tidx, final TableauNodePtrTable nodeTbl) throws IOException {
 
 		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
@@ -550,7 +550,7 @@ public class LiveWorker extends IdThread {
 		// 1. curNode has not been pushed on cycleStack.
 		// 2. nodeTbl is trashed after this operation.
 		nodeTbl.resetElems();
-		LongVec postfix = new LongVec(16);
+		final LongVec postfix = new LongVec(16);
 		long startState = curNode.stateFP;
 
 		if (startState != state) {
@@ -650,7 +650,7 @@ public class LiveWorker extends IdThread {
 		long cycleFP = fp;
 		while (cycleStack.size() > 0) {
 			postfix.addElement(cycleStack.popLong());
-			cycleStack.popInt();
+			cycleStack.popInt(); // ignore tableau idx
 		}
 
 		// Assert.assert(fps.length > 0);
@@ -677,10 +677,10 @@ public class LiveWorker extends IdThread {
 			if (TLCGlobals.tool) {
 				MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + cyclePos }, (TLCState) null, -1);
 			} else {
+				// Contrary to TLCGlobals.tool mode, we print the extra state
+				// which is logically identical to the state TLC_BACK_TO_STATE
+				// points to.
 				StatePrinter.printState(sinfo, null, (++stateNum));
-				// SZ Jul 10, 2009: replaced with state printer
-				// ToolIO.err.println("STATE " + (++stateNum) + ": " +
-				// sinfo.info);
 				MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
 			}
 		}
