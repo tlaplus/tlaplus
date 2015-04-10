@@ -421,7 +421,9 @@ public class TableauNodePtrTable {
   							buf.append(" pred: " + (elem - offset));
   						}
   						final int predTidx = table.getElemTidx(node, j);
-  						buf.append(" predtidx: " + predTidx);
+  						if (predTidx != -1) {
+  							buf.append(" predtidx: " + predTidx);
+  						}
   						buf.append(", isSeen: " + isSeen(node, j));
   						buf.append("\n");
   					}
