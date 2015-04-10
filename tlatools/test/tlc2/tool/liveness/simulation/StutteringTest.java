@@ -26,52 +26,34 @@
 
 package tlc2.tool.liveness.simulation;
 
-import java.util.List;
-
 import tlc2.output.EC;
-import tlc2.tool.TLCStateInfo;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
+public class StutteringTest extends ModelCheckerTestCase {
 
-	public AbstractExampleTestCase(final String cfg) {
-		// Checks the depth parameter too. Depth <= 100 will cause simluation to
-		// go on forever.
-		super(cfg, "simulation", new String[] {"-simulate", "-depth", "11"});
+	public StutteringTest() {
+		super("MC", "CodePlexBug08", new String[] { "-simulate" });
 	}
-	
+
 	public void testSpec() {
-		// ModelChecker has finished and generated the expected amount of states
+		// Simulation has finished and generated states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_STATS_SIMU, "12"));
-		
+		assertTrue(recorder.recorded(EC.TLC_STATS_SIMU));
+
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-		
-		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		List<Object> trace = recorder.getRecords(EC.TLC_STATE_PRINT2);
-		
-		assertEquals(10, trace.size());
 
-		int i = 0; // State's position in records
-		Object[] objs = (Object[]) trace.get(i++);
-		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("x = 0", stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
-		assertEquals(i, objs[1]);
-		
-		objs = (Object[]) trace.get(9);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("x = 9", stateInfo.toString().trim());
-		
-		// Must not stutter
-		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT3));
-		
-		// Must show back loop to init state
+		// Assert an error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		trace = recorder.getRecords(EC.TLC_STATE_PRINT2);
-		objs = (Object[]) trace.get(0);
-		assertEquals(1, objs[1]);
+
+		// The actual trace differs at each simulation due to its random
+		// selection of the next state.
+
+		// Assert the error trace contains a stuttering step at position 5
+		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
+
+		// Assert the error trace does NOT show back to state X
+		assertFalse("Trace shows \"Back to state...\"", recorder.recorded(EC.TLC_BACK_TO_STATE));
 	}
 }
