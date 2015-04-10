@@ -499,7 +499,7 @@ public class LiveCheck1 implements ILiveCheck {
 	}
 
 	/* Print out the error state trace. */
-	void printErrorTrace(BEGraphNode node) throws IOException {
+	void printErrorTrace(final BEGraphNode node) throws IOException {
 		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
 		// First, find a "bad" cycle from the "bad" scc.
@@ -669,8 +669,11 @@ public class LiveCheck1 implements ILiveCheck {
 				lastState = sinfo.state;
 			}
 		}
-		StatePrinter.printStutteringState(++stateNum);
-		MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
+		if (node.stateFP == lastState.fingerPrint()) {
+			StatePrinter.printStutteringState(++stateNum);
+		} else {
+			MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
+		}
 	}
 
 	/**
