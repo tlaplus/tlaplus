@@ -239,6 +239,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 			sb.append("digraph DiskGraph {\n");
 			sb.append("nodesep = 0.7\n");
 			sb.append("rankdir=LR;\n"); // Left to right rather than top to bottom
+			//TODO Reading the file front to end potentially yields node duplicates in the output. Better to create a (temporary) nodeptrtable and traverse it instead.
 			long nodePtr = this.nodeRAF.getFilePointer();
 			long nodePtrPtr = this.nodePtrRAF.getFilePointer();
 			long len = this.nodePtrRAF.length();
