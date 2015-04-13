@@ -621,7 +621,6 @@ Console Facory
             class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandlerDelegate"
             commandId="toolbox.tool.tlc.commands.model.clone.delegate">
          <enabledWhen>
-            <or>
                <and>
                   <count
                         value="1">
@@ -635,18 +634,8 @@ Console Facory
                               value="org.eclipse.debug.core.ILaunchConfiguration">
                         </instanceof>
                      </iterate>
-                  </with></and>
-               <with
-                     variable="activeMenu">
-                  <iterate>
-                     <not>
-                        <equals
-                              value="toolbox.explorer.popup">
-                        </equals>
-                     </not>
-                  </iterate>
-               </with>
-            </or>
+                  </with>
+               </and>
          </enabledWhen>
          <!-- enabledWhen>
             <count
