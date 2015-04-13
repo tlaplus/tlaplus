@@ -23,7 +23,6 @@ import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.OutOfBuildSpecModul
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
 import org.lamport.tla.toolbox.ui.contribution.SizeControlContribution;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -48,30 +47,7 @@ public class Activator extends AbstractTLCActivator
     private static WorkspaceSpecManager specManager;
     private static final CountDownLatch latch = new CountDownLatch(1);
     private static ParserDependencyStorage parserDependencyStorage;
-    private ParseStatusContributionItem parseStatusContributionItem = null;
     private SizeControlContribution sizeControlContribution = null;
-    
-    private final Runnable parseStatusUpdateRunable = new Runnable() {
-
-        public void run()
-        {
-            if (parseStatusContributionItem != null)
-            {
-                parseStatusContributionItem.updateStatus();
-            }
-        }
-    };
-    
-    private final Runnable sizeUpdateRunnable = new Runnable() {
-
-        public void run()
-        {
-            if (sizeControlContribution != null)
-            {
-                sizeControlContribution.updateSize();
-            }
-        }
-    };
 
     /**
      * The constructor
@@ -307,8 +283,8 @@ public class Activator extends AbstractTLCActivator
                                 // TO-DO: If this is the currently opened spec, change display of
                                 // that spec's size.  
                                 Spec curSpec = ToolboxHandle.getCurrentSpec();
-                                if ((curSpec != null) && curSpec.getProject().equals(resource)){
-                                    UIHelper.runUIAsync(sizeUpdateRunnable);
+                                if (sizeControlContribution != null && (curSpec != null) && curSpec.getProject().equals(resource)){
+                                    sizeControlContribution.updateSize();
                                 }
                             }
 
@@ -398,23 +374,6 @@ public class Activator extends AbstractTLCActivator
         return parserDependencyStorage;
     }
 
-    /**
-     * This method is called by the ParseContributionItem during initialization
-     */
-    public void setParseStatusContribution(ParseStatusContributionItem parseStatusContributionItem)
-    {
-        this.parseStatusContributionItem = parseStatusContributionItem;
-    }
-
-    /**
-     * Retrieves the runnable to update the Spec Parse Status Widget
-     * @return
-     */
-    public final Runnable getParseStatusUpdateRunable()
-    {
-        return parseStatusUpdateRunable;
-    }
-
     public static boolean isSpecManagerInstantiated()
     {
         return specManager != null;
@@ -423,6 +382,5 @@ public class Activator extends AbstractTLCActivator
     public void setSizeControlContribution(SizeControlContribution sizeControlContribution)
     {
         this.sizeControlContribution = sizeControlContribution; 
-        
     }
 }
