@@ -12,6 +12,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.SpecEvent;
+import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -35,7 +37,18 @@ public class ParseStatusContributionItem extends WorkbenchWindowControlContribut
     public ParseStatusContributionItem()
     {
         super("specParseStatusState");
-        Activator.getDefault().setParseStatusContribution(this);
+        
+        // Updates the Parse status widget on any spec operations
+        Activator.getSpecManager().addSpecLifecycleParticipant(new SpecLifecycleParticipant() {
+			
+			/* (non-Javadoc)
+			 * @see org.lamport.tla.toolbox.tool.SpecLifecycleParticipant#eventOccured(org.lamport.tla.toolbox.tool.SpecEvent)
+			 */
+			public boolean eventOccured(SpecEvent event) {
+				ParseStatusContributionItem.this.updateStatus();
+				return true;
+			}
+		});
     }
 
     protected Control createControl(Composite parent)
@@ -117,3 +130,4 @@ public class ParseStatusContributionItem extends WorkbenchWindowControlContribut
     }
 
 }
+
