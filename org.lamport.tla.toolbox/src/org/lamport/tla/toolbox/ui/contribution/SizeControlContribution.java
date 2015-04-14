@@ -3,6 +3,15 @@
  */
 package org.lamport.tla.toolbox.ui.contribution;
 
+import java.util.Iterator;
+import java.util.List;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -15,7 +24,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.ToolboxDirectoryVisitor;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
@@ -25,7 +37,7 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  * @author lamport
  *
  */
-public class SizeControlContribution extends WorkbenchWindowControlContribution
+public class SizeControlContribution extends WorkbenchWindowControlContribution implements IResourceChangeListener
 {
     // the element
     private Composite composite;
@@ -41,8 +53,9 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution
         // The corresponding one for ParseStatusContributionItem
         // does not appear elsewhere in the code.
         super("specDirectorySize");
-        Activator.getDefault().setSizeControlContribution(this);
-
+        
+		// Register a listener to find any changed .toobox directories of specs.
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
     }
 
     /* (non-Javadoc)
@@ -128,5 +141,49 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution
 			}
 		};
 		j.schedule();
+	}
+
+	public void resourceChanged(final IResourceChangeEvent event) {
+		UIHelper.runUIAsync(new Runnable() {
+			public void run() {
+				final IResourceDelta delta = event.getDelta();
+				if (delta != null) {
+					try {
+						// We cannot get the spec manager if it has not been
+						// instantiated
+						// because this would trigger a resource change event,
+						// and this code
+						// is being called within a resourceChanged method. Such
+						// an
+						// infinite loop is not allowed.
+						if (Activator.isSpecManagerInstantiated()) {
+							// delta.accept calls the visit method of the
+							// visitor
+							// on the delta.
+							final ToolboxDirectoryVisitor toolboxDirectoryFinder = new ToolboxDirectoryVisitor();
+							delta.accept(toolboxDirectoryFinder);
+							List<IProject> directories = toolboxDirectoryFinder.getDirectories();
+							// Set resource to the IResource representing a
+							// project for a spec. This resource is embodied in
+							// the file system as the spec's .toolbox director.
+							for (Iterator<IProject> it = directories.iterator(); it.hasNext();) {
+								IProject resource = it.next();
+								ResourceHelper.setToolboxDirSize(resource);
+
+								// TO-DO: If this is the currently opened spec,
+								// change display of
+								// that spec's size.
+								Spec curSpec = ToolboxHandle.getCurrentSpec();
+								if ((curSpec != null) && curSpec.getProject().equals(resource)) {
+									SizeControlContribution.this.updateSize();
+								}
+							}
+						}
+					} catch (CoreException e) {
+						Activator.getDefault().logError("Error during post save status update", e);
+					}
+				}
+			}
+		});
 	}
 }

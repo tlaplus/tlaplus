@@ -9,13 +9,14 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.dnd.DropTargetListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IPluginContribution;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.ide.EditorAreaDropAdapter;
+import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
+import org.lamport.tla.toolbox.ui.view.ProblemView;
 
 /**
  * Configuration of the main window
@@ -81,7 +82,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 				}
 			}
 		}
-
+		
+		// At this point in time we can be certain that the UI is fully
+		// instantiated (views, editors, menus...). Thus, register
+		// listeners that connect the UI to the workspace resources.
+		ProblemView.ResourceListener.init();
+		ToolboxExplorer.ResourceListener.init();
+		
 		super.postWindowOpen();
 	}
 	

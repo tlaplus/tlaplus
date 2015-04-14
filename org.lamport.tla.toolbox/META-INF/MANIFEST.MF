@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.ui.editors,
  org.eclipse.jface.text,
- org.eclipse.ui.navigator;bundle-version="3.3.101",
+ org.eclipse.ui.navigator;bundle-version="3.3.101";visibility:=reexport,
  org.eclipse.core.expressions;bundle-version="3.4.100",
  org.lamport.tlatools;bundle-version="1.0.0";visibility:=reexport
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
@@ -36,6 +36,7 @@ Export-Package: org.lamport.tla.toolbox,
    tla2sany.modanalyzer",
  org.lamport.tla.toolbox.ui.dialog,
  org.lamport.tla.toolbox.ui.handler,
+ org.lamport.tla.toolbox.ui.navigator,
  org.lamport.tla.toolbox.ui.preference,
  org.lamport.tla.toolbox.ui.provider;
   uses:="org.lamport.tla.toolbox.spec,
