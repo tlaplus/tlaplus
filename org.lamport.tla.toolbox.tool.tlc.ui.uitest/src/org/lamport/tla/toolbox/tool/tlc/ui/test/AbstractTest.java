@@ -2,14 +2,16 @@ package org.lamport.tla.toolbox.tool.tlc.ui.test;
 
 import java.io.File;
 
-import junit.framework.Assert;
-
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory;
 import org.eclipse.swtbot.swt.finder.matchers.WithText;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.WaitForObjectCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
+import org.hamcrest.Matcher;
+import org.junit.Assert;
 import org.junit.Before;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
 
@@ -44,6 +46,12 @@ public abstract class AbstractTest {
 	@Before
 	public void setUp() throws Exception {
 		bot = new SWTWorkbenchBot();
+
+		// Wait for the Toolbox UI to be fully started.
+		final Matcher<MenuItem> withMnemonic = WidgetMatcherFactory.withMnemonic("File");
+		final Matcher<MenuItem> matcher = WidgetMatcherFactory.allOf(WidgetMatcherFactory.widgetOfType(MenuItem.class),
+				withMnemonic);
+		bot.waitUntil(Conditions.waitForMenu(bot.activeShell(), matcher), 30000);
 	}
 
 	/**
