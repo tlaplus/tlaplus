@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.test;
 
+import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withText;
+
 import java.io.File;
 
 import org.eclipse.swt.widgets.MenuItem;
@@ -47,6 +49,10 @@ public abstract class AbstractTest {
 	public void setUp() throws Exception {
 		bot = new SWTWorkbenchBot();
 
+		// Wait for the Toolbox shell to be available
+		final Matcher<Shell> withText = withText("TLA+ Toolbox");
+		bot.waitUntil(Conditions.waitForShell(withText), 30000);
+		
 		// Wait for the Toolbox UI to be fully started.
 		final Matcher<MenuItem> withMnemonic = WidgetMatcherFactory.withMnemonic("File");
 		final Matcher<MenuItem> matcher = WidgetMatcherFactory.allOf(WidgetMatcherFactory.widgetOfType(MenuItem.class),
