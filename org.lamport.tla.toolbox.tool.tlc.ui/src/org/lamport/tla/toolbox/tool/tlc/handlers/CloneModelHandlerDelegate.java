@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -13,7 +14,6 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -106,29 +106,20 @@ public class CloneModelHandlerDelegate extends AbstractHandler implements IHandl
                 return null;
             }
 
-            final IEditorPart editor = ModelHelper.getEditorWithModelOpened(model);
-            boolean wasOpened = (editor != null);
-
             // construct real name
             String newModelName = specRootModule.getProject().getName() + "___" + modelName;
 
-            HashMap parameters = null;
-
-            // clone the model
-            parameters = new HashMap();
+            // Clone the model
+            Map<String, String> parameters = null;
+            parameters = new HashMap<String, String>();
             parameters.put(CloneModelHandler.PARAM_MODEL_NAME, model.getName());
             parameters.put(CloneModelHandler.PARAM_MODELCOPY_NAME, newModelName);
             UIHelper.runCommand(CloneModelHandler.COMMAND_ID, parameters);
 
-            // Changed by LL on 14 Apr 2010 to open the cloned spec regardless
-            // of whether it is open
-            // original model was open
-            // if (wasOpened)
-            // {
-            parameters = new HashMap();
+            // Open the previously created model
+            parameters = new HashMap<String, String>();
             parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelName);
             UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
-            // }
         }
 
         return null;

@@ -33,6 +33,10 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class CloneModelContributionItem extends CompoundContributionItem
 {
+    /**
+     * Contrary to CloneModelHandlerDelegate.COMMAND_ID, no enabledWhen expression plugin.xml
+     */
+    public static final String COMMAND_ID_ALWAYS_ENABLED = CloneModelHandlerDelegate.COMMAND_ID + ".always.enabled";
 
     private ImageDescriptor modelIcon = TLCUIActivator.getImageDescriptor("icons/full/choice_sc_obj.gif");
 
@@ -86,11 +90,11 @@ public class CloneModelContributionItem extends CompoundContributionItem
                 // create the contribution item
                 CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper
                         .getActiveWindow(), "toolbox.command.model.clone." + modelName,
-                        CloneModelHandlerDelegate.COMMAND_ID, parameters, modelIcon, null, null, modelNameUser, null,
+                        COMMAND_ID_ALWAYS_ENABLED, parameters, modelIcon, null, null, modelNameUser, null,
                         "Clones " + modelNameUser, CommandContributionItem.STYLE_PUSH, null, true);
 
                 // add contribution item to the list
-                modelContributions.add(new CloneCommandContributionItem(param));
+                modelContributions.add(new CommandContributionItem(param));
             }
 
         } catch (CoreException e)
@@ -99,45 +103,4 @@ public class CloneModelContributionItem extends CompoundContributionItem
         }
         return (IContributionItem[]) modelContributions.toArray(new IContributionItem[modelContributions.size()]);
     }
-
-    /*
-	 * CloneCommandContributionItem has been added to replace a Eclipse
-	 * foundation "enabledWhen" core expression to programmatically handle the
-	 * enablement and visibility of CommandContributionItems.
-	 * 
-	 * The problem with the core expression is, that a change in behavior
-	 * introduced with 4.x causes the "Clone Model" submenu entries to disappear
-	 * from the main menu. The reason is, that open and closing the Toolbox spec
-	 * explorer context menu changes the "activeMenu" evaluated by the
-	 * expression framework from [] to "toolbox.explorer.popup" to nothing
-	 * (IEvaluationContext.UNDEFINED_VARIABLE). Once it is nothing, the
-	 * WithExpression determining if the CommandContributionItem is visible
-	 * always evaluates to false no matter what.
-	 * 
-	 * Because the CommandContributionItems are only rendered by the
-	 * "Clone Model" main menu item, which itself has an enabledWhen clause, we
-	 * don't really need the enabledWhen on the item level anyway.
-	 * 
-	 * Also see handler definition in org.lamport.tla.toolbox.tool.tlc.ui/plugin.xml
-	 */
-	private static class CloneCommandContributionItem extends CommandContributionItem {
-
-		public CloneCommandContributionItem(CommandContributionItemParameter param) {
-			super(param);
-		}
-
-		/* (non-Javadoc)
-		 * @see org.eclipse.ui.menus.CommandContributionItem#isEnabled()
-		 */
-		public boolean isEnabled() {
-			return true;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.eclipse.ui.menus.CommandContributionItem#isVisible()
-		 */
-		public boolean isVisible() {
-			return true;
-		}
-	}
 }
