@@ -4,6 +4,7 @@ import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withTe
 
 import java.io.File;
 
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -12,14 +13,14 @@ import org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
+import org.eclipse.ui.PlatformUI;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
-
-import junit.framework.Assert;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class AddSpecWizardTest {
@@ -29,6 +30,14 @@ public class AddSpecWizardTest {
 	@BeforeClass
 	public static void beforeClass() throws Exception {
 		RCPTestSetupHelper.beforeClass();
+		
+		// Force shell activation to counter, no active Shell when running SWTBot tests in Xvfb/Xvnc
+		// see https://wiki.eclipse.org/SWTBot/Troubleshooting#No_active_Shell_when_running_SWTBot_tests_in_Xvfb
+		Display.getDefault().syncExec(new Runnable() {
+			public void run() {
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().forceActive();
+			}
+		});
 		
 		bot = new SWTWorkbenchBot();
 
@@ -40,7 +49,7 @@ public class AddSpecWizardTest {
 		final Matcher<MenuItem> withMnemonic = WidgetMatcherFactory.withMnemonic("File");
 		final Matcher<MenuItem> matcher = WidgetMatcherFactory.allOf(WidgetMatcherFactory.widgetOfType(MenuItem.class),
 				withMnemonic);
-		bot.waitUntil(Conditions.waitForMenu(bot.activeShell(), matcher), 30000);
+		bot.waitUntil(Conditions.waitForMenu(bot.shell("TLA+ Toolbox"), matcher), 30000);
 	}
 	
 	/**
