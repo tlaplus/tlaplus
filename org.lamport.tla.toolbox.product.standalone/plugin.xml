@@ -25,7 +25,7 @@
             name="TLA+ Toolbox">
          <property
                name="windowImages"
-               value="icons/full/etool16/tla_launch_check_wiz.gif">
+               value="platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_16.png,platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_32.png,platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_48.png,platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_64.png,platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_128.png,platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_256.png">
          </property>
          <property
                name="aboutText"
@@ -38,14 +38,6 @@
          <property
                name="appName"
                value="TLA+ Toolbox">
-         </property>
-         <property
-               name="startupProgressRect"
-               value="5,275,445,15">
-         </property>
-         <property
-               name="preferenceCustomization"
-               value="plugin_customization.ini">
          </property>
       </product>
    </extension>
