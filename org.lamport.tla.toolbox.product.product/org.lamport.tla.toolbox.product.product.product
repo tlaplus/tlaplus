@@ -32,7 +32,7 @@ Please send us reports of problems or suggestions; see https://groups.google.com
       </vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="icons/full/etool16/tla_launch_check_wiz.gif"/>
+   <windowImages i16="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_16.png" i32="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_32.png" i48="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_48.png" i64="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_64.png" i128="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_128.png" i256="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_256.png"/>
 
 
    <launcher name="toolbox">
