@@ -409,10 +409,10 @@ public class ResourceHelper
 
     /**
      * On relocation, all linked files in the project become invalid. This method fixes this issue
-     * @param project project containing links to the nen-existing files
+     * @param project project containing links to the non-existing files
      * @param newLocationParent the parent directory, where the files are located
      */
-    public static void relocateFiles(IProject project, IPath newLocationParent, IProgressMonitor monitor)
+    private static void relocateFiles(IProject project, IPath newLocationParent, IProgressMonitor monitor)
     {
         Assert.isNotNull(project);
         Assert.isNotNull(newLocationParent);
@@ -432,8 +432,8 @@ public class ResourceHelper
 
             for (int i = 0; i < members.length; i++)
             {
-                if (members[i].isLinked() && !members[i].getRawLocation().toFile().exists())
-                {
+				final IResource resource = members[i];
+				if (resource.isLinked() && (!resource.isAccessible() || resource.getRawLocation().isAbsolute())) {
                     // the linked file points to a file that does not exist.
                     String name = members[i].getName();
                     IPath newLocation = newLocationParent.append(name);
@@ -441,7 +441,7 @@ public class ResourceHelper
                     members[i].delete(true, new SubProgressMonitor(monitor, 1));
                     if (newLocation.toFile().exists())
                     {
-                        getLinkedFile(project, newLocation.toOSString(), true);
+                        getLinkedFile(project, ResourceHelper.PARENT_ONE_PROJECT_LOC + name, true);
                         monitor.worked(1);
 
                         Activator.getDefault().logDebug("File found " + newLocation.toOSString());
@@ -458,7 +458,7 @@ public class ResourceHelper
                 }
 
             }
-        	if (!failures.isEmpty()) {
+            if (!failures.isEmpty()) {
         		
         		// Inform the user that the Toolbox failed to "relocate" files (we are going to call it
         		// "find" though, in hope that it's more meaningful).
@@ -2391,4 +2391,15 @@ public class ResourceHelper
         final IFile file = project.getFile(new Path(new Path(name).lastSegment()));
         return file.isLinked(IResource.CHECK_ANCESTORS);
 	}
+
+	/**
+	 * @param aFileName
+	 * @param project
+	 * @return true iff aPath points to the parent folder of the given project
+	 */
+	public static boolean isProjectParent(final IPath aFileName, final IProject project) {
+		return aFileName.equals(project.getLocation().removeLastSegments(1));
+	}
+
+	public static final String PARENT_ONE_PROJECT_LOC = "PARENT-1-PROJECT_LOC/";
 }
