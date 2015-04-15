@@ -1,18 +1,25 @@
 package org.lamport.tla.toolbox.ui.wizard;
 
+import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withText;
+
 import java.io.File;
 
-import junit.framework.Assert;
-
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
+import org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory;
+import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
+import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
+
+import junit.framework.Assert;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class AddSpecWizardTest {
@@ -24,6 +31,16 @@ public class AddSpecWizardTest {
 		RCPTestSetupHelper.beforeClass();
 		
 		bot = new SWTWorkbenchBot();
+
+		// Wait for the Toolbox shell to be available
+		final Matcher<Shell> withText = withText("TLA+ Toolbox");
+		bot.waitUntil(Conditions.waitForShell(withText), 30000);
+		
+		// Wait for the Toolbox UI to be fully started.
+		final Matcher<MenuItem> withMnemonic = WidgetMatcherFactory.withMnemonic("File");
+		final Matcher<MenuItem> matcher = WidgetMatcherFactory.allOf(WidgetMatcherFactory.widgetOfType(MenuItem.class),
+				withMnemonic);
+		bot.waitUntil(Conditions.waitForMenu(bot.activeShell(), matcher), 30000);
 	}
 	
 	/**
