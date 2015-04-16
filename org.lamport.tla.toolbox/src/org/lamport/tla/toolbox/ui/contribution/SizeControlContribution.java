@@ -119,13 +119,25 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution 
 						} else if (!sizeLabel.isDisposed() && !composite.isDisposed()) {
 							final IPreferenceStore preferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(spec
 									.getProject());
-							final String size = preferenceStore.getString(IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE);
+							String size = preferenceStore.getString(IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE);
+							if ("".equals(size)) {
+								// PreferenceStore returned the default because
+								// there is no size stored for the project. This
+								// can happen when the resource change event is
+								// fired before the size has been calculated.
+								// Set size to MIN_VALUE to prevent a
+								// NumberFormatException below and to make sure
+								// the composite is set invisible regardless of
+								// the I_MIN_DISPLAY_SIZE.
+								size = Long.toString(Long.MIN_VALUE);
+							}
 							sizeLabel.setText(size);
 
 							// Make invisible if less than the
 							// I_MIN_DISPLAYED_SIZE
 							// preference.
-							if (Long.parseLong(size) < Activator.getDefault().getPreferenceStore()
+							long parseLong = Long.parseLong(size);
+							if (parseLong < Activator.getDefault().getPreferenceStore()
 									.getInt(IPreferenceConstants.I_MIN_DISPLAYED_SIZE)) {
 								composite.setVisible(false);
 								return;
