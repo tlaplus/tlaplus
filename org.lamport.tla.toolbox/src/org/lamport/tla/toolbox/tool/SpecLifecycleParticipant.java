@@ -20,11 +20,14 @@ public abstract class SpecLifecycleParticipant
     }
 
     /**
-     * Is called on every spec event
-     * @param event the event containing the information about what is happening
-     * @return a boolean value indicating the reaction of the participant to the event. 
-     * Reserved for future use.
-     */
+	 * Is called on every spec event. The event can either come from a backend
+	 * thread or the UI thread. There is no guarantee whatsoever.
+	 * 
+	 * @param event
+	 *            the event containing the information about what is happening
+	 * @return a boolean value indicating the reaction of the participant to the
+	 *         event. Reserved for future use.
+	 */
     public abstract boolean eventOccured(SpecEvent event);
 
     /**
