@@ -268,14 +268,14 @@
 		</plugins>
 	</build>
 
-	<!-- pass mac specific SWT proeprties on mac (OS check is based on identifying the VM)-->
+	<!-- pass mac specific SWT properties on ...drum roll... mac -->
 	<profiles>
 		<profile>
 			<id>macosx</id>
 			<activation>
 				<property>
-					<name>java.vendor.url</name>
-					<value>http://www.apple.com/</value>
+					<name>os.name</name>
+					<value>Mac OS X</value>
 				</property>
 			</activation>
 			<properties>
