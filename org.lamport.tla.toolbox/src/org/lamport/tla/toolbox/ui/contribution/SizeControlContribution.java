@@ -141,7 +141,8 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution 
 
 					// Make invisible if less than the
 					// I_MIN_DISPLAYED_SIZE preference.
-					if (size < Activator.getDefault().getPreferenceStore()
+					// Size calculated is in bytes, preference in kilobytes.
+					if ((size / 1000L) < Activator.getDefault().getPreferenceStore()
 							.getInt(IPreferenceConstants.I_MIN_DISPLAYED_SIZE)) {
 						composite.setVisible(false);
 						return;
