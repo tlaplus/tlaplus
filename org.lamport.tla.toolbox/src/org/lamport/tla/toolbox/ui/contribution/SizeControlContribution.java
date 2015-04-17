@@ -118,7 +118,10 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution 
         // Create label inside composite.
         sizeLabel = new Label(composite, SWT.BORDER | SWT.CENTER);
         sizeLabel.setText("n/a");
-        sizeLabel.setToolTipText("Size of .toolbox directory");
+		sizeLabel
+				.setToolTipText("Size of .toolbox directory. If this appears large and the TLC"
+						+ " model checker is *not* running, try removing TLC's volatile data "
+						+ "like state/ subdirectories of the model directory.");
         sizeLabel.setSize(100, 20);
         sizeLabel.setBackground(description.getDisplay().getSystemColor(SWT.COLOR_YELLOW));
         composite.setVisible(false);
