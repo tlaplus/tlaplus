@@ -596,12 +596,6 @@
       </view>
    </extension>
    <extension
-         point="org.lamport.tla.toolbox.spec">
-      <participant
-            class="org.lamport.tla.toolbox.tool.prover.ui.util.ProverSpecLifecycleParticipant">
-      </participant>
-   </extension>
-   <extension
          id="org.lamport.tla.toolbox.tool.prover.obligation"
          name="Obligation information"
          point="org.eclipse.core.resources.markers">
