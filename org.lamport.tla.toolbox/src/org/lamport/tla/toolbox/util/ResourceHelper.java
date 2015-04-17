@@ -62,7 +62,6 @@ import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.ui.preference.LibraryPathComposite;
-import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import pcal.TLAtoPCalMapping;
@@ -1369,24 +1368,6 @@ public class ResourceHelper
     }
 
     /**
-     * Sets the ToolboxDirSize property, which equals the number of kbytes of storage
-     * used by the spec's .toolbox directory, where resource is the IProject object
-     * for the spec.
-     * 
-     * @param resource
-     */
-    public static void setToolboxDirSize(IProject resource)
-    {
-        // set dirSize to the size of the .toolbox directory
-        long dirSize = ResourceHelper.getSizeOfJavaFileResource(resource);
-
-        // Set the size property of the Spec's property page spec to the Spec object for which
-        IPreferenceStore preferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(resource);
-
-        preferenceStore.setValue(IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE, String.valueOf(dirSize / 1000));
-    }
-
-    /**
      * Called to find the number of bytes contained within an IResource
      * that represents a Java File object (a file or directory).  Returns
      * 0 if resource or its File are null.
@@ -1394,7 +1375,7 @@ public class ResourceHelper
      * @param resource
      * @return
      */
-    public static long getSizeOfJavaFileResource(IResource resource)
+    public static long getSizeOfJavaFileResource(final IResource resource)
     {
         // Set file to the Java File represented by the resource.
         if (resource == null)
@@ -1418,9 +1399,9 @@ public class ResourceHelper
     }
 
     /**
-     * If dir is a directory, return the size of all
+     * If dir is a directory, return the size in bytes of all
      * @param dir
-     * @return
+     * @return the size in bytes
      */
     private static long getDirSize(File dir)
     {

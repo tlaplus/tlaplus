@@ -22,6 +22,7 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  */
 public class SpecPropertyPage extends GenericFieldEditorPropertyPage {
 	private StringFieldEditor rootFileEditor;
+	private StringFieldEditor directorySizeEditor;
 	private LibraryPathComposite libraryPathComposite;
 
 	protected Control createContents(Composite parent) {
@@ -47,8 +48,8 @@ public class SpecPropertyPage extends GenericFieldEditorPropertyPage {
 				composite);
 		addEditor(pcalParamEditor);
 
-		StringFieldEditor directorySizeEditor = new StringFieldEditor(
-				IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE,
+		directorySizeEditor = new StringFieldEditor(
+				"DoesNotExistIsIrrelevant",
 				"Size of .toolbox directory in kbytes", composite);
 		addEditor(directorySizeEditor);
 		directorySizeEditor.getTextControl(composite).setEditable(false);
@@ -77,6 +78,8 @@ public class SpecPropertyPage extends GenericFieldEditorPropertyPage {
 		final String relativePath = preferenceStore.getString(IPreferenceConstants.P_PROJECT_ROOT_FILE);
 		final IFile resolvedFile = project.getFile(new Path(relativePath).lastSegment());
 		rootFileEditor.setStringValue(resolvedFile.getLocation().toOSString());
+		
+		directorySizeEditor.setStringValue(Long.toString(spec.getSize() / 1000L)); // convert to KB
 	}
 
 	/* (non-Javadoc)
