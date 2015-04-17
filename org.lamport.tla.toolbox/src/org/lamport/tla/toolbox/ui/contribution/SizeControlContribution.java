@@ -111,7 +111,7 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution 
 
         // label informing the user that this reflects the parse status of the spec
         Label description = new Label(composite, SWT.NONE);
-        description.setText("Storage (KB): ");
+        description.setText("Storage:");
         description.setSize(50, 20);
         // description.setBackground(description.getDisplay().getSystemColor(SWT.COLOR_YELLOW));
 
@@ -137,7 +137,16 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution 
 				}
 
 				if (!sizeLabel.isDisposed() && !composite.isDisposed()) {
-					sizeLabel.setText(Long.toString(size / 1000L)); // convert to KB
+					// Si!
+					if (size / (1000 * 1000 * 1000) > 0) {
+						sizeLabel.setText(Long.toString(size / (1000 * 1000 * 1000) ) + " gB");
+					} else if (size / (1000 * 1000) > 0) {
+						sizeLabel.setText(Long.toString(size / (1000 * 1000)) + " mB");
+					} else if (size / 1000 > 0) {
+						sizeLabel.setText(Long.toString(size / 1000) + " kB");
+					} else {
+						sizeLabel.setText(Long.toString(size) + " bytes");
+					}
 
 					// Make invisible if less than the
 					// I_MIN_DISPLAYED_SIZE preference.
