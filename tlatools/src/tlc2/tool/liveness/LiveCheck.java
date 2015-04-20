@@ -210,6 +210,7 @@ public class LiveCheck implements ILiveCheck {
 	 * @see tlc2.tool.liveness.ILiveCheck#reset()
 	 */
 	public void reset() throws IOException {
+		LiveWorker.nextOOS = 0;
 		for (int i = 0; i < checker.length; i++) {
 			checker[i].getDiskGraph().reset();
 		}

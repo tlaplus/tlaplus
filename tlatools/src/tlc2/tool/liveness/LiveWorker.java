@@ -25,7 +25,7 @@ public class LiveWorker extends IdThread {
 	public static final IBucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
 			.getPackage().getName(), "StronglyConnectedComponent sizes");
 	
-	private static int nextOOS = 0;
+	static int nextOOS = 0;
 	private static int errFoundByThread = -1;
 	private static Object workerLock = new Object();
 
