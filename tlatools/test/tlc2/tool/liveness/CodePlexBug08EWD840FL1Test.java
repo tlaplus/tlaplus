@@ -64,7 +64,7 @@ public class CodePlexBug08EWD840FL1Test extends ModelCheckerTestCase {
 		assertEquals(i, objs[1]);
 		
 		// Omitted check of 8 in-between states, just make sure four more states exist
-		assertEquals("Expect five states prior to stuttering", 9, records.size());
+		assertEquals("Expect five states prior to stuttering", 8, records.size());
 		
 		// state six is back to state 1
 		assertTrue(recorder.recorded(EC.TLC_BACK_TO_STATE));

@@ -677,10 +677,6 @@ public class LiveWorker extends IdThread {
 			if (TLCGlobals.tool) {
 				MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + cyclePos }, (TLCState) null, -1);
 			} else {
-				// Contrary to TLCGlobals.tool mode, we print the extra state
-				// which is logically identical to the state TLC_BACK_TO_STATE
-				// points to.
-				StatePrinter.printState(sinfo, null, (++stateNum));
 				MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
 			}
 		}

@@ -71,15 +71,10 @@ public class Test3 extends ModelCheckerTestCase {
 		assertEquals("x = 2", stateInfo.toString().trim());
 		assertEquals(i, objs[1]);
 		
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("x = 0", stateInfo.toString().trim());
-		assertEquals(i, objs[1]);
-		
 		// Assert the error trace ends with "Back to state 1"
 		assertTrue(recorder.recorded(EC.TLC_BACK_TO_STATE));
 		records = recorder.getRecords(EC.TLC_BACK_TO_STATE);
 		objs = (Object[]) records.get(0);
-		assertEquals("x = 0", stateInfo.toString().trim());
+		assertEquals("1", objs[0]);
 	}
 }
