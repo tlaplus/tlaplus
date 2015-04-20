@@ -49,6 +49,8 @@ public class AddModuleHandlerTest extends TestCase {
 
 	/*
 	 * Test that a create module file is stored realtive to the project
+	 * 
+	 * see SpecTest if this fails because of non-matching paths.
 	 */
 	public void testCreateModuleStoreRelativePath() throws IOException, CoreException {
 		// Need a per invocation temp directory to avoid writing to the same
@@ -87,7 +89,7 @@ public class AddModuleHandlerTest extends TestCase {
 		}
 	}
 
-	public static File createTempDirectory() throws IOException {
+	private static File createTempDirectory() throws IOException {
 		final File temp = File.createTempFile("temp", Long.toString(System.nanoTime()));
 
 		if (!(temp.delete())) {

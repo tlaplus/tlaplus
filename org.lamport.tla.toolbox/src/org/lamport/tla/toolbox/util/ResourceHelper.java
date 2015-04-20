@@ -2374,6 +2374,17 @@ public class ResourceHelper
 	}
 
 	/**
+	 * This does *not* work when the path are both pointing to an identical file
+	 * but either is a symlink. This shouldn`t matter much for the Toolbox
+	 * though (hope so).
+	 * <p>
+	 * A scenario where the previous claim is plain wrong is when running
+	 * SpecTest on Mac OS X. Both /var/ and /tmp are symlinks pointing into
+	 * /private/... and SpecTest thus fails because isProjectParent returns
+	 * false. project.getLocation returns the resolved path /private/var/...
+	 * whereas aFileName is /var/...
+	 * @see SpecTest and AddModuleHandlerTest
+	 * 
 	 * @param aFileName
 	 * @param project
 	 * @return true iff aPath points to the parent folder of the given project

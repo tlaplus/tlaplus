@@ -45,6 +45,11 @@ public class SpecTest extends TestCase {
 	 * Creates a new spec and checks that the path variables stored in the
 	 * spec's (project's) metadata are relative. We want portable
 	 * specifications.
+	 * 
+	 * This test fails on Mac OS X unless "-Djava.io.tmpdir=/private/tmp/" is
+	 * set. See
+	 * org.lamport.tla.toolbox.util.ResourceHelper.isProjectParent(IPath,
+	 * IProject) for the reason why. Maven build sets this VM property.
 	 */
 	public void testCreateSpecStoreRelativePath() throws IOException {
 		// Create...
