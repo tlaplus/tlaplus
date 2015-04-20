@@ -138,7 +138,7 @@ public abstract class AbstractDiskGraph {
 	 * not allow to draw a conclusion about the graph's node count.
 	 * 
 	 * @see commented tlc2.tool.liveness.DiskGraphTest#
-	 *      testAddSameGraphNodeTwiceCorrectSuccessors
+	 *      testAddSameGraphN	odeTwiceCorrectSuccessors
 	 */
 	public final long addNode(GraphNode node) throws IOException {
 		outDegreeGraphStats.addSample(node.succSize());
@@ -186,7 +186,16 @@ public abstract class AbstractDiskGraph {
 		if (gnode != null && gnode.stateFP == stateFP && gnode.tindex == tidx) {
 			return gnode;
 		}
-		
+
+		GraphNode gnode1 = getNodeFromDisk(stateFP, tidx, ptr);
+		// Add to in-memory cache
+		if (gnode == null) {
+			this.gnodes[idx] = gnode1;
+		}
+		return gnode1;
+	}
+	
+	public final GraphNode getNodeFromDisk(final long stateFP, final int tidx, final long ptr) throws IOException {
 		// If the node is not found in the in-memory cache, the ptr has to be
 		// positive. BufferedRandomAccessFile#seek will throw an IOException due
 		// to "negative seek offset" anyway. Lets catch it early on!
@@ -202,11 +211,6 @@ public abstract class AbstractDiskGraph {
 		gnode1.read(this.nodeRAF);
 		
 		this.nodeRAF.seek(curPtr);
-
-		// Add to in-memory cache
-		if (gnode == null) {
-			this.gnodes[idx] = gnode1;
-		}
 		return gnode1;
 	}
 

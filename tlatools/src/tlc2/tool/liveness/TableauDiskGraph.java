@@ -118,11 +118,39 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 		this.nodePtrTbl.put(node.stateFP, node.tindex, ptr);
 	}
 
-	/* Get the graph node. Return null if the node is not in this. */
+	/**
+	 * Get the graph node. Returns a new GraphNode if the node is not in this.
+	 * 
+	 * @param fp
+	 * @param tidx
+	 * @return A new GraphNode instance or an existing GraphNode instance read
+	 *         from the graph (technically either cache or disk).
+	 *         <p>
+	 *         The latter case is only used in simulation mode to add a new
+	 *         (outgoing) transition to an existing GraphNode. In simulation
+	 *         mode a trace can be such that the same state occurs multiple
+	 *         times (due to random selection of next state), but each time with
+	 *         a different successor. This is not possible in regular model
+	 *         checking, because the complete set of successors is calculated
+	 *         the first time a state is generated.
+	 *         <p>
+	 *         For an GraphNode update to produce a valid result, the nodePtr
+	 *         files have to be read from start to end to make sure the
+	 *         reconstruction correctly updates the GraphNode data in the
+	 *         nodeptrtbl. //TODO Add test case to TableauDiskGraph that adds
+	 *         the same GraphNode multiple times with different outgoing
+	 *         transitions.
+	 * 
+	 * @throws IOException
+	 */
 	public final GraphNode getNode(long fp, int tidx) throws IOException {
 		long ptr = this.nodePtrTbl.get(fp, tidx);
 		if (ptr < 0) {
-			return null;
+			return new GraphNode(fp, tidx);
+		}
+		if (gnodes == null) {
+			// No cache, get directly from disk.
+			return this.getNodeFromDisk(fp, tidx, ptr);
 		}
 		return this.getNode(fp, tidx, ptr);
 	}

@@ -461,4 +461,50 @@ public class TableauDiskGraphTest extends DiskGraphTest {
 		assertEquals(fingerprint, path.elementAt(0));
 		assertEquals(fingerprint, path.elementAt(1));
 	}
+	
+	/*
+	 * Test that it is possible to "update" a GraphNode's outgoing transitions.
+	 */
+	public void testLookupExistingNode() throws IOException {
+		final TableauDiskGraph dg = (TableauDiskGraph) getDiskGraph();
+		
+		GraphNode node = dg.getNode(1L, 1);
+		assertEquals(0, node.succSize());
+		dg.addNode(node);
+		
+		// Cause the DiskGraph to be read from disk
+		dg.makeNodePtrTbl();
+		
+		node = dg.getNode(1L, 1);
+		dg.addNode(node);
+		assertEquals(0, node.succSize());
+		
+		node.addTransition(2, 2, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 0);
+		dg.addNode(node);
+		assertEquals(1, node.succSize());
+		assertTrue(node.transExists(2, 2));
+		
+		dg.makeNodePtrTbl();
+		
+		node = dg.getNode(1L, 1);
+		assertEquals(1, node.succSize());
+
+		node.addTransition(3, 3, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 0);
+		dg.addNode(node);
+		assertEquals(2, node.succSize());
+		assertTrue(node.transExists(2, 2));
+		assertTrue(node.transExists(3, 3));
+		
+		// commit/chkpt
+		dg.beginChkpt();
+		dg.commitChkpt();
+		dg.recover();
+		
+		node = dg.getNode(1L, 1);
+		assertEquals(2, node.succSize());
+		assertTrue(node.transExists(2, 2));
+		assertTrue(node.transExists(3, 3));
+	}
 }

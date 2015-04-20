@@ -412,7 +412,7 @@ public class LiveCheck implements ILiveCheck {
 				for (int nidx = 2; nidx < nodes.length; nidx += dgraph.getElemLength()) {
 					final int tidx0 = nodes[nidx];
 					final TBGraphNode tnode0 = oos.getTableau().getNode(tidx0);
-					final GraphNode node0 = new GraphNode(fp0, tidx0);
+					final GraphNode node0 = dgraph.getNode(fp0, tidx0);
 					node0.setCheckState(checkStateResults);
 					for (int sidx = 0; sidx < succCnt; sidx++) {
 						final TLCState s1 = nextStates.elementAt(sidx);
