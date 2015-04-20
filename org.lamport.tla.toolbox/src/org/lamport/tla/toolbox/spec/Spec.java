@@ -98,6 +98,11 @@ public class Spec implements IAdaptable {
      */
     private int currentSelection = 0;
 
+    /**
+	 * The overall size of the spec directory with all subdirectories and files.
+	 */
+	private long size = 0;
+
     /* project handle */
     private final IProject project;
 
@@ -169,9 +174,8 @@ public class Spec implements IAdaptable {
         this.specObj = null;
         this.status = IParseConstants.UNPARSED;
 
-        // Initialize the spec's ToolboxDirSize property.
-        // Added by LL and Dan on 21 May 2010
-        ResourceHelper.setToolboxDirSize(this.project);
+        // Read the current size of the spec. 
+        size = ResourceHelper.getSizeOfJavaFileResource(this.project);
 
         // Assert.isNotNull(this.rootFile);
         // This assertion was preventing the Toolbox from starting, so LL
@@ -427,6 +431,17 @@ public class Spec implements IAdaptable {
     public int getCurrentSelection() {
         return currentSelection;
     }
+
+	public long getSize() {
+		return size;
+	}
+	
+	/**
+	 * @param size A spec size in bytes
+	 */
+	public void setSize(long size) {
+		this.size = size;
+	}
 
     /**
      * @see ResourceHelper#getTLALibraryPath(IProject)

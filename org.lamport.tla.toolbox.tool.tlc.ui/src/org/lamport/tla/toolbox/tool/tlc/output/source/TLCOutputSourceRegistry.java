@@ -146,6 +146,13 @@ public class TLCOutputSourceRegistry
             // also not a source for trace explorer output, so
             // can look for the log file
             ILaunchConfiguration config = ModelHelper.getModelByName(processName);
+            if (config == null) {
+				// Config can be null after startup following a hard crash when
+				// the Toolbox restores the ModelEditor but no spec is currently
+				// open/loaded. In this case fail gracefully rather than hang
+				// the Toolbox.
+            	return false;
+            }
             IFile logFile = ModelHelper.getModelOutputLogFile(config, isTraceExploreInstance);
             // log file found
             if (logFile != null && logFile.exists())

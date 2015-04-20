@@ -1,5 +1,8 @@
 package org.lamport.tla.toolbox.ui.property;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.widgets.Composite;
@@ -18,7 +21,8 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  * @version $Id$
  */
 public class SpecPropertyPage extends GenericFieldEditorPropertyPage {
-	private StringFieldEditor pcalParamEditor;
+	private StringFieldEditor rootFileEditor;
+	private StringFieldEditor directorySizeEditor;
 	private LibraryPathComposite libraryPathComposite;
 
 	protected Control createContents(Composite parent) {
@@ -33,25 +37,49 @@ public class SpecPropertyPage extends GenericFieldEditorPropertyPage {
 
 	public void createFieldEditors(Composite composite) {
 		// TODO change root file
-		StringFieldEditor rootFileEditor = new StringFieldEditor(
+		rootFileEditor = new StringFieldEditor(
 				IPreferenceConstants.P_PROJECT_ROOT_FILE,
 				"Specification root module", composite);
 		addEditor(rootFileEditor);
 		rootFileEditor.getTextControl(composite).setEditable(false);
 
-		pcalParamEditor = new StringFieldEditor(
+		StringFieldEditor pcalParamEditor = new StringFieldEditor(
 				IPreferenceConstants.PCAL_CAL_PARAMS, "PlusCal call arguments",
 				composite);
 		addEditor(pcalParamEditor);
 
-		StringFieldEditor directorySizeEditor = new StringFieldEditor(
-				IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE,
+		directorySizeEditor = new StringFieldEditor(
+				"DoesNotExistIsIrrelevant",
 				"Size of .toolbox directory in kbytes", composite);
 		addEditor(directorySizeEditor);
 		directorySizeEditor.getTextControl(composite).setEditable(false);
 
 		libraryPathComposite = new LibraryPathComposite(this);
 
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.ui.property.GenericFieldEditorPropertyPage#initialize()
+	 */
+	protected void initialize() {
+		super.initialize();	
+		
+		/*
+		 * The preference store keeps an Eclipse specific relative file path. It
+		 * has to be resolved to the OS specific path.
+		 * 
+		 * @see PreferenceStoreHelper#storeRootFilename(..)
+		 */
+		final IPreferenceStore preferenceStore = getPreferenceStore();
+
+		final Spec spec = (Spec) getElement();
+		final IProject project = spec.getProject();
+
+		final String relativePath = preferenceStore.getString(IPreferenceConstants.P_PROJECT_ROOT_FILE);
+		final IFile resolvedFile = project.getFile(new Path(relativePath).lastSegment());
+		rootFileEditor.setStringValue(resolvedFile.getLocation().toOSString());
+		
+		directorySizeEditor.setStringValue(Long.toString(spec.getSize() / 1000L)); // convert to KB
 	}
 
 	/* (non-Javadoc)

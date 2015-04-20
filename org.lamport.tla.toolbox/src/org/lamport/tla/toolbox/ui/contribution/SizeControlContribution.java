@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.lamport.tla.toolbox.ui.contribution;
 
 import java.util.Iterator;
@@ -16,7 +13,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -26,17 +22,14 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.ToolboxDirectoryVisitor;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.SpecEvent;
+import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
-import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
-/**
- * @author lamport
- *
- */
 public class SizeControlContribution extends WorkbenchWindowControlContribution implements IResourceChangeListener
 {
     // the element
@@ -55,7 +48,44 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution 
         super("specDirectorySize");
         
 		// Register a listener to find any changed .toobox directories of specs.
+		// E.g. when the model checker is running for a long time, the size
+		// should be shown eventually.
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
+		
+		// Register for Spec events like open, close, delete... to change
+		// visibility of composite accordingly.
+		Activator.getSpecManager().addSpecLifecycleParticipant(new SpecLifecycleParticipant() {
+			/* (non-Javadoc)
+			 * @see org.lamport.tla.toolbox.tool.SpecLifecycleParticipant#eventOccured(org.lamport.tla.toolbox.tool.SpecEvent)
+			 */
+			public boolean eventOccured(final SpecEvent event) {
+				if (event.getType() == SpecEvent.TYPE_CLOSE || event.getType() == SpecEvent.TYPE_DELETE) {
+					// SpecEvents don't give a guarantee that they are fired
+					// from inside the UI thread.
+					UIHelper.runUISync(new Runnable() {
+						public void run() {
+							composite.setVisible(false);
+						}
+					});
+					return false;
+				} else if (event.getType() == SpecEvent.TYPE_OPEN || event.getType() == SpecEvent.TYPE_OPEN) {
+					final Job job = new ToolboxJob("Calculating spec size...") {
+						protected IStatus run(IProgressMonitor monitor) {
+							// TO-DO: If this is the currently opened spec,
+							// change display of that spec's size.
+							final Spec spec = event.getSpec();
+							final long specSize = ResourceHelper
+									.getSizeOfJavaFileResource(event.getSpec().getProject());
+							spec.setSize(specSize);
+							updateSize(specSize);
+							return Status.OK_STATUS;
+						}
+					};
+					job.schedule();
+				}
+				return true;
+			}
+		});
     }
 
     /* (non-Javadoc)
@@ -81,109 +111,99 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution 
 
         // label informing the user that this reflects the parse status of the spec
         Label description = new Label(composite, SWT.NONE);
-        description.setText("Storage (KB): ");
+        description.setText("Storage:");
         description.setSize(50, 20);
         // description.setBackground(description.getDisplay().getSystemColor(SWT.COLOR_YELLOW));
 
         // Create label inside composite.
         sizeLabel = new Label(composite, SWT.BORDER | SWT.CENTER);
         sizeLabel.setText("n/a");
-        sizeLabel.setToolTipText("Size of .toolbox directory");
+		sizeLabel
+				.setToolTipText("Size of .toolbox directory. If this appears large and the TLC"
+						+ " model checker is *not* running, try removing TLC's volatile data "
+						+ "like state/ subdirectories of the model directory.");
         sizeLabel.setSize(100, 20);
         sizeLabel.setBackground(description.getDisplay().getSystemColor(SWT.COLOR_YELLOW));
-        // update status
-        updateSize();
+        composite.setVisible(false);
         return composite;
     }
 
     // Updates status from the specification currently loaded in the SpecManager
-	public void updateSize() {
+	private void updateSize(final long size) {
 		if (sizeLabel == null || sizeLabel.isDisposed()) {
 			return;
 		}
-
-		final Job j = new ToolboxJob("Calculating specification size...") {
-			/* (non-Javadoc)
-			 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
-			 */
-			protected IStatus run(IProgressMonitor monitor) {
-				final Spec spec = Activator.getSpecManager().getSpecLoaded();
-
-				UIHelper.runUIAsync(new Runnable() {
-					/* (non-Javadoc)
-					 * @see java.lang.Runnable#run()
-					 */
-					public void run() {
-						if (spec == null && !composite.isDisposed()) {
-							composite.setVisible(false);
-						} else if (!sizeLabel.isDisposed() && !composite.isDisposed()) {
-							final IPreferenceStore preferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(spec
-									.getProject());
-							final String size = preferenceStore.getString(IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE);
-							sizeLabel.setText(size);
-
-							// Make invisible if less than the
-							// I_MIN_DISPLAYED_SIZE
-							// preference.
-							if (Long.parseLong(size) < Activator.getDefault().getPreferenceStore()
-									.getInt(IPreferenceConstants.I_MIN_DISPLAYED_SIZE)) {
-								composite.setVisible(false);
-								return;
-							}
-							// sizeLabel.setBackground(sizeLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTBGColor(spec)));
-							// sizeLabel.setForeground(sizeLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTFGColor(spec)));
-							sizeLabel.redraw();
-							composite.setVisible(true);
-						}
-					}
-				});
-				return Status.OK_STATUS;
-			}
-		};
-		j.schedule();
-	}
-
-	public void resourceChanged(final IResourceChangeEvent event) {
 		UIHelper.runUIAsync(new Runnable() {
 			public void run() {
-				final IResourceDelta delta = event.getDelta();
-				if (delta != null) {
-					try {
-						// We cannot get the spec manager if it has not been
-						// instantiated
-						// because this would trigger a resource change event,
-						// and this code
-						// is being called within a resourceChanged method. Such
-						// an
-						// infinite loop is not allowed.
-						if (Activator.isSpecManagerInstantiated()) {
-							// delta.accept calls the visit method of the
-							// visitor
-							// on the delta.
-							final ToolboxDirectoryVisitor toolboxDirectoryFinder = new ToolboxDirectoryVisitor();
-							delta.accept(toolboxDirectoryFinder);
-							List<IProject> directories = toolboxDirectoryFinder.getDirectories();
-							// Set resource to the IResource representing a
-							// project for a spec. This resource is embodied in
-							// the file system as the spec's .toolbox director.
-							for (Iterator<IProject> it = directories.iterator(); it.hasNext();) {
-								IProject resource = it.next();
-								ResourceHelper.setToolboxDirSize(resource);
+				if (!composite.isDisposed()) {
+					composite.setVisible(false);
+				}
 
-								// TO-DO: If this is the currently opened spec,
-								// change display of
-								// that spec's size.
-								Spec curSpec = ToolboxHandle.getCurrentSpec();
-								if ((curSpec != null) && curSpec.getProject().equals(resource)) {
-									SizeControlContribution.this.updateSize();
-								}
-							}
-						}
-					} catch (CoreException e) {
-						Activator.getDefault().logError("Error during post save status update", e);
+				if (!sizeLabel.isDisposed() && !composite.isDisposed()) {
+					// Si!
+					if (size / (1000 * 1000 * 1000) > 0) {
+						sizeLabel.setText(Long.toString(size / (1000 * 1000 * 1000) ) + " gB");
+					} else if (size / (1000 * 1000) > 0) {
+						sizeLabel.setText(Long.toString(size / (1000 * 1000)) + " mB");
+					} else if (size / 1000 > 0) {
+						sizeLabel.setText(Long.toString(size / 1000) + " kB");
+					} else {
+						sizeLabel.setText(Long.toString(size) + " bytes");
 					}
+
+					// Make invisible if less than the
+					// I_MIN_DISPLAYED_SIZE preference.
+					// Size calculated is in bytes, preference in kilobytes.
+					if ((size / 1000L) < Activator.getDefault().getPreferenceStore()
+							.getInt(IPreferenceConstants.I_MIN_DISPLAYED_SIZE)) {
+						composite.setVisible(false);
+						return;
+					}
+					sizeLabel.redraw();
+					composite.setVisible(true);
 				}
 			}
 		});
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
+	 */
+	public void resourceChanged(final IResourceChangeEvent event) {
+		final IResourceDelta delta = event.getDelta();
+		if (delta != null) {
+			try {
+				// We cannot get the spec manager if it has not been
+				// instantiated because this would trigger a resource change
+				// event, and this code is being called within a resourceChanged
+				// method. Such an infinite loop is not allowed.
+				if (Activator.isSpecManagerInstantiated()) {
+					// delta.accept calls the visit method of the
+					// visitor on the delta.
+					final ToolboxDirectoryVisitor toolboxDirectoryFinder = new ToolboxDirectoryVisitor();
+					delta.accept(toolboxDirectoryFinder);
+					final List<IProject> directories = toolboxDirectoryFinder.getDirectories();
+					// Set resource to the IResource representing a
+					// project for a spec. This resource is embodied in
+					// the file system as the spec's .toolbox director.
+					for (Iterator<IProject> it = directories.iterator(); it.hasNext();) {
+						final IProject resource = it.next();
+						final long specSize = ResourceHelper.getSizeOfJavaFileResource(resource);
+
+						// TO-DO: If this is the currently opened spec,
+						// change display of that spec's size.
+						final Spec curSpec = ToolboxHandle.getCurrentSpec();
+						if (curSpec != null) {
+							curSpec.setSize(specSize);
+							if (curSpec.getProject().equals(resource)) {
+								updateSize(specSize);
+							}
+						}
+					}
+				}
+			} catch (CoreException e) {
+				Activator.getDefault().logError("Error during post save status update", e);
+			}
+		}
 	}
 }

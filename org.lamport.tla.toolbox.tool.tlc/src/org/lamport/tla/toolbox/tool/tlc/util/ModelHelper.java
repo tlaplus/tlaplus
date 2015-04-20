@@ -214,7 +214,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         if (currentSpec != null) {
         	return getModelByName(currentSpec.getProject(), modelName);
         } else {
-        	throw new NullPointerException();
+        	return null;
         }
     }
 
@@ -251,7 +251,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         } catch (CoreException e)
         {
-            TLCActivator.getDefault().logError("Error finding the model name", e);
+            TLCActivator.logError("Error finding the model name", e);
         }
 
         return null;
@@ -307,7 +307,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
  				renameModel(model, aNewSpecName, getModelSuffix(model));
 			}
     	} catch(CoreException e) {
-            TLCActivator.getDefault().logError("Error realigning models.", e);
+            TLCActivator.logError("Error realigning models.", e);
     	}
     }
 
@@ -327,7 +327,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 			// delete the old model
 			model.delete();
 		} catch (CoreException e) {
-            TLCActivator.getDefault().logError("Error renaming model.", e);
+            TLCActivator.logError("Error renaming model.", e);
 		}
 	}
 	
@@ -354,7 +354,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             config.doSave();
         } catch (CoreException e)
         {
-            TLCActivator.getDefault().logError("Error saving the model", e);
+            TLCActivator.logError("Error saving the model", e);
         }
     }
 
@@ -1163,7 +1163,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             }
         } catch (CoreException e)
         {
-            TLCActivator.getDefault().logError("Error removing model markers", e);
+            TLCActivator.logError("Error removing model markers", e);
         }
     }
 
@@ -1196,7 +1196,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             return marker;
         } catch (CoreException e)
         {
-            TLCActivator.getDefault().logError("Error installing a model marker", e);
+            TLCActivator.logError("Error installing a model marker", e);
         }
 
         return null;
@@ -1829,7 +1829,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             }, fileRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, 100));
         } catch (CoreException e)
         {
-            TLCActivator.getDefault().logError("Error creating files.", e);
+            TLCActivator.logError("Error creating files.", e);
         }
 
     }
@@ -1882,7 +1882,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 										new SubProgressMonitor(subMonitor, 1));
 							}
 						} catch (CoreException e) {
-							TLCActivator.getDefault().logError("Error deleting a file "
+							TLCActivator.logError("Error deleting a file "
 									+ e.getMessage(), e);
 							throw e;
 						}
@@ -1993,7 +1993,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
                 } else
                 {
-                    TLCActivator.getDefault().logDebug("Found start tag region in model log file without end tag for model "
+                    TLCActivator.logDebug("Found start tag region in model log file without end tag for model "
                             + config.getName() + ".");
                 }
                 // TLCActivator.getDefault().logDebug(logFileDocument.get(startTagRegion.getOffset() + startTagRegion.getLength(),
@@ -2006,10 +2006,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             return trace;
         } catch (CoreException e)
         {
-            TLCActivator.getDefault().logError("Error connecting to model log file for model " + config.getName() + ".", e);
+            TLCActivator.logError("Error connecting to model log file for model " + config.getName() + ".", e);
         } catch (BadLocationException e)
         {
-            TLCActivator.getDefault().logError("Error searching model log file for " + config.getName() + ".", e);
+            TLCActivator.logError("Error searching model log file for " + config.getName() + ".", e);
         } finally
         {
             /*

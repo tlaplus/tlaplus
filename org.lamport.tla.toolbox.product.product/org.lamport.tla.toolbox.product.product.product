@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.4.8" useFeatures="true" includeLaunchers="true">
+<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.4.9" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.lamport.tla.toolbox.product.standalone/images/splash_small.png"/>
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
 
-This is Version 1.4.8 of 25 February 2014 and includes:
+This is Version 1.4.9 of UNRELEASED and includes:
   - SANY Version 2.1 of 24 February 2014
-  - TLC Version 2.05 of 25 June 2014
+  - TLC Version 2.06 of UNRELEASED
   - PlusCal Version 1.8 of 2 April 2013
   - TLATeX Version 1.0 of 12 April 2013
 
@@ -32,7 +32,7 @@ Please send us reports of problems or suggestions; see https://groups.google.com
       </vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="icons/full/etool16/tla_launch_check_wiz.gif"/>
+   <windowImages i16="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_16.png" i32="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_32.png" i48="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_48.png" i64="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_64.png" i128="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_128.png" i256="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_256.png"/>
 
 
    <launcher name="toolbox">
