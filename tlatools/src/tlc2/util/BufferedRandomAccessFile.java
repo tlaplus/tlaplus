@@ -423,6 +423,17 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
         this.curr += len;
         return len;
     }
+    
+    /**
+	 * Resets the BufferedRandomAccessFile so it appears to be a pristine file.
+	 * The previous content of the underlying disk file will be overwritten.
+	 * 
+	 * @throws IOException
+	 */
+    public void reset() throws IOException {
+    	setLength(0);
+    	this.init();
+    }
 
   public static void main(String[] args) throws IOException {
     String name = "xxx";

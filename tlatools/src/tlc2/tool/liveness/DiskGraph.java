@@ -45,8 +45,8 @@ public class DiskGraph extends AbstractDiskGraph {
 
 
 	public void reset() throws IOException {
-		this.nodePtrRAF.setLength(0);
-		this.nodeRAF.setLength(0);
+		this.nodePtrRAF.reset();
+		this.nodeRAF.reset();
 		this.nodePtrTbl = new NodePtrTable(255);
 	}
 	
