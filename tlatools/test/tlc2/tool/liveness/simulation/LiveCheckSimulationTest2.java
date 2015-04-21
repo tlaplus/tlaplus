@@ -27,11 +27,16 @@
 package tlc2.tool.liveness.simulation;
 
 import tlc2.TLC;
+import tlc2.tool.Simulator;
 
-public class SimulationTest2 extends SuccessfulSimulationTestCase {
+public class LiveCheckSimulationTest2 extends SuccessfulSimulationTestCase {
 
-	public SimulationTest2() {
-		super("Test2", "/", new String[] {"-simulate", "-depth", "6"});
+	static {
+		Simulator.EXPERIMENTAL_LIVENESS_SIMULATION = true;
+	}
+
+	public LiveCheckSimulationTest2() {
+		super("Test2", "/", new String[] {"-simulate", "-depth", "10"});
 		TLC.traceNum = 50;
 	}
 }

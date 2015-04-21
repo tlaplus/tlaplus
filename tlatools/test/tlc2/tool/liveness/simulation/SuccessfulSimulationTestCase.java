@@ -26,12 +26,40 @@
 
 package tlc2.tool.liveness.simulation;
 
-import tlc2.TLC;
+import tlc2.output.EC;
+import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class SimulationTest2 extends SuccessfulSimulationTestCase {
+public abstract class SuccessfulSimulationTestCase extends ModelCheckerTestCase {
 
-	public SimulationTest2() {
-		super("Test2", "/", new String[] {"-simulate", "-depth", "6"});
-		TLC.traceNum = 50;
+	public SuccessfulSimulationTestCase(String spec) {
+		super(spec);
+	}
+
+	public SuccessfulSimulationTestCase(String spec, String path) {
+		super(spec, path);
+	}
+
+	public SuccessfulSimulationTestCase(String spec, String path, String[] extraArguments) {
+		super(spec, path, extraArguments);
+	}
+	
+	public void testSpec() {
+		// Simulation must *NOT* show a counterexample. Regular model-checking
+		// shows that the liveness property holds.
+		//
+		// Since simulation runs forever until it either finds a counterexample
+		// or it is manually stopped, we can only keep it running for a fixed
+		// amount of time and stop it afterwards.
+
+		// No temporal violation
+		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		// No counterexample
+		assertFalse(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+		// No trace
+		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));
+		// Does not stutter
+		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT3));
+		// No back loop to init state
+		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));
 	}
 }
