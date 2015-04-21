@@ -36,7 +36,7 @@ public class GraphNode {
 		this(fp, tindex, emptyIntArr, new BitVector(0));
 	}
 
-	public GraphNode(long fp, int tindex, int[] nnodes, BitVector checks) {
+	private GraphNode(long fp, int tindex, int[] nnodes, BitVector checks) {
 		this.stateFP = fp;
 		this.tindex = tindex;
 		this.nnodes = nnodes;

@@ -465,7 +465,7 @@ public class TableauDiskGraphTest extends DiskGraphTest {
 	/*
 	 * Test that it is possible to "update" a GraphNode's outgoing transitions.
 	 */
-	public void testLookupExistingNode() throws IOException {
+	public void testLookupExistingNodeWithTidx() throws IOException {
 		final TableauDiskGraph dg = (TableauDiskGraph) getDiskGraph();
 		
 		GraphNode node = dg.getNode(1L, 1);

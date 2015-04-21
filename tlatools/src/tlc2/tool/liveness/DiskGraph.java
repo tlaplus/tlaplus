@@ -30,11 +30,19 @@ public class DiskGraph extends AbstractDiskGraph {
 		nodePtrTbl = new NodePtrTable(255);
 	}
 
+	public final GraphNode getNode(long fp, int tidx) throws IOException {
+		return getNode(fp);
+	}
+	
 	/* Get the graph node. Return null if the node is not in this. */
 	public final GraphNode getNode(long stateFP) throws IOException {
 		long ptr = this.nodePtrTbl.get(stateFP);
 		if (ptr < 0) {
-			return null;
+			return  new GraphNode(stateFP, -1);
+		}
+		if (gnodes == null) {
+			// No cache, get directly from disk.
+			return this.getNodeFromDisk(stateFP, -1, ptr);
 		}
 		return this.getNode(stateFP, -1, ptr);
 	}
@@ -111,6 +119,9 @@ public class DiskGraph extends AbstractDiskGraph {
 	 * @see java.lang.Object#toString()
 	 */
 	public final String toString() {
+		/*
+		 * BEWARE THAT THIS ALTERS (populates) THE CACHE (this.gnodes)!!! 
+		 */
 
 		// The following code relies on gnodes not being null, thus safeguard
 		// against accidental invocations.
@@ -146,6 +157,7 @@ public class DiskGraph extends AbstractDiskGraph {
 
 			System.exit(1);
 		}
+		
 		return sb.toString();
 	}
 

@@ -278,7 +278,7 @@ public class LiveCheck implements ILiveCheck {
 				final BitVector checkActionResults, final boolean[] checkStateResults) throws IOException {
 			int cnt = 0;
 			// if there is no tableau ...
-			final GraphNode node0 = new GraphNode(fp0, -1);
+			final GraphNode node0 = dgraph.getNode(fp0);
 			node0.setCheckState(checkStateResults);
 			final int succCnt = nextStates.size();
 			final int alen = oos.getCheckAction().length;
@@ -464,7 +464,7 @@ public class LiveCheck implements ILiveCheck {
 			final boolean[] checkStateRes = oos.checkState(s);
 			final int slen = checkStateRes.length;
 			final int alen = oos.getCheckAction().length;
-			final GraphNode node = new GraphNode(fp, tnode.index);
+			final GraphNode node = dgraph.getNode(fp, tnode.index);
 			node.setCheckState(checkStateRes);
 
 			// see allocationHint of node.addTransition() invocations below

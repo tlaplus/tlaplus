@@ -159,6 +159,8 @@ public abstract class AbstractDiskGraph {
 		return ptr;
 	}
 	
+	public abstract GraphNode getNode(long fingerprint, int tableauIdx) throws IOException;
+	
 	/**
 	 * @return true iff the given GraphNode belongs to the set of initial
 	 *         states.
