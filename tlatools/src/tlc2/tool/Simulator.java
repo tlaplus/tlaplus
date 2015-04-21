@@ -30,7 +30,6 @@ public class Simulator implements Cancelable {
 
 	public static boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
 	
-	private ILiveCheck liveCheck;
 
 	/* Constructors */
 	/**
@@ -97,21 +96,22 @@ public class Simulator implements Cancelable {
 	}
 
 	/* Fields */
-	private Tool tool;
-	private Action[] actions; // the sub actions
-	private Action[] invariants; // the invariants to be checked
-	private Action[] impliedActions; // the implied-actions to be checked
-	private boolean checkDeadlock; // check deadlock?
-	private boolean checkLiveness; // check liveness?
+	private final ILiveCheck liveCheck;
+	private final Tool tool;
+	private final Action[] actions; // the sub actions
+	private final Action[] invariants; // the invariants to be checked
+	private final Action[] impliedActions; // the implied-actions to be checked
+	private final boolean checkDeadlock; // check deadlock?
+	private final boolean checkLiveness; // check liveness?
 	private long numOfGenStates;
 	// private Action[] actionTrace; // SZ: never read locally
-	private String traceFile;
-	private long traceDepth;
-	private long traceNum;
-	private RandomGenerator rng;
-	private long seed;
+	private final String traceFile;
+	private final long traceDepth;
+	private final long traceNum;
+	private final RandomGenerator rng;
+	private final long seed;
 	private long aril;
-	private ObjLongTable astCounts;
+	private final ObjLongTable astCounts;
 	private boolean isCancelled; // SZ Feb 24, 2009: cancellation added
 
 	/*
