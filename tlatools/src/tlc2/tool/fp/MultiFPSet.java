@@ -197,6 +197,7 @@ public class MultiFPSet extends FPSet {
 			long fp = braf.readLong();
 			getFPSet(fp).recoverFP(fp);
 		}
+		braf.close();
 
 		for (int i = 0; i < this.sets.length; i++) {
 			this.sets[i].completeRecovery();
