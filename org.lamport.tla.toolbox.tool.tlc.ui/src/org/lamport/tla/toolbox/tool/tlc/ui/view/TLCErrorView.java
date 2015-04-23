@@ -947,7 +947,7 @@ public class TLCErrorView extends ViewPart
 				Integer is1 = s1.getStateNumber();
 				Integer is2 = s2.getStateNumber();
 
-				// If either is a back state, make sure they are smaller/larger
+				// If either is a back state, make sure they are larger
 				// than any regular state. If both are back states, simply
 				// compare their state number. The latter case is AFAICT not
 				// possible.
@@ -955,7 +955,7 @@ public class TLCErrorView extends ViewPart
 					is1 = Integer.MAX_VALUE;
 				}
 				else if (s2.isBackToState() && !s1.isBackToState()) {
-					is2 = Integer.MIN_VALUE;
+					is2 = Integer.MAX_VALUE;
 				}
 				
 				// Two regular states, delegate to state number

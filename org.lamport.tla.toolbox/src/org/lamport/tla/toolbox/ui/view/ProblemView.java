@@ -6,6 +6,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IMarkerDelta;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -22,18 +27,24 @@ import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.compare.MarkerComparator;
+import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * Shows parse problems
  * @version $Id$
  * @author Simon Zambrovski
  */
+/**
+ * @author makuppe
+ *
+ */
 public class ProblemView extends ViewPart
 {
     public static final String ID = "toolbox.view.ProblemView";
     private ExpandBar bar = null;
 
-    /**
+	/**
      * Creates the layout and fill it with data 
      */
     public void createPartControl(Composite parent)
@@ -155,4 +166,76 @@ public class ProblemView extends ViewPart
     {
 		bar.setFocus();
 	}
+
+    /*
+	 * Use an inner class because instantiation of ProblemView itself should be
+	 * left to the Eclipse foundation and not be triggered directly via new.
+	 */
+    public static class ResourceListener implements IResourceChangeListener {
+
+		private static ResourceListener INSTANCE;
+
+		public synchronized static void init() {
+			if (INSTANCE == null) {
+				INSTANCE = new ResourceListener();
+			}
+		}
+
+    	private ResourceListener() {
+    		// Check if there have been any markers set already
+    		showOrHideProblemView();
+    		
+    		// ...and listen for new markers
+    		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+    		workspace.addResourceChangeListener(this, IResourceChangeEvent.POST_BUILD);
+    	}
+
+    	private void showOrHideProblemView() {
+            boolean showProblems = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
+                    IPreferenceConstants.I_PARSER_POPUP_ERRORS);
+			if (showProblems) {
+				if (TLAMarkerHelper.currentSpecHasProblems()) {
+					// This used to be in Activator. However,
+					// at startup there might not be an
+					// activePage which results in a
+					// NullPointerException. Thus, have the
+					// ProblemView check the parse status when
+					// UI startup complete.
+					ProblemView view = (ProblemView) UIHelper.getActivePage().findView(ProblemView.ID);
+					// show
+					if (view != null) {
+						// already shown, hide
+						UIHelper.hideView(ProblemView.ID);
+					}
+
+					// not shown, show
+					UIHelper.openViewNoFocus(ProblemView.ID);
+				} else {
+					// hide
+					UIHelper.hideView(ProblemView.ID);
+				}
+			}
+    	}
+
+    	private boolean hasMarkerDelta(IResourceChangeEvent event) {
+    		IMarkerDelta[] deltas = event.findMarkerDeltas(TLAMarkerHelper.TOOLBOX_MARKERS_ALL_MARKER_ID, true);
+    		if (deltas.length > 0) {
+    			return true;
+    		}
+    		return false;
+    	}
+  	
+    	public void resourceChanged(IResourceChangeEvent event) {
+    		// no marker update
+    		if (!hasMarkerDelta(event)) {
+    			return;
+    		} else {
+    			UIHelper.runUIAsync(new Runnable() {
+    				public void run() {
+    					showOrHideProblemView();
+    				}
+    			});
+    		}
+    	}
+    }
 }

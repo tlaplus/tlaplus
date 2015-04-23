@@ -580,6 +580,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
             * There are arguments, which are heirs()[1].                   *
             ***************************************************************/
             if (prefixElts[i].heirs().length != 3) {
+              // Note added 13 April 2015 by LL:
+              // This error is caused by the spurious "(x)" in the leaf proof
+              //    BY ... DEF A!foo(x)
+              // It would be nice if this produced a more helpful error
+              // message, but I have no idea if there are other bad inputs
+              // that can cause it.
               errors.addAbort(
                 prefixElts[i].getLocation(),
                 "Internal error: " + 

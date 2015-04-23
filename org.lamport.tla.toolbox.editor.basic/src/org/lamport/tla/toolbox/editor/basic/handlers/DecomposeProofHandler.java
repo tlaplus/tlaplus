@@ -6418,10 +6418,10 @@ public class DecomposeProofHandler extends AbstractHandler implements
     
     /**
      * An InstanceSubstitution object provides the necessary data to handle an
-     * expression obtained by expanding a definitios imported into a module by 
+     * expression obtained by expanding a definition imported into a module by 
      * instantiation.
      * 
-     * In general, a definition in the current module comes from by a usually empty
+     * In general, a definition in the current module comes from a usually empty
      * sequence of instantiations.  When expanding the definition, two kinds of
      * substitutions may have to be performed when that sequence is non-empty.
      * 
@@ -6430,7 +6430,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
      *   
      * - Instantiation with renaming requires renaming of user-defined operators
      *   that appear in the body of the definition expansion.  For example,
-     *   suppose an operator Op is defined in module M terms of operator
+     *   suppose an operator Op is defined in module M in terms of operator
      *   DOp.  If an occurrence of Foo(x+y,z)!Bar!Op(a) occurring in the current
      *   module is expanded, then each instance of DOp in the definition of Op
      *   must be replaced by Foo(x+y,z)!Bar!DOp.

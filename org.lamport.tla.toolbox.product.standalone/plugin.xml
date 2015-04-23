@@ -25,11 +25,11 @@
             name="TLA+ Toolbox">
          <property
                name="windowImages"
-               value="icons/full/etool16/tla_launch_check_wiz.gif">
+               value="platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_16.png,platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_32.png,platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_48.png,platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_64.png,platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_128.png,platform:/plugin/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_256.png">
          </property>
          <property
                name="aboutText"
-               value="TLA+ Toolbox provides a user interface for TLA+ Tools. &#x0A;&#x0A;This is Version 1.4.8 of 25 February 2014 and includes:&#x0A;  - SANY Version 2.1 of 24 February 2014&#x0A;  - TLC Version 2.05 of 25 June 2014&#x0A;  - PlusCal Version 1.8 of 2 April 2013&#x0A;  - TLATeX Version 1.0 of 12 April 2013&#x0A;&#x0A;Don&apos;t forget to click on help.  You can learn about features that you never knew about or have forgotten.&#x0A;&#x0A;Please send us reports of problems or suggestions; see https://groups.google.com/d/forum/tlaplus .">
+               value="TLA+ Toolbox provides a user interface for TLA+ Tools. &#x0A;&#x0A;This is Version 1.4.9 of UNRELEASED and includes:&#x0A;  - SANY Version 2.1 of 24 February 2014&#x0A;  - TLC Version 2.06 of UNRELEASED&#x0A;  - PlusCal Version 1.8 of 2 April 2013&#x0A;  - TLATeX Version 1.0 of 12 April 2013&#x0A;&#x0A;Don&apos;t forget to click on help.  You can learn about features that you never knew about or have forgotten.&#x0A;&#x0A;Please send us reports of problems or suggestions; see https://groups.google.com/d/forum/tlaplus .">
          </property>
          <property
                name="aboutImage"
@@ -38,14 +38,6 @@
          <property
                name="appName"
                value="TLA+ Toolbox">
-         </property>
-         <property
-               name="startupProgressRect"
-               value="5,275,445,15">
-         </property>
-         <property
-               name="preferenceCustomization"
-               value="plugin_customization.ini">
          </property>
       </product>
    </extension>

@@ -81,8 +81,7 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
                 {
                     IPath modulePath = new Path(moduleFileName);
                     // check the folder we are in
-                    if (!modulePath.removeLastSegments(1)
-                            .equals(spec.getRootFile().getLocation().removeLastSegments(1)))
+                    if (!ResourceHelper.isProjectParent(modulePath.removeLastSegments(1), spec.getProject()))
                     {
                         // the selected resource is not in the same directory as the root file
                         MessageDialog
@@ -126,7 +125,7 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
                         }
                     }
                     // adding the file to the spec
-                    module = ResourceHelper.getLinkedFile(spec.getProject(), moduleFileName, true);
+					module = createModuleFile(spec, moduleFileName, modulePath);
                 }
 
                 // create parameters for the handler
@@ -141,6 +140,20 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
 
         return null;
     }
+
+	public IFile createModuleFile(final Spec spec, String moduleFileName, final IPath modulePath) {
+		// Convert the OS specific absolute path to an Eclipse
+		// specific relative one that is portable iff the resource
+		// is in the project's folder hierarchy.
+		// Technically this will always evaluate to true. One of the
+		// checks above makes sure that one can only add modules
+		// residing in the project's parent.
+		if (ResourceHelper.isProjectParent(modulePath.removeLastSegments(1), spec.getProject())) {
+			moduleFileName = ResourceHelper.PARENT_ONE_PROJECT_LOC + modulePath.lastSegment();
+		}
+		// adding the file to the spec
+		return ResourceHelper.getLinkedFile(spec.getProject(), moduleFileName, true);
+	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()

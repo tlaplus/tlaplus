@@ -4,7 +4,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.lamport.tla.toolbox.tool.SpecEvent;
 import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
-import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 
 /**
  * This class listens to changes in specs in order to update information
@@ -18,39 +17,35 @@ import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
  *     obligations from the previously opened spec.
  *     
  * @author Daniel Ricketts
- *
  */
-public class ProverSpecLifecycleParticipant extends SpecLifecycleParticipant
-{
+public class ProverSpecLifecycleParticipant extends SpecLifecycleParticipant {
 
-    public boolean eventOccured(SpecEvent event)
-    {
-        /*
-         * If a spec if being closed remove all obligation markers
-         * on that spec and cancel any running prover jobs.
-         * 
-         * If a spec is being opened, refresh the obligation view.
-         */
-        if (event.getType() == SpecEvent.TYPE_CLOSE)
-        {
-            try
-            {
-                /*
-                 * Running provers must be killed before clearing
-                 * obligations markers because the running jobs can continue to
-                 * contribute new obligation markers.
-                 */
-                ProverHelper.cancelProverJobs(true);
-                ProverHelper.clearObligationMarkers(event.getSpec().getProject());
-            } catch (CoreException e)
-            {
-                ProverUIActivator.getDefault().logError("Error removing obligation markers from spec " + event.getSpec().getName()
-                        + " when it was closed.", e);
-            }
-        } else if (event.getType() == SpecEvent.TYPE_OPEN)
-        {
-            ObligationsView.refreshObligationView();
-        }
-        return false;
-    }
+	public boolean eventOccured(SpecEvent event) {
+		/*
+		 * If a spec if being closed remove all obligation markers on that spec
+		 * and cancel any running prover jobs.
+		 * 
+		 * If a spec is being opened, refresh the obligation view.
+		 */
+		if (event.getType() == SpecEvent.TYPE_CLOSE) {
+			try {
+				/*
+				 * Running provers must be killed before clearing obligations
+				 * markers because the running jobs can continue to contribute
+				 * new obligation markers.
+				 * 
+				 * The following two invocations don't access the UI and can
+				 * thus be safely run from this Extension Point created
+				 * ProverSpecLifecycleParticipant.
+				 */
+				ProverHelper.cancelProverJobs(true);
+				ProverHelper.clearObligationMarkers(event.getSpec().getProject());
+			} catch (CoreException e) {
+				ProverUIActivator.getDefault().logError(
+						"Error removing obligation markers from spec " + event.getSpec().getName()
+								+ " when it was closed.", e);
+			}
+		}
+		return false;
+	}
 }
