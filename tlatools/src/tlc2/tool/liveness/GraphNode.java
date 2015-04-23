@@ -310,8 +310,11 @@ public class GraphNode {
 		return buf.toString();
 	}
 
-	public String toDotViz(final boolean isInitState) {
-		final String id = (""+this.stateFP).substring(0,3) + "." + this.tindex;
+	public String toDotViz(final boolean isInitState, final boolean hasTableau) {
+		String id = (""+this.stateFP).substring(0,3);
+		if (hasTableau) {
+			id += "." + this.tindex;
+		}
 		
 		final StringBuffer buf = new StringBuffer();
 		if (isInitState) {
@@ -323,7 +326,12 @@ public class GraphNode {
 			long high = this.nnodes[i];
 			long low = this.nnodes[i + 1];
 			long fp = (high << 32) | (low & 0xFFFFFFFFL);
-			buf.append(("" + fp).substring(0, 3) + "." + this.nnodes[i + 2]);
+			if (hasTableau) {
+				buf.append(("" + fp).substring(0, 3) + "." + this.nnodes[i + 2]);
+			} else {
+				//Omit tableau index when it's -1 (indicating no tableau)
+				buf.append(("" + fp).substring(0, 3));
+			}
 			buf.append("\n");
 		}
 		return buf.toString();
