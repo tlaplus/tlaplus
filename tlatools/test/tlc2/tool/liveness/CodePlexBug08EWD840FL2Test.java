@@ -26,8 +26,10 @@
 
 package tlc2.tool.liveness;
 
+import java.io.File;
 import java.util.List;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 
 /**
@@ -57,5 +59,17 @@ public class CodePlexBug08EWD840FL2Test extends ModelCheckerTestCase {
 		assertTrue(stutter.size() > 0);
 		Object[] object = (Object[]) stutter.get(0);
 		assertEquals("1", object[0]);
+		
+		// Check the file size of the AbstractDiskGraph files to check if the
+		// expected amount of ptrs and nodes (outgoing arcs) have been written
+		// to disk.
+		final String metadir = TLCGlobals.mainChecker.metadir;
+		assertNotNull(metadir);
+		final File nodes = new File(metadir + File.separator + "nodes_0");
+		final File ptrs =  new File(metadir + File.separator + "ptrs_0");
+		assertTrue(nodes.exists());
+		assertTrue(ptrs.exists());
+		assertEquals(53958732L, nodes.length());
+		assertEquals(831296L, ptrs.length());
 	}
 }
