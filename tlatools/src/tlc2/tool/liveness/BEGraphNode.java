@@ -80,7 +80,7 @@ public class BEGraphNode {
 	public final boolean getCheckAction(int slen, int alen, int nodeIdx, int[] is) {
 		int len = is.length;
 		for (int i = 0; i < len; i++) {
-			int pos = slen + alen * nodeIdx + i;
+			int pos = slen + alen * nodeIdx + is[i];
 			if (!this.checks.get(pos)) {
 				return false;
 			}
