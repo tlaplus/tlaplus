@@ -10,7 +10,7 @@ import java.io.IOException;
 import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;
 
-public class GraphNode {
+public class GraphNode extends AbstractGraphNode {
 	/**
 	 * GraphNode is a node in the behaviour graph. We're going to only store
 	 * fingerprints of states, rather than actual states. So, as we encounter
@@ -29,7 +29,6 @@ public class GraphNode {
 	 * {@link GraphNode}
 	 */
 	private int[] nnodes; // outgoing links
-	private BitVector checks; // truth values for state and action preds
 	final int tindex;
 
 	public GraphNode(long fp, int tindex) {
@@ -37,10 +36,10 @@ public class GraphNode {
 	}
 
 	private GraphNode(long fp, int tindex, int[] nnodes, BitVector checks) {
+		super(checks);
 		this.stateFP = fp;
 		this.tindex = tindex;
 		this.nnodes = nnodes;
-		this.checks = checks;
 	}
 
 	public final boolean equals(Object obj) {
@@ -66,35 +65,6 @@ public class GraphNode {
 			return this.offset / 3;
 		}
 		return this.nnodes.length / 3;
-	}
-
-	public final boolean getCheckState(int i) {
-		return this.checks.get(i);
-	}
-
-	public final boolean getCheckAction(int slen, int alen, int nodeIdx, int i) {
-		int pos = slen + alen * nodeIdx + i;
-		return this.checks.get(pos);
-	}
-
-	public final boolean getCheckAction(int slen, int alen, int nodeIdx, int[] is) {
-		int len = is.length;
-		for (int i = 0; i < len; i++) {
-			int pos = slen + alen * nodeIdx + is[i];
-			if (!this.checks.get(pos)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public final void setCheckState(boolean[] vals) {
-		int len = vals.length;
-		for (int i = 0; i < len; i++) {
-			if (vals[i]) {
-				this.checks.set(i);
-			}
-		}
 	}
 
 	/**

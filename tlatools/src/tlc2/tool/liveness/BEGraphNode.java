@@ -8,7 +8,7 @@ package tlc2.tool.liveness;
 import tlc2.util.BitVector;
 import util.WrongInvocationException;
 
-public class BEGraphNode {
+public class BEGraphNode extends AbstractGraphNode {
 	/**
 	 * BEGraphNode is a node in the behaviour graph. We're going to only store
 	 * fingerprints of states, rather than actual states. So, as we encounter
@@ -18,15 +18,14 @@ public class BEGraphNode {
 	 */
 	public long stateFP; // fingerprint of the state
 	private BEGraphNode[] nnodes; // outgoing links
-	private BitVector checks; // truth values for state and action preds
 	private long number; // for DFS and SCC
 
 	private static final BEGraphNode[] emptyNodes = new BEGraphNode[0];
 
 	public BEGraphNode(long fp) {
+		super(new BitVector(0));
 		this.stateFP = fp;
 		this.nnodes = emptyNodes;
-		this.checks = new BitVector(0);
 		this.number = 0;
 	}
 
@@ -66,35 +65,6 @@ public class BEGraphNode {
 
 	public final int nextSize() {
 		return this.nnodes.length;
-	}
-
-	public final boolean getCheckState(int i) {
-		return this.checks.get(i);
-	}
-
-	public final boolean getCheckAction(int slen, int alen, int nodeIdx, int i) {
-		int pos = slen + alen * nodeIdx + i;
-		return this.checks.get(pos);
-	}
-
-	public final boolean getCheckAction(int slen, int alen, int nodeIdx, int[] is) {
-		int len = is.length;
-		for (int i = 0; i < len; i++) {
-			int pos = slen + alen * nodeIdx + is[i];
-			if (!this.checks.get(pos)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public final void setCheckState(boolean[] vals) {
-		int len = vals.length;
-		for (int i = 0; i < len; i++) {
-			if (vals[i]) {
-				this.checks.set(i);
-			}
-		}
 	}
 
 	public final void addTransition(BEGraphNode target, int slen, int alen, boolean[] acts) {
