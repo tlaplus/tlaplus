@@ -35,11 +35,14 @@ public class LiveCheck implements ILiveCheck {
 	// private static PossibleErrorModel currentPEM;
 
 	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics) throws IOException {
+		this(tool, acts, Liveness.processLiveness(tool, mdir), mdir, bucketStatistics);
+	}
+
+	public LiveCheck(Tool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics) throws IOException {
 		myTool = tool;
 		actions = acts;
 		metadir = mdir;
 		outDegreeGraphStats = bucketStatistics;
-		final OrderOfSolution[] solutions = Liveness.processLiveness(myTool, metadir);
 		checker = new ILiveChecker[solutions.length];
 		for (int soln = 0; soln < solutions.length; soln++) {
 			if (!solutions[soln].hasTableau()) {
@@ -279,6 +282,7 @@ public class LiveCheck implements ILiveCheck {
 			int cnt = 0;
 			// if there is no tableau ...
 			final GraphNode node0 = dgraph.getNode(fp0);
+			final int s = node0.succSize();
 			node0.setCheckState(checkStateResults);
 			final int succCnt = nextStates.size();
 			final int alen = oos.getCheckAction().length;
@@ -311,6 +315,16 @@ public class LiveCheck implements ILiveCheck {
 						cnt++;
 					}
 				}
+				// In simulation mode (see Simulator), it's possible that this
+				// method is called multiple times for the same state (s0/fp0)
+				// but with changing successors caused by the random successor
+				// selection. If the successor is truly new (it has not been
+				// added before), the GraphNode instance has to be updated
+				// (creating a new record on disk). However, when the the
+				// successor parameter happens to pass known successors, there
+				// is no point in adding the GraphNode again. It is assumed that
+				// it wouldn't invalidate the result, but it wastes disk space.
+				if (s < node0.succSize()) {
 				node0.realign(); // see node0.addTransition() hint
 				// Add a node for the current state. It gets added *after*
 				// all transitions have been added because addNode
@@ -318,6 +332,7 @@ public class LiveCheck implements ILiveCheck {
 				// transitions.
 				dgraph.addNode(node0);
 			}
+		}
 		}
 
 		public DiskGraph getDiskGraph() {
@@ -414,6 +429,7 @@ public class LiveCheck implements ILiveCheck {
 					final int tidx0 = nodes[nidx];
 					final TBGraphNode tnode0 = oos.getTableau().getNode(tidx0);
 					final GraphNode node0 = dgraph.getNode(fp0, tidx0);
+					final int s = node0.succSize();
 					node0.setCheckState(checkStateResults);
 					for (int sidx = 0; sidx < succCnt; sidx++) {
 						final TLCState s1 = nextStates.elementAt(sidx);
@@ -448,10 +464,13 @@ public class LiveCheck implements ILiveCheck {
 							}
 						}
 					}
+					// See same case in LiveChecker#addNextState
+					if (s < node0.succSize()) {
 					node0.realign(); // see node0.addTransition() hint
 					dgraph.addNode(node0);
 				}
 			}
+		}
 		}
 
 		/**
@@ -465,6 +484,7 @@ public class LiveCheck implements ILiveCheck {
 			final int slen = checkStateRes.length;
 			final int alen = oos.getCheckAction().length;
 			final GraphNode node = dgraph.getNode(fp, tnode.index);
+			final int numSucc = node.succSize();
 			node.setCheckState(checkStateRes);
 
 			// see allocationHint of node.addTransition() invocations below
@@ -529,8 +549,10 @@ public class LiveCheck implements ILiveCheck {
 					}
 				}
 			}
+			if (numSucc < node.succSize()) {
 			node.realign(); // see node.addTransition() hint
 			dgraph.addNode(node);
+		}
 		}
 
 		/* (non-Javadoc)

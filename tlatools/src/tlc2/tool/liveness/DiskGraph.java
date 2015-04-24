@@ -46,11 +46,17 @@ public class DiskGraph extends AbstractDiskGraph {
 		}
 		return this.getNode(stateFP, -1, ptr);
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#getPtr(long, int)
+	 */
+	public final long getPtr(long fp, int tidx) {
+		return getPtr(fp);
+	}
 
 	public final long getPtr(long fp) {
 		return this.nodePtrTbl.get(fp);
 	}
-
 
 	public void reset() throws IOException {
 		this.nodePtrRAF.reset();

@@ -138,6 +138,7 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</javac>
@@ -155,6 +156,9 @@
 				<classpath refid="project.classpath" />
 				<classpath>
 					<pathelement location="lib/junit-4.8.2.jar" />
+					<pathelement location="lib/cglib-nodep-3.1.jar" />
+					<pathelement location="lib/objenesis-2.1.jar" />
+					<pathelement location="lib/easymock-3.3.1.jar" />
 					<pathelement path="${ws.class.dir}" />
 					<pathelement path="${test.class.dir}" />
 				</classpath>
@@ -189,6 +193,7 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</javac>
@@ -205,6 +210,9 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement location="lib/cglib-nodep-3.1.jar" />
+				<pathelement location="lib/objenesis-2.1.jar" />
+				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="${dist.file}" />
 				<pathelement path="${test.class.dir}" />
 			</classpath>

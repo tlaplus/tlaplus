@@ -31,7 +31,7 @@ import tlc2.tool.Tool;
  * consistency. Therefore LNState and LNAction have appropriate eval functions.
  **/
 
-abstract class LiveExprNode {
+public abstract class LiveExprNode {
 	/**
 	 * getLevel() = 0 --> constant getLevel() = 1 --> state expression
 	 * getLevel() = 2 --> action expression getLevel() = 3 --> temporal

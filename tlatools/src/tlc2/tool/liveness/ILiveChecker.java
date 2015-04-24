@@ -7,7 +7,7 @@ import tlc2.tool.TLCState;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
-interface ILiveChecker {
+public interface ILiveChecker {
 
 	/**
 	 * This method records that state is an initial state in the behavior graph.

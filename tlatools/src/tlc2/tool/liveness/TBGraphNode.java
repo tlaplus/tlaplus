@@ -58,11 +58,11 @@ public class TBGraphNode {
 		return this.par;
 	}
 
-	public final int nextSize() {
+	public int nextSize() {
 		return this.nexts.size();
 	}
 
-	public final TBGraphNode nextAt(int i) {
+	public TBGraphNode nextAt(int i) {
 		return (TBGraphNode) this.nexts.elementAt(i);
 	}
 
@@ -77,7 +77,7 @@ public class TBGraphNode {
 	}
 
 	/* Checks if this particle node is consistent with a state. */
-	public final boolean isConsistent(TLCState state, Tool tool) {
+	public boolean isConsistent(TLCState state, Tool tool) {
 		for (int j = 0; j < this.statePreds.length; j++) {
 			if (!this.statePreds[j].eval(tool, state, null)) {
 				return false;

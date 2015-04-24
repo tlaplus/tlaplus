@@ -19,7 +19,7 @@ public class TBGraph extends Vect {
 		this.initCnt = 0;
 	}
 
-	public final TBGraphNode getNode(int idx) {
+	public TBGraphNode getNode(int idx) {
 		return (TBGraphNode) this.elementAt(idx);
 	}
 
@@ -27,7 +27,7 @@ public class TBGraph extends Vect {
 		this.initCnt = n;
 	}
 
-	public final int getInitCnt() {
+	public int getInitCnt() {
 		return this.initCnt;
 	}
 

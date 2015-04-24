@@ -216,6 +216,8 @@ public abstract class AbstractDiskGraph {
 		return gnode1;
 	}
 
+	public abstract long getPtr(long l, int tidx);
+
 	/* Create the in-memory node-pointer table from the node-pointer file. */
 	public final void makeNodePtrTbl() throws IOException {
 		long ptr = this.nodePtrRAF.getFilePointer();
