@@ -297,6 +297,12 @@ public class Simulator implements Cancelable {
 						final TLCState tlcState = stateTrace.elementAt(i);
 						final long fingerPrint = tlcState.fingerPrint();
 						
+						// Add state itself as successor to allow stuttering.
+						// See ModelChecker.doNext(..) line ~607
+						successor.addElement(tlcState);
+						successorFP.addElement(fingerPrint);
+						
+						// Add the "real" successor
 						successor.addElement(stateTrace.elementAt(i + 1));
 						successorFP.addElement(stateTrace.elementAt(i + 1).fingerPrint());
 						liveCheck.addNextState(tlcState, fingerPrint, successor, successorFP);
