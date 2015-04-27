@@ -351,8 +351,10 @@ public class TLCServerThread extends IdThread {
 			// This is to work around a design bug in
 			// tlc2.tool.queue.StateQueue's impl. Other IStateQueue impls should
 			// hopefully not be affected by calling notifyAll on them though.
-			synchronized (stateQueue) {
-				stateQueue.notifyAll();
+			if (stateQueue != null) {
+				synchronized (stateQueue) {
+					stateQueue.notifyAll();
+				}
 			}
 			
 			TLCGlobals.decNumWorkers();
