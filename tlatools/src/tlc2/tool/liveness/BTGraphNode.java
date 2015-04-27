@@ -50,9 +50,39 @@ public class BTGraphNode extends BEGraphNode {
 		return (this.tindex & 0x40000000) > 0;
 	}
 
-	public final boolean equals(Object obj) {
-		return ((obj instanceof BTGraphNode) && (this.stateFP == ((BTGraphNode) obj).stateFP) && (this.getIndex() == ((BTGraphNode) obj)
-				.getIndex()));
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (stateFP ^ (stateFP >>> 32));
+		result = prime * result + getIndex();
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		BTGraphNode other = (BTGraphNode) obj;
+		if (stateFP != other.stateFP) {
+			return false;
+		}
+		if (getIndex() != other.getIndex()) {
+			return false;
+		}
+		return true;
 	}
 
 	public final TBGraphNode getTNode(TBGraph tableau) {

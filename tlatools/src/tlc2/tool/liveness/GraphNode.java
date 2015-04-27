@@ -42,8 +42,38 @@ public class GraphNode extends AbstractGraphNode {
 		this.nnodes = nnodes;
 	}
 
-	public final boolean equals(Object obj) {
-		return ((obj instanceof GraphNode) && (this.stateFP == ((GraphNode) obj).stateFP) && (this.tindex == ((GraphNode) obj).tindex));
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (stateFP ^ (stateFP >>> 32));
+		result = prime * result + tindex;
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		GraphNode other = (GraphNode) obj;
+		if (stateFP != other.stateFP) {
+			return false;
+		}
+		if (tindex != other.tindex) {
+			return false;
+		}
+		return true;
 	}
 
 	public final long getStateFP(int i) {

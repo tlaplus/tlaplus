@@ -55,8 +55,34 @@ public class BEGraphNode extends AbstractGraphNode {
 		this.number = this.number ^ 0x8000000000000000L;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (stateFP ^ (stateFP >>> 32));
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	public boolean equals(Object obj) {
-		return ((obj instanceof BEGraphNode) && (this.stateFP == ((BEGraphNode) obj).stateFP));
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		BEGraphNode other = (BEGraphNode) obj;
+		if (stateFP != other.stateFP) {
+			return false;
+		}
+		return true;
 	}
 
 	public final BEGraphNode nextAt(int i) {
