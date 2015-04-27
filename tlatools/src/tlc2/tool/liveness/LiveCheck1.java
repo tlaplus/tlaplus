@@ -30,7 +30,7 @@ public class LiveCheck1 implements ILiveCheck {
 	 * Implementation of liveness checking based on MP book.
 	 */
 	private Tool myTool;
-	private String metadir;
+	private String metadir = "";
 	private Action[] actions;
 	private OrderOfSolution[] solutions;
 	private BEGraph[] bgraphs;
@@ -73,7 +73,7 @@ public class LiveCheck1 implements ILiveCheck {
 
 	public LiveCheck1(Tool tool) {
 		myTool = tool;
-		solutions = Liveness.processLiveness(myTool, metadir);
+		solutions = Liveness.processLiveness(myTool);
 		bgraphs = new BEGraph[0];
 	}
 
@@ -81,7 +81,7 @@ public class LiveCheck1 implements ILiveCheck {
 		myTool = tool;
 		metadir = mdir;
 		actions = acts;
-		solutions = Liveness.processLiveness(myTool, metadir);
+		solutions = Liveness.processLiveness(myTool);
 		bgraphs = new BEGraph[solutions.length];
 		for (int i = 0; i < solutions.length; i++) {
 			bgraphs[i] = new BEGraph(metadir, solutions[i].hasTableau());

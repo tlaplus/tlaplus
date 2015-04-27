@@ -36,7 +36,7 @@ public class LiveCheck implements ILiveCheck {
 	// private static PossibleErrorModel currentPEM;
 
 	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics) throws IOException {
-		this(tool, acts, Liveness.processLiveness(tool, mdir), mdir, bucketStatistics);
+		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics);
 	}
 
 	public LiveCheck(Tool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics) throws IOException {

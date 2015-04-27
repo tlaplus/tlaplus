@@ -520,7 +520,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * implicit. So, the only job is to turn livespec /\ -livecheck: live1 /\
 	 * live2 ... /\ (-check1 \/ -check2 ...) into normal form.
 	 */
-	public static OrderOfSolution[] processLiveness(Tool tool, String metadir) {
+	public static OrderOfSolution[] processLiveness(Tool tool) {
 		LiveExprNode lexpr = parseLiveness(tool);
 
 		if (lexpr == null) {
