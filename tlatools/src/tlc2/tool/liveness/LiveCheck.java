@@ -98,13 +98,13 @@ public class LiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#finalCheck()
 	 */
-	public boolean finalCheck() throws Exception {
+	public boolean finalCheck() throws InterruptedException, IOException {
 		// Do *not* re-create the nodePtrTable after the check which takes a
 		// while for larger disk graphs.
 		return check(true);
 	}
 	
-	private boolean check(final boolean finalCheck) throws Exception {
+	private boolean check(final boolean finalCheck) throws InterruptedException, IOException {
 		int slen = checker.length;
 		int wNum = Math.min(slen, TLCGlobals.getNumWorkers());
 
@@ -133,6 +133,51 @@ public class LiveCheck implements ILiveCheck {
 			}
 		}
 		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#checkTrace(tlc2.tool.StateVec)
+	 */
+	public void checkTrace(final StateVec stateTrace) throws InterruptedException, IOException {
+		// Add the first state to the LiveCheck as the current init state
+		addInitState(stateTrace.elementAt(0), stateTrace.elementAt(0).fingerPrint());
+		
+		// Add the remaining states...
+		final StateVec successor = new StateVec(2);
+		final LongVec successorFP = new LongVec(2);
+
+		// For all states except last one add the successor
+		// (which is the next state in stateTrace).
+		for (int i = 0; i < stateTrace.size() - 1; i++) {
+			// Empty out old successors.
+			successor.clear();
+			successorFP.reset();
+			
+			// Calculate the current state's fingerprint
+			final TLCState tlcState = stateTrace.elementAt(i);
+			final long fingerPrint = tlcState.fingerPrint();
+
+			// Add state itself to allow stuttering
+			successor.addElement(tlcState);
+			successorFP.addElement(fingerPrint);
+			
+			// Add the successor in the trace
+			successor.addElement(stateTrace.elementAt(i + 1));
+			successorFP.addElement(stateTrace.elementAt(i + 1).fingerPrint());
+			addNextState(tlcState, fingerPrint, successor, successorFP);
+		}
+		
+		// Add last state in trace for which *no* successors have been generated
+		final TLCState lastState = stateTrace.elementAt(stateTrace.size() - 1);
+		addNextState(lastState, lastState.fingerPrint(), new StateVec(0), new LongVec(0));
+		
+		if (!finalCheck()) { //HACK Calling finalCheck here to prevent code from re-creating the nodeptrtable from a non existant file.
+			throw new LiveException();
+		}
+		
+		// We are done with the current subsequence of the behavior. Reset LiveCheck
+		// for the next behavior simulation is going to create.
+		reset();
 	}
 
 	/* (non-Javadoc)

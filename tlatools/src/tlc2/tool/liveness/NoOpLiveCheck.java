@@ -72,6 +72,12 @@ public class NoOpLiveCheck implements ILiveCheck {
 	public boolean finalCheck() throws Exception {
 		return true;
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#checkTrace(tlc2.tool.StateVec)
+	 */
+	public void checkTrace(StateVec trace) throws IOException, InterruptedException {
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#getMetaDir()

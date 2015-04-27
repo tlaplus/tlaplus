@@ -19,7 +19,6 @@ import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.LiveCheck1;
 import tlc2.tool.liveness.LiveException;
 import tlc2.tool.liveness.NoOpLiveCheck;
-import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
 import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
@@ -273,53 +272,9 @@ public class Simulator implements Cancelable {
 					inConstraints = (this.tool.isInModel(s1) && this.tool.isInActions(curState, s1));
 					curState = s1;
 				}
-
+				
 				// Check if the current trace satisfies liveness properties.
-				if (liveCheck instanceof LiveCheck1) {
-					// legacy implementation supports checking the trace directly
-					((LiveCheck1) liveCheck).checkTrace(stateTrace);
-				} else {
-					// Add the first state to the LiveCheck as the current init state
-					liveCheck.addInitState(stateTrace.elementAt(0), stateTrace.elementAt(0).fingerPrint());
-					
-					// Add the remaining states...
-					final StateVec successor = new StateVec(1);
-					final LongVec successorFP = new LongVec(1);
-
-					// For all states except last one add the successor
-					// (which is the next state in stateTrace).
-					for (int i = 0; i < stateTrace.size() - 1; i++) {
-						// Empty out old successors.
-						successor.clear();
-						successorFP.reset();
-						
-						// Calculate the current state's fingerprint
-						final TLCState tlcState = stateTrace.elementAt(i);
-						final long fingerPrint = tlcState.fingerPrint();
-						
-						// Add state itself as successor to allow stuttering.
-						// See ModelChecker.doNext(..) line ~607
-						successor.addElement(tlcState);
-						successorFP.addElement(fingerPrint);
-						
-						// Add the "real" successor
-						successor.addElement(stateTrace.elementAt(i + 1));
-						successorFP.addElement(stateTrace.elementAt(i + 1).fingerPrint());
-						liveCheck.addNextState(tlcState, fingerPrint, successor, successorFP);
-					}
-					
-					// Add last state in trace for which *no* successors have been generated
-					final TLCState lastState = stateTrace.elementAt(stateTrace.size() - 1);
-					liveCheck.addNextState(lastState, lastState.fingerPrint(), new StateVec(0), new LongVec(0));
-					
-					if (!liveCheck.finalCheck()) { //HACK Calling finalCheck here to prevent code from re-creating the nodeptrtable from a non existant file.
-						throw new LiveException();
-					}
-					
-					// We are done with the current subsequence of the behavior. Reset LiveCheck
-					// for the next behavior simulation is going to create.
-					liveCheck.reset();
-				}
+				liveCheck.checkTrace(stateTrace);
 
 				// Write the trace out if desired. The trace is printed in the
 				// format of TLA module, so that it can be read by TLC again.
