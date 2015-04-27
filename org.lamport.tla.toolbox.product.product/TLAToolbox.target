@@ -31,7 +31,7 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.jclouds.feature.feature.group" version="0.0.0"/>
-<repository location="http://tla.msr-inria.inria.fr/jclouds2p2/"/>
+<repository location="http://lemmy.github.com/jclouds2p2/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.rcp.id" version="4.4.2.M20150204-1700"/>
