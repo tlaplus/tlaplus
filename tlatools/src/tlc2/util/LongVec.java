@@ -39,6 +39,10 @@ public class LongVec implements Cloneable, Serializable {
 		rangeCheck(index);
 		return this.elementData[index];
 	}
+	
+	public final long lastElement() {
+		return this.elementData[elementCount - 1];
+	}
 
 	public final void removeElement(int index) {
 		rangeCheck(index);

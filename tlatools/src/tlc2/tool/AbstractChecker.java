@@ -8,9 +8,17 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.liveness.ILiveCheck;
+import tlc2.tool.liveness.LiveCheck;
+import tlc2.tool.liveness.Liveness;
+import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.util.StateWriter;
+import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.DummyBucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
+import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
 
@@ -21,6 +29,8 @@ import util.FilenameToStream;
  */
 public abstract class AbstractChecker implements Cancelable
 {
+    protected static final boolean LIVENESS_STATS = Boolean.getBoolean(Liveness.class.getPackage().getName() + ".statistics");
+	
     // SZ Mar 9, 2009: static modifier removed
     protected long nextLiveCheck;
     protected AtomicLong numOfGenStates;
@@ -40,6 +50,7 @@ public abstract class AbstractChecker implements Cancelable
     public Action[] actions;
     protected StateWriter allStateWriter;
     protected boolean cancellationFlag;
+	protected final ILiveCheck liveCheck;
 
     /**
      * Constructor of the abstract model checker
@@ -95,6 +106,19 @@ public abstract class AbstractChecker implements Cancelable
         this.impliedActions = this.tool.getImpliedActions(); // implied-actions to be checked
         this.actions = this.tool.getActions(); // the sub-actions
 
+        if (this.checkLiveness) {
+            // Initialization for liveness checking:
+            report("initializing liveness checking");
+			IBucketStatistics stats = new DummyBucketStatistics();
+			if (LIVENESS_STATS) {
+				stats = new BucketStatistics("Histogram vertex out-degree", LiveCheck.class.getPackage().getName(),
+						"DiskGraphsOutDegree");
+			}
+			this.liveCheck = new LiveCheck(this.tool, this.actions, this.metadir, stats);
+            report("liveness checking initialized");
+        } else {
+        	this.liveCheck = new NoOpLiveCheck(this.tool, this.metadir);
+        }
     }
 
     public final void setDone()
@@ -263,6 +287,15 @@ public abstract class AbstractChecker implements Cancelable
     public void setCancelFlag(boolean flag)
     {
         this.cancellationFlag = flag;
+    }
+    
+    /**
+     * Debugging support
+     * @param message
+     */
+    protected void report(String message)
+    {
+        DebugPrinter.print(message);
     }
 
     /**

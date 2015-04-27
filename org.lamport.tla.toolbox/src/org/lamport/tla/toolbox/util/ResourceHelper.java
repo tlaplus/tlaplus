@@ -62,7 +62,6 @@ import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.ui.preference.LibraryPathComposite;
-import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import pcal.TLAtoPCalMapping;
@@ -409,10 +408,10 @@ public class ResourceHelper
 
     /**
      * On relocation, all linked files in the project become invalid. This method fixes this issue
-     * @param project project containing links to the nen-existing files
+     * @param project project containing links to the non-existing files
      * @param newLocationParent the parent directory, where the files are located
      */
-    public static void relocateFiles(IProject project, IPath newLocationParent, IProgressMonitor monitor)
+    private static void relocateFiles(IProject project, IPath newLocationParent, IProgressMonitor monitor)
     {
         Assert.isNotNull(project);
         Assert.isNotNull(newLocationParent);
@@ -432,8 +431,8 @@ public class ResourceHelper
 
             for (int i = 0; i < members.length; i++)
             {
-                if (members[i].isLinked() && !members[i].getRawLocation().toFile().exists())
-                {
+				final IResource resource = members[i];
+				if (resource.isLinked() && (!resource.isAccessible() || resource.getRawLocation().isAbsolute())) {
                     // the linked file points to a file that does not exist.
                     String name = members[i].getName();
                     IPath newLocation = newLocationParent.append(name);
@@ -441,7 +440,7 @@ public class ResourceHelper
                     members[i].delete(true, new SubProgressMonitor(monitor, 1));
                     if (newLocation.toFile().exists())
                     {
-                        getLinkedFile(project, newLocation.toOSString(), true);
+                        getLinkedFile(project, ResourceHelper.PARENT_ONE_PROJECT_LOC + name, true);
                         monitor.worked(1);
 
                         Activator.getDefault().logDebug("File found " + newLocation.toOSString());
@@ -458,7 +457,7 @@ public class ResourceHelper
                 }
 
             }
-        	if (!failures.isEmpty()) {
+            if (!failures.isEmpty()) {
         		
         		// Inform the user that the Toolbox failed to "relocate" files (we are going to call it
         		// "find" though, in hope that it's more meaningful).
@@ -1369,24 +1368,6 @@ public class ResourceHelper
     }
 
     /**
-     * Sets the ToolboxDirSize property, which equals the number of kbytes of storage
-     * used by the spec's .toolbox directory, where resource is the IProject object
-     * for the spec.
-     * 
-     * @param resource
-     */
-    public static void setToolboxDirSize(IProject resource)
-    {
-        // set dirSize to the size of the .toolbox directory
-        long dirSize = ResourceHelper.getSizeOfJavaFileResource(resource);
-
-        // Set the size property of the Spec's property page spec to the Spec object for which
-        IPreferenceStore preferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(resource);
-
-        preferenceStore.setValue(IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE, String.valueOf(dirSize / 1000));
-    }
-
-    /**
      * Called to find the number of bytes contained within an IResource
      * that represents a Java File object (a file or directory).  Returns
      * 0 if resource or its File are null.
@@ -1394,7 +1375,7 @@ public class ResourceHelper
      * @param resource
      * @return
      */
-    public static long getSizeOfJavaFileResource(IResource resource)
+    public static long getSizeOfJavaFileResource(final IResource resource)
     {
         // Set file to the Java File represented by the resource.
         if (resource == null)
@@ -1418,9 +1399,9 @@ public class ResourceHelper
     }
 
     /**
-     * If dir is a directory, return the size of all
+     * If dir is a directory, return the size in bytes of all
      * @param dir
-     * @return
+     * @return the size in bytes
      */
     private static long getDirSize(File dir)
     {
@@ -2391,4 +2372,26 @@ public class ResourceHelper
         final IFile file = project.getFile(new Path(new Path(name).lastSegment()));
         return file.isLinked(IResource.CHECK_ANCESTORS);
 	}
+
+	/**
+	 * This does *not* work when the path are both pointing to an identical file
+	 * but either is a symlink. This shouldn`t matter much for the Toolbox
+	 * though (hope so).
+	 * <p>
+	 * A scenario where the previous claim is plain wrong is when running
+	 * SpecTest on Mac OS X. Both /var/ and /tmp are symlinks pointing into
+	 * /private/... and SpecTest thus fails because isProjectParent returns
+	 * false. project.getLocation returns the resolved path /private/var/...
+	 * whereas aFileName is /var/...
+	 * @see SpecTest and AddModuleHandlerTest
+	 * 
+	 * @param aFileName
+	 * @param project
+	 * @return true iff aPath points to the parent folder of the given project
+	 */
+	public static boolean isProjectParent(final IPath aFileName, final IProject project) {
+		return aFileName.equals(project.getLocation().removeLastSegments(1));
+	}
+
+	public static final String PARENT_ONE_PROJECT_LOC = "PARENT-1-PROJECT_LOC/";
 }

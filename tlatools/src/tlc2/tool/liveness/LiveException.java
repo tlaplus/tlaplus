@@ -7,7 +7,11 @@ package tlc2.tool.liveness;
 
 public class LiveException extends RuntimeException {
 
-  public LiveException() { super(); }
+	public LiveException() {
+		super();
+	}
 
-  public LiveException(String msg) { super(msg); }
+	public LiveException(String msg) {
+		super(msg);
+	}
 }

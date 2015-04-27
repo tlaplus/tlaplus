@@ -26,7 +26,7 @@ public class StatePrinter
         {
             stateString = currentState.toString();
         }
-        MP.printState(EC.TLC_STATE_PRINT1, new String[] { String.valueOf(num), stateString });
+        MP.printState(EC.TLC_STATE_PRINT1, new String[] { String.valueOf(num), stateString }, currentState, num);
     }
 
     /**
@@ -34,7 +34,7 @@ public class StatePrinter
      */
     public static void printState(TLCState currentState, int num)
     {
-        MP.printState(EC.TLC_STATE_PRINT1, new String[] { String.valueOf(num), currentState.toString() });
+        MP.printState(EC.TLC_STATE_PRINT1, new String[] { String.valueOf(num), currentState.toString() }, currentState, num);
     }
 
     /**
@@ -42,7 +42,7 @@ public class StatePrinter
      */
     public static void printState(TLCState currentState)
     {
-        MP.printState(EC.TLC_STATE_PRINT1, new String[] { "", currentState.toString() });
+        MP.printState(EC.TLC_STATE_PRINT1, new String[] { "", currentState.toString() }, currentState, -1);
     }
 
     /**
@@ -62,7 +62,7 @@ public class StatePrinter
             stateString = currentStateInfo.state.toString();
         }
         MP.printState(EC.TLC_STATE_PRINT2, new String[] { String.valueOf(num), currentStateInfo.info.toString(),
-                stateString });
+                stateString }, currentStateInfo, num);
     }
 
     /**
@@ -70,7 +70,7 @@ public class StatePrinter
      */
     public static void printStutteringState(int num)
     {
-        MP.printState(EC.TLC_STATE_PRINT3, new String[] { String.valueOf(num) });
+        MP.printState(EC.TLC_STATE_PRINT3, new String[] { String.valueOf(num) }, (TLCState) null, num);
     }
 
 }

@@ -19,6 +19,7 @@
 <unit id="org.apache.commons.io" version="2.0.1.v201105210651"/>
 <unit id="javax.activation" version="1.1.0.v201211130549"/>
 <unit id="javax.mail" version="1.4.0.v201005080615"/>
+<unit id="org.easymock" version="2.4.0.v20090202-0900"/>
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">

@@ -18,7 +18,10 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
-	//TODO increase buffer to match modern day hardware?
+	// Increase 8k buffer to match modern day hardware? No!!! The implementation
+	// discards the whole buffer each time it seeks to a position outside the
+	// current buffer. It then creates a new buffer, which takes proportionally
+	// longer with larger buffer sizes.
 	static final int LogBuffSz = 13; // 8K buffer
     public static final int BuffSz = (1 << LogBuffSz);
     static final int BuffMask = ~(BuffSz - 1);
@@ -419,6 +422,17 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
         System.arraycopy(b, off, this.buff, buffOff, len);
         this.curr += len;
         return len;
+    }
+    
+    /**
+	 * Resets the BufferedRandomAccessFile so it appears to be a pristine file.
+	 * The previous content of the underlying disk file will be overwritten.
+	 * 
+	 * @throws IOException
+	 */
+    public void reset() throws IOException {
+    	setLength(0);
+    	this.init();
     }
 
   public static void main(String[] args) throws IOException {

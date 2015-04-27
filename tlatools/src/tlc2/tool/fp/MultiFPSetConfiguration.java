@@ -11,6 +11,12 @@ class MultiFPSetConfiguration extends FPSetConfiguration {
 		// Set wrapper to values of config to be wrapped
 		this.fpBits = fpSetConfig.getFpBits();
 		this.ratio = fpSetConfig.getRatio();
+		
+		// Sanity check configuration right away
+		if (getMemoryInFingerprintCnt() <= 0) {
+			throw new IllegalArgumentException(
+					"Given fpSetConfig results in zero or negative fp count.");
+		}
 	}
 
 	/* (non-Javadoc)

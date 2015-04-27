@@ -73,12 +73,12 @@ public class Bags implements ValueConstants
                     num += ((IntValue) vals[i]).val;
                 } else
                 {
-                    new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagCardinality", "a bag",
+                    throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagCardinality", "a bag",
                             Value.ppr(b.toString()) });
                 }
             } else
             {
-                new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagCardinality", "a bag",
+            	throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagCardinality", "a bag",
                         Value.ppr(b.toString()) });
             }
         }
@@ -414,16 +414,16 @@ public class Bags implements ValueConstants
     public static Value SetToBag(Value b)
     {
         SetEnumValue s1 = SetEnumValue.convert(b);
-        // The following `if' added by LL on 5 Mar 2012 to correct a bug found by Tom Rodeheffer,
-        // in which SetToBag creates a function with multiple copies of the elements in its
-        // domain, and this causes BagToSet to report an error.
-        if (!s1.isNormalized()) {
-            s1.normalize();
-        }
         if (s1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagToSet",
                     "a function with a finite domain", Value.ppr(b.toString()) });
+        }
+        // The following `if' added by LL on 5 Mar 2012 to correct a bug found by Tom Rodeheffer,
+        // in which SetToBag creates a function with multiple copies of the elements in its
+        // domain, and this causes BagToSet to report an error.
+        if (!s1.isNormalized()) {
+        	s1.normalize();
         }
         ValueVec elems = s1.elems;
         Value[] domain = new Value[elems.size()];

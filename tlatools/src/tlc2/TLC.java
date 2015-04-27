@@ -66,6 +66,10 @@ public class TLC
     private String fromChkpt;
 
     private int fpIndex;
+    /**
+     * The number of traces/behaviors to generate in simulation mode
+     */
+    public static long traceNum = Long.MAX_VALUE;
     private int traceDepth;
     private FilenameToStream resolver;
     private SpecObj specObj;
@@ -716,7 +720,7 @@ public class TLC
                 }
                 MP.printMessage(EC.TLC_MODE_SIMU, String.valueOf(seed));
                 Simulator simulator = new Simulator(mainFile, configFile, null, deadlock, traceDepth, 
-                        Long.MAX_VALUE, rng, seed, true, resolver, specObj);
+                        traceNum, rng, seed, true, resolver, specObj);
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
 //                MP.printMessage(EC.TLC_STARTING);
                 instance = simulator;

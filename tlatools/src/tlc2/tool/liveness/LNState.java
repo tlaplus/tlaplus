@@ -10,25 +10,46 @@ import tlc2.tool.Tool;
 import tlc2.util.Context;
 
 abstract class LNState extends LiveExprNode {
-  protected Context con;
-  protected int tag;
+	private final Context con;
+	private int tag;
 
-  public LNState(Context con) {
-    this.con = con;
-  }
+	public LNState(Context con) {
+		this.con = con;
+	}
 
-  public final int getLevel() { return 1; }
+	public final int getLevel() {
+		return 1;
+	}
 
-  public final boolean containAction() { return false; }
-  
-  public final boolean eval(Tool tool, TLCState s) {
-    return this.eval(tool, s, TLCState.Empty);
-  }
+	public final boolean containAction() {
+		return false;
+	}
 
-  public final Context getContext() { return this.con; }
+	public final boolean eval(Tool tool, TLCState s) {
+		return this.eval(tool, s, TLCState.Empty);
+	}
 
-  public final int getTag() { return this.tag; }
+	public final Context getContext() {
+		return this.con;
+	}
 
-  public final void setTag(int t) { this.tag = t; }
+	public final int getTag() {
+		return this.tag;
+	}
 
+	public final void setTag(int t) {
+		this.tag = t;
+	}
+
+	public int tagExpr(int tag) {
+		setTag(tag);
+		return tag + 1;
+	}
+
+	public boolean equals(LiveExprNode exp) {
+		if (exp instanceof LNState) {
+			return getTag() == ((LNState) exp).getTag();
+		}
+		return false;
+	}
 }

@@ -20,9 +20,14 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.SpecEvent;
+import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
@@ -164,6 +169,15 @@ public class ObligationsView extends ViewPart
             }
         }
     };
+    
+	private final SpecLifecycleParticipant specLifecycleParticipant = new SpecLifecycleParticipant() {
+		public boolean eventOccured(SpecEvent event) {
+			if (event.getType() == SpecEvent.TYPE_OPEN) {
+				ObligationsView.refreshObligationView();
+			}
+			return false;
+		}
+	};
 
     public ObligationsView()
     {
@@ -187,7 +201,27 @@ public class ObligationsView extends ViewPart
         fillFromCurrentSpec();
     }
 
-    /**
+    
+    /* (non-Javadoc)
+	 * @see org.eclipse.ui.part.ViewPart#init(org.eclipse.ui.IViewSite)
+	 */
+	public void init(IViewSite site) throws PartInitException {
+		super.init(site);
+		// Register a SLP to refresh the obligation view once it has been
+		// created. This used to be done as part of the
+		// ProverSpecLifecycleParticipant. However, the PSLP is created from an
+		// Extension Point which means it potentially runs *before* the UI is
+		// fully initialized. If this is interleaved with a spec open event, it
+		// means the UIHelper.runUIAsync(..) tries to create a UI and then
+		// nullpointers.
+		// See dipose() where the lifecycle participant is de-registered again.
+		// It should be safe to receive events even if the Obligations View
+		// isn't open, but it's good practice to remove listeners past disposal.
+		// Even if it just saves a few CPU cycles in an hour.
+		Activator.getSpecManager().addSpecLifecycleParticipant(specLifecycleParticipant);
+	}
+
+	/**
      * Used to refresh the obligation view if it is currently open. If the view
      * is not currently open, this method does nothing. If the view is currently open,
      * this takes the following two steps:

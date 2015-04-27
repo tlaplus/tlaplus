@@ -12,7 +12,6 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.dfid.FPIntSet;
 import tlc2.tool.fp.dfid.MemFPIntSet;
-import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.LiveException;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
@@ -63,12 +62,6 @@ public class DFIDModelChecker extends AbstractChecker
      */
     public void modelCheck() throws Exception
     {
-        // Initialization for liveness checking:
-        if (this.checkLiveness)
-        {
-            LiveCheck.init(this.tool, this.actions, this.metadir);
-        }
-
         boolean recovered = this.recover();
         try
         {
@@ -135,10 +128,11 @@ public class DFIDModelChecker extends AbstractChecker
                         // Always check liveness properties at the end:
                         if (this.checkLiveness)
                         {
-                            MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, "complete");
+							MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS,
+									new String[] { "complete", Long.toString(this.theFPSet.size()) });
                             // SZ Jul 10, 2009: what for?
                             // ToolIO.out.flush();
-                            success = LiveCheck.check();
+                            success = liveCheck.finalCheck();
                             if (!success)
                                 return;
                         }
@@ -276,7 +270,7 @@ public class DFIDModelChecker extends AbstractChecker
                         // build behavior graph for liveness checking
                         if (this.checkLiveness)
                         {
-                            LiveCheck.addInitState(curState, fp);
+                            liveCheck.addInitState(curState, fp);
                         }
                     }
                 }
@@ -536,7 +530,7 @@ public class DFIDModelChecker extends AbstractChecker
                 liveNextStates.addElement(curState);
                 liveNextFPs.addElement(curStateFP);
                 // Add curState to the behavior graph:
-                LiveCheck.addNextState(curState, curStateFP, liveNextStates, liveNextFPs);
+                liveCheck.addNextState(curState, curStateFP, liveNextStates, liveNextFPs);
             }
 
             // We set curState DONE if
@@ -628,8 +622,8 @@ public class DFIDModelChecker extends AbstractChecker
             boolean doCheck = this.checkLiveness && (stateNum >= nextLiveCheck);
             if (doCheck)
             {
-                MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, "current");
-                if (!LiveCheck.check())
+                MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, new String[] {"current", Long.toString(stateNum)});
+                if (!liveCheck.check())
                 {
                     return false;
                 }
@@ -642,7 +636,7 @@ public class DFIDModelChecker extends AbstractChecker
             this.theFPSet.beginChkpt();
             if (this.checkLiveness)
             {
-                LiveCheck.beginChkpt();
+                liveCheck.beginChkpt();
             }
             UniqueString.internTbl.beginChkpt(this.metadir);
 
@@ -650,7 +644,7 @@ public class DFIDModelChecker extends AbstractChecker
             this.theFPSet.commitChkpt();
             if (this.checkLiveness)
             {
-                LiveCheck.commitChkpt();
+                liveCheck.commitChkpt();
             }
             UniqueString.internTbl.commitChkpt(this.metadir);
             MP.printMessage(EC.TLC_CHECKPOINT_END);
@@ -668,7 +662,7 @@ public class DFIDModelChecker extends AbstractChecker
             this.theFPSet.recover();
             if (this.checkLiveness)
             {
-                LiveCheck.recover();
+                liveCheck.recover();
             }
             MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END_DFID, String.valueOf(this.theFPSet.size()));
             recovered = true;
@@ -681,7 +675,7 @@ public class DFIDModelChecker extends AbstractChecker
     {
         this.theFPSet.close();
         if (this.checkLiveness)
-            LiveCheck.close();
+            liveCheck.close();
         if (this.allStateWriter != null)
             this.allStateWriter.close();
         // SZ Feb 23, 2009:

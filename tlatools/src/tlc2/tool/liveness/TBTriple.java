@@ -6,36 +6,43 @@
 package tlc2.tool.liveness;
 
 public class TBTriple {
-  /**
-   * TBTriple are used in tableau construction.  There are two kinds
-   * of triples. The alpha triples are (p/\q, p, q) and ([]p, p, O[]p).
-   * The beta triples are (p\/q, p, q) and (<>p, p, O<>q).
-   */
-  private LiveExprNode fa;
-  private LiveExprNode fb;
-  private LiveExprNode fc;
+	/**
+	 * TBTriple are used in tableau construction. There are two kinds of
+	 * triples. The alpha triples are (p/\q, p, q) and ([]p, p, O[]p). The beta
+	 * triples are (p\/q, p, q) and (<>p, p, O<>q).
+	 */
+	private final LiveExprNode fa;
+	private final LiveExprNode fb;
+	private final LiveExprNode fc;
 
-  public TBTriple(LiveExprNode a, LiveExprNode b, LiveExprNode c) {
-    this.fa = a;
-    this.fb = b;
-    this.fc = c;
-  }
-  public final LiveExprNode getA() { return this.fa; }
-  public final LiveExprNode getB() { return this.fb; }
-  public final LiveExprNode getC() { return this.fc; }
+	public TBTriple(LiveExprNode a, LiveExprNode b, LiveExprNode c) {
+		this.fa = a;
+		this.fb = b;
+		this.fc = c;
+	}
 
-  public final boolean isAlpha() {
-    return ((this.fa instanceof LNConj) ||
-	    (this.fa instanceof LNAll));
-  }
+	public final LiveExprNode getA() {
+		return this.fa;
+	}
 
-  public final boolean isBeta() {
-    return ((this.fa instanceof LNDisj) ||
-	    (this.fa instanceof LNEven));
-  }
+	public final LiveExprNode getB() {
+		return this.fb;
+	}
 
-  public final String toString() {
-    return "<" + this.fa + ",\n " + this.fb + ",\n " + this.fc + ">";
-  }
+	public final LiveExprNode getC() {
+		return this.fc;
+	}
+
+	public final boolean isAlpha() {
+		return ((this.fa instanceof LNConj) || (this.fa instanceof LNAll));
+	}
+
+	public final boolean isBeta() {
+		return ((this.fa instanceof LNDisj) || (this.fa instanceof LNEven));
+	}
+
+	public final String toString() {
+		return "<" + this.fa + ",\n " + this.fb + ",\n " + this.fc + ">";
+	}
 
 }

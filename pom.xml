@@ -270,18 +270,21 @@
 		</plugins>
 	</build>
 
-	<!-- pass mac specific SWT proeprties on mac (OS check is based on identifying the VM)-->
+	<!-- pass mac specific SWT properties on ...drum roll... mac -->
 	<profiles>
 		<profile>
 			<id>macosx</id>
 			<activation>
 				<property>
-					<name>java.vendor.url</name>
-					<value>http://www.apple.com/</value>
+					<name>os.name</name>
+					<value>Mac OS X</value>
 				</property>
 			</activation>
 			<properties>
-				<tycho.test.vm.argline>-Dosgi.ws=cocoa -XstartOnFirstThread</tycho.test.vm.argline>
+				<!-- On Mac OS X, /tmp is a symbolic link pointing to /private/tmp. Thus, make sure unit tests -->
+				<!-- use the /private/tmp to make path comparison work. -->
+				<!-- See org.lamport.tla.toolbox.spec.SpecTest.testCreateSpecStoreRelativePath() -->
+				<tycho.test.vm.argline>-Dosgi.ws=cocoa -Djava.io.tmpdir=/private/tmp/ -XstartOnFirstThread</tycho.test.vm.argline>
 				<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
 			</properties>
 		</profile>

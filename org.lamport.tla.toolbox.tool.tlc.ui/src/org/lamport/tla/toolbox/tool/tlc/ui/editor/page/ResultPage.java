@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -43,6 +45,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -109,6 +112,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private TableViewer coverage;
     private TableViewer stateSpace;
 
+    private final Lock disposeLock = new ReentrantLock(true);
+
     // listener on changes to the tlc output font preference
     private FontPreferenceChangeListener fontChangeListener;
 
@@ -148,114 +153,127 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     public void modelChanged(final TLCModelLaunchDataProvider dataProvider, final int fieldId)
     {
         UIHelper.runUIAsync(new Runnable() {
-            public void run()
-            {
-				switch (fieldId) {
-                case USER_OUTPUT:
-                    ResultPage.this.userOutput.setDocument(dataProvider.getUserOutput());
-                    break;
-                case PROGRESS_OUTPUT:
-                    ResultPage.this.progressOutput.setDocument(dataProvider.getProgressOutput());
-                    break;
-                case CONST_EXPR_EVAL_OUTPUT:
-                    ResultPage.this.expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
-                    break;
-                case START_TIME:
-                    ResultPage.this.startTimestampText.setText(new Date(dataProvider.getStartTimestamp()).toString());
-                    ResultPage.this.startTime = dataProvider.getStartTime();
-                    break;
-                case END_TIME:
-                    long finishTimestamp = dataProvider.getFinishTimestamp();
-                    if(finishTimestamp < 0) {
-                    	ResultPage.this.finishTimestampText.setText("");
-                    	break;
-                    }
-                    ResultPage.this.finishTimestampText.setText(new Date(finishTimestamp).toString());
-                    
-                    // calc elapsed time and set as Tooltip
-                    final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-                    sdf.setTimeZone(TimeZone.getTimeZone("GMT")); // explicitly set TZ to handle local offset
-                    long elapsedTime = finishTimestamp - dataProvider.getStartTimestamp();
-                    ResultPage.this.finishTimestampText.setToolTipText(sdf.format(new Date(elapsedTime)));
-                    ResultPage.this.startTimestampText.setToolTipText(sdf.format(new Date(elapsedTime)));
-                    break;
-                case LAST_CHECKPOINT_TIME:
-                    long lastCheckpointTimeStamp = dataProvider.getLastCheckpointTimeStamp();
-                    if(lastCheckpointTimeStamp > 0) {
-                    	ResultPage.this.lastCheckpointTimeText.setText(new Date(lastCheckpointTimeStamp).toString());
-                    	break;
-                    }
-                   	ResultPage.this.lastCheckpointTimeText.setText("");
-                   	break;
-                case CURRENT_STATUS:
-                    ResultPage.this.currentStatusText.setText(dataProvider.getCurrentStatus());
-                    break;
-                case FINGERPRINT_COLLISION_PROBABILITY:
-                    ResultPage.this.fingerprintCollisionProbabilityText.setText(dataProvider.getFingerprintCollisionProbability());
-                    break;
-                case COVERAGE_TIME:
-                    ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
-                    break;
-                case COVERAGE:
-                    ResultPage.this.coverage.setInput(dataProvider.getCoverageInfo());
-                    break;
-                case PROGRESS:
-                    ResultPage.this.stateSpace.setInput(dataProvider.getProgressInformation());
-
-                    // The following code finds all the graph windows (shells) for this
-                    // model and calls redraw() and update() on them, which apparently is the
-                    // magic incantation to cause its listener to be called to issue the
-                    // necessary commands to redraw the data and then displays the result.
-                    String suffix = getGraphTitleSuffix(ResultPage.this);
-                    Shell[] shells = UIHelper.getCurrentDisplay().getShells();
-                    for (int i = 0; i < shells.length; i++)
-                    {
-                        if (shells[i].getText().endsWith(suffix))
-                        {
-                            shells[i].redraw();
-                            shells[i].update();
-                            // The following was commented out by LL on 6 Jul 2012 because it was filling
-                            // up the Console log with useless stuff.
-                            // TLCUIActivator.getDefault().logDebug("Called redraw/update on shell number" + i);
-                        }
-                    }
-                    break;
-                case ERRORS:
-                    String text;
-                    Color color;
-                    int errorCount = dataProvider.getErrors().size();
-                    switch (errorCount) {
-                    case 0:
-                        text = TLCModelLaunchDataProvider.NO_ERRORS;
-                        color = TLCUIActivator.getColor(SWT.COLOR_BLACK);
-                        ResultPage.this.errorStatusHyperLink
-                                .removeHyperlinkListener(ResultPage.this.errorHyperLinkListener);
-                        break;
-                    case 1:
-                        text = "1 Error";
-                        ResultPage.this.errorStatusHyperLink
-                                .addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
-                        color = TLCUIActivator.getColor(SWT.COLOR_RED);
-                        break;
-                    default:
-                        text = String.valueOf(errorCount) + " Errors";
-                        ResultPage.this.errorStatusHyperLink
-                                .addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
-                        color = TLCUIActivator.getColor(SWT.COLOR_RED);
-                        break;
-                    }
-
-                    ResultPage.this.errorStatusHyperLink.setText(text);
-                    ResultPage.this.errorStatusHyperLink.setForeground(color);
-
-                    // update the error view
-                    TLCErrorView.updateErrorView(dataProvider.getConfig());
-                    break;
-                default:
-                    break;
-                }
-
-                // ResultPage.this.refresh();
+			public void run() {
+				// Acquire dispose lock prior to widget access. Using a single
+				// lock just to serialize dispose and modelChange seems
+				// overkill, but the wait-for graph becomes tricky with all the
+				// background jobs going on (at least too tricky to get it
+				// solved within an hour).
+            	disposeLock.lock();
+            	try {
+                	if (getPartControl().isDisposed()) {
+            			// Don't update the widgets if the underlying SWT control has
+            			// already been disposed. Otherwise it results in an
+            			// "SWTException: Widget is disposed".
+                		return;
+                	}
+					switch (fieldId) {
+	                case USER_OUTPUT:
+	                    ResultPage.this.userOutput.setDocument(dataProvider.getUserOutput());
+	                    break;
+	                case PROGRESS_OUTPUT:
+	                    ResultPage.this.progressOutput.setDocument(dataProvider.getProgressOutput());
+	                    break;
+	                case CONST_EXPR_EVAL_OUTPUT:
+	                    ResultPage.this.expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
+	                    break;
+	                case START_TIME:
+	                    ResultPage.this.startTimestampText.setText(new Date(dataProvider.getStartTimestamp()).toString());
+	                    ResultPage.this.startTime = dataProvider.getStartTime();
+	                    break;
+	                case END_TIME:
+	                    long finishTimestamp = dataProvider.getFinishTimestamp();
+	                    if(finishTimestamp < 0) {
+	                    	ResultPage.this.finishTimestampText.setText("");
+	                    	break;
+	                    }
+	                    ResultPage.this.finishTimestampText.setText(new Date(finishTimestamp).toString());
+	                    
+	                    // calc elapsed time and set as Tooltip
+	                    final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+	                    sdf.setTimeZone(TimeZone.getTimeZone("GMT")); // explicitly set TZ to handle local offset
+	                    long elapsedTime = finishTimestamp - dataProvider.getStartTimestamp();
+	                    ResultPage.this.finishTimestampText.setToolTipText(sdf.format(new Date(elapsedTime)));
+	                    ResultPage.this.startTimestampText.setToolTipText(sdf.format(new Date(elapsedTime)));
+	                    break;
+	                case LAST_CHECKPOINT_TIME:
+	                    long lastCheckpointTimeStamp = dataProvider.getLastCheckpointTimeStamp();
+	                    if(lastCheckpointTimeStamp > 0) {
+	                    	ResultPage.this.lastCheckpointTimeText.setText(new Date(lastCheckpointTimeStamp).toString());
+	                    	break;
+	                    }
+	                   	ResultPage.this.lastCheckpointTimeText.setText("");
+	                   	break;
+	                case CURRENT_STATUS:
+	                    ResultPage.this.currentStatusText.setText(dataProvider.getCurrentStatus());
+	                    break;
+	                case FINGERPRINT_COLLISION_PROBABILITY:
+	                    ResultPage.this.fingerprintCollisionProbabilityText.setText(dataProvider.getFingerprintCollisionProbability());
+	                    break;
+	                case COVERAGE_TIME:
+	                    ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
+	                    break;
+	                case COVERAGE:
+	                    ResultPage.this.coverage.setInput(dataProvider.getCoverageInfo());
+	                    break;
+	                case PROGRESS:
+	                    ResultPage.this.stateSpace.setInput(dataProvider.getProgressInformation());
+	
+	                    // The following code finds all the graph windows (shells) for this
+	                    // model and calls redraw() and update() on them, which apparently is the
+	                    // magic incantation to cause its listener to be called to issue the
+	                    // necessary commands to redraw the data and then displays the result.
+	                    String suffix = getGraphTitleSuffix(ResultPage.this);
+	                    Shell[] shells = UIHelper.getCurrentDisplay().getShells();
+	                    for (int i = 0; i < shells.length; i++)
+	                    {
+	                        if (shells[i].getText().endsWith(suffix))
+	                        {
+	                            shells[i].redraw();
+	                            shells[i].update();
+	                            // The following was commented out by LL on 6 Jul 2012 because it was filling
+	                            // up the Console log with useless stuff.
+	                            // TLCUIActivator.getDefault().logDebug("Called redraw/update on shell number" + i);
+	                        }
+	                    }
+	                    break;
+	                case ERRORS:
+	                    String text;
+	                    Color color;
+	                    int errorCount = dataProvider.getErrors().size();
+	                    switch (errorCount) {
+	                    case 0:
+	                        text = TLCModelLaunchDataProvider.NO_ERRORS;
+	                        color = TLCUIActivator.getColor(SWT.COLOR_BLACK);
+	                        ResultPage.this.errorStatusHyperLink
+	                                .removeHyperlinkListener(ResultPage.this.errorHyperLinkListener);
+	                        break;
+	                    case 1:
+	                        text = "1 Error";
+	                        ResultPage.this.errorStatusHyperLink
+	                                .addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
+	                        color = TLCUIActivator.getColor(SWT.COLOR_RED);
+	                        break;
+	                    default:
+	                        text = String.valueOf(errorCount) + " Errors";
+	                        ResultPage.this.errorStatusHyperLink
+	                                .addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
+	                        color = TLCUIActivator.getColor(SWT.COLOR_RED);
+	                        break;
+	                    }
+	
+	                    ResultPage.this.errorStatusHyperLink.setText(text);
+	                    ResultPage.this.errorStatusHyperLink.setForeground(color);
+	
+	                    // update the error view
+	                    TLCErrorView.updateErrorView(dataProvider.getConfig());
+	                    break;
+	                default:
+	                    break;
+	                }
+            	} finally {
+            		disposeLock.unlock();
+            	}
             }
         });
 
@@ -290,16 +308,25 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private synchronized void reinit()
     {
         // TLCUIActivator.getDefault().logDebug("Entering reinit()");
-        this.startTimestampText.setText("");
-        this.startTime = 0;
-        this.finishTimestampText.setText("");
-        this.lastCheckpointTimeText.setText("");
-        this.currentStatusText.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
-        this.errorStatusHyperLink.setText(TLCModelLaunchDataProvider.NO_ERRORS);
-        this.coverage.setInput(new Vector());
-        this.stateSpace.setInput(new Vector());
-        this.progressOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
-        this.userOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
+    	disposeLock.lock();
+    	try {
+    		if (getPartControl().isDisposed()) {
+    			// Cannot access widgets past their disposal
+    			return;
+    		}
+    		this.startTimestampText.setText("");
+    		this.startTime = 0;
+    		this.finishTimestampText.setText("");
+    		this.lastCheckpointTimeText.setText("");
+    		this.currentStatusText.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
+    		this.errorStatusHyperLink.setText(TLCModelLaunchDataProvider.NO_ERRORS);
+    		this.coverage.setInput(new Vector<CoverageInformationItem>());
+    		this.stateSpace.setInput(new Vector<StateSpaceInformationItem>());
+    		this.progressOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
+    		this.userOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
+    	} finally {
+    		disposeLock.unlock();
+    	}
         // TLCUIActivator.getDefault().logDebug("Exiting reinit()");
     }
 
@@ -308,7 +335,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     public void dispose()
     {
-
+    	disposeLock.lock();
+    	try {
         /*
          * Remove graph windows raised for the page.
          */
@@ -331,6 +359,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             provider.setPresenter(null);
         }
         super.dispose();
+    	} finally {
+    		disposeLock.unlock();
+    	}
     }
 
     /**
@@ -544,7 +575,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         progressOutput.getControl().setLayoutData(gd);
         progressOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
-        Vector controls = new Vector();
+        Vector<Control> controls = new Vector<Control>();
         controls.add(userOutput.getControl());
         controls.add(progressOutput.getControl());
         fontChangeListener = new FontPreferenceChangeListener(controls, ITLCPreferenceConstants.I_TLC_OUTPUT_FONT);
@@ -720,11 +751,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     public StateSpaceInformationItem[] getStateSpaceInformation()
     {
-        List infoList = (List) stateSpace.getInput();
+		List<StateSpaceInformationItem> infoList = (List<StateSpaceInformationItem>) stateSpace.getInput();
         StateSpaceInformationItem[] result = new StateSpaceInformationItem[infoList.size()];
         for (int i = 0; i < result.length; i++)
         {
-            result[i] = (StateSpaceInformationItem) infoList.get(result.length - i - 1);
+            result[i] = infoList.get(result.length - i - 1);
         }
         return result;
 
@@ -1015,7 +1046,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                             return;
                         }
 
-                        long[] data = new long[ssInfo.length + 1];
+                        final long[] data = new long[ssInfo.length + 1];
                         long[] times = new long[ssInfo.length + 1];
                         data[0] = 0;
                         times[0] = 0;
@@ -1049,10 +1080,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                                 return;
                             }
                             times[i] = ssInfo[i - 1].getTime().getTime() - startTime;
-                        }
-                        if (data == null)
-                        {
-                            return;
                         }
 
                         Rectangle rect = shell.getClientArea();

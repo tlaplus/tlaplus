@@ -106,6 +106,22 @@
                optional="true">
          </commandParameter>
       </command>
+      <!-- The difference between this command and the "...delegate" above is, 
+      	   that handlers associated to this command are *always* created. This 
+      	   is used by the CloneModelContributionItem that is supposed to show
+      	   clone model candidates regardless of the enabledWhen expression of
+      	   the Toolbox's spec explorer enablement state. -->
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Creates a copy of selected model."
+            id="toolbox.tool.tlc.commands.model.clone.delegate.always.enabled"
+            name="Clone Model">
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.clone.param.modelName"
+               name="Model to be cloned"
+               optional="true">
+         </commandParameter>
+      </command>
       <command
             categoryId="toolbox.tool.tlc.commands.category"
             description="Runs the model checker."
@@ -619,9 +635,13 @@ Console Facory
       </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandlerDelegate"
+            commandId="toolbox.tool.tlc.commands.model.clone.delegate.always.enabled">
+            <!-- intentionally no enabledWhen here (see corresponding command above) -->
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandlerDelegate"
             commandId="toolbox.tool.tlc.commands.model.clone.delegate">
          <enabledWhen>
-            <or>
                <and>
                   <count
                         value="1">
@@ -635,18 +655,8 @@ Console Facory
                               value="org.eclipse.debug.core.ILaunchConfiguration">
                         </instanceof>
                      </iterate>
-                  </with></and>
-               <with
-                     variable="activeMenu">
-                  <iterate>
-                     <not>
-                        <equals
-                              value="toolbox.explorer.popup">
-                        </equals>
-                     </not>
-                  </iterate>
-               </with>
-            </or>
+                  </with>
+               </and>
          </enabledWhen>
          <!-- enabledWhen>
             <count

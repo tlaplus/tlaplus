@@ -39,6 +39,14 @@ public final class MemIntStack {
     return this.elems[--this.size];
   }
 
+  public final synchronized int peakInt() {
+	    return peakInt(size - 1);
+  }
+
+  public final synchronized int peakInt(int pos) {
+	    return this.elems[pos];
+}
+
   /* Pop the long integer on top of the stack.  */
   public final synchronized long popLong() {
     long high = this.popInt();
@@ -46,6 +54,17 @@ public final class MemIntStack {
     return (high << 32) | (low & 0xFFFFFFFFL);
   }
 
+  public final synchronized long peakLong() {
+	    long high = this.peakInt();
+	    long low = this.peakInt();
+	    return (high << 32) | (low & 0xFFFFFFFFL);
+	  }
+
+  public final synchronized long peakLong(int pos) {
+	    long high = this.peakInt(pos);
+	    long low = this.peakInt(pos + 1);
+	    return (high << 32) | (low & 0xFFFFFFFFL);
+	  }
+
   public final void reset() { this.size = 0; }
-  
 }

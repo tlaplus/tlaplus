@@ -15,10 +15,10 @@ public class ActionItemList {
    *    kind = -2: UNCHANGED pred
    *    kind = -3: pred' # pred
    */
-  public SemanticNode pred;     // Expression of the action
-  public Context con;           // Context of the action
-  public int kind;  
-  public ActionItemList next;
+  public final SemanticNode pred;     // Expression of the action
+  public final Context con;           // Context of the action
+  public final int kind;  
+  public final ActionItemList next;
 
   public final static ActionItemList
     Empty = new ActionItemList(null, null, 0, null);

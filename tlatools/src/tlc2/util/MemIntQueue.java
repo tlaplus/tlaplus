@@ -7,6 +7,7 @@ package tlc2.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
@@ -35,7 +36,9 @@ public final class MemIntQueue {
   }
 
   public final int length() { return this.len; }
-    
+  
+  public final boolean hasElements() { return this.len > 0; }
+  
   public final void enqueueInt(int elem) {
     if (this.len == this.elems.length) {
       // grow the array
@@ -59,6 +62,9 @@ public final class MemIntQueue {
     
   public final int dequeueInt() {
     // Assert.check(this.len > 0);
+	if (this.len < 1) {
+		throw new NoSuchElementException();
+	}
     int res = this.elems[this.start];
     this.len--;
     this.start = (this.start + 1) % this.elems.length;
@@ -105,4 +111,39 @@ public final class MemIntQueue {
     bis.close();
   }
 
+  	/*
+	 * The detailed formatter below can be activated in Eclipse's variable view
+	 * by choosing "New detailed formatter" from the MemIntQueue context menu.
+	 * Insert "MemIntQueue.DetailedFormatter.fpAndtidxAndptr(this);".
+	 */
+  	public static class DetailedFormatter {
+  		
+  		// An Eclipse detailed formatter for when this Queue holds pairs of long
+  		// (fp) and int (tableau idx)
+  		public static String fpAndtidx(MemIntQueue aQueue) {
+  			final StringBuffer buf = new StringBuffer(aQueue.len / 3);
+  			for (int i = 0; i < aQueue.len; i+=3) {
+  				final long fp = ((long) aQueue.elems[i] << 32) | ((long) (aQueue.elems[i + 1]) & 0xFFFFFFFFL);
+  				buf.append("fp: " + fp);
+  				buf.append(" tidx: " + aQueue.elems[i + 2]);
+  				buf.append("\n");
+  			}
+  			return buf.toString();
+  		}
+  		
+  		// An Eclipse detailed formatter for when this Queue holds pairs of long
+  		// (fp), int (tableau idx) and long (disk graph pointer).
+  		public static String fpAndtidxAndptr(MemIntQueue aQueue) {
+  			final StringBuffer buf = new StringBuffer(aQueue.len / 5);
+  			for (int i = 0; i < aQueue.len; i += 5) {
+  				final long fp = ((long) aQueue.elems[i] << 32) | ((long) (aQueue.elems[i + 1]) & 0xFFFFFFFFL);
+  				buf.append("fp: " + fp);
+  				buf.append(" tidx: " + aQueue.elems[i + 2]);
+  				final long ptr = ((long) aQueue.elems[i + 3] << 32) | ((long) (aQueue.elems[i+ 4] ) & 0xFFFFFFFFL);
+  				buf.append(" ptr: " + ptr);
+  				buf.append("\n");
+  			}
+  			return buf.toString();
+  		}
+  	}
 }

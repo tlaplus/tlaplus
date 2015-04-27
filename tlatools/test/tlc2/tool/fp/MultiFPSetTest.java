@@ -59,6 +59,14 @@ public class MultiFPSetTest extends TestCase {
 		} catch (OutOfMemoryError e) {
 			// might happen depending on test machine setup
 			return;
+		} catch (IllegalArgumentException e) {
+			// Happens when MultiFPSetConfiguration is invalid (too many fpsets
+			// leaving no room/memory for each individual fpset).
+			if (e.getMessage().equals("Given fpSetConfig results in zero or negative fp count.")) {
+				return;
+			}
+			// some other cause for the IAE
+			fail();
 		} catch (RuntimeException e) {
 			fail();
 		}

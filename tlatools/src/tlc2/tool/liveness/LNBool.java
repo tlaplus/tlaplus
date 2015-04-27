@@ -9,23 +9,51 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 
 class LNBool extends LiveExprNode {
-  public static final LNBool TRUE = new LNBool(true);
-  public static final LNBool FALSE = new LNBool(false);
-  
-  protected boolean b;
+	public static final LNBool TRUE = new LNBool(true);
+	public static final LNBool FALSE = new LNBool(false);
 
-  public LNBool(boolean b) { this.b = b; }
+	protected final boolean b;
 
-  public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
-    return this.b;
-  }
+	public LNBool(boolean b) {
+		this.b = b;
+	}
 
-  public final int getLevel() { return 0; }
+	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+		return this.b;
+	}
 
-  public final boolean containAction() { return false; }
+	public final int getLevel() {
+		return 0;
+	}
 
-  public final void toString(StringBuffer sb, String padding) {
-    sb.append(this.b ? "TRUE" : "FALSE");
-  }
+	public final boolean containAction() {
+		return false;
+	}
 
+	public final void toString(StringBuffer sb, String padding) {
+		sb.append(this.b ? "TRUE" : "FALSE");
+	}
+
+	public LiveExprNode pushNeg() {
+		return new LNBool(!b);
+	}
+
+	/**
+	 * This method pushes a negation all the way down to the atoms. It is
+	 * currently not used.
+	 */
+	public LiveExprNode pushNeg(boolean hasNeg) {
+		// for the remaining types, negate when needed:
+		if (hasNeg) {
+			return new LNBool(!b);
+		}
+		return super.pushNeg(hasNeg);
+	}
+
+	public boolean equals(LiveExprNode exp) {
+		if (exp instanceof LNBool) {
+			return b == ((LNBool) exp).b;
+		}
+		return false;
+	}
 }

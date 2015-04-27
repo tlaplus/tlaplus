@@ -637,11 +637,9 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
 
   private final String msgStackToString(ParseException e) {
     StringBuffer msg;
-    String name = " *unknown* (error occurred before module header)";
-    if (mn != null) name = mn.toString();
 
     msg = new StringBuffer("***Parse Error***\n");
-    if ( expecting != emptyString ) {
+    if ( !expecting.equals(emptyString) ) {
       msg.append("Was expecting \"");
       msg.append( expecting );
       msg.append("\"\n");

@@ -12,6 +12,7 @@ org.lamport.tla.toolbox.uitest/farsite/DistributedSystemModule.toolbox/
 tlatools/TLA+ Tools
 tlatools/test-reports
 tlatools/ByteUtilsTest*.bin
+tlatools/states/
 *.csv
 org.lamport.tla.toolbox.product.product/plugin_customization.ini
 examples/*/states/
@@ -20,3 +21,4 @@ org.lamport.tla.toolbox.jnlp/files/dist-tlc.zip
 workspace/
 states/
 .DS_Store
+screenshots/

@@ -51,8 +51,6 @@ public class MultiFPSet extends FPSet {
 	    // LL modified error message on 7 April 2012
 		Assert.check(bits > 0 && bits <= MAX_FPBITS, "Illegal number of FPSets found.");
 		
-		this.sets = new FPSet[fpSetConfiguration.getMultiFPSetCnt()];
-		
 		if (fpMemSize == MEM_DEFAULT) {
 			fpMemSize = HeapBasedDiskFPSet.DefaultMaxTblCnt / 20;
 		}
@@ -197,6 +195,7 @@ public class MultiFPSet extends FPSet {
 			long fp = braf.readLong();
 			getFPSet(fp).recoverFP(fp);
 		}
+		braf.close();
 
 		for (int i = 0; i < this.sets.length; i++) {
 			this.sets[i].completeRecovery();

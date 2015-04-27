@@ -40,7 +40,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	 * @see tlc2.tool.distributed.fp.IFPSetManager#numOfAliveServers()
 	 */
 	public int numOfAliveServers() {
-		return numOfAliveServers();
+		return numOfServers();
 	}
 
 	/* (non-Javadoc)

@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IProject;
@@ -32,6 +33,10 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class CloneModelContributionItem extends CompoundContributionItem
 {
+    /**
+     * Contrary to CloneModelHandlerDelegate.COMMAND_ID, no enabledWhen expression plugin.xml
+     */
+    public static final String COMMAND_ID_ALWAYS_ENABLED = CloneModelHandlerDelegate.COMMAND_ID + ".always.enabled";
 
     private ImageDescriptor modelIcon = TLCUIActivator.getImageDescriptor("icons/full/choice_sc_obj.gif");
 
@@ -41,7 +46,7 @@ public class CloneModelContributionItem extends CompoundContributionItem
         ILaunchConfigurationType launchConfigurationType = launchManager
                 .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
 
-        Vector modelContributions = new Vector();
+        final Vector<CommandContributionItem> modelContributions = new Vector<CommandContributionItem>();
 
         Spec currentSpec = ToolboxHandle.getCurrentSpec();
         if (currentSpec == null) {
@@ -74,7 +79,7 @@ public class CloneModelContributionItem extends CompoundContributionItem
 
                 // Next, set the command and the parameters for the command
                 // that will be called when the user selects this item.
-                HashMap parameters = new HashMap();
+                Map<String, String> parameters = new HashMap<String, String>();
 
                 // user visible model name
                 String modelNameUser = ModelHelper.getModelName(launchConfigurations[i].getFile());
@@ -85,7 +90,7 @@ public class CloneModelContributionItem extends CompoundContributionItem
                 // create the contribution item
                 CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper
                         .getActiveWindow(), "toolbox.command.model.clone." + modelName,
-                        CloneModelHandlerDelegate.COMMAND_ID, parameters, modelIcon, null, null, modelNameUser, null,
+                        COMMAND_ID_ALWAYS_ENABLED, parameters, modelIcon, null, null, modelNameUser, null,
                         "Clones " + modelNameUser, CommandContributionItem.STYLE_PUSH, null, true);
 
                 // add contribution item to the list
@@ -98,5 +103,4 @@ public class CloneModelContributionItem extends CompoundContributionItem
         }
         return (IContributionItem[]) modelContributions.toArray(new IContributionItem[modelContributions.size()]);
     }
-
 }

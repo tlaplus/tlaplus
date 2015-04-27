@@ -9,6 +9,8 @@ import java.util.Map;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.tool.SpecEvent;
+import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.semantic.ModuleNode;
@@ -42,13 +44,13 @@ public class ParseResultBroadcaster
 {
 
     private static ParseResultBroadcaster instance;
-    private List listeners;
+    private List<IParseResultListener> listeners;
     /**
      * Map from {@link IPath} to the most recent
      * {@link ParseResult} containing that module that
      * exists at that full file system path.
      */
-    private Map parseResults;
+    private Map<IPath, ParseResult> parseResults;
 
     /**
      * This is a singleton class, so the constructor
@@ -57,8 +59,28 @@ public class ParseResultBroadcaster
      */
     private ParseResultBroadcaster()
     {
-        listeners = new LinkedList();
-        parseResults = new HashMap();
+        listeners = new LinkedList<IParseResultListener>();
+        parseResults = new HashMap<IPath, ParseResult>();
+        Activator.getSpecManager().addSpecLifecycleParticipant(new SpecLifecycleParticipant() {
+			/* (non-Javadoc)
+			 * @see org.lamport.tla.toolbox.tool.SpecLifecycleParticipant#eventOccured(org.lamport.tla.toolbox.tool.SpecEvent)
+			 */
+			public boolean eventOccured(SpecEvent event) {
+				if (event.getType() == SpecEvent.TYPE_CLOSE) {
+					/*
+					 * We clear any information that the parse result
+					 * broadcaster has when the spec is closed because the
+					 * parse result broadcasters saves a map of module names
+					 * to parse results. These module names are unique
+					 * within a spec but not unique globally so information
+					 * in the class should not persist across changes of
+					 * specs.
+					 */
+					ParseResultBroadcaster.this.clear();
+				}
+				return true;
+			}
+		});
     }
 
     /**
@@ -66,7 +88,7 @@ public class ParseResultBroadcaster
      * 
      * @return
      */
-    public static ParseResultBroadcaster getParseResultBroadcaster()
+    public synchronized static ParseResultBroadcaster getParseResultBroadcaster()
     {
         if (instance == null)
         {
@@ -87,10 +109,10 @@ public class ParseResultBroadcaster
      */
     public void broadcastParseResult(ParseResult parseResult)
     {
-        Iterator it = listeners.iterator();
+        Iterator<IParseResultListener> it = listeners.iterator();
         while (it.hasNext())
         {
-            IParseResultListener listener = (IParseResultListener) it.next();
+            IParseResultListener listener = it.next();
             listener.newParseResult(parseResult);
         }
 
@@ -164,7 +186,7 @@ public class ParseResultBroadcaster
      */
     public ParseResult getParseResult(IPath modulePath)
     {
-        return (ParseResult) parseResults.get(modulePath);
+        return parseResults.get(modulePath);
     }
 
     /**
