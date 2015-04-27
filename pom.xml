@@ -91,40 +91,6 @@
 		<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
 	</properties>
 
-	<!-- explicitly define plugin repositories to make tycho SNAPSHOT builds available -->
-	<pluginRepositories>
-
-		<!-- main Maven repository (do not remove) -->
-	    <pluginRepository>
-	      <id>central</id>
-	      <name>Maven Plugin Repository</name>
-	      <url>http://repo1.maven.org/maven2</url>
-	      <layout>default</layout>
-	      <snapshots>
-	        <enabled>false</enabled>
-	      </snapshots>
-	      <releases>
-	        <updatePolicy>never</updatePolicy>
-	      </releases>
-	    </pluginRepository>
-
-	    <!-- Private Tycho snapshot repo (remove once 0.14 is stable) -->
-	    <!-- Eclispe ini patcher repo (remove when bug TYCHO-595 fixed) -->
-	    <pluginRepository>
-	      <id>tla</id>
-	      <name>Eclipse-ini-patcher and Tycho Snapshot Repository</name>
-	      <url>http://tla.msr-inria.inria.fr/maven</url>
-	      <layout>default</layout>
-	      <snapshots>
-	        <enabled>true</enabled>
-	      </snapshots>
-	      <releases>
-	        <updatePolicy>never</updatePolicy>
-	      </releases>
-	    </pluginRepository>
-
-	  </pluginRepositories>
-
 	<build>
 		<plugins>
 			<!-- enable tycho build extension -->
