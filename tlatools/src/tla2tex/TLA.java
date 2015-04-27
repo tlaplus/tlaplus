@@ -514,7 +514,7 @@ public class TLA
                 }
                 ;
                 Parameters.UserStyleFile = RemoveExtension(args[nextArg]);
-                if ((Parameters.UserStyleFile != args[nextArg])
+                if ((!Parameters.UserStyleFile.equals(args[nextArg]))
                         && (args[nextArg].indexOf(".sty") != args[nextArg].length() - 4))
                 {
                     CommandLineError("-style file must have extension `.sty'");

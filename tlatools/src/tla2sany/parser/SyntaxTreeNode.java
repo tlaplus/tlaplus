@@ -571,7 +571,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     
     System.out.print((image == null ? "(" + SyntaxNodeImage[kind].toString() 
          + ")" : image.toString()) 
-         + "\t" + (operator != "" ? operator + "\t" : "")
+         + "\t" + (!operator.equals("") ? operator + "\t" : "")
          + "  #heirs: " + heirs.length + "\t"
          + "  kind:   " + kind + PreCommentToString(preComment) + "\n"      
                   // Printing of preComment added by LL on 2 Jul 2009

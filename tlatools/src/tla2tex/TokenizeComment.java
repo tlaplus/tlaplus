@@ -906,7 +906,7 @@ public class TokenizeComment
                    }
                   else if (nextChar == '\n' )
                    { skipNextChar();
-                     if (token == "")
+                     if (token.equals(""))
                        { token = " "; }
                      CTokenOut(CToken.TEX);
                      startNewLine();
