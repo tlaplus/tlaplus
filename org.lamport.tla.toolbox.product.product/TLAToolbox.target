@@ -8,7 +8,7 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="1.0.1.201502251926"/>
-<repository location="http://tla.msr-inria.inria.fr/pdf4eclipse/"/>
+<repository location="http://lemmy.github.com/Pdf4Eclipse/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.log4j" version="1.2.15.v201012070815"/>
