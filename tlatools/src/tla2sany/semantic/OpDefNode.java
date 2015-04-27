@@ -737,7 +737,7 @@ public class OpDefNode extends OpDefOrDeclNode
             } // end for
           }
           else {
-            errors.addAbort(null,
+            errors.addAbort(Location.nullLoc,
                             "Internal error: operator neither BuiltIn nor UserDefined" +
                             " \nin call to OpDefNode.match()", true);
           }
