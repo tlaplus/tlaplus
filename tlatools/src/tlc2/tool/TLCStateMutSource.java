@@ -294,7 +294,7 @@ implements Cloneable, Serializable {
       UniqueString key = vars[0].getName();
       Value val = this.lookup(key);
       Value lstateVal = lstate.lookup(key);
-      if (!val.equals(lstateVal)) {
+      if (val == null || !val.equals(lstateVal)) {
 	String val_str = (val == null) ? "null" : Value.ppr(val.toString());
 	result.append(key.toString());
 	result.append(" = " + val_str + "\n");
@@ -305,7 +305,7 @@ implements Cloneable, Serializable {
 	UniqueString key = vars[i].getName();
 	Value val = this.lookup(key);
 	Value lstateVal = lstate.lookup(key);
-	if (!val.equals(lstateVal)) {
+	if (val == null || !val.equals(lstateVal)) {
 	  String val_str = (val == null) ? "null" : Value.ppr(val.toString());
 	  result.append("/\\ ");
 	  result.append(key.toString());
