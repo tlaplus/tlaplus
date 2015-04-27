@@ -73,12 +73,12 @@ public class Bags implements ValueConstants
                     num += ((IntValue) vals[i]).val;
                 } else
                 {
-                    new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagCardinality", "a bag",
+                    throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagCardinality", "a bag",
                             Value.ppr(b.toString()) });
                 }
             } else
             {
-                new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagCardinality", "a bag",
+            	throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagCardinality", "a bag",
                         Value.ppr(b.toString()) });
             }
         }
