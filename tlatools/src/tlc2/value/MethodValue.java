@@ -23,18 +23,18 @@ public class MethodValue extends OpValue implements Applicable {
 
   public final int compareTo(Object obj) {
     Assert.fail("Attempted to compare operator " + this.toString() +
-		" with value:\n" + ppr(obj.toString()));
+		" with value:\n" + obj == null ? "null" : ppr(obj.toString()));
     return 0;       // make compiler happy
   }
   
   public final boolean equals(Object obj) {
     Assert.fail("Attempted to check equality of operator " + this.toString() +
-		" with value:\n" + ppr(obj.toString()));
+		" with value:\n" + obj == null ? "null" : ppr(obj.toString()));
     return false;   // make compiler happy
   }
 
   public final boolean member(Value elem) {
-    Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
+    Assert.fail("Attempted to check if the value:\n" + elem == null ? "null" : ppr(elem.toString()) +
 		"\nis an element of operator " + this.toString());
     return false;   // make compiler happy
   }
