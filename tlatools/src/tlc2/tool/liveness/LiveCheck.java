@@ -19,6 +19,7 @@ import tlc2.util.FP64;
 import tlc2.util.LongVec;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
+import util.Assert;
 import util.SimpleFilenameToStream;
 
 public class LiveCheck implements ILiveCheck {
@@ -134,7 +135,7 @@ public class LiveCheck implements ILiveCheck {
 		}
 		return true;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#checkTrace(tlc2.tool.StateVec)
 	 */
@@ -370,14 +371,19 @@ public class LiveCheck implements ILiveCheck {
 				// is no point in adding the GraphNode again. It is assumed that
 				// it wouldn't invalidate the result, but it wastes disk space.
 				if (s < node0.succSize()) {
-				node0.realign(); // see node0.addTransition() hint
-				// Add a node for the current state. It gets added *after*
-				// all transitions have been added because addNode
-				// immediately writes the GraphNode to disk including its
-				// transitions.
-				dgraph.addNode(node0);
+					node0.realign(); // see node0.addTransition() hint
+					// Add a node for the current state. It gets added *after*
+					// all transitions have been added because addNode
+					// immediately writes the GraphNode to disk including its
+					// transitions.
+					dgraph.addNode(node0);
+				} else {
+					// Since the condition is only supposed to evaluate to false
+					// when LiveCheck is used in simulation mode, mainChecker
+					// has to be null.
+					Assert.check(TLCGlobals.mainChecker == null, EC.GENERAL);
+				}
 			}
-		}
 		}
 
 		public DiskGraph getDiskGraph() {
@@ -511,11 +517,16 @@ public class LiveCheck implements ILiveCheck {
 					}
 					// See same case in LiveChecker#addNextState
 					if (s < node0.succSize()) {
-					node0.realign(); // see node0.addTransition() hint
-					dgraph.addNode(node0);
+						node0.realign(); // see node0.addTransition() hint
+						dgraph.addNode(node0);
+					} else {
+						// Since the condition is only supposed to evaluate to false
+						// when LiveCheck is used in simulation mode, mainChecker
+						// has to be null.
+						Assert.check(TLCGlobals.mainChecker == null, EC.GENERAL);
+					}
 				}
 			}
-		}
 		}
 
 		/**
@@ -595,9 +606,9 @@ public class LiveCheck implements ILiveCheck {
 				}
 			}
 			if (numSucc < node.succSize()) {
-			node.realign(); // see node.addTransition() hint
-			dgraph.addNode(node);
-		}
+				node.realign(); // see node.addTransition() hint
+				dgraph.addNode(node);
+			}
 		}
 
 		/* (non-Javadoc)
