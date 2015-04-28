@@ -121,6 +121,11 @@
 		<!-- by the tla2tools OSGi bundle and is expected to be the same version. -->
 		<unzip src="lib/javax.mail.jar" dest="${class.dir}"/>
 		
+		<!-- Extract javax.mail to maven classes folder. This script is triggered by -->
+		<!-- maven. However, maven compiles the code again to target/classes from -->
+		<!-- where it creates the plugin -->
+		<unzip src="lib/javax.mail.jar" dest="target/classes"/>
+		
 		<!-- TODO: add javax.activation to lib/ and extract it here too. Otherwise we have a -->
 		<!-- runtime dependency on Java 6. -->
 		
