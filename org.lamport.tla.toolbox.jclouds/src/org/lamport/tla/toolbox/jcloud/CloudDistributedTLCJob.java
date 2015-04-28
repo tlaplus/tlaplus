@@ -184,7 +184,8 @@ public class CloudDistributedTLCJob extends Job {
 							// This needs some better build-time integration
 							// between TLA and jmx2munin (probably best to make
 							// jmx2munin a submodule of the TLA git repo).
-							+ "wget http://tla.msr-inria.inria.fr/jmx2munin/jmx2munin_1.0_all.deb && "
+							+ "wget https://lemmy.github.com/jmx2munin/jmx2munin_1.0_all.deb && "
+//							+ "wget http://tla.msr-inria.inria.fr/jmx2munin/jmx2munin_1.0_all.deb && "
 							// Install jmx2munin into the system
 							+ "dpkg -i jmx2munin_1.0_all.deb ; "
 							// Force apt to download and install the
