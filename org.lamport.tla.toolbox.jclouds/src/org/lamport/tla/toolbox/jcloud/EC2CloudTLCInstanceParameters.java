@@ -2,6 +2,12 @@ package org.lamport.tla.toolbox.jcloud;
 
 public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 
+	private final String tlcParams;
+
+	public EC2CloudTLCInstanceParameters(final String tlcParams) {
+        this.tlcParams = tlcParams.trim();
+	}
+
 	@Override
 	public String getOwnerId() {
 		// ubuntu official
@@ -37,6 +43,9 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 
 	@Override
 	public String getTLCParameters() {
+		if (tlcParams.length() > 0) {
+			return "-workers 12 " + tlcParams;
+		}
 		return "-workers 12";
 	}
 }

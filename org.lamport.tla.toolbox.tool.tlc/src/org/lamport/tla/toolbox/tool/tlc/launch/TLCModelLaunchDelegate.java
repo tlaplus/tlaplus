@@ -61,6 +61,7 @@ import org.osgi.framework.ServiceReference;
 
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
+import tlc2.TLCGlobals;
 
 /**
  * Represents a launch delegate for TLC<br>
@@ -728,7 +729,33 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 					props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
 					props.put(TLCJobFactory.MAIL_ADDRESS, config.getAttribute(
 							LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, "tlc@localhost"));
-					job = factory.getTLCJob(cloud, file, numberOfWorkers, props);
+					
+					// The parameters below are the only one currently useful with CloudDistributedTLC
+					final StringBuffer tlcParams = new StringBuffer();
+					
+			        // fp seed offset (decrease by one to map from [1, 64] interval to [0, 63] array address
+			        final int fpSeedOffset = launch.getLaunchConfiguration().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
+			        tlcParams.append("-fp ");
+			        tlcParams.append(String.valueOf(fpSeedOffset - 1));
+		        	tlcParams.append(" ");
+			        
+			        // add maxSetSize argument if not equal to the default
+			        // code added by LL on 9 Mar 2012
+			        final int maxSetSize = launch.getLaunchConfiguration().getAttribute(
+			                LAUNCH_MAXSETSIZE, TLCGlobals.setBound);
+			        if (maxSetSize != TLCGlobals.setBound) {
+			        	tlcParams.append("-maxSetSize ");
+			        	tlcParams.append(String.valueOf(maxSetSize));
+			        	tlcParams.append(" ");
+			        }
+			        
+			        boolean checkDeadlock = config.getAttribute(IModelConfigurationConstants.MODEL_CORRECTNESS_CHECK_DEADLOCK,
+							IModelConfigurationDefaults.MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
+					if (!checkDeadlock) {
+						tlcParams.append("-deadlock");
+					}
+
+					job = factory.getTLCJob(cloud, file, numberOfWorkers, props, tlcParams.toString());
 					job.addJobChangeListener(new WithStatusJobChangeListener(config));
 					break;
 				}

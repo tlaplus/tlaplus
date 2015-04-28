@@ -10,5 +10,5 @@ public interface TLCJobFactory {
 	final String MAIN_CLASS = "mainClass";
 	final String MAIL_ADDRESS = "result.mail.address";
 	
-	Job getTLCJob(String aName, File aModelFolder, int numberOfWorkers, Properties props);
+	Job getTLCJob(String aName, File aModelFolder, int numberOfWorkers, Properties props, String string);
 }

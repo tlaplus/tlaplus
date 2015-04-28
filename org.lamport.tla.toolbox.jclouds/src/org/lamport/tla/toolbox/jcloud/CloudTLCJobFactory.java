@@ -9,8 +9,8 @@ import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 public class CloudTLCJobFactory implements TLCJobFactory {
 
 	@Override
-	public Job getTLCJob(String aName, File aModelFolder, int numberOfWorkers, final Properties props) {
-		return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props, new EC2CloudTLCInstanceParameters());
+	public Job getTLCJob(String aName, File aModelFolder, int numberOfWorkers, final Properties props, String tlcparams) {
+		return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props, new EC2CloudTLCInstanceParameters(tlcparams));
 	}
 
 }
