@@ -1291,7 +1291,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         checkpointButton = toolkit.createButton(ckptComp, "Recover from checkpoint", SWT.CHECK);
         checkpointButton.addSelectionListener(howToRunListener);
         checkpointButton.addFocusListener(focusListener);
-        Button ckptHelpButton = HelpButton.helpButton(ckptComp, "model/overview-page.html#checkpoint") ;
+        HelpButton.helpButton(ckptComp, "model/overview-page.html#checkpoint") ;
 
         FormText chkpointIdLabel = toolkit.createFormText(howToRunArea, true);
         chkpointIdLabel.setText("Checkpoint ID:", false, false);
@@ -1396,7 +1396,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 */
 		// composite
         final Composite networkInterface = new Composite(builtInOptions, SWT.NONE) ;
-        layout = new GridLayout(3, false);
+        layout = new GridLayout(3, true);
         networkInterface.setLayout(layout);
         gd = new GridData();
         gd.horizontalSpan = 2;
@@ -1404,7 +1404,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		
         // label
         FormText networkInterfaceLabel = toolkit.createFormText(networkInterface, true);
-        networkInterfaceLabel.setText("Network Interface:", false, false);
+        networkInterfaceLabel.setText("Master's network address:", false, false);
 
         // field
         networkInterfaceCombo = new Combo(networkInterface, SWT.NONE);
@@ -1414,7 +1414,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.horizontalIndent = 10;
         networkInterfaceCombo.setLayoutData(gd);
         
-        networkInterfaceCombo.setToolTipText("IP address to which workers (and distributed FPSets) will connect.");
+        networkInterfaceCombo.setToolTipText("IP address to which workers (and distributed fingerprint sets) will connect.");
         networkInterfaceCombo.addSelectionListener(howToRunListener);
         networkInterfaceCombo.addFocusListener(focusListener);
         try {
@@ -1481,7 +1481,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		// composite
         final Composite distributedFPSetCount = new Composite(builtInOptions, SWT.NONE);
-        layout = new GridLayout(3, false);
+        layout = new GridLayout(3, true);
         distributedFPSetCount.setLayout(layout);
         gd = new GridData();
         gd.horizontalSpan = 2;
@@ -1489,7 +1489,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		
         // label
         FormText distributedFPSetCountLabel = toolkit.createFormText(distributedFPSetCount, true);
-        distributedFPSetCountLabel.setText("Number of distributed FPSets:", false, false);
+        distributedFPSetCountLabel.setText("Number of distributed fingerprint sets (zero for single built-in set):", false, false);
 
         // field
         distributedFPSetCountSpinner = new Spinner(distributedFPSetCount, SWT.NONE);
