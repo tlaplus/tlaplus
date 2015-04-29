@@ -1391,7 +1391,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 */
 		// composite
         final Composite networkInterface = new Composite(builtInOptions, SWT.NONE) ;
-        layout = new GridLayout(3, true);
+        layout = new GridLayout(3, false);
         networkInterface.setLayout(layout);
         gd = new GridData();
         gd.horizontalSpan = 2;
@@ -1436,7 +1436,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		// composite
         final Composite distributedFPSetCount = new Composite(builtInOptions, SWT.NONE);
-        layout = new GridLayout(3, true);
+        layout = new GridLayout(3, false);
         distributedFPSetCount.setLayout(layout);
         gd = new GridData();
         gd.horizontalSpan = 2;
