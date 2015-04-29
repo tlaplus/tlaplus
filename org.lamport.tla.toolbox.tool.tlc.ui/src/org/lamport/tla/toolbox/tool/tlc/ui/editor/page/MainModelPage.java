@@ -1,10 +1,15 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
@@ -1409,21 +1414,61 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.horizontalIndent = 10;
         networkInterfaceCombo.setLayoutData(gd);
         
-        networkInterfaceCombo.setToolTipText("IP address which workers (and distributed FPSets) will connect to.");
+        networkInterfaceCombo.setToolTipText("IP address to which workers (and distributed FPSets) will connect.");
         networkInterfaceCombo.addSelectionListener(howToRunListener);
         networkInterfaceCombo.addFocusListener(focusListener);
         try {
+        	final Comparator<InetAddress> comparator = new Comparator<InetAddress>() {
+        		// Try to "guess" the best possible match.
+        		public int compare(InetAddress o1, InetAddress o2) {
+        			// IPv4 < IPv6 (v6 is less common even today)
+        			if (o1 instanceof Inet4Address && o2 instanceof Inet6Address) {
+        				return -1;
+        			} else if (o1 instanceof Inet6Address && o2 instanceof Inet4Address) {
+        				return 1;
+        			}
+        			
+        			// anything < LoopBack (loopback only useful if master and worker are on the same host)
+        			if (!o1.isLoopbackAddress() && o2.isLoopbackAddress()) {
+        				return -1;
+        			} else if (o1.isLoopbackAddress() && !o2.isLoopbackAddress()) {
+        				return 1;
+        			}
+        			
+        			// Public Addresses < Non-private RFC 1918 (I guess this is questionable)
+        			if (!o1.isSiteLocalAddress() && o2.isSiteLocalAddress()) {
+        				return -1;
+        			} else if (o1.isSiteLocalAddress() && !o2.isSiteLocalAddress()) {
+        				return 1;
+        			}
+        			
+        			return 0;
+        		}
+        	};
+
+        	// Get all IP addresses of the host and sort them according to the Comparator.
+        	final List<InetAddress> addresses = new ArrayList<InetAddress>(); 
 			final Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
 			while (nets.hasMoreElements()) {
-				NetworkInterface iface = (NetworkInterface) nets.nextElement();
-				Enumeration<InetAddress> inetAddresses = iface.getInetAddresses();
+				final NetworkInterface iface = (NetworkInterface) nets.nextElement();
+				final Enumeration<InetAddress> inetAddresses = iface.getInetAddresses();
 				while (inetAddresses.hasMoreElements()) {
-					InetAddress inetAddress = (InetAddress) inetAddresses
-							.nextElement();
-					networkInterfaceCombo.add(inetAddress.getHostAddress());
-					networkInterfaceCombo.select(0);
+					final InetAddress addr = inetAddresses.nextElement();
+					// Cannot connect to a multicast address
+					if (addr.isMulticastAddress()) {
+						continue;
+					}
+					addresses.add(addr);
 				}
 			}
+			
+			// Add the sorted IP addresses and select the first one which -
+			// according to the comparator - is assumed to be the best match.
+			Collections.sort(addresses, comparator);
+			for (InetAddress inetAddress : addresses) {
+				networkInterfaceCombo.add(inetAddress.getHostAddress());
+			}
+			networkInterfaceCombo.select(0);
 		} catch (SocketException e1) {
 			e1.printStackTrace();
 		}
