@@ -68,8 +68,8 @@ and on the master if slave fingerprint servers are not used.&nbsp;
 <p>
 TLC is run on a <a href="creating-model.html">model</a>.&nbsp;  
 
-To specify that it is to be run in distributed mode, check the <i>Run
-in distributed mode</i> box in the 
+To specify that it is to be run in distributed mode, select "ad hoc"
+in the <i>Run in distributed mode</i> drop down list in the 
 <a href="overview-page.html#how-to-run">How to run?</a>  section
 of the Model Overview Page.  That section also allows you to adjust
 the amount of memory allocated to the master.
@@ -78,12 +78,15 @@ the amount of memory allocated to the master.
 
 
 <p>
-For distributed mode, you may also want to add special arguments to
-the command that launches the JVM that runs the master.&nbsp; As
-explained <a href="#possible-problem">below</a>, one such argument may
-be needed for the master and the workers to communicate.&nbsp; The
-arguments are put in the <A href="advanced-page.html#jvmargs">JVM arguments</A> field
-of the model's Advanced Options page.  </p>
+Your master computer is likely to have multiple network interface cards
+and thus several different IP addresses. The <i>Master's network address</i>
+drop down list shows all IP addresses the Toolbox could identify. Choose the one
+to which the workers will be able to connect. The Toolbox tries guess the best
+match and selects it by default.
+<br>
+It is up to you to configure your master's firewall to allow the workers incoming
+connections.
+</p>
 
 <p> You start a TLC run in distributed mode as usual by clicking on
 the <IMG SRC="run-icon.gif" Align="bottom"/> button, by selecting
@@ -91,20 +94,26 @@ the <IMG SRC="run-icon.gif" Align="bottom"/> button, by selecting
 F11.&nbsp; This should cause the <i>Current status</i> field of the <a
 href="results-page.html">Model Checking Results Page</a> to change to
 <i>Master is waiting for (remote) workers</i> and then to indicate
-that one or more workers have registered with the master.  </p>
+that one or more workers have registered with the master.
+</p>
 
 <p>
 If you want TLC to store the fingerprint set among slave computers,
 you must run a (single) <i>fingerprint server</i> on each of them.&nbsp;
 Your model must tell TLC how many fingerprint servers it will use.&nbsp;  If you
-want fingerprints stored on 5 fingerprint servers (5 slave computers), you specify the following
-<A href="advanced-page.html#jvmargs">JVM argument</A>:
- 
-<pre>
-   -Dtlc2.tool.distributed.TLCServer.expectedFPSetCount=5
-</pre>
+want fingerprints stored on 5 fingerprint servers (5 slave computers), you increase 
+the <i>Number of distributed fingerprint sets</i> spinner to 5. Setting it to 0, means 
+that the master will store the fingerprints. The master uses more memory in this mode.
 </p>
 
+<p>
+For distributed mode, you may also want to add special arguments to
+the command that launches the JVM that runs the master.&nbsp; As
+explained <a href="#possible-problem">below</a>, one such argument may
+be needed for the master and the workers to communicate.&nbsp; The
+arguments are put in the <A href="advanced-page.html#jvmargs">JVM arguments</A> field
+of the model's Advanced Options page.
+</p>
 
 <p>
 If your model will run for a long time (days or weeks), you may not want to 
