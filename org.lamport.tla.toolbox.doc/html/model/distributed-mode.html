@@ -132,7 +132,7 @@ and <code>model-path</code> is is the complete pathname of the directory
    java  -cp tool-path  tlc2.tool.distributed.TLCServer  model-path/MC
 </pre>
 Like the  JVM argument <code>-cp tool-path</code>, other JVM arguments can come between <code>java</code> 
-and <code>tlc2.tool.distributed.TLCServer</code> in this command.  TLC options follow 
+and <code>tlc2.tool.distributed.TLCServer</code> in this command. TLC options follow 
 <code>model-path/MC</code>.
 <!-- 
  E.g. with the 
@@ -143,6 +143,13 @@ and the Toolbox's installation directory in /opt, the command line will look lik
 </pre>
 -->
 </p>
+
+<div align="center">
+<div align="center" style="width:500px;height:85px;border:1px solid #000;">
+If you need to check liveness properties (see <a href="#limitations">Limitations</a> below) or cannot
+leave the master computer running for days or weeks, you can switch to the new <a href="../cloudtlc/index.html">cloud-based distributed TLC</a> Toolbox feature.
+</div>
+</div>
 
 <a name="running-workers"></a><h2>Running the Slave Computers</h2>
 
@@ -293,7 +300,7 @@ The major disadvantage of doing this is that a separate copy of
 the worker code is loaded into memory for each worker.
     END COMMENTED OUT -->
     
-<a name="limitations"></a><h2>Limitations of Distributed Mode </h2>
+<a name="limitations"></a><h2>Limitations of Distributed Mode</h2>
 
 When run in distributed mode, TLC cannot check liveness properties. 
 Nor does it use depth-first mode or simulation mode, even if one of
