@@ -75,8 +75,6 @@ of the Model Overview Page.  That section also allows you to adjust
 the amount of memory allocated to the master.
 </p>
 
-
-
 <p>
 Your master computer is likely to have multiple network interface cards
 and thus several different IP addresses. The <i>Master's network address</i>
@@ -174,6 +172,42 @@ There are two basic ways to run a slave computer computer.&nbsp;  In the followi
 
 <dl>
 <dt><b>Method 1</b></dt>
+<dd>
+Start the Toolbox on the master computer, and then run a Web browser
+on the worker computer.&nbsp;  In that web browser, enter the URL
+<pre>
+    http://master-computer:10996
+</pre> This will display a Web page containing  buttons to launch
+worker threads, a fingerprint server, or both on the slave.
+
+<p>
+You can launch the slaves with additional system properties and VM arguments
+by adding them to the URL.&nbsp; (When you launch a slave from a command line, 
+system properties [which begin with <code>-D</code>] and VM arguments are specified separately.)&nbsp; For example, the URL
+<pre>
+   http://localhost:10996/worker.jnlp?sysprops=-Diron.bar=5%20-Dfrob=2%20foo=&vmargs=-Xmx=512m%20-XX:MaxDirectMemorysize=512m
+</pre>
+causes the worker to be launched in a VM with VM arguments
+
+   <code>-XX:MaxDirectMemorysize=512m</code> and
+   <code>-Xmx=512m</code>
+   
+and system properties
+
+   <code>-Diron.bar=5</code> and
+   <code>-Dfrob=2</code>.
+
+
+</p> 
+
+<!-- COMMENTED OUT
+<i>Launch worker from browser</i>.&nbsp; Clicking on that will
+download the file <code>tla2tools.jar</code> and will execute it,
+starting the worker.  
+  END  COMMENTED OUT -->
+</dd> 
+<p> </P>
+<dt><b>Method 2</b></dt>
 
 <dd>
 Start the Toolbox on the master computer.&nbsp;  Then do the following on a
@@ -217,43 +251,7 @@ You can add JVM arguments to the <code>java</code> command, such as the argument
 gives the slave 7 gigabytes of memory.  
 </p>
 </dd>
-
-<p> </P>
-<dt><b>Method 2</b></dt>
-<dd>
-Start the Toolbox on the master computer, and then run a Web browser
-on the worker computer.&nbsp;  In that web browser, enter the URL
-<pre>
-    http://master-computer:10996
-</pre> This will display a Web page containing  buttons to launch
-worker threads, a fingerprint server, or both on the slave.
-
-<p>
-You can launch the slaves with additional system properties and VM arguments
-by adding them to the URL.&nbsp; (When you launch a slave from a command line, 
-system properties [which begin with <code>-D</code>] and VM arguments are specified separately.)&nbsp; For example, the URL
-<pre>
-   http://localhost:10996/worker.jnlp?sysprops=-Diron.bar=5%20-Dfrob=2%20foo=&vmargs=-Xmx=512m%20-XX:MaxDirectMemorysize=512m
-</pre>
-causes the worker to be launched in a VM with VM arguments
-
-   <code>-XX:MaxDirectMemorysize=512m</code> and
-   <code>-Xmx=512m</code>
-   
-and system properties
-
-   <code>-Diron.bar=5</code> and
-   <code>-Dfrob=2</code>.
-
-
-</p> 
-
-<!-- COMMENTED OUT
-<i>Launch worker from browser</i>.&nbsp; Clicking on that will
-download the file <code>tla2tools.jar</code> and will execute it,
-starting the worker.  
-  END  COMMENTED OUT -->
-</dd> </dl>
+</dl>
 
 <p>
 By default, each slave that runs workers runs as many worker threads
