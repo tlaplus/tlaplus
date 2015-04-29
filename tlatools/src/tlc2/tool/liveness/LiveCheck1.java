@@ -7,6 +7,7 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.StatePrinter;
@@ -672,7 +673,13 @@ public class LiveCheck1 implements ILiveCheck {
 		if (node.stateFP == lastState.fingerPrint()) {
 			StatePrinter.printStutteringState(++stateNum);
 		} else {
-			MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
+			if (TLCGlobals.tool) {
+				// The parser in Tool mode is picky and does not detect the Back to State unless it's printed via MP.printState.
+				// See LiveWorker#printTrace(..)
+				MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + cyclePos }, (TLCState) null, -1);
+			} else {
+				MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
+			}
 		}
 	}
 
