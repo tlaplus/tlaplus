@@ -93,7 +93,7 @@ public class Activator extends AbstractTLCActivator
 					state = context.getBundle().getState();
 				}
 				
-				specManager = new WorkspaceSpecManager();
+				specManager = new WorkspaceSpecManager(monitor);
 				latch.countDown();
 				return Status.OK_STATUS;
 			}
