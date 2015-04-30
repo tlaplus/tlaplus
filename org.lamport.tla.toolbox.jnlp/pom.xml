@@ -13,6 +13,15 @@
   <artifactId>org.lamport.tla.toolbox.jnlp</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
+
+  <!-- These properties define a dummy certificate store that is used unless the developer passes overwrites to maven -->
+  <!-- see http://stackoverflow.com/a/3620575 for how such an overwrite would look like. -->  
+  <properties>
+  	<keystore.path>keystore</keystore.path>
+	<keystore.alias>msr</keystore.alias>
+    <keystore.store.password>secret</keystore.store.password>
+    <keystore.key.password>secret</keystore.key.password>
+  </properties>
   
     <build>
     <plugins>
@@ -161,14 +170,14 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jarsigner-plugin</artifactId>
-        <version>1.2</version>
+        <version>1.4</version>
         <configuration>
         	<archive>${project.build.directory}/../files/tla2tools.jar</archive>
-        	<alias>msr</alias>
-        	<keystore>keystore</keystore>
-     		<keypass>secret</keypass>
-     		<storepass>secret</storepass>
-     		<verbose>false</verbose>
+	        <keystore>${keystore.path}</keystore>
+	        <alias>${keystore.alias}</alias>
+	        <storepass>${keystore.store.password}</storepass>
+	        <keypass>${keystore.key.password}</keypass>
+           	<verbose>false</verbose>
         </configuration>
         <executions>
           <execution>
@@ -187,7 +196,7 @@
         </executions>
       </plugin>
 	      
-        <plugin>
+        <plugin>	
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-clean-plugin</artifactId>
            <version>2.4.1</version>
