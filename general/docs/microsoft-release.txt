@@ -182,7 +182,6 @@ Method 3. Using tla.msr-inria.inria.fr
         This is redirected to the right place by putting in my lamport.org/ top-level directory a file named .htaccess containing
         the line
                   Redirect /tlatoolbox http://tla.msr-inria.inria.fr/tlatoolbox
-    
 
 TO PREPARE THE STAND-ALONE TLA TOOLS RELEASE ZIP FILE (IN 
 Methods 1 and 2)
