@@ -700,8 +700,9 @@ Re-check your credentials
 \end_layout
 
 \begin_layout Itemize
-If your credentials are correct, please turn on debug logging (!!!INSTRUCTIONS
- here!!!) and send us the output.
+If your credentials are correct, please turn on debug logging (start the
+ Toolbox executable with “toolbox -console -consolelog”) and send us the
+ output.
  You might have encountered a bug in cloud based distributed TLC.
 \end_layout
 
