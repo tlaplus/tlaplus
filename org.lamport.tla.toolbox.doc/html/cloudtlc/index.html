@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <meta name="generator" content="http://www.nongnu.org/elyxer/"/>
 <meta name="create-date" content="2014-07-18"/>
-<link rel="stylesheet" href="http://elyxer.nongnu.org/lyx.css" type="text/css" media="all"/>
+ <LINK href="../style.css" rel="stylesheet" type="text/css">
 <title>Cloud based distributed TLC</title>
 </head>
 <body>
@@ -13,12 +13,6 @@
 <h1 class="title">
 Cloud based distributed TLC
 </h1>
-<h2 class="author">
-Markus Alexander Kuppe
-</h2>
-<h2 class="Date">
-Jul 18, 2014
-</h2>
 <h1 class="Section">
 <a class="toc" name="toc-Section-1">1</a> Motivation
 </h1>
@@ -70,6 +64,13 @@ Cloud based distributed TLC cannot recover from a checkpoint
 <h1 class="Section">
 <a class="toc" name="toc-Section-4">4</a> Usage
 </h1>
+
+<div align="left">
+<div align="center" style="width:500px;height:45px;border:1px solid #000;">
+<em>Additionally to the instructions below, you can <a href="https://vimeo.com/126244715">watch a eight minutes introductory video</a> online</em>.
+</div>
+</div>
+
 <ol>
 <li>
 Set <a class="URL" href="http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html">AWS access key and secret</a> as <a class="URL" href="http://en.wikipedia.org/wiki/Environment_variable">environment variables</a> prior to launching the Toolbox. See the example with dummy keys below.<ol>
@@ -91,7 +92,7 @@ Create a specification and a model
 <li>
 Open your model in the model editor <div class="float">
 <a class="Label" name="Figure-1"> </a><div class="figure" style="max-width: 100%;">
-<img class="figure" src="ModelEditorA.png" alt="figure ModelEditorA.png" style="max-width: 1047px; max-height: 838px;"/>
+<img class="figure" src="ModelEditorA.png" alt="figure ModelEditorA.png" style="max-width: 800px; max-height: 600px;"/>
 <div class="caption">
 Figure 1 Model Editor
 </div>
@@ -104,7 +105,7 @@ Figure 1 Model Editor
 <li>
 Expand the &ldquo;How to run&rdquo; section of the &ldquo;Model Overview&rdquo; page <div class="float">
 <a class="Label" name="Figure-2"> </a><div class="figure" style="max-width: 100%;">
-<img class="figure" src="ModelEditorB.png" alt="figure ModelEditorB.png" style="max-width: 1047px; max-height: 838px;"/>
+<img class="figure" src="ModelEditorB.png" alt="figure ModelEditorB.png" style="max-width: 800px; max-height: 600px;"/>
 <div class="caption">
 Figure 2 How to run section
 </div>
@@ -117,7 +118,7 @@ Figure 2 How to run section
 <li>
 Select &ldquo;aws-ec2&rdquo; from the &ldquo;Run in distributed mode&rdquo; drop down <div class="float">
 <a class="Label" name="Figure-3"> </a><div class="figure" style="max-width: 100%;">
-<img class="figure" src="ModelEditorC.png" alt="figure ModelEditorC.png" style="max-width: 1047px; max-height: 838px;"/>
+<img class="figure" src="ModelEditorC.png" alt="figure ModelEditorC.png" style="max-width: 800px; max-height: 600px;"/>
 <div class="caption">
 Figure 3 Select your cloud provider
 </div>
@@ -130,7 +131,7 @@ Figure 3 Select your cloud provider
 <li>
 Enter an email address into &ldquo;Result mailto address&rdquo; at which you want to receive the model checking result <div class="float">
 <a class="Label" name="Figure-4"> </a><div class="figure" style="max-width: 100%;">
-<img class="figure" src="ModelEditorD.png" alt="figure ModelEditorD.png" style="max-width: 1047px; max-height: 838px;"/>
+<img class="figure" src="ModelEditorD.png" alt="figure ModelEditorD.png" style="max-width: 800px; max-height: 600px;"/>
 <div class="caption">
 Figure 4 Enter your email address
 </div>
@@ -145,7 +146,7 @@ Click &ldquo;Run TLC&rdquo; to start model checking in the cloud and wait for th
 <li>
 The Toolbox switches to the &ldquo;Model checking results&rdquo; page and opens a progress dialog indicating the state of cloud instance provisioning <div class="float">
 <a class="Label" name="Figure-5"> </a><div class="figure" style="max-width: 100%;">
-<img class="figure" src="ProgressBar.png" alt="figure ProgressBar.png" style="max-width: 1078px; max-height: 789px;"/>
+<img class="figure" src="ProgressBar.png" alt="figure ProgressBar.png" style="max-width: 800px; max-height: 600px;"/>
 <div class="caption">
 Figure 5 Progress Dialog
 </div>
@@ -158,7 +159,7 @@ Figure 5 Progress Dialog
 <li>
 After provisioning the cloud instance, the Toolbox prompts the user to open a website in a browser. <div class="float">
 <a class="Label" name="Figure-6"> </a><div class="figure" style="max-width: 100%;">
-<img class="figure" src="ProgressBarFinal.png" alt="figure ProgressBarFinal.png" style="max-width: 1077px; max-height: 790px;"/>
+<img class="figure" src="ProgressBarFinal.png" alt="figure ProgressBarFinal.png" style="max-width: 800px; max-height: 600px;"/>
 <div class="caption">
 Figure 6 Progress Dialog Final
 </div>
@@ -168,7 +169,7 @@ Figure 6 Progress Dialog Final
 </div>
  This website is hosted on the cloud instance and shows the TLC process output as well as runtime statistics similar to Toolbox stats <div class="float">
 <a class="Label" name="Figure-7"> </a><div class="figure" style="max-width: 100%;">
-<img class="figure" src="MCoutInBrowser.png" alt="figure MCoutInBrowser.png" style="max-width: 1600px; max-height: 899px;"/>
+<img class="figure" src="MCoutInBrowser.png" alt="figure MCoutInBrowser.png" style="max-width: 800px; max-height: 600px;"/>
 <div class="caption">
 Figure 7 TLC runtime statistics in your browser
 </div>
@@ -186,9 +187,9 @@ Figure 7 TLC runtime statistics in your browser
 Walk out and enjoy the weekend while TLC is busy checking 
 </li>
 <li>
-On Monday<span class="FootOuter"><span class="SupFootMarker"> [A] </span><span class="HoverFoot"><span class="SupFootMarker"> [A] </span>Depending on the size of your model, this might be a Monday in the far distance.</span></span> expect to find an email in your inbox <div class="float">
+On Monday expect to find an email in your inbox <div class="float">
 <a class="Label" name="Figure-8"> </a><div class="figure" style="max-width: 100%;">
-<img class="figure" src="EMailResult.png" alt="figure EMailResult.png" style="max-width: 911px; max-height: 788px;"/>
+<img class="figure" src="EMailResult.png" alt="figure EMailResult.png" style="max-width: 800px; max-height: 600px;"/>
 <div class="caption">
 Figure 8 Email Result
 </div>
@@ -207,7 +208,7 @@ Switch back to the Toolbox and open the model editor
 <li>
 Open the &ldquo;Model Checking Results&rdquo; page <div class="float">
 <a class="Label" name="Figure-9"> </a><div class="figure" style="max-width: 100%;">
-<img class="figure" src="LoadResultIntoToolbox.png" alt="figure LoadResultIntoToolbox.png" style="max-width: 1074px; max-height: 789px;"/>
+<img class="figure" src="LoadResultIntoToolbox.png" alt="figure LoadResultIntoToolbox.png" style="max-width: 800px; max-height: 600px;"/>
 <div class="caption">
 Figure 9 Load result into Toolbox
 </div>
@@ -281,44 +282,7 @@ Copy &amp; paste the MC.out content from the browser window into a plain text fi
 </li>
 
 </ul>
-<h1 class="Section">
-<a class="toc" name="toc-Section-6">6</a> TODO
-</h1>
-<ul>
-<li>
-Even though it is called cloud-based <i>distributed</i> TLC, it can do non-distributed liveness checking.
-</li>
 
-</ul>
-<h1 class="Section">
-<a class="toc" name="toc-Section-7">7</a> Leslie
-</h1>
-<ul>
-<li>
-This says nothing about what to do if you’re not using aws-ec2. I presume that’s selected with the "ad hoc" choice in Figure 3. That needs to be documented. Does it work like the present system? If so, you can just incorporate the existing instructions in some way
-</li>
-<li>
-I presume in bullet 2 of section 3, "non-distribute mode" is some EC2 jargon that doesn’t mean what a TLC user would expect it to. This should be made more clear to non-EC2 users.
-</li>
-<li>
-<strike>In the 3rd bullet, if "(m4.2xlarge)" naming is the single instance type, then it should be moved immediately after "type".</strike>
-</li>
-<li>
-<strike>Section 4.1. I presume those keys are dummies.</strike>
-</li>
-<li>
-Step 13 of section 4 isn’t clear. I presume the importing is done from the file chooser in Figure 10, but I don’t know how that chooser is raised.
-</li>
-<li>
-<strike>Section 6. I presume you mean that it does non-distributed liveness-checking? If so, say so. </strike>
-</li>
-
-</ul>
-
-<hr class="footer"/>
-<div class="footer" id="generated-by">
-Document generated by <a href="http://elyxer.nongnu.org/">eLyXer 1.2.5 (2013-03-10)</a> on <span class="create-date">2014-07-18T07:55:20.260834</span>
-</div>
 </div>
 </body>
 </html>
