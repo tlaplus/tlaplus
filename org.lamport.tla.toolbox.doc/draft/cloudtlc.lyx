@@ -63,26 +63,6 @@
 Cloud based distributed TLC
 \end_layout
 
-\begin_layout Author
-Markus Alexander Kuppe
-\end_layout
-
-\begin_layout Date
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-today
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
 \begin_layout Section
 Motivation
 \end_layout
@@ -549,17 +529,7 @@ Walk out and enjoy the weekend while TLC is busy checking
 \end_layout
 
 \begin_layout Enumerate
-On Monday
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-Depending on the size of your model, this might be a Monday in the far distance.
-\end_layout
-
-\end_inset
-
- expect to find an email in your inbox 
+On Monday, expect to find an email in your inbox 
 \begin_inset Float figure
 placement H
 wide false
@@ -748,8 +718,8 @@ Check your email spam folder if the model checking result has incorrectly
 \end_layout
 
 \begin_layout Itemize
-Another reason why mail delivery might fail are too strict spam countermessures
- at the mail server level.
+Another reason why mail delivery might fail are too strict spam counter
+ measures at the mail server level.
  You might want to try to use a different email address (domain part) in
  the future.
 \end_layout
@@ -769,6 +739,10 @@ reference "enu:Import-the-MC.out"
 
 \end_deeper
 \end_deeper
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
 \begin_layout Section
 TODO
 \end_layout
@@ -786,6 +760,8 @@ Leslie
 \end_layout
 
 \begin_layout Itemize
+
+\strikeout on
 I noticed that there's a window named "Cloud TLC" that says "Clicking OK
  opens a status page in a browser" but doesn't say what clicking Cancel
  does.
@@ -857,5 +833,10 @@ https://github.com/ymnk/jsch-agent-proxy/blob/master/README.md#dependencies
 \end_layout
 
 \end_deeper
+\end_inset
+
+
+\end_layout
+
 \end_body
 \end_document
