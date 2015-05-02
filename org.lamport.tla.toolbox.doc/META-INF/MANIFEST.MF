@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: TLA+ Toolbox Help
 Bundle-SymbolicName: org.lamport.tla.toolbox.doc; singleton:=true
-Bundle-Version: 1.4.9.qualifier
+Bundle-Version: 1.5.0.qualifier
 Bundle-RequiredExecutionEnvironment: J2SE-1.4
 Bundle-Vendor: Simon Zambrovski, Leslie Lamport
 Bundle-ActivationPolicy: lazy

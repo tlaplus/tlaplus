@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.4.9" useFeatures="true" includeLaunchers="true">
+<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.5.0" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.lamport.tla.toolbox.product.standalone/images/splash_small.png"/>
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
 
-This is Version 1.4.9 of UNRELEASED and includes:
+This is Version 1.5.0 of 2 May 2015 and includes:
   - SANY Version 2.1 of 24 February 2014
-  - TLC Version 2.06 of UNRELEASED
+  - TLC Version 2.06 of 2 May 2015
   - PlusCal Version 1.8 of 2 April 2013
   - TLATeX Version 1.0 of 12 April 2013
 
@@ -49,6 +49,7 @@ Please send us reports of problems or suggestions; see https://groups.google.com
       <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7</windows>
    </vm>
 
+
    <plugins>
    </plugins>
 
@@ -68,11 +69,18 @@ Please send us reports of problems or suggestions; see https://groups.google.com
       <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
       <plugin id="org.lamport.tla.toolbox.jclouds" autoStart="true" startLevel="4" />
       <plugin id="sts" autoStart="true" startLevel="4" />
-      <property name="eclipse.buildId" value="1.4.2" />
+      <property name="eclipse.buildId" value="1.5.0" />
    </configurations>
 
    <repositories>
       <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
    </repositories>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
 
 </product>
