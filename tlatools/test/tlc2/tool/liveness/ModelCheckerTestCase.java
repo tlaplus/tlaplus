@@ -79,7 +79,7 @@ public abstract class ModelCheckerTestCase extends TestCase {
 			final List<String> args = new ArrayList<String>(4);
 			args.add("-deadlock");
 			args.add("-workers");
-			args.add("1");
+			args.add(getNumberOfThreads());
 			args.addAll(Arrays.asList(extraArguments));
 			args.add(spec);
 			tlc.handleParameters(args.toArray(new String[args.size()]));
@@ -92,4 +92,7 @@ public abstract class ModelCheckerTestCase extends TestCase {
 		}
 	}
 
+	protected String getNumberOfThreads() {
+		return "1";
+	}
 }

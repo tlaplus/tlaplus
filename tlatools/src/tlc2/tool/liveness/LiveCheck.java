@@ -327,12 +327,12 @@ public class LiveCheck implements ILiveCheck {
 				final BitVector checkActionResults, final boolean[] checkStateResults) throws IOException {
 			int cnt = 0;
 			// if there is no tableau ...
-			final GraphNode node0 = dgraph.getNode(fp0);
-			final int s = node0.succSize();
-			node0.setCheckState(checkStateResults);
 			final int succCnt = nextStates.size();
 			final int alen = oos.getCheckAction().length;
 			synchronized (oos) {
+				final GraphNode node0 = dgraph.getNode(fp0);
+				final int s = node0.succSize();
+				node0.setCheckState(checkStateResults);
 				for (int sidx = 0; sidx < succCnt; sidx++) {
 					final long successor = nextFPs.elementAt(sidx);
 					// Only add the transition if:
@@ -630,7 +630,7 @@ public class LiveCheck implements ILiveCheck {
 		// relative to the parent directory. It does *not* need to contain the
 		// backing file of the fingerprint set or the state queue files.
 		public static ILiveCheck recreateFromDisk(final String path) throws Exception {
-			// Don't know with with Polynominal the FP64 has been initialized, but
+			// Don't know with which Polynomial the FP64 has been initialized, but
 			// the default is 0.
 			FP64.Init(0);
 			
