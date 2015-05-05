@@ -269,14 +269,14 @@
 		</javac>
 		<!-- copy class.dir to path with whitespace -->
 		<!-- this is required by some tests to make sense -->
-		<!-- even throw a non digit in -->
+		<!-- even throw a "+" and whitespace into the mix -->
 		<property name="ws.class.dir" value="TLA+ Tools" />
 		<copy todir="${ws.class.dir}">
 			<fileset dir="${class.dir}" />
 		</copy>
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJarLong" />
-		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="1024m">
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="4096m" forkmode="perTest" fork="yes">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -288,6 +288,16 @@
 
 			<batchtest fork="yes" todir="${test.reports}/onJarLong">
 				<fileset dir="${test.dir}-long">
+					<exclude name="**/MultiThreadedSpecTest.java"/>
+					
+					<!-- The following tests take way too long (hours) -->
+					<!-- Reactivate when you start working on the fingerprint sets -->
+					<exclude name="**/DiskFPSetTest.java"/>
+					<exclude name="**/FPSetTest.java"/>
+					<exclude name="**/MSBDiskFPSetTest.java"/>
+					<exclude name="**/OffHeapDiskFPSetTest.java"/>
+					<exclude name="**/DiskStateQueueTest.java"/>
+					
 					<include name="**/*Test*.java" />
 				</fileset>
 			</batchtest>

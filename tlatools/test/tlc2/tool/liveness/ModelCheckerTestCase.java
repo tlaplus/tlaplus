@@ -23,7 +23,6 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-
 package tlc2.tool.liveness;
 
 import java.io.File;
@@ -72,15 +71,27 @@ public abstract class ModelCheckerTestCase extends TestCase {
 			final TLC tlc = new TLC();
 			// * We want *no* deadlock checking to find the violation of the
 			// temporal formula
-			// * We use a single worker to simplify debugging by taking out
-			// threading
+			// * We use (unless overridden) a single worker to simplify
+			// debugging by taking out threading
 			// * MC is the name of the TLA+ specification to be checked (the file
 			// is placed in TEST_MODEL
-			final List<String> args = new ArrayList<String>(4);
+			final List<String> args = new ArrayList<String>(6);
+			
+			// *Don't* check for deadlocks. All tests are interested in liveness
+			// checks which are shielded away by deadlock checking. TLC finds a
+			// deadlock (if it exists) before it finds most liveness violations.
 			args.add("-deadlock");
+			
 			args.add("-workers");
-			args.add(getNumberOfThreads());
+			args.add(Integer.toString(getNumberOfThreads()));
+			
+			// Never create checkpoints. They distort performance tests and are
+			// of no use anyway.
+			args.add("-checkpoint");
+			args.add("0");
+
 			args.addAll(Arrays.asList(extraArguments));
+			
 			args.add(spec);
 			tlc.handleParameters(args.toArray(new String[args.size()]));
 			
@@ -88,11 +99,11 @@ public abstract class ModelCheckerTestCase extends TestCase {
 			tlc.process();
 			
 		} catch (Exception e) {
-			fail();
+			fail(e.getMessage());
 		}
 	}
 
-	protected String getNumberOfThreads() {
-		return "1";
+	protected int getNumberOfThreads() {
+		return 1;
 	}
 }

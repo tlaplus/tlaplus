@@ -29,7 +29,9 @@ import util.FilenameToStream;
  */
 public abstract class AbstractChecker implements Cancelable
 {
-    protected static final boolean LIVENESS_STATS = Boolean.getBoolean(Liveness.class.getPackage().getName() + ".statistics");
+    public static final String NEXT_LIVECHECK = AbstractChecker.class.getName() + ".nextLiveCheck";
+
+	protected static final boolean LIVENESS_STATS = Boolean.getBoolean(Liveness.class.getPackage().getName() + ".statistics");
 	
     // SZ Mar 9, 2009: static modifier removed
     protected long nextLiveCheck;
@@ -86,7 +88,13 @@ public abstract class AbstractChecker implements Cancelable
         // performed.  This value of 1000 sounds low, but since the value is
         // doubled after each check up to a maximum of 640K (a number embedded
         // in several places in the code), it probably doesn't much matter.
-        this.nextLiveCheck = 1000;
+        //
+		// The default of 1000 states can be overridden with a system property.
+		// This is e.g. used by unit tests to prevent periodic liveness checking
+		// (setting nextLiveCheck to Long.MAX_VALUE) and force TLC to check
+		// liveness only at the end of model checking. This gives predictable
+		// results required by unit tests.
+        this.nextLiveCheck = Long.getLong(NEXT_LIVECHECK, 1000);
         this.numOfGenStates = new AtomicLong(0);
         this.errState = null;
         this.predErrState = null;

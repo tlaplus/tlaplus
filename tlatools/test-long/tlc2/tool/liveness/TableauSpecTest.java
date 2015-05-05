@@ -25,9 +25,9 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
-public class NoTableauSpecTest extends MultiThreadedSpecTest {
+public class TableauSpecTest extends MultiThreadedSpecTest {
 
-	public NoTableauSpecTest() {
-		super("MC", "VoteProof", "137297983", "693930", 0.25d, 0.25d);
+	public TableauSpecTest() {
+		super("MC", "EWD840", new String[] {"-maxSetSize", "9000000"}, "540765192", "10487806", 0.3d, 0.3d);
 	}
 }
