@@ -24,7 +24,7 @@
 
 	<taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
 		<classpath>
-			<pathelement location="lib/aspectjtools.jar" />
+			<pathelement location="lib/aspectjtools-1.8.5.jar" />
 		</classpath>
 	</taskdef>
 
@@ -89,8 +89,8 @@
 		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true" source="1.5" target="1.5">
 			<classpath refid="project.classpath" />
 			<classpath>
-				<pathelement location="lib/aspectjrt.jar" />
-				<pathelement location="lib/aspectjtools.jar" />
+				<pathelement location="lib/aspectjrt-1.8.5.jar" />
+				<pathelement location="lib/aspectjtools-1.8.5.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</iajc>
@@ -107,8 +107,8 @@
 		<!-- These files are requried for load time weaving and during runtime -->
 		<copy todir="${class.dir}/lib">
 			<fileset dir="lib/">
-				<include name="aspectjrt.jar" />
-				<include name="aspectjweaver.jar" />
+				<include name="aspectjrt-1.8.5.jar" />
+				<include name="aspectjweaver-1.8.5.jar" />
 			</fileset>
 		</copy>
 	</target>
