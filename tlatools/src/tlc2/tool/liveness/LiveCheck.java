@@ -641,12 +641,17 @@ public class LiveCheck implements ILiveCheck {
 	// Intended to be used in unit tests only!!! This is not part of the API!!!
 	static class TestHelper {
 		
+		/*
+		 * * EWD840 (with tableau) spec with N = 11 and maxSetSize = 9.000.000 => 12GB nodes file, 46141438 distinct states
+		 * * EWD840 (with tableau) spec with N = 12 and maxSetSize = 9.000.000 => TBD 
+		 */
+		
 		// The Eclipse Launch configuration has to set the working directory
 		// (Arguments tab) to the parent directory of the folder containing the
 		// nodes_* and ptrs_* files. The parent folder has to contain the spec
 		// and config file both named "MC".
 		// metadir is the the name of the folder with the nodes_* and ptrs_*
-		// relative to the parent directory. It does *not* need to contain the
+		// relative to the parent directory. The directory does *not* need to contain the
 		// backing file of the fingerprint set or the state queue files.
 		public static ILiveCheck recreateFromDisk(final String path) throws Exception {
 			// Don't know with which Polynomial the FP64 has been initialized, but
@@ -660,6 +665,11 @@ public class LiveCheck implements ILiveCheck {
 			// doesn't really need tool).
 	        final Tool tool = new Tool("", "MC", "MC", new SimpleFilenameToStream());
 	        tool.init(true, null);
+	        
+			// Initialize tool's actions explicitly. LiveCheck#printTrace is
+			// going to access the actions and fails with a NPE unless
+			// initialized.
+	        tool.getActions();
 	        
 			final ILiveCheck liveCheck = new LiveCheck(tool, null, path, new DummyBucketStatistics());
 			
