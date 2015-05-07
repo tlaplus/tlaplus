@@ -117,7 +117,7 @@ public class DiskGraphTest extends TestCase {
 	 * |          |       |          |
 	 * +----------+       +----------+
 	 * 
-	 * The specialty here is that there are *two* init nodes and one them has *no* successors.
+	 * The specialty here is that there are *two* init nodes and one of them has *no* successors.
 	 * 
 	 * @see https://bugzilla.tlaplus.net/show_bug.cgi?id=293
 	 */
@@ -258,5 +258,42 @@ public class DiskGraphTest extends TestCase {
 		assertEquals(2, n.succSize());
 		assertTrue(n.transExists(2, NO_TABLEAU));
 		assertTrue(n.transExists(3, NO_TABLEAU));
+	}
+	
+	/*
+	 * Test to verify that getPath does not throw an ArrayIndexOutOfBounds due
+	 * to nextLoc being -1. This used to happen intermittently when liveness
+	 * checking runs periodically on an incomplete state/behavior graph, a
+	 * liveness violation is found and the path of the error trace gets explored.
+	 */
+	public void testGetPathPartialGraph() throws IOException {
+		final AbstractDiskGraph dg = getDiskGraph();
+		
+		final long initState = 2L;
+		final long danglingState = 3L;
+
+		// Init
+		dg.addInitNode(initState, NO_TABLEAU);
+		final GraphNode node = new GraphNode(initState, NO_TABLEAU);
+		node.addTransition(danglingState, NO_TABLEAU, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+				NUMBER_OF_ACTIONS, 0);
+		dg.addNode(node);
+
+		/*
+		 * The dangling state does not get added on purpose to simulate a
+		 * partial graph.
+		 */
+	
+		// Now get the path to some non-existing state (to explore all states in
+		// the graph)
+		dg.createCache();
+		try {
+			dg.getPath(5L, NO_TABLEAU);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			fail(e.getMessage());
+		} catch (RuntimeException e) {
+			// Make sure it is the correct RuntimeException
+			assertEquals("Couldn't re-create liveness trace (path) starting at: 5 and tidx: -1", e.getMessage());
+		}
 	}
 }

@@ -387,6 +387,26 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 				// Lookup the successor nodes of nextState (curState -> nextState ->
 				// successor nodes).
 				final int nextLoc = reversablePtrTable.getNodesLoc(nextState);
+				if (nextLoc == -1) {
+					// nextState is not on disk.
+					//
+					// Iff nextState itself is not on disk, it's successor nodes
+					// won't be either (or we don't know its successors yet).
+					// This scenario occurs when liveness checking is executed
+					// on a *partial* graph only. The model checker has added
+					// curState with nextState as its successor, nextState has
+					// not been added yet though. Basically this is where the
+					// partial graph has its border to the unknown.
+					//
+					// Continuing the for loop is fine. But we might as well add
+					// nextState to the queue. Once it gets picked up by the outer
+					// while loop, it will be skipped anyway as its succCnt is 0.
+					//
+					// If this case happens when LiveCheck is doing its
+					// finalCheck (complete graph), it is most probably a bug.
+					// Unfortunately, I don't know a proper assertion to check.
+					continue;
+				}
 				final int[] nextNodes = reversablePtrTable.getNodesByLoc(nextLoc);
 				final int cloc = reversablePtrTable.getIdx(nextNodes, nextTidx);
 				final long nextPtr = TableauNodePtrTable.getElem(nextNodes, cloc);

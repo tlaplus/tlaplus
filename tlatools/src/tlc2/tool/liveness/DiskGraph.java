@@ -282,6 +282,26 @@ public class DiskGraph extends AbstractDiskGraph {
 					return res;
 				}
 				final int nextLoc = this.nodePtrTbl.getLoc(nextState);
+				if (nextLoc == -1) {
+					// nextState is not on disk.
+					//
+					// Iff nextState itself is not on disk, its successor nodes
+					// won't be either (or we don't know it's successors yet).
+					// This scenario occurs when liveness checking is executed
+					// on a *partial* graph only. The model checker has added
+					// curState with nextState as its successor, nextState has
+					// not been added yet though. Basically this is where the
+					// partial graph has its border to the unknown.
+					//
+					// Continuing the for loop is fine. But we might as well add
+					// nextState to the queue. Once it gets picked up by the outer
+					// while loop, it will be skipped anyway as its succCnt is 0.
+					//
+					// If this case happens when LiveCheck is doing its
+					// finalCheck (complete graph), it is most probably a bug.
+					// Unfortunately, I don't know a proper assertion to check.
+					continue;
+				}
 				final long nextPtr = this.nodePtrTbl.getByLoc(nextLoc);
 				if (isFilePointer(nextPtr)) {
 					// nextState is not visited:
