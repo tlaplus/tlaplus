@@ -642,8 +642,8 @@ public class LiveCheck implements ILiveCheck {
 	static class TestHelper {
 		
 		/*
-		 * * EWD840 (with tableau) spec with N = 11 and maxSetSize = 9.000.000 => 12GB nodes file, 46141438 distinct states
-		 * * EWD840 (with tableau) spec with N = 12 and maxSetSize = 9.000.000 => TBD 
+		 * - EWD840 (with tableau) spec with N = 11 and maxSetSize = 9.000.000 => 12GB nodes file, 46.141.438 distinct states
+		 * - EWD840 (with tableau) spec with N = 12 and maxSetSize = 9.000.000 => 56GB, 201.334.782 dist. states 
 		 */
 		
 		// The Eclipse Launch configuration has to set the working directory
