@@ -63,6 +63,14 @@
 	</target>
 
 	<target name="compile" depends="clean" description="Compile">
+		<echo>
+			================================================================
+			= The following warnings about sun.misc.Unsafe can be ignored. = 
+			= OffHeapDiskFPSet has been written using Unsafe to best use   =
+			= a computer's memory. If Unsafe is removed from the JVM,      =
+			= OffHeapDiskFPSet won't work anymore.                         =
+			================================================================
+		</echo>
 		<!-- compile -->
 		<mkdir dir="${class.dir}" />
 		<javac srcdir="${src.dir}" destdir="${class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
@@ -83,13 +91,20 @@
 			</fileset>
 		</copy>
 	</target>
-
+	
 	<target name="compile-aj" depends="compile" if="withaj">
+		<echo>
+			====================================================================
+			= The following warnings (Xlint:adviceDidNotMatch) can be ignored. =
+			= We are doing load time weaving that kicks in when TLC gets       = 
+			= started, not when it is compiled.                                =
+			====================================================================
+		</echo>
 		<!-- compile aspectj related class files -->
 		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true" source="1.5" target="1.5">
 			<classpath refid="project.classpath" />
 			<classpath>
-				<pathelement location="lib/aspectjrt-1.8.5.jar" />
+					<pathelement location="lib/aspectjrt-1.8.5.jar" />
 				<pathelement location="lib/aspectjtools-1.8.5.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
@@ -217,7 +232,7 @@
 		</javac>
 		<!-- copy class.dir to path with whitespace -->
 		<!-- this is required by some tests to make sense -->
-		<!-- even throw a non digit in -->
+		<!-- even throw a "+" and whitespace into the mix -->
 		<property name="ws.class.dir" value="TLA+ Tools" />
 		<copy todir="${ws.class.dir}">
 			<fileset dir="${class.dir}" />
@@ -277,6 +292,9 @@
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJarLong" />
 		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="4096m" forkmode="perTest" fork="yes">
+			<jvmarg value="-javaagent:lib/aspectjweaver-1.8.5.jar" />
+			<sysproperty key="org.aspectj.weaver.showWeaveInfo" value="false"/>
+			<sysproperty key="aj.weaving.verbose" value="false"/>
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -290,8 +308,8 @@
 				<fileset dir="${test.dir}-long">
 					<exclude name="**/MultiThreadedSpecTest.java"/>
 					
-					<!-- The following tests take way too long (hours) -->
-					<!-- Reactivate when you start working on the fingerprint sets -->
+					<!-- The following tests take way too long (hours). -->
+					<!-- Reactivate when you start working on the fingerprint sets! -->
 					<exclude name="**/DiskFPSetTest.java"/>
 					<exclude name="**/FPSetTest.java"/>
 					<exclude name="**/MSBDiskFPSetTest.java"/>

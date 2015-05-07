@@ -38,7 +38,7 @@ import java.util.concurrent.TimeoutException;
 
 import tlc2.output.EC;
 import tlc2.tool.AbstractChecker;
-import tlc2.tool.Worker;
+import tlc2.tool.WorkerMonitor;
 
 /**
  * This test takes about four minutes with 32 cores on an EC2 cr1.8xlarge instance.
@@ -94,7 +94,29 @@ public abstract class MultiThreadedSpecTest extends ModelCheckerTestCase {
 		latch.await(10, TimeUnit.SECONDS);
 
 		// Except as many results as we have started worker threads.
-		assertEquals(getNumberOfThreads(), performanceResults.size());
+		//
+		// If this assert fails, make sure that AspectJ is loaded and the
+		// WorkerMonitorAspect is woven. This is done automatically by the ant
+		// build (customBuild.xml) but not when this test is executed inside
+		// Eclipse. AJDT (the AspectJ development tools) should not be a general
+		// requirement to compile the tlatools/ project in Eclipse.
+		//
+		// If you ask why it uses AspectJ the first place... Rather than adding
+		// API to the TLC code making in more and more complex just to test its
+		// performance behavior, I deemed the extra test complexity caused by
+		// AspectJ acceptable. We trade less complexity in program code with
+		// higher complexity in test code.
+		//
+		// To run this test in Eclipse, install AJDT (http://eclipse.org/ajdt/),
+		// convert the tlatools/ project into an AspectJ project via the 
+		// Package Explorers context menu and add 
+		// "-javaagent:${project_loc:tlatools}/lib/aspectjweaver-1.8.5.jar" 
+		// as a program argument to your JUnit launch config.
+		//
+		// If you get some but not all results, it's most certainly unrelated to
+		// AspectJ and indicates a programming bug.
+		assertEquals("PerfResult size is 0? => Is AspectJ load time weaving enabled?", getNumberOfThreads(),
+				performanceResults.size());
 		
 		// None of the workers threads should have been blocked or waiting for
 		// more than 25%
@@ -121,10 +143,10 @@ public abstract class MultiThreadedSpecTest extends ModelCheckerTestCase {
 
 		// Register a listener hot for the termination of the TLC worker
 		// threads. 
-		// Using ThreadMXBean to lookup all threads after TLC has
-		// finished has the potential that the JVM deleted the worker threads
+		// Using ThreadMXBean directly to lookup all threads after TLC has
+		// finished has the potential that the JVM deletes the worker threads
 		// before this test gets a chance to collect statistics.
-		Worker.addThreadListener(new Worker.ThreadListener() {
+		WorkerMonitor.addThreadListener(new WorkerMonitor.ThreadListener() {
 			public synchronized void terminated(final Thread thread, final long runningTime) {
 				final ThreadInfo threadInfo = threadBean.getThreadInfo(thread.getId());
 				double d = threadInfo.getBlockedTime() / (runningTime * 1.0d);

@@ -5,9 +5,6 @@
 
 package tlc2.tool;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.queue.IStateQueue;
@@ -16,12 +13,6 @@ import tlc2.util.ObjLongTable;
 import tlc2.value.Value;
 
 public class Worker extends IdThread implements IWorker {
-	
-	private static final Set<ThreadListener> THREAD_LISTENERS = new HashSet<ThreadListener>();
-	
-	public static void addThreadListener(ThreadListener listener) {
-		THREAD_LISTENERS.add(listener);
-	}
 	
 	/**
 	 * Multi-threading helps only when running on multiprocessors. TLC can
@@ -69,7 +60,6 @@ public class Worker extends IdThread implements IWorker {
    * updates the state set and state queue.
 	 */
 	public final void run() {
-		final long startTime = System.currentTimeMillis();
 		TLCState curState = null;
 		try {
 			while (true) {
@@ -97,19 +87,6 @@ public class Worker extends IdThread implements IWorker {
 				this.tlc.notify();
 			}
 			return;
-		} finally {
-			for (ThreadListener listener : THREAD_LISTENERS) {
-				listener.terminated(this, System.currentTimeMillis() - startTime);
-			}
 		}
-	}
-	
-	/**
-	 * A ThreadListener is notified of when the Worker thread terminates. The
-	 * notification includes the execution time of the thread.
-	 */
-	public static interface ThreadListener {
-
-		void terminated(final Thread thread, final long runningTime);
 	}
 }
