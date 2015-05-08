@@ -648,14 +648,10 @@ public class ModelChecker extends AbstractChecker
         if (this.theStateQueue.suspendAll())
         {
             // Run liveness checking, if needed:
-            long stateNum = this.theFPSet.size();
-            boolean doCheck = this.checkLiveness && (stateNum >= nextLiveCheck);
-            if (doCheck)
+            if (this.checkLiveness)
             {
-				MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, new String[] { "current", Long.toString(stateNum) });
-                if (!liveCheck.check())
+                if (!liveCheck.check(false))
                     return false;
-                nextLiveCheck = (stateNum <= 640000) ? stateNum * 2 : stateNum + 640000;
             }
 
             if (TLCGlobals.doCheckPoint()) {

@@ -36,8 +36,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
-import tlc2.tool.AbstractChecker;
 import tlc2.tool.WorkerMonitor;
 
 /**
@@ -129,12 +129,12 @@ public abstract class MultiThreadedSpecTest extends ModelCheckerTestCase {
 	}
 	
 	public void setUp() {
-		// Set the number of states before TLC (periodically) checks liveness to
-		// the largest possible value. This essentially stops TLC for checking
+		// Set the threshold before TLC (periodically) checks liveness to
+		// the largest possible value. This essentially stops TLC from checking
 		// liveness during model checking and delays it until the end when one
 		// final liveness check is run. We only then get deterministic behavior
 		// needed by this test to e.g. check the number of states generated...
-		System.setProperty(AbstractChecker.NEXT_LIVECHECK, Long.toString(Long.MAX_VALUE));
+		TLCGlobals.livenessThreshold = Double.MAX_VALUE;
 		
 		final ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 		// Enable contention thread statistics to have the JVM measure

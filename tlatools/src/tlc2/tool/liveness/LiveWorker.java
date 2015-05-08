@@ -700,6 +700,10 @@ public class LiveWorker extends IdThread {
 					}
 				}
 				this.dg.destroyCache();
+				// Record the size of the disk graph at the time its checked. This
+				// information is later used to decide if it it makes sense to
+				// run the next check on the larger but still *partial* graph.
+				this.dg.recordSize();
 			}
 		} catch (Exception e) {
 			MP.printError(EC.GENERAL, "checking liveness", e); // LL changed

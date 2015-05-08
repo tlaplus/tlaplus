@@ -618,16 +618,12 @@ public class DFIDModelChecker extends AbstractChecker
         synchronized (this.theFPSet)
         {
             // Run liveness checking, if needed:
-            long stateNum = this.theFPSet.size();
-            boolean doCheck = this.checkLiveness && (stateNum >= nextLiveCheck);
-            if (doCheck)
+            if (this.checkLiveness)
             {
-                MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, new String[] {"current", Long.toString(stateNum)});
-                if (!liveCheck.check())
+                if (!liveCheck.check(false))
                 {
                     return false;
                 }
-                nextLiveCheck = (stateNum < 600000) ? stateNum * 2 : stateNum + 200000;
             }
 
             if (TLCGlobals.doCheckPoint()) {

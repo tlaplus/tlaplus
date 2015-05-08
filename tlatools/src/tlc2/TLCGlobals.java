@@ -26,6 +26,12 @@ public class TLCGlobals
 
     // Number of concurrent workers
     private static int numWorkers = 1;
+    
+	/**
+	 * Execute liveness checking when any of the disk graphs' size has increased
+	 * exceeding the threshold (10% by default).
+	 */
+    public static double livenessThreshold = 0.1d;
 
     public synchronized static void setNumWorkers(int n)
     {
