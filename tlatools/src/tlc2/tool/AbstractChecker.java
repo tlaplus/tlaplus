@@ -257,12 +257,9 @@ public abstract class AbstractChecker implements Cancelable
         // while (true) {
         while (!this.cancellationFlag)
         {
-            if (TLCGlobals.doCheckPoint())
+            if (!this.doPeriodicWork())
             {
-                if (!this.doPeriodicWork())
-                {
-                    return false;
-                }
+                return false;
             }
             synchronized (this)
             {

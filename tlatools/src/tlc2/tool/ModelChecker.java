@@ -658,29 +658,34 @@ public class ModelChecker extends AbstractChecker
                 nextLiveCheck = (stateNum <= 640000) ? stateNum * 2 : stateNum + 640000;
             }
 
-            // Checkpoint:
-            MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
-
-            // start checkpointing:
-            this.theStateQueue.beginChkpt();
-            this.trace.beginChkpt();
-            this.theFPSet.beginChkpt();
-            this.theStateQueue.resumeAll();
-            UniqueString.internTbl.beginChkpt(this.metadir);
-            if (this.checkLiveness)
-            {
-                liveCheck.beginChkpt();
+            if (TLCGlobals.doCheckPoint()) {
+            	// Checkpoint:
+            	MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
+            	
+            	// start checkpointing:
+            	this.theStateQueue.beginChkpt();
+            	this.trace.beginChkpt();
+            	this.theFPSet.beginChkpt();
+            	this.theStateQueue.resumeAll();
+            	UniqueString.internTbl.beginChkpt(this.metadir);
+            	if (this.checkLiveness)
+            	{
+            		liveCheck.beginChkpt();
+            	}
+            	// commit checkpoint:
+            	this.theStateQueue.commitChkpt();
+            	this.trace.commitChkpt();
+            	this.theFPSet.commitChkpt();
+            	UniqueString.internTbl.commitChkpt(this.metadir);
+            	if (this.checkLiveness)
+            	{
+            		liveCheck.commitChkpt();
+            	}
+            	MP.printMessage(EC.TLC_CHECKPOINT_END);
+            } else {
+				// Just resume worker threads when checkpointing is skipped
+            	this.theStateQueue.resumeAll();
             }
-            // commit checkpoint:
-            this.theStateQueue.commitChkpt();
-            this.trace.commitChkpt();
-            this.theFPSet.commitChkpt();
-            UniqueString.internTbl.commitChkpt(this.metadir);
-            if (this.checkLiveness)
-            {
-                liveCheck.commitChkpt();
-            }
-            MP.printMessage(EC.TLC_CHECKPOINT_END);
         }
         return true;
     }
