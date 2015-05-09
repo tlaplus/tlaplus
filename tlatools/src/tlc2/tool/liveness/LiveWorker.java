@@ -5,6 +5,7 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.concurrent.BlockingQueue;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -25,7 +26,6 @@ public class LiveWorker extends IdThread {
 	public static final IBucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
 			.getPackage().getName(), "StronglyConnectedComponent sizes");
 	
-	static int nextOOS = 0;
 	private static int errFoundByThread = -1;
 	private static Object workerLock = new Object();
 
@@ -33,19 +33,12 @@ public class LiveWorker extends IdThread {
 	private AbstractDiskGraph dg = null;
 	private PossibleErrorModel pem = null;
 	private final ILiveCheck liveCheck;
+	private final BlockingQueue<ILiveChecker> queue;
 
-	public LiveWorker(int id, final ILiveCheck liveCheck) {
+	public LiveWorker(int id, final ILiveCheck liveCheck, final BlockingQueue<ILiveChecker> queue) {
 		super(id);
 		this.liveCheck = liveCheck;
-	}
-
-	public int getNextOOS() {
-		synchronized (LiveWorker.class) {
-			if (nextOOS < liveCheck.getNumChecker()) {
-				return nextOOS++;
-			}
-			return -1;
-		}
+		this.queue = queue;
 	}
 
 	// Returns true iff an error has already found.
@@ -685,14 +678,19 @@ public class LiveWorker extends IdThread {
 	public final void run() {
 		try {
 			while (true) {
-				// Get next OOS, and work on it:
-				int idx = getNextOOS();
-				if (idx == -1 || hasErrFound()) {
+				// Use poll() to get the next checker from the queue or null if
+				// there is none. Do *not* block when there are no more checkers
+				// available. Nobody is going to add new checkers to the queue.
+				final ILiveChecker checker = queue.poll();
+				if (checker == null || hasErrFound()) {
+					// Another thread has either found an error (violation of a
+					// liveness property) OR there is no more work (checker) to
+					// be done.
 					break;
 				}
 
-				this.oos = liveCheck.getChecker(idx).getSolution();
-				this.dg = liveCheck.getChecker(idx).getDiskGraph();
+				this.oos = checker.getSolution();
+				this.dg = checker.getDiskGraph();
 				this.dg.createCache();
 				PossibleErrorModel[] pems = this.oos.getPems();
 				for (int i = 0; i < pems.length; i++) {

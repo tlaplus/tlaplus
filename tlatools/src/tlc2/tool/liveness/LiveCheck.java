@@ -5,7 +5,10 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -106,16 +109,33 @@ public class LiveCheck implements ILiveCheck {
 	}
 	
 	private boolean check(final boolean finalCheck) throws InterruptedException, IOException {
+		// Copy the array of checkers into a concurrent-enabled queue
+		// that allows LiveWorker threads to easily get the next 
+		// LiveChecker to work on. We don't really need the FIFO
+		// ordering of the BlockingQueue, just its support for removing
+		// elements concurrently.
+		//
+		// Logically the queue is the unit of work the group of LiveWorkers
+		// has to complete. Once the queue is empty, all work is done and
+		// the LiveWorker threads will terminate.
+		//
+		// An alternative implementation could partition the array of
+		// LiveChecker a-priori and assign one partition to each thread.
+		// However, that assumes the work in all partitions is evenly
+		// distributed, which is not necessarily true.
+		final BlockingQueue<ILiveChecker> queue = new ArrayBlockingQueue<ILiveChecker>(checker.length);
+		queue.addAll(Arrays.asList(checker));
+
 		int slen = checker.length;
 		int wNum = Math.min(slen, TLCGlobals.getNumWorkers());
 
 		if (wNum == 1) {
-			LiveWorker worker = new LiveWorker(0, this);
+			LiveWorker worker = new LiveWorker(0, this, queue);
 			worker.run();
 		} else {
 			LiveWorker[] workers = new LiveWorker[wNum];
 			for (int i = 0; i < wNum; i++) {
-				workers[i] = new LiveWorker(i, this);
+				workers[i] = new LiveWorker(i, this, queue);
 				workers[i].start();
 			}
 			for (int i = 0; i < wNum; i++) {
@@ -259,7 +279,6 @@ public class LiveCheck implements ILiveCheck {
 	 * @see tlc2.tool.liveness.ILiveCheck#reset()
 	 */
 	public void reset() throws IOException {
-		LiveWorker.nextOOS = 0;
 		for (int i = 0; i < checker.length; i++) {
 			checker[i].getDiskGraph().reset();
 		}
