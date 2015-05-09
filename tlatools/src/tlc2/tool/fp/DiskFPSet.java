@@ -745,7 +745,13 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#checkFPs()
 	 */
 	public final double checkFPs() throws IOException {
-		flusher.flushTable(); // No need for any lock here
+		// It seems pointless to acquire the locks when checkFPs is only
+		// executed after model checking has finished. Sill lock the disk
+		// fingerprint sets though. Acquiring the locks is cheap.
+		rwLock.acquireAllLocks();
+		flusher.flushTable();
+		rwLock.releaseAllLocks();
+
 		RandomAccessFile braf = new BufferedRandomAccessFile(
 				this.fpFilename, "r");
 		long fileLen = braf.length();

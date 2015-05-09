@@ -110,7 +110,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
 			final long buffLen = tblCnt.get();
 			final TLCIterator itr = new TLCIterator(tbl);
-	
+
 			// Precompute the maximum value of the new file
 			long maxVal = itr.getLast();
 			if (index != null) {
@@ -295,18 +295,28 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 			int len = buff.length - 1;
 			long[] bucket = buff[len];
 
-			// find last bucket containing elements, buff elements might be null if
-			// no fingerprint for such an index has been added to the DiskFPSet
-			while (bucket == null) {
+			// Walk from the end of buff to the beginning. Each bucket that is
+			// found and non-null (null if no fingerprint for such an index has
+			// been added to the DiskFPSet) is checked for a valid fingerprint.
+			// A fp is valid iff it is larger zero. A zero fingerprint slot
+			// indicates an unoccupied slot, while a negative one corresponds to
+			// a fp that has already been flushed to disk.
+			while (len > 0) {
 				bucket = buff[--len];
-			}
-			
-			// find last element > 0 in bucket
-			for (int i = bucket.length - 1; i >= 0 ;i--) {
-				if (bucket[i] > 0) {
-					return bucket[i];
+
+				// Find last element > 0 in bucket (negative elements have already
+				// been flushed to disk, zero indicates an unoccupied slot).
+				if (bucket != null) {
+					for (int i = bucket.length - 1; i >= 0; i--) {
+						if (bucket[i] > 0) {
+							return bucket[i];
+						}
+					}
 				}
 			}
+			// At this point we have scanned the complete buff, but haven't
+			// found a single fingerprint that hasn't been flushed to disk
+			// already.
 			throw new NoSuchElementException();
 		}
 		

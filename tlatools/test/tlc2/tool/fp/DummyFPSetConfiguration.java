@@ -14,4 +14,8 @@ public class DummyFPSetConfiguration extends FPSetConfiguration {
 		// which unit tests might have to tear down.
 		return memoryInBytes;
 	}
+	
+	public void setMemoryInFingerprintCnt(int numberOfFingerprints) {
+		this.memoryInBytes = numberOfFingerprints * FPSet.LongSize;
+	}
 }
