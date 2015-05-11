@@ -16,12 +16,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
-import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
@@ -803,8 +803,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         area.setLayout(new GridLayout(2, false));
         
 //        // label fp
-//        FormText fpLabel = toolkit.createFormText(area, true);
-//        fpLabel.setText("Fingerprint seed index:", false, false);
+//        Label fpLabel = toolkit.createLabel(area, "Fingerprint seed index:");
+//        fpLabel.setText(, false, false);
 //        gd = new GridData();
 //        gd.horizontalIndent = 10;
 //        fpLabel.setLayoutData(gd);
@@ -830,8 +830,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         mcOption.setLayoutData(gd);
 
         // label view
-        FormText viewLabel = toolkit.createFormText(area, true);
-        viewLabel.setText("View:", false, false);
+        Label viewLabel = toolkit.createLabel(area, "View:");
         gd = new GridData();
         gd.verticalAlignment = SWT.BEGINNING;
         gd.horizontalIndent = 10;
@@ -851,8 +850,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd.horizontalIndent = 10;
         dfidOption.setLayoutData(gd);
         // label depth
-        FormText dfidDepthLabel = toolkit.createFormText(area, true);
-        dfidDepthLabel.setText("Depth:", false, false);
+        Label dfidDepthLabel = toolkit.createLabel(area, "Depth:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         dfidDepthLabel.setLayoutData(gd);
@@ -870,8 +868,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         simulationOption.addFocusListener(focusListener);
 
         // label depth
-        FormText depthLabel = toolkit.createFormText(area, true);
-        depthLabel.setText("Maximum length of the trace:", false, false);
+        Label depthLabel = toolkit.createLabel(area, "Maximum length of the trace:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         depthLabel.setLayoutData(gd);
@@ -883,8 +880,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         simuDepthText.addFocusListener(focusListener);
 
         // label seed
-        FormText seedLabel = toolkit.createFormText(area, true);
-        seedLabel.setText("Seed:", false, false);
+        Label seedLabel = toolkit.createLabel(area, "Seed:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         seedLabel.setLayoutData(gd);
@@ -897,8 +893,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         simuSeedText.addFocusListener(focusListener);
 
         // label seed
-        FormText arilLabel = toolkit.createFormText(area, true);
-        arilLabel.setText("Aril:", false, false);
+        Label arilLabel = toolkit.createLabel(area, "Aril:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         arilLabel.setLayoutData(gd);
@@ -916,8 +911,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         toolkit.createComposite(area);
         
         // label fp
-        FormText fpLabel = toolkit.createFormText(area, true);
-        fpLabel.setText("Fingerprint seed index:", false, false);
+        Label fpLabel = toolkit.createLabel(area, "Fingerprint seed index:");
         gd = new GridData();
         gd.horizontalIndent = 0;
         fpLabel.setLayoutData(gd);
@@ -939,8 +933,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         fpIndexSpinner.addFocusListener(focusListener);
         
         // fpbits label
-        FormText fpBitsLabel = toolkit.createFormText(area, true);
-        fpBitsLabel.setText("Log base 2 of number of disk storage files:", false, false);
+        Label fpBitsLabel = toolkit.createLabel(area, "Log base 2 of number of disk storage files:");
         gd = new GridData();
         gd.horizontalIndent = 0;
         fpBitsLabel.setLayoutData(gd);
@@ -963,8 +956,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         fpBits.setSelection(defaultFPBits);
         
         // maxSetSize label
-        FormText maxSetSizeLabel = toolkit.createFormText(area, true);
-        maxSetSizeLabel.setText("Cardinality of largest enumerable set:", false, false);
+        Label maxSetSizeLabel = toolkit.createLabel(area, "Cardinality of largest enumerable set:");
         gd = new GridData();
         gd.horizontalIndent = 0;
         maxSetSizeLabel.setLayoutData(gd);
@@ -987,8 +979,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         maxSetSize.setSelection(defaultMaxSetSize);
     
 		// Extra/Additional VM arguments and system properties
-        FormText vmArgsLabel = toolkit.createFormText(area, true);
-        vmArgsLabel.setText("JVM arguments:", false, false);
+        toolkit.createLabel(area, "JVM arguments:");
 
         extraVMArgumentsText = toolkit.createText(area, "", SWT.MULTI | SWT.WRAP);
         extraVMArgumentsText.setEditable(true);
@@ -1003,8 +994,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         extraVMArgumentsText.setLayoutData(gd);
 
 		// Extra/Additional TLC arguments
-        FormText tlcParamsLabel = toolkit.createFormText(area, true);
-        tlcParamsLabel.setText("TLC command line parameters:", false, false);
+        toolkit.createLabel(area, "TLC command line parameters:");
 
         extraTLCParametersText = toolkit.createText(area, "", SWT.MULTI | SWT.WRAP);
         extraTLCParametersText.setEditable(true);
