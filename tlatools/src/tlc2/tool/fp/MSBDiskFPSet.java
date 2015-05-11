@@ -71,17 +71,6 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 		 */
 		protected void prepareTable() {
 			
-			// Why not sort this.tbl in-place rather than doubling memory
-			// requirements by copying to clone array and subsequently sorting it?
-			// - disk written fps are marked disk written by changing msb to 1
-			// - next time such a fp from the in-memory this.tlb is converted on the
-			// fly back and again used to do an in-memory lookup
-			//
-			// - this.tbl bucket assignment (hashing) is done on least significant bits,
-			// which makes in-place sort with overlay index infeasible
-			// - erasing this.tbl means we will loose the in-memory cache completely until it fills up again
-			// - new fps overwrite disk flushed fps in-memory
-	
 			// copy table contents into a buffer array buff; do not erase tbl, but 1
 			// msb of each fp to indicate it has been flushed to disk
 			for (int j = 0; j < tbl.length; j++) {
