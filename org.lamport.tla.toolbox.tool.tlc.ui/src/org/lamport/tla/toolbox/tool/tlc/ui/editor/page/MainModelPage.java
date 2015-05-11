@@ -46,7 +46,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Spinner;
@@ -172,8 +171,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
     private Combo distributedCombo;
     private Text resultMailAddressText;
-    private Text distributedScriptText;
-    private Button browseDistributedScriptButton;
     
     // The widgets to display the checkpoint size and
     // the delete button.
@@ -335,9 +332,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		} else {
 			MainModelPage.this.putOnTopOfStack("off", true, true);
 		}
-        
-        final String distributedScript = getConfig().getAttribute(LAUNCH_DISTRIBUTED_SCRIPT, LAUNCH_DISTRIBUTED_SCRIPT_DEFAULT);
-        this.distributedScriptText.setText(distributedScript);
         
         // distribute FPSet count
         distributedFPSetCountSpinner.setSelection(getConfig().getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
@@ -709,29 +703,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT));
             }
         }
-        
-        // enablement for distributed input text boxes depends on button
-        int selectionIndex = this.distributedCombo.getSelectionIndex();
-		String distributed = this.distributedCombo.getItem(selectionIndex);
-		// only allow a script if the "ad hoc" cloud is selected. The ad hoc cloud
-		// is the one where TLC just spawns a thread and the user is required to
-		// start the workers (e.g. via jnlp)
-        this.distributedScriptText.setEnabled(distributed.equals("ad hoc")); //TODO use constant
-        
-        // verify existence of pre-flight script
-//       	if(distributed) {
-//       		final String scriptPath = distributedScriptText.getText();
-//       		if(scriptPath != null && !"".equals(scriptPath)) {
-//       			final File f = new File(scriptPath);
-//       			if(!f.exists()) {
-//                    modelEditor.addErrorMessage("noScript", "No script file found", this.getId(),
-//                            IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_SCRIPT)));
-//                    setComplete(false);
-//                    expandSection(SEC_HOW_TO_RUN);
-//       			}
-//       		}
-//       	}
-//       	
 
         mm.setAutoUpdate(true);
 
@@ -857,9 +828,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // network interface
         final String iface = this.networkInterfaceCombo.getItem(this.networkInterfaceCombo.getSelectionIndex());
         getConfig().setAttribute(LAUNCH_DISTRIBUTED_INTERFACE, iface);
-        
-        final String distributedScript = this.distributedScriptText.getText();
-        getConfig().setAttribute(LAUNCH_DISTRIBUTED_SCRIPT, distributedScript);
 
         // invariants
         List<String> serializedList = FormHelper.getSerializedInput(invariantsTable);
@@ -1568,60 +1536,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
         });
-        
-        /*
-         * pre-flight script executed prior to distributed TLC (e.g. to start remote workers)
-         */
-        final Label distributedLabel = toolkit.createLabel(howToRunArea, "Pre Flight Script:");
-
-        // non-editable text input
-        distributedScriptText = toolkit.createText(howToRunArea, "");
-        distributedScriptText.setEditable(true);
-        distributedScriptText
-        .setToolTipText("Optionally pass a pre-flight script to be run prior to the TLC process (e.g. to start remote workers)");
-        distributedScriptText.addModifyListener(howToRunListener);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 300;
-        distributedScriptText.setLayoutData(gd);
-        dm.bindAttribute(LAUNCH_DISTRIBUTED_SCRIPT, distributedScriptText, howToRunPart);
-
-        // skip the left cell in the grid layout
-        final Text invisibleText = toolkit.createText(howToRunArea, "");
-        invisibleText.setEditable(false);
-        invisibleText.setVisible(false);
-        invisibleText.setEnabled(false);
-        
-        // browse button right-aligned
-        browseDistributedScriptButton = toolkit.createButton(howToRunArea, "Browse", SWT.PUSH);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-		browseDistributedScriptButton.setLayoutData(gd);
-        browseDistributedScriptButton.addSelectionListener(new SelectionListener() {
-			/* (non-Javadoc)
-			 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
-			 */
-			public void widgetSelected(SelectionEvent e) {
-				// prompt user for a file
-				final FileDialog fd = new FileDialog(getSite().getShell(), SWT.OPEN);
-				final String oldPath = distributedScriptText.getText();
-				fd.setFileName(oldPath);
-				
-				// use user-provided path as input for script input text box
-				final String path = fd.open();
-				distributedScriptText.setText((path != null) ? path : oldPath);
-			}
-			/* (non-Javadoc)
-			 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-			 */
-			public void widgetDefaultSelected(SelectionEvent e) {
-				//nop
-			}
-		});
-
-        // deactivate because domain logic is not done yet
-        distributedLabel.setVisible(false);
-        distributedScriptText.setVisible(false);
-        browseDistributedScriptButton.setVisible(false);
 
         /*
          * run link
