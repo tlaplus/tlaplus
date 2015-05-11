@@ -59,7 +59,6 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
-import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ImageHyperlink;
@@ -178,7 +177,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     
     // The widgets to display the checkpoint size and
     // the delete button.
-    private FormText chkpointSizeLabel;
+    private Label chkpointSizeLabel;
     private Text checkpointSizeText;
     private Button chkptDeleteButton;
     
@@ -1138,8 +1137,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         elementLine.setLayout(new FillLayout(SWT.HORIZONTAL));
 
         // the text
-        FormText labelText = toolkit.createFormText(elementLine, false);
-        labelText.setText("Advanced parts of the model:", false, false);
+        toolkit.createLabel(elementLine, "Advanced parts of the model:");
 
         // the hyperlinks
         Hyperlink hyper;
@@ -1190,8 +1188,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
          */
         
         // label workers
-        FormText workersLabel = toolkit.createFormText(howToRunArea, true);
-        workersLabel.setText("Number of worker threads:", false, false);
+        toolkit.createLabel(howToRunArea, "Number of worker threads:");
 
         // field workers
         workers = new Spinner(howToRunArea, SWT.NONE);
@@ -1214,8 +1211,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
          */
         
         // max heap size label
-        FormText maxHeapLabel = toolkit.createFormText(howToRunArea, true);
-        maxHeapLabel.setText("Fraction of physical memory allocated to TLC:", false, false);
+        toolkit.createLabel(howToRunArea, "Fraction of physical memory allocated to TLC:");
 
 		// Create a composite inside the right "cell" of the "how to run"
 		// section grid layout to fit the scale and the maxHeapSizeFraction
@@ -1243,10 +1239,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dm.bindAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize, howToRunPart);
         
         // label next to the scale showing the current fraction selected
-        final FormText maxHeapSizeFraction = toolkit.createFormText(maxHeapScale, false);
 		final TLCRuntime instance = TLCRuntime.getInstance();
 		long memory = instance.getAbsolutePhysicalSystemMemory(defaultMaxHeapSize / 100d);
-        maxHeapSizeFraction.setText(defaultMaxHeapSize + "%" + " (" + memory + " mb)", false, false);
+		final Label maxHeapSizeFraction = toolkit.createLabel(maxHeapScale,
+				defaultMaxHeapSize + "%" + " (" + memory + " mb)");
         maxHeapSize.addPaintListener(new PaintListener() {
 			/* (non-Javadoc)
 			 * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
@@ -1256,14 +1252,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				int value = ((Scale) e.getSource()).getSelection();
 				final TLCRuntime instance = TLCRuntime.getInstance();
 				long memory = instance.getAbsolutePhysicalSystemMemory(value / 100d);
-				maxHeapSizeFraction.setText(value + "%" + " (" + memory + " mb)" , false, false);
+				maxHeapSizeFraction.setText(value + "%" + " (" + memory + " mb)");
 			}
 		});
 
         
 //        // label workers
-//        FormText workersLabel = toolkit.createFormText(howToRunArea, true);
-//        workersLabel.setText("Number of worker threads:", false, false);
+//        toolkit.createLabel(howToRunArea, "Number of worker threads:");
 //
 //        // field workers
 //        workers = toolkit.createText(howToRunArea, "1");
@@ -1293,8 +1288,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         checkpointButton.addFocusListener(focusListener);
         HelpButton.helpButton(ckptComp, "model/overview-page.html#checkpoint") ;
 
-        FormText chkpointIdLabel = toolkit.createFormText(howToRunArea, true);
-        chkpointIdLabel.setText("Checkpoint ID:", false, false);
+        toolkit.createLabel(howToRunArea, "Checkpoint ID:");
 
         checkpointIdText = toolkit.createText(howToRunArea, "");
         checkpointIdText.setEditable(false);
@@ -1304,8 +1298,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         checkpointIdText.setLayoutData(gd);
         dm.bindAttribute(LAUNCH_RECOVER, checkpointButton, howToRunPart);
 
-        chkpointSizeLabel = toolkit.createFormText(howToRunArea, true);
-        chkpointSizeLabel.setText("Checkpoint size (kbytes):", false, false);
+        chkpointSizeLabel = toolkit.createLabel(howToRunArea, "Checkpoint size (kbytes):");
         checkpointSizeText = toolkit.createText(howToRunArea, "");
         gd = new GridData();
         gd.horizontalIndent = 10;
@@ -1407,8 +1400,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         networkInterface.setLayoutData(gd);
 		
         // label
-        FormText networkInterfaceLabel = toolkit.createFormText(networkInterface, true);
-        networkInterfaceLabel.setText("Master's network address:", false, false);
+        toolkit.createLabel(networkInterface, "Master's network address:");
 
         // field
         networkInterfaceCombo = new Combo(networkInterface, SWT.NONE);
@@ -1492,8 +1484,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         distributedFPSetCount.setLayoutData(gd);
 		
         // label
-        FormText distributedFPSetCountLabel = toolkit.createFormText(distributedFPSetCount, true);
-        distributedFPSetCountLabel.setText("Number of distributed fingerprint sets (zero for single built-in set):", false, false);
+        toolkit.createLabel(distributedFPSetCount, "Number of distributed fingerprint sets (zero for single built-in set):");
 
         // field
         distributedFPSetCountSpinner = new Spinner(distributedFPSetCount, SWT.NONE);
@@ -1581,8 +1572,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         /*
          * pre-flight script executed prior to distributed TLC (e.g. to start remote workers)
          */
-        FormText distributedLabel = toolkit.createFormText(howToRunArea, true);
-        distributedLabel.setText("Pre Flight Script:", false, false);
+        final Label distributedLabel = toolkit.createLabel(howToRunArea, "Pre Flight Script:");
 
         // non-editable text input
         distributedScriptText = toolkit.createText(howToRunArea, "");
