@@ -1374,6 +1374,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		distributedOptions = new Composite(howToRunArea, SWT.NONE);
 		final StackLayout stackLayout = new StackLayout();
 		distributedOptions.setLayout(stackLayout);
+		
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        distributedOptions.setLayoutData(gd);
         
 		// No distribution has no options
 		final Composite offComposite = new Composite(distributedOptions, SWT.NONE);
@@ -1384,7 +1388,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 * Composite wrapping number of distributed FPSet and iface when ad hoc selected
 		 */
         final Composite builtInOptions = new Composite(distributedOptions, SWT.NONE);
-        layout = new GridLayout(3, true);
+        layout = new GridLayout(2, true);
         builtInOptions.setLayout(layout);
         gd = new GridData();
         gd.horizontalSpan = 2;
@@ -1396,7 +1400,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 */
 		// composite
         final Composite networkInterface = new Composite(builtInOptions, SWT.NONE) ;
-        layout = new GridLayout(3, true);
+        layout = new GridLayout(2, true);
         networkInterface.setLayout(layout);
         gd = new GridData();
         gd.horizontalSpan = 2;
@@ -1481,7 +1485,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		// composite
         final Composite distributedFPSetCount = new Composite(builtInOptions, SWT.NONE);
-        layout = new GridLayout(3, true);
+        layout = new GridLayout(2, false);
         distributedFPSetCount.setLayout(layout);
         gd = new GridData();
         gd.horizontalSpan = 2;
@@ -1496,6 +1500,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         distributedFPSetCountSpinner.addSelectionListener(howToRunListener);
         distributedFPSetCountSpinner.addFocusListener(focusListener);
         gd = new GridData();
+        gd.grabExcessHorizontalSpace = true;
         gd.horizontalIndent = 10;
         gd.widthHint = 40;
         distributedFPSetCountSpinner.setLayoutData(gd);
@@ -1512,15 +1517,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 * Result mail address input
 		 */
         final Composite resultAddress = new Composite(distributedOptions, SWT.NONE) ;
-        layout = new GridLayout(3, true);
+        layout = new GridLayout(2, true);
         resultAddress.setLayout(layout);
         
         gd = new GridData();
         gd.horizontalSpan = 2;
-        distComp.setLayoutData(gd);
+        resultAddress.setLayoutData(gd);
         
 		toolkit.createLabel(resultAddress, "Result mailto address:");
-		resultMailAddressText = toolkit.createText(resultAddress, "");
+		resultMailAddressText = toolkit.createText(resultAddress, "", SWT.BORDER);
 		resultMailAddressText.setMessage("my-name@my-domain.org"); // hint
 		resultMailAddressText.addKeyListener(new KeyAdapter() {
 			
@@ -1547,6 +1552,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			}
 		});
         gd = new GridData();
+        gd.grabExcessHorizontalSpace = true;
         gd.horizontalIndent = 10;
         gd.widthHint = 200;
         resultMailAddressText.setLayoutData(gd);
@@ -1571,7 +1577,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
         });
-
+        
         /*
          * pre-flight script executed prior to distributed TLC (e.g. to start remote workers)
          */
