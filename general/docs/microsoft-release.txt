@@ -209,11 +209,18 @@ TO GENERATE THE RELEASE:
   Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
-Version 1.4.9 - ??
-  - Fixed bug in TLC that caused infinite looping if a recursively
+Version 1.5.0 - 11 May 2015
+  - Distributed TLC in the Cloud--significantly improves 
+    distributed TLC.
+  - Significantly speeds ups TLC's liveness checking.
+  - Improvements to the Decompose Proof command.
+  - Improvements to the TLC Errors view, including ability to
+    show trace in reverse order.
+  - Fixes all known bugs in TLC's liveness checking.
+  - Fixes bug in TLC that caused infinite looping if a recursively
     defined operator is used as an operator argument in its own
     definition.
-  - Fixed minor bug in Decompose Proof command.
+
 Version 1.4.8 - 25 February 2014
   - Made module names case sensitive, so they must exactly match
     the name of the file containing them.
