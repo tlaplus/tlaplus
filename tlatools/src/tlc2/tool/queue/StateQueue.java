@@ -179,7 +179,19 @@ public abstract class StateQueue implements IStateQueue {
 	 */
 	public synchronized void finishAll() {
 		this.finish = true;
+		// Notify all other worker threads.
 		this.notifyAll();
+		// Need to wake main thread that waits (mu.wait()) to suspend access to
+		// the squeue (see suspendAll). The main thread might attempt to do its
+		// periodic work (tlc2.tool.ModelChecker.doPeriodicWork()) the moment
+		// all worker threads finish. Since suspendAll assumes the main thread
+		// is woken up (potentially) multiple times from sleeping indefinitely
+		// in the while loop before it finally returns after locking the
+		// StateQueue, we have to live up to this assumption.
+		synchronized (this.mu) {
+			// Technically notify() would do.
+			this.mu.notify();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -194,11 +206,13 @@ public abstract class StateQueue implements IStateQueue {
 			this.stop = true;
 			needWait = needsWaiting();
 		}
+		// Wait for all worker threads to stop.
 		while (needWait) {
 			synchronized (this.mu) {
 				try {
 					// waiting here assumes that subsequently a worker
-					// is going to wake us up by calling isAvail()
+					// is going to wake us up by calling isAvail() or
+					// this.mu.notify*()
 					this.mu.wait();
 				} catch (Exception e) {
 					MP.printError(EC.GENERAL, "waiting for a worker to wake up", e);  // LL changed call 7 April 2012
