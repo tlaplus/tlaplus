@@ -186,6 +186,10 @@
 		<mkdir dir="${test.reports}" />
 		<jacoco:coverage destfile="target/code-coverage.exec">
 			<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes">
+				<!-- Uncomment to open a debug port in each forked VM to remote attach your Eclipse at port 1044.
+	            <jvmarg value="-Xdebug" />
+		        <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044" />
+				-->
 				<classpath refid="project.classpath" />
 				<classpath>
 					<pathelement location="lib/junit-4.8.2.jar" />
