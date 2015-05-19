@@ -7,6 +7,8 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="src" path="test-long"/>
 	<classpathentry kind="src" path="test-concurrent"/>
+	<classpathentry kind="src" path="test-verify"/>
 	<classpathentry kind="lib" path="lib/javax.mail.jar"/>
+	<classpathentry kind="lib" path="lib/jpf.jar"/>
 	<classpathentry kind="output" path="class"/>
 </classpath>

@@ -18,9 +18,9 @@
 	</tstamp>
 
 	<!-- JaCoCo code coverage -->
-    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
-        <classpath path="lib/jacocoant.jar"/>
-    </taskdef>
+	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+		<classpath path="lib/jacocoant.jar"/>
+	</taskdef>
 
 	<taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
 		<classpath>
@@ -91,7 +91,7 @@
 			</fileset>
 		</copy>
 	</target>
-	
+
 	<target name="compile-aj" depends="compile" if="withaj">
 		<echo>
 			====================================================================
@@ -104,7 +104,7 @@
 		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true" source="1.5" target="1.5">
 			<classpath refid="project.classpath" />
 			<classpath>
-					<pathelement location="lib/aspectjrt-1.8.5.jar" />
+				<pathelement location="lib/aspectjrt-1.8.5.jar" />
 				<pathelement location="lib/aspectjtools-1.8.5.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
@@ -135,15 +135,15 @@
 		<!-- The javax.mail dependency as well as javax.activation is also depended upon -->
 		<!-- by the tla2tools OSGi bundle and is expected to be the same version. -->
 		<unzip src="lib/javax.mail.jar" dest="${class.dir}"/>
-		
+
 		<!-- Extract javax.mail to maven classes folder. This script is triggered by -->
 		<!-- maven. However, maven compiles the code again to target/classes from -->
 		<!-- where it creates the plugin -->
 		<unzip src="lib/javax.mail.jar" dest="target/classes"/>
-		
+
 		<!-- TODO: add javax.activation to lib/ and extract it here too. Otherwise we have a -->
 		<!-- runtime dependency on Java 6. -->
-		
+
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.file}">
@@ -200,7 +200,7 @@
 					<pathelement path="${test.class.dir}" />
 				</classpath>
 				<formatter type="xml" />
-	
+
 				<!-- Pass the base path of the tlatools project to unit tests in case they need it to locate TLA+ specs or configs -->
 				<sysproperty key="basedir" value="${basedir}/"/>
 				<batchtest fork="yes" todir="${test.reports}">
@@ -311,7 +311,7 @@
 			<batchtest fork="yes" todir="${test.reports}/onJarLong">
 				<fileset dir="${test.dir}-long">
 					<exclude name="**/MultiThreadedSpecTest.java"/>
-					
+
 					<!-- The following tests take way too long (hours). -->
 					<!-- Reactivate when you start working on the fingerprint sets! -->
 					<exclude name="**/DiskFPSetTest.java"/>
@@ -319,7 +319,7 @@
 					<exclude name="**/MSBDiskFPSetTest.java"/>
 					<exclude name="**/OffHeapDiskFPSetTest.java"/>
 					<exclude name="**/DiskStateQueueTest.java"/>
-					
+
 					<include name="**/*Test*.java" />
 				</fileset>
 			</batchtest>
@@ -327,6 +327,40 @@
 
 		<!-- remove copied class.dir -->
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
+	</target>
+
+	<!-- -->
+	<target name="test-verify" description="Verifies TLC parts with NASA's pathfinder model checker">
+		<!-- Compile our boilerplate code needed to verify TLC. E.g. the StateQueueVerify creates -->
+		<!-- examplary produces & consumers and a dummy implementation of StateQueue. -->
+		<javac srcdir="${test.dir}-verify" destdir="${test.class.dir}" debug="true" verbose="false">
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement path="${class.dir}" />
+				<pathelement location="lib/jpf.jar" />
+			</classpath>
+		</javac>
+
+		<mkdir dir="${test.reports}/verify" />
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="4096m" forkmode="perTest" fork="yes" 
+			dir="${basedir}/test-verify" >
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement location="lib/jpf.jar" />
+				<pathelement location="lib/jpf-classes.jar" />
+				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
+			</classpath>
+
+			<formatter type="xml" />
+
+			<batchtest fork="yes" todir="${test.reports}/verify">
+				<fileset dir="${test.dir}-verify">
+					<include name="**/*Test*.java" />
+				</fileset>
+			</batchtest>
+		</junit>
 	</target>
 
 	<target name="dist-mixed-jar" description="Build a distribution" depends="default">
