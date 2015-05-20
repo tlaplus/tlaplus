@@ -92,7 +92,7 @@
 		</copy>
 	</target>
 
-	<target name="compile-aj" depends="compile" if="withaj">
+	<target name="compile-aj" if="withaj">
 		<echo>
 			====================================================================
 			= The following warnings (Xlint:adviceDidNotMatch) can be ignored. =
@@ -223,7 +223,7 @@
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
 
-	<target name="test-dist" description="Executes accompining unit tests on jar file" depends="dist" unless="test.skip">
+	<target name="test-dist" description="Executes accompining unit tests on jar file" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
 		<javac includeantruntime="false" srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
@@ -276,7 +276,7 @@
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
 
-	<target name="test-dist-long" description="Executes accompining long-running unit tests on jar file" depends="dist" unless="test.skip">
+	<target name="test-dist-long" description="Executes accompining long-running unit tests on jar file" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
 		<javac includeantruntime="false" srcdir="${test.dir}-long" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
