@@ -101,7 +101,7 @@
 			====================================================================
 		</echo>
 		<!-- compile aspectj related class files -->
-		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true" source="1.5" target="1.5">
+		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/aspectjrt-1.8.5.jar" />
@@ -167,7 +167,7 @@
 	<target name="test" description="Executes accompining unit tests" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
-		<javac includeantruntime="false" srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+		<javac includeantruntime="false" srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -226,7 +226,7 @@
 	<target name="test-dist" description="Executes accompining unit tests on jar file" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
-		<javac includeantruntime="false" srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+		<javac includeantruntime="false" srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -279,7 +279,7 @@
 	<target name="test-dist-long" description="Executes accompining long-running unit tests on jar file" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
-		<javac includeantruntime="false" srcdir="${test.dir}-long" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+		<javac includeantruntime="false" srcdir="${test.dir}-long" destdir="${test.class.dir}" debug="true" verbose="false">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
