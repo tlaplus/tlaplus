@@ -618,36 +618,34 @@ public class DFIDModelChecker extends AbstractChecker
         synchronized (this.theFPSet)
         {
             // Run liveness checking, if needed:
-            long stateNum = this.theFPSet.size();
-            boolean doCheck = this.checkLiveness && (stateNum >= nextLiveCheck);
-            if (doCheck)
+            if (this.checkLiveness)
             {
-                MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, new String[] {"current", Long.toString(stateNum)});
-                if (!liveCheck.check())
+                if (!liveCheck.check(false))
                 {
                     return false;
                 }
-                nextLiveCheck = (stateNum < 600000) ? stateNum * 2 : stateNum + 200000;
             }
 
-            // Checkpoint:
-            MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
-            // start checkpointing:
-            this.theFPSet.beginChkpt();
-            if (this.checkLiveness)
-            {
-                liveCheck.beginChkpt();
+            if (TLCGlobals.doCheckPoint()) {
+            	// Checkpoint:
+            	MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
+            	// start checkpointing:
+            	this.theFPSet.beginChkpt();
+            	if (this.checkLiveness)
+            	{
+            		liveCheck.beginChkpt();
+            	}
+            	UniqueString.internTbl.beginChkpt(this.metadir);
+            	
+            	// Commit checkpoint:
+            	this.theFPSet.commitChkpt();
+            	if (this.checkLiveness)
+            	{
+            		liveCheck.commitChkpt();
+            	}
+            	UniqueString.internTbl.commitChkpt(this.metadir);
+            	MP.printMessage(EC.TLC_CHECKPOINT_END);
             }
-            UniqueString.internTbl.beginChkpt(this.metadir);
-
-            // Commit checkpoint:
-            this.theFPSet.commitChkpt();
-            if (this.checkLiveness)
-            {
-                liveCheck.commitChkpt();
-            }
-            UniqueString.internTbl.commitChkpt(this.metadir);
-            MP.printMessage(EC.TLC_CHECKPOINT_END);
         }
         return true;
     }

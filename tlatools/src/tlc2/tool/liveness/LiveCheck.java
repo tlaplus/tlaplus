@@ -93,10 +93,31 @@ public class LiveCheck implements ILiveCheck {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ILiveCheck#check()
+	 * @see tlc2.tool.liveness.ILiveCheck#check(boolean)
 	 */
-	public boolean check() throws Exception {
-		return check(false);
+	public boolean check(boolean forceCheck) throws Exception {
+		if (forceCheck) {
+			return check0(false);
+		}
+		for (int i = 0; i < checker.length; i++) {
+			// If anyone of the disk graphs has increased by the given
+			// percentage, run liveness checking. This is the best heuristic I
+			// can come up with quickly.
+			//
+			// TODO Alternatively the level could be taken
+			// into account. Unless the level (height) of the graph increases, 
+			// no new cycle won't be found anyway. All other aspects of liveness
+			// checking are checked as part of regular safety checking.
+			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
+			final long sizeAtLastCheck = diskGraph.getSizeAtLastCheck();
+			final long sizeCurrently = diskGraph.size();
+			final double delta = (sizeCurrently - sizeAtLastCheck) / (sizeAtLastCheck * 1.d);
+			if (delta > TLCGlobals.livenessThreshold) {
+				return check0(false);
+			}
+		}
+		
+		return true;
 	}
 	
 	/* (non-Javadoc)
@@ -105,10 +126,23 @@ public class LiveCheck implements ILiveCheck {
 	public boolean finalCheck() throws InterruptedException, IOException {
 		// Do *not* re-create the nodePtrTable after the check which takes a
 		// while for larger disk graphs.
-		return check(true);
+		return check0(true);
 	}
 	
-	private boolean check(final boolean finalCheck) throws InterruptedException, IOException {
+	/**
+	 * @param finalCheck
+	 *            If the internal nodePtrTbl should be restored for a subsequent
+	 *            liveness check. If this is the final/last check, it's pointless
+	 *            to re-create the nodePtrTable.
+	 */
+	private boolean check0(final boolean finalCheck) throws InterruptedException, IOException {
+		long sum = 0L;
+		for (int i = 0; i < checker.length; i++) {
+			sum += checker[i].getDiskGraph().size();
+		}
+		MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS,
+				new String[] { "current", Long.toString(sum) });
+
 		// Copy the array of checkers into a concurrent-enabled queue
 		// that allows LiveWorker threads to easily get the next 
 		// LiveChecker to work on. We don't really need the FIFO
@@ -133,7 +167,7 @@ public class LiveCheck implements ILiveCheck {
 			LiveWorker worker = new LiveWorker(0, this, queue);
 			worker.run();
 		} else {
-			LiveWorker[] workers = new LiveWorker[wNum];
+			final LiveWorker[] workers = new LiveWorker[wNum];
 			for (int i = 0; i < wNum; i++) {
 				workers[i] = new LiveWorker(i, this, queue);
 				workers[i].start();
@@ -192,7 +226,8 @@ public class LiveCheck implements ILiveCheck {
 		final TLCState lastState = stateTrace.elementAt(stateTrace.size() - 1);
 		addNextState(lastState, lastState.fingerPrint(), new StateVec(0), new LongVec(0));
 		
-		if (!finalCheck()) { //HACK Calling finalCheck here to prevent code from re-creating the nodeptrtable from a non existant file.
+		// Do *not* re-create the nodePtrTbl when it is thrown away anyway.
+		if (!check0(true)) {
 			throw new LiveException();
 		}
 		
@@ -641,12 +676,17 @@ public class LiveCheck implements ILiveCheck {
 	// Intended to be used in unit tests only!!! This is not part of the API!!!
 	static class TestHelper {
 		
+		/*
+		 * - EWD840 (with tableau) spec with N = 11 and maxSetSize = 9.000.000 => 12GB nodes file, 46.141.438 distinct states
+		 * - EWD840 (with tableau) spec with N = 12 and maxSetSize = 9.000.000 => 56GB, 201.334.782 dist. states 
+		 */
+		
 		// The Eclipse Launch configuration has to set the working directory
 		// (Arguments tab) to the parent directory of the folder containing the
 		// nodes_* and ptrs_* files. The parent folder has to contain the spec
 		// and config file both named "MC".
 		// metadir is the the name of the folder with the nodes_* and ptrs_*
-		// relative to the parent directory. It does *not* need to contain the
+		// relative to the parent directory. The directory does *not* need to contain the
 		// backing file of the fingerprint set or the state queue files.
 		public static ILiveCheck recreateFromDisk(final String path) throws Exception {
 			// Don't know with which Polynomial the FP64 has been initialized, but
@@ -660,6 +700,11 @@ public class LiveCheck implements ILiveCheck {
 			// doesn't really need tool).
 	        final Tool tool = new Tool("", "MC", "MC", new SimpleFilenameToStream());
 	        tool.init(true, null);
+	        
+			// Initialize tool's actions explicitly. LiveCheck#printTrace is
+			// going to access the actions and fails with a NPE unless
+			// initialized.
+	        tool.getActions();
 	        
 			final ILiveCheck liveCheck = new LiveCheck(tool, null, path, new DummyBucketStatistics());
 			

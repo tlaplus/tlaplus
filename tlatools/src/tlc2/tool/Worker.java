@@ -13,11 +13,11 @@ import tlc2.util.ObjLongTable;
 import tlc2.value.Value;
 
 public class Worker extends IdThread implements IWorker {
+	
 	/**
-   * Multi-threading helps only when running on multiprocessors. TLC
-   * can pretty much eat up all the cycles of a processor running
-   * single threaded.  We expect to get linear speedup with respect
-   * to the number of processors.
+	 * Multi-threading helps only when running on multiprocessors. TLC can
+	 * pretty much eat up all the cycles of a processor running single threaded.
+	 * We expect to get linear speedup with respect to the number of processors.
 	 */
 	private ModelChecker tlc;
 	private IStateQueue squeue;
@@ -72,15 +72,16 @@ public class Worker extends IdThread implements IWorker {
 					this.squeue.finishAll();
 					return;
 				}
-	if (this.tlc.doNext(curState, this.astCounts)) return;
-				}
+				if (this.tlc.doNext(curState, this.astCounts))
+					return;
 			}
-    catch (Throwable e) {
+		} catch (Throwable e) {
 			// Something bad happened. Quit ...
 			// Assert.printStack(e);
 			synchronized (this.tlc) {
 				if (this.tlc.setErrState(curState, null, true)) {
-	    MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
+					MP.printError(EC.GENERAL, e); // LL changed call 7 April
+													// 2012
 				}
 				this.squeue.finishAll();
 				this.tlc.notify();
@@ -88,5 +89,4 @@ public class Worker extends IdThread implements IWorker {
 			return;
 		}
 	}
-
 }

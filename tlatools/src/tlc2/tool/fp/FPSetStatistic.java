@@ -1,6 +1,8 @@
 // Copyright (c) 2012 Markus Alexander Kuppe. All rights reserved.
 package tlc2.tool.fp;
 
+import java.io.IOException;
+
 public interface FPSetStatistic {
 
 	/**
@@ -118,4 +120,9 @@ public interface FPSetStatistic {
 	 * @return DiskFPSet#forceFlush();
 	 */
 	void forceFlush();
+	
+	/**
+	 * @see DiskFPSet#checkInvariant()
+	 */
+	boolean checkInvariant() throws IOException;
 }

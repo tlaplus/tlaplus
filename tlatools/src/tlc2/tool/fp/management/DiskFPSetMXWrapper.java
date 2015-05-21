@@ -1,6 +1,8 @@
 // Copyright (c) 2011 Microsoft Corporation.  All rights reserved.
 package tlc2.tool.fp.management;
 
+import java.io.IOException;
+
 import javax.management.NotCompliantMBeanException;
 
 import tlc2.tool.fp.FPSetStatistic;
@@ -188,5 +190,12 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	 */
 	public void forceFlush() {
 		fpset.forceFlush();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#checkInvariant()
+	 */
+	public boolean checkInvariant() throws IOException {
+		return fpset.checkInvariant();
 	}
 }

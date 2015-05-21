@@ -62,6 +62,24 @@ public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {
 		fail();
 	}
 
+	public void testHighFingerprint1() throws RemoteException, IOException {
+		final MSBDiskFPSet msbDiskFPSet = getMSBDiskFPSet();
+		assertFalse(msbDiskFPSet.put(9223368718049406096L));
+		msbDiskFPSet.flusher.flushTable();
+		assertTrue(msbDiskFPSet.put(9223368718049406096L));
+		msbDiskFPSet.flusher.flushTable();
+		assertTrue(msbDiskFPSet.put(9223368718049406096L));
+	}
+
+	public void testHighFingerprint2() throws RemoteException, IOException {
+		final MSBDiskFPSet msbDiskFPSet = getMSBDiskFPSet();
+		assertFalse(msbDiskFPSet.put(9223335424116589377L));
+		msbDiskFPSet.flusher.flushTable();
+		assertTrue(msbDiskFPSet.put(9223335424116589377L));
+		msbDiskFPSet.flusher.flushTable();
+		assertTrue(msbDiskFPSet.put(9223335424116589377L));
+	}
+
 	/*
 	 * Try to get the last element with no elements in the set.
 	 */
@@ -73,6 +91,39 @@ public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {
 		try {
 			tlcIterator.getLast();
 		} catch (NoSuchElementException e) {
+			return;
+		}
+		fail();
+	}
+	
+	public void testGetLastWithLowerBound() throws IOException {
+		final MSBDiskFPSet msbDiskFPSet = getMSBDiskFPSet();
+		
+		// Add the largest possible fingerprint into the fpset. It will end up
+		// in the largest bucket. Check that the MSB iterator returns it.
+		final long highFP = 1L << 62;
+		msbDiskFPSet.put(highFP);
+		TLCIterator tlcIterator = new MSBDiskFPSet.TLCIterator(msbDiskFPSet.tbl);
+		assertEquals(highFP, tlcIterator.getLast());
+		
+		// Flush the set to disk (simulating e.g. a checkpoint), a new iterator
+		// won't find the element anymore because it intentionally only searches
+		// for elements that are *not* on disk.
+		msbDiskFPSet.flusher.flushTable();
+		new MSBDiskFPSet.TLCIterator(msbDiskFPSet.tbl);
+		try {
+			tlcIterator.getLast();
+		} catch (NoSuchElementException e) {
+			// This exception is expected.
+			
+			// Now add the smallest possible element into the set. It will end
+			// up in the smallest bucket.
+			final long lowFP = 1;
+			msbDiskFPSet.put(lowFP);
+			// check that the iterator finds lower bound as the last element.
+			tlcIterator = new MSBDiskFPSet.TLCIterator(msbDiskFPSet.tbl);
+			final long lowerBound = highFP - 1L;
+			assertEquals(lowerBound, tlcIterator.getLast(lowerBound));
 			return;
 		}
 		fail();

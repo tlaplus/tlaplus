@@ -23,10 +23,17 @@ public interface ILiveCheck {
 	void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs) throws IOException;
 	
 	/**
-	 * Check liveness properties for the current partial state graph. Returns
+	 * Check liveness properties for the current (potentially partial) state graph. Returns
 	 * true iff it finds no errors.
+	 * 
+	 * @param forceCheck
+	 *            Always checks liveness if true, otherwise heuristics about the
+	 *            partial graph are taken into account if it is worthwhile to
+	 *            check liveness.
+	 * @return true iff it finds no errors or if liveness has not been checked
+	 *         on the partial graph because it was deemed worthless.
 	 */
-	boolean check() throws Exception;
+	boolean check(boolean forceCheck) throws Exception;
 
 	/**
 	 * No states can be added with add*State once finalCheck has been called.

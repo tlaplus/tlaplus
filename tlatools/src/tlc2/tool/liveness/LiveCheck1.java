@@ -442,7 +442,7 @@ public class LiveCheck1 implements ILiveCheck {
 	 * "bad" cycle. A "bad" cycle gives rise to a violation of liveness
 	 * property.
 	 */
-	public synchronized boolean check() {
+	public synchronized boolean check(boolean forceCheck) {
 		int slen = solutions.length;
 		if (slen == 0) {
 			return true;
@@ -910,7 +910,7 @@ public class LiveCheck1 implements ILiveCheck {
 	 * @see tlc2.tool.liveness.ILiveCheck#finalCheck()
 	 */
 	public boolean finalCheck() throws Exception {
-		return check();
+		return check(true);
 	}
 
 	/* (non-Javadoc)

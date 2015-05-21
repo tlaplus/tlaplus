@@ -18,13 +18,13 @@
 	</tstamp>
 
 	<!-- JaCoCo code coverage -->
-    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
-        <classpath path="lib/jacocoant.jar"/>
-    </taskdef>
+	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+		<classpath path="lib/jacocoant.jar"/>
+	</taskdef>
 
 	<taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
 		<classpath>
-			<pathelement location="lib/aspectjtools.jar" />
+			<pathelement location="lib/aspectjtools-1.8.5.jar" />
 		</classpath>
 	</taskdef>
 
@@ -63,9 +63,17 @@
 	</target>
 
 	<target name="compile" depends="clean" description="Compile">
+		<echo>
+			================================================================
+			= The following warnings about sun.misc.Unsafe can be ignored. = 
+			= OffHeapDiskFPSet has been written using Unsafe to best use   =
+			= a computer's memory. If Unsafe is removed from the JVM,      =
+			= OffHeapDiskFPSet won't work anymore.                         =
+			================================================================
+		</echo>
 		<!-- compile -->
 		<mkdir dir="${class.dir}" />
-		<javac srcdir="${src.dir}" destdir="${class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+		<javac includeantruntime="false" srcdir="${src.dir}" destdir="${class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
 			<!-- compilerarg value="-Xlint:deprecation"/-->
 			<classpath refid="project.classpath" />
 			<classpath>
@@ -84,13 +92,20 @@
 		</copy>
 	</target>
 
-	<target name="compile-aj" depends="compile" if="withaj">
+	<target name="compile-aj" if="withaj">
+		<echo>
+			====================================================================
+			= The following warnings (Xlint:adviceDidNotMatch) can be ignored. =
+			= We are doing load time weaving that kicks in when TLC gets       = 
+			= started, not when it is compiled.                                =
+			====================================================================
+		</echo>
 		<!-- compile aspectj related class files -->
-		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true" source="1.5" target="1.5">
+		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true">
 			<classpath refid="project.classpath" />
 			<classpath>
-				<pathelement location="lib/aspectjrt.jar" />
-				<pathelement location="lib/aspectjtools.jar" />
+				<pathelement location="lib/aspectjrt-1.8.5.jar" />
+				<pathelement location="lib/aspectjtools-1.8.5.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</iajc>
@@ -107,8 +122,8 @@
 		<!-- These files are requried for load time weaving and during runtime -->
 		<copy todir="${class.dir}/lib">
 			<fileset dir="lib/">
-				<include name="aspectjrt.jar" />
-				<include name="aspectjweaver.jar" />
+				<include name="aspectjrt-1.8.5.jar" />
+				<include name="aspectjweaver-1.8.5.jar" />
 			</fileset>
 		</copy>
 	</target>
@@ -120,15 +135,15 @@
 		<!-- The javax.mail dependency as well as javax.activation is also depended upon -->
 		<!-- by the tla2tools OSGi bundle and is expected to be the same version. -->
 		<unzip src="lib/javax.mail.jar" dest="${class.dir}"/>
-		
+
 		<!-- Extract javax.mail to maven classes folder. This script is triggered by -->
 		<!-- maven. However, maven compiles the code again to target/classes from -->
 		<!-- where it creates the plugin -->
 		<unzip src="lib/javax.mail.jar" dest="target/classes"/>
-		
+
 		<!-- TODO: add javax.activation to lib/ and extract it here too. Otherwise we have a -->
 		<!-- runtime dependency on Java 6. -->
-		
+
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.file}">
@@ -152,7 +167,7 @@
 	<target name="test" description="Executes accompining unit tests" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
-		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+		<javac includeantruntime="false" srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -171,6 +186,10 @@
 		<mkdir dir="${test.reports}" />
 		<jacoco:coverage destfile="target/code-coverage.exec">
 			<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes">
+				<!-- Uncomment to open a debug port in each forked VM to remote attach your Eclipse at port 1044.
+	            <jvmarg value="-Xdebug" />
+		        <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044" />
+				-->
 				<classpath refid="project.classpath" />
 				<classpath>
 					<pathelement location="lib/junit-4.8.2.jar" />
@@ -181,7 +200,7 @@
 					<pathelement path="${test.class.dir}" />
 				</classpath>
 				<formatter type="xml" />
-	
+
 				<!-- Pass the base path of the tlatools project to unit tests in case they need it to locate TLA+ specs or configs -->
 				<sysproperty key="basedir" value="${basedir}/"/>
 				<batchtest fork="yes" todir="${test.reports}">
@@ -204,10 +223,10 @@
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
 
-	<target name="test-dist" description="Executes accompining unit tests on jar file" depends="dist" unless="test.skip">
+	<target name="test-dist" description="Executes accompining unit tests on jar file" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
-		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+		<javac includeantruntime="false" srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -217,7 +236,7 @@
 		</javac>
 		<!-- copy class.dir to path with whitespace -->
 		<!-- this is required by some tests to make sense -->
-		<!-- even throw a non digit in -->
+		<!-- even throw a "+" and whitespace into the mix -->
 		<property name="ws.class.dir" value="TLA+ Tools" />
 		<copy todir="${ws.class.dir}">
 			<fileset dir="${class.dir}" />
@@ -257,10 +276,10 @@
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
 
-	<target name="test-dist-long" description="Executes accompining long-running unit tests on jar file" depends="dist" unless="test.skip">
+	<target name="test-dist-long" description="Executes accompining long-running unit tests on jar file" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
-		<javac srcdir="${test.dir}-long" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+		<javac includeantruntime="false" srcdir="${test.dir}-long" destdir="${test.class.dir}" debug="true" verbose="false">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -269,14 +288,17 @@
 		</javac>
 		<!-- copy class.dir to path with whitespace -->
 		<!-- this is required by some tests to make sense -->
-		<!-- even throw a non digit in -->
+		<!-- even throw a "+" and whitespace into the mix -->
 		<property name="ws.class.dir" value="TLA+ Tools" />
 		<copy todir="${ws.class.dir}">
 			<fileset dir="${class.dir}" />
 		</copy>
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJarLong" />
-		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="1024m">
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="4096m" forkmode="perTest" fork="yes">
+			<jvmarg value="-javaagent:lib/aspectjweaver-1.8.5.jar" />
+			<sysproperty key="org.aspectj.weaver.showWeaveInfo" value="false"/>
+			<sysproperty key="aj.weaving.verbose" value="false"/>
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -288,6 +310,16 @@
 
 			<batchtest fork="yes" todir="${test.reports}/onJarLong">
 				<fileset dir="${test.dir}-long">
+					<exclude name="**/MultiThreadedSpecTest.java"/>
+
+					<!-- The following tests take way too long (hours). -->
+					<!-- Reactivate when you start working on the fingerprint sets! -->
+					<exclude name="**/DiskFPSetTest.java"/>
+					<exclude name="**/FPSetTest.java"/>
+					<exclude name="**/MSBDiskFPSetTest.java"/>
+					<exclude name="**/OffHeapDiskFPSetTest.java"/>
+					<exclude name="**/DiskStateQueueTest.java"/>
+
 					<include name="**/*Test*.java" />
 				</fileset>
 			</batchtest>
@@ -295,6 +327,40 @@
 
 		<!-- remove copied class.dir -->
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
+	</target>
+
+	<!-- -->
+	<target name="test-verify" description="Verifies TLC parts with NASA's pathfinder model checker">
+		<!-- Compile our boilerplate code needed to verify TLC. E.g. the StateQueueVerify creates -->
+		<!-- examplary produces & consumers and a dummy implementation of StateQueue. -->
+		<javac includeantruntime="false" srcdir="${test.dir}-verify" destdir="${test.class.dir}" debug="true" verbose="false">
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement path="${class.dir}" />
+				<pathelement location="lib/jpf.jar" />
+			</classpath>
+		</javac>
+
+		<mkdir dir="${test.reports}/verify" />
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="4096m" forkmode="perTest" fork="yes" 
+			dir="${basedir}/test-verify" >
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement location="lib/jpf.jar" />
+				<pathelement location="lib/jpf-classes.jar" />
+				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
+			</classpath>
+
+			<formatter type="xml" />
+
+			<batchtest fork="yes" todir="${test.reports}/verify">
+				<fileset dir="${test.dir}-verify">
+					<include name="**/*Test*.java" />
+				</fileset>
+			</batchtest>
+		</junit>
 	</target>
 
 	<target name="dist-mixed-jar" description="Build a distribution" depends="default">

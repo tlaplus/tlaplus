@@ -23,37 +23,11 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-
 package tlc2.tool.liveness;
 
-import tlc2.output.EC;
-
-/**
- * This takes about four minutes with 32 cores on an EC2 cr1.8xlarge instance.
- * On a Thinkpad T430s it takes eight times as long.
- */
-public class NoTableauSpecTest extends ModelCheckerTestCase {
+public class NoTableauSpecTest extends MultiThreadedSpecTest {
 
 	public NoTableauSpecTest() {
-		super("MC", "VoteProof");
-	}
-	
-	public void testSpec() {
-		// ModelChecker has finished and generated the expected amount of states
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "137297983", "693930"));
-		
-		// Assert it has found the temporal violation and also a counter example
-		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
-		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-		
-		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
-	}
-
-	protected String getNumberOfThreads() {
-		// Run this test with as many threads possible to hopefully spot concurrency issues.
-		int availableProcessors = Runtime.getRuntime().availableProcessors();
-		return Integer.toString(availableProcessors);
+		super("MC", "VoteProof", "137297983", "693930", 0.25d, 0.25d);
 	}
 }

@@ -39,6 +39,19 @@ public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 			int cnt = (int) tblCnt.get();
 			Assert.check(cnt > 0, EC.GENERAL);
 			
+			// Why not sort this.tbl in-place rather than doubling memory
+			// requirements by copying to clone array and subsequently sorting it?
+			// - disk written fps are marked disk written by changing msb to 1
+			// - next time such a fp from the in-memory this.tlb is converted on the
+			// fly back and again used to do an in-memory lookup
+			//
+			// - this.tbl bucket assignment (hashing) is done on least significant bits,
+			// which makes in-place sort with overlay index infeasible
+			// - erasing this.tbl means we will loose the in-memory cache completely until it fills up again
+			// - new fps overwrite disk flushed fps in-memory
+			// see MSBDiskFPSet for an implementation that doesn't have the
+			// requirement to sort in a clone array.
+	
 			// copy table contents into a buffer array buff; do not erase tbl
 			buff = new long[cnt];
 			int idx = 0;

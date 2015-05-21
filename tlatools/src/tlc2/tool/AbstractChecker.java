@@ -29,10 +29,9 @@ import util.FilenameToStream;
  */
 public abstract class AbstractChecker implements Cancelable
 {
-    protected static final boolean LIVENESS_STATS = Boolean.getBoolean(Liveness.class.getPackage().getName() + ".statistics");
+	protected static final boolean LIVENESS_STATS = Boolean.getBoolean(Liveness.class.getPackage().getName() + ".statistics");
 	
     // SZ Mar 9, 2009: static modifier removed
-    protected long nextLiveCheck;
     protected AtomicLong numOfGenStates;
     protected TLCState predErrState;
     protected TLCState errState;
@@ -82,11 +81,6 @@ public abstract class AbstractChecker implements Cancelable
         // moved to file utilities
         this.metadir = FileUtil.makeMetaDir(specDir, fromChkpt);
         
-        // The number of states generated before the first liveness check is
-        // performed.  This value of 1000 sounds low, but since the value is
-        // doubled after each check up to a maximum of 640K (a number embedded
-        // in several places in the code), it probably doesn't much matter.
-        this.nextLiveCheck = 1000;
         this.numOfGenStates = new AtomicLong(0);
         this.errState = null;
         this.predErrState = null;
@@ -249,12 +243,9 @@ public abstract class AbstractChecker implements Cancelable
         // while (true) {
         while (!this.cancellationFlag)
         {
-            if (TLCGlobals.doCheckPoint())
+            if (!this.doPeriodicWork())
             {
-                if (!this.doPeriodicWork())
-                {
-                    return false;
-                }
+                return false;
             }
             synchronized (this)
             {

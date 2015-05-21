@@ -84,6 +84,8 @@ public abstract class AbstractDiskGraph {
 
 	private final IBucketStatistics outDegreeGraphStats;
 
+	private long sizeAtCheck = 1; // initialize with 1 to avoid div by zero
+
 	public AbstractDiskGraph(String metadir, int soln, IBucketStatistics graphStats) throws IOException {
 		this.metadir = metadir;
 		this.outDegreeGraphStats = graphStats;
@@ -259,6 +261,15 @@ public abstract class AbstractDiskGraph {
 	 */
 	public abstract long size();
 	
+	
+	public long getSizeAtLastCheck() {
+		return sizeAtCheck;
+	}
+
+	public void recordSize() {
+		this.sizeAtCheck = size();
+	}
+	
 	/**
 	 * Only useful for debugging.
 	 * 
@@ -393,12 +404,10 @@ public abstract class AbstractDiskGraph {
 			tidx = nodeRAF.readInt();
 		}
 
-		@Override
 		public String toString() {
 			return "NodeRAFRecord [fp=" + fp + ", tidx=" + tidx + "]";
 		}
 
-		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
@@ -408,7 +417,6 @@ public abstract class AbstractDiskGraph {
 			return result;
 		}
 
-		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
 				return true;

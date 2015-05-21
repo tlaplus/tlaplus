@@ -1,6 +1,8 @@
 // Copyright (c) 2011 Microsoft Corporation.  All rights reserved.
 package tlc2.tool.fp.management;
 
+import java.io.IOException;
+
 import tlc2.tool.fp.DiskFPSet;
 import tlc2.tool.fp.FPSet;
 
@@ -111,4 +113,9 @@ public interface DiskFPSetMXBean {
 	 * @see DiskFPSet#forceFlush()
 	 */
 	void forceFlush();
+	
+	/**
+	 * @see DiskFPSet#checkInvariant()
+	 */
+	boolean checkInvariant() throws IOException;
 }

@@ -2,6 +2,7 @@
 <aspectj>
 
 	<aspects>
+		<aspect name="tlc2.tool.WorkerMonitorAspect"/>
 		<aspect name="tlc2.tool.distributed.RMIMethodMonitorAspect"/>
 		<aspect name="tlc2.tool.distributed.TLCServerMonitorAspect"/>
 	</aspects>
