@@ -216,6 +216,7 @@ Version 1.5.0 - 11 May 2015
   - Improvements to the Decompose Proof command.
   - Improvements to the TLC Errors view, including ability to
     show trace in reverse order.
+  - Has some changes to the way the Toolbox handles its subwindows.
   - Fixes all known bugs in TLC's liveness checking.
   - Fixes bug in TLC that caused infinite looping if a recursively
     defined operator is used as an operator argument in its own
