@@ -298,8 +298,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 		 *                ascending order though!
 		 */
 		public long getLast(final long lowBound) {
-			int len = buff.length - 1;
-			long[] bucket = buff[len];
+			int len = buff.length;
 
 			// Walk from the end of buff to the beginning. Each bucket that is
 			// found and non-null (null if no fingerprint for such an index has
@@ -308,7 +307,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 			// indicates an unoccupied slot, while a negative one corresponds to
 			// a fp that has already been flushed to disk.
 			while (len > 0) {
-				bucket = buff[--len];
+				long[] bucket = buff[--len];
 
 				// Find last element > 0 in bucket (negative elements have already
 				// been flushed to disk, zero indicates an unoccupied slot).
@@ -356,8 +355,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 			 * it might as well be the cutOff.
 			 */
 			
-			int len = buff.length - 1;
-			long[] bucket = buff[len];
+			int len = buff.length;
 
 			// Walk from the end of buff to the beginning. Each bucket that is
 			// found and non-null (null if no fingerprint for such an index has
@@ -366,7 +364,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 			// indicates an unoccupied slot, while a negative one corresponds to
 			// a fp that has already been flushed to disk.
 			while (len > 0) {
-				bucket = buff[--len];
+				long[] bucket = buff[--len];
 
 				// Find last element > 0 in bucket (negative elements have already
 				// been flushed to disk, zero indicates an unoccupied slot).

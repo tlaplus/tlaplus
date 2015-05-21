@@ -62,6 +62,24 @@ public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {
 		fail();
 	}
 
+	public void testHighFingerprint1() throws RemoteException, IOException {
+		final MSBDiskFPSet msbDiskFPSet = getMSBDiskFPSet();
+		assertFalse(msbDiskFPSet.put(9223368718049406096L));
+		msbDiskFPSet.flusher.flushTable();
+		assertTrue(msbDiskFPSet.put(9223368718049406096L));
+		msbDiskFPSet.flusher.flushTable();
+		assertTrue(msbDiskFPSet.put(9223368718049406096L));
+	}
+
+	public void testHighFingerprint2() throws RemoteException, IOException {
+		final MSBDiskFPSet msbDiskFPSet = getMSBDiskFPSet();
+		assertFalse(msbDiskFPSet.put(9223335424116589377L));
+		msbDiskFPSet.flusher.flushTable();
+		assertTrue(msbDiskFPSet.put(9223335424116589377L));
+		msbDiskFPSet.flusher.flushTable();
+		assertTrue(msbDiskFPSet.put(9223335424116589377L));
+	}
+
 	/*
 	 * Try to get the last element with no elements in the set.
 	 */
