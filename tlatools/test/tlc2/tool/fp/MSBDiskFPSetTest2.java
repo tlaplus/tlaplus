@@ -77,6 +77,39 @@ public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {
 		}
 		fail();
 	}
+	
+	public void testGetLastWithCutOff() throws IOException {
+		final MSBDiskFPSet msbDiskFPSet = getMSBDiskFPSet();
+		
+		// Add the largest possible fingerprint into the fpset. It will end up
+		// in the largest bucket. Check that the MSB iterator returns it.
+		final long highFP = 1L << 62;
+		msbDiskFPSet.put(highFP);
+		TLCIterator tlcIterator = new MSBDiskFPSet.TLCIterator(msbDiskFPSet.tbl);
+		assertEquals(highFP, tlcIterator.getLast());
+		
+		// Flush the set to disk (simulating e.g. a checkpoint), a new iterator
+		// won't find the element anymore because it intentionally only searches
+		// for elements that are *not* on disk.
+		msbDiskFPSet.flusher.flushTable();
+		new MSBDiskFPSet.TLCIterator(msbDiskFPSet.tbl);
+		try {
+			tlcIterator.getLast();
+		} catch (NoSuchElementException e) {
+			// This exception is expected.
+			
+			// Now add the smallest possible element into the set. It will end
+			// up in the smallest bucket.
+			final long lowFP = 1;
+			msbDiskFPSet.put(lowFP);
+			// check that the iterator finds lower bound as the last element.
+			tlcIterator = new MSBDiskFPSet.TLCIterator(msbDiskFPSet.tbl);
+			final long lowerBound = highFP - 1L;
+			assertEquals(lowerBound, tlcIterator.getLast(lowerBound));
+			return;
+		}
+		fail();
+	}
 
 	private MSBDiskFPSet getMSBDiskFPSet() throws RemoteException, IOException {
 		// Create an MSBDiskFPSet usable in this unit test with memory allocated

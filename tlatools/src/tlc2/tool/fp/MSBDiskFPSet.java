@@ -100,10 +100,18 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 			final long buffLen = tblCnt.get();
 			final TLCIterator itr = new TLCIterator(tbl);
 
-			// Precompute the maximum value of the new file
-			long maxVal = itr.getLast();
+			// Precompute the maximum value of the new file.
+			// If this isn't the first merge, the index has
+			// the last element of the disk file. In that case
+			// the new maxVal is the larger element of the two
+			// in-memory and on-disk elements.
+			// The largest on-disk element is passed to the
+			// iterator as a lower bound.
+			long maxVal;
 			if (index != null) {
-				maxVal = Math.max(maxVal, index[index.length - 1]);
+				maxVal = itr.getLast(index[index.length - 1]);
+			} else {
+				maxVal = itr.getLast();
 			}
 	
 			int indexLen = calculateIndexLen(buffLen);
@@ -141,6 +149,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 					if (value == fp) {
 						Assert.check(false, EC.TLC_FP_VALUE_ALREADY_ON_DISK,
 								String.valueOf(value));
+						
 					}
 					writeFP(outRAF, fp);
 					// we used one fp up, thus move to next one
@@ -277,10 +286,76 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 		}
 
 		/**
+		 * @param lowBound
+		 *            Stop searching for the last element if no element is
+		 *            larger than lowBound
+		 * @return The last element in the iteration that is larger than lowBound
+		 * @exception NoSuchElementException
+		 *                if iteration is empty.
+		 *                <p>
+		 *                Pre-condition: Each bucket is sorted in ascending
+		 *                order. on-disk fingerprints don't adhere to the
+		 *                ascending order though!
+		 */
+		public long getLast(final long lowBound) {
+			int len = buff.length - 1;
+			long[] bucket = buff[len];
+
+			// Walk from the end of buff to the beginning. Each bucket that is
+			// found and non-null (null if no fingerprint for such an index has
+			// been added to the DiskFPSet) is checked for a valid fingerprint.
+			// A fp is valid iff it is larger zero. A zero fingerprint slot
+			// indicates an unoccupied slot, while a negative one corresponds to
+			// a fp that has already been flushed to disk.
+			while (len > 0) {
+				bucket = buff[--len];
+
+				// Find last element > 0 in bucket (negative elements have already
+				// been flushed to disk, zero indicates an unoccupied slot).
+				if (bucket != null) {
+					for (int i = bucket.length - 1; i >= 0; i--) {
+						final long fp = bucket[i];
+						// unused slot
+						if (fp == 0) {
+							continue;
+						}
+						// in-memory fingerprint
+						if (fp > 0) {
+							if (fp < lowBound) {
+								// smaller lowBound
+								return lowBound;
+							} else {
+								// larger or equal lowBound
+								return fp;
+							}
+						}
+						// Cannot take on-disk fingerprints (negative ones) into
+						// account. They don't adhere to the precondition that
+						// the bucket is sorted. The bucket is logically sorted
+						// only for in-memory fingerprints.
+					}
+				}
+			}
+			// At this point we have scanned the complete buff, but haven't
+			// found a single fingerprint that hasn't been flushed to disk
+			// already.
+			throw new NoSuchElementException();
+		}
+
+		/**
 		 * @return The last element in the iteration.
 	     * @exception NoSuchElementException if iteration is empty.
+	     * 
+	     * Pre-condition: Each bucket is sorted in ascending order!
 		 */
 		public long getLast() {
+			/*
+			 * Tempting to delegate to getLast(Long.MAX_VALUE). However,
+			 * getLast() could not throw a NoSuchElementException when the
+			 * value returned is Long.MAX_VALUE. It could be a valid value, but
+			 * it might as well be the cutOff.
+			 */
+			
 			int len = buff.length - 1;
 			long[] bucket = buff[len];
 
