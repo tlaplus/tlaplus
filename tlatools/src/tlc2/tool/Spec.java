@@ -870,6 +870,15 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         {
             Assert.fail(EC.TLC_CONFIG_MISSING_NEXT);
         }
+        
+		// Process the model constraints in the config. It's done after all
+		// other config processing because it used to be processed lazy upon the
+		// first invocation of getModelConstraints. However, this caused a NPE
+		// in distributed mode due to concurrency issues and there was no
+		// apparent reason to process the model constraints lazily.
+        processModelConstraints();
+        
+        processActionConstraints();
     }
 
     /** 
@@ -1366,10 +1375,10 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
      */
     public final ExprNode[] getModelConstraints()
     {
-        if (this.modelConstraints != null)
-        {
-            return this.modelConstraints;
-        }
+        return this.modelConstraints;
+    }
+        
+    private final void processModelConstraints() {
         Vect names = this.config.getConstraints();
         this.modelConstraints = new ExprNode[names.size()];
         int idx = 0;
@@ -1396,6 +1405,8 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "constraint", name });
             }
         }
+		// Shrink modelContraints in case we allocated a too large array. See
+		// nested if block above for why some constraints don't get instantiated.
         if (idx < this.modelConstraints.length)
         {
             ExprNode[] constrs = new ExprNode[idx];
@@ -1405,7 +1416,6 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             }
             this.modelConstraints = constrs;
         }
-        return this.modelConstraints;
     }
 
     /**
@@ -1413,10 +1423,10 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
      */
     public final ExprNode[] getActionConstraints()
     {
-        if (this.actionConstraints != null)
-        {
-            return this.actionConstraints;
-        }
+        return this.actionConstraints;
+    }
+        
+    private void processActionConstraints() {
         Vect names = this.config.getActionConstraints();
         this.actionConstraints = new ExprNode[names.size()];
         int idx = 0;
@@ -1444,6 +1454,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "action constraint", name });
             }
         }
+        // Shrink in case array has been overallocated
         if (idx < this.actionConstraints.length)
         {
             ExprNode[] constrs = new ExprNode[idx];
@@ -1453,7 +1464,6 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             }
             this.actionConstraints = constrs;
         }
-        return this.actionConstraints;
     }
 
     /* Get the initial state predicate of the specification.  */
