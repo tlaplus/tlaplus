@@ -94,16 +94,4 @@ public class TLCIteratorTest extends TestCase {
 	public void testGetLast() {
 		assertEquals(getLast(), itr.getLast());
 	}
-
-	public void testGetLastLowBound() {
-		assertEquals(getLast() + 1, itr.getLast(getLast() + 1));
-	}
-	
-	/*
-	 * Use a smaller lower bound element than last in the buffer.
-	 */
-	public void testGetLastLowerBoundNoHit() {
-		assertEquals(getLast(), itr.getLast(20));
-	}
-
 }
