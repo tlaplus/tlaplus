@@ -3,27 +3,16 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.core.ILaunchDelegate;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
@@ -590,8 +579,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 			super("Load output", TLCUIActivator.imageDescriptorFromPlugin(
 					TLCUIActivator.PLUGIN_ID,
 					"icons/full/copy_edit.gif"));
-			setDescription("Loads the output from an external model run corresponding to this model.");
-			setToolTipText("Loads an existing output (e.g. from a standlone TLC run that corresponds to this model.");
+			setDescription("Loads the output from an external model run (requires \"-tool\" parameter) corresponding to this model.");
+			setToolTipText(
+					"Loads an existing output (e.g. from a standlone TLC run that corresponds to this model). Output has to contain tool markers. Run TLC with \"-tool\" command line parameter.	");
 		}
 
 		public void run() {
