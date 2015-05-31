@@ -11,7 +11,14 @@ import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.JFaceResources;
@@ -51,6 +58,7 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
+import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem;
@@ -585,21 +593,45 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 		}
 
 		public void run() {
-			FileDialog fileDialog = new FileDialog(new Shell());
-			String path = fileDialog.open();
-			try {
-				TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry
-						.getModelCheckSourceRegistry();
-				modelCheckSourceRegistry
-						.removeTLCStatusSource(new ILaunchConfiguration[] { getConfig() });
-				ModelHelper.createModelOutputLogFile(getConfig(),
-						new FileInputStream(new File(path)));
-				ResultPage.this.loadData();
-			} catch (CoreException e) {
-				e.printStackTrace();
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
+			// Get the user input (the path to the TLC output file).
+			final FileDialog fileDialog = new FileDialog(new Shell());
+			final String path = fileDialog.open();
+			
+			// I/O operations should never run inside the UI thread.
+			final Job j = new WorkspaceJob("Loading output file...") {
+				public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
+					try {
+						// Import the file into the Toolbox on the file/resource layer.
+						final TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry
+								.getModelCheckSourceRegistry();
+						modelCheckSourceRegistry
+								.removeTLCStatusSource(new ILaunchConfiguration[] { getConfig() });
+						ModelHelper.createModelOutputLogFile(getConfig(),
+								new FileInputStream(new File(path)), monitor);
+						
+						// Once the output has been imported on the
+						// file/resource layer, update the UI.
+						final Job job = new UIJob("Updating results page with loaded output...") {
+							public IStatus runInUIThread(IProgressMonitor monitor) {
+								try {
+									ResultPage.this.loadData();
+								} catch (CoreException e) {
+									return new Status(IStatus.ERROR, TLCUIActivator.PLUGIN_ID, e.getMessage(), e);
+								}
+								return Status.OK_STATUS;
+							}
+						};
+						job.schedule();
+						
+					} catch (FileNotFoundException e) {
+						return new Status(IStatus.ERROR, TLCUIActivator.PLUGIN_ID, e.getMessage(), e);
+					}
+	                return Status.OK_STATUS;
+				}
+			};
+		   	final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+			j.setRule(workspace.getRuleFactory().buildRule());
+			j.schedule();
 		}
 	}
 

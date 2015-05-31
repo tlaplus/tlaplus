@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -715,25 +714,39 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return null;
     }
     
-    public static void createModelOutputLogFile(ILaunchConfiguration config, InputStream is) throws CoreException {
+    public static void createModelOutputLogFile(ILaunchConfiguration config, InputStream is, IProgressMonitor monitor) throws CoreException {
         Assert.isNotNull(config);
         IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
-		// create targetFolder which might be missing if the model has never
+		// Create targetFolder which might be missing if the model has never
 		// been checked but the user wants to load TLC output anyway.
 		// This happens with distributed TLC, where the model is executed
 		// remotely and the log is send to the user afterwards.
         if (targetFolder == null || !targetFolder.exists()) {
             String modelName = getModelName(config.getFile());
     		targetFolder = config.getFile().getProject().getFolder(modelName);
-    		targetFolder.create(true, true, new NullProgressMonitor());
+    		targetFolder.create(true, true, monitor);
         }
         if (targetFolder != null && targetFolder.exists())
         {
-        	IFile file = targetFolder.getFile(ModelHelper.FILE_OUT);
-        	if (file.exists()) {
-        		file.delete(true, new NullProgressMonitor());
+			// Always refresh the folder in case it has to override an existing
+			// file that is out-of-sync with the Eclipse foundation layer.
+        	targetFolder.refreshLocal(IFolder.DEPTH_INFINITE, monitor);
+        	
+        	// Import MC.out
+        	IFile mcOutFile = targetFolder.getFile(ModelHelper.FILE_OUT);
+        	if (mcOutFile.exists()) {
+        		mcOutFile.delete(true, monitor);
         	}
-        	file.create(is, true, new NullProgressMonitor());
+        	mcOutFile.create(is, true, monitor); // create closes the InputStream is.
+        	
+        	// Import MC_TE.out by copying the MC.out file to MC_TE.out.
+			// The reason why there are two identical files (MC.out and
+			// MC_TE.out) has been lost in history.
+        	IFile mcTEOutfile = targetFolder.getFile(ModelHelper.TE_TRACE_SOURCE);
+        	if (mcTEOutfile.exists()) {
+        		mcTEOutfile.delete(true, monitor);
+        	}
+        	mcOutFile.copy(mcTEOutfile.getFullPath(), true, monitor);
         }
     }
 
