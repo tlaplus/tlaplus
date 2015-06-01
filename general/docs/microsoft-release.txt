@@ -209,6 +209,14 @@ TO GENERATE THE RELEASE:
   Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
+Version 1.5.1 - 1 June 2015
+  - Fix intermittent "Fingerprint is already on disk" TLC crash. 
+  - Fix conditions in state queue that can deadlock TLC.
+  - Fix NullPointer bug during distributed TLC startup when
+    action or model constraints are defined. 
+  - Fix broken trace exploration in Toolbox after loading
+    externally written TLC output. 
+
 Version 1.5.0 - 11 May 2015
   - Distributed TLC in the Cloud--significantly improves 
     distributed TLC.

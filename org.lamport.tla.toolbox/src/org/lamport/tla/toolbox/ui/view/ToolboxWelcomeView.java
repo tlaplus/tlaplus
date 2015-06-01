@@ -201,7 +201,7 @@ public class ToolboxWelcomeView extends ViewPart
 		
 		final Label lblVersion = new Label(outerContainer, SWT.WRAP);
 		lblVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-		lblVersion.setText("Version 1.5.1  of UNRELEASED");
+		lblVersion.setText("Version 1.5.1  of 1 June 2015");
 		lblVersion.setBackground(backgroundColor);
     }
 
