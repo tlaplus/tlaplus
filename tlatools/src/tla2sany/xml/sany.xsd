@@ -305,6 +305,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
+        <xs:element minOccurs="0" ref="uniquename"/>
         <xs:choice>
           <xs:group ref="ExprNode"/>
           <xs:element ref="AssumeProveNode"/>

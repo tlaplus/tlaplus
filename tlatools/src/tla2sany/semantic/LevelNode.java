@@ -324,7 +324,7 @@ public int levelChecked   = 0 ;
 
   protected Element getSemanticElement(Document doc, tla2sany.xml.SymbolContext context) {
       // T.L. abstract method used to add data from subclasses
-      Element e = getLevelElement(doc, context);
+      Element e = getLevelElement(doc, context); //SymbolElement.getLevelElement is not supposed to be called
       try {
         Element l = appendText(doc,"level",Integer.toString(getLevel()));
         e.insertBefore(l,e.getFirstChild());

@@ -35,6 +35,7 @@ import util.WrongInvocationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /***************************************************************************
 * This node represents the definition of Foo in                            *
@@ -630,7 +631,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
    * most of the information in this class is a duplication of the information
    * in the TheoremNode.
    *
-   * We care to export only the name of the theorem (CHECK what hppens when instantiated).
+   * We care to export only the name of the theorem (CHECK what happens when instantiated).
    */
   protected String getNodeRef() {
     if (theorem)
@@ -639,9 +640,18 @@ public class ThmOrAssumpDefNode extends SymbolNode
       return "AssumeNodeRef";
   }
 
+  /* appending the name is handled in Theorem.export to prevent cyclic dependencies, this is only left for documentation
+  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+    Element e = getSymbolElement(doc, context);
+    Node n = e.appendChild(appendText(doc, "uniquename",name.toString()));
+    e.appendChild(n);
+    return e;
+  }*/
+
   protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
     // since this element doesnt seem to contain any additional information
     // over theorems or assumptions, we just refer to them
+      //actually it does: the name is not known in a theorem
       /*TODO: for now we just return an invalid element if thmOrAssump is null. if there are some valid calls with null after
               bug-fixing, change the Dummy solution */
     if (thmOrAssump != null) return thmOrAssump.getLevelElement(doc,context);

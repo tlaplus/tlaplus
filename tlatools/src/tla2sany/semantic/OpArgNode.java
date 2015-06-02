@@ -13,6 +13,7 @@ import util.UniqueString;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * This class represents operators of arity > 0 used as arguments to
@@ -136,9 +137,13 @@ public class OpArgNode extends ExprOrOpArgNode {
 
   protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("OpArgNode");
+    Node n = doc.createElement("argument")
+    Node ope = op.getSymbolElement(doc, context);
+    n.appendChild(ope);
+    e.appendChild(n);
 
-    e.appendChild(appendText(doc,"uniquename",getName().toString()));
-    e.appendChild(appendText(doc,"arity", Integer.toString(getArity())));
+    //e.appendChild(appendText(doc,"uniquename",getName().toString()));
+    //e.appendChild(appendText(doc,"arity", Integer.toString(getArity())));
 
     return e;
   }

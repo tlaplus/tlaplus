@@ -158,7 +158,7 @@ public abstract class SymbolNode extends LevelNode {
    * we also override getLevelElement as it should never be called
    */
   protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
-    throw new UnsupportedOperationException("This should not be possible and therefore a bug");
+    throw new UnsupportedOperationException("implementation Error: A symbol node may not be called for its level element.");
   }
 
   /** TL

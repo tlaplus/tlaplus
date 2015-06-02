@@ -371,16 +371,18 @@ public final boolean levelCheck(int iter) {
   }
 
   public Element export(Document doc, tla2sany.xml.SymbolContext context) {
-    if (getDef() == null)
-      // we export the definition of the theorem
-      return super.export(doc,context);
-    else
-      // we export its name only, named theorem will be exported through the ThmOrAss..
-      return getDef().export(doc,context);
+    Element e = super.export(doc, context);
+    return e;
   }
 
   protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("TheoremNode");
+    //e.appendChild(appendText(doc,"uniquename",getName().toString()));
+    if (getDef() != null) {
+      //if there is a definition, export its name too
+      e.appendChild(appendText(doc, "uniquename",getDef().getName().toString()));
+    }
+
     e.appendChild(getTheorem().export(doc,context));
     if (getProof() != null)  e.appendChild(getProof().export(doc,context));
     if (isSuffices()) e.appendChild(doc.createElement("suffices"));
