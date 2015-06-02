@@ -61,8 +61,8 @@ public final class MemIntStack {
 	  }
 
   public final synchronized long peakLong(int pos) {
-	    long high = this.peakInt(pos);
-	    long low = this.peakInt(pos + 1);
+	    long high = this.peakInt(pos + 1);
+	    long low = this.peakInt(pos);
 	    return (high << 32) | (low & 0xFFFFFFFFL);
 	  }
 
