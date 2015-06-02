@@ -102,10 +102,10 @@ public class TableauNodePtrTable {
 				int cloc = getIdx(node, tidx);
 				if (cloc == -1) {
 					// The list of nodes does not contain the give tableau idx
-					// yet, thus add a new element. Technically, it means we
+					// yet, thus append a new element. Technically, it means we
 					// grow the nodes array by three and insert the tableau idx
 					// and its element.
-					this.nodes[loc] = addElem(node, tidx, elem);
+					this.nodes[loc] = appendElem(node, tidx, elem);
 				} else {
 					// Nodes already contains an entry for the given tableau.
 					// Update its element. The element is either a pointer
@@ -288,7 +288,7 @@ public class TableauNodePtrTable {
 		return node;
 	}
 
-	protected int[] addElem(int[] node, int tidx, long elem) {
+	protected int[] appendElem(int[] node, int tidx, long elem) {
 		int len = node.length;
 		int[] newNode = new int[len + getElemLength()];
 		System.arraycopy(node, 0, newNode, 0, len);

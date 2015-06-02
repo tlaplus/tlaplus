@@ -543,9 +543,9 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 		}
 
 		/* (non-Javadoc)
-		 * @see tlc2.tool.liveness.TableauNodePtrTable#addElem(int[], int, long)
+		 * @see tlc2.tool.liveness.TableauNodePtrTable#appendElem(int[], int, long)
 		 */
-		protected int[] addElem(final int[] node, final int tidx, final long elem) {
+		protected int[] appendElem(final int[] node, final int tidx, final long elem) {
 			int len = node.length;
 			int[] newNode = new int[len + getElemLength()];
 			System.arraycopy(node, 0, newNode, 0, len);
