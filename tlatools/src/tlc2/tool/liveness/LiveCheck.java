@@ -141,7 +141,7 @@ public class LiveCheck implements ILiveCheck {
 			sum += checker[i].getDiskGraph().size();
 		}
 		MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS,
-				new String[] { "current", Long.toString(sum) });
+				new String[] { finalCheck ? "complete":"current", Long.toString(sum) });
 
 		// Copy the array of checkers into a concurrent-enabled queue
 		// that allows LiveWorker threads to easily get the next 

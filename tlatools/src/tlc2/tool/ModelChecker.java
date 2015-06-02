@@ -202,8 +202,6 @@ public class ModelChecker extends AbstractChecker
                 // Always check liveness properties at the end:
                 if (this.checkLiveness)
                 {
-					MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS,
-							new String[] { "complete", Long.toString(this.theFPSet.size()) });
                     report("checking liveness");
                     success = liveCheck.finalCheck();
                     report("liveness check complete");
