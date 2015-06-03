@@ -48,6 +48,17 @@ public class OrderOfSolution {
 	 * in the temporal formulas.
 	 */
 	private final TBGraph tableau; // tableau graph
+	
+	/**
+	 * A promise &#966; that a property expressed by a formula will eventually hold.
+	 * 
+	 * @see Page 409ff of Manna & Pnueli
+	 * "Temporal Verification of Reactive Systems: Safety"
+	 * <p>
+	 * @see https://books.google.de/books?id=lfIGCAAAQBAJ&lpg=PR5&ots=_YBX09o5tM
+	 *      &dq=manna%20pnueli%20temporal%20verification%20of%20reactive%
+	 *      20systems%20safety%20doi&pg=PA409
+	 */
 	private final LNEven[] promises; // promises in the tableau
 	private LiveExprNode[] checkState; // state subformula
 	private LiveExprNode[] checkAction; // action subformula

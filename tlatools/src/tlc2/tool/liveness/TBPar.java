@@ -231,7 +231,14 @@ public class TBPar extends Vect {
 	}
 
 	/**
-	 * This methods returns true iff this particle fulfills the promise.
+	 * This methods returns true iff this particle (TBPar) fulfills the given
+	 * promise.
+	 * <p>
+	 * A particle A is said to fulfill formula &#966; which promises r if either:
+	 * <ul>
+	 * <li>&#966; \notin A</li>
+	 * <li>r \in A</li>
+	 * </ul>
 	 */
 	public final boolean isFulfilling(LNEven promise) {
 		return !this.member(promise) || this.member(promise.getBody());

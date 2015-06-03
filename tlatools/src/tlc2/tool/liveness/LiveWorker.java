@@ -21,27 +21,48 @@ import tlc2.util.MemIntStack;
 import tlc2.util.statistics.BucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 
+/**
+ * {@link LiveWorker} is doing the heavy lifting of liveness checking:
+ * <ul>
+ * <li>Searches for strongly connected components (SCC) a.k.a. cycles in the
+ * liveness/behavior graph.</li>
+ * <li>Checks each SCC if it violates the liveness properties.</li>
+ * <li>In case of a violation, reconstructs and prints the error trace.</li>
+ * </ul>
+ */
 public class LiveWorker extends IdThread {
+
+	/**
+	 * A marker that is pushed onto the dfsStack during SCC depth-first-search
+	 * to marker an explored nodes on the stack.
+	 * <p>
+	 * A node with a marker is on the comStack.
+	 */
+	private static final long SCC_MARKER = -42L;
 
 	public static final IBucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
 			.getPackage().getName(), "StronglyConnectedComponent sizes");
 	
 	private static int errFoundByThread = -1;
-	private static Object workerLock = new Object();
+	private static final Object workerLock = new Object();
 
 	private OrderOfSolution oos = null;
 	private AbstractDiskGraph dg = null;
 	private PossibleErrorModel pem = null;
 	private final ILiveCheck liveCheck;
 	private final BlockingQueue<ILiveChecker> queue;
+	private final boolean isFinalCheck;
 
-	public LiveWorker(int id, final ILiveCheck liveCheck, final BlockingQueue<ILiveChecker> queue) {
+	public LiveWorker(int id, final ILiveCheck liveCheck, final BlockingQueue<ILiveChecker> queue, final boolean finalCheck) {
 		super(id);
 		this.liveCheck = liveCheck;
 		this.queue = queue;
+		this.isFinalCheck = finalCheck;
 	}
 
-	// Returns true iff an error has already found.
+	/**
+	 * Returns true iff an error has already been found.
+	 */
 	public static boolean hasErrFound() {
 		synchronized (workerLock) {
 			return (errFoundByThread != -1);
@@ -49,8 +70,11 @@ public class LiveWorker extends IdThread {
 	}
 
 	/**
-	 * Returns true iff either an error has not found or the error is found by
-	 * this thread.
+	 * Returns true iff either an error has not been found or the error is found
+	 * by this thread.
+	 * <p>
+	 * This is used so that only one of the threads which have found an error
+	 * prints it.
 	 */
 	private/* static synchronized */boolean setErrFound() {
 		synchronized (workerLock) {
@@ -69,11 +93,30 @@ public class LiveWorker extends IdThread {
 	 * http://en.wikipedia.org/wiki/Strongly_connected_component), and checks
 	 * each of them to see if it contains a counterexample.
 	 * <p>
-	 * It seems to be using the Path-based strong component algorithm
-	 * (http://en.wikipedia.org/wiki/Path-based_strong_component_algorithm).
-	 * This assumption however is incorrect! The second stack is not related to
-	 * the SCC algorithm. Thus, it is Tarjan's SCC algorithm at work
-	 * (http://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm).
+	 * It is Tarjan's SCC algorithm at work:
+	 * <p>
+	 * The notable differences to the text book algorithm are:
+	 * <ul>
+	 * <li>It is implemented iteratively (probably to prevent StackOverflows)
+	 * </li>
+	 * <li>The lowLink number gets pushed onto the DFS stack</li>
+	 * <li>If a node is on the DFS stack is determined by checking if it has a
+	 * link number assigned</li>
+	 * <li>Once an SCC has been found, it is checked immediately for liveness
+	 * violations (there is no point it searching all SCCs if the first SCC
+	 * found already violates liveness)</li>
+	 * <li>Not all states are added to the set of unexplored nodes initially,
+	 * but only the model checking init states (all successors are known to be
+	 * reachable from the init states).</li>
+	 * <li>Liveness is checked periodically during model checking and thus
+	 * checkSccs runs on a partial graph. Thus some nodes are marked undone.
+	 * Those nodes are skipped by the SCC search.</li>
+	 * </ul>
+	 * 
+	 * @see http://en.wikipedia.org/wiki/Tarjan'
+	 *      s_strongly_connected_components_algorithm
+	 * @see http://dx.doi.org/10.1137%2F0201010
+	 * 
 	 */
 	private final void checkSccs() throws IOException {
 		// Initialize this.dg:
@@ -82,10 +125,19 @@ public class LiveWorker extends IdThread {
 		// Initialize nodeQueue with initial states. The initial states stored 
 		// separately in the DiskGraph are resolved to their pointer location
 		// in the on-disk part of the DiskGraph.
-		// The pointer location is obviously used to:
+		// The pointer location generally is obviously used to:
 		// * Speed up disk lookups in the RandomAccessFile(s) backing up the DiskGraph
-		// * Seems to serve as a marker for when a node during SCCs is fully explored //VERIFY assumption!
+		// * Is replaced by the SCC link number the moment the node's successors
+		//   are explored during DFS search. At this point the ptr location isn't
+		//   needed anymore. The successors have been resolved.
 		// 
+		// From each node in nodeQueue the SCC search is started down below,
+		// which can subsequently add additional nodes into nodeQueue.
+		// 
+		// Contrary to plain Tarjan, not all vertices are added to the
+		// nodeQueue of unexplored states, but only the initial states. Since we
+		// know that all non-initial states are reachable from the set of
+		// initial states, this is sufficient to start with.
 		final MemIntQueue nodeQueue = new MemIntQueue(liveCheck.getMetaDir(), "root");
 		final LongVec initNodes = this.dg.getInitNodes();
 		final int numOfInits = initNodes.size();
@@ -93,10 +145,26 @@ public class LiveWorker extends IdThread {
 			final long state = initNodes.elementAt(j);
 			final int tidx = (int) initNodes.elementAt(j + 1);
 			final long ptr = this.dg.getLink(state, tidx);
-			if (ptr >= 0) { //QUESTION When is a ptr < 0?
+			// Check if the node <<state, tidx>> s is done. A node s is undone
+			// if it is an initial state which hasn't been explored yet. This is
+			// the case if s has been added via LiveChecker#addInitState but not
+			// yet via LiveChecker#addNextState. LiveChecker#addNextState fully
+			// explores the given init state s because it has access to s'
+			// successors.
+			if (ptr >= 0) {
+				// Make sure none of the init states has already been assigned a
+				// link number. That would indicate a bug in makeNodePtrTbl
+				// which is supposed to reset all link numbers to file ptrs.
+				assert DiskGraph.isFilePointer(ptr);
 				nodeQueue.enqueueLong(state);
 				nodeQueue.enqueueInt(tidx);
 				nodeQueue.enqueueLong(ptr);
+			} else {
+				// If this is the final check on the complete graph, no node is
+				// allowed to be undone. If it's not the final check, ptr has to
+				// be UNDONE (a non-UNDONE negative pointer is probably a bug).
+				// isFinalCheck => ptr # UNDONE
+				assert !isFinalCheck || ptr != TableauNodePtrTable.UNDONE;
 			}
 		}
 
@@ -108,81 +176,132 @@ public class LiveWorker extends IdThread {
 		final MemIntStack dfsStack = new MemIntStack(liveCheck.getMetaDir(), "dfs");
 		
 		// comStack is only being added to during the deep first search. It is passed
-		// to the checkComponent method while in DFS though.
+		// to the checkComponent method while in DFS though. Note that the nodes pushed
+		// onto comStack don't necessarily form a strongly connected component (see
+		// comment above this.checkComponent(...) below for more details).
 		//
-		// An Eclipse detailed formatter:
-		// StringBuffer buf = new StringBuffer(this.size);
-		// for (int i = 1; i < this.size; i+=5) {
-		// 	buf.append("state: ");
-		// 	buf.append(peakLong(size - i));
-		// 	buf.append("\n");
-		// 	buf.append(" Tableaux idx: ");
-		// 	buf.append(peakInt(size - i - 2));
-		// 	buf.append("\n");
-		// 	buf.append(" ptr loc: ");
-		// 	buf.append(peakLong(size - i - 3));
-		// 	buf.append("\n");
-		// }
-		// return buf.toString();
-		//
+		// See tlc2.tool.liveness.LiveWorker.DetailedFormatter.toString(MemIntStack)
+		// which is useful during debugging.
 		final MemIntStack comStack = new MemIntStack(liveCheck.getMetaDir(), "com");
 
-		// Generate the SCCs and check if they contain any "bad" cycle.
+		// Generate the SCCs and check if they contain a "bad" cycle.
 		while (nodeQueue.length() > 0) {
+			// Pick one of the unexplored nodes as root and start searching the
+			// reachable SCCs from it.
 			final long state = nodeQueue.dequeueLong();
 			final int tidx = nodeQueue.dequeueInt();
 			final long loc = nodeQueue.dequeueLong();
 
-			// Start computing SCCs with <state, tidx> as the root node:
+			// Reset (remove all elements) the stack. Logically a new SCC search
+			// is being started unrelated to the previous one.
 			dfsStack.reset();
 
+			// Push the first node onto the DFS stack which makes it the node
+			// from which the depth-first-search is being started.
 			dfsStack.pushLong(state);
 			dfsStack.pushInt(tidx);
 			dfsStack.pushLong(loc);
+			// Push the smallest possible link number (confusingly called
+			// MAX_PTR here but only because file pointers are < MAX_PTR) as the
+			// first link number.
+			// [0, MAX_PTR) for file pointers
+			// [MAX_PTR, MAX_LINK] for links
 			dfsStack.pushLong(DiskGraph.MAX_PTR);
 			long newLink = DiskGraph.MAX_PTR;
 
-			while (dfsStack.size() > 2) {
-				long lowLink = dfsStack.popLong();
+			while (dfsStack.size() >= 7) {
+				final long lowLink = dfsStack.popLong();
 				final long curLoc = dfsStack.popLong();
 				final int curTidx = dfsStack.popInt();
 				final long curState = dfsStack.popLong();
 				
+				// At this point curLoc is still a file pointer (small MAX_PTR)
+				// and not yet replaced by a link (MAX_PTR < curLoc < MAX_LINK).
+				assert DiskGraph.isFilePointer(curLoc);
 				
 				// The current node is explored iff curLoc < 0. If it is indeed fully explored,
 				// it means it has potentially found an SCC. Thus, check if this is the case
 				// for the current GraphNode.
-				if (curLoc < 0) {
+				// A node is fully explored if the nested loop over its
+				// successors down below in the else branch has not revealed any
+				// unexplored successors.
+				if (curLoc == SCC_MARKER) {
+					// Check if the current node's link is lowLink which
+					// indicates that the nodes on comStack up to <<curState,
+					// curTidx>> form an SCC.
+					// If curLink # lowLink, continue by pop'ing the next node
+					// from dfsStack. It can either be:
+					// - unexplored in which case the else branch is taken and
+					//   DFS continues.
+					// - be an intermediate node of the SCC and thus curLink #
+					//   lowLink for it too.
+					// - can be the start of the SCC (curLink = lowLink).
 					final long curLink = this.dg.getLink(curState, curTidx);
+					assert curLink < AbstractDiskGraph.MAX_LINK;
 					if (curLink == lowLink) {
-						// The states on the comStack from top to curState form
-						// a SCC.
-						// Check for "bad" cycle.
+						// The states on the comStack from "top" to <<curState,
+						// curTidx>> form an SCC, thus check for "bad" cycle.
+						//
+						// The cycle does not necessarily include all states in
+						// comStack. "top" might very well be curState in which
+						// case only a single state is checked by
+						// checkComponent.
+						//
+						// The aforementioned case happens regularly when the
+						// behaviors to check don't have cycles at all (leaving
+						// single node cycles aside for the moment). The DFS
+						// followed each behavior from its initial state (see
+						// nodeQueue) all the way to the behavior's end state at
+						// which point DFS halts. Since DFS cannot continue
+						// (there are no successors) it calls checkComponent now
+						// with the current comStack and the end state as
+						// <<curState, curTidx>> effectively checking the
+						// topmost element of comStack. Unless this single state
+						// violates any liveness properties, it gets removed
+						// from comStack and DFS continues. Iff DFS still cannot
+						// continue because the predecessor to endstate
+						// (endstate - 1) has no more successors to explore
+						// either, it again calls checkComponent for the single
+						// element (endstate - 1). This goes on until either the
+						// initial state is reached or an intermediate state has
+						// unexplored successors with DFS.
 						final boolean isOK = this.checkComponent(curState, curTidx, comStack);
 						if (!isOK) {
-							// Found a "bad" cycle, no point in searching for more SCCs. 
+							// Found a "bad" cycle of one to comStack.size()
+							// nodes, no point in searching for more SCCs as we
+							// are only interested in one counter-example at a
+							// time.
+							// checkComponent will have printed the
+							// counter-example by now.
 							return;
 						}
 					}
-					long plowLink = dfsStack.popLong();
-					if (lowLink < plowLink) {
-						plowLink = lowLink;
-					}
-					dfsStack.pushLong(plowLink);
+					// Replace previous lowLink (plowLink) with the minimum of
+					// the current lowLink and plowLink on the stack.
+					final long plowLink = dfsStack.popLong();
+					dfsStack.pushLong(Math.min(plowLink, lowLink));
 					
 				// No SCC found yet	
 				} else {
 					// Assign newLink to curState:
 					final long link = this.dg.putLink(curState, curTidx, newLink);
+					// link is -1 if newLink has been assigned to pair
+					// <<curState, curTidx>>. If the pair had been assigned a
+					// link before, the previous link in range [MAX_PTR,
+					// MAX_LINK] is returned. If the link is not -1, it means
+					// the node has been explored by this DFS search before.
 					if (link == -1) {
 						// Push curState back onto dfsStack, but make curState
 						// explored:
 						dfsStack.pushLong(lowLink);
 						dfsStack.pushLong(curState);
 						dfsStack.pushInt(curTidx);
-						dfsStack.pushLong(-1);
+						// Push a marker onto the stack that, if pop'ed as
+						// curLoc above causes branching to enter the true case
+						// of the if block.
+						dfsStack.pushLong(SCC_MARKER);
 
-						// Add curState to comStack:
+						// Add the tuple <<curState, curTidx, curLoc>> to comStack:
 						comStack.pushLong(curLoc);
 						comStack.pushInt(curTidx);
 						comStack.pushLong(curState);
@@ -190,52 +309,145 @@ public class LiveWorker extends IdThread {
 						// Look at all the successors of curState:
 						final GraphNode gnode = this.dg.getNode(curState, curTidx, curLoc);
 						final int succCnt = gnode.succSize();
-						long nextLowLink = newLink++;
+						long nextLowLink = newLink;
+						// DFS moved on to a new node, thus increment the newLink
+						// number by 1 for subsequent exploration.
+						newLink = newLink + 1;
 						for (int i = 0; i < succCnt; i++) {
 							final long nextState = gnode.getStateFP(i);
 							final int nextTidx = gnode.getTidx(i);
 							final long nextLink = this.dg.getLink(nextState, nextTidx);
+							// If <<nextState, nextTidx>> node's link is < 0 it
+							// means the node isn't "done" yet (see
+							// tlc2.tool.liveness.TableauNodePtrTable.UNDONE).
+							// A successor node t of gnode is undone if it is:
+							// - An initial state which hasn't been explored yet
+							// - t has not been added to the liveness disk graph
+							//   itself (only as the successor (transition) of
+							//   gnode).
+							//
+							// If it is >= 0, it either is a:
+							// - file pointer location
+							// - a previously assigned link (>= MAX_PTR)
+							//
+							// Iff nextLink == MAX_PTR, it means that the
+							// <<nextState, nextTidx>> successor node has been
+							// processed by checkComponent. The checks below
+							// will result in the successor node being skipped.
+							//
+							// It is possible that <<nextState, nextTidx>> =
+							// <<curState, curTid>> due to self loops. This is
+							// intended, as checkAction has to be evaluated for
+							// self loops too.
 							if (nextLink >= 0) {
+								// Check if the arc/transition from <<curState,
+								// curTidx>> to <<nextState, nextTidx>>
+								// satisfies ("P-satisfiable" MP page 422ff)
+								// its PEM's EAAction. If it does, 1/3 of the
+								// conditions for P-satisfiability are
+								// satisfied. Thus it makes sense to check the
+								// other 2/3 in checkComponent (AEAction &
+								// Fulfilling promises). If the EAAction does
+								// not hold, there is no point in checking the
+								// other 2/3. All must hold for
+								// P-satisfiability.
+								//
+								// This check is related to the fairness spec.
+								// Usually, it evals to true when no or weak
+								// fairness have been specified. False on strong
+								// fairness.
 								if (gnode.getCheckAction(slen, alen, i, eaaction)) {
+									// If the node's nextLink still points to
+									// disk, it means it has no link assigned
+									// yet which is the case if this node gets
+									// explored during DFS search the first
+									// time. Since it is new, add it to dfsStack
+									// to have it explored subsequently by DFS.
 									if (DiskGraph.isFilePointer(nextLink)) {
 										dfsStack.pushLong(nextState);
 										dfsStack.pushInt(nextTidx);
-										dfsStack.pushLong(nextLink);
-									} else if (nextLink < nextLowLink) {
-										nextLowLink = nextLink;
+										dfsStack.pushLong(nextLink); // nextLink is logically a ptr/loc here
+										// One would expect a (logical) lowLink
+										// being pushed (additionally to the
+										// ptr/loc in previous line) onto the
+										// stack here. However, it is pushed
+										// down below after all successors are
+										// on the stack and valid for the
+										// topmost successor. For the other
+										// successors below the topmost, a link
+										// number will be assigned subsequently.
+									} else {
+										// The node has been processed
+										// already, thus use the minimum of its link
+										// (nextLink) and nextLowLink.
+										nextLowLink = Math.min(nextLowLink, nextLink);
 									}
-								} else if (DiskGraph.isFilePointer(nextLink)) {
+								} else {
+									// The transition from <<curState, curTidx>>
+									// to <<nextState, nextTidx>> is not
+									// P-satisfiable and thus does not need to
+									// be checkComponent'ed. However, since we
+									// only added initial but no intermediate
+									// states to nodeQueue above, we have to add
+									// <<nextState, nextTidx>> to nodeQueue if
+									// it's still unprocessed (indicated by its
+									// on disk state). The current path
+									// potentially might be the only one by
+									// which DFS can reach it.
+									if (DiskGraph.isFilePointer(nextLink)) {
 									nodeQueue.enqueueLong(nextState);
 									nodeQueue.enqueueInt(nextTidx);
-									nodeQueue.enqueueLong(nextLink);
+									nodeQueue.enqueueLong(nextLink); // nextLink is logically a ptr/loc here
+									}
 								}
+							} else {
+								// If this is the final check on the complete
+								// graph, no node is allowed to be undone. If
+								// it's not the final check, nextLink has to be
+								// UNDONE (a non-UNDONE negative nextLink is
+								// probably a bug).
+								// isFinalCheck => nextLink # UNDONE
+								assert !isFinalCheck || nextLink != TableauNodePtrTable.UNDONE;
 							}
 						}
+						// Push the next lowLink onto stack on top of all
+						// successors. It is assigned to the topmost 
+						// successor only though.
 						dfsStack.pushLong(nextLowLink);
 					} else {
-						if (link < lowLink) {
-							lowLink = link;
-						}
-						dfsStack.pushLong(lowLink);
+						// link above wasn't "-1", thus it has to be a valid
+						// link in the known interval.
+						assert AbstractDiskGraph.MAX_PTR <= link && link <= AbstractDiskGraph.MAX_LINK; 
+						// Push the minimum of the two links onto the stack. If
+						// link == DiskGraph.MAX_PTR lowLink will always be the
+						// minimum (unless this graph has a gigantic amount of
+						// SCCs exceeding (MAX_LINK - MAX_PTR).
+						dfsStack.pushLong(Math.min(lowLink, link));
 					}
 				}
 			}
 		}
-
-		// After completing the checks, clean up:
-		// dfsStack.cleanup();
-		// comStack.cleanup();
+		// Make sure all nodes on comStack have been checkComponent()'ed
+		assert comStack.size() == 0;
 	}
 
 	/**
-	 * For currentPEM, this method checks if the current scc satisfies its AEs
-	 * and is fulfilling. (We know the current scc satisfies the pem's EA.) If
-	 * satisfiable, this pem contains a counterexample, and this method then
-	 * calls printErrorTrace to print an error trace and returns false.
+	 * For currentPEM, this method checks if the current SCC satisfies its AEs
+	 * and is fulfilling (we know the current SCC satisfies the PEM's EA by the
+	 * nested EAaction in checkSccs() above.) If satisfiable, this PEM
+	 * contains a counterexample, and this method then calls printErrorTrace to
+	 * print an error trace and returns false.
+	 * <p>
+	 * Speaking in words of Manna & Pnueli (Page 422ff), it checks if ¬&#966;
+	 * (which is PEM) is "P-satisfiable" (i.e. is there a computation that
+	 * satisfies &#968;). ¬&#966; (called &#968; by MP) is the negation of the
+	 * liveness formula &#966; which has to be "P-valid" for the liveness
+	 * properties to be valid.
 	 */
 	private boolean checkComponent(final long state, final int tidx, final MemIntStack comStack) throws IOException {
-//		final int comStackSize = comStack.size();
-//		Assert.check(comStackSize > 0, EC.GENERAL);
+		final int comStackSize = comStack.size();
+		// There is something to pop and each is a well formed tuple <<fp, tidx, loc>> 
+		assert comStackSize >= 5 && comStackSize % 5 == 0; // long + int + long
 		
 		long state1 = comStack.popLong();
 		int tidx1 = comStack.popInt();
@@ -259,7 +471,7 @@ public class LiveWorker extends IdThread {
 		// to be kept in com. However, it would destroy NodePtrTable's
 		// collision handling. NodePtrTable uses open addressing (see
 		// http://en.wikipedia.org/wiki/Open_addressing).
-		TableauNodePtrTable com = new TableauNodePtrTable(128);
+		final TableauNodePtrTable com = new TableauNodePtrTable(128);
 		while (true) {
 			// Add <state1, tidx1> into com:
 			com.put(state1, tidx1, loc1);
@@ -275,7 +487,7 @@ public class LiveWorker extends IdThread {
 			loc1 = comStack.popLong();
 		}
 		// Just parameter node in com OR com subset of comStack
-//		Assert.check(com.size() <= (comStackSize / 5), EC.GENERAL);
+		assert com.size() <= (comStackSize / 5);
 
 		STATS.addSample(com.size());
 
@@ -295,42 +507,69 @@ public class LiveWorker extends IdThread {
 		// NodePtrTable internally hashes the elements to buckets
 		// and isn't filled start to end. Thus, the code
 		// below iterates NodePtrTable front to end skipping null buckets.
-		int tsz = com.getSize();
+		//
+		// Note that the nodes are processed in random order (depending on a
+		// node's hash in TableauNodePtrTbl) and not in the order given by
+		// comStack. This is fine because the AEstate checks and checking
+		// fulfilling promises is done on individual states and not on
+		// sequences. For the AEActions, the successors are looked up in the
+		// disk graph.
+		final int tsz = com.getSize();
 		for (int ci = 0; ci < tsz; ci++) {
-			int[] nodes = com.getNodesByLoc(ci);
+			final int[] nodes = com.getNodesByLoc(ci);
 			if (nodes == null) {
 				// miss in NotePtrTable (null bucket)
 				continue;
 			}
 
 			state1 = TableauNodePtrTable.getKey(nodes);
-			for (int nidx = 2; nidx < nodes.length; nidx += com.getElemLength()) {
+			for (int nidx = 2; nidx < nodes.length; nidx += com.getElemLength()) { // nidx starts with 2 because [0][1] are the long fingerprint state1. 
 				tidx1 = TableauNodePtrTable.getTidx(nodes, nidx);
 				loc1 = TableauNodePtrTable.getElem(nodes, nidx);
 
-				GraphNode curNode = this.dg.getNode(state1, tidx1, loc1);
+				final GraphNode curNode = this.dg.getNode(state1, tidx1, loc1);
 
 				// Check AEState:
 				for (int i = 0; i < aeslen; i++) {
+					// Only ever set AEStateRes[i] to true, but never to false
+					// once it was true. It only matters if one state in com
+					// satisfies PEM's liveness property due to []<>¬p (which is
+					// the inversion of <>[]p).
+					// 
+					// It obviously has to check all nodes in the component
+					// (com) if either of them violates AEState unless all
+					// elements of AEStateRes are true. From that point onwards,
+					// checking further states wouldn't make a difference.
 					if (!AEStateRes[i]) {
 						int idx = this.pem.AEState[i];
 						AEStateRes[i] = curNode.getCheckState(idx);
+						// Can stop checking AEStates the moment AEStateRes
+						// is completely set to true. However, most of the time
+						// aeslen is small and the compiler will probably optimize
+						// out.
 					}
 				}
 
-				// Check AEAction: A TLA+ action represents the relationship
-				// between the current node and a successor state. The current
-				// node has n successor states. For each pair, see iff the 
-				// successor is in the "com" NodePtrTablecheck, check actions
-				// and store the results in AEActionRes(ult).
-				int succCnt = curNode.succSize();
+				// All EAAction have already been checked as part of checkSccs!
+
+				// Check AEAction: A TLA+ temporal action represents the
+				// relationship between the current node and a successor state
+				// in the scope of the behavior. The current node has n
+				// successor states.
+				final int succCnt = aealen > 0 ? curNode.succSize() : 0; // No point in looping successors if there are no AEActions to check on them.
 				for (int i = 0; i < succCnt; i++) {
-					long nextState = curNode.getStateFP(i);
-					int nextTidx = curNode.getTidx(i);
+					final long nextState = curNode.getStateFP(i);
+					final int nextTidx = curNode.getTidx(i);
+					// For each successor <<nextState, nextTdix>> of curNode's
+					// successors check, if it is part of the currently
+					// processed SCC (com). Successors, which are not part of
+					// the current SCC have obviously no relevance here. After
+					// all, we check the SCC.
 					if (com.getLoc(nextState, nextTidx) != -1) {
 						for (int j = 0; j < aealen; j++) {
+							// Only set false to true, but never true to false. 
 							if (!AEActionRes[j]) {
-								int idx = this.pem.AEAction[j];
+								final int idx = this.pem.AEAction[j];
 								AEActionRes[j] = curNode.getCheckAction(slen, alen, i, idx);
 							}
 						}
@@ -340,8 +579,8 @@ public class LiveWorker extends IdThread {
 				// Check that the component is fulfilling. (See MP page 453.)
 				// Note that the promises are precomputed and stored in oos.
 				for (int i = 0; i < plen; i++) {
-					LNEven promise = this.oos.getPromises()[i];
-					TBPar par = curNode.getTNode(this.oos.getTableau()).getPar();
+					final LNEven promise = this.oos.getPromises()[i];
+					final TBPar par = curNode.getTNode(this.oos.getTableau()).getPar();
 					if (par.isFulfilling(promise)) {
 						promiseRes[i] = true;
 					}
@@ -349,7 +588,15 @@ public class LiveWorker extends IdThread {
 			}
 		}
 
-		// We find a counterexample if all three conditions are satisfied.
+		// We find a counterexample if all three conditions are satisfied. If
+		// either of the conditions is false, it means the PEM does not hold and
+		// thus the liveness properties are not violated by the SCC.
+		//
+		// All AEState properties, AEActions and promises of PEM must be
+		// satisfied. If a single one isn't satisfied, the PEM as a whole isn't
+		// P-satisfiable. That's why it returns on the first false. As stated
+		// before, EAAction have already been checked if satisfiable.
+		// checkComponent is only called if the EA actions are satisfiable.
 		for (int i = 0; i < aeslen; i++) {
 			if (!AEStateRes[i]) {
 				return true;
@@ -366,7 +613,8 @@ public class LiveWorker extends IdThread {
 			}
 		}
 		// This component must contain a counter-example because all three
-		// conditions are satisfied. So, print a counter-example!
+		// conditions are satisfied. So, print a counter-example (if this thread
+		// is the first one to find a counter-example)!
 		if (setErrFound()) {
 			this.printTrace(state, tidx, com);
 		}
@@ -375,18 +623,20 @@ public class LiveWorker extends IdThread {
 
 	/* Check if the node <state, tidx> stutters. */
 	private boolean isStuttering(long state, int tidx, long loc) throws IOException {
-		int slen = this.oos.getCheckState().length;
-		int alen = this.oos.getCheckAction().length;
+		final int slen = this.oos.getCheckState().length;
+		final int alen = this.oos.getCheckAction().length;
 
-		GraphNode gnode = this.dg.getNode(state, tidx, loc);
-		int succCnt = gnode.succSize();
+		// Find the self loop and check its <>[]action
+		final GraphNode gnode = this.dg.getNode(state, tidx, loc);
+		final int succCnt = gnode.succSize();
 		for (int i = 0; i < succCnt; i++) {
-			long nextState = gnode.getStateFP(i);
-			int nextTidx = gnode.getTidx(i);
+			final long nextState = gnode.getStateFP(i);
+			final int nextTidx = gnode.getTidx(i);
 			if (state == nextState && tidx == nextTidx) {
 				return gnode.getCheckAction(slen, alen, i, this.pem.EAAction);
 			}
 		}
+		// <state, tidx> has no self loop, thus cannot stutter
 		return false;
 	}
 
@@ -402,19 +652,19 @@ public class LiveWorker extends IdThread {
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
 
 		// First, find a "bad" cycle from the "bad" scc.
-		int slen = this.oos.getCheckState().length;
-		int alen = this.oos.getCheckAction().length;
-		boolean[] AEStateRes = new boolean[this.pem.AEState.length];
-		boolean[] AEActionRes = new boolean[this.pem.AEAction.length];
-		boolean[] promiseRes = new boolean[this.oos.getPromises().length];
+		final int slen = this.oos.getCheckState().length;
+		final int alen = this.oos.getCheckAction().length;
+		final boolean[] AEStateRes = new boolean[this.pem.AEState.length];
+		final boolean[] AEActionRes = new boolean[this.pem.AEAction.length];
+		final boolean[] promiseRes = new boolean[this.oos.getPromises().length];
 		int cnt = AEStateRes.length + AEActionRes.length + promiseRes.length;
 
-		MemIntStack cycleStack = new MemIntStack(liveCheck.getMetaDir(), "cycle");
+		final MemIntStack cycleStack = new MemIntStack(liveCheck.getMetaDir(), "cycle");
 
 		// Mark state as visited:
 		int[] nodes = nodeTbl.getNodes(state);
 		int tloc = nodeTbl.getIdx(nodes, tidx);
-		long ptr = TableauNodePtrTable.getElem(nodes, tloc);
+		final long ptr = TableauNodePtrTable.getElem(nodes, tloc);
 		TableauNodePtrTable.setSeen(nodes, tloc);
 
 		GraphNode curNode = this.dg.getNode(state, tidx, ptr);
@@ -675,6 +925,9 @@ public class LiveWorker extends IdThread {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Thread#run()
+	 */
 	public final void run() {
 		try {
 			while (true) {
@@ -714,4 +967,85 @@ public class LiveWorker extends IdThread {
 		}
 	}
 
+  	/*
+	 * The detailed formatter below can be activated in Eclipse's variable view
+	 * by choosing "New detailed formatter" from the MemIntQueue context menu.
+	 * Insert "LiveWorker.DetailedFormatter.toString(this);".
+	 */
+  	public static class DetailedFormatter {
+  		public static String toString(final MemIntStack comStack) {
+  			final int size = comStack.size();
+			final StringBuffer buf = new StringBuffer(size / 5);
+  			for (int i = 0; i < comStack.size(); i+=5) {
+  				long loc = comStack.peakLong(size - i - 5);
+  				int tidx = comStack.peakInt(size - i - 3);
+  				long state = comStack.peakLong(size - i - 2);
+  				buf.append("state: ");
+  				buf.append(state);
+  				buf.append(" tidx: ");
+  				buf.append(tidx);
+  				buf.append(" loc: ");
+  				buf.append(loc);
+  				buf.append("\n");
+  			}
+ 			return buf.toString();
+  		}
+  	}
+
+  	/*
+	 * The detailed formatter below can be activated in Eclipse's variable view
+	 * by choosing "New detailed formatter" from the MemIntQueue context menu.
+	 * Insert "LiveWorker.DFSStackDetailedFormatter.toString(this);".
+	 * Unfortunately it collides with the comStack DetailedFormatter as both use
+	 * the same type MemIntStack. So you have to chose what you want to look at
+	 * while debugging.
+	 * Note that toString treats pops/pushes of nodes and
+	 * states atomically. If called during a node is only partially pushed onto
+	 * the stack, the detailed formatter will crash.
+	 */
+  	public static class DFSStackDetailedFormatter {
+  		public static String toString(final MemIntStack dfsStack) {
+  			final int size = dfsStack.size();
+			final StringBuffer buf = new StringBuffer(size / 7); // approximate the size needed (buf will grow or shrink if needed)
+  			int i = 0;
+  			for (; i < dfsStack.size();) {
+  				// Peak element to see if it's a marker or not
+  				final long topElement = dfsStack.peakLong(size - i - 2);
+  				if (topElement == SCC_MARKER) {
+  					// It is the marker element
+  	  				buf.append("node [");
+  	  				buf.append(" fp: ");
+  	  				buf.append(dfsStack.peakLong(size - i - 5));
+  	  				buf.append(" tidx: ");
+  	  				buf.append(dfsStack.peakInt(size - i - 3));
+  	  				buf.append(" lowLink: ");
+  	  				buf.append(dfsStack.peakLong(size - i - 7) - DiskGraph.MAX_PTR);
+  	  				buf.append("]\n");
+  	  				// Increase i by the number of elements peaked
+  	  				i += 7;
+  				} else if (DiskGraph.isFilePointer(topElement)) {
+  					final long location = topElement;
+  	  				buf.append("succ [");
+  	  				buf.append(" fp: ");
+  	  				buf.append(dfsStack.peakLong(size - i - 5));
+  	  				buf.append(" tidx: ");
+  	  				buf.append(dfsStack.peakInt(size - i - 3));
+  	  				buf.append(" location: ");
+  	  				buf.append(location);
+  	  				buf.append("]\n");
+  	  				// Increase i by the number of elements peaked
+  	  				i += 5;
+  				} else if (topElement >= DiskGraph.MAX_PTR) {
+  					final long pLowLink = topElement - DiskGraph.MAX_PTR;
+  	  				buf.append("pLowLink: ");
+  	  				buf.append(pLowLink);
+  	  				buf.append("\n");
+  					i += 2;
+  				}
+  			}
+  			// Assert all elements are used up
+  			assert i == size;
+ 			return buf.toString();
+  		}
+  	}
 }

@@ -69,6 +69,8 @@ public abstract class AbstractDiskGraph {
 	public static final long MAX_LINK = 0x7FFFFFFFFFFFFFFFL;
 
 	public static boolean isFilePointer(long loc) {
+		// TODO Does not check >= 0 and thus accepts TableauDiskGraph.UNDONE as
+		// ptr.
 		return loc < MAX_PTR;
 	}
 
@@ -107,11 +109,26 @@ public abstract class AbstractDiskGraph {
 		return this.initNodes;
 	}
 
+	/**
+	 * Creates a fixed size in-memory cache of {@link GraphNode}'s. A disk
+	 * lookup is avoid in {@link AbstractDiskGraph#getNode(long, int, long)} on
+	 * each cache hit. The cache is destroyed by
+	 * {@link AbstractDiskGraph#destroyCache()}.
+	 */
 	public final void createCache() {
-		// Make array length a function of the available (heap) memory
+		// Make array length a function of the available (heap) memory. Could
+		// approximate the required memory by taking the size of the on-disk
+		// files into account, but think of hash collisions!
 		this.gnodes = new GraphNode[65536];
 	}
 
+	/**
+	 * Destroys the fixed size in-memory cache created by
+	 * {@link AbstractDiskGraph#createCache()}. This should be done if liveness
+	 * checking wants to destroy in-memory {@link GraphNode} nodes to start a
+	 * new liveness check on them (e.g. to replace SCC link numbers with the
+	 * original disk ptr location).
+	 */
 	public final void destroyCache() {
 		this.gnodes = null;
 	}
@@ -199,7 +216,7 @@ public abstract class AbstractDiskGraph {
 		return gnode1;
 	}
 	
-	public final GraphNode getNodeFromDisk(final long stateFP, final int tidx, final long ptr) throws IOException {
+	protected final GraphNode getNodeFromDisk(final long stateFP, final int tidx, final long ptr) throws IOException {
 		// If the node is not found in the in-memory cache, the ptr has to be
 		// positive. BufferedRandomAccessFile#seek will throw an IOException due
 		// to "negative seek offset" anyway. Lets catch it early on!
@@ -228,19 +245,74 @@ public abstract class AbstractDiskGraph {
 		this.nodePtrRAF.seek(ptr);
 	}
 
+	/**
+	 * This methods reads the node PTR file from disk (the ptr file is the
+	 * smaller file ptrs_N of the pair ptrs_N and nodes_N).
+	 * <p>
+	 * The ptr file contains tuples <<fingerprint, tableau idx, ptr location>>
+	 * for all fingerprints times all tableau indices (the corresponding nodes
+	 * file contains the outgoing arcs of the node described in the ptr file).
+	 * <p>
+	 * The reason why the nodePtrTable has to be re-made by calling this method
+	 * prior to running the SCC search, is because the ptr location is
+	 * eventually overwritten with the nodes link number used by SCC search.
+	 * <p>
+	 * makeNodePtrTbl maintains/does not overwrite the isDone state of the node,
+	 * which - iff true - causes SCC search to skip/ignore the node.
+	 * 
+	 * @param ptr
+	 *            The length of the ptr file up to which this method reads.
+	 * @throws IOException
+	 *             Reading the file failed
+	 */
 	protected abstract void makeNodePtrTbl(final long ptr) throws IOException;
 
-	/* Return the link assigned to the node. */
+	/* Link information for SCC search */
+	
+	/**
+	 * Return the link assigned to the node via putLink() or -1 if the node has
+	 * no link assigned yet. Unless -1, the link is in interval [
+	 * {@link AbstractDiskGraph#MAX_PTR}, {@link AbstractDiskGraph#MAX_LINK}]
+	 * 
+	 * @param state
+	 *            The state's fingerprint
+	 * @param tidx
+	 *            The corresponding tableau index
+	 */
 	public abstract long getLink(long state, int tidx);
 
 	/**
-	 * Assign link to node. If a link has already been assigned to the node,
-	 * does nothing by simply returning the existing link. Otherwise, add <node,
-	 * link> into the table and return -1.
+	 * Assign link to node during SCC search. If a link has already been
+	 * assigned to the node, does nothing by simply returning the existing link.
+	 * Otherwise, add &lt;node, link&gt; into the table and return -1. The link
+	 * overwrites the previous value of elem (file pointer into nodes_N) in the
+	 * nodePtrTable.
+	 * <p>
+	 * The link has to be in the range [{@link AbstractDiskGraph#MAX_PTR},
+	 * {@link AbstractDiskGraph#MAX_LINK}). {AbstractDiskGraph#MAX_LINK} is used
+	 * to exclude nodes from being explored by SCC search twice (see
+	 * {@link AbstractDiskGraph#setMaxLink(long, int)}.
+	 * 
+	 * @param state
+	 *            The state's fingerprint
+	 * @param tidx
+	 *            The corresponding tableau index
 	 */
 	public abstract long putLink(long state, int tidx, long link);
 
+	/**
+	 * Assigns the maximum possible link number to the given node &lt;state,
+	 * tidx&gt;. This results in that the node is skipped/ignored if it turns up
+	 * as a node during SCC's depth-first-search.
+	 * 
+	 * @param state
+	 *            The state's fingerprint
+	 * @param tidx
+	 *            The corresponding tableau index
+	 */
 	public abstract void setMaxLink(long state, int tidx);
+
+	/* End link information for SCC search */
 
 	/**
 	 * Return the shortest path (inclusive and in reverse order) from some

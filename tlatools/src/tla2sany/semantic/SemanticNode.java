@@ -4,19 +4,18 @@
 // last modified on Fri 16 Mar 2007 at 17:22:54 PST by lamport
 package tla2sany.semantic;
 
-import java.util.Comparator;
 import java.util.Hashtable;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import tla2sany.explorer.ExploreNode;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
-import util.ToolIO;
-
 import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import util.ToolIO;
 
 /**
  * SemanticNode is the (abstract) superclass of all nodes in the
@@ -233,10 +232,22 @@ public abstract class SemanticNode
 *       to the following two toString methods.                             *
 ***************************************************************************/
   public final void toString(StringBuffer sb, String padding) {
-    sb.append(this.getLocation());
+// Uncomment the code to print the actual image instead of file locations.	  
+//	  TreeNode treeNode = getTreeNode();
+//	  if (treeNode instanceof SyntaxTreeNode) {
+//		  SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
+//		  sb.append(stn.getHumanReadableImage());
+//	  } else {
+		  sb.append(this.getLocation());
+//	  }
   }
 
   public String toString() {
+//	  TreeNode treeNode = getTreeNode();
+//	  if (treeNode instanceof SyntaxTreeNode) {
+//		  SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
+//		  return stn.getHumanReadableImage();
+//	  }
     return this.getLocation().toString();
   }
 

@@ -4,6 +4,9 @@
 
 package tlc2.tool.liveness;
 
+/**
+ * @see TableauNodePtrTable
+ */
 public class NodePtrTable {
 
 	private int count;

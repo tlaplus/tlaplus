@@ -33,11 +33,6 @@ public class LiveCheck implements ILiveCheck {
 	private final IBucketStatistics outDegreeGraphStats;
 	private final ILiveChecker[] checker;
 	
-	// SZ: fields not read locally
-	// private static OrderOfSolution currentOOS;
-	// private static DiskGraph currentDG;
-	// private static PossibleErrorModel currentPEM;
-
 	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics) throws IOException {
 		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics);
 	}
@@ -136,6 +131,8 @@ public class LiveCheck implements ILiveCheck {
 	 *            to re-create the nodePtrTable.
 	 */
 	private boolean check0(final boolean finalCheck) throws InterruptedException, IOException {
+		// Sum up the number of nodes in all disk graphs to indicate the amount
+		// of work to be done by liveness checking.
 		long sum = 0L;
 		for (int i = 0; i < checker.length; i++) {
 			sum += checker[i].getDiskGraph().size();
@@ -164,12 +161,12 @@ public class LiveCheck implements ILiveCheck {
 		int wNum = Math.min(slen, TLCGlobals.getNumWorkers());
 
 		if (wNum == 1) {
-			LiveWorker worker = new LiveWorker(0, this, queue);
+			LiveWorker worker = new LiveWorker(0, this, queue, finalCheck);
 			worker.run();
 		} else {
 			final LiveWorker[] workers = new LiveWorker[wNum];
 			for (int i = 0; i < wNum; i++) {
-				workers[i] = new LiveWorker(i, this, queue);
+				workers[i] = new LiveWorker(i, this, queue, finalCheck);
 				workers[i].start();
 			}
 			for (int i = 0; i < wNum; i++) {

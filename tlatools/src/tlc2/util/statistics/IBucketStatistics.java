@@ -1,10 +1,13 @@
 package tlc2.util.statistics;
 
+/**
+ * Keeps statistics about any samples added.
+ */
 public interface IBucketStatistics {
 
 	/**
 	 * @param amount
-	 *            Add a sample to the stastics. Allowed range is 0 <= sample <=
+	 *            Add a sample to the statistics. Allowed range is 0 <= sample <=
 	 *            Integer.MAX_VALUE
 	 */
 	void addSample(int amount);

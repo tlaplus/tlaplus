@@ -112,7 +112,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.DiskGraph#putNode(tlc2.tool.liveness.GraphNode, long)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#putNode(tlc2.tool.liveness.GraphNode, long)
 	 */
 	protected void putNode(GraphNode node, long ptr) {
 		this.nodePtrTbl.put(node.stateFP, node.tindex, ptr);
@@ -156,16 +156,17 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.DiskGraph#getLink(long, int)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#getLink(long, int)
 	 */
 	public long getLink(long state, int tidx) {
 		return this.nodePtrTbl.get(state, tidx);
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.DiskGraph#putLink(long, int, long)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#putLink(long, int, long)
 	 */
 	public long putLink(long state, int tidx, long link) {
+		assert MAX_PTR <= link && link < MAX_LINK; 
 		int[] node = this.nodePtrTbl.getNodes(state);
 		int cloc = this.nodePtrTbl.getIdx(node, tidx);
 		long oldLink = TableauNodePtrTable.getElem(node, cloc);
@@ -177,7 +178,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.DiskGraph#setMaxLink(long, int)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#setMaxLink(long, int)
 	 */
 	public void setMaxLink(long state, int tidx) {
 		this.nodePtrTbl.put(state, tidx, MAX_LINK);
@@ -197,7 +198,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.DiskGraph#makeNodePtrTbl(long)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#makeNodePtrTbl(long)
 	 */
 	protected void makeNodePtrTbl(final long ptr) throws IOException  {
 		makeNodePtrTbl(ptr, nodePtrTbl);
@@ -503,6 +504,12 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 		return res;
 	}
 	
+	/**
+	 * This implementation extends {@link TableauNodePtrTable} to additionally
+	 * store the tableau index of the predecessor node. It is needed to traverse
+	 * the {@link ReverseTraversableTableauNodePtrTable} backwards once a error
+	 * trace path has been created.
+	 */
 	private class ReverseTraversableTableauNodePtrTable extends TableauNodePtrTable {
 
 		public ReverseTraversableTableauNodePtrTable(final int size) {

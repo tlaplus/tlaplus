@@ -26,8 +26,55 @@
 
 package tlc2.tool.liveness;
 
+/**
+ * {@link TableauNodePtrTable} (and its sibling {@link NodePtrTable} for
+ * tableau-less liveness checking) is a - highly optimized - set of all nodes in
+ * the behavior graph {@link TableauDiskGraph}.
+ * <p>
+ * Each node in the behavior graph consists of the pair <<state, tidx>> (where
+ * state is a state's fingerprint) and auxiliary information. The auxiliary
+ * information is:
+ * <ul>
+ * <li>An offset into the second set which represents the arcs between the nodes
+ * (logically outgoing transitions). Technically this is a pointer location into
+ * the second disk file of {@link TableauDiskGraph}.</li>
+ * <li>The node's link number during Tarjan's SCC search.</li>
+ * <li>A flag if the node is done or not (see {@link TableauNodePtrTable#UNDONE}
+ * below).</li>
+ * <li>A flag that marks a node an initial node.</li>
+ * <li>A flag if the node has been seen before.</li>
+ * </ul>
+ * <p>
+ * To minimize {@link TableauNodePtrTable}'s space/memory requirements, the
+ * auxiliary information replace each other depending on the phase of liveness
+ * checking.<br>
+ * During model checking (safety checking) the auxiliary information is set to a
+ * pointer location (long) pointing into the arcs set and the high bits of the
+ * long are used to mark nodes as done or undone.<br>
+ * As soon as the SCC search starts, the pointer location is replaced by the SCC
+ * link number.<br>
+ * Once a liveness violation has been detected, the seen flag is set during the
+ * error trace path reconstruction.
+ * <p>
+ * Internally {@link TableauNodePtrTable} hashes the node's fingerprint to a
+ * bucket address. In case of hash collision, open addressing is used.
+ */
 public class TableauNodePtrTable {
 
+	/**
+	 * A node is marked UNDONE if it is:
+	 * <ul>
+	 * <li>An initial node <b>s0</b> and not yet visited again by
+	 * LiveChecker#addNextState(<b>s0</b>)</li>
+	 * <li>A previously unseen successor node <b>t</b> of a node <b>s</b> that
+	 * is added as an outgoing transition of <b>s</b> when <b>s</b> is being
+	 * added via LiveChecker#addNextState(<b>s</b> )</li>
+	 * </ul>
+	 * <p>
+	 * It logically markers the successor node <b>t</b> to be incomplete which
+	 * can only happen during liveness checking of a <b>partial</b> liveness
+	 * graph.
+	 */
 	public static final long UNDONE = 0xFFFFFFFE00000000L;
 	
 	private int count;
@@ -200,6 +247,7 @@ public class TableauNodePtrTable {
 		return node[3] != -2;
 	}
 
+	// Called by addNextState
 	public final int setDone(long k) {
 		if (this.count >= this.thresh) {
 			this.grow();
@@ -235,6 +283,7 @@ public class TableauNodePtrTable {
 		}
 	}
 	
+	// Called when the error trace is being printed
 	public final void resetElems() {
 		for (int i = 0; i < this.nodes.length; i++) {
 			int[] node = this.nodes[i];
@@ -385,7 +434,7 @@ public class TableauNodePtrTable {
 
   	/*
 	 * The detailed formatter below can be activated in Eclipse's variable view
-	 * by choosing "New detailed formatter" from the MemIntQueue context menu.
+	 * by choosing "New detailed formatter" from the nodePtrTable's context menu.
 	 * Insert "TableauNodePtrTable.DetailedFormatter.toString(this);".
 	 */
   	public static class DetailedFormatter {
@@ -402,8 +451,11 @@ public class TableauNodePtrTable {
   					buf.append(" isDone: " + (node.length == 2 || (node.length > 2 && node[3] != -2)));
   					buf.append("\n");
   					
-  					// A node maintains n records. Each record logically contains information about a node's successor.
-  					// fingerprint
+					// A node maintains n records. Each record logically
+					// contains information - combined with the fingerprint -
+					// about the full tuple <<fp, tidx, loc>>.
+  					// Depending on the state of the record, the loc might
+  					// also be overwritten by the SCC link number. 
   					int j = 2;
   					for (; j < node.length - 1; j+=table.getElemLength()) { // don't miss the ptr at the end
   						buf.append("\t");
@@ -413,7 +465,11 @@ public class TableauNodePtrTable {
   						// element
   						final long elem = getElem(node, j);
   						if (AbstractDiskGraph.isFilePointer(elem)) {
-  							buf.append("  ptr: " + elem);
+  							if (table.isDone(fp)) {
+  								buf.append("  ptr: " + elem);
+  							} else {
+  								buf.append("  ptr: undone");
+  							}
   						} else if (AbstractDiskGraph.MAX_PTR == elem){
   							buf.append(" elem: Init State");
   						} else {

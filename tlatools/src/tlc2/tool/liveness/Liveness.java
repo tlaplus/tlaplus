@@ -538,20 +538,20 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		if ((lexpr instanceof LNBool) && !((LNBool) lexpr).b) {
 			return new OrderOfSolution[0]; // must be unsatisfiable
 		}
-		LNDisj dnf = (lexpr instanceof LNDisj) ? (LNDisj) lexpr : (new LNDisj(lexpr));
+		final LNDisj dnf = (lexpr instanceof LNDisj) ? (LNDisj) lexpr : (new LNDisj(lexpr));
 
 		// Now we will turn DNF into a format that can be tested by the
 		// tableau method. The first step is to collect everything into
 		// pems+lexps: listof-(listof-<>[],[]<> /\ tf)
-		OSExprPem[] pems = new OSExprPem[dnf.getCount()];
-		LiveExprNode[] tfs = new LiveExprNode[dnf.getCount()];
+		final OSExprPem[] pems = new OSExprPem[dnf.getCount()];
+		final LiveExprNode[] tfs = new LiveExprNode[dnf.getCount()];
 		for (int i = 0; i < dnf.getCount(); i++) {
 			// Flatten junctions, because DNF may contain singleton junctions
-			LiveExprNode ln = dnf.getBody(i).flattenSingleJunctions();
-			OSExprPem pem = new OSExprPem();
+			final LiveExprNode ln = dnf.getBody(i).flattenSingleJunctions();
+			final OSExprPem pem = new OSExprPem();
 			pems[i] = pem;
 			if (ln instanceof LNConj) {
-				LNConj lnc2 = (LNConj) ln;
+				final LNConj lnc2 = (LNConj) ln;
 				for (int j = 0; j < lnc2.getCount(); j++) {
 					classifyExpr(lnc2.getBody(j), pem);
 				}
@@ -562,7 +562,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			if (pem.tfs.size() == 1) {
 				tfs[i] = (LiveExprNode) pem.tfs.elementAt(0);
 			} else if (pem.tfs.size() > 1) {
-				LNConj lnc2 = new LNConj(pem.tfs.size());
+				final LNConj lnc2 = new LNConj(pem.tfs.size());
 				for (int j = 0; j < pem.tfs.size(); j++) {
 					lnc2.addConj((LiveExprNode) pem.tfs.elementAt(j));
 				}
@@ -579,13 +579,13 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		// haven't done any real rearrangement of them, apart from munging
 		// up \/ and /\ above them. tfbin contains the different tf's.
 		// pembin is a vect of vect-of-pems collecting each tf's pems.
-		TBPar tfbin = new TBPar(dnf.getCount());
-		Vect pembin = new Vect(dnf.getCount());
+		final TBPar tfbin = new TBPar(dnf.getCount());
+		final Vect pembin = new Vect(dnf.getCount());
 		for (int i = 0; i < dnf.getCount(); i++) {
 			int found = -1;
-			LiveExprNode tf = tfs[i];
+			final LiveExprNode tf = tfs[i];
 			for (int j = 0; j < tfbin.size() && found == -1; j++) {
-				LiveExprNode tf0 = tfbin.exprAt(j);
+				final LiveExprNode tf0 = tfbin.exprAt(j);
 				if ((tf == null && tf0 == null) || (tf != null && tf0 != null && tf.equals(tf0))) {
 					found = j;
 				}
@@ -599,15 +599,15 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		}
 
 		// We then create an OrderOfSolution for each tf in tfbin.
-		OrderOfSolution[] oss = new OrderOfSolution[tfbin.size()];
+		final OrderOfSolution[] oss = new OrderOfSolution[tfbin.size()];
 		for (int i = 0; i < tfbin.size(); i++) {
-			LiveExprNode tf = tfbin.exprAt(i);
+			final LiveExprNode tf = tfbin.exprAt(i);
 
 			if (tf == null) {
 				oss[i] = new OrderOfSolution(new LNEven[0], tool);
 			} else {
-				LiveExprNode tf1 = tf.makeBinary();
-				TBPar promises = new TBPar(10);
+				final LiveExprNode tf1 = tf.makeBinary();
+				final TBPar promises = new TBPar(10);
 				tf1.extractPromises(promises);
 				oss[i] = new OrderOfSolution(constructTableau(tf1, 0), new LNEven[promises.size()], tool);
 				for (int j = 0; j < promises.size(); j++) {
@@ -617,16 +617,14 @@ public class Liveness implements ToolGlobals, ASTConstants {
 
 			// We lump all the pems into a single checkState and checkAct,
 			// and oss[i].pems will simply be integer lookups into them.
-			Vect stateBin = new Vect();
-			Vect actionBin = new Vect();
-			Vect tfPems = (Vect) pembin.elementAt(i);
+			final Vect stateBin = new Vect();
+			final Vect actionBin = new Vect();
+			final Vect tfPems = (Vect) pembin.elementAt(i);
 			oss[i].setPems(new PossibleErrorModel[tfPems.size()]);
 			for (int j = 0; j < tfPems.size(); j++) {
-				OSExprPem pem = (OSExprPem) tfPems.elementAt(j);
-				oss[i].getPems()[j] = new PossibleErrorModel();
-				oss[i].getPems()[j].AEAction = addToBin(pem.AEAction, actionBin);
-				oss[i].getPems()[j].AEState = addToBin(pem.AEState, stateBin);
-				oss[i].getPems()[j].EAAction = addToBin(pem.EAAction, actionBin);
+				final OSExprPem pem = (OSExprPem) tfPems.elementAt(j);
+				oss[i].getPems()[j] = new PossibleErrorModel(addToBin(pem.AEAction, actionBin),
+						addToBin(pem.AEState, stateBin), addToBin(pem.EAAction, actionBin));
 			}
 			// Finally, store the bins with the order of solution.
 			oss[i].setCheckState(new LiveExprNode[stateBin.size()]);
