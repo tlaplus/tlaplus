@@ -311,26 +311,26 @@ public class GraphNode extends AbstractGraphNode {
 	}
 
 	public String toDotViz(final boolean isInitState, final boolean hasTableau) {
-		String id = (""+this.stateFP).substring(0,3);
+		String id = (""+this.stateFP).substring(0,6);
 		if (hasTableau) {
 			id += "." + this.tindex;
 		}
 		
 		final StringBuffer buf = new StringBuffer();
 		if (isInitState) {
-			buf.append(id + " [style = filled]\n"); // node's label
+			buf.append("\"" + id + "\" [style = filled]\n"); // node's label
 		}
 		int size = this.nnodes.length;
 		for (int i = 0; i < size; i += 3) {
-			buf.append(id + " -> ");
+			buf.append("\"" + id + "\" -> ");
 			long high = this.nnodes[i];
 			long low = this.nnodes[i + 1];
 			long fp = (high << 32) | (low & 0xFFFFFFFFL);
 			if (hasTableau) {
-				buf.append(("" + fp).substring(0, 3) + "." + this.nnodes[i + 2]);
+				buf.append(("\"" + fp).substring(0, 7) + "." + this.nnodes[i + 2] + "\"");
 			} else {
 				//Omit tableau index when it's -1 (indicating no tableau)
-				buf.append(("" + fp).substring(0, 3));
+				buf.append(("\"" + fp).substring(0, 7) + "\"");
 			}
 			buf.append("\n");
 		}
