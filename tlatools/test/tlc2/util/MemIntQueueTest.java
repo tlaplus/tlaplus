@@ -93,4 +93,35 @@ public class MemIntQueueTest extends TestCase {
 		}
 		fail("Returned element where there should be none.");
 	}
+	
+	public void testGrow() {
+		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant", 4);
+		queue.enqueueInt(0);
+		queue.enqueueInt(1);
+		queue.enqueueInt(2);
+		queue.enqueueInt(3);
+		assertEquals(4, queue.length());
+
+		queue.dequeueInt();
+		queue.dequeueInt();
+		queue.dequeueInt();
+		queue.dequeueInt();
+		assertEquals(0, queue.length());
+
+		queue.enqueueInt(4);
+		queue.enqueueInt(5);
+		queue.enqueueInt(6);
+		queue.enqueueInt(7);
+		assertEquals(4, queue.length());
+
+		queue.dequeueInt();
+
+		// This should make the queue grow internally.
+		queue.enqueueInt(8);
+		queue.enqueueInt(9);
+		for(int i = 5; i < 10; i++) {
+			assertEquals(i, queue.dequeueInt());
+		}
+		assertEquals(0, queue.length());
+	}
 }

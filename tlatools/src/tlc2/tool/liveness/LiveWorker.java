@@ -138,9 +138,12 @@ public class LiveWorker extends IdThread {
 		// nodeQueue of unexplored states, but only the initial states. Since we
 		// know that all non-initial states are reachable from the set of
 		// initial states, this is sufficient to start with.
-		final MemIntQueue nodeQueue = new MemIntQueue(liveCheck.getMetaDir(), "root");
 		final LongVec initNodes = this.dg.getInitNodes();
 		final int numOfInits = initNodes.size();
+		// Allocate space for all initial states, assuming the majority of
+		// initial nodes will be done. Multiplied by 5 because of
+		// <<long, int, long>> per "record.
+		final MemIntQueue nodeQueue = new MemIntQueue(liveCheck.getMetaDir(), "root", (numOfInits / 2) * 5);
 		for (int j = 0; j < numOfInits; j += 2) {
 			final long state = initNodes.elementAt(j);
 			final int tidx = (int) initNodes.elementAt(j + 1);
