@@ -33,6 +33,8 @@ public class TLCGlobals
 	 */
     public static double livenessThreshold = 0.1d;
 
+    public static double livenessGraphSizeThreshold = 0.1d;
+
     public synchronized static void setNumWorkers(int n)
     {
         numWorkers = n;

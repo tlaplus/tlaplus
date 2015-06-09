@@ -14,12 +14,15 @@ import util.BufferedDataOutputStream;
 import util.FileUtil;
 
 /**
- * Alternative implementation
- * currently not used 
+ * Alternative implementation. Currently not used
  * 
- * @version $Id$
+ * This implementation is likely to have never worked and should be regarded as
+ * a sketch for a how a concurrent implementation could look like. For the
+ * moment, {@link SynchronousDiskIntStack} does the job just fine. Albeit - as
+ * the name suggests - in a synchronous fashion.
+ * 
  */
-public final class DiskIntStack {
+public final class DiskIntStack implements IntStack {
   private final static int BufSize = 16384;
 
   private long size;
@@ -168,4 +171,10 @@ public final class DiskIntStack {
     }
   }
 
+	/* (non-Javadoc)
+	 * @see tlc2.util.IntStack#reset()
+	 */
+	public void reset() {
+		// TODO Auto-generated method stub
+	}
 }

@@ -15,9 +15,11 @@ import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.util.IdThread;
+import tlc2.util.IntStack;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
 import tlc2.util.MemIntStack;
+import tlc2.util.SynchronousDiskIntStack;
 import tlc2.util.statistics.BucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 
@@ -176,7 +178,8 @@ public class LiveWorker extends IdThread {
 		final int alen = this.oos.getCheckAction().length;
 		
 		// Tarjan's stack
-		final MemIntStack dfsStack = new MemIntStack(liveCheck.getMetaDir(), "dfs");
+		// Append thread id to name for unique disk files during concurrent SCC search 
+		final IntStack dfsStack = getStack(liveCheck.getMetaDir(), "dfs" + this.myGetId());
 		
 		// comStack is only being added to during the deep first search. It is passed
 		// to the checkComponent method while in DFS though. Note that the nodes pushed
@@ -185,10 +188,10 @@ public class LiveWorker extends IdThread {
 		//
 		// See tlc2.tool.liveness.LiveWorker.DetailedFormatter.toString(MemIntStack)
 		// which is useful during debugging.
-		final MemIntStack comStack = new MemIntStack(liveCheck.getMetaDir(), "com");
+		final IntStack comStack = getStack(liveCheck.getMetaDir(), "com" + this.myGetId());
 
 		// Generate the SCCs and check if they contain a "bad" cycle.
-		while (nodeQueue.length() > 0) {
+		while (nodeQueue.size() > 0) {
 			// Pick one of the unexplored nodes as root and start searching the
 			// reachable SCCs from it.
 			final long state = nodeQueue.dequeueLong();
@@ -434,6 +437,26 @@ public class LiveWorker extends IdThread {
 		assert comStack.size() == 0;
 	}
 
+	private IntStack getStack(final String metaDir, final String name) throws IOException {
+		// It is unlikely that the stacks will fit into memory if the
+		// size of the behavior graph is larger relative to the available memory.
+		final long freeMemoryInBytes = Runtime.getRuntime().freeMemory();
+		final long graphSizeInBytes = this.dg.getSizeOnDisk();
+		final double ratio = graphSizeInBytes / (freeMemoryInBytes * 1d);
+		if (ratio > TLCGlobals.livenessGraphSizeThreshold) {
+			// Double SDIS's bufSize/pageSize by how much the graph size
+			// overshoots the free memory size, but limit page size to 1gb.
+			int moveBy = (int) ratio;
+			if (moveBy > 1) {
+				return new SynchronousDiskIntStack(metaDir, name,
+						SynchronousDiskIntStack.BufSize << Math.min(moveBy, 5));
+			} else {
+				return new SynchronousDiskIntStack(metaDir, name);
+			}
+		}
+		return new MemIntStack(metaDir, name);
+	}
+
 	/**
 	 * For currentPEM, this method checks if the current SCC satisfies its AEs
 	 * and is fulfilling (we know the current SCC satisfies the PEM's EA by the
@@ -447,8 +470,8 @@ public class LiveWorker extends IdThread {
 	 * liveness formula &#966; which has to be "P-valid" for the liveness
 	 * properties to be valid.
 	 */
-	private boolean checkComponent(final long state, final int tidx, final MemIntStack comStack) throws IOException {
-		final int comStackSize = comStack.size();
+	private boolean checkComponent(final long state, final int tidx, final IntStack comStack) throws IOException {
+		final long comStackSize = comStack.size();
 		// There is something to pop and each is a well formed tuple <<fp, tidx, loc>> 
 		assert comStackSize >= 5 && comStackSize % 5 == 0; // long + int + long
 		
@@ -977,7 +1000,7 @@ public class LiveWorker extends IdThread {
 	 */
   	public static class DetailedFormatter {
   		public static String toString(final MemIntStack comStack) {
-  			final int size = comStack.size();
+  			final int size = (int) comStack.size();
 			final StringBuffer buf = new StringBuffer(size / 5);
   			for (int i = 0; i < comStack.size(); i+=5) {
   				long loc = comStack.peakLong(size - i - 5);
@@ -1008,7 +1031,7 @@ public class LiveWorker extends IdThread {
 	 */
   	public static class DFSStackDetailedFormatter {
   		public static String toString(final MemIntStack dfsStack) {
-  			final int size = dfsStack.size();
+  			final int size = (int) dfsStack.size();
 			final StringBuffer buf = new StringBuffer(size / 7); // approximate the size needed (buf will grow or shrink if needed)
   			int i = 0;
   			for (; i < dfsStack.size();) {

@@ -66,11 +66,7 @@ public abstract class MemBasedSet {
 	/**
 	 * Return the number of items on the stack.
 	 */
-	public final int size() {
-		return this.size;
-	}
-
-	public final int length() {
+	public final long size() {
 		return this.size;
 	}
 

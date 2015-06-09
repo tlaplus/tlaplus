@@ -100,19 +100,19 @@ public class MemIntQueueTest extends TestCase {
 		queue.enqueueInt(1);
 		queue.enqueueInt(2);
 		queue.enqueueInt(3);
-		assertEquals(4, queue.length());
+		assertEquals(4, queue.size());
 
 		queue.dequeueInt();
 		queue.dequeueInt();
 		queue.dequeueInt();
 		queue.dequeueInt();
-		assertEquals(0, queue.length());
+		assertEquals(0, queue.size());
 
 		queue.enqueueInt(4);
 		queue.enqueueInt(5);
 		queue.enqueueInt(6);
 		queue.enqueueInt(7);
-		assertEquals(4, queue.length());
+		assertEquals(4, queue.size());
 
 		queue.dequeueInt();
 
@@ -122,6 +122,6 @@ public class MemIntQueueTest extends TestCase {
 		for(int i = 5; i < 10; i++) {
 			assertEquals(i, queue.dequeueInt());
 		}
-		assertEquals(0, queue.length());
+		assertEquals(0, queue.size());
 	}
 }

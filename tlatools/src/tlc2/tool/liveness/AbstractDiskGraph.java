@@ -333,6 +333,17 @@ public abstract class AbstractDiskGraph {
 	 */
 	public abstract long size();
 	
+	/**
+	 * @return The size of both disk files (ptrs and nodes) measured in bytes.
+	 *         Can be incorrect during short periods when the graph is being
+	 *         recreated ({@link #makeNodePtrTbl()}) or nodes are read from
+	 *         disk ({@link #getNodeFromDisk(long, int, long)}). It is up to
+	 *         the caller to take this into account.
+	 * @throws IOException
+	 */
+	public long getSizeOnDisk() throws IOException {
+		return this.nodePtrRAF.length() + this.nodeRAF.length();
+	}
 	
 	public long getSizeAtLastCheck() {
 		return sizeAtCheck;

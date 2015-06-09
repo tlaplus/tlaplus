@@ -5,21 +5,15 @@
 
 package tlc2.util;
 
-public final class MemIntStack extends MemBasedSet {
+public final class MemIntStack extends MemBasedSet implements IntStack {
 	private static final int MIN_CAPACITY = 1024;
 
 	public MemIntStack(String diskdir, String name) {
-		// TODO Implement flushing MemIntStack to disk when it becomes too
-		// large. This might not be necessary though, when concurrent SCC
-		// search is implemented first. Its implementation will either replace
-		// MemIntStack completely with something different or make sure that
-		// each thread uses its own MemIntStack thus splitting the space 
-		// requirement among the threads (avoid NegativeArraySizeException).
 		super(MIN_CAPACITY);
 	}
 
-	/**
-	 * Push an integer onto the stack.
+	/* (non-Javadoc)
+	 * @see tlc2.util.IntStack#pushInt(int)
 	 */
 	public final synchronized void pushInt(int x) {
 		if (this.size == this.elems.length) {
@@ -31,16 +25,16 @@ public final class MemIntStack extends MemBasedSet {
 		this.size++;
 	}
 
-	/**
-	 * Push a long integer onto the stack.
+	/* (non-Javadoc)
+	 * @see tlc2.util.IntStack#pushLong(long)
 	 */
 	public final synchronized void pushLong(long x) {
 		this.pushInt((int) (x & 0xFFFFFFFFL));
 		this.pushInt((int) (x >>> 32));
 	}
 
-	/**
-	 * Pop the integer on top of the stack.
+	/* (non-Javadoc)
+	 * @see tlc2.util.IntStack#popInt()
 	 */
 	public final synchronized int popInt() {
 		return this.elems[--this.size];
@@ -54,8 +48,8 @@ public final class MemIntStack extends MemBasedSet {
 		return this.elems[pos];
 	}
 
-	/**
-	 * Pop the long integer on top of the stack.
+	/* (non-Javadoc)
+	 * @see tlc2.util.IntStack#popLong()
 	 */
 	public final synchronized long popLong() {
 		long high = this.popInt();
@@ -75,8 +69,8 @@ public final class MemIntStack extends MemBasedSet {
 		return (high << 32) | (low & 0xFFFFFFFFL);
 	}
 
-	/**
-	 * Removes all elements from the stack
+	/* (non-Javadoc)
+	 * @see tlc2.util.IntStack#reset()
 	 */
 	public final void reset() {
 		this.size = 0;
