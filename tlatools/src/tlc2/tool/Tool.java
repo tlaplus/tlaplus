@@ -306,9 +306,14 @@ public class Tool
    * probably make tools like TLC useless.
    */
   public final StateVec getInitStates() {
+	  final StateVec initStates = new StateVec(0);
+	  getInitStates(initStates);
+	  return initStates;
+  }
+  
+  public final void getInitStates(IStateFunctor functor) {
     Vect init = this.getInitStateSpec();
     ActionItemList acts = ActionItemList.Empty;
-    StateVec initStates = new StateVec(0);
     for (int i = 1; i < init.size(); i++) {
       Action elem = (Action)init.elementAt(i);
       acts = acts.cons(elem.pred, elem.con, -1);
@@ -316,9 +321,8 @@ public class Tool
     if (init.size() != 0) {
       Action elem = (Action)init.elementAt(0);
       TLCState ps = TLCState.Empty.createEmpty();
-      this.getInitStates(elem.pred, acts, elem.con, ps, initStates);
+      this.getInitStates(elem.pred, acts, elem.con, ps, functor);
     }
-    return initStates;
   }
 
   /* Create the state specified by pred.  */
@@ -338,7 +342,7 @@ public class Tool
   }
 
   private final void getInitStates(SemanticNode init, ActionItemList acts,
-                                   Context c, TLCState ps, StateVec states) {
+                                   Context c, TLCState ps, IStateFunctor states) {
     switch (init.getKind()) {
     case OpApplKind:
       {
@@ -396,7 +400,7 @@ public class Tool
     }
   }
 
-  private final void getInitStates(ActionItemList acts, TLCState ps, StateVec states) {
+  private final void getInitStates(ActionItemList acts, TLCState ps, IStateFunctor states) {
     if (acts.isEmpty()) {
       states.addElement(ps.copy());
     }
@@ -408,7 +412,7 @@ public class Tool
   }
 
   private final void getInitStatesAppl(OpApplNode init, ActionItemList acts,
-                                       Context c, TLCState ps, StateVec states) {
+                                       Context c, TLCState ps, IStateFunctor states) {
     ExprOrOpArgNode[] args = init.getArgs();
     int alen = args.length;
     SymbolNode opNode = init.getOperator();

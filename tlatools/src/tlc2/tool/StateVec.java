@@ -18,7 +18,7 @@ import util.UniqueString;
  * updates are used for improved performance and reduced
  * allocation.
  */
-public final class StateVec {
+public final class StateVec implements IStateFunctor {
   private TLCState v[];
   private int size;
 
@@ -84,6 +84,9 @@ public final class StateVec {
     return this;
   }
 
+  /* (non-Javadoc)
+   * @see tlc2.tool.IStateFunction#addElement(tlc2.tool.TLCState)
+   */
   public final StateVec addElement(TLCState state) {
     if (this.size >= this.v.length) { grow(1); }
     this.v[this.size++] = state;

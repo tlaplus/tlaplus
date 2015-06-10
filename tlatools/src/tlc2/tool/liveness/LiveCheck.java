@@ -14,6 +14,7 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
+import tlc2.tool.IStateFunctor;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
@@ -712,11 +713,15 @@ public class LiveCheck implements ILiveCheck {
 			//recover();
 			
 			// After recovery, one has to redo the init states
-			final StateVec initStates = tool.getInitStates();
-			for (int i = 0; i < initStates.size(); i++) {
-				TLCState state = initStates.elementAt(i);
-				liveCheck.addInitState(state, state.fingerPrint());
-			}
+			tool.getInitStates(new IStateFunctor() {
+				/* (non-Javadoc)
+				 * @see tlc2.tool.IStateFunctor#addElement(tlc2.tool.TLCState)
+				 */
+				public Object addElement(TLCState state) {
+					liveCheck.addInitState(state, state.fingerPrint());
+					return true;
+				}
+			});
 			
 			return liveCheck; 
 		}
