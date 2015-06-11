@@ -564,7 +564,8 @@ public class ModelChecker extends AbstractChecker
         } catch (Throwable e)
         {
 			// Assert.printStack(e);
-			boolean keep = ((e instanceof StackOverflowError) || (e instanceof OutOfMemoryError));
+			boolean keep = ((e instanceof StackOverflowError) || (e instanceof OutOfMemoryError)
+					|| (e instanceof AssertionError));
             synchronized (this)
             {
                 if (this.setErrState(curState, succState, !keep))
@@ -575,6 +576,9 @@ public class ModelChecker extends AbstractChecker
                     } else if (e instanceof OutOfMemoryError)
                     {
 						MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
+                    } else if (e instanceof AssertionError)
+                    {
+						MP.printError(EC.TLC_BUG, e);
                     } else if (e.getMessage() != null)
                     {
                         MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
