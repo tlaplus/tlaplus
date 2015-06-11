@@ -198,7 +198,7 @@
 					<pathelement location="lib/cglib-nodep-3.1.jar" />
 					<pathelement location="lib/objenesis-2.1.jar" />
 					<pathelement location="lib/easymock-3.3.1.jar" />
-					<pathelement path="${ws.class.dir}" />
+					<pathelement path="${class.dir}" />
 					<pathelement path="${test.class.dir}" />
 				</classpath>
 				<formatter type="xml" />
