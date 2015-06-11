@@ -296,6 +296,8 @@
 				<pathelement location="lib/junit-4.8.2.jar" />
 				<pathelement location="${dist.file}" />
 				<pathelement path="${test.class.dir}" />
+				<!-- Need class.dir on path to find AspectJ related classes which don't get packaged into dist -->
+				<pathelement path="${class.dir}" />
 			</classpath>
 
 			<formatter type="xml" />
