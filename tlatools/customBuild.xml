@@ -101,7 +101,7 @@
 			====================================================================
 		</echo>
 		<!-- compile aspectj related class files -->
-		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true">
+		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true" source="1.5" target="1.5">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/aspectjrt-1.8.5.jar" />
