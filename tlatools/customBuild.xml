@@ -43,6 +43,7 @@
 	<target name="default" depends="info" description="Default">
 		<antcall target="compile" inheritall="true" inheritrefs="true" />
 		<antcall target="compile-aj" inheritall="true" inheritrefs="true" />
+		<antcall target="compile-test" inheritall="true" inheritrefs="true" />
 		<antcall target="test" inheritall="true" inheritrefs="true" />
 		<antcall target="dist" inheritall="true" inheritrefs="true" />
 		<antcall target="test-dist" inheritall="true" inheritrefs="true" />
@@ -163,8 +164,9 @@
 			</manifest>
 		</jar>
 	</target>
-
-	<target name="test" description="Executes accompining unit tests" unless="test.skip">
+	
+	<!-- Compiles the TLA+ tools *test* code -->
+	<target name="compile-test" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
 		<javac includeantruntime="false" srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false">
@@ -182,6 +184,9 @@
 		<copy todir="${ws.class.dir}">
 			<fileset dir="${class.dir}" />
 		</copy>
+	</target>
+
+	<target name="test" description="Executes accompining unit tests" unless="test.skip">
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
 		<jacoco:coverage destfile="target/code-coverage.exec">
@@ -226,23 +231,6 @@
 	</target>
 
 	<target name="test-dist" description="Executes accompining unit tests on jar file" unless="test.skip">
-		<!-- compile unit tests -->
-		<mkdir dir="${test.class.dir}" />
-		<javac includeantruntime="false" srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false">
-			<classpath refid="project.classpath" />
-			<classpath>
-				<pathelement location="lib/junit-4.8.2.jar" />
-				<pathelement location="lib/easymock-3.3.1.jar" />
-				<pathelement path="${class.dir}" />
-			</classpath>
-		</javac>
-		<!-- copy class.dir to path with whitespace -->
-		<!-- this is required by some tests to make sense -->
-		<!-- even throw a "+" and whitespace into the mix -->
-		<property name="ws.class.dir" value="TLA+ Tools" />
-		<copy todir="${ws.class.dir}">
-			<fileset dir="${class.dir}" />
-		</copy>
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJar" />
 		<junit printsummary="yes" haltonfailure="no" haltonerror="no" forkmode="perTest" fork="yes">
