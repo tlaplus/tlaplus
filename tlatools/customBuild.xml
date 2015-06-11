@@ -288,6 +288,8 @@
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJarLong" />
 		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="4096m" forkmode="perTest" fork="yes">
+			<!-- enable all assertions -->
+			<jvmarg value="-ea"/>
 			<jvmarg value="-javaagent:lib/aspectjweaver-1.8.5.jar" />
 			<sysproperty key="org.aspectj.weaver.showWeaveInfo" value="false"/>
 			<sysproperty key="aj.weaving.verbose" value="false"/>
