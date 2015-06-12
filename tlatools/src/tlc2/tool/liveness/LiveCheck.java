@@ -131,7 +131,7 @@ public class LiveCheck implements ILiveCheck {
 	 *            liveness check. If this is the final/last check, it's pointless
 	 *            to re-create the nodePtrTable.
 	 */
-	private boolean check0(final boolean finalCheck) throws InterruptedException, IOException {
+	protected boolean check0(final boolean finalCheck) throws InterruptedException, IOException {
 		// Sum up the number of nodes in all disk graphs to indicate the amount
 		// of work to be done by liveness checking.
 		long sum = 0L;

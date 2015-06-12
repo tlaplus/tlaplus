@@ -8,6 +8,7 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.liveness.AddAndCheckLiveCheck;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.Liveness;
@@ -29,6 +30,15 @@ import util.FilenameToStream;
  */
 public abstract class AbstractChecker implements Cancelable
 {
+	/**
+	 * True when unit tests explicitly request to use
+	 * {@link AddAndCheckLiveCheck} to run liveness checking after each
+	 * insertion into the behavior graph. This should only be true if you
+	 * exactly know what you are doing. If you don't and this is true, make sure
+	 * it's false.
+	 */
+	public static boolean LIVENESS_TESTING_IMPLEMENTATION = Boolean.getBoolean(ILiveCheck.class.getName() + ".testing");
+	
 	protected static final boolean LIVENESS_STATS = Boolean.getBoolean(Liveness.class.getPackage().getName() + ".statistics");
 	
     // SZ Mar 9, 2009: static modifier removed
@@ -108,7 +118,11 @@ public abstract class AbstractChecker implements Cancelable
 				stats = new BucketStatistics("Histogram vertex out-degree", LiveCheck.class.getPackage().getName(),
 						"DiskGraphsOutDegree");
 			}
-			this.liveCheck = new LiveCheck(this.tool, this.actions, this.metadir, stats);
+			if (LIVENESS_TESTING_IMPLEMENTATION) {
+				this.liveCheck = new AddAndCheckLiveCheck(this.tool, this.actions, this.metadir, stats);
+			} else {
+				this.liveCheck = new LiveCheck(this.tool, this.actions, this.metadir, stats);
+			}
             report("liveness checking initialized");
         } else {
         	this.liveCheck = new NoOpLiveCheck(this.tool, this.metadir);
