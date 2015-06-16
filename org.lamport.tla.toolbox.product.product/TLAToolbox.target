@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="62">
+<?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="63">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.3.e42x-RELEASE-20130625-1400"/>
@@ -27,7 +27,7 @@
 <unit id="org.eclipse.swtbot.eclipse.test.junit.feature.group" version="2.2.1.201402241301"/>
 <unit id="org.eclipse.swtbot.feature.group" version="2.2.1.201402241301"/>
 <unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.2.1.201402241301"/>
-<repository location="http://download.eclipse.org/technology/swtbot/releases/latest/"/>
+<repository location="http://download.eclipse.org/technology/swtbot/releases/2.2.1/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.jclouds.feature.feature.group" version="0.0.0"/>
