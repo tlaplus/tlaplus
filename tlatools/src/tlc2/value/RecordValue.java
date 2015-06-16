@@ -5,6 +5,8 @@
 
 package tlc2.value;
 
+import java.util.Arrays;
+
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.util.FP64;
@@ -262,7 +264,14 @@ public class RecordValue extends Value implements Applicable {
     for (int i = 0; i < this.values.length; i++) {
       vals[i] = this.values[i].deepCopy();
     }
-    return new RecordValue(this.names, vals, this.isNorm);
+    // Following code modified 16 June 2015 by adding Arrays.copyOf to fix
+    // the following bug that seems to have manifested itself only in TLC.Print and
+    // TLC.PrintT: Calling normalize on the original modifies the
+    // order of the names array in the deepCopy (and vice-versa) without doing the
+    // corresponding modification on the values array. Thus, the names are
+    // copied too to prevent any modification/normalization done to the
+    // original to appear in the deepCopy.
+	return new RecordValue(Arrays.copyOf(this.names, this.names.length), vals, this.isNorm);
   }
 
   public final boolean assignable(Value val) {
