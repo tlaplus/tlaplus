@@ -936,6 +936,22 @@ public class TLCErrorView extends ViewPart
         }
     	
 		public int compare(final Viewer viewer, final Object e1, final Object e2) {
+			// TLCVariables are the expressions entered into the error trace.
+			// They should always be on top.
+			if (e1 instanceof TLCVariable && e2 instanceof TLCVariable) {
+				final TLCVariable v1 = (TLCVariable) e1;
+				final TLCVariable v2 = (TLCVariable) e2;
+				if (v1.isTraceExplorerVar() && v2.isTraceExplorerVar()) {
+					// both are variables. Compare the vars alphabetically.
+					return v1.getName().compareTo(v2.getName());
+				}
+			}
+			if (e1 instanceof TLCVariable && ((TLCVariable) e1).isTraceExplorerVar()) {
+				return -1;
+			}
+			if (e2 instanceof TLCVariable && ((TLCVariable) e2).isTraceExplorerVar()) {
+				return 1;
+			}
 			// The error trace has to be sorted on the number of the state. An
 			// unordered state sequence is rather incomprehensible. The default
 			// is ordering the state trace first to last for educational reasons.
