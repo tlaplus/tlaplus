@@ -727,7 +727,11 @@ public class FindAlignments
               int alignLine = curLabelLine ;
               int alignItem = 1 ;
               boolean notDone = true ;
-              while (notDone) {
+              // Test of curLine < spec.length added 4 Aug 2015 to fix
+              // bug caused by running off the end of the spec when called by
+              // TLATeX to format a snippet of PlusCal code.  See comment from
+              // this date in TokenizeSpec.
+              while (notDone && (curLine < spec.length)) {
                   int curItem = 0 ;
                      // If spec[alignLine][alignItem] is to be aligned with a token
                      // on this line, then the token is spec[curLine][nextItem] 
