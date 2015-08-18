@@ -18,7 +18,7 @@ public class IndexServlet extends URLHttpServlet {
 	@Override
 	protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
 		super.doGet(req, resp);
-		
+
 		resp.setContentType("text/html");
 		
 		resp.getWriter().println("<!DOCTYPE html>");
@@ -26,12 +26,12 @@ public class IndexServlet extends URLHttpServlet {
 		resp.getWriter().println(
 				"<html><head>\n" + 
 						"<title>Distributed TLC</title>\n" + 
-				"</head>");
+				"</head><body>");
 		
 		// boostrap JRE on Windows systems
 		resp.getWriter().println(
 				"<object codebase=\"http://java.sun.com/update/1.7.0/jinstall-7u80-windows-i586.cab#Version=7,0,0,0\" classid=\"clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284\" height='0' width='0'>" +
-						"<param name=\"app\" value=\"" + url + "\"/>" +
+						"<param name=\"app\" value=\"" + addr + "\"/>" +
 						"<param name=\"back\" value=\"false\"/>" +
 				"</object>");
 		
@@ -111,7 +111,7 @@ public class IndexServlet extends URLHttpServlet {
 				"<li>\n" + 
 					"<p>Run from slave command line:</p>\n" + 
 					"<p><pre>" + 
-						"javaws " + url + jnlpName +
+						"javaws " + addr + " " + jnlpName +
 					"</pre></p>\n" + 
 				"</li>");
 		
