@@ -292,6 +292,12 @@ public class ParseAlgorithm
       * Performs the initialization method of the AST to create default  *
       * objects for each subclass.                                       *
       *******************************************************************/
+    
+    /*
+     * Following added by LL on 17 Aug 2015 to fix bug apparently caused by
+     * incomplete initialization 
+     */
+    LATsize = 0 ;
    }
 
    

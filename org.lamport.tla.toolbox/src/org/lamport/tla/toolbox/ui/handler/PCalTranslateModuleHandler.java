@@ -57,6 +57,27 @@ public class PCalTranslateModuleHandler extends SaveDirtyEditorAbstractHandler i
                 // a bogus "missing `begin'" error when run after fixing
                 // a real error.  Or again, it might not.  
                 // - Note added by LL on 2 Apr 2013
+                // Note added by LL on 17 Aug 2015: 
+                //  Changing the first argument apparently does not fix that bug.
+                //  However, running the translator on the following algorithm
+                //  reliably produces the bug:
+                //
+                //   (* --algorithm alok_test {
+                //      {
+                //        print "hello" 
+                //        print "world"
+                //    }
+                //   } *)
+                //
+                //  Running the translator repeatedly on it switches between the
+                // "missing ;" and the "missing `begin'" error.  After correcting
+                //  the "missing ;" error, it reliably produces the "missing begin"
+                //  error.  The translator behaves correctly when run from the
+                // command line, so this is only a problem when the translator is
+                // run from the Toolbox.
+                //
+                // This bug was fixed on 17 Aug 2015 by a change to ParseAlgorithm.java.
+                //  
                 progressDialog.run(true, false, translatorOperation);
                 fileToBuild.refreshLocal(IResource.DEPTH_ONE, monitor);
 
