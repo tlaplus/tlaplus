@@ -209,6 +209,8 @@ TO GENERATE THE RELEASE:
   Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
+Version 1.5.X - ???
+  - Fixed minor PlusCal translator bug.
 Version 1.5.1 - 1 June 2015
   - Fix intermittent "Fingerprint is already on disk" TLC crash. 
   - Fix conditions in state queue that can deadlock TLC.
