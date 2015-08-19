@@ -373,7 +373,7 @@ public class ModelChecker extends AbstractChecker
 				this.incNumOfGenStates(sz);
 				deadLocked = deadLocked && (sz == 0);
 
-                for (int j = 0; j < sz; j++)
+                SUCCESSORS: for (int j = 0; j < sz; j++)
                 {
 					succState = nextStates.elementAt(j);
 					// Check if succState is a legal state.
@@ -397,7 +397,7 @@ public class ModelChecker extends AbstractChecker
 						((TLCStateMutSource) succState).addCounts(counts);
 					}
 
-					boolean inModel = (this.tool.isInModel(succState) && this.tool.isInActions(curState, succState));
+					final boolean inModel = (this.tool.isInModel(succState) && this.tool.isInActions(curState, succState));
 					boolean seen = false;
                     if (inModel)
                     {
@@ -410,10 +410,16 @@ public class ModelChecker extends AbstractChecker
                             {
 								this.allStateWriter.writeState(succState);
 							}
-                            // Enqueue succState only if it satisfies the model constraints:
+							// Write succState to trace only if it satisfies the
+							// model constraints. Do not enqueue it yet, but wait
+                            // for implied actions and invariants to be checked.
+                            // Those checks - if violated - will cause model checking
+                            // to terminate. Thus we cannot let concurrent workers start
+                            // exploring this new state. Conversely, the state has to
+                            // be in the trace in case either invariant or implied action
+                            // checks want to print the trace. 
 							long loc = this.trace.writeState(curState, fp);
 							succState.uid = loc;
-							this.theStateQueue.sEnqueue(succState);
 						}
 						// For liveness checking:
                         if (this.checkLiveness)
@@ -428,7 +434,7 @@ public class ModelChecker extends AbstractChecker
                         try
                         {
 							int len = this.invariants.length;
-                            for (k = 0; k < len; k++)
+                            INVARIANTS: for (k = 0; k < len; k++)
                             {
 								// SZ Feb 23, 2009: cancel the calculation
                                 if (this.cancellationFlag)
@@ -446,7 +452,7 @@ public class ModelChecker extends AbstractChecker
 											MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
 													this.tool.getInvNames()[k]);
 											this.trace.printTrace(curState, succState);
-											break;
+											break INVARIANTS;
                                         } else
                                         {
                                             if (this.setErrState(curState, succState, false))
@@ -462,8 +468,20 @@ public class ModelChecker extends AbstractChecker
 									}
 								}
 							}
-							if (k < len)
-								continue;
+							if (k < len) {
+								if (inModel && !seen) {
+									// Even though the state violates an
+									// invariant, add it to the queue. After
+									// all, the user selected to continue model
+									// checking even if an invariant is
+									// violated.
+									this.theStateQueue.sEnqueue(succState);
+								}
+								// Continue with next successor iff an
+								// invariant is violated and
+								// TLCGlobals.continuation is true.
+								continue SUCCESSORS;
+							}
                         } catch (Exception e)
                         {
                             if (this.setErrState(curState, succState, true))
@@ -483,7 +501,7 @@ public class ModelChecker extends AbstractChecker
                     try
                     {
 						int len = this.impliedActions.length;
-                        for (k = 0; k < len; k++)
+                        IMPLIED: for (k = 0; k < len; k++)
                         {
 							// SZ Feb 23, 2009: cancel the calculation
                             if (this.cancellationFlag)
@@ -501,7 +519,7 @@ public class ModelChecker extends AbstractChecker
                                         MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool
                                                 .getImpliedActNames()[k]);
 										this.trace.printTrace(curState, succState);
-										break;
+										break IMPLIED;
                                     } else
                                     {
                                         if (this.setErrState(curState, succState, false))
@@ -517,8 +535,20 @@ public class ModelChecker extends AbstractChecker
 								}
 							}
 						}
-						if (k < len)
-							continue;
+						if (k < len) {
+							if (inModel && !seen) {
+								// Even though the state violates an
+								// invariant, add it to the queue. After
+								// all, the user selected to continue model
+								// checking even if an implied action is
+								// violated.
+								this.theStateQueue.sEnqueue(succState);
+							}
+							// Continue with next successor iff an
+							// implied action is violated and
+							// TLCGlobals.continuation is true.
+							continue SUCCESSORS;
+						}
                     } catch (Exception e)
                     {
                         if (this.setErrState(curState, succState, true))
@@ -532,6 +562,12 @@ public class ModelChecker extends AbstractChecker
 						}
 						throw e;
 					}
+                    if (inModel && !seen) {
+						// The state is inModel, unseen and neither invariants
+						// nor implied actions are violated. It is thus eligible
+						// for further processing by other workers.
+						this.theStateQueue.sEnqueue(succState);
+                    }
 				}
 				// Must set state to null!!!
 				succState = null;
