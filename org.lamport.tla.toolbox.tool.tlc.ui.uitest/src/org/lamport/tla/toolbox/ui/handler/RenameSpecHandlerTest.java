@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.ui.handler;
 
 import java.io.File;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -118,7 +119,8 @@ public class RenameSpecHandlerTest extends AbstractTest {
 	private void checkForModelExistenceUI(final SWTBotTreeItem treeItem) {
 		try {
 			treeItem.expand();
-			treeItem.select(TEST_MODEL);
+			SWTBotTreeItem models = treeItem.getNode("models");
+			models.getNode(TEST_MODEL).select();
 		} catch(AssertionFailedException e) {
 			Assert.fail(e.getMessage());
 		}
