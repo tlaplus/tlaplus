@@ -20,7 +20,10 @@ import org.junit.Before;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
 
 public abstract class AbstractTest {
-	
+
+	protected static final String SPEC_EXPLORER = "Spec Explorer";
+	protected static final String TLA_SUFFIX = ".tla";
+
 	/**
 	 * workbench handle used by tests to access UI elements 
 	 */

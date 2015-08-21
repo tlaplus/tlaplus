@@ -1,9 +1,6 @@
 package org.lamport.tla.toolbox.ui.handler;
 
 import java.io.File;
-import java.util.List;
-
-import junit.framework.Assert;
 
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -15,6 +12,7 @@ import org.eclipse.swtbot.swt.finder.matchers.WithText;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -25,15 +23,14 @@ import org.lamport.tla.toolbox.tool.tlc.ui.test.AbstractTest;
 import org.lamport.tla.toolbox.tool.tlc.ui.test.ModelEditorOpenCondition;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
+
 /**
  * This test is placed in bundle ...tlc.ui.uitest because it renaming a spec
  * internally requires renaming all its models too.
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class RenameSpecHandlerTest extends AbstractTest {
-
-	private static final String SPEC_EXPLORER = "Spec Explorer";
-	private static final String TLA_SUFFIX = ".tla";
+	
 	private static final String TEST_SPEC = "ToBeRenamedSpec";
 	private static final String TEST_MODEL = "Model_1";
 

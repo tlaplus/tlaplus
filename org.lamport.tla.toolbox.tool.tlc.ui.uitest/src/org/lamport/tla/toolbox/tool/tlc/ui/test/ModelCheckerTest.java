@@ -2,11 +2,13 @@ package org.lamport.tla.toolbox.tool.tlc.ui.test;
 
 import java.io.File;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.eclipse.swtbot.swt.finder.keyboard.Keystrokes;
 import org.eclipse.swtbot.swt.finder.matchers.WithText;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
@@ -15,6 +17,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
@@ -56,12 +59,26 @@ public class ModelCheckerTest extends AbstractTest {
 		final String modelName = UIHelper.getActiveEditor().getTitle();
 		final IJobChangeListener listener = new DummyJobChangeListener(modelName);
 		Job.getJobManager().addJobChangeListener(listener);
-
-		// register job change listener to find out later if the job has been
-		// run start model checking by using the new F11 shortcut :)
-		bot.activeShell().pressShortcut(Keystrokes.F11);
+		
+		// start model checking by clicking the menu. This is more robust
+		// compared to the f11 keystroke which can get lost when fired during
+		// initialization of the model editor.
+		bot.menu("TLC Model Checker").menu("Run model").click();
 
 		// make unit test wait for model checker job to finish
 		bot.waitUntil((ICondition) listener, SWTBotPreferences.TIMEOUT * 3);
+		
+		// Delete the newly created model again. It does not use the UI because
+		// SWTBot cannot handle the modal confirmation dialog do delete the
+		// model.
+		// Deleting the model is necessary because repeated test execution would
+		// leave huge numbers of model leftovers contributing to slowed down test
+		// execution (see SizeControlContribution for reason why). 
+		try {
+			final ILaunchConfiguration ilc = ModelHelper.getModelByName(modelName);
+			ModelHelper.deleteModel(ilc, new NullProgressMonitor());
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 	}
 }
