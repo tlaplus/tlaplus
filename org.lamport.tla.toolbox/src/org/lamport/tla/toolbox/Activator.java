@@ -100,6 +100,12 @@ public class Activator extends AbstractTLCActivator
         };
         initializerJob.setRule(workspace.getRuleFactory().buildRule());
         initializerJob.schedule();
+        
+		// Running plug-in tests with Eclipse 4.5, the foundation suspends the
+		// JobManager at startup causing our jobs to never be executed. In turn,
+		// this causes the Toolbox to hang at startup. Thus, resume the JobManager
+        // which is a no-op outside the test mode.
+        Job.getJobManager().resume();
 
         // activate handler to show the radio buttons in perspective selection
         // UIJob job = new UIJob("InitCommandsWorkaround") {

@@ -211,6 +211,9 @@ TO GENERATE THE RELEASE:
 -------------------------------------------------------------
 Version 1.5.X - ???
   - Fixed minor PlusCal translator bug.
+  - Application Bundle packaging on Mac (Existing installations
+    have to be manually updated).
+  - Ended support for 32 bit Toolbox releases on Mac OSX.
 Version 1.5.1 - 1 June 2015
   - Fix intermittent "Fingerprint is already on disk" TLC crash. 
   - Fix conditions in state queue that can deadlock TLC.
