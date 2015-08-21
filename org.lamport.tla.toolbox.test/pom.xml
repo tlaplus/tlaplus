@@ -86,10 +86,35 @@
 							<artifactId>org.eclipse.equinox.event</artifactId>
 							<version>0.0.0</version>
 						</dependency>
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.apache.felix.gogo.command</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.apache.felix.gogo.runtime</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.apache.felix.gogo.shell</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.eclipse.equinox.console</artifactId>
+							<version>0.0.0</version>
+						</dependency>
 					</dependencies>
 					<bundleStartLevel>
 						<bundle>
 							<id>org.eclipse.equinox.event</id>
+							<level>4</level>
+							<autoStart>true</autoStart>
+						</bundle>
+						<bundle>
+							<id>org.eclipse.equinox.console</id>
 							<level>4</level>
 							<autoStart>true</autoStart>
 						</bundle>
