@@ -76,7 +76,7 @@ public class DeleteModelHandler extends AbstractHandler implements IHandler
 				}
 			}
 			
-			// 3.) at this point, we are save to delete all models (user has
+			// 3.) at this point, we are safe to delete all models (user has
 			// confirmed, no model is used in model checking
 			// But there might be open editors corresponding to the models which have to be closed first
 			final Iterator<ILaunchConfiguration> itr2 = iss.iterator();
