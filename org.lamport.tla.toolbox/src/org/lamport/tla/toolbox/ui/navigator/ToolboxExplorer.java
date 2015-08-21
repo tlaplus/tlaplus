@@ -41,6 +41,7 @@ import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonViewer;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.OpenModuleHandler;
 import org.lamport.tla.toolbox.ui.provider.IGroup;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -184,8 +185,12 @@ public class ToolboxExplorer extends CommonNavigator
 				public void run() {
 					ToolboxExplorer.refresh();
 					// Expand the current spec and all its children
-					getViewer().expandToLevel(Activator.getSpecManager().getSpecLoaded(),
-							AbstractTreeViewer.ALL_LEVELS);
+					final CommonViewer viewer = getViewer();
+					if (viewer != null) { // viewer might already be disposed which happens when the Toolbox shuts down.
+						final Spec specLoaded = Activator.getSpecManager().getSpecLoaded();
+						viewer.expandToLevel(specLoaded,
+								AbstractTreeViewer.ALL_LEVELS);
+					}
 				}
 			});
 		}
