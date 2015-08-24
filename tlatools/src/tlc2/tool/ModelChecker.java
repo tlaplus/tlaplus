@@ -640,7 +640,6 @@ public class ModelChecker extends AbstractChecker
 			// Do not suspend the state queue if neither check-pointing nor
 			// liveness-checking is going to happen. Suspending is expensive.
 			// It stops all workers.
-			System.err.println("§§grlksejglkfdjglsk§");
 			return true;
 		}
    	
