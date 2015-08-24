@@ -23,6 +23,11 @@ public interface ILiveCheck {
 	void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs) throws IOException;
 	
 	/**
+	 * true iff a call to {@link ILiveCheck#check(boolean)} would indeed result in liveness checking.
+	 */
+	boolean doLiveCheck();
+	
+	/**
 	 * Check liveness properties for the current (potentially partial) state graph. Returns
 	 * true iff it finds no errors.
 	 * 

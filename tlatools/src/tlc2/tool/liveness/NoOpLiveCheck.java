@@ -60,6 +60,13 @@ public class NoOpLiveCheck implements ILiveCheck {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#doLiveCheck()
+	 */
+	public boolean doLiveCheck() {
+		return false;
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#check(boolean)
 	 */
 	public boolean check(boolean forceCheck) throws Exception {

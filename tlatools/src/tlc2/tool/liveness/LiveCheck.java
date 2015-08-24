@@ -89,6 +89,40 @@ public class LiveCheck implements ILiveCheck {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#doLiveCheck()
+	 */
+	public boolean doLiveCheck() {
+		for (int i = 0; i < checker.length; i++) {
+			// If one of the disk graph's size has increased by the given
+			// percentage, run liveness checking.
+			//
+			// TODO Alternatively:
+			//
+			// - LL suggest to dedicate a fixed fraction of model checking time
+			// to liveness checking.
+			//
+			// - The level could be taken into account. Unless the level
+			// (height) of the graph increases, no new cycle won't be found
+			// anyway (all other aspects of liveness checking are checked as
+			// part of regular safety checking).
+			//
+			// - The authors of the Divine model checker describe an algorithm
+			// in http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1240299
+			// that counts the "Back-level-edges" and runs liveness checking upon
+			// the counter reaching a certain (user defined?!) threshold.
+			//
+			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
+			final long sizeAtLastCheck = diskGraph.getSizeAtLastCheck();
+			final long sizeCurrently = diskGraph.size();
+			final double delta = (sizeCurrently - sizeAtLastCheck) / (sizeAtLastCheck * 1.d);
+			if (delta > TLCGlobals.livenessThreshold) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#check(boolean)
 	 */
 	public boolean check(boolean forceCheck) throws Exception {
@@ -96,14 +130,7 @@ public class LiveCheck implements ILiveCheck {
 			return check0(false);
 		}
 		for (int i = 0; i < checker.length; i++) {
-			// If anyone of the disk graphs has increased by the given
-			// percentage, run liveness checking. This is the best heuristic I
-			// can come up with quickly.
-			//
-			// TODO Alternatively the level could be taken
-			// into account. Unless the level (height) of the graph increases, 
-			// no new cycle won't be found anyway. All other aspects of liveness
-			// checking are checked as part of regular safety checking.
+			// see note in doLiveCheck() above!
 			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
 			final long sizeAtLastCheck = diskGraph.getSizeAtLastCheck();
 			final long sizeCurrently = diskGraph.size();
@@ -112,7 +139,6 @@ public class LiveCheck implements ILiveCheck {
 				return check0(false);
 			}
 		}
-		
 		return true;
 	}
 	

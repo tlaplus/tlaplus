@@ -436,6 +436,13 @@ public class LiveCheck1 implements ILiveCheck {
 			bgraphs[soln].allNodes.setDone(fp);
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ILiveCheck#doLiveCheck()
+	 */
+	public boolean doLiveCheck() {
+		return true;
+	}
 
 	/**
 	 * Checks if the partial behavior graph constructed up to now contains any
