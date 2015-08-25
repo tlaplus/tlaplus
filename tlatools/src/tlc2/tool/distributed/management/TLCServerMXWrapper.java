@@ -105,4 +105,19 @@ public class TLCServerMXWrapper extends TLCStandardMBean implements TLCStatistic
 	public long getAverageBlockCnt() {
 		return tlcServer.getAverageBlockCnt();
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getRuntimeRatio()
+	 */
+	public double getRuntimeRatio() {
+		// Distributed TLC does not support liveness checking
+		return 0d;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#liveCheck()
+	 */
+	public void liveCheck() {
+		// Distributed TLC does not support liveness checking
+	}
 }

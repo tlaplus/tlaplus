@@ -57,4 +57,14 @@ public interface TLCStatisticsMXBean {
 	 * Creates a checkpoint next time possible
 	 */
 	void checkpoint();
+	
+	/**
+	 * @return The ratio between time dedicated to safety and liveness checking.
+	 */
+	double getRuntimeRatio();
+	
+	/**
+	 * Force new progress interval to check liveness
+	 */
+	void liveCheck();
 }

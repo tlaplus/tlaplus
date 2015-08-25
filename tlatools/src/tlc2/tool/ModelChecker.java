@@ -52,6 +52,18 @@ public class ModelChecker extends AbstractChecker
     // used to calculate the spm metric
     public long distinctStatesPerMinute, statesPerMinute = 0L;
     protected long oldNumOfGenStates, oldFPSetSize = 0L;
+    /**
+     * Timestamp of when model checking started.
+     */
+    private final long startTime = System.currentTimeMillis();
+    /**
+	 * The ratio between time spend on safety checking and liveness checking.
+	 */
+    private double runtimeRatio = 0d;
+	/**
+	 * Flag set via JMX if liveness checking should be triggered.
+	 */
+	private boolean forceLiveCheck = false;
 
     /* Constructors  */
     /**
@@ -99,7 +111,6 @@ public class ModelChecker extends AbstractChecker
         report("entering modelCheck()");
         
         // needed to calculate state/minute in final progress report
-        final long startTime = System.currentTimeMillis();
 
         boolean recovered = this.recover();
         if (!recovered)
@@ -636,7 +647,9 @@ public class ModelChecker extends AbstractChecker
      */
     public final boolean doPeriodicWork() throws Exception
     {
-		if ((!this.checkLiveness || !liveCheck.doLiveCheck()) && !TLCGlobals.doCheckPoint()) {
+		if ((!this.checkLiveness || runtimeRatio > TLCGlobals.livenessRatio || !liveCheck.doLiveCheck()) && !forceLiveCheck && !TLCGlobals.doCheckPoint()) {
+			updateRuntimeRatio(0L);
+			
 			// Do not suspend the state queue if neither check-pointing nor
 			// liveness-checking is going to happen. Suspending is expensive.
 			// It stops all workers.
@@ -646,10 +659,18 @@ public class ModelChecker extends AbstractChecker
         if (this.theStateQueue.suspendAll())
         {
             // Run liveness checking, if needed:
-            if (this.checkLiveness)
+			// The ratio set in TLCGlobals defines an upper bound for the
+			// runtime dedicated to liveness checking.
+            if (this.checkLiveness && (runtimeRatio < TLCGlobals.livenessRatio || forceLiveCheck))
             {
-                if (!liveCheck.check(false))
-                    return false;
+            	final long preLivenessChecking = System.currentTimeMillis();
+                if (!liveCheck.check(forceLiveCheck)) {
+                	return false;
+                }
+                forceLiveCheck = false;
+                updateRuntimeRatio(System.currentTimeMillis() - preLivenessChecking);
+            } else if (runtimeRatio > TLCGlobals.livenessRatio) {
+            	updateRuntimeRatio(0L);
             }
 
             if (TLCGlobals.doCheckPoint()) {
@@ -682,6 +703,28 @@ public class ModelChecker extends AbstractChecker
             }
         }
         return true;
+    }
+
+	public void forceLiveCheck() {
+		forceLiveCheck = true;
+	}
+    
+    private final void updateRuntimeRatio(long delta) {
+		// Absolute runtime including liveness checking. 
+		final long totalRuntime = System.currentTimeMillis() - startTime;
+		// absolute time spent on liveness checking. Substract one
+		// progressInterval to account for the fact that the ratio
+		// was calculated with totalRuntime from the previous
+		// progressReporting interval.
+		final double absLivenessRuntime = Math.max(((totalRuntime - TLCGlobals.progressInterval) * runtimeRatio), 0);
+
+		final double oldRatio = runtimeRatio;
+		runtimeRatio = (delta + absLivenessRuntime) / totalRuntime;
+		assert delta > 0 ? oldRatio < runtimeRatio : oldRatio > runtimeRatio;
+    }
+    
+    public double getRuntimeRatio() {
+    	return runtimeRatio;
     }
 
     public final boolean recover() throws IOException

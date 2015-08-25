@@ -35,6 +35,13 @@ public class TLCGlobals
 
     public static double livenessGraphSizeThreshold = 0.1d;
 
+	/**
+	 * Ratio of runtime dedicated to safety checking (80%) and liveness checking
+	 * (20%). Some aspects of liveness are also checked during state insertion
+	 * (see ILiveCheck#addNextState) and thus part of safety checking..
+	 */
+	public static double livenessRatio = 0.2d;
+
     public synchronized static void setNumWorkers(int n)
     {
         numWorkers = n;

@@ -107,9 +107,9 @@ public class LiveCheck implements ILiveCheck {
 			// part of regular safety checking).
 			//
 			// - The authors of the Divine model checker describe an algorithm
-			// in http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1240299
-			// that counts the "Back-level-edges" and runs liveness checking upon
-			// the counter reaching a certain (user defined?!) threshold.
+			// in http://dx.doi.org/10.1109/ASE.2003.1240299
+			// that counts the "Back-level Edges" and runs liveness checking upon
+			// a counter reaching a certain (user defined?!) threshold.
 			//
 			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
 			final long sizeAtLastCheck = diskGraph.getSizeAtLastCheck();

@@ -102,4 +102,18 @@ public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatis
 		//TODO adapt once Workers can support units of work greater than 1 
 		return 1;
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getRuntimeRatio()
+	 */
+	public double getRuntimeRatio() {
+		return modelChecker.getRuntimeRatio();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#liveCheck()
+	 */
+	public void liveCheck() {
+		modelChecker.forceLiveCheck();
+	}
 }
