@@ -446,25 +446,35 @@ public class LiveWorker extends IdThread {
 	}
 
 	private IntStack getStack(final String metaDir, final String name) throws IOException {
-		// It is unlikely that the stacks will fit into memory if the
-		// size of the behavior graph is larger relative to the available
-		// memory. Also take the total number of simultaneously running workers
-		// into account that have to share the available memory amongst each other.
-		final long freeMemoryInBytes = Runtime.getRuntime().freeMemory();
-		final long graphSizeInBytes = this.dg.getSizeOnDisk();
-		final double ratio = graphSizeInBytes / (freeMemoryInBytes / (numWorkers * 1d));
-		if (ratio > TLCGlobals.livenessGraphSizeThreshold) {
-			// Double SDIS's bufSize/pageSize by how much the graph size
-			// overshoots the free memory size, but limit page size to 1gb.
-			int moveBy = (int) ratio;
-			if (moveBy > 1) {
-				return new SynchronousDiskIntStack(metaDir, name,
-						SynchronousDiskIntStack.BufSize << Math.min(moveBy, 5));
-			} else {
-				return new SynchronousDiskIntStack(metaDir, name);
+		// Synchronize all LiveWorker instances to consistently read free
+		// memory. This method is only called during initialization of SCC
+		// search, thus synchronization should not cause significant thread
+		// contention.
+		synchronized (LiveWorker.class) {
+			// It is unlikely that the stacks will fit into memory if the
+			// size of the behavior graph is larger relative to the available
+			// memory. Also take the total number of simultaneously running
+			// workers into account that have to share the available memory
+			// among each other.
+			final double freeMemoryInBytes = (Runtime.getRuntime().freeMemory() / (numWorkers * 1d));
+			final long graphSizeInBytes = this.dg.getSizeOnDisk();
+			final double ratio = graphSizeInBytes / freeMemoryInBytes;
+			if (ratio > TLCGlobals.livenessGraphSizeThreshold) {
+				// Double SDIS's bufSize/pageSize by how much the graph size
+				// overshoots the free memory size, but limit page size to 1gb.
+				// Also, don't allocate more than what is available.
+				final int capacityInBytes = SynchronousDiskIntStack.BufSize << Math.min((int) ratio, 5);
+				if (capacityInBytes < freeMemoryInBytes) {
+					return new SynchronousDiskIntStack(metaDir, name, capacityInBytes);
+				} else {
+					// Use default SDIS which is 32mb of in-memory size
+					return new SynchronousDiskIntStack(metaDir, name);
+				}
 			}
+			// If the disk graph as a whole fits into memory, do not use a
+			// disk-backed SynchronousDiskIntStack.
+			return new MemIntStack(metaDir, name);
 		}
-		return new MemIntStack(metaDir, name);
 	}
 
 	/**
