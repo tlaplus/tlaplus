@@ -54,9 +54,14 @@ public class LiveWorker extends IdThread {
 	private final ILiveCheck liveCheck;
 	private final BlockingQueue<ILiveChecker> queue;
 	private final boolean isFinalCheck;
+	/**
+	 * Total number of LiveWorkers simultaneously checking liveness.
+	 */
+	private final int numWorkers;
 
-	public LiveWorker(int id, final ILiveCheck liveCheck, final BlockingQueue<ILiveChecker> queue, final boolean finalCheck) {
+	public LiveWorker(int id, int numWorkers, final ILiveCheck liveCheck, final BlockingQueue<ILiveChecker> queue, final boolean finalCheck) {
 		super(id);
+		this.numWorkers = numWorkers;
 		this.liveCheck = liveCheck;
 		this.queue = queue;
 		this.isFinalCheck = finalCheck;
@@ -439,10 +444,12 @@ public class LiveWorker extends IdThread {
 
 	private IntStack getStack(final String metaDir, final String name) throws IOException {
 		// It is unlikely that the stacks will fit into memory if the
-		// size of the behavior graph is larger relative to the available memory.
+		// size of the behavior graph is larger relative to the available
+		// memory. Also take the total number of simultaneously running workers
+		// into account that have to share the available memory amongst each other.
 		final long freeMemoryInBytes = Runtime.getRuntime().freeMemory();
 		final long graphSizeInBytes = this.dg.getSizeOnDisk();
-		final double ratio = graphSizeInBytes / (freeMemoryInBytes * 1d);
+		final double ratio = graphSizeInBytes / (freeMemoryInBytes / (numWorkers * 1d));
 		if (ratio > TLCGlobals.livenessGraphSizeThreshold) {
 			// Double SDIS's bufSize/pageSize by how much the graph size
 			// overshoots the free memory size, but limit page size to 1gb.

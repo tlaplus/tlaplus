@@ -188,12 +188,12 @@ public class LiveCheck implements ILiveCheck {
 		int wNum = Math.min(slen, TLCGlobals.getNumWorkers());
 
 		if (wNum == 1) {
-			LiveWorker worker = new LiveWorker(0, this, queue, finalCheck);
+			LiveWorker worker = new LiveWorker(0, 1, this, queue, finalCheck);
 			worker.run();
 		} else {
 			final LiveWorker[] workers = new LiveWorker[wNum];
 			for (int i = 0; i < wNum; i++) {
-				workers[i] = new LiveWorker(i, this, queue, finalCheck);
+				workers[i] = new LiveWorker(i, wNum, this, queue, finalCheck);
 				workers[i].start();
 			}
 			for (int i = 0; i < wNum; i++) {
