@@ -65,6 +65,9 @@ public class LiveWorker extends IdThread {
 		this.liveCheck = liveCheck;
 		this.queue = queue;
 		this.isFinalCheck = finalCheck;
+		
+		// Set the name to something more indicative than "Thread-4711".
+		this.setName("TLCLiveWorkerThread-" + String.format("%03d", id));
 	}
 
 	/**
