@@ -181,10 +181,25 @@ public class PcalFixIDs {
                 	// For some reason, this originally called PcalDebug.ReportBug.
                 	// Since it can occur just because there is no procedure by that
                 	// name in the code, it occurs on an error.  Fixed 31 May 2013 by LL.
+                	// This fix caused the for loop that follows to throw an ArrayIndexOutOfBounds
+                	// exception.  When run from the Toolbox, this caused the error message
+                	// to be lost and the Translate command to fail with no message.
+                	// It appears that it's not necessary to report the error here, because
+                	// it will be caught later.  Moreover, when caught later, the location
+                	// of the bad procedure name is indicated.  That location doesn't seem to
+                	// available here.  However, I'm hesitant to remove the error report in case
+                	// the error isn't caught later in all cases.  So I have added the return
+                	// to avoid the exception.  Hopefully, no further exceptions can be caused
+                	// by the error.  However, I don't know how to make sure that's the
+                	// case without figuring out how the code works.  
+                	// I also removed an unhelpful part of the message.  LL 30 Aug 2015
                     PcalDebug.reportError(
-                     "Could not find procedure name `" + pName +
-                     "' in method FixMultiprocess");
-                }
+                     "Could not find procedure name `" + pName +"'"
+                     // + "' in method FixMultiprocess"
+                     ) ;
+                    return ; // Added 30 Aug 2015 
+
+               }
                 // For each k such that path[pNum][k] is true
                 // (meaning that procedure number pNum calls
                 // procedure number k), add 
