@@ -720,7 +720,7 @@ public class ModelChecker extends AbstractChecker
 
 		final double oldRatio = runtimeRatio;
 		runtimeRatio = (delta + absLivenessRuntime) / totalRuntime;
-		assert delta > 0 ? oldRatio < runtimeRatio : oldRatio > runtimeRatio;
+		assert delta > 0 ? oldRatio < runtimeRatio : oldRatio >= runtimeRatio;
     }
     
     public double getRuntimeRatio() {
