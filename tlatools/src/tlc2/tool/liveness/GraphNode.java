@@ -12,6 +12,12 @@ import tlc2.util.BufferedRandomAccessFile;
 
 public class GraphNode extends AbstractGraphNode {
 	/**
+	 * The record size indicates the number of integers used by each transition
+	 * in the array of nnodes (2x32bit to keep the fp and 32bit to keep the tableau
+	 * idx).
+	 */
+	private static final int NNODE_RECORD_SIZE = 3;
+	/**
 	 * GraphNode is a node in the behaviour graph. We're going to only store
 	 * fingerprints of states, rather than actual states. So, as we encounter
 	 * each state, we need to calculate all the <>[] and []<>'s listed in the
@@ -77,24 +83,24 @@ public class GraphNode extends AbstractGraphNode {
 	}
 
 	public final long getStateFP(int i) {
-		long high = this.nnodes[3 * i];
-		long low = this.nnodes[3 * i + 1];
+		long high = this.nnodes[NNODE_RECORD_SIZE * i];
+		long low = this.nnodes[NNODE_RECORD_SIZE * i + 1];
 		return (high << 32) | (low & 0xFFFFFFFFL);
 	}
 
 	public final int getTidx(int i) {
-		return this.nnodes[3 * i + 2];
+		return this.nnodes[NNODE_RECORD_SIZE * i + 2];
 	}
 
 	public final int succSize() {
 		// offset being != -1 indicates that the nnodes array has been
 		// overallocated in preparation to batch-insert transitions but the
 		// transitions have not been added yet. In this case the nnodes.length /
-		// 3 is *not* the actual number of transitions, offset / 3 is!
+		// NNODE_RECORD_SIZE is *not* the actual number of transitions, offset / NNODE_RECORD_SIZE is!
 		if (this.offset != -1) {
-			return this.offset / 3;
+			return this.offset / NNODE_RECORD_SIZE;
 		}
-		return this.nnodes.length / 3;
+		return this.nnodes.length / NNODE_RECORD_SIZE;
 	}
 
 	/**
@@ -135,7 +141,7 @@ public class GraphNode extends AbstractGraphNode {
 	 */
 	private final void allocate(final int transitions) {
 		final int len = this.nnodes.length;
-		int[] newNodes = new int[len + (3 * transitions)];
+		int[] newNodes = new int[len + (NNODE_RECORD_SIZE * transitions)];
 		System.arraycopy(this.nnodes, 0, newNodes, 0, len);
 		this.nnodes = newNodes;
 
@@ -196,7 +202,7 @@ public class GraphNode extends AbstractGraphNode {
 		this.nnodes[this.offset] = (int) (fp >>> 32);
 		this.nnodes[this.offset + 1] = (int) (fp & 0xFFFFFFFFL);
 		this.nnodes[this.offset + 2] = tidx;
-		this.offset = this.offset + 3;
+		this.offset = this.offset + NNODE_RECORD_SIZE;
 		if (this.offset == this.nnodes.length) {
 			this.offset = -1;
 		}
@@ -215,7 +221,7 @@ public class GraphNode extends AbstractGraphNode {
 		int result = 0;
 		// It is a noop iff offset == -1
 		if (this.offset != -1) {
-			result = (this.nnodes.length - this.offset) / 3;
+			result = (this.nnodes.length - this.offset) / NNODE_RECORD_SIZE;
 			// shrink newNodes to correct size
 			int[] newNodes = new int[this.offset];
 			System.arraycopy(this.nnodes, 0, newNodes, 0, newNodes.length);
@@ -247,7 +253,7 @@ public class GraphNode extends AbstractGraphNode {
 		}
 		int high = (int) (fp >>> 32);
 		int low = (int) (fp & 0xFFFFFFFFL);
-		for (int i = 0; i < len; i += 3) {
+		for (int i = 0; i < len; i += NNODE_RECORD_SIZE) {
 			if (this.nnodes[i] == high && this.nnodes[i + 1] == low && this.nnodes[i + 2] == tidx) {
 				return true;
 			}
@@ -300,7 +306,7 @@ public class GraphNode extends AbstractGraphNode {
 			long fp = (high << 32) | (low & 0xFFFFFFFFL);
 			buf.append("<" + fp + "," + this.nnodes[2] + ">");
 		}
-		for (int i = 3; i < size; i += 3) {
+		for (int i = NNODE_RECORD_SIZE; i < size; i += NNODE_RECORD_SIZE) {
 			buf.append(", ");
 			long high = this.nnodes[i];
 			long low = this.nnodes[i + 1];
@@ -321,7 +327,7 @@ public class GraphNode extends AbstractGraphNode {
 			buf.append("\"" + id + "\" [style = filled]\n"); // node's label
 		}
 		int size = this.nnodes.length;
-		for (int i = 0; i < size; i += 3) {
+		for (int i = 0; i < size; i += NNODE_RECORD_SIZE) {
 			buf.append("\"" + id + "\" -> ");
 			long high = this.nnodes[i];
 			long low = this.nnodes[i + 1];
