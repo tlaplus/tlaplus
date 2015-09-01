@@ -517,6 +517,15 @@ public class LiveWorker extends IdThread {
 		// to be kept in com. However, it would destroy NodePtrTable's
 		// collision handling. NodePtrTable uses open addressing (see
 		// http://en.wikipedia.org/wiki/Open_addressing).
+		//
+		// Initializing the NTPT with 128 buckets/slows is a significant memory
+		// overhead (especially when comStack contains < 10 elements) which
+		// regularly results in OutOfMemoryErrors being thrown. To alleviate the
+		// problem the key-space of the comStack elements could be checked and
+		// the minimum possible collision-free TNPT size be calculated.
+		// (Btw. the implementation uses a TNPT in the first place because it is
+		// passed on to printTrace iff an error is found. The implementation
+		// here could use a simple java.util.Map or HashTable technically.)
 		final TableauNodePtrTable com = new TableauNodePtrTable(128);
 		while (true) {
 			// Add <state1, tidx1> into com:
