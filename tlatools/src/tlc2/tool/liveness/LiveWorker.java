@@ -972,6 +972,10 @@ public class LiveWorker extends IdThread {
 			if (sinfo == null) {
 				throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 			}
+			// The print stmts below claim there is a cycle, thus assert that
+			// there is indeed one. Index-based lookup into states array is
+			// reduced by one because cyclePos is human-readable.
+			assert states[cyclePos - 1].state.equals(sinfo.state);
 			if (TLCGlobals.tool) {
 				MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + cyclePos }, (TLCState) null, -1);
 			} else {
