@@ -565,10 +565,10 @@ public class LiveWorker extends IdThread {
 		//
 		// Note that the nodes are processed in random order (depending on a
 		// node's hash in TableauNodePtrTbl) and not in the order given by
-		// comStack. This is fine because the AEstate checks and checking
-		// fulfilling promises is done on individual states and not on
-		// sequences. For the AEActions, the successors are looked up in the
-		// disk graph.
+		// comStack. This is fine because the all checks have been evaluated
+		// eagerly during insertion into the liveness graph long before the
+		// SCC search started. Thus, the code here only has to check the 
+		// check results which can happen in any order.
 		final int tsz = com.getSize();
 		for (int ci = 0; ci < tsz; ci++) {
 			final int[] nodes = com.getNodesByLoc(ci);
