@@ -42,6 +42,12 @@ public abstract class LiveExprNode {
 	/* Returns true iff the expression contains action. */
 	public abstract boolean containAction();
 
+	/**
+	 * @param s1 First state
+	 * @param s2 Second (successor) state
+	 * @param tool (Technical Tool implementation)
+	 * @return true iff both states are consistent with this {@link LiveExprNode}.
+	 */
 	public abstract boolean eval(Tool tool, TLCState s1, TLCState s2);
 
 	/* The string representation. */
