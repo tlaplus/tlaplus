@@ -33,7 +33,10 @@ import java.util.List;
 import junit.framework.TestCase;
 import tlc2.TLC;
 import tlc2.TestMPRecorder;
+import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.output.MPRecorder;
+import tlc2.tool.TLCStateInfo;
 import util.ToolIO;
 
 public abstract class ModelCheckerTestCase extends TestCase {
@@ -61,6 +64,9 @@ public abstract class ModelCheckerTestCase extends TestCase {
 		this.extraArguments  = extraArguments; 
 	}
 	
+	/* (non-Javadoc)
+	 * @see junit.framework.TestCase#setUp()
+	 */
 	public void setUp() {
 		try {
 			// TEST_MODEL is where TLC should look for user defined .tla files
@@ -103,7 +109,44 @@ public abstract class ModelCheckerTestCase extends TestCase {
 		}
 	}
 
+	/**
+	 * @return The number of worker threads TLC should use.
+	 */
 	protected int getNumberOfThreads() {
 		return 1;
+	}
+
+	/**
+	 * Asserts that the actual trace and the expected error trace are equal.
+	 * 
+	 * @param actual
+	 *            The actual trace as recorded by {@link MPRecorder}.
+	 * @param expectedTrace
+	 *            The expected trace.
+	 */
+	protected void assertTraceWith(final List<Object> actual, final List<String> expectedTrace) {
+		assertEquals(expectedTrace.size(), actual.size());
+		for (int i = 0; i < expectedTrace.size(); i++) {
+			final Object[] objs = (Object[]) actual.get(i);
+			final TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
+			assertEquals(expectedTrace.get(i), 
+					   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
+			assertEquals(i+1, objs[1]);
+		}
+	}
+	
+
+	/**
+	 * Asserts that the error trace loops back to the state with the given
+	 * number.
+	 * 
+	 * @param i The loop back state number.
+	 */
+	protected void assertBackToState(int stateNum) {
+		assertTrue(recorder.recorded(EC.TLC_BACK_TO_STATE));
+		List<Object> loop = recorder.getRecords(EC.TLC_BACK_TO_STATE);
+		assertTrue(loop.size() > 0);
+		Object[] object = (Object[]) loop.get(0);
+		assertEquals(Integer.toString(stateNum), object[0]);
 	}
 }

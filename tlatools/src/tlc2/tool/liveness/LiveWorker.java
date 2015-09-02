@@ -700,6 +700,16 @@ public class LiveWorker extends IdThread {
 	 * from the current scc, and then generates a prefix path from some initial
 	 * state to the "bad" cycle in the state graph. The prefix path and the
 	 * "bad" cycle together forms a counter-example.
+	 * <p>
+	 * Additionally, the first part can be divided into the two while loops A)
+	 * and B). A) re-creates the sub-path of the error trace starting at the
+	 * start state of the SCC as given by the parameters and ends when all
+	 * states have be accumulated that -combined- violate the liveness
+	 * properties. Iff the last state after termination of A) is not equal to
+	 * the start state, there is a gap in the cycle. Thus, B) task is to close
+	 * the gap.
+	 * <p>
+	 * see tlatools/test-model/symmetry/ErrorTraceConstructionPhases.png for a sketch.
 	 */
 	private void printTrace(final long state, final int tidx, final TableauNodePtrTable nodeTbl) throws IOException {
 
@@ -712,6 +722,11 @@ public class LiveWorker extends IdThread {
 		final boolean[] AEStateRes = new boolean[this.pem.AEState.length];
 		final boolean[] AEActionRes = new boolean[this.pem.AEAction.length];
 		final boolean[] promiseRes = new boolean[this.oos.getPromises().length];
+		// The number/count of all liveness checks. The while loop A) terminates
+		// once it has accumulated all states that violate all checks (we know
+		// that the states in nodeTbl have to violate the liveness property
+		// because we are in printTrace already. checkComponent has already
+		// determined that there is a violation).
 		int cnt = AEStateRes.length + AEActionRes.length + promiseRes.length;
 
 		final MemIntStack cycleStack = new MemIntStack(liveCheck.getMetaDir(), "cycle");
@@ -722,6 +737,7 @@ public class LiveWorker extends IdThread {
 		final long ptr = TableauNodePtrTable.getElem(nodes, tloc);
 		TableauNodePtrTable.setSeen(nodes, tloc);
 
+		// A)
 		GraphNode curNode = this.dg.getNode(state, tidx, ptr);
 		while (cnt > 0) {
 			int cnt0 = cnt;
@@ -750,7 +766,8 @@ public class LiveWorker extends IdThread {
 					break;
 				}
 
-				// Check AEAction:
+				// Check AEAction (which is a check of the out-arc of curNode to
+				// one of its successors):
 				long nextState1 = 0, nextState2 = 0;
 				int nextTidx1 = 0, nextTidx2 = 0;
 				int tloc1 = -1, tloc2 = -1;
@@ -851,6 +868,13 @@ public class LiveWorker extends IdThread {
 		final LongVec postfix = new LongVec(16);
 		long startState = curNode.stateFP;
 
+		/*
+		 * If the cycle is not closed/completed (complete when startState ==
+		 * state), continue from the curNode at which the previous while loop
+		 * terminated and follow its successors until the start state shows up.
+		 */
+
+		// B)
 		if (startState != state) {
 			MemIntQueue queue = new MemIntQueue(liveCheck.getMetaDir(), null);
 			long curState = startState;
@@ -871,7 +895,9 @@ public class LiveWorker extends IdThread {
 						long nextState = curNode.getStateFP(j);
 
 						if (nextState == state) {
-							// we have found a path from startState to state:
+							// We have found a path from startState to state,
+							// now backtrack the path the outer loop took to get
+							// us here and add each state to postfix.
 							while (curState != startState) {
 								postfix.addElement(curState);
 								nodes = nodeTbl.getNodesByLoc(ploc);
@@ -898,6 +924,14 @@ public class LiveWorker extends IdThread {
 				nodes = nodeTbl.getNodesByLoc(curLoc);
 			}
 		}
+		/*
+		 * At this point 2/3 of the error trace have been constructed.
+		 * cycleStack contains the states from the start state of the SCC up to
+		 * the state that violates all liveness properties. postfix contains the
+		 * suffix from the violating state back to the start state of the SCC.
+		 * The next step is to get the last third which is the prefix from an
+		 * initial node to the start node of the SCC.
+		 */
 
 		// Now, print the error trace. We first construct the prefix that
 		// led to the bad cycle. The nodes on prefix and cycleStack then
@@ -943,6 +977,11 @@ public class LiveWorker extends IdThread {
 			lastState = states[i].state;
 		}
 
+		/*
+		 * At this point everything from the initial state up to the start state
+		 * of the SCC has been printed.
+		 */
+
 		// Print the cycle:
 		int cyclePos = stateNum;
 		long cycleFP = fp;
@@ -964,6 +1003,11 @@ public class LiveWorker extends IdThread {
 				fp = curFP;
 			}
 		}
+
+		/* All error trace states have been printed (prefix + cycleStack +
+		 * postfix). What is left is to print either the stuttering or the
+		 * back-to-cyclePos marker.
+		 */ 
 
 		if (fp == cycleFP) {
 			StatePrinter.printStutteringState(++stateNum);
