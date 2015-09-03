@@ -232,22 +232,23 @@ public abstract class SemanticNode
 *       to the following two toString methods.                             *
 ***************************************************************************/
   public final void toString(StringBuffer sb, String padding) {
-// Uncomment the code to print the actual image instead of file locations.	  
-//	  TreeNode treeNode = getTreeNode();
-//	  if (treeNode instanceof SyntaxTreeNode) {
-//		  SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
-//		  sb.append(stn.getHumanReadableImage());
-//	  } else {
+	  TreeNode treeNode = getTreeNode();
+		if (treeNode instanceof SyntaxTreeNode
+				&& System.getProperty(SemanticNode.class.getName() + ".showPlainFormulae") != null) {
+		  SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
+		  sb.append(stn.getHumanReadableImage());
+	  } else {
 		  sb.append(this.getLocation());
-//	  }
+	  }
   }
 
   public String toString() {
-//	  TreeNode treeNode = getTreeNode();
-//	  if (treeNode instanceof SyntaxTreeNode) {
-//		  SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
-//		  return stn.getHumanReadableImage();
-//	  }
+	  TreeNode treeNode = getTreeNode();
+		if (treeNode instanceof SyntaxTreeNode
+				&& System.getProperty(SemanticNode.class.getName() + ".showPlainFormulae") != null) {
+			  SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
+		  return stn.getHumanReadableImage();
+	  }
     return this.getLocation().toString();
   }
 
