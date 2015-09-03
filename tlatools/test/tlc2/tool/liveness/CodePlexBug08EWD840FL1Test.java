@@ -63,10 +63,10 @@ public class CodePlexBug08EWD840FL1Test extends ModelCheckerTestCase {
 				   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
 		assertEquals(i, objs[1]);
 		
-		// Omitted check of 8 in-between states, just make sure four more states exist
+		// Omitted check of 8 in-between states, just make sure eight more states exist
 		assertEquals("Expect five states prior to stuttering", 8, records.size());
 		
-		// state six is back to state 1
+		// last state loops back to state 1
 		assertTrue(recorder.recorded(EC.TLC_BACK_TO_STATE));
 		List<Object> stutter = recorder.getRecords(EC.TLC_BACK_TO_STATE);
 		assertTrue(stutter.size() > 0);
