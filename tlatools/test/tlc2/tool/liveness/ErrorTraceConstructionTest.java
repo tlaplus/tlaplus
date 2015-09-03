@@ -31,9 +31,9 @@ import java.util.List;
 
 import tlc2.output.EC;
 
-public class ErrorTraceConstruction extends ModelCheckerTestCase {
+public class ErrorTraceConstructionTest extends ModelCheckerTestCase {
 
-	public ErrorTraceConstruction() {
+	public ErrorTraceConstructionTest() {
 		super("ErrorTraceConstructionMC", "symmetry");
 	}
 	

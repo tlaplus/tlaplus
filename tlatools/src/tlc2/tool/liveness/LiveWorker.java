@@ -709,7 +709,11 @@ public class LiveWorker extends IdThread {
 	 * the start state, there is a gap in the cycle. Thus, B) task is to close
 	 * the gap.
 	 * <p>
-	 * see tlatools/test-model/symmetry/ErrorTraceConstructionPhases.png for a sketch.
+	 * 
+	 * @see tlatools/test-model/symmetry/ErrorTraceConstructionPhases.png for a
+	 *      sketch.
+	 * @see tlc2.tool.liveness.ErrorTraceConstructionTest which runs a spec that
+	 *      exemplifies the three staged error trace composition
 	 */
 	private void printTrace(final long state, final int tidx, final TableauNodePtrTable nodeTbl) throws IOException {
 
