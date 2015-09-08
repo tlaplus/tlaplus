@@ -723,6 +723,8 @@ public class LiveWorker extends IdThread {
 		// First, find a "bad" cycle from the "bad" scc.
 		final int slen = this.oos.getCheckState().length;
 		final int alen = this.oos.getCheckAction().length;
+		// The 3 boolean arrays are used to make sure that the same check result
+		// is exactly counted once.
 		final boolean[] AEStateRes = new boolean[this.pem.AEState.length];
 		final boolean[] AEActionRes = new boolean[this.pem.AEAction.length];
 		final boolean[] promiseRes = new boolean[this.oos.getPromises().length];
