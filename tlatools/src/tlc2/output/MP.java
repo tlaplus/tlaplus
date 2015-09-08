@@ -742,7 +742,7 @@ public class MP
             b.append("Finished computing initial states: %1% distinct state%2% generated.");
             break;
         case EC.TLC_INIT_GENERATED2:
-            b.append("Finished computing initial states: %1% states generated, with %2% of them distinct.");
+            b.append("Finished computing initial states: %1% state%2% generated, with %3% of them distinct.");
             break;
         case EC.TLC_INIT_GENERATED3:
             b.append("Finished computing initial states: %1% states generated.\n"

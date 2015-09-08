@@ -176,13 +176,13 @@ public class ModelChecker extends AbstractChecker
                 return;
             }
 
+            final String plural = (this.numOfGenStates.get() == 1) ? "" : "s";
             if (this.numOfGenStates.get() == this.theFPSet.size())
             {
-                String plural = (this.numOfGenStates.get() == 1) ? "" : "s";
                 MP.printMessage(EC.TLC_INIT_GENERATED1, new String[] { String.valueOf(this.numOfGenStates), plural });
             } else
             {
-                MP.printMessage(EC.TLC_INIT_GENERATED1, new String[] { String.valueOf(this.numOfGenStates),
+                MP.printMessage(EC.TLC_INIT_GENERATED2, new String[] { String.valueOf(this.numOfGenStates), plural,
                         String.valueOf(this.theFPSet.size()) });
             }
         }
