@@ -35,15 +35,22 @@ package tlc2.tool.liveness;
  * state is a state's fingerprint) and auxiliary information. The auxiliary
  * information is:
  * <ul>
- * <li>An offset into the second set which represents the arcs between the nodes
- * (logically outgoing transitions). Technically this is a pointer location into
- * the second disk file of {@link TableauDiskGraph}.</li>
+ * <li>An offset into the second set (@see {@link AbstractDiskGraph#nodeRAF})
+ * which represents the arcs between the nodes (logically outgoing transitions).
+ * Technically this is a pointer location into the second disk file of
+ * {@link TableauDiskGraph}.</li>
  * <li>The node's link number during Tarjan's SCC search.</li>
  * <li>A flag if the node is done or not (see {@link TableauNodePtrTable#UNDONE}
  * below).</li>
  * <li>A flag that marks a node an initial node.</li>
- * <li>A flag if the node has been seen before.</li>
+ * <li>A flag if the node has been seen before during error trace re-creation
+ * (see {@link LiveWorker#printTrace}.</li>
  * </ul>
+ * <p>
+ * The last item indicates that this class is used in two scenarios. It's
+ * primary purpose is to be the backing store of the liveness/behavior disc
+ * graph. Additionally though, LiveWorker#printTrace independently instantiates
+ * a new {@link TableauNodePtrTable} to do its work.
  * <p>
  * To minimize {@link TableauNodePtrTable}'s space/memory requirements, the
  * auxiliary information replace each other depending on the phase of liveness

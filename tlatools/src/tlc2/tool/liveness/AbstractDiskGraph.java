@@ -26,10 +26,11 @@ import util.FileUtil;
  * 
  * - A {@link DiskGraph} has a 1:1 relationship with {@link OrderOfSolution}
  * 
- * - Logically stores the triple of state, tableaux, link (transitions)
+ * - Logically stores a set of triples that represent the liveness/behavior graph (see Manna/Pnuelli book).
+ * - Technically, it stores the triple of <<state (fingerprint), tableau node index, link (transitions)>>
  * -- Technically does *not* store States, but only a state's fingerprints
  * --- Stores a fingerprint split into 2 ints (low & high part of a fingerprint)
- * -- Stores the index of the tableaux, not the tableaux itself
+ * -- Stores the index of the tableau node, not the tableau node itself
  * --- The TableauGraphNode (TBGraphNode) instance can be obtained by reading
  *     the DiskGraph triple into a GraphNode instance and calling 
  *     GraphNode#getTNode(TBGraph). One obviously has to have access to the TBGraph
@@ -76,6 +77,9 @@ public abstract class AbstractDiskGraph {
 
 	private final String chkptName;
 	protected final String metadir;
+	/**
+	 * @see tlatools/test/tlc2/tool/liveness/AbstractDiskGraph.JPG
+	 */
 	protected final BufferedRandomAccessFile nodeRAF;
 	protected final BufferedRandomAccessFile nodePtrRAF;
 	protected final LongVec initNodes;
