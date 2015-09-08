@@ -69,6 +69,20 @@ public final class MemIntQueue extends MemBasedSet {
 		return (high << 32) | (low & 0xFFFFFFFFL);
 	}
 
+	public int popInt() {
+		// Assert.check(this.len > 0);
+		if (this.size < 1) {
+			throw new NoSuchElementException();
+		}
+		return this.elems[--this.size];
+	}
+
+	public long popLong() {
+		long low = this.popInt();
+		long high = this.popInt();
+		return (high << 32) | (low & 0xFFFFFFFFL);
+	}
+
 	// Checkpoint.
 	public final void beginChkpt() throws IOException {
 		String tmpName = this.diskdir + FileUtil.separator + this.filename + ".tmp";
