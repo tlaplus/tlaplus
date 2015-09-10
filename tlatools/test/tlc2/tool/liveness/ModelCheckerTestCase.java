@@ -129,6 +129,14 @@ public abstract class ModelCheckerTestCase extends TestCase {
 		for (int i = 0; i < expectedTrace.size(); i++) {
 			final Object[] objs = (Object[]) actual.get(i);
 			final TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
+			final String info = (String) stateInfo.info;
+			if (i == 0) {
+				// The first state has to be an initial state.
+				"<Initial predicate>".equals(info);
+			} else {
+				// ... all others are reachable via an action.
+				info.startsWith("<Action");
+			}
 			assertEquals(expectedTrace.get(i), 
 					   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
 			assertEquals(i+1, objs[1]);
