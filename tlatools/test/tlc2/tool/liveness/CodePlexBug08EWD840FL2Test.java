@@ -27,6 +27,7 @@
 package tlc2.tool.liveness;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import tlc2.TLCGlobals;
@@ -52,13 +53,35 @@ public class CodePlexBug08EWD840FL2Test extends ModelCheckerTestCase {
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		final List<String> expectedTrace = new ArrayList<String>(4);
+		expectedTrace.add("/\\ tpos = 0\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"black\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 3\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"white\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 3\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"white\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 3\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> FALSE)\n"
+				+ "/\\ tcolor = \"white\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 2\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> FALSE)\n"
+				+ "/\\ tcolor = \"white\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 2\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"white\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"black\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 1\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"black\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 0\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"black\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		// last state points back to state 1
-		assertTrue(recorder.recorded(EC.TLC_BACK_TO_STATE));
-		List<Object> stutter = recorder.getRecords(EC.TLC_BACK_TO_STATE);
-		assertTrue(stutter.size() > 0);
-		Object[] object = (Object[]) stutter.get(0);
-		assertEquals("1", object[0]);
+		assertBackToState(1);
 		
 		// Check the file size of the AbstractDiskGraph files to check if the
 		// expected amount of ptrs and nodes (outgoing arcs) have been written

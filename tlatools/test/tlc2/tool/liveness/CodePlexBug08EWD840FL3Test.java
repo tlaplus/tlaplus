@@ -26,10 +26,10 @@
 
 package tlc2.tool.liveness;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import tlc2.output.EC;
-import tlc2.tool.TLCStateInfo;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
@@ -51,26 +51,34 @@ public class CodePlexBug08EWD840FL3Test extends ModelCheckerTestCase {
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
-
-		int i = 0; // State's position in records
-		Object[] objs = (Object[]) records.get(i++);
-		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ tpos = 0\n"
-				   + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
-				   + "/\\ tcolor = \"black\"\n"
-				   + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")", 
-				   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
-		assertEquals(i, objs[1]);
-		
-		// Omitted check of 8 in-between states, just make sure eight more states exist
-		assertEquals("Expect five states prior to stuttering", 8, records.size());
+		final List<String> expectedTrace = new ArrayList<String>(4);
+		expectedTrace.add("/\\ tpos = 0\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"black\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 3\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"white\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 3\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"white\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 3\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> FALSE)\n"
+				+ "/\\ tcolor = \"white\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 2\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> FALSE)\n"
+				+ "/\\ tcolor = \"white\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 2\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"white\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"black\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 1\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"black\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 0\n" + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ tcolor = \"black\"\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		// last state loops back to state 1
-		assertTrue(recorder.recorded(EC.TLC_BACK_TO_STATE));
-		List<Object> stutter = recorder.getRecords(EC.TLC_BACK_TO_STATE);
-		assertTrue(stutter.size() > 0);
-		Object[] object = (Object[]) stutter.get(0);
-		assertEquals("1", object[0]);
+		assertBackToState(1);
 	}
 }

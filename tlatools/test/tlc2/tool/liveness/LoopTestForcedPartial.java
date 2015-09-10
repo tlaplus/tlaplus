@@ -26,11 +26,11 @@
 
 package tlc2.tool.liveness;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import tlc2.output.EC;
 import tlc2.tool.AbstractChecker;
-import tlc2.tool.TLCStateInfo;
 
 /**
  * Identical to {@link LoopTest}, except that liveness checking uses
@@ -59,20 +59,11 @@ public class LoopTestForcedPartial extends ModelCheckerTestCase {
 
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
-
-		// states 1
-		Object[] objs = (Object[]) records.get(0);
-		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("x = 0", 
-				   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
-		assertEquals(1, objs[1]);
+		final List<String> expectedTrace = new ArrayList<String>(4);
+		expectedTrace.add("x = 0");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		// Stuttering after the init state.
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
-		List<Object> stutter = recorder.getRecords(EC.TLC_STATE_PRINT3);
-		assertTrue(stutter.size() > 0);
-		Object[] object = (Object[]) stutter.get(0);
-		assertEquals(2, object[1]);
+		assertStuttering(2);
 	}
 }

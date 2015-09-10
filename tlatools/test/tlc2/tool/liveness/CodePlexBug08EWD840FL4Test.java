@@ -26,10 +26,10 @@
 
 package tlc2.tool.liveness;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import tlc2.output.EC;
-import tlc2.tool.TLCStateInfo;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
@@ -51,31 +51,18 @@ public class CodePlexBug08EWD840FL4Test extends ModelCheckerTestCase {
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
-
-		int i = 0; // State's position in records
-		Object[] objs = (Object[]) records.get(i++);
-		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ tpos = 0\n"
+		final List<String> expectedTrace = new ArrayList<String>(4);
+		expectedTrace.add("/\\ tpos = 0\n"
 				   + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
 				   + "/\\ tcolor = \"black\"\n"
-				   + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")", 
-				   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
-		assertEquals(i, objs[1]);
-		
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ tpos = 3\n"
+				   + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ tpos = 3\n"
 				   + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
 				   + "/\\ tcolor = \"white\"\n"
-				   + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")", 
-				   stateInfo.toString().trim());
+				   + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		// state 3 is stuttering
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
-		List<Object> stutter = recorder.getRecords(EC.TLC_STATE_PRINT3);
-		assertTrue(stutter.size() > 0);
-		Object[] object = (Object[]) stutter.get(0);
-		assertEquals(3, object[1]);
+		assertStuttering(3);
 	}
 }

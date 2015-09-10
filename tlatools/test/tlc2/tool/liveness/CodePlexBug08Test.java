@@ -26,10 +26,10 @@
 
 package tlc2.tool.liveness;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import tlc2.output.EC;
-import tlc2.tool.TLCStateInfo;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
@@ -51,43 +51,15 @@ public class CodePlexBug08Test extends ModelCheckerTestCase {
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
+		final List<String> expectedTrace = new ArrayList<String>(4);
+		expectedTrace.add("/\\ b = FALSE\n/\\ x = 2");
+		expectedTrace.add("/\\ b = TRUE\n/\\ x = 3");
+		expectedTrace.add("/\\ b = FALSE\n/\\ x = 3");
+		expectedTrace.add("/\\ b = TRUE\n/\\ x = 4");
+		expectedTrace.add("/\\ b = FALSE\n/\\ x = 4");
+		expectedTrace.add("/\\ b = TRUE\n/\\ x = 5");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		int i = 0; // State's position in records
-		Object[] objs = (Object[]) records.get(i++);
-		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = FALSE\n/\\ x = 2", stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
-		assertEquals(i, objs[1]);
-		
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = TRUE\n/\\ x = 3", stateInfo.toString().trim());
-		assertEquals(i, objs[1]);
-		
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = FALSE\n/\\ x = 3", stateInfo.toString().trim());
-		assertEquals(i, objs[1]);
-
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = TRUE\n/\\ x = 4", stateInfo.toString().trim());
-		assertEquals(i, objs[1]);
-		
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = FALSE\n/\\ x = 4", stateInfo.toString().trim());
-		assertEquals(i, objs[1]);
-
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("/\\ b = TRUE\n/\\ x = 5", stateInfo.toString().trim());
-		assertEquals(i, objs[1]);
-		
-		// Assert the error trace contains a stuttering step at position 5
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
-		records = recorder.getRecords(EC.TLC_STATE_PRINT3);
-		objs = (Object[]) records.get(0);
-		assertEquals(++i, objs[1]);
+		assertStuttering(7);
 	}
 }

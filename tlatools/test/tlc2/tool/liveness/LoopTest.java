@@ -26,10 +26,10 @@
 
 package tlc2.tool.liveness;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import tlc2.output.EC;
-import tlc2.tool.TLCStateInfo;
 
 /**
  * System LOOP as described by Manna & Pneuli on page 423ff
@@ -52,33 +52,15 @@ public class LoopTest extends ModelCheckerTestCase {
 
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
-
-		// states 1 to 3
-		int i = 0; // State's position in records
-		Object[] objs = (Object[]) records.get(i++);
-		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("x = 0", 
-				   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
-		assertEquals(i, objs[1]);
-		
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("x = 1", 
-				   stateInfo.toString().trim());
-
-		objs = (Object[]) records.get(i++);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("x = 2", 
-				   stateInfo.toString().trim());
+		final List<String> expectedTrace = new ArrayList<String>(4);
+		expectedTrace.add("x = 0");
+		expectedTrace.add("x = 1");
+		expectedTrace.add("x = 2");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		// Without any fairness defined, state 4 is stuttering instead of moving
 		// on to state x=3.
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
-		List<Object> stutter = recorder.getRecords(EC.TLC_STATE_PRINT3);
-		assertTrue(stutter.size() > 0);
-		Object[] object = (Object[]) stutter.get(0);
-		assertEquals(4, object[1]);
+		assertStuttering(4);
 		
 		//TODO This error trace is not the shortest one. The shortest one would
 		// be stuttering after the initial state x=0 and not after x=2 with x=3
