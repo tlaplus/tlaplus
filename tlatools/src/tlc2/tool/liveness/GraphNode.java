@@ -328,10 +328,14 @@ public class GraphNode extends AbstractGraphNode {
 		}
 		int size = this.nnodes.length;
 		for (int i = 0; i < size; i += NNODE_RECORD_SIZE) {
-			buf.append("\"" + id + "\" -> ");
 			long high = this.nnodes[i];
 			long low = this.nnodes[i + 1];
 			long fp = (high << 32) | (low & 0xFFFFFFFFL);
+//			if (fp == this.stateFP) {
+//				// skip self loops if edge count to large for dotViz to handle.
+//				continue;
+//			}
+			buf.append("\"" + id + "\" -> ");
 			if (hasTableau) {
 				buf.append(("\"" + fp).substring(0, 7) + "." + this.nnodes[i + 2] + "\"");
 			} else {
