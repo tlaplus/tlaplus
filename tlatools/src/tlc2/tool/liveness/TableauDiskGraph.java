@@ -381,7 +381,21 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 					continue;
 				}
 				if (nextState == state && nextTidx == tidx) {
-					// Stop BFS (see MemIntQUEUE above), we found a path to state.
+					// Stop BFS (see MemIntQUEUE above), we found a path to
+					// state. The path might not necessarily be the shortest one
+					// possible. A non-optimal path is returned if the BFS
+					// search happens to produce a path <<fp1, fp2, fp3>> first
+					// before it finds <<fp1, fp1, fp2>> (the first two elements
+					// share the same fingerprint and only differ in the
+					// discarded tableau id). The caller LiveWorker#printTrace
+					// collapses contiguous segments (identical fingerprint) in
+					// the path into a single state. E.g. the second example
+					// above will be printed as two states: <<State(fp1),
+					// State(fp2)>>. Hence, it is shorter than <<State(fp1),
+					// State(fp2), State(fp3)>>. Note that the search does *not*
+					// stop after the second node from the end in <<fp1, fp1, fp2>>
+					// because this node - due to its tableau id - does not
+					// correspond to an initial state in reversablePtrTable.
 					return reconstructReversePath(reversablePtrTable, curState, curTidx, nextState, nextTidx);
 				}
 

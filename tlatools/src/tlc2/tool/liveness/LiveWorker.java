@@ -963,9 +963,11 @@ public class LiveWorker extends IdThread {
 		for (int i = plen - 2; i >= 0; i--) {
 			long curFP = prefix.elementAt(i);
 			// The prefix might contain duplicates if the path happens to walk
-			// along two distinct states which differ in the tableau idx only
-			// (same fingerprint). From the counterexample perspective, this is
-			// irrelevant.
+			// along two (or more distinct states which differ in the tableau
+			// idx only (same fingerprint). From the counterexample perspective,
+			// this is irrelevant iff the identical fingerprints are contiguous.
+			// It won't be correct to shorten a path <<fp1,fp2,fp1>> to
+			// <<fp2,fp1>> though.
 			if (curFP != fp) {
 				sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
 				if (sinfo == null) {
