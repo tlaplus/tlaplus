@@ -43,7 +43,7 @@ public class CodePlexBug08aTest extends ModelCheckerTestCase {
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "18", "11"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "18", "11", "0"));
 		
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
