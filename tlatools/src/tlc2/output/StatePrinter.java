@@ -73,4 +73,17 @@ public class StatePrinter
         MP.printState(EC.TLC_STATE_PRINT3, new String[] { String.valueOf(num) }, (TLCState) null, num);
     }
 
+	/**
+	 * Prints a marker (EC.TLC_BACK_TO_STATE) looping back to the state with the
+	 * given stateNum.
+	 * 
+	 * @param stateNum
+	 */
+	public static void printBackToState(final long stateNum) {
+		if (TLCGlobals.tool) {
+			MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + stateNum }, (TLCState) null, -1);
+		} else {
+			MP.printMessage(EC.TLC_BACK_TO_STATE, "" + stateNum);
+		}
+	}
 }

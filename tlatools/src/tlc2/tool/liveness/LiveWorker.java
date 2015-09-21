@@ -605,12 +605,15 @@ public class LiveWorker extends IdThread {
 					}
 				}
 
-				// All EAAction have already been checked as part of checkSccs!
-
-				// Check AEAction: A TLA+ temporal action represents the
-				// relationship between the current node and a successor state
-				// in the scope of the behavior. The current node has n
-				// successor states.
+				// Check AEAction: A TLA+ action represents the relationship
+				// between the current node and a successor state. The current
+				// node has n successor states. For each pair, see iff the 
+				// successor is in the "com" NodePtrTablecheck, check actions
+				// and store the results in AEActionRes(ult). Note that the
+				// actions have long been checked in advance when the node was
+				// added to the graph and the actual state and not just its
+				// fingerprint was available. Here, the result is just being
+				// looked up.
 				final int succCnt = aealen > 0 ? curNode.succSize() : 0; // No point in looping successors if there are no AEActions to check on them.
 				for (int i = 0; i < succCnt; i++) {
 					final long nextState = curNode.getStateFP(i);
@@ -652,6 +655,9 @@ public class LiveWorker extends IdThread {
 		// P-satisfiable. That's why it returns on the first false. As stated
 		// before, EAAction have already been checked if satisfiable.
 		// checkComponent is only called if the EA actions are satisfiable.
+		//
+		// Technically: No error is found if any of the AEStateRes, AEActionRes
+		// or promiseRes booleans is false.
 		for (int i = 0; i < aeslen; i++) {
 			if (!AEStateRes[i]) {
 				return true;
@@ -696,10 +702,11 @@ public class LiveWorker extends IdThread {
 	}
 
 	/**
-	 * Print out the error state trace. The method first generates a "bad" cycle
-	 * from the current scc, and then generates a prefix path from some initial
-	 * state to the "bad" cycle in the state graph. The prefix path and the
-	 * "bad" cycle together forms a counter-example.
+	 * Print out the error state trace by finding a cycle in the given SCC. The
+	 * method first generates a "bad" cycle from the current scc, and then
+	 * generates a prefix path from some initial state to the "bad" cycle in the
+	 * state graph. The prefix path and the "bad" cycle together forms a
+	 * counter-example.
 	 * <p>
 	 * Additionally, the first part can be divided into the two while loops A)
 	 * and B). A) re-creates the sub-path of the error trace starting at the
@@ -714,8 +721,21 @@ public class LiveWorker extends IdThread {
 	 *      sketch.
 	 * @see tlc2.tool.liveness.ErrorTraceConstructionTest which runs a spec that
 	 *      exemplifies the three staged error trace composition
+	 *      
+	 * @param state
+	 *            fingerprint of the state which is the "starting" state of the
+	 *            SCC in nodeTbl.
+	 * @param tidx
+	 *            tableau index pointing to the {@link TBGraph}. Corresponds to
+	 *            the state fingerprint. Combined <<state, tidx>> unique
+	 *            identify a node in the liveness/behavior graph.
+	 * @param nodeTbl
+	 *            The current SCC which is known to satisfy the
+	 *            {@link PossibleErrorModel} and thus violates the liveness
+	 *            properties.
 	 */
 	private void printTrace(final long state, final int tidx, final TableauNodePtrTable nodeTbl) throws IOException {
+//		System.out.println(toDotViz(state, tidx, nodeTbl));
 
 		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
@@ -744,6 +764,8 @@ public class LiveWorker extends IdThread {
 		TableauNodePtrTable.setSeen(nodes, tloc);
 
 		// A)
+		//
+		// Greedy DFS search for a path satisfying the PossibleErrorModel.
 		GraphNode curNode = this.dg.getNode(state, tidx, ptr);
 		while (cnt > 0) {
 			int cnt0 = cnt;
@@ -872,7 +894,7 @@ public class LiveWorker extends IdThread {
 		// 2. nodeTbl is trashed after this operation.
 		nodeTbl.resetElems();
 		final LongVec postfix = new LongVec(16);
-		long startState = curNode.stateFP;
+		final long startState = curNode.stateFP;
 
 		/*
 		 * If the cycle is not closed/completed (complete when startState ==
@@ -881,24 +903,29 @@ public class LiveWorker extends IdThread {
 		 */
 
 		// B)
+		//
+		// BFS search
 		if (startState != state) {
-			MemIntQueue queue = new MemIntQueue(liveCheck.getMetaDir(), null);
+			final MemIntQueue queue = new MemIntQueue(liveCheck.getMetaDir(), null);
 			long curState = startState;
 			int ploc = -1;
 			int curLoc = nodeTbl.getNodesLoc(curState);
 			nodes = nodeTbl.getNodesByLoc(curLoc);
 			TableauNodePtrTable.setSeen(nodes);
 
+			// B1)
 			_done: while (true) {
 				tloc = TableauNodePtrTable.startLoc(nodes);
 				while (tloc != -1) {
-					int curTidx = TableauNodePtrTable.getTidx(nodes, tloc);
-					long curPtr = TableauNodePtrTable.getPtr(TableauNodePtrTable.getElem(nodes, tloc));
+					final int curTidx = TableauNodePtrTable.getTidx(nodes, tloc);
+					final long curPtr = TableauNodePtrTable.getPtr(TableauNodePtrTable.getElem(nodes, tloc));
 					curNode = this.dg.getNode(curState, curTidx, curPtr);
-					int succCnt = curNode.succSize();
+					final int succCnt = curNode.succSize();
 
+					// for each successor of curNode s, check if s is the
+					// destination state.
 					for (int j = 0; j < succCnt; j++) {
-						long nextState = curNode.getStateFP(j);
+						final long nextState = curNode.getStateFP(j);
 
 						if (nextState == state) {
 							// We have found a path from startState to state,
@@ -914,7 +941,11 @@ public class LiveWorker extends IdThread {
 							break _done;
 						}
 
-						int[] nodes1 = nodeTbl.getNodes(nextState);
+						// s is not equal to the destination state 'startState'.
+						// If s's successors are still unseen, add s to the
+						// queue to later explore it as well. Mark it seen
+						// to not explore it twice.
+						final int[] nodes1 = nodeTbl.getNodes(nextState);
 						if (nodes1 != null && !TableauNodePtrTable.isSeen(nodes1)) {
 							TableauNodePtrTable.setSeen(nodes1);
 							queue.enqueueLong(nextState);
@@ -923,7 +954,9 @@ public class LiveWorker extends IdThread {
 					}
 					tloc = TableauNodePtrTable.nextLoc(nodes, tloc);
 				}
+				// Create a parent pointer to later reverse the path in B2)
 				TableauNodePtrTable.setParent(nodes, ploc);
+				// Dequeue the next unexplored state from the queue.
 				curState = queue.dequeueLong();
 				ploc = queue.dequeueInt();
 				curLoc = nodeTbl.getNodesLoc(curState);
@@ -990,17 +1023,27 @@ public class LiveWorker extends IdThread {
 		 * of the SCC has been printed.
 		 */
 
-		// Print the cycle:
-		int cyclePos = stateNum;
-		long cycleFP = fp;
+		// Rewind cycleStack into postfix to reverse its order (cycleStack has
+		// the last state at the top).
+		final int cyclePos = stateNum;
+		final long cycleFP = fp;
 		while (cycleStack.size() > 0) {
+			// Do not filter successive <<fp,tidx,permId>> here but do it below
+			// when the actual states get printed. See Test3.tla for reason why.
 			postfix.addElement(cycleStack.popLong());
 			cycleStack.popInt(); // ignore tableau idx
 		}
 
 		// Assert.assert(fps.length > 0);
 		for (int i = postfix.size() - 1; i >= 0; i--) {
-			long curFP = postfix.elementAt(i);
+			final long curFP = postfix.elementAt(i);
+			// Only print the state if it differs from its predecessor. We don't
+			// want to print an identical state twice. This can happen if the
+			// loops A) and B) above added an identical state multiple times
+			// into cycleStack/postfix.
+			// The reason we don't simply compare the actual states is for
+			// efficiency reason. Regenerating the next state might be
+			// expensive.
 			if (curFP != fp) {
 				sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
 				if (sinfo == null) {
@@ -1028,11 +1071,7 @@ public class LiveWorker extends IdThread {
 			// there is indeed one. Index-based lookup into states array is
 			// reduced by one because cyclePos is human-readable.
 			assert states[cyclePos - 1].state.equals(sinfo.state);
-			if (TLCGlobals.tool) {
-				MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + cyclePos }, (TLCState) null, -1);
-			} else {
-				MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
-			}
+			StatePrinter.printBackToState(cyclePos);
 		}
 	}
 
@@ -1078,6 +1117,34 @@ public class LiveWorker extends IdThread {
 		}
 	}
 
+	public String toDotViz(final long state, final int tidx, TableauNodePtrTable tnpt) throws IOException {
+		final StringBuffer sb = new StringBuffer(tnpt.size() * 10);
+		sb.append("digraph TableauNodePtrTable {\n");
+		sb.append("nodesep = 0.7\n");
+		sb.append("rankdir=LR;\n"); // Left to right rather than top to bottom
+
+		final int tsz = tnpt.getSize();
+		for (int ci = 0; ci < tsz; ci++) {
+			final int[] nodes = tnpt.getNodesByLoc(ci);
+			if (nodes == null) {
+				// miss in TableauNodePtrTable (null bucket)
+				continue;
+			}
+
+			long state1 = TableauNodePtrTable.getKey(nodes);
+			for (int nidx = 2; nidx < nodes.length; nidx += tnpt.getElemLength()) { // nidx starts with 2 because [0][1] are the long fingerprint state1. 
+				int tidx1 = TableauNodePtrTable.getTidx(nodes, nidx);
+				long loc1 = TableauNodePtrTable.getElem(nodes, nidx);
+
+				final GraphNode curNode = this.dg.getNode(state1, tidx1, loc1);
+				sb.append(curNode.toDotViz((state1 == state && tidx1 == tidx), true));
+			}
+		}
+		
+		sb.append("}");
+		return sb.toString();
+	}
+	
   	/*
 	 * The detailed formatter below can be activated in Eclipse's variable view
 	 * by choosing "New detailed formatter" from the MemIntQueue context menu.
