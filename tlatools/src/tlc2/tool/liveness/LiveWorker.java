@@ -5,7 +5,14 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -122,13 +129,15 @@ public class LiveWorker extends IdThread {
 	 * checkSccs runs on a partial graph. Thus some nodes are marked undone.
 	 * Those nodes are skipped by the SCC search.</li>
 	 * </ul>
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 * 
 	 * @see http://en.wikipedia.org/wiki/Tarjan'
 	 *      s_strongly_connected_components_algorithm
 	 * @see http://dx.doi.org/10.1137%2F0201010
 	 * 
 	 */
-	private final void checkSccs() throws IOException {
+	private final void checkSccs() throws IOException, InterruptedException, ExecutionException {
 		// Initialize this.dg:
 		this.dg.makeNodePtrTbl();
 		
@@ -489,8 +498,10 @@ public class LiveWorker extends IdThread {
 	 * satisfies &#968;). ¬&#966; (called &#968; by MP) is the negation of the
 	 * liveness formula &#966; which has to be "P-valid" for the liveness
 	 * properties to be valid.
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	private boolean checkComponent(final long state, final int tidx, final IntStack comStack) throws IOException {
+	private boolean checkComponent(final long state, final int tidx, final IntStack comStack) throws IOException, InterruptedException, ExecutionException {
 		final long comStackSize = comStack.size();
 		// There is something to pop and each is a well formed tuple <<fp, tidx, loc>> 
 		assert comStackSize >= 5 && comStackSize % 5 == 0; // long + int + long
@@ -733,12 +744,73 @@ public class LiveWorker extends IdThread {
 	 *            The current SCC which is known to satisfy the
 	 *            {@link PossibleErrorModel} and thus violates the liveness
 	 *            properties.
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	private void printTrace(final long state, final int tidx, final TableauNodePtrTable nodeTbl) throws IOException {
+	private void printTrace(final long state, final int tidx, final TableauNodePtrTable nodeTbl) throws IOException, InterruptedException, ExecutionException {
 //		System.out.println(toDotViz(state, tidx, nodeTbl));
 
 		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
+		
+		/*
+		 * Use a dedicated thread to concurrently search a prefix-path from some
+		 * initial node to the state identified by <<state, tidx>>.
+		 */
+		final ExecutorService executor = Executors.newFixedThreadPool(1);
+		final Future<List<TLCStateInfo>> future = executor.submit(new Callable<List<TLCStateInfo>>() {
+			@Override
+			public List<TLCStateInfo> call() throws Exception {
+				// Print the error trace. We first construct the prefix that
+				// led to the bad cycle. The nodes on prefix and cycleStack then
+				// form the complete counter example.
+				int stateNum = 0;
+				final LongVec prefix = LiveWorker.this.dg.getPath(state, tidx);
+				final int plen = prefix.size();
+				final List<TLCStateInfo> states = new ArrayList<TLCStateInfo>(plen);
+
+				// Recover the initial state:
+				//TODO This throws an ArrayIndexOutOfBounds if getPath returned a
+				// LongVec with just a single element. This happens when the parameter
+				// state is one of the init states already.
+				long fp = prefix.elementAt(plen - 1);
+				TLCStateInfo sinfo = liveCheck.getTool().getState(fp);
+				if (sinfo == null) {
+					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_INIT);
+				}
+				sinfo.stateNumber = stateNum++;
+				states.add(sinfo);
+
+				// Recover the successor states:
+				//TODO Check if path.size has elements
+				for (int i = plen - 2; i >= 0; i--) {
+					long curFP = prefix.elementAt(i);
+					// The prefix might contain duplicates if the path happens to walk
+					// along two (or more distinct states which differ in the tableau
+					// idx only (same fingerprint). From the counterexample perspective,
+					// this is irrelevant iff the identical fingerprints are contiguous.
+					// It won't be correct to shorten a path <<fp1,fp2,fp1>> to
+					// <<fp2,fp1>> though.
+					if (curFP != fp) {
+						sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
+						if (sinfo == null) {
+							throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
+						}
+						sinfo.stateNumber = stateNum++;
+						states.add(sinfo);
+						fp = curFP;
+					}
+				}
+
+				// Print the prefix:
+				TLCState lastState = null;
+				for (int i = 0; i < stateNum; i++) {
+					StatePrinter.printState(states.get(i), lastState, i + 1);
+					lastState = states.get(i).state;
+				}
+				return states;
+			}
+		});
 
 		// First, find a "bad" cycle from the "bad" scc.
 		final int slen = this.oos.getCheckState().length;
@@ -963,70 +1035,16 @@ public class LiveWorker extends IdThread {
 				nodes = nodeTbl.getNodesByLoc(curLoc);
 			}
 		}
+		
 		/*
-		 * At this point 2/3 of the error trace have been constructed.
+		 * At this point the cycle part of the error trace has been constructed.
 		 * cycleStack contains the states from the start state of the SCC up to
 		 * the state that violates all liveness properties. postfix contains the
 		 * suffix from the violating state back to the start state of the SCC.
-		 * The next step is to get the last third which is the prefix from an
-		 * initial node to the start node of the SCC.
+		 * Thus, append the reversed cycleStack onto postfix (cycleStack has the
+		 * last state at the top). Postfix then contains the minimal path in the
+		 * SCC that violates the liveness property.
 		 */
-
-		// Now, print the error trace. We first construct the prefix that
-		// led to the bad cycle. The nodes on prefix and cycleStack then
-		// form the complete counter example.
-		int stateNum = 0;
-		LongVec prefix = this.dg.getPath(state, tidx);
-		int plen = prefix.size();
-		TLCStateInfo[] states = new TLCStateInfo[plen];
-
-		// Recover the initial state:
-		//TODO This throws an ArrayIndexOutOfBounds if getPath returned a
-		// LongVec with just a single element. This happens when the parameter
-		// state is one of the init states already.
-		long fp = prefix.elementAt(plen - 1);
-		TLCStateInfo sinfo = liveCheck.getTool().getState(fp);
-		if (sinfo == null) {
-			throw new EvalException(EC.TLC_FAILED_TO_RECOVER_INIT);
-		}
-		states[stateNum++] = sinfo;
-
-		// Recover the successor states:
-		//TODO Check if path.size has elements
-		for (int i = plen - 2; i >= 0; i--) {
-			long curFP = prefix.elementAt(i);
-			// The prefix might contain duplicates if the path happens to walk
-			// along two (or more distinct states which differ in the tableau
-			// idx only (same fingerprint). From the counterexample perspective,
-			// this is irrelevant iff the identical fingerprints are contiguous.
-			// It won't be correct to shorten a path <<fp1,fp2,fp1>> to
-			// <<fp2,fp1>> though.
-			if (curFP != fp) {
-				sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
-				if (sinfo == null) {
-					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
-				}
-				states[stateNum++] = sinfo;
-				fp = curFP;
-			}
-		}
-
-		// Print the prefix:
-		TLCState lastState = null;
-		for (int i = 0; i < stateNum; i++) {
-			StatePrinter.printState(states[i], lastState, i + 1);
-			lastState = states[i].state;
-		}
-
-		/*
-		 * At this point everything from the initial state up to the start state
-		 * of the SCC has been printed.
-		 */
-
-		// Rewind cycleStack into postfix to reverse its order (cycleStack has
-		// the last state at the top).
-		final int cyclePos = stateNum;
-		final long cycleFP = fp;
 		while (cycleStack.size() > 0) {
 			// Do not filter successive <<fp,tidx,permId>> here but do it below
 			// when the actual states get printed. See Test3.tla for reason why.
@@ -1034,7 +1052,20 @@ public class LiveWorker extends IdThread {
 			cycleStack.popInt(); // ignore tableau idx
 		}
 
-		// Assert.assert(fps.length > 0);
+		// Wait for the prefix-path to be searched/generated and fully printed.
+		final List<TLCStateInfo> states = future.get();
+
+		/*
+		 * At this point everything from the initial state up to the start state
+		 * of the SCC has been printed. Now, print the states in postfix.
+		 */
+		TLCStateInfo sinfo = states.get(states.size() - 1);
+		TLCState lastState = sinfo.state;
+		long fp = lastState.fingerPrint();
+		int stateNum = (int) sinfo.stateNumber + 1;
+		final int cyclePos = stateNum;
+		final long cycleFP = fp;
+
 		for (int i = postfix.size() - 1; i >= 0; i--) {
 			final long curFP = postfix.elementAt(i);
 			// Only print the state if it differs from its predecessor. We don't
@@ -1070,7 +1101,7 @@ public class LiveWorker extends IdThread {
 			// The print stmts below claim there is a cycle, thus assert that
 			// there is indeed one. Index-based lookup into states array is
 			// reduced by one because cyclePos is human-readable.
-			assert states[cyclePos - 1].state.equals(sinfo.state);
+			assert states.get(cyclePos - 1).state.equals(sinfo.state);
 			StatePrinter.printBackToState(cyclePos);
 		}
 	}
