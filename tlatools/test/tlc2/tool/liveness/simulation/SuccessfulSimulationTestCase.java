@@ -53,6 +53,7 @@ public abstract class SuccessfulSimulationTestCase extends ModelCheckerTestCase 
 
 		// Finished...
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertFalse(recorder.recorded(EC.GENERAL));
 		// No temporal violation
 		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		// No counterexample

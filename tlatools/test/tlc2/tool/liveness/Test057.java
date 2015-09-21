@@ -38,6 +38,7 @@ public class Test057 extends ModelCheckerTestCase {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_MODE_MC));
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recorded(EC.TLC_COMPUTING_INIT));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_INVARIANT_VIOLATED_INITIAL, "Invariant1", "x = 1"));
 	}

@@ -38,6 +38,7 @@ public class DoInitFunctorPropertyTest extends ModelCheckerTestCase {
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.TLC_STATS));
+		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_PROPERTY_VIOLATED_INITIAL, "NotNine", "x = 9\n"));
 	}

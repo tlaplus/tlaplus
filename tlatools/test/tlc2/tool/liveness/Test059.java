@@ -37,6 +37,7 @@ public class Test059 extends ModelCheckerTestCase {
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "5"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "6", "5", "0"));

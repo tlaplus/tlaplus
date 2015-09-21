@@ -42,6 +42,7 @@ public class NoSymmetryTableauModelCheckerTest extends ModelCheckerTestCase {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5492", "1272", "0"));
+		assertFalse(recorder.recorded(EC.GENERAL));
 		
 		// Assert it has not found a temporal violation nor a counter example
 		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));

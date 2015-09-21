@@ -38,6 +38,7 @@ public class DoInitFunctorEvalExceptionTest extends ModelCheckerTestCase {
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recorded(EC.TLC_STATS));
+		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_INITIAL_STATE,
 				"TLC expected a boolean value, but did not find one. line 15, col 15 to line 15, col 18 of module DoInitFunctorEvalException",
