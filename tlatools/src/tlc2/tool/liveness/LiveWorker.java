@@ -759,7 +759,9 @@ public class LiveWorker extends IdThread {
 		 */
 		final ExecutorService executor = Executors.newFixedThreadPool(1);
 		final Future<List<TLCStateInfo>> future = executor.submit(new Callable<List<TLCStateInfo>>() {
-			@Override
+			/* (non-Javadoc)
+			 * @see java.util.concurrent.Callable#call()
+			 */
 			public List<TLCStateInfo> call() throws Exception {
 				// Print the error trace. We first construct the prefix that
 				// led to the bad cycle. The nodes on prefix and cycleStack then
