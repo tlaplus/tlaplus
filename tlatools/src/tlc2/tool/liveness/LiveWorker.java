@@ -814,6 +814,170 @@ public class LiveWorker extends IdThread {
 			}
 		});
 
+		/*
+		 * With the executor concurrently working on the prefix, let this thread
+		 * work on the postfix (cycle).
+		 */
+		final MemIntStack cycleStack = new MemIntStack(liveCheck.getMetaDir(), "cycle");
+		GraphNode curNode = dfsPostFix(state, tidx, nodeTbl, cycleStack);
+		
+		/*
+		 * If the cycle is not closed/completed (complete when startState ==
+		 * state), continue from the curNode at which the previous while loop
+		 * terminated and follow its successors until the start state shows up.
+		 */
+		final LongVec postfix = bfsPostFix(state, nodeTbl, curNode);
+
+		/*
+		 * At this point the cycle part of the error trace has been constructed.
+		 * cycleStack contains the states from the start state of the SCC up to
+		 * the state that violates all liveness properties. postfix contains the
+		 * suffix from the violating state back to the start state of the SCC.
+		 * Thus, append the reversed cycleStack onto postfix (cycleStack has the
+		 * last state at the top). Postfix then contains the minimal path in the
+		 * SCC that violates the liveness property.
+		 */
+		while (cycleStack.size() > 0) {
+			// Do not filter successive <<fp,tidx,permId>> here but do it below
+			// when the actual states get printed. See Test3.tla for reason why.
+			postfix.addElement(cycleStack.popLong());
+			cycleStack.popInt(); // ignore tableau idx. The tableau idx is
+									// irrelevant as <<fpA, tidx1>> and <<fpA,
+									// tidx2>> both map to the same state in the
+									// error trace.
+		}
+
+		// Wait for the prefix-path to be searched/generated and fully printed.
+		// get() is a blocking call that makes this thread wait for the executor
+		// to finish its job of searching and printing the prefix-path.
+		final List<TLCStateInfo> states = future.get();
+		
+		/*
+		 * At this point everything from the initial state up to the start state
+		 * of the SCC has been printed. Now, print the states in postfix. Obtain
+		 * the last state from the prefix (which corresponds to <<state, tidx>>)
+		 * to use it to generate the next state. Obviously, we have to wait for
+		 * the prefix thread to be done for two reasons: a) the trace has to be
+		 * printed and b) we need the TLCState instance to generate the
+		 * successor states in the cycle.
+		 */
+		TLCStateInfo sinfo = states.get(states.size() - 1);
+		TLCState lastState = sinfo.state;
+		long fp = lastState.fingerPrint();
+		int stateNum = (int) sinfo.stateNumber + 1;
+		final int cyclePos = stateNum;
+		final long cycleFP = fp;
+
+		// Assert.assert(fps.length > 0);
+		for (int i = postfix.size() - 1; i >= 0; i--) {
+			final long curFP = postfix.elementAt(i);
+			// Only print the state if it differs from its predecessor. We don't
+			// want to print an identical state twice. This can happen if the
+			// loops A) and B) above added an identical state multiple times
+			// into cycleStack/postfix.
+			// The reason we don't simply compare the actual states is for
+			// efficiency reason. Regenerating the next state might be
+			// expensive.
+			if (curFP != fp) {
+				sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
+				if (sinfo == null) {
+					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
+				}
+				StatePrinter.printState(sinfo, lastState, ++stateNum);
+				lastState = sinfo.state; // keep lastState to be able to print the diff in StatePringer.printState if requested by user.
+				fp = curFP;
+			}
+		}
+
+		/* All error trace states have been printed (prefix + cycleStack +
+		 * postfix). What is left is to print either the stuttering or the
+		 * back-to-cyclePos marker.
+		 */ 
+
+		if (fp == cycleFP) {
+			StatePrinter.printStutteringState(++stateNum);
+		} else {
+			sinfo = liveCheck.getTool().getState(cycleFP, sinfo.state);
+			if (sinfo == null) {
+				throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
+			}
+			// The print stmts below claim there is a cycle, thus assert that
+			// there is indeed one. Index-based lookup into states array is
+			// reduced by one because cyclePos is human-readable.
+			assert states.get(cyclePos - 1).state.equals(sinfo.state);
+			StatePrinter.printBackToState(cyclePos);
+		}
+	}
+
+	// BFS search
+	private LongVec bfsPostFix(final long state, final TableauNodePtrTable nodeTbl, GraphNode curNode)
+			throws IOException {
+		final LongVec postfix = new LongVec(16);
+		final long startState = curNode.stateFP;
+		
+		// B)
+		if (startState != state) {
+			final MemIntQueue queue = new MemIntQueue(liveCheck.getMetaDir(), null);
+			long curState = startState;
+			int ploc = -1;
+			int curLoc = nodeTbl.getNodesLoc(curState);
+			int[] nodes = nodeTbl.getNodesByLoc(curLoc);
+			TableauNodePtrTable.setSeen(nodes);
+
+			// B1)
+			_done: while (true) {
+				int tloc = TableauNodePtrTable.startLoc(nodes);
+				while (tloc != -1) {
+					final int curTidx = TableauNodePtrTable.getTidx(nodes, tloc);
+					final long curPtr = TableauNodePtrTable.getPtr(TableauNodePtrTable.getElem(nodes, tloc));
+					curNode = this.dg.getNode(curState, curTidx, curPtr);
+					final int succCnt = curNode.succSize();
+
+					// for each successor of curNode s, check if s is the
+					// destination state.
+					for (int j = 0; j < succCnt; j++) {
+						final long nextState = curNode.getStateFP(j);
+
+						if (nextState == state) {
+							// We have found a path from startState to state,
+							// now backtrack the path the outer loop took to get
+							// us here and add each state to postfix.
+							while (curState != startState) {
+								postfix.addElement(curState);
+								nodes = nodeTbl.getNodesByLoc(ploc);
+								curState = TableauNodePtrTable.getKey(nodes);
+								ploc = TableauNodePtrTable.getParent(nodes);
+							}
+							postfix.addElement(startState);
+							break _done;
+						}
+
+						// s is not equal to the destination state 'startState'.
+						// If s's successors are still unseen, add s to the
+						// queue to later explore it as well. Mark it seen
+						// to not explore it twice.
+						final int[] nodes1 = nodeTbl.getNodes(nextState);
+						if (nodes1 != null && !TableauNodePtrTable.isSeen(nodes1)) {
+							TableauNodePtrTable.setSeen(nodes1);
+							queue.enqueueLong(nextState);
+							queue.enqueueInt(curLoc);
+						}
+					}
+					tloc = TableauNodePtrTable.nextLoc(nodes, tloc);
+				}
+				// Create a parent pointer to later reverse the path in B2)
+				TableauNodePtrTable.setParent(nodes, ploc);
+				// Dequeue the next unexplored state from the queue.
+				curState = queue.dequeueLong();
+				ploc = queue.dequeueInt();
+				curLoc = nodeTbl.getNodesLoc(curState);
+				nodes = nodeTbl.getNodesByLoc(curLoc);
+			}
+		}
+		return postfix;
+	}
+
+	private GraphNode dfsPostFix(final long state, final int tidx, final TableauNodePtrTable nodeTbl, final MemIntStack cycleStack) throws IOException {
 		// First, find a "bad" cycle from the "bad" scc.
 		final int slen = this.oos.getCheckState().length;
 		final int alen = this.oos.getCheckAction().length;
@@ -829,8 +993,6 @@ public class LiveWorker extends IdThread {
 		// determined that there is a violation).
 		int cnt = AEStateRes.length + AEActionRes.length + promiseRes.length;
 
-		final MemIntStack cycleStack = new MemIntStack(liveCheck.getMetaDir(), "cycle");
-
 		// Mark state as visited:
 		int[] nodes = nodeTbl.getNodes(state);
 		int tloc = nodeTbl.getIdx(nodes, tidx);
@@ -841,6 +1003,7 @@ public class LiveWorker extends IdThread {
 		//
 		// Greedy DFS search for a path satisfying the PossibleErrorModel.
 		GraphNode curNode = this.dg.getNode(state, tidx, ptr);
+
 		while (cnt > 0) {
 			int cnt0 = cnt;
 
@@ -961,151 +1124,14 @@ public class LiveWorker extends IdThread {
 				TableauNodePtrTable.setSeen(nodes2, tloc2);
 			}
 		}
-
-		// All the conditions are satisfied. Find a path from curNode
-		// to state to form a cycle. Note that:
+		// All the conditions are satisfied. 
 		// 1. curNode has not been pushed on cycleStack.
-		// 2. nodeTbl is trashed after this operation.
+		// 2. nodeTbl is trashed after this operation, thus reset. Trashed means
+		// that some nodes are still marked seen being left-overs from the
+		// Depth-First search.
 		nodeTbl.resetElems();
-		final LongVec postfix = new LongVec(16);
-		final long startState = curNode.stateFP;
-
-		/*
-		 * If the cycle is not closed/completed (complete when startState ==
-		 * state), continue from the curNode at which the previous while loop
-		 * terminated and follow its successors until the start state shows up.
-		 */
-
-		// B)
-		//
-		// BFS search
-		if (startState != state) {
-			final MemIntQueue queue = new MemIntQueue(liveCheck.getMetaDir(), null);
-			long curState = startState;
-			int ploc = -1;
-			int curLoc = nodeTbl.getNodesLoc(curState);
-			nodes = nodeTbl.getNodesByLoc(curLoc);
-			TableauNodePtrTable.setSeen(nodes);
-
-			// B1)
-			_done: while (true) {
-				tloc = TableauNodePtrTable.startLoc(nodes);
-				while (tloc != -1) {
-					final int curTidx = TableauNodePtrTable.getTidx(nodes, tloc);
-					final long curPtr = TableauNodePtrTable.getPtr(TableauNodePtrTable.getElem(nodes, tloc));
-					curNode = this.dg.getNode(curState, curTidx, curPtr);
-					final int succCnt = curNode.succSize();
-
-					// for each successor of curNode s, check if s is the
-					// destination state.
-					for (int j = 0; j < succCnt; j++) {
-						final long nextState = curNode.getStateFP(j);
-
-						if (nextState == state) {
-							// We have found a path from startState to state,
-							// now backtrack the path the outer loop took to get
-							// us here and add each state to postfix.
-							while (curState != startState) {
-								postfix.addElement(curState);
-								nodes = nodeTbl.getNodesByLoc(ploc);
-								curState = TableauNodePtrTable.getKey(nodes);
-								ploc = TableauNodePtrTable.getParent(nodes);
-							}
-							postfix.addElement(startState);
-							break _done;
-						}
-
-						// s is not equal to the destination state 'startState'.
-						// If s's successors are still unseen, add s to the
-						// queue to later explore it as well. Mark it seen
-						// to not explore it twice.
-						final int[] nodes1 = nodeTbl.getNodes(nextState);
-						if (nodes1 != null && !TableauNodePtrTable.isSeen(nodes1)) {
-							TableauNodePtrTable.setSeen(nodes1);
-							queue.enqueueLong(nextState);
-							queue.enqueueInt(curLoc);
-						}
-					}
-					tloc = TableauNodePtrTable.nextLoc(nodes, tloc);
-				}
-				// Create a parent pointer to later reverse the path in B2)
-				TableauNodePtrTable.setParent(nodes, ploc);
-				// Dequeue the next unexplored state from the queue.
-				curState = queue.dequeueLong();
-				ploc = queue.dequeueInt();
-				curLoc = nodeTbl.getNodesLoc(curState);
-				nodes = nodeTbl.getNodesByLoc(curLoc);
-			}
-		}
 		
-		/*
-		 * At this point the cycle part of the error trace has been constructed.
-		 * cycleStack contains the states from the start state of the SCC up to
-		 * the state that violates all liveness properties. postfix contains the
-		 * suffix from the violating state back to the start state of the SCC.
-		 * Thus, append the reversed cycleStack onto postfix (cycleStack has the
-		 * last state at the top). Postfix then contains the minimal path in the
-		 * SCC that violates the liveness property.
-		 */
-		while (cycleStack.size() > 0) {
-			// Do not filter successive <<fp,tidx,permId>> here but do it below
-			// when the actual states get printed. See Test3.tla for reason why.
-			postfix.addElement(cycleStack.popLong());
-			cycleStack.popInt(); // ignore tableau idx
-		}
-
-		// Wait for the prefix-path to be searched/generated and fully printed.
-		final List<TLCStateInfo> states = future.get();
-
-		/*
-		 * At this point everything from the initial state up to the start state
-		 * of the SCC has been printed. Now, print the states in postfix.
-		 */
-		TLCStateInfo sinfo = states.get(states.size() - 1);
-		TLCState lastState = sinfo.state;
-		long fp = lastState.fingerPrint();
-		int stateNum = (int) sinfo.stateNumber + 1;
-		final int cyclePos = stateNum;
-		final long cycleFP = fp;
-
-		for (int i = postfix.size() - 1; i >= 0; i--) {
-			final long curFP = postfix.elementAt(i);
-			// Only print the state if it differs from its predecessor. We don't
-			// want to print an identical state twice. This can happen if the
-			// loops A) and B) above added an identical state multiple times
-			// into cycleStack/postfix.
-			// The reason we don't simply compare the actual states is for
-			// efficiency reason. Regenerating the next state might be
-			// expensive.
-			if (curFP != fp) {
-				sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
-				if (sinfo == null) {
-					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
-				}
-				StatePrinter.printState(sinfo, lastState, ++stateNum);
-				lastState = sinfo.state;
-				fp = curFP;
-			}
-		}
-
-		/* All error trace states have been printed (prefix + cycleStack +
-		 * postfix). What is left is to print either the stuttering or the
-		 * back-to-cyclePos marker.
-		 */ 
-
-		if (fp == cycleFP) {
-			StatePrinter.printStutteringState(++stateNum);
-		} else {
-			sinfo = liveCheck.getTool().getState(cycleFP, sinfo.state);
-			if (sinfo == null) {
-				throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
-			}
-			// The print stmts below claim there is a cycle, thus assert that
-			// there is indeed one. Index-based lookup into states array is
-			// reduced by one because cyclePos is human-readable.
-			assert states.get(cyclePos - 1).state.equals(sinfo.state);
-			StatePrinter.printBackToState(cyclePos);
-		}
+		return curNode;
 	}
 
 	/* (non-Javadoc)

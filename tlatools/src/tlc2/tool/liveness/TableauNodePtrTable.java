@@ -290,13 +290,22 @@ public class TableauNodePtrTable {
 		}
 	}
 	
-	// Called when the error trace is being printed
+	/**
+	 * Clears the seen flag of all records set by static setSeen(..) calls
+	 * earlier.
+	 * <p>
+	 * Post-Condition: None of the records is marked seen.
+	 * 
+	 * @see TableauNodePtrTable#setSeen(int[])
+	 * @see TableauNodePtrTable#setSeen(int[], int)
+	 */
 	public final void resetElems() {
+		// Only called when the error trace is being printed. 
 		for (int i = 0; i < this.nodes.length; i++) {
 			int[] node = this.nodes[i];
 			if (node != null) {
 				for (int j = 3; j < node.length; j += getElemLength()) {
-					node[j] &= 0x7FFFFFFF;
+					node[j] &= 0x7FFFFFFF; // Clear the MSB set by setSeen(..)
 				}
 			}
 		}
@@ -410,25 +419,48 @@ public class TableauNodePtrTable {
 		return (loc < node.length) ? loc : -1;
 	}
 
+	/**
+	 * @param nodes
+	 * @return True, iff the record at tloc has been marked seen.
+	 * @see TableauNodePtrTable#setSeen(int[], int)
+	 */
 	public static boolean isSeen(int[] nodes, int tloc) {
 		return getElem(nodes, tloc) < 0;
 	}
 
+	/**
+	 * Marks the record at tloc seen.
+	 * 
+	 * @param nodes
+	 * @see TableauNodePtrTable#setSeen(int[])
+	 * @see TableauNodePtrTable#resetElems()
+	 */
 	public static void setSeen(int[] nodes, int tloc) {
 		long ptr = getElem(nodes, tloc);
-		putElem(nodes, (ptr | 0x8000000000000000L), tloc);
+		putElem(nodes, (ptr | 0x8000000000000000L), tloc); // Set the MSB
 	}
 
 	public static long getPtr(long ptr) {
 		return (ptr & 0x7FFFFFFFFFFFFFFFL);
 	}
 
+	/**
+	 * @see TableauNodePtrTable#setSeen(int[])
+	 * @param nodes
+	 * @return True, iff the record has been marked seen.
+	 */
 	public static boolean isSeen(int[] nodes) {
 		return nodes[3] < 0;
 	}
 
+	/**
+	 * Marks this record seen.
+	 * 
+	 * @param nodes
+	 * @see TableauNodePtrTable#resetElems()
+	 */
 	public static void setSeen(int[] nodes) {
-		nodes[3] |= 0x80000000;
+		nodes[3] |= 0x80000000; // Set the MSB
 	}
 
 	public static int getParent(int[] nodes) {
