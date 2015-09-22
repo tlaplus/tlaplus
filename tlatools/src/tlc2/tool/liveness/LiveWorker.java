@@ -826,7 +826,7 @@ public class LiveWorker extends IdThread {
 		 * state), continue from the curNode at which the previous while loop
 		 * terminated and follow its successors until the start state shows up.
 		 */
-		final LongVec postfix = bfsPostFix(state, nodeTbl, curNode);
+		final LongVec postfix = bfsPostFix(state, tidx, nodeTbl, curNode);
 
 		/*
 		 * At this point the cycle part of the error trace has been constructed.
@@ -910,13 +910,14 @@ public class LiveWorker extends IdThread {
 	}
 
 	// BFS search
-	private LongVec bfsPostFix(final long state, final TableauNodePtrTable nodeTbl, GraphNode curNode)
+	private LongVec bfsPostFix(final long state, final int tidx, final TableauNodePtrTable nodeTbl, GraphNode curNode)
 			throws IOException {
 		final LongVec postfix = new LongVec(16);
 		final long startState = curNode.stateFP;
+		final long startTidx = curNode.tindex;
 		
 		// B)
-		if (startState != state) {
+		if (startState != state || startTidx != tidx) {
 			final MemIntQueue queue = new MemIntQueue(liveCheck.getMetaDir(), null);
 			long curState = startState;
 			int ploc = -1;
@@ -937,8 +938,9 @@ public class LiveWorker extends IdThread {
 					// destination state.
 					for (int j = 0; j < succCnt; j++) {
 						final long nextState = curNode.getStateFP(j);
+						final int nextTidx = curNode.getTidx(j);
 
-						if (nextState == state) {
+						if (nextState == state && nextTidx == tidx) {
 							// We have found a path from startState to state,
 							// now backtrack the path the outer loop took to get
 							// us here and add each state to postfix.
