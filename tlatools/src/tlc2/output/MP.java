@@ -1195,7 +1195,7 @@ public class MP
         } else {
             msg = msg + "\nThe error occurred when TLC was " + cause + ".";
         }
-        msg = msg + "\nThe exception was a " + throwable.getClass().getName();
+        msg = msg + "\nThe exception was a " + throwable.getClass().getName() + "\n";
         if (throwable.getMessage() != null) {
             msg = msg + ": " + throwable.getMessage();
             
