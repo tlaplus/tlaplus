@@ -767,7 +767,7 @@ public class LiveWorker extends IdThread {
 				// Print the error trace. We first construct the prefix that
 				// led to the bad cycle. The nodes on prefix and cycleStack then
 				// form the complete counter example.
-				int stateNum = 0;
+				int stateNum = 1;
 				final LongVec prefix = LiveWorker.this.dg.getPath(state, tidx);
 				final int plen = prefix.size();
 				final List<TLCStateInfo> states = new ArrayList<TLCStateInfo>(plen);
@@ -807,7 +807,7 @@ public class LiveWorker extends IdThread {
 
 				// Print the prefix:
 				TLCState lastState = null;
-				for (int i = 0; i < stateNum; i++) {
+				for (int i = 0; i < stateNum - 1; i++) {
 					StatePrinter.printState(states.get(i), lastState, i + 1);
 					lastState = states.get(i).state;
 				}
@@ -865,7 +865,7 @@ public class LiveWorker extends IdThread {
 		TLCStateInfo sinfo = states.get(states.size() - 1);
 		TLCState lastState = sinfo.state;
 		long fp = lastState.fingerPrint();
-		int stateNum = (int) sinfo.stateNumber + 1;
+		int stateNum = (int) sinfo.stateNumber;
 		final int cyclePos = stateNum;
 		final long cycleFP = fp;
 
