@@ -541,6 +541,7 @@ public class LiveWorker extends IdThread {
 		while (true) {
 			// Add <state1, tidx1> into com:
 			com.put(state1, tidx1, loc1);
+			assert AbstractDiskGraph.isFilePointer(loc1);
 			this.dg.setMaxLink(state1, tidx1);
 
 			// Get the next node of the component:
@@ -920,7 +921,7 @@ public class LiveWorker extends IdThread {
 		if (startState != state || startTidx != tidx) {
 			final MemIntQueue queue = new MemIntQueue(liveCheck.getMetaDir(), null);
 			long curState = startState;
-			int ploc = -1;
+			int ploc = TableauNodePtrTable.NO_PARENT;
 			int curLoc = nodeTbl.getNodesLoc(curState);
 			int[] nodes = nodeTbl.getNodesByLoc(curLoc);
 			TableauNodePtrTable.setSeen(nodes);

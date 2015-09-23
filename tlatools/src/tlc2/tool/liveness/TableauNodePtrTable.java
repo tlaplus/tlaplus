@@ -410,6 +410,12 @@ public class TableauNodePtrTable {
 		return node[loc];
 	}
 
+	/*
+	 * Helper methods used by LiveWorker#printTrace(..) only. Note that
+	 * printTrace does not use the TNPT instance of the DiskGraph but its own
+	 * instance only containing a single SCC.
+	 */
+	
 	public static int startLoc(int[] node) {
 		return (node.length > 2) ? 2 : -1;
 	}
@@ -463,11 +469,14 @@ public class TableauNodePtrTable {
 		nodes[3] |= 0x80000000; // Set the MSB
 	}
 
+	public static final int NO_PARENT = -1;
+	
 	public static int getParent(int[] nodes) {
 		return nodes[4];
 	}
 
 	public static void setParent(int[] nodes, int loc) {
+		assert loc >= NO_PARENT && loc <= AbstractDiskGraph.MAX_PTR;
 		nodes[4] = loc;
 	}
 
