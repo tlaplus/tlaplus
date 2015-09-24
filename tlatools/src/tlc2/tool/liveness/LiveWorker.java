@@ -880,7 +880,7 @@ public class LiveWorker extends IdThread {
 			// efficiency reason. Regenerating the next state might be
 			// expensive.
 			if (curFP != fp) {
-				sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
+				sinfo = liveCheck.getTool().getState(curFP, sinfo);
 				if (sinfo == null) {
 					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 				}
@@ -898,7 +898,7 @@ public class LiveWorker extends IdThread {
 		if (fp == cycleFP) {
 			StatePrinter.printStutteringState(++stateNum);
 		} else {
-			sinfo = liveCheck.getTool().getState(cycleFP, sinfo.state);
+			sinfo = liveCheck.getTool().getState(cycleFP, sinfo);
 			if (sinfo == null) {
 				throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 			}

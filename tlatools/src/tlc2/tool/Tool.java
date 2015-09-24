@@ -6,6 +6,7 @@
 package tlc2.tool;
 
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.FormalParamNode;
@@ -19,7 +20,6 @@ import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
-import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tlc2.TLCGlobals;
@@ -2719,6 +2719,16 @@ public class Tool
     }
     return null;
   }
+  
+	/**
+	 * Reconstruct the next state of state s whose fingerprint is fp.
+	 */
+	public final TLCStateInfo getState(long fp, TLCStateInfo sinfo) {
+		final TLCStateInfo tlcStateInfo = getState(fp, sinfo.state);
+		tlcStateInfo.stateNumber = sinfo.stateNumber + 1;
+		tlcStateInfo.predecessorState = sinfo;
+		return tlcStateInfo;
+	}
   
   /* Reconstruct the next state of state s whose fingerprint is fp. */
   public final TLCStateInfo getState(long fp, TLCState s) {
