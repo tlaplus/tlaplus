@@ -906,7 +906,7 @@ public class LiveWorker extends IdThread {
 			// there is indeed one. Index-based lookup into states array is
 			// reduced by one because cyclePos is human-readable.
 			assert states.get(cyclePos - 1).state.equals(sinfo.state);
-			StatePrinter.printBackToState(cyclePos);
+			StatePrinter.printBackToState(sinfo, cyclePos);
 		}
 	}
 

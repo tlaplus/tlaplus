@@ -170,4 +170,21 @@ public abstract class ModelCheckerTestCase extends TestCase {
 		Object[] object = (Object[]) loop.get(0);
 		assertEquals(Integer.toString(stateNum), object[0]);
 	}
+
+	/**
+	 * Asserts that the error trace loops back to the state with the given
+	 * number.
+	 * 
+	 * @param i The loop back state number.
+	 * @param action The action label associated with the loop back marker
+	 */
+	protected void assertBackToState(int stateNum, final String action) {
+		assertTrue(recorder.recorded(EC.TLC_BACK_TO_STATE));
+		List<Object> loop = recorder.getRecords(EC.TLC_BACK_TO_STATE);
+		assertTrue(loop.size() > 0);
+		Object[] object = (Object[]) loop.get(0);
+		assertTrue(object.length > 1);
+		assertEquals(Integer.toString(stateNum), object[0]);
+		assertEquals(action, object[1]);
+	}
 }

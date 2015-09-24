@@ -70,7 +70,10 @@ public class TLCState implements IModuleLocatable
             return STUTTERING_STATE(number, modelName);
         } else if (label.indexOf(BACK_TO_STATE) != -1)
         {
-            return BACK_TO_STATE(number, modelName);
+            final TLCState state = BACK_TO_STATE(number, modelName);
+            // See in MP.java case for EC.TLC_BACK_TO_STATE
+            state.setLocation(Location.parseLocation(label.substring(" Back to State: ".length(), label.length()))); 
+			return state;
         } else
         {
             TLCState state = new TLCState(number, modelName);
