@@ -10,14 +10,24 @@ public class TLCStateInfo {
   public long stateNumber;
   public TLCState state;
   public Object info;
+  public Long fp;
 
   public TLCStateInfo(TLCState s, Object info) {
     this.state = s;
     this.info = info;
   }
 
+  public TLCStateInfo(TLCState s, String info, int stateNum, long fp) {
+	  this(s, info);
+	  stateNumber = stateNum;
+	  this.fp = fp;
+  }
+
   public final long fingerPrint() {
-    return this.state.fingerPrint();
+	  if (fp == null) {
+		  fp = this.state.fingerPrint();
+	  }
+	  return fp.longValue();
   }
 
   public final String toString() {

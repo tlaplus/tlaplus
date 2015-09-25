@@ -678,7 +678,7 @@ public class LiveCheck1 implements ILiveCheck {
 			}
 		}
 		if (node.stateFP == lastState.fingerPrint()) {
-			StatePrinter.printStutteringState(++stateNum);
+			StatePrinter.printStutteringState(stateNum);
 		} else {
 			if (TLCGlobals.tool) {
 				// The parser in Tool mode is picky and does not detect the Back to State unless it's printed via MP.printState.

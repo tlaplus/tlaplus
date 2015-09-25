@@ -19,7 +19,6 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.StatePrinter;
 import tlc2.tool.EvalException;
-import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.util.IdThread;
 import tlc2.util.IntStack;
@@ -767,7 +766,6 @@ public class LiveWorker extends IdThread {
 				// Print the error trace. We first construct the prefix that
 				// led to the bad cycle. The nodes on prefix and cycleStack then
 				// form the complete counter example.
-				int stateNum = 1;
 				final LongVec prefix = LiveWorker.this.dg.getPath(state, tidx);
 				final int plen = prefix.size();
 				final List<TLCStateInfo> states = new ArrayList<TLCStateInfo>(plen);
@@ -781,11 +779,9 @@ public class LiveWorker extends IdThread {
 				if (sinfo == null) {
 					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_INIT);
 				}
-				sinfo.stateNumber = stateNum++;
 				states.add(sinfo);
 
 				// Recover the successor states:
-				//TODO Check if path.size has elements
 				for (int i = plen - 2; i >= 0; i--) {
 					long curFP = prefix.elementAt(i);
 					// The prefix might contain duplicates if the path happens to walk
@@ -795,21 +791,15 @@ public class LiveWorker extends IdThread {
 					// It won't be correct to shorten a path <<fp1,fp2,fp1>> to
 					// <<fp2,fp1>> though.
 					if (curFP != fp) {
-						sinfo = liveCheck.getTool().getState(curFP, sinfo.state);
-						if (sinfo == null) {
-							throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
-						}
-						sinfo.stateNumber = stateNum++;
-						states.add(sinfo);
+						sinfo = liveCheck.getTool().getState(curFP, sinfo);
+						states.add(sinfo);	
 						fp = curFP;
 					}
 				}
 
-				// Print the prefix:
-				TLCState lastState = null;
-				for (int i = 0; i < stateNum - 1; i++) {
-					StatePrinter.printState(states.get(i), lastState, i + 1);
-					lastState = states.get(i).state;
+				// Print the prefix in reverse order of previous loop:
+				for (int i = 0; i < states.size(); i++) {
+					StatePrinter.printState(states.get(i));
 				}
 				return states;
 			}
@@ -862,12 +852,10 @@ public class LiveWorker extends IdThread {
 		 * printed and b) we need the TLCState instance to generate the
 		 * successor states in the cycle.
 		 */
-		TLCStateInfo sinfo = states.get(states.size() - 1);
-		TLCState lastState = sinfo.state;
-		long fp = lastState.fingerPrint();
-		int stateNum = (int) sinfo.stateNumber;
-		final int cyclePos = stateNum;
-		final long cycleFP = fp;
+		final TLCStateInfo cycleState = states.get(states.size() - 1);
+		
+		TLCStateInfo sinfo = cycleState;
+		long fp = sinfo.fingerPrint();
 
 		// Assert.assert(fps.length > 0);
 		for (int i = postfix.size() - 1; i >= 0; i--) {
@@ -881,11 +869,7 @@ public class LiveWorker extends IdThread {
 			// expensive.
 			if (curFP != fp) {
 				sinfo = liveCheck.getTool().getState(curFP, sinfo);
-				if (sinfo == null) {
-					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
-				}
-				StatePrinter.printState(sinfo, lastState, ++stateNum);
-				lastState = sinfo.state; // keep lastState to be able to print the diff in StatePringer.printState if requested by user.
+				StatePrinter.printState(sinfo);
 				fp = curFP;
 			}
 		}
@@ -894,19 +878,17 @@ public class LiveWorker extends IdThread {
 		 * postfix). What is left is to print either the stuttering or the
 		 * back-to-cyclePos marker.
 		 */ 
-
-		if (fp == cycleFP) {
-			StatePrinter.printStutteringState(++stateNum);
+		
+		final int stateNumber = (int) cycleState.stateNumber; // if the cast causes problems the trace won't be comprehensible anyway.
+		if (fp == cycleState.fingerPrint()) {
+			StatePrinter.printStutteringState(stateNumber);
 		} else {
-			sinfo = liveCheck.getTool().getState(cycleFP, sinfo);
-			if (sinfo == null) {
-				throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
-			}
+			sinfo = liveCheck.getTool().getState(cycleState.fingerPrint(), sinfo);
 			// The print stmts below claim there is a cycle, thus assert that
 			// there is indeed one. Index-based lookup into states array is
 			// reduced by one because cyclePos is human-readable.
-			assert states.get(cyclePos - 1).state.equals(sinfo.state);
-			StatePrinter.printBackToState(sinfo, cyclePos);
+			assert cycleState.state.equals(sinfo.state);
+			StatePrinter.printBackToState(sinfo, stateNumber);
 		}
 	}
 

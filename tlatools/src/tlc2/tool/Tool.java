@@ -2714,7 +2714,8 @@ public class Tool
       long nfp = state.fingerPrint();
       if (fp == nfp) {
         String info = "<Initial predicate>";
-        return new TLCStateInfo(state, info);
+        final TLCStateInfo tlcStateInfo = new TLCStateInfo(state, info, 1, fp);
+		return tlcStateInfo;
       }
     }
     return null;
@@ -2722,11 +2723,19 @@ public class Tool
   
 	/**
 	 * Reconstruct the next state of state s whose fingerprint is fp.
+	 * 
+	 * @return Returns the TLCState wrapped in TLCStateInfo. TLCStateInfo stores
+	 *         the stateNumber (relative to the given sinfo) and a pointer to
+	 *         the predecessor.
 	 */
 	public final TLCStateInfo getState(long fp, TLCStateInfo sinfo) {
 		final TLCStateInfo tlcStateInfo = getState(fp, sinfo.state);
+		if (tlcStateInfo == null) {
+			throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
+		}
 		tlcStateInfo.stateNumber = sinfo.stateNumber + 1;
 		tlcStateInfo.predecessorState = sinfo;
+		tlcStateInfo.fp = fp;
 		return tlcStateInfo;
 	}
   

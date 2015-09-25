@@ -45,6 +45,15 @@ public class StatePrinter
         MP.printState(EC.TLC_STATE_PRINT1, new String[] { "", currentState.toString() }, currentState, -1);
     }
 
+    public static void printState(TLCStateInfo currentStateInfo) {
+    	if (currentStateInfo.predecessorState == null) {
+    		// It's an initial state
+			printState(currentStateInfo, null, (int) currentStateInfo.stateNumber);
+    	} else {
+			printState(currentStateInfo, currentStateInfo.predecessorState.state, (int) currentStateInfo.stateNumber);
+    	}
+    }
+    
     /**
      * Prints the state information
      * if the TLC runs in print-diff-only mode and the last state is set, it will print the diff only 
@@ -70,7 +79,7 @@ public class StatePrinter
      */
     public static void printStutteringState(int num)
     {
-        MP.printState(EC.TLC_STATE_PRINT3, new String[] { String.valueOf(num) }, (TLCState) null, num);
+        MP.printState(EC.TLC_STATE_PRINT3, new String[] { String.valueOf(num + 1) }, (TLCState) null, num + 1);
     }
 
 	/**
