@@ -299,21 +299,11 @@ public class GraphNode extends AbstractGraphNode {
 	public final String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("<" + this.stateFP + "," + this.tindex + "> --> ");
-		int size = this.nnodes.length;
-		if (size != 0) {
-			long high = this.nnodes[0];
-			long low = this.nnodes[1];
-			long fp = (high << 32) | (low & 0xFFFFFFFFL);
-			buf.append("<" + fp + "," + this.nnodes[2] + ">");
-		}
-		for (int i = NNODE_RECORD_SIZE; i < size; i += NNODE_RECORD_SIZE) {
+		for (int i = 0; i < succSize(); i++) {
+			buf.append("<" + getStateFP(i) + "," + getTidx(i) + ">");
 			buf.append(", ");
-			long high = this.nnodes[i];
-			long low = this.nnodes[i + 1];
-			long fp = (high << 32) | (low & 0xFFFFFFFFL);
-			buf.append("<" + fp + "," + this.nnodes[i + 2] + ">");
 		}
-		return buf.toString();
+		return buf.substring(0, buf.length() - ", ".length()); // chop off dangling ", "
 	}
 
 	public String toDotViz(final boolean isInitState, final boolean hasTableau) {
