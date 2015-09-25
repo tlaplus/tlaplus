@@ -855,9 +855,6 @@ public class LiveWorker extends IdThread {
 		final TLCStateInfo cycleState = states.get(states.size() - 1);
 		
 		TLCStateInfo sinfo = cycleState;
-		long fp = sinfo.fingerPrint();
-
-		// Assert.assert(fps.length > 0);
 		for (int i = postfix.size() - 1; i >= 0; i--) {
 			final long curFP = postfix.elementAt(i);
 			// Only print the state if it differs from its predecessor. We don't
@@ -867,10 +864,9 @@ public class LiveWorker extends IdThread {
 			// The reason we don't simply compare the actual states is for
 			// efficiency reason. Regenerating the next state might be
 			// expensive.
-			if (curFP != fp) {
+			if (curFP != sinfo.fingerPrint()) {
 				sinfo = liveCheck.getTool().getState(curFP, sinfo);
 				StatePrinter.printState(sinfo);
-				fp = curFP;
 			}
 		}
 
@@ -880,7 +876,7 @@ public class LiveWorker extends IdThread {
 		 */ 
 		
 		final int stateNumber = (int) cycleState.stateNumber; // if the cast causes problems the trace won't be comprehensible anyway.
-		if (fp == cycleState.fingerPrint()) {
+		if (sinfo.fingerPrint() == cycleState.fingerPrint()) {
 			StatePrinter.printStutteringState(stateNumber);
 		} else {
 			sinfo = liveCheck.getTool().getState(cycleState.fingerPrint(), sinfo);
