@@ -915,10 +915,20 @@ public class LiveWorker extends IdThread {
 
 					// for each successor of curNode s, check if s is the
 					// destination state.
-					for (int j = 0; j < succCnt; j++) {
+					SUCCESSORS: for (int j = 0; j < succCnt; j++) {
 						final long nextState = curNode.getStateFP(j);
 						final int nextTidx = curNode.getTidx(j);
 
+						// Ignore self-loop because it cannot close the
+						// cycle/lasso. The seen state flag partially
+						// prevents exploring self-loops, but only if
+						// the tableau idx is the base idx (the seen 
+						// flag ignores the tableau idx entirely).
+						if (curState == nextState && curTidx == nextTidx) {
+							assert TableauNodePtrTable.isSeen(nodes);
+							continue SUCCESSORS;
+						}
+						
 						if (nextState == state && nextTidx == tidx) {
 							// We have found a path from startState to state,
 							// now backtrack the path the outer loop took to get
