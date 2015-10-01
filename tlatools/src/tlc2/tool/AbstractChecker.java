@@ -160,8 +160,9 @@ public abstract class AbstractChecker implements Cancelable
      */
     protected void reportCoverage(IWorker[] workers)
     {
-        if (TLCGlobals.coverageInterval >= 0)
-        {
+		// Without actions (empty spec) there won't be any statistics anyway.
+		if (TLCGlobals.coverageInterval >= 0 && this.actions.length > 0)
+		{
             MP.printMessage(EC.TLC_COVERAGE_START);
             // First collecting all counts from all workers:
             ObjLongTable counts = this.tool.getPrimedLocs();
