@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -136,17 +137,19 @@ public class StateSpaceInformationItem
 			final Date time = SDF.parse(outputMessage.substring(
 					i[1] + AT.length(), i[2]));
 
+			final NumberFormat nf = NumberFormat.getNumberInstance();
+			
 			final long diameter = Long.parseLong(outputMessage.substring(i[0]
 					+ OB.length(), i[1]));
 			final long foundStates = Long.parseLong(outputMessage.substring(
 					i[2] + COLON.length(), i[3]));
-			final long statesPerMinute = Long.parseLong(outputMessage
-					.substring(i[3] + GENERATED.length(), i[4]).replace(",", ""));
+			final long statesPerMinute = nf.parse(outputMessage
+					.substring(i[3] + GENERATED.length(), i[4]).replace(",", "")).longValue();
 
 			final long distinctStates = Long.parseLong(outputMessage.substring(
 					i[4] + SPM.length(), i[5]));
-			final long distinctStatesPerMinute = Long.parseLong(outputMessage
-					.substring(i[5] + DISTINCT.length(), i[6]).replace(",", ""));
+			final long distinctStatesPerMinute = nf.parse(outputMessage
+					.substring(i[5] + DISTINCT.length(), i[6]).replace(",", "")).longValue();
 
 			final long leftStates = Long.parseLong(outputMessage.substring(i[6]
 					+ DISTINCT_SPM.length(), i[7]));
