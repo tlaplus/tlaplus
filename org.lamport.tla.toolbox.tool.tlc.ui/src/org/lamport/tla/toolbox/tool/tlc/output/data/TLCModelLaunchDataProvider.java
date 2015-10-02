@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.output.data;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +14,9 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationListener;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
@@ -43,7 +46,7 @@ import tlc2.output.MP;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class TLCModelLaunchDataProvider implements ITLCOutputListener
+public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchConfigurationListener
 {
     public static final String NO_OUTPUT_AVAILABLE = "No user output is available";
 
@@ -115,6 +118,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
     protected int numWorkers = 0;
 
+	private Map<String, Object> cachedAttributes;
+
     /**
      * @return the startTime
      */
@@ -126,6 +131,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public TLCModelLaunchDataProvider(ILaunchConfiguration config)
     {
         this.config = config;
+
         // init provider, but not connect it to the source!
         initialize();
 
@@ -159,6 +165,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
         constantExprEvalOutput = "";
 
+        // Register as a LCL to cache the LaunchConfig's attributes upon save/commit.
+        DebugPlugin.getDefault().getLaunchManager().addLaunchConfigurationListener(this);
     }
 
     /**
@@ -492,6 +500,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      */
     public void destroy()
     {
+        DebugPlugin.getDefault().getLaunchManager().removeLaunchConfigurationListener(this);
         TLCOutputSourceRegistry.getModelCheckSourceRegistry().disconnect(this);
     }
 
@@ -603,7 +612,17 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                 // some attributes are lists
                                 if (ModelHelper.isListAttribute(attributeName))
                                 {
-                                    List<String> attributeValue = (List<String>) config.getAttribute(attributeName, new ArrayList<String>());
+									// If a cached version of the attributes is
+									// available (which should), use it as a
+									// fall back for the non-deterministic case
+									// that config.getAttribute(..) temporarily
+									// fails to read the real value.
+									@SuppressWarnings("unchecked")
+									final List<String> defaultValue = cachedAttributes == null
+											? new ArrayList<String>(0)
+											: (List<String>) cachedAttributes.get(attributeName);
+										
+									List<String> attributeValue = (List<String>) config.getAttribute(attributeName, defaultValue);
                                     int attributeNumber = (attributeIndex != null) ? attributeIndex.intValue() : 0;
 
                                     if (IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS.equals(attributeName)
@@ -970,5 +989,35 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 		// defined here so subclasses can override which ain't backed by a real
 		// file (e.g. unit test)
 		return ModelHelper.getModelName(getConfig().getFile());
+	}
+	
+	/* org.eclipse.debug.core.ILaunchConfigurationListener */
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.core.ILaunchConfigurationListener#launchConfigurationAdded(org.eclipse.debug.core.ILaunchConfiguration)
+	 */
+	public void launchConfigurationAdded(final ILaunchConfiguration configuration) {
+		// Ignore
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.core.ILaunchConfigurationListener#launchConfigurationChanged(org.eclipse.debug.core.ILaunchConfiguration)
+	 */
+	public void launchConfigurationChanged(final ILaunchConfiguration configuration) {
+		// The moment the launch config is saved/committed, cache its attributes.
+		if (configuration == this.config) {
+			try {
+				cachedAttributes = this.config.getAttributes();
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.core.ILaunchConfigurationListener#launchConfigurationRemoved(org.eclipse.debug.core.ILaunchConfiguration)
+	 */
+	public void launchConfigurationRemoved(final ILaunchConfiguration configuration) {
+		// Ignore
 	}
 }
