@@ -26,8 +26,16 @@ import util.ToolIO;
 * CLASS trans                                                              *
 *                                                                          *
 *  BUGS:                                                                   *
-*     Accepts if (...) {...} ; else {...}                                  *
-*     Generates code as if the ";" were not there.                         *
+*    - Accepts if (...) {...} ; else {...}                                  *
+*      Generates code as if the ";" were not there.                         *
+*      
+*    - When the body of a macro contains a statement with(v \in ...)
+*      and v is a macro parameter, the argument is not being substituted
+*      for v.
+*      
+*    - I came across a  "TLAExpr.renormalize() found anchor has moved to left"
+*      error, apparently caused by a substitution of an expression longer
+*      than the macro parameter it is instantiating in some weird case.
 *                                                                          *
 *  POSSIBLE FEATURE:                                                       *
 *     Adds the pc variable if a label has a + or - modifier.  It's         *
