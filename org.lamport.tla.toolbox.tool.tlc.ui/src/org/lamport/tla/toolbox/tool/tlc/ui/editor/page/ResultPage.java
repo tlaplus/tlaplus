@@ -596,6 +596,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 			// Get the user input (the path to the TLC output file).
 			final FileDialog fileDialog = new FileDialog(new Shell());
 			final String path = fileDialog.open();
+			if (path == null) {
+				// User cancelled the dialog
+				return;
+			}
 			
 			// I/O operations should never run inside the UI thread.
 			final Job j = new WorkspaceJob("Loading output file...") {
