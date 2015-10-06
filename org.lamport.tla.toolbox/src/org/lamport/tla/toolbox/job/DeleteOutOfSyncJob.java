@@ -2,7 +2,7 @@ package org.lamport.tla.toolbox.job;
 
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -16,12 +16,12 @@ import org.eclipse.core.runtime.Status;
  */
 public class DeleteOutOfSyncJob extends WorkspaceJob
 {
-    private final List files;
+    private final List<IResource> files;
 
     /**
      * @param name
      */
-    public DeleteOutOfSyncJob(List files)
+    public DeleteOutOfSyncJob(List<IResource> files)
     {
         super("deleteOutOfSyncFiles");
         this.files = files;
@@ -34,7 +34,7 @@ public class DeleteOutOfSyncJob extends WorkspaceJob
     {
         for (int i = 0; i < files.size(); i++)
         {
-            ((IFile)files.get(i)).delete(true, monitor);
+            files.get(i).delete(true, monitor);
         }
         return Status.OK_STATUS;
     }
