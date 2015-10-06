@@ -841,10 +841,13 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                             // install it on the first page
                             // if it is a global TLC error, then we call addGlobalTLCErrorMessage()
                             // to add a hyperlink to the TLC Error view
-                            if (bubbleType == IMessageProvider.WARNING)
+                            if (bubbleType == IMessageProvider.WARNING && IModelConfigurationDefaults.EMPTY_STRING.equals(message))
                             {
                                 this.pagesToAdd[0].addGlobalTLCErrorMessage("modelProblem_" + i);
                                 this.pagesToAdd[1].addGlobalTLCErrorMessage("modelProblem_" + i);
+                            } else if (bubbleType == IMessageProvider.WARNING) {
+                            	// Used by the ResultPage to display an error un incomplete state space exploration.
+                            	this.pagesToAdd[2].addGlobalTLCErrorMessage("ResultPageProblem", message);
                             } else
                             {
                                 // else install as with other messages

@@ -25,8 +25,13 @@ public class StateSpaceInformationItem
     private long leftStates;
 	private long spm;
 	private long distinctSPM;
+	/**
+	 * True if this is the most recent/up-to-date SSII holding the newest
+	 * values.
+	 */
+	private boolean isMostRecent = true;
 
-    /**
+	/**
 	 * @param time
 	 * @param diameter
 	 * @param foundStates
@@ -48,6 +53,20 @@ public class StateSpaceInformationItem
 		this.distinctSPM = distinctSPM;
 	}
 
+    /**
+	 * @return the isMostRecent
+	 */
+	public boolean isMostRecent() {
+		return isMostRecent;
+	}
+
+	/**
+	 * @param isMostRecent the isMostRecent to set
+	 */
+	public void setMostRecent(boolean isMostRecent) {
+		this.isMostRecent = isMostRecent;
+	}
+	
 	public final Date getTime() {
 		return time;
 	}

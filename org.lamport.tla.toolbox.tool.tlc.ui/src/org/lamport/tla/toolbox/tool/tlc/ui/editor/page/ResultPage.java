@@ -11,6 +11,7 @@ import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -25,6 +26,8 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITableColorProvider;
+import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -35,6 +38,7 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -261,13 +265,33 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	
 	                    ResultPage.this.errorStatusHyperLink.setText(text);
 	                    ResultPage.this.errorStatusHyperLink.setForeground(color);
-	
+						
 	                    // update the error view
 	                    TLCErrorView.updateErrorView(dataProvider.getConfig());
 	                    break;
 	                default:
 	                    break;
 	                }
+					
+					// Set label provider to highlight unexplored states if
+					// TLC is done but not all states are explored.
+					final StateSpaceLabelProvider sslp = (StateSpaceLabelProvider) ResultPage.this.stateSpace
+							.getLabelProvider();
+					if (dataProvider.isDone() && dataProvider.getProgressInformation().size() > 0
+							&& dataProvider.getProgressInformation().get(0).getLeftStates() > 0) {
+						sslp.setHighlightUnexplored();
+						// Create a problem marker which gets displayed by
+						// BasicFormPage/ModelEditor as a warning on the result page.
+						ModelHelper.installModelProblemMarker(getConfig().getFile(),
+								ModelHelper.createMarkerDescription("State space exploration incomplete",
+										IMarker.SEVERITY_WARNING),
+								ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+					} else {
+						sslp.unsetHighlightUnexplored();
+					}
+					ResultPage.this.stateSpace.refresh();
+					
+
             	} finally {
             		disposeLock.unlock();
             	}
@@ -790,7 +814,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     /**
      * Provides labels for the state space table 
      */
-    static class StateSpaceLabelProvider extends LabelProvider implements ITableLabelProvider
+    static class StateSpaceLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider, ITableColorProvider
     {
         public final static String[] columnTitles = new String[] { "Time", "Diameter", "States Found",
                 "Distinct States", "Queue Size" };
@@ -804,6 +828,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         public final static int COL_LEFT = 4;
 
         private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // $NON-NLS-1$
+		private boolean doHighlight = false;
 
         /* (non-Javadoc)
          * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
@@ -813,7 +838,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             return null;
         }
 
-        /**
+		/**
          * @param stateTable
          */
         public static void createTableColumns(Table stateTable, ResultPage page)
@@ -875,7 +900,35 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             }
             return null;
         }
-    }
+
+		public Color getForeground(Object element, int columnIndex) {
+			return null; // Use default color
+		}
+
+		public Color getBackground(Object element, int columnIndex) {
+			final StateSpaceInformationItem ssii = (StateSpaceInformationItem) element;
+			if (doHighlight && columnIndex == COL_LEFT && ssii.isMostRecent()) {
+				return TLCUIActivator.getColor(SWT.COLOR_RED);
+			}
+			return null;
+		}
+
+		public Font getFont(Object element, int columnIndex) {
+			final StateSpaceInformationItem ssii = (StateSpaceInformationItem) element;
+			if (doHighlight && columnIndex == COL_LEFT && ssii.isMostRecent()) {
+				return JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
+			}
+			return null;
+		}
+
+        public void setHighlightUnexplored() {
+			doHighlight  = true;
+		}
+
+		public void unsetHighlightUnexplored() {
+			doHighlight = false;
+		}
+   }
 
     /**
      * Provides labels for the coverage table 

@@ -381,6 +381,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                 case EC.TLC_PROGRESS_SIMU:
                 case EC.TLC_PROGRESS_STATS:
                     this.progressInformation.add(0, StateSpaceInformationItem.parse(outputMessage));
+                    if (this.progressInformation.size() > 1) {
+						// Set the predecessor to not be the most recent
+						// progress information.
+                    	this.progressInformation.get(1).setMostRecent(false);
+                    }
                     informPresenter(ITLCModelLaunchDataPresenter.PROGRESS);
                     break;
                 // Coverage information
@@ -924,6 +929,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
     {
         return currentStatus;
     }
+
+	public boolean isDone() {
+		assert currentStatus.equals("Not running");
+		return isDone;
+	}
 
     /**
      * @param fingerprintCollisionProbability the fingerprintCollisionProbability to set

@@ -833,8 +833,13 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void addGlobalTLCErrorMessage(String key)
     {
-        IMessageManager mm = getManagedForm().getMessageManager();
-        mm.addMessage(key, TLC_ERROR_STRING, null, IMessageProvider.WARNING);
+    	addGlobalTLCErrorMessage(key, TLC_ERROR_STRING);
+    }
+    
+    public void addGlobalTLCErrorMessage(String key, String message)
+    {
+    	IMessageManager mm = getManagedForm().getMessageManager();
+        mm.addMessage(key, message, null, IMessageProvider.WARNING);
         /*globalTLCErrorHyperLink.setText(TLC_ERROR_STRING);
         globalTLCErrorHyperLink.setToolTipText(tooltipText);
         globalTLCErrorHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_DARK_YELLOW));
