@@ -31,7 +31,8 @@ import org.w3c.dom.Element;
 
 /**
  * OpApplNodes represent all kinds of operator applications in TLA+,
- * including the application of builtin operators and user-defined
+ * including the application of builtin
+ * ors and user-defined
  * operators, operators with a variable number of arguments or a fixed
  * number (including, of course, 0), and including quantifiers and
  * choose, which involve bound variables with or without bounding sets.

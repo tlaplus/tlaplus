@@ -634,10 +634,14 @@ public class ThmOrAssumpDefNode extends SymbolNode
    * We care to export only the name of the theorem (CHECK what happens when instantiated).
    */
   protected String getNodeRef() {
-    if (theorem)
+    if (theorem) {
+      assert(thmOrAssump instanceof TheoremNode);
       return "TheoremNodeRef";
-    else
+    }
+    else {
+      assert(thmOrAssump instanceof  AssumeNode);
       return "AssumeNodeRef";
+    }
   }
 
   /* appending the name is handled in Theorem.export to prevent cyclic dependencies, this is only left for documentation
