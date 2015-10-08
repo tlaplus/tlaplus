@@ -131,10 +131,11 @@ public class SpecContentProvider implements ITreeContentProvider {
 			modules.add(module);
 		}
 
-		final DeleteOutOfSyncJob job = new DeleteOutOfSyncJob(outOfSyncResourcesToDelete);
-		job.setRule(ResourceHelper.getDeleteRule(
-				(IResource[]) outOfSyncResourcesToDelete.toArray(new IResource[outOfSyncResourcesToDelete.size()])));
-		job.schedule(500);
+		if (outOfSyncResourcesToDelete.size() > 0) {
+			final DeleteOutOfSyncJob job = new DeleteOutOfSyncJob(
+					(IResource[]) outOfSyncResourcesToDelete.toArray(new IResource[outOfSyncResourcesToDelete.size()]));
+			job.schedule(500);
+		}
 
 		return (Module[]) modules.toArray(new Module[modules.size()]);
 	}

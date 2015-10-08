@@ -1,3 +1,28 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Simon Zambrovski - initial API and implementation
+ ******************************************************************************/
 package org.lamport.tla.toolbox.ui.contribution;
 
 import java.util.HashMap;
@@ -20,8 +45,6 @@ import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Contribution item for opening the modules
- * @author Simon Zambrovski
- * @version $Id$
  */
 public class ModuleListContributionItem extends CompoundContributionItem
 {
@@ -35,12 +58,11 @@ public class ModuleListContributionItem extends CompoundContributionItem
      */
     protected IContributionItem[] getContributionItems()
     {
-
-        Spec spec = Activator.getSpecManager().getSpecLoaded();
-        Vector moduleContributions = new Vector();
-        HashMap parameters = new HashMap();
+        final Spec spec = Activator.getSpecManager().getSpecLoaded();
+        final Vector<IContributionItem> moduleContributions = new Vector<IContributionItem>();
+        HashMap<String, String> parameters = new HashMap<String, String>();
         
-        Vector outOfSyncResourcesToDelete = new Vector();
+        final Vector<IResource> outOfSyncResourcesToDelete = new Vector<IResource>();
 
         // create the contribution item for add module
         CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper.getActiveWindow(),
@@ -54,8 +76,8 @@ public class ModuleListContributionItem extends CompoundContributionItem
 
         if (spec != null)
         {
-            IResource[] modules = spec.getModuleResources();
-            IResource rootModule = spec.getRootFile();
+            final IResource[] modules = spec.getModuleResources();
+            final IResource rootModule = spec.getRootFile();
             boolean isRoot;
             for (int i = 0; i < modules.length; i++)
             {
@@ -73,7 +95,7 @@ public class ModuleListContributionItem extends CompoundContributionItem
 
                 isRoot = rootModule.equals(modules[i]);
 
-                parameters = new HashMap();
+                parameters = new HashMap<String, String>();
                 // fill the module name for the handler
                 parameters.put(OpenModuleHandler.PARAM_MODULE, ResourceHelper.getModuleNameChecked(
                         modules[i].getName(), false));
@@ -89,9 +111,11 @@ public class ModuleListContributionItem extends CompoundContributionItem
             }
         }
 
-        DeleteOutOfSyncJob job = new DeleteOutOfSyncJob(outOfSyncResourcesToDelete);
-        job.setRule(ResourceHelper.getDeleteRule((IResource[]) outOfSyncResourcesToDelete.toArray(new IResource[outOfSyncResourcesToDelete.size()])));
-        job.schedule();
+        if (outOfSyncResourcesToDelete.size() > 0) {
+        	final DeleteOutOfSyncJob job = new DeleteOutOfSyncJob(
+        			(IResource[]) outOfSyncResourcesToDelete.toArray(new IResource[outOfSyncResourcesToDelete.size()]));
+        	job.schedule();
+        }
         
         return (IContributionItem[]) moduleContributions.toArray(new IContributionItem[moduleContributions.size()]);
     }
