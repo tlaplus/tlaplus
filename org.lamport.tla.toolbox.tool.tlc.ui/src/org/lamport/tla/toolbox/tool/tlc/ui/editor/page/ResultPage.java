@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.Vector;
@@ -282,9 +283,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 						sslp.setHighlightUnexplored();
 						// Create a problem marker which gets displayed by
 						// BasicFormPage/ModelEditor as a warning on the result page.
+						final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
+								"State space exploration incomplete", IMarker.SEVERITY_WARNING);
+						marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
 						ModelHelper.installModelProblemMarker(getConfig().getFile(),
-								ModelHelper.createMarkerDescription("State space exploration incomplete",
-										IMarker.SEVERITY_WARNING),
+								marker,
 								ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 					} else {
 						sslp.unsetHighlightUnexplored();

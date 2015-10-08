@@ -97,6 +97,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME = "attributeName";
     public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX = "attributeIndex";
 
+	/**
+	 * The zero-based id of the BasicFormPage to show the error on.
+	 */
+	public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE = "basicFormPageId";
+
     /**
      * marker on .launch file with boolean attribute modelIsRunning 
      */

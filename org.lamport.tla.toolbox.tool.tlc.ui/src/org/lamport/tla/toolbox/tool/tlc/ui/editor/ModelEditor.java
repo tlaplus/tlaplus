@@ -835,27 +835,29 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
                         if (ModelHelper.EMPTY_STRING.equals(attributeName))
                         {
-                            String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
+                            final String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
                                     IModelConfigurationDefaults.EMPTY_STRING);
+							final int pageId = modelProblemMarkers[i]
+									.getAttribute(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, -1);
                             // no attribute, this is a global error, not bound to a particular attribute
                             // install it on the first page
                             // if it is a global TLC error, then we call addGlobalTLCErrorMessage()
                             // to add a hyperlink to the TLC Error view
-                            if (bubbleType == IMessageProvider.WARNING && IModelConfigurationDefaults.EMPTY_STRING.equals(message))
-                            {
-                                this.pagesToAdd[0].addGlobalTLCErrorMessage("modelProblem_" + i);
-                                this.pagesToAdd[1].addGlobalTLCErrorMessage("modelProblem_" + i);
-                            } else if (bubbleType == IMessageProvider.WARNING) {
-                            	// Used by the ResultPage to display an error un incomplete state space exploration.
-                            	this.pagesToAdd[2].addGlobalTLCErrorMessage("ResultPageProblem", message);
-                            } else
-                            {
-                                // else install as with other messages
-                                IMessageManager mm = this.pagesToAdd[0].getManagedForm().getMessageManager();
-                                mm.setAutoUpdate(false);
-                                mm.addMessage("modelProblem_" + i, message, null, bubbleType);
-                                mm.setAutoUpdate(true);
-                            }
+							if (pageId != -1 && bubbleType == IMessageProvider.WARNING
+									&& !IModelConfigurationDefaults.EMPTY_STRING.equals(message)) {
+								// Used by the ResultPage to display an error un
+								// incomplete state space exploration.
+								this.pagesToAdd[pageId].addGlobalTLCErrorMessage("ResultPageProblem", message);
+							} else if (bubbleType == IMessageProvider.WARNING) {
+								this.pagesToAdd[0].addGlobalTLCErrorMessage("modelProblem_" + i);
+								this.pagesToAdd[1].addGlobalTLCErrorMessage("modelProblem_" + i);
+							} else {
+								// else install as with other messages
+								IMessageManager mm = this.pagesToAdd[0].getManagedForm().getMessageManager();
+								mm.setAutoUpdate(false);
+								mm.addMessage("modelProblem_" + i, message, null, bubbleType);
+								mm.setAutoUpdate(true);
+							}
                         } else
                         {
                             // attribute found
