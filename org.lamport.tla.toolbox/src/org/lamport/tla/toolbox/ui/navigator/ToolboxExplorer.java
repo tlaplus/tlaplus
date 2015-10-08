@@ -186,7 +186,10 @@ public class ToolboxExplorer extends CommonNavigator
 					ToolboxExplorer.refresh();
 					// Expand the current spec and all its children
 					final CommonViewer viewer = getViewer();
-					if (viewer != null) { // viewer might already be disposed which happens when the Toolbox shuts down.
+					// Event is only null when this Ctor calls us causing the
+					// initial expanded state of a spec to be fully expanded.
+					// Afterwards, the users expanded states is preserved.
+					if (event == null && viewer != null) { // viewer might already be disposed which happens when the Toolbox shuts down.
 						final Spec specLoaded = Activator.getSpecManager().getSpecLoaded();
 						viewer.expandToLevel(specLoaded,
 								AbstractTreeViewer.ALL_LEVELS);

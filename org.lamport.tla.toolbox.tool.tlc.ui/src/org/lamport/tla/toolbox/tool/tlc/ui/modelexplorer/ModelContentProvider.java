@@ -25,6 +25,7 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -133,6 +134,32 @@ public class ModelContentProvider implements ITreeContentProvider {
 		
 		public String toString() {
 			return "models";
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + Arrays.hashCode(models);
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Group other = (Group) obj;
+			if (!Arrays.equals(models, other.models))
+				return false;
+			return true;
 		}
 	}
 }
