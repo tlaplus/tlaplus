@@ -28,34 +28,23 @@ package tlc2.tool.liveness;
 
 import tlc2.output.EC;
 
-public class SymmetryTableauModelCheckerTest extends ModelCheckerTestCase {
+public class UnsymmetricModelCheckerTestB extends ModelCheckerTestCase {
 
-	public SymmetryTableauModelCheckerTest() {
-		super("SymmetryLivenessTableauMC", "symmetry");
+	public UnsymmetricModelCheckerTestB() {
+		super("UnsymmetricMCB", "symmetry");
 	}
 	
 	public void testSpec() {
 		// ModelChecker intends to check liveness
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "2"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "8", "s", "2"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "1"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "2", "s", "1"));
 		
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "779", "168", "0"));
-
-		// Assert it has found a temporal violation and a counter example
-		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
-		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-		
-		// The spec's 'NoVal' value is what violates symmetry.
-		assertTrue(recorder.recordedWithStringValue(EC.GENERAL,
-				"TLC threw an unexpected exception.\n" 
-						+ "This was probably caused by an error in the spec or model.\n"
-						+ "The error occurred when TLC was checking liveness.\n"
-						+ "The exception was a tlc2.tool.EvalException\n"
-						+ ": Failed to recover the next state from its fingerprint during\n"
-						+ "liveness error trace re-construction. This indicates that the\n"
-						+ "spec is in fact not symmetric (Please report a TLC bug if the\n"
-						+ "spec is known to be symmetric)."));
+		assertFalse(recorder.recorded(EC.GENERAL));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "2", "0"));
+	
+		// Contrary to UMCTA, B doesn't find a counter-example. This is due to
+		// the CHOOSE on S and the selected initial state.
 	}
 }

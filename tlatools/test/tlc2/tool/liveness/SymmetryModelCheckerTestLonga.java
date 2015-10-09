@@ -26,36 +26,39 @@
 
 package tlc2.tool.liveness;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tlc2.output.EC;
 
-public class SymmetryTableauModelCheckerTest extends ModelCheckerTestCase {
+public class SymmetryModelCheckerTestLonga extends ModelCheckerTestCase {
 
-	public SymmetryTableauModelCheckerTest() {
-		super("SymmetryLivenessTableauMC", "symmetry");
+	public SymmetryModelCheckerTestLonga() {
+		super("LongMCa", "symmetry");
 	}
 	
 	public void testSpec() {
-		// ModelChecker intends to check liveness
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "2"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "8", "s", "2"));
-		
-		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "779", "168", "0"));
 
-		// Assert it has found a temporal violation and a counter example
+		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+
+		// Assert the error trace
+		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		final List<String> expectedTrace = new ArrayList<String>(4);
+		expectedTrace.add("/\\ x = a\n/\\ y = 0");
+		expectedTrace.add("/\\ x = a\n/\\ y = 1");
+		expectedTrace.add("/\\ x = a\n/\\ y = 2");
+		expectedTrace.add("/\\ x = a\n/\\ y = 3");
+		expectedTrace.add("/\\ x = a\n/\\ y = 4"); // <= x changes after this state
+		expectedTrace.add("/\\ x = b\n/\\ y = 0");
+		expectedTrace.add("/\\ x = b\n/\\ y = 1");
+		expectedTrace.add("/\\ x = b\n/\\ y = 2");
+		expectedTrace.add("/\\ x = b\n/\\ y = 3");
+		expectedTrace.add("/\\ x = b\n/\\ y = 4");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		// The spec's 'NoVal' value is what violates symmetry.
-		assertTrue(recorder.recordedWithStringValue(EC.GENERAL,
-				"TLC threw an unexpected exception.\n" 
-						+ "This was probably caused by an error in the spec or model.\n"
-						+ "The error occurred when TLC was checking liveness.\n"
-						+ "The exception was a tlc2.tool.EvalException\n"
-						+ ": Failed to recover the next state from its fingerprint during\n"
-						+ "liveness error trace re-construction. This indicates that the\n"
-						+ "spec is in fact not symmetric (Please report a TLC bug if the\n"
-						+ "spec is known to be symmetric)."));
+		assertBackToState(1, "<Action line 25, col 12 to line 27, col 27 of module SymmetryLivenessLong>");
 	}
 }

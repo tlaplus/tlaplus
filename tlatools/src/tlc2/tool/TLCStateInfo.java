@@ -33,4 +33,19 @@ public class TLCStateInfo {
   public final String toString() {
     return this.state.toString();
   }
+  
+  public boolean equals(Object other) {
+	  if (other instanceof TLCStateInfo) {
+		  TLCStateInfo sinfo = (TLCStateInfo) other;
+		  return this.state.equals(sinfo.state);
+	  } else if (other instanceof TLCState) {
+		  TLCState state = (TLCState) other;
+		  return this.state.equals(state);
+	  }
+	  return false;
+  }
+
+  public int hashCode() {
+	  return this.state.hashCode();
+  }
 }

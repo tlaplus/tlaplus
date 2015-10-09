@@ -26,36 +26,37 @@
 
 package tlc2.tool.liveness;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tlc2.output.EC;
 
-public class SymmetryTableauModelCheckerTest extends ModelCheckerTestCase {
+public class UnsymmetricModelCheckerTestA extends ModelCheckerTestCase {
 
-	public SymmetryTableauModelCheckerTest() {
-		super("SymmetryLivenessTableauMC", "symmetry");
+	public UnsymmetricModelCheckerTestA() {
+		super("UnsymmetricMCA", "symmetry");
 	}
-	
+
 	public void testSpec() {
 		// ModelChecker intends to check liveness
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "2"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "8", "s", "2"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "1"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "2", "s", "1"));
 		
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "779", "168", "0"));
-
+		assertFalse(recorder.recorded(EC.GENERAL));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "2", "0"));
+	
 		// Assert it has found a temporal violation and a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
-		// The spec's 'NoVal' value is what violates symmetry.
-		assertTrue(recorder.recordedWithStringValue(EC.GENERAL,
-				"TLC threw an unexpected exception.\n" 
-						+ "This was probably caused by an error in the spec or model.\n"
-						+ "The error occurred when TLC was checking liveness.\n"
-						+ "The exception was a tlc2.tool.EvalException\n"
-						+ ": Failed to recover the next state from its fingerprint during\n"
-						+ "liveness error trace re-construction. This indicates that the\n"
-						+ "spec is in fact not symmetric (Please report a TLC bug if the\n"
-						+ "spec is known to be symmetric)."));
+		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		final List<String> expectedTrace = new ArrayList<String>(2);
+		expectedTrace.add("x = a");
+		expectedTrace.add("x = 1");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+
+		assertBackToState(1);
 	}
 }

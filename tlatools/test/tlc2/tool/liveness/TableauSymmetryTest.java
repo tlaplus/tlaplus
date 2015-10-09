@@ -26,36 +26,38 @@
 
 package tlc2.tool.liveness;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tlc2.output.EC;
 
-public class SymmetryTableauModelCheckerTest extends ModelCheckerTestCase {
+public class TableauSymmetryTest extends ModelCheckerTestCase {
 
-	public SymmetryTableauModelCheckerTest() {
-		super("SymmetryLivenessTableauMC", "symmetry");
+	public TableauSymmetryTest() {
+		super("TableauSymmetryMC", "symmetry");
 	}
 	
 	public void testSpec() {
-		// ModelChecker intends to check liveness
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "2"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "8", "s", "2"));
-		
-		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "779", "168", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "13", "6", "0"));
+		assertFalse(recorder.recorded(EC.GENERAL));
 
-		// Assert it has found a temporal violation and a counter example
+		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+
+		// Assert the error trace
+		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		final List<String> expectedTrace = new ArrayList<String>(7);
+		// Trace prefix
+		expectedTrace.add("arr = (a :> \"ready\" @@ b :> \"ready\")");
+		expectedTrace.add("arr = (a :> \"busy\" @@ b :> \"ready\")");
+		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"ready\")");
+		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"busy\")");
+		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"done\")");
+		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"ready\")");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		// The spec's 'NoVal' value is what violates symmetry.
-		assertTrue(recorder.recordedWithStringValue(EC.GENERAL,
-				"TLC threw an unexpected exception.\n" 
-						+ "This was probably caused by an error in the spec or model.\n"
-						+ "The error occurred when TLC was checking liveness.\n"
-						+ "The exception was a tlc2.tool.EvalException\n"
-						+ ": Failed to recover the next state from its fingerprint during\n"
-						+ "liveness error trace re-construction. This indicates that the\n"
-						+ "spec is in fact not symmetric (Please report a TLC bug if the\n"
-						+ "spec is known to be symmetric)."));
+		assertBackToState(4, "<Action line 7, col 13 to line 8, col 47 of module TableauSymmetry>");
 	}
 }

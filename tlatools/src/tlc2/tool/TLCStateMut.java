@@ -145,59 +145,67 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
    * via the state queue. They have to be normalized before adding to
    * the state queue.  We do that here.
    */
-  public final long fingerPrint() {
-    int sz = this.values.length;
+	public final long fingerPrint() {
+		int sz = this.values.length;
 
-    Value[] minVals = this.values;
-    if (perms != null) {
-      Value[] vals = new Value[sz];
-      // Find the "smallest" state under the symmetry permutations:
-      for (int i = 0; i < perms.length; i++) {
-	int cmp = 0;
-	for (int j = 0; j < sz; j++) {
-	  vals[j] = this.values[j].permute(perms[i]);
-	  if (cmp == 0) {
-	    cmp = vals[j].compareTo(minVals[j]);
-	  }
+		// minVals is what is used to calculate/generate the fingerprint below.
+		// If this state is part of a symmetry permutation and not the smallest
+		// member, its current minVals will be replaced temporarily with the
+		// values of the smallest state for the calculation of the fingerprint.
+		Value[] minVals = this.values;
+		if (perms != null) {
+			Value[] vals = new Value[sz];
+			// Find the "smallest" state under the symmetry permutations:
+			for (int i = 0; i < perms.length; i++) {
+				int cmp = 0;
+				// For each value in values succinctly permute the current value
+				// and compare it to minVals.
+				for (int j = 0; j < sz; j++) {
+					vals[j] = this.values[j].permute(perms[i]);
+					if (cmp == 0) {
+						// Compare the permuted values to the minVals unless an
+						// earlier compare has found a different already.
+						cmp = vals[j].compareTo(minVals[j]);
+					}
+				}
+				// cmp < 0 means the current state is part of a symmetry
+				// permutation set/group and not the "smallest" one.
+				if (cmp < 0) {
+					if (minVals == this.values) {
+						minVals = vals;
+						vals = new Value[sz];
+					} else {
+						Value[] temp = minVals;
+						minVals = vals;
+						vals = temp;
+					}
+				}
+			}
+		}
+		// Fingerprint the state:
+		long fp = FP64.New();
+		if (viewMap == null) {
+			for (int i = 0; i < sz; i++) {
+				fp = minVals[i].fingerPrint(fp);
+			}
+			if (this.values != minVals) {
+				for (int i = 0; i < sz; i++) {
+					this.values[i].deepNormalize();
+				}
+			}
+		} else {
+			for (int i = 0; i < sz; i++) {
+				this.values[i].deepNormalize();
+			}
+			TLCStateMut state = this;
+			if (minVals != this.values) {
+				state = new TLCStateMut(minVals);
+			}
+			Value val = mytool.eval(viewMap, Context.Empty, state);
+			fp = val.fingerPrint(fp);
+		}
+		return fp;
 	}
-	if (cmp < 0) {
-	  if (minVals == this.values) {
-	    minVals = vals;
-	    vals = new Value[sz];
-	  }
-	  else {
-	    Value[] temp = minVals;
-	    minVals = vals;
-	    vals = temp;
-	  }
-	}
-      }
-    }
-    // Fingerprint the state:
-    long fp = FP64.New();      
-    if (viewMap == null) {
-      for (int i = 0; i < sz; i++) {
-	fp = minVals[i].fingerPrint(fp);
-      }
-      if (this.values != minVals) {
-	for (int i = 0; i < sz; i++) {
-	  this.values[i].deepNormalize();
-	}
-      }
-    }
-    else {
-      for (int i = 0; i < sz; i++) {
-	this.values[i].deepNormalize();
-      }
-      TLCStateMut state = this;
-      if (minVals != this.values) {
-	state = new TLCStateMut(minVals);
-      }
-      Value val = mytool.eval(viewMap, Context.Empty, state);
-      fp = val.fingerPrint(fp);
-    }
-    return fp;
-  }
 
   public final boolean allAssigned() {
     int len = this.values.length;    

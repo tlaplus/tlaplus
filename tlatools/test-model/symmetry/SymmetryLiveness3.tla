@@ -29,11 +29,6 @@ N2 ==   \/ /\ y = 0
            /\ x' = Other(x)
 Spec2 == Init /\ [][N2]_<<x, y>> /\ WF_<<x,y>>(N2) \* Fails to find error in Prop1
 
-\*Prop1 == []<>[](x \notin S)
-\*Prop1==[]<>[](y=0)
-\*[](Cardinality of S is two)
-\*Prop1 == <>[](y=0 ~> y=1)
+
 Prop1 == <>[][x'=x]_<<x, y>>
-\*Prop1 == (y=0 ~> y=0) /\ (<>[][x'=x]_<<x, y>>)
-\*Prop1 == (x \in S ~> x \in (S \ {Other(x)}))
 =============================================================================

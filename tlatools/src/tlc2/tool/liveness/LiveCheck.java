@@ -79,6 +79,15 @@ public class LiveCheck implements ILiveCheck {
 			// to hold the result and loop over actions x successors twice
 			// (here and down below). This is a little price to pay for significantly
 			// increased concurrency.
+			//
+			// The actions have to be checked here because - in the light of
+			// symmetry - while we still have access to the actual successor
+			// state rather than just its fingerprint that represents all states
+			// in the symmetry set. Unless super-symmetry is in place (the
+			// actions checks for all states in the symmetry set evaluate to the
+			// same value), the "smallest" (see
+			// tlc2.tool.TLCStateMut.fingerPrint()) cannot be used as a
+			// replacement state to check the actions.
 			final BitVector checkActionResults = new BitVector(alen * nextStates.size());
 			for (int sidx = 0; sidx < nextStates.size(); sidx++) {
 				final TLCState s1 = nextStates.elementAt(sidx);
@@ -209,7 +218,7 @@ public class LiveCheck implements ILiveCheck {
 		if (LiveWorker.hasErrFound()) {
 			return false;
 		}
-
+		
 		// Reset after checking unless it's the final check:
 		if (finalCheck == false) {
 			for (int i = 0; i < checker.length; i++) {
@@ -418,6 +427,7 @@ public class LiveCheck implements ILiveCheck {
 				node0.setCheckState(checkStateResults);
 				for (int sidx = 0; sidx < succCnt; sidx++) {
 					final long successor = nextFPs.elementAt(sidx);
+					final TLCState successorState = (TLCState) nextStates.elementAt(sidx);
 					// Only add the transition if:
 					// a) The successor itself has not been written to disk
 					//    TODO Why is an existing successor ignored?
@@ -440,6 +450,17 @@ public class LiveCheck implements ILiveCheck {
 						// single one (and only iff we over-allocated).
 						node0.addTransition(successor, -1, checkStateResults.length, alen,
 								checkActionResults, sidx * alen, (succCnt - cnt++));
+					} else if (node0.transExists(successor, -1) && ptr1 >= 0) {
+						// TODO Check that this checkActionResult (arc label)
+						// and the result of the existing arc differ. No point
+						// to add a redundant arc with an identical label. This
+						// causes LiveCheckTest to fail too, because it
+						// rightfully expects that fully identical transitions
+						// are not added twice.
+						
+						//TODO Adding an assertion that symmetry has indeed been declared
+//						node0.addTransition(successor, -1, checkStateResults.length, alen,
+//								checkActionResults, sidx * alen, (succCnt - cnt++), successorState.getPermutationId());
 					} else {
 						cnt++;
 					}
