@@ -454,7 +454,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     /**
      * Instead of committing pages, forms and form-parts, we just commit pages 
      */
-    protected void commitPages(IProgressMonitor monitor, boolean onSave)
+    protected synchronized void commitPages(IProgressMonitor monitor, boolean onSave)
     {
         // TLCUIActivator.getDefault().logDebug("entering ModelEditor#commitPages(IProgressMonitor monitor, boolean onSave)");
         for (int i = 0; i < getPageCount(); i++)

@@ -118,8 +118,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
 
     protected int numWorkers = 0;
 
-	private Map<String, Object> cachedAttributes;
-
     /**
      * @return the startTime
      */
@@ -617,17 +615,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                                 // some attributes are lists
                                 if (ModelHelper.isListAttribute(attributeName))
                                 {
-									// If a cached version of the attributes is
-									// available (which should), use it as a
-									// fall back for the non-deterministic case
-									// that config.getAttribute(..) temporarily
-									// fails to read the real value.
-									@SuppressWarnings("unchecked")
-									final List<String> defaultValue = cachedAttributes == null
-											? new ArrayList<String>(0)
-											: (List<String>) cachedAttributes.get(attributeName);
-										
-									List<String> attributeValue = (List<String>) config.getAttribute(attributeName, defaultValue);
+									final List<String> attributeValue = (List<String>) config
+											.getAttribute(attributeName, new ArrayList<String>(0));
                                     int attributeNumber = (attributeIndex != null) ? attributeIndex.intValue() : 0;
 
                                     if (IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS.equals(attributeName)
@@ -1014,20 +1003,15 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
 	 * @see org.eclipse.debug.core.ILaunchConfigurationListener#launchConfigurationChanged(org.eclipse.debug.core.ILaunchConfiguration)
 	 */
 	public void launchConfigurationChanged(final ILaunchConfiguration configuration) {
-		// The moment the launch config is saved/committed, cache its attributes.
-		if (configuration == this.config) {
-			try {
-				cachedAttributes = this.config.getAttributes();
-			} catch (CoreException e) {
-				e.printStackTrace();
-			}
-		}
+		// The moment the launch config is saved/committed, keep it.
+		this.config = configuration;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.core.ILaunchConfigurationListener#launchConfigurationRemoved(org.eclipse.debug.core.ILaunchConfiguration)
 	 */
 	public void launchConfigurationRemoved(final ILaunchConfiguration configuration) {
-		// Ignore
+		// Ignore, should never happen during model checking because the ILC is locked.
+		this.config = null;
 	}
 }
