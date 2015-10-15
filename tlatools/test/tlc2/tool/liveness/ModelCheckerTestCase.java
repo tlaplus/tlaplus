@@ -32,6 +32,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 import tlc2.TLC;
+import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -73,6 +74,13 @@ public abstract class ModelCheckerTestCase extends TestCase {
 			ToolIO.setUserDir(BASE_DIR + TEST_MODEL + path);
 			
 			MP.setRecorder(recorder);
+			
+			// Increase the liveness checking threshold to prevent liveness
+			// checking of an incomplete graph. Most tests check that the 
+			// state queue is empty and fail if not. This is only given 
+			// when liveness checking is executed when all states have been
+			// generated.
+			TLCGlobals.livenessThreshold = Double.MAX_VALUE;
 			
 			final TLC tlc = new TLC();
 			// * We want *no* deadlock checking to find the violation of the
