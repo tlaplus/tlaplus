@@ -81,7 +81,7 @@ public class ModelContentProvider implements ITreeContentProvider {
 
 			// only get models of the current spec
 			if (ToolboxHandle.getCurrentSpec() == parentElement) {
-				return new Group[] {new Group(models.toArray(new ILaunchConfiguration[models.size()]))};
+				return new Group[] {new Group((Spec) parentElement, models.toArray(new ILaunchConfiguration[models.size()]))};
 			}
 		} else if (parentElement instanceof Group) {
 			return ((Group) parentElement).getModels();
@@ -120,16 +120,22 @@ public class ModelContentProvider implements ITreeContentProvider {
 		// nothing to do
 	}
 
-	static final class Group implements IGroup {
+	public static final class Group implements IGroup {
 		
 		private final ILaunchConfiguration[] models;
+		private final Spec spec;
 		
-		public Group(ILaunchConfiguration[] iLaunchConfigurations) {
+		public Group(Spec spec, ILaunchConfiguration[] iLaunchConfigurations) {
+			this.spec = spec;
 			this.models = iLaunchConfigurations;
 		}
 		
 		public ILaunchConfiguration[] getModels() {
 			return models;
+		}
+		
+		public Spec getSpec() {
+			return spec;
 		}
 		
 		public String toString() {

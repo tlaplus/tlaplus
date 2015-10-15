@@ -510,29 +510,6 @@ Console Facory
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.NewModelHandlerSelectedDelegate"
             commandId="toolbox.tool.tlc.commands.model.new.delegate.selected">
-         <activeWhen>
-            <and>
-               <with
-                     variable="selection">
-                  <iterate
-                        ifEmpty="true"
-                        operator="and">
-                     <instanceof
-                           value="org.lamport.tla.toolbox.spec.Spec">
-                     </instanceof>
-                     <adapt
-                           type="org.lamport.tla.toolbox.spec.Spec">
-                        <reference
-                              definitionId="toolbox.isCurrentSpec">
-                        </reference>
-                     </adapt>
-                  </iterate>
-               </with>
-               <count
-                     value="1">
-               </count>
-            </and>
-         </activeWhen>
       </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.NewModelHandlerCurrentDelegate"

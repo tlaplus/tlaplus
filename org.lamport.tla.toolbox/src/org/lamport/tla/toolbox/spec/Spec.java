@@ -591,4 +591,15 @@ public class Spec implements IAdaptable {
     @SuppressWarnings("serial")
     private static class NullTLAtoPCalMapping extends TLAtoPCalMapping {
     }
+
+	/**
+	 * @return true iff this spec is the currently active spec.
+	 * 
+	 * @see Activator#getSpecManager()
+	 * 
+	 */
+	public boolean isCurrentSpec() {
+		
+		return Activator.getSpecManager().getSpecLoaded() == this;
+	}
 }
