@@ -647,7 +647,11 @@ public class ModelChecker extends AbstractChecker
      */
     public final boolean doPeriodicWork() throws Exception
     {
-		if ((!this.checkLiveness || runtimeRatio > TLCGlobals.livenessRatio || !liveCheck.doLiveCheck()) && !forceLiveCheck && !TLCGlobals.doCheckPoint()) {
+		// Remember if checkpointing should be run. doCheckPoint() when called
+		// internally diffs the time expired since its last invocation which is
+		// only milliseconds here when called twice.
+		final boolean createCheckPoint = TLCGlobals.doCheckPoint();
+		if ((!this.checkLiveness || runtimeRatio > TLCGlobals.livenessRatio || !liveCheck.doLiveCheck()) && !forceLiveCheck && !createCheckPoint) {
 			updateRuntimeRatio(0L);
 			
 			// Do not suspend the state queue if neither check-pointing nor
@@ -673,7 +677,7 @@ public class ModelChecker extends AbstractChecker
             	updateRuntimeRatio(0L);
             }
 
-            if (TLCGlobals.doCheckPoint()) {
+            if (createCheckPoint) {
             	// Checkpoint:
             	MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
             	
