@@ -208,9 +208,14 @@
          point="org.eclipse.ui.commands">
       <!-- spec commands -->
       <category
-            description="Speicification Commands"
+            description="Dummy Command"
+            id="toolbox.command.category.dummy"
+            name="Dummy Command">
+      </category>
+      <category
+            description="Specification Commands"
             id="toolbox.command.category.spec"
-            name="Speicification Commands">
+            name="Specification Commands">
       </category>
       <command
             categoryId="toolbox.command.category.spec"
@@ -772,6 +777,16 @@
             locationURI="toolbar:org.eclipse.ui.trim.status">
          <toolbar
                id="toolbox.trim">
+ 			<!-- Dummy command needed to make the contributions height --> 
+			<!-- be larger than too small. --> 
+            <!-- https://bugs.eclipse.org/bugs/show_bug.cgi?id=471313 -->
+	        <command
+	            id="org.lamport.tla.toolbox.ui.contribution.dummy"
+	            commandId="toolbox.command.category.dummyj"
+	            label="&#160;"> 
+	            <!-- &#160; is the "No break space" unicode character. -->	
+	            <!-- It is not printable and thus make the dummy invisible. -->
+	        </command>
             <control
                   class="org.lamport.tla.toolbox.ui.contribution.SizeControlContribution"
                   id="toolbox.contributions.spec.size">
