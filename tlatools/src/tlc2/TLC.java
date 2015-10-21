@@ -8,9 +8,11 @@ package tlc2;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.TimeZone;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
@@ -682,6 +684,8 @@ public class TLC
      */
     public void process()
     {
+    	long startTime = System.currentTimeMillis();
+    	
         ToolIO.cleanToolObjects(TLCGlobals.ToolId);
         // UniqueString.initialize();
         
@@ -768,10 +772,35 @@ public class TLC
             }
         } finally 
         {
-       		modelCheckerMXWrapper.unregister();
-            MP.printMessage(EC.TLC_FINISHED);
-            MP.flush();
+			modelCheckerMXWrapper.unregister();
+			MP.printMessage(EC.TLC_FINISHED,
+					convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
+			MP.flush();
         }
+    }
+    
+    /**
+	 * @return The given milliseconds runtime converted into human readable form
+	 *         with SI unit and insignificant parts stripped (when runtime is
+	 *         days, nobody cares for minutes or seconds).
+	 */
+    static String convertRuntimeToHumanReadable(long runtime) {
+		SimpleDateFormat df = null;
+		if (runtime > (60 * 60 * 24 * 1000L)) {
+			df = new SimpleDateFormat("D'd' HH'h'");
+			runtime -= 86400000L;
+		} else if (runtime > (60 * 60 * 24 * 1000L)) {
+			df = new SimpleDateFormat("D'd' HH'h'");
+			runtime -= 86400000L;
+		} else if (runtime > (60 * 60 * 1000L)) {
+			df = new SimpleDateFormat("HH'h' mm'min'");
+		} else if (runtime > (60 * 1000L)) {
+			df = new SimpleDateFormat("mm'min' ss's'");
+		} else {
+			df = new SimpleDateFormat("ss's'");
+		}
+		df.setTimeZone(TimeZone.getTimeZone("UTC"));
+		return df.format(runtime);
     }
     
     @SuppressWarnings("unchecked")

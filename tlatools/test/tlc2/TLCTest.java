@@ -93,4 +93,13 @@ public class TLCTest extends TestCase {
 		assertTrue(tlc.handleParameters(new String[] {"-maxSetSize", Integer.toString(Integer.MAX_VALUE), "MC"}));
 		assertTrue(TLCGlobals.setBound == Integer.MAX_VALUE);
 	}
+	
+	public void testRuntimeConversion() {
+		assertEquals("59s", TLC.convertRuntimeToHumanReadable(59000L));
+		assertEquals("59min 59s", TLC.convertRuntimeToHumanReadable(3599000L));
+		assertEquals("23h 59min", TLC.convertRuntimeToHumanReadable(86340000L));
+		assertEquals("1d 23h", TLC.convertRuntimeToHumanReadable(169200000L));
+		assertEquals("2d 23h", TLC.convertRuntimeToHumanReadable(255600000L));
+		assertEquals("99d 23h", TLC.convertRuntimeToHumanReadable(8636400000L));
+	}
 }
