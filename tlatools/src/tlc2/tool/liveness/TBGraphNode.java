@@ -76,7 +76,12 @@ public class TBGraphNode {
 		return false;
 	}
 
-	/* Checks if this particle node is consistent with a state. */
+	/**
+	 * Checks if this particle node is consistent with the given
+	 * {@link TLCState}. In other words, it checks if {@link TLCState}'s truth
+	 * values according to all state predicates of the tableau node. The state
+	 * predicates are deduced from the particles during tableau construction.
+	 */
 	public boolean isConsistent(TLCState state, Tool tool) {
 		for (int j = 0; j < this.statePreds.length; j++) {
 			if (!this.statePreds[j].eval(tool, state, null)) {
