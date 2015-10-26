@@ -906,8 +906,16 @@ public class LiveWorker extends IdThread {
 
 			// B1)
 			_done: while (true) {
+				// tloc, the index of the various tableau indices in nodes array
 				int tloc = TableauNodePtrTable.startLoc(nodes);
-				while (tloc != -1) {
+				// Loop over all GraphNodes (differing by tableau indices only)
+				// in nodes until at end. When all GraphNodes are explored, the
+				// next GraphNode to explore is taken from the FIFO/queue and
+				// the search continues. If one GraphNode happens to match the
+				// searched for <<fp, tidx>>, the (forward) search stops and
+				// the reverse path is followed up to the start node (inner
+				// while loop).
+				while (tloc != TableauNodePtrTable.END_MARKER) {
 					final int curTidx = TableauNodePtrTable.getTidx(nodes, tloc);
 					final long curPtr = TableauNodePtrTable.getPtr(TableauNodePtrTable.getElem(nodes, tloc));
 					curNode = this.dg.getNode(curState, curTidx, curPtr);

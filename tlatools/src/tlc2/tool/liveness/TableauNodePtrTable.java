@@ -415,14 +415,15 @@ public class TableauNodePtrTable {
 	 * printTrace does not use the TNPT instance of the DiskGraph but its own
 	 * instance only containing a single SCC.
 	 */
+	public static final int END_MARKER = -1;
 	
 	public static int startLoc(int[] node) {
-		return (node.length > 2) ? 2 : -1;
+		return (node.length > 2) ? 2 : END_MARKER;
 	}
 
 	public static int nextLoc(int[] node, int curLoc) {
 		int loc = curLoc + 3;
-		return (loc < node.length) ? loc : -1;
+		return (loc < node.length) ? loc : END_MARKER;
 	}
 
 	/**
