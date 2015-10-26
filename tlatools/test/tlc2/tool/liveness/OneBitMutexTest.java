@@ -61,24 +61,24 @@ public class OneBitMutexTest extends ModelCheckerTestCase {
 		final List<String> expectedTrace = new ArrayList<String>(17);
 		//1
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
-						+ "/\\ other = (A :> A @@ B :> A)\n"
+						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> FALSE @@ B :> FALSE)\n" 
 						+ "/\\ pc = (A :> \"ncs\" @@ B :> \"ncs\")");
 		//2
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n"
-						+ "/\\ other = (A :> A @@ B :> A)\n"
+						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> FALSE @@ B :> FALSE)\n"
 						+ "/\\ pc = (A :> \"e1\" @@ B :> \"ncs\")");
 		//3
 		expectedTrace.add("/\\ unchecked = (A :> {B} @@ B :> {})\n"
-						+ "/\\ other = (A :> A @@ B :> A)\n"
+						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n"
 						+ "/\\ pc = (A :> \"e2\" @@ B :> \"ncs\")");
 		//4
-		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n"
+		expectedTrace.add("/\\ unchecked = (A :> {B} @@ B :> {})\n"
 						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"ncs\")");
+						+ "/\\ pc = (A :> \"e2\" @@ B :> \"e1\")");
 		//5
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
 						+ "/\\ other = (A :> B @@ B :> A)\n"
@@ -90,10 +90,10 @@ public class OneBitMutexTest extends ModelCheckerTestCase {
 						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
 						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
 		//7
-		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {A})\n" 
+		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
 						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
-						+ "/\\ pc = (A :> \"e4\" @@ B :> \"e2\")");
+						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e3\")");
 		//8 (Loops back to)
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
 						+ "/\\ other = (A :> B @@ B :> A)\n"
@@ -124,28 +124,8 @@ public class OneBitMutexTest extends ModelCheckerTestCase {
 						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> FALSE @@ B :> FALSE)\n" 
 						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e1\")");
-		//14
-		expectedTrace.add("/\\ unchecked = (A :> {B} @@ B :> {})\n" 
-						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n" 
-						+ "/\\ pc = (A :> \"e2\" @@ B :> \"e1\")");
-		//15
-		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
-						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e1\")");
-		//16
-		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {A})\n" 
-						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
-		//17
-		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {A})\n" 
-						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
-						+ "/\\ pc = (A :> \"e4\" @@ B :> \"e2\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		assertBackToState(8, "<Action line 66, col 13 to line 74, col 21 of module OneBitMutex>");
+		assertBackToState(4, "<Action line 60, col 13 to line 64, col 29 of module OneBitMutex>");
 	}
 }

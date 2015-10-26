@@ -35,7 +35,6 @@ import java.util.Enumeration;
 import org.easymock.EasyMock;
 import org.junit.Test;
 import tlc2.tool.Action;
-import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.tool.liveness.AbstractDiskGraph;
@@ -46,7 +45,7 @@ import tlc2.tool.liveness.OrderOfSolution;
 import tlc2.tool.liveness.TBGraph;
 import tlc2.tool.liveness.TBGraphNode;
 import tlc2.tool.queue.DummyTLCState;
-import tlc2.util.LongVec;
+import tlc2.util.SetOfStates;
 import tlc2.util.statistics.DummyBucketStatistics;
 
 public class LiveCheckTest {
@@ -83,20 +82,17 @@ public class LiveCheckTest {
 		final TLCState state = new DummyTLCState();
 		liveCheck.addInitState(state, 100L);
 
-		final StateVec stateVec = new StateVec(1);
-		stateVec.addElement(new DummyTLCState());
-
-		final LongVec longVec = new LongVec(1);
-		longVec.addElement(200L);
+		final SetOfStates setOfStates = new SetOfStates(1);
+		setOfStates.put(200L, new DummyTLCState(200L));
 		
 		// Add state 100L the first time, then add its successor
-		liveCheck.addNextState(state, 100L, stateVec, longVec);
-		liveCheck.addNextState(state, 200L, stateVec, longVec);
+		liveCheck.addNextState(state, 100L, setOfStates);
+		liveCheck.addNextState(state, 200L, setOfStates);
 		assertEquals(0, diskGraph.getPtr(100L, tableauId));
 
 		// Add state 100L again and check that it does *not* 
 		// end up in disk graph.
-		liveCheck.addNextState(state, 100L, stateVec, longVec);
+		liveCheck.addNextState(state, 100L, setOfStates);
 		assertEquals(0, diskGraph.getPtr(100L, tableauId));
 	}
 

@@ -31,7 +31,7 @@ import java.io.IOException;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
-import tlc2.util.LongVec;
+import tlc2.util.SetOfStates;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 
@@ -54,9 +54,9 @@ public class NoOpLiveCheck implements ILiveCheck {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ILiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.tool.StateVec, tlc2.util.LongVec)
+	 * @see tlc2.tool.liveness.ILiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.util.SetOfStates)
 	 */
-	public void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs) throws IOException {
+	public void addNextState(TLCState s0, long fp0, SetOfStates nextStates) throws IOException {
 	}
 
 	/* (non-Javadoc)

@@ -10,11 +10,18 @@ import util.UniqueString;
 @SuppressWarnings("serial")
 public class DummyTLCState extends TLCState {
 
+	private final long fp;
+
 	public DummyTLCState() {
 		uid = 0;
 		TLCState.Empty = this;
+		this.fp = 0L;
 	}
 	
+	public DummyTLCState(long fp) {
+		this.fp = fp;
+	}
+
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#bind(util.UniqueString, tlc2.value.Value, tla2sany.semantic.SemanticNode)
 	 */
@@ -82,7 +89,7 @@ public class DummyTLCState extends TLCState {
 	 * @see tlc2.tool.TLCState#fingerPrint()
 	 */
 	public long fingerPrint() {
-		return 0;
+		return this.fp;
 	}
 
 	/* (non-Javadoc)

@@ -19,9 +19,9 @@ import tlc2.tool.TLCStateInfo;
 import tlc2.tool.Tool;
 import tlc2.util.FP64;
 import tlc2.util.LongObjTable;
-import tlc2.util.LongVec;
 import tlc2.util.MemObjectStack;
 import tlc2.util.ObjectStack;
+import tlc2.util.SetOfStates;
 import tlc2.util.Vect;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
@@ -270,14 +270,15 @@ public class LiveCheck1 implements ILiveCheck {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ILiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.tool.StateVec, tlc2.util.LongVec)
+	 * @see tlc2.tool.liveness.ILiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.util.SetOfStates)
 	 */
-	public void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs) throws IOException {
+	public void addNextState(TLCState s0, long fp0, SetOfStates nextStates) throws IOException {
 		for (int i = 0; i < nextStates.size(); i++) {
-			final TLCState s2 = nextStates.elementAt(i);
-			final long fp2 = nextFPs.elementAt(i);
+			final TLCState s2 = nextStates.next();
+			final long fp2 = s2.fingerPrint();
 			addNextState(s0, fp0, s2, fp2);
 		}
+		nextStates.resetNext();
 	}
 
 	/**

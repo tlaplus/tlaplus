@@ -30,7 +30,7 @@ import java.io.IOException;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
-import tlc2.util.LongVec;
+import tlc2.util.SetOfStates;
 import tlc2.util.statistics.IBucketStatistics;
 
 public interface ILiveCheck {
@@ -45,7 +45,7 @@ public interface ILiveCheck {
 	 * This method adds new nodes into the behavior graph induced by s0. It is
 	 * called after the successors of s0 are computed.
 	 */
-	void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs) throws IOException;
+	void addNextState(TLCState s0, long fp0, SetOfStates nextStates) throws IOException;
 	
 	/**
 	 * true iff a call to {@link ILiveCheck#check(boolean)} would indeed result in liveness checking.

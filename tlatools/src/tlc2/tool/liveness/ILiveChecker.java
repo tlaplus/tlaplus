@@ -2,10 +2,9 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 
-import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.util.BitVector;
-import tlc2.util.LongVec;
+import tlc2.util.SetOfStates;
 
 public interface ILiveChecker {
 
@@ -19,7 +18,7 @@ public interface ILiveChecker {
 	 * This method adds new nodes into the behavior graph induced by s0. It is
 	 * called after the successors of s0 are computed.
 	 */
-	void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs, BitVector checkActionResults,
+	void addNextState(TLCState s0, long fp0, SetOfStates nextStates, BitVector checkActionResults,
 			boolean[] checkStateResults) throws IOException;
 
 	AbstractDiskGraph getDiskGraph();

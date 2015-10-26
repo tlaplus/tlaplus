@@ -61,6 +61,14 @@ public abstract class AbstractChecker implements Cancelable
     protected boolean cancellationFlag;
 	protected final ILiveCheck liveCheck;
 
+	protected final ThreadLocal<Integer> threadLocal = new ThreadLocal<Integer>() {
+		protected Integer initialValue() {
+			return 1;
+		}
+	};
+
+	protected static final int INITIAL_CAPACITY = 16;
+	
     /**
      * Constructor of the abstract model checker
      * @param specFile

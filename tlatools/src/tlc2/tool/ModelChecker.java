@@ -20,8 +20,8 @@ import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IdThread;
-import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
+import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
 import tlc2.value.Value;
 import util.DebugPrinter;
@@ -348,13 +348,11 @@ public class ModelChecker extends AbstractChecker
 
         boolean deadLocked = true;
         TLCState succState = null;
-        StateVec liveNextStates = null;
-        LongVec liveNextFPs = null;
+        SetOfStates liveNextStates = null;
 
         if (this.checkLiveness)
         {
-            liveNextStates = new StateVec(2);
-            liveNextFPs = new LongVec(2);
+            liveNextStates = new SetOfStates(INITIAL_CAPACITY * threadLocal.get());
         }
 
         try
@@ -437,8 +435,7 @@ public class ModelChecker extends AbstractChecker
 						// For liveness checking:
                         if (this.checkLiveness)
                         {
-							liveNextStates.addElement(succState);
-							liveNextFPs.addElement(fp);
+							liveNextStates.put(fp, succState);
 						}
 					}
 					// Check if succState violates any invariant:
@@ -609,10 +606,17 @@ public class ModelChecker extends AbstractChecker
             {
 				// Add the stuttering step:
 				long curStateFP = curState.fingerPrint();
-				liveNextStates.addElement(curState);
-				liveNextFPs.addElement(curStateFP);
-				liveCheck.addNextState(curState, curStateFP, liveNextStates, liveNextFPs);
-			}
+				liveNextStates.put(curStateFP, curState);
+				liveCheck.addNextState(curState, curStateFP, liveNextStates);
+
+				// Poor man's version of a controller. If necessary, try e.g.
+				// PID controller instead.
+				final int multiplier = threadLocal.get();
+				if (liveNextStates.capacity() > (multiplier * INITIAL_CAPACITY)) {
+					// Increase initial size for as long as the set has to grow
+					threadLocal.set(multiplier + 1);
+				}
+            }
 			return false;
         } catch (Throwable e)
         {

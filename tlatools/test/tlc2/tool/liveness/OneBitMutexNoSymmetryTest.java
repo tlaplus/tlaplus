@@ -67,82 +67,97 @@ public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 						+ "/\\ x = (A :> FALSE @@ B :> FALSE)\n"
 						+ "/\\ pc = (A :> \"e1\" @@ B :> \"ncs\")");
 		//3
-		expectedTrace.add("/\\ unchecked = (A :> {B} @@ B :> {})\n"
-						+ "/\\ other = (A :> A @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n"
-						+ "/\\ pc = (A :> \"e2\" @@ B :> \"ncs\")");
-		//4
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n"
-						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"ncs\")");
+						+ "/\\ other = (A :> A @@ B :> A)\n"
+						+ "/\\ x = (A :> FALSE @@ B :> FALSE)\n"
+						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e1\")");
+		//4
+		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {A})\n"
+						+ "/\\ other = (A :> A @@ B :> A)\n"
+						+ "/\\ x = (A :> FALSE @@ B :> TRUE)\n" 
+						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e2\")");
 		//5
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
-						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e1\")");
+						+ "/\\ other = (A :> A @@ B :> A)\n"
+						+ "/\\ x = (A :> FALSE @@ B :> TRUE)\n" 
+						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e3\")");
 		//6
-		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {A})\n" 
-						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
+		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
+						+ "/\\ other = (A :> A @@ B :> A)\n"
+						+ "/\\ x = (A :> FALSE @@ B :> TRUE)\n" 
+						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e2\")");
 		//7
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
-						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e3\")");
+						+ "/\\ other = (A :> A @@ B :> A)\n"
+						+ "/\\ x = (A :> FALSE @@ B :> TRUE)\n" 
+						+ "/\\ pc = (A :> \"e1\" @@ B :> \"cs\")");
 		//8 (Loops back to)
-		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
-						+ "/\\ other = (A :> B @@ B :> A)\n"
+		expectedTrace.add("/\\ unchecked = (A :> {B} @@ B :> {})\n" 
+						+ "/\\ other = (A :> A @@ B :> A)\n"
 						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e4\")");
+						+ "/\\ pc = (A :> \"e2\" @@ B :> \"cs\")");
 		//9
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
 						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
-						+ "/\\ pc = (A :> \"e4\" @@ B :> \"e4\")");
+						+ "/\\ pc = (A :> \"e3\" @@ B :> \"cs\")");
 		//10
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
 						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n" 
-						+ "/\\ pc = (A :> \"e4\" @@ B :> \"e5\")");
+						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
+						+ "/\\ pc = (A :> \"e3\" @@ B :> \"f\")");
 		//11
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
 						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> FALSE @@ B :> FALSE)\n" 
-						+ "/\\ pc = (A :> \"e5\" @@ B :> \"e5\")");
+						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
+						+ "/\\ pc = (A :> \"e4\" @@ B :> \"f\")");
 		//12
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
 						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> FALSE @@ B :> FALSE)\n" 
-						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e5\")");
+						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n" 
+						+ "/\\ pc = (A :> \"e4\" @@ B :> \"ncs\")");
 		//13
+		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
+						+ "/\\ other = (A :> B @@ B :> A)\n"
+						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n" 
+						+ "/\\ pc = (A :> \"e4\" @@ B :> \"e1\")");
+		//14
+		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
+						+ "/\\ other = (A :> B @@ B :> A)\n"
+						+ "/\\ x = (A :> FALSE @@ B :> FALSE)\n" 
+						+ "/\\ pc = (A :> \"e5\" @@ B :> \"e1\")");
+		//15
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
 						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> FALSE @@ B :> FALSE)\n" 
 						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e1\")");
-		//14
-		expectedTrace.add("/\\ unchecked = (A :> {B} @@ B :> {})\n" 
-						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n" 
-						+ "/\\ pc = (A :> \"e2\" @@ B :> \"e1\")");
-		//15
-		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
-						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> FALSE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e1\")");
 		//16
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {A})\n" 
 						+ "/\\ other = (A :> B @@ B :> A)\n"
-						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
+						+ "/\\ x = (A :> FALSE @@ B :> TRUE)\n" 
+						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e2\")");
 		//17
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
 						+ "/\\ other = (A :> B @@ B :> A)\n"
+						+ "/\\ x = (A :> FALSE @@ B :> TRUE)\n" 
+						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e3\")");
+		//18
+		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
+						+ "/\\ other = (A :> B @@ B :> A)\n"
+						+ "/\\ x = (A :> FALSE @@ B :> TRUE)\n" 
+						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e2\")");
+		//19
+		expectedTrace.add("/\\ unchecked = (A :> {B} @@ B :> {})\n" 
+						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
-						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e3\")");
+						+ "/\\ pc = (A :> \"e2\" @@ B :> \"e2\")");
+		//20
+		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
+						+ "/\\ other = (A :> B @@ B :> A)\n"
+						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
+						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		assertBackToState(8, "<Action line 76, col 13 to line 82, col 50 of module OneBitMutex>");
+		assertBackToState(9, "<Action line 66, col 13 to line 74, col 21 of module OneBitMutex>");
 	}
 }

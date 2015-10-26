@@ -31,11 +31,10 @@ import java.io.IOException;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
-import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.tool.Worker;
-import tlc2.util.LongVec;
+import tlc2.util.SetOfStates;
 import tlc2.util.statistics.IBucketStatistics;
 
 /**
@@ -71,11 +70,11 @@ public class AddAndCheckLiveCheck extends LiveCheck {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.LiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.tool.StateVec, tlc2.util.LongVec)
+	 * @see tlc2.tool.liveness.LiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.util.SetOfStates)
 	 */
 	@Override
-	public synchronized void addNextState(TLCState s0, long fp0, StateVec nextStates, LongVec nextFPs) throws IOException {
-		super.addNextState(s0, fp0, nextStates, nextFPs);
+	public synchronized void addNextState(TLCState s0, long fp0, SetOfStates nextStates) throws IOException {
+		super.addNextState(s0, fp0, nextStates);
 		try {
 			check0(false);
 		} catch (InterruptedException e) {
