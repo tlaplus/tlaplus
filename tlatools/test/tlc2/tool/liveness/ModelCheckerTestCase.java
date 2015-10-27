@@ -195,4 +195,25 @@ public abstract class ModelCheckerTestCase extends TestCase {
 		assertEquals(Integer.toString(stateNum), object[0]);
 		assertEquals(action, object[1]);
 	}
+
+	/**
+	 * Check the file size of the AbstractDiskGraph files to assert that the
+	 * expected amount of ptrs and nodes (outgoing arcs) have been written to
+	 * disk.
+	 * 
+	 * @param nodesSize
+	 * @param ptrsSize
+	 */
+	protected void assertNodeAndPtrSizes(final long nodesSize, final long ptrsSize) {
+		final String metadir = TLCGlobals.mainChecker.metadir;
+		assertNotNull(metadir);
+		
+		final File nodes = new File(metadir + File.separator + "nodes_0");
+		assertTrue(nodes.exists());
+		assertEquals(nodesSize, nodes.length());
+
+		final File ptrs =  new File(metadir + File.separator + "ptrs_0");
+		assertTrue(ptrs.exists());
+		assertEquals(ptrsSize, ptrs.length());
+	}
 }

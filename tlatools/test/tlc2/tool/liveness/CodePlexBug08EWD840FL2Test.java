@@ -26,11 +26,9 @@
 
 package tlc2.tool.liveness;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
 
 /**
@@ -51,6 +49,8 @@ public class CodePlexBug08EWD840FL2Test extends ModelCheckerTestCase {
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+		
+		assertNodeAndPtrSizes(53958732L, 831296L);
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
@@ -83,17 +83,5 @@ public class CodePlexBug08EWD840FL2Test extends ModelCheckerTestCase {
 		
 		// last state points back to state 1
 		assertBackToState(1);
-		
-		// Check the file size of the AbstractDiskGraph files to check if the
-		// expected amount of ptrs and nodes (outgoing arcs) have been written
-		// to disk.
-		final String metadir = TLCGlobals.mainChecker.metadir;
-		assertNotNull(metadir);
-		final File nodes = new File(metadir + File.separator + "nodes_0");
-		final File ptrs =  new File(metadir + File.separator + "ptrs_0");
-		assertTrue(nodes.exists());
-		assertTrue(ptrs.exists());
-		assertEquals(53958732L, nodes.length());
-		assertEquals(831296L, ptrs.length());
 	}
 }
