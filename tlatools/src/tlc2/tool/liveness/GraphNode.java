@@ -93,11 +93,11 @@ public class GraphNode extends AbstractGraphNode {
 	}
 
 	public final int succSize() {
-		// offset being != -1 indicates that the nnodes array has been
+		// offset being != NO_FREE_SLOTS indicates that the nnodes array has been
 		// overallocated in preparation to batch-insert transitions but the
 		// transitions have not been added yet. In this case the nnodes.length /
 		// NNODE_RECORD_SIZE is *not* the actual number of transitions, offset / NNODE_RECORD_SIZE is!
-		if (this.offset != -1) {
+		if (this.offset != NO_FREE_SLOTS) {
 			return this.offset / NNODE_RECORD_SIZE;
 		}
 		return this.nnodes.length / NNODE_RECORD_SIZE;
@@ -105,12 +105,14 @@ public class GraphNode extends AbstractGraphNode {
 
 	/**
 	 * Points to the first available slot in {@link GraphNode#nnodes} iff free
-	 * slots are available. "-1" indicates no free slots are available.
+	 * slots are available. "NO_FREE_SLOTS" indicates no free slots are available.
 	 * 
 	 * @see GraphNode#allocate(int)
 	 */
-	private int offset = -1;
+	private int offset = NO_FREE_SLOTS;
 
+	private static final int NO_FREE_SLOTS = -1;
+	
 	/**
 	 * Allocates memory for subsequent
 	 * {@link GraphNode#addTransition(long, int, int, int, boolean[])} calls.
@@ -194,7 +196,7 @@ public class GraphNode extends AbstractGraphNode {
 				}
 			}
 		}
-		if (this.offset == -1) {
+		if (this.offset == NO_FREE_SLOTS) {
 			// Have to create a new slot regardless of 0 or negative hint, thus
 			// Math.max...
 			this.allocate(Math.max(allocationHint, 1));
@@ -204,7 +206,7 @@ public class GraphNode extends AbstractGraphNode {
 		this.nnodes[this.offset + 2] = tidx;
 		this.offset = this.offset + NNODE_RECORD_SIZE;
 		if (this.offset == this.nnodes.length) {
-			this.offset = -1;
+			this.offset = NO_FREE_SLOTS;
 		}
 	}
 
@@ -219,14 +221,14 @@ public class GraphNode extends AbstractGraphNode {
 	 */
 	public int realign() {
 		int result = 0;
-		// It is a noop iff offset == -1
-		if (this.offset != -1) {
+		// It is a noop iff offset == NO_FREE_SLOTS
+		if (this.offset != NO_FREE_SLOTS) {
 			result = (this.nnodes.length - this.offset) / NNODE_RECORD_SIZE;
 			// shrink newNodes to correct size
 			int[] newNodes = new int[this.offset];
 			System.arraycopy(this.nnodes, 0, newNodes, 0, newNodes.length);
 			this.nnodes = newNodes;
-			this.offset = -1;
+			this.offset = NO_FREE_SLOTS;
 		}
 		return result;
 	}
@@ -246,9 +248,9 @@ public class GraphNode extends AbstractGraphNode {
 		// been
 		// reached. The free slot detection work with the allocation offset that
 		// points to the end of the filled slots (slots are filled in ascending
-		// order). If offset is marked invalid ("-1"), the nnodes buffer is
+		// order). If offset is marked invalid ("NO_FREE_SLOTS"), the nnodes buffer is
 		// completely occupied and has to be searched to the end.
-		if (this.offset != -1) {
+		if (this.offset != NO_FREE_SLOTS) {
 			len = offset;
 		}
 		int high = (int) (fp >>> 32);
@@ -274,6 +276,7 @@ public class GraphNode extends AbstractGraphNode {
 	 * @throws IOException
 	 */
 	void write(final BufferedRandomAccessFile nodeRAF) throws IOException {
+		assert offset == NO_FREE_SLOTS; // assert that nnodes hasn't been overallocated.
 		// Write nnodes
 		final int cnt = nnodes.length;
 		nodeRAF.writeNat(cnt);
@@ -294,6 +297,8 @@ public class GraphNode extends AbstractGraphNode {
 		// Read checks
 		checks = new BitVector();
 		checks.read(nodeRAF);
+		
+		assert offset == NO_FREE_SLOTS;
 	}
 
 	public final String toString() {
