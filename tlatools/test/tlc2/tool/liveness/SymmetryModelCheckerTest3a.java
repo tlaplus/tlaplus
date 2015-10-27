@@ -52,10 +52,14 @@ public class SymmetryModelCheckerTest3a extends ModelCheckerTestCase {
 		// violating state with x=a (where x=a logically does not violate
 		// Prop1).
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "4", "2", "0"));
+		assertFalse(recorder.recorded(EC.GENERAL));
 
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+		
+		assertNodeAndPtrSizes(72L, 32L);
 
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
