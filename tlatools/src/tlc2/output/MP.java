@@ -930,7 +930,11 @@ public class MP
             b.append("%1%:\n%2%");
             break;
         case EC.TLC_STATE_PRINT2:
-            b.append("%1%: %2%\n%3%");
+        	if (DO_DEBUG) {
+        		b.append("%1%: %2%\n%3%fp: %4%\n");
+        	} else {
+        		b.append("%1%: %2%\n%3%");
+        	}
             break;
         case EC.TLC_STATE_PRINT3:
             b.append("%1%: Stuttering");
