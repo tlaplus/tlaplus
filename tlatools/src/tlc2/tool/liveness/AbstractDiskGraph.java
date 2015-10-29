@@ -366,8 +366,10 @@ public abstract class AbstractDiskGraph {
 	 * Copy&Paste output "digraph DiskGraph {...} to a file called graphviz.txt
 	 * and call something similar to: 'dot -T svg graphviz.txt -o
 	 * "Graphviz.svg"'. It obviously needs Graphviz (http://www.graphviz.org).
+	 * @param alen 
+	 * @param slen 
 	 */
-	public abstract String toDotViz();
+	public abstract String toDotViz(final int slen, final int alen);
 
 	/* Checkpoint. */
 	public synchronized final void beginChkpt() throws IOException {

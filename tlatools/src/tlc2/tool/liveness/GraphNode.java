@@ -311,32 +311,44 @@ public class GraphNode extends AbstractGraphNode {
 		return buf.substring(0, buf.length() - ", ".length()); // chop off dangling ", "
 	}
 
-	public String toDotViz(final boolean isInitState, final boolean hasTableau) {
+	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen) {
+		// The node's id including its tidx if any
 		String id = (""+this.stateFP).substring(0,6);
 		if (hasTableau) {
 			id += "." + this.tindex;
 		}
 		
+		// marker if it is an init state
 		final StringBuffer buf = new StringBuffer();
 		if (isInitState) {
 			buf.append("\"" + id + "\" [style = filled]\n"); // node's label
 		}
-		int size = this.nnodes.length;
-		for (int i = 0; i < size; i += NNODE_RECORD_SIZE) {
-			long high = this.nnodes[i];
-			long low = this.nnodes[i + 1];
-			long fp = (high << 32) | (low & 0xFFFFFFFFL);
+		
+		// Each outgoing transition
+		for (int i = 0; i < succSize(); i++) {
+			final long fp = getStateFP(i);
 //			if (fp == this.stateFP) {
 //				// skip self loops if edge count to large for dotViz to handle.
 //				continue;
 //			}
 			buf.append("\"" + id + "\" -> ");
 			if (hasTableau) {
-				buf.append(("\"" + fp).substring(0, 7) + "." + this.nnodes[i + 2] + "\"");
+				final int tidx = getTidx(i);
+				buf.append(("\"" + fp).substring(0, 7) + "." + tidx + "\"");
 			} else {
 				//Omit tableau index when it's -1 (indicating no tableau)
 				buf.append(("\"" + fp).substring(0, 7) + "\"");
 			}
+			
+			buf.append(" [label=\"");
+			for (int j = 0; j < alen; j++) {
+				if (getCheckAction(slen, alen, i, j)) {
+					buf.append("t");
+				} else {
+					buf.append("f");
+				}
+			}
+			buf.append("\"];");
 			buf.append("\n");
 		}
 		return buf.toString();

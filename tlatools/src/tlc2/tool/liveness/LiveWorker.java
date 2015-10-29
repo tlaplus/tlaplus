@@ -1195,7 +1195,7 @@ public class LiveWorker extends IdThread {
 				long loc1 = TableauNodePtrTable.getElem(nodes, nidx);
 
 				final GraphNode curNode = this.dg.getNode(state1, tidx1, loc1);
-				sb.append(curNode.toDotViz((state1 == state && tidx1 == tidx), true));
+				sb.append(curNode.toDotViz((state1 == state && tidx1 == tidx), true, 0, 0));
 			}
 		}
 		

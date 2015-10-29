@@ -257,9 +257,9 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.DiskGraph#toDotViz()
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#toDotViz(int, int)
 	 */
-	public final String toDotViz() {
+	public final String toDotViz(final int slen, final int alen) {
 
 		// The following code relies on gnodes not being null, thus safeguard
 		// against accidental invocations.
@@ -285,7 +285,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 				int tidx = nodePtrRAF.readInt();
 				long loc = nodePtrRAF.readLongNat();
 				GraphNode gnode = this.getNode(fp, tidx, loc);
-				sb.append(gnode.toDotViz(isInitState(gnode), true));
+				sb.append(gnode.toDotViz(isInitState(gnode), true, slen, alen));
 			}
 			sb.append("}");
 			this.nodeRAF.seek(nodePtr);
