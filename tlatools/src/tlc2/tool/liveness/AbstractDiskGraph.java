@@ -4,11 +4,13 @@
 
 package tlc2.tool.liveness;
 
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -366,10 +368,48 @@ public abstract class AbstractDiskGraph {
 	 * Copy&Paste output "digraph DiskGraph {...} to a file called graphviz.txt
 	 * and call something similar to: 'dot -T svg graphviz.txt -o
 	 * "Graphviz.svg"'. It obviously needs Graphviz (http://www.graphviz.org).
-	 * @param alen 
-	 * @param slen 
+	 *
+	 * @param slen Length of state checks
+	 * @param alen Length of action checks 
 	 */
 	public abstract String toDotViz(final int slen, final int alen);
+
+	/**
+	 * Only useful for debugging.
+	 * 
+	 * Writes the current {@link AbstractDiskGraph} to the given {@link File}.
+	 * <p>
+	 * For the Eclipse IDE there exists a handy plug-in that automatically
+	 * renders a .dot file when selected in the package explorer. Just follow
+	 * the installation instructions at
+	 * https://github.com/abstratt/eclipsegraphviz
+	 * 
+	 * @param slen
+	 *            Length of state checks
+	 * @param alen
+	 *            Length of action checks
+	 * @param file
+	 *            Destination
+	 */
+	public final void writeDotViz(final int slen, final int alen, final File file) {
+		this.createCache();
+
+		try {
+			final BufferedWriter bwr = new BufferedWriter(new FileWriter(file));
+
+			// write contents of StringBuffer to a file
+			bwr.write(toDotViz(slen, alen));
+
+			// flush the stream
+			bwr.flush();
+
+			// close the stream
+			bwr.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		this.destroyCache();
+	}
 
 	/* Checkpoint. */
 	public synchronized final void beginChkpt() throws IOException {

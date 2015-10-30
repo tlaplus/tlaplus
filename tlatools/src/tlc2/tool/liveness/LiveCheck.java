@@ -85,6 +85,11 @@ public class LiveCheck implements ILiveCheck {
 				oos.checkAction(s0, s1, checkActionResults, alen * sidx);
 			}
 			check.addNextState(s0, fp0, nextStates, nextFPs, checkActionResults, oos.checkState(s0));
+			
+			// Write the content of the current graph to a file in GraphViz
+			// format. Useful when debugging!
+//			check.getDiskGraph().writeDotViz(oos.getCheckState().length, oos.getCheckAction().length, new java.io.File(
+//					metadir + java.io.File.separator + "dgraph_" + i + "_" + System.currentTimeMillis() + ".dot"));
 		}
 	}
 
