@@ -613,9 +613,18 @@ public class LiveCheck implements ILiveCheck {
 		}
 
 		/**
-		 * This method takes care of the case that a new node (s, t) is generated
-		 * after s has been done. In this case, we will have to compute the children
-		 * of (s, t). Hopefully, this case does not occur very frequently.
+		 * This method takes care of the case that a new node <<state, tableau>>
+		 * in the (state X tableau) graph is generated after the state itself
+		 * has been done. Done means that the state has been found during safety
+		 * checking in the state graph already, except that the node <<state,
+		 * tableau>> not been created.
+		 * <p>
+		 * In this case, we will have to generate the state graph successors of
+		 * the state and create the permutation of all successors with all
+		 * tableau nodes .
+		 * <p>
+		 * Hopefully, this case does not occur very frequently because it
+		 * generates successor nodes.
 		 */
 		private void addNextState(final TLCState s, final long fp, final TBGraphNode tnode, final OrderOfSolution oos, final TableauDiskGraph dgraph)
 				throws IOException {
@@ -629,7 +638,8 @@ public class LiveCheck implements ILiveCheck {
 			// see allocationHint of node.addTransition() invocations below
 			int cnt = 0;
 			
-			// Add edges induced by s -> s:
+			// Add edges induced by s -> s (self-loop) coming from the tableau
+			// graph:
 			final BitVector checkActionResults = oos.checkAction(s, s, new BitVector(alen), 0);
 			
 			final int nextSize = tnode.nextSize();
@@ -650,7 +660,8 @@ public class LiveCheck implements ILiveCheck {
 				}
 			}
 
-			// Add edges induced by s -> s1:
+			// Add edges induced by s -> s1 (where s1 is a successor of s in the
+			// state graph):
 			cnt = 0;
 			for (int i = 0; i < actions.length; i++) {
 				final StateVec nextStates = myTool.getNextStates(actions[i], s);
