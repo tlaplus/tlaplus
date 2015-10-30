@@ -6,6 +6,8 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;
@@ -261,6 +263,54 @@ public class GraphNode extends AbstractGraphNode {
 			}
 		}
 		return false;
+	}
+
+	public boolean checkInvariants() {
+		final Set<Transition> transitions = new HashSet<Transition>();
+		for (int i = 0; i < succSize(); i++) {
+			transitions.add(new Transition(getStateFP(i), getTidx(i)));
+		}
+		return transitions.size() == succSize();
+	}
+	
+	private static class Transition {
+
+		private final long fp;
+		private final int tidx;
+
+		public Transition(long fp, int tidx) {
+			this.fp = fp;
+			this.tidx = tidx;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + (int) (fp ^ (fp >>> 32));
+			result = prime * result + tidx;
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Transition other = (Transition) obj;
+			if (fp != other.fp)
+				return false;
+			if (tidx != other.tidx)
+				return false;
+			return true;
+		}
 	}
 
 	/* Return the tableau graph node used by this. */

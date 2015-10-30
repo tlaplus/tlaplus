@@ -1165,6 +1165,9 @@ public class LiveWorker extends IdThread {
 				// information is later used to decide if it it makes sense to
 				// run the next check on the larger but still *partial* graph.
 				this.dg.recordSize();
+				// If assertions are on (e.g. during unit testing) make sure
+				// that the disk graph's invariants hold.
+				assert this.dg.checkInvariants();
 			}
 		} catch (Exception e) {
 			MP.printError(EC.GENERAL, "checking liveness", e); // LL changed

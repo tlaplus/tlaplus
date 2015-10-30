@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import tlc2.output.EC;
@@ -320,6 +321,64 @@ public abstract class AbstractDiskGraph {
 
 	/* End link information for SCC search */
 
+	public boolean checkInvariants() {
+		// Make sure there are no redundant transitions.
+		final Iterator<GraphNode> itr = iterator();
+		while (itr.hasNext()) {
+			final GraphNode gn = itr.next();
+			if (!gn.checkInvariants()) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/* start iteration */
+	
+    private Iterator<GraphNode> iterator() {
+		try {
+			// reverse ptr file to beginning
+			this.nodePtrRAF.seek(0);
+			
+			final long length = this.nodePtrRAF.length();
+	        
+			return new Iterator<GraphNode>() {
+
+				/* (non-Javadoc)
+				 * @see java.util.Iterator#hasNext()
+				 */
+				public boolean hasNext() {
+					return nodePtrRAF.getFilePointer() < length;
+				}
+
+				/* (non-Javadoc)
+				 * @see java.util.Iterator#next()
+				 */
+				public GraphNode next() {
+					try {
+						long fp = nodePtrRAF.readLong();
+						int tidx = nodePtrRAF.readInt();
+						long loc = nodePtrRAF.readLongNat();
+						return getNodeFromDisk(fp, tidx, loc);
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+
+				/* (non-Javadoc)
+				 * @see java.util.Iterator#remove()
+				 */
+				public void remove() {
+					throw new UnsupportedOperationException("Not supported!");
+				}
+			};
+		} catch (IOException e1) {
+			throw new RuntimeException(e1);
+		}
+    }
+	
+	/* end iteration */
+	
 	/**
 	 * Return the shortest path (inclusive and in reverse order) from some
 	 * initial state to state. The path is a vector of states <s1, s2, ..., sn>,
