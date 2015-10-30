@@ -640,9 +640,8 @@ public class LiveCheck implements ILiveCheck {
 			
 			// Add edges induced by s -> s (self-loop) coming from the tableau
 			// graph:
-			final BitVector checkActionResults = oos.checkAction(s, s, new BitVector(alen), 0);
-			
 			final int nextSize = tnode.nextSize();
+			final BitVector checkActionResults = nextSize > 0 ? oos.checkAction(s, s, new BitVector(alen), 0) : null;
 			for (int i = 0; i < nextSize; i++) {
 				final TBGraphNode tnode1 = tnode.nextAt(i);
 				final int tidx1 = tnode1.index;
