@@ -265,10 +265,11 @@ public class GraphNode extends AbstractGraphNode {
 		return false;
 	}
 
-	public boolean checkInvariants() {
+	public boolean checkInvariants(final int slen, final int alen) {
 		final Set<Transition> transitions = new HashSet<Transition>();
 		for (int i = 0; i < succSize(); i++) {
-			transitions.add(new Transition(getStateFP(i), getTidx(i)));
+			final Transition t = new Transition(getStateFP(i), getTidx(i), getCheckAction(slen, alen, i));
+			transitions.add(t);
 		}
 		return transitions.size() == succSize();
 	}
@@ -277,10 +278,12 @@ public class GraphNode extends AbstractGraphNode {
 
 		private final long fp;
 		private final int tidx;
+		private final BitVector bv;
 
-		public Transition(long fp, int tidx) {
+		public Transition(long fp, int tidx, BitVector bv) {
 			this.fp = fp;
 			this.tidx = tidx;
+			this.bv = bv;
 		}
 
 		/* (non-Javadoc)
@@ -289,6 +292,7 @@ public class GraphNode extends AbstractGraphNode {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
+			result = prime * result + ((bv == null) ? 0 : bv.hashCode());
 			result = prime * result + (int) (fp ^ (fp >>> 32));
 			result = prime * result + tidx;
 			return result;
@@ -305,6 +309,11 @@ public class GraphNode extends AbstractGraphNode {
 			if (getClass() != obj.getClass())
 				return false;
 			Transition other = (Transition) obj;
+			if (bv == null) {
+				if (other.bv != null)
+					return false;
+			} else if (!bv.equals(other.bv))
+				return false;
 			if (fp != other.fp)
 				return false;
 			if (tidx != other.tidx)

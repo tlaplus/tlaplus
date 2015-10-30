@@ -40,6 +40,14 @@ public abstract class AbstractGraphNode {
 		return this.checks.get(i);
 	}
 
+	public BitVector getCheckAction(int slen, int alen, int nodeIdx) {
+		final BitVector bv = new BitVector(alen);
+		for (int j = 0; j < alen; j++) {
+			bv.set(j, getCheckAction(slen, alen, nodeIdx, j));
+		}
+		return bv;
+	}
+
 	public boolean getCheckAction(int slen, int alen, int nodeIdx, int i) {
 		int pos = slen + alen * nodeIdx + i;
 		return this.checks.get(pos);

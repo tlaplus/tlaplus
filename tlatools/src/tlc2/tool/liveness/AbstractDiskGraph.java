@@ -321,12 +321,12 @@ public abstract class AbstractDiskGraph {
 
 	/* End link information for SCC search */
 
-	public boolean checkInvariants() {
+	public boolean checkInvariants(final int slen, final int alen) {
 		// Make sure there are no redundant transitions.
 		final Iterator<GraphNode> itr = iterator();
 		while (itr.hasNext()) {
 			final GraphNode gn = itr.next();
-			if (!gn.checkInvariants()) {
+			if (!gn.checkInvariants(slen, alen)) {
 				return false;
 			}
 		}

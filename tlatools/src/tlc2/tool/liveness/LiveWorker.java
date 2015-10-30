@@ -1167,7 +1167,7 @@ public class LiveWorker extends IdThread {
 				this.dg.recordSize();
 				// If assertions are on (e.g. during unit testing) make sure
 				// that the disk graph's invariants hold.
-				assert this.dg.checkInvariants();
+				assert this.dg.checkInvariants(oos.getCheckState().length, oos.getCheckAction().length);
 			}
 		} catch (Exception e) {
 			MP.printError(EC.GENERAL, "checking liveness", e); // LL changed
