@@ -581,30 +581,25 @@ public class LiveCheck implements ILiveCheck {
 						for (int k = 0; k < tnode0.nextSize(); k++) {
 							final TBGraphNode tnode1 = tnode0.nextAt(k);
 							// Check if the successor is new
-							long ptr1 = dgraph.getPtr(successor, tnode1.getIndex());
-							if (ptr1 == -1) {
-								if (consistency.get((tnode1.getIndex() * succCnt) + sidx)) { // see note on addressing above
-									node0.addTransition(successor, tnode1.getIndex(), checkStateResults.length,
-											alen, checkActionResults, sidx * alen,
-											allocationHint - cnt++);
-									// Record that we have seen <fp1,
-									// tnode1>. If fp1 is done, we have
-									// to compute the next states for <fp1,
-									// tnode1>.
+							final long ptr1 = dgraph.getPtr(successor, tnode1.getIndex());
+							if (consistency.get((tnode1.getIndex() * succCnt) + sidx)
+									&& (ptr1 == -1 || !node0.transExists(successor, tnode1.getIndex()))) {
+								node0.addTransition(successor, tnode1.getIndex(), checkStateResults.length, alen,
+										checkActionResults, sidx * alen, allocationHint - cnt);
+								// Record that we have seen <fp1,
+								// tnode1>. If fp1 is done, we have
+								// to compute the next states for <fp1,
+								// tnode1>.
+								if (ptr1 == -1) {
 									dgraph.recordNode(successor, tnode1.getIndex());
 									if (isDone) {
 										addNextState(s1, successor, tnode1, oos, dgraph);
 									}
 								}
-							} else if (consistency.get((tnode1.getIndex() * succCnt) + sidx)
-									&& !node0.transExists(successor, tnode1.getIndex())) {
-								node0.addTransition(successor, tnode1.getIndex(), checkStateResults.length, alen,
-										checkActionResults, sidx * alen, allocationHint - cnt++);
-							} else {
-								// Increment cnt even if addTrasition is not called. After all, 
-								// the for loop has completed yet another iteration.
-								cnt++;
 							}
+							// Increment cnt even if addTrasition is not called. After all, 
+							// the for loop has completed yet another iteration.
+							cnt++;
 						}
 					}
 					nextStates.resetNext();
@@ -656,17 +651,14 @@ public class LiveCheck implements ILiveCheck {
 				final TBGraphNode tnode1 = tnode.nextAt(i);
 				final int tidx1 = tnode1.getIndex();
 				final long ptr1 = dgraph.getPtr(fp, tidx1);
-				if (ptr1 == -1) {
-					if (tnode1.isConsistent(s, myTool)) {
-						node.addTransition(fp, tidx1, slen, alen, checkActionResults, 0, (nextSize - cnt++));
+				if (tnode1.isConsistent(s, myTool) && (ptr1 == -1 || !node.transExists(fp, tidx1))) {
+					node.addTransition(fp, tidx1, slen, alen, checkActionResults, 0, (nextSize - cnt));
+					if (ptr1 == -1) {
 						dgraph.recordNode(fp, tnode1.getIndex());
 						addNextState(s, fp, tnode1, oos, dgraph);
-					} else {
-						cnt++;
 					}
-				} else {
-					node.addTransition(fp, tidx1, slen, alen, checkActionResults, 0, (nextSize - cnt++));
 				}
+				cnt++;
 			}
 
 			// Add edges induced by s -> s1 (where s1 is a successor of s in the
@@ -686,22 +678,19 @@ public class LiveCheck implements ILiveCheck {
 							final int tidx1 = tnode1.getIndex();
 							long ptr1 = dgraph.getPtr(fp1, tidx1);
 							final int total = actions.length * nextCnt * tnode.nextSize();
-							if (ptr1 == -1) {
-								if (tnode1.isConsistent(s1, myTool)) {
-									node.addTransition(fp1, tidx1, slen, alen, checkActionRes, 0, (total - cnt++));
-									// Record that we have seen <fp1, tnode1>. If
-									// fp1 is done, we have to compute the next
-									// states for <fp1, tnode1>.
+							if (tnode1.isConsistent(s1, myTool) && (ptr1 == -1 || !node.transExists(fp1, tidx1))) {
+								node.addTransition(fp1, tidx1, slen, alen, checkActionRes, 0, (total - cnt));
+								// Record that we have seen <fp1, tnode1>. If
+								// fp1 is done, we have to compute the next
+								// states for <fp1, tnode1>.
+								if (ptr1 == -1) {
 									dgraph.recordNode(fp1, tidx1);
 									if (isDone) {
 										addNextState(s1, fp1, tnode1, oos, dgraph);
 									}
 								}
-							} else if (tnode1.isConsistent(s1, myTool) && !node.transExists(fp1, tidx1)) {
-								node.addTransition(fp1, tidx1, slen, alen, checkActionRes, 0, (total - cnt++));
-							} else {
-								cnt++;
 							}
+							cnt++;
 						}
 					} else {
 						cnt++;
