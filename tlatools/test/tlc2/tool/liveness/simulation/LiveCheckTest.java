@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.util.Enumeration;
 
 import org.easymock.EasyMock;
 import org.junit.Test;
@@ -109,29 +108,19 @@ public class LiveCheckTest {
 		return new LiveCheck(EasyMock.createNiceMock(Tool.class), new Action[0],
 				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
 	}
-
+	
 	private ILiveCheck getLiveCheckWithTableau() throws IOException {
 		final TBGraphNode node = EasyMock.createMock(TBGraphNode.class);
 		EasyMock.expect(node.isConsistent((TLCState) EasyMock.anyObject(), (Tool) EasyMock.anyObject())).andReturn(true)
 				.anyTimes();
 		EasyMock.expect(node.nextSize()).andReturn(1).anyTimes();
 		EasyMock.expect(node.nextAt(0)).andReturn(node).anyTimes();
+		EasyMock.expect(node.getIndex()).andReturn(0).anyTimes();
 		EasyMock.replay(node);
 		
-		final TBGraph tbGraph = EasyMock.createNiceMock(TBGraph.class);
-		EasyMock.expect(tbGraph.elements()).andReturn(new Enumeration<TBGraphNode>() {
-			boolean has = true;
-			public boolean hasMoreElements() {
-				return has;
-			}
-			public TBGraphNode nextElement() {
-				has = false;
-				return node;
-			}
-		}).anyTimes();
-		EasyMock.expect(tbGraph.getInitCnt()).andReturn(1).anyTimes();
-		EasyMock.expect(tbGraph.getNode(EasyMock.anyInt())).andReturn(node).anyTimes();
-		EasyMock.replay(tbGraph);
+		final TBGraph tbGraph = new TBGraph(null);
+		tbGraph.addElement(node);
+		tbGraph.setInitCnt(1);
 		
 		// Configure OOS mock to react to the subsequent invocation. This is a
 		// essentially the list of calls being made on OOS during

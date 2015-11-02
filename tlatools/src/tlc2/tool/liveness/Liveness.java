@@ -355,7 +355,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		}
 		// Assign each node in the tableau an index.
 		for (int i = 0; i < allnodes.size(); i++) {
-			allnodes.getNode(i).index = idx++;
+			allnodes.getNode(i).setIndex(idx++);
 		}
 		return allnodes;
 	}

@@ -155,11 +155,11 @@ public class LiveCheck1 implements ILiveCheck {
 			for (int i = 0; i < initCnt; i++) {
 				TBGraphNode tnode = os.getTableau().getNode(i);
 				if (tnode.isConsistent(srcState, myTool)) {
-					BEGraphNode destNode = new BTGraphNode(srcFP, tnode.index);
+					BEGraphNode destNode = new BTGraphNode(srcFP, tnode.getIndex());
 					destNode.setCheckState(checkStateRes);
 					initNodes.addElement(destNode);
 					srcNodes.addElement(destNode);
-					allNodes.put(FP64.Extend(srcFP, tnode.index), destNode);
+					allNodes.put(FP64.Extend(srcFP, tnode.getIndex()), destNode);
 				}
 			}
 			for (int i = 0; i < srcNodes.size(); i++) {
@@ -167,7 +167,7 @@ public class LiveCheck1 implements ILiveCheck {
 				TBGraphNode tnode = srcNode.getTNode(os.getTableau());
 				for (int j = 0; j < tnode.nextSize(); j++) {
 					TBGraphNode tnode1 = tnode.nextAt(j);
-					long destFP = FP64.Extend(srcFP, tnode1.index);
+					long destFP = FP64.Extend(srcFP, tnode1.getIndex());
 					BEGraphNode destNode = (BEGraphNode) allNodes.get(destFP);
 					if (destNode != null) {
 						srcNode.addTransition(destNode, slen, alen, checkActionRes);
@@ -185,11 +185,11 @@ public class LiveCheck1 implements ILiveCheck {
 					TBGraphNode tnode = srcNode.getTNode(os.getTableau());
 					for (int k = 0; k < tnode.nextSize(); k++) {
 						TBGraphNode tnode1 = tnode.nextAt(k);
-						long destFP = FP64.Extend(destStateFP, tnode1.index);
+						long destFP = FP64.Extend(destStateFP, tnode1.getIndex());
 						BEGraphNode destNode = (BEGraphNode) allNodes.get(destFP);
 						if (destNode == null) {
 							if (tnode1.isConsistent(destState, myTool)) {
-								destNode = new BTGraphNode(destStateFP, tnode1.index);
+								destNode = new BTGraphNode(destStateFP, tnode1.getIndex());
 								destNode.setCheckState(checkStateRes);
 								srcNode.addTransition(destNode, slen, alen, checkActionRes);
 								destNodes.addElement(destNode);
@@ -206,11 +206,11 @@ public class LiveCheck1 implements ILiveCheck {
 					TBGraphNode tnode = srcNode.getTNode(os.getTableau());
 					for (int k = 0; k < tnode.nextSize(); k++) {
 						TBGraphNode tnode1 = tnode.nextAt(k);
-						long destFP = FP64.Extend(destStateFP, tnode1.index);
+						long destFP = FP64.Extend(destStateFP, tnode1.getIndex());
 						BEGraphNode destNode = (BEGraphNode) allNodes.get(destFP);
 						if (destNode == null) {
 							if (tnode1.isConsistent(destState, myTool)) {
-								destNode = new BTGraphNode(destStateFP, tnode1.index);
+								destNode = new BTGraphNode(destStateFP, tnode1.getIndex());
 								destNode.setCheckState(checkStateRes);
 								srcNode.addTransition(destNode, slen, alen, checkActionRes);
 								destNodes.addElement(destNode);
@@ -255,7 +255,7 @@ public class LiveCheck1 implements ILiveCheck {
 				for (int i = 0; i < initCnt; i++) {
 					TBGraphNode tnode = os.getTableau().getNode(i);
 					if (tnode.isConsistent(state, myTool)) {
-						BTGraphNode destNode = new BTGraphNode(stateFP, tnode.index);
+						BTGraphNode destNode = new BTGraphNode(stateFP, tnode.getIndex());
 						destNode.setCheckState(checkStateRes);
 						bgraph.addInitNode(destNode);
 						bgraph.allNodes.putBTNode(destNode);
@@ -323,10 +323,10 @@ public class LiveCheck1 implements ILiveCheck {
 					TBGraphNode tnode = os.getTableau().getNode(srcNode.getIndex());
 					for (int j = 0; j < tnode.nextSize(); j++) {
 						TBGraphNode tnode1 = tnode.nextAt(j);
-						BTGraphNode destNode = bgraph.allNodes.getBTNode(fp2, tnode1.index);
+						BTGraphNode destNode = bgraph.allNodes.getBTNode(fp2, tnode1.getIndex());
 						if (destNode == null) {
 							if (tnode1.isConsistent(s2, myTool)) {
-								destNode = new BTGraphNode(fp2, tnode1.index);
+								destNode = new BTGraphNode(fp2, tnode1.getIndex());
 								if (checkStateRes == null) {
 									checkStateRes = os.checkState(s2);
 								}
@@ -364,10 +364,10 @@ public class LiveCheck1 implements ILiveCheck {
 		TBGraphNode tnode = node.getTNode(os.getTableau());
 		for (int i = 0; i < tnode.nextSize(); i++) {
 			TBGraphNode tnode1 = tnode.nextAt(i);
-			BTGraphNode destNode = bgraph.allNodes.getBTNode(fp, tnode1.index);
+			BTGraphNode destNode = bgraph.allNodes.getBTNode(fp, tnode1.getIndex());
 			if (destNode == null) {
 				if (tnode1.isConsistent(state, myTool)) {
-					destNode = new BTGraphNode(fp, tnode1.index);
+					destNode = new BTGraphNode(fp, tnode1.getIndex());
 					destNode.setCheckState(checkState);
 					node.addTransition(destNode, slen, alen, checkAction);
 					bgraph.allNodes.putBTNode(destNode);
@@ -400,10 +400,10 @@ public class LiveCheck1 implements ILiveCheck {
 				boolean[] checkActionRes1 = null;
 				for (int k = 0; k < tnode.nextSize(); k++) {
 					TBGraphNode tnode1 = tnode.nextAt(k);
-					BTGraphNode destNode = bgraph.allNodes.getBTNode(fp1, tnode1.index);
+					BTGraphNode destNode = bgraph.allNodes.getBTNode(fp1, tnode1.getIndex());
 					if (destNode == null) {
 						if (tnode1.isConsistent(s1, myTool)) {
-							destNode = new BTGraphNode(fp1, tnode1.index);
+							destNode = new BTGraphNode(fp1, tnode1.getIndex());
 							if (checkStateRes == null) {
 								checkStateRes = os.checkState(s1);
 							}

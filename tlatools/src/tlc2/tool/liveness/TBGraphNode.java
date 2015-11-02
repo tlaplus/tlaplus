@@ -20,7 +20,7 @@ public class TBGraphNode {
 	 */
 	private final TBPar par; // particle
 	public final Vect nexts; // outlinks
-	public int index; // unique id for this node
+	private int index; // unique id for this node
 	private final LiveExprNode[] statePreds; // state predicates in the particle
 
 	public static TBGraphNode dummyNode = new TBGraphNode();
@@ -52,6 +52,14 @@ public class TBGraphNode {
 		for (int i = 0; i < preds.size(); i++) {
 			this.statePreds[i] = preds.exprAt(i);
 		}
+	}
+
+	public int getIndex() {
+		return index;
+	}
+
+	public void setIndex(final int i) {
+		this.index = i;
 	}
 
 	public final TBPar getPar() {

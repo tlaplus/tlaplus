@@ -7,6 +7,7 @@ package tlc2.tool.liveness;
 
 import tlc2.util.Vect;
 
+@SuppressWarnings("serial")
 public class TBGraph extends Vect {
 	/**
 	 * TBGraph represents the nodes in the tableau graph.
@@ -39,7 +40,7 @@ public class TBGraph extends Vect {
 			tnode.getPar().toString(sb, padding);
 			sb.append(" --> ");
 			for (int j = 0; j < tnode.nexts.size(); j++) {
-				sb.append(tnode.nextAt(j).index + " ");
+				sb.append(tnode.nextAt(j).getIndex() + " ");
 			}
 			sb.append("\n");
 		}

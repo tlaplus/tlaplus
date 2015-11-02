@@ -502,8 +502,8 @@ public class LiveCheck implements ILiveCheck {
 			for (int i = 0; i < initCnt; i++) {
 				TBGraphNode tnode = oos.getTableau().getNode(i);
 				if (tnode.isConsistent(state, myTool)) {
-					dgraph.addInitNode(stateFP, tnode.index);
-					dgraph.recordNode(stateFP, tnode.index);
+					dgraph.addInitNode(stateFP, tnode.getIndex());
+					dgraph.recordNode(stateFP, tnode.getIndex());
 				}
 			}
 		}
@@ -536,7 +536,7 @@ public class LiveCheck implements ILiveCheck {
 						// via each state. Use identical addressing below
 						// where the lookup is done (plus 1 accounts for
 						// zero-based addressing).
-						consistency.set((tableauNode.index * succCnt) + sidx);
+						consistency.set((tableauNode.getIndex() * succCnt) + sidx);
 					}
 				}
 				nextStates.resetNext();
@@ -581,27 +581,24 @@ public class LiveCheck implements ILiveCheck {
 						for (int k = 0; k < tnode0.nextSize(); k++) {
 							final TBGraphNode tnode1 = tnode0.nextAt(k);
 							// Check if the successor is new
-							long ptr1 = dgraph.getPtr(successor, tnode1.index);
+							long ptr1 = dgraph.getPtr(successor, tnode1.getIndex());
 							if (ptr1 == -1) {
-								if (consistency.get((tnode1.index * succCnt) + sidx)) { // see note on addressing above
-									node0.addTransition(successor, tnode1.index, checkStateResults.length,
+								if (consistency.get((tnode1.getIndex() * succCnt) + sidx)) { // see note on addressing above
+									node0.addTransition(successor, tnode1.getIndex(), checkStateResults.length,
 											alen, checkActionResults, sidx * alen,
 											allocationHint - cnt++);
 									// Record that we have seen <fp1,
 									// tnode1>. If fp1 is done, we have
 									// to compute the next states for <fp1,
 									// tnode1>.
-									dgraph.recordNode(successor, tnode1.index);
+									dgraph.recordNode(successor, tnode1.getIndex());
 									if (isDone) {
 										addNextState(s1, successor, tnode1, oos, dgraph);
 									}
 								}
-							} else if (consistency.get((tnode1.index * succCnt) + sidx)
-									&& !node0.transExists(successor, tnode1.index)) {
-								node0.addTransition(successor, tnode1.index, checkStateResults.length,
-										alen, checkActionResults, sidx * alen, allocationHint
-												- cnt++);
-								node0.addTransition(successor, tnode1.index, checkStateResults.length, alen,
+							} else if (consistency.get((tnode1.getIndex() * succCnt) + sidx)
+									&& !node0.transExists(successor, tnode1.getIndex())) {
+								node0.addTransition(successor, tnode1.getIndex(), checkStateResults.length, alen,
 										checkActionResults, sidx * alen, allocationHint - cnt++);
 							} else {
 								// Increment cnt even if addTrasition is not called. After all, 
@@ -644,7 +641,7 @@ public class LiveCheck implements ILiveCheck {
 			final boolean[] checkStateRes = oos.checkState(s);
 			final int slen = checkStateRes.length;
 			final int alen = oos.getCheckAction().length;
-			final GraphNode node = dgraph.getNode(fp, tnode.index);
+			final GraphNode node = dgraph.getNode(fp, tnode.getIndex());
 			final int numSucc = node.succSize();
 			node.setCheckState(checkStateRes);
 
@@ -657,12 +654,12 @@ public class LiveCheck implements ILiveCheck {
 			final BitVector checkActionResults = nextSize > 0 ? oos.checkAction(s, s, new BitVector(alen), 0) : null;
 			for (int i = 0; i < nextSize; i++) {
 				final TBGraphNode tnode1 = tnode.nextAt(i);
-				final int tidx1 = tnode1.index;
+				final int tidx1 = tnode1.getIndex();
 				final long ptr1 = dgraph.getPtr(fp, tidx1);
 				if (ptr1 == -1) {
 					if (tnode1.isConsistent(s, myTool)) {
 						node.addTransition(fp, tidx1, slen, alen, checkActionResults, 0, (nextSize - cnt++));
-						dgraph.recordNode(fp, tnode1.index);
+						dgraph.recordNode(fp, tnode1.getIndex());
 						addNextState(s, fp, tnode1, oos, dgraph);
 					} else {
 						cnt++;
@@ -686,7 +683,7 @@ public class LiveCheck implements ILiveCheck {
 						boolean isDone = dgraph.isDone(fp1);
 						for (int k = 0; k < tnode.nextSize(); k++) {
 							final TBGraphNode tnode1 = tnode.nextAt(k);
-							final int tidx1 = tnode1.index;
+							final int tidx1 = tnode1.getIndex();
 							long ptr1 = dgraph.getPtr(fp1, tidx1);
 							final int total = actions.length * nextCnt * tnode.nextSize();
 							if (ptr1 == -1) {
