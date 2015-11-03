@@ -70,8 +70,14 @@ public class StatePrinter
         {
             stateString = currentStateInfo.state.toString();
         }
-        MP.printState(EC.TLC_STATE_PRINT2, new String[] { String.valueOf(num), currentStateInfo.info.toString(),
-                stateString, String.valueOf(currentStateInfo.fingerPrint()) }, currentStateInfo, num);
+        if (currentStateInfo.state.allAssigned()) {
+        	MP.printState(EC.TLC_STATE_PRINT2, new String[] { String.valueOf(num), currentStateInfo.info.toString(),
+        			stateString, String.valueOf(currentStateInfo.fingerPrint()) }, currentStateInfo, num);
+        } else {
+        	// fingerprint can't be calculated when state is incomplete, just return a random value.
+        	MP.printState(EC.TLC_STATE_PRINT2, new String[] { String.valueOf(num), currentStateInfo.info.toString(),
+        			stateString, "-1" }, currentStateInfo, num);
+        }
     }
 
     /**
