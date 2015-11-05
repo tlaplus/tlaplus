@@ -90,6 +90,9 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPresenter
 {
+	
+	public static final String RESULT_PAGE_PROBLEM = "ResultPageProblem";
+
     public static final String ID = "resultPage";
 
     private static final String TOOLTIP = "Click on a row to go to action.";
@@ -137,6 +140,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             }
         }
     };
+
+	private IMarker incompleteStateExploration;
 
     /**
      * Constructor for the page
@@ -278,19 +283,29 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 					// TLC is done but not all states are explored.
 					final StateSpaceLabelProvider sslp = (StateSpaceLabelProvider) ResultPage.this.stateSpace
 							.getLabelProvider();
-					if (dataProvider.isDone() && dataProvider.getProgressInformation().size() > 0
-							&& dataProvider.getProgressInformation().get(0).getLeftStates() > 0) {
-						sslp.setHighlightUnexplored();
-						// Create a problem marker which gets displayed by
-						// BasicFormPage/ModelEditor as a warning on the result page.
-						final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
-								"State space exploration incomplete", IMarker.SEVERITY_WARNING);
-						marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
-						ModelHelper.installModelProblemMarker(getConfig().getFile(),
-								marker,
-								ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
-					} else {
-						sslp.unsetHighlightUnexplored();
+					if (dataProvider.isDone() && dataProvider.getProgressInformation().size() > 0) {
+						final long statesLeft = dataProvider.getProgressInformation().get(0).getLeftStates();
+						if (statesLeft > 0) {
+							sslp.setHighlightUnexplored();
+							// Create a problem marker which gets displayed by
+							// BasicFormPage/ModelEditor as a warning on the
+							// result page.
+							final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
+									"State space exploration incomplete", IMarker.SEVERITY_WARNING);
+							marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
+							incompleteStateExploration = ModelHelper.installModelProblemMarker(getConfig().getFile(),
+									marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+						} else {
+							if (incompleteStateExploration != null) {
+								try {
+									incompleteStateExploration.delete();
+									ResultPage.this.resetMessage(RESULT_PAGE_PROBLEM);
+								} catch (CoreException e) {
+									TLCUIActivator.getDefault().logError(e.getMessage(), e);
+								}
+							}
+							sslp.unsetHighlightUnexplored();
+						}
 					}
 					ResultPage.this.stateSpace.refresh();
 					

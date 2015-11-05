@@ -74,7 +74,7 @@ import tla2sany.semantic.ModuleNode;
 public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 {
 
-    /**
+	/**
      * Editor ID
      */
     public static final String ID = "org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor";
@@ -845,9 +845,9 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                             // to add a hyperlink to the TLC Error view
 							if (pageId != -1 && bubbleType == IMessageProvider.WARNING
 									&& !IModelConfigurationDefaults.EMPTY_STRING.equals(message)) {
-								// Used by the ResultPage to display an error un
+								// Used by the ResultPage to display an error on
 								// incomplete state space exploration.
-								this.pagesToAdd[pageId].addGlobalTLCErrorMessage("ResultPageProblem", message);
+								this.pagesToAdd[pageId].addGlobalTLCErrorMessage(ResultPage.RESULT_PAGE_PROBLEM, message);
 							} else if (bubbleType == IMessageProvider.WARNING) {
 								this.pagesToAdd[0].addGlobalTLCErrorMessage("modelProblem_" + i);
 								this.pagesToAdd[1].addGlobalTLCErrorMessage("modelProblem_" + i);

@@ -820,6 +820,15 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         getManagedForm().getMessageManager().setAutoUpdate(applyChange);
     }
 
+    public void resetMessage(final Object key) {
+        getManagedForm().getMessageManager().setAutoUpdate(false);
+        getManagedForm().getMessageManager().removeMessage(key);;
+        // make the run possible
+        setComplete(true);
+        // make the change visible
+        getManagedForm().getMessageManager().setAutoUpdate(true);
+    }
+    
     /**
      * This method adds the text "TLC Error" next to the title of the page.
      * The text will appear as a hyperlink. Clicking on the link will give
