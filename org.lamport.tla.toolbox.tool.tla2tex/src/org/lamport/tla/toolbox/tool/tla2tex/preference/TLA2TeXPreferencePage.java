@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tla2tex.preference;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -36,9 +37,11 @@ public class TLA2TeXPreferencePage extends FieldEditorPreferencePage implements
 	}
 
 	protected void createFieldEditors() {
-		addField(new BooleanFieldEditor(
-				ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER,
-				"&Use built-in PDF viewer", getFieldEditorParent()));
+		if (!Platform.getOS().equals(Platform.OS_MACOSX)) {
+			addField(new BooleanFieldEditor(
+					ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER,
+					"&Use built-in PDF viewer", getFieldEditorParent()));
+		}
 		addField(new BooleanFieldEditor(
 				ITLA2TeXPreferenceConstants.SHADE_COMMENTS, "&Shade comments",
 				getFieldEditorParent()));
