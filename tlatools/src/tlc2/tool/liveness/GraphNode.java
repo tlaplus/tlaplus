@@ -274,7 +274,15 @@ public class GraphNode extends AbstractGraphNode {
 		return transitions.size() == succSize();
 	}
 	
-	private static class Transition {
+	public Set<Transition> getTransition() {
+		final Set<Transition> transitions = new HashSet<Transition>();
+		for (int i = 0; i < succSize(); i++) {
+			transitions.add(new Transition(getStateFP(i), getTidx(i), new BitVector(0)));
+		}
+		return transitions;
+	}
+	
+	public static class Transition {
 
 		private final long fp;
 		private final int tidx;
@@ -372,7 +380,10 @@ public class GraphNode extends AbstractGraphNode {
 
 	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen) {
 		// The node's id including its tidx if any
-		String id = (""+this.stateFP).substring(0,6);
+		String id = Long.toString(this.stateFP);
+		if (id.length() >=6) {
+			id = id.substring(0, 6);
+		}
 		if (hasTableau) {
 			id += "." + this.tindex;
 		}
@@ -385,7 +396,10 @@ public class GraphNode extends AbstractGraphNode {
 		
 		// Each outgoing transition
 		for (int i = 0; i < succSize(); i++) {
-			final long fp = getStateFP(i);
+			String fp = Long.toString(getStateFP(i));
+			if (fp.length() >= 6) {
+				fp = fp.substring(0, 6);
+			}
 //			if (fp == this.stateFP) {
 //				// skip self loops if edge count to large for dotViz to handle.
 //				continue;
@@ -393,10 +407,10 @@ public class GraphNode extends AbstractGraphNode {
 			buf.append("\"" + id + "\" -> ");
 			if (hasTableau) {
 				final int tidx = getTidx(i);
-				buf.append(("\"" + fp).substring(0, 7) + "." + tidx + "\"");
+				buf.append(("\"" + fp) + "." + tidx + "\"");
 			} else {
 				//Omit tableau index when it's -1 (indicating no tableau)
-				buf.append(("\"" + fp).substring(0, 7) + "\"");
+				buf.append(("\"" + fp) + "\"");
 			}
 			
 			buf.append(" [label=\"");

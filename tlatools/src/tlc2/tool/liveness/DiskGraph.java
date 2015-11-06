@@ -72,6 +72,13 @@ public class DiskGraph extends AbstractDiskGraph {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#checkDuplicate(tlc2.tool.liveness.GraphNode)
+	 */
+	protected boolean checkDuplicate(final GraphNode node) {
+		return this.nodePtrTbl.get(node.stateFP) != -1;
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.AbstractDiskGraph#getLink(long, int)
 	 */
 	public long getLink(long state, int tidx) {

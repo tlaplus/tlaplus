@@ -704,7 +704,7 @@ public class Tool
    * This method returns the set of next states when taking the action
    * in the given state.
    */
-  public final StateVec getNextStates(Action action, TLCState state) {
+  public /*final*/ StateVec getNextStates(Action action, TLCState state) {
     ActionItemList acts = ActionItemList.Empty;
     TLCState s1 = TLCState.Empty.createEmpty();
     StateVec nss = new StateVec(0);
@@ -2097,7 +2097,7 @@ public class Tool
   }
 
   /* This method determines if a state satisfies the model constraints. */
-  public final boolean isInModel(TLCState state) throws EvalException {
+  public /*final*/ boolean isInModel(TLCState state) throws EvalException {
     ExprNode[] constrs = this.getModelConstraints();
     for (int i = 0; i < constrs.length; i++) {
       Value bval = this.eval(constrs[i], Context.Empty, state);
@@ -2110,7 +2110,7 @@ public class Tool
   }
 
   /* This method determines if a pair of states satisfy the action constraints. */
-  public final boolean isInActions(TLCState s1, TLCState s2) throws EvalException {
+  public /*final*/ boolean isInActions(TLCState s1, TLCState s2) throws EvalException {
     ExprNode[] constrs = this.getActionConstraints();
     for (int i = 0; i < constrs.length; i++) {
       Value bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear);
@@ -2788,6 +2788,14 @@ public class Tool
     ValueEnumeration Enum = ((Enumerable)fcns).elements();
     return MVPerm.permutationSubgroup(Enum);
   }
+
+	public boolean hasSymmetry() {
+		if (this.config == null) {
+			return false;
+		}
+		final String name = this.config.getSymmetry();
+		return name.length() > 0;
+	}
 
   public final Context getFcnContext(FcnLambdaValue fcn, ExprOrOpArgNode[] args,
                                      Context c, TLCState s0, TLCState s1,

@@ -117,6 +117,13 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	protected void putNode(GraphNode node, long ptr) {
 		this.nodePtrTbl.put(node.stateFP, node.tindex, ptr);
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#checkDuplicate(tlc2.tool.liveness.GraphNode)
+	 */
+	protected boolean checkDuplicate(final GraphNode node) {
+		return this.nodePtrTbl.get(node.stateFP, node.tindex) != -1;
+	}
 
 	/**
 	 * Get the graph node. Returns a new GraphNode if the node is not in this.

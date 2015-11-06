@@ -185,6 +185,12 @@ public abstract class AbstractDiskGraph {
 		return ptr;
 	}
 	
+	/**
+	 * @return true iff the given {@link GraphNode} has already been added to
+	 *         this {@link AbstractDiskGraph}.
+	 */
+	protected abstract boolean checkDuplicate(GraphNode node);
+
 	public abstract GraphNode getNode(long fingerprint, int tableauIdx) throws IOException;
 	
 	/**

@@ -110,7 +110,7 @@ public class DummyTLCState extends TLCState {
 	 * @see tlc2.tool.TLCState#toString()
 	 */
 	public String toString() {
-		return "Dummy#" + uid;
+		return "Dummy#" + uid + ":" + fp;
 	}
 
 	/* (non-Javadoc)
