@@ -687,7 +687,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     {
         // constants list
     	final List<Assignment> constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
-                new Vector<String>()));
+                new Vector<String>()), true);
 
         // the advanced model values
         TypedSet modelValues = TypedSet.parseSet(config.getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING));
@@ -707,5 +707,4 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writer.addFormulaList(ModelWriter.createOverridesContent(overrides, ModelWriter.DEFOV_SCHEME), "CONSTANT",
                 MODEL_PARAMETER_DEFINITIONS);
     }
-
 }

@@ -451,7 +451,18 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * De-serialize assignment list. 
      * @see ModelHelper#serializeAssignmentList(List)
      */
-    public static List<Assignment> deserializeAssignmentList(List<String> serializedList)
+    public static List<Assignment> deserializeAssignmentList(final List<String> serializedList) {
+    	return deserializeAssignmentList(serializedList, false);
+    }
+    
+    /**
+     * De-serialize assignment list. 
+     * @param serializedList
+     * @param stripSymmetry Strips any symmetry definitions from assignments iff true
+     * @return The list of all {@link Assignment}
+     * @see ModelHelper#serializeAssignmentList(List)
+     */
+    public static List<Assignment> deserializeAssignmentList(final List<String> serializedList, final boolean stripSymmetry)
     {
         Vector<Assignment> result = new Vector<Assignment>(serializedList.size());
         Iterator<String> iter = serializedList.iterator();
@@ -478,7 +489,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 assign.setModelValue(true);
 
                 // is symmetrical
-                if (fields.length > 4 && fields[4].equals("1"))
+                if (!stripSymmetry && fields.length > 4 && fields[4].equals("1"))
                 {
                     assign.setSymmetric(true);
                 }
