@@ -364,15 +364,11 @@ public class DFIDModelChecker extends AbstractChecker
                     // Check if the state is a legal state.
                     if (!this.tool.isGoodState(succState))
                     {
-                        if (this.setErrState(curState, succState, false))
-                        {
-                            this.printTrace(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, null, curState, succState);
-
-                            synchronized (this)
-                            {
-                                this.notify();
-                            }
-                        }
+						synchronized (this) {
+							if (this.setErrState(curState, succState, false)) {
+								this.printTrace(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, null, curState, succState);
+							}
+						}
                         return allSuccNonLeaf;
                     }
 
@@ -447,13 +443,15 @@ public class DFIDModelChecker extends AbstractChecker
                                 continue;
                         } catch (Exception e)
                         {
-                            if (this.setErrState(curState, succState, true))
-                            {
-                                this.printTrace(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[] { this.tool
-                                        .getInvNames()[k] }, curState, succState);
-                                this.notify();
-                            }
-                            return allSuccNonLeaf;
+                        	synchronized (this) {
+		                        if (this.setErrState(curState, succState, true))
+		                        {
+		                            this.printTrace(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[] { this.tool
+		                                    .getInvNames()[k] }, curState, succState);
+		                            this.notify();
+		                        }
+		                        return allSuccNonLeaf;
+                        	}
                         }
                     }
                     // Check if the state violates any implied action. We need to do it
@@ -494,13 +492,15 @@ public class DFIDModelChecker extends AbstractChecker
                             continue;
                     } catch (Exception e)
                     {
-                        if (this.setErrState(curState, succState, true))
-                        {
-                            this.printTrace(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[] { this.tool
-                                    .getImpliedActNames()[k] }, curState, succState);
-                            this.notify();
-                        }
-                        return allSuccNonLeaf;
+                    	synchronized (this) {
+		                    if (this.setErrState(curState, succState, true))
+		                    {
+		                        this.printTrace(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[] { this.tool
+		                                .getImpliedActNames()[k] }, curState, succState);
+		                        this.notify();
+		                    }
+                    	}
+                    	return allSuccNonLeaf;
                     }
                 }
 

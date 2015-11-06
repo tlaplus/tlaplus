@@ -390,18 +390,20 @@ public class ModelChecker extends AbstractChecker
 					// Check if succState is a legal state.
                     if (!this.tool.isGoodState(succState))
                     {
-                        if (this.setErrState(curState, succState, false))
-                        {
-							MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT);
-							this.trace.printTrace(curState, succState);
-							this.theStateQueue.finishAll();
-
-                            synchronized (this)
-                            {
-								this.notify();
-							}
-						}
-						return true;
+                    	synchronized (this) {
+                    		if (this.setErrState(curState, succState, false))
+                    		{
+                    			MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT);
+                    			this.trace.printTrace(curState, succState);
+                    			this.theStateQueue.finishAll();
+                    			
+                    			synchronized (this)
+                    			{
+                    				this.notify();
+                    			}
+                    		}
+                    		return true;
+                    	}
 					}
                     if (TLCGlobals.coverageInterval >= 0)
                     {
@@ -495,16 +497,18 @@ public class ModelChecker extends AbstractChecker
 							}
                         } catch (Exception e)
                         {
-                            if (this.setErrState(curState, succState, true))
-                            {
-                                MP.printError(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[] {
-                                        this.tool.getInvNames()[k], 
-												(e.getMessage() == null) ? e.toString() : e.getMessage() });
-								this.trace.printTrace(curState, succState);
-								this.theStateQueue.finishAll();
-								this.notify();
+                        	synchronized (this) {
+                        		if (this.setErrState(curState, succState, true))
+                        		{
+                        			MP.printError(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[] {
+                        					this.tool.getInvNames()[k], 
+                        					(e.getMessage() == null) ? e.toString() : e.getMessage() });
+                        			this.trace.printTrace(curState, succState);
+                        			this.theStateQueue.finishAll();
+                        			this.notify();
+                        		}
+                        		throw e;
 							}
-							throw e;
 						}
 					}
                     // Check if the state violates any implied action. We need to do it
@@ -562,16 +566,18 @@ public class ModelChecker extends AbstractChecker
 						}
                     } catch (Exception e)
                     {
-                        if (this.setErrState(curState, succState, true))
-                        {
-                            MP.printError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[] {
-                                    this.tool.getImpliedActNames()[k], 
-											(e.getMessage() == null) ? e.toString() : e.getMessage() });
-							this.trace.printTrace(curState, succState);
-							this.theStateQueue.finishAll();
-							this.notify();
-						}
-						throw e;
+                    	synchronized (this) {
+	                        if (this.setErrState(curState, succState, true))
+	                        {
+	                            MP.printError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[] {
+	                                    this.tool.getImpliedActNames()[k], 
+												(e.getMessage() == null) ? e.toString() : e.getMessage() });
+								this.trace.printTrace(curState, succState);
+								this.theStateQueue.finishAll();
+								this.notify();
+							}
+							throw e;
+                    	}
 					}
                     if (inModel && !seen) {
 						// The state is inModel, unseen and neither invariants

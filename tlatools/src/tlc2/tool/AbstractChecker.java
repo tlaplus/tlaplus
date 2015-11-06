@@ -145,7 +145,8 @@ public abstract class AbstractChecker implements Cancelable
      */
     public boolean setErrState(TLCState curState, TLCState succState, boolean keep)
     {
-        if (!TLCGlobals.continuation && this.done)
+       assert Thread.holdsLock(this) : "Caller thread has to hold monitor!";
+       if (!TLCGlobals.continuation && this.done)
             return false;
         this.predErrState = curState;
         this.errState = (succState == null) ? curState : succState;
