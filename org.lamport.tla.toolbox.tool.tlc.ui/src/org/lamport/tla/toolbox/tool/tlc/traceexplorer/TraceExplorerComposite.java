@@ -331,7 +331,8 @@ public class TraceExplorerComposite
         // add a formula
         if (formula != null)
         {
-            Vector input = ((Vector) tableViewer.getInput());
+            @SuppressWarnings("unchecked")
+			Vector<Formula> input = ((Vector<Formula>) tableViewer.getInput());
             input.add(formula);
             tableViewer.setInput(input);
             if (tableViewer instanceof CheckboxTableViewer)
@@ -445,10 +446,8 @@ public class TraceExplorerComposite
 
             final ILaunchConfigurationWorkingCopy workingCopy = modelConfig.getWorkingCopy();
 
-            List trace = view.getTrace();
-
             // if the trace is empty, then do nothing
-            if (trace.size() > 0)
+            if (view.getTrace().size() > 0)
             {
                 // TraceExplorerHelper.serializeTrace(modelConfig);
             	

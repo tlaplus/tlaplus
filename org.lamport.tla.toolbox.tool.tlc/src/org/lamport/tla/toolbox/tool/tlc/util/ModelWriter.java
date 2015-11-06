@@ -1,3 +1,28 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Simon Zambrovski - initial API and implementation
+ ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.util.Hashtable;
@@ -8,7 +33,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -29,8 +53,6 @@ import tla2sany.semantic.OpDefNode;
 
 /**
  * Encapsulates two buffers and provides semantic methods to add content to the _MC file and the CFG file of the model 
- * @author Simon Zambrovski
- * @version $Id$
  */
 public class ModelWriter
 {
@@ -148,13 +170,13 @@ public class ModelWriter
      * @param constants
      * @param modelValues
      */
-    public void addConstants(List constants, TypedSet modelValues, String attributeConstants, String attributeMVs)
+    public void addConstants(List<Assignment> constants, TypedSet modelValues, String attributeConstants, String attributeMVs)
     {
         // add declarations for model values introduced on Advanced Model page.
         addMVTypedSet(modelValues, "MV CONSTANT declarations ", attributeMVs);
 
         Assignment constant;
-        Vector symmetrySets = new Vector();
+        Vector<String> symmetrySets = new Vector<String>();
 
         // first run for all the declarations
         for (int i = 0; i < constants.size(); i++)
@@ -222,7 +244,7 @@ public class ModelWriter
             // symmetric model value sets added
             for (int i = 0; i < symmetrySets.size(); i++)
             {
-                tlaBuffer.append("Permutations(").append((String) symmetrySets.get(i)).append(")");
+                tlaBuffer.append("Permutations(").append(symmetrySets.get(i)).append(")");
                 if (i != symmetrySets.size() - 1)
                 {
                     tlaBuffer.append(" \\union ");
@@ -235,7 +257,7 @@ public class ModelWriter
 
     }
 
-    public void addConstantsBis(List constants, /* TypedSet modelValues, */ String attributeConstants /* , String attributeMVs */)
+    public void addConstantsBis(List<Assignment> constants, /* TypedSet modelValues, */ String attributeConstants /* , String attributeMVs */)
     {
 //        // add declarations for model values introduced on Advanced Model page.
 //        addMVTypedSet(modelValues, "MV CONSTANT declarations ", attributeMVs);
@@ -368,18 +390,16 @@ public class ModelWriter
      * @return array of {@link TraceExpressionInformationHolder} where each element
      * contains the expression, the identifier, and the variable name
      */
-    public TraceExpressionInformationHolder[] createAndAddTEVariablesAndDefinitions(List expressions,
+    public TraceExpressionInformationHolder[] createAndAddTEVariablesAndDefinitions(List<Formula> expressions,
             String attributeName)
     {
 
         TraceExpressionInformationHolder[] expressionData = new TraceExpressionInformationHolder[expressions.size()];
-        Iterator it = expressions.iterator();
+        Iterator<Formula> it = expressions.iterator();
         int position = 0;
         while (it.hasNext())
         {
-            Object next = it.next();
-            Assert.isTrue(next instanceof Formula);
-            String expression = ((Formula) next).getFormula();
+            String expression = it.next().getFormula();
 
             if (expression != null && expression.length() > 0)
             {
@@ -568,7 +588,7 @@ public class ModelWriter
      * @return String[], first element is the identifier for the initial state predicate,
      * second element is the identifier for the next-state action
      */
-    public String[] addInitNextForTE(List trace, TraceExpressionInformationHolder[] expressionData)
+    public String[] addInitNextForTE(List<SimpleTLCState> trace, TraceExpressionInformationHolder[] expressionData)
     {
         String initId = getValidIdentifier(INIT_SCHEME);
         String nextId = getValidIdentifier(NEXT_SCHEME);
@@ -676,14 +696,14 @@ public class ModelWriter
      * @param initId the identifier to be used for the initial state predicate, cannot be null
      * @param nextId the identifier to be used for the next-state action, cannot be null
      */
-    public void addInitNextForTE(List trace, TraceExpressionInformationHolder[] expressionData, String initId,
+    public void addInitNextForTE(List<SimpleTLCState> trace, TraceExpressionInformationHolder[] expressionData, String initId,
             String nextId)
     {
 
         if (trace.size() > 0)
         {
-            Iterator it = trace.iterator();
-            SimpleTLCState currentState = (SimpleTLCState) it.next();
+            Iterator<SimpleTLCState> it = trace.iterator();
+            SimpleTLCState currentState = it.next();
 
             /*******************************************************
              * Add the init definition.                            *
@@ -1166,7 +1186,7 @@ public class ModelWriter
      * @param keyword the keyword to be used in the CFG file
      * @param attributeName the name of the attribute in the model file
      */
-    public void addFormulaList(List elements, String keyword, String attributeName)
+    public void addFormulaList(List<String[]> elements, String keyword, String attributeName)
     {
         if (elements.isEmpty())
         {
@@ -1177,7 +1197,7 @@ public class ModelWriter
 
         for (int i = 0; i < elements.size(); i++)
         {
-            String[] element = (String[]) elements.get(i);
+            String[] element = elements.get(i);
             cfgBuffer.append(element[0]).append(CR);
             // when a definition in the root module is overriden as a model value
             // there is nothing to add to the MC.tla file so, we do not do the following
@@ -1230,10 +1250,10 @@ public class ModelWriter
      * @return a list with at most one String[] element
      * @throws CoreException 
      */
-    public static List createSourceContent(String propertyName, String labelingScheme, ILaunchConfiguration config)
+    public static List<String[]> createSourceContent(String propertyName, String labelingScheme, ILaunchConfiguration config)
             throws CoreException
     {
-        Vector result = new Vector();
+        Vector<String[]> result = new Vector<String[]>();
         String value = config.getAttribute(propertyName, EMPTY_STRING);
         if (value.trim().length() == 0)
         {
@@ -1250,17 +1270,17 @@ public class ModelWriter
         return result;
     }
 
-    public static List createFalseInit(String var)
+    public static List<String[]> createFalseInit(String var)
     {
-        List list = new Vector();
+        List<String[]> list = new Vector<String[]>();
         String identifier = getValidIdentifier(INIT_SCHEME);
         list.add(new String[] { identifier, identifier + DEFINES_CR + "FALSE/\\" + var + EQ + "0" });
         return list;
     }
 
-    public static List createFalseNext(String var)
+    public static List<String[]> createFalseNext(String var)
     {
-        List list = new Vector();
+        List<String[]> list = new Vector<String[]>();
         String identifier = getValidIdentifier(NEXT_SCHEME);
         list.add(new String[] { identifier, identifier + DEFINES_CR + "FALSE/\\" + var + PRIME + EQ + var });
         return list;
@@ -1272,9 +1292,9 @@ public class ModelWriter
      * @param labelingScheme
      * @return
      */
-    public static List createFormulaListContent(List serializedFormulaList, String labelingScheme)
+    public static List<String[]> createFormulaListContent(List<String> serializedFormulaList, String labelingScheme)
     {
-        List formulaList = ModelHelper.deserializeFormulaList(serializedFormulaList);
+        List<Formula> formulaList = ModelHelper.deserializeFormulaList(serializedFormulaList);
         return (createListContent(formulaList, labelingScheme));
     }
 
@@ -1334,9 +1354,9 @@ public class ModelWriter
      * Was throwing null-pointer exception when called with spec unparsed.
      * Hacked a fix to handle this case.  LL 20 Sep 2009
      */
-    public static List createOverridesContent(List overrides, String labelingScheme)
+    public static List<String[]> createOverridesContent(List<Assignment> overrides, String labelingScheme)
     {
-        Vector resultContent = new Vector(overrides.size());
+        Vector<String[]> resultContent = new Vector<String[]>(overrides.size());
         String[] content;
         String id;
         Assignment formula;
@@ -1349,7 +1369,7 @@ public class ModelWriter
             return resultContent;
         }
         OpDefNode[] opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
-        Hashtable nodeTable = new Hashtable(opDefNodes.length);
+        Hashtable<String, OpDefNode> nodeTable = new Hashtable<String, OpDefNode>(opDefNodes.length);
 
         for (int j = 0; j < opDefNodes.length; j++)
         {
@@ -1363,9 +1383,9 @@ public class ModelWriter
             // formulas
             // to .cfg : <id>
             // to _MC.tla : <id> == <expression>
-            formula = ((Assignment) overrides.get(i));
+            formula = overrides.get(i);
 
-            OpDefNode defNode = (OpDefNode) nodeTable.get(formula.getLabel());
+            OpDefNode defNode = nodeTable.get(formula.getLabel());
 
             if (defNode == null)
             {
@@ -1423,9 +1443,9 @@ public class ModelWriter
      * @param labelingScheme 
      * @return
      */
-    public static List createListContent(List formulaList, String labelingScheme)
+    public static List<String[]> createListContent(List<Formula> formulaList, String labelingScheme)
     {
-        Vector resultContent = new Vector(formulaList.size());
+        Vector<String[]> resultContent = new Vector<String[]>(formulaList.size());
         String[] content;
         String label;
         for (int i = 0; i < formulaList.size(); i++)
@@ -1434,7 +1454,7 @@ public class ModelWriter
             // formulas
             // to .cfg : <id>
             // to _MC.tla : <id> == <expression>
-            content = new String[] { label, label + DEFINES_CR + ((Formula) formulaList.get(i)).getFormula() };
+            content = new String[] { label, label + DEFINES_CR + formulaList.get(i).getFormula() };
             resultContent.add(content);
         }
         return resultContent;
@@ -1527,7 +1547,7 @@ public class ModelWriter
     * @param traceExpressionData
     * @return
     */
-    public static List createTraceInitContent(String traceInit, TraceExpressionInformationHolder[] traceExpressionData)
+    public static List<String[]> createTraceInitContent(String traceInit, TraceExpressionInformationHolder[] traceExpressionData)
     {
         String id = getValidIdentifier(INIT_SCHEME);
         StringBuffer initPredicate = new StringBuffer();
@@ -1545,21 +1565,21 @@ public class ModelWriter
                 initPredicate.append(TRACE_NA);
             }
         }
-        Vector toReturn = new Vector();
+        Vector<String[]> toReturn = new Vector<String[]>();
         toReturn.add(new String[] { id, initPredicate.toString() });
         return toReturn;
     }
 
-    public static List createTraceNextContent(List traceNextActions,
+    public static List<String[]> createTraceNextContent(List<String> traceNextActions,
             TraceExpressionInformationHolder[] traceExpressionData)
     {
         String id = getValidIdentifier(NEXT_SCHEME);
         StringBuffer nextActionDisj = new StringBuffer();
         nextActionDisj.append(id).append(DEFINES_CR);
-        Iterator it = traceNextActions.iterator();
+        Iterator<String> it = traceNextActions.iterator();
         while (it.hasNext())
         {
-            String actionConj = (String) it.next();
+            String actionConj = it.next();
             nextActionDisj.append(TLA_OR).append(L_PAREN).append(actionConj);
             for (int i = 0; i < traceExpressionData.length; i++)
             {
@@ -1576,7 +1596,7 @@ public class ModelWriter
             nextActionDisj.append(R_PAREN).append(CR);
         }
 
-        Vector toReturn = new Vector();
+        Vector<String[]> toReturn = new Vector<String[]>();
         toReturn.add(new String[] { id, nextActionDisj.toString() });
         return toReturn;
     }
@@ -1603,12 +1623,12 @@ public class ModelWriter
         }
 
         Matcher matcher = ModelWriter.ID_MATCHER.matcher(text);
-        Vector regions = new Vector();
+        Vector<Region> regions = new Vector<Region>();
         while (matcher.find())
         {
             regions.add(new Region(matcher.start(), matcher.end() - matcher.start()));
         }
-        return (IRegion[]) regions.toArray(new IRegion[regions.size()]);
+        return regions.toArray(new IRegion[regions.size()]);
     }
 
     /**

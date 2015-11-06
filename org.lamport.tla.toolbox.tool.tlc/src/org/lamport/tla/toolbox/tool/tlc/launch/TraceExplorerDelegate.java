@@ -1,3 +1,28 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Daniel Ricketts - initial API and implementation
+ ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
 import java.util.Hashtable;
@@ -32,6 +57,7 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TraceExplorerJob;
+import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -70,11 +96,6 @@ import tla2sany.semantic.OpDefNode;
  * 
  * The third method, launch(), is called if and only if finalLaunchCheck() returns true. It creates an instance of
  * {@link TLCProcessJob} which launches TLC.
- * 
- * 
- * 
- * @author Daniel Ricketts
- *
  */
 public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILaunchConfigurationDelegate,
         IModelConfigurationConstants, IConfigurationConstants
@@ -87,7 +108,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     private IFile tlaFile;
     private IFile cfgFile;
     private IFile outFile;
-    private List trace;
+    private List<SimpleTLCState> trace;
     private String initId;
     private String nextId;
 
@@ -258,7 +279,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         cfgFile = project.getFile(targetFolderPath.append(ModelHelper.TE_FILE_CFG));
         outFile = project.getFile(targetFolderPath.append(ModelHelper.TE_FILE_OUT));
 
-        TLCActivator.getDefault().logDebug("Writing files to: " + targetFolderPath.toOSString());
+        TLCActivator.logDebug("Writing files to: " + targetFolderPath.toOSString());
 
         IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 
@@ -321,7 +342,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                                 // ignore this fact
                                 // FIXME this should be fixed at
                                 // some later point in time
-                                TLCActivator.getDefault().logError("Error deleting a file " + members[i].getLocation(), e);
+                                TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
                             }
                         }
                         monitor.done();
@@ -410,7 +431,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
          * object returned by SANY.
          */
         traceExpressionData = writer.createAndAddTEVariablesAndDefinitions(ModelHelper.deserializeFormulaList(config
-                .getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector())),
+                .getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector<String>())),
                 TRACE_EXPLORE_EXPRESSIONS);
 
         // add the initial state predicate and next state action without
@@ -466,22 +487,11 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
              * to locations to module TE with the string from that location.
              */
             StringBuffer errorMessage = new StringBuffer();
-            Iterator it = parseResult.getDetectedErrors().iterator();
+            Iterator<TLAMarkerInformationHolder> it = parseResult.getDetectedErrors().iterator();
             while (it.hasNext())
             {
-                Object next = it.next();
-                if (next instanceof TLAMarkerInformationHolder)
-                {
-
-                    TLAMarkerInformationHolder errorInfo = (TLAMarkerInformationHolder) next;
-                    errorMessage.append(errorInfo.getMessage() + "\n");
-
-                } else
-                {
-                    TLCActivator
-                            .logDebug("Parse error while running trace explorer not represented by TLAMarkerInformationHolder."
-                                    + "This is unexpected.");
-                }
+                TLAMarkerInformationHolder errorInfo = it.next();
+                errorMessage.append(errorInfo.getMessage() + "\n");
             }
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Parsing error when running trace explorer", errorMessage.toString());
@@ -507,7 +517,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
          */
         OpDefNode[] opDefNodes = ((ParseResult) parseResult).getSpecObj().getExternalModuleTable().getRootModule()
                 .getOpDefs();
-        Hashtable nodeTable = new Hashtable(opDefNodes.length);
+        Hashtable<String, OpDefNode> nodeTable = new Hashtable<String, OpDefNode>(opDefNodes.length);
 
         Assert.isNotNull(opDefNodes, "OpDefNodes[] from parsing TE.tla is null. This is a bug.");
         for (int j = 0; j < opDefNodes.length; j++)
@@ -522,7 +532,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
          * We use the following object to collect level three expressions in order to display
          * these in a message to the user.
          */
-        Vector levelThreeExpressions = new Vector();
+        Vector<TraceExpressionInformationHolder> levelThreeExpressions = new Vector<TraceExpressionInformationHolder>();
         for (int i = 0; i < traceExpressionData.length; i++)
         {
             OpDefNode opDefNode = (OpDefNode) nodeTable.get(traceExpressionData[i].getIdentifier());
@@ -543,10 +553,10 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
             StringBuffer errorBuffer = new StringBuffer();
             errorBuffer
                     .append("The trace explorer cannot evaluate temporal formulas. The following expressions are temporal formulas:\n\n");
-            Iterator it = levelThreeExpressions.iterator();
+            Iterator<TraceExpressionInformationHolder> it = levelThreeExpressions.iterator();
             while (it.hasNext())
             {
-                TraceExpressionInformationHolder expressionInfo = (TraceExpressionInformationHolder) it.next();
+                TraceExpressionInformationHolder expressionInfo = it.next();
                 errorBuffer.append(expressionInfo.getExpression() + "\n\n");
             }
 
@@ -637,7 +647,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException
     {
-    	TLCActivator.getDefault().logDebug("launch called");
+    	TLCActivator.logDebug("launch called");
         // check the modes
         if (!MODE_TRACE_EXPLORE.equals(mode))
         {
@@ -676,8 +686,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     private void writeModelInfo(ILaunchConfiguration config, ModelWriter writer) throws CoreException
     {
         // constants list
-        List constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
-                new Vector()));
+    	final List<Assignment> constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
+                new Vector<String>()));
 
         // the advanced model values
         TypedSet modelValues = TypedSet.parseSet(config.getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING));
@@ -692,8 +702,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // add definitions for CONSTANT parameters instantiated by ordinary values.
         writer.addConstantsBis(constants, MODEL_PARAMETER_CONSTANTS);
         // definition overrides list
-        List overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
-                new Vector()));
+        List<Assignment> overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
+                new Vector<String>()));
         writer.addFormulaList(ModelWriter.createOverridesContent(overrides, ModelWriter.DEFOV_SCHEME), "CONSTANT",
                 MODEL_PARAMETER_DEFINITIONS);
     }

@@ -20,5 +20,5 @@ public interface IParseResult
     /**
      * Retrieves the list of {@link TLAMarkerInformationHolder} or an empty list
      */
-    public Vector getDetectedErrors();
+    public Vector<TLAMarkerInformationHolder> getDetectedErrors();
 }

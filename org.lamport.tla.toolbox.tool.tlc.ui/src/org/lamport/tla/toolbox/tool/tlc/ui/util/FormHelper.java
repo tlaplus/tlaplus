@@ -25,6 +25,7 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
+import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -222,12 +223,13 @@ public class FormHelper
      * @param source - viewer containing the formulas/assignments
      * @return
      */
-    public static List getSerializedInput(TableViewer table)
+    public static List<String> getSerializedInput(TableViewer table)
     {
         if (table instanceof CheckboxTableViewer)
         {
             CheckboxTableViewer source = (CheckboxTableViewer) table;
-            List formulas = (List) source.getInput();
+            @SuppressWarnings("unchecked")
+			List<Formula> formulas = (List<Formula>) source.getInput();
             Object[] checkedArray = source.getCheckedElements();
 
             if (formulas == null)
@@ -235,16 +237,16 @@ public class FormHelper
                 return null;
             }
 
-            Vector result = new Vector(formulas.size());
-            List checked = Arrays.asList(checkedArray);
+            Vector<String> result = new Vector<String>(formulas.size());
+            List<Object> checked = Arrays.asList(checkedArray);
 
-            Iterator formulaIterator = formulas.iterator();
+            Iterator<Formula> formulaIterator = formulas.iterator();
 
             Formula formula;
             String entry;
             while (formulaIterator.hasNext())
             {
-                formula = (Formula) formulaIterator.next();
+                formula = formulaIterator.next();
                 entry = ((checked.contains(formula)) ? "1" : "0") + formula.toString();
                 result.add(entry);
             }
@@ -253,7 +255,8 @@ public class FormHelper
 
         } else
         {
-            List assignments = (List) table.getInput();
+            @SuppressWarnings("unchecked")
+			List<Assignment> assignments = (List<Assignment>) table.getInput();
             if (assignments == null)
             {
                 return null;
@@ -268,23 +271,24 @@ public class FormHelper
     /**
      * Performs the inverse operation to {@link FormHelper#getSerializedInput(CheckboxTableViewer)} 
      */
-    public static void setSerializedInput(TableViewer table, List serializedInput)
+    public static void setSerializedInput(TableViewer table, List<String> serializedInput)
     {
-        Vector input = ((Vector) table.getInput());
+        @SuppressWarnings("unchecked")
+		Vector<Formula> input = ((Vector<Formula>) table.getInput());
         if (input == null)
         {
-            input = new Vector();
+            input = new Vector<Formula>();
         }
         // handling Formulas
         if (table instanceof CheckboxTableViewer)
         {
-            Iterator serializedIterator = serializedInput.iterator();
-            Vector checked = new Vector();
+            Iterator<String> serializedIterator = serializedInput.iterator();
+            Vector<Formula> checked = new Vector<Formula>();
 
             CheckboxTableViewer checkTable = (CheckboxTableViewer) table;
             while (serializedIterator.hasNext())
             {
-                String entry = (String) serializedIterator.next();
+                String entry = serializedIterator.next();
                 Formula formula = new Formula(entry.substring(1));
                 input.add(formula);
                 if ("1".equals(entry.substring(0, 1)))
@@ -298,7 +302,7 @@ public class FormHelper
         } else
         // handling Assignments
         {
-            List deserializeAssignmentList = ModelHelper.deserializeAssignmentList(serializedInput);
+            List<Assignment> deserializeAssignmentList = ModelHelper.deserializeAssignmentList(serializedInput);
             table.setInput(deserializeAssignmentList);
         }
 

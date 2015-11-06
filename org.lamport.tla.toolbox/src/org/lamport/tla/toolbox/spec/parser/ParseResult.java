@@ -21,7 +21,7 @@ public class ParseResult implements IParseResult
     private IResource parsedResource;
     private Errors parseErrors;
     private Errors semanticErrors;
-    private Vector detectedErrors;
+    private Vector<TLAMarkerInformationHolder> detectedErrors;
     /**
      * Time stamp for when the parser
      * was called that eventually produced this result
@@ -42,7 +42,7 @@ public class ParseResult implements IParseResult
         this.parsedResource = parsedResource;
         this.parseErrors = parseErrors;
         this.semanticErrors = semanticErrors;
-        this.detectedErrors = new Vector();
+        this.detectedErrors = new Vector<TLAMarkerInformationHolder>();
         this.parserCalled = parserCalled;
     }
 
@@ -100,7 +100,7 @@ public class ParseResult implements IParseResult
         return semanticErrors;
     }
 
-    public Vector getDetectedErrors()
+    public Vector<TLAMarkerInformationHolder> getDetectedErrors()
     {
         return detectedErrors;
     }
