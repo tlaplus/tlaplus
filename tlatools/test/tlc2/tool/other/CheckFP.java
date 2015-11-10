@@ -19,7 +19,8 @@ import tlc2.util.BufferedRandomAccessFile;
 public class CheckFP {
   public static void main(String args[]) {
     try {
-      BufferedRandomAccessFile raf = new BufferedRandomAccessFile(args[0], "r");
+      @SuppressWarnings("resource")
+	  BufferedRandomAccessFile raf = new BufferedRandomAccessFile(args[0], "r");
       long fileLen = raf.length();
       long dis = Long.MAX_VALUE;
       int cnt = 0;

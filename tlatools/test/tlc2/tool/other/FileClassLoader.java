@@ -14,6 +14,7 @@ import java.io.IOException;
  * it seems to be a helper utility used during the development 
  * @deprecated according to the paths it is not used (SZ February 19, 2009) 
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class FileClassLoader extends ClassLoader {
   /* Load a class from a file. */
   private String dir;
