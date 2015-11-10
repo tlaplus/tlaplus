@@ -31,6 +31,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import tlc2.output.EC;
 
@@ -41,6 +43,7 @@ public class SymmetryModelCheckerTest3 extends ModelCheckerTestCase {
 	}
 	
 	@Test
+	@Ignore("Ignored for as long as symmetry is incorrectly handled by TLC with liveness checking.")
 	public void testSpec() {
 		// Violates Prop1 with Spec2. TLC finds no violation.
 		//

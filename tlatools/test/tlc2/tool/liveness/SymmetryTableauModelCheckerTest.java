@@ -28,6 +28,7 @@ package tlc2.tool.liveness;
 
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import tlc2.output.EC;
 
@@ -38,6 +39,7 @@ public class SymmetryTableauModelCheckerTest extends ModelCheckerTestCase {
 	}
 	
 	@Test
+	@Ignore("Ignored for as long as symmetry is incorrectly handled by TLC with liveness checking.")
 	public void testSpec() {
 		// ModelChecker intends to check liveness
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "2"));

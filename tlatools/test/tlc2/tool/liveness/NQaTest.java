@@ -30,6 +30,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -42,6 +43,7 @@ public class NQaTest extends ModelCheckerTestCase {
 	}
 	
 	@Test
+	@Ignore("Ignored for as long as symmetry is incorrectly handled by TLC with liveness checking.")
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1049", "363", "0"));

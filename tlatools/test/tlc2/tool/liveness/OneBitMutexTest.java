@@ -32,6 +32,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import tlc2.output.EC;
 
@@ -42,6 +44,7 @@ public class OneBitMutexTest extends ModelCheckerTestCase {
 	}
 	
 	@Test
+	@Ignore("Ignored for as long as symmetry is incorrectly handled by TLC with liveness checking.")
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "133", "68", "0"));
