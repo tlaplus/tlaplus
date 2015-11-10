@@ -2,6 +2,11 @@
 
 package tlc2.tool.distributed.fp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -9,18 +14,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import junit.framework.TestCase;
+import org.junit.Test;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MemFPSet;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
-public class DynamicFPSetManagerTest extends TestCase {
+public class DynamicFPSetManagerTest {
 
 	/**
 	 * Test that the ctor rejects invalid values.
 	 */
+	@Test
 	public void testCtorInvalidZero() throws RemoteException {
 		try {
 			new DynamicFPSetManager(0);
@@ -33,6 +38,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	/**
 	 * Test that the ctor rejects invalid values.
 	 */
+	@Test
 	public void testCtorInvalidMin1() throws RemoteException {
 		try {
 			new DynamicFPSetManager(-1);
@@ -46,6 +52,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	 * Test that the ctor correctly calculates its mask used to index fpset
 	 * servers for valid values.
 	 */
+	@Test
 	public void testCtor1() throws RemoteException {
 		DynamicFPSetManager dynamicFPSetManager = new DynamicFPSetManager(1);
 		long mask = dynamicFPSetManager.getMask();
@@ -56,6 +63,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	 * Test that the ctor correctly calculates its mask used to index fpset
 	 * servers for valid values.
 	 */
+	@Test
 	public void testCtor10() throws RemoteException {
 		DynamicFPSetManager dynamicFPSetManager = new DynamicFPSetManager(10);
 		long mask = dynamicFPSetManager.getMask();
@@ -66,6 +74,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	 * Test that the ctor correctly calculates its mask used to index fpset
 	 * servers for valid values.
 	 */
+	@Test
 	public void testCtor31() throws RemoteException {
 		DynamicFPSetManager dynamicFPSetManager = new DynamicFPSetManager(31);
 		long mask = dynamicFPSetManager.getMask();
@@ -76,6 +85,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	 * Test that the ctor correctly calculates its mask used to index fpset
 	 * servers for valid values.
 	 */
+	@Test
 	public void testCtor32() throws RemoteException {
 		DynamicFPSetManager dynamicFPSetManager = new DynamicFPSetManager(32);
 		long mask = dynamicFPSetManager.getMask();
@@ -86,6 +96,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	 * Test that the ctor correctly calculates its mask used to index fpset
 	 * servers for valid values.
 	 */
+	@Test
 	public void testCtor33() throws RemoteException {
 		DynamicFPSetManager dynamicFPSetManager = new DynamicFPSetManager(33);
 		long mask = dynamicFPSetManager.getMask();
@@ -96,6 +107,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	 * Test that the ctor correctly calculates its mask used to index fpset
 	 * servers for valid values.
 	 */
+	@Test
 	public void testCtorMax() throws RemoteException {
 		DynamicFPSetManager dynamicFPSetManager = new DynamicFPSetManager(Integer.MAX_VALUE);
 		long mask = dynamicFPSetManager.getMask();
@@ -106,6 +118,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	 * Test that the {@link DynamicFPSetManager} correctly indexes into the
 	 * table of FPSet servers.
 	 */
+	@Test
 	public void testGetIndexSingleFPSet() throws RemoteException {
 		// Simple case with a single FPSet server
 		final Map<Long, Integer> pairs = new HashMap<Long, Integer>();
@@ -121,6 +134,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	 * Test that the {@link DynamicFPSetManager} correctly indexes into the
 	 * table of FPSet servers.
 	 */
+	@Test
 	public void testGetIndex10FPSet() throws RemoteException {
 		final Map<Long, Integer> pairs = new HashMap<Long, Integer>();
 		
@@ -170,6 +184,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	/**
 	 * Tests that reassign doesn't accept invalid values
 	 */
+	@Test
 	public void testReassingInvalidMin1() throws RemoteException {
 		int expectedNumOfServers = 1;
 		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
@@ -190,6 +205,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	/**
 	 * Tests that reassign doesn't accept invalid values
 	 */
+	@Test
 	public void testReassingInvalid2() throws RemoteException {
 		int expectedNumOfServers = 1;
 		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
@@ -211,6 +227,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	 * Tests that reassign correctly terminates with -1 when reassignment to
 	 * next FPSet impossible (no FPSets left)
 	 */
+	@Test
 	public void testReassingTerminate() throws RemoteException {
 		int expectedNumOfServers = 1;
 		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
@@ -225,6 +242,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	/**
 	 * Tests that reassign correctly assigns to the next FPSet
 	 */
+	@Test
 	public void testReassing() throws RemoteException {
 		int expectedNumOfServers = 10;
 		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
@@ -268,6 +286,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	/**
 	 * Tests if the {@link FPSetManager} correctly fails over to the replacement {@link FPSet}
 	 */
+	@Test
 	public void testFailoverPut() throws RemoteException {
 		int expectedNumOfServers = 2;
 		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
@@ -292,6 +311,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	/**
 	 * Tests if the {@link FPSetManager} correctly fails over to the replacement {@link FPSet}
 	 */
+	@Test
 	public void testFailoverPutBlock() throws RemoteException {
 		int expectedNumOfServers = 2;
 		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
@@ -345,6 +365,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	/**
 	 * Tests if the {@link FPSetManager} correctly terminates if all nested FPSets fail
 	 */
+	@Test
 	public void testFailoverTerminationPutBlock() throws RemoteException {
 		int expectedNumOfServers = 2;
 		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
@@ -397,6 +418,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	/**
 	 * Tests if the {@link FPSetManager} correctly terminates if all nested FPSets fail
 	 */
+	@Test
 	public void testFailoverTerminationPutBlockConcurrent() throws RemoteException {
 		int expectedNumOfServers = 2;
 		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);
@@ -461,6 +483,7 @@ public class DynamicFPSetManagerTest extends TestCase {
 	 * {@link DynamicFPSetManager} is indeed faulty (pay attention to
 	 * intermittent test failures).
 	 */
+	@Test
 	public void testPutBlockConcurrentOrder() throws IOException {
 		int expectedNumOfServers = 20;
 		final DynamicFPSetManager dfm = new DynamicFPSetManager(expectedNumOfServers);

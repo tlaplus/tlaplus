@@ -26,8 +26,12 @@
 
 package tlc2.tool.liveness.simulation;
 
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+import org.junit.Test;
 import tlc2.TLC;
 import tlc2.output.EC;
 import tlc2.tool.Simulator;
@@ -50,6 +54,7 @@ public class LiveCheckSimulationTest2a extends ModelCheckerTestCase {
 		TLC.traceNum = 100;
 	}
 	
+	@Test
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));

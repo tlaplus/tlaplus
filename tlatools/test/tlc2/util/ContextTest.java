@@ -26,8 +26,10 @@
 
 package tlc2.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -39,8 +41,9 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 
-public class ContextTest extends TestCase {
+public class ContextTest {
 
+	@Test
 	public void testLookupEmpty() {
 		assertNull(Context.Empty.lookup(new DummySymbolNode()));
 		assertNull(Context.Empty.lookup(new DummySymbolNode(), true));
@@ -50,6 +53,7 @@ public class ContextTest extends TestCase {
 		assertNull(Context.Empty.lookup(null, false));
 	}
 
+	@Test
 	public void testLookupBranch() {
 		// BranchCtx -> Empty
 		final Context ctx = Context.branch(Context.Empty);
@@ -61,11 +65,13 @@ public class ContextTest extends TestCase {
 		assertNull(ctx.lookup(null, true));
 	}
 	
+	@Test
 	public void testLookupSymbolNodeNull() {
 		final Context ctx = Context.branch(Context.Empty);
 		assertNull(ctx.lookup(null));
 	}
 	
+	@Test
 	public void testLookup() {
 		final DummySymbolNode name = new DummySymbolNode("ctx1");
 		final Object value = "value1";
@@ -79,6 +85,7 @@ public class ContextTest extends TestCase {
 		assertEquals(value, ctx3.lookup(name));
 	}
 	
+	@Test
 	public void testLookupCutOffFalse() {
 		final DummySymbolNode name = new DummySymbolNode("ctx1");
 		final Object value = "value1";
@@ -93,6 +100,7 @@ public class ContextTest extends TestCase {
 	}
 	
 	// Cutoff causes lookup to stop at branching context
+	@Test
 	public void testLookupCutOffTrue() {
 		final DummySymbolNode name = new DummySymbolNode("ctx1");
 		final Object value = "value1";
@@ -106,6 +114,7 @@ public class ContextTest extends TestCase {
 		assertNull(ctx3.lookup(name, true));
 	}
 	
+	@Test
 	public void testLookupWithAtBranching() {
 		final DummySymbolNode name = new DummySymbolNode("ctx1");
 		final Object value = "value1";
@@ -117,6 +126,7 @@ public class ContextTest extends TestCase {
 		assertEquals(value, branch.lookup(name));
 	}
 	
+	@Test
 	public void testLookupWithCutOffFalseAtBranching() {
 		final DummySymbolNode name = new DummySymbolNode("ctx1");
 		final Object value = "value1";
@@ -128,6 +138,7 @@ public class ContextTest extends TestCase {
 		assertEquals(value, branch.lookup(name, false));
 	}
 
+	@Test
 	public void testLookupWithCutOffTrueAtBranching() {
 		final DummySymbolNode name = new DummySymbolNode("ctx1");
 		final Object value = "value1";
@@ -142,6 +153,7 @@ public class ContextTest extends TestCase {
 	/**
 	 * Test method for {@link tlc2.util.Context#lookup(tla2sany.semantic.SymbolNode)}.
 	 */
+	@Test
 	public void testLookupSymbolNode() {
 		final DummySymbolNode name = new DummySymbolNode();
 		final Object value = new Object();

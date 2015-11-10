@@ -1,21 +1,28 @@
 package tlc2.tool.queue;
 
-import tlc2.tool.TLCState;
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-public class StateQueueTest extends TestCase {
+import org.junit.Before;
+import org.junit.Test;
+import tlc2.tool.TLCState;
+
+public class StateQueueTest {
 
 	protected IStateQueue sQueue;
 
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	public void setUp() throws Exception {
 		sQueue = new MemStateQueue("");
 	}
 
 	// add and remove a single state
+	@Test
 	public void testEnqueue() {
 		final TLCState expected = new DummyTLCState();
 		sQueue.enqueue(expected);
@@ -24,18 +31,21 @@ public class StateQueueTest extends TestCase {
 	}
 
 	// dequeue from empty 
+	@Test
 	public void testsDequeueEmpty() {
 		TLCState state = sQueue.sDequeue();
 		assertNull(state);
 	}
 	
 	// dequeue from empty 
+	@Test
 	public void testDequeueEmpty() {
 		TLCState state = sQueue.dequeue();
 		assertNull(state);
 	}
 	
 	// dequeue from not empty 
+	@Test
 	public void testsDequeueNotEmpty() {
 		DummyTLCState expected = new DummyTLCState();
 		sQueue.sEnqueue(expected);
@@ -46,6 +56,7 @@ public class StateQueueTest extends TestCase {
 	}
 	
 	// dequeue from not empty 
+	@Test
 	public void testDequeueNotEmpty() {
 		DummyTLCState expected = new DummyTLCState();
 		sQueue.enqueue(expected);
@@ -56,6 +67,7 @@ public class StateQueueTest extends TestCase {
 	}
 
 	// add 10 states and check size
+	@Test
 	public void testEnqueueAddNotSame() {
 		final int j = 10;
 		for (int i = 0; i < j; i++) {
@@ -65,6 +77,7 @@ public class StateQueueTest extends TestCase {
 	}
 	
 	// add same states 10 times and check size
+	@Test
 	public void testEnqueueAddSame() {
 		final DummyTLCState state = new DummyTLCState();
 		final int j = 10;
@@ -75,6 +88,7 @@ public class StateQueueTest extends TestCase {
 	}
 
 	// uncommon input with empty queue sDequeue
+	@Test
 	public void testsDequeueAbuseEmpty() {
 		expectRuntimeException(sQueue, 0);
 		expectRuntimeException(sQueue, -1);
@@ -84,6 +98,7 @@ public class StateQueueTest extends TestCase {
 	
 	// uncommon input with non-empty queue
 	// unfortunately sDequeue behaves differently depending what's its internal state
+	@Test
 	public void testsDequeueAbuseNonEmpty() {
 		sQueue.sEnqueue(new DummyTLCState()); // make sure isAvail = true
 

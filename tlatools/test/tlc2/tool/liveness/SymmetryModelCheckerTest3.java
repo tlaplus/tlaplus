@@ -26,9 +26,12 @@
 
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
-
+import org.junit.Test;
 import tlc2.output.EC;
 
 public class SymmetryModelCheckerTest3 extends ModelCheckerTestCase {
@@ -37,6 +40,7 @@ public class SymmetryModelCheckerTest3 extends ModelCheckerTestCase {
 		super("MC", "symmetry");
 	}
 	
+	@Test
 	public void testSpec() {
 		// Violates Prop1 with Spec2. TLC finds no violation.
 		//

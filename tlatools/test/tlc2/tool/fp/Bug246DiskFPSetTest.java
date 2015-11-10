@@ -2,20 +2,24 @@
 
 package tlc2.tool.fp;
 
-import java.io.IOException;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import junit.framework.TestCase;
+import java.io.IOException;
+import org.junit.Test;
 import util.TLCRuntime;
 
 /**
  * @author Markus Alexander Kuppe
  */
-public class Bug246DiskFPSetTest extends TestCase {
+public class Bug246DiskFPSetTest {
 
 	/**
 	 * Tests if the DiskFPSet gets correctly flushed to disk (if the fp spaces is unevenly distributed) or causes an {@link OutOfMemoryError} 
 	 * @throws IOException 
 	 */
+	@Test
 	@SuppressWarnings("deprecation")
 	public void testLinearFillup() throws IOException {
 		final long vmMaxMemory = Runtime.getRuntime().maxMemory();
@@ -77,6 +81,7 @@ public class Bug246DiskFPSetTest extends TestCase {
 		}
 	}
 	
+	@Test
 	public void testFlushDiskFPSet() throws IOException {
 		
 //		// Dedicate 90% of VM memory to DiskFPSet 

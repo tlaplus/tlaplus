@@ -26,11 +26,13 @@
 
 package tlc2.value;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 import util.InternTable;
 import util.UniqueString;
 
-public class RecordValueTest extends TestCase {
+public class RecordValueTest {
 
 	/**
 	 * Test method for {@link tlc2.value.RecordValue#deepCopy()}.
@@ -40,6 +42,7 @@ public class RecordValueTest extends TestCase {
 	 * normalized afterwards and the normalization incorrectly ripples through
 	 * to the copy.
 	 */
+	@Test
 	public void testDeepCopy() {
 		final InternTable internTable = new InternTable(2);
 		final UniqueString a = internTable.put("a");

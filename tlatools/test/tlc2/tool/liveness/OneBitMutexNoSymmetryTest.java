@@ -26,10 +26,13 @@
 
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.junit.Test;
 import tlc2.output.EC;
 
 public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
@@ -38,6 +41,7 @@ public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 		super("OneBitMutexNoSymmetryMC", "symmetry" + File.separator + "OneBitMutex");
 	}
 	
+	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "244", "127", "0"));

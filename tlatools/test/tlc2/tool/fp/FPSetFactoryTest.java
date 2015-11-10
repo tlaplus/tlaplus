@@ -1,13 +1,15 @@
 // Copyright (c) 2012 Markus Alexander Kuppe. All rights reserved.
 package tlc2.tool.fp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
-
-import junit.framework.TestCase;
+import org.junit.Test;
 
 @SuppressWarnings("deprecation")
-public class FPSetFactoryTest extends TestCase {
+public class FPSetFactoryTest {
 	// Has to be larger than util.TLCRuntime.MinFpMemSize. For off-heap/non-heap
 	// tests it should not exceed what the VM allocates by default (usually
 	// 64mb). 64mb is also the default used by util.TLCRuntime.getNonHeapPhysicalMemory().
@@ -15,6 +17,7 @@ public class FPSetFactoryTest extends TestCase {
 
 	/* Test single FPSet with default memory */
 
+	@Test
 	public void testGetFPSetMSB() throws RemoteException {
 		// Explicitly set MSBDiskFPSet to overwrite any previous setting (if any)
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, MSBDiskFPSet.class.getName());
@@ -22,12 +25,14 @@ public class FPSetFactoryTest extends TestCase {
 		doTestGetFPSet(MSBDiskFPSet.class, fpSetConfiguration);
 	}
 
+	@Test
 	public void testGetFPSetLSB() throws RemoteException {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, LSBDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
 		doTestGetFPSet(LSBDiskFPSet.class, fpSetConfiguration);
 	}
 
+	@Test
 	public void testGetFPSetOffHeap() throws RemoteException {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
@@ -36,6 +41,7 @@ public class FPSetFactoryTest extends TestCase {
 
 	/* Test single FPSet with explicit memory */
 	
+	@Test
 	public void testGetFPSetMSBWithMem() throws RemoteException {
 		// Explicitly set MSBDiskFPSet to overwrite any previous setting (if any)
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, MSBDiskFPSet.class.getName());
@@ -51,6 +57,7 @@ public class FPSetFactoryTest extends TestCase {
 		assertTrue((MEMORY / FPSet.LongSize) > diskFPSet.getMaxTblCnt());
 	}
 
+	@Test
 	public void testGetFPSetLSBWithMem() throws RemoteException {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, LSBDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
@@ -67,6 +74,7 @@ public class FPSetFactoryTest extends TestCase {
 		assertTrue(((MEMORY / FPSet.LongSize) / 2) > diskFPSet.getMaxTblCnt());
 	}
 
+	@Test
 	public void testGetFPSetOffHeapWithMem() throws RemoteException {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
@@ -83,6 +91,7 @@ public class FPSetFactoryTest extends TestCase {
 	
 	/* Test single FPSet with explicit memory and ratio */
 	
+	@Test
 	public void testGetFPSetMSBWithMemAndRatio() throws RemoteException {
 		// Explicitly set MSBDiskFPSet to overwrite any previous setting (if any)
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, MSBDiskFPSet.class.getName());
@@ -98,6 +107,7 @@ public class FPSetFactoryTest extends TestCase {
 		assertTrue((MEMORY / FPSet.LongSize) > diskFPSet.getMaxTblCnt());
 	}
 
+	@Test
 	public void testGetFPSetLSBWithMemAndRatio() throws RemoteException {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, LSBDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
@@ -114,6 +124,7 @@ public class FPSetFactoryTest extends TestCase {
 		assertTrue((MEMORY / FPSet.LongSize) > diskFPSet.getMaxTblCnt());
 	}
 
+	@Test
 	public void testGetFPSetOffHeapWithMemAndRatio() throws RemoteException {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
@@ -133,6 +144,7 @@ public class FPSetFactoryTest extends TestCase {
 	
 	/* Test MultiFPSet with default memory */
 	
+	@Test
 	public void testGetFPSetMultiFPSet() throws RemoteException {
 		// Explicitly set MSBDiskFPSet to overwrite any previous setting (if any)
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, MSBDiskFPSet.class.getName());
@@ -143,6 +155,7 @@ public class FPSetFactoryTest extends TestCase {
 		doTestNested(MSBDiskFPSet.class, fpSetConfiguration, mFPSet);
 	}
 	
+	@Test
 	public void testGetFPSetLSBMultiFPSet() throws RemoteException {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, LSBDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
@@ -152,6 +165,7 @@ public class FPSetFactoryTest extends TestCase {
 		doTestNested(LSBDiskFPSet.class, fpSetConfiguration, mFPSet);
 	}
 	
+	@Test
 	public void testGetFPSetOffHeapMultiFPSet() throws RemoteException {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
@@ -163,6 +177,7 @@ public class FPSetFactoryTest extends TestCase {
 	
 	/* Test MultiFPSet with explicit memory */
 
+	@Test
 	public void testGetFPSetMultiFPSetWithMem() throws RemoteException {
 		// Explicitly set MSBDiskFPSet to overwrite any previous setting (if any)
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, MSBDiskFPSet.class.getName());
@@ -175,6 +190,7 @@ public class FPSetFactoryTest extends TestCase {
 		doTestNested(MSBDiskFPSet.class, fpSetConfiguration, mFPSet);
 	}
 	
+	@Test
 	public void testGetFPSetLSBMultiFPSetWithMem() throws RemoteException {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, LSBDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
@@ -186,6 +202,7 @@ public class FPSetFactoryTest extends TestCase {
 		doTestNested(LSBDiskFPSet.class, fpSetConfiguration, mFPSet);
 	}
 	
+	@Test
 	public void testGetFPSetOffHeapMultiFPSetWithMem() throws RemoteException {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();

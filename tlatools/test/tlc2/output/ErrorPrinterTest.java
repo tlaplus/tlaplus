@@ -1,21 +1,24 @@
 package tlc2.output;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
+import org.junit.Test;
 import util.ToolIO;
 
 /**
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ErrorPrinterTest extends TestCase
+public class ErrorPrinterTest
 {
 
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
-    protected void setUp() throws Exception
+    @Before
+	public void setUp() throws Exception
     {
-        super.setUp();
         ToolIO.setMode(ToolIO.TOOL);
         ToolIO.reset();
     }
@@ -23,7 +26,8 @@ public class ErrorPrinterTest extends TestCase
     /**
      * Test method for {@link tlc2.output.MP#printError(int)}.
      */
-    public void testPrintErrorInt()
+    @Test
+	public void testPrintErrorInt()
     {
         MP.printError(EC.UNIT_TEST);
         String[] allMessages = ToolIO.getAllMessages();
@@ -34,7 +38,8 @@ public class ErrorPrinterTest extends TestCase
     /**
      * Test method for {@link tlc2.output.MP#printError(int, java.lang.String)}.
      */
-    public void testPrintErrorIntString()
+    @Test
+	public void testPrintErrorIntString()
     {
         String parameter = "EXPECTED";
         MP.printError(EC.UNIT_TEST, parameter);
@@ -46,7 +51,8 @@ public class ErrorPrinterTest extends TestCase
     /**
      * Test method for {@link tlc2.output.MP#printError(int, java.lang.String[])}.
      */
-    public void testPrintErrorIntStringArray()
+    @Test
+	public void testPrintErrorIntStringArray()
     {
         String[] parameters = new String[] { "EXPECTED", "EXPECTED2", "TOO MANY" };
         MP.printError(EC.UNIT_TEST, parameters);

@@ -1,7 +1,11 @@
 // Copyright (c) 2011 Microsoft Corporation.  All rights reserved.
 package tlc2.tool.fp;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
+import org.junit.Test;
 
 public class Bug210DiskFPSetTest extends AbstractFPSetTest {
 
@@ -19,6 +23,7 @@ public class Bug210DiskFPSetTest extends AbstractFPSetTest {
 	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=210
 	 * @throws IOException
 	 */
+	@Test
 	public void testDiskLookupWithOverflow() throws IOException {
 		// set up an index whose upper bound is beyond 1/1024 of
 		// Integer.MAX_VALUE

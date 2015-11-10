@@ -26,14 +26,13 @@
 
 package tlc2.tool.liveness;
 
-import java.io.File;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+import java.io.File;
 import tlc2.output.EC;
 
 public class NQaTest extends ModelCheckerTestCase {
@@ -42,6 +41,7 @@ public class NQaTest extends ModelCheckerTestCase {
 		super("MCa", "symmetry" + File.separator + "NQ");
 	}
 	
+	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1049", "363", "0"));

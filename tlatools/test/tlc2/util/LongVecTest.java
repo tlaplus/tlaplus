@@ -26,15 +26,19 @@
 
 package tlc2.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-public class LongVecTest extends TestCase {
+import org.junit.Test;
+
+public class LongVecTest {
 
 	protected LongVec getLongVec() {
 		// default capacity
 		return new LongVec();
 	}
 	
+	@Test
 	public void testReadBeyondCapacity() {
 		final LongVec vec = getLongVec();
 		try {
@@ -45,6 +49,7 @@ public class LongVecTest extends TestCase {
 		fail("Read beyond capacity");
 	}
 
+	@Test
 	public void testAddAndReadBeyondCapacity() {
 		final LongVec vec = getLongVec();
 		vec.addElement(1L);
@@ -57,6 +62,7 @@ public class LongVecTest extends TestCase {
 		fail("Read beyond capacity");
 	}
 
+	@Test
 	public void testRemoveBeyondCapacity() {
 		final LongVec vec = new LongVec(10);
 		for (int i = -1; i <= 10; i++) {
@@ -69,6 +75,7 @@ public class LongVecTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAddRemoveBeyondCapacity() {
 		final LongVec vec = new LongVec(10);
 		vec.addElement(1L);
@@ -81,6 +88,7 @@ public class LongVecTest extends TestCase {
 		fail("Read beyond capacity");
 	}
 	
+	@Test
 	public void testRemoveAndGet() {
 		final LongVec vec = getLongVec();
 		vec.addElement(1L);
@@ -103,6 +111,7 @@ public class LongVecTest extends TestCase {
 		fail("A new elements magically appeared in LongVec");
 	}
 	
+	@Test
 	public void testRemoveWrongOrder() {
 		final LongVec vec = getLongVec();
 		vec.addElement(1L);
@@ -120,6 +129,7 @@ public class LongVecTest extends TestCase {
 		fail("Removed non-existing element");
 	}
 
+	@Test
 	public void testGetNegative() {
 		final LongVec vec = getLongVec();
 		try {
@@ -130,6 +140,7 @@ public class LongVecTest extends TestCase {
 		fail("Read negative");
 	}
 
+	@Test
 	public void testRemoveNegative() {
 		final LongVec vec = getLongVec();
 		try {

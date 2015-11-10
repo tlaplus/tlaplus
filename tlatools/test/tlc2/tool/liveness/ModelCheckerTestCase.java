@@ -25,12 +25,16 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import junit.framework.TestCase;
+import org.junit.Before;
 import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
@@ -42,7 +46,7 @@ import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;
 import util.ToolIO;
 
-public abstract class ModelCheckerTestCase extends TestCase {
+public abstract class ModelCheckerTestCase {
 
 	private static final String BASE_DIR = System.getProperty("basedir", "");
 	private static final String TEST_MODEL = "test-model" + File.separator;
@@ -70,6 +74,7 @@ public abstract class ModelCheckerTestCase extends TestCase {
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
+	@Before
 	public void setUp() {
 		try {
 			// TEST_MODEL is where TLC should look for user defined .tla files

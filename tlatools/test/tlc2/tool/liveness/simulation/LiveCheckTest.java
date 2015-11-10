@@ -26,12 +26,14 @@
 
 package tlc2.tool.liveness.simulation;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.util.Enumeration;
 
 import org.easymock.EasyMock;
-
-import junit.framework.TestCase;
+import org.junit.Test;
 import tlc2.tool.Action;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
@@ -47,7 +49,7 @@ import tlc2.tool.queue.DummyTLCState;
 import tlc2.util.LongVec;
 import tlc2.util.statistics.DummyBucketStatistics;
 
-public class LiveCheckTest extends TestCase {
+public class LiveCheckTest {
 
 	// Add identical state twice, which can happen in simulation mode when the
 	// trace is: <<100L, 200L, ..., 100L, 200L>> (as in a cycle that is
@@ -56,10 +58,12 @@ public class LiveCheckTest extends TestCase {
 	// change.
 	// Note that adding/updating the state would result in a larger
 	// on-disk file, but doesn't seem to invalidate the simulation validity.
+	@Test
 	public void testAddIdenticalNodeTwiceNoTableau() throws IOException {
 		addIdenticalNodeTwice(false, -1);
 	}
 
+	@Test
 	public void testAddIdenticalNodeTwiceWithTableau() throws IOException {
 		addIdenticalNodeTwice(true, 0);
 	}

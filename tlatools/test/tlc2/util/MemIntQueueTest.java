@@ -26,12 +26,15 @@
 
 package tlc2.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.util.NoSuchElementException;
+import org.junit.Test;
 
-import junit.framework.TestCase;
+public class MemIntQueueTest {
 
-public class MemIntQueueTest extends TestCase {
-
+	@Test
 	public void testDequeuePastLastElement() {
 		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
 		queue.enqueueInt(1);
@@ -47,6 +50,7 @@ public class MemIntQueueTest extends TestCase {
 	
 	// Add 0 three times and make sure it's only returned this many times. 0
 	// is MemIntQueue's internal default for an empty slot.
+	@Test
 	public void testEnqueueZeros() {
 		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
 		queue.enqueueInt(0);
@@ -65,6 +69,7 @@ public class MemIntQueueTest extends TestCase {
 		fail("Returned element where there should be none.");
 	}
 	
+	@Test
 	public void testEnqueueLong() {
 		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
 		queue.enqueueLong(0);
@@ -80,6 +85,7 @@ public class MemIntQueueTest extends TestCase {
 		fail("Returned element where there should be none.");
 	}
 	
+	@Test
 	public void testEnqueueDequeueLong() {
 		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
 		queue.enqueueLong(0);
@@ -94,6 +100,7 @@ public class MemIntQueueTest extends TestCase {
 		fail("Returned element where there should be none.");
 	}
 	
+	@Test
 	public void testGrow() {
 		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant", 4);
 		queue.enqueueInt(0);

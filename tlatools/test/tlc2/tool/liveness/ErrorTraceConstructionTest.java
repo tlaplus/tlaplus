@@ -26,9 +26,12 @@
 
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
-
+import org.junit.Test;
 import tlc2.output.EC;
 
 public class ErrorTraceConstructionTest extends ModelCheckerTestCase {
@@ -37,6 +40,7 @@ public class ErrorTraceConstructionTest extends ModelCheckerTestCase {
 		super("ErrorTraceConstructionMC", "symmetry");
 	}
 	
+	@Test
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));

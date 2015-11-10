@@ -6,10 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
+import org.junit.After;
+import org.junit.Before;
 
-import junit.framework.TestCase;
-
-public abstract class AbstractFPSetTest extends TestCase {
+public abstract class AbstractFPSetTest {
 
 	protected static final long RNG_SEED = 15041980L;
 
@@ -28,9 +28,8 @@ public abstract class AbstractFPSetTest extends TestCase {
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	protected void setUp() throws Exception {
-		super.setUp();
-	
+	@Before
+	public void setUp() throws Exception {
 		// create temp folder
 		dir = new File(tmpdir);
 		dir.mkdirs();
@@ -44,6 +43,7 @@ public abstract class AbstractFPSetTest extends TestCase {
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#tearDown()
 	 */
+	@After
 	public void tearDown() {
 		if (endTimeStamp == null) {
 			endTimeStamp = new Date();

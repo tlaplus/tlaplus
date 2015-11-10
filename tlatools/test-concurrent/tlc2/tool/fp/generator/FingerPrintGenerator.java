@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.Assert;
+
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MultiThreadedFPSetTest;
 
@@ -37,7 +39,7 @@ public class FingerPrintGenerator implements Runnable {
 			try {
 				// make sure set still contains predecessor
 				if (predecessor != 0L) {
-					MultiThreadedFPSetTest.assertTrue(fpSet.contains(predecessor));
+					Assert.assertTrue(fpSet.contains(predecessor));
 				}
 
 				predecessor = rnd.nextLong();
@@ -56,7 +58,7 @@ public class FingerPrintGenerator implements Runnable {
 
 			} catch (IOException e) {
 				e.printStackTrace();
-				MultiThreadedFPSetTest.fail("Unexpected");
+				Assert.fail("Unexpected");
 			}
 		}
 		latch.countDown();

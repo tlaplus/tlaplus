@@ -26,10 +26,13 @@
 
 package tlc2.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
-public class MemIntStackTest extends TestCase {
+import org.junit.Test;
 
+public class MemIntStackTest {
+
+	@Test
 	public void testPeak() {
 		final MemIntStack memIntStack = new MemIntStack("", "");
 		

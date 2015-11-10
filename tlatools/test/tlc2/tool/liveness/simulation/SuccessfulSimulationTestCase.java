@@ -26,6 +26,10 @@
 
 package tlc2.tool.liveness.simulation;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
@@ -43,6 +47,7 @@ public abstract class SuccessfulSimulationTestCase extends ModelCheckerTestCase 
 		super(spec, path, extraArguments);
 	}
 	
+	@Test
 	public void testSpec() {
 		// Simulation must *NOT* show a counterexample. Regular model-checking
 		// shows that the liveness property holds.

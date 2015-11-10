@@ -26,6 +26,10 @@
 
 package tlc2.tool.liveness.simulation;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
@@ -35,6 +39,7 @@ public class StutteringTest extends ModelCheckerTestCase {
 		super("MC", "CodePlexBug08", new String[] { "-simulate" });
 	}
 
+	@Test
 	public void testSpec() {
 		// Simulation has finished and generated states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));

@@ -8,7 +8,6 @@ public class TestDriver
     private static final int COUNT = 3;
 
     private static final long TIMEOUT = 1000 * 5;
-    private static final int STEP = 30;
 
     private static int reported;
     private static TLCThread tlcThread;

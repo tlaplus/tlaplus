@@ -26,9 +26,12 @@
 
 package tlc2.tool;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
-
+import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
@@ -38,6 +41,7 @@ public class IncompleteNextTest extends ModelCheckerTestCase {
 		super("IncompleteNext", "");
 	}
 
+	@Test
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));

@@ -26,12 +26,14 @@
 
 package tlc2.util;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
+import org.junit.Test;
 
-import junit.framework.TestCase;
+public class SynchronousDiskIntStackTest {
 
-public class SynchronousDiskIntStackTest extends TestCase {
-
+	@Test
 	public void testPushIntNoWrite() {
 		final String diskdir = System.getProperty("java.io.tmpdir") + File.separator + "SynchronousDiskIntStackTest_"
 				+ System.currentTimeMillis();
@@ -51,6 +53,7 @@ public class SynchronousDiskIntStackTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPushIntWrite() {
 		final String diskdir = System.getProperty("java.io.tmpdir") + File.separator + "SynchronousDiskIntStackTest_"
 				+ System.currentTimeMillis();

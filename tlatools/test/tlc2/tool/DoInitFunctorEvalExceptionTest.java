@@ -26,6 +26,10 @@
 
 package tlc2.tool;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
@@ -35,6 +39,7 @@ public class DoInitFunctorEvalExceptionTest extends ModelCheckerTestCase {
 		super("DoInitFunctorEvalException", "DoInitFunctor");
 	}
 
+	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recorded(EC.TLC_STATS));

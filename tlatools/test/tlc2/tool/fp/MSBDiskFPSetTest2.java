@@ -1,10 +1,15 @@
 // Copyright (c) 2012 Markus Alexander Kuppe. All rights reserved.
 package tlc2.tool.fp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.NoSuchElementException;
-
+import org.junit.Test;
 import tlc2.tool.fp.MSBDiskFPSet.TLCIterator;
 
 public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {
@@ -30,6 +35,7 @@ public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {
 		return 1L << 31;
 	}
 	
+	@Test
 	public void testGetLast() throws IOException {
 		final MSBDiskFPSet msbDiskFPSet = getMSBDiskFPSet();
 		
@@ -62,6 +68,7 @@ public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {
 		fail();
 	}
 
+	@Test
 	public void testHighFingerprint1() throws RemoteException, IOException {
 		final MSBDiskFPSet msbDiskFPSet = getMSBDiskFPSet();
 		assertFalse(msbDiskFPSet.put(9223368718049406096L));
@@ -71,6 +78,7 @@ public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {
 		assertTrue(msbDiskFPSet.put(9223368718049406096L));
 	}
 
+	@Test
 	public void testHighFingerprint2() throws RemoteException, IOException {
 		final MSBDiskFPSet msbDiskFPSet = getMSBDiskFPSet();
 		assertFalse(msbDiskFPSet.put(9223335424116589377L));
@@ -83,6 +91,7 @@ public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {
 	/*
 	 * Try to get the last element with no elements in the set.
 	 */
+	@Test
 	public void testGetLastNoBuckets() throws IOException {
 		final MSBDiskFPSet msbDiskFPSet = getMSBDiskFPSet();
 		

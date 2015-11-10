@@ -26,9 +26,12 @@
 
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
-
+import org.junit.Test;
 import tlc2.output.EC;
 
 public class SymmetryModelCheckerTestLong extends ModelCheckerTestCase {
@@ -37,6 +40,7 @@ public class SymmetryModelCheckerTestLong extends ModelCheckerTestCase {
 		super("LongMC", "symmetry");
 	}
 	
+	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "8", "5", "0"));

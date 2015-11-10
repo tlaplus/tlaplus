@@ -26,16 +26,21 @@
 
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
-
-import junit.framework.TestCase;
+import org.junit.Test;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import tlc2.util.statistics.BucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 
-public class DiskGraphTest extends TestCase {
+public class DiskGraphTest {
 
 	private static final IBucketStatistics GRAPH_STATS = new BucketStatistics("Test Dummy", 16);
 	private static final int NUMBER_OF_SOLUTIONS = 1;
@@ -62,6 +67,7 @@ public class DiskGraphTest extends TestCase {
 	}
 	
 	// No init node makes DiskGraph#getPath never break from the while loop
+	@Test
 	public void testGetPathWithoutInitNoTableau() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
 		dg.addNode(new GraphNode(1L, NO_TABLEAU));
@@ -76,6 +82,7 @@ public class DiskGraphTest extends TestCase {
 
 	// Create a linear minimal graph (2 nodes) and check if the graph is
 	// returned by getPath afterwards.
+	@Test
 	public void testGetMinimalPathWithoutTableau() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
 
@@ -121,6 +128,7 @@ public class DiskGraphTest extends TestCase {
 	 * 
 	 * @see https://bugzilla.tlaplus.net/show_bug.cgi?id=293
 	 */
+	@Test
 	public void testPathWithTwoInitNodes() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
 
@@ -168,6 +176,7 @@ public class DiskGraphTest extends TestCase {
 	/*
 	 * Make sure the same logical node isn't counted twice.
 	 */
+	@Test
 	public void testAddSameGraphNodeTwice() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
 		dg.addNode(new GraphNode(1L, 1));
@@ -179,6 +188,7 @@ public class DiskGraphTest extends TestCase {
 	/*
 	 * Test that it is possible to "update" a GraphNode's outgoing transitions.
 	 */
+	@Test
 	public void testLookupExistingNode() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
 		
@@ -226,6 +236,7 @@ public class DiskGraphTest extends TestCase {
 	 * Test that adding a GraphNode twice (same fingerprint & tableau idx) but
 	 * with different successors afterwards yields the union of the successors.
 	 */
+	@Test
 	public void testAddSameGraphNodeTwiceCorrectSuccessors() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
 
@@ -266,6 +277,7 @@ public class DiskGraphTest extends TestCase {
 	 * checking runs periodically on an incomplete state/behavior graph, a
 	 * liveness violation is found and the path of the error trace gets explored.
 	 */
+	@Test
 	public void testGetPathPartialGraph() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
 		

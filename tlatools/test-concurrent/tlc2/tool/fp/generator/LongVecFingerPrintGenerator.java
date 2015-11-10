@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.Assert;
+
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MultiThreadedFPSetTest;
 import tlc2.util.BitVector;
@@ -29,7 +31,7 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 				// Make sure set still contains predecessors
 				if (initialized) {
 					final BitVector bitVector = fpSet.containsBlock(predecessors);
-					MultiThreadedFPSetTest.assertTrue(bitVector.trueCnt() == batch);
+					Assert.assertTrue(bitVector.trueCnt() == batch);
 				}
 
 				// Fill new fingerprints and sort them
@@ -51,7 +53,7 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 
 			} catch (IOException e) {
 				e.printStackTrace();
-				MultiThreadedFPSetTest.fail("Unexpected");
+				Assert.fail("Unexpected");
 			}
 		}
 		latch.countDown();

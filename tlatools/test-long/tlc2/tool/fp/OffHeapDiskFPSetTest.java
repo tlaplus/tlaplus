@@ -1,15 +1,19 @@
 // Copyright (c) 2012 Markus Alexander Kuppe. All rights reserved.
 package tlc2.tool.fp;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.Random;
-
+import org.junit.Test;
 import util.TLCRuntime;
 
 public class OffHeapDiskFPSetTest extends FPSetTest {
 	
 	private static final int FLUSHES = 4;
 
+	@Test
 	public void testCollisionBucket() throws IOException {
 		final FPSet fpSet = getFPSet(new FPSetConfiguration());
 		fpSet.init(1, tmpdir, filename);
@@ -20,6 +24,7 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 		}
 	}
 
+	@Test
 	public void testPosition() throws IOException {
 		final FPSet fpSet = getFPSet(new FPSetConfiguration());
 		fpSet.init(1, tmpdir, filename);
@@ -36,6 +41,7 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 	/**
 	 * 
 	 */
+	@Test
 	public void testMultipleFlushes() throws IOException {
 		final FPSet fpSet = getFPSet(new FPSetConfiguration());
 		fpSet.init(1, tmpdir, filename);

@@ -26,11 +26,15 @@
 
 package tlc2.util.statistics;
 
-import tlc2.util.statistics.BucketStatistics;
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-public class BucketStatisticsTest extends TestCase {
+import org.junit.Test;
+import tlc2.util.statistics.BucketStatistics;
+
+public class BucketStatisticsTest {
 	
+	@Test
 	public void testInvalidArgument() {
 		try {
 			final IBucketStatistics gs = new BucketStatistics();
@@ -41,38 +45,41 @@ public class BucketStatisticsTest extends TestCase {
 		fail();
 	}
 	
+	@Test
 	public void testMean() {
 		final IBucketStatistics gs = new BucketStatistics();
-		assertEquals(-1.0d, gs.getMean());
+		assertEquals(-1.0d, gs.getMean(), 0);
 
 		gs.addSample(0);
-		assertEquals(0.0d, gs.getMean());
+		assertEquals(0.0d, gs.getMean(), 0);
 		
 		gs.addSample(1);
 		gs.addSample(2);
-		assertEquals(1.0d, gs.getMean());
+		assertEquals(1.0d, gs.getMean(), 0);
 
 		gs.addSample(2);
 		gs.addSample(2);
-		assertEquals(1.4d, gs.getMean());
+		assertEquals(1.4d, gs.getMean(), 0);
 	}
 
+	@Test
 	public void testMedian() {
 		final IBucketStatistics gs = new BucketStatistics();
-		assertEquals(-1, gs.getMedian());
+		assertEquals(-1, gs.getMedian(), 0);
 
 		gs.addSample(0);
-		assertEquals(0, gs.getMedian());
+		assertEquals(0, gs.getMedian(), 0);
 		
 		gs.addSample(1);
 		gs.addSample(2);
-		assertEquals(1, gs.getMedian());
+		assertEquals(1, gs.getMedian(), 0);
 
 		gs.addSample(2);
 		gs.addSample(2);
-		assertEquals(2, gs.getMedian());
+		assertEquals(2, gs.getMedian(), 0);
 	}
 
+	@Test
 	public void testMin() {
 		final IBucketStatistics gs = new BucketStatistics();
 		assertEquals(-1, gs.getMin());
@@ -88,6 +95,7 @@ public class BucketStatisticsTest extends TestCase {
 		assertEquals(0, gs.getMin());
 	}
 	
+	@Test
 	public void testMax() {
 		final IBucketStatistics gs = new BucketStatistics();
 		assertEquals(-1, gs.getMax());
@@ -105,9 +113,10 @@ public class BucketStatisticsTest extends TestCase {
 		assertEquals(3, gs.getMax());
 	}
 
+	@Test
 	public void testStandardDeviation() {
 		final IBucketStatistics gs = new BucketStatistics();
-		assertEquals(-1.0, gs.getStdDev());
+		assertEquals(-1.0, gs.getStdDev(), 0);
 
 		gs.addSample(0);
 		gs.addSample(0);
@@ -119,12 +128,13 @@ public class BucketStatisticsTest extends TestCase {
 		gs.addSample(2);
 		gs.addSample(2);
 		gs.addSample(3);
-		assertEquals(1.005d, (Math.round(gs.getStdDev() * 10000d) / 10000d));
+		assertEquals(1.005d, (Math.round(gs.getStdDev() * 10000d) / 10000d), 0);
 	}
 
+	@Test
 	public void testGetPercentile() {
 		final IBucketStatistics gs = new BucketStatistics();
-		assertEquals(-1.0, gs.getPercentile(1));
+		assertEquals(-1.0, gs.getPercentile(1), 0);
 		
 		try {
 			gs.addSample(1); // <- first element
@@ -140,11 +150,12 @@ public class BucketStatisticsTest extends TestCase {
 		gs.addSample(2);
 		gs.addSample(2);
 		gs.addSample(3);
-		assertEquals(2.0d, gs.getPercentile(0.5d));
-		assertEquals(2.0d, gs.getPercentile(0.75d));
-		assertEquals(3.0d, gs.getPercentile(0.999d));
+		assertEquals(2.0d, gs.getPercentile(0.5d), 0);
+		assertEquals(2.0d, gs.getPercentile(0.75d), 0);
+		assertEquals(3.0d, gs.getPercentile(0.999d), 0);
 	}
 	// NaN test
+	@Test
 	public void testGetPercentileNaN() {
 		try {
 			final IBucketStatistics gs = new BucketStatistics();
@@ -155,6 +166,7 @@ public class BucketStatisticsTest extends TestCase {
 		fail("Parameter not a number");
 	}
 	
+	@Test
 	public void testToString() {
 		try {
 			//just invoke to check for exceptions
@@ -177,6 +189,7 @@ public class BucketStatisticsTest extends TestCase {
 		}
 	}
 	
+	@Test
 	public void testMaximum() {
 		final IBucketStatistics gs = new BucketStatistics("test title", 8);
 		gs.addSample(16);

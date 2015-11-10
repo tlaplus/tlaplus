@@ -26,14 +26,17 @@
 
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import org.junit.Test;
 
-import junit.framework.TestCase;
+public class GraphNodeTest {
 
-public class GraphNodeTest extends TestCase {
-
+	@Test
 	public void testAllocateRealign() {
 		// Create a random graph node (fingerprint/tableau don't matter)
 		final GraphNode node = new GraphNode(0, 0);
@@ -55,6 +58,7 @@ public class GraphNodeTest extends TestCase {
 		assertTrue("Lost a transition during this allocation business", node.transExists(5, -1));
 	}
 
+	@Test
 	public void testRealign() {
 		// Create a random graph node (fingerprint/tableau don't matter)
 		final GraphNode node = new GraphNode(0, 0);
@@ -70,6 +74,7 @@ public class GraphNodeTest extends TestCase {
 		assertTrue("Lost a transition during this allocation business", node.transExists(1, -1));
 	}
 
+	@Test
 	public void testAllocateNested() {
 		// Create a random graph node (fingerprint/tableau don't matter)
 		final GraphNode node = new GraphNode(0, 0);
@@ -91,6 +96,7 @@ public class GraphNodeTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAllocateNestedRandom() {
 		// Create a random graph node (fingerprint/tableau don't matter)
 		final GraphNode node = new GraphNode(0, 0);
@@ -117,6 +123,7 @@ public class GraphNodeTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAllocateNegative() {
 		// Create a random graph node (fingerprint/tableau don't matter)
 		final GraphNode node = new GraphNode(0, 0);
@@ -124,6 +131,7 @@ public class GraphNodeTest extends TestCase {
 		assertTrue("overallocated", node.realign() == 0);
 	}
 	
+	@Test
 	public void testAllocateAndSuccessorSize() {
 		// Hint to allocate 100 transitions and make sure the actual number of
 		// transitions is 1.

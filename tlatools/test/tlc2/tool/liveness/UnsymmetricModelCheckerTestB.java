@@ -26,6 +26,10 @@
 
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 import tlc2.output.EC;
 
 public class UnsymmetricModelCheckerTestB extends ModelCheckerTestCase {
@@ -34,6 +38,7 @@ public class UnsymmetricModelCheckerTestB extends ModelCheckerTestCase {
 		super("UnsymmetricMCB", "symmetry");
 	}
 	
+	@Test
 	public void testSpec() {
 		// ModelChecker intends to check liveness
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "1"));

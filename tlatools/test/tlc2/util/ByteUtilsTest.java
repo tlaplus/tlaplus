@@ -7,8 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Random;
-
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 import util.ToolIO;
 
 /**
@@ -16,7 +16,7 @@ import util.ToolIO;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ByteUtilsTest extends TestCase
+public class ByteUtilsTest
 {
     public static final int ARRAYSIZE = 10000;
     public static final int BITS = 1000;
@@ -32,9 +32,9 @@ public class ByteUtilsTest extends TestCase
     long t1;
     long t2;
 
-    protected void setUp() throws Exception
+    @Before
+	public void setUp() throws Exception
     {
-        super.setUp();
         Arr = new BigInteger[ARRAYSIZE];
         Arr2 = new BigInteger[ARRAYSIZE];
         Arr3 = new BigInteger[ARRAYSIZE];
@@ -54,7 +54,8 @@ public class ByteUtilsTest extends TestCase
 
     }
 
-    public void test1()
+    @Test
+	public void test1()
     {
         t1 = System.currentTimeMillis();
         mainTestinttoByte();
@@ -62,7 +63,8 @@ public class ByteUtilsTest extends TestCase
         ToolIO.out.println("Testing IntToByteArray took " + (t2 - t1) + "ms");
     }
 
-    public void test2() throws FileNotFoundException, IOException
+    @Test
+	public void test2() throws FileNotFoundException, IOException
     {
         t1 = System.currentTimeMillis();
         mainTestWriteIntReadInt();
@@ -70,7 +72,8 @@ public class ByteUtilsTest extends TestCase
         ToolIO.out.println("Testing WriteInt, ReadInt took " + (t2 - t1) + "ms");
     }
 
-    public void test3()
+    @Test
+	public void test3()
     {
         t1 = System.currentTimeMillis();
         mainTestlongtoByte();
@@ -78,7 +81,8 @@ public class ByteUtilsTest extends TestCase
         ToolIO.out.println("Testing longToByteArray took " + (t2 - t1) + "ms");
     }
 
-    public void test4() throws FileNotFoundException, IOException
+    @Test
+	public void test4() throws FileNotFoundException, IOException
     {
         t1 = System.currentTimeMillis();
         mainTestWriteLongReadLong();
@@ -86,7 +90,8 @@ public class ByteUtilsTest extends TestCase
         ToolIO.out.println("Testing WriteLong, ReadLong took " + (t2 - t1) + "ms");
     }
 
-    public void test5() throws FileNotFoundException, IOException
+    @Test
+	public void test5() throws FileNotFoundException, IOException
     {
         t1 = System.currentTimeMillis();
         mainTestWriteReadSizeByteArray();
@@ -94,7 +99,8 @@ public class ByteUtilsTest extends TestCase
         ToolIO.out.println("Testing Write, Read took " + (t2 - t1) + "ms");
     }
 
-    public void test6() throws FileNotFoundException, IOException
+    @Test
+	public void test6() throws FileNotFoundException, IOException
     {
         t1 = System.currentTimeMillis();
         mainTestAppend();

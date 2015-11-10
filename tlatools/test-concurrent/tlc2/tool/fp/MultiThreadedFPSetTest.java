@@ -1,12 +1,16 @@
 // Copyright (c) 2012 Markus Alexander Kuppe. All rights reserved.
 package tlc2.tool.fp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
-
+import org.junit.Before;
+import org.junit.Test;
 import tlc2.tool.fp.generator.BatchedFingerPrintGenerator;
 import tlc2.tool.fp.generator.FingerPrintGenerator;
 import tlc2.tool.fp.generator.LongVecFingerPrintGenerator;
@@ -21,8 +25,8 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	public void setUp() throws Exception {
 		System.out.println("Insertions: " + df.format(INSERTIONS)
 				+ " (approx: " + df.format(INSERTIONS * FPSet.LongSize >> 20) + " GiB)");
 		System.out.println("Thread count: " + NUM_THREADS);
@@ -32,6 +36,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 	 * Test filling a {@link FPSet} with random fingerprints using multiple
 	 * threads in ordered batches
 	 */
+	@Test
 	public void testMaxFPSetSizeRndBatched() throws IOException, InterruptedException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		doTest(BatchedFingerPrintGenerator.class);
 	}
@@ -40,6 +45,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 	 * Test filling a {@link FPSet} with random fingerprints using multiple
 	 * threads in ordered LongVecs using putBlock/containsBlock
 	 */
+	@Test
 	public void testMaxFPSetSizeRndBlock() throws IOException, InterruptedException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		doTest(LongVecFingerPrintGenerator.class);
 	}
@@ -48,6 +54,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 	 * Test filling a {@link FPSet} with max int + 2L random using multiple
 	 * threads
 	 */
+	@Test
 	public void testMaxFPSetSizeRnd() throws IOException, InterruptedException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		doTest(FingerPrintGenerator.class);
 	}

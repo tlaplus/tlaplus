@@ -1,26 +1,29 @@
 // Copyright (c) 2011 Microsoft Corporation.  All rights reserved.
 package tlc2.tool.fp;
 
-import java.io.IOException;
+import static org.junit.Assert.fail;
 
-import junit.framework.TestCase;
+import java.io.IOException;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Markus Alexander Kuppe
  */
-public class MultiFPSetTest extends TestCase {
+public class MultiFPSetTest {
 
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	public void setUp() throws Exception {
 	}
 
 	/**
 	 * Test method for {@link tlc2.tool.fp.MultiFPSet#new}.
 	 * @throws IOException Not supposed to happen
 	 */
+	@Test
 	public void testCTorLowerMin() throws IOException {
 		try {
 			FPSetConfiguration conf = new FPSetConfiguration();
@@ -36,6 +39,7 @@ public class MultiFPSetTest extends TestCase {
 	 * Test method for {@link tlc2.tool.fp.MultiFPSet#new}.
 	 * @throws IOException Not supposed to happen
 	 */
+	@Test
 	public void testCTorMin() throws IOException {
 		try {
 			FPSetConfiguration conf = new FPSetConfiguration();
@@ -51,6 +55,7 @@ public class MultiFPSetTest extends TestCase {
 	 * Test method for {@link tlc2.tool.fp.MultiFPSet#new}.
 	 * @throws IOException Not supposed to happen
 	 */
+	@Test
 	public void testCTorMax() throws IOException {
 		try {
 			FPSetConfiguration conf = new FPSetConfiguration();
@@ -77,6 +82,7 @@ public class MultiFPSetTest extends TestCase {
 	 * Test method for {@link tlc2.tool.fp.MultiFPSet#new}.
 	 * @throws IOException Not supposed to happen
 	 */
+	@Test
 	public void testCTorHigherMax() throws IOException {
 		try {
 			FPSetConfiguration conf = new FPSetConfiguration();
@@ -92,6 +98,7 @@ public class MultiFPSetTest extends TestCase {
 	 * Test method for {@link tlc2.tool.fp.MultiFPSet#put(long)}.
 	 * @throws IOException Not supposed to happen
 	 */
+	@Test
 	public void testPutMax() throws IOException {
 		FPSetConfiguration conf = new FPSetConfiguration();
 		conf.setFpBits(1);
@@ -109,6 +116,7 @@ public class MultiFPSetTest extends TestCase {
 	 * Test method for {@link tlc2.tool.fp.MultiFPSet#put(long)}.
 	 * @throws IOException Not supposed to happen
 	 */
+	@Test
 	public void testPutMin() throws IOException {
 		FPSetConfiguration conf = new FPSetConfiguration();
 		conf.setFpBits(1);
@@ -126,6 +134,7 @@ public class MultiFPSetTest extends TestCase {
 	 * Test method for {@link tlc2.tool.fp.MultiFPSet#put(long)}.
 	 * @throws IOException Not supposed to happen
 	 */
+	@Test
 	public void testPutZero() throws IOException {
 		FPSetConfiguration conf = new FPSetConfiguration();
 		conf.setFpBits(1);

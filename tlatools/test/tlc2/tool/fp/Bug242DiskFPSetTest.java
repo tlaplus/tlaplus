@@ -1,8 +1,11 @@
 // Copyright (c) 2011 Microsoft Corporation.  All rights reserved.
 package tlc2.tool.fp;
 
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.rmi.RemoteException;
+import org.junit.Test;
 
 /**
  *
@@ -28,6 +31,7 @@ public class Bug242DiskFPSetTest extends AbstractFPSetTest {
 	/**
 	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=242
 	 */
+	@Test
 	public void testDiskFPSetWithHighMem() throws RemoteException {
 		try {
 			getFPSet(2097153638);
@@ -38,6 +42,7 @@ public class Bug242DiskFPSetTest extends AbstractFPSetTest {
 			fail(e.getMessage());
 		}
 	}
+	@Test
 	public void testDiskFPSetIntMaxValue() throws RemoteException {
 		try {
 			getFPSet(Integer.MAX_VALUE);
@@ -48,6 +53,7 @@ public class Bug242DiskFPSetTest extends AbstractFPSetTest {
 			fail(e.getMessage());
 		}
 	}
+	@Test
 	public void testDiskFPSetIntMinValue() throws RemoteException {
 		try {
 			getFPSet(Integer.MIN_VALUE);
@@ -57,6 +63,7 @@ public class Bug242DiskFPSetTest extends AbstractFPSetTest {
 		}
 		fail();
 	}
+	@Test
 	public void testDiskFPSetZero() throws RemoteException {
 		try {
 			getFPSet(0);
@@ -64,6 +71,7 @@ public class Bug242DiskFPSetTest extends AbstractFPSetTest {
 			fail(e.getMessage());
 		}
 	}
+	@Test
 	public void testDiskFPSetOne() throws RemoteException {
 		try {
 			getFPSet(1);

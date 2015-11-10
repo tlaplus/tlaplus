@@ -26,9 +26,12 @@
 
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
-
+import org.junit.Test;
 import tlc2.output.EC;
 
 public class SymmetryModelCheckerTest3a extends ModelCheckerTestCase {
@@ -37,6 +40,7 @@ public class SymmetryModelCheckerTest3a extends ModelCheckerTestCase {
 		super("MCa", "symmetry");
 	}
 	
+	@Test
 	public void testSpec() {
 		// Violates Prop1 of Spec1 which TLC correctly detects. However, it
 		// produced a bogus counterexample. It does not use the symmetric state

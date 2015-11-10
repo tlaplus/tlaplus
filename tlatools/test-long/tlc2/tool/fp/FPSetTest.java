@@ -1,8 +1,13 @@
 package tlc2.tool.fp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.Random;
+import org.junit.Test;
 
 public abstract class FPSetTest extends AbstractFPSetTest {
 
@@ -10,6 +15,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	 * Test filling a {@link FPSet} with four linearly incrementing values
 	 * @throws IOException
 	 */
+	@Test
 	public void testSimpleFill() throws IOException {
 		final FPSet fpSet = getFPSet(new FPSetConfiguration());
 		fpSet.init(1, tmpdir, filename);
@@ -29,6 +35,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	 * Test filling a {@link FPSet} with max int + 1 random
 	 * @throws IOException
 	 */
+	@Test
 	public void testMaxFPSetSizeRnd() throws IOException {
 		Random rnd = new Random(RNG_SEED);
 		
@@ -69,6 +76,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 	 * Test filling a {@link FPSet} with max int + 1 
 	 * @throws IOException
 	 */
+	@Test
 	public void testMaxFPSetSize() throws IOException {
 	
 		//

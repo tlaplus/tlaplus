@@ -26,6 +26,10 @@
 
 package tlc2.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
 
 public class GrowingLongVecTest extends LongVecTest {
 
@@ -34,6 +38,7 @@ public class GrowingLongVecTest extends LongVecTest {
 		return new LongVec(0);
 	}
 	
+	@Test
 	public void testGrowAndShrink() {
 		// Zero capacity, LongVec has to grow
 		final LongVec vec = new LongVec(0);
