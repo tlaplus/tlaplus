@@ -195,7 +195,8 @@ public abstract class AbstractDiskGraph {
 	
 	/**
 	 * @return true iff the given GraphNode belongs to the set of initial
-	 *         states.
+	 *         states. Inefficient, only use for auxiliary use cases (e.g.
+	 *         visualization of the liveness graph (toDotViz())).
 	 */
 	protected boolean isInitState(final GraphNode gnode) {
 		final int numOfInits = initNodes.size();

@@ -51,11 +51,11 @@ public class GraphNodeTest {
 		int overallocated = node.realign();
 		assertTrue("Allocation overallocated", overallocated == 0);
 
-		assertTrue("Lost a transition during this allocation business", node.transExists(1, -1));
-		assertTrue("Lost a transition during this allocation business", node.transExists(2, -1));
-		assertTrue("Lost a transition during this allocation business", node.transExists(3, -1));
-		assertTrue("Lost a transition during this allocation business", node.transExists(4, -1));
-		assertTrue("Lost a transition during this allocation business", node.transExists(5, -1));
+		assertTrue("Lost a transition during the allocation business", node.transExists(1, -1));
+		assertTrue("Lost a transition during the allocation business", node.transExists(2, -1));
+		assertTrue("Lost a transition during the allocation business", node.transExists(3, -1));
+		assertTrue("Lost a transition during the allocation business", node.transExists(4, -1));
+		assertTrue("Lost a transition during the allocation business", node.transExists(5, -1));
 	}
 
 	@Test
@@ -71,7 +71,7 @@ public class GraphNodeTest {
 		overallocated = node.realign();
 		assertTrue("Allocation overallocated", overallocated == 0);
 
-		assertTrue("Lost a transition during this allocation business", node.transExists(1, -1));
+		assertTrue("Lost a transition during the allocation business", node.transExists(1, -1));
 	}
 
 	@Test

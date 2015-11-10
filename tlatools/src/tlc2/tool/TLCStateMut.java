@@ -59,6 +59,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     return new TLCStateMut(vals);
   }
 
+  //TODO equals without hashcode!
   public final boolean equals(Object obj) {
     if (obj instanceof TLCStateMut) {
       TLCStateMut state = (TLCStateMut)obj;
