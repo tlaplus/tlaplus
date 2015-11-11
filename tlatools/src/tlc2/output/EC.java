@@ -174,6 +174,7 @@ public interface EC
     public static final int TLC_INIT_GENERATED3 = 2207;
     public static final int TLC_INIT_GENERATED4 = 2208;
     public static final int TLC_CHECKING_TEMPORAL_PROPS = 2192;
+    public static final int TLC_CHECKING_TEMPORAL_PROPS_END = 2267;
     public static final int TLC_SUCCESS = 2193;
     public static final int TLC_SEARCH_DEPTH = 2194;
     public static final int TLC_CHECKPOINT_START = 2195;

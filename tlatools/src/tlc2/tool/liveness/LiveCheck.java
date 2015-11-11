@@ -10,6 +10,7 @@ import java.util.Enumeration;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -173,14 +174,16 @@ public class LiveCheck implements ILiveCheck {
 	 *            to re-create the nodePtrTable.
 	 */
 	protected boolean check0(final boolean finalCheck) throws InterruptedException, IOException {
+		final long startTime = System.currentTimeMillis();
+		
 		// Sum up the number of nodes in all disk graphs to indicate the amount
 		// of work to be done by liveness checking.
 		long sum = 0L;
 		for (int i = 0; i < checker.length; i++) {
 			sum += checker[i].getDiskGraph().size();
 		}
-		MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS,
-				new String[] { finalCheck ? "complete":"current", Long.toString(sum) });
+		MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, new String[] { finalCheck ? "complete" : "current",
+				Long.toString(sum), checker.length == 1 ? "" : checker.length + " branches of " });
 
 		// Copy the array of checkers into a concurrent-enabled queue
 		// that allows LiveWorker threads to easily get the next 
@@ -217,6 +220,7 @@ public class LiveCheck implements ILiveCheck {
 		}
 
 		if (LiveWorker.hasErrFound()) {
+			MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS_END, TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
 			return false;
 		}
 		
@@ -226,6 +230,8 @@ public class LiveCheck implements ILiveCheck {
 				checker[i].getDiskGraph().makeNodePtrTbl();
 			}
 		}
+		MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS_END, TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
+		
 		return true;
 	}
 	

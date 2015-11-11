@@ -784,7 +784,7 @@ public class TLC
 	 *         with SI unit and insignificant parts stripped (when runtime is
 	 *         days, nobody cares for minutes or seconds).
 	 */
-    static String convertRuntimeToHumanReadable(long runtime) {
+    public static String convertRuntimeToHumanReadable(long runtime) {
 		SimpleDateFormat df = null;
 		if (runtime > (60 * 60 * 24 * 1000L)) {
 			df = new SimpleDateFormat("D'd' HH'h'");

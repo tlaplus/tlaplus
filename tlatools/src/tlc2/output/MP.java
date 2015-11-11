@@ -752,10 +752,12 @@ public class MP
             b.append("Finished computing initial states: %1% states generated, with %2% of them distinct.");
             break;
         case EC.TLC_CHECKING_TEMPORAL_PROPS:
-			b.append("Checking temporal properties for the %1% state space with %2% distinct states at (")
+			b.append("Checking %3%temporal properties for the %1% state space with %2% total distinct states at (")
 					.append(SDF.format(new Date())).append(")");
             break;
-
+		case EC.TLC_CHECKING_TEMPORAL_PROPS_END:
+			b.append("Finished checking temporal properties in %1% at " + SDF.format(new Date()));
+	        break;
         case EC.TLC_SUCCESS:
             b.append("Model checking completed. No error has been found.\n"
                     + "  Estimates of the probability that TLC did not check all reachable states\n"
@@ -791,9 +793,14 @@ public class MP
             b.append("The number of states generated: %1%\nSimulation using seed %2% and aril %3%");
             break;
         case EC.TLC_PROGRESS_STATS:
-			b.append("Progress(%1%) at " + SDF.format(new Date()) + ": %2% states generated ("
-					+ df.format(Long.valueOf(parameters[4])) + " s/min), %3% distinct states found ("
-					+ df.format(Long.valueOf(parameters[5])) + " ds/min), %4% states left on queue.");
+        	if (parameters.length == 4) {
+				b.append("Progress(%1%) at " + SDF.format(new Date()) + ": %2% states generated, "
+						+ "%3% distinct states found, " + "%4% states left on queue.");
+        	} else {
+        		b.append("Progress(%1%) at " + SDF.format(new Date()) + ": %2% states generated ("
+        				+ df.format(Long.valueOf(parameters[4])) + " s/min), %3% distinct states found ("
+        				+ df.format(Long.valueOf(parameters[5])) + " ds/min), %4% states left on queue.");
+        	}
             break;
         case EC.TLC_PROGRESS_START_STATS_DFID:
             b.append("Starting level %1%: %2% states generated, %3% distinct states found.");

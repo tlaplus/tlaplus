@@ -129,8 +129,12 @@ public class DFIDModelChecker extends AbstractChecker
                         // Always check liveness properties at the end:
                         if (this.checkLiveness)
                         {
-							MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS,
-									new String[] { "complete", Long.toString(this.theFPSet.size()) });
+        					// Print progress statistics prior to liveness checking.
+        					// Liveness checking can take a substantial amount of time
+        					// and thus give the user some clues at what stage safety
+        					// checking is.
+							MP.printMessage(EC.TLC_PROGRESS_STATS_DFID, new String[] {
+									String.valueOf(this.numOfGenStates), String.valueOf(theFPSet.size()) });
                             // SZ Jul 10, 2009: what for?
                             // ToolIO.out.flush();
                             success = liveCheck.finalCheck();

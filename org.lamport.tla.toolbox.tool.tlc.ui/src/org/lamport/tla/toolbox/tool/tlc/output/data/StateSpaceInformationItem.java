@@ -231,4 +231,39 @@ public class StateSpaceInformationItem
 
 	public final static SimpleDateFormat SDF = new SimpleDateFormat(
 			"yyyy-MM-dd HH:mm:ss");
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (diameter ^ (diameter >>> 32));
+		result = prime * result + (int) (distinctStates ^ (distinctStates >>> 32));
+		result = prime * result + (int) (foundStates ^ (foundStates >>> 32));
+		result = prime * result + (int) (leftStates ^ (leftStates >>> 32));
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		StateSpaceInformationItem other = (StateSpaceInformationItem) obj;
+		if (diameter != other.diameter)
+			return false;
+		if (distinctStates != other.distinctStates)
+			return false;
+		if (foundStates != other.foundStates)
+			return false;
+		if (leftStates != other.leftStates)
+			return false;
+		return true;
+	}
 }

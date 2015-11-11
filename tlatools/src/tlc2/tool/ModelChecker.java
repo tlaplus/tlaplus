@@ -213,6 +213,14 @@ public class ModelChecker extends AbstractChecker
                 // Always check liveness properties at the end:
                 if (this.checkLiveness)
                 {
+					// Print progress statistics prior to liveness checking.
+					// Liveness checking can take a substantial amount of time
+					// and thus give the user some clues at what stage safety
+					// checking is.
+            		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
+                            String.valueOf(this.numOfGenStates), String.valueOf(theFPSet.size()),
+                            String.valueOf(this.theStateQueue.size()) });
+                	
                     report("checking liveness");
                     success = liveCheck.finalCheck();
                     report("liveness check complete");
@@ -677,7 +685,7 @@ public class ModelChecker extends AbstractChecker
 			// runtime dedicated to liveness checking.
             if (this.checkLiveness && (runtimeRatio < TLCGlobals.livenessRatio || forceLiveCheck))
             {
-            	final long preLivenessChecking = System.currentTimeMillis();
+        		final long preLivenessChecking = System.currentTimeMillis();
                 if (!liveCheck.check(forceLiveCheck)) {
                 	return false;
                 }

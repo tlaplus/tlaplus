@@ -3,7 +3,6 @@ package org.lamport.tla.toolbox.tool.tlc.output.data;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,6 +56,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
     public static final String RECOVERING = "Recovering from checkpoint";
     public static final String COMPUTING_REACHABLE = "Computing reachable states";
     public static final String CHECKPOINTING = "Checkpointing";
+    public static final String CHECKING_LIVENESS_FINAL = "Checking final liveness";
     public static final String CHECKING_LIVENESS = "Checking liveness";
     public static final String SERVER_RUNNING = "Master waiting for workers";
     public static final String SINGLE_WORKER_REGISTERED = " worker registered";
@@ -297,6 +297,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                     this.lastDetectedError = null;
                 }
 
+				// Order of case statements matters. There are no "break" statements because - by default - it should go to the document. 
                 switch (messageCode) {
                 // Progress information
                 case EC.TLC_VERSION:
@@ -344,11 +345,17 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_CHECKING_TEMPORAL_PROPS:
-                    if (outputMessage.indexOf("complete") != 1)
-                    {
-                        this.setCurrentStatus(CHECKING_LIVENESS);
-                        informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    if (outputMessage.contains("complete")) {
+                    	this.setCurrentStatus(CHECKING_LIVENESS_FINAL);
+                    } else {
+                    	this.setCurrentStatus(CHECKING_LIVENESS);
                     }
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_CHECKING_TEMPORAL_PROPS_END:
+					this.setCurrentStatus(COMPUTING_REACHABLE);
+					informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_CHECKPOINT_RECOVER_START:
@@ -378,13 +385,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                 case EC.TLC_PROGRESS_STATS_DFID:
                 case EC.TLC_PROGRESS_SIMU:
                 case EC.TLC_PROGRESS_STATS:
-                    this.progressInformation.add(0, StateSpaceInformationItem.parse(outputMessage));
-                    if (this.progressInformation.size() > 1) {
-						// Set the predecessor to not be the most recent
-						// progress information.
-                    	this.progressInformation.get(1).setMostRecent(false);
+                    if (addOrReplaceProgressInformation(StateSpaceInformationItem.parse(outputMessage))) {
+                    	informPresenter(ITLCModelLaunchDataPresenter.PROGRESS);
                     }
-                    informPresenter(ITLCModelLaunchDataPresenter.PROGRESS);
                     break;
                 // Coverage information
                 case EC.TLC_COVERAGE_START:
@@ -499,6 +502,31 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
     }
 
     /**
+     * @param latest
+     * @return true iff the presenter should be updated
+     */
+    private boolean addOrReplaceProgressInformation(final StateSpaceInformationItem latest) {
+    	if (!this.progressInformation.isEmpty()) {
+    		final StateSpaceInformationItem head = this.progressInformation.get(0);
+    		if (head.equals(latest)) {
+    			this.progressInformation.set(0, latest);
+    			return false;
+    		} else {
+    			this.progressInformation.add(0, latest);
+    			if (this.progressInformation.size() > 1) {
+    				// Set the predecessor to not be the most recent
+    				// progress information.
+    				this.progressInformation.get(1).setMostRecent(false);
+    			}
+    			return true;
+    		}
+    	} else {
+    		this.progressInformation.add(latest);
+    		return true;
+    	}
+	}
+
+	/**
      * Destroy and disconnect
      */
     public void destroy()
