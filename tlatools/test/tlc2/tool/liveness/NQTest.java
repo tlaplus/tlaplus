@@ -46,7 +46,7 @@ public class NQTest extends ModelCheckerTestCase {
 	@Ignore("Ignored for as long as symmetry is incorrectly handled by TLC with liveness checking.")
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "380633", "98122", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1049", "363", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		// Assert it has *not* found a temporal violation and a counter example

@@ -8,12 +8,12 @@ e1, e2
 
 \* MV CONSTANT declarations@modelParameterConstants
 CONSTANTS
-i1, i2, i3, i4
+i1, i2
 ----
 
 \* MV CONSTANT declarations@modelParameterConstants
 CONSTANTS
-d1, d2
+d1
 ----
 
 \* MV CONSTANT declarations@modelParameterConstants
@@ -28,12 +28,12 @@ const_14467714432321108000 ==
 
 \* MV CONSTANT definitions Ids
 const_14467714432421109000 == 
-{i1, i2, i3, i4}
+{i1, i2}
 ----
 
 \* MV CONSTANT definitions DeQers
 const_14467714432521110000 == 
-{d1, d2}
+{d1}
 ----
 
 \* MV CONSTANT definitions Data
