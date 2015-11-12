@@ -731,18 +731,36 @@ public class ModelChecker extends AbstractChecker
 		forceLiveCheck = true;
 	}
     
-    private final void updateRuntimeRatio(long delta) {
-		// Absolute runtime including liveness checking. 
-		final long totalRuntime = System.currentTimeMillis() - startTime;
-		// absolute time spent on liveness checking. Substract one
-		// progressInterval to account for the fact that the ratio
-		// was calculated with totalRuntime from the previous
-		// progressReporting interval.
-		final double absLivenessRuntime = Math.max(((totalRuntime - TLCGlobals.progressInterval) * runtimeRatio), 0);
+    protected void updateRuntimeRatio(final long delta) {
+    	assert delta >= 0L;
 
-		final double oldRatio = runtimeRatio;
-		runtimeRatio = (delta + absLivenessRuntime) / totalRuntime;
-		assert delta > 0 ? oldRatio < runtimeRatio : oldRatio >= runtimeRatio;
+    	// Absolute runtime from TLC startup to now (includes liveness
+		// checking, even the current delta).
+		long totalRuntime = System.currentTimeMillis() - startTime;
+		
+		// Subtract a progressInterval to account for the fact that the
+		// previously recorded runtimeRatio was calculated with totalRuntime
+		// from the previous progressReporting interval. updateRuntimeRatio is
+		// called from doPeriodicWork which executes every progressIntervall.
+		// This is an approximation because the last invocation could have
+		// happened longer ago than progressInterval if e.g. checkpointing
+		// blocked the doPeriodicWork thread.
+		totalRuntime = totalRuntime - TLCGlobals.progressInterval;
+		
+		// Subtract delta from the totalRuntime
+		totalRuntime = totalRuntime - delta;
+		
+		// Absolute time spent on all liveness checks from TLC
+		// startup up to now (without delta). Iff no liveness checking has been
+		// executed so far, the absolute time is obviously 0. totalRuntime
+		// can also be negative.
+		final double absLivenessRuntime = Math.max(totalRuntime * runtimeRatio, 0);
+
+		// Sum up the absLivenessRuntime with the new delta. It is the current
+		// absolute time for liveness checking. Divide it by overall
+		// totalRuntime (including progressInterval and delta) to calculate the
+		// new ratio.
+		runtimeRatio = (delta + absLivenessRuntime) / (totalRuntime + TLCGlobals.progressInterval + delta);
     }
     
     public double getRuntimeRatio() {
