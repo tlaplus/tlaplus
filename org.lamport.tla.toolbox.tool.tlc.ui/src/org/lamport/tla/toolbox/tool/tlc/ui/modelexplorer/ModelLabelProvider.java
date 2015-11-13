@@ -33,6 +33,7 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.navigator.IDescriptionProvider;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelContentProvider.Group;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -98,10 +99,14 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 	 */
 	public String getDescription(final Object element) {
 		if (element instanceof ILaunchConfiguration) {
-			return getText(element);
+			try {
+				final ILaunchConfiguration ilc = (ILaunchConfiguration) element;
+				return ilc.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS, getText(element));
+			} catch (CoreException e) {
+				return getText(element);
+			}
 		}
 		return null;
-
 	}
 
 	/**

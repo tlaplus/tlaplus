@@ -32,6 +32,8 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 public interface ISectionConstants
 {
     // sections of the first page
+    public final static String SEC_COMMENTS = "__what_is_the_description";
+
     public final static String SEC_WHAT_IS_THE_SPEC = "__what_is_the_spec";
     public final static String SEC_WHAT_TO_CHECK = "__what_to_check";
     public final static String SEC_WHAT_TO_CHECK_INVARIANTS = "__what_to_check_invariants";

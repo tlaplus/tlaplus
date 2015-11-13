@@ -7,6 +7,10 @@ package org.lamport.tla.toolbox.tool.tlc.launch;
 public interface IModelConfigurationConstants extends IConfigurationConstants
 {
     /**
+     * Comments
+     */
+    public static final String MODEL_COMMENTS = "modelComments";
+    /**
      * number showing if one closed formula is used
      */
     public static final String MODEL_BEHAVIOR_SPEC_TYPE = "modelBehaviorSpecType";

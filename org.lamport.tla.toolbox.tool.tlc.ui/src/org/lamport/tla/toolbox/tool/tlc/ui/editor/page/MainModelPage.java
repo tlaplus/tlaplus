@@ -63,6 +63,7 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
@@ -107,6 +108,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private Button noSpecRadio; // re-added on 10 Sep 2009
     private Button closedFormulaRadio;
     private Button initNextFairnessRadio;
+	private SourceViewer commentsSource;
     private SourceViewer initFormulaSource;
     private SourceViewer nextFormulaSource;
     // private SourceViewer fairnessFormulaSource;
@@ -335,6 +337,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         // distribute FPSet count
         distributedFPSetCountSpinner.setSelection(getConfig().getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
+
+    	// comments/description/notes
+        String commentsStr = getConfig().getAttribute(MODEL_COMMENTS, EMPTY_STRING);
+        if (!EMPTY_STRING.equals(commentsStr)) {
+        	commentsSource.setDocument(new Document(commentsStr));
+        }
     }
 
     public void validatePage(boolean switchToErrorPage)
@@ -762,6 +770,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
 	public void commit(boolean onSave)
     {
+        String comments = FormHelper.trimTrailingSpaces(commentsSource.getDocument().get());
+        if (!EMPTY_STRING.equals(comments)) {
+        	getConfig().setAttribute(MODEL_COMMENTS, comments);
+        }
+        
         // TLCUIActivator.getDefault().logDebug("Main page commit");
         // closed formula
         String closedFormula = FormHelper.trimTrailingSpaces(this.specSource.getDocument().get());
@@ -906,6 +919,39 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         GridData gd;
         TableWrapData twd;
 
+        Section section;
+        GridLayout layout;
+
+        /*
+         * Comments/notes section spanning two columns
+         */
+        Composite top = toolkit.createComposite(body);
+        top.setLayout(FormHelper.createFormTableWrapLayout(false, 2));
+        twd = new TableWrapData(TableWrapData.FILL_GRAB);
+        twd.colspan = 2;
+        top.setLayoutData(twd);
+        
+        section = FormHelper.createSectionComposite(top, "Model description", "", toolkit, sectionFlags
+                | Section.EXPANDED, getExpansionListener());
+        
+        final ValidateableSectionPart commentsPart = new ValidateableSectionPart(section, this, SEC_COMMENTS);
+        managedForm.addPart(commentsPart);
+        final DirtyMarkingListener commentsListener = new DirtyMarkingListener(commentsPart, true);
+
+        final Composite commentsArea = (Composite) section.getClient();
+        commentsArea.setLayout(new TableWrapLayout());
+        
+        commentsSource = FormHelper.createFormsSourceViewer(toolkit, commentsArea, SWT.V_SCROLL | SWT.WRAP);
+        // layout of the source viewer
+        twd = new TableWrapData(TableWrapData.FILL_GRAB);
+        twd.heightHint = 120;
+        commentsSource.addTextListener(commentsListener);
+        commentsSource.getTextWidget().setLayoutData(twd);
+        commentsSource.getTextWidget().addFocusListener(focusListener);
+        toolkit.paintBordersFor(commentsArea);
+
+        dm.bindAttribute(MODEL_COMMENTS, commentsSource, commentsPart);
+
         /*
          * Because the two Composite objects `left' and `right' are added to the
          * object `body' in this order, `left' is displayed to the left of `right'.
@@ -923,9 +969,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         twd.grabHorizontal = true;
         right.setLayoutData(twd);
         right.setLayout(new GridLayout(1, false));
-
-        Section section;
-        GridLayout layout;
 
         // ------------------------------------------
         // what is the spec
@@ -1574,6 +1617,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // add listeners propagating the changes of the elements to the changes
         // of the
         // parts to the list to be activated after the values has been loaded
+        dirtyPartListeners.add(commentsListener);
         dirtyPartListeners.add(whatIsTheSpecListener);
         dirtyPartListeners.add(whatToCheckListener);
         dirtyPartListeners.add(howToRunListener);
