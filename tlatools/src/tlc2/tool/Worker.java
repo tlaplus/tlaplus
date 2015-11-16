@@ -10,7 +10,6 @@ import tlc2.output.MP;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
-import tlc2.value.Value;
 
 public class Worker extends IdThread implements IWorker {
 	
@@ -22,7 +21,6 @@ public class Worker extends IdThread implements IWorker {
 	private ModelChecker tlc;
 	private IStateQueue squeue;
 	private ObjLongTable astCounts;
-	private Value[] localValues;
 
 	// SZ Feb 20, 2009: changed due to super type introduction
 	public Worker(int id, AbstractChecker tlc) {
@@ -32,27 +30,10 @@ public class Worker extends IdThread implements IWorker {
 		this.tlc = (ModelChecker) tlc;
 		this.squeue = this.tlc.theStateQueue;
 		this.astCounts = new ObjLongTable(10);
-		this.localValues = new Value[4];
 		this.setName("TLCWorkerThread-" + String.format("%03d", id));
 	}
 
   public final ObjLongTable getCounts() { return this.astCounts; }
-
-	public Value getLocalValue(int idx) {
-		if (idx < this.localValues.length) {
-			return this.localValues[idx];
-		}
-		return null;
-	}
-
-	public void setLocalValue(int idx, Value val) {
-		if (idx >= this.localValues.length) {
-			Value[] vals = new Value[idx + 1];
-			System.arraycopy(this.localValues, 0, vals, 0, this.localValues.length);
-			this.localValues = vals;
-		}
-		this.localValues[idx] = val;
-	}
 
 	/**
    * This method gets a state from the queue, generates all the

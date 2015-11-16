@@ -2,12 +2,15 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
+import tlc2.value.Value;
+
 /** An <code>IdThread</code> is a <code>Thread</code> with an
     integer identifier. */
 
 public class IdThread extends Thread {
     private final int id;
-    
+	private Value[] localValues = new Value[4];
+   
     /** Create a new thread with ID <code>id</code>. */
     public IdThread(int id) {
         this.id = id;
@@ -40,4 +43,20 @@ public class IdThread extends Thread {
         Thread th = Thread.currentThread();
         return (th instanceof IdThread) ? ((IdThread)th).id : otherId;
     }
+    
+	public Value getLocalValue(int idx) {
+		if (idx < this.localValues.length) {
+			return this.localValues[idx];
+		}
+		return null;
+	}
+
+	public void setLocalValue(int idx, Value val) {
+		if (idx >= this.localValues.length) {
+			Value[] vals = new Value[idx + 1];
+			System.arraycopy(this.localValues, 0, vals, 0, this.localValues.length);
+			this.localValues = vals;
+		}
+		this.localValues[idx] = val;
+	}
 }

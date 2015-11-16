@@ -23,7 +23,6 @@ import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
-import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -1044,19 +1043,6 @@ public class ModelChecker extends AbstractChecker
 //            i++;
 //        }    
 //    }
-
-    public final void setAllValues(int idx, Value val)
-    {
-        for (int i = 0; i < this.workers.length; i++)
-        {
-            workers[i].setLocalValue(idx, val);
-        }
-    }
-
-    public final Value getValue(int i, int idx)
-    {
-        return workers[i].getLocalValue(idx);
-    }
 
     /**
      * Spawn the worker threads

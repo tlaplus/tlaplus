@@ -22,6 +22,7 @@ import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.ObjLongTable;
 import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
+import tlc2.value.Value;
 import util.FileUtil;
 import util.FilenameToStream;
 
@@ -112,6 +113,7 @@ public class Simulator implements Cancelable {
 	private long aril;
 	private final ObjLongTable astCounts;
 	private boolean isCancelled; // SZ Feb 24, 2009: cancellation added
+	private Value[] localValues = new Value[4];
 
 	/*
 	 * This method does simulation on a TLA+ spec. Its argument specifies the
@@ -361,6 +363,22 @@ public class Simulator implements Cancelable {
 			index = (index + p) % len;
 		}
 		return null;
+	}
+
+	public Value getLocalValue(int idx) {
+		if (idx < this.localValues.length) {
+			return this.localValues[idx];
+		}
+		return null;
+	}
+
+	public void setLocalValue(int idx, Value val) {
+		if (idx >= this.localValues.length) {
+			Value[] vals = new Value[idx + 1];
+			System.arraycopy(this.localValues, 0, vals, 0, this.localValues.length);
+			this.localValues = vals;
+		}
+		this.localValues[idx] = val;
 	}
 
 	/**

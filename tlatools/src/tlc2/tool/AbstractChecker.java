@@ -19,6 +19,7 @@ import tlc2.util.StateWriter;
 import tlc2.util.statistics.BucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
+import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -59,6 +60,7 @@ public abstract class AbstractChecker implements Cancelable
     public Action[] actions;
     protected StateWriter allStateWriter;
     protected boolean cancellationFlag;
+    private IdThread[] workers;
 	protected final ILiveCheck liveCheck;
 
 	protected final ThreadLocal<Integer> threadLocal = new ThreadLocal<Integer>() {
@@ -68,7 +70,7 @@ public abstract class AbstractChecker implements Cancelable
 	};
 
 	protected static final int INITIAL_CAPACITY = 16;
-	
+
     /**
      * Constructor of the abstract model checker
      * @param specFile
@@ -224,8 +226,7 @@ public abstract class AbstractChecker implements Cancelable
             return true;
         }
 
-        // Start all the workers:
-        IdThread[] workers = startWorkers(this, depth);
+        workers = startWorkers(this, depth);
 
         // Check progress periodically:
         // Comment added by LL on 9 April 2012.  The coverage is printed
@@ -304,6 +305,16 @@ public abstract class AbstractChecker implements Cancelable
         this.cancellationFlag = flag;
     }
     
+	public final void setAllValues(int idx, Value val) {
+		for (int i = 0; i < this.workers.length; i++) {
+			workers[i].setLocalValue(idx, val);
+		}
+	}
+
+	public final Value getValue(int i, int idx) {
+		return workers[i].getLocalValue(idx);
+	}
+
     /**
      * Debugging support
      * @param message

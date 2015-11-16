@@ -3,7 +3,8 @@
 package tlc2;
 
 import tla2sany.semantic.FrontEnd;
-import tlc2.tool.ModelChecker;
+import tlc2.tool.AbstractChecker;
+import tlc2.tool.Simulator;
 
 /**
  * Globals
@@ -71,8 +72,11 @@ public class TLCGlobals
     	incNumWorkers(-1);
     }
 
-    // The main model checker object
-    public static ModelChecker mainChecker = null;
+    // The main model checker object (null if simulator non-null)
+    public static AbstractChecker mainChecker = null;
+    
+    // The main simulator object (null if mainChecker non-null)
+    public static Simulator simulator = null;
 
     // Enable collecting coverage information
     public static int coverageInterval = -1;

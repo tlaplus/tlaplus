@@ -10,7 +10,7 @@ import tlc2.output.EC;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
-import tlc2.tool.Worker;
+import tlc2.util.IdThread;
 import tlc2.util.RandomGenerator;
 import tlc2.value.Applicable;
 import tlc2.value.BoolValue;
@@ -112,12 +112,15 @@ public class TLC implements ValueConstants
             {
                 Thread th = Thread.currentThread();
                 Value res = null;
-                if (th instanceof Worker)
+                if (th instanceof IdThread)
                 {
-                    res = ((Worker) th).getLocalValue(idx);
-                } else
+                    res = ((IdThread) th).getLocalValue(idx);
+                } else if (TLCGlobals.mainChecker != null)
                 {
                     res = tlc2.TLCGlobals.mainChecker.getValue(0, idx);
+                } else 
+                {	
+                    res = tlc2.TLCGlobals.simulator.getLocalValue(idx);
                 }
                 if (res == null)
                 {
@@ -138,12 +141,15 @@ public class TLC implements ValueConstants
             if (idx >= 0)
             {
                 Thread th = Thread.currentThread();
-                if (th instanceof Worker)
+                if (th instanceof IdThread)
                 {
-                    ((Worker) th).setLocalValue(idx, val);
-                } else
+                    ((IdThread) th).setLocalValue(idx, val);
+                } else if (TLCGlobals.mainChecker != null)
                 {
                     TLCGlobals.mainChecker.setAllValues(idx, val);
+                } else 
+                {	
+                    tlc2.TLCGlobals.simulator.setLocalValue(idx, val);
                 }
                 return ValTrue;
             }

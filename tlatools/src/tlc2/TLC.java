@@ -725,6 +725,7 @@ public class TLC
                 MP.printMessage(EC.TLC_MODE_SIMU, String.valueOf(seed));
                 Simulator simulator = new Simulator(mainFile, configFile, null, deadlock, traceDepth, 
                         traceNum, rng, seed, true, resolver, specObj);
+                TLCGlobals.simulator = simulator;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
 //                MP.printMessage(EC.TLC_STARTING);
                 instance = simulator;
@@ -738,12 +739,12 @@ public class TLC
                 if (TLCGlobals.DFIDMax == -1)
                 {
                     mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
-                    TLCGlobals.mainChecker = (ModelChecker) mc;
                     modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc);
                 } else
                 {
                     mc = new DFIDModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
                 }
+                TLCGlobals.mainChecker = mc;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
 //                MP.printMessage(EC.TLC_STARTING);
                 instance = mc;
@@ -803,7 +804,6 @@ public class TLC
 		return df.format(runtime);
     }
     
-    @SuppressWarnings("unchecked")
 	public List<File> getModuleFiles() {
     	final List<File> result = new ArrayList<File>();
     	
