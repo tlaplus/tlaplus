@@ -216,6 +216,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         return proposition;
     }
+    public static String getModelName(ILaunchConfiguration config) {
+    	return getModelName(config.getFile());
+    }
 
     /**
      * Transforms a model name to the name visible to the user 
@@ -2182,4 +2185,18 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
         return null;
     }
+
+	public static String prettyPrintConstants(final ILaunchConfiguration config) throws CoreException {
+		final StringBuffer buf = new StringBuffer();
+		final List<String> constants = config.getAttribute(IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS,
+				new ArrayList<String>());
+		final List<Assignment> assignments = deserializeAssignmentList(constants);
+		for (int i = 0; i < assignments.size(); i++) {
+			buf.append(assignments.get(i));
+			if (i < assignments.size() - 1) {
+				buf.append("\n");
+			}
+		}
+		return buf.toString();
+	}
 }

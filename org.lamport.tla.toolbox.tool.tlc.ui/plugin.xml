@@ -159,6 +159,11 @@
                optional="false">
          </commandParameter>
       </command>
+      <command
+            description="Open a spec, module or model."
+            id="org.lamport.tla.toolbox.openElementSelection"
+            name="Filtered open element selection dialog">
+      </command>
    </extension>
    
    
@@ -784,6 +789,10 @@ Console Facory
             </and>
          </activeWhen>
       </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.TLAOpenElementSelectionDialogHandler"
+            commandId="org.lamport.tla.toolbox.openElementSelection">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
@@ -858,4 +867,13 @@ Console Facory
             commandId="toolbox.tool.tlc.commands.model.run"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
 	</extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="org.lamport.tla.toolbox.openElementSelection"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+T">
+      </key>
+   </extension>
 </plugin>
