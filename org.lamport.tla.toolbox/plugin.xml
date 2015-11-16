@@ -351,6 +351,10 @@
             id="org.lamport.tla.toolbox.refresh"
             name="Refresh Specification">
       </command>
+      <command
+            id="org.lamport.tla.toolbox.history"
+            name="Module History">
+      </command>
    </extension>
 <!-- 
  Key bindings
@@ -757,6 +761,11 @@
                label="Refresh"
                style="push">
          </command>
+         <command
+               commandId="org.lamport.tla.toolbox.history"
+               label="Show in History"
+               style="push">
+         </command>
       </menuContribution>
 
       <menuContribution
@@ -1033,6 +1042,27 @@
             <test
                   property="toolbox.property.hasParseErrors">
             </test>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.ShowHistoryHandler"
+            commandId="org.lamport.tla.toolbox.history">
+         <enabledWhen>
+               <and>
+                  <count
+                        value="1">
+                  </count>
+                  <with
+                        variable="selection">
+                     <iterate
+                           ifEmpty="false"
+                           operator="or">
+                        <instanceof
+                              value="org.lamport.tla.toolbox.spec.Module">
+                        </instanceof>
+                     </iterate>
+                  </with>
+               </and>
          </enabledWhen>
       </handler>
    </extension>

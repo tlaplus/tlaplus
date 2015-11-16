@@ -28,6 +28,7 @@ package org.lamport.tla.toolbox.spec;
 
 import java.io.File;
 
+import org.eclipse.core.resources.IResource;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 
 import tla2sany.semantic.ModuleNode;
@@ -41,13 +42,19 @@ public class Module
     
     private ModuleNode node;
     private boolean isRoot = false;
+	private IResource resource;
 
     public Module(String absoluteFilename)
     {
         file = new File(absoluteFilename);
     }
 
-    /**
+    public Module(IResource resource) {
+    	this(resource.getLocation().toOSString());
+    	this.resource = resource;
+	}
+
+	/**
      * Retrieves absolute path of the module file
      * 
      * @return path of the module file
@@ -67,6 +74,21 @@ public class Module
         return file;
     }
 
+	/**
+	 * @return null or the Eclipse specific resource handle for this module. A
+	 *         IResource is the pendant to the non-Eclipse specific
+	 *         java.io.File.
+	 * 
+	 * @see {@link Module#getFile()}
+	 */
+    public IResource getResource() {
+    	return resource;
+    }
+
+	public void setResource(IResource aResource) {
+		this.resource = aResource;
+	}
+   
     /**
      * Retrieves the module name
      * @return the name of the module

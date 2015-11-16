@@ -276,6 +276,7 @@ public class ModuleParserLauncher
                 if (moduleResource != null && moduleResource.exists())
                 {
                     resourcesToTimeStamp.add(moduleResource);
+                    module.setResource(moduleResource);
                 }
             }
 

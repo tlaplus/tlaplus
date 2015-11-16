@@ -549,6 +549,9 @@ public class TLAEditor extends TextEditor
      */
     public void updateFoldingStructure(List<Position> positions)
     {
+    	if (annotationModel == null) {
+    		return;
+    	}
 
         Annotation[] annotations = new Annotation[positions.size()];
 
@@ -855,7 +858,12 @@ public class TLAEditor extends TextEditor
     {
         if (getSourceViewer() != null)
         {
-            getSourceViewer().setEditable(!EditorUtil.isReadOnly(((FileEditorInput) getEditorInput()).getFile()));
+        	if (getEditorInput() instanceof IFileEditorInput) {
+        		final IFileEditorInput fileEditorInput = (IFileEditorInput) getEditorInput();
+        		getSourceViewer().setEditable(!EditorUtil.isReadOnly(fileEditorInput.getFile()));
+        	} else {
+        		getSourceViewer().setEditable(false);
+        	}
         }
     }
     

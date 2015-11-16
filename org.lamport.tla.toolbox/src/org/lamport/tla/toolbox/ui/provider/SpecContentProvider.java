@@ -127,7 +127,7 @@ public class SpecContentProvider implements ITreeContentProvider {
 				outOfSyncResourcesToDelete.add(moduleResources[i]);
 				continue;
 			}
-			final Module module = new Module(moduleResources[i].getLocation().toOSString());
+			final Module module = new Module(moduleResources[i]);
 			modules.add(module);
 		}
 
