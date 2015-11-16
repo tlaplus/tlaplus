@@ -6,9 +6,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -17,10 +19,10 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.spec.parser.IParseResultListener;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
@@ -70,7 +72,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      * of the statement which they prove. These proofs
      * do not fold.
      */
-    private Vector foldPositions;
+    private Vector<TLAProofPosition> foldPositions;
     /**
      * Time stamp for last modification of the document
      * represented by the editor as returned by
@@ -97,18 +99,20 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         canPerformFoldingCommands = true;
         this.editor = editor;
         this.document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-        foldPositions = new Vector();
+        foldPositions = new Vector<TLAProofPosition>();
 
         // add this as listener to document to listen for changes
         document.addDocumentListener(this);
 
         // get a parse result if the parse result broadcaster has already stored one
-        ParseResult parseResult = ParseResultBroadcaster.getParseResultBroadcaster().getParseResult(
-                ((FileEditorInput) editor.getEditorInput()).getFile().getLocation());
-
-        if (parseResult != null)
-        {
-            newParseResult(parseResult);
+        if (editor.getEditorInput() instanceof IFileEditorInput) {
+        	IFileEditorInput editorInput = (IFileEditorInput) editor.getEditorInput();
+        	IPath location = editorInput.getFile().getLocation();
+        	ParseResult parseResult = ParseResultBroadcaster.getParseResultBroadcaster().getParseResult(location);
+        	if (parseResult != null)
+        	{
+        		newParseResult(parseResult);
+        	}
         }
 
         // now listen to any new parse results
@@ -131,8 +135,8 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      * 
      * @throws BadLocationException 
      */
-    private void computeProofFoldPositions(TheoremNode theoremNode, HashMap additions, List foldsInCurrentTree,
-            List previousFolds) throws BadLocationException
+    private void computeProofFoldPositions(TheoremNode theoremNode, Map<ProjectionAnnotation, TLAProofPosition> additions, List<TLAProofPosition> foldsInCurrentTree,
+            List<TLAProofPosition> previousFolds) throws BadLocationException
     {
 
         if (theoremNode.getProof() == null)
@@ -167,9 +171,9 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
          * new folds for proof tree.
          */
         TLAProofPosition matchingPosition = null;
-        for (Iterator it = previousFolds.iterator(); it.hasNext();)
+        for (Iterator<TLAProofPosition> it = previousFolds.iterator(); it.hasNext();)
         {
-            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+            TLAProofPosition proofPosition = it.next();
 
             // positions are considered the same if the beginning and end line are the same
             if (proofPosition.isSamePosition(proofNodeRegion, document))
@@ -235,6 +239,13 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
     public void newParseResult(ParseResult parseResult)
     {
 
+    	if (!(editor.getEditorInput() instanceof IFileEditorInput)) {
+			// input can be the file history which isn't an IFileEditorInput and
+			// thus cannot be parsed. There is no point parsing every revision
+    		// of the file history anyway.
+    		return;
+    	}
+    	
         /*
          * If the parsed resource for parseResult is in a different
          * directory than the file open in the editor, then parseResult
@@ -243,12 +254,12 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
          * in the same directory.
          */
         if (!parseResult.getParsedResource().getLocation().removeLastSegments(1).equals(
-                ((FileEditorInput) editor.getEditorInput()).getFile().getLocation().removeLastSegments(1)))
+        	((IFileEditorInput) editor.getEditorInput()).getFile().getLocation().removeLastSegments(1)))
         {
             return;
         }
 
-        String moduleName = ResourceHelper.getModuleName(((FileEditorInput) editor.getEditorInput()).getFile());
+        String moduleName = ResourceHelper.getModuleName(((IFileEditorInput) editor.getEditorInput()).getFile());
 
         // TLAEditorActivator.getDefault().logDebug("Proof structure provider for " + moduleName + " recieved a parse result.");
 
@@ -302,8 +313,8 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
 
         canPerformFoldingCommands = false;
 
-        HashMap additions = new HashMap();
-        Vector foldsInCurrentTree = new Vector();
+        Map<ProjectionAnnotation, TLAProofPosition> additions = new HashMap<ProjectionAnnotation, TLAProofPosition>();
+        Vector<TLAProofPosition> foldsInCurrentTree = new Vector<TLAProofPosition>();
 
         TheoremNode[] theorems = moduleNode.getTheorems();
 
@@ -331,9 +342,9 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         // compute array of annotations to be deleted
         Annotation[] deletions = new ProjectionAnnotation[foldPositions.size()];
         int i = 0;
-        for (Iterator it = foldPositions.iterator(); it.hasNext();)
+        for (Iterator<TLAProofPosition> it = foldPositions.iterator(); it.hasNext();)
         {
-            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+            TLAProofPosition proofPosition = it.next();
             proofPosition.remove(document);
             deletions[i] = proofPosition.getAnnotation();
         }
@@ -348,9 +359,9 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         // then it makes sense to sort
         int currentOffset = -1;
         boolean isSorted = true;
-        for (Iterator it = foldPositions.iterator(); it.hasNext();)
+        for (Iterator<TLAProofPosition> it = foldPositions.iterator(); it.hasNext();)
         {
-            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+            TLAProofPosition proofPosition = it.next();
             if (proofPosition.getOffset() >= currentOffset)
             {
                 currentOffset = proofPosition.getOffset();
@@ -363,19 +374,12 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
 
         if (!isSorted)
         {
-            Collections.sort(foldPositions, new Comparator() {
+			Collections.sort(foldPositions, new Comparator<TLAProofPosition>() {
 
-                public int compare(Object arg0, Object arg1)
-                {
-                    if (arg0 instanceof TLAProofPosition && arg1 instanceof TLAProofPosition)
-                    {
-                        return ((TLAProofPosition) arg0).getOffset() - ((TLAProofPosition) arg1).getOffset();
-                    } else
-                    {
-                        return 0;
-                    }
-                }
-            });
+				public int compare(TLAProofPosition arg0, TLAProofPosition arg1) {
+					return arg0.getOffset() - arg1.getOffset();
+				}
+			});
         }
 
         canPerformFoldingCommands = true;
@@ -421,7 +425,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         {
             for (int i = 0; i < foldPositions.size(); i++)
             {
-                TLAProofPosition proofPosition = (TLAProofPosition) foldPositions.get(i);
+                TLAProofPosition proofPosition = foldPositions.get(i);
                 if (proofPosition.containsBeforeProof(caretOffset, document))
                 {
                     return true;
@@ -443,24 +447,24 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      * @param selection selection in the editor
      * @return
      */
-    private boolean containedByProof(int caretOffset)
-    {
-        try
-        {
-            for (int i = 0; i < foldPositions.size(); i++)
-            {
-                TLAProofPosition proofPosition = (TLAProofPosition) foldPositions.get(i);
-                if (proofPosition.containsInProof(caretOffset, document))
-                {
-                    return true;
-                }
-            }
-        } catch (BadLocationException e)
-        {
-            Activator.getDefault().logError("Error computing if selection is in proof step.", e);
-        }
-        return false;
-    }
+//    private boolean containedByProof(int caretOffset)
+//    {
+//        try
+//        {
+//            for (int i = 0; i < foldPositions.size(); i++)
+//            {
+//                TLAProofPosition proofPosition = (TLAProofPosition) foldPositions.get(i);
+//                if (proofPosition.containsInProof(caretOffset, document))
+//                {
+//                    return true;
+//                }
+//            }
+//        } catch (BadLocationException e)
+//        {
+//            Activator.getDefault().logError("Error computing if selection is in proof step.", e);
+//        }
+//        return false;
+//    }
 
     /**
      * Returns whether or not the selection is at a proof step, theorem statement, or leaf proof.
@@ -477,7 +481,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         {
             for (int i = 0; i < foldPositions.size(); i++)
             {
-                TLAProofPosition proofPosition = (TLAProofPosition) foldPositions.get(i);
+                TLAProofPosition proofPosition = foldPositions.get(i);
                 if (proofPosition.containsInProofOrStatement(caretOffset, document))
                 {
                     return true;
@@ -606,10 +610,10 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      */
     private void foldEverythingUnusable(int cursorOffset)
     {
-        Vector modifiedAnnotations = new Vector();
-        for (Iterator it = foldPositions.iterator(); it.hasNext();)
+        Vector<Annotation> modifiedAnnotations = new Vector<Annotation>();
+        for (Iterator<TLAProofPosition> it = foldPositions.iterator(); it.hasNext();)
         {
-            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+            TLAProofPosition proofPosition = it.next();
             try
             {
                 if (proofPosition.containsInProofOrStatement(cursorOffset, document))
@@ -641,10 +645,10 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      */
     private void foldAllProofs()
     {
-        Vector modifiedAnnotations = new Vector();
-        for (Iterator it = foldPositions.iterator(); it.hasNext();)
+        Vector<Annotation> modifiedAnnotations = new Vector<Annotation>();
+        for (Iterator<TLAProofPosition> it = foldPositions.iterator(); it.hasNext();)
         {
-            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+            TLAProofPosition proofPosition = it.next();
             if (!proofPosition.getAnnotation().isCollapsed())
             {
                 // should fold every proof
@@ -660,10 +664,10 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
 
     private void expandAllProofs()
     {
-        Vector modifiedAnnotations = new Vector();
-        for (Iterator it = foldPositions.iterator(); it.hasNext();)
+        Vector<Annotation> modifiedAnnotations = new Vector<Annotation>();
+        for (Iterator<TLAProofPosition> it = foldPositions.iterator(); it.hasNext();)
         {
-            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+            TLAProofPosition proofPosition = it.next();
             if (proofPosition.getAnnotation().isCollapsed())
             {
                 // should fold every proof
@@ -683,7 +687,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      */
     private void expandCurrentSubtree(int offset)
     {
-        ArrayList modifiedAnnotations = new ArrayList();
+        List<Annotation> modifiedAnnotations = new ArrayList<Annotation>();
         // find statement containing offset
         TLAProofPosition found = null;
 
@@ -698,9 +702,9 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
          * This requires that the proof positions be sorted in ascending
          * order of offset.
          */
-        for (Iterator it = foldPositions.iterator(); it.hasNext();)
+        for (Iterator<TLAProofPosition> it = foldPositions.iterator(); it.hasNext();)
         {
-            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+            TLAProofPosition proofPosition = it.next();
             try
             {
                 if (found == null && proofPosition.containsBeforeProof(offset, document))
@@ -738,7 +742,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      */
     private void hideCurrentSubtree(int offset)
     {
-        ArrayList modifiedAnnotations = new ArrayList();
+        List<Annotation> modifiedAnnotations = new ArrayList<Annotation>();
         // find statement containing offset
         TLAProofPosition found = null;
 
@@ -753,9 +757,9 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
          * This requires that the proof positions be sorted in ascending
          * order of offset.
          */
-        for (Iterator it = foldPositions.iterator(); it.hasNext();)
+        for (Iterator<TLAProofPosition> it = foldPositions.iterator(); it.hasNext();)
         {
-            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+            TLAProofPosition proofPosition = it.next();
             try
             {
                 if (found == null && proofPosition.containsBeforeProof(offset, document))
@@ -794,7 +798,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      */
     private void showImmediateDescendants(int offset)
     {
-        ArrayList modifiedAnnotations = new ArrayList();
+        List<Annotation> modifiedAnnotations = new ArrayList<Annotation>();
         // find statement containing offset
         TLAProofPosition found = null;
 
@@ -809,9 +813,9 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
          * This requires that the proof positions be sorted in ascending
          * order of offset.
          */
-        for (Iterator it = foldPositions.iterator(); it.hasNext();)
+        for (Iterator<TLAProofPosition> it = foldPositions.iterator(); it.hasNext();)
         {
-            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+            TLAProofPosition proofPosition = it.next();
             try
             {
                 if (found == null && proofPosition.containsBeforeProof(offset, document))

@@ -13,7 +13,6 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
@@ -240,21 +239,21 @@ public class ModuleParserLauncher
         // Set the moduleNode components only if there were no parsing or
         // semantic errors.
 
-        Vector userModules = new Vector();
+        Vector<Module> userModules = new Vector<Module>();
         // Vector standardModules = new Vector();
         boolean rootModuleFound = false;
 
-        final Vector resourcesToTimeStamp = new Vector();
+        final Vector<IResource> resourcesToTimeStamp = new Vector<IResource>();
 
         // iterate over parse units
-        Enumeration enumerate = moduleSpec.parseUnitContext.keys();
+        Enumeration<String> enumerate = moduleSpec.parseUnitContext.keys();
         while (enumerate.hasMoreElements())
         {
             // should cancel?
             checkCancel(monitor);
         	
             // This enumeration finds all non-inner modules in the spec.
-            String moduleName = (String) enumerate.nextElement();
+            String moduleName = enumerate.nextElement();
             ParseUnit parseUnit = (ParseUnit) moduleSpec.parseUnitContext.get(moduleName);
 
             String absoluteFileName = null;
@@ -328,10 +327,10 @@ public class ModuleParserLauncher
 
                 public void run(IProgressMonitor monitor) throws CoreException
                 {
-                    Iterator iterator = resourcesToTimeStamp.iterator();
+                    Iterator<IResource> iterator = resourcesToTimeStamp.iterator();
                     while (iterator.hasNext())
                     {
-                        IResource resource = (IResource) iterator.next();
+                        IResource resource = iterator.next();
                         resource.setPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT, String.valueOf(System
                                 .currentTimeMillis()));
                     }

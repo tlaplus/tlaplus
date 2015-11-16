@@ -115,7 +115,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     protected void loadData() throws CoreException
     {
         // definition overrides
-        List definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector());
+        List<String> definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector<String>());
         FormHelper.setSerializedInput(definitionsTable, definitions);
 
         // new definitions
@@ -245,7 +245,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         getConfig().setAttribute(LAUNCH_MAXSETSIZE, maxSetSize.getSelection());
         
         // definitions
-        List definitions = FormHelper.getSerializedInput(definitionsTable);
+        List<String> definitions = FormHelper.getSerializedInput(definitionsTable);
         getConfig().setAttribute(MODEL_PARAMETER_DEFINITIONS, definitions);
 
         // new definitions
@@ -412,7 +412,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
              * IMessageProvider.ERROR, modelValuesSource.getControl());
              * setComplete(false); }
              */
-            List values = modelValuesSet.getValuesAsList();
+            List<String> values = modelValuesSet.getValuesAsList();
             // check list of model values if these are already used
             validateUsage(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value",
                     "Advanced Model Values", true);
@@ -451,7 +451,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         {
             opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
         }
-        Hashtable nodeTable = new Hashtable();
+        Hashtable<String, OpDefNode> nodeTable = new Hashtable<String, OpDefNode>();
 
         if (opDefNodes != null)
         {
@@ -465,12 +465,13 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // get widget for definition overrides
         Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_DEFINITIONS));
         // check the definition overrides
-        List definitions = (List) definitionsTable.getInput();
+        @SuppressWarnings("unchecked")
+		List<Assignment> definitions = (List<Assignment>) definitionsTable.getInput();
 
         for (int i = 0; i < definitions.size(); i++)
         {
-            Assignment definition = (Assignment) definitions.get(i);
-            List values = Arrays.asList(definition.getParams());
+            Assignment definition = definitions.get(i);
+            List<String> values = Arrays.asList(definition.getParams());
             // check list of parameters
             validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides",
                     false);
@@ -657,7 +658,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         int expand = 0;
         try
         {
-           List definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector());
+           List<String> definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector<String>());
             if ((definitions != null) && (definitions.size() != 0)) {
                 expand = Section.EXPANDED;
             }

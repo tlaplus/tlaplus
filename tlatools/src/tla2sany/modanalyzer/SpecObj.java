@@ -5,6 +5,7 @@ package tla2sany.modanalyzer;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
@@ -38,7 +39,7 @@ public class SpecObj
     // must be done, i.e. if MODULE A references B, A is lower
     // on the stack. The same module name can occur multiple times.
 
-    public Hashtable parseUnitContext = new Hashtable();
+    public Hashtable<String, ParseUnit> parseUnitContext = new Hashtable<String, ParseUnit>();
     // Holds all known ParseUnit objects, i.e external, top-level
     // modules that have so far been encountered, keyed by module
     // (parseUnit) string name
@@ -218,7 +219,7 @@ public class SpecObj
     // Returns enumeration of the modules so far included in the spec.
     // As whoever wrote this documentation didn't think was worth mentioning,
     // it appears that the "modules" being returned are ModulePointer objects.
-    public final Enumeration getModules()
+    public final Enumeration<String> getModules()
     {
         return moduleRelationshipsSpec.getKeys();
     }
@@ -232,12 +233,12 @@ public class SpecObj
     // Prints the context of one ParseUnit
     public final void printParseUnitContext()
     {
-        Enumeration enumerate = parseUnitContext.keys();
+        Enumeration<String> enumerate = parseUnitContext.keys();
 
         ToolIO.out.println("parseUnitContext =");
         while (enumerate.hasMoreElements())
         {
-            String key = (String) enumerate.nextElement();
+            String key = enumerate.nextElement();
             ToolIO.out.println("  " + key + "-->" + ((ParseUnit) parseUnitContext.get(key)).getName());
         }
     }
@@ -348,7 +349,7 @@ public class SpecObj
     // parseUnitName. If there is, cause an abort; otherwise return.
     private void nonCircularityTest(ParseUnit parseUnit, Errors errors) throws AbortException
     {
-        HashSet alreadyVisited = new HashSet();
+        Set<ParseUnit> alreadyVisited = new HashSet<ParseUnit>();
         Vector circularPath = new Vector();
 
         circularPath.addElement(parseUnit);
@@ -361,7 +362,7 @@ public class SpecObj
     // errors, and the method aborts. The set alreadyVisited is
     // used to prevent searching paths through the same candidate
     // multiple times.
-    private void nonCircularityBody(ParseUnit parseUnit, ParseUnit candidate, Errors errors, HashSet alreadyVisited,
+    private void nonCircularityBody(ParseUnit parseUnit, ParseUnit candidate, Errors errors, Set<ParseUnit> alreadyVisited,
             Vector circularPath) throws AbortException
     {
         // If we have already checked for circularities through this

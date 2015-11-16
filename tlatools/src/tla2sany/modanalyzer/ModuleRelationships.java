@@ -33,7 +33,7 @@ class ModuleRelationships {
   } // end getContext()
 
 
-  Enumeration getKeys() { return modRelHashtable.keys(); }  
+  Enumeration<String> getKeys() { return modRelHashtable.keys(); }  
 
 
   // Add the entries from otherMR into THIS; they are assumed not to overlap.

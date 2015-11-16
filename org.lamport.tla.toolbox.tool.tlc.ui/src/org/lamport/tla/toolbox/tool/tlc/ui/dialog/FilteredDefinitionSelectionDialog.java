@@ -1,8 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.dialog;
 
 import java.util.Comparator;
-import java.util.List;
-import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -18,7 +16,6 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ModuleNode;
@@ -210,15 +207,12 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
     /* (non-Javadoc)
      * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#getItemsComparator()
      */
-    protected Comparator getItemsComparator()
+    protected Comparator<OpDefNode> getItemsComparator()
     {
-        return new Comparator() {
+        return new Comparator<OpDefNode>() {
             // group by modules, sort by user modules first, then by module name and then then by operator name
-            public int compare(Object arg0, Object arg1)
+            public int compare(OpDefNode node0, OpDefNode node1)
             {
-                OpDefNode node0 = (OpDefNode) arg0;
-                OpDefNode node1 = (OpDefNode) arg1;
-
                 ModuleNode module0 = node0.getOriginallyDefinedInModuleNode();
                 ModuleNode module1 = node1.getOriginallyDefinedInModuleNode();
 
