@@ -1150,7 +1150,12 @@ public class UIHelper {
 	 * @return The currently active editor
 	 */
 	public static IEditorPart getActiveEditor() {
-		return getActivePage().getActiveEditor();
+		final IWorkbenchPage activePage = getActivePage();
+		if (activePage != null) {
+			// At Toolbox startup, activePage can be null.
+			return activePage.getActiveEditor();
+		}
+		return null;
 	}
 
 	/**
