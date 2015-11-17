@@ -2186,7 +2186,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return null;
     }
 
-	public static String prettyPrintConstants(final ILaunchConfiguration config) throws CoreException {
+	public static String prettyPrintConstants(final ILaunchConfiguration config, String delim) throws CoreException {
 		final StringBuffer buf = new StringBuffer();
 		final List<String> constants = config.getAttribute(IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS,
 				new ArrayList<String>());
@@ -2194,7 +2194,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 		for (int i = 0; i < assignments.size(); i++) {
 			buf.append(assignments.get(i));
 			if (i < assignments.size() - 1) {
-				buf.append("\n");
+				buf.append(delim);
 			}
 		}
 		return buf.toString();

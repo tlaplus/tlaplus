@@ -28,22 +28,27 @@ package org.lamport.tla.toolbox.tool.tlc.ui.dialog;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -66,11 +71,15 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialog {
 
+	private static final String SHOW_CONSTANTS = "ShowConstants"; //$NON-NLS-1$
+	
 	private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
 	private static final Image ModelImage = TLCUIActivator.getImageDescriptor("/icons/full/choice_sc_obj.gif")
 			.createImage();
 
+	private final ToggleShowAction toggleShowConstantsAction  = new ToggleShowAction("Show spec constants", getDialogSettings().getBoolean(SHOW_CONSTANTS));
+	
 	private SourceViewer sourceViewer;
 
 	public TLAFilteredItemsSelectionDialog(final Shell shell) {
@@ -132,6 +141,22 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	}
 
 	/* (non-Javadoc)
+	 * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#storeDialog(org.eclipse.jface.dialogs.IDialogSettings)
+	 */
+	protected void storeDialog(IDialogSettings settings) {
+		settings.put(SHOW_CONSTANTS, toggleShowConstantsAction.isChecked());
+		super.storeDialog(settings);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#fillViewMenu(org.eclipse.jface.action.IMenuManager)
+	 */
+	protected void fillViewMenu(IMenuManager menuManager) {
+		menuManager.add(toggleShowConstantsAction);
+		super.fillViewMenu(menuManager);
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#validateItem(java.lang.Object)
 	 */
 	protected IStatus validateItem(final Object item) {
@@ -163,7 +188,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 				final List<String> fallbacksFallback = new ArrayList<String>();
 				fallbacksFallback.add(ModelHelper.getModelName(config));
 				
-				final String fallback = ModelHelper.prettyPrintConstants(config);
+				final String fallback = ModelHelper.prettyPrintConstants(config, "\n");
 
 				final String attribute = config.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS, fallback);
 				if (!EMPTY_STRING.equals(attribute)) {
@@ -281,7 +306,9 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 		}
 	}
 
-	private class TableLabelProvider extends LabelProvider implements IDescriptionProvider {
+	private class TableLabelProvider extends LabelProvider implements IDescriptionProvider, IStyledLabelProvider {
+
+		private static final String DELIM = ":";
 
 		public String getText(final Object element) {
 			if (element == null) {
@@ -299,12 +326,15 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			} else if (element instanceof ILaunchConfiguration) {
 				final ILaunchConfiguration config = (ILaunchConfiguration) element;
 				try {
-					String attribute = config.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS, EMPTY_STRING);
+					String attribute = config.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS,
+							toggleShowConstantsAction.isChecked()
+									? ModelHelper.prettyPrintConstants(config, DELIM + " ")
+									: EMPTY_STRING);
 					if (!EMPTY_STRING.equals(attribute)) {
 						if (attribute.contains("\n")) {
 							attribute = attribute.split("\n")[0];
 						}
-						return ModelHelper.getModelName(config) + ": " + attribute;
+						return ModelHelper.getModelName(config) + DELIM + " " + attribute;
 					}
 				} catch (CoreException e) {
 				}
@@ -332,6 +362,33 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 				return ModelImage;
 			}
 			return null;
+		}
+
+		public StyledString getStyledText(Object element) {
+			final String text = getText(element);
+			if (text == null || EMPTY_STRING.equals(text)) {
+				return new StyledString();
+			}
+			
+			final StyledString string = new StyledString(text);
+			
+			if (element instanceof ILaunchConfiguration && text.indexOf(DELIM) != -1) {
+				final int index = text.indexOf(DELIM);
+				string.setStyle(index, text.length() - index, StyledString.DECORATIONS_STYLER);
+			}
+			return string;
+		}
+	}
+	
+	private class ToggleShowAction extends Action {
+
+		public ToggleShowAction(final String label, final boolean checked) {
+			super(label, IAction.AS_CHECK_BOX);
+			setChecked(checked);
+		}
+
+		public void run() {
+			// Doesn't do anything. The dialog has to be re-opened to see its effect.
 		}
 	}
 }
