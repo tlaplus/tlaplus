@@ -340,9 +340,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
     	// comments/description/notes
         String commentsStr = getConfig().getAttribute(MODEL_COMMENTS, EMPTY_STRING);
-        if (!EMPTY_STRING.equals(commentsStr)) {
-        	commentsSource.setDocument(new Document(commentsStr));
-        }
+       	commentsSource.setDocument(new Document(commentsStr));
     }
 
     public void validatePage(boolean switchToErrorPage)
@@ -770,10 +768,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
 	public void commit(boolean onSave)
     {
-        String comments = FormHelper.trimTrailingSpaces(commentsSource.getDocument().get());
-        if (!EMPTY_STRING.equals(comments)) {
-        	getConfig().setAttribute(MODEL_COMMENTS, comments);
-        }
+		final String comments = FormHelper.trimTrailingSpaces(commentsSource.getDocument().get());
+		if (!EMPTY_STRING.equals(comments)) {
+			getConfig().setAttribute(MODEL_COMMENTS, comments);
+		}
         
         // TLCUIActivator.getDefault().logDebug("Main page commit");
         // closed formula
@@ -940,7 +938,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         final Composite commentsArea = (Composite) section.getClient();
         commentsArea.setLayout(new TableWrapLayout());
-        
+
         commentsSource = FormHelper.createFormsSourceViewer(toolkit, commentsArea, SWT.V_SCROLL | SWT.WRAP);
         // layout of the source viewer
         twd = new TableWrapData(TableWrapData.FILL_GRAB);
