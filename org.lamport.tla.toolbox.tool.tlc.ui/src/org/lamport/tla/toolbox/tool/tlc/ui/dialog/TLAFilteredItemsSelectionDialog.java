@@ -63,7 +63,6 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.util.ResourceHelper;
 
 public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialog {
 
@@ -77,8 +76,8 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	public TLAFilteredItemsSelectionDialog(final Shell shell) {
 		super(shell, false);
 		setInitialPattern("?"); // https://bugs.eclipse.org/308689
-		setListLabelProvider(new TLAFilteredItemSelectionDialog());
-		setDetailsLabelProvider(new TLADetailsFilteredItemSelectionDialog());
+		setListLabelProvider(new TableLabelProvider());
+		setDetailsLabelProvider(new DetailsLabelProvider());
 	}
 	
 	/* (non-Javadoc)
@@ -216,31 +215,20 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	protected void fillContentProvider(final AbstractContentProvider contentProvider, final ItemsFilter itemsFilter,
 			final IProgressMonitor progressMonitor) throws CoreException {
 		final Spec spec = Activator.getSpecManager().getSpecLoaded();
-//
-//		// // Spec
-//		// if (itemsFilter.isConsistentItem(spec)) {
-//		// contentProvider.add(spec, itemsFilter);
-//		// }
 
-		// Modules
-		final IResource[] moduleResources = spec.getModuleResources();
-		for (int i = 0; i < moduleResources.length; i++) {
-			// skip non-modules
-			if (!ResourceHelper.isModule(moduleResources[i])) {
-				continue;
-			}
-			final Module module = new Module(moduleResources[i]);
-			module.setRoot(ResourceHelper.isRoot((IFile) moduleResources[i]));
-			if (itemsFilter.isConsistentItem(module)) {
-				contentProvider.add(module, itemsFilter);
-			}
-		}
-		
 		// Models
 		final List<ILaunchConfiguration> models = ModelHelper.getModelsBySpec(spec);
 		for (final ILaunchConfiguration model : models) {
 			if (itemsFilter.isConsistentItem(model)) {
 				contentProvider.add(model, itemsFilter);
+			}
+		}
+
+		// Modules
+		final List<Module> modules = spec.getModules();
+		for (Module module : modules) {
+			if (itemsFilter.isConsistentItem(module)) {
+				contentProvider.add(module, itemsFilter);
 			}
 		}
 	}
@@ -254,6 +242,8 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 
 	public class TLCItemFilter extends ItemsFilter {
 
+		private final TableLabelProvider labelProvider = new TableLabelProvider();
+		
 		/* (non-Javadoc)
 		 * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog.ItemsFilter#isConsistentItem(java.lang.Object)
 		 */
@@ -268,20 +258,13 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			if (getPattern() == null || getPattern().length() == 0) {
 				return true;
 			}
-			if (item instanceof Module) {
-				final Module m = (Module) item;
-				final String moduleName = m.getModuleName();
-				return patternMatcher.matches(moduleName);
-			} else if (item instanceof ILaunchConfiguration) {
-				final ILaunchConfiguration config = (ILaunchConfiguration) item;
-				String modelName = ModelHelper.getModelName(config.getFile());
-				return patternMatcher.matches(modelName);
-			}
-			return true;
+			// Use the text shown by the label provider. The user definitely
+			// wants to search inside what is actually shown.
+			return patternMatcher.matches(labelProvider.getText(item));
 		}
 	}
 
-	private class TLADetailsFilteredItemSelectionDialog extends LabelProvider {
+	private class DetailsLabelProvider extends LabelProvider {
 
 		/* (non-Javadoc)
 		 * @see org.eclipse.jface.viewers.LabelProvider#getText(java.lang.Object)
@@ -298,7 +281,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 		}
 	}
 
-	private class TLAFilteredItemSelectionDialog extends LabelProvider implements IDescriptionProvider {
+	private class TableLabelProvider extends LabelProvider implements IDescriptionProvider {
 
 		public String getText(final Object element) {
 			if (element == null) {

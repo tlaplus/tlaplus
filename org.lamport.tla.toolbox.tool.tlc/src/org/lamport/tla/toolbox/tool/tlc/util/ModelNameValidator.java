@@ -39,6 +39,9 @@ public class ModelNameValidator implements IInputValidator
         {
             return "Model name cannot begin with \"" + project.getName() + "___\".";
         }
+        if (newText.contains(":")) {
+        	return "Model name cannot contain ':' characters.";
+        }
         IStatus fileStatus = ResourcesPlugin.getWorkspace().validateName(newText, IResource.FILE);
         if (! fileStatus.isOK()) {
           return fileStatus.getMessage(); 

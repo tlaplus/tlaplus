@@ -297,7 +297,8 @@ public class Spec implements IAdaptable {
     /**
      * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
      */
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    @SuppressWarnings("unchecked")
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         // lookup the IAdapterManager service
         IAdapterManager manager = Platform.getAdapterManager();
         // forward the request to IAdapterManager service
@@ -601,5 +602,20 @@ public class Spec implements IAdaptable {
 	public boolean isCurrentSpec() {
 		
 		return Activator.getSpecManager().getSpecLoaded() == this;
+	}
+
+	public List<Module> getModules() {
+		final List<Module> modules = new ArrayList<Module>();
+		final IResource[] moduleResources = getModuleResources();
+		for (int i = 0; i < moduleResources.length; i++) {
+			// skip non-modules
+			if (!ResourceHelper.isModule(moduleResources[i])) {
+				continue;
+			}
+			final Module module = new Module(moduleResources[i]);
+			module.setRoot(ResourceHelper.isRoot((IFile) moduleResources[i]));
+			modules.add(module);
+		}
+		return modules;
 	}
 }
