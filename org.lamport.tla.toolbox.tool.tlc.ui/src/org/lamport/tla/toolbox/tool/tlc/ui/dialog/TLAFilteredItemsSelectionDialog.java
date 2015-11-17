@@ -70,8 +70,10 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialog {
-
+	
 	private static final String SHOW_CONSTANTS = "ShowConstants"; //$NON-NLS-1$
+	
+	private static final String SHOW_CLOSED_SPECS = "ShowClosedSpecs"; //$NON-NLS-1$
 	
 	private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
@@ -79,6 +81,8 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			.createImage();
 
 	private final ToggleShowAction toggleShowConstantsAction  = new ToggleShowAction("Show spec constants", getDialogSettings().getBoolean(SHOW_CONSTANTS));
+	
+	private final ToggleShowAction toggleShowSpecAction = new ToggleShowAction("Show closed specs", getDialogSettings().getBoolean(SHOW_CLOSED_SPECS));
 	
 	private SourceViewer sourceViewer;
 
@@ -145,6 +149,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	 */
 	protected void storeDialog(IDialogSettings settings) {
 		settings.put(SHOW_CONSTANTS, toggleShowConstantsAction.isChecked());
+		settings.put(SHOW_CLOSED_SPECS, toggleShowSpecAction.isChecked());
 		super.storeDialog(settings);
 	}
 	
@@ -153,6 +158,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	 */
 	protected void fillViewMenu(IMenuManager menuManager) {
 		menuManager.add(toggleShowConstantsAction);
+		menuManager.add(toggleShowSpecAction);
 		super.fillViewMenu(menuManager);
 	}
 	
@@ -199,6 +205,16 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			} catch (final CoreException ignored) {
 				sourceViewer.setDocument(new Document(EMPTY_STRING));
 			}
+		} else if (selection != null && selection.getFirstElement() instanceof Spec) {
+			final Spec spec = (Spec) selection.getFirstElement();
+			final Path path = spec.getRootFile().getLocation().makeAbsolute().toFile().toPath();
+			try {
+				sourceViewer.setDocument(new Document(new String(Files.readAllBytes(path))));
+			} catch (IOException e) {
+				sourceViewer.setDocument(new Document(EMPTY_STRING));
+			}
+		} else if (selection != null && selection.getFirstElement() instanceof ItemsListSeparator) {
+			sourceViewer.setDocument(new Document(EMPTY_STRING));
 		}
 		super.handleSelected(selection);
 	}
@@ -225,10 +241,34 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 					final Module m1 = (Module) o1;
 					final Module m2 = (Module) o2;
 					return m1.getModuleName().compareTo(m2.getModuleName());
-				} else if (o1 instanceof Module) {
-					return 1;
-				} else {
+				} else if (o1 instanceof Spec && o2 instanceof Spec) {
+					return ((Spec) o1).getName().compareTo(((Spec) o2).getName());
+				} else if (o1 instanceof ILaunchConfiguration && o2 instanceof Module) {
 					return -1;
+				} else if (o1 instanceof ILaunchConfiguration && o2 instanceof Spec) {
+					return -1;
+				} else if (o1 instanceof ILaunchConfiguration && o2 instanceof ItemsListSeparator) {
+					return -1;
+				} else if (o1 instanceof Module && o2 instanceof ILaunchConfiguration) {
+					return 1;
+				} else if (o1 instanceof Module && o2 instanceof Spec) {
+					return -1;
+				} else if (o1 instanceof Module && o2 instanceof ItemsListSeparator) {
+					return -1;
+				} else if (o1 instanceof Spec && o2 instanceof ILaunchConfiguration) {
+					return 1;
+				} else if (o1 instanceof Spec && o2 instanceof Module) {
+					return 1;
+				} else if (o1 instanceof Spec && o2 instanceof ItemsListSeparator) {
+					return 1;
+				} else if (o1 instanceof ItemsListSeparator && o2 instanceof ILaunchConfiguration) {
+					return 1;
+				} else if (o1 instanceof ItemsListSeparator && o2 instanceof Module) {
+					return 1;
+				} else if (o1 instanceof ItemsListSeparator && o2 instanceof Spec) {
+					return -1;
+				} else {
+					return 1;
 				}
 			}
 		};
@@ -240,7 +280,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	protected void fillContentProvider(final AbstractContentProvider contentProvider, final ItemsFilter itemsFilter,
 			final IProgressMonitor progressMonitor) throws CoreException {
 		final Spec spec = Activator.getSpecManager().getSpecLoaded();
-
+		
 		// Models
 		final List<ILaunchConfiguration> models = ModelHelper.getModelsBySpec(spec);
 		for (final ILaunchConfiguration model : models) {
@@ -254,6 +294,20 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 		for (Module module : modules) {
 			if (itemsFilter.isConsistentItem(module)) {
 				contentProvider.add(module, itemsFilter);
+			}
+		}
+		
+		// All closed specs
+		if (toggleShowSpecAction.isChecked()) {
+			final Spec[] specs = Activator.getSpecManager().getRecentlyOpened();
+			if (specs.length > 0) {
+				contentProvider.add(new ItemsListSeparator("Closed specifications"), itemsFilter);
+				for (int i = 0; i < specs.length; i++) {
+					final Spec aSpec = specs[i];
+					if (!spec.equals(aSpec) && itemsFilter.isConsistentItem(aSpec)) {
+						contentProvider.add(aSpec, itemsFilter);
+					}
+				}
 			}
 		}
 	}
@@ -301,8 +355,25 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			} else if (element instanceof ILaunchConfiguration) {
 				final ILaunchConfiguration config = (ILaunchConfiguration) element;
 				return ModelHelper.getModelName(config.getFile());
+			} else if (element instanceof Spec) {
+				final Spec spec = (Spec) element;
+				return spec.getName();
+			} else if (element instanceof ItemsListSeparator) {
+				return EMPTY_STRING;
 			}
 			return super.getText(element);
+		}
+	}
+	
+	private class ItemsListSeparator {
+		private final String label;
+		
+		public ItemsListSeparator(String label) {
+			this.label = label;
+		}
+
+		public String getLabel() {
+			return label;
 		}
 	}
 
@@ -339,6 +410,9 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 				} catch (CoreException e) {
 				}
 				return ModelHelper.getModelName(config);
+			} else if (element instanceof ItemsListSeparator) {
+				final ItemsListSeparator ils = (ItemsListSeparator) element;
+				return "-------------- " + ils.getLabel() + " --------------";
 			}
 			return null;
 		}
@@ -372,9 +446,13 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			
 			final StyledString string = new StyledString(text);
 			
-			if (element instanceof ILaunchConfiguration && text.indexOf(DELIM) != -1) {
+			if (element instanceof Spec) {
+				string.setStyle(0, string.length(), StyledString.QUALIFIER_STYLER);
+			} else if (element instanceof ILaunchConfiguration && text.indexOf(DELIM) != -1) {
 				final int index = text.indexOf(DELIM);
 				string.setStyle(index, text.length() - index, StyledString.DECORATIONS_STYLER);
+			} else if (element instanceof ItemsListSeparator) {
+				string.setStyle(0, string.length(), StyledString.QUALIFIER_STYLER);
 			}
 			return string;
 		}

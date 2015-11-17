@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.ui.handler;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -40,7 +41,7 @@ public class OpenSpecHandlerDelegate extends AbstractHandler implements IHandler
                 Object selected = ((IStructuredSelection) selection).getFirstElement();
                 if (selected instanceof Spec)
                 {
-                    HashMap parameters = new HashMap();
+                    final Map<String, String> parameters = new HashMap<String, String>();
                     // fill the spec name for the handler
                     parameters.put(OpenSpecHandler.PARAM_SPEC, ((Spec) selected).getName());
 

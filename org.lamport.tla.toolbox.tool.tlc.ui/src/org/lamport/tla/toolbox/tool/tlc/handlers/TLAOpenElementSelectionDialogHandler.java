@@ -37,6 +37,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.spec.Module;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.tlc.ui.dialog.TLAFilteredItemsSelectionDialog;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.ui.handler.OpenModuleHandler;
@@ -65,6 +66,9 @@ public class TLAOpenElementSelectionDialogHandler extends AbstractHandler implem
 				parameters.put(OpenModelHandler.PARAM_MODEL_NAME,
 						ModelHelper.getModelName(((ILaunchConfiguration) result[0]).getFile()));
 				UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
+			} else if (result[0] instanceof Spec) {
+				parameters.put(OpenSpecHandler.PARAM_SPEC, ((Spec) result[0]).getName());
+				UIHelper.runCommand(OpenSpecHandler.COMMAND_ID, parameters);
 			}
 		}
 		return null;
