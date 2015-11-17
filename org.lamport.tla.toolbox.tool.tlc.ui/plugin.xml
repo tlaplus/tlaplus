@@ -274,7 +274,15 @@
                style="push"
                tooltip="Runs TLC on the model.">
             <visibleWhen
-                  checkEnabled="false">
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <not>
+                        <equals
+                              value="org.lamport.tla.toolbox.ui.perspective.initial">
+                        </equals>
+                     </not>
+                  </with>
             </visibleWhen>
          </command>
          <separator
