@@ -394,18 +394,6 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 		}
 	}
 	
-	private class ItemsListSeparator {
-		private final String label;
-		
-		public ItemsListSeparator(String label) {
-			this.label = label;
-		}
-
-		public String getLabel() {
-			return label;
-		}
-	}
-
 	private class TableLabelProvider extends LabelProvider implements IDescriptionProvider, IStyledLabelProvider {
 
 		private static final String DELIM = ":";
@@ -441,7 +429,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 				return ModelHelper.getModelName(config);
 			} else if (element instanceof ItemsListSeparator) {
 				final ItemsListSeparator ils = (ItemsListSeparator) element;
-				return "-------------- " + ils.getLabel() + " --------------";
+				return ils.getName();
 			}
 			return null;
 		}
