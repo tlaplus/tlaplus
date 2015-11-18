@@ -57,9 +57,14 @@ public class Assignment extends Formula
         }
     }
 
-    public String getFormula()
+    public String getFormula() {
+    	return getFormula("");
+    }
+
+    public String getFormula(String tab)
     {
         StringBuffer buffer = new StringBuffer(getLeft());
+        buffer.append(tab);
         buffer.append(ASSIGNMENT_SIGN);
         
         if (this.modelValue)
@@ -218,6 +223,13 @@ public class Assignment extends Formula
     }
     
     /**
+     * @return true iff model value but not a set of values
+     */
+    public boolean isSimpleModelValue() {
+    	return isModelValue() && !isSetOfModelValues();
+    }
+    
+    /**
      * Returns true, iff the assignment is a set of model values
      */
     public boolean isSetOfModelValues()
@@ -288,6 +300,26 @@ public class Assignment extends Formula
             return false;
 
         return (params.length == obj.params.length);
+    }
+    
+    public String prettyPrint() {
+    	final StringBuffer buf = new StringBuffer();
+    	if (!isModelValue()) {
+    		return getFormula("\t");
+    	} else if (isSetOfModelValues()) {
+    		buf.append(getLeft());
+    		buf.append("\t");
+    		buf.append(ASSIGNMENT_SIGN);
+   			if (isSymmetricalSet()) {
+   				buf.append("sym");
+   			}
+   			buf.append(getFormattedRight());
+  		} else {
+			// Ordinary model value, just skip the value (no point showing "X <-
+			// X").
+   			buf.append(getLeft());
+    	}
+    	return buf.toString();
     }
     
 }

@@ -401,7 +401,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 				try {
 					String attribute = config.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS,
 							toggleShowConstantsAction.isChecked()
-									? ModelHelper.prettyPrintConstants(config, DELIM + " ")
+									? ModelHelper.prettyPrintConstants(config, ", ")
 									: EMPTY_STRING);
 					if (!EMPTY_STRING.equals(attribute)) {
 						if (attribute.contains("\n")) {

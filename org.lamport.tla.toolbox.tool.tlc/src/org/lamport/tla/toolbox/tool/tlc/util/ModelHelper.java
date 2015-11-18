@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -2187,14 +2188,52 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
 	public static String prettyPrintConstants(final ILaunchConfiguration config, String delim) throws CoreException {
+		
+		final List<Assignment> assignments = deserializeAssignmentList(
+				config.getAttribute(IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS, new ArrayList<String>()));
+		
+		// Sort the assignments: Basic assignments alphabetically first, Set
+		// model values including symmetric ones (alphabetically), Basic model
+		// values.
+		Collections.sort(assignments, new Comparator<Assignment>() {
+			public int compare(Assignment a1, Assignment a2) {
+				if (a1.isSimpleModelValue() && a2.isSimpleModelValue()) {
+					return a1.getLeft().compareTo(a2.getLeft());
+				} else if (a1.isSetOfModelValues() && a2.isSetOfModelValues()) {
+					return a1.getLeft().compareTo(a2.getLeft());
+				} else if (a1.isSimpleModelValue() && !a2.isModelValue()) {
+					return 1;
+				} else if (a1.isSimpleModelValue() && a2.isSetOfModelValues()) {
+					return 1;
+				} else if (a1.isSetOfModelValues() && !a2.isModelValue()) {
+					return 1;
+				} else if (a1.isSetOfModelValues() && a2.isSimpleModelValue()) {
+					return -1;
+				} else if (!a1.isModelValue() && a2.isModelValue()) {
+					return -1;
+				} else {
+					// Basic assignments
+					return a1.getLeft().compareTo(a2.getLeft());
+				}
+			}
+		});
+
 		final StringBuffer buf = new StringBuffer();
-		final List<String> constants = config.getAttribute(IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS,
-				new ArrayList<String>());
-		final List<Assignment> assignments = deserializeAssignmentList(constants);
 		for (int i = 0; i < assignments.size(); i++) {
-			buf.append(assignments.get(i));
-			if (i < assignments.size() - 1) {
-				buf.append(delim);
+			final Assignment assignment = assignments.get(i);
+			if (assignment.isSimpleModelValue()) {
+				buf.append("Model values: ");
+				for (; i < assignments.size(); i++) {
+					buf.append(assignments.get(i).prettyPrint());
+					if (i < assignments.size() - 1) {
+						buf.append(", ");
+					}
+				}
+			} else {
+				buf.append(assignment.prettyPrint());
+				if (i < assignments.size() - 1) {
+					buf.append(delim);
+				}
 			}
 		}
 		return buf.toString();
