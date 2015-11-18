@@ -171,7 +171,12 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	 * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#getDialogSettings()
 	 */
 	protected IDialogSettings getDialogSettings() {
-		return Activator.getDefault().getDialogSettings();
+		final IDialogSettings settings = Activator.getDefault().getDialogSettings();
+		if (settings.get(SHOW_CONSTANTS) == null) {
+			// Show constants by default
+			settings.put(SHOW_CONSTANTS, true);
+		}
+		return settings;
 	}
 
 	/* (non-Javadoc)
