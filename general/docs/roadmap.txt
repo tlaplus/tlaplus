@@ -7,7 +7,7 @@ To Fix Eclipse if it can't find a bunch of imported classes:
    and click on Update.
 
 To tell Eclipse where to find a new JRE:
-   go to Window > Preferences > Java > Installed JREs you can add it
+   Go to Window > Preferences > Java > Installed JREs you can add it
    
 To find the methods that Eclipse is using to implement something:
    Alt-Shift-F1:
