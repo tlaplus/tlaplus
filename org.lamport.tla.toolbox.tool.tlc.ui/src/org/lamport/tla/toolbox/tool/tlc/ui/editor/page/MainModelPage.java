@@ -942,7 +942,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         commentsSource = FormHelper.createFormsSourceViewer(toolkit, commentsArea, SWT.V_SCROLL | SWT.WRAP);
         // layout of the source viewer
         twd = new TableWrapData(TableWrapData.FILL_GRAB);
-        twd.heightHint = 120;
+        twd.heightHint = 60;
         commentsSource.addTextListener(commentsListener);
         commentsSource.getTextWidget().setLayoutData(twd);
         commentsSource.getTextWidget().addFocusListener(focusListener);
