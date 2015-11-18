@@ -50,6 +50,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -59,9 +60,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.eclipse.ui.ide.IDE.SharedImages;
 import org.eclipse.ui.navigator.IDescriptionProvider;
+import org.lamport.org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -75,6 +76,10 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	
 	private static final String SHOW_CLOSED_SPECS = "ShowClosedSpecs"; //$NON-NLS-1$
 	
+	private static final String SASH_RATIO_TOP = "SashRatioTop"; //$NON-NLS-1$
+
+	private static final String SASH_RATIO_BOTTOM = "SashRatioBottom"; //$NON-NLS-1$
+	
 	private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
 	private static final Image ModelImage = TLCUIActivator.getImageDescriptor("/icons/full/choice_sc_obj.gif")
@@ -85,6 +90,8 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	private final ToggleShowAction toggleShowSpecAction = new ToggleShowAction("Show closed specs", getDialogSettings().getBoolean(SHOW_CLOSED_SPECS));
 	
 	private SourceViewer sourceViewer;
+
+	private SashForm sashForm;
 
 	public TLAFilteredItemsSelectionDialog(final Shell shell) {
 		super(shell, false);
@@ -114,6 +121,15 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	}
 
 	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.ui.dialog.FilteredItemsSelectionDialog#createContentCoposite(org.eclipse.swt.widgets.Composite)
+	 */
+	protected Composite createContentComposite(final Composite parent) {
+		sashForm = new SashForm(parent, SWT.VERTICAL);
+		sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
+		return sashForm;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#createExtendedContentArea(org.eclipse.swt.widgets.Composite)
 	 */
 	protected Control createExtendedContentArea(final Composite parent) {
@@ -134,6 +150,15 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 		sourceViewer.getTextWidget().setWordWrap(true);
 		sourceViewer.getTextWidget().setEditable(false);
 		sourceViewer.getTextWidget().setFont(TLCUIActivator.getDefault().getCourierFont());
+		
+		// The weights can only be set *after* its nested controls (content
+		// above) are added. Thus it's done here instead of createContentControl(..).
+		final int top = getDialogSettings().get(SASH_RATIO_TOP) == null ? 75
+				: getDialogSettings().getInt(SASH_RATIO_TOP);
+		final int bottom = getDialogSettings().get(SASH_RATIO_BOTTOM) == null ? 25
+				: getDialogSettings().getInt(SASH_RATIO_BOTTOM);
+		sashForm.setWeights(new int[] { top, bottom });
+
 		return content;
 	}
 
@@ -150,6 +175,8 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	protected void storeDialog(IDialogSettings settings) {
 		settings.put(SHOW_CONSTANTS, toggleShowConstantsAction.isChecked());
 		settings.put(SHOW_CLOSED_SPECS, toggleShowSpecAction.isChecked());
+		settings.put(SASH_RATIO_TOP, sashForm.getWeights()[0]);
+		settings.put(SASH_RATIO_BOTTOM, sashForm.getWeights()[1]);
 		super.storeDialog(settings);
 	}
 	
