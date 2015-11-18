@@ -175,7 +175,7 @@
          <menu
                id="toolbox.toolmenus.tlc"
                label="TLC Model Checker"
-               mnemonic="M"
+               mnemonic="C"
                tooltip="TLC Model Checker Actions">
             <command
                   commandId="toolbox.tool.tlc.commands.model.new.delegate.current"
