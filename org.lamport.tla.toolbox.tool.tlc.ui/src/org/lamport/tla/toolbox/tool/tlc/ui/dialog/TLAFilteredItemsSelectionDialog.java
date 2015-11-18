@@ -280,20 +280,22 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	protected void fillContentProvider(final AbstractContentProvider contentProvider, final ItemsFilter itemsFilter,
 			final IProgressMonitor progressMonitor) throws CoreException {
 		final Spec spec = Activator.getSpecManager().getSpecLoaded();
-		
-		// Models
-		final List<ILaunchConfiguration> models = ModelHelper.getModelsBySpec(spec);
-		for (final ILaunchConfiguration model : models) {
-			if (itemsFilter.isConsistentItem(model)) {
-				contentProvider.add(model, itemsFilter);
+		// On the initial/welcome page, no spec is open.
+		if (spec != null) {
+			// Models
+			final List<ILaunchConfiguration> models = ModelHelper.getModelsBySpec(spec);
+			for (final ILaunchConfiguration model : models) {
+				if (itemsFilter.isConsistentItem(model)) {
+					contentProvider.add(model, itemsFilter);
+				}
 			}
-		}
-
-		// Modules
-		final List<Module> modules = spec.getModules();
-		for (Module module : modules) {
-			if (itemsFilter.isConsistentItem(module)) {
-				contentProvider.add(module, itemsFilter);
+			
+			// Modules
+			final List<Module> modules = spec.getModules();
+			for (Module module : modules) {
+				if (itemsFilter.isConsistentItem(module)) {
+					contentProvider.add(module, itemsFilter);
+				}
 			}
 		}
 		
@@ -304,7 +306,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 				contentProvider.add(new ItemsListSeparator("Closed specifications"), itemsFilter);
 				for (int i = 0; i < specs.length; i++) {
 					final Spec aSpec = specs[i];
-					if (!spec.equals(aSpec) && itemsFilter.isConsistentItem(aSpec)) {
+					if (!aSpec.equals(spec) && itemsFilter.isConsistentItem(aSpec)) {
 						contentProvider.add(aSpec, itemsFilter);
 					}
 				}

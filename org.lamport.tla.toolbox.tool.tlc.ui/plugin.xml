@@ -259,6 +259,19 @@
             </separator>
          </menu>
       </menuContribution>
+      
+      <!-- 'Window' menu -->
+      
+      <menuContribution
+            locationURI="menu:toolbox.window.menu?after=toolbox.window.view.separator">
+                  <command
+                  commandId="org.lamport.tla.toolbox.openElementSelection"
+                  label="Quick Access..."
+                  mnemonic="A"
+                  style="push">
+            </command>
+       </menuContribution>
+      
       <menuContribution
             locationURI="menu:toolbox.toolmenus.tlc?after=org.lamport.tla.toolbox.tool.tlc.separator">
 
@@ -273,7 +286,7 @@
                mode="FORCE_TEXT"
                style="push"
                tooltip="Runs TLC on the model.">
-            <visibleWhen
+               <visibleWhen
                      checkEnabled="true">
                   <with
                         variable="activeWorkbenchWindow.activePerspective">
@@ -283,7 +296,7 @@
                         </equals>
                      </not>
                   </with>
-            </visibleWhen>
+               </visibleWhen>
          </command>
          <separator
                name="org.lamport.tla.toolbox.tool.tlc.ui.separator1"
@@ -881,7 +894,7 @@ Console Facory
             commandId="org.lamport.tla.toolbox.openElementSelection"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+T">
+            sequence="M1+M2+A">
       </key>
    </extension>
 </plugin>
