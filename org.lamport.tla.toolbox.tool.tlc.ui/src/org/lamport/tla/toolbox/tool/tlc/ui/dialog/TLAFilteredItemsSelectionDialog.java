@@ -84,6 +84,10 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 
 	private static final Image ModelImage = TLCUIActivator.getImageDescriptor("/icons/full/choice_sc_obj.gif")
 			.createImage();
+	
+	private final ItemsListSeparator modulesSep	= new ItemsListSeparator("Modules"); //$NON-NLS-1$
+
+	private final ItemsListSeparator specsSep = new ItemsListSeparator("Closed Specs"); //$NON-NLS-1$
 
 	private final ToggleShowAction toggleShowConstantsAction  = new ToggleShowAction("Show spec constants", getDialogSettings().getBoolean(SHOW_CONSTANTS));
 	
@@ -133,6 +137,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 	 * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#createExtendedContentArea(org.eclipse.swt.widgets.Composite)
 	 */
 	protected Control createExtendedContentArea(final Composite parent) {
+		
 		final Composite content = new Composite(parent, SWT.BORDER);
 		
 		final GridData layoutData = new GridData(GridData.FILL_HORIZONTAL);
@@ -268,6 +273,10 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 					final Module m1 = (Module) o1;
 					final Module m2 = (Module) o2;
 					return m1.getModuleName().compareTo(m2.getModuleName());
+				} else if (o1 instanceof ItemsListSeparator && o1 == modulesSep && o2 instanceof ItemsListSeparator) {
+					return -1;
+				} else if (o1 instanceof ItemsListSeparator && o1 == specsSep && o2 instanceof ItemsListSeparator) {
+					return 1;
 				} else if (o1 instanceof Spec && o2 instanceof Spec) {
 					return ((Spec) o1).getName().compareTo(((Spec) o2).getName());
 				} else if (o1 instanceof ILaunchConfiguration && o2 instanceof Module) {
@@ -280,6 +289,8 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 					return 1;
 				} else if (o1 instanceof Module && o2 instanceof Spec) {
 					return -1;
+				} else if (o1 instanceof Module && o2 instanceof ItemsListSeparator && o2 == modulesSep) {
+					return 1;
 				} else if (o1 instanceof Module && o2 instanceof ItemsListSeparator) {
 					return -1;
 				} else if (o1 instanceof Spec && o2 instanceof ILaunchConfiguration) {
@@ -290,6 +301,8 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 					return 1;
 				} else if (o1 instanceof ItemsListSeparator && o2 instanceof ILaunchConfiguration) {
 					return 1;
+				} else if (o1 instanceof ItemsListSeparator && o1 == modulesSep && o2 instanceof Module) {
+					return -1;
 				} else if (o1 instanceof ItemsListSeparator && o2 instanceof Module) {
 					return 1;
 				} else if (o1 instanceof ItemsListSeparator && o2 instanceof Spec) {
@@ -319,9 +332,12 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			
 			// Modules
 			final List<Module> modules = spec.getModules();
-			for (Module module : modules) {
-				if (itemsFilter.isConsistentItem(module)) {
-					contentProvider.add(module, itemsFilter);
+			if (modules.size() > 0) {
+				contentProvider.add(modulesSep, itemsFilter);
+				for (Module module : modules) {
+					if (itemsFilter.isConsistentItem(module)) {
+						contentProvider.add(module, itemsFilter);
+					}
 				}
 			}
 		}
@@ -330,7 +346,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 		if (toggleShowSpecAction.isChecked()) {
 			final Spec[] specs = Activator.getSpecManager().getRecentlyOpened();
 			if (specs.length > 0) {
-				contentProvider.add(new ItemsListSeparator("Closed specifications"), itemsFilter);
+				contentProvider.add(specsSep, itemsFilter);
 				for (int i = 0; i < specs.length; i++) {
 					final Spec aSpec = specs[i];
 					if (!aSpec.equals(spec) && itemsFilter.isConsistentItem(aSpec)) {
@@ -393,7 +409,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			return super.getText(element);
 		}
 	}
-	
+
 	private class TableLabelProvider extends LabelProvider implements IDescriptionProvider, IStyledLabelProvider {
 
 		private static final String DELIM = ":";
