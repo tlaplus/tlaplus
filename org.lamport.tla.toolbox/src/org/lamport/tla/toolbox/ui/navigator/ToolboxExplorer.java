@@ -78,6 +78,8 @@ public class ToolboxExplorer extends CommonNavigator
 				UIHelper.runCommand(OpenModuleHandler.COMMAND_ID, parameters);
         	} else if (firstElement instanceof IGroup) {
         		// No-Op
+        	} else if (firstElement instanceof Spec && ((Spec) firstElement).isCurrentSpec()) {
+        		// No-op, do not re-open an open spec again.
         	} else /*it's an ILaunchConfiguration*/ {
         		UIHelper.runCommand(ToolboxExplorer.COMMAND_ID, new HashMap<String, String>());
         	}
