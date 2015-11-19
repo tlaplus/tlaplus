@@ -303,12 +303,16 @@ public class Assignment extends Formula
     }
     
     public String prettyPrint() {
+    	return prettyPrint("");
+    }
+    
+    public String prettyPrint(final String delim) {
     	final StringBuffer buf = new StringBuffer();
     	if (!isModelValue()) {
-    		return getFormula("\t");
+    		return getFormula(delim);
     	} else if (isSetOfModelValues()) {
     		buf.append(getLeft());
-    		buf.append("\t");
+    		buf.append(delim);
     		buf.append(ASSIGNMENT_SIGN);
    			if (isSymmetricalSet()) {
    				buf.append("s");

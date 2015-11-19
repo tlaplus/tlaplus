@@ -231,7 +231,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 				final List<String> fallbacksFallback = new ArrayList<String>();
 				fallbacksFallback.add(ModelHelper.getModelName(config));
 				
-				final String fallback = ModelHelper.prettyPrintConstants(config, "\n");
+				final String fallback = ModelHelper.prettyPrintConstants(config, "\n", true);
 
 				final String attribute = config.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS, fallback);
 				if (!EMPTY_STRING.equals(attribute)) {

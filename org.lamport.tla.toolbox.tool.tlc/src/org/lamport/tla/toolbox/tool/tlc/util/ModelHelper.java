@@ -2188,7 +2188,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
 	public static String prettyPrintConstants(final ILaunchConfiguration config, String delim) throws CoreException {
-		
+		return prettyPrintConstants(config, delim, false);
+	}
+	
+	public static String prettyPrintConstants(final ILaunchConfiguration config, String delim, boolean align) throws CoreException {
 		final List<Assignment> assignments = deserializeAssignmentList(
 				config.getAttribute(IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS, new ArrayList<String>()));
 		
@@ -2217,6 +2220,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 				}
 			}
 		});
+		
+		// Determine the longest label of the assignment's left hand side.
+		int longestLeft = 0;
+		for (int i = 0; i < assignments.size() && align; i++) {
+			final Assignment assignment = assignments.get(i);
+			if (!assignment.isSimpleModelValue()) {
+				longestLeft = Math.max(longestLeft, assignment.getLeft().length());
+			}
+		}
 
 		final StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < assignments.size(); i++) {
@@ -2228,6 +2240,16 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 					if (i < assignments.size() - 1) {
 						buf.append(", ");
 					}
+				}
+			} else if (align) {
+				final int length = longestLeft - assignment.getLeft().length();
+				final StringBuffer whitespaces = new StringBuffer(length);
+				for (int j = 0; j < length; j++) {
+					whitespaces.append(" ");
+				}
+				buf.append(assignment.prettyPrint(whitespaces.toString()));
+				if (i < assignments.size() - 1) {
+					buf.append(delim);
 				}
 			} else {
 				buf.append(assignment.prettyPrint());
