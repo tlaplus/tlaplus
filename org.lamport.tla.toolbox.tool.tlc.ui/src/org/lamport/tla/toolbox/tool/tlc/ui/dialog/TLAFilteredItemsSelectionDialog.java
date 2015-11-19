@@ -435,10 +435,10 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			} else if (element instanceof ILaunchConfiguration) {
 				final ILaunchConfiguration config = (ILaunchConfiguration) element;
 				try {
-					String attribute = config.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS,
-							toggleShowConstantsAction.isChecked()
-									? ModelHelper.prettyPrintConstants(config, ", ")
-									: EMPTY_STRING);
+					String attribute = config.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS, EMPTY_STRING);
+					if (toggleShowConstantsAction.isChecked() && EMPTY_STRING.equals(attribute)) {
+						attribute = ModelHelper.prettyPrintConstants(config, ", ");
+					}
 					if (!EMPTY_STRING.equals(attribute)) {
 						if (attribute.contains("\n")) {
 							attribute = attribute.split("\n")[0];
