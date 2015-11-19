@@ -66,6 +66,7 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -419,7 +420,7 @@ public class TLAEditor extends TextEditor
             if (items[i] instanceof MenuManager)
             {
                 MenuManager subMenu = (MenuManager) items[i];
-                if (subMenu.find("viewsShowIn") != null)
+                if (subMenu.find(ContributionItemFactory.VIEWS_SHOW_IN.getId()) != null)
                 {
                     menuManager.remove(subMenu);
                     break;
