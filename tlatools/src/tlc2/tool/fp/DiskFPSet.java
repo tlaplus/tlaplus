@@ -730,7 +730,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#exit(boolean)
 	 */
-	public final void exit(boolean cleanup) throws IOException {
+	public void exit(boolean cleanup) throws IOException {
 		if (cleanup) {
 			// Delete the metadata directory:
 			FileUtil.deleteDir(this.metadir, true);

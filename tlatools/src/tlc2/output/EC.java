@@ -36,6 +36,11 @@ public interface EC
 
     public static final int UNKNOWN = -1;  // TODO remove all these
     public final static int UNIT_TEST = -123456;
+	/**
+	 * A feature of TLA+/TLC is not supported by TLC's current mode. E.g.
+	 * TLCGet/TLCSet operator cannot be used in distributed TLC.
+	 */
+	public static final int TLC_FEATURE_UNSUPPORTED = 2156;
 
     public static final int GENERAL = 1000;
     public static final int SYSTEM_OUT_OF_MEMORY = 1001;
@@ -98,7 +103,7 @@ public interface EC
     public static final int TLC_CHOOSE_UPPER_BOUND = 2165;
 
     public static final int TLC_VALUE_ASSERT_FAILED = 2132;
-    public static final int TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE = 2154;
+	public static final int TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE = 2154;
 
     public static final int TLC_FP_NOT_IN_SET = 2133;
     public static final int TLC_FP_VALUE_ALREADY_ON_DISK = 2166;

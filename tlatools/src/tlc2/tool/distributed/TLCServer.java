@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.EvalException;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
@@ -444,6 +445,17 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			} catch (Throwable e) {
 				// Assert.printStack(e);
 				done = true;
+				
+				// Distributed TLC does not support TLCGet/TLCSet operator. It
+				// would require synchronization among all (distributed)
+				// workers. In distributed mode, it is of limited use anyway. 
+				if (e instanceof EvalException
+						&& ((EvalException) e).getErrorCode() == EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE
+						&& (((EvalException) e).getMessage().contains("tlc2.module.TLC.TLCSet")
+								|| ((EvalException) e).getMessage().contains("tlc2.module.TLC.TLCGet"))) {
+					MP.printError(EC.TLC_FEATURE_UNSUPPORTED,
+							"TLCSet & TLCGet operators not supported by distributed TLC.");
+				} else {
 				// LL modified error message on 7 April 2012
 				MP.printError(EC.GENERAL, "initializing the server", e); // LL changed call 7 April 2012
 				if (errState != null) {
@@ -460,6 +472,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 									+ work.printCallStack(), e);
 				}
 			}
+		}
 		}
 		if (done) {
 			// clean up before exit:

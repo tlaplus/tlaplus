@@ -20,21 +20,29 @@ public class EvalException extends RuntimeException
 //    private int type;
 
 
-    public EvalException(int errorCode, String[] parameters)
+    private final int errorCode;
+
+	public EvalException(int errorCode, String[] parameters)
     {
         super(MP.getMessage(errorCode, parameters));
+		this.errorCode = errorCode;
     }
 
     public EvalException(int errorCode, String parameter)
     {
         super(MP.getMessage(errorCode, parameter));
+		this.errorCode = errorCode;
     }
 
     public EvalException(int errorCode)
     {
-        super(MP.getMessage(errorCode));        
+        super(MP.getMessage(errorCode));
+		this.errorCode = errorCode;        
     }
 
+    public int getErrorCode() {
+    	return errorCode;
+    }
     
     // SZ Jul 14, 2009: refactored and deprecated, all usage changed to standard constructor 
     // public EvalException(int type, String message)

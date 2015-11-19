@@ -241,6 +241,7 @@
 					<fileset dir="${test.dir}">
 						<include name="**/*Test*.java" />
 						<exclude name="**/ModelCheckerTestCase.java" />
+						<exclude name="**/TLCServerTestCase.java" />
 						<exclude name="**/SuccessfulSimulationTestCase.java" />
 						<exclude name="**/AbstractExampleTestCase.java" />
 						<exclude name="**/TestMPRecorder.java" />
@@ -281,6 +282,7 @@
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
 					<exclude name="**/ModelCheckerTestCase.java" />
+					<exclude name="**/TLCServerTestCase.java" />
 					<exclude name="**/SuccessfulSimulationTestCase.java" />
 					<exclude name="**/AbstractExampleTestCase.java" />
 					<exclude name="**/TestMPRecorder.java" />

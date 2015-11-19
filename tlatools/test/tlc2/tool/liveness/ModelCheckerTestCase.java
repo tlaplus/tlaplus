@@ -48,13 +48,13 @@ import util.ToolIO;
 
 public abstract class ModelCheckerTestCase {
 
-	private static final String BASE_DIR = System.getProperty("basedir", "");
-	private static final String TEST_MODEL = "test-model" + File.separator;
+	protected static final String BASE_DIR = System.getProperty("basedir", "");
+	protected static final String TEST_MODEL = "test-model" + File.separator;
 	
-	private String path = "";
-	private final String spec;
+	protected String path = "";
+	protected final String spec;
 	protected final TestMPRecorder recorder = new TestMPRecorder();
-	private String[] extraArguments = new String[0];
+	protected String[] extraArguments = new String[0];
 
 
 	public ModelCheckerTestCase(String spec) {

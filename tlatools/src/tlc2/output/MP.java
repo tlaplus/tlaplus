@@ -608,6 +608,9 @@ public class MP
             b.append("Attempted to apply the operator overridden by the Java method"
                     + "\n%1%,\nbut it produced the following error:\n%2%");
             break;
+        case EC.TLC_FEATURE_UNSUPPORTED:
+            b.append("%1%");
+            break;
 
         /* Liveness errors */
         case EC.TLC_LIVE_BEGRAPH_FAILED_TO_CONSTRUCT:
