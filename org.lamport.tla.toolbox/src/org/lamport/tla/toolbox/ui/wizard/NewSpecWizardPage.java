@@ -88,7 +88,7 @@ public class NewSpecWizardPage extends WizardPage
 
         // brows button
         Button button = new Button(container, SWT.PUSH);
-        button.setText("Browse...");
+        button.setText("&Browse...");
         button.addSelectionListener(new SelectionAdapter() {
             public synchronized void widgetSelected(SelectionEvent e)
             {
