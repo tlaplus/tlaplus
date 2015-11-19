@@ -302,7 +302,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     	final ILaunchConfiguration[] launchConfigurations = getAllLaunchConfigurations();
 		for (int i = 0; i < launchConfigurations.length; i++) {
 			final ILaunchConfiguration iLaunchConfiguration = launchConfigurations[i];
-			if (iLaunchConfiguration.getName().startsWith(aSpec.getName())) {
+			if (getSpecPrefix(iLaunchConfiguration).equals(aSpec.getName())) {
 				res.add(iLaunchConfiguration);
 			}
 		}
