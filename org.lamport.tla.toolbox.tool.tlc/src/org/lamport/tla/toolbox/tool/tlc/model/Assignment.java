@@ -311,7 +311,7 @@ public class Assignment extends Formula
     		buf.append("\t");
     		buf.append(ASSIGNMENT_SIGN);
    			if (isSymmetricalSet()) {
-   				buf.append("sym");
+   				buf.append("s");
    			}
    			buf.append(getFormattedRight());
   		} else {
