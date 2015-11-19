@@ -769,9 +769,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	public void commit(boolean onSave)
     {
 		final String comments = FormHelper.trimTrailingSpaces(commentsSource.getDocument().get());
-		if (!EMPTY_STRING.equals(comments)) {
-			getConfig().setAttribute(MODEL_COMMENTS, comments);
-		}
+		getConfig().setAttribute(MODEL_COMMENTS, comments);
         
         // TLCUIActivator.getDefault().logDebug("Main page commit");
         // closed formula
