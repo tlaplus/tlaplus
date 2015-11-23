@@ -13,7 +13,6 @@ import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 /**
  * A listener broadcasting the stream appending to extensions 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class BroadcastStreamListener implements IStreamListener
 {
@@ -44,7 +43,7 @@ public class BroadcastStreamListener implements IStreamListener
                     listeners[i].appendText(text);
                 } catch (Exception e)
                 {
-                    TLCActivator.getDefault().logError("Error broadcasting the message", e);
+                    TLCActivator.logError("Error broadcasting the message", e);
                 }
             }
         }
@@ -67,7 +66,7 @@ public class BroadcastStreamListener implements IStreamListener
                 }
             } catch (Exception e)
             {
-                TLCActivator.getDefault().logError("Error broadcasting the stream closed event", e);
+                TLCActivator.logError("Error broadcasting the stream closed event", e);
             }
         }
     }
@@ -81,7 +80,7 @@ public class BroadcastStreamListener implements IStreamListener
         IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(
                 IProcessOutputSink.EXTENSION_ID);
 
-        Vector validExtensions = new Vector();
+        Vector<IProcessOutputSink> validExtensions = new Vector<IProcessOutputSink>();
         for (int i = 0; i < decls.length; i++)
         {
             try
@@ -91,7 +90,7 @@ public class BroadcastStreamListener implements IStreamListener
                 validExtensions.add(extension);
             } catch (CoreException e)
             {
-                TLCActivator.getDefault().logError("Error instatiating the IProcessSink extension", e);
+                TLCActivator.logError("Error instatiating the IProcessSink extension", e);
             }
         }
         return (IProcessOutputSink[]) validExtensions.toArray(new IProcessOutputSink[validExtensions.size()]);

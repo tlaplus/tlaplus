@@ -86,7 +86,6 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * A page to display results of model checking (the "third tab"
  * of the model editor).
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPresenter
 {
@@ -331,14 +330,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             provider.setPresenter(this);
         } else
         {
-            // no data provider
-            reinit();
-        }
+							// no data provider
+							reinit();
+						}
 
-        // constant expression
+						// constant expression
         String expression = getConfig().getAttribute(MODEL_EXPRESSION_EVAL, EMPTY_STRING);
-        expressionEvalInput.setDocument(new Document(expression));
-    }
+						expressionEvalInput.setDocument(new Document(expression));
+					}
 
     /**
      * Reinitialize the fields
@@ -415,8 +414,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     protected void createBodyContent(IManagedForm managedForm)
     {
-        int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED | SWT.WRAP;
-        int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION | SWT.WRAP;
+        final int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED | SWT.WRAP;
+        final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION;
+        final int expressionFieldFlags = textFieldFlags | SWT.WRAP;
 
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
@@ -516,7 +516,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         expressionComposite.setLayout(gLayout);
 
         toolkit.createLabel(expressionComposite, "Expression: ");
-        expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, textFieldFlags);
+        expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, expressionFieldFlags);
 
         // We want the value section to get larger as the window
         // gets larger but not the expression section.
@@ -524,7 +524,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         valueComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         valueComposite.setLayout(gLayout);
         toolkit.createLabel(valueComposite, "Value: ");
-        expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, valueComposite, textFieldFlags);
+        expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, valueComposite, expressionFieldFlags);
 
         // We dont want these items to fill excess
         // vertical space because then in some cases

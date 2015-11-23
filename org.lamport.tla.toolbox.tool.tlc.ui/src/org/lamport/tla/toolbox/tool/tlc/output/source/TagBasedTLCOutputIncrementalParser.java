@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentPartitioningChangedEvent;
+import org.eclipse.jface.text.DocumentRewriteSessionType;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.IDocumentPartitioningListener;
@@ -46,7 +47,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
  * does the work in analyzing the partitions. See that method for the implementation.
  * 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class TagBasedTLCOutputIncrementalParser
 {
@@ -281,6 +281,12 @@ public class TagBasedTLCOutputIncrementalParser
         // now register the listener, responsible for evaluating the partitioning information
         document.addDocumentPartitioningListener(new TLCOutputPartitionChangeListener());
 
+		// TLC always appends to the document. Therefore, we can tell the
+		// document to use a more efficient rewrite mode which reduces the time
+		// taken to execute replace operations from minutes and hours to
+		// seconds.
+        document.startRewriteSession(DocumentRewriteSessionType.STRICTLY_SEQUENTIAL);
+
         /*
          *  Register the process source
          *  
@@ -337,6 +343,9 @@ public class TagBasedTLCOutputIncrementalParser
      */
     public void done()
     {
+		if (this.document.getActiveRewriteSession() != null) {
+			this.document.stopRewriteSession(this.document.getActiveRewriteSession());
+		}
         this.source.onDone();
     }
 
@@ -347,5 +356,4 @@ public class TagBasedTLCOutputIncrementalParser
     {
         return this.source;
     }
-
 }

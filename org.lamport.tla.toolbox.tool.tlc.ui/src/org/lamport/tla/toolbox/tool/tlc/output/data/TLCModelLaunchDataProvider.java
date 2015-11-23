@@ -18,6 +18,8 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationListener;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.DocumentRewriteSession;
+import org.eclipse.jface.text.DocumentRewriteSessionType;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -43,7 +45,6 @@ import tlc2.output.MP;
 /**
  * Container for the data about the model launch
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchConfigurationListener
 {
@@ -784,6 +785,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
         return topError;
     }
 
+    private static final String CR = "\n";
+    private static final String EMPTY = "";
+
     /**
      * Sets text to a document
      * @param document
@@ -792,42 +796,40 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
      * @throws BadLocationException
      * Has to be run from non-UI thread
      */
-    public static synchronized void setDocumentText(final IDocument document, final String message, final boolean append)
-    {
-        final String CR = "\n";
-        final String EMPTY = "";
+	public static synchronized void setDocumentText(final Document document, final String message,
+			final boolean append) {
 
-        UIHelper.runUIAsync(new Runnable() {
-
-            public void run()
-            {
-                try
-                {
-                    if (append)
-                    {
-                        if (document.getLength() == NO_OUTPUT_AVAILABLE.length())
-                        {
-                            String content = document.get(0, NO_OUTPUT_AVAILABLE.length());
-                            if (content != null && NO_OUTPUT_AVAILABLE.equals(content))
-                            {
-                                document.replace(0, document.getLength(), message
-                                        + ((message.endsWith(CR)) ? EMPTY : CR));
-                            }
-                        } else
-                        {
-                            document.replace(document.getLength(), 0, message + ((message.endsWith(CR)) ? EMPTY : CR));
-                        }
-                    } else
-                    {
-                        document.replace(0, document.getLength(), message + ((message.endsWith(CR)) ? EMPTY : CR));
-                    }
-                } catch (BadLocationException e)
-                {
-
-                }
-            }
-        });
-    }
+		UIHelper.runUIAsync(new Runnable() {
+			public void run() {
+				try {
+					DocumentRewriteSession rewriteSession;
+					if (append && !isDefaultLabel(document)) {
+						rewriteSession = document.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
+						// append to existing document (0 length is valid and means message is going to be appended)
+						document.replace(document.getLength(), 0, message + ((message.endsWith(CR)) ? EMPTY : CR));
+					} else {
+						rewriteSession = document.startRewriteSession(DocumentRewriteSessionType.STRICTLY_SEQUENTIAL);
+						// replace of complete document
+						document.replace(0, document.getLength(), message + ((message.endsWith(CR)) ? EMPTY : CR));
+					}
+					document.stopRewriteSession(rewriteSession);
+				} catch (BadLocationException ignored) {
+				}
+			}
+		});
+	}
+	
+	/**
+	 * @param document
+	 * @return true iff the current content of the document is
+	 *         {@link TLCModelLaunchDataProvider#NO_OUTPUT_AVAILABLE}
+	 * @throws BadLocationException
+	 */
+	private static boolean isDefaultLabel(final IDocument document) throws BadLocationException {
+		return document.getLength() == NO_OUTPUT_AVAILABLE.length()
+				&& document.get(0, NO_OUTPUT_AVAILABLE.length()) != null
+				&& NO_OUTPUT_AVAILABLE.equals(document.get(0, NO_OUTPUT_AVAILABLE.length()));
+	}
 
     /**
      *  Connects this provider to the tlc output source registry.
