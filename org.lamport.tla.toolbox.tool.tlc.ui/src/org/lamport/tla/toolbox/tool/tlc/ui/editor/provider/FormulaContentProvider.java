@@ -9,7 +9,6 @@ import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 
 /**
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class FormulaContentProvider implements IStructuredContentProvider
 {
@@ -42,7 +41,8 @@ public class FormulaContentProvider implements IStructuredContentProvider
     {
         if (inputElement != null && inputElement instanceof Vector)
         {
-            Vector formulaList = (Vector) inputElement;
+            @SuppressWarnings("unchecked")
+			Vector<Formula> formulaList = (Vector<Formula>) inputElement;
             return formulaList.toArray(new Formula[formulaList.size()]);
         }
         return EMPTY;

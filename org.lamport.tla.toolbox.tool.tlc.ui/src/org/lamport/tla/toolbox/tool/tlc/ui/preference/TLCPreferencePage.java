@@ -14,7 +14,6 @@ import org.lamport.tla.toolbox.util.UIHelper;
 /**
  * Preferences for TLC
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class TLCPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
@@ -52,7 +51,8 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
                 "Maximum JVM Heap Size default in % of physical system memory", getFieldEditorParent()));
         addField(new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME, "TLC run auto-lock time (in minutes)",
                 getFieldEditorParent()));
-
+		addField(new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS,
+				"Maximum tail length of Trace explorer states", getFieldEditorParent()));
     }
 
     public void init(IWorkbench workbench)

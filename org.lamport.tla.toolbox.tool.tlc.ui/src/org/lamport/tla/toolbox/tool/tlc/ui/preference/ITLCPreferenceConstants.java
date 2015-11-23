@@ -1,14 +1,19 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.preference;
 
+import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
+
 import tlc2.tool.fp.FPSet;
 
 /**
  * TLC preferences
  * @author Simon Zambrovski
- * @version $Id$
  */
 public interface ITLCPreferenceConstants
 {
+    /** 
+     * Maximum number of states to show in {@link TLCErrorView}
+     */
+    public static final String I_TLC_TRACE_MAX_SHOW_ERRORS = "traceMaxShowErrors";
     /** 
      * Popup on TLC errors
      */

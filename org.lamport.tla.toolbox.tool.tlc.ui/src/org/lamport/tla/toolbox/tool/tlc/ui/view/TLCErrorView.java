@@ -93,11 +93,10 @@ import tlc2.output.MP;
  * explorer. This is the view of the error description.
  * 
  * @author Simon Zambrovski
- * @version $Id$
  */
-
 public class TLCErrorView extends ViewPart
 {
+	
 	private static final String INNER_WEIGHTS_KEY = "INNER_WEIGHTS_KEY";
 	private static final String OUTER_WEIGHTS_KEY = "OUTER_WEIGHTS_KEY";
 
@@ -122,6 +121,8 @@ public class TLCErrorView extends ViewPart
     {
         return new Document("Select line in Error Trace to show its value here.");
     }
+    
+    private int numberOfStatesToShow;
 
     private FormToolkit toolkit;
     private Form form;
@@ -139,9 +140,15 @@ public class TLCErrorView extends ViewPart
     // listener on changes to the tlc output font preference
     private FontPreferenceChangeListener fontChangeListener;
 
+	public TLCErrorView() {
+		numberOfStatesToShow = TLCUIActivator.getDefault().getPreferenceStore()
+				.getInt(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS);
+	}
+    
     /**
      * Clears the view
      */
+    @SuppressWarnings("unchecked")
     public void clear()
     {
         errorViewer.setDocument(EMPTY_DOCUMENT());
@@ -161,6 +168,7 @@ public class TLCErrorView extends ViewPart
      * @param problems
      *            a list of {@link TLCError} objects representing the errors.
      */
+    @SuppressWarnings("unchecked")
     protected void fill(String modelName, List<TLCError> problems)
     {
 
@@ -178,7 +186,7 @@ public class TLCErrorView extends ViewPart
              */
             traceExplorerComposite.getTableViewer().setInput(new Vector());
             FormHelper.setSerializedInput(traceExplorerComposite.getTableViewer(), configFileHandle.getAttribute(
-                    IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector()));
+                    IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector<String>()));
         } catch (CoreException e)
         {
             TLCUIActivator.getDefault().logError("Error loading trace explorer expressions into table", e);
@@ -201,6 +209,10 @@ public class TLCErrorView extends ViewPart
                 {
                     Assert.isTrue(states == null, "Two traces are provided. Unexpected. This is a bug");
                     states = error.getStates();
+                    if (states.size() > numberOfStatesToShow) {
+                    	int size = states.size();
+                    	states = states.subList(size - numberOfStatesToShow, size);
+                    }
                 }
             }
             if (states == null)
@@ -214,7 +226,7 @@ public class TLCErrorView extends ViewPart
              * seconds in these cases, so it is important to not reset the trace
              * if it is not necessary
              */
-            List<TLCState> oldStates = (List<TLCState>) variableViewer.getInput();
+			List<TLCState> oldStates = (List<TLCState>) variableViewer.getInput();
             boolean isNewTrace = states != null && oldStates != null && !(states == oldStates);
 
             /*
@@ -1238,6 +1250,9 @@ public class TLCErrorView extends ViewPart
         if (stateList.size() < 2)
         {
             return;
+        } else if (stateList.size() > numberOfStatesToShow) {
+           	int size = stateList.size();
+           	stateList = stateList.subList(size - numberOfStatesToShow, size);
         }
 
         /*
