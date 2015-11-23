@@ -235,7 +235,9 @@ public class CloudDistributedTLCJob extends Job {
 				};
 			};
 			// Copy tlatools.jar to _one_ remote host (do not exhaust upload of
-			// the machine running the toolbox)
+			// the machine running the toolbox).
+			// TODO Share the tla2tools.jar with the worker nodes by making it
+			// available on the master's webserver for the clients to download.
 			SshClient sshClient = context.utils().sshForNode().apply(master);
 			sshClient.put("/mnt/tlc/tla2tools.jar",	jarPayLoad);
 			sshClient.disconnect();
