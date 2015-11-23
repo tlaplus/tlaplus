@@ -359,6 +359,13 @@ public abstract class Value implements ValueConstants, Serializable {
     StringBuffer sb = new StringBuffer();
     return this.toString(sb, 0).toString();
   }
+  
+  public final String toString(String delim) {
+	    StringBuffer sb = new StringBuffer();
+	    sb = this.toString(sb, 0);
+	    sb.append(delim);
+		return sb.toString();
+	  }
 
   public static String ppr(String s) {
     return PrettyPrint.mypp(s, 80) ;

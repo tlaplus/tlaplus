@@ -5,8 +5,11 @@
 
 package tlc2;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -137,6 +140,8 @@ public class TLC
      *    Defaults to 1000000 if not specified
      *  o -metadir path: store metadata in the directory at path
      *    Defaults to specdir/states if not specified
+	 *  o -userFile file: A full qualified/absolute path to a file to log user
+	 *    output (Print/PrintT/...) to
      *  o -workers num: the number of TLC worker threads
      *    Defaults to 1
      *  o -dfid num: use depth-first iterative deepening with initial depth num
@@ -171,7 +176,7 @@ public class TLC
      *  Defaults to 1
      *  o -maxSetSize num: the size of the largest set TLC will enumerate.
      *                     default: 1000000
-     *    
+     *   
      */
     public static void main(String[] args) throws UnknownHostException, FileNotFoundException
     {
@@ -219,7 +224,6 @@ public class TLC
     {
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
-               
         int index = 0;
 		while (index < args.length)
         {
@@ -466,6 +470,24 @@ public class TLC
                 } else
                 {
                     printErrorMsg("Error: need to specify the metadata directory.");
+                    return false;
+                }
+            } else if (args[index].equals("-userFile"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    try {
+						// Most problems will only show we TLC eventually tries
+						// to write to the file.
+						tlc2.module.TLC.OUTPUT = new BufferedWriter(new FileWriter(new File(args[index++])));
+        			} catch (IOException e) {
+                        printErrorMsg("Error: Failed to create user output log file.");
+                        return false;
+        			}
+                } else
+                {
+                    printErrorMsg("Error: need to specify the full qualified file.");
                     return false;
                 }
             } else if (args[index].equals("-workers"))
@@ -773,6 +795,13 @@ public class TLC
             }
         } finally 
         {
+        	if (tlc2.module.TLC.OUTPUT != null) {
+        		try {
+        			tlc2.module.TLC.OUTPUT.flush();
+					tlc2.module.TLC.OUTPUT.close();
+				} catch (IOException e) {
+				}
+        	}
 			modelCheckerMXWrapper.unregister();
 			MP.printMessage(EC.TLC_FINISHED,
 					convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));

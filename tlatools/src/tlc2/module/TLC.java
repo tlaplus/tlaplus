@@ -5,8 +5,12 @@
 
 package tlc2.module;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
@@ -34,6 +38,7 @@ public class TLC implements ValueConstants
 {
 
     private static RandomGenerator rng;
+	public static BufferedWriter OUTPUT;
 
     static
     {
@@ -57,7 +62,15 @@ public class TLC implements ValueConstants
         Value v2c = v2.deepCopy();
         v1c.deepNormalize();
         v2c.deepNormalize();
-        ToolIO.out.println(Value.ppr(v1c.toString()) + "  " + Value.ppr(v2c.toString()));
+        if (OUTPUT == null) {
+        	ToolIO.out.println(Value.ppr(v1c.toString()) + "  " + Value.ppr(v2c.toString()));
+        } else {
+        	try {
+        		OUTPUT.write(Value.ppr(v1c.toString()) + "  " + Value.ppr(v2c.toString()) + "\n");
+        	} catch (IOException e) {
+        		MP.printError(EC.GENERAL, e);
+        	}
+        }
         return v2;
     }
 
@@ -70,7 +83,16 @@ public class TLC implements ValueConstants
     {
         Value v1c = v1.deepCopy();
         v1c.deepNormalize();   
-        ToolIO.out.println(Value.ppr(v1c.toString()));
+        if (OUTPUT == null) {
+        	String ppr = Value.ppr(v1c.toString());
+        	ToolIO.out.println(ppr);
+        } else {
+        	try {
+        		OUTPUT.write(Value.ppr(v1c.toString("\n")));
+        	} catch (IOException e) {
+        		MP.printError(EC.GENERAL, e);
+        	}
+        }
         return ValTrue;
     }
 
