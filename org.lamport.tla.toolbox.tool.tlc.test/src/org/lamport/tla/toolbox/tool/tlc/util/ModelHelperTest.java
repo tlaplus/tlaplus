@@ -112,7 +112,7 @@ public class ModelHelperTest extends TestCase
     	assertEquals("U <- 42", split[0]);
     	assertEquals("W <- 1", split[1]);
     	assertEquals("Y <- {a1, b1}", split[2]);
-    	assertEquals("Z <- sym{s1, s2}", split[3]);
+    	assertEquals("Z <- s{s1, s2}", split[3]);
     	assertEquals("Model values: V, X", split[4]);
     }
     

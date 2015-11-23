@@ -45,7 +45,7 @@ public class AssignmentTest {
 		final Assignment c = new Assignment("Z", new String[0], "{s1, s2}");
 		c.setModelValue(true);
 		c.setSymmetric(true);
-		assertEquals("Z" + Assignment.ASSIGNMENT_SIGN + "sym{s1, s2}", c.prettyPrint());
+		assertEquals("Z" + Assignment.ASSIGNMENT_SIGN + "s{s1, s2}", c.prettyPrint());
 
 		final Assignment d = new Assignment("W", new String[0], "1");
 		assertEquals("W" + Assignment.ASSIGNMENT_SIGN + "1", d.prettyPrint());
