@@ -61,6 +61,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFcnElementVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFunctionVariableValue;
@@ -168,28 +169,20 @@ public class TLCErrorView extends ViewPart
      *            a list of {@link TLCError} objects representing the errors.
      */
     @SuppressWarnings("unchecked")
-    protected void fill(String modelName, List<TLCError> problems)
+    protected void fill(String modelName, List<TLCError> problems, final List<String> serializedInput)
     {
-
-        try
-        {
-            /*
-             * Fill the trace explorer expression table 
-             * with expressions saved in the config.
-             * 
-             * Setting the input of the trace explorer composite
-             * table viewer to an empty vector is done to avoid adding duplicates.
-             * 
-             * FormHelper.setSerializedInput adds the elements from the config
-             * to the table viewer.
-             */
-            traceExplorerComposite.getTableViewer().setInput(new Vector());
-            FormHelper.setSerializedInput(traceExplorerComposite.getTableViewer(), configFileHandle.getAttribute(
-                    IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector<String>()));
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error loading trace explorer expressions into table", e);
-        }
+        /*
+		 * Fill the trace explorer expression table with expressions saved in
+		 * the config.
+         * 
+		 * Setting the input of the trace explorer composite table viewer to an
+		 * empty vector is done to avoid adding duplicates.
+         * 
+		 * FormHelper.setSerializedInput adds the elements from the config to
+		 * the table viewer.
+         */
+		traceExplorerComposite.getTableViewer().setInput(new Vector<Formula>());
+		FormHelper.setSerializedInput(traceExplorerComposite.getTableViewer(), serializedInput);
 
         // if there are errors
         if (problems != null && !problems.isEmpty())
@@ -665,9 +658,18 @@ public class TLCErrorView extends ViewPart
             {
                 return;
             }
+            updateErrorView(provider, config, openErrorView);
+        } catch (CoreException e)
+        {
+            TLCUIActivator.getDefault().logError("Error determining if trace explorer expressions should be shown", e);
+        }
+    }
+    
+	public static void updateErrorView(final TLCModelLaunchDataProvider provider, final ILaunchConfiguration config,
+			boolean openErrorView) {
+		try {
             TLCErrorView errorView;
-            if (provider.getErrors().size() > 0 && openErrorView == true)
-            {
+			if (provider.getErrors().size() > 0 && openErrorView == true) {
            		errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
             } else
             {
@@ -682,24 +684,23 @@ public class TLCErrorView extends ViewPart
                  * all of the expressions that should appear. The filling of the trace
                  * explorer table occurs in the fill() method.
                  */
-                if (config.isWorkingCopy())
-                {
+				if (config.isWorkingCopy()) {
                     errorView.configFileHandle = ((ILaunchConfigurationWorkingCopy) config).getOriginal();
-                } else
-                {
+				} else {
                     errorView.configFileHandle = config;
                 }
 
+				final List<String> serializedInput = errorView.configFileHandle
+						.getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector<String>());
                 // fill the name and the errors
-                errorView.fill(ModelHelper.getModelName(provider.getConfig().getFile()), provider.getErrors());
+				errorView.fill(ModelHelper.getModelName(provider.getConfig().getFile()), provider.getErrors(),
+						serializedInput);
 
-                if (provider.getErrors().size() == 0)
-                {
+				if (provider.getErrors().size() == 0) {
                     errorView.hide();
                 }
             }
-        } catch (CoreException e)
-        {
+		} catch (CoreException e) {
             TLCUIActivator.getDefault().logError("Error determining if trace explorer expressions should be shown", e);
         }
 
