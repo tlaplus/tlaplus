@@ -44,13 +44,13 @@ public class TraceExplorerHelper
          */
         TLCModelLaunchDataProvider originalTraceProvider = TLCOutputSourceRegistry.getModelCheckSourceRegistry()
                 .getProvider(config);
-        List errors = originalTraceProvider.getErrors();
+        List<TLCError> errors = originalTraceProvider.getErrors();
         if (errors != null)
         {
-            Iterator it = errors.iterator();
+            Iterator<TLCError> it = errors.iterator();
             while (it.hasNext())
             {
-                TLCError error = (TLCError) it.next();
+                TLCError error = it.next();
                 if (error.hasTrace())
                 {
                     return error;
@@ -70,9 +70,9 @@ public class TraceExplorerHelper
     {
         try
         {
-            List trace = getErrorOfOriginalTrace(config).getStates();
+            List<TLCState> trace = getErrorOfOriginalTrace(config).getStates();
             Assert.isNotNull(trace);
-            Iterator it = trace.iterator();
+            Iterator<TLCState> it = trace.iterator();
             IFile traceSourceFile = ModelHelper.getTraceSourceFile(config);
             ModelHelper.createOrClearFiles(new IFile[] { traceSourceFile }, new NullProgressMonitor());
             while (it.hasNext())

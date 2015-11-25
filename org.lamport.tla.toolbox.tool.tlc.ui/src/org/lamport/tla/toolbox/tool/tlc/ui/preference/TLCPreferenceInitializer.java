@@ -23,7 +23,7 @@ public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
     {
 
         IPreferenceStore store = TLCUIActivator.getDefault().getPreferenceStore();
-        store.setDefault(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS, 25);
+        store.setDefault(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS, 5000);
         store.setDefault(ITLCPreferenceConstants.I_TLC_POPUP_ERRORS, true);
         store.setDefault(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY, true);
         store.setDefault(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT, MAX_HEAP_SIZE_DEFAULT);

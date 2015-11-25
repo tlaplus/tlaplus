@@ -1,11 +1,15 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -60,11 +64,13 @@ public class ActionClickListener implements MouseListener {
 				// so taking the first element of the structured selection
 				// should work
 				final Object firstElement = structuredSelection.getFirstElement();
-				if (firstElement instanceof IModuleLocatable) {
+				if (firstElement instanceof LoaderTLCState) {
+					final LoaderTLCState loader = (LoaderTLCState) firstElement;
+					loader.loadMore();
+				} else if (firstElement instanceof IModuleLocatable) {
 					final IModuleLocatable moduleLocatable = (IModuleLocatable) firstElement;
 					Location location = moduleLocatable.getModuleLocation();
 					if (location != null) {
-
 						/*
 						 * jumpToNested will be true if the location could be
 						 * shown in a nested saved module editor. If it is
@@ -78,8 +84,37 @@ public class ActionClickListener implements MouseListener {
 							UIHelper.jumpToLocation(location, jumpToPCal);
 						}
 					}
+				} else if (!Platform.getWS().equals(Platform.WS_WIN32) && viewer instanceof TreeViewer) {
+					// Windows has built-in expand/collapse on double click
+					TreeViewer treeViewer = (TreeViewer) viewer;
+					if (treeViewer.getExpandedState(firstElement)) {
+						treeViewer.collapseToLevel(firstElement, 1);
+					} else {
+						treeViewer.expandToLevel(firstElement, 1);
+					}
 				}
 			}
 		}
 	}
+    
+    public static class LoaderTLCState extends TLCState {
+
+		private final TLCError error;
+		private final int numberOfStatesToShow;
+		private final TreeViewer viewer;
+
+		public LoaderTLCState(TreeViewer viewer, int numberOfStatesToShow, TLCError error) {
+			super(-1, "Load more...");
+			this.viewer = viewer;
+			this.numberOfStatesToShow = numberOfStatesToShow;
+			this.error = error;
+			setLabel(String.format("Load %s additional states...", numberOfStatesToShow));
+		}
+
+		public void loadMore() {
+			error.reduceTraceRestrictionBy(numberOfStatesToShow);
+			viewer.getTree().setItemCount(error.getTraceSize() + (error.isTraceRestricted() ? 1 : 0));
+			viewer.setInput(error);
+		}
+    }
 }

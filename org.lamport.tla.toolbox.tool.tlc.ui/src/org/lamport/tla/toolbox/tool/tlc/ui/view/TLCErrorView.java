@@ -1,8 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.view;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Pattern;
@@ -19,18 +17,16 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.ILazyTreeContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
@@ -66,6 +62,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFcnElementVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFunctionVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCMultiVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCNamedVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCRecordVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCSequenceVariableValue;
@@ -148,11 +145,10 @@ public class TLCErrorView extends ViewPart
     /**
      * Clears the view
      */
-    @SuppressWarnings("unchecked")
     public void clear()
     {
         errorViewer.setDocument(EMPTY_DOCUMENT());
-        setTraceInput(Collections.EMPTY_LIST);
+        setTraceInput(new TLCError());
         traceExplorerComposite.getTableViewer().setInput(new Vector<TLCState>());
         traceExplorerComposite.changeExploreEnablement(false);
         valueViewer.setInput(EMPTY_DOCUMENT());
@@ -168,7 +164,6 @@ public class TLCErrorView extends ViewPart
      * @param problems
      *            a list of {@link TLCError} objects representing the errors.
      */
-    @SuppressWarnings("unchecked")
     protected void fill(String modelName, List<TLCError> problems, final List<String> serializedInput)
     {
         /*
@@ -185,9 +180,9 @@ public class TLCErrorView extends ViewPart
 		FormHelper.setSerializedInput(traceExplorerComposite.getTableViewer(), serializedInput);
 
         // if there are errors
+		TLCError trace = null;
         if (problems != null && !problems.isEmpty())
         {
-            List<TLCState> states = null;
             StringBuffer buffer = new StringBuffer();
             // iterate over the errors
             for (int i = 0; i < problems.size(); i++)
@@ -199,17 +194,13 @@ public class TLCErrorView extends ViewPart
                 // read out the trace if any
                 if (error.hasTrace())
                 {
-                    Assert.isTrue(states == null, "Two traces are provided. Unexpected. This is a bug");
-                    states = error.getStates();
-                    if (states.size() > numberOfStatesToShow) {
-                    	int size = states.size();
-                    	states = states.subList(size - numberOfStatesToShow, size);
+                    Assert.isTrue(trace == null, "Two traces are provided. Unexpected. This is a bug");
+                    trace = error;
                     }
                 }
-            }
-            if (states == null)
+            if (trace == null)
             {
-                states = new LinkedList<TLCState>();
+            	trace = new TLCError();
             }
 
             IDocument document = errorViewer.getDocument();
@@ -222,26 +213,20 @@ public class TLCErrorView extends ViewPart
                 TLCUIActivator.getDefault().logError("Error reporting the error " + buffer.toString(), e);
             }
 
-            // update the trace information
-
             /*
              * determine if trace has changed. this is important for really long
              * traces because resetting the trace input locks up the toolbox for a few
              * seconds in these cases, so it is important to not reset the trace
              * if it is not necessary
              */
-			List<TLCState> oldStates = (List<TLCState>) variableViewer.getInput();
-            boolean isNewTrace = states != null && oldStates != null && !(states == oldStates);
+            TLCError oldTrace = (TLCError) variableViewer.getInput();
+            boolean isNewTrace = trace != null && oldTrace != null && !(trace == oldTrace);
+            // update the trace information
             if (isNewTrace)
             {
-                this.setTraceInput(states);
+                this.setTraceInput(trace);
                 traceExplorerComposite.changeExploreEnablement(true);
             }
-            if (states != null && !states.isEmpty())
-            {
-                variableViewer.expandToLevel(2);
-            }
-
             this.form.setText(modelName);
 
         } else
@@ -428,7 +413,6 @@ public class TLCErrorView extends ViewPart
         resizer.comp = sashForm;
         resizer.tree = tree;
 
-        final StateViewerSorter sorter = new StateViewerSorter();
 		for (int i = 0; i < StateLabelProvider.COLUMN_TEXTS.length; i++) {
 			TreeColumn column = new TreeColumn(tree, SWT.LEFT);
 			column.setText(StateLabelProvider.COLUMN_TEXTS[i]);
@@ -437,8 +421,15 @@ public class TLCErrorView extends ViewPart
 			column.setToolTipText(TOOLTIP);
 			column.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
-					sorter.reverseStateSortDirection();
-					variableViewer.refresh();
+					// reverse the current trace
+					final TLCError error = (TLCError) variableViewer.getInput();
+					error.reverseTrace();
+					variableViewer.refresh(false);
+					
+					// remember the order for next trace shown
+					final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+					dialogSettings.put(TLCModelLaunchDataProvider.STATESORTORDER,
+							!dialogSettings.getBoolean(TLCModelLaunchDataProvider.STATESORTORDER));
 				}
 			});
 		}
@@ -454,10 +445,10 @@ public class TLCErrorView extends ViewPart
         resizer.column[0].addListener(eventType, resizer);
 
         variableViewer = new TreeViewer(tree);
-        variableViewer.setContentProvider(new StateContentProvider());
-        variableViewer.setFilters(new ViewerFilter[] { new StateFilter() });
+        final StateContentProvider provider = new StateContentProvider(variableViewer);
+        variableViewer.setUseHashlookup(true);
+		variableViewer.setContentProvider(provider);
         variableViewer.setLabelProvider(new StateLabelProvider());
-		variableViewer.setSorter(sorter);
         getSite().setSelectionProvider(variableViewer);
 
         variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer));
@@ -671,12 +662,10 @@ public class TLCErrorView extends ViewPart
             TLCErrorView errorView;
 			if (provider.getErrors().size() > 0 && openErrorView == true) {
            		errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
-            } else
-            {
+			} else {
                 errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
             }
-            if (errorView != null)
-            {
+			if (errorView != null) {
                 /*
                  * We need a handle on the actual underlying configuration file handle
                  * in order to retrieve the expressions that should be put in the trace
@@ -817,207 +806,150 @@ public class TLCErrorView extends ViewPart
     /**
      * Content provider for the tree table
      */
-    private class StateContentProvider implements ITreeContentProvider
-    {
+    private class StateContentProvider implements ILazyTreeContentProvider {
+       	
+    	private final TreeViewer viewer;
 
-        public Object[] getChildren(Object parentElement)
-        {
-            if (parentElement instanceof List)
-            {
-                return (TLCState[]) ((List) parentElement).toArray(new TLCState[((List) parentElement).size()]);
-            } else if (parentElement instanceof TLCState)
-            {
-                TLCState state = (TLCState) parentElement;
-                if (!state.isStuttering() && !state.isBackToState())
-                {
-                    return state.getVariables();
+		public StateContentProvider(TreeViewer viewer) {
+			this.viewer = viewer;
+    	}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
+		 */
+		public void dispose() {
+		}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
+		 */
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+		}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.ILazyTreeContentProvider#updateElement(java.lang.Object, int)
+		 */
+		public void updateElement(Object parent, int viewerIndex) {
+			if (parent instanceof TLCError) {
+				final TLCError error = (TLCError) parent;
+				if (error.isTraceRestricted() && viewerIndex == 0) {
+					// If only a subset of the trace is shown, show a dummy item
+					// at the top which can be double-clicked to load more.
+					viewer.replace(parent, viewerIndex,
+							new ActionClickListener.LoaderTLCState(viewer, numberOfStatesToShow, error));
+					return;
+				}
+				// decrease index into states by one if the viewers first element is a dummy item
+				final int statesIndex = viewerIndex - (error.isTraceRestricted() ? 1 : 0);
+				final TLCState child = error.getStates().get(statesIndex);
+				// Diffing is supposed to be lazy and thus is done here when
+				// the state is first used by the viewer. The reason why it
+				// has to be lazy is to be able to efficiently handle traces
+				// with hundreds or thousands of states where it would be a
+				// waste to diff all state pairs even if the user is never
+				// going to look at all states anyway.
+				// TODO If ever comes up as a performance problem again, the
+				// nested TLCVariableValues could also be diffed lazily.
+           		if (statesIndex > 0) {
+           			final TLCState predecessor = error.getStates().get(statesIndex - 1);
+           			predecessor.diff(child);
+           		}
+				viewer.replace(parent, viewerIndex, child);
+				if (child.getVariablesAsList().size() > 0) {
+					viewer.setHasChildren(child, true);
+				}
+				// Lazily expand the children
+				viewer.expandToLevel(child, 1);
+			} else if (parent instanceof TLCState) {
+				final TLCState state = (TLCState) parent;
+                if ((state.isStuttering() || state.isBackToState())) {
+					viewer.setChildCount(state, 0);
+                } else {
+                	final List<TLCVariable> variablesAsList = state.getVariablesAsList();
+                	if (variablesAsList.size() > viewerIndex) {
+                		final TLCVariable child = variablesAsList.get(viewerIndex);
+                		viewer.replace(parent, viewerIndex, child);
+                		if (child.getChildCount() > 0) {
+                			viewer.setHasChildren(child, true);
+                		}
+                	}
                 }
-            } else if (parentElement instanceof TLCVariable)
-            {
-                TLCVariable variable = (TLCVariable) parentElement;
-                TLCVariableValue value = variable.getValue();
-                if (value instanceof TLCSetVariableValue)
-                {
-                    return ((TLCSetVariableValue) value).getElements();
-                } else if (value instanceof TLCSequenceVariableValue)
-                {
-                    return ((TLCSequenceVariableValue) value).getElements();
-                } else if (value instanceof TLCFunctionVariableValue)
-                {
-                    return ((TLCFunctionVariableValue) value).getFcnElements();
-                } else if (value instanceof TLCRecordVariableValue)
-                {
-                    return ((TLCRecordVariableValue) value).getPairs();
-                }
-                return null;
-            } else if (parentElement instanceof TLCVariableValue)
-            {
-                TLCVariableValue value = (TLCVariableValue) parentElement;
-                if (value instanceof TLCSetVariableValue)
-                {
-                    return ((TLCSetVariableValue) value).getElements();
-                } else if (value instanceof TLCSequenceVariableValue)
-                {
-                    return ((TLCSequenceVariableValue) value).getElements();
-                } else if (value instanceof TLCFunctionVariableValue)
-                {
-                    return ((TLCFunctionVariableValue) value).getFcnElements();
-                } else if (value instanceof TLCRecordVariableValue)
-                {
-                    return ((TLCRecordVariableValue) value).getPairs();
-                } else if (value instanceof TLCNamedVariableValue)
-                {
-                    return getChildren(((TLCNamedVariableValue) value).getValue());
-                } else if (value instanceof TLCFcnElementVariableValue)
-                {
-                    return getChildren(((TLCFcnElementVariableValue) value).getValue());
-                }
-                return null;
-            }
-            return null;
-        }
-
-        public Object getParent(Object element)
-        {
-            return null;
-        }
-
-        public boolean hasChildren(Object element)
-        {
-            if (element instanceof List)
-                return true;
-
-            return (getChildren(element) != null);
-        }
-
-        public Object[] getElements(Object inputElement)
-        {
-            return getChildren(inputElement);
-        }
-
-        public void dispose()
-        {
-        }
-
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-        {
-            /*
-             * Set the data structures that cause highlighting of changes in the
-             * error trace.
-             */
-            if (oldInput != newInput && newInput instanceof List)
-            {
-            	/*
-            	 * Sets the HashSet objects of StateLabelProvider object that stores the
-            	 * sets of objects to be highlighted to show state changes in the states
-            	 * contained in the parameter stateList.
-            	 */
-            	List<TLCState> stateList = (List<TLCState>) newInput;
-                if (stateList.size() < 2)
-                {
-                    return;
-                } else if (stateList.size() > numberOfStatesToShow) {
-                   	int size = stateList.size();
-                   	stateList = stateList.subList(size - numberOfStatesToShow, size);
-                }
-
-                /*
-                 * Set states to the array of TLCState objects in stateList, and set
-                 * changedRows, addedRows, and deletedRows to the HashSet into which all
-                 * the appropriate row objects are put, and initialize each HashSet to
-                 * empty.
-                 */
-                TLCState firstState = stateList.get(0);
-
-                for (int i = 1; i < stateList.size(); i++)
-                {
-                    TLCState secondState = stateList.get(i);
-                    firstState.diff(secondState);
-                    firstState = secondState;
-                }
-            }
-        }
-    }
-
-    static class StateFilter extends ViewerFilter
-    {
-
-        public boolean select(Viewer viewer, Object parentElement, Object element)
-        {
-            return true;
-        }
-
-    }
-
-    static class StateViewerSorter extends ViewerSorter {
-    	
-    	private static final String STATESORTORDER = "STATESORTORDER";
-
-        /**
-         * Sort order in which states are sorted in the variable viewer
-         */
-		private boolean stateSortDirection;
-
-		private final IDialogSettings dialogSettings;
-
-		public StateViewerSorter() {
-			dialogSettings = Activator.getDefault().getDialogSettings();
-			stateSortDirection = dialogSettings.getBoolean(STATESORTORDER);
+			} else if (parent instanceof TLCVariable
+					&& ((TLCVariable) parent).getValue() instanceof TLCMultiVariableValue) {
+				final TLCMultiVariableValue multiValue = (TLCMultiVariableValue) ((TLCVariable) parent).getValue();
+				final TLCVariableValue child = multiValue.asList().get(viewerIndex);
+				viewer.replace(parent, viewerIndex, child);
+				if (child.getChildCount() > 0) {
+					viewer.setHasChildren(child, true);
+				}
+			} else if (parent instanceof TLCVariable) {
+				final TLCVariable variable = (TLCVariable) parent;
+				final TLCVariableValue child = variable.getValue();
+				viewer.replace(parent, viewerIndex, child);
+				if (child.getChildCount() > 0) {
+					viewer.setChildCount(child, child.getChildCount());
+				}
+			} else if (parent instanceof TLCMultiVariableValue) {
+				final TLCMultiVariableValue multiValue = (TLCMultiVariableValue) parent;
+				final TLCVariableValue child = multiValue.asList().get(viewerIndex);
+				viewer.replace(parent, viewerIndex, child);
+				if (child.getChildCount() > 0) {
+					viewer.setHasChildren(child, true);
+				}
+			} else if (parent instanceof TLCVariableValue
+					&& ((TLCVariableValue) parent).getValue() instanceof TLCMultiVariableValue) {
+				final TLCMultiVariableValue multiValue = (TLCMultiVariableValue) ((TLCVariableValue) parent).getValue();
+				final TLCVariableValue child = multiValue.asList().get(viewerIndex);
+				viewer.replace(parent, viewerIndex, child);
+				if (child.getChildCount() > 0) {
+					viewer.setHasChildren(child, true);
+				}
+			} else {
+				throw new IllegalArgumentException();
+			}
 		}
 		
-        public void reverseStateSortDirection() {
-        	stateSortDirection = !stateSortDirection;
-        	dialogSettings.put(STATESORTORDER, stateSortDirection);
-        }
-    	
-		public int compare(final Viewer viewer, final Object e1, final Object e2) {
-			// TLCVariables are the expressions entered into the error trace.
-			// They should always be on top.
-			if (e1 instanceof TLCVariable && e2 instanceof TLCVariable) {
-				final TLCVariable v1 = (TLCVariable) e1;
-				final TLCVariable v2 = (TLCVariable) e2;
-				if (v1.isTraceExplorerVar() && v2.isTraceExplorerVar()) {
-					// both are variables. Compare the vars alphabetically.
-					return v1.getName().compareTo(v2.getName());
+		/* (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.ILazyTreeContentProvider#updateChildCount(java.lang.Object, int)
+		 */
+		public void updateChildCount(Object element, int currentChildCount) {
+			if (element instanceof TLCError) {
+				final TLCError error = (TLCError) element;
+				final List<TLCState> list = error.getStates();
+				if (list.size() != currentChildCount) {
+					if (error.isTraceRestricted()) {
+						viewer.setChildCount(element, list.size() + 1);
+					} else {
+						viewer.setChildCount(element, list.size());
+					}
 				}
+			} else if (element instanceof TLCState) {
+				final TLCState state = (TLCState) element;
+				if (((state.isStuttering() || state.isBackToState()) && currentChildCount != 0)) {
+					viewer.setChildCount(element, 0);
+				} else if (currentChildCount != state.getVariablesAsList().size()) {
+					viewer.setChildCount(element, state.getVariablesAsList().size());
+				}
+			} else if (element instanceof TLCVariable) {
+				final TLCVariable variable = (TLCVariable) element;
+				if (currentChildCount != variable.getChildCount()) {
+					viewer.setChildCount(element, variable.getChildCount());
+				}
+			} else if (element instanceof TLCVariableValue) {
+				final TLCVariableValue value = (TLCVariableValue) element;
+				if (currentChildCount != value.getChildCount()) {
+					viewer.setChildCount(element, value.getChildCount());
+				}
+			} else {
+				throw new IllegalArgumentException();
 			}
-			if (e1 instanceof TLCVariable && ((TLCVariable) e1).isTraceExplorerVar()) {
-				return -1;
-			}
-			if (e2 instanceof TLCVariable && ((TLCVariable) e2).isTraceExplorerVar()) {
-				return 1;
-			}
-			// The error trace has to be sorted on the number of the state. An
-			// unordered state sequence is rather incomprehensible. The default
-			// is ordering the state trace first to last for educational reasons.
-			// Advanced users are free to click the table column headers to permanently
-			// change the order.
-			if (e1 instanceof TLCState && e2 instanceof TLCState) {
-				final TLCState s1 = (TLCState) e1;
-				final TLCState s2 = (TLCState) e2;
-				Integer is1 = s1.getStateNumber();
-				Integer is2 = s2.getStateNumber();
+		}
 
-				// If either is a back state, make sure they are larger
-				// than any regular state. If both are back states, simply
-				// compare their state number. The latter case is AFAICT not
-				// possible.
-				if (s1.isBackToState() && !s2.isBackToState()) {
-					is1 = Integer.MAX_VALUE;
-				}
-				else if (s2.isBackToState() && !s1.isBackToState()) {
-					is2 = Integer.MAX_VALUE;
-				}
-				
-				// Two regular states, delegate to state number
-				if(!stateSortDirection) { // negated because the default coming from DialogSettings is false
-					return Integer.valueOf(is1).compareTo(is2);
-				} else {
-					return Integer.valueOf(is2).compareTo(is1);
-				}
-			}
-			// Sort just on the label provided by the label provider
-			return super.compare(viewer, e1, e2);
+		/* (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.ILazyTreeContentProvider#getParent(java.lang.Object)
+		 */
+		public Object getParent(Object element) {
+			return null;
 		}
     }
     
@@ -1088,7 +1020,11 @@ public class TLCErrorView extends ViewPart
                     }
                     return state.getLabel();
                 case VALUE:
-                    return "State (num = " + state.getStateNumber() + ")";
+                	if (state instanceof ActionClickListener.LoaderTLCState) {
+                    	return "";
+                    } else {
+                    	return "State (num = " + state.getStateNumber() + ")";
+                    }
                     // state.toString();
                 default:
                     break;
@@ -1238,19 +1174,21 @@ public class TLCErrorView extends ViewPart
                 {
                     return JFaceResources.getFontRegistry().getBold("");
                 }
+            } else if (element instanceof ActionClickListener.LoaderTLCState) {
+                return JFaceResources.getFontRegistry().getBold("");
             }
             return null;
         }
 
     }
 
-    public List getTrace()
+	public TLCError getTrace()
     {
         if (variableViewer == null)
         {
             return null;
         }
-        return (List) variableViewer.getInput();
+        return (TLCError) variableViewer.getInput();
     }
 
     /**
@@ -1286,10 +1224,16 @@ public class TLCErrorView extends ViewPart
      * 
      * @param states
      */
-    private void setTraceInput(List<TLCState> states)
+    void setTraceInput(TLCError error)
     {
-        variableViewer.setInput(states);
-        if (!states.isEmpty())
+		// If itemCount is large (>10.000 items), the underlying OS window
+		// toolkit can be slow. As a possible fix, look into
+		// http://www.eclipse.org/nattable/. For background, read
+		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=129457#c27
+    	error.restrictTraceTo(numberOfStatesToShow);
+		variableViewer.getTree().setItemCount(error.getTraceSize() + (error.isTraceRestricted() ? 1 : 0));
+        variableViewer.setInput(error);
+        if (!error.isTraceEmpty())
         {
             valueViewer.setDocument(NO_VALUE_DOCUMENT());
         } else

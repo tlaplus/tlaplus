@@ -1,3 +1,29 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Simon Zambrovski - initial API and implementation
+ ******************************************************************************/
+
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
 import java.util.ArrayList;
@@ -16,6 +42,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationListener;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentRewriteSession;
@@ -26,6 +53,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
@@ -48,6 +76,8 @@ import tlc2.output.MP;
  */
 public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchConfigurationListener
 {
+	public static final String STATESORTORDER = "STATESORTORDER";
+
     public static final String NO_OUTPUT_AVAILABLE = "No user output is available";
 
     public static final String NO_ERRORS = "No errors";
@@ -100,6 +130,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
     protected Document userOutput;
     // calc output
     protected String constantExprEvalOutput;
+    /**
+     * Sort order in which states are sorted in the variable viewer
+     */
+	private boolean stateSortDirection;
 
     // the model, which is represented by the current launch data provider
     private ILaunchConfiguration config;
@@ -163,6 +197,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
         progressOutput = new Document(NO_OUTPUT_AVAILABLE);
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
         constantExprEvalOutput = "";
+
+		final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+		stateSortDirection = dialogSettings.getBoolean(STATESORTORDER);
 
         // Register as a LCL to cache the LaunchConfig's attributes upon save/commit.
         DebugPlugin.getDefault().getLaunchManager().addLaunchConfigurationListener(this);
@@ -256,7 +293,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
             case MP.STATE:
                 Assert.isNotNull(this.lastDetectedError,
                         "The state encountered without the error describing the reason for it. This is a bug.");
-                this.lastDetectedError.addState(TLCState.parseState(outputMessage, getModelName()));
+                this.lastDetectedError.addState(TLCState.parseState(outputMessage, getModelName()), stateSortDirection);
                 break;
             case MP.ERROR:
             case MP.TLCBUG:
