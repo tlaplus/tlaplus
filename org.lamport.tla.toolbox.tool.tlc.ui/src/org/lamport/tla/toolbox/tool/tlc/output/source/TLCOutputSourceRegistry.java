@@ -1,11 +1,21 @@
 package org.lamport.tla.toolbox.tool.tlc.output.source;
 
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.ui.progress.IProgressConstants;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.LogFileReader;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
@@ -160,14 +170,28 @@ public class TLCOutputSourceRegistry
                 // initialize the reader and read the content
                 // this will create the parser
                 // the parser will create a source and register in the registry
-                LogFileReader logFileReader = new LogFileReader(processName, logFile, isTraceExploreInstance);
+                final LogFileReader logFileReader = new LogFileReader(processName, logFile, isTraceExploreInstance);
 
                 // retrieve the source
                 source = logFileReader.getSource();
                 source.addTLCOutputListener(listener);
 
                 // read in the data
-                logFileReader.read();
+                // read in the data
+                final Job job = new WorkspaceJob("Logfile reader...") {
+					public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+						try {
+							logFileReader.read(monitor);
+						} catch (IOException | BadLocationException e) {
+							return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage());
+						}
+						return Status.OK_STATUS;
+					}
+				};
+				job.setProperty(IProgressConstants.PROPERTY_IN_DIALOG, true);
+				job.setPriority(Job.LONG);
+				job.setUser(true);
+				job.schedule();
 
                 // from now on we should have a source for this model
                 Assert.isTrue(this.sources.get(processName) != null);

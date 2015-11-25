@@ -58,7 +58,7 @@ public class LogFileReader {
     /**
 	 * Reads the contents
 	 */
-	public void read(final IProgressMonitor monitor) {
+	public void read(final IProgressMonitor monitor) throws IOException, BadLocationException {
 		BufferedReader reader = null;
 		try {
 			final long numberOfLines = getLineNumbers();
@@ -80,6 +80,7 @@ public class LogFileReader {
 			 */
 			for (int lineNum = 0; lineNum < numberOfLines; lineNum++) {
 				if (monitor.isCanceled()) {
+					this.parser.clear();
 					return;
 				}
 				if (lineNum % 1000 == 0) {
@@ -91,10 +92,13 @@ public class LogFileReader {
 			monitor.worked(1);
 		} catch (BadLocationException e) {
 			TLCUIActivator.getDefault().logError("Error positioning in the TLC log file", e);
+			throw e;
 		} catch (FileNotFoundException e) {
 			TLCUIActivator.getDefault().logError("Error accessing the TLC log file contents", e);
+			throw e;
 		} catch (IOException e) {
 			TLCUIActivator.getDefault().logError("Error reading the TLC log file contents", e);
+			throw e;
 		} finally {
 			/*
 			 * The document provider is not needed. Always disconnect it to

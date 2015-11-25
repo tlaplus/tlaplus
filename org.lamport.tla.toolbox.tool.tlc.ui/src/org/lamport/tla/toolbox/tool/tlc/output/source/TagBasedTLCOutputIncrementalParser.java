@@ -329,6 +329,21 @@ public class TagBasedTLCOutputIncrementalParser
 
 		document.replace(document.getLength(), 0, text);
     }
+    
+    /**
+	 * Contrary to addIncrement(String), this method does not verify that the
+	 * input terminates with the newline separator. It is up to the caller to
+	 * only provide valid input.
+	 */
+    public void addLine(String text) throws BadLocationException
+    {
+		// don't waste time, skip empty or new lines
+		if (text == null || text.length() == 0 || text.equals("\n")) {
+			return;
+		}
+
+		document.replace(document.getLength(), 0, text);
+    }
 
 	IDocument getDocument() {
 		return document;
@@ -356,4 +371,11 @@ public class TagBasedTLCOutputIncrementalParser
     {
         return this.source;
     }
+
+	public void clear() throws BadLocationException {
+		this.document.replace(0, this.document.getLength(), "");
+		if (this.document.getActiveRewriteSession() != null) {
+			this.document.stopRewriteSession(this.document.getActiveRewriteSession());
+		}
+	}
 }
