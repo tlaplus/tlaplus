@@ -10,7 +10,6 @@ import org.eclipse.core.runtime.Assert;
 /**
  * A representation of a variable value
  * @author Simon Zambrovski
- * @version $Id$
  */
 public abstract class TLCVariableValue
 {
@@ -151,7 +150,7 @@ public abstract class TLCVariableValue
                 throw new VariableValueParseException();
             }
 
-            List sequenceValues = new Vector();
+            List<TLCVariableValue> sequenceValues = new Vector<TLCVariableValue>();
             innerValue = innerParse(input);
             if (innerValue != null)
             {
@@ -180,7 +179,7 @@ public abstract class TLCVariableValue
             return null;
 
         case OBRACKET:
-            List recordPairs = new Vector();
+            List<TLCVariableValue> recordPairs = new Vector<TLCVariableValue>();
 
             TLCVariableValue innerValue2;
 
@@ -252,7 +251,7 @@ public abstract class TLCVariableValue
         case CBRACKET:
             return null;
         case OPAREN:
-            List fcnElements = new Vector();
+            List<TLCVariableValue> fcnElements = new Vector<TLCVariableValue>();
 
             TLCVariableValue domElement;
 
@@ -319,7 +318,7 @@ public abstract class TLCVariableValue
             throw new VariableValueParseException();
 
         case OCBRACE:
-            List setValues = new Vector();
+            List<TLCVariableValue> setValues = new Vector<TLCVariableValue>();
             innerValue = innerParse(input);
             if (innerValue != null)
             {
@@ -419,6 +418,8 @@ public abstract class TLCVariableValue
      * TLCNamedVariableValue objects--and for TLCSimpleVariableValue 
      * objects. */
     protected String source = null;
+    
+    private short diffState = 0;
 
     public Object getValue()
     {
@@ -443,6 +444,164 @@ public abstract class TLCVariableValue
     {
         return value.toString();
     }
+
+    /*
+     * Here are the three states that contain the objects
+     * representing rows in the table displaying the trace that should be
+     * highlighted. They have the following meanings:
+     * 
+     * changed: Rows indicating values that have changed from the last
+     * state. Subobjects of the value column of such a row could also be
+     * highlighted.
+     * 
+     * added: Rows that have been added to a value since the last state.
+     * 
+     * deleted: Rows that are deleted in the following state.
+     * 
+     * The same row can appear in both the deleted and the
+     * changed or added. In that case, it should be displayed as
+     * a changed or added row--since we can't do multicolored backgrounds to
+     * show that it is both.
+     */
+    protected void setDeleted() {
+		 diffState |= (1 << 2);
+	}
+
+	/**
+	 * @return true iff this value has been delete compared to the predecessor
+	 *         state's value in the error trace.
+	 */
+	public boolean isDeleted() {
+		return ((diffState>>2) & 1) != 0;
+	}
+	
+	protected void setAdded() {
+		 diffState |= (1 << 1);
+	}
+
+	/**
+	 * @return true iff this value has been added compared to the predecessor
+	 *         state's value in the error trace.
+	 */
+	public boolean isAdded() {
+		return ((diffState>>1) & 1) != 0;
+	}
+	
+	protected void setChanged() {
+		 diffState |= (1 << 0);
+	}
+
+	/**
+	 * @return true iff this value is different to the predecessor state's value
+	 *         in the error trace.
+	 */
+	public boolean isChanged() {
+		return ((diffState>>0) & 1) != 0;
+	}
+
+	/**
+	 * The recursive method called by innerDiff that diffs the subobjects of
+	 * the variable value objects to indicate which rows of
+	 * the hierarchical trace table should be highlighted to show the parts of
+	 * the state that have changed.
+	 */
+	public void diff(TLCVariableValue other) {
+		if (!this.toSimpleString().equals(other.toSimpleString())) {
+			other.setChanged();
+			if (this.getClass().equals(other.getClass())) {
+				// Only diff objects of identical types
+				innerDiff(other);
+			}
+		}
+	}
+
+	protected void innerDiff(TLCVariableValue other) {
+		// nothing to be done generally, subclass may override
+		return;
+	}
+
+	/**
+	 * A method that sets the diff highlighting information for two arrays of
+	 * either TLCFcnElementVariableValue or TLCNamedVariableValue objects,
+	 * representing the value elements of twos values represented by
+	 * TLCFunctionVariableValue, TLCRecordVariableValue, or
+	 * TLCSequenceVariableValue objects. The parameters firstElts and secondElts
+	 * are the two arrays, and firstLHStrings and secondLHStrings are the
+	 * results of applying the toString or toSimpleString method to their first
+	 * elements. In plain math, this means that we are doing a diff on two
+	 * functions (possibly two records or two sequences) where the ...Strings
+	 * arrays are string representations of the domain elements of each of the
+	 * function elements.
+	 * 
+	 * The HashSet arguments are the sets of element objects that are to be
+	 * highlighted in the appropriate fashion.
+	 * 
+	 * We mark a function element as added or deleted if its left-hand value
+	 * does not appear in one of the elements of the other function. We mark the
+	 * element as changed, and call setInnerDiffInfo on the elements' values if
+	 * elements with the same left-hand values having different values appear in
+	 * the two records.
+	 */
+	protected void setElementArrayDiffInfo(TLCVariableValue[] firstElts, String[] firstLHStrings,
+			TLCVariableValue[] secondElts, String[] secondLHStrings) {
+
+		for (int i = 0; i < firstElts.length; i++) {
+			boolean notfound = true;
+			int j = 0;
+			while (notfound && j < secondElts.length) {
+				if (firstLHStrings[i].equals(secondLHStrings[j])) {
+					notfound = false;
+					TLCVariableValue first = (TLCVariableValue) firstElts[i].getValue();
+					TLCVariableValue second = (TLCVariableValue) secondElts[j].getValue();
+					if (!first.toSimpleString().equals(second.toSimpleString())) {
+						second.setChanged();
+						if (first.getClass().equals(second.getClass())) {
+							// Only diff objects of identical types
+							first.innerDiff(second);
+						}
+					}
+				}
+				j++;
+			}
+			if (notfound) {
+				firstElts[i].setDeleted();
+			}
+		}
+
+		for (int i = 0; i < secondElts.length; i++) {
+			boolean notfound = true;
+			int j = 0;
+			while (notfound && j < firstElts.length) {
+				if (firstElts[j].toSimpleString().equals(secondElts[i].toSimpleString())) {
+					notfound = false;
+				}
+				j++;
+			}
+			if (notfound) {
+				secondElts[i].setAdded();
+			}
+		}
+	}
+
+	/**
+	 * A method that sets the diff highlighting information for two arrays of
+	 * TLCFcnElementVariableValue objects. The parameters firstElts and
+	 * secondElts are the two arrays.In plain math, this means that we are doing
+	 * a diff on two functions (possibly two sequences). This method calls
+	 * setElementArrayDiffInfo to do the work.
+	 */
+	protected void setFcnElementArrayDiffInfo(TLCFcnElementVariableValue[] firstElts,
+			TLCFcnElementVariableValue[] secondElts) {
+		final String[] firstLHStrings = new String[firstElts.length];
+		for (int i = 0; i < firstElts.length; i++) {
+			firstLHStrings[i] = firstElts[i].getFrom().toSimpleString();
+		}
+		final String[] secondLHStrings = new String[secondElts.length];
+		for (int i = 0; i < secondElts.length; i++) {
+			secondLHStrings[i] = secondElts[i].getFrom().toSimpleString();
+		}
+		setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts, secondLHStrings);
+	}
 
     static class InputPair
     {

@@ -66,4 +66,71 @@ public class TLCSequenceVariableValue extends TLCVariableValue
         return arrayToSimpleStringBuffer(elementValues, DELIMETERS).toString();
     }
 
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue#innerDiff(org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue)
+	 */
+	protected void innerDiff(TLCVariableValue other) {
+		/*
+		 * SEQUENCES In general, it's not clear how differences between two
+		 * sequences should be highlighted. We adopt the following
+		 * preliminary approach: If one sequence is a proper initial prefix
+		 * or suffix of the other, then the difference is interpreted as
+		 * adding or deleting the appropriate sequence elements. Otherwise,
+		 * the sequences are treated as functions.
+		 * 
+		 * Note: If one sequence is both an initial prefix and a suffix of
+		 * the other then we give preference to interpreting the operation
+		 * as adding to the end or removing from the front.
+		 */
+		if (!(other instanceof TLCSequenceVariableValue)) {
+			return;
+		}
+		TLCFcnElementVariableValue[] firstElts = this.getElements();
+		TLCFcnElementVariableValue[] secondElts = ((TLCSequenceVariableValue) other).getElements();
+		if (firstElts.length == secondElts.length) {
+			setFcnElementArrayDiffInfo(firstElts, secondElts);
+			return;
+		}
+
+		TLCFcnElementVariableValue[] shorter = firstElts;
+		TLCFcnElementVariableValue[] longer = secondElts;
+		boolean firstShorter = true;
+		if (firstElts.length > secondElts.length) {
+			longer = firstElts;
+			shorter = secondElts;
+			firstShorter = false;
+		}
+		boolean isPrefix = true;
+		for (int i = 0; i < shorter.length; i++) {
+			if (!((TLCVariableValue) shorter[i].getValue()).toSimpleString()
+					.equals(((TLCVariableValue) longer[i].getValue()).toSimpleString())) {
+				isPrefix = false;
+				break;
+			}
+		}
+		boolean isSuffix = true;
+		for (int i = 0; i < shorter.length; i++) {
+			if (!((TLCVariableValue) shorter[i].getValue()).toSimpleString().equals(
+					((TLCVariableValue) longer[i + longer.length - shorter.length].getValue()).toSimpleString())) {
+
+				isSuffix = false;
+				break;
+			}
+		}
+		/*
+		 * If it's both a prefix and a suffix, we interpret the change as
+		 * either adding to the end or deleting from the front. If it's
+		 * neither, we treat the sequences as functions.
+		 */
+		if (isPrefix && isSuffix) {
+			if (firstShorter) {
+				isSuffix = false;
+			} else {
+				isPrefix = false;
+			}
+		} else if (!(isPrefix || isSuffix)) {
+			setFcnElementArrayDiffInfo(firstElts, secondElts);
+			return;
+		}
+	}
 }

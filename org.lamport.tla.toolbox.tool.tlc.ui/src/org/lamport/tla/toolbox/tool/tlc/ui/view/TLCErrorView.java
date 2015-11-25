@@ -2,7 +2,6 @@ package org.lamport.tla.toolbox.tool.tlc.ui.view;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -220,24 +219,6 @@ public class TLCErrorView extends ViewPart
                 states = new LinkedList<TLCState>();
             }
 
-            /*
-             * determine if trace has changed. this is important for really long
-             * traces because resetting the trace input locks up the toolbox for a few
-             * seconds in these cases, so it is important to not reset the trace
-             * if it is not necessary
-             */
-			List<TLCState> oldStates = (List<TLCState>) variableViewer.getInput();
-            boolean isNewTrace = states != null && oldStates != null && !(states == oldStates);
-
-            /*
-             * Set the data structures that cause highlighting of changes in the
-             * error trace.
-             */
-            if (isNewTrace)
-            {
-                setDiffInfo(states);
-            }
-
             IDocument document = errorViewer.getDocument();
             try
             {
@@ -249,6 +230,15 @@ public class TLCErrorView extends ViewPart
             }
 
             // update the trace information
+
+            /*
+             * determine if trace has changed. this is important for really long
+             * traces because resetting the trace input locks up the toolbox for a few
+             * seconds in these cases, so it is important to not reset the trace
+             * if it is not necessary
+             */
+			List<TLCState> oldStates = (List<TLCState>) variableViewer.getInput();
+            boolean isNewTrace = states != null && oldStates != null && !(states == oldStates);
             if (isNewTrace)
             {
                 this.setTraceInput(states);
@@ -826,10 +816,7 @@ public class TLCErrorView extends ViewPart
     /**
      * Content provider for the tree table
      */
-    static class StateContentProvider implements ITreeContentProvider
-    // 
-    // evtl. for path-based addressing in the tree
-    // , ITreePathContentProvider
+    private class StateContentProvider implements ITreeContentProvider
     {
 
         public Object[] getChildren(Object parentElement)
@@ -913,6 +900,41 @@ public class TLCErrorView extends ViewPart
 
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
         {
+            /*
+             * Set the data structures that cause highlighting of changes in the
+             * error trace.
+             */
+            if (oldInput != newInput && newInput instanceof List)
+            {
+            	/*
+            	 * Sets the HashSet objects of StateLabelProvider object that stores the
+            	 * sets of objects to be highlighted to show state changes in the states
+            	 * contained in the parameter stateList.
+            	 */
+            	List<TLCState> stateList = (List<TLCState>) newInput;
+                if (stateList.size() < 2)
+                {
+                    return;
+                } else if (stateList.size() > numberOfStatesToShow) {
+                   	int size = stateList.size();
+                   	stateList = stateList.subList(size - numberOfStatesToShow, size);
+                }
+
+                /*
+                 * Set states to the array of TLCState objects in stateList, and set
+                 * changedRows, addedRows, and deletedRows to the HashSet into which all
+                 * the appropriate row objects are put, and initialize each HashSet to
+                 * empty.
+                 */
+                TLCState firstState = stateList.get(0);
+
+                for (int i = 1; i < stateList.size(); i++)
+                {
+                    TLCState secondState = stateList.get(i);
+                    firstState.diff(secondState);
+                    firstState = secondState;
+                }
+            }
         }
     }
 
@@ -1158,45 +1180,26 @@ public class TLCErrorView extends ViewPart
          * the table. It highlights the entire row for an added or deleted item.
          * For a changed value, only the value is highlighted.
          */
-        public Color getBackground(Object element, int column)
-        {
-            if (changedRows.contains(element))
-            {
-                if (column == VALUE)
-                {
-                    return TLCUIActivator.getDefault().getChangedColor();
-                }
-            } else if (addedRows.contains(element))
-            {
-                return TLCUIActivator.getDefault().getAddedColor();
-            } else if (deletedRows.contains(element))
-            {
-                return TLCUIActivator.getDefault().getDeletedColor();
-            }
-            return null;
-        }
-
-        /*
-         * Here are the three HashSet objects that contain the objects
-         * representing rows in the table displaying the trace that should be
-         * highlighted. They have the following meanings:
-         * 
-         * changedRows: Rows indicating values that have changed from the last
-         * state. Subobjects of the value column of such a row could also be
-         * highlighted.
-         * 
-         * addedRows: Rows that have been added to a value since the last state.
-         * 
-         * deletedRows: Rows that are deleted in the following state.
-         * 
-         * The same row can appear in both the deletedRows set and the
-         * changedRows or addedRows set. In that case, it should be displayed as
-         * a changed or added row--since we can't do multicolored backgrounds to
-         * show that it is both.
-         */
-        protected HashSet<Object> changedRows = new HashSet<Object>();
-        protected HashSet<TLCVariableValue> addedRows = new HashSet<TLCVariableValue>();
-        protected HashSet<TLCVariableValue> deletedRows = new HashSet<TLCVariableValue>();
+		public Color getBackground(Object element, int column) {
+			if (element instanceof TLCVariable) {
+				final TLCVariable var = (TLCVariable) element;
+				if (var.isChanged() && column == VALUE) {
+					return TLCUIActivator.getDefault().getChangedColor();
+				}
+			} else if (element instanceof TLCVariableValue) {
+				final TLCVariableValue value = (TLCVariableValue) element;
+				if (value.isChanged()) {
+					if (column == VALUE) {
+						return TLCUIActivator.getDefault().getChangedColor();
+					}
+				} else if (value.isAdded()) {
+					return TLCUIActivator.getDefault().getAddedColor();
+				} else if (value.isDeleted()) {
+					return TLCUIActivator.getDefault().getDeletedColor();
+				}
+			}
+			return null;
+		}
 
         public Color getForeground(Object element, int i)
         {
@@ -1238,378 +1241,6 @@ public class TLCErrorView extends ViewPart
             return null;
         }
 
-    }
-
-    /*
-     * Sets the HashSet objects of StateLabelProvider object that stores the
-     * sets of objects to be highlighted to show state changes in the states
-     * contained in the parameter stateList.
-     */
-    private void setDiffInfo(List<TLCState> stateList)
-    {
-        if (stateList.size() < 2)
-        {
-            return;
-        } else if (stateList.size() > numberOfStatesToShow) {
-           	int size = stateList.size();
-           	stateList = stateList.subList(size - numberOfStatesToShow, size);
-        }
-
-        /*
-         * Set states to the array of TLCState objects in stateList, and set
-         * changedRows, addedRows, and deletedRows to the HashSet into which all
-         * the appropriate row objects are put, and initialize each HashSet to
-         * empty.
-         */
-        TLCState[] states = new TLCState[stateList.size()];
-        for (int i = 0; i < states.length; i++)
-        {
-            states[i] = stateList.get(i);
-        }
-        StateLabelProvider labelProvider = (StateLabelProvider) variableViewer.getLabelProvider();
-        HashSet<Object> changedRows = labelProvider.changedRows;
-        HashSet<TLCVariableValue> addedRows = labelProvider.addedRows;
-        HashSet<TLCVariableValue> deletedRows = labelProvider.deletedRows;
-        changedRows.clear();
-        addedRows.clear();
-        deletedRows.clear();
-
-        TLCState firstState = states[0];
-        TLCVariable[] firstVariables = firstState.getVariables();
-
-        for (int i = 1; i < states.length; i++)
-        {
-            TLCState secondState = states[i];
-            if (secondState.isStuttering() || secondState.isBackToState())
-            {
-                // there are no variables in second state
-                // because it is a stuttering or a back to state
-                // step
-                break;
-            }
-            TLCVariable[] secondVariables = secondState.getVariables();
-            for (int j = 0; j < firstVariables.length; j++)
-            {
-                TLCVariableValue firstValue = firstVariables[j].getValue();
-                TLCVariableValue secondValue = secondVariables[j].getValue();
-                if (!firstValue.toSimpleString().equals(secondValue.toSimpleString()))
-                {
-                    changedRows.add(secondVariables[j]);
-                    setInnerDiffInfo(firstValue, secondValue, changedRows, addedRows, deletedRows);
-                }
-            }
-
-            firstState = secondState;
-            firstVariables = secondVariables;
-        }
-
-    }
-
-    /**
-     * The recursive method called by setDiffInfo that adds the subobjects of
-     * the variable value objects to the HashSets that indicate which rows of
-     * the hierarchical trace table should be highlighted to show the parts of
-     * the state that have changed.
-     * 
-     * It is called with the objects in the Value columns of corresponding
-     * values that have changed. It adds rows of these two objects' table
-     * representations to the appropriate HashSets to indicate that those rows
-     * should be appropriately highlighted.
-     */
-    private void setInnerDiffInfo(TLCVariableValue first, TLCVariableValue second, HashSet<Object> changed, HashSet<TLCVariableValue> added,
-            HashSet<TLCVariableValue> deleted)
-    {
-        if (first instanceof TLCSimpleVariableValue)
-        {
-            return;
-        } else if (first instanceof TLCSetVariableValue)
-        { /*
-           * SETS For two
-           * sets, the only
-           * meaningful
-           * changes are
-           * additions and
-           * deletions.
-           */
-
-            if (!(second instanceof TLCSetVariableValue))
-            {
-                return;
-            }
-            TLCVariableValue[] firstElts = ((TLCSetVariableValue) first).getElements();
-            TLCVariableValue[] secondElts = ((TLCSetVariableValue) second).getElements();
-
-            for (int i = 0; i < firstElts.length; i++)
-            {
-                boolean notfound = true;
-                int j = 0;
-                while (notfound && j < secondElts.length)
-                {
-                    if (firstElts[i].toSimpleString().equals(secondElts[j].toSimpleString()))
-                    {
-                        notfound = false;
-                    }
-                    j++;
-                }
-                if (notfound)
-                {
-                    deleted.add(firstElts[i]);
-                }
-            }
-
-            for (int i = 0; i < secondElts.length; i++)
-            {
-                boolean notfound = true;
-                int j = 0;
-                while (notfound && j < firstElts.length)
-                {
-                    if (firstElts[j].toSimpleString().equals(secondElts[i].toSimpleString()))
-                    {
-                        notfound = false;
-                    }
-                    j++;
-                }
-                if (notfound)
-                {
-                    added.add(secondElts[i]);
-                }
-            }
-        } else if (first instanceof TLCRecordVariableValue)
-        {
-            /*
-             * RECORDS We mark a record element as added or deleted if its label
-             * does not appear in one of the elements of the other record. We
-             * mark the element as changed, and call setInnerDiffInfo on the
-             * elements' values if elements with same label but different values
-             * appear in the two records.
-             */
-            if (!(second instanceof TLCRecordVariableValue))
-            {
-                return;
-            }
-            TLCVariableValue[] firstElts = ((TLCRecordVariableValue) first).getPairs();
-            TLCVariableValue[] secondElts = ((TLCRecordVariableValue) second).getPairs();
-
-            String[] firstLHStrings = new String[firstElts.length];
-            for (int i = 0; i < firstElts.length; i++)
-            {
-                firstLHStrings[i] = ((TLCNamedVariableValue) firstElts[i]).getName();
-            }
-            String[] secondLHStrings = new String[secondElts.length];
-            for (int i = 0; i < secondElts.length; i++)
-            {
-                secondLHStrings[i] = ((TLCNamedVariableValue) secondElts[i]).getName();
-            }
-
-            setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts, secondLHStrings, changed, added, deleted);
-        } else if (first instanceof TLCFunctionVariableValue)
-        {
-            /*
-             * FUNCTIONS We mark a record element as added or deleted if its
-             * label does not appear in one of the elements of the other record.
-             * We mark the element as changed, and call setInnerDiffInfo on the
-             * elements' values if elements with same label but different values
-             * appear in the two records.
-             */
-            if (!(second instanceof TLCFunctionVariableValue))
-            {
-                return;
-            }
-
-            setFcnElementArrayDiffInfo(((TLCFunctionVariableValue) first).getFcnElements(),
-                    ((TLCFunctionVariableValue) second).getFcnElements(), changed, added, deleted);
-
-        }
-
-        else if (first instanceof TLCSequenceVariableValue)
-        {
-            /*
-             * SEQUENCES In general, it's not clear how differences between two
-             * sequences should be highlighted. We adopt the following
-             * preliminary approach: If one sequence is a proper initial prefix
-             * or suffix of the other, then the difference is interpreted as
-             * adding or deleting the appropriate sequence elements. Otherwise,
-             * the sequences are treated as functions.
-             * 
-             * Note: If one sequence is both an initial prefix and a suffix of
-             * the other then we give preference to interpreting the operation
-             * as adding to the end or removing from the front.
-             */
-            if (!(second instanceof TLCSequenceVariableValue))
-            {
-                return;
-            }
-            TLCFcnElementVariableValue[] firstElts = ((TLCSequenceVariableValue) first).getElements();
-            TLCFcnElementVariableValue[] secondElts = ((TLCSequenceVariableValue) second).getElements();
-            if (firstElts.length == secondElts.length)
-            {
-                setFcnElementArrayDiffInfo(firstElts, secondElts, changed, added, deleted);
-                return;
-            }
-
-            TLCFcnElementVariableValue[] shorter = firstElts;
-            TLCFcnElementVariableValue[] longer = secondElts;
-            boolean firstShorter = true;
-            if (firstElts.length > secondElts.length)
-            {
-                longer = firstElts;
-                shorter = secondElts;
-                firstShorter = false;
-            }
-            boolean isPrefix = true;
-            for (int i = 0; i < shorter.length; i++)
-            {
-                if (!((TLCVariableValue) shorter[i].getValue()).toSimpleString().equals(
-                        ((TLCVariableValue) longer[i].getValue()).toSimpleString()))
-                {
-                    isPrefix = false;
-                    break;
-                }
-            }
-            boolean isSuffix = true;
-            for (int i = 0; i < shorter.length; i++)
-            {
-                if (!((TLCVariableValue) shorter[i].getValue()).toSimpleString().equals(
-                        ((TLCVariableValue) longer[i + longer.length - shorter.length].getValue()).toSimpleString()))
-                {
-
-                    isSuffix = false;
-                    break;
-                }
-            }
-            /*
-             * If it's both a prefix and a suffix, we interpret the change as
-             * either adding to the end or deleting from the front. If it's
-             * neither, we treat the sequences as functions.
-             */
-            if (isPrefix && isSuffix)
-            {
-                if (firstShorter)
-                {
-                    isSuffix = false;
-                } else
-                {
-                    isPrefix = false;
-                }
-            } else if (!(isPrefix || isSuffix))
-            {
-                setFcnElementArrayDiffInfo(firstElts, secondElts, changed, added, deleted);
-                return;
-            }
-            /*
-             * There are four cases: isPrefix and firstShorter : we mark end of
-             * longer (= second) as added. isPrefix and !firstShorter : we mark
-             * end of longer (= first) as deleted. isSuffix and firstShorter :
-             * we mark beginning of longer (=second) as added. isSuffix and
-             * !firstShorter : we mark beginning of longer (=first) as deleted.
-             */
-            int firstEltToMark = (isPrefix) ? shorter.length : 0;
-            HashSet<TLCVariableValue> howToMark = (firstShorter) ? added : deleted;
-
-            for (int i = 0; i < longer.length - shorter.length; i++)
-            {
-                howToMark.add(longer[i + firstEltToMark]);
-            }
-            // setFcnElementArrayDiffInfo(firstElts, secondElts, changed, added,
-            // deleted);
-        }
-
-        return;
-
-    }
-
-    /**
-     * A method that sets the diff highlighting information for two arrays of
-     * either TLCFcnElementVariableValue or TLCNamedVariableValue objects,
-     * representing the value elements of twos values represented by
-     * TLCFunctionVariableValue, TLCRecordVariableValue, or
-     * TLCSequenceVariableValue objects. The parameters firstElts and secondElts
-     * are the two arrays, and firstLHStrings and secondLHStrings are the
-     * results of applying the toString or toSimpleString method to their first
-     * elements. In plain math, this means that we are doing a diff on two
-     * functions (possibly two records or two sequences) where the ...Strings
-     * arrays are string representations of the domain elements of each of the
-     * function elements.
-     * 
-     * The HashSet arguments are the sets of element objects that are to be
-     * highlighted in the appropriate fashion.
-     * 
-     * We mark a function element as added or deleted if its left-hand value
-     * does not appear in one of the elements of the other function. We mark the
-     * element as changed, and call setInnerDiffInfo on the elements' values if
-     * elements with the same left-hand values having different values appear in
-     * the two records.
-     */
-    private void setElementArrayDiffInfo(TLCVariableValue[] firstElts, String[] firstLHStrings,
-            TLCVariableValue[] secondElts, String[] secondLHStrings, HashSet<Object> changed, HashSet<TLCVariableValue> added, HashSet<TLCVariableValue> deleted)
-    {
-
-        for (int i = 0; i < firstElts.length; i++)
-        {
-            boolean notfound = true;
-            int j = 0;
-            while (notfound && j < secondElts.length)
-            {
-                if (firstLHStrings[i].equals(secondLHStrings[j]))
-                {
-                    notfound = false;
-                    TLCVariableValue first = (TLCVariableValue) firstElts[i].getValue();
-                    TLCVariableValue second = (TLCVariableValue) secondElts[j].getValue();
-                    if (!first.toSimpleString().equals(second.toSimpleString()))
-                    {
-                        changed.add(secondElts[j]);
-                        setInnerDiffInfo(first, second, changed, added, deleted);
-                    }
-                }
-                j++;
-            }
-            if (notfound)
-            {
-                deleted.add(firstElts[i]);
-            }
-        }
-
-        for (int i = 0; i < secondElts.length; i++)
-        {
-            boolean notfound = true;
-            int j = 0;
-            while (notfound && j < firstElts.length)
-            {
-                if (firstElts[j].toSimpleString().equals(secondElts[i].toSimpleString()))
-                {
-                    notfound = false;
-                }
-                j++;
-            }
-            if (notfound)
-            {
-                added.add(secondElts[i]);
-            }
-        }
-
-    }
-
-    /**
-     * A method that sets the diff highlighting information for two arrays of
-     * TLCFcnElementVariableValue objects. The parameters firstElts and
-     * secondElts are the two arrays.In plain math, this means that we are doing
-     * a diff on two functions (possibly two sequences). This method calls
-     * setElementArrayDiffInfo to do the work.
-     */
-    private void setFcnElementArrayDiffInfo(TLCFcnElementVariableValue[] firstElts,
-            TLCFcnElementVariableValue[] secondElts, HashSet<Object> changed, HashSet<TLCVariableValue> added, HashSet<TLCVariableValue> deleted)
-    {
-        String[] firstLHStrings = new String[firstElts.length];
-        for (int i = 0; i < firstElts.length; i++)
-        {
-            firstLHStrings[i] = firstElts[i].getFrom().toSimpleString();
-        }
-        String[] secondLHStrings = new String[secondElts.length];
-        for (int i = 0; i < secondElts.length; i++)
-        {
-            secondLHStrings[i] = secondElts[i].getFrom().toSimpleString();
-        }
-        setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts, secondLHStrings, changed, added, deleted);
     }
 
     public List getTrace()

@@ -74,5 +74,8 @@ public class TLCVariable
     {
         this.isTraceExplorerVar = isTraceExplorerVar;
     }
-
+	
+	public boolean isChanged() {
+		return value.isChanged() || value.isDeleted() || value.isAdded();
+	}
 }

@@ -11,7 +11,6 @@ import tla2sany.st.Location;
 /**
  * Representation of the TLC state
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class TLCState implements IModuleLocatable
 {
@@ -93,7 +92,7 @@ public class TLCState implements IModuleLocatable
     private static TLCVariable[] parseVariables(String variablesText)
     {
         String[] lines = variablesText.split(CR);
-        Vector vars = new Vector();
+        Vector<TLCVariable> vars = new Vector<TLCVariable>();
         int index;
 
         // buffer for accumulating the state variable
@@ -160,6 +159,7 @@ public class TLCState implements IModuleLocatable
      * is a state.
      */
     private String modelName;
+	private boolean wasDiffed= false;
 
     /**
      * 
@@ -197,7 +197,7 @@ public class TLCState implements IModuleLocatable
         this.label = label;
     }
 
-    public final List getVariablesAsList()
+    public final List<TLCVariable> getVariablesAsList()
     {
         return Arrays.asList(variables);
     }
@@ -278,4 +278,25 @@ public class TLCState implements IModuleLocatable
     {
         return modelName;
     }
+
+    /**
+     * Set the data structures that cause highlighting of changes in the
+     * error trace.
+     */
+	public void diff(final TLCState other) {
+		if (wasDiffed || other.isStuttering() || other.isBackToState()) {
+			// there are no variables in other
+			// because it is a stuttering or a back to state
+			// step
+			return;
+		}
+		wasDiffed = true;
+		final List<TLCVariable> predecessorVariables = this.getVariablesAsList();
+		final List<TLCVariable> secondVariables = other.getVariablesAsList();
+		for (int i = 0; i < predecessorVariables.size(); i++) {
+			final TLCVariableValue firstValue = predecessorVariables.get(i).getValue();
+			final TLCVariableValue secondValue = secondVariables.get(i).getValue();
+			firstValue.diff(secondValue);
+		}
+	}
 }
