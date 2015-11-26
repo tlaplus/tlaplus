@@ -52,7 +52,7 @@ public class LogFileReader {
 
 	public LogFileReader(String name, IFile aLogFile, boolean isTraceExplorerLogFile) {
 		this.logFile = new File(aLogFile.getLocation().toOSString());
-		this.parser = new TagBasedTLCOutputIncrementalParser(name, ITLCOutputSource.PRIO_LOW, isTraceExplorerLogFile);
+		this.parser = new TagBasedTLCOutputIncrementalParser(name, ITLCOutputSource.PRIO_LOW, isTraceExplorerLogFile, TagBasedTLCOutputIncrementalParser.Mode.BATCH);
 	}
 
     /**

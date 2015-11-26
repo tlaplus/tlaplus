@@ -1,3 +1,29 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Simon Zambrovski - initial API and implementation
+ ******************************************************************************/
+
 package org.lamport.tla.toolbox.tool.tlc.output.source;
 
 import org.eclipse.core.runtime.Assert;
@@ -50,6 +76,20 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
  */
 public class TagBasedTLCOutputIncrementalParser
 {
+	
+	/**
+	 * In batch mode, all lines are added to the document before the parser
+	 * begins its work (see TLCOutputPartitionChangeListener). This is i.e.
+	 * useful where an existing log file is processed. Conversely, incremental
+	 * mode parses each line immediately when added via addIncrement/addLine.
+	 * This mode should be used when {@link TagBasedTLCOutputIncrementalParser}
+	 * is attached to a process sink/running TLC model checker and is supposed
+	 * to show its progress.
+	 */
+	public enum Mode {
+		BATCH, INCREMENTAL;
+	}
+	
     /**
      * The offset of the end of the last
      * start or end tag seen by the previous run of
@@ -263,7 +303,11 @@ public class TagBasedTLCOutputIncrementalParser
      * @param prio
      * @param isTraceExplorer TODO
      */
-    public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer)
+    public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer) {
+    	this(name, prio, isTraceExplorer, Mode.INCREMENTAL);
+    }
+    
+    public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer, Mode mode)
     {
         // create the document
         document = new Document();
@@ -293,11 +337,13 @@ public class TagBasedTLCOutputIncrementalParser
             TLCOutputSourceRegistry.getTraceExploreSourceRegistry().addTLCOutputSource(this.source);
         } else
         {
-        	// TLC always appends to the document. Therefore, we can tell the
-        	// document to use a more efficient rewrite mode which reduces the time
-        	// taken to execute replace operations from minutes and hours to
-        	// seconds.
-        	document.startRewriteSession(DocumentRewriteSessionType.STRICTLY_SEQUENTIAL);
+        	if (mode == Mode.BATCH) {
+        		// TLC always appends to the document. Therefore, we can tell the
+        		// document to use a more efficient rewrite mode which reduces the time
+        		// taken to execute replace operations from minutes and hours to
+        		// seconds.
+        		document.startRewriteSession(DocumentRewriteSessionType.STRICTLY_SEQUENTIAL);
+        	}
         	
             TLCOutputSourceRegistry.getModelCheckSourceRegistry().addTLCOutputSource(this.source);
         }
