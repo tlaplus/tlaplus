@@ -96,7 +96,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      * It is used in the workspace root listener and is called once after the input is set and after the pages 
      * are added.
      */
-    private ValidateRunnable validateRunable = new ValidateRunnable();
+    private final ValidateRunnable validateRunable = new ValidateRunnable();
 
     private class ValidateRunnable implements Runnable
     {
@@ -799,6 +799,15 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             IMarker[] modelProblemMarkers = ModelHelper.getModelProblemMarker(getConfig());
             DataBindingManager dm = getDataBindingManager();
 
+			// The loop is going to update the page's messages for potentially
+			// each marker (nested loop). Thus, turn auto update off during the
+			// loop for all pages (we don't yet know which marker gets displayed
+			// on which page).
+            for (int i = 0; i < this.pagesToAdd.length; i++) {
+				IMessageManager mm = this.pagesToAdd[i].getManagedForm().getMessageManager();
+            	mm.setAutoUpdate(false);
+            }
+            
             for (int j = 0; j < getPageCount(); j++)
             {
                 /*
@@ -854,9 +863,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 							} else {
 								// else install as with other messages
 								IMessageManager mm = this.pagesToAdd[0].getManagedForm().getMessageManager();
-								mm.setAutoUpdate(false);
 								mm.addMessage("modelProblem_" + i, message, null, bubbleType);
-								mm.setAutoUpdate(true);
 							}
                         } else
                         {
@@ -876,7 +883,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                             // the header of every page, so the if statement that is commented
                             // out is no longer relevant
                             IMessageManager mm = page.getManagedForm().getMessageManager();
-                            mm.setAutoUpdate(false);
                             String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
                                     IModelConfigurationDefaults.EMPTY_STRING);
 
@@ -893,7 +899,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                             }
                             // expand the section with an error
                             dm.expandSection(sectionId);
-                            mm.setAutoUpdate(true);
 
                             if (page.getId().equals(pageId) && errorPageIndex < j)
                             {
@@ -904,6 +909,13 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                     }
                 }
             }
+            
+            // Once all markers have been processed, re-enable auto update again.
+            for (int i = 0; i < this.pagesToAdd.length; i++) {
+				final IMessageManager mm = this.pagesToAdd[i].getManagedForm().getMessageManager();
+            	mm.setAutoUpdate(true);
+            }
+            
             if (switchToErrorPage && errorPageIndex != -1 && currentPageIndex != errorPageIndex)
             {
                 // the page has a marker
