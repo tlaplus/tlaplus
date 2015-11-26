@@ -8,11 +8,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.ParserHelper;
+import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.perspective.SpecLoadedPerspective;
 import org.lamport.tla.toolbox.util.ToolboxJob;
@@ -75,6 +77,12 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
 					@Override
 					public IStatus runInUIThread(IProgressMonitor monitor) {
 						UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(spec.getRootFile()));
+
+		        		// Expand the spec's subitems (modules & models group and their subitems).
+						// getViewer() cannot return null here. After all, this listener
+						// is handling its double-click event.
+		        		ToolboxExplorer.getViewer().expandToLevel(spec, AbstractTreeViewer.ALL_LEVELS);
+
 						return Status.OK_STATUS;
 					}
 				};

@@ -80,7 +80,7 @@ public class ToolboxExplorer extends CommonNavigator
         		// No-Op
         	} else if (firstElement instanceof Spec && ((Spec) firstElement).isCurrentSpec()) {
         		// No-op, do not re-open an open spec again.
-        	} else /*it's an ILaunchConfiguration*/ {
+        	} else {
         		UIHelper.runCommand(ToolboxExplorer.COMMAND_ID, new HashMap<String, String>());
         	}
         }
@@ -109,12 +109,14 @@ public class ToolboxExplorer extends CommonNavigator
      * Retrieves the current viewer if any
      * @return the instance of common viewer or <code>null</code>
      */
-    private static CommonViewer getViewer()
+    public static CommonViewer getViewer()
     {
         CommonNavigator navigator = findCommonNavigator(ToolboxExplorer.VIEW_ID);
         if (navigator != null) 
         {
-            return navigator.getCommonViewer();
+            final CommonViewer commonViewer = navigator.getCommonViewer();
+            commonViewer.setAutoExpandLevel(AbstractTreeViewer.ALL_LEVELS);
+			return commonViewer;
         }
         
         return null;
