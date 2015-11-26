@@ -182,7 +182,9 @@ public class TLCOutputSourceRegistry
 					public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 						try {
 							logFileReader.read(monitor);
-						} catch (IOException | BadLocationException e) {
+						} catch (BadLocationException e) {
+							return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage());
+						} catch (IOException e) {
 							return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage());
 						}
 						return Status.OK_STATUS;
