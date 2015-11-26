@@ -289,16 +289,19 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 							// Create a problem marker which gets displayed by
 							// BasicFormPage/ModelEditor as a warning on the
 							// result page.
-							final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
-									"State space exploration incomplete", IMarker.SEVERITY_WARNING);
-							marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
-							incompleteStateExploration = ModelHelper.installModelProblemMarker(getConfig().getFile(),
-									marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+							if (incompleteStateExploration == null) {
+								final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
+										"State space exploration incomplete", IMarker.SEVERITY_WARNING);
+								marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
+								incompleteStateExploration = ModelHelper.installModelProblemMarker(getConfig().getFile(),
+										marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+							}
 						} else {
 							if (incompleteStateExploration != null) {
 								try {
 									incompleteStateExploration.delete();
 									ResultPage.this.resetMessage(RESULT_PAGE_PROBLEM);
+									incompleteStateExploration = null;
 								} catch (CoreException e) {
 									TLCUIActivator.getDefault().logError(e.getMessage(), e);
 								}
@@ -374,32 +377,36 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     public void dispose()
     {
     	disposeLock.lock();
-    	try {
-        /*
-         * Remove graph windows raised for the page.
-         */
-        String suffix = getGraphTitleSuffix(this);
-        Shell[] shells = UIHelper.getCurrentDisplay().getShells();
-        for (int i = 0; i < shells.length; i++)
-        {
-            if (shells[i].getText().endsWith(suffix))
-            {
-                shells[i].dispose();
-            }
-        }
+		try {
+			/*
+			 * Remove graph windows raised for the page.
+			 */
+			String suffix = getGraphTitleSuffix(this);
+			Shell[] shells = UIHelper.getCurrentDisplay().getShells();
+			for (int i = 0; i < shells.length; i++) {
+				if (shells[i].getText().endsWith(suffix)) {
+					shells[i].dispose();
+				}
+			}
 
-        JFaceResources.getFontRegistry().removeListener(fontChangeListener);
+			if (incompleteStateExploration != null) {
+				incompleteStateExploration.delete();
+				incompleteStateExploration = null;
+			}
 
-        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(
-                getConfig());
-        if (provider != null)
-        {
-            provider.setPresenter(null);
-        }
-        super.dispose();
-    	} finally {
-    		disposeLock.unlock();
-    	}
+			JFaceResources.getFontRegistry().removeListener(fontChangeListener);
+
+			TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry()
+					.getProvider(getConfig());
+			if (provider != null) {
+				provider.setPresenter(null);
+			}
+			super.dispose();
+		} catch (CoreException e) {
+			e.printStackTrace();
+		} finally {
+			disposeLock.unlock();
+		}
     }
 
     /**
