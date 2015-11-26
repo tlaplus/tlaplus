@@ -281,12 +281,6 @@ public class TagBasedTLCOutputIncrementalParser
         // now register the listener, responsible for evaluating the partitioning information
         document.addDocumentPartitioningListener(new TLCOutputPartitionChangeListener());
 
-		// TLC always appends to the document. Therefore, we can tell the
-		// document to use a more efficient rewrite mode which reduces the time
-		// taken to execute replace operations from minutes and hours to
-		// seconds.
-        document.startRewriteSession(DocumentRewriteSessionType.STRICTLY_SEQUENTIAL);
-
         /*
          *  Register the process source
          *  
@@ -299,6 +293,12 @@ public class TagBasedTLCOutputIncrementalParser
             TLCOutputSourceRegistry.getTraceExploreSourceRegistry().addTLCOutputSource(this.source);
         } else
         {
+        	// TLC always appends to the document. Therefore, we can tell the
+        	// document to use a more efficient rewrite mode which reduces the time
+        	// taken to execute replace operations from minutes and hours to
+        	// seconds.
+        	document.startRewriteSession(DocumentRewriteSessionType.STRICTLY_SEQUENTIAL);
+        	
             TLCOutputSourceRegistry.getModelCheckSourceRegistry().addTLCOutputSource(this.source);
         }
     }
