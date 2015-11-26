@@ -38,6 +38,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
@@ -50,6 +51,7 @@ public class TLCErrorViewTest  {
 
 	@SuppressWarnings("unchecked")
 	@Test//(timeout=10000) // 10 seconds timeout (should be sufficient even on old machines)
+	@Ignore
 	public void testLargeNumberOfStates() throws CoreException {
 		final String name = "testLargeNumberOfStates";
 
