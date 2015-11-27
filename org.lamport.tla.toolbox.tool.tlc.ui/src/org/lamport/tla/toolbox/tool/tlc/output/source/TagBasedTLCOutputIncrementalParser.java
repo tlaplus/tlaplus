@@ -108,6 +108,15 @@ public class TagBasedTLCOutputIncrementalParser
     class TLCOutputPartitionChangeListener implements IDocumentPartitioningListener,
             IDocumentPartitioningListenerExtension2
     {
+		private final Mode mode;
+
+		public TLCOutputPartitionChangeListener(Mode mode) {
+			this.mode = mode;
+		}
+
+		/* (non-Javadoc)
+         * @see org.eclipse.jface.text.IDocumentPartitioningListener#documentPartitioningChanged(org.eclipse.jface.text.IDocument)
+         */
         public void documentPartitioningChanged(IDocument document)
         {
         }
@@ -287,8 +296,15 @@ public class TagBasedTLCOutputIncrementalParser
                 }
 
                 // Step 6
-                if (offsetToRemove > 0)
+                if (mode == Mode.INCREMENTAL && offsetToRemove > 0)
                 {
+					// if mode is BATCH, this call would just replace the
+					// Documents complete contents wrapped in several
+					// categories. Since we are going to throw the Document away
+					// anyway, there is no point in removing categories.
+					// Removing categories takes a long time because the
+					// implementation isn't meant for a huge number of
+					// categories.
                     document.replace(0, offsetToRemove, "");
                 }
             } catch (BadLocationException e)
@@ -311,7 +327,7 @@ public class TagBasedTLCOutputIncrementalParser
     
     public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer, Mode mode, final long size)
     {
-        // create the document
+		// create the document
         document = new LargeTextStoreDocument(size);
 
         this.analyzer = new TagBasedTLCAnalyzer(document);
@@ -325,7 +341,7 @@ public class TagBasedTLCOutputIncrementalParser
         
 
         // now register the listener, responsible for evaluating the partitioning information
-        document.addDocumentPartitioningListener(new TLCOutputPartitionChangeListener());
+        document.addDocumentPartitioningListener(new TLCOutputPartitionChangeListener(mode));
 
         /*
          *  Register the process source
