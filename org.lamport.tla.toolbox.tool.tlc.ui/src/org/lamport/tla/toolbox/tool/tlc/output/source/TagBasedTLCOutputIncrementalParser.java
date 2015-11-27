@@ -31,11 +31,13 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentPartitioningChangedEvent;
 import org.eclipse.jface.text.DocumentRewriteSessionType;
+import org.eclipse.jface.text.GapTextStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.IDocumentPartitioningListener;
 import org.eclipse.jface.text.IDocumentPartitioningListenerExtension2;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextStore;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
@@ -304,13 +306,13 @@ public class TagBasedTLCOutputIncrementalParser
      * @param isTraceExplorer TODO
      */
     public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer) {
-    	this(name, prio, isTraceExplorer, Mode.INCREMENTAL);
+    	this(name, prio, isTraceExplorer, Mode.INCREMENTAL, LargeTextStoreDocument.SIZE_UNKNOWN);
     }
     
-    public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer, Mode mode)
+    public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer, Mode mode, final long size)
     {
         // create the document
-        document = new Document();
+        document = new LargeTextStoreDocument(size);
 
         this.analyzer = new TagBasedTLCAnalyzer(document);
         this.source = new CachingTLCOutputSource(name, prio);
@@ -342,6 +344,9 @@ public class TagBasedTLCOutputIncrementalParser
         		// document to use a more efficient rewrite mode which reduces the time
         		// taken to execute replace operations from minutes and hours to
         		// seconds.
+				// Its down side is that the ResultPage is only updated when the
+				// complete log file is fully parsed, whereas in incremental
+				// mode, it (potentially) updates after each line.
         		document.startRewriteSession(DocumentRewriteSessionType.STRICTLY_SEQUENTIAL);
         	}
         	
@@ -422,6 +427,38 @@ public class TagBasedTLCOutputIncrementalParser
 		this.document.replace(0, this.document.getLength(), "");
 		if (this.document.getActiveRewriteSession() != null) {
 			this.document.stopRewriteSession(this.document.getActiveRewriteSession());
+		}
+	}
+
+	/**
+	 * {@link Document} targets source code documents of a few thousand lines.
+	 * It quickly becomes inefficient for large inputs like e.g. a TLC log file
+	 * can be.
+	 * <p>
+	 * {@link LargeTextStoreDocument} thus drastically increases the min and max
+	 * sizes of the {@link Document}'s underlying {@link ITextStore}.
+	 * Experiments revealed that this optimization significantly increases the
+	 * {@link TagBasedTLCOutputIncrementalParser} performance.
+	 * <p>
+	 * As we know the size of the log file a-prior, the {@link ITextStore}'s
+	 * internal storage can be sized up-front to match the input's size.
+	 * <p>
+	 * Generally though, it's stupid to keep the entire log file in memory. The
+	 * *incremental* parser should rather discard seen content after processing
+	 * to free memory right away. However, this is larger refactoring.
+	 */
+	private class LargeTextStoreDocument extends Document {
+		
+		public static final long SIZE_UNKNOWN = -1;
+		
+		public LargeTextStoreDocument(long size) {
+			if (size != SIZE_UNKNOWN) {
+				Assert.isLegal(size > 0, "Negative file size");
+				if (size > Integer.MAX_VALUE) {
+					size = Integer.MAX_VALUE - 1;
+				}
+				setTextStore(new GapTextStore((int) size, (int) size + 1, 0.1f));
+			}
 		}
 	}
 }
