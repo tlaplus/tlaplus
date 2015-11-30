@@ -22,7 +22,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
 /**
  * Section part for the constants 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class ValidateableConstantSectionPart extends ValidateableTableSectionPart
 {
@@ -78,6 +77,10 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
         Assignment formula = (Assignment) selection.getFirstElement();
+        if (formula == null) {
+        	// User clicked on an empty line in the formula table
+        	return;	
+        }
         Assignment editedFormula = doEditFormula(formula);
         if (editedFormula != null)
         {
