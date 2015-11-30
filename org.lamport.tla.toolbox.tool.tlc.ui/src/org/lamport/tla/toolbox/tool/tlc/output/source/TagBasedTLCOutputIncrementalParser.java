@@ -469,7 +469,7 @@ public class TagBasedTLCOutputIncrementalParser
 		
 		public LargeTextStoreDocument(long size) {
 			if (size != SIZE_UNKNOWN) {
-				Assert.isLegal(size > 0, "Negative file size");
+				Assert.isLegal(size >= 0, "Negative file size");
 				if (size > Integer.MAX_VALUE) {
 					size = Integer.MAX_VALUE - 1;
 				}
