@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -38,7 +39,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -66,7 +66,8 @@ import org.lamport.org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
@@ -222,22 +223,20 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			} catch (IOException e) {
 				sourceViewer.setDocument(new Document(EMPTY_STRING));
 			}
-		} else if (selection != null && selection.getFirstElement() instanceof ILaunchConfiguration) {
-			final ILaunchConfiguration config = (ILaunchConfiguration) selection.getFirstElement();
+		} else if (selection != null && selection.getFirstElement() instanceof Model) {
+			final Model model = (Model) selection.getFirstElement();
 			try {
 				// By default, show the model's comment/description and fall-back
 				// to its constants. If there are no constants, the last fall-back
 				// is the model's name.
 				final List<String> fallbacksFallback = new ArrayList<String>();
-				fallbacksFallback.add(ModelHelper.getModelName(config));
+				fallbacksFallback.add(model.getName());
 				
-				final String fallback = ModelHelper.prettyPrintConstants(config, "\n", true);
-
-				final String attribute = config.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS, fallback);
+				final String attribute = model.getComments();
 				if (!EMPTY_STRING.equals(attribute)) {
 					sourceViewer.setDocument(new Document(attribute));
 				} else {
-					sourceViewer.setDocument(new Document(fallback));
+					sourceViewer.setDocument(new Document(ModelHelper.prettyPrintConstants(model, "\n", true)));
 				}
 			} catch (final CoreException ignored) {
 				sourceViewer.setDocument(new Document(EMPTY_STRING));
@@ -270,10 +269,10 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 		return new Comparator<Object>() {
 
 			public int compare(final Object o1, final Object o2) {
-				if (o1 instanceof ILaunchConfiguration && o2 instanceof ILaunchConfiguration) {
-					final ILaunchConfiguration c1 = (ILaunchConfiguration) o1;
-					final ILaunchConfiguration c2 = (ILaunchConfiguration) o2;
-					return ModelHelper.getModelName(c1.getFile()).compareTo(ModelHelper.getModelName(c2.getFile()));
+				if (o1 instanceof Model && o2 instanceof Model) {
+					final Model c1 = (Model) o1;
+					final Model c2 = (Model) o2;
+					return c1.getName().compareTo(c2.getName());
 				} else if (o1 instanceof Module && o2 instanceof Module) {
 					final Module m1 = (Module) o1;
 					final Module m2 = (Module) o2;
@@ -284,13 +283,13 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 					return 1;
 				} else if (o1 instanceof Spec && o2 instanceof Spec) {
 					return ((Spec) o1).getName().compareTo(((Spec) o2).getName());
-				} else if (o1 instanceof ILaunchConfiguration && o2 instanceof Module) {
+				} else if (o1 instanceof Model && o2 instanceof Module) {
 					return -1;
-				} else if (o1 instanceof ILaunchConfiguration && o2 instanceof Spec) {
+				} else if (o1 instanceof Model && o2 instanceof Spec) {
 					return -1;
-				} else if (o1 instanceof ILaunchConfiguration && o2 instanceof ItemsListSeparator) {
+				} else if (o1 instanceof Model && o2 instanceof ItemsListSeparator) {
 					return -1;
-				} else if (o1 instanceof Module && o2 instanceof ILaunchConfiguration) {
+				} else if (o1 instanceof Module && o2 instanceof Model) {
 					return 1;
 				} else if (o1 instanceof Module && o2 instanceof Spec) {
 					return -1;
@@ -298,13 +297,13 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 					return 1;
 				} else if (o1 instanceof Module && o2 instanceof ItemsListSeparator) {
 					return -1;
-				} else if (o1 instanceof Spec && o2 instanceof ILaunchConfiguration) {
+				} else if (o1 instanceof Spec && o2 instanceof Model) {
 					return 1;
 				} else if (o1 instanceof Spec && o2 instanceof Module) {
 					return 1;
 				} else if (o1 instanceof Spec && o2 instanceof ItemsListSeparator) {
 					return 1;
-				} else if (o1 instanceof ItemsListSeparator && o2 instanceof ILaunchConfiguration) {
+				} else if (o1 instanceof ItemsListSeparator && o2 instanceof Model) {
 					return 1;
 				} else if (o1 instanceof ItemsListSeparator && o1 == modulesSep && o2 instanceof Module) {
 					return -1;
@@ -328,8 +327,8 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 		// On the initial/welcome page, no spec is open.
 		if (spec != null) {
 			// Models
-			final List<ILaunchConfiguration> models = ModelHelper.getModelsBySpec(spec);
-			for (final ILaunchConfiguration model : models) {
+			final Collection<Model> models = spec.getAdapter(TLCSpec.class).getModels().values();
+			for (final Model model : models) {
 				if (itemsFilter.isConsistentItem(model)) {
 					contentProvider.add(model, itemsFilter);
 				}
@@ -402,9 +401,8 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			if (element instanceof Module) {
 				final Module module = (Module) element;
 				return module.getModuleName();
-			} else if (element instanceof ILaunchConfiguration) {
-				final ILaunchConfiguration config = (ILaunchConfiguration) element;
-				return ModelHelper.getModelName(config.getFile());
+			} else if (element instanceof Model) {
+				((Model) element).getName();
 			} else if (element instanceof Spec) {
 				final Spec spec = (Spec) element;
 				return spec.getName();
@@ -432,22 +430,22 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 				return spec.getName() + " [ " + root.getName() + " ]";
 			} else if (element instanceof Module) {
 				return ((Module) element).getModuleName();
-			} else if (element instanceof ILaunchConfiguration) {
-				final ILaunchConfiguration config = (ILaunchConfiguration) element;
+			} else if (element instanceof Model) {
+				final Model model = (Model) element;
 				try {
-					String attribute = config.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS, EMPTY_STRING);
+					String attribute = model.getComments();
 					if (toggleShowConstantsAction.isChecked() && EMPTY_STRING.equals(attribute)) {
-						attribute = ModelHelper.prettyPrintConstants(config, ", ");
+						attribute = ModelHelper.prettyPrintConstants(model, ", ");
 					}
 					if (!EMPTY_STRING.equals(attribute)) {
 						if (attribute.contains("\n")) {
 							attribute = attribute.split("\n")[0];
 						}
-						return ModelHelper.getModelName(config) + DELIM + " " + attribute;
+						return model.getName() + DELIM + " " + attribute;
 					}
 				} catch (CoreException e) {
 				}
-				return ModelHelper.getModelName(config);
+				return model.getName();
 			} else if (element instanceof ItemsListSeparator) {
 				final ItemsListSeparator ils = (ItemsListSeparator) element;
 				return ils.getName();
@@ -470,7 +468,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 				return PlatformUI.getWorkbench().getSharedImages().getImage(SharedImages.IMG_OBJ_PROJECT_CLOSED);
 			} else if (element instanceof Module) {
 				return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
-			} else if (element instanceof ILaunchConfiguration) {
+			} else if (element instanceof Model) {
 				return ModelImage;
 			}
 			return null;
@@ -486,7 +484,7 @@ public class TLAFilteredItemsSelectionDialog extends FilteredItemsSelectionDialo
 			
 			if (element instanceof Spec) {
 				string.setStyle(0, string.length(), StyledString.QUALIFIER_STYLER);
-			} else if (element instanceof ILaunchConfiguration && text.indexOf(DELIM) != -1) {
+			} else if (element instanceof Model && text.indexOf(DELIM) != -1) {
 				final int index = text.indexOf(DELIM);
 				string.setStyle(index, text.length() - index, StyledString.DECORATIONS_STYLER);
 			} else if (element instanceof ItemsListSeparator) {

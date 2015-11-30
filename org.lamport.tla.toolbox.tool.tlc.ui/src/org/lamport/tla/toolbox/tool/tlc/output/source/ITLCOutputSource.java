@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.output.source;
 
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 
 /**
@@ -33,7 +34,7 @@ public interface ITLCOutputSource
     /**
      * Retrieves the source name, which is the id of the source
      */
-    public String getTLCOutputName();
+    public Model getModel();
 
     /**
      * Retrieves the source priority

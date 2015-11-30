@@ -25,31 +25,24 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.navigator.IDescriptionProvider;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelContentProvider.Group;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
  * Provides labels for the TLC models
  */
 public class ModelLabelProvider extends LabelProvider implements IDescriptionProvider {
 	private Image image = TLCUIActivator.getImageDescriptor("/icons/full/choice_sc_obj.gif").createImage();
-	private final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 
 	/**
 	 * Retrieves model's image
 	 */
 	public Image getImage(final Object element) {
-		if (element instanceof ILaunchConfiguration || element instanceof Group) {
+		if (element instanceof Model || element instanceof Group) {
 			return image;
 		}
 		return super.getImage(element);
@@ -59,33 +52,14 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 	 * Retrieves model's label
 	 */
 	public String getText(final Object element) {
-		if (element instanceof ILaunchConfiguration) {
-			final ILaunchConfiguration config = (ILaunchConfiguration) element;
-			final String modelName = ModelHelper.getModelName(config.getFile());
-			try {
-				if (ModelHelper.isModelStale(config)) {
-					return modelName + " [ crashed ]";
-				}
-				if (ModelHelper.isModelRunning(config)) {
-					final ILaunch[] launches = launchManager.getLaunches();
-					boolean found = false;
-					for (int i = 0; i < launches.length; i++) {
-						if (launches[i].getLaunchConfiguration().contentsEqual(config)) {
-							found = true;
-							break;
-						}
-					}
-					if (found) {
-						return modelName + " [ modelchecking ]";
-					} else {
-						// the MC crashed
-						// mark the error
-						ModelHelper.staleModel(config);
-						return modelName + " [ crashed ]";
-					}
-				}
-			} catch (final CoreException e) {
-				TLCUIActivator.getDefault().logError("Error creating description for a model", e);
+		if (element instanceof Model) {
+			final Model model = (Model) element;
+			final String modelName = model.getName();
+			if (model.isStale()) {
+				return modelName + " [ crashed ]";
+			}
+			if (model.isRunning()) {
+				return modelName + " [ modelchecking ]";
 			}
 			return modelName;
 		} else if (element instanceof Group) {
@@ -98,13 +72,13 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 	 * Description to be shown in the status bar
 	 */
 	public String getDescription(final Object element) {
-		if (element instanceof ILaunchConfiguration) {
-			try {
-				final ILaunchConfiguration ilc = (ILaunchConfiguration) element;
-				return ilc.getAttribute(IModelConfigurationConstants.MODEL_COMMENTS, getText(element));
-			} catch (CoreException e) {
+		if (element instanceof Model) {
+			final Model model = (Model) element;
+			final String comments = model.getComments();
+			if (comments.equals("")) {
 				return getText(element);
 			}
+			return comments;
 		}
 		return null;
 	}
@@ -119,5 +93,4 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 		image = null;
 		super.dispose();
 	}
-
 }

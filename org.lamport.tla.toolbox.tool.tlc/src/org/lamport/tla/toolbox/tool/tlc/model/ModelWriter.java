@@ -23,7 +23,7 @@
  * Contributors:
  *   Simon Zambrovski - initial API and implementation
  ******************************************************************************/
-package org.lamport.tla.toolbox.tool.tlc.util;
+package org.lamport.tla.toolbox.tool.tlc.model;
 
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -41,11 +41,9 @@ import org.eclipse.jface.text.Region;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
-import org.lamport.tla.toolbox.tool.tlc.model.Formula;
-import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCVariable;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -1615,7 +1613,7 @@ public class ModelWriter
      * @param text text containing IDs (error text)
      * @return array of regions or empty array
      */
-    static IRegion[] findIds(String text)
+    public static IRegion[] findIds(String text)
     {
         if (text == null || text.length() == 0)
         {

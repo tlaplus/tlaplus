@@ -1,19 +1,14 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.expression;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.ui.IEditorPart;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 public class ModelErrorsTester extends PropertyTester
 {
-
-    public ModelErrorsTester()
-    {
-        // TODO Auto-generated constructor stub
-    }
 
     /**
      * 
@@ -28,10 +23,10 @@ public class ModelErrorsTester extends PropertyTester
                 if (activeEditor instanceof ModelEditor)
                 {
                     ModelEditor activeModelEditor = (ModelEditor) activeEditor;
-                    ILaunchConfiguration config = activeModelEditor.getConfig();
-                    if (config != null)
+                    Model model = activeModelEditor.getModel();
+                    if (model != null)
                     {
-                        return TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(config).getErrors().size() > 0;
+                        return TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(model).getErrors().size() > 0;
                     }
                 }
             }

@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -155,9 +156,9 @@ public class TLCUIHelper
      * 
      * @param styledText
      * @param trigger
-     * @param config
+     * @param model
      */
-    public static void openTLCLocationHyperlink(StyledText styledText, MouseEvent trigger, ILaunchConfiguration config)
+    public static void openTLCLocationHyperlink(StyledText styledText, MouseEvent trigger, Model model)
     {
         try
         {
@@ -168,7 +169,7 @@ public class TLCUIHelper
                 Object data = range.data;
                 if (data instanceof Location)
                 {
-                    boolean jumpToSavedModule = jumpToSavedLocation((Location) data, config);
+                    boolean jumpToSavedModule = jumpToSavedLocation((Location) data, model);
                     if (!jumpToSavedModule)
                     {
                         UIHelper.jumpToLocation((Location) data, (trigger.stateMask & SWT.CTRL) != 0);
@@ -227,12 +228,11 @@ public class TLCUIHelper
      * editor showing the saved module.
      * 
      * @param location
-     * @param configuration
      * @return
      */
-    public static boolean jumpToSavedLocation(Location location, ILaunchConfiguration configuration)
+    public static boolean jumpToSavedLocation(Location location, Model model)
     {
-        IEditorPart editor = ModelHelper.getEditorWithModelOpened(configuration);
+        IEditorPart editor = model.getAdapter(ModelEditor.class);
         if (editor instanceof ModelEditor)
         {
             ModelEditor modelEditor = (ModelEditor) editor;

@@ -6,7 +6,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.matchers.WithText;
@@ -17,7 +16,9 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
@@ -57,7 +58,8 @@ public class ModelCheckerTest extends AbstractTest {
 		
 		// register job listener who listens for the model checker job
 		final String modelName = UIHelper.getActiveEditor().getTitle();
-		final IJobChangeListener listener = new DummyJobChangeListener(modelName);
+		final Model model = ToolboxHandle.getCurrentSpec().getAdapter(TLCSpec.class).getModel(modelName);
+		final IJobChangeListener listener = new DummyJobChangeListener(model);
 		Job.getJobManager().addJobChangeListener(listener);
 		
 		// start model checking by clicking the menu. This is more robust
@@ -75,8 +77,7 @@ public class ModelCheckerTest extends AbstractTest {
 		// leave huge numbers of model leftovers contributing to slowed down test
 		// execution (see SizeControlContribution for reason why). 
 		try {
-			final ILaunchConfiguration ilc = ModelHelper.getModelByName(modelName);
-			ModelHelper.deleteModel(ilc, new NullProgressMonitor());
+			model.delete(new NullProgressMonitor());
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}

@@ -9,9 +9,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
@@ -21,15 +20,15 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 public abstract class ChangedSpecModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
 {
 
-    private IContainer rootFileParent;
-    private Vector modules = new Vector();
+    private final IContainer rootFileParent;
+    private Vector<IResource> modules = new Vector<IResource>();
     private IResource model = null;
     private boolean checkpointsChanged = false;
-    private IFolder modelDir;
+    private final IFolder modelDir;
 
-    public ChangedSpecModulesGatheringDeltaVisitor(ILaunchConfiguration config)
+    public ChangedSpecModulesGatheringDeltaVisitor(Model model)
     {
-        modelDir = ModelHelper.getModelTargetDirectory(config);
+    	modelDir = model.getTargetDirectory();
         rootFileParent = Activator.getSpecManager().getSpecLoaded().getRootFile().getParent();
     }
 
@@ -85,7 +84,7 @@ public abstract class ChangedSpecModulesGatheringDeltaVisitor implements IResour
      * Retrieves found modules, or an empty list, if nothing found
      * @return a list with found modules
      */
-    public List getModules()
+    public List<IResource> getModules()
     {
         return modules;
     }

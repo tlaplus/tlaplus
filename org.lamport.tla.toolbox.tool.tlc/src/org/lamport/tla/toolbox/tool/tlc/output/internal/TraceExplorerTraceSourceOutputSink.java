@@ -2,7 +2,7 @@ package org.lamport.tla.toolbox.tool.tlc.output.internal;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.debug.core.ILaunchConfiguration;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -56,13 +56,10 @@ public class TraceExplorerTraceSourceOutputSink extends FileProcessOutputSink
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink#initializeSink(java.lang.String, int)
      */
-    public void initializeSink(String processName, int sinkType)
+    public void initializeSink(Model model, int sinkType)
     {
         this.isTraceExplorerOutput = sinkType == IProcessOutputSink.TYPE_TRACE_EXPLORE;
-        this.processName = processName;
-        ILaunchConfiguration config = ModelHelper.getModelByName(processName);
-
-        this.outFile = ModelHelper.getTraceSourceFile(config);
+        this.outFile = model.getTraceSourceFile();
         this.rule = ResourceHelper.getModifyRule(outFile);
 
         // flag the output file to be cleared before the first text is appended

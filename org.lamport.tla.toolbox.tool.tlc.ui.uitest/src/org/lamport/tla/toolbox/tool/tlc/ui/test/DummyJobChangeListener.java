@@ -5,15 +5,16 @@ import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 
 public class DummyJobChangeListener extends DefaultCondition implements IJobChangeListener, ICondition {
 
-	private final String suffix;
+	private final Model model;
 	private Job job;
 
-	public DummyJobChangeListener(final String aModelName) {
-		this.suffix = aModelName;
+	public DummyJobChangeListener(final Model model) {
+		this.model = model;
 	}
 
 	/* (non-Javadoc)
@@ -27,7 +28,7 @@ public class DummyJobChangeListener extends DefaultCondition implements IJobChan
 	 * @see org.eclipse.swtbot.swt.finder.waits.ICondition#getFailureMessage()
 	 */
 	public String getFailureMessage() {
-		return String.format("Timed out waiting for job with %s ", suffix);
+		return String.format("Timed out waiting for job with %s ", model.getName());
 	}
 
 	/* (non-Javadoc)
@@ -37,7 +38,7 @@ public class DummyJobChangeListener extends DefaultCondition implements IJobChan
 		final Job j = event.getJob();
 		if(j.belongsTo(ToolboxJob.FAMILY)) {
 			final String jobName = j.getName();
-			if(jobName.endsWith(suffix)) {
+			if(jobName.endsWith(model.getName())) {
 				job = j;
 			}
 		}

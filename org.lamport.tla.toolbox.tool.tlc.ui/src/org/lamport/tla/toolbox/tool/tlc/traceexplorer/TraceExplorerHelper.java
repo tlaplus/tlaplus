@@ -10,11 +10,11 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.debug.core.ILaunchConfiguration;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Length;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
-import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Length;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -33,10 +33,10 @@ public class TraceExplorerHelper
      * Returns the error that has a trace most recently produced by running model checking
      * on the config or null if none found.
      * 
-     * @param config
+     * @param model
      * @return
      */
-    public static TLCError getErrorOfOriginalTrace(ILaunchConfiguration config)
+    public static TLCError getErrorOfOriginalTrace(Model model)
     {
         /*
          * The trace explorer should not be run for a model while TLC is being run for
@@ -44,7 +44,7 @@ public class TraceExplorerHelper
          * from the tlc output source registry for model checking.
          */
         TLCModelLaunchDataProvider originalTraceProvider = TLCOutputSourceRegistry.getModelCheckSourceRegistry()
-                .getProvider(config);
+                .getProvider(model);
         List<TLCError> errors = originalTraceProvider.getErrors();
         if (errors != null)
         {
@@ -67,14 +67,14 @@ public class TraceExplorerHelper
      * Writes the trace to MC_TE.out.
      * @param trace
      */
-    public static void serializeTrace(ILaunchConfiguration config)
+    public static void serializeTrace(Model model)
     {
         try
         {
-            List<TLCState> trace = getErrorOfOriginalTrace(config).getStates(Length.ALL);
+            List<TLCState> trace = getErrorOfOriginalTrace(model).getStates(Length.ALL);
             Assert.isNotNull(trace);
             Iterator<TLCState> it = trace.iterator();
-            IFile traceSourceFile = ModelHelper.getTraceSourceFile(config);
+            IFile traceSourceFile = model.getTraceSourceFile();
             ModelHelper.createOrClearFiles(new IFile[] { traceSourceFile }, new NullProgressMonitor());
             while (it.hasNext())
             {

@@ -1,11 +1,10 @@
 package org.lamport.tla.toolbox.tool.tlc.result;
 
-import org.eclipse.debug.core.ILaunch;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 
 /**
  * Interface for the TLC job result presenter used in the extension point 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public interface IResultPresenter
 {
@@ -15,5 +14,5 @@ public interface IResultPresenter
     /**
      * Show the results of the launch 
      */
-    public void showResults(ILaunch launch);
+    public void showResults(Model model);
 }

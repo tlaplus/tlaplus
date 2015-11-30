@@ -7,13 +7,10 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -22,9 +19,9 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -48,32 +45,24 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
         if (selection != null && selection instanceof IStructuredSelection)
         {
             // model file
-            final ILaunchConfiguration model = (ILaunchConfiguration) ((IStructuredSelection) selection).getFirstElement();
-
-            // root file
-            final IResource specRootModule = ToolboxHandle.getRootModule(model.getFile().getProject());
+            final Model model = (Model) ((IStructuredSelection) selection).getFirstElement();
 
             // a) fail if model is in use or locked
-            final String modelName = ModelHelper.getModelName(model.getFile()) + "_Copy";
-			try {
-				if (ModelHelper.isModelRunning(model) || ModelHelper.isModelLocked(model)) {
-					MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Could not rename models",
-							"Could not rename the model " + modelName
-									+ ", because it is being model checked or is locked.");
-					return null;
-				}
-			} catch (CoreException e1) {
-				throw new ExecutionException(e1.getMessage(), e1);
+			if (model.isRunning() || model.isLocked()) {
+				MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Could not rename models",
+						"Could not rename the model " + model.getName()
+								+ ", because it is being model checked or is locked.");
+				return null;
 			}
 
             // b) open dialog prompting for new model name
-            final IInputValidator modelNameInputValidator = new ModelNameValidator(specRootModule.getProject());
+            final IInputValidator modelNameInputValidator = new ModelNameValidator(model.getSpec());
             final InputDialog dialog = new InputDialog(UIHelper.getShell(), "Rename model...",
-                    "Please input the new name of the model", modelName, modelNameInputValidator);
+                    "Please input the new name of the model", model.getName(), modelNameInputValidator);
             dialog.setBlockOnOpen(true);
             if(dialog.open() == Window.OK) {
             	// c) close model editor if open
-                final IEditorPart editor = ModelHelper.getEditorWithModelOpened(model);
+                final IEditorPart editor = model.getAdapter(ModelEditor.class);
                 if(editor != null) {
                 	reopenModelEditorAfterRename = true;
                 	UIHelper.getActivePage().closeEditor(editor, true);
@@ -86,7 +75,7 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
 					protected IStatus run(IProgressMonitor monitor) {
 						// d) rename
 						final String newModelName = dialog.getValue();
-						ModelHelper.renameModel(model, ModelHelper.getSpecPrefix(model), newModelName);
+						model.rename(newModelName);
 
 						// e) reopen (in UI thread)
 			            if (reopenModelEditorAfterRename) {

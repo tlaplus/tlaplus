@@ -56,8 +56,7 @@ public class SavedModuleContributionItem extends CompoundContributionItem
         IEditorPart editor = UIHelper.getActiveEditor();
         if (editor instanceof ModelEditor)
         {
-            ModelEditor modelEditor = (ModelEditor) editor;
-            IFolder modelFolder = ModelHelper.getModelTargetDirectory(modelEditor.getConfig());
+            IFolder modelFolder = ((ModelEditor) editor).getModel().getTargetDirectory();
             if (modelFolder != null && modelFolder.exists())
             {
                 try

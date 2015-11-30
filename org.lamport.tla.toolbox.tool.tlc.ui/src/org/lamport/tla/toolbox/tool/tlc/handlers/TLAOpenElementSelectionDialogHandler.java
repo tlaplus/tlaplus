@@ -33,13 +33,12 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.ui.dialog.TLAFilteredItemsSelectionDialog;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.ui.handler.OpenModuleHandler;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -62,9 +61,8 @@ public class TLAOpenElementSelectionDialogHandler extends AbstractHandler implem
 			} else if (result[0] instanceof Module) {
 				parameters.put(OpenModuleHandler.PARAM_MODULE, ((Module) result[0]).getModuleName());
 				UIHelper.runCommand(OpenModuleHandler.COMMAND_ID, parameters);
-			} else if (result[0] instanceof ILaunchConfiguration) {
-				parameters.put(OpenModelHandler.PARAM_MODEL_NAME,
-						ModelHelper.getModelName(((ILaunchConfiguration) result[0]).getFile()));
+			} else if (result[0] instanceof Model) {
+				parameters.put(OpenModelHandler.PARAM_MODEL_NAME, ((Model) result[0]).getName());
 				UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
 			} else if (result[0] instanceof Spec) {
 				parameters.put(OpenSpecHandler.PARAM_SPEC, ((Spec) result[0]).getName());

@@ -26,6 +26,7 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.result.IResultPresenter;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -185,7 +186,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                     IModelConfigurationDefaults.LAUNCH_RECOVER_DEFAULT);
             if (recover)
             {
-                IResource[] checkpoints = ModelHelper.getCheckpoints(config, false);
+                IResource[] checkpoints = config.getAdapter(Model.class).getCheckpoints(false);
                 if (checkpoints.length > 0)
                 {
                     arguments.put("-recover", checkpoints[0].getName());
@@ -267,7 +268,8 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                 IResultPresenter[] registeredResultPresenters = getRegisteredResultPresenters();
                 for (int i = 0; i < registeredResultPresenters.length; i++)
                 {
-                    registeredResultPresenters[i].showResults(launch);
+                	Model model = launch.getLaunchConfiguration().getAdapter(Model.class);
+                    registeredResultPresenters[i].showResults(model);
                 }
             }
         };
@@ -306,7 +308,9 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     {
         if (family != null)
         {
-            if (family instanceof ILaunchConfiguration)
+        	if (family instanceof Model) {
+                return (this.launch.getLaunchConfiguration().getAdapter(Model.class).equals(family));
+        	} else if (family instanceof ILaunchConfiguration)
             {
                 return (this.launch.getLaunchConfiguration().contentsEqual((ILaunchConfiguration) family));
             } else if (family instanceof Spec)

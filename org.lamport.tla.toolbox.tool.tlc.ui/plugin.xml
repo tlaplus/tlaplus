@@ -135,12 +135,6 @@
             name="Stop model checking">
       </command>
       <command
-            categoryId="toolbox.tool.tlc.commands.category"
-            description="Repairs corrupted model."
-            id="toolbox.tool.tlc.commands.model.repair"
-            name="Repair corrupted model">
-      </command>
-      <command
             id="org.lamport.tla.toolbox.tool.tlc.ui.command1"
             name="lets-create-a-command">
       </command>
@@ -418,13 +412,6 @@
                label="Stop"
                style="push">
          </command>
-         <command
-               commandId="toolbox.tool.tlc.commands.model.repair"
-               icon="icons/full/loop_obj.gif"
-               id="toolbox.popupmenu.model.repair"
-               label="Repair"
-               style="push">
-         </command>
       </menuContribution>
    </extension>
    <extension
@@ -456,7 +443,7 @@
          <possibleChildren>
             <or>
                <instanceof
-                     value="org.eclipse.debug.core.ILaunchConfiguration">
+                     value="org.lamport.tla.toolbox.tool.tlc.model.Model">
                </instanceof>
             </or>
          </possibleChildren>
@@ -568,7 +555,7 @@ Console Facory
                      ifEmpty="false"
                      operator="or">
                   <instanceof
-                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                        value="org.lamport.tla.toolbox.tool.tlc.model.Model">
                   </instanceof>
                </iterate>
             </with>
@@ -591,10 +578,10 @@ Console Facory
                      ifEmpty="false"
                      operator="or">
                   <instanceof
-                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                        value="org.lamport.tla.toolbox.tool.tlc.model.Model">
                   </instanceof>
                   <adapt
-                        type="org.eclipse.debug.core.ILaunchConfiguration">
+                        type="org.lamport.tla.toolbox.tool.tlc.model.Model">
                      <not>
                         <reference
                               definitionId="toolbox.tlc.hasModelRunningMarker">
@@ -622,10 +609,10 @@ Console Facory
                      ifEmpty="false"
                      operator="or">
                   <instanceof
-                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                        value="org.lamport.tla.toolbox.tool.tlc.model.Model">
                   </instanceof>
                   <adapt
-                        type="org.eclipse.debug.core.ILaunchConfiguration">
+                        type="org.lamport.tla.toolbox.tool.tlc.model.Model">
                      <not>
                         <reference
                               definitionId="toolbox.tlc.hasModelRunningMarker">
@@ -655,7 +642,7 @@ Console Facory
                            ifEmpty="false"
                            operator="or">
                         <instanceof
-                              value="org.eclipse.debug.core.ILaunchConfiguration">
+                              value="org.lamport.tla.toolbox.tool.tlc.model.Model">
                         </instanceof>
                      </iterate>
                   </with>
@@ -673,7 +660,7 @@ Console Facory
                      ifEmpty="false"
                      operator="or">
                   <instanceof
-                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                        value="org.lamport.tla.toolbox.tool.tlc.model.Model">
                   </instanceof>
                </iterate>
             </with>
@@ -694,10 +681,10 @@ Console Facory
                         ifEmpty="false"
                         operator="and">
                      <instanceof
-                           value="org.eclipse.debug.core.ILaunchConfiguration">
+                           value="org.lamport.tla.toolbox.tool.tlc.model.Model">
                      </instanceof>
 	                   <adapt
-	                         type="org.eclipse.debug.core.ILaunchConfiguration">
+	                         type="org.lamport.tla.toolbox.tool.tlc.model.Model">
 	                     <not>
                         	<or>
 	                      <reference
@@ -723,19 +710,14 @@ Console Facory
                      ifEmpty="false"
                      operator="and">
                   <instanceof
-                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                        value="org.lamport.tla.toolbox.tool.tlc.model.Model">
                   </instanceof>
                   <adapt
-                        type="org.eclipse.debug.core.ILaunchConfiguration">
+                        type="org.lamport.tla.toolbox.tool.tlc.model.Model">
                      <and>
                         <reference
                               definitionId="toolbox.tlc.hasModelRunningMarker">
                         </reference>
-                        <not>
-                           <reference
-                                 definitionId="toolbox.tlc.hasModelCrashedMarker">
-                           </reference>
-                        </not>
                      </and>
                   </adapt>
                </iterate>
@@ -748,41 +730,7 @@ Console Facory
                      ifEmpty="false"
                      operator="or">
                   <instanceof
-                        value="org.eclipse.debug.core.ILaunchConfiguration">
-                  </instanceof>
-               </iterate>
-            </with>
-         </enabledWhen>
-      </handler>
-      <handler
-            class="org.lamport.tla.toolbox.tool.tlc.handlers.RepairLaunchHandler"
-            commandId="toolbox.tool.tlc.commands.model.repair">
-         <activeWhen>
-            <with
-                  variable="selection">
-                  <iterate
-                        ifEmpty="false"
-                        operator="and">
-                     <instanceof
-                           value="org.eclipse.debug.core.ILaunchConfiguration">
-                     </instanceof>
-                     <adapt
-                           type="org.eclipse.debug.core.ILaunchConfiguration">
-                        <reference
-                              definitionId="toolbox.tlc.hasModelCrashedMarker">
-                        </reference>
-                     </adapt>
-                  </iterate>
-            </with>
-         </activeWhen>
-         <enabledWhen>
-            <with
-                  variable="selection">
-               <iterate
-                     ifEmpty="false"
-                     operator="or">
-                  <instanceof
-                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                        value="org.lamport.tla.toolbox.tool.tlc.model.Model">
                   </instanceof>
                </iterate>
             </with>
@@ -896,5 +844,15 @@ Console Facory
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+A">
       </key>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.lamport.tla.toolbox.tool.tlc.model.Model"
+            class="org.lamport.tla.toolbox.tool.tlc.ui.util.ModelEditorAdapterFactory">
+         <adapter
+               type="org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor">
+         </adapter>
+      </factory>
    </extension>
 </plugin>

@@ -2,16 +2,13 @@ package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -20,9 +17,8 @@ import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandlerDelegate;
-import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -42,10 +38,6 @@ public class CloneModelContributionItem extends CompoundContributionItem
 
     protected IContributionItem[] getContributionItems()
     {
-        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-        ILaunchConfigurationType launchConfigurationType = launchManager
-                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
-
         final Vector<CommandContributionItem> modelContributions = new Vector<CommandContributionItem>();
 
         Spec currentSpec = ToolboxHandle.getCurrentSpec();
@@ -63,44 +55,31 @@ public class CloneModelContributionItem extends CompoundContributionItem
 			// here. Meaning, why doesn't the resource fw handle this case
 			// already?
             specProject.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
-
-            // First, search for all models for the given spec.
-            ILaunchConfiguration[] launchConfigurations = launchManager
-                    .getLaunchConfigurations(launchConfigurationType);
-            for (int i = 0; i < launchConfigurations.length; i++)
-            {
-                String modelName = launchConfigurations[i].getName();
-
-                // skip launches from other specs
-                if (!specProject.equals(launchConfigurations[i].getFile().getProject()))
-                {
-                    continue;
-                }
-
-                // Next, set the command and the parameters for the command
-                // that will be called when the user selects this item.
-                Map<String, String> parameters = new HashMap<String, String>();
-
-                // user visible model name
-                String modelNameUser = ModelHelper.getModelName(launchConfigurations[i].getFile());
-
-                // fill the model name for the handler
-                parameters.put(CloneModelHandlerDelegate.PARAM_MODEL_NAME, modelNameUser);
-
-                // create the contribution item
-                CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper
-                        .getActiveWindow(), "toolbox.command.model.clone." + modelName,
-                        COMMAND_ID_ALWAYS_ENABLED, parameters, modelIcon, null, null, modelNameUser, null,
-                        "Clones " + modelNameUser, CommandContributionItem.STYLE_PUSH, null, true);
-
-                // add contribution item to the list
-                modelContributions.add(new CommandContributionItem(param));
-            }
-
         } catch (CoreException e)
         {
         	e.printStackTrace();
         }
+
+		// First, search for all models for the given spec.
+		final Set<String> modelNames = currentSpec.getAdapter(TLCSpec.class).getModels().keySet();
+		for (String modelName : modelNames) {
+            // Next, set the command and the parameters for the command
+            // that will be called when the user selects this item.
+            Map<String, String> parameters = new HashMap<String, String>();
+
+            // fill the model name for the handler
+            parameters.put(CloneModelHandlerDelegate.PARAM_MODEL_NAME, modelName);
+
+            // create the contribution item
+            CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper
+                    .getActiveWindow(), "toolbox.command.model.clone." + modelName,
+                    COMMAND_ID_ALWAYS_ENABLED, parameters, modelIcon, null, null, modelName, null,
+                    "Clones " + modelName, CommandContributionItem.STYLE_PUSH, null, true);
+
+            // add contribution item to the list
+            modelContributions.add(new CommandContributionItem(param));
+        }
+
         return (IContributionItem[]) modelContributions.toArray(new IContributionItem[modelContributions.size()]);
     }
 }

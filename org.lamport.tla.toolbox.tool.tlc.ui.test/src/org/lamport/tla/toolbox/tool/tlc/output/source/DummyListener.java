@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.text.ITypedRegion;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 
@@ -23,9 +24,9 @@ public class DummyListener implements ITLCOutputListener {
 	// all states found by the parser
 	private List<TLCState> states = new ArrayList<TLCState>();
 
-	public String getTLCOutputName() {
+	public Model getModel() {
 		// nop
-		return "";
+		return null;
 	}
 
 	public void onOutput(ITypedRegion region, String text) {

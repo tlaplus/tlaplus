@@ -5,12 +5,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.easymock.EasyMock;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.BadLocationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue;
@@ -121,7 +124,7 @@ public class StateTagBasedTLCOutputIncrementalParserTest {
 		
 		this.state = buf.toString();
 		
-		this.parser = new TagBasedTLCOutputIncrementalParser("foobar", 0, false);
+		this.parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 		
 		// Register test listener with parser output
 		ITLCOutputSource source = parser.getSource();
@@ -261,5 +264,17 @@ public class StateTagBasedTLCOutputIncrementalParserTest {
 		}
 		
 		Assert.assertEquals(STATES, testListener.getRegions().size());
+	}
+	
+	private class DummyModel extends Model {
+
+		DummyModel() {
+			super(EasyMock.createNiceMock(ILaunchConfiguration.class));
+		}
+		
+		public String getName() {
+			// Stop super from delegating to ILC
+			return "StateTagBasedTLCOutputIncrementalParserTest";
+		}
 	}
 }

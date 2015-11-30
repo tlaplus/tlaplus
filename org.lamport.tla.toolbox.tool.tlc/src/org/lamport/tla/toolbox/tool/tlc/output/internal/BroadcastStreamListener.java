@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 
 /**
@@ -20,12 +21,12 @@ public class BroadcastStreamListener implements IStreamListener
 
     /**
      * 
-     * @param streamName
+     * @param model
      * @param kind, see constants {@link IProcessOutputSink#TYPE_DEBUG}, {@link IProcessOutputSink#TYPE_ERROR}, {@link IProcessOutputSink#TYPE_OUT}
      */
-    public BroadcastStreamListener(String streamName, int kind)
+    public BroadcastStreamListener(Model model, int kind)
     {
-        this.listeners = getRegisteredStreamManagers(streamName, kind);
+        this.listeners = getRegisteredStreamManagers(model, kind);
     }
 
     /* (non-Javadoc)
@@ -75,7 +76,7 @@ public class BroadcastStreamListener implements IStreamListener
      * Retrieves all registered listener managers
      * @return 
      */
-    private IProcessOutputSink[] getRegisteredStreamManagers(String name, int type)
+    private IProcessOutputSink[] getRegisteredStreamManagers(Model model, int type)
     {
         IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(
                 IProcessOutputSink.EXTENSION_ID);
@@ -86,7 +87,7 @@ public class BroadcastStreamListener implements IStreamListener
             try
             {
                 IProcessOutputSink extension = (IProcessOutputSink) decls[i].createExecutableExtension("class");
-                extension.initializeSink(name, type);
+                extension.initializeSink(model, type);
                 validExtensions.add(extension);
             } catch (CoreException e)
             {

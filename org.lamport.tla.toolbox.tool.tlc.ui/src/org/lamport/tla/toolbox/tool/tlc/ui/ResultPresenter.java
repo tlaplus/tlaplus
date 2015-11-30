@@ -1,11 +1,10 @@
 package org.lamport.tla.toolbox.tool.tlc.ui;
 
-import org.eclipse.debug.core.ILaunch;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.result.IResultPresenter;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -13,16 +12,11 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * 
  * 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class ResultPresenter implements IResultPresenter
 {
 
-    public ResultPresenter()
-    {
-    }
-
-    public void showResults(ILaunch launch)
+    public void showResults(Model model)
     {
         /*
          * For trace exploration, just update the error view with the data
@@ -30,23 +24,20 @@ public class ResultPresenter implements IResultPresenter
          * the editor for that model, show the result page, and update the
          * data on the result page.
          */
-        if (launch.getLaunchMode().equals(TraceExplorerDelegate.MODE_TRACE_EXPLORE))
+        if (model.getLastLaunch().getLaunchMode().equals(TraceExplorerDelegate.MODE_TRACE_EXPLORE))
         {
-            ModelEditor editor = (ModelEditor) ModelHelper.getEditorWithModelOpened(launch.getLaunchConfiguration());
-            if (editor != null && editor.getActivePage() != -1)
+            final ModelEditor modelEditor = model.getAdapter(ModelEditor.class);
+            if (modelEditor != null && modelEditor.getActivePage() != -1)
             {
                 // If an editor is open and active on the model, update the error view.
                 // Although the trace explorer only takes a few seconds to run,
                 // the user could still switch to another model.
                 // If so, this code should not be run.
-
-                TLCErrorView.updateErrorView(launch.getLaunchConfiguration());
-
+                TLCErrorView.updateErrorView(model);
             }
         } else
         {
-            ModelEditor editor = (ModelEditor) UIHelper.openEditor(ModelEditor.ID, launch.getLaunchConfiguration()
-                    .getFile());
+            ModelEditor editor = (ModelEditor) UIHelper.openEditor(ModelEditor.ID, model.getFile());
             if (editor != null)
             {
                 editor.showResultPage();

@@ -36,6 +36,7 @@ import java.io.LineNumberReader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.source.ITLCOutputSource;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TagBasedTLCOutputIncrementalParser;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
@@ -50,9 +51,9 @@ public class LogFileReader {
 	private final TagBasedTLCOutputIncrementalParser parser;
 	private final File logFile;
 
-	public LogFileReader(String name, IFile aLogFile, boolean isTraceExplorerLogFile) {
+	public LogFileReader(Model model, IFile aLogFile, boolean isTraceExplorerLogFile) {
 		this.logFile = new File(aLogFile.getLocation().toOSString());
-		this.parser = new TagBasedTLCOutputIncrementalParser(name, ITLCOutputSource.PRIO_LOW, isTraceExplorerLogFile,
+		this.parser = new TagBasedTLCOutputIncrementalParser(model, ITLCOutputSource.PRIO_LOW, isTraceExplorerLogFile,
 				TagBasedTLCOutputIncrementalParser.Mode.BATCH, this.logFile.length());
 	}
 

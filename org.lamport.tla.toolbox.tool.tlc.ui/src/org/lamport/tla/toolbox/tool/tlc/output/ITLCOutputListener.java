@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.output;
 
 import org.eclipse.jface.text.ITypedRegion;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 
 /**
@@ -10,7 +11,6 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
  * This class is not intended to be subclassed by the clients.<br>
  * 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public interface ITLCOutputListener
 {
@@ -18,7 +18,7 @@ public interface ITLCOutputListener
      * Retrieves the process name of TLC 
      * @return the name to identify the TLC instance
      */
-    public String getTLCOutputName();
+    public Model getModel();
 
     /**
      * Reports new output.

@@ -11,14 +11,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -33,7 +33,7 @@ public class DeleteModelHandler extends AbstractHandler implements IHandler
     {
 		// Get the currently selected models from the Eclipse SelectionService
 		// (Ask UI what the current selection is). The CommandFramework makes
-		// sure that only ILaunchConfigurations can be part of the selection.
+		// sure that only Model can be part of the selection.
         final ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
         if (selection != null && selection instanceof IStructuredSelection) {
         	final IStructuredSelection iss = (IStructuredSelection) selection;
@@ -54,56 +54,58 @@ public class DeleteModelHandler extends AbstractHandler implements IHandler
 			// currently running a model check
 			// TODO better disable delete action in spec explorer for
 			// currently model checking models
-			final Iterator<ILaunchConfiguration> itr1 = iss.iterator();
+			final Iterator<Model> itr1 = iss.iterator();
 			for (; itr1.hasNext();) {
-        		final ILaunchConfiguration ilc = itr1.next();
-        		try {
-					boolean modelIsRunning = ModelHelper.isModelRunning(ilc);
-					if(modelIsRunning) {
-						MessageDialog
-								.openError(
-										UIHelper.getShell(),
-										"Could not delete a model",
-										"Could not delete the model "
-												+ ModelHelper.getModelName(ilc.getFile())
-												+ ", because it is being model checked.");
-						return null;
-					}
-				} catch (CoreException e) {
-					// Can't think of a situation where this would throw a CoreException
-					// (except for an impl bug in isModelRunning()) at this point.
-					e.printStackTrace();
+        		final Model model = itr1.next();
+				if(model.isRunning()) {
+					MessageDialog
+							.openError(
+									UIHelper.getShell(),
+									"Could not delete a model",
+									"Could not delete the model "
+											+ model.getName()
+											+ ", because it is being model checked.");
+					return null;
+				}
+				if(model.isLocked()) {
+					MessageDialog
+							.openError(
+									UIHelper.getShell(),
+									"Could not delete a model",
+									"Could not delete the model "
+											+ model.getName()
+											+ ", because it is currently locked.");
+					return null;
 				}
 			}
 			
 			// 3.) at this point, we are safe to delete all models (user has
 			// confirmed, no model is used in model checking
 			// But there might be open editors corresponding to the models which have to be closed first
-			final Iterator<ILaunchConfiguration> itr2 = iss.iterator();
+			final Iterator<Model> itr2 = iss.iterator();
 			for (; itr2.hasNext();) {
-        		final ILaunchConfiguration ilc = itr2.next();
+        		final Model model = itr2.next();
 
         		// close corresponding editor if open
-				final IEditorPart editorWithModelOpened = ModelHelper
-						.getEditorWithModelOpened(ilc);
+        		final IEditorPart editorWithModelOpened = model.getAdapter(ModelEditor.class);
 				if (editorWithModelOpened != null) {
 					UIHelper.getActivePage().closeEditor(editorWithModelOpened,
 							false);
 				}
 			}
 			
-			// Remove all to be deleted LaunchConfigs from the Selection so that
+			// Remove all to be deleted Models from the Selection so that
 			// other UI handlers do not handle them during the backend job
 			
 			// Simply convert selection to ILC[]
-			final ILaunchConfiguration[] ilcs = (ILaunchConfiguration[]) iss
-			.toList().toArray(new ILaunchConfiguration[iss.size()]);
+			final Model[] models = (Model[]) iss
+			.toList().toArray(new Model[iss.size()]);
 
 			// 3.) remove any tlc output sources corresponding to this model
 			// in case the user opens a new model of the same name in
 			// the same toolbox session
 			TLCOutputSourceRegistry.getModelCheckSourceRegistry()
-					.removeTLCStatusSource(ilcs);
+					.removeTLCStatusSource(models);
 			
 			// 4.) UI is in ready state
 			// Defer deletion to ResourceFramework outside the UI thread (makes
@@ -113,7 +115,9 @@ public class DeleteModelHandler extends AbstractHandler implements IHandler
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
 					try {
-						ModelHelper.deleteModels(ilcs, monitor);
+						for (Model model : models) {
+							model.delete(monitor);
+						}
 					} catch (CoreException e) {
 						return new Status(Status.ERROR,
 								"org.lamport.tla.toolbox.tool.tlc.ui",

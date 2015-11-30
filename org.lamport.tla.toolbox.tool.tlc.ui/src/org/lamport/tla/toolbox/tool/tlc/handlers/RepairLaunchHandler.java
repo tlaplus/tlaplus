@@ -5,18 +5,14 @@ import java.util.Iterator;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 
 /**
  * Repairs model launches
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class RepairLaunchHandler extends AbstractHandler
 {
@@ -32,18 +28,12 @@ public class RepairLaunchHandler extends AbstractHandler
             while (modelIterator.hasNext())
             {
                 Object element = modelIterator.next();
-                if (element instanceof ILaunchConfiguration)
+                if (element instanceof Model)
                 {
-                    ILaunchConfiguration config = (ILaunchConfiguration) element;
-                    try
+                	Model model = (Model) element;
+                    if (model.isStale())
                     {
-                        if (ModelHelper.isModelRunning(config) && ModelHelper.isModelStale(config))
-                        {
-                            ModelHelper.recoverModel(config);
-                        }
-                    } catch (CoreException e)
-                    {
-                        TLCUIActivator.getDefault().logError("Error reparing the model launch", e);
+                    	model.recover();
                     }
                 }
             }

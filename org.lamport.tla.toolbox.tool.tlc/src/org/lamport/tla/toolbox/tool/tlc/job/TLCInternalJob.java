@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
@@ -37,7 +38,8 @@ public class TLCInternalJob extends TLCJob
         // initialize the progress reporting variable
         reported = 0;
         
-        outputListener = new BroadcastStreamListener(modelName, IProcessOutputSink.TYPE_OUT);
+        final Model model = launch.getLaunchConfiguration().getAdapter(Model.class);
+        outputListener = new BroadcastStreamListener(model, IProcessOutputSink.TYPE_OUT);
     }
 
     protected IStatus run(IProgressMonitor monitor)

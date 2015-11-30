@@ -1,16 +1,13 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
-import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -84,17 +81,12 @@ public class ModelEditorPartListener implements IPartListener2
 			final ModelEditor editor = (ModelEditor) part;
 			TLCModelLaunchDataProvider provider = null;
 
-			final ILaunchConfiguration config = editor.getConfig().getOriginal();
+			final Model model = editor.getModel();
 
-			try {
-				if (ModelHelper.isOriginalTraceShown(config)) {
-					provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(config);
-				} else {
-					provider = TLCOutputSourceRegistry.getTraceExploreSourceRegistry().getProvider(config);
-				}
-			} catch (final CoreException e) {
-				TLCUIActivator.getDefault().logError(
-						"Error determining if original trace should be shown when model editor is made visible.", e);
+			if (model.isOriginalTraceShown()) {
+				provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(model);
+			} else {
+				provider = TLCOutputSourceRegistry.getTraceExploreSourceRegistry().getProvider(model);
 			}
 
 			final TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
@@ -115,7 +107,7 @@ public class ModelEditorPartListener implements IPartListener2
 			    	// 3) Run the model
 			    	// 4) Cycle focus
 					// 5) Bam!
-					TLCErrorView.updateErrorView(config, !UIHelper.isInSameStack(editor, TLCErrorView.ID));
+					TLCErrorView.updateErrorView(model, !UIHelper.isInSameStack(editor, TLCErrorView.ID));
 				} else {
 					errorView.clear();
 				}

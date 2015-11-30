@@ -11,22 +11,20 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
  * Sink writing the MC.out file
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class FileProcessOutputSink implements IProcessOutputSink
 {
     protected ISchedulingRule rule;
     protected IFile outFile;
-    protected String processName;
+	private Model model;
 
     public FileProcessOutputSink()
     {
@@ -51,7 +49,7 @@ public class FileProcessOutputSink implements IProcessOutputSink
             // if the console output is active, print to it
         } catch (CoreException e)
         {
-            TLCActivator.getDefault().logError("Error writing the TLC process output file for " + processName, e);
+            TLCActivator.logError("Error writing the TLC process output file for " + model.getName(), e);
         }
 
     }
@@ -59,13 +57,12 @@ public class FileProcessOutputSink implements IProcessOutputSink
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink#initializeSink(java.lang.String, int)
      */
-    public void initializeSink(String processName, int sinkType)
+    public void initializeSink(Model model, int sinkType)
     {
         boolean isTraceExplore = sinkType == TYPE_TRACE_EXPLORE;
 
-        this.processName = processName;
-        ILaunchConfiguration config = ModelHelper.getModelByName(processName);
-        this.outFile = ModelHelper.getModelOutputLogFile(config, isTraceExplore);
+        this.model = model;
+        this.outFile = model.getOutputLogFile(isTraceExplore);
         this.rule = ResourceHelper.getModifyRule(outFile);
     }
 

@@ -1,7 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -15,8 +15,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -43,9 +41,10 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
-import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCModelFactory;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
@@ -59,7 +58,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ChangedSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -69,9 +67,8 @@ import tla2sany.semantic.ModuleNode;
 /**
  * Editor for the model
  * @author Simon Zambrovski
- * @version $Id$
  */
-public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
+public class ModelEditor extends FormEditor
 {
 
 	/**
@@ -82,7 +79,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     /*
      * working copy of the model
      */
-    private ILaunchConfigurationWorkingCopy configurationCopy;
     // helper to resolve semantic matches of words
     private SemanticHelper helper;
     // reacts on model changes
@@ -107,7 +103,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         {
             // re-validate the pages, iff the model is not running
             // and is not locked
-            if (!isModelRunning() && !isModelLocked())
+            if (!model.isRunning() && !model.isLocked())
             {
                 /*
                  * Note that all pages are not necessarily
@@ -146,10 +142,10 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
              * This is a helper method that returns a new instance of ChangedModulesGatheringDeltaVisitor,
              * which gathers the changed TLA modules from a resource delta tree.
              */
-            ChangedSpecModulesGatheringDeltaVisitor visitor = new ChangedSpecModulesGatheringDeltaVisitor(getConfig()) {
+            ChangedSpecModulesGatheringDeltaVisitor visitor = new ChangedSpecModulesGatheringDeltaVisitor(model) {
                 public IResource getModel()
                 {
-                    return ModelEditor.this.getConfig().getFile();
+                    return model.getFile();
                 }
             };
 
@@ -194,6 +190,8 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     // array of pages to add
     private BasicFormPage[] pagesToAdd;
 
+	private Model model;
+
     /**
      * Simple editor constructor
      */
@@ -218,59 +216,65 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 		if (finput == null || !finput.exists()) {
 			throw new PartInitException("Editor input does not exist: " + finput.getName());
 		}
-
-        final ILaunchConfiguration configuration = ModelHelper.getModelByFile(finput.getFile());
-
-        try
-        {
-            configurationCopy = configuration.getWorkingCopy();
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Could not load model content for " + finput.getName(), e);
-            throw new PartInitException(e.getMessage(), e);
-        }
-
+		
+        model = TLCModelFactory.getBy(finput.getFile());
+        
         /*
          * Install a resource change listener on the file opened which react
          * on marker changes
          */
-        modelFileChangeListener = ModelHelper.installModelModificationResourceChangeListener(this,
-        /*
-         * If the model file is changed, refresh the changes in the
-         * editor if the model is in use, activate the third page
-         */
-        new Runnable() {
-            public void run()
-            {
-                // update the pages
-                for (int i = 0; i < getPageCount(); i++)
-                {
-                    /*
-                     * Note that all pages are not necessarily
-                     * instances of BasicFormPage. Some are read
-                     * only editors showing saved versions of
-                     * modules.
-                     */
-                    if (pages.get(i) instanceof BasicFormPage)
-                    {
-                        BasicFormPage page = (BasicFormPage) pages.get(i);
-                        ((BasicFormPage) page).refresh();
-                    }
-                }
+        // construct the listener
+		modelFileChangeListener = new IResourceChangeListener() {
+			public void resourceChanged(IResourceChangeEvent event) {
+				// get the marker changes
+				IMarkerDelta[] markerChanges = event.findMarkerDeltas(Model.TLC_MODEL_IN_USE_MARKER, false);
 
-                if (isModelRunning())
-                {
-                    showResultPage();
-                }
-                // evtl. add more graphical sugar here,
-                // like changing the model icon,
-                // changing the editor title (part name)
-            }
-        });
+				// usually this list has at most one element
+				for (int i = 0; i < markerChanges.length; i++) {
+					if (getFileEditorInput().getFile().equals(markerChanges[i].getResource())) {
+						UIHelper.runUIAsync(
+								/*
+								 * If the model file is changed, refresh the
+								 * changes in the editor if the model is in use,
+								 * activate the third page
+								 */
+								new Runnable() {
+							public void run() {
+								// update the pages
+								for (int i = 0; i < getPageCount(); i++) {
+									/*
+									 * Note that all pages are not necessarily
+									 * instances of BasicFormPage. Some are read
+									 * only editors showing saved versions of
+									 * modules.
+									 */
+									if (pages.get(i) instanceof BasicFormPage) {
+										BasicFormPage page = (BasicFormPage) pages.get(i);
+										((BasicFormPage) page).refresh();
+									}
+								}
 
+								if (model.isRunning()) {
+									showResultPage();
+								}
+								// evtl. add more graphical sugar here,
+								// like changing the model icon,
+								// changing the editor title (part name)
+							}
+						});
+						// It's sufficient to only update the UI once
+						return;
+					}
+				}
+			}
+		};
+
+        // add to the workspace root
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(modelFileChangeListener, IResourceChangeEvent.POST_CHANGE);
+ 
         // setContentDescription(path.toString());
-        this.setPartName(ModelHelper.getModelName(finput.getFile()));
-        this.setTitleToolTip(finput.getFile().getProjectRelativePath().toString());
+        this.setPartName(model.getName());
+        this.setTitleToolTip(model.getFile().getLocation().toOSString());
 
         // add a listener that will update the tlc error view when a model editor
         // is made visible
@@ -327,7 +331,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // remove the listeners
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(workspaceResourceChangeListener);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileChangeListener);
+
         super.dispose();
+        
+        // super.dispose still needs the model instance
+        model = null;
         // TLCUIActivator.getDefault().logDebug("leaving ModelEditor#dispose()");
     }
 
@@ -341,10 +349,10 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     public void doSave(IProgressMonitor monitor)
     {
         this.commitPages(monitor, true);
-        ModelHelper.doSaveConfigurationCopy(configurationCopy);
+        model.save(monitor);
 
         // remove existing markers
-        ModelHelper.removeModelProblemMarkers(configurationCopy, ModelHelper.TLC_MODEL_ERROR_MARKER_SANY);
+        model.removeMarkers(Model.TLC_MODEL_ERROR_MARKER_SANY);
 
         boolean revalidate = TLCUIActivator.getDefault().getPreferenceStore().getBoolean(
                 ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY);
@@ -373,7 +381,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     public void doSaveWithoutValidating(IProgressMonitor monitor)
     {
         this.commitPages(monitor, true);
-        ModelHelper.doSaveConfigurationCopy(configurationCopy);
+        model.save(monitor);
 
         this.editorDirtyStateChanged();
     }
@@ -388,21 +396,20 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     /**
      * Ask the view for an adapter for certain class
      */
-    public Object getAdapter(Class required)
+    @SuppressWarnings("unchecked")
+	public <T> T getAdapter(Class<T> required)
     {
-
-        // ask for the launh data provider
+        // ask for the launch data provider
         if (TLCModelLaunchDataProvider.class.equals(required))
         {
             // return a provider, if this can be found
             TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(
-                    getConfig());
+            		getModel());
             if (provider != null)
             {
-                return provider;
+                return (T) provider;
             }
         }
-
         return super.getAdapter(required);
     }
 
@@ -681,10 +688,9 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 							// must be saved from the preferences
 							int autoLockTime = TLCUIActivator.getDefault().getPreferenceStore()
 									.getInt(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME);
-							getConfig().setAttribute(IConfigurationConstants.LAUNCH_AUTO_LOCK_MODEL_TIME, autoLockTime);
-							getConfig().doSave();
+							model.setAutoLockTime(autoLockTime);
 						}
-						getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
+						model.launch(mode, new SubProgressMonitor(monitor, 1), true);
 
 						/*
 						 * Close any tabs in this editor containing read-only
@@ -719,7 +725,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 			}, monitor);
 		} catch (CoreException e) {
 			TLCUIActivator.getDefault().logError(
-					"Error launching the configuration " + getConfig().getName(), e);
+					"Error launching the configuration " + model.getName(), e);
 			MessageDialog.openError(getSite().getShell(), "Model processing failed", e.getMessage());
 		}
 	}
@@ -729,32 +735,20 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     public void stop()
     {
-        try
+        if (getModel().isRunning())
         {
-            if (ModelHelper.isModelRunning(getConfig()) && !ModelHelper.isModelStale(getConfig()))
+            Job[] runningSpecJobs = Job.getJobManager().find(getModel().getLaunchConfiguration());
+            for (int i = 0; i < runningSpecJobs.length; i++)
             {
-                Job[] runningSpecJobs = Job.getJobManager().find(getConfig());
-                for (int i = 0; i < runningSpecJobs.length; i++)
-                {
-                    // send cancellations to all jobs...
-                    runningSpecJobs[i].cancel();
-                }
+                // send cancellations to all jobs...
+                runningSpecJobs[i].cancel();
             }
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error stopping the model launch", e);
         }
-
     }
 
-    /**
-     * Returns a working copy of the launch configuration for this model.
-     * 
-     * @return
-     */
-    public ILaunchConfigurationWorkingCopy getConfig()
+    public Model getModel()
     {
-        return configurationCopy;
+        return model;
     }
 
     /**
@@ -796,7 +790,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         int currentPageIndex = getActivePage();
         try
         {
-            IMarker[] modelProblemMarkers = ModelHelper.getModelProblemMarker(getConfig());
+            IMarker[] modelProblemMarkers = model.getMarkers();
             DataBindingManager dm = getDataBindingManager();
 
 			// The loop is going to update the page's messages for potentially
@@ -829,7 +823,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                                 IModelConfigurationDefaults.EMPTY_STRING);
 
                         int bubbleType = -1;
-                        if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_SANY))
+                        if (modelProblemMarkers[i].getType().equals(Model.TLC_MODEL_ERROR_MARKER_SANY))
                         {
                             // SANY markers are errors
                             bubbleType = IMessageProvider.ERROR;
@@ -989,78 +983,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             }
         }
         return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IResourceProvider#
-     * getResource()
-     */
-    public IFile getResource(int type)
-    {
-        IFile result = getFileEditorInput().getFile();
-
-        switch (type) {
-        case IFileProvider.TYPE_MODEL:
-            break;
-        case IFileProvider.TYPE_RESULT:
-            String modelName = ModelHelper.getModelName(result);
-            result = result.getProject().getFolder(modelName).getFile(ModelHelper.FILE_OUT);
-            break;
-        default:
-            result = null;
-            break;
-        }
-        return result;
-    }
-
-    /**
-     * Retrieves if the working copy of the model is running
-     * @return true, if the model is locked 
-     */
-    public boolean isModelRunning()
-    {
-        try
-        {
-            return ModelHelper.isModelRunning(getConfig());
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error determining model status", e);
-            return true;
-        }
-    }
-
-    /**
-     * Retrieves if the working copy of the model is locked
-     * @return true, if the model is locked 
-     */
-    public boolean isModelLocked()
-    {
-        try
-        {
-            return ModelHelper.isModelLocked(getConfig());
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error determining model status", e);
-            return true;
-        }
-    }
-
-    /**
-     * Retrieves if the working copy of the model is still left 
-     * in in-use status, even if no process is running on it anymore
-     */
-    public boolean isModelStale()
-    {
-        try
-        {
-            return ModelHelper.isModelStale(getConfig());
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error determining model status", e);
-            return true;
-        }
     }
 
     /**

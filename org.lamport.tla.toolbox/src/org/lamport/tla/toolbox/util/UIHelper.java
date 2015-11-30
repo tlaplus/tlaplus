@@ -491,17 +491,14 @@ public class UIHelper {
 			ParameterizedCommand pCommand = ParameterizedCommand.generateCommand(command, parameters);
 			return handlerService.executeCommand(pCommand, null);
 		} catch (NotDefinedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Activator.getDefault().logError(e.getMessage(), e);
 		} catch (NotEnabledException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Activator.getDefault().logError(e.getMessage(), e);
 		} catch (NotHandledException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Activator.getDefault().logError(e.getMessage(), e);
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MessageDialog.openError(getShell(), "Failed to execute.", e.getMessage());
+			Activator.getDefault().logError(e.getMessage(), e);
 		}
 
 		return null;

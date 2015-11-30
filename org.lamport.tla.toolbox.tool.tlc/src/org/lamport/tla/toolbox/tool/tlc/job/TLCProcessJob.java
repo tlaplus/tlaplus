@@ -24,6 +24,7 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -158,7 +159,7 @@ public class TLCProcessJob extends TLCJob
 
                 // register the broadcasting listener
 
-                String modelFileName = launch.getLaunchConfiguration().getFile().getName();
+                final Model model = launch.getLaunchConfiguration().getAdapter(Model.class);
 
                 /*
                  * If TLC is being run for model checking then the stream kind passed to
@@ -174,7 +175,7 @@ public class TLCProcessJob extends TLCJob
                     kind = IProcessOutputSink.TYPE_TRACE_EXPLORE;
                 }
 
-                listener = new BroadcastStreamListener(modelFileName, kind);
+                listener = new BroadcastStreamListener(model, kind);
 
                 process.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
                 process.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
@@ -344,4 +345,17 @@ public class TLCProcessJob extends TLCJob
         return tlcEndTime;
     }
 
+	/**
+	 * @return The processee's exit/return value or -1 if unknown.
+	 */
+    public int getExitValue() {
+    	if (this.process != null) {
+    		try {
+    			return this.process.getExitValue();
+    		} catch (DebugException shouldNotHappen) {
+    			shouldNotHappen.printStackTrace();
+    		}
+    	}
+    	return -1;
+    }
 }

@@ -36,8 +36,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -62,17 +60,14 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
-import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * This is somewhat mislabeled as a composite. Its really
@@ -241,7 +236,7 @@ public class TraceExplorerComposite
 
             public void checkStateChanged(CheckStateChangedEvent event)
             {
-                saveInput();
+                view.getModel().save(new NullProgressMonitor());
             }
         });
 
@@ -342,7 +337,7 @@ public class TraceExplorerComposite
 
         changeButtonEnablement();
 
-        saveInput();
+        view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
     }
 
     /**
@@ -366,8 +361,7 @@ public class TraceExplorerComposite
 
             changeButtonEnablement();
 
-            saveInput();
-
+            view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
         }
     }
 
@@ -391,7 +385,7 @@ public class TraceExplorerComposite
 
         changeButtonEnablement();
 
-        saveInput();
+        view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
     }
 
     /**
@@ -425,8 +419,7 @@ public class TraceExplorerComposite
          * currently possible to check for validation errors, so the
          * trace explorer cannot be run.
          */
-        final ModelEditor modelEditor = ((ModelEditor) ModelHelper.getEditorWithModelOpened(view
-                .getCurrentConfigFileHandle()));
+        final ModelEditor modelEditor = view.getModel().getAdapter(ModelEditor.class);
         if (modelEditor == null)
         {
             // the model editor must be open to run the trace explorer
@@ -455,47 +448,30 @@ public class TraceExplorerComposite
         // the trace explorer to do.
         // This could erase a trace that was produced
         // after a three week run of TLC.
-        UIHelper.runUISync(new Runnable() {
+        modelEditor.doSaveWithoutValidating((new NullProgressMonitor()));
 
-            public void run()
-            {
-                modelEditor.doSaveWithoutValidating((new NullProgressMonitor()));
-            }
-        });
-
-        try
+        // save the launch configuration
+        // if the trace is empty, then do nothing
+        if (!view.getTrace().isTraceEmpty())
         {
-            // save the launch configuration
-            ILaunchConfiguration modelConfig = saveInput();
-
-            final ILaunchConfigurationWorkingCopy workingCopy = modelConfig.getWorkingCopy();
-
-            // if the trace is empty, then do nothing
-            if (!view.getTrace().isTraceEmpty())
-            {
-                // TraceExplorerHelper.serializeTrace(modelConfig);
-            	
-            	// Wrap the launch in a WorkspaceJob to guarantee that the
-            	// operation is executed atomically from the workspace perspective.
-            	// If the job and rule would be omitted, the launch can become interleaved with
-            	// workspace (autobuild) jobs triggered by IResourceChange events.
-            	// The Toolbox's IResourceChangeListeners reacting to resource change events
-            	// run the SANY parser and SANY does not support concurrent execution.
-            	final Job job = new WorkspaceJob("Exploring the trace...") {
-					public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-						workingCopy.doSave().launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, monitor, true);
-						return Status.OK_STATUS;
-					}
-				};
-				// Lock the entire workspace.
-				job.setRule(ResourcesPlugin.getWorkspace().getRoot());
-				job.setUser(true);
-				job.schedule();
-            }
-
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error launching trace explorer.", e);
+            // TraceExplorerHelper.serializeTrace(modelConfig);
+        	
+        	// Wrap the launch in a WorkspaceJob to guarantee that the
+        	// operation is executed atomically from the workspace perspective.
+        	// If the runnable would be omitted, the launch can become interleaved with
+        	// workspace (autobuild) jobs triggered by IResourceChange events.
+        	// The Toolbox's IResourceChangeListeners reacting to resource change events
+        	// run the SANY parser and SANY does not support concurrent execution.
+        	
+        	final Job job = new WorkspaceJob("Exploring the trace...") {
+				public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+					view.getModel().save(monitor).launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, monitor, true);
+					return Status.OK_STATUS;
+				}
+			};
+			job.setRule(ResourcesPlugin.getWorkspace().getRoot());
+			job.setUser(true);
+			job.schedule();
         }
     }
 
@@ -504,17 +480,11 @@ public class TraceExplorerComposite
      */
     private void doRestore()
     {
-        try
-        {
-            // set the model to have the original trace shown
-            ModelHelper.setOriginalTraceShown(view.getCurrentConfigFileHandle(), true);
+        // set the model to have the original trace shown
+    	view.setOriginalTraceShown(true);
 
-            // update the error view with this provider
-            TLCErrorView.updateErrorView(view.getCurrentConfigFileHandle());
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error setting original trace shown flag.", e);
-        }
+        // update the error view with this provider
+        view.updateErrorView();
     }
 
     /**
@@ -573,62 +543,4 @@ public class TraceExplorerComposite
             return null;
         }
     }
-
-    /**
-     * Saves the expressions in the table to the configuration
-     * whose errors are currently loaded in the error view where this
-     * composite appears.
-     * 
-     * @return a handle on the underlying configuration file, can return null
-     */
-    private ILaunchConfiguration saveInput()
-    {
-        try
-        {
-            if (view.getCurrentConfigFileHandle() != null)
-            {
-                /*
-                 * Retrieve a working copy of the launch configuration whose errors
-                 * are currently loaded in the error view.
-                 * 
-                 * If a model editor is open on the launch configuration, then the model
-                 * editor already has a working copy open for the launch configuration. We
-                 * don't want to open a second working copy because they could become out of
-                 * synch. In that case if working copy A were saved and then working copy B were saved,
-                 * the contents of working copy A that were saved originally would be overwritten by working
-                 * copy B.
-                 * 
-                 * We can get the working copy from the model editor by calling the getConfig() method
-                 * of ModelEditor. If there is not a model editor open on the launch configuration, then
-                 * there should be no other working copies open on the the launch configuration returned
-                 * by view.getCurrentConfigFileHandle() so a working copy can safely be used.
-                 */
-                ModelEditor modelEditor = ((ModelEditor) ModelHelper.getEditorWithModelOpened(view
-                        .getCurrentConfigFileHandle()));
-
-                ILaunchConfigurationWorkingCopy configCopy = null;
-
-                if (modelEditor != null)
-                {
-                    configCopy = modelEditor.getConfig();
-                } else
-                {
-                    // there is no editor open on the model
-                    // obtain the working copy from the handle stored by the view
-                    configCopy = view.getCurrentConfigFileHandle().getWorkingCopy();
-                }
-
-                configCopy.setAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, FormHelper
-                        .getSerializedInput(tableViewer));
-                ILaunchConfiguration savedConfig = configCopy.doSave();
-
-                return savedConfig;
-            }
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error saving trace explorer expression.", e);
-        }
-        return null;
-    }
-
 }

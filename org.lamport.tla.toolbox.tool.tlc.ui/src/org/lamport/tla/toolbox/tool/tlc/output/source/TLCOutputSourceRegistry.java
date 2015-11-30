@@ -12,16 +12,15 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.LogFileReader;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TraceExplorerDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
  * The TLC process can produce some output, which needs to be processed by a consumer. The TLC Output Source ({@link ITLCOutputSource})
@@ -33,16 +32,16 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  * during the work with the registry:
  * <ul>
  *   <li>The consumer is passed as to the registry during the call of {@link TLCOutputSourceRegistry#connect(ITLCOutputListener)}</li> 
- *   <li>The registry will call {@link ITLCOutputListener#getTLCOutputName()} and eventually select among one of the sources available</li>
+ *   <li>The registry will call {@link ITLCOutputListener#getModel()} and eventually select among one of the sources available</li>
  *   <li>If the source is selected, {@link ITLCOutputSource#addTLCOutputListener(ITLCOutputListener)} is called by the registry on it, 
  *   passing the consumer listener instance</li>
  *   <li>After the end of the with the source, the consumer is disconnected by calling {@link TLCOutputSourceRegistry#disconnect(ITLCOutputListener)}</li>
  * </ul>
  * <br><br>
  * A new source of the TLC output is added by calling {@link TLCOutputSourceRegistry#addTLCOutputSource(ITLCOutputSource)} method. The source 
- * is identified by the name and priority. The methods {@link ITLCOutputSource#getTLCOutputName()} and {@link ITLCOutputSource#getSourcePrio()}
+ * is identified by the name and priority. The methods {@link ITLCOutputSource#getModel()} and {@link ITLCOutputSource#getSourcePrio()}
  * are used to obtain this information. If any listener have been registered, which are interested in the certain TLC Output (the values of 
- * {@link ITLCOutputListener#getTLCOutputName()} and {@link ITLCOutputSource#getTLCOutputName()}) are equal, then these will be registered by the
+ * {@link ITLCOutputListener#getModel()} and {@link ITLCOutputSource#getModel()}) are equal, then these will be registered by the
  * new source. The priority resolves the case if a new source for the same name arrives. Currently, high priority is used for the source attached
  * to the running process, low priority is used for the file source. 
  * 
@@ -62,9 +61,9 @@ public class TLCOutputSourceRegistry
     // instance for output sources from trace exploration
     private static TLCOutputSourceRegistry traceExploreInstance;
     // container for sources, hashed by the source name
-    private Hashtable<String, ITLCOutputSource> sources;
+    private Hashtable<Model, ITLCOutputSource> sources;
     // container for data providers, hashed by the process name
-    private Hashtable<String, TLCModelLaunchDataProvider> providers;
+    private Hashtable<Model, TLCModelLaunchDataProvider> providers;
     // flag indicating if this is a trace explorer instance
     // true indicates that this is a trace explorer instance
     private boolean isTraceExploreInstance;
@@ -74,7 +73,7 @@ public class TLCOutputSourceRegistry
      * reconnect the the listeners, iff there are any at place and the prio of the new source is higher
      * that the one of the old one.
      * @param source new source
-     * @see ITLCOutputSource#getTLCOutputName()
+     * @see ITLCOutputSource#getModel()
      * @see ITLCOutputSource#getSourcePrio()
      */
     public synchronized void addTLCOutputSource(ITLCOutputSource source)
@@ -83,7 +82,7 @@ public class TLCOutputSourceRegistry
 
         // TLCUIActivator.getDefault().logDebug("adding source " + source.getSourceName() + " " + source.getSourcePrio());
 
-        ITLCOutputSource existingSource = this.sources.get(source.getTLCOutputName());
+        ITLCOutputSource existingSource = this.sources.get(source.getModel());
 
         // a new source for a given name arrives which has a higher priority
         // re-register the listeners
@@ -102,14 +101,14 @@ public class TLCOutputSourceRegistry
             {
                 // the source didn't exist, but there is a data provider interested in this source
                 TLCModelLaunchDataProvider provider = providers.get(source
-                        .getTLCOutputName());
+                        .getModel());
                 if (provider != null)
                 {
                     source.addTLCOutputListener(provider);
                 }
             }
         }
-        this.sources.put(source.getTLCOutputName(), source);
+        this.sources.put(source.getModel(), source);
 
         printStats();
     }
@@ -118,9 +117,9 @@ public class TLCOutputSourceRegistry
      * Remove a source and the date provider associated with that source, if it
      * exists.
      */
-    private synchronized void removeTLCStatusSource(ILaunchConfiguration ilc)
+    private synchronized void removeTLCStatusSource(Model model)
     {
-    	String name = ilc.getFile().getName();
+    	String name = model.getLaunchConfiguration().getFile().getName();
         this.sources.remove(name);
         this.providers.remove(name);
         printStats();
@@ -130,47 +129,46 @@ public class TLCOutputSourceRegistry
      * Remove a source and the date provider associated with that source, if it
      * exists.
      */
-    public synchronized void removeTLCStatusSource(ILaunchConfiguration[] ilcs)
+    public synchronized void removeTLCStatusSource(Model[] models)
     {
-    	for (int i = 0; i < ilcs.length; i++) {
-			removeTLCStatusSource(ilcs[i]);
+    	for (int i = 0; i < models.length; i++) {
+			removeTLCStatusSource(models[i]);
 		}
     }
 
     /**
      * Connect the source to the listener
      * @param an instance of ITLCOutputListener interested in the receiving of TLC output from source 
-     * with {@link ITLCOutputSource#getTLCOutputName()} equals to {@link ITLCOutputListener#getTLCOutputName()}  
+     * with {@link ITLCOutputSource#getModel()} equals to {@link ITLCOutputListener#getModel()}  
      * @return status of connection: <code>true</code> if successfully connected, <code>false</code> otherwise
      */
     public synchronized boolean connect(ITLCOutputListener listener)
     {
         Assert.isNotNull(listener);
-        String processName = listener.getTLCOutputName();
+        Model model = listener.getModel();
 
         // try to obtain a source
-        ITLCOutputSource source = this.sources.get(processName);
+        ITLCOutputSource source = this.sources.get(model);
         if (source == null)
         {
             // no source found, so no live TLC process
             // also not a source for trace explorer output, so
             // can look for the log file
-            ILaunchConfiguration config = ModelHelper.getModelByName(processName);
-            if (config == null) {
+            if (model == null) {
 				// Config can be null after startup following a hard crash when
 				// the Toolbox restores the ModelEditor but no spec is currently
 				// open/loaded. In this case fail gracefully rather than hang
 				// the Toolbox.
             	return false;
             }
-            IFile logFile = ModelHelper.getModelOutputLogFile(config, isTraceExploreInstance);
+            IFile logFile = model.getOutputLogFile(isTraceExploreInstance);
             // log file found
             if (logFile != null && logFile.exists())
             {
                 // initialize the reader and read the content
                 // this will create the parser
                 // the parser will create a source and register in the registry
-                final LogFileReader logFileReader = new LogFileReader(processName, logFile, isTraceExploreInstance);
+                final LogFileReader logFileReader = new LogFileReader(model, logFile, isTraceExploreInstance);
 
                 // retrieve the source
                 source = logFileReader.getSource();
@@ -196,13 +194,13 @@ public class TLCOutputSourceRegistry
 				job.schedule();
 
                 // from now on we should have a source for this model
-                Assert.isTrue(this.sources.get(processName) != null);
+                Assert.isTrue(this.sources.get(model) != null);
             } else
             {
                 // no log file
                 if (DO_DEBUG)
                 {
-                    TLCUIActivator.getDefault().logDebug("No source for " + processName + " found.");
+                    TLCUIActivator.getDefault().logDebug("No source for " + model.getName() + " found.");
                 }
                 return false;
             }
@@ -223,7 +221,7 @@ public class TLCOutputSourceRegistry
     {
         Assert.isNotNull(listener);
 
-        ITLCOutputSource source = this.sources.get(listener.getTLCOutputName());
+        ITLCOutputSource source = this.sources.get(listener.getModel());
         if (source != null)
         {
             source.removeTLCOutputListener(listener);
@@ -236,21 +234,20 @@ public class TLCOutputSourceRegistry
      * Retrieves the data provider for the given configuration
      * @return a data provider for the current model
      */
-    public synchronized TLCModelLaunchDataProvider getProvider(ILaunchConfiguration configuration)
+    public synchronized TLCModelLaunchDataProvider getProvider(Model model)
     {
-        Assert.isNotNull(configuration);
-        String processKey = configuration.getFile().getName();
-        TLCModelLaunchDataProvider provider = providers.get(processKey);
+        Assert.isNotNull(model);
+        TLCModelLaunchDataProvider provider = providers.get(model);
         if (provider == null)
         {
             if (isTraceExploreInstance)
             {
-                provider = new TraceExplorerDataProvider(configuration);
+                provider = new TraceExplorerDataProvider(model);
             } else
             {
-                provider = new TLCModelLaunchDataProvider(configuration);
+                provider = new TLCModelLaunchDataProvider(model);
             }
-            providers.put(processKey, provider);
+            providers.put(model, provider);
         }
         return provider;
     }
@@ -261,8 +258,8 @@ public class TLCOutputSourceRegistry
      */
     private TLCOutputSourceRegistry()
     {
-        this.sources = new Hashtable<String, ITLCOutputSource>();
-        this.providers = new Hashtable<String, TLCModelLaunchDataProvider>();
+        this.sources = new Hashtable<Model, ITLCOutputSource>();
+        this.providers = new Hashtable<Model, TLCModelLaunchDataProvider>();
     }
 
     /**
@@ -306,12 +303,12 @@ public class TLCOutputSourceRegistry
             }
             TLCUIActivator.getDefault().logDebug("TLCOutputSourceRegistry for " + type + " maintains " + sources.size()
                     + " sources.");
-            Enumeration<String> keys = sources.keys();
+            Enumeration<Model> keys = sources.keys();
             while (keys.hasMoreElements())
             {
-                String sourceName = keys.nextElement();
-                ITLCOutputSource source = sources.get(sourceName);
-                TLCUIActivator.getDefault().logDebug("The source " + sourceName + " has " + source.getSourcePrio() + " prio and "
+                Model model = keys.nextElement();
+                ITLCOutputSource source = sources.get(model);
+                TLCUIActivator.getDefault().logDebug("The source " + model.getName() + " has " + source.getSourcePrio() + " prio and "
                         + source.getListeners().length + " listeners");
 
             }

@@ -12,9 +12,11 @@ import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.widgets.Display;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.st.Location;
@@ -100,10 +102,10 @@ public class ActionClickListener implements MouseListener, KeyListener {
 						 * shown in a nested saved module editor. If it is
 						 * false, we jump to the regular TLA editor instead.
 						 */
+						Model model = ToolboxHandle.getCurrentSpec().getAdapter(TLCSpec.class).getModel(moduleLocatable
+								.getModelName());
 						final boolean jumpedToNested = TLCUIHelper
-								.jumpToSavedLocation(location, ModelHelper
-										.getModelByName(moduleLocatable
-												.getModelName()));
+								.jumpToSavedLocation(location, model);
 						if (!jumpedToNested) {
 							UIHelper.jumpToLocation(location, jumpToPCal);
 						}

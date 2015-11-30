@@ -11,11 +11,13 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
 
-import junit.framework.Assert;
-
+import org.easymock.EasyMock;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITypedRegion;
+import org.junit.Assert;
 import org.junit.Test;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 
 public class Bug267Test {
 
@@ -39,7 +41,7 @@ public class Bug267Test {
 	
 	@Test
 	public void testSuccess() throws Exception {
-		final TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		final TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 		
 		final Bug267Listener listener = new Bug267Listener();
 
@@ -60,7 +62,7 @@ public class Bug267Test {
 	
 	@Test
 	public void testAdd2154And2132Nested() throws IOException {
-		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 		// Register test listener with parser output
 
 		ITLCOutputSource source = parser.getSource();
@@ -129,7 +131,7 @@ public class Bug267Test {
 
 	@Test
 	public void testAdd2132Region() throws IOException {
-		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 		// Register test listener with parser output
 
 		ITLCOutputSource source = parser.getSource();
@@ -171,7 +173,7 @@ public class Bug267Test {
 
 	@Test
 	public void testAdd2154Region() throws IOException {
-		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 		// Register test listener with parser output
 
 		ITLCOutputSource source = parser.getSource();
@@ -210,5 +212,17 @@ public class Bug267Test {
 				region.getOffset(), region.getOffset() + region.getLength()
 				+ 1);
 		Assert.assertEquals(text, regionText);
+	}
+	
+	private class DummyModel extends Model {
+
+		DummyModel() {
+			super(EasyMock.createNiceMock(ILaunchConfiguration.class));
+		}
+		
+		public String getName() {
+			// Stop super from delegating to ILC
+			return "Bug267Test";
+		}
 	}
 }

@@ -7,8 +7,8 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.ui.IEditorPart;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.ui.handler.OpenViewHandler;
@@ -29,14 +29,14 @@ public class OpenTLCErrorViewHandler extends AbstractHandler implements IHandler
             if (activeEditor instanceof ModelEditor)
             {
                 ModelEditor activeModelEditor = (ModelEditor) activeEditor;
-                final ILaunchConfiguration config = activeModelEditor.getConfig();
-                if (config != null)
+                final Model model = activeModelEditor.getModel();
+                if (model != null)
                 {
                     UIHelper.runUISync(new Runnable() {
 
                         public void run()
                         {
-                            TLCErrorView.updateErrorView(config);
+                            TLCErrorView.updateErrorView(model);
                         }
                     });
                 }

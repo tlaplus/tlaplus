@@ -297,10 +297,9 @@ public class Spec implements IAdaptable {
     /**
      * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
      */
-    @SuppressWarnings("unchecked")
-	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+	public <T> T getAdapter(Class<T> adapter) {
         // lookup the IAdapterManager service
-        IAdapterManager manager = Platform.getAdapterManager();
+        final IAdapterManager manager = Platform.getAdapterManager();
         // forward the request to IAdapterManager service
         return manager.getAdapter(this, adapter);
     }

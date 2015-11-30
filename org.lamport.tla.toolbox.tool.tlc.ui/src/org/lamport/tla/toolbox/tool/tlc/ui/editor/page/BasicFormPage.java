@@ -7,7 +7,6 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
@@ -42,6 +41,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
@@ -52,7 +52,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.SymbolNode;
@@ -153,9 +152,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             // if it is a global TLC error, it will shift focus to the error view
             if (messages.length > 0 && messages[0].getMessage().equals(TLC_ERROR_STRING))
             {
-                if (getConfig() != null)
+                if (getModel() != null)
                 {
-                    TLCErrorView.updateErrorView(getConfig());
+                    TLCErrorView.updateErrorView(getModel());
                 }
             } else
             {
@@ -439,15 +438,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         return image;
     }
 
-    /**
-     * Retrieves the configuration the editor is editing
-     * @return
-     */
-    public ILaunchConfigurationWorkingCopy getConfig()
-    {
-        return ((ModelEditor) getEditor()).getConfig();
+    public Model getModel() {
+    	return ((ModelEditor) getEditor()).getModel();
     }
-
+    
     /**
      * Validates the data entries entered in the input fields. The validate method is called 
      * on any change in the fields. For this to work, the corresponding listeners are registered 
@@ -558,7 +552,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             IToolBarManager toolbarManager = mForm.getForm().getToolBarManager();
 
             // get the usage status
-            boolean modelRunning = isModelRunning();
+            boolean modelRunning = getModel().isRunning();
 
             // refresh the title
             String title = mForm.getForm().getText();
@@ -572,21 +566,15 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
             if (modelRunning)
             {
-                if (isModelStale())
+                if (getModel().isStale())
                 {
                     mForm.getForm().setText(title + CRASHED_TITLE);
-                    // the model crashed
-                    toolbarManager.add(new DynamicContributionItem(new ModelRecoveryAction()));
-                    if (headClientTBM != null)
-                    {
-                        headClientTBM.add(new DynamicContributionItem(new ModelRecoveryAction()));
-                    }
                 } else
                 {
                     mForm.getForm().setText(title + RUNNING_TITLE);
                 }
 
-            } else if (isModelLocked())
+            } else if (getModel().isLocked())
             {
                 mForm.getForm().setText(title + LOCKED_TITLE);
             } else
@@ -608,33 +596,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             }
 
             // refresh enablement status
-            setEnabled(!modelRunning && !isModelLocked());
+            setEnabled(!modelRunning && !getModel().isLocked());
             mForm.getForm().update();
 
         }
-    }
-
-    /**
-     * Returns true, if the model is being run, that is the attribute MODEL_IS_RUNNING is true
-     * @return true if the underlying model file has attribute MODEL_IS_RUNNING set to true 
-     */
-    public boolean isModelRunning()
-    {
-        return ((ModelEditor) getEditor()).isModelRunning();
-    }
-
-    /**
-     * Returns true, if the model is locked, that is the attribute MODEL_IS_LOCKED is true
-     * @return true if the underlying model file has attribute MODEL_IS_LOCKED set to true 
-     */
-    public boolean isModelLocked()
-    {
-        return ((ModelEditor) getEditor()).isModelLocked();
-    }
-
-    public boolean isModelStale()
-    {
-        return ((ModelEditor) getEditor()).isModelStale();
     }
 
     /**
@@ -877,7 +842,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
          */
         public boolean isEnabled()
         {
-            return !isModelRunning() && !isModelLocked();
+            final Model model = getModel();
+			return !model.isRunning() && !model.isLocked();
         }
     }
 
@@ -904,7 +870,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
          */
         public boolean isEnabled()
         {
-            return !isModelRunning() && !isModelLocked();
+            return !getModel().isRunning() && !getModel().isLocked();
         }
     }
 
@@ -931,7 +897,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
          */
         public boolean isEnabled()
         {
-            return isModelRunning() && !isModelStale();
+            return getModel().isRunning();
         }
     }
 
@@ -950,18 +916,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         public void run()
         {
-            try
-            {
-                ModelHelper.recoverModel(((ModelEditor) getEditor()).getConfig());
-            } catch (CoreException e)
-            {
-                TLCUIActivator.getDefault().logError("Error recovering the model", e);
-            }
+        	((ModelEditor) getEditor()).getModel().recover();
         }
 
         public boolean isEnabled()
         {
-            return isModelStale();
+            return getModel().isStale();
         }
     }
 
@@ -977,18 +937,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         public void run()
         {
-            try
-            {
-                ModelHelper.setModelLocked(getConfig(), false);
-            } catch (CoreException e)
-            {
-                TLCUIActivator.getDefault().logError("There was an error unlocking the model.", e);
-            }
+        	((ModelEditor) getEditor()).getModel().setLocked(false);
         }
 
         public boolean isEnabled()
         {
-            return !isModelRunning() && isModelLocked();
+            return !getModel().isRunning() && getModel().isLocked();
         }
     }
     
@@ -1023,18 +977,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                     return;
                 }
             }
-            try
-            {
-                ModelHelper.setModelLocked(getConfig(), true);
-            } catch (CoreException e)
-            {
-                TLCUIActivator.getDefault().logError("There was an error locking the model.", e);
-            }
+            getModel().setLocked(true);
         }
 
         public boolean isEnabled()
         {
-            return !isModelLocked();
+            return !getModel().isLocked();
         }
     }
 }

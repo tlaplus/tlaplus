@@ -8,15 +8,16 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -55,15 +56,15 @@ public class OpenSavedModuleHandler extends AbstractHandler implements IHandler
                  * spec of the module. If this is not equal to the project of the
                  * currently opened spec, it is a bug.
                  */
-                if (module.getProject().equals(ToolboxHandle.getCurrentSpec().getProject()))
+                final Spec currentSpec = ToolboxHandle.getCurrentSpec();
+				if (module.getProject().equals(currentSpec.getProject()))
                 {
                     /*
                      * The parent of the module is the model folder, so it is the name
                      * of the model.
                      */
-                    ILaunchConfiguration config = ModelHelper.getModelByName(module.getProject(), module.getParent()
-                            .getName());
-                    ModelEditor modelEditor = (ModelEditor) UIHelper.openEditor(ModelEditor.ID, config.getFile());
+					Model model = currentSpec.getAdapter(TLCSpec.class).getModel(module.getParent().getName());
+                    ModelEditor modelEditor = (ModelEditor) UIHelper.openEditor(ModelEditor.ID, model.getLaunchConfiguration().getFile());
                     if (modelEditor != null)
                     {
                         try
@@ -124,11 +125,11 @@ public class OpenSavedModuleHandler extends AbstractHandler implements IHandler
                         } catch (PartInitException e)
                         {
                             TLCUIActivator.getDefault().logError("Error adding saved module read-only editor for module "
-                                    + modulePath + " to model " + config.getName(), e);
+                                    + modulePath + " to model " + model.getName(), e);
                         }
                     } else
                     {
-                        TLCUIActivator.getDefault().logDebug("Could not open model editor for model " + config.getName());
+                        TLCUIActivator.getDefault().logDebug("Could not open model editor for model " + model.getName());
                     }
                 } else
                 {

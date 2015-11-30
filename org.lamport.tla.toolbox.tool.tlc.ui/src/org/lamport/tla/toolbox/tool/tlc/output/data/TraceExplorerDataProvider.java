@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
@@ -20,6 +19,8 @@ import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Length;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
@@ -27,8 +28,6 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tlc2.output.EC;
@@ -51,10 +50,9 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     private Hashtable<String, TraceExpressionInformationHolder> traceExpressionDataTable;
     private static String TE_ERROR_HEADER = "Error(s) from running the Trace Explorer:\n";
 
-    public TraceExplorerDataProvider(ILaunchConfiguration config)
+    public TraceExplorerDataProvider(Model model)
     {
-        super(config);
-
+        super(model);
     }
 
     /** 
@@ -81,7 +79,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
             public void run()
             {
-                TLCErrorView.updateErrorView(getConfig());
+                TLCErrorView.updateErrorView(getModel());
             }
         });
     }
@@ -108,7 +106,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
          * provider in the finally block for this try block in order to avoid
          * a memory leak.
          */
-        IFile teFile = ModelHelper.getTraceExplorerTLAFile(getConfig());
+        IFile teFile = getModel().getTraceExplorerTLAFile();
         FileEditorInput teFileEditorInput = new FileEditorInput((IFile) teFile);
         FileDocumentProvider teFileDocumentProvider = new FileDocumentProvider();
         try
@@ -289,7 +287,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     private void processTraceForTraceExplorer()
     {
         // retrieve the error with a trace for which the trace explorer was run
-        final TLCError originalErrorWithTrace = TraceExplorerHelper.getErrorOfOriginalTrace(getConfig());
+        final TLCError originalErrorWithTrace = TraceExplorerHelper.getErrorOfOriginalTrace(getModel());
         if (originalErrorWithTrace == null)
         {
             // the trace explorer is meaningless if the original trace cannot be recovered
@@ -554,13 +552,13 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                     Arrays.sort(finalStateNewTraceVariables, varComparator);
                 } else if (finalStateOriginalTrace.isBackToState())
                 {
-                    error.addState(TLCState.BACK_TO_STATE(finalStateOriginalTrace.getStateNumber(), ModelHelper
-                            .getModelName(getConfig().getFile())));
+					error.addState(TLCState.BACK_TO_STATE(finalStateOriginalTrace.getStateNumber(),
+							getModel().getName()));
                 } else
                 {
                     // stuttering trace
-                    error.addState(TLCState.STUTTERING_STATE(finalStateOriginalTrace.getStateNumber(), ModelHelper
-                            .getModelName(getConfig().getFile())));
+					error.addState(TLCState.STUTTERING_STATE(finalStateOriginalTrace.getStateNumber(),
+							getModel().getName()));
                 }
 
             } else
@@ -576,7 +574,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
          */
         if (successfulTEError != null)
         {
-            List<TLCError> originalErrors = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(getConfig())
+            List<TLCError> originalErrors = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(getModel())
                     .getErrors();
             List<TLCError> newErrors = new LinkedList<TLCError>();
             Iterator<TLCError> iterator = originalErrors.iterator();

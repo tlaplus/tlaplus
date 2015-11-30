@@ -131,7 +131,7 @@
             id="toolbox.propertyTester.MarkerTester"
             namespace="toolbox.property"
             properties="hasMarker"
-            type="org.eclipse.debug.core.ILaunchConfiguration">
+            type="org.lamport.tla.toolbox.tool.tlc.model.Model">
 		</propertyTester>
    </extension>
    <extension
@@ -162,6 +162,26 @@
       <persistent
             value="true">
       </persistent>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.eclipse.debug.core.ILaunchConfiguration"
+            class="org.lamport.tla.toolbox.tool.tlc.model.TLCModelFactory">
+         <adapter
+               type="org.lamport.tla.toolbox.tool.tlc.model.Model">
+         </adapter>
+      </factory>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.lamport.tla.toolbox.spec.Spec"
+            class="org.lamport.tla.toolbox.tool.tlc.model.TLCSpecFactory">
+         <adapter
+               type="org.lamport.tla.toolbox.tool.tlc.model.TLCSpec">
+         </adapter>
+      </factory>
    </extension>
 <!--
   NCE definition

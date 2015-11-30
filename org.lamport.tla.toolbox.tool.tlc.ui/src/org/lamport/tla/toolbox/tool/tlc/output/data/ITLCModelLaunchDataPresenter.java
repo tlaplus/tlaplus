@@ -1,11 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-
 /**
  * A presenter is responsible for the presentation of data handled by the {@link TLCModelLaunchDataProvider}
  * @author Simon Zambrovski
- * @version $Id$
  */
 public interface ITLCModelLaunchDataPresenter
 {
@@ -28,11 +25,6 @@ public interface ITLCModelLaunchDataPresenter
 	public final static int[] ALL_FIELDS = { USER_OUTPUT, PROGRESS_OUTPUT, START_TIME, END_TIME, LAST_CHECKPOINT_TIME,
 			COVERAGE_TIME, COVERAGE, PROGRESS, ERRORS, CONST_EXPR_EVAL_OUTPUT, FINGERPRINT_COLLISION_PROBABILITY,
 			DISTRIBUTED_SERVER_RUNNING, DISTRIBUTED_WORKER_REGISTERED };
-
-    /**
-     * Retrieves the model 
-     */
-    public ILaunchConfigurationWorkingCopy getConfig();
 
     /**
      * Inform the presenter about the data changes

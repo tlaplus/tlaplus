@@ -96,7 +96,6 @@ import util.TLCRuntime;
  * 
  * 
  * @author Simon Zambrovski
- * @version $Id$
  * This is the FormPage class for the Model Overview tabbed page of
  * the model editor.
  */
@@ -245,61 +244,61 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
     protected void loadData() throws CoreException
     {
-        int specType = getConfig().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
+        int specType = getModel().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
 
         // set up the radio buttons
         setSpecSelection(specType);
 
         // closed spec
-        String modelSpecification = getConfig().getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
+        String modelSpecification = getModel().getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
         Document closedDoc = new Document(modelSpecification);
         this.specSource.setDocument(closedDoc);
 
         // init
-        String modelInit = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
+        String modelInit = getModel().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
         Document initDoc = new Document(modelInit);
         this.initFormulaSource.setDocument(initDoc);
 
         // next
-        String modelNext = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
+        String modelNext = getModel().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
         Document nextDoc = new Document(modelNext);
         this.nextFormulaSource.setDocument(nextDoc);
 
         // fairness
         // String modelFairness =
-        // getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
+        // getModel().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
         // EMPTY_STRING);
         // Document fairnessDoc = new Document(modelFairness);
         // this.fairnessFormulaSource.setDocument(fairnessDoc);
 
         // number of workers
-        workers.setSelection(getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
+        workers.setSelection(getModel().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
 
         // max JVM heap size
         final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-        final int maxHeapSizeValue = getConfig().getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
+        final int maxHeapSizeValue = getModel().getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
         maxHeapSize.setSelection(maxHeapSizeValue);
         
         // check deadlock
-        boolean checkDeadlock = getConfig().getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
+        boolean checkDeadlock = getModel().getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
                 MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
         this.checkDeadlockButton.setSelection(checkDeadlock);
 
         // invariants
-        List<String> serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector<String>());
+        List<String> serializedList = getModel().getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector<String>());
         FormHelper.setSerializedInput(invariantsTable, serializedList);
 
         // properties
-        serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector<String>());
+        serializedList = getModel().getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector<String>());
         FormHelper.setSerializedInput(propertiesTable, serializedList);
 
         // constants from the model
-        List<String> savedConstants = getConfig().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector<String>());
+        List<String> savedConstants = getModel().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector<String>());
         FormHelper.setSerializedInput(constantTable, savedConstants);
 
         // recover from the checkpoint
-        boolean recover = getConfig().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
+        boolean recover = getModel().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
         this.checkpointButton.setSelection(recover);
         
         /*
@@ -307,11 +306,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
          */
         String cloud = "off";
         try {
-			cloud = getConfig().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+			cloud = getModel().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
         } catch (CoreException e) {
         	// LAUNCH_DISTRIBUTED might still be stored in a legacy format. The user is
         	// opening an old model.
-        	boolean distributed = getConfig().getAttribute(LAUNCH_DISTRIBUTED, false);
+        	boolean distributed = getModel().getAttribute(LAUNCH_DISTRIBUTED, false);
         	if (distributed) {
         		cloud = "ad hoc";
         	}
@@ -327,7 +326,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		if (cloud.equalsIgnoreCase("aws-ec2") || cloud.equalsIgnoreCase("Azure")) {
 			MainModelPage.this.putOnTopOfStack("jclouds", false, false);
-			String email = getConfig().getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
+			String email = getModel().getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
 			resultMailAddressText.setText(email);
 		} else if(cloud.equalsIgnoreCase("ad hoc")) {
 			MainModelPage.this.putOnTopOfStack("ad hoc", false, true);
@@ -336,10 +335,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		}
         
         // distribute FPSet count
-        distributedFPSetCountSpinner.setSelection(getConfig().getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
+        distributedFPSetCountSpinner.setSelection(getModel().getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
 
     	// comments/description/notes
-        String commentsStr = getConfig().getAttribute(MODEL_COMMENTS, EMPTY_STRING);
+        String commentsStr = getModel().getAttribute(MODEL_COMMENTS, EMPTY_STRING);
        	commentsSource.setDocument(new Document(commentsStr));
     }
 
@@ -560,11 +559,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 					.getDefault()
 					.getPreferenceStore()
 					.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-			final int legacyValue = getConfig().getAttribute(
+			final int legacyValue = getModel().getAttribute(
 					LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
 			// old default, silently convert to new default
 			if (legacyValue == 500) {
-				getConfig().setAttribute(
+				getModel().setAttribute(
 						LAUNCH_MAX_HEAP_SIZE, TLCPreferenceInitializer.MAX_HEAP_SIZE_DEFAULT);
 				maxHeapSize.setSelection(TLCPreferenceInitializer.MAX_HEAP_SIZE_DEFAULT);
 			} else if (legacyValue >= 100) {
@@ -769,25 +768,25 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	public void commit(boolean onSave)
     {
 		final String comments = FormHelper.trimTrailingSpaces(commentsSource.getDocument().get());
-		getConfig().setAttribute(MODEL_COMMENTS, comments);
+		getModel().setAttribute(MODEL_COMMENTS, comments);
         
         // TLCUIActivator.getDefault().logDebug("Main page commit");
         // closed formula
         String closedFormula = FormHelper.trimTrailingSpaces(this.specSource.getDocument().get());
-        getConfig().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
+        getModel().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
 
         // init formula
         String initFormula = FormHelper.trimTrailingSpaces(this.initFormulaSource.getDocument().get());
-        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormula);
+        getModel().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormula);
 
         // next formula
         String nextFormula = FormHelper.trimTrailingSpaces(this.nextFormulaSource.getDocument().get());
-        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
+        getModel().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
 
         // fairness formula
         // String fairnessFormula =
         // FormHelper.trimTrailingSpaces(this.fairnessFormulaSource.getDocument().get());
-        // getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
+        // getModel().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
         // fairnessFormula);
 
         // mode
@@ -806,53 +805,53 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             specType = MODEL_BEHAVIOR_TYPE_DEFAULT;
         }
 
-        getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
+        getModel().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
 
         // number of workers
-        getConfig().setAttribute(LAUNCH_NUMBER_OF_WORKERS, workers.getSelection());
+        getModel().setAttribute(LAUNCH_NUMBER_OF_WORKERS, workers.getSelection());
 
         int maxHeapSizeValue = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
         maxHeapSizeValue = maxHeapSize.getSelection();
-        getConfig().setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSizeValue);
+        getModel().setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSizeValue);
 
         // recover from deadlock
         boolean recover = this.checkpointButton.getSelection();
-        getConfig().setAttribute(LAUNCH_RECOVER, recover);
+        getModel().setAttribute(LAUNCH_RECOVER, recover);
 
         // check deadlock
         boolean checkDeadlock = this.checkDeadlockButton.getSelection();
-        getConfig().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
+        getModel().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
 
         // run in distributed mode
         String distributed = this.distributedCombo.getItem(this.distributedCombo.getSelectionIndex());
-        getConfig().setAttribute(LAUNCH_DISTRIBUTED, distributed);
+        getModel().setAttribute(LAUNCH_DISTRIBUTED, distributed);
         
         String resultMailAddress = this.resultMailAddressText.getText();
-        getConfig().setAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddress);
+        getModel().setAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddress);
         
         // distributed FPSet count
-        getConfig().setAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, distributedFPSetCountSpinner.getSelection());
+        getModel().setAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, distributedFPSetCountSpinner.getSelection());
         
         // network interface
         final String iface = this.networkInterfaceCombo.getItem(this.networkInterfaceCombo.getSelectionIndex());
-        getConfig().setAttribute(LAUNCH_DISTRIBUTED_INTERFACE, iface);
+        getModel().setAttribute(LAUNCH_DISTRIBUTED_INTERFACE, iface);
 
         // invariants
         List<String> serializedList = FormHelper.getSerializedInput(invariantsTable);
-        getConfig().setAttribute(MODEL_CORRECTNESS_INVARIANTS, serializedList);
+        getModel().setAttribute(MODEL_CORRECTNESS_INVARIANTS, serializedList);
 
         // properties
         serializedList = FormHelper.getSerializedInput(propertiesTable);
-        getConfig().setAttribute(MODEL_CORRECTNESS_PROPERTIES, serializedList);
+        getModel().setAttribute(MODEL_CORRECTNESS_PROPERTIES, serializedList);
 
         // constants
         List<String> constants = FormHelper.getSerializedInput(constantTable);
-        getConfig().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
+        getModel().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
 
         // variables
         String variables = ModelHelper.createVariableList(SemanticHelper.getRootModuleNode());
-        getConfig().setAttribute(MODEL_BEHAVIOR_VARS, variables);
+        getModel().setAttribute(MODEL_BEHAVIOR_VARS, variables);
 
         super.commit(onSave);
     }
@@ -866,7 +865,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         try
         {
             // checkpoint id
-            checkpoints = ModelHelper.getCheckpoints(getConfig(), false);
+            checkpoints = getModel().getCheckpoints(false);
         } catch (CoreException e)
         {
             TLCUIActivator.getDefault().logError("Error checking chekpoint data", e);
@@ -1090,9 +1089,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         int propFlags = sectionFlags;
         try
         {
-            if (!((String) getConfig().getAttribute(MODEL_PROPERTIES_EXPAND, "")).equals("")) {
+            if (!((String) getModel().getAttribute(MODEL_PROPERTIES_EXPAND, "")).equals("")) {
                propFlags = propFlags | Section.EXPANDED;
-               getConfig().setAttribute(MODEL_PROPERTIES_EXPAND, "");
+               getModel().setAttribute(MODEL_PROPERTIES_EXPAND, "");
             }
         } catch (CoreException e)
         {
@@ -1322,7 +1321,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 final IResource[] checkpoints;
                 try
                 {
-                    checkpoints = ModelHelper.getCheckpoints(getConfig(), false);
+                    checkpoints = getModel().getCheckpoints(false);
 
                     if ((checkpoints != null) && checkpoints.length > 0)
                     {

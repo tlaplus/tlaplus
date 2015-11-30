@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.ITypedRegion;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 
 /**
@@ -11,7 +12,6 @@ import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
  * has received the output 
  *  
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class CachingTLCOutputSource implements ITLCOutputSource
 {
@@ -20,18 +20,19 @@ public class CachingTLCOutputSource implements ITLCOutputSource
     /**
      * List of {@link TypedRegionAndText}s.
      */
-    private Vector<TypedRegionAndText> detectedRegions = new Vector<TypedRegionAndText>();
-    private String sourceName;
-    private int priority;
+    private final Vector<TypedRegionAndText> detectedRegions = new Vector<TypedRegionAndText>();
+    private final Model model;
+    private final int priority;
 
     /**
      * Constructor of the source for a given name and prio
-     * @param name
+     * @param model
      * @param priority
      */
-    public CachingTLCOutputSource(String name, int priority)
+    public CachingTLCOutputSource(Model model, int priority)
     {
-        this.sourceName = name;
+    	Assert.isNotNull(model);
+        this.model = model;
         this.priority = priority;
     }
 
@@ -118,11 +119,11 @@ public class CachingTLCOutputSource implements ITLCOutputSource
     }
 
     /**
-     * @see org.lamport.tla.toolbox.tool.tlc.output.source.ITLCOutputSource#getTLCOutputName()
+     * @see org.lamport.tla.toolbox.tool.tlc.output.source.ITLCOutputSource#getModel()
      */
-    public String getTLCOutputName()
+    public Model getModel()
     {
-        return sourceName;
+        return model;
     }
 
     /**

@@ -25,23 +25,16 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
-import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.ui.provider.IGroup;
 
 /**
@@ -53,35 +46,15 @@ public class ModelContentProvider implements ITreeContentProvider {
 	public static final String TLC_NCE = "toolbox.content.ModelContent";
 	private static final Object[] EMPTY_ARRAY = new Object[0];
 	
-	private final Map<ILaunchConfiguration, Group> reverse = new HashMap<ILaunchConfiguration, Group>();
+	private final Map<Model, Group> reverse = new HashMap<Model, Group>();
 	
 	public Object[] getChildren(final Object parentElement) {
 		if (parentElement instanceof Spec) {
 			final Spec currentSpec = (Spec) parentElement;
-			final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-
-			final ILaunchConfigurationType configType = launchManager
-					.getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
-
-			final Vector<ILaunchConfiguration> models = new Vector<ILaunchConfiguration>();
-
-			final IProject specProject = currentSpec.getProject();
-			try {
-				final ILaunchConfiguration[] configs = launchManager.getLaunchConfigurations(configType);
-				for (int i = 0; i < configs.length; i++) {
-					// skip launches from other specs (projects)
-					if (!specProject.equals(configs[i].getFile().getProject()) || !configs[i].exists()) {
-						continue;
-					}
-					models.add(configs[i]);
-				}
-			} catch (final CoreException e) {
-				TLCUIActivator.getDefault().logError("Error fetching the models", e);
-			}
-
 			// only get models of the current spec
 			if (ToolboxHandle.getCurrentSpec() == parentElement) {
-				return new Group[] {new Group((Spec) parentElement, models.toArray(new ILaunchConfiguration[models.size()]))};
+				final Collection<Model> models = currentSpec.getAdapter(TLCSpec.class).getModels().values();
+				return new Group[] {new Group((Spec) parentElement, models.toArray(new Model[models.size()]))};
 			}
 		} else if (parentElement instanceof Group) {
 			return ((Group) parentElement).getModels();
@@ -90,10 +63,8 @@ public class ModelContentProvider implements ITreeContentProvider {
 	}
 
 	public Object getParent(final Object element) {
-		if (element instanceof ILaunchConfiguration) {
-			if (((ILaunchConfiguration) element).exists()) {
-				return ToolboxHandle.getSpecByName(((ILaunchConfiguration) element).getFile().getProject().getName());
-			}
+		if (element instanceof Model) {
+			return ((Model) element).getSpec();
 		}
 		return null;
 	}
@@ -122,15 +93,15 @@ public class ModelContentProvider implements ITreeContentProvider {
 
 	public static final class Group implements IGroup {
 		
-		private final ILaunchConfiguration[] models;
+		private final Model[] models;
 		private final Spec spec;
 		
-		public Group(Spec spec, ILaunchConfiguration[] iLaunchConfigurations) {
+		public Group(Spec spec, Model[] models) {
 			this.spec = spec;
-			this.models = iLaunchConfigurations;
+			this.models = models;
 		}
 		
-		public ILaunchConfiguration[] getModels() {
+		public Model[] getModels() {
 			return models;
 		}
 		
@@ -141,6 +112,15 @@ public class ModelContentProvider implements ITreeContentProvider {
 		public String toString() {
 			return "models";
 		}
+		
+		/*
+		 * equals/hashcode is custom tailored for the ToolboxExplorer's viewer.
+		 * If the Group does not implement e/h as below, the viewer changes its
+		 * expanded state upon refreshs. Since we know that a spec only ever
+		 * has a single "models" group node, we can base equality on the Spec.
+		 * Also, the set of models keeps changing which renders it unusable
+		 * to determine equality.
+		 */
 
 		/* (non-Javadoc)
 		 * @see java.lang.Object#hashCode()
@@ -148,7 +128,7 @@ public class ModelContentProvider implements ITreeContentProvider {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + Arrays.hashCode(models);
+			result = prime * result + ((spec == null) ? 0 : spec.hashCode());
 			return result;
 		}
 
@@ -163,7 +143,10 @@ public class ModelContentProvider implements ITreeContentProvider {
 			if (getClass() != obj.getClass())
 				return false;
 			Group other = (Group) obj;
-			if (!Arrays.equals(models, other.models))
+			if (spec == null) {
+				if (other.spec != null)
+					return false;
+			} else if (!spec.equals(other.spec))
 				return false;
 			return true;
 		}

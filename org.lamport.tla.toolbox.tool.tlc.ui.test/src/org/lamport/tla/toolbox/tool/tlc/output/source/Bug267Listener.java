@@ -4,21 +4,13 @@ package org.lamport.tla.toolbox.tool.tlc.output.source;
 import java.util.Vector;
 
 import org.eclipse.jface.text.Document;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 
-/**
- * @author Markus Alexander Kuppe
- */
-/**
- * @author Markus Alexander Kuppe
- */
-/**
- * @author Markus Alexander Kuppe
- */
 public class Bug267Listener extends TLCModelLaunchDataProvider implements
 		ITLCOutputListener {
 	
@@ -30,7 +22,7 @@ public class Bug267Listener extends TLCModelLaunchDataProvider implements
 	 * @see org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider#getModelName()
 	 */
 	protected String getModelName() {
-		return getTLCOutputName();
+		return "Bug267";
 	}
 	
 	/* (non-Javadoc)
@@ -56,10 +48,10 @@ public class Bug267Listener extends TLCModelLaunchDataProvider implements
 	}
 
 	/* (non-Javadoc)
-	 * @see org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider#getTLCOutputName()
+	 * @see org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider#getModel()
 	 */
-	public String getTLCOutputName() {
-		return "Bug267";
+	public Model getModel() {
+		return null;
 	}
 
 	/* (non-Javadoc)

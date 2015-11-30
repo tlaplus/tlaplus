@@ -7,11 +7,10 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 public class OpenModelHandlerDelegate extends AbstractHandler implements IHandler
@@ -31,14 +30,12 @@ public class OpenModelHandlerDelegate extends AbstractHandler implements IHandle
                 && ((IStructuredSelection) selection).size() == 1)
         {
             Object selected = ((IStructuredSelection) selection).getFirstElement();
-            if (selected instanceof ILaunchConfiguration)
+            if (selected instanceof Model)
             {
                 Map<String, String> parameters = new HashMap<String, String>();
 
-                String modelNameUser = ModelHelper.getModelName(((ILaunchConfiguration) selected).getFile());
-
                 // fill the model name for the handler
-                parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelNameUser);
+                parameters.put(OpenModelHandler.PARAM_MODEL_NAME, ((Model) selected).getName());
                 // delegate the call to the open model handler
                 UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
             }

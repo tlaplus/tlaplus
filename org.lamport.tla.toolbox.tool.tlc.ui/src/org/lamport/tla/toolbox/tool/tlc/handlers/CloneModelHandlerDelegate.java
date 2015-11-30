@@ -1,3 +1,28 @@
+/*******************************************************************************
+ *
+ * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Simon Zambrovski - initial API and implementation
+ ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
 import java.util.HashMap;
@@ -7,16 +32,14 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -24,105 +47,70 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * Copies the contents of a model into a new model.
  * 
  * @author Simon Zambrovski
- * @version $Id$
  */
-public class CloneModelHandlerDelegate extends AbstractHandler implements IHandler
-{
+public class CloneModelHandlerDelegate extends AbstractHandler implements IHandler {
 
-    public static final String COMMAND_ID = "toolbox.tool.tlc.commands.model.clone.delegate";
+	public static final String COMMAND_ID = "toolbox.tool.tlc.commands.model.clone.delegate";
 
-    /**
-     * Parameter giving the name of the model to be cloned.
-     * 
-     * If this parameter is set, the call to event.getParameter(PARAM_MODEL) should return
-     * an object of type String. This is an optional parameter, so if it is not
-     * set this handler looks for the current selection to find the model to be cloned.
-     * 
-     * The model name can be of the form specName___modelName or just of the form
-     * modelName.
-     */
-    public static final String PARAM_MODEL_NAME = "toolbox.tool.tlc.commands.model.clone.param.modelName";
+	/**
+	 * Parameter giving the name of the model to be cloned.
+	 * 
+	 * If this parameter is set, the call to event.getParameter(PARAM_MODEL)
+	 * should return an object of type String. This is an optional parameter, so
+	 * if it is not set this handler looks for the current selection to find the
+	 * model to be cloned.
+	 * 
+	 * The model name can be of the form specName___modelName or just of the
+	 * form modelName.
+	 */
+	public static final String PARAM_MODEL_NAME = "toolbox.tool.tlc.commands.model.clone.param.modelName";
 
-    private String modelName;
+	/**
+	 * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+	 */
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		final TLCSpec spec = ToolboxHandle.getCurrentSpec().getAdapter(TLCSpec.class);
+		
+		Model model = null;
+		/*
+		 * First try to get the model from the parameters. It is an optional
+		 * parameter, so it may not have been set.
+		 */
+		final String paramModelName = (String) event.getParameter(PARAM_MODEL_NAME);
+		if (paramModelName != null) {
+			// The name is given which means the user clicked the main menu
+			// instead of the spec explorer. Under the constraint that only ever
+			// a single spec can be open, lookup the current spec to eventually
+			// get the corresponding model.
+			model = spec.getModel(paramModelName);
+		} else {
+			/*
+			 * No parameter try to get it from active navigator if any
+			 */
+			final ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
+			if (selection != null && selection instanceof IStructuredSelection) {
+				// model
+				model = (Model) ((IStructuredSelection) selection).getFirstElement();
+			}
+		}
 
-    /**
-     * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-     */
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
-        /*
-         * First try to get the model from the parameters. It is an optional
-         * parameter, so it may not have been set.
-         */
-        String paramModelName = (String) event.getParameter(PARAM_MODEL_NAME);
-        ILaunchConfiguration model = null;
+		if (model != null) {
+			final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "Clone model...",
+					"Please input the new name of the model", spec.getModelNameSuggestion(model), new ModelNameValidator(spec));
+			dialog.setBlockOnOpen(true);
+			if (dialog.open() == Window.OK) {
+				final String usersChosenName = dialog.getValue();
+				if (model.copy(usersChosenName) == null) {
+					throw new ExecutionException(
+							"Failed to copy with name " + usersChosenName + " from model " + model.getName());
+				}
 
-        if (paramModelName != null)
-        {
-            model = ModelHelper.getModelByName(paramModelName);
-        } else
-        {
-            /*
-             * No parameter try to get it from active navigator if any
-             */
-            ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
-            if (selection != null && selection instanceof IStructuredSelection)
-            {
-                // model
-                model = (ILaunchConfiguration) ((IStructuredSelection) selection).getFirstElement();
-            }
-        }
-
-        if (model != null)
-        {
-
-            // root file
-            IResource specRootModule = ToolboxHandle.getRootModule(model.getFile().getProject());
-
-            modelName = ModelHelper.getModelName(model.getFile()) + "_Copy";
-
-            IInputValidator modelNameInputValidator = new ModelNameValidator(specRootModule.getProject());
-            final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "Clone model...",
-                    "Please input the new name of the model", modelName, modelNameInputValidator);
-            dialog.setBlockOnOpen(true);
-            UIHelper.runUISync(new Runnable() {
-
-                public void run()
-                {
-                    int open = dialog.open();
-                    switch (open) {
-                    case Window.OK:
-                        modelName = dialog.getValue();
-                        break;
-                    case Window.CANCEL:
-                        // cancel model creation
-                        modelName = null;
-                    }
-                }
-            });
-            if (modelName == null)
-            {
-                // exit processing if no specName at place
-                return null;
-            }
-
-            // construct real name
-            String newModelName = specRootModule.getProject().getName() + "___" + modelName;
-
-            // Clone the model
-            Map<String, String> parameters = null;
-            parameters = new HashMap<String, String>();
-            parameters.put(CloneModelHandler.PARAM_MODEL_NAME, model.getName());
-            parameters.put(CloneModelHandler.PARAM_MODELCOPY_NAME, newModelName);
-            UIHelper.runCommand(CloneModelHandler.COMMAND_ID, parameters);
-
-            // Open the previously created model
-            parameters = new HashMap<String, String>();
-            parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelName);
-            UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
-        }
-
-        return null;
-    }
-
+				// Open the previously created model
+				final Map<String, String> parameters = new HashMap<String, String>();
+				parameters.put(OpenModelHandler.PARAM_MODEL_NAME, usersChosenName);
+				UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
+			}
+		}
+		return null;
+	}
 }

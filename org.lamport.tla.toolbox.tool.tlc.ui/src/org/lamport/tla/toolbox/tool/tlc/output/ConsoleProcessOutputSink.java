@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.eclipse.ui.console.MessageConsole;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.console.ConsoleFactory;
@@ -11,7 +12,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.console.ConsoleFactory;
 /**
  * A sink writing to a console
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class ConsoleProcessOutputSink implements IProcessOutputSink
 {
@@ -38,7 +38,7 @@ public class ConsoleProcessOutputSink implements IProcessOutputSink
         }
     }
 
-    public void initializeSink(String processName, int sinkType)
+    public void initializeSink(Model model, int sinkType)
     {
 
     }

@@ -40,6 +40,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextStore;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.rules.FastPartitioner;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
 /**
@@ -321,17 +322,17 @@ public class TagBasedTLCOutputIncrementalParser
      * @param prio
      * @param isTraceExplorer TODO
      */
-    public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer) {
-    	this(name, prio, isTraceExplorer, Mode.INCREMENTAL, LargeTextStoreDocument.SIZE_UNKNOWN);
+    public TagBasedTLCOutputIncrementalParser(Model model, int prio, boolean isTraceExplorer) {
+    	this(model, prio, isTraceExplorer, Mode.INCREMENTAL, LargeTextStoreDocument.SIZE_UNKNOWN);
     }
     
-    public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer, Mode mode, final long size)
+    public TagBasedTLCOutputIncrementalParser(Model model, int prio, boolean isTraceExplorer, Mode mode, final long size)
     {
 		// create the document
         document = new LargeTextStoreDocument(size);
 
         this.analyzer = new TagBasedTLCAnalyzer(document);
-        this.source = new CachingTLCOutputSource(name, prio);
+        this.source = new CachingTLCOutputSource(model, prio);
 
         // set up the partitioner
         FastPartitioner partitioner = new FastPartitioner(new TagBasedTLCOutputTokenScanner(),

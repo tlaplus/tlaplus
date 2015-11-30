@@ -7,9 +7,7 @@ import java.util.Vector;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -58,8 +56,8 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFcnElementVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFunctionVariableValue;
@@ -128,11 +126,7 @@ public class TLCErrorView extends ViewPart
     private SourceViewer errorViewer;
     private TreeViewer variableViewer;
     private SourceViewer valueViewer;
-    /**
-     * a handle on the underlying configuration file representing the
-     * model for which errors are currently being displayed in this view
-     */
-    private ILaunchConfiguration configFileHandle;
+    private Model model;
     private TraceExplorerComposite traceExplorerComposite;
 
     // listener on changes to the tlc output font preference
@@ -318,7 +312,7 @@ public class TLCErrorView extends ViewPart
 
             public void mouseDown(MouseEvent e)
             {
-                TLCUIHelper.openTLCLocationHyperlink(text, e, getCurrentConfigFileHandle());
+                TLCUIHelper.openTLCLocationHyperlink(text, e, model);
             }
 
             public void mouseDoubleClick(MouseEvent e)
@@ -623,88 +617,68 @@ public class TLCErrorView extends ViewPart
         }
     }
 
+	public void updateErrorView() {
+		updateErrorView(this.model);
+	}
+
     /**
      * Display the errors in the view, or hides the view if no errors
      * Displays data from the most recent trace explorer run for config
      * iff {@link ModelHelper#isOriginalTraceShown(ILaunchConfiguration)} is false.
      * 
-     * @param config TODO
      * @param errors
      *            a list of {@link TLCError}
      */
-    public static void updateErrorView(ILaunchConfiguration config) {
-    	updateErrorView(config, true);
+    public static void updateErrorView(Model model) {
+    	System.out.println(model);
+    	updateErrorView(model, true);
     }
 
-    public static void updateErrorView(ILaunchConfiguration config, boolean openErrorView)
+    public static void updateErrorView(Model model, boolean openErrorView)
     {
-
-        try
+        if (model == null)
         {
-            if (config == null)
-            {
-                return;
-            }
-            boolean isTraceExplorerUpdate;
-            isTraceExplorerUpdate = !ModelHelper.isOriginalTraceShown(config);
-
-            TLCModelLaunchDataProvider provider = null;
-            if (isTraceExplorerUpdate)
-            {
-                provider = TLCOutputSourceRegistry.getTraceExploreSourceRegistry().getProvider(config);
-            } else
-            {
-                provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(config);
-            }
-
-            if (provider == null)
-            {
-                return;
-            }
-            updateErrorView(provider, config, openErrorView);
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error determining if trace explorer expressions should be shown", e);
+            return;
         }
+        boolean isTraceExplorerUpdate;
+        isTraceExplorerUpdate = !model.isOriginalTraceShown();
+
+        TLCModelLaunchDataProvider provider = null;
+        if (isTraceExplorerUpdate)
+        {
+            provider = TLCOutputSourceRegistry.getTraceExploreSourceRegistry().getProvider(model);
+        } else
+        {
+            provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(model);
+        }
+
+        if (provider == null)
+        {
+            return;
+        }
+        updateErrorView(provider, model, openErrorView);
     }
     
-	public static void updateErrorView(final TLCModelLaunchDataProvider provider, final ILaunchConfiguration config,
+	public static void updateErrorView(final TLCModelLaunchDataProvider provider, final Model model,
 			boolean openErrorView) {
-		try {
-            TLCErrorView errorView;
-			if (provider.getErrors().size() > 0 && openErrorView == true) {
-           		errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
-			} else {
-                errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
-            }
-			if (errorView != null) {
-                /*
-                 * We need a handle on the actual underlying configuration file handle
-                 * in order to retrieve the expressions that should be put in the trace
-                 * explorer table. Working copies of the configuration file may not have
-                 * all of the expressions that should appear. The filling of the trace
-                 * explorer table occurs in the fill() method.
-                 */
-				if (config.isWorkingCopy()) {
-                    errorView.configFileHandle = ((ILaunchConfigurationWorkingCopy) config).getOriginal();
-				} else {
-                    errorView.configFileHandle = config;
-                }
-
-				final List<String> serializedInput = errorView.configFileHandle
-						.getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector<String>());
-                // fill the name and the errors
-				errorView.fill(ModelHelper.getModelName(provider.getConfig().getFile()), provider.getErrors(),
-						serializedInput);
-
-				if (provider.getErrors().size() == 0) {
-                    errorView.hide();
-                }
-            }
-		} catch (CoreException e) {
-            TLCUIActivator.getDefault().logError("Error determining if trace explorer expressions should be shown", e);
+        TLCErrorView errorView;
+		if (provider.getErrors().size() > 0 && openErrorView == true) {
+       		errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
+		} else {
+            errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
         }
+		if (errorView != null) {
+            errorView.model= model;
 
+            final List<String> serializedInput = model.getTraceExplorerExpressions();
+            // fill the name and the errors
+			errorView.fill(provider.getModel().getName(), provider.getErrors(),
+					serializedInput);
+
+			if (provider.getErrors().size() == 0) {
+                errorView.hide();
+            }
+        }
     }
 
     /**
@@ -1240,16 +1214,9 @@ public class TLCErrorView extends ViewPart
         return (TLCError) variableViewer.getInput();
     }
 
-    /**
-     * Returns a handle on the underlying configuration file for which
-     * errors are being shown by this view. Can return null.
-     * 
-     * @return
-     */
-    public ILaunchConfiguration getCurrentConfigFileHandle()
-    {
-        return configFileHandle;
-    }
+	public Model getModel() {
+		return model;
+	}
 
     private class HelpAction extends Action
     {
@@ -1306,4 +1273,8 @@ public class TLCErrorView extends ViewPart
             valueViewer.setDocument(EMPTY_DOCUMENT());
         }
     }
+
+	public void setOriginalTraceShown(boolean b) {
+		this.model.setOriginalTraceShown(b);
+	}
 }

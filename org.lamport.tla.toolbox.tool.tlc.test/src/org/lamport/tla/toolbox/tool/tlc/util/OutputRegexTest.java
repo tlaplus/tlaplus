@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IRegion;
+import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 
 import tla2sany.st.Location;
 
@@ -13,7 +14,6 @@ import junit.framework.TestCase;
 /**
  * Tests the regex matcher for generated ids
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class OutputRegexTest extends TestCase
 {

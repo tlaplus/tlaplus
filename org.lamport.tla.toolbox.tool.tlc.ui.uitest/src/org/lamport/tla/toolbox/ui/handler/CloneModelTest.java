@@ -2,7 +2,6 @@ package org.lamport.tla.toolbox.ui.handler;
 
 import java.io.File;
 
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
@@ -16,9 +15,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.ui.test.AbstractTest;
 import org.lamport.tla.toolbox.tool.tlc.ui.test.ModelEditorOpenCondition;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class CloneModelTest extends AbstractTest {
@@ -26,6 +26,7 @@ public class CloneModelTest extends AbstractTest {
 	private static final String TLA_SUFFIX = ".tla";
 	private static final String TEST_SPEC = "ToBeClonedSpec";
 	private static final String TEST_MODEL = "Model_1";
+	private static final String TEST_MODEL_RENAME = "Model_2";
 
 	@BeforeClass
 	public static void beforeClass() {
@@ -75,7 +76,7 @@ public class CloneModelTest extends AbstractTest {
 		cloneModelSubMenu.menu(TEST_MODEL).click();
 
 		bot.button("OK").click();
-		bot.waitUntil(new ModelEditorOpenCondition(TEST_MODEL + "_Copy"));
+		bot.waitUntil(new ModelEditorOpenCondition(TEST_MODEL_RENAME));
 	}
 
 	// Verify spec and model show expected state (via API!!!)
@@ -83,7 +84,7 @@ public class CloneModelTest extends AbstractTest {
 		final Spec spec = Activator.getSpecManager().getSpecLoaded();
 		Assert.assertEquals(specExpected, spec.getName());
 		
-		final ILaunchConfiguration model = ModelHelper.getModelByName(spec.getProject(), TEST_MODEL);
+		final Model model = spec.getAdapter(TLCSpec.class).getModel(TEST_MODEL);
 		Assert.assertNotNull("Model could not be found", model);
 	}
 }

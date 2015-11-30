@@ -52,7 +52,6 @@ import tlc2.tool.fp.MultiFPSet;
  * Represent all advanced model elements
  * 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class AdvancedModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
@@ -115,48 +114,48 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     protected void loadData() throws CoreException
     {
         // definition overrides
-        List<String> definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector<String>());
+        List<String> definitions = getModel().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector<String>());
         FormHelper.setSerializedInput(definitionsTable, definitions);
 
         // new definitions
-        String newDefinitions = getConfig().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING);
+        String newDefinitions = getModel().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING);
         newDefinitionsSource.setDocument(new Document(newDefinitions));
 
         // advanced model values
-        String modelValues = getConfig().getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING);
+        String modelValues = getModel().getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING);
         modelValuesSource.setDocument(new Document(modelValues));
 
         // constraint
-        String constraint = getConfig().getAttribute(MODEL_PARAMETER_CONSTRAINT, EMPTY_STRING);
+        String constraint = getModel().getAttribute(MODEL_PARAMETER_CONSTRAINT, EMPTY_STRING);
         constraintSource.setDocument(new Document(constraint));
 
         // view
-        String view = getConfig().getAttribute(LAUNCH_VIEW, EMPTY_STRING);
+        String view = getModel().getAttribute(LAUNCH_VIEW, EMPTY_STRING);
         viewSource.setDocument(new Document(view));
 
         // action constraint
-        String actionConstraint = getConfig().getAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, EMPTY_STRING);
+        String actionConstraint = getModel().getAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, EMPTY_STRING);
         actionConstraintSource.setDocument(new Document(actionConstraint));
 
         // run mode mode
-        boolean isMCMode = getConfig().getAttribute(LAUNCH_MC_MODE, LAUNCH_MC_MODE_DEFAULT);
+        boolean isMCMode = getModel().getAttribute(LAUNCH_MC_MODE, LAUNCH_MC_MODE_DEFAULT);
         mcOption.setSelection(isMCMode);
         simulationOption.setSelection(!isMCMode);
 
         // DFID mode
-        boolean isDFIDMode = getConfig().getAttribute(LAUNCH_DFID_MODE, LAUNCH_DFID_MODE_DEFAULT);
+        boolean isDFIDMode = getModel().getAttribute(LAUNCH_DFID_MODE, LAUNCH_DFID_MODE_DEFAULT);
         dfidOption.setSelection(isDFIDMode);
 
         // DFID depth
-        int dfidDepth = getConfig().getAttribute(LAUNCH_DFID_DEPTH, LAUNCH_DFID_DEPTH_DEFAULT);
+        int dfidDepth = getModel().getAttribute(LAUNCH_DFID_DEPTH, LAUNCH_DFID_DEPTH_DEFAULT);
         dfidDepthText.setText("" + dfidDepth);
 
         // simulation depth
-        int simuDepth = getConfig().getAttribute(LAUNCH_SIMU_DEPTH, LAUNCH_SIMU_DEPTH_DEFAULT);
+        int simuDepth = getModel().getAttribute(LAUNCH_SIMU_DEPTH, LAUNCH_SIMU_DEPTH_DEFAULT);
         simuDepthText.setText("" + simuDepth);
 
         // simulation aril
-        int simuAril = getConfig().getAttribute(LAUNCH_SIMU_SEED, LAUNCH_SIMU_ARIL_DEFAULT);
+        int simuAril = getModel().getAttribute(LAUNCH_SIMU_SEED, LAUNCH_SIMU_ARIL_DEFAULT);
         if (LAUNCH_SIMU_ARIL_DEFAULT != simuAril)
         {
             simuArilText.setText("" + simuAril);
@@ -166,7 +165,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         }
 
         // simulation seed
-        int simuSeed = getConfig().getAttribute(LAUNCH_SIMU_ARIL, LAUNCH_SIMU_SEED_DEFAULT);
+        int simuSeed = getModel().getAttribute(LAUNCH_SIMU_ARIL, LAUNCH_SIMU_SEED_DEFAULT);
         if (LAUNCH_SIMU_SEED_DEFAULT != simuSeed)
         {
             simuSeedText.setText("" + simuSeed);
@@ -176,25 +175,25 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         }
         
         // fp index
-        final int fpIndex = getConfig().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
+        final int fpIndex = getModel().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
        	fpIndexSpinner.setSelection(fpIndex);
        	
         // fpBits
         int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
-        fpBits.setSelection(getConfig().getAttribute(LAUNCH_FPBITS, defaultFPBits));
+        fpBits.setSelection(getModel().getAttribute(LAUNCH_FPBITS, defaultFPBits));
 
         // maxSetSize
         int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
-        maxSetSize.setSelection(getConfig().getAttribute(LAUNCH_MAXSETSIZE, defaultMaxSetSize));
+        maxSetSize.setSelection(getModel().getAttribute(LAUNCH_MAXSETSIZE, defaultMaxSetSize));
         
         // Extra JVM arguments and system properties
-        final String vmArgs = getConfig().getAttribute(LAUNCH_JVM_ARGS, LAUNCH_JVM_ARGS_DEFAULT);
+        final String vmArgs = getModel().getAttribute(LAUNCH_JVM_ARGS, LAUNCH_JVM_ARGS_DEFAULT);
         this.extraVMArgumentsText.setText(vmArgs);
 
         // Extra JVM arguments and system properties
-        final String tlcParameters = getConfig().getAttribute(LAUNCH_TLC_PARAMETERS, LAUNCH_TLC_PARAMETERS_DEFAULT);
+        final String tlcParameters = getModel().getAttribute(LAUNCH_TLC_PARAMETERS, LAUNCH_TLC_PARAMETERS_DEFAULT);
         this.extraTLCParametersText.setText(tlcParameters);
     }
 
@@ -206,11 +205,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // TLCUIActivator.getDefault().logDebug("Advanced page commit");
 
         boolean isMCMode = mcOption.getSelection();
-        getConfig().setAttribute(LAUNCH_MC_MODE, isMCMode);
+        getModel().setAttribute(LAUNCH_MC_MODE, isMCMode);
 
         // DFID mode
         boolean isDFIDMode = dfidOption.getSelection();
-        getConfig().setAttribute(LAUNCH_DFID_MODE, isDFIDMode);
+        getModel().setAttribute(LAUNCH_DFID_MODE, isDFIDMode);
 
         int dfidDepth = Integer.parseInt(dfidDepthText.getText());
         int simuDepth = Integer.parseInt(simuDepthText.getText());
@@ -227,56 +226,56 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         }
 
         // DFID depth
-        getConfig().setAttribute(LAUNCH_DFID_DEPTH, dfidDepth);
+        getModel().setAttribute(LAUNCH_DFID_DEPTH, dfidDepth);
         // simulation depth
-        getConfig().setAttribute(LAUNCH_SIMU_DEPTH, simuDepth);
+        getModel().setAttribute(LAUNCH_SIMU_DEPTH, simuDepth);
         // simulation aril
-        getConfig().setAttribute(LAUNCH_SIMU_SEED, simuSeed);
+        getModel().setAttribute(LAUNCH_SIMU_SEED, simuSeed);
         // simulation seed
-        getConfig().setAttribute(LAUNCH_SIMU_ARIL, simuAril);
+        getModel().setAttribute(LAUNCH_SIMU_ARIL, simuAril);
 
         // FP Seed index
-        getConfig().setAttribute(LAUNCH_FP_INDEX, fpIndexSpinner.getSelection());
+        getModel().setAttribute(LAUNCH_FP_INDEX, fpIndexSpinner.getSelection());
 
         // fpBits
-        getConfig().setAttribute(LAUNCH_FPBITS, fpBits.getSelection());
+        getModel().setAttribute(LAUNCH_FPBITS, fpBits.getSelection());
 
         // fpBits
-        getConfig().setAttribute(LAUNCH_MAXSETSIZE, maxSetSize.getSelection());
+        getModel().setAttribute(LAUNCH_MAXSETSIZE, maxSetSize.getSelection());
         
         // definitions
         List<String> definitions = FormHelper.getSerializedInput(definitionsTable);
-        getConfig().setAttribute(MODEL_PARAMETER_DEFINITIONS, definitions);
+        getModel().setAttribute(MODEL_PARAMETER_DEFINITIONS, definitions);
 
         // new definitions
         String newDefinitions = FormHelper.trimTrailingSpaces(newDefinitionsSource.getDocument().get());
-        getConfig().setAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, newDefinitions);
+        getModel().setAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, newDefinitions);
 
         // model values
         String modelValues = FormHelper.trimTrailingSpaces(modelValuesSource.getDocument().get());
         TypedSet modelValuesSet = TypedSet.parseSet(modelValues);
-        getConfig().setAttribute(MODEL_PARAMETER_MODEL_VALUES, modelValuesSet.toString());
+        getModel().setAttribute(MODEL_PARAMETER_MODEL_VALUES, modelValuesSet.toString());
 
         // constraint formula
         String constraintFormula = FormHelper.trimTrailingSpaces(constraintSource.getDocument().get());
-        getConfig().setAttribute(MODEL_PARAMETER_CONSTRAINT, constraintFormula);
+        getModel().setAttribute(MODEL_PARAMETER_CONSTRAINT, constraintFormula);
 
         // view
         String viewFormula = FormHelper.trimTrailingSpaces(viewSource.getDocument().get());
-        getConfig().setAttribute(LAUNCH_VIEW, viewFormula);
+        getModel().setAttribute(LAUNCH_VIEW, viewFormula);
 
         // action constraint formula
         String actionConstraintFormula = FormHelper.trimTrailingSpaces(actionConstraintSource.getDocument().get());
-        getConfig().setAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintFormula);
+        getModel().setAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintFormula);
 
 		// extra vm arguments (replace newlines which otherwise cause the
 		// process to ignore all args except the first one)
         final String vmArgs = this.extraVMArgumentsText.getText().replace("\r\n", " ").replace("\n", " ");
-        getConfig().setAttribute(LAUNCH_JVM_ARGS, vmArgs);
+        getModel().setAttribute(LAUNCH_JVM_ARGS, vmArgs);
 
         // extra tlc parameters
         final String tlcParameters = this.extraTLCParametersText.getText();
-        getConfig().setAttribute(LAUNCH_TLC_PARAMETERS, tlcParameters);
+        getModel().setAttribute(LAUNCH_TLC_PARAMETERS, tlcParameters);
       
         super.commit(onSave);
     }
@@ -658,7 +657,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         int expand = 0;
         try
         {
-           List<String> definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector<String>());
+           List<String> definitions = getModel().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector<String>());
             if ((definitions != null) && (definitions.size() != 0)) {
                 expand = Section.EXPANDED;
             }

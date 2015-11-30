@@ -39,9 +39,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationListener;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
@@ -56,13 +53,14 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -74,7 +72,7 @@ import tlc2.output.MP;
  * Container for the data about the model launch
  * @author Simon Zambrovski
  */
-public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchConfigurationListener
+public class TLCModelLaunchDataProvider implements ITLCOutputListener
 {
 	public static final String STATESORTORDER = "STATESORTORDER";
 
@@ -136,7 +134,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
 	private boolean stateSortDirection;
 
     // the model, which is represented by the current launch data provider
-    private ILaunchConfiguration config;
+    private final Model model;
     // flag indicating that TLC has started
     // currently this is used to indicate
     // that tlc output not surrounded by message tags
@@ -161,9 +159,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
         return startTime;
     }
 
-    public TLCModelLaunchDataProvider(ILaunchConfiguration config)
+    public TLCModelLaunchDataProvider(Model model)
     {
-        this.config = config;
+        this.model = model;
 
         // init provider, but not connect it to the source!
         initialize();
@@ -183,7 +181,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
         isTLCStarted = false;
         errors = new Vector<TLCError>();
         lastDetectedError = null;
-        ModelHelper.removeModelProblemMarkers(this.config, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+        model.removeMarkers(ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 
         coverageInfo = new Vector<CoverageInformationItem>();
         progressInformation = new Vector<StateSpaceInformationItem>();
@@ -200,9 +198,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
 
 		final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
 		stateSortDirection = dialogSettings.getBoolean(STATESORTORDER);
-
-        // Register as a LCL to cache the LaunchConfig's attributes upon save/commit.
-        DebugPlugin.getDefault().getLaunchManager().addLaunchConfigurationListener(this);
     }
 
     /**
@@ -231,10 +226,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
     /**
      * Name of the model
      */
-    public String getTLCOutputName()
+    public Model getModel()
     {
-        // the model filename is good because it is unique
-        return config.getFile().getName();
+        return model;
     }
 
     public void onDone()
@@ -569,7 +563,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
      */
     public void destroy()
     {
-        DebugPlugin.getDefault().getLaunchManager().removeLaunchConfigurationListener(this);
         TLCOutputSourceRegistry.getModelCheckSourceRegistry().disconnect(this);
     }
 
@@ -616,7 +609,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                      * provider in the finally block for this try block in order to avoid
                      * a memory leak.
                      */
-                    IFile mcFile = ModelHelper.getModelTLAFile(config);
+                    IFile mcFile = getModel().getTLAFile();
                     FileEditorInput mcFileEditorInput = new FileEditorInput((IFile) mcFile);
                     FileDocumentProvider mcFileDocumentProvider = new FileDocumentProvider();
 
@@ -664,7 +657,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                             // create the error properties for this id
                             // this method find the corresponding attribute and
                             // create the map with attributes, required to create a marker
-                            props[j] = ModelHelper.createMarkerDescription(config, mcDocument, mcSearcher,
+                            props[j] = ModelHelper.createMarkerDescription(mcDocument, mcSearcher,
                                     errorMessage, IMarker.SEVERITY_ERROR, coordinates);
 
                             // read the attribute name
@@ -681,7 +674,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                                 // some attributes are lists
                                 if (ModelHelper.isListAttribute(attributeName))
                                 {
-									final List<String> attributeValue = (List<String>) config
+									final List<String> attributeValue = (List<String>) model
 											.getAttribute(attributeName, new ArrayList<String>(0));
                                     int attributeNumber = (attributeIndex != null) ? attributeIndex.intValue() : 0;
 
@@ -708,7 +701,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                                 } else
                                 {
                                     // others are just strings
-                                    idReplacement = config.getAttribute(attributeName, ModelHelper.EMPTY_STRING);
+                                    idReplacement = model.getAttribute(attributeName, ModelHelper.EMPTY_STRING);
                                 }
                                 // patch the message
 
@@ -779,8 +772,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                             // patch the error marker
                             props[j].put(IMarker.MESSAGE, errorMessage);
                             // install error marker
-                            ModelHelper.installModelProblemMarker(config.getFile(), props[j],
-                                    ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+                            model.setMarker(props[j], ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
                             markerInstalled = true;
                         }
 
@@ -789,8 +781,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
                         if (!markerInstalled)
                         {
                             Hashtable<String, Object> prop = ModelHelper.createMarkerDescription(errorMessage, IMarker.SEVERITY_ERROR);
-                            ModelHelper.installModelProblemMarker(config.getFile(), prop,
-                                    ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+                            model.setMarker(prop, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
                         }
 
                         // set error text
@@ -879,15 +870,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
     {
 
         TLCOutputSourceRegistry.getModelCheckSourceRegistry().connect(this);
-    }
-
-    /**
-     * Retrieves the config
-     * @return config this launch data provider is representing
-     */
-    public ILaunchConfiguration getConfig()
-    {
-        return this.config;
     }
 
     /**
@@ -1054,31 +1036,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener, ILaunchCo
 	protected String getModelName() {
 		// defined here so subclasses can override which ain't backed by a real
 		// file (e.g. unit test)
-		return ModelHelper.getModelName(getConfig().getFile());
+		return getModel().getName();
 	}
 	
-	/* org.eclipse.debug.core.ILaunchConfigurationListener */
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.core.ILaunchConfigurationListener#launchConfigurationAdded(org.eclipse.debug.core.ILaunchConfiguration)
-	 */
-	public void launchConfigurationAdded(final ILaunchConfiguration configuration) {
-		// Ignore
-	}
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.core.ILaunchConfigurationListener#launchConfigurationChanged(org.eclipse.debug.core.ILaunchConfiguration)
-	 */
-	public void launchConfigurationChanged(final ILaunchConfiguration configuration) {
-		// The moment the launch config is saved/committed, keep it.
-		this.config = configuration;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.core.ILaunchConfigurationListener#launchConfigurationRemoved(org.eclipse.debug.core.ILaunchConfiguration)
-	 */
-	public void launchConfigurationRemoved(final ILaunchConfiguration configuration) {
-		// Ignore, should never happen during model checking because the ILC is locked.
-		this.config = null;
+	public String toString() {
+		return getModel().getSpec().getName() + "___" + getModelName();
 	}
 }

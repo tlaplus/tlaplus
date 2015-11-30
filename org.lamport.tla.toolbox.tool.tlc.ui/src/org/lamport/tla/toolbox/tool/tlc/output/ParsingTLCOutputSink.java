@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.output;
 
 import org.eclipse.jface.text.BadLocationException;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.source.ITLCOutputSource;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TagBasedTLCOutputIncrementalParser;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
@@ -47,18 +48,18 @@ public class ParsingTLCOutputSink implements IProcessOutputSink
 			parser.addIncrement(input);
 		} catch (BadLocationException e) {
             TLCUIActivator.getDefault().logError("Error parsing the TLC output stream for "
-                    + this.parser.getSource().getTLCOutputName(), e);
+                    + this.parser.getSource().getModel(), e);
 		}
     }
     
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink#initializeSink(java.lang.String, int)
      */
-    public void initializeSink(String processName, int sinkType)
+    public void initializeSink(Model model, int sinkType)
     {
         boolean isTraceExploration = sinkType == IProcessOutputSink.TYPE_TRACE_EXPLORE;
         // parser = new TLCOutputIncrementalParser(processName, ITLCOutputSource.PRIO_HIGH);
-        parser = new TagBasedTLCOutputIncrementalParser(processName, ITLCOutputSource.PRIO_HIGH, isTraceExploration);
+        parser = new TagBasedTLCOutputIncrementalParser(model, ITLCOutputSource.PRIO_HIGH, isTraceExploration);
     }
 
     /* (non-Javadoc)

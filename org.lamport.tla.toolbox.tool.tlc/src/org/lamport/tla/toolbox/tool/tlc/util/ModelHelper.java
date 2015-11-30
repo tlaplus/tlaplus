@@ -26,7 +26,6 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,24 +33,16 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceRuleFactory;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -62,7 +53,6 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.text.BadLocationException;
@@ -70,21 +60,15 @@ import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.editors.text.FileDocumentProvider;
-import org.eclipse.ui.part.FileEditorInput;
-import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
-import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
-import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
-import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.util.ResourceHelper;
-import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ModuleNode;
@@ -92,7 +76,6 @@ import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
-import tlc2.output.MP;
 
 /**
  * Provides utility methods for model manipulation
@@ -100,26 +83,14 @@ import tlc2.output.MP;
 public class ModelHelper implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
 
-    private static final String SPEC_MODEL_DELIM = "___";
-
 	/**
      * Empty location
      */
     public static final int[] EMPTY_LOCATION = new int[] { 0, 0, 0, 0 };
-
-    /**
-     * Marker indicating an error in the model
-     */
-    public static final String TLC_MODEL_ERROR_MARKER = "org.lamport.tla.toolbox.tlc.modelErrorMarker";
     /**
      * Marker indicating the TLC Errors
      */
     public static final String TLC_MODEL_ERROR_MARKER_TLC = "org.lamport.tla.toolbox.tlc.modelErrorTLC";
-    /**
-     * Marker indicating the SANY Errors
-     */
-    public static final String TLC_MODEL_ERROR_MARKER_SANY = "org.lamport.tla.toolbox.tlc.modelErrorSANY";
-
     public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME = "attributeName";
     public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX = "attributeIndex";
 
@@ -129,40 +100,13 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 	public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE = "basicFormPageId";
 
     /**
-     * marker on .launch file with boolean attribute modelIsRunning 
-     */
-    public static final String TLC_MODEL_IN_USE_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
-    /**
-     * marker on .launch file, binary semantics
-     */
-    public static final String TLC_CRASHED_MARKER = "org.lamport.tla.toolbox.tlc.crashedModelMarker";
-    /**
-     * model is being run
-     */
-    private static final String MODEL_IS_RUNNING = "modelIsRunning";
-    /**
-     * model is locked by a user lock
-     */
-    private static final String MODEL_IS_LOCKED = "modelIsLocked";
-    /**
-     * marker on .launch file, with boolean attribute isOriginalTraceShown
-     */
-    public static final String TRACE_EXPLORER_MARKER = "org.lamport.tla.toolbox.tlc.traceExplorerMarker";
-    /**
-     * boolean attribute indicating if the original trace of a model checking
-     * run should be shown in the error view for that model
-     */
-    public static final String IS_ORIGINAL_TRACE_SHOWN = "isOriginalTraceShown";
-    /**
      * Delimiter used to serialize lists  
      */
     private static final String LIST_DELIMITER = ";";
-    private static final String CR = "\n";
     /**
      * Delimiter used to serialize parameter-value pair  
      */
     private static final String PARAM_DELIMITER = ":";
-    private static final String SPACE = " ";
 
     public static final String MC_MODEL_NAME = "MC";
     public static final String FILE_TLA = MC_MODEL_NAME + ".tla";
@@ -178,146 +122,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     // that the trace explorer can retrieve the trace when it is run
     public static final String TE_TRACE_SOURCE = "MC_TE.out";
 
-    private static final String CHECKPOINT_STATES = MC_MODEL_NAME + ".st.chkpt";
-    private static final String CHECKPOINT_QUEUE = "queue.chkpt";
-    private static final String CHECKPOINT_VARS = "vars.chkpt";
-
-    /**
-     * Constructs the model called Foo___Model_1 from the SpecName Foo
-     * if Foo___Model_1 already exists, delivers Foo___Model_2, and so on...
-     * 
-     * This method tests the existence of the launch configuration AND of the file
-     * 
-     * @param specProject
-     * @return
-     */
-    public static String constructModelName(IProject specProject)
-    {
-
-        return doConstructModelName(specProject, "Model_1");
-    }
-
-    /**
-     * Implementation of the {@link ModelHelper#constructModelName(IProject, String)}
-     * @param specProject
-     * @param proposition
-     * @return
-     */
-    public static String doConstructModelName(IProject specProject, String proposition)
-    {
-
-        ILaunchConfiguration existingModel = getModelByName(specProject, proposition);
-        if (existingModel != null || specProject.getFile(proposition + ".tla").exists())
-        {
-            String oldNumber = proposition.substring(proposition.lastIndexOf("_") + 1);
-            int number = Integer.parseInt(oldNumber) + 1;
-            proposition = proposition.substring(0, proposition.lastIndexOf("_") + 1);
-            return doConstructModelName(specProject, proposition + number);
-        }
-
-        return proposition;
-    }
-    public static String getModelName(ILaunchConfiguration config) {
-    	return getModelName(config.getFile());
-    }
-
-    /**
-     * Transforms a model name to the name visible to the user 
-     * @param modelFile
-     * @return
-     */
-    public static String getModelName(IFile modelFile)
-    {
-        String name = modelFile.getLocation().removeFileExtension().lastSegment();
-        int i = name.indexOf(modelFile.getProject().getName() + SPEC_MODEL_DELIM);
-        if (i != -1)
-        {
-            name = name.substring(i + (modelFile.getProject().getName() + SPEC_MODEL_DELIM).length());
-        }
-        return name;
-    }
-
-    /**
-     * Convenience method retrieving the model for the project of the current specification
-     * @param modelName name of the model
-     * @return launch configuration or null, if not found
-     */
-    public static ILaunchConfiguration getModelByName(String modelName)
-    {
-    	Assert.isNotNull(modelName);
-        final Spec currentSpec = ToolboxHandle.getCurrentSpec();
-        if (currentSpec != null) {
-        	return getModelByName(currentSpec.getProject(), modelName);
-        } else {
-        	return null;
-        }
-    }
-
-    /**
-     * Retrieves the model name by name
-     * @param specProject
-     * @param modelName
-     * @return ILaunchConfiguration representing a model or null
-     */
-    public static ILaunchConfiguration getModelByName(IProject specProject, String modelName)
-    {
-        // a model name can be "spec__modelname" or just "modelname"
-        if (modelName.indexOf(specProject.getName() + SPEC_MODEL_DELIM) != 0)
-        {
-            modelName = specProject.getName() + SPEC_MODEL_DELIM + modelName;
-        }
-
-        if (modelName.endsWith(".launch"))
-        {
-            modelName = modelName.substring(0, modelName.length() - ".launch".length());
-        }
-
-        try
-        {
-        	ILaunchConfiguration[] launchConfigurations = getAllLaunchConfigurations();
-            for (int i = 0; i < launchConfigurations.length; i++)
-            {
-
-                if (launchConfigurations[i].getName().equals(modelName))
-                {
-                    return launchConfigurations[i];
-                }
-            }
-
-        } catch (CoreException e)
-        {
-            TLCActivator.logError("Error finding the model name", e);
-        }
-
-        return null;
-    }
-    
-    /**
-     * @return All models associated with the given spec
-     * @throws CoreException 
-     */
-    public static List<ILaunchConfiguration> getModelsBySpec(final Spec aSpec) throws CoreException {
-    	final List<ILaunchConfiguration> res = new ArrayList<ILaunchConfiguration>();
-    	
-    	final ILaunchConfiguration[] launchConfigurations = getAllLaunchConfigurations();
-		for (int i = 0; i < launchConfigurations.length; i++) {
-			final ILaunchConfiguration iLaunchConfiguration = launchConfigurations[i];
-			if (getSpecPrefix(iLaunchConfiguration).equals(aSpec.getName())) {
-				res.add(iLaunchConfiguration);
-			}
-		}
-    	
-    	return res;
-    }
-    
-    private static ILaunchConfiguration[] getAllLaunchConfigurations() throws CoreException {
-		final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-		final ILaunchConfigurationType launchConfigurationType = launchManager
-				.getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
-
-		return launchManager.getLaunchConfigurations(launchConfigurationType);
-    }
-
     /**
      * Convenience method
      * @param modelFile file containing the model
@@ -328,70 +132,13 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
         return launchManager.getLaunchConfiguration(modelFile);
     }
-    
-    
-    /**
-     * Rename all models of the given spec to be aligned with the spec name
-     * @param aSpec
-     * @param aNewSpecName 
-     */
-    public static void realignModelNames(final Spec aSpec, final String aNewSpecName) {
-    	try {
-    		final List<ILaunchConfiguration> models = ModelHelper.getModelsBySpec(aSpec);
-    		for (ILaunchConfiguration model : models) {
- 				renameModel(model, aNewSpecName, getModelSuffix(model));
-			}
-    	} catch(CoreException e) {
-            TLCActivator.logError("Error realigning models.", e);
-    	}
-    }
-
-	/**
-	 * Renames the given model to the new model name passed
-	 * @param model
-	 * @param specPrefix
-	 * @param newModelSuffix
-	 */
-	public static void renameModel(final ILaunchConfiguration model, final String specPrefix, final String newModelSuffix) {
-		try {
-			// create the model with the new name
-			final ILaunchConfigurationWorkingCopy copy = model.copy(specPrefix + SPEC_MODEL_DELIM + newModelSuffix);
-			copy.setAttribute(MODEL_NAME, newModelSuffix);
-			copy.doSave();
-
-			// delete the old model
-			model.delete();
-		} catch (CoreException e) {
-            TLCActivator.logError("Error renaming model.", e);
-		}
-	}
-	
-	public static String getSpecPrefix(final ILaunchConfiguration aModel) {
-        final String oldModelName = aModel.getName(); // old full qualified name
-        int indexOf = oldModelName.indexOf(SPEC_MODEL_DELIM); // position model delimiter
-    	return oldModelName.substring(0, indexOf);
-	}
-	
-	public static String getModelSuffix(final ILaunchConfiguration aModel) {
-        final String oldModelName = aModel.getName(); // old full qualified name
-        int indexOf = oldModelName.indexOf(SPEC_MODEL_DELIM); // position model delimiter
-    	return oldModelName.substring(indexOf + SPEC_MODEL_DELIM.length());
-	}
 
     /**
      * Saves the config working copy
      * @param config
      */
-    public static void doSaveConfigurationCopy(ILaunchConfigurationWorkingCopy config)
-    {
-        try
-        {
-            config.doSave();
-        } catch (CoreException e)
-        {
-            TLCActivator.logError("Error saving the model", e);
-        }
-    }
+	public static void doSaveConfigurationCopy(ILaunchConfigurationWorkingCopy config) {
+	}
 
     /**
      * Creates a serial version of the assignment list, to be stored in the {@link ILaunchConfiguration}
@@ -703,588 +450,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
-     * Retrieves the editor with model instance opened, or null, if no editor found
-     * @param model
-     * @return
-     */
-    public static IEditorPart getEditorWithModelOpened(ILaunchConfiguration model)
-    {
-        if (model != null)
-        {
-            return UIHelper.getActivePage().findEditor(new FileEditorInput(model.getFile()));
-        }
-        return null;
-    }
-
-    /**
-     * Retrieves the working directory for the model
-     * <br>Note, this is a handle operation only, the resource returned may not exist
-     * @param config 
-     * @return the Folder.
-     */
-    public static IFolder getModelTargetDirectory(ILaunchConfiguration config)
-    {
-        Assert.isNotNull(config);
-        Assert.isTrue(config.getFile().exists());
-        return (IFolder) config.getFile().getProject().findMember(getModelName(config.getFile()));
-    }
-
-    /**
-     * Retrieves a file where the log of the TLC run is written. If isTraceExploration is true, this
-     * will return the log file for trace exploration. If that flag is false, this will return the log file
-     * for normal model checking.
-     * 
-     * @param config configuration representing the model
-     * @param getTraceExplorerOutput flag indicating if the log file for trace exploration is to be returned
-     * @return the file handle, or null
-     */
-    public static IFile getModelOutputLogFile(ILaunchConfiguration config, boolean getTraceExplorerOutput)
-    {
-        Assert.isNotNull(config);
-        IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
-        if (targetFolder != null && targetFolder.exists())
-        {
-            String fileName = ModelHelper.FILE_OUT;
-            if (getTraceExplorerOutput)
-            {
-                fileName = ModelHelper.TE_FILE_OUT;
-            }
-            IFile logFile = (IFile) targetFolder.findMember(fileName);
-            if (logFile != null && logFile.exists())
-            {
-                return logFile;
-            }
-        }
-
-        return null;
-    }
-    
-    public static void createModelOutputLogFile(ILaunchConfiguration config, InputStream is, IProgressMonitor monitor) throws CoreException {
-        Assert.isNotNull(config);
-        IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
-		// Create targetFolder which might be missing if the model has never
-		// been checked but the user wants to load TLC output anyway.
-		// This happens with distributed TLC, where the model is executed
-		// remotely and the log is send to the user afterwards.
-        if (targetFolder == null || !targetFolder.exists()) {
-            String modelName = getModelName(config.getFile());
-    		targetFolder = config.getFile().getProject().getFolder(modelName);
-    		targetFolder.create(true, true, monitor);
-        }
-        if (targetFolder != null && targetFolder.exists())
-        {
-			// Always refresh the folder in case it has to override an existing
-			// file that is out-of-sync with the Eclipse foundation layer.
-        	targetFolder.refreshLocal(IFolder.DEPTH_INFINITE, monitor);
-        	
-        	// Import MC.out
-        	IFile mcOutFile = targetFolder.getFile(ModelHelper.FILE_OUT);
-        	if (mcOutFile.exists()) {
-        		mcOutFile.delete(true, monitor);
-        	}
-        	mcOutFile.create(is, true, monitor); // create closes the InputStream is.
-        	
-        	// Import MC_TE.out by copying the MC.out file to MC_TE.out.
-			// The reason why there are two identical files (MC.out and
-			// MC_TE.out) has been lost in history.
-        	IFile mcTEOutfile = targetFolder.getFile(ModelHelper.TE_TRACE_SOURCE);
-        	if (mcTEOutfile.exists()) {
-        		mcTEOutfile.delete(true, monitor);
-        	}
-        	mcOutFile.copy(mcTEOutfile.getFullPath(), true, monitor);
-        }
-    }
-
-    /**
-     * Retrieves the TLA file that is being model checked on the model run
-     * @param config configuration representing the model
-     * @return a file handle or <code>null</code>
-     */
-    public static IFile getModelTLAFile(ILaunchConfiguration config)
-    {
-        Assert.isNotNull(config);
-        IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
-        if (targetFolder != null && targetFolder.exists())
-        {
-            IFile mcFile = (IFile) targetFolder.findMember(ModelHelper.FILE_TLA);
-            if (mcFile != null && mcFile.exists())
-            {
-                return mcFile;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Retrives the TLA file used by the trace explorer
-     * @param config configuration representing the model
-     * @return a file handle or <code>null</code>
-     */
-    public static IFile getTraceExplorerTLAFile(ILaunchConfiguration config)
-    {
-        Assert.isNotNull(config);
-        IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
-        if (targetFolder != null && targetFolder.exists())
-        {
-            IFile teFile = (IFile) targetFolder.findMember(ModelHelper.TE_FILE_TLA);
-            if (teFile != null && teFile.exists())
-            {
-                return teFile;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Installs a model modification change listener  
-     * @param provider provider for the file representing the model
-     * @param runnable a runnable to run if the model is changed 
-     */
-    public static IResourceChangeListener installModelModificationResourceChangeListener(final IFileProvider provider,
-            final Runnable runnable)
-    {
-        // construct the listener
-        IResourceChangeListener listener = new IResourceChangeListener() {
-            public void resourceChanged(IResourceChangeEvent event)
-            {
-                // get the marker changes
-                IMarkerDelta[] markerChanges = event.findMarkerDeltas(TLC_MODEL_IN_USE_MARKER, false);
-
-                // usually this list has at most one element
-                for (int i = 0; i < markerChanges.length; i++)
-                {
-                    if (provider.getResource(IFileProvider.TYPE_MODEL).equals(markerChanges[i].getResource()))
-                    {
-                        UIHelper.runUIAsync(runnable);
-                    }
-                }
-            }
-        };
-
-        // add to the workspace root
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(listener, IResourceChangeEvent.POST_CHANGE);
-
-        // return the listener
-        return listener;
-    }
-
-    /**
-     * Checks whether the model is running or not
-     * @param config
-     * @return
-     * @throws CoreException
-     */
-    public static boolean isModelRunning(ILaunchConfiguration config) throws CoreException
-    {
-        // marker
-        IFile resource = config.getFile();
-        if (resource.exists())
-        {
-            IMarker marker;
-            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
-            if (foundMarkers.length > 0)
-            {
-                marker = foundMarkers[0];
-                // remove trash if any
-                for (int i = 1; i < foundMarkers.length; i++)
-                {
-                    foundMarkers[i].delete();
-                }
-
-                return marker.getAttribute(MODEL_IS_RUNNING, false);
-            } else
-            {
-                return false;
-            }
-        } else
-        {
-            return false;
-        }
-        /*
-        // persistence property
-        String isLocked = config.getFile().getPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING));
-        if (isLocked == null) 
-        {
-            return false;
-        } else {
-            return Boolean.getBoolean(isLocked);
-        }
-        */
-
-        /*
-        return config.getAttribute(MODEL_IS_RUNNING, false);
-        */
-    }
-
-    /**
-     * Checks whether the model is locked or not
-     * @param config
-     * @return
-     * @throws CoreException
-     */
-    public static boolean isModelLocked(ILaunchConfiguration config) throws CoreException
-    {
-        // marker
-        IFile resource = config.getFile();
-        if (resource.exists())
-        {
-            IMarker marker;
-            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
-            if (foundMarkers.length > 0)
-            {
-                marker = foundMarkers[0];
-                // remove trash if any
-                for (int i = 1; i < foundMarkers.length; i++)
-                {
-                    foundMarkers[i].delete();
-                }
-
-                return marker.getAttribute(MODEL_IS_LOCKED, false);
-            } else
-            {
-                return false;
-            }
-        } else
-        {
-            return false;
-        }
-        /*
-        // persistence property
-        String isLocked = config.getFile().getPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING));
-        if (isLocked == null) 
-        {
-            return false;
-        } else {
-            return Boolean.getBoolean(isLocked);
-        }
-        */
-
-        /*
-        return config.getAttribute(MODEL_IS_RUNNING, false);
-        */
-    }
-
-    /**
-     * Looks up if the model has a stale marker. The stale marker is installed in case,
-     * if the model is locked, but no TLC is running on this model.
-     * @param config
-     * @return
-     * @throws CoreException
-     */
-    public static boolean isModelStale(ILaunchConfiguration config) throws CoreException
-    {
-        // marker
-        IFile resource = config.getFile();
-        if (resource.exists())
-        {
-            IMarker[] foundMarkers = resource.findMarkers(TLC_CRASHED_MARKER, false, IResource.DEPTH_ZERO);
-            if (foundMarkers.length > 0)
-            {
-                return true;
-            } else
-            {
-                return false;
-            }
-        } else
-        {
-            return false;
-        }
-    }
-
-    /**
-     * Returns whether the original trace or the trace with trace explorer expressions from the
-     * most recent run of the trace explorer for the model should be shown in the TLC error view.
-     * 
-     * See {@link ModelHelper#setOriginalTraceShown(ILaunchConfiguration, boolean)} for setting this
-     * return value.
-     * 
-     * @param config
-     * @return whether the original trace or the trace with trace explorer expressions from the
-     * most recent run of the trace explorer for the model should be shown in the TLC error view
-     * @throws CoreException 
-     */
-    public static boolean isOriginalTraceShown(ILaunchConfiguration config) throws CoreException
-    {
-        // marker
-        IFile resource = config.getFile();
-        if (resource.exists())
-        {
-            IMarker marker;
-            IMarker[] foundMarkers = resource.findMarkers(TRACE_EXPLORER_MARKER, false, IResource.DEPTH_ZERO);
-            if (foundMarkers.length > 0)
-            {
-                marker = foundMarkers[0];
-                // remove trash if any
-                for (int i = 1; i < foundMarkers.length; i++)
-                {
-                    foundMarkers[i].delete();
-                }
-
-                return marker.getAttribute(IS_ORIGINAL_TRACE_SHOWN, true);
-            } else
-            {
-                return true;
-            }
-        } else
-        {
-            return true;
-        }
-    }
-
-    /**
-     * Tries to recover model after an abnormal TLC termination
-     * It deletes all temporary files on disk and restores the state to unlocked.
-     * @param config
-     */
-    public static void recoverModel(ILaunchConfiguration config) throws CoreException
-    {
-        IFile resource = config.getFile();
-        if (resource.exists())
-        {
-            // remove any crashed markers
-            IMarker[] foundMarkers = resource.findMarkers(TLC_CRASHED_MARKER, false, IResource.DEPTH_ZERO);
-            if (foundMarkers.length == 0)
-            {
-                return;
-            }
-
-            ModelHelper.cleanUp(config);
-
-            for (int i = 0; i < foundMarkers.length; i++)
-            {
-                foundMarkers[i].delete();
-            }
-
-            foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
-            for (int i = 0; i < foundMarkers.length; i++)
-            {
-                foundMarkers[i].delete();
-            }
-        }
-    }
-
-    /**
-     * Cleans up the TLC working directory
-     * @param config
-     */
-    private static void cleanUp(ILaunchConfiguration config) throws CoreException
-    {
-
-    }
-
-    /**
-     * Signals that the model is staled
-     */
-    public static void staleModel(ILaunchConfiguration config) throws CoreException
-    {
-        config.getFile().createMarker(TLC_CRASHED_MARKER);
-    }
-
-    /**
-     * Signals the start of model execution
-     * @param config
-     * @param isRunning whether TLC is running on the config or not
-     */
-    public static void setModelRunning(ILaunchConfiguration config, boolean isRunning) throws CoreException
-    {
-        IFile resource = config.getFile();
-        if (resource.exists())
-        {
-            IMarker marker;
-            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
-            if (foundMarkers.length > 0)
-            {
-                marker = foundMarkers[0];
-                // remove trash if any
-                for (int i = 1; i < foundMarkers.length; i++)
-                {
-                    foundMarkers[i].delete();
-                }
-            } else
-            {
-                marker = resource.createMarker(TLC_MODEL_IN_USE_MARKER);
-            }
-
-            marker.setAttribute(MODEL_IS_RUNNING, isRunning);
-        }
-        /*
-        // persistence property
-        config.getFile().setPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING), Boolean.toString(true));
-         */
-
-        /*
-        // file modification 
-        ModelHelper.writeAttributeValue(config, IModelConfigurationConstants.MODEL_IS_RUNNING, true);
-         */
-    }
-
-    /**
-     * Signals that the model is locked if isLocked is true, signals that
-     * the model is unlocked if isLocked is false
-     * @param config
-     * @param lock whether the model should be locked or not
-     * @throws CoreException
-     */
-    public static void setModelLocked(ILaunchConfiguration config, boolean lock) throws CoreException
-    {
-        IFile resource = config.getFile();
-        if (resource.exists())
-        {
-            IMarker marker;
-            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
-            if (foundMarkers.length > 0)
-            {
-                marker = foundMarkers[0];
-                // remove trash if any
-                for (int i = 1; i < foundMarkers.length; i++)
-                {
-                    foundMarkers[i].delete();
-                }
-            } else
-            {
-                marker = resource.createMarker(TLC_MODEL_IN_USE_MARKER);
-            }
-
-            marker.setAttribute(MODEL_IS_LOCKED, lock);
-        }
-        /*
-        // persistence property
-        config.getFile().setPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING), Boolean.toString(true));
-         */
-
-        /*
-        // file modification 
-        ModelHelper.writeAttributeValue(config, IModelConfigurationConstants.MODEL_IS_RUNNING, true);
-         */
-    }
-
-    /**
-     * Sets whether the original trace or the trace with trace explorer expressions
-     * should be shown in the TLC error view for the model represented by this
-     * configuration.
-     * 
-     * Code the raises the TLC error view or updates the TLC error view for a model
-     * can use {@link ModelHelper#isOriginalTraceShown(ILaunchConfiguration)} to determine
-     * if the original trace should be shown for a given model.
-     * 
-     * @param config
-     * @param isOriginalTraceShown true if the original trace should be shown, false if
-     * the trace with trace explorer expressions should be shown
-     */
-    public static void setOriginalTraceShown(ILaunchConfiguration config, boolean isOriginalTraceShown)
-            throws CoreException
-    {
-        IFile resource = config.getFile();
-        if (resource.exists())
-        {
-            IMarker marker;
-            IMarker[] foundMarkers = resource.findMarkers(TRACE_EXPLORER_MARKER, false, IResource.DEPTH_ZERO);
-            if (foundMarkers.length > 0)
-            {
-                marker = foundMarkers[0];
-                // remove trash if any
-                for (int i = 1; i < foundMarkers.length; i++)
-                {
-                    foundMarkers[i].delete();
-                }
-            } else
-            {
-                marker = resource.createMarker(TRACE_EXPLORER_MARKER);
-            }
-
-            marker.setAttribute(IS_ORIGINAL_TRACE_SHOWN, isOriginalTraceShown);
-        }
-    }
-
-    /**
-     * Write a boolean value into the launch config and saves it
-     * @param config
-     * @param attributeName
-     * @param value
-     */
-    public static void writeAttributeValue(ILaunchConfiguration config, String attributeName, boolean value)
-            throws CoreException
-    {
-        ILaunchConfigurationWorkingCopy copy;
-        if (config instanceof ILaunchConfigurationWorkingCopy)
-        {
-            copy = (ILaunchConfigurationWorkingCopy) config;
-        } else
-        {
-            copy = config.getWorkingCopy();
-        }
-
-        copy.setAttribute(attributeName, value);
-        copy.doSave();
-    }
-
-    /**
-     * Simple interface for getting a resource 
-     */
-    public static interface IFileProvider
-    {
-        public static final int TYPE_MODEL = 1;
-        public static final int TYPE_RESULT = 2;
-
-        public IFile getResource(int type);
-    }
-
-    /**
-     * Remove a model marker of a particular type
-     * @param configuration the model to remove markers from
-     * @param type the marker type
-     */
-    public static void removeModelProblemMarkers(ILaunchConfiguration configuration, String type)
-    {
-        try
-        {
-            IMarker[] foundMarkers = configuration.getFile().findMarkers(type, true, IResource.DEPTH_ONE);
-            for (int i = 0; i < foundMarkers.length; i++)
-            {
-                foundMarkers[i].delete();
-            }
-        } catch (CoreException e)
-        {
-            TLCActivator.logError("Error removing model markers", e);
-        }
-    }
-
-    /**
-     * Delete all model error markers from a resource
-     * @param configuration the model to remove markers from
-     */
-    public static void removeModelProblemMarkers(ILaunchConfiguration configuration)
-    {
-        removeModelProblemMarkers(configuration, TLC_MODEL_ERROR_MARKER);
-    }
-
-    /**
-     * Installs a marker on the model
-     * @param resource the model file to install markers on
-	 * @param properties a map of attribute names to attribute values 
-	 *		(key type : <code>String</code> value type : <code>String</code>, 
-	 *		<code>Integer</code>, or <code>Boolean</code>) or <code>null</code>
-     */
-    public static IMarker installModelProblemMarker(IResource resource, Map<String, Object> properties, String markerType)
-    {
-        Assert.isNotNull(resource);
-        Assert.isTrue(resource.exists());
-
-        try
-        {
-            // create an empty marker
-            IMarker marker = resource.createMarker(markerType);
-            marker.setAttributes(properties);
-            return marker;
-        } catch (CoreException e)
-        {
-            TLCActivator.logError("Error installing a model marker", e);
-        }
-
-        return null;
-    }
-
-    /**
      * For an given id that is used in the document retrieves the four coordinates of it's first occurrence.
      * @param document
      * @param searchAdapter
@@ -1311,21 +476,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
                     "Error during detection of the id position in MC.tla.", e));
         }
-    }
-
-    /**
-     * Converts four-int-location to a region
-     * @param document
-     * @param location
-     * @return
-     * @throws BadLocationException 
-     * @deprecated use {@link AdapterFactory#locationToRegion(IDocument, Location)} instead
-     */
-    public static IRegion locationToRegion(IDocument document, Location location) throws BadLocationException
-    {
-        int offset = document.getLineOffset(location.beginLine() - 1) + location.beginColumn() - 1;
-        int length = document.getLineOffset(location.endLine() - 1) + location.endColumn() - offset;
-        return new Region(offset, length);
     }
 
     /**
@@ -1386,7 +536,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Using the supplied findReplaceAdapter finds the name of the attribute 
      * (saved in the comment, previous to the region in which the error has been detected) 
      * 
-     * @param configuration the configuration of the launch
      * @param document the document of the file containing the generated model .tla file
      * @param searchAdapter the search adapter on the document
      * @param message the error message
@@ -1405,7 +554,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * </ul> 
      * @throws CoreException if something goes wrong
      */
-    public static Hashtable<String, Object> createMarkerDescription(ILaunchConfiguration configuration, IDocument document,
+    public static Hashtable<String, Object> createMarkerDescription(IDocument document,
             FindReplaceDocumentAdapter searchAdapter, String message, int severity, int[] coordinates)
             throws CoreException
     {
@@ -1674,7 +823,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         } else if (attributeName.equals(MODEL_PARAMETER_VIEW))
         {
             return "View";
-        } else if (attributeName.equals(MODEL_EXPRESSION_EVAL))
+        } else if (attributeName.equals(Model.MODEL_EXPRESSION_EVAL))
         {
             return "Expression";
         }
@@ -1682,99 +831,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
-     * Retrieves error markers of the model
-     * @param config
-     * @return
-     * @throws CoreException
-     */
-    public static IMarker[] getModelProblemMarker(ILaunchConfiguration config) throws CoreException
-    {
-        IFile resource = config.getFile();
-        if (resource.exists())
-        {
-            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_ERROR_MARKER, true, IResource.DEPTH_ZERO);
-            return foundMarkers;
-        }
-
-        return new IMarker[0];
-    }
-
-    /**
-     * Checks whether the checkpoint files exist for a given model
-     * If doRefresh is set to true, this method will refresh the model directory,
-     * and if a checkpoint folder is found, it will refresh the contents of that folder.
-     * This means that the eclipse workspace representation of that directory will
-     * synch with the file system. This is a long running job, so this method should not
-     * be called within the running of another job unless the scheduling rule for
-     * refreshing the model directory is included in the scheduling rule of the job which
-     * is calling this method. This scheduling rule can be found by calling
-     * 
-     * Note: Because the Toolbox deletes any existing checkpoint when running TLC,
-     * there should be at most one checkpoint.  Therefore, this method should return an array
-     * of length 0 or 1.
-     * 
-     * {@link IResourceRuleFactory#refreshRule(IResource)}
-     * @param config
-     * @param doRefresh whether the model directory's contents and any checkpoint
-     * folders contents should be refreshed
-     * @return the array of checkpoint directories, sorted from last to first
-     */
-    public static IResource[] getCheckpoints(ILaunchConfiguration config, boolean doRefresh) throws CoreException
-    {
-        // yy-MM-dd-HH-mm-ss
-        Pattern pattern = Pattern.compile("[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}");
-
-        Vector<IResource> checkpoints = new Vector<IResource>();
-        IFolder directory = getModelTargetDirectory(config);
-
-        if (directory != null && directory.exists())
-        {
-            // refreshing is necessary because TLC creates
-            // the checkpoint folders, but they may not have
-            // been incorporated into the toolbox workspace
-            // yet
-            // the depth is one to find any checkpoint folders
-            if (doRefresh)
-            {
-                directory.refreshLocal(IResource.DEPTH_ONE, null);
-            }
-            IResource[] members = directory.members();
-            for (int i = 0; i < members.length; i++)
-            {
-                if (members[i].getType() == IResource.FOLDER)
-                {
-                    Matcher matcher = pattern.matcher(members[i].getName());
-                    if (matcher.matches())
-                    {
-                        // if there is a checkpoint folder, it is necessary
-                        // to refresh its contents because they may not
-                        // be part of the workspace yet
-                        if (doRefresh)
-                        {
-                            members[i].refreshLocal(IResource.DEPTH_ONE, null);
-                        }
-                        if (((IFolder) members[i]).findMember(CHECKPOINT_QUEUE) != null
-                                && ((IFolder) members[i]).findMember(CHECKPOINT_VARS) != null
-                                && ((IFolder) members[i]).findMember(CHECKPOINT_STATES) != null)
-                        {
-                            checkpoints.add(members[i]);
-                        }
-                    }
-                }
-            }
-        }
-        IResource[] result = (IResource[]) checkpoints.toArray(new IResource[checkpoints.size()]);
-        // sort the result
-        Arrays.sort(result, new Comparator<IResource>() {
-            public int compare(IResource arg0, IResource arg1)
-            {
-                return arg0.getName().compareTo(arg1.getName());
-            }
-        });
-
-        return result;
-    }
-
     /**
      * Find the IDs in the given text and return the array of 
      * regions pointing to those or an empty array, if no IDs were found.
@@ -1915,65 +971,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
 
     }
-    
-    public static void deleteModels(ILaunchConfiguration[] ilcs, IProgressMonitor monitor) throws CoreException {
-    	for (int i = 0; i < ilcs.length; i++) {
-    		deleteModel(ilcs[i], monitor);
-		}
-    }
-
-    /**
-     * Deletes the given model plus its model folder
-     * @param monitor
-     * @param ilc the config file corresponding to the model folder
-     * @throws CoreException
-     */
-	public static void deleteModel(final ILaunchConfiguration ilc,
-			IProgressMonitor monitor) throws CoreException {
-		
-		final IResource[] members;
-
-		// if the model has never been model checked, no model folder will exist
-		final IFolder modelFolder = ModelHelper.getModelTargetDirectory(ilc);
-		if(modelFolder != null) {
-			members = new IResource[2];
-			members[0] = modelFolder; // model folder
-			members[1] = ilc.getFile(); // modle launch config
-		} else {
-			members = new IResource[]{ilc.getFile()};
-		}
-		
-		// schedule combined deletion of both the model folder as well as the
-		// launch config
-		final ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
-
-		ResourcesPlugin.getWorkspace().run(
-				new IWorkspaceRunnable() {
-
-					/* (non-Javadoc)
-					 * @see org.eclipse.core.resources.IWorkspaceRunnable#run(org.eclipse.core.runtime.IProgressMonitor)
-					 */
-					public void run(IProgressMonitor subMonitor)
-							throws CoreException {
-						subMonitor.beginTask("Deleting files", members.length);
-
-						// actually deletes all IResource members
-						try {
-							for (int i = 0; i < members.length; i++) {
-								members[i].delete(IResource.FORCE,
-										new SubProgressMonitor(subMonitor, 1));
-							}
-						} catch (CoreException e) {
-							TLCActivator.logError("Error deleting a file "
-									+ e.getMessage(), e);
-							throw e;
-						}
-						
-						subMonitor.done();
-					}
-				}, deleteRule, IWorkspace.AVOID_UPDATE,
-				new SubProgressMonitor(monitor, members.length));
-	}
 
     /**
      * Copies the module files that are extended by specRootFile into the
@@ -2009,101 +1006,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 // TODO check the existence of copied files
             }
         }
-    }
-
-    /**
-     * Returns a possibly empty List of {@link SimpleTLCState} that represents
-     * the error trace produced by the most recent run of TLC on config, if an error
-     * trace was produced.
-     * 
-     * @param config
-     * @return
-     */
-    public static List<SimpleTLCState> getErrorTrace(ILaunchConfiguration config)
-    {
-        // try
-        // {
-        // File logFile = getModelOutputLogFile(config, false).getFullPath().toFile();
-        // if (logFile.exists())
-        // {
-        // FileInputStream fis = new FileInputStream(logFile);
-        // } else
-        // {
-        // TLCActivator.getDefault().logDebug("Could not locate log file for model " + config.getName() + ".");
-        // }
-        // } catch (FileNotFoundException e)
-        // {
-        // e.printStackTrace();
-        // }
-
-        /*
-         * Use a file editor input and file document provider to gain access to the
-         * document representation of the file containing the trace.
-         */
-        FileEditorInput logFileEditorInput = new FileEditorInput(getTraceSourceFile(config));
-        FileDocumentProvider logFileDocumentProvider = new FileDocumentProvider();
-        try
-        {
-            logFileDocumentProvider.connect(logFileEditorInput);
-            IDocument logFileDocument = logFileDocumentProvider.getDocument(logFileEditorInput);
-
-            FindReplaceDocumentAdapter logFileSearcher = new FindReplaceDocumentAdapter(logFileDocument);
-
-            // the regular expression for searching for the start tag for state print outs
-            String regExStartTag = MP.DELIM + MP.STARTMSG + "[0-9]{4}" + MP.COLON + MP.STATE + SPACE + MP.DELIM + CR;
-            // the regular expression for searching for the end tag for state print outs
-            String regExEndTag = MP.DELIM + MP.ENDMSG + "[0-9]{4}" + SPACE + MP.DELIM;
-
-            IRegion startTagRegion = logFileSearcher.find(0, regExStartTag, true, true, false, true);
-
-            // vector of SimpleTLCStates
-            Vector<SimpleTLCState> trace = new Vector<SimpleTLCState>();
-
-            while (startTagRegion != null)
-            {
-                IRegion endTagRegion = logFileSearcher.find(startTagRegion.getOffset() + startTagRegion.getLength(),
-                        regExEndTag, true, true, false, true);
-
-                if (endTagRegion != null)
-                {
-                    int stateInputStart = startTagRegion.getOffset() + startTagRegion.getLength();
-                    int stateInputLength = endTagRegion.getOffset() - stateInputStart;
-                    // string from which the state can be parsed
-                    String stateInputString = logFileDocument.get(stateInputStart, stateInputLength);
-
-                    trace.add(SimpleTLCState.parseSimpleTLCState(stateInputString));
-
-                } else
-                {
-                    TLCActivator.logDebug("Found start tag region in model log file without end tag for model "
-                            + config.getName() + ".");
-                }
-                // TLCActivator.getDefault().logDebug(logFileDocument.get(startTagRegion.getOffset() + startTagRegion.getLength(),
-                // endTagRegion.getOffset() - startTagRegion.getLength() - startTagRegion.getOffset()));
-
-                startTagRegion = logFileSearcher.find(startTagRegion.getOffset() + startTagRegion.getLength(),
-                        regExStartTag, true, true, false, true);
-            }
-
-            return trace;
-        } catch (CoreException e)
-        {
-            TLCActivator.logError("Error connecting to model log file for model " + config.getName() + ".", e);
-        } catch (BadLocationException e)
-        {
-            TLCActivator.logError("Error searching model log file for " + config.getName() + ".", e);
-        } finally
-        {
-            /*
-             * The document provider is not needed. Always disconnect it to avoid a memory leak.
-             * 
-             * Keeping it connected only seems to provide synchronization of
-             * the document with file changes. That is not necessary in this context.
-             */
-            logFileDocumentProvider.disconnect(logFileEditorInput);
-        }
-
-        return new Vector<SimpleTLCState>();
     }
 
     /**
@@ -2161,34 +1063,17 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         return false;
     }
-
-    /**
-     * Returns a handle to the output file {@link ModelHelper#TE_TRACE_SOURCE} used by the
-     * trace explorer to retrieve the trace from the most recent run of TLC on
-     * the config.
-     * 
-     * Note that this is a handle-only operation. The file need not exist in the
-     * underlying file system.
-     * 
-     * @param config
-     * @return
-     */
-    public static IFile getTraceSourceFile(ILaunchConfiguration config)
-    {
-
-        Assert.isNotNull(config);
-        IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
-        if (targetFolder != null && targetFolder.exists())
-        {
-            IFile logFile = targetFolder.getFile(TE_TRACE_SOURCE);
-            Assert.isNotNull(logFile);
-            return logFile;
-        }
-        return null;
-    }
+    
+	public static String prettyPrintConstants(final Model model, String delim) throws CoreException {
+		return prettyPrintConstants(model.getLaunchConfiguration(), delim, false);
+	}
 
 	public static String prettyPrintConstants(final ILaunchConfiguration config, String delim) throws CoreException {
 		return prettyPrintConstants(config, delim, false);
+	}
+	
+	public static String prettyPrintConstants(final Model model, String delim, boolean align) throws CoreException {
+		return prettyPrintConstants(model.getLaunchConfiguration(), delim, align);
 	}
 	
 	public static String prettyPrintConstants(final ILaunchConfiguration config, String delim, boolean align) throws CoreException {

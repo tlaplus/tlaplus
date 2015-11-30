@@ -1,6 +1,6 @@
 /*******************************************************************************
- *
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ *
  * The MIT License (MIT)
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
@@ -21,41 +21,43 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * Contributors:
- *   Simon Zambrowski - initial API and implementation
+ *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package org.lamport.tla.toolbox.tool.tlc.handlers;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+package org.lamport.tla.toolbox.tool.tlc.ui.util;
+
+import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
+import org.lamport.tla.toolbox.util.UIHelper;
 
-/**
- * Clones the launch configuration
- */
-public class CloneModelHandler extends AbstractHandler implements IModelConfigurationConstants {
-	
-	public static final String PARAM_MODEL_NAME = "toolbox.tool.tlc.commands.model.open.param.modelName";
-	public static final String PARAM_MODELCOPY_NAME = "toolbox.tool.tlc.commands.model.open.param.modelCloneName";
-	public static final String COMMAND_ID = "toolbox.tool.tlc.commands.model.clone";
+public class ModelEditorAdapterFactory implements IAdapterFactory {
 
-	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		final String fullQualifiedModelName = event.getParameter(PARAM_MODEL_NAME);
-		final String modelCopyName = event.getParameter(PARAM_MODELCOPY_NAME);
-		if (fullQualifiedModelName == null) {
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.runtime.IAdapterFactory#getAdapter(java.lang.Object, java.lang.Class)
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
+		if (!ModelEditor.class.equals(adapterType)) {
 			return null;
 		}
-
-		final Model model = Model.getByName(fullQualifiedModelName);
-		if (model == null) {
-			throw new ExecutionException("Failed to find model by name " + fullQualifiedModelName);
-		}
-		
-		if (model.copy(modelCopyName) == null) {
-			throw new ExecutionException(
-					"Failed to create copy with name " + modelCopyName + " of model " + model.getName());
+		if (adaptableObject instanceof Model) {
+			final IWorkbenchPage activePage = UIHelper.getActivePage();
+			if (activePage != null) {
+				final Model model = (Model) adaptableObject;
+				return (T) activePage.findEditor(new FileEditorInput(model.getFile()));
+			}
 		}
 		return null;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.runtime.IAdapterFactory#getAdapterList()
+	 */
+	public Class<?>[] getAdapterList() {
+		return new Class[] {Model.class};
+	}
+
 }

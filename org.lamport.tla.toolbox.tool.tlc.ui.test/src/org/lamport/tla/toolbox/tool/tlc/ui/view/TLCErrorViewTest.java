@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
@@ -79,8 +80,9 @@ public class TLCErrorViewTest  {
 				.andReturn(new ArrayList<String>()).anyTimes();
 		EasyMock.replay(launchConfig);
 
+		final Model dummyModel = new DummyModel(launchConfig);
 		// Cannot be mocked because it's not an interface.
-		final TLCModelLaunchDataProvider provider = new TLCModelLaunchDataProvider(launchConfig);
+		final TLCModelLaunchDataProvider provider = new TLCModelLaunchDataProvider(dummyModel);
 		final List<TLCError> errors = new ArrayList<TLCError>();
 		provider.setErrors(errors);
 
@@ -100,9 +102,16 @@ public class TLCErrorViewTest  {
 		final long before = System.currentTimeMillis();
 		UIHelper.runUISync(new Runnable() {
 			public void run() {
-				TLCErrorView.updateErrorView(provider, launchConfig, true);
+				TLCErrorView.updateErrorView(provider, dummyModel, true);
 			}
 		});
 		assertTrue(before - System.currentTimeMillis() <= 10 * 1000); // maximally ten seconds
+	}
+	
+	private class DummyModel extends Model {
+
+		protected DummyModel(ILaunchConfiguration launchConfig) {
+			super(launchConfig);
+		}
 	}
 }

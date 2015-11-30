@@ -5,8 +5,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 
 /**
  * Test if the marker exists 
@@ -36,13 +36,14 @@ public class MarkerPropertyTester extends PropertyTester
                     attributeName = (String) args[1];
                 }
                 
-                if (receiver != null && receiver instanceof ILaunchConfiguration)
+                if (receiver != null && receiver instanceof Model)
                 {
                 	// safeguard against non-existent files.
 					// This might e.g. happen if another handler's changes
 					// modifies the current selection before this property
 					// tester is executed
-                	final IFile file = ((ILaunchConfiguration) receiver).getFile();
+                	final Model model = (Model) receiver;
+                	final IFile file = model.getLaunchConfiguration().getFile();
                 	if(!file.exists()) {
                 		return false;
                 	}
@@ -92,7 +93,7 @@ public class MarkerPropertyTester extends PropertyTester
 
                     } catch (CoreException e)
                     {
-                        TLCActivator.getDefault().logError("Error testing markers", e);
+                        TLCActivator.logError("Error testing markers", e);
                     }
                 }
             }

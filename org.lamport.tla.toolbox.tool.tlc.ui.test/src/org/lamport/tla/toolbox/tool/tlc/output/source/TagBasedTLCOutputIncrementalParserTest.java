@@ -8,12 +8,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
+import org.easymock.EasyMock;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITypedRegion;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 
 import tlc2.output.MP;
 
@@ -39,7 +41,7 @@ public class TagBasedTLCOutputIncrementalParserTest {
 	
 	@Test
 	public void testNoNewline() throws IOException {
-		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 
 		
 		// read in test input and feed it to the parser
@@ -53,7 +55,7 @@ public class TagBasedTLCOutputIncrementalParserTest {
 	
 	@Test
 	public void testAddIncrementTLCHeader() throws IOException {
-		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 
 		
 		// read in test input and feed it to the parser
@@ -70,7 +72,7 @@ public class TagBasedTLCOutputIncrementalParserTest {
 
 	@Test
 	public void testAddIncrementState() throws IOException {
-		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 		
 		// read in test input and feed it to the parser
 		try {
@@ -151,7 +153,7 @@ public class TagBasedTLCOutputIncrementalParserTest {
 
 	@Test
 	public void testAddPrintTStmt() throws IOException {
-		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 		// Register test listener with parser output
 
 		ITLCOutputSource source = parser.getSource();
@@ -198,7 +200,7 @@ public class TagBasedTLCOutputIncrementalParserTest {
 	
 	@Test
 	public void testAddPrintTStmtFull() throws IOException {
-		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 		// Register test listener with parser output
 
 		ITLCOutputSource source = parser.getSource();
@@ -297,7 +299,7 @@ public class TagBasedTLCOutputIncrementalParserTest {
 
 	@Test
 	public void testAddOneLevelNesting() throws IOException {
-		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 		// Register test listener with parser output
 
 		ITLCOutputSource source = parser.getSource();
@@ -342,7 +344,7 @@ public class TagBasedTLCOutputIncrementalParserTest {
 
 	@Test
 	public void testAddTwoLevelNesting() throws IOException {
-		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser(new DummyModel(), 0, false);
 		// Register test listener with parser output
 
 		ITLCOutputSource source = parser.getSource();
@@ -389,5 +391,17 @@ public class TagBasedTLCOutputIncrementalParserTest {
 		final List<ITypedRegion> regions = testListener.getRegions();
 		Assert.assertNotNull(regions);
 		Assert.assertEquals("Not all or too many regions detected", 3, regions.size());
+	}
+	
+	private class DummyModel extends Model {
+
+		DummyModel() {
+			super(EasyMock.createNiceMock(ILaunchConfiguration.class));
+		}
+
+		public String getName() {
+			// Stop super from delegating to ILC
+			return "TagBasedTLCOutputIncrementalParserTest";
+		}
 	}
 }

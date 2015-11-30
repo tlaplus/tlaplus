@@ -58,10 +58,11 @@ import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TraceExplorerJob;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -261,12 +262,13 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     public boolean buildForLaunch(ILaunchConfiguration config, String mode, IProgressMonitor monitor)
             throws CoreException
     {
+    	final Model model = config.getAdapter(Model.class);
+    	final IProject project = model.getSpec().getProject();
 
-        int STEP = 100;
+    	int STEP = 100;
 
         // retrieve the project containing the specification
-        IProject project = ResourceHelper.getProject(specName);
-        IFolder modelFolder = project.getFolder(config.getAttribute(MODEL_NAME, EMPTY_STRING));
+    	final IFolder modelFolder = model.getFolder();
         if (!modelFolder.exists())
         {
             throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
@@ -288,7 +290,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
          * the model is not locked. Before copying, the previous spec
          * files must be deleted.
          */
-        if (!ModelHelper.isModelLocked(config))
+        if (!model.isLocked())
         {
 
             /******************************************************************
@@ -307,7 +309,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                 // This ModelHelper method should return an array of
                 // size one because there should only be one checkpoint
                 // folder.
-                final IResource[] checkpoints = ModelHelper.getCheckpoints(config, false);
+                final IResource[] checkpoints = model.getCheckpoints(false);
 
                 ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
 
@@ -404,7 +406,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // retrieve the trace produced by running the model checker on the
         // config
         // trace = TLCErrorTraceRegistry.getErrorTraceRegistry().getTrace(config);
-        trace = ModelHelper.getErrorTrace(config);
+        trace = model.getErrorTrace();
 
         ModelWriter writer = new ModelWriter();
 
@@ -646,7 +648,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         modelFolder.refreshLocal(IResource.DEPTH_ONE, new SubProgressMonitor(monitor, 100));
 
         // set the model to have the trace with trace explorer expression shown
-        ModelHelper.setOriginalTraceShown(configuration, false);
+        configuration.getAdapter(Model.class).setOriginalTraceShown(false);
 
         // launch should proceed
         return true;

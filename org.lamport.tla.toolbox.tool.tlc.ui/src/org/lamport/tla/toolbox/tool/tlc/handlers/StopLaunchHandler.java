@@ -5,19 +5,15 @@ import java.util.Iterator;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 
 /**
  * Stops model launches
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class StopLaunchHandler extends AbstractHandler
 {
@@ -34,23 +30,17 @@ public class StopLaunchHandler extends AbstractHandler
             while (modelIterator.hasNext())
             {
                 Object element = modelIterator.next();
-                if (element instanceof ILaunchConfiguration)
+                if (element instanceof Model)
                 {
-                    ILaunchConfiguration config = (ILaunchConfiguration) element;
-                    try
+                	Model model = (Model) element;
+                    if (model.isRunning())
                     {
-                        if (ModelHelper.isModelRunning(config) && !ModelHelper.isModelStale(config))
+                        Job[] runningSpecJobs = Job.getJobManager().find(model.getLaunchConfiguration());
+                        for (int i = 0; i < runningSpecJobs.length; i++)
                         {
-                            Job[] runningSpecJobs = Job.getJobManager().find(config);
-                            for (int i = 0; i < runningSpecJobs.length; i++)
-                            {
-                                // send cancellations to all jobs...
-                                runningSpecJobs[i].cancel();
-                            }
+                            // send cancellations to all jobs...
+                            runningSpecJobs[i].cancel();
                         }
-                    } catch (CoreException e)
-                    {
-                        TLCUIActivator.getDefault().logError("Error stopping the model launch", e);
                     }
                 }
             }

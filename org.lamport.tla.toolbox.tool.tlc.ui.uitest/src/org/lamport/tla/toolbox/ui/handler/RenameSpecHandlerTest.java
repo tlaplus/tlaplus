@@ -3,7 +3,6 @@ package org.lamport.tla.toolbox.ui.handler;
 import java.io.File;
 
 import org.eclipse.core.runtime.AssertionFailedException;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
@@ -19,9 +18,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.ui.test.AbstractTest;
 import org.lamport.tla.toolbox.tool.tlc.ui.test.ModelEditorOpenCondition;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 
 /**
@@ -108,7 +108,8 @@ public class RenameSpecHandlerTest extends AbstractTest {
 		final Spec spec = Activator.getSpecManager().getSpecLoaded();
 		Assert.assertEquals(specExpected, spec.getName());
 		
-		final ILaunchConfiguration model = ModelHelper.getModelByName(spec.getProject(), TEST_MODEL);
+		
+		final Model model = spec.getAdapter(TLCSpec.class).getModel(TEST_MODEL);
 		Assert.assertNotNull("Model could not be found", model);
 	}
 	

@@ -16,7 +16,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
@@ -33,6 +32,8 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
@@ -60,15 +61,6 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
     public static final String COMMAND_ID = "toolbox.tool.tlc.commands.model.new";
     public static final String PARAM_SPEC_NAME = "toolbox.tool.tlc.commands.model.new.param";
     // public static final String PARAM_SPEC_NAME = "specName";
-
-    private String modelName = null;
-
-    /**
-     * The constructor.
-     */
-    public NewModelHandler()
-    {
-    }
 
     /**
      *  This method is called when the TLC Model Checker / New Model command 
@@ -116,34 +108,15 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         ILaunchConfigurationType launchConfigurationType = launchManager
                 .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
 
-        // retrieve a new model name for the spec
-        modelName = ModelHelper.constructModelName(specProject);
-
-        IInputValidator modelNameInputValidator = new ModelNameValidator(specProject);
-        final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "New model...",
-                "Please input the name of the model to create", modelName, modelNameInputValidator);
+		final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "New model...",
+				"Please input the name of the model to create", spec.getAdapter(TLCSpec.class).getModelNameSuggestion(),
+				new ModelNameValidator(spec));
 
         dialog.setBlockOnOpen(true);
-        UIHelper.runUISync(new Runnable() {
-
-            public void run()
-            {
-                int open = dialog.open();
-                switch (open) {
-                case Window.OK:
-                    modelName = dialog.getValue();
-                    break;
-                case Window.CANCEL:
-                    // cancel model creation
-                    modelName = null;
-                }
-            }
-        });
-        if (modelName == null)
-        {
-            // exit processing if no model name at place
-            return null;
+        if (dialog.open() != Window.OK) {
+        	return null;
         }
+        final String modelName = dialog.getValue();
 
         // get the root module
         ModuleNode moduleNode = specObject.getExternalModuleTable().getRootModule();
@@ -171,7 +144,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             // create new launch instance
             ILaunchConfigurationWorkingCopy launchCopy = launchConfigurationType.newInstance(specProject, specProject
                     .getName()
-                    + "___" + modelName);
+                    + Model.SPEC_MODEL_DELIM + modelName);
 
             launchCopy.setAttribute(SPEC_NAME, spec.getName());
             // it is easier to do launchCopy.getProject().getPersistentProperty(SPEC_ROOT_FILE)

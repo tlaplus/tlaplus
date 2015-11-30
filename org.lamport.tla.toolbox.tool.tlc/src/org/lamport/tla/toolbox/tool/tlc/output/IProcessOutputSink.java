@@ -1,9 +1,10 @@
 package org.lamport.tla.toolbox.tool.tlc.output;
 
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+
 /**
  * Basic interface for the sink
  * @author Simon Zambrovski
- * @version $Id$
  */
 public interface IProcessOutputSink
 {
@@ -36,10 +37,10 @@ public interface IProcessOutputSink
 
     /**
      * Called prior the usage to initialize the sink
-     * @param processName name of the process
+     * @param model name of the process
      * @param sinkType type, see constants {@link IProcessOutputSink#TYPE_DEBUG}, {@link IProcessOutputSink#TYPE_ERROR}, {@link IProcessOutputSink#TYPE_OUT}, {@link IProcessOutputSink#TYPE_TRACE_EXPLORE}
      */
-    public void initializeSink(String processName, int sinkType);
+    public void initializeSink(Model model, int sinkType);
 
     /**
      * Signal to the sink that the process has terminated and no data will be sent
