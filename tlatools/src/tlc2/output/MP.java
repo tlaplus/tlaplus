@@ -378,6 +378,9 @@ public class MP
             break;
 
         // this is a TLC bug
+        case EC.TLC_STATES_AND_NO_NEXT_ACTION:
+            b.append("No next state actions defined to generate successor states from.");
+            break;
         case EC.TLC_FAILED_TO_RECOVER_NEXT:
             b.append("Failed to recover the next state from its fingerprint.");
             break;

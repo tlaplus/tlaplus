@@ -190,8 +190,12 @@ public class ModelChecker extends AbstractChecker
         // Finished if there is no next state predicate:
         if (this.actions.length == 0)
         {
-            reportSuccess(this.theFPSet, this.numOfGenStates.get());
-            this.printSummary(true, startTime);
+        	if (this.theStateQueue.isEmpty()) {
+        		reportSuccess(this.theFPSet, this.numOfGenStates.get());
+        		this.printSummary(true, startTime);
+        	} else {
+        		MP.printError(EC.TLC_STATES_AND_NO_NEXT_ACTION);
+        	}
             this.cleanup(true);
             report("exiting with actions.length == 0");
             return;

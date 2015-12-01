@@ -70,6 +70,7 @@ public interface EC
     public static final int TLC_ACTION_PROPERTY_EVALUATION_FAILED = 2113;
     public static final int TLC_DEADLOCK_REACHED = 2114;
 
+    public static final int TLC_STATES_AND_NO_NEXT_ACTION = 2115;
     public static final int TLC_TEMPORAL_PROPERTY_VIOLATED = 2116;
     public static final int TLC_FAILED_TO_RECOVER_NEXT = 2117;
     public static final int TLC_NO_STATES_SATISFYING_INIT = 2118;
