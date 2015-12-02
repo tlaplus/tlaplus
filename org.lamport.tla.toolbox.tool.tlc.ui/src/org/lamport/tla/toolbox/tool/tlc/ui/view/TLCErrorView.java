@@ -19,6 +19,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ILazyTreeContentProvider;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableColorProvider;
@@ -425,6 +426,16 @@ public class TLCErrorView extends ViewPart
 					// reverse the current trace
 					final TLCError error = (TLCError) variableViewer.getInput();
 					error.reverseTrace();
+					// Reset the viewer's selection to the empty selection. With empty
+					// selection, the subsequent refresh call does *not* invalidate the
+					// StateContentProvider's lazy policy.
+					// We know that the user clicked on the tree's column header
+					// and the real selection is of little importance.
+					variableViewer.setSelection(new ISelection() {
+						public boolean isEmpty() {
+							return true;
+						}
+					});
 					variableViewer.refresh(false);
 					
 					// remember the order for next trace shown

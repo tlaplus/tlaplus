@@ -114,6 +114,17 @@ public class ActionClickListener implements MouseListener {
 		public void loadMore() {
 			error.reduceTraceRestrictionBy(numberOfStatesToShow);
 			viewer.getTree().setItemCount(error.getTraceSize() + (error.isTraceRestricted() ? 1 : 0));
+			// Reset the viewer's selection to the empty selection. With empty
+			// selection, the subsequent setInput call does *not* invalidate the
+			// viewer content provider's lazy policy.
+			// Since we know that this loadMore() method is called when the user
+			// clicks the first tree item (which is the LoaderTLCState), there
+			// is no point in preserving the selection anyway.
+			viewer.setSelection(new ISelection() {
+				public boolean isEmpty() {
+					return true;
+				}
+			});
 			viewer.setInput(error);
 		}
     }
