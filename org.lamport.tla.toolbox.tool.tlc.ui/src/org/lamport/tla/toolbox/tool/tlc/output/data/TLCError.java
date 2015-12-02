@@ -85,6 +85,18 @@ public class TLCError
 	public boolean isTraceRestricted() {
 		return this.states.size() > this.numberOfStatesToShow;
 	}
+	
+	/**
+	 * @return The amount of trace states currently hidden because of the
+	 *         restriction.
+	 */
+	public int getNumberOfRestrictedTraceStates() {
+		if (isTraceRestricted()) {
+			return this.states.size() - this.numberOfStatesToShow;
+		} else {
+			return 0;
+		}
+	}
 
 	public void reduceTraceRestrictionBy(int numberOfStatesToShow) {
 		this.numberOfStatesToShow += numberOfStatesToShow;

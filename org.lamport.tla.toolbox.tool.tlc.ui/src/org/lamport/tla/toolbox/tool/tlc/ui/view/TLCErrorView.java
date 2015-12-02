@@ -835,8 +835,8 @@ public class TLCErrorView extends ViewPart
 				if (error.isTraceRestricted() && viewerIndex == 0) {
 					// If only a subset of the trace is shown, show a dummy item
 					// at the top which can be double-clicked to load more.
-					viewer.replace(parent, viewerIndex,
-							new ActionClickListener.LoaderTLCState(viewer, numberOfStatesToShow, error));
+					viewer.replace(parent, viewerIndex, new ActionClickListener.LoaderTLCState(viewer,
+							Math.min(numberOfStatesToShow, error.getNumberOfRestrictedTraceStates()), error));
 					return;
 				}
 				// decrease index into states by one if the viewers first element is a dummy item
