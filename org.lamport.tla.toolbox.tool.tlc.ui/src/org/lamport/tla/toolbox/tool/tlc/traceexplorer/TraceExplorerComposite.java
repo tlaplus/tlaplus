@@ -469,7 +469,7 @@ public class TraceExplorerComposite
             final ILaunchConfigurationWorkingCopy workingCopy = modelConfig.getWorkingCopy();
 
             // if the trace is empty, then do nothing
-            if (view.getTrace().getStates().size() > 0)
+            if (!view.getTrace().isTraceEmpty())
             {
                 // TraceExplorerHelper.serializeTrace(modelConfig);
             	
@@ -529,7 +529,7 @@ public class TraceExplorerComposite
         }
         if (buttonExplore != null)
         {
-            buttonExplore.setEnabled(view.getTrace() != null && view.getTrace().getStates().size() > 0
+            buttonExplore.setEnabled(view.getTrace() != null && !view.getTrace().isTraceEmpty()
                     && tableViewer.getCheckedElements().length > 0);
         }
     }
