@@ -539,6 +539,8 @@ public abstract class FilteredItemsSelectionDialog extends
 			}
 		});
 
+		// Just the image is easily missed. Thus, add an additional label.
+		toolItem.setText("Options");
 		toolItem.setImage(WorkbenchImages
 				.getImage(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU));
 		toolItem
