@@ -117,6 +117,7 @@ public class RenameSpecHandlerTest extends AbstractTest {
 		try {
 			treeItem.expand();
 			SWTBotTreeItem models = treeItem.getNode("models");
+			models.expand();
 			models.getNode(TEST_MODEL).select();
 		} catch(AssertionFailedException e) {
 			Assert.fail(e.getMessage());
