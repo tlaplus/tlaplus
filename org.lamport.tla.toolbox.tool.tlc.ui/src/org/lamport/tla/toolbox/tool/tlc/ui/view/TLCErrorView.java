@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.view;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -809,6 +810,7 @@ public class TLCErrorView extends ViewPart
     private class StateContentProvider implements ILazyTreeContentProvider {
        	
     	private final TreeViewer viewer;
+		private List<TLCState> states = new ArrayList<TLCState>(0);
 
 		public StateContentProvider(TreeViewer viewer) {
 			this.viewer = viewer;
@@ -824,6 +826,17 @@ public class TLCErrorView extends ViewPart
 		 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
 		 */
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			// Eagerly cache the list of states as it can be a sublist of the
+			// complete trace. Getting the sublist in the updateElement method
+			// means we obtain it over and over again for each top-level tree
+			// item.
+			if (newInput instanceof TLCError) {
+				this.states = ((TLCError) newInput).getStates();
+			} else if (newInput == null) {
+				this.states = new ArrayList<TLCState>(0);
+			} else {
+				throw new IllegalArgumentException();
+			}
 		}
 
 		/* (non-Javadoc)
@@ -841,7 +854,7 @@ public class TLCErrorView extends ViewPart
 				}
 				// decrease index into states by one if the viewers first element is a dummy item
 				final int statesIndex = viewerIndex - (error.isTraceRestricted() ? 1 : 0);
-				final TLCState child = error.getStates().get(statesIndex);
+				final TLCState child = states.get(statesIndex);
 				// Diffing is supposed to be lazy and thus is done here when
 				// the state is first used by the viewer. The reason why it
 				// has to be lazy is to be able to efficiently handle traces
@@ -851,7 +864,7 @@ public class TLCErrorView extends ViewPart
 				// TODO If ever comes up as a performance problem again, the
 				// nested TLCVariableValues could also be diffed lazily.
            		if (statesIndex > 0) {
-           			final TLCState predecessor = error.getStates().get(statesIndex - 1);
+           			final TLCState predecessor = states.get(statesIndex - 1);
            			predecessor.diff(child);
            		}
 				viewer.replace(parent, viewerIndex, child);
