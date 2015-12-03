@@ -36,6 +36,10 @@ import java.util.List;
  */
 public class TLCError
 {
+	public enum Length {
+		ALL, RESTRICTED;
+	}
+	
     private String message = "";
     private LinkedList<TLCState> states = new LinkedList<TLCState>();
     private TLCError cause;
@@ -98,6 +102,10 @@ public class TLCError
 		}
 	}
 
+	public int getTraceRestriction() {
+		return this.numberOfStatesToShow;
+	}
+	
 	public void reduceTraceRestrictionBy(int numberOfStatesToShow) {
 		this.numberOfStatesToShow += numberOfStatesToShow;
 	}
@@ -108,8 +116,23 @@ public class TLCError
 		}
 		return states.size();
 	}
-
 	public final List<TLCState> getStates() {
+		return getStates(Length.RESTRICTED);
+	}
+
+	/**
+	 * Returns the {@link TLCState}s that represent the trace of this
+	 * {@link TLCError}. If {@link Length#ALL} is given, all {@link TLCState}s
+	 * are returned regardless of any restriction imposed. Length.RESTRICTED
+	 * returns the subList of states according to the restriction set.
+	 * 
+	 * @param l
+	 * @return
+	 */
+	public final List<TLCState> getStates(Length l) {
+		if (l == Length.ALL) {
+			return states;
+		}
 		if (states.size() > numberOfStatesToShow) {
 			// If only a sublist is requested, the current order of the list has
 			// to be taken into account. Otherwise, reversing the tree's sort

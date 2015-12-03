@@ -20,6 +20,7 @@ import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Length;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
@@ -38,7 +39,6 @@ import tlc2.output.EC;
  * of an error trace, if one is produced.
  * 
  * @author Daniel Ricketts
- *
  */
 public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 {
@@ -48,7 +48,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     // the key is the variable name used for the expression, the value
     // is an instance of TraceExpressionInformationHolder corresponding
     // to the expression.
-    private Hashtable traceExpressionDataTable;
+    private final Hashtable<String, TraceExpressionInformationHolder> traceExpressionDataTable = new Hashtable<String, TraceExpressionInformationHolder>();
     private static String TE_ERROR_HEADER = "Error(s) from running the Trace Explorer:\n";
 
     public TraceExplorerDataProvider(ILaunchConfiguration config)
@@ -92,13 +92,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     private void getTraceExpressionsInformation()
     {
         // erase existing information
-        if (traceExpressionDataTable == null)
-        {
-            traceExpressionDataTable = new Hashtable();
-        } else
-        {
-            traceExpressionDataTable.clear();
-        }
+        traceExpressionDataTable.clear();
 
         /*
          * Retrieve the TE file and create a document provider. This document
@@ -289,7 +283,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     private void processTraceForTraceExplorer()
     {
         // retrieve the error with a trace for which the trace explorer was run
-        TLCError originalErrorWithTrace = TraceExplorerHelper.getErrorOfOriginalTrace(getConfig());
+        final TLCError originalErrorWithTrace = TraceExplorerHelper.getErrorOfOriginalTrace(getConfig());
         if (originalErrorWithTrace == null)
         {
             // the trace explorer is meaningless if the original trace cannot be recovered
@@ -312,14 +306,14 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
         // retrieve the original trace
         // this is necessary for items (3) and (5) from the list in the
         // documentation for this method
-        List originalTrace = originalErrorWithTrace.getStates();
+        List<TLCState> originalTrace = originalErrorWithTrace.getStates(Length.ALL);
         Assert.isNotNull(originalTrace, "Could not get original trace after running trace explorer. This is a bug.");
 
         // iterate through the errors to find one with a trace
-        Iterator it = getErrors().iterator();
+        Iterator<TLCError> it = getErrors().iterator();
         while (it.hasNext())
         {
-            TLCError error = (TLCError) it.next();
+            TLCError error = it.next();
 
             if (error.hasTrace())
             {
@@ -342,16 +336,14 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 {
                     error.setMessage(TE_ERROR_HEADER + error.getMessage());
                 }
-
+                
                 // a comparator used for sorting the variables within each
                 // state so that the variables representing the trace explorer
                 // expressions appear first in each state
-                Comparator varComparator = new Comparator() {
+                final Comparator<TLCVariable> varComparator = new Comparator<TLCVariable>() {
 
-                    public int compare(Object arg0, Object arg1)
+                    public int compare(TLCVariable var0, TLCVariable var1)
                     {
-                        TLCVariable var0 = (TLCVariable) arg0;
-                        TLCVariable var1 = (TLCVariable) arg1;
                         if ((var0.isTraceExplorerVar() && var1.isTraceExplorerVar())
                                 || (!var0.isTraceExplorerVar() && !var1.isTraceExplorerVar()))
                         {
@@ -376,15 +368,15 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
                 // this is the trace produced by the run
                 // of TLC for the trace explorer
-                List newTrace = error.getStates();
+                List<TLCState> newTrace = error.getStates();
 
-                Iterator newTraceIt = newTrace.iterator();
-                Iterator originalTraceIt = originalTrace.iterator();
+                Iterator<TLCState> newTraceIt = newTrace.iterator();
+                Iterator<TLCState> originalTraceIt = originalTrace.iterator();
 
-                TLCState currentStateNewTrace = (TLCState) newTraceIt.next();
+                TLCState currentStateNewTrace = newTraceIt.next();
                 TLCState nextStateNewTrace = null;
 
-                TLCState currentStateOriginalTrace = (TLCState) originalTraceIt.next();
+                TLCState currentStateOriginalTrace = originalTraceIt.next();
 
                 /*
                  * The following while loop performs items 1-4 for some of the states.
@@ -433,7 +425,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                         // not represent a trace explorer expression
                         // If the variable does represent a trace explorer expression, then the following
                         // object will contain the variable name, the expression, and the level of the expression
-                        TraceExpressionInformationHolder traceExpressionData = (TraceExpressionInformationHolder) traceExpressionDataTable
+                        TraceExpressionInformationHolder traceExpressionData = traceExpressionDataTable
                                 .get(variableName.trim());
 
                         if (traceExpressionData != null)
@@ -467,7 +459,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
                     currentStateNewTrace = nextStateNewTrace;
 
-                    currentStateOriginalTrace = (TLCState) originalTraceIt.next();
+                    currentStateOriginalTrace = originalTraceIt.next();
                 }
 
                 /*
@@ -490,6 +482,8 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 {
                     newTrace.subList(originalTrace.size() - 1, newTrace.size()).clear();
                 }
+
+                error.restrictTraceTo(originalErrorWithTrace.getTraceRestriction());
 
                 // new trace should now be no longer than the original trace
                 Assert.isTrue(newTrace.size() <= originalTrace.size(),
@@ -529,7 +523,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                     for (int i = 0; i < finalStateNewTraceVariables.length; i++)
                     {
 
-                        TraceExpressionInformationHolder traceExpressionData = (TraceExpressionInformationHolder) traceExpressionDataTable
+                        TraceExpressionInformationHolder traceExpressionData = traceExpressionDataTable
                                 .get(finalStateNewTraceVariables[i].getName().trim());
 
                         if (traceExpressionData != null)
@@ -576,13 +570,13 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
          */
         if (successfulTEError != null)
         {
-            List originalErrors = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(getConfig())
+            List<TLCError> originalErrors = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(getConfig())
                     .getErrors();
-            List newErrors = new LinkedList();
-            Iterator iterator = originalErrors.iterator();
+            List<TLCError> newErrors = new LinkedList<TLCError>();
+            Iterator<TLCError> iterator = originalErrors.iterator();
             while (iterator.hasNext())
             {
-                Object next = iterator.next();
+                TLCError next = iterator.next();
                 if (next == originalErrorWithTrace)
                 {
                     newErrors.add(successfulTEError);

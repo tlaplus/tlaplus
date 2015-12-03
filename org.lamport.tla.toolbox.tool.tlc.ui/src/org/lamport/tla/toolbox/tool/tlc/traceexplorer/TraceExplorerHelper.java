@@ -14,6 +14,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Length;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -70,7 +71,7 @@ public class TraceExplorerHelper
     {
         try
         {
-            List<TLCState> trace = getErrorOfOriginalTrace(config).getStates();
+            List<TLCState> trace = getErrorOfOriginalTrace(config).getStates(Length.ALL);
             Assert.isNotNull(trace);
             Iterator<TLCState> it = trace.iterator();
             IFile traceSourceFile = ModelHelper.getTraceSourceFile(config);
