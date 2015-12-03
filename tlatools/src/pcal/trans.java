@@ -25,9 +25,19 @@ import util.ToolIO;
 * <pre>
 * CLASS trans                                                              *
 *                                                                          *
-*  BUGS:                                                                   *
-*    - Accepts if (...) {...} ; else {...}                                  *
-*      Generates code as if the ";" were not there.                         *
+*  BUGS:                                                                   *   
+*    - Interprets                                                          *
+*                                                                          *
+*         if (...) call f(...) ; return                                    *
+*                                                                          *        
+*      as if it were                                                       *
+*                                                                          *     
+*         if (...) call {f(...) ; return }                                 *
+*                                                                          *
+*      See 2 Dec 2015 Tlaplus Google group post by Jaak Ristioja           *
+*                                                                          *     
+*    - Accepts if (...) {...} ; else {...}                                 *
+*      Generates code as if the ";" were not there.                        *
 *      
 *    - When the body of a macro contains a statement with(v \in ...)
 *      and v is a macro parameter, the argument is not being substituted
