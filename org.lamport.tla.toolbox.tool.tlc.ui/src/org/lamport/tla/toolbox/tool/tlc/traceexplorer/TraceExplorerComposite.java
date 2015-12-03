@@ -28,6 +28,7 @@ package org.lamport.tla.toolbox.tool.tlc.traceexplorer;
 
 import java.util.Vector;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -476,7 +477,7 @@ public class TraceExplorerComposite
             	
             	// Wrap the launch in a WorkspaceJob to guarantee that the
             	// operation is executed atomically from the workspace perspective.
-            	// If the runnable would be omitted, the launch can become interleaved with
+            	// If the job and rule would be omitted, the launch can become interleaved with
             	// workspace (autobuild) jobs triggered by IResourceChange events.
             	// The Toolbox's IResourceChangeListeners reacting to resource change events
             	// run the SANY parser and SANY does not support concurrent execution.
@@ -486,6 +487,8 @@ public class TraceExplorerComposite
 						return Status.OK_STATUS;
 					}
 				};
+				// Lock the entire workspace.
+				job.setRule(ResourcesPlugin.getWorkspace().getRoot());
 				job.setUser(true);
 				job.schedule();
             }
