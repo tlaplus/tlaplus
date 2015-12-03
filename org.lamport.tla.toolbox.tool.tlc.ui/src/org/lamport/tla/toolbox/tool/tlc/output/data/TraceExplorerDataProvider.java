@@ -48,7 +48,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     // the key is the variable name used for the expression, the value
     // is an instance of TraceExpressionInformationHolder corresponding
     // to the expression.
-    private final Hashtable<String, TraceExpressionInformationHolder> traceExpressionDataTable = new Hashtable<String, TraceExpressionInformationHolder>();
+    private Hashtable<String, TraceExpressionInformationHolder> traceExpressionDataTable;
     private static String TE_ERROR_HEADER = "Error(s) from running the Trace Explorer:\n";
 
     public TraceExplorerDataProvider(ILaunchConfiguration config)
@@ -91,6 +91,12 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
      */
     private void getTraceExpressionsInformation()
     {
+    	if (traceExpressionDataTable == null) {
+			// getTraceExpressionsInformation is called implicitly when
+			// super(config) is called in the constructor. Thus, we have to
+			// initialize it here.
+    		traceExpressionDataTable = new Hashtable<String, TraceExpressionInformationHolder>();
+    	}
         // erase existing information
         traceExpressionDataTable.clear();
 
