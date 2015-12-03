@@ -486,15 +486,19 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
              * dialog. It attempts to replace messages containing references
              * to locations to module TE with the string from that location.
              */
-            StringBuffer errorMessage = new StringBuffer();
+            final StringBuffer errorMessage = new StringBuffer();
             Iterator<TLAMarkerInformationHolder> it = parseResult.getDetectedErrors().iterator();
             while (it.hasNext())
             {
                 TLAMarkerInformationHolder errorInfo = it.next();
                 errorMessage.append(errorInfo.getMessage() + "\n");
             }
-            MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                    "Parsing error when running trace explorer", errorMessage.toString());
+            UIHelper.runUIAsync(new Runnable() {
+				public void run() {
+					MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+							"Parsing error when running trace explorer", errorMessage.toString());
+				}
+			});
             return false;
         }
 
@@ -550,7 +554,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // the launch should not proceed
         if (!levelThreeExpressions.isEmpty())
         {
-            StringBuffer errorBuffer = new StringBuffer();
+            final StringBuffer errorBuffer = new StringBuffer();
             errorBuffer
                     .append("The trace explorer cannot evaluate temporal formulas. The following expressions are temporal formulas:\n\n");
             Iterator<TraceExpressionInformationHolder> it = levelThreeExpressions.iterator();
@@ -560,8 +564,12 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                 errorBuffer.append(expressionInfo.getExpression() + "\n\n");
             }
 
-            MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Temporal formulas found", errorBuffer
-                    .toString());
+            UIHelper.runUIAsync(new Runnable() {
+ 				public void run() {
+ 		            MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Temporal formulas found", errorBuffer
+ 		                    .toString());
+ 				}
+ 			});
 
             return false;
         }

@@ -28,12 +28,13 @@ package org.lamport.tla.toolbox.tool.tlc.traceexplorer;
 
 import java.util.Vector;
 
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -473,18 +474,20 @@ public class TraceExplorerComposite
             {
                 // TraceExplorerHelper.serializeTrace(modelConfig);
             	
-            	// Wrap the launch in a WorkspaceRunnable to guarantee that the
+            	// Wrap the launch in a WorkspaceJob to guarantee that the
             	// operation is executed atomically from the workspace perspective.
             	// If the runnable would be omitted, the launch can become interleaved with
             	// workspace (autobuild) jobs triggered by IResourceChange events.
             	// The Toolbox's IResourceChangeListeners reacting to resource change events
             	// run the SANY parser and SANY does not support concurrent execution.
-            	final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            	workspace.run(new IWorkspaceRunnable() {
-					public void run(IProgressMonitor monitor) throws CoreException {
+            	final Job job = new WorkspaceJob("Exploring the trace...") {
+					public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 						workingCopy.doSave().launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, monitor, true);
+						return Status.OK_STATUS;
 					}
-				}, new NullProgressMonitor());
+				};
+				job.setUser(true);
+				job.schedule();
             }
 
         } catch (CoreException e)
