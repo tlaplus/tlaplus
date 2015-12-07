@@ -85,6 +85,7 @@ public interface EC
     public static final int SYSTEM_ERROR_READING_POOL = 2125;
     public static final int SYSTEM_CHECKPOINT_RECOVERY_CORRUPT = 2126;
     public static final int SYSTEM_ERROR_WRITING_POOL = 2127;
+    public static final int SYSTEM_ERROR_CLEANING_POOL = 2270;
     public static final int SYSTEM_INDEX_ERROR = 2134;
     public static final int SYSTEM_STREAM_EMPTY = 2135;
     public static final int SYSTEM_FILE_NULL = 2137;

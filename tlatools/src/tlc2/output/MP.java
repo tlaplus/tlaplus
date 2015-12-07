@@ -245,6 +245,13 @@ public class MP
         case EC.SYSTEM_ERROR_WRITING_POOL:
             b.append("when writing the disk (StatePoolWriter.run):\n%1%");
             break;
+		case EC.SYSTEM_ERROR_CLEANING_POOL:
+			if (messageClass == ERROR) {
+				b.append("Exception %2% cleaning up an obsolete disk files.\n%1%");
+			} else if (messageClass == WARNING) {
+				b.append("Failed to clean up an obsolete disk file. Please manually delete %1% if free disk space is low.");
+			}
+            break;
 
         case EC.SYSTEM_DISKGRAPH_ACCESS:
             b.append("DiskGraph.toString()");

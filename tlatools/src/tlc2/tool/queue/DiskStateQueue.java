@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 
 import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.TLCState;
 import tlc2.util.StatePoolReader;
 import tlc2.util.StatePoolWriter;
@@ -23,7 +24,7 @@ import util.FileUtil;
  */
 public class DiskStateQueue extends StateQueue {
 	// TODO dynamic bufsize based on current VM parameters?
-	private final static int BufSize = Integer.getInteger(DiskStateQueue.class.getName() + ".BufSize", 8192);;
+	private final static int BufSize = Integer.getInteger(DiskStateQueue.class.getName() + ".BufSize", 8192);
 
 	/*
 	 * Invariants: I1. Entries in deqBuf are in the indices: [deqIndex,
@@ -40,6 +41,13 @@ public class DiskStateQueue extends StateQueue {
 	protected int deqIndex, enqIndex;
 	protected StatePoolReader reader;
 	protected StatePoolWriter writer;
+	/**
+	 * The SPC takes care or deleting swap files on the lower end of the range
+	 * (loPool, hiPool). It terminates, when the first checkpoint is written at
+	 * which point checkpointing itself takes care of removing obsolete swap
+	 * files.
+	 */
+	protected final StatePoolCleaner cleaner;
 	private int loPool, hiPool, lastLoPool, newLastLoPool;
 	private File loFile;
 
@@ -61,6 +69,9 @@ public class DiskStateQueue extends StateQueue {
 		this.writer = new StatePoolWriter(BufSize, this.reader);
 		this.writer.setDaemon(true);
 		this.writer.start();
+		this.cleaner = new StatePoolCleaner();
+		this.cleaner.setDaemon(true);
+		this.cleaner.start();
 	}
 
 	final void enqueueInner(TLCState state) {
@@ -117,6 +128,14 @@ public class DiskStateQueue extends StateQueue {
 					this.enqIndex = 0;
 				}
 			}
+			// Notify the cleaner to do its job unless its waits for more work
+			// to pile up.
+			if ((loPool - lastLoPool) > 100) { //TODO Take BufSize into account. It defines the disc file size.
+				synchronized (this.cleaner) {
+					this.cleaner.deleteUpTo = loPool - 1;
+					this.cleaner.notifyAll();
+				}
+			}
 		} catch (Exception e) {
 			Assert.fail(EC.SYSTEM_ERROR_READING_STATES, new String[] { "queue",
 					(e.getMessage() == null) ? e.toString() : e.getMessage() });
@@ -125,6 +144,14 @@ public class DiskStateQueue extends StateQueue {
 
 	/* Checkpoint. */
 	public final void beginChkpt() throws IOException {
+		synchronized (this.cleaner) {
+			// Checkpointing takes precedence over periodic cleaning
+			// (cleaner would otherwise delete checkpoint files as it know
+			// nothing of checkpoints).
+			this.cleaner.finished = true;
+			this.cleaner.notifyAll();
+		}
+		
 		String filename = this.filePrefix + "queue.tmp";
 		ValueOutputStream vos = new ValueOutputStream(filename);
 		vos.writeLongNat(this.len);
@@ -195,6 +222,52 @@ public class DiskStateQueue extends StateQueue {
 			this.reader.setFinished();
 			this.reader.notifyAll();
 		}
+		synchronized (this.cleaner) {
+			this.cleaner.finished = true;
+			this.cleaner.notifyAll();
+		}
 	}
 
+	private class StatePoolCleaner extends Thread {
+
+		private volatile boolean finished = false;
+		public int deleteUpTo;
+		
+		private StatePoolCleaner() {
+			super("TLCStatePoolCleaner");
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Thread#run()
+		 */
+		public void run() {
+			try {
+				synchronized (this) {
+					while (!this.finished) {
+						this.wait();
+						if (this.finished) {
+							return;
+						}
+						
+						for (int i = lastLoPool; i < deleteUpTo; i++) {
+							final File oldPoolFile = new File(filePrefix + Integer.toString(i));
+							if (!oldPoolFile.delete()) {
+								// No reason to terminate/kill TLC when the cleanup fails.
+								// Contrary to StatePoolReader/Write, cleanup is optional
+								// functionality whose purpose is to prevent the disc from
+								// filling up. If the cleaner fails, the user can still
+								// manually delete the files.
+								MP.printWarning(EC.SYSTEM_ERROR_CLEANING_POOL, oldPoolFile.getCanonicalPath());
+							}
+						}
+						lastLoPool = deleteUpTo;
+					}
+				}
+			} catch (Exception e) {
+				// Assert.printStack(e);
+				MP.printError(EC.SYSTEM_ERROR_CLEANING_POOL, e.getMessage(), e);
+				System.exit(1);
+			}
+		}
+	}
 }
