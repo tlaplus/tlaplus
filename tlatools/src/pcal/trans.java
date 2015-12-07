@@ -32,7 +32,7 @@ import util.ToolIO;
 *                                                                          *        
 *      as if it were                                                       *
 *                                                                          *     
-*         if (...) call {f(...) ; return }                                 *
+*         if (...) {call f(...) ; return }                                 *
 *                                                                          *
 *      See 2 Dec 2015 Tlaplus Google group post by Jaak Ristioja           *
 *                                                                          *     
