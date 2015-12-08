@@ -939,12 +939,12 @@ public class TLCErrorView extends ViewPart
 		public void updateChildCount(Object element, int currentChildCount) {
 			if (element instanceof TLCError) {
 				final TLCError error = (TLCError) element;
-				final List<TLCState> list = error.getStates();
-				if (list.size() != currentChildCount) {
+				int traceSize = error.getTraceSize();
+				if (traceSize != currentChildCount) {
 					if (error.isTraceRestricted()) {
-						viewer.setChildCount(element, list.size() + 1);
+						viewer.setChildCount(element, traceSize + 1);
 					} else {
-						viewer.setChildCount(element, list.size());
+						viewer.setChildCount(element, traceSize);
 					}
 				}
 			} else if (element instanceof TLCState) {
@@ -1257,6 +1257,22 @@ public class TLCErrorView extends ViewPart
     	error.restrictTraceTo(numberOfStatesToShow);
 		variableViewer.getTree().setItemCount(error.getTraceSize() + (error.isTraceRestricted() ? 1 : 0));
         variableViewer.setInput(error);
+		// If the number of states in the trace is sufficiently small, eagerly
+		// expand all root level items (which translates to the states
+		// variables). This causes the TreeViewer to correctly determine the
+		// vertical scroll bar's height. For larger number of states, we accept
+		// an incorrect scroll bar height in return for lazy and thus much
+		// faster item handling. I pulled the limit out of thin air, but
+        // tested it on three modern (2015) laptops with Win/Mac/Linux.
+        //
+		// There seems to be an implementation inside the Eclipse SDK that
+		// correctly handles the expanded state of a virtual tree:
+		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=201135
+        // https://bugs.eclipse.org/bugs/show_bug.cgi?id=266189
+        final int level = 1;
+        if (error.getTraceSize(level) < 1000) {
+        	variableViewer.expandToLevel(level + 1); // viewer counts root node. 
+        }
         if (!error.isTraceEmpty())
         {
             valueViewer.setDocument(NO_VALUE_DOCUMENT());

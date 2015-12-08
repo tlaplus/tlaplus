@@ -341,4 +341,14 @@ public class TLCState implements IModuleLocatable
 			firstValue.diff(secondValue);
 		}
 	}
+
+	public int getVariableCount(int level) {
+		if (level > 1) {
+			throw new UnsupportedOperationException("not yet implemented");
+		}
+		if (level == 1) {
+			return this.variables.size();
+		}
+		return 0;
+	}
 }

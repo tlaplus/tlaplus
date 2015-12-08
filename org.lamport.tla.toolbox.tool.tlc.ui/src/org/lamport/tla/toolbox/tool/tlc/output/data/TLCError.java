@@ -110,12 +110,27 @@ public class TLCError
 		this.numberOfStatesToShow += numberOfStatesToShow;
 	}
 
-	public int getTraceSize() {
-		if (numberOfStatesToShow < states.size()) {
-			return numberOfStatesToShow;
+	public int getTraceSize(final int level) {
+		if (states.isEmpty()) {
+			return 0;
 		}
-		return states.size();
+		
+		TLCState representative = this.states.getFirst();
+		if (representative.isInitialState()) {
+			representative = states.getLast();
+		}
+		final int varCnt = representative.getVariableCount(level);
+		
+		if (numberOfStatesToShow < states.size()) {
+			return numberOfStatesToShow * (varCnt + 1);
+		}
+		return states.size() * (varCnt + 1);
 	}
+	
+	public int getTraceSize() {
+		return getTraceSize(0);
+	}
+	
 	public final List<TLCState> getStates() {
 		return getStates(Length.RESTRICTED);
 	}
