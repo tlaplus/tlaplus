@@ -3,8 +3,11 @@ package org.lamport.tla.toolbox.tool.tlc.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -57,6 +60,19 @@ public class StartLaunchHandler extends AbstractHandler {
 						if (save) {
 							// TODO decouple from ui thread
 							ref.getEditor(true).doSave(new NullProgressMonitor());
+
+							// Wait for the AutoBuilder to parse the spec.
+							// Unless we wait here, the spec might actually in
+							// the unparsed state by the time we try to launch
+							// TLC. This launch will subsequently fail
+							// due to the spec's unparsed state.
+							try {
+								Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, new NullProgressMonitor());
+							} catch (OperationCanceledException e) {
+								throw new ExecutionException(e.getMessage(), e);
+							} catch (InterruptedException e) {
+								throw new ExecutionException(e.getMessage(), e);
+							}
 						} else {
 							return null;
 						}
