@@ -13,14 +13,13 @@ import java.util.Hashtable;
  * <br><b>Note:</b>
  * 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class TLARegistry {
 
-  private static Hashtable javaToTLA = new Hashtable();
+  private static final Hashtable<String, String> javaToTLA = new Hashtable<String, String>();
 
   public static String get(String name) {
-    return (String)javaToTLA.get(name);
+    return javaToTLA.get(name);
   }
 
   /**
@@ -30,7 +29,7 @@ public class TLARegistry {
    * @return the previous value, if one
    */
   public static String put(String tname, String jname) {
-    return (String)javaToTLA.put(tname, jname);
+    return javaToTLA.put(tname, jname);
   }
 
   public static String mapName(String name) {
@@ -41,7 +40,7 @@ public class TLARegistry {
   /* Used only for debugging. */
   public static String allNames() {
     StringBuffer sb = new StringBuffer("{");
-    Enumeration eNames = javaToTLA.keys();
+    Enumeration<String> eNames = javaToTLA.keys();
     if (eNames.hasMoreElements()) {
       sb.append(eNames.nextElement());
     }

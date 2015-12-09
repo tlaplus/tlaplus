@@ -12,6 +12,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Set;
 
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
@@ -70,7 +71,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
     protected ModelConfig config; // The model configuration.
     protected ExternalModuleTable moduleTbl; // The external modules reachable from root
     protected ModuleNode rootModule; // The root module.
-    protected HashSet processedDefs ; 
+    protected Set<OpDefNode> processedDefs ; 
       // The set of OpDefNodes on which processSpec has been called.
       // Added by LL & YY on 25 June 2014 to eliminate infinite
       // loop when a recursively defined operator is used as an
@@ -100,7 +101,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
 
     public Spec(String specDir, String file, FilenameToStream resolver)
     {
-        this.processedDefs = new HashSet();
+        this.processedDefs = new HashSet<OpDefNode>();
         this.specDir = specDir;
         this.rootFile = file;
         this.rootModule = null;
@@ -264,7 +265,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         // here since we use defns. Things added into defns later will make it
         // wrong to use it in the method processConstants.
         ModuleNode[] mods = this.moduleTbl.getModuleNodes();
-        HashSet modSet = new HashSet();
+        Set<String> modSet = new HashSet<String>();
         for (int i = 0; i < mods.length; i++)
         {
             this.processConstants(mods[i]);
@@ -347,7 +348,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             {
                 // Override with a user defined Java class for the TLA+ module.
                 // Collects new definitions:
-                Hashtable javaDefs = new Hashtable();
+                Hashtable<UniqueString, Value> javaDefs = new Hashtable<UniqueString, Value>();
                 Method[] mds = userModule.getDeclaredMethods();
                 for (int j = 0; j < mds.length; j++)
                 {
@@ -378,7 +379,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             }
         }
 
-        HashSet overriden = new HashSet();
+        Set<String> overriden = new HashSet<String>();
         // Apply config file overrides to constants:
         for (int i = 0; i < rootConsts.length; i++)
         {
@@ -527,7 +528,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 Object def = opDefs[i].getToolObject(TLCGlobals.ToolId);
                 if (def instanceof OpDefNode)
                 {
-                	this.processedDefs.add(def);
+                	this.processedDefs.add((OpDefNode) def);
                     this.processConstants(((OpDefNode) def).getBody());
                 }
                 this.processConstants(opDefs[i].getBody());
