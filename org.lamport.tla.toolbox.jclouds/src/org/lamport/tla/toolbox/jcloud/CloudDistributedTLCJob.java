@@ -85,7 +85,7 @@ public class CloudDistributedTLCJob extends Job {
 
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
-		monitor.beginTask("Starting TLC model checker in the cloud", 85);
+		monitor.beginTask("Starting TLC model checker in the cloud", 95);
 		
 		// Validate credentials and fail fast if null or syntactically incorrect
 		if (!validateAWSCredentials()) {
@@ -171,6 +171,22 @@ public class CloudDistributedTLCJob extends Job {
 				return Status.CANCEL_STATUS;
 			}
 			
+			// Creating an entry in /etc/alias that makes sure system email sent
+			// to root ends up at the address given by the user. Note that this
+			// has to be done before postfix gets installed later. postfix
+			// re-generates the aliases file for us.
+			final String email = props.getProperty(TLCJobFactory.MAIL_ADDRESS);
+			monitor.subTask("Setting up root aliases to " + email
+					+ " on all node(s)");
+			compute.runScriptOnNodesMatching(inGroup(groupNameUUID),
+					// Never be prompted for input
+					exec("echo root: " + email + " >> /etc/aliases"),
+					new TemplateOptions().runAsRoot(true).wrapInInitScript(false));
+			monitor.worked(10);
+			if (monitor.isCanceled()) {
+				return Status.CANCEL_STATUS;
+			}
+			
 			// Install custom tailored jmx2munin to monitor the TLC process. Can
 			// either monitor standalone tlc2.TLC or TLCServer.
 			monitor.subTask("Provisioning TLC Monitoring on all node(s)");
@@ -196,7 +212,13 @@ public class CloudDistributedTLCJob extends Job {
 							// to the TLC process if logged in to the
 							// instance directly (it's probably already
 							// installed).
-							+ "apt-get install screen -y"),
+							+ "apt-get install screen -y && "
+							// postfix is an MTA that is used to send warnings
+							// produced by munin off of the system. E.g.
+							// if the hard disc becomes full, the user
+							// will receive an email giving her a chance
+							// to free space and prevent TLC from crashing.
+							+ "apt-get install postfix heirloom-mailx -y"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			
 			monitor.worked(10);
