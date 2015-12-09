@@ -21,12 +21,12 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 
 	@Override
 	public String getImageId() {
-		// Ubuntu 64bit 14.04.2 Trusty paravirtual/instance-store release
+		// Ubuntu 64bit 14.04.3 Trusty paravirtual/instance-store release
 		// https://cloud-images.ubuntu.com/releases/14.04/release/
 		// or http://cloud-images.ubuntu.com/locator/ec2/
 		// See http://aws.amazon.com/amazon-linux-ami/instance-type-matrix/
 		// for paravirtual vs. hvm
-		return "us-east-1/ami-3234315a";
+		return "us-east-1/ami-0a7a3f60";
 	}
 
 	@Override
