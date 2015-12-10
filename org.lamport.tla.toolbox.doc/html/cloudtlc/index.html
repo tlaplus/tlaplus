@@ -48,13 +48,18 @@ Using cloud based TLC launches compute instances at your cloud provider which ma
 </h1>
 <ul>
 <li>
-Only supports a single cloud provider (<a class="URL" href="http://aws.amazon.com/ec2/">Amazon EC2</a>) as of now
+Only supports two cloud providers (<a class="URL" href="http://aws.amazon.com/ec2/">Amazon EC2</a> and <a class="URL" href="https://azure.microsoft.com/en-us/">Microsoft Azure</a>) as of now
+<ul>
+<li>
+On Azure, the VM instances just stoppes but does not <a class="URL" href="http://blogs.technet.com/b/gbanin/archive/2015/04/22/difference-between-the-states-of-azure-virtual-machines-stopped-and-stopped-deallocated.aspx">deallocate</a> automatically. Please make sure to manually shutdown the VM instance after TLC finishes.
+</li>
+</ul>
 </li>
 <li>
 Runs TLC in non-distributed mode on a single cloud instance only as of now
 </li>
 <li>
-Only a single instance type (<a class="URL" href="http://en.wikipedia.org/wiki/Amazon_Elastic_Compute_Cloud#Instance_types">m4.2xlarge</a>) supported as of now 
+Only a single instance type per cloud (<a class="URL" href="http://en.wikipedia.org/wiki/Amazon_Elastic_Compute_Cloud#Instance_types">m4.2xlarge</a> and <a class="URL" href="https://azure.microsoft.com/en-us/pricing/details/virtual-machines/">D14</a>) supported as of now 
 </li>
 <li>
 Cloud based distributed TLC cannot recover from a checkpoint
@@ -83,8 +88,16 @@ export AWS_SECRET_ACCESS_KEY=6FDASAIG7DAS976TYDKHCGQAS5D\FA77
 
 </li>
 
-</ol>
+Alternatively for Azure, after the one-time <a class="URL" href="https://azure.microsoft.com/en-us/documentation/articles/java-create-azure-website-using-java-sdk/#create-a-certificate">creation and installation of a certificate</a>, set:
 
+<li>
+<div class="listing">
+<pre class="listing">export AZURE_COMPUTE_CREDENTIALS=ThePasswordUsedForTheCertificate   (The "password" supplied during certificate creation)
+export AZURE_COMPUTE_IDENTITY=/absolute/path/to/the/azure.p12
+export AZURE_COMPUTE_SUBSCRIPTION=YourAzureSubscriptionId   (Extract the ID from the <a class="URL" href="https://ms.portal.azure.com/#blade/Microsoft_Azure_Billing/SubscriptionsBlade">Azure portal under "Subscriptions"</a>)
+</pre>
+</div></li>
+</ol>
 </li>
 <li>
 Create a specification and a model
@@ -261,14 +274,57 @@ If your credentials are correct, please turn on debug logging (start the Toolbox
 
 </ul>
 
+
+<li>
+The cloud instance sends "system notification" emails warning that the remaining disc space is at a critical level:<br>
+        <i>"tlc :: tlc :: Disk usage in percent<br>
+        CRITICALs: / is 92.23..."</i>
+<ul>
+<li>
+A long running TLC process writes unexplored states to the system disk for later exploration. With very large models, this can potentially use up all of the available disk space. If this happens, TLC will crash. Thus, if you received such a warning, please create a checkpoint, <a class="URL" href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-add-volume-to-instance.html">attach a larger disk to your VM</a> and continue TLC by recovering from the checkpoint.
+<ul>
+<li>
+<a class="URL" href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-connect-to-instance-linux.html#using-putty">Connect to the cloud instance with ssh</a>
 </li>
+<li>
+# Download a jmx commandline client<br>
+wget http://crawler.archive.org/cmdline-jmxclient/cmdline-jmxclient-0.10.3.jar
+</li>
+<li>
+# Connect to the locally running TLC and have it create a checkpoint<br>
+java -jar cmdline-jmxclient-0.10.3.jar - localhost:5400 tlc2.tool:type=ModelChecker checkpoint 
+</li>
+<li>
+Re-attach to the screen session running TLC and terminate TLC wth CTRL^C
+</li>
+<li>
+# Restart TLC and have it recover from the checkpoint created<br>
+java -jar tla2tools.jar -recover /path/to/states/15-12-16-12-16-04/
+</li>
+</ul>
+
+</li>
+</ul>
+
+<li>
+The cloud instance sends "system notification" email warnings directly after startup.
+<ul>
+<li>
+Ignore these emails :-).
+</li>
+<li>
+This happens primarily on Azure when the monitoring runs too earlier before the cloud instance is fully started.
+</li>
+</ul>
+</li>
+
 <li>
 The runtime statistics (web browser) indicate that TLC has finished model checking, but no result is sent via email.<ul>
 <li>
 Check your email spam folder if the model checking result has incorrectly been classified as spam
 </li>
 <li>
-Another reason why mail delivery might fail, are too strict spam counter measures at the mail server level. You might want to try to use a different email address (domain part) in the future.<ul>
+Another reason why mail delivery might fail, are too strict spam counter measures at the mail server level. You might want to try to use a different email address (domain part) in the future. For Azure, it works best to use an Outlook.com email address.<ul>
 <li>
 Copy &amp; paste the MC.out content from the browser window into a plain text file and load it from there (see <a class="Reference" href="#enu:Import-the-MC.out">4↑</a>)
 </li>

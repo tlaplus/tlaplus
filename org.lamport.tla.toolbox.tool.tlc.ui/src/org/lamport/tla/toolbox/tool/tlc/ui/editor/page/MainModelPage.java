@@ -325,8 +325,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			}
 		}
 
-		if (cloud.equalsIgnoreCase("aws-ec2")) {
-			MainModelPage.this.putOnTopOfStack("aws-ec2", false, false);
+		if (cloud.equalsIgnoreCase("aws-ec2") || cloud.equalsIgnoreCase("Azure")) {
+			MainModelPage.this.putOnTopOfStack("jclouds", false, false);
 			String email = getConfig().getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
 			resultMailAddressText.setText(email);
 		} else if(cloud.equalsIgnoreCase("ad hoc")) {
@@ -1364,7 +1364,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         toolkit.createLabel(distComp, "Run in distributed mode");
         distributedCombo = new Combo(distComp, SWT.READ_ONLY);
-        distributedCombo.setItems(new String[] {"off", "ad hoc", "aws-ec2"});
+        distributedCombo.setItems(new String[] {"off", "ad hoc", "aws-ec2", "Azure"});
         distributedCombo.select(0);
         HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
         distributedCombo.addSelectionListener(howToRunListener);
@@ -1557,14 +1557,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         resultMailAddressText.addModifyListener(howToRunListener);
         dm.bindAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddressText, howToRunPart);
 		
-		distributedOptions.setData("aws-ec2", resultAddress);
+		distributedOptions.setData("jclouds", resultAddress);
 
         distributedCombo.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent e) {
 				int selectionIndex = distributedCombo.getSelectionIndex();
 				String item = distributedCombo.getItem(selectionIndex);
-				if (item.equalsIgnoreCase("aws-ec2")) {
-					MainModelPage.this.putOnTopOfStack("aws-ec2", false, false);
+				if (item.equalsIgnoreCase("aws-ec2") || item.equalsIgnoreCase("Azure")) {
+					MainModelPage.this.putOnTopOfStack("jclouds", false, false);
 				} else if(item.equalsIgnoreCase("ad hoc")) {
 					MainModelPage.this.putOnTopOfStack("ad hoc", false, true);
 				} else {

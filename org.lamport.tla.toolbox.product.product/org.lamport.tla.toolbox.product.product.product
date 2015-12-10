@@ -60,6 +60,7 @@ Please send us reports of problems or suggestions; see https://groups.google.com
       <plugin id="aws-ec2" autoStart="true" startLevel="4" />
       <plugin id="com.jcraft.jsch" autoStart="true" startLevel="4" />
       <plugin id="ec2" autoStart="true" startLevel="4" />
+      <plugin id="azurecompute" autoStart="true" startLevel="4" />
       <plugin id="jclouds-core" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />

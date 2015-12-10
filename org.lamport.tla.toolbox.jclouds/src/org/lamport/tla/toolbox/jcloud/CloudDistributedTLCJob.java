@@ -1,3 +1,29 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Markus Alexander Kuppe - initial API and implementation
+ ******************************************************************************/
+
 package org.lamport.tla.toolbox.jcloud;
 
 import static com.google.common.base.Predicates.not;
@@ -19,7 +45,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jclouds.ContextBuilder;
-import org.jclouds.aws.ec2.reference.AWSEC2Constants;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.RunNodesException;
@@ -44,15 +69,19 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.inject.AbstractModule;
 
+/*
+ * TODO
+ * ====
+ * - Reverse PTR records in DNS to make it less likely that emails coming out of the VM are classified as SPAM
+ * -- Azure has only support for it in its service API but not in JClouds
+ * -- AWS just has a form where users can request a PTR record  
+ * - Send test mail during instance startup and communicate back to user on failure
+ */
 public class CloudDistributedTLCJob extends Job {
-	
-	private final String identity = System.getenv("AWS_ACCESS_KEY_ID");
-	private final String credential = System
-			.getenv("AWS_SECRET_ACCESS_KEY");
 	
 	/**
 	 * The groupName has to be unique per job. This is how cloud instances are
-	 * associated to this job. If two jobs use the same groupName, the will talk
+	 * associated to this job. If two jobs use the same groupName, they will talk
 	 * to the same set of nodes.
 	 */
 	private final String groupNameUUID;
@@ -65,36 +94,19 @@ public class CloudDistributedTLCJob extends Job {
 			int numberOfWorkers, final Properties properties, CloudTLCInstanceParameters params) {
 		super(aName);
 		this.params = params;
-		groupNameUUID = aName + "-" + UUID.randomUUID().toString();
+		//TODO groupNameUUID is used by some providers (azure) as a hostname/DNS name. Thus, format.
+		groupNameUUID = aName.toLowerCase() + "-" + UUID.randomUUID().toString();
 		props = properties;
 		modelPath = aModelFolder.toPath();
-	}
-	
-	// http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/AWSCredentials.html
-	private boolean validateAWSCredentials() {
-		// must not be null
-		if (identity != null && credential != null) {
-			// identity always starts with "AIKA" and has 20 chars
-			if (identity.matches("AKIA[a-zA-Z0-9]{16}")) {
-				// secret has 40 chars
-				return credential.length() == 40;
-			}
-		}
-		return false;
 	}
 
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
-		monitor.beginTask("Starting TLC model checker in the cloud", 95);
+		monitor.beginTask("Starting TLC model checker in the cloud", 100);
 		
 		// Validate credentials and fail fast if null or syntactically incorrect
-		if (!validateAWSCredentials()) {
-			return new Status(
-					Status.ERROR,
-					"org.lamport.tla.toolbox.jcloud",
-					"Invalid credentials, please check the environment variables "
-							+ "(AWS_ACCESS_KEY_ID & AWS_SECRET_ACCESS_KEY) are correctly "
-							+ "set up and picked up by the Toolbox.");
+		if (!params.validateCredentials().equals(Status.OK_STATUS)) {
+			return params.validateCredentials();
 		}
 		
 		ComputeServiceContext context = null;
@@ -112,8 +124,7 @@ public class CloudDistributedTLCJob extends Job {
 			// example of specific properties, in this case optimizing image
 			// list to only amazon supplied
 			final Properties properties = new Properties();
-			properties.setProperty(AWSEC2Constants.PROPERTY_EC2_AMI_QUERY,
-					params.getOwnerId());
+			params.mungeProperties(properties);
 
 			// Create compute environment in the cloud and inject an ssh
 			// implementation. ssh is our means of communicating with the node.
@@ -121,10 +132,11 @@ public class CloudDistributedTLCJob extends Job {
 					.<AbstractModule> of(new SshjSshClientModule(), new SLF4JLoggingModule());
 
 			final ContextBuilder builder = ContextBuilder
-					.newBuilder(params.getCloudProvier())
-					.credentials(identity, credential).modules(modules)
+					.newBuilder(params.getCloudProvider())
+					.credentials(params.getIdentity(), params.getCredentials()).modules(modules)
 					.overrides(properties);
-
+			params.mungeBuilder(builder);
+			
 			monitor.subTask("Initializing " + builder.getApiMetadata().getName());
 			context = builder.buildView(ComputeServiceContext.class);
 			final ComputeService compute = context.getComputeService();
@@ -179,7 +191,6 @@ public class CloudDistributedTLCJob extends Job {
 			monitor.subTask("Setting up root aliases to " + email
 					+ " on all node(s)");
 			compute.runScriptOnNodesMatching(inGroup(groupNameUUID),
-					// Never be prompted for input
 					exec("echo root: " + email + " >> /etc/aliases"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(false));
 			monitor.worked(10);
@@ -225,7 +236,20 @@ public class CloudDistributedTLCJob extends Job {
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
 			}
-			
+
+			// Install all security relevant system packages
+			monitor.subTask("Installing security relevant system packages (in background)");
+			compute.runScriptOnNodesMatching(
+					inGroup(groupNameUUID),
+					exec("echo unattended-upgrades unattended-upgrades/enable_auto_updates boolean true | debconf-set-selections"
+							+ " && "
+							+ "apt-get install unattended-upgrades"
+							+ " && "
+							+ "/usr/bin/unattended-upgrades"),
+					new TemplateOptions().runAsRoot(true).wrapInInitScript(
+							false).blockOnComplete(false).blockUntilRunning(false));
+			monitor.worked(5);
+		
 			// Create /mnt/tlc and change permission to be world writable
 			// Requires package 'apache2' to be already installed. apache2
 			// creates /var/www/html.
@@ -260,6 +284,7 @@ public class CloudDistributedTLCJob extends Job {
 			// the machine running the toolbox).
 			// TODO Share the tla2tools.jar with the worker nodes by making it
 			// available on the master's webserver for the clients to download.
+			// On the other hand this means we are making the spec world-readable.
 			SshClient sshClient = context.utils().sshForNode().apply(master);
 			sshClient.put("/mnt/tlc/tla2tools.jar",	jarPayLoad);
 			sshClient.disconnect();
@@ -316,7 +341,7 @@ public class CloudDistributedTLCJob extends Job {
 					new TemplateOptions().runAsRoot(false).wrapInInitScript(
 							true).blockOnComplete(false).blockUntilRunning(false));
 			monitor.worked(5);
-
+			
 			// Communicate result to user
 			monitor.done();
 			final String hostname = Iterables.getOnlyElement(master.getPublicAddresses()); // master.getHostname() only returns internal name
