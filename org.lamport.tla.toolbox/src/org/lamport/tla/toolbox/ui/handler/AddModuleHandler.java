@@ -7,6 +7,8 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -16,6 +18,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -83,15 +86,28 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
                     // check the folder we are in
                     if (!ResourceHelper.isProjectParent(modulePath.removeLastSegments(1), spec.getProject()))
                     {
-                        // the selected resource is not in the same directory as the root file
-                        MessageDialog
-                                .openInformation(
-                                        window.getShell(),
-                                        "Wrong TLA+ Module is part of the spec",
-                                        "The provided module "
-                                                + module.getName()
-                                                + " is not located in the same directory as the root file. \nPlease select the module in "
-                                                + spec.getRootFile().getFullPath().removeLastSegments(1).toOSString());
+						// the selected resource is not in the same directory as
+						// the root file
+						MessageDialog.openInformation(window.getShell(), "TLA+ Module is not part of the current spec.",
+								"The provided module " + module.getName()
+										+ " is not part of the spec which is currently open. It will therefore be opened in read-only mode.\n"
+										+ "If you want to make changes to this file, you will have to open the corresponding spec first.");
+
+						// Open TLA's read-only editor on a .tla file that does
+						// *not* belong to the current spec. It is opened
+						// read-only, because we want to allow any changes,
+						// because we couldn't parse the spec anyway. The reason
+						// why this functionality is offered, is to allow users
+						// to look at .tla files of closed spec.
+						// http://wiki.eclipse.org/FAQ_How_do_I_open_an_editor_on_a_file_outside_the_workspace%3F
+						final IFileStore fileStore = EFS.getLocalFileSystem().getStore(new Path(moduleFileName));
+						if (!fileStore.fetchInfo().isDirectory() && fileStore.fetchInfo().exists()) {
+							UIHelper.openEditor("org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly",
+									new FileStoreEditorInput(fileStore));
+						} else {
+							throw new ExecutionException(moduleFileName
+									+ " cannot be opened in read-only mode because its file content could not be obtained.");
+						}
                         return null;
                     }
 

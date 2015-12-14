@@ -16,7 +16,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.navigator;bundle-version="3.3.101";visibility:=reexport,
  org.eclipse.core.expressions;bundle-version="3.4.100",
  org.lamport.tlatools;bundle-version="1.0.0";visibility:=reexport,
- org.eclipse.team.ui
+ org.eclipse.team.ui,
+ org.eclipse.core.filesystem;bundle-version="1.5.0"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
