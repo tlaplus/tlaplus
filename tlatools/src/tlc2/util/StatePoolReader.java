@@ -23,6 +23,7 @@ public class StatePoolReader extends Thread {
   }
 
   public StatePoolReader(int bufSize, File file) {
+	  super("TLCStatePoolReader");
     this.buf = new TLCState[bufSize];
     this.poolFile = file;
     this.isFull = false;

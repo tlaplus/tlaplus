@@ -28,6 +28,7 @@ public class StatePoolWriter extends Thread {
   }
 
   public StatePoolWriter(int bufSize, StatePoolReader reader) {
+	  super("TLCStatePoolWriter");
     this.buf = new TLCState[bufSize];
     this.poolFile = null;
     this.reader = reader;
