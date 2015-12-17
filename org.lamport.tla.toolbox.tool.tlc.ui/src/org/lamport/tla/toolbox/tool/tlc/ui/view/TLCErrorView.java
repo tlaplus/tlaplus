@@ -18,17 +18,17 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ILazyTreeContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITableColorProvider;
-import org.eclipse.jface.viewers.ITableFontProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
@@ -78,6 +78,7 @@ import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerComposite;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener.LoaderTLCState;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -100,8 +101,6 @@ public class TLCErrorView extends ViewPart
 	private static final String OUTER_WEIGHTS_KEY = "OUTER_WEIGHTS_KEY";
 
 	public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
-
-    private static final String TOOLTIP = "Click on a row to see in viewer, double-click to go to action in spec.";
 
     /**
      * This is the pattern of an error message resulting from evaluating the constant
@@ -408,21 +407,30 @@ public class TLCErrorView extends ViewPart
         // gd.grabExcessHorizontalSpace = true ;
 
         tree.setLayoutData(gd);
-        tree.setToolTipText(TOOLTIP);
 
         // Initialize the trace display's resizer.
         TraceDisplayResizer resizer = new TraceDisplayResizer();
         resizer.comp = sashForm;
         resizer.tree = tree;
+        
+        tree.addControlListener(resizer);
 
+        variableViewer = new TreeViewer(tree);
+        final StateContentProvider provider = new StateContentProvider(variableViewer);
+        variableViewer.setUseHashlookup(true);
+		variableViewer.setContentProvider(provider);
+        ColumnViewerToolTipSupport.enableFor(variableViewer);
+        getSite().setSelectionProvider(variableViewer);
+
+        final StateLabelProvider labelProvider = new StateLabelProvider();
 		for (int i = 0; i < StateLabelProvider.COLUMN_TEXTS.length; i++) {
-			TreeColumn column = new TreeColumn(tree, SWT.LEFT);
-			column.setText(StateLabelProvider.COLUMN_TEXTS[i]);
-			column.setWidth(StateLabelProvider.COLUMN_WIDTH[i]);
-			resizer.column[i] = column; // set up the resizer.
-			column.setToolTipText(TOOLTIP);
-			column.addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(SelectionEvent e) {
+			final TreeViewerColumn column = new TreeViewerColumn(variableViewer, i);
+			column.getColumn().setText(StateLabelProvider.COLUMN_TEXTS[i]);
+			column.getColumn().setWidth(StateLabelProvider.COLUMN_WIDTH[i]);
+			column.setLabelProvider(labelProvider);
+			resizer.column[i] = column.getColumn(); // set up the resizer.
+			column.getColumn().addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
 					// reverse the current trace
 					final TLCError error = (TLCError) variableViewer.getInput();
 					error.reverseTrace();
@@ -445,8 +453,6 @@ public class TLCErrorView extends ViewPart
 				}
 			});
 		}
-        
-        tree.addControlListener(resizer);
 
         // I need to add a listener for size changes to column[0] to
         // detect when the user has tried to resize the individual columns.
@@ -456,14 +462,8 @@ public class TLCErrorView extends ViewPart
         // be?
         resizer.column[0].addListener(eventType, resizer);
 
-        variableViewer = new TreeViewer(tree);
-        final StateContentProvider provider = new StateContentProvider(variableViewer);
-        variableViewer.setUseHashlookup(true);
-		variableViewer.setContentProvider(provider);
-        variableViewer.setLabelProvider(new StateLabelProvider());
-        getSite().setSelectionProvider(variableViewer);
-
         variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer));
+        variableViewer.getTree().addKeyListener(new ActionClickListener(variableViewer));
 
         variableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -982,8 +982,7 @@ public class TLCErrorView extends ViewPart
      * implement ITableColorProvider instead of IColorProvider. This allows
      * coloring of individual columns, not just of entire rows.
      */
-    static class StateLabelProvider extends LabelProvider implements ITableLabelProvider, ITableColorProvider,
-            ITableFontProvider // IColorProvider
+    static class StateLabelProvider extends CellLabelProvider
     {
         public static final int NAME = 0;
         public static final int VALUE = 1;
@@ -991,11 +990,12 @@ public class TLCErrorView extends ViewPart
         public static final int[] COLUMN_WIDTH = { 200, 200 };
         public static final String[] COLUMN_TEXTS = { "Name", "Value" };
 
-        private Image stateImage;
-        private Image varImage;
-        private Image recordImage;
-        private Image setImage;
-
+        private final Image stateImage;
+        private final Image varImage;
+        private final Image recordImage;
+        private final Image setImage;
+        private final Image loadMoreImage;
+        
         public StateLabelProvider()
         {
             stateImage = TLCUIActivator.getImageDescriptor("/icons/full/default_co.gif").createImage();
@@ -1003,12 +1003,16 @@ public class TLCErrorView extends ViewPart
             recordImage = TLCUIActivator.getImageDescriptor("/icons/full/brkpi_obj.gif").createImage();
             // setImage = TLCUIActivator.getImageDescriptor("/icons/full/over_co.gif").createImage();
             setImage = TLCUIActivator.getImageDescriptor("/icons/full/compare_method.gif").createImage();
+            loadMoreImage = TLCUIActivator.getImageDescriptor("/icons/full/add.gif").createImage(); // other candidate is newstream_wiz.gif, nav_go.gif, debugt_obj.gif
         }
 
-        public Image getColumnImage(Object element, int columnIndex)
+        private Image getColumnImage(Object element, int columnIndex)
         {
             if (columnIndex == NAME)
             {
+            	if (element instanceof LoaderTLCState) {
+            		return loadMoreImage;	
+            	}
                 if (element instanceof TLCState)
                 {
                     return stateImage;
@@ -1027,7 +1031,7 @@ public class TLCErrorView extends ViewPart
             return null;
         }
 
-        public String getColumnText(Object element, int columnIndex)
+        private String getColumnText(Object element, int columnIndex)
         {
             if (element instanceof TLCState)
             {
@@ -1141,7 +1145,7 @@ public class TLCErrorView extends ViewPart
          * the table. It highlights the entire row for an added or deleted item.
          * For a changed value, only the value is highlighted.
          */
-		public Color getBackground(Object element, int column) {
+		private Color getBackground(Object element, int column) {
 			if (element instanceof TLCVariable) {
 				final TLCVariable var = (TLCVariable) element;
 				if (var.isChanged() && column == VALUE) {
@@ -1162,34 +1166,12 @@ public class TLCErrorView extends ViewPart
 			return null;
 		}
 
-        public Color getForeground(Object element, int i)
+        private Color getForeground(Object element, int i)
         {
             return null;
         }
 
-        public Image getImage(Object element)
-        {
-            return getColumnImage(element, 0);
-        }
-
-        public String getText(Object element)
-        {
-            return getColumnText(element, 0);
-        }
-
-        public void dispose()
-        {
-            /*
-             * Remove images
-             */
-            stateImage.dispose();
-            varImage.dispose();
-            recordImage.dispose();
-            setImage.dispose();
-            super.dispose();
-        }
-
-        public Font getFont(Object element, int columnIndex)
+        private Font getFont(Object element, int columnIndex)
         {
             if (element instanceof TLCVariable)
             {
@@ -1204,6 +1186,49 @@ public class TLCErrorView extends ViewPart
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see org.eclipse.jface.viewers.BaseLabelProvider#dispose()
+         */
+        public void dispose()
+        {
+            /*
+             * Remove images
+             */
+            stateImage.dispose();
+            varImage.dispose();
+            recordImage.dispose();
+            setImage.dispose();
+            loadMoreImage.dispose();
+           super.dispose();
+        }
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.IToolTipProvider#getToolTipText(java.lang.Object)
+		 */
+		public String getToolTipText(Object element) {
+			if (element instanceof LoaderTLCState) {
+				return "Double-click to load more states.\nIf the number of states is large, this might take a few seconds.";
+			}
+			return "Click on a row to see in viewer below, double-click to go to corresponding action in spec.";
+		}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.CellLabelProvider#update(org.eclipse.jface.viewers.ViewerCell)
+		 */
+		public void update(ViewerCell cell) {
+			// labels
+			cell.setText(getColumnText(cell.getElement(), cell.getColumnIndex()));
+			
+			// images
+			cell.setImage(getColumnImage(cell.getElement(), cell.getColumnIndex()));
+			
+			// font
+			cell.setFont(getFont(cell.getElement(), cell.getColumnIndex()));
+			
+			// colors
+			cell.setForeground(getForeground(cell.getElement(), cell.getColumnIndex()));
+			cell.setBackground(getBackground(cell.getElement(), cell.getColumnIndex()));
+		}
     }
 
 	public TLCError getTrace()

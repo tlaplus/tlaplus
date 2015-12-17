@@ -6,8 +6,12 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.BusyIndicator;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.widgets.Display;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -31,7 +35,7 @@ import tla2sany.st.Location;
  * @author Daniel Ricketts
  * 
  */
-public class ActionClickListener implements MouseListener {
+public class ActionClickListener implements MouseListener, KeyListener {
 
 	private final Viewer viewer;
 
@@ -56,6 +60,20 @@ public class ActionClickListener implements MouseListener {
 	 */
 	public void mouseUp(MouseEvent e) {}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.KeyListener#keyPressed(org.eclipse.swt.events.KeyEvent)
+	 */
+	public void keyPressed(KeyEvent e) {}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.KeyListener#keyReleased(org.eclipse.swt.events.KeyEvent)
+	 */
+	public void keyReleased(final KeyEvent event) {
+		if (event.keyCode == SWT.CR) {
+			goToAction(viewer.getSelection(), (event.stateMask & SWT.CTRL) != 0);
+		}
+	}
+	
 	private void goToAction(final ISelection selection, boolean jumpToPCal) {
 		if (selection != null && !selection.isEmpty()) {
 			if (selection instanceof StructuredSelection) {
@@ -66,7 +84,13 @@ public class ActionClickListener implements MouseListener {
 				final Object firstElement = structuredSelection.getFirstElement();
 				if (firstElement instanceof LoaderTLCState) {
 					final LoaderTLCState loader = (LoaderTLCState) firstElement;
-					loader.loadMore();
+					// Loading more states can potentially block for a couple
+					// seconds. Thus, give feedback to user.
+					BusyIndicator.showWhile(Display.getCurrent(), new Runnable() {
+						public void run() {
+							loader.loadMore();
+						}
+					});
 				} else if (firstElement instanceof IModuleLocatable) {
 					final IModuleLocatable moduleLocatable = (IModuleLocatable) firstElement;
 					Location location = moduleLocatable.getModuleLocation();
