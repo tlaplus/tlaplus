@@ -1,17 +1,15 @@
-package org.lamport.tla.toolbox.util;
+package org.lamport.tla.toolbox;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.lamport.tla.toolbox.tool.ToolboxLifecycleException;
-import org.lamport.tla.toolbox.tool.ToolboxLifecycleParticipant;
+import org.lamport.tla.toolbox.lifecycle.ToolboxLifecycleParticipant;
 
 /**
  * Provides methods for accessing the extensions registered to the toolbox extension points
  *  
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class ToolboxLifecycleParticipantManger
 {
@@ -22,7 +20,7 @@ public class ToolboxLifecycleParticipantManger
      * Retrieves tools registered
      * @return
      */
-    public static ToolboxLifecycleParticipant[] getRegisteredTools() throws ToolboxLifecycleException
+    private static ToolboxLifecycleParticipant[] getRegisteredTools()
     {
         IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(POINT);
         ToolboxLifecycleParticipant[] extensions = new ToolboxLifecycleParticipant[decls.length];
@@ -34,7 +32,8 @@ public class ToolboxLifecycleParticipantManger
                 extensions[i] = (ToolboxLifecycleParticipant) decls[i].createExecutableExtension(CLASS_ATTR_NAME);
             } catch (CoreException e)
             {
-                throw new ToolboxLifecycleException("Error retrieving the registered tools", e);
+            	StandaloneActivator.getDefault().logError(e.getMessage(), e);
+            	return new ToolboxLifecycleParticipant[0];
             }
         }
         return extensions;
@@ -43,10 +42,10 @@ public class ToolboxLifecycleParticipantManger
     /**
      * Distributes the initialize message
      * @param participants
-     * @throws ToolboxLifecycleException
      */
-    public static void initialize(ToolboxLifecycleParticipant[] participants) throws ToolboxLifecycleException
+    public static void initialize()
     {
+    	final ToolboxLifecycleParticipant[] participants = getRegisteredTools();
         Assert.isNotNull(participants);
         // Activator.getDefault().logDebug("Initializing the tools");
         for (int i = 0; i < participants.length; i++)
@@ -55,19 +54,26 @@ public class ToolboxLifecycleParticipantManger
         }
     }
 
+    public static void postWorkbenchWindowOpen() {
+		final ToolboxLifecycleParticipant[] participants = getRegisteredTools();
+		Assert.isNotNull(participants);
+		for (int i = 0; i < participants.length; i++) {
+			participants[i].postWorkbenchWindowOpen();
+		}
+    }
+    	
     /**
      * Distributes the terminate message  
      * @param participants
-     * @throws ToolboxLifecycleException
      */
-    public static void terminate(ToolboxLifecycleParticipant[] participants) throws ToolboxLifecycleException
+    public static void terminate()
     {
+    	final ToolboxLifecycleParticipant[] participants = getRegisteredTools();
         Assert.isNotNull(participants);
         // Activator.getDefault().logDebug("Terminating the tools");
         for (int i = 0; i < participants.length; i++)
         {
             participants[i].terminate();
         }
-    }
-
+	}
 }

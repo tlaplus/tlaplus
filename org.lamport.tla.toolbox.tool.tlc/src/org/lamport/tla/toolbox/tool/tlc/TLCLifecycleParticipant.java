@@ -1,8 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc;
 
 import org.eclipse.core.runtime.jobs.Job;
-import org.lamport.tla.toolbox.tool.ToolboxLifecycleException;
-import org.lamport.tla.toolbox.tool.ToolboxLifecycleParticipant;
+import org.lamport.tla.toolbox.lifecycle.ToolboxLifecycleParticipant;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 
 /**
@@ -15,7 +14,7 @@ public class TLCLifecycleParticipant extends ToolboxLifecycleParticipant {
 	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.tool.ToolboxLifecycleParticipant#terminate()
 	 */
-	public void terminate() throws ToolboxLifecycleException {
+	public void terminate() {
 		Job.getJobManager().cancel(TLCJob.AllJobsMatcher);
 	}
 }

@@ -1,8 +1,15 @@
 // Copyright (c) Jan 30, 2012 Microsoft Corporation.  All rights reserved.
 package org.lamport.tla.toolbox;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
@@ -11,7 +18,6 @@ import org.eclipse.ui.PlatformUI;
  * This class controls all aspects of the application's execution
  * 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class Application implements IApplication {
 
@@ -34,6 +40,36 @@ public class Application implements IApplication {
 				StandaloneActivator.getDefault().logDebug(context.getBrandingName()
 						+ " started without arguments.");
 			}
+		}
+		
+		// The call to getStateLocation makes sure the instance location gets
+		// initialized before we call .lock on it.
+		StandaloneActivator.getDefault().getStateLocation();
+		final Location instanceLocation = Platform.getInstanceLocation();
+		// Only allow a single Toolbox instance per workspace to prevent data
+		// corruption in the workspace files.
+		try {
+			if (!instanceLocation.lock()) {
+				final File workspaceDirectory = new File(Platform.getInstanceLocation().getURL().getFile());
+				if (workspaceDirectory.exists()) {
+					MessageDialog.openError(PlatformUI.createDisplay().getActiveShell(), "Toolbox files cannot be locked",
+							NLS.bind(
+									"Could not launch the Toolbox because the associated workspace is currently in use by another Toolbox. Opening two instances on the same workspace leads to data corruption.\n\n"
+											+ "If this is incorrect and there is no other Toolbox running, an earlier Toolbox terminated without releasing the lock. Please manually delete the lock file ''{0}'' and try restarting the Toolbox.",
+											workspaceDirectory.getAbsolutePath()
+											.concat(File.separator + ".metadata" + File.separator + ".lock")));
+				}
+				// We showed an error to the user, lets do a "clean" (0) exit to
+				// not raise a second window with a detailed technical error.
+				System.exit(0);
+			}
+		} catch (IOException e) {
+			StandaloneActivator.getDefault().logError("Toolbox files cannot be locked", e);
+			MessageDialog.openError(PlatformUI.createDisplay().getActiveShell(), "Toolbox files cannot be locked",
+					"Could not launch the Toolbox because acquiring the associated workspace lock failed. We are sorry, this is a bug. Please get in contact with us.");
+			// We showed an error to the user, lets do a "clean" (0) exit to
+			// not raise a second window with a detailed technical error.
+			System.exit(0);
 		}
 
 		Display display = PlatformUI.createDisplay();

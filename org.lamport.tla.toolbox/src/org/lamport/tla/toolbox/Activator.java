@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox;
 
-import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -12,12 +11,8 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.osgi.util.NLS;
-import org.eclipse.ui.PlatformUI;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.OutOfBuildSpecModulesGatheringDeltaVisitor;
@@ -53,22 +48,7 @@ public class Activator extends AbstractTLCActivator
     {
         super.start(context);
         plugin = this;
-
-		// Only allow a single Toolbox instance per workspace to prevent data
-		// corruption in the workspace files.
-		if (!Platform.getInstanceLocation().lock()) {
-			final File workspaceDirectory = new File(Platform.getInstanceLocation().getURL().getFile());
-			if (workspaceDirectory.exists()) {
-				MessageDialog.openError(PlatformUI.createDisplay().getActiveShell(), "Toolbox files cannot be locked",
-						NLS.bind(
-								"Could not launch the Toolbox because the associated workspace is currently in use by another Toolbox. Opening two instances on the same workspace leads to data corruption.\n\n"
-										+ "If this is incorrect and there is no other Toolbox running, an earlier Toolbox terminated without releasing the lock. Please manually delete the lock file ''{0}'' and try restarting the Toolbox.",
-								workspaceDirectory.getAbsolutePath()
-										.concat(File.separator + ".metadata" + File.separator + ".lock")));
-			}
-			System.exit(1);
-		}
-		
+        
         // register the listeners
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         
@@ -108,7 +88,7 @@ public class Activator extends AbstractTLCActivator
 							getThread().wait(100);
 						}
 					} catch (InterruptedException e) {
-						e.printStackTrace();
+						logError(e.getMessage(), e);
 					}
 					state = context.getBundle().getState();
 				}

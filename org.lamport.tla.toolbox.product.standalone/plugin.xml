@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
+   <extension-point id="org.lamport.tla.toolbox.tool" name="Toolbox Life Cycle Participant" schema="schema/org.lamport.tla.toolbox.tool.exsd"/>
 
 <!--              -->
 <!-- Application  -->
@@ -48,7 +49,7 @@
    <extension
          point="org.eclipse.ui.intro">
       <intro
-            class="org.lamport.tla.toolbox.ui.intro.ToolboxIntoPart"
+            class="org.lamport.tla.toolbox.ui.intro.ToolboxIntroPart"
             id="org.lamport.tla.toolbox.product.standalone.intro">
       </intro>
       <introProductBinding

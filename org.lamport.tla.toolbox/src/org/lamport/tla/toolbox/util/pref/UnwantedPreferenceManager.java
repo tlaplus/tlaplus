@@ -3,8 +3,10 @@ package org.lamport.tla.toolbox.util.pref;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.tool.ToolboxLifecycleException;
-import org.lamport.tla.toolbox.tool.ToolboxLifecycleParticipant;
+import org.lamport.tla.toolbox.lifecycle.ToolboxLifecycleParticipant;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.ui.intro.ToolboxIntroPart;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * This class removes unwanted preference pages that are declared
@@ -25,7 +27,7 @@ public class UnwantedPreferenceManager extends ToolboxLifecycleParticipant
         // TODO Auto-generated constructor stub
     }
 
-    public void initialize() throws ToolboxLifecycleException
+    public void initialize()
     {
         if (Activator.getDefault().getWorkbench() == null)
         {
@@ -95,4 +97,13 @@ public class UnwantedPreferenceManager extends ToolboxLifecycleParticipant
         }
     }
 
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.lifecycle.ToolboxLifecycleParticipant#terminate()
+	 */
+	public void terminate() {
+		if (!ToolboxHandle.getInstanceStore().getBoolean(ToolboxHandle.I_RESTORE_LAST_SPEC)) {
+			UIHelper.getActivePage().closeAllEditors(true);
+			UIHelper.switchPerspective(ToolboxIntroPart.PERSPECTIVE_ID);
+		}
+	}
 }

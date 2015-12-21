@@ -28,10 +28,6 @@ package org.lamport.tla.toolbox.ui.navigator;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -125,7 +121,7 @@ public class ToolboxExplorer extends CommonNavigator
     /**
      * Refreshes the instance of the viewer if any
      */
-    private static void refresh()
+    static void refresh()
     {
         CommonViewer instance = getViewer();
         if (instance != null)
@@ -159,47 +155,4 @@ public class ToolboxExplorer extends CommonNavigator
 //            contentService.update();
 //        }
 //    }
-
-    /*
-	 * Use an inner class because instantiation of ProblemView itself should be
-	 * left to the Eclipse foundation and not be triggered directly via new.
-	 */
-    public static class ResourceListener implements IResourceChangeListener {
-
-		private static ResourceListener INSTANCE;
-
-		public synchronized static void init() {
-			if (INSTANCE == null) {
-				INSTANCE = new ResourceListener();
-			}
-		}
-
-    	private ResourceListener() {
-			// We might have missed events during Toolbox startup when there was
-			// a workspace but no UI yet.
-    		resourceChanged(null);
-    		
-            // update CNF viewers
-    		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-    		workspace.addResourceChangeListener(this);
-    	}
-    	
-		public void resourceChanged(final IResourceChangeEvent event) {
-			UIHelper.runUIAsync(new Runnable() {
-				public void run() {
-					ToolboxExplorer.refresh();
-					// Expand the current spec and all its children
-					final CommonViewer viewer = getViewer();
-					// Event is only null when this Ctor calls us causing the
-					// initial expanded state of a spec to be fully expanded.
-					// Afterwards, the users expanded states is preserved.
-					if (event == null && viewer != null) { // viewer might already be disposed which happens when the Toolbox shuts down.
-						final Spec specLoaded = Activator.getSpecManager().getSpecLoaded();
-						viewer.expandToLevel(specLoaded,
-								AbstractTreeViewer.ALL_LEVELS);
-					}
-				}
-			});
-		}
-    }
 }

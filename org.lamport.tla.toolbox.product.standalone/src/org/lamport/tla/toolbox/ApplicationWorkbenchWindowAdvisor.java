@@ -15,8 +15,6 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.ide.EditorAreaDropAdapter;
-import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
-import org.lamport.tla.toolbox.ui.view.ProblemView;
 
 /**
  * Configuration of the main window
@@ -85,14 +83,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 				}
 			}
 		}
+		super.postWindowOpen();
 		
 		// At this point in time we can be certain that the UI is fully
 		// instantiated (views, editors, menus...). Thus, register
 		// listeners that connect the UI to the workspace resources.
-		ProblemView.ResourceListener.init();
-		ToolboxExplorer.ResourceListener.init();
-		
-		super.postWindowOpen();
+		ToolboxLifecycleParticipantManger.postWorkbenchWindowOpen();
 	}
-	
 }

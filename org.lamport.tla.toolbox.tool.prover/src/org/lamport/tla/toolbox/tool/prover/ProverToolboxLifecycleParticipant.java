@@ -1,7 +1,6 @@
 package org.lamport.tla.toolbox.tool.prover;
 
-import org.lamport.tla.toolbox.tool.ToolboxLifecycleException;
-import org.lamport.tla.toolbox.tool.ToolboxLifecycleParticipant;
+import org.lamport.tla.toolbox.lifecycle.ToolboxLifecycleParticipant;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
 /**
@@ -22,10 +21,8 @@ public class ProverToolboxLifecycleParticipant extends ToolboxLifecycleParticipa
     /**
      * Is called during termination of the toolbox. 
      * This implementation cancels all running prover jobs.
-     * 
-     * @throws ToolboxLifecycleException
      */
-    public void terminate() throws ToolboxLifecycleException
+    public void terminate()
     {
 
         ProverHelper.cancelProverJobs(true);

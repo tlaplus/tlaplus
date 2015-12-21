@@ -9,24 +9,18 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.ide.IDE;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.ToolboxLifecycleException;
-import org.lamport.tla.toolbox.tool.ToolboxLifecycleParticipant;
-import org.lamport.tla.toolbox.util.ToolboxLifecycleParticipantManger;
-import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.ui.intro.ToolboxIntroPart;
 import org.osgi.framework.Bundle;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
  * the perspective id for the initial window.
  * @author Simon Zambrovski
- * @version $Id$ 
  */
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 {
 
     // TODO MOVE!
-    public static final String PERSPECTIVE_ID = "org.lamport.tla.toolbox.ui.perspective.initial";
     public static final String IDE_PLUGIN = "org.eclipse.ui.ide";
     public static final String PATH_OBJECT = "icons/full/obj16/";
     public static final String PATH_WIZBAN = "icons/full/wizban/";
@@ -39,7 +33,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
      * Image definition from org.eclipse.ui.internal.ide.IDEInternalWorkbenchImages#IMG_DLGBAN_SAVEAS_DLG
      */
     public static final String IMG_DLGBAN_SAVEAS_DLG = "IMG_DLGBAN_SAVEAS_DLG";
-    private ToolboxLifecycleParticipant[] registeredTools;
 
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
     {
@@ -48,7 +41,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     public String getInitialWindowPerspectiveId()
     {
-        return PERSPECTIVE_ID;
+        return ToolboxIntroPart.PERSPECTIVE_ID;
     }
 
     /*
@@ -80,41 +73,19 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         configurer.declareImage(symbolicName, desc, shared);
     }
 
-    public boolean preShutdown()
-    {
-        if (!ToolboxHandle.getInstanceStore().getBoolean(ToolboxHandle.I_RESTORE_LAST_SPEC))
-        {
-            UIHelper.getActivePage().closeAllEditors(true);
-            UIHelper.switchPerspective(getInitialWindowPerspectiveId());
-        }
-        
-        try 
-        {
-            ToolboxLifecycleParticipantManger.terminate(registeredTools);
-        } catch (ToolboxLifecycleException e)
-        {
-            // TODO
-            e.printStackTrace();
-        }
-        
-        return super.preShutdown();
-    }
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.application.WorkbenchAdvisor#preShutdown()
+	 */
+	public boolean preShutdown() {
+		ToolboxLifecycleParticipantManger.terminate();
+		return super.preShutdown();
+	}
 
-    public void postStartup()
-    {
-        super.postStartup();
-        
-        try 
-        {
-            registeredTools = ToolboxLifecycleParticipantManger.getRegisteredTools();
-            ToolboxLifecycleParticipantManger.initialize(registeredTools);
-        } catch (ToolboxLifecycleException e)
-        {
-            // TODO
-            e.printStackTrace();
-        }
-        
-    }
-    
-    
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.application.WorkbenchAdvisor#postStartup()
+	 */
+	public void postStartup() {
+		super.postStartup();
+		ToolboxLifecycleParticipantManger.initialize();
+	}
 }
