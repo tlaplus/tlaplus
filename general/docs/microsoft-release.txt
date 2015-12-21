@@ -209,7 +209,38 @@ TO GENERATE THE RELEASE:
   Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
-Version 1.5.X - ???
+Version 1.5.2 - 21 December 2015
+  - Quick access dialog to make models easily accessible to users (Ctrl+Shift-A). Additionally shows a spec's modules and (optionally) closed specs.
+  - Upon spec safe, automatically keep a file revision/history. Let users restore revision from history view.
+  - Do not offer to use built-in PDF viewer on Mac OS X. It is fundamentally broken and Mac's PDF viewer is more powerful anyway.
+  - Parse and size status line item's height too small.
+  - Limit the trace length to a fixed number of 1000 states by default. User can easily load more by clicking "Load more" in trace explorer.
+  - Show corresponding action for "back-to-state" cycle marker upon double click.
+  - Remove any symmetry definition when model is run in TraceExplorer.
+  - Allow users to add free-form comments to their models.
+  - Show warnings when modelchecking terminated with unexplored states left.
+  - Result page better indicates liveness checking stage (final vs. run on incomplete liveness graph).
+  - Stop NumberFormatException in "per minute" statistics.
+  - Fix bug where Toolbox reports a bogus invariant violation.
+  - Show Modules (files in spec dir) and Models as children of the root specification in the SpecExplorer. Group both under a virtual "modules" and "models" tree item.
+  - Show progress when opening a model from an existing log file. Supports cancellation if log file is large.
+  - Toolbox hangs on large TLC outputs during model checking and at startup. Now several orders of magnitude faster.
+  - Only reflect address part instead of full URL back on distributed TLC's setup webpage. (SECURITY)
+  - Allow only one Toolbox instance to be running.
+  - Open Module can open modules from foreign specs.
+  - Upgrade to Eclipse Foundation 4.5.
+  - Run liveness checking based on runtime ratio between safety and liveness checking.
+  - Add -userFile parameter to redirect Print/PrintT/... output to dedicated file instead of sysout.
+  - Show time it took to model check and to check liveness.
+  - Simulator (and DFIDChecker) now support TLCSet/TLCGet.
+  - Distributed TLC does not support TLCGet/TLCSet. Prints a warning upon startup.
+  - The ordering of records in TLC.Print and PrintT statement outputs can be wrong.
+  - Report Java assertion violations as such. Don't blame it on the user's spec or model.
+  - Do not throw a NullPointerException on action-less spec when coverage requested.
+  - Incorrect cmdline parameters cause NullPointerException.
+  - Race condition when printing the trace of an invariant violation.
+  - Delay adding successor states *after* corresponding invariants and implied actions have been checked. Previously, the early addition could potentially lead to multiple invariant/implied action violations being reported simultaneously iff TLC uses multiple workers (i.e. worker 1 adds a successor to the StateQueue *before* checking the invariants. Worker 2 would explore this state and find a invariant violation concurrently with worker 1).
+  - TLC never deletes old states from state queue causing the disk to fill up.
   - Fixed minor PlusCal translator bug.
   - Application Bundle packaging on Mac (Existing installations
     have to be manually updated).

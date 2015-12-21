@@ -17,7 +17,7 @@ public class TLCGlobals
 {
 
     // The current version of TLC
-    public static String versionOfTLC = "Version 2.07 of 1 June 2015";
+    public static String versionOfTLC = "Version 2.08 of 21 December 2015";
 
     // The bound for set enumeration, used for pretty printing
     public static int enumBound = 2000;
