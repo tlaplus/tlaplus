@@ -42,11 +42,11 @@ public class DFIDModelChecker extends AbstractChecker
      * Constructor for running DFID   
      * @param resolver 
      */
-    public DFIDModelChecker(String specFile, String configFile, String dumpFile, boolean deadlock, String fromChkpt,
+    public DFIDModelChecker(String specFile, String configFile, String dumpFile, boolean asDot, boolean deadlock, String fromChkpt,
             boolean preprocess, FilenameToStream resolver, SpecObj specObj) throws EvalException, IOException
     {
         // call the abstract constructor
-        super(specFile, configFile, dumpFile, deadlock, fromChkpt, preprocess, resolver, specObj);
+        super(specFile, configFile, dumpFile, asDot, deadlock, fromChkpt, preprocess, resolver, specObj);
 
         this.theInitStates = null;
         this.theInitFPs = null;
@@ -267,10 +267,7 @@ public class DFIDModelChecker extends AbstractChecker
                         this.theInitFPs[idx++] = fp;
 
                         // Write out the state if asked
-                        if (this.allStateWriter != null)
-                        {
-                            this.allStateWriter.writeState(curState);
-                        }
+                        this.allStateWriter.writeState(curState);
 
                         // build behavior graph for liveness checking
                         if (this.checkLiveness)
@@ -390,10 +387,7 @@ public class DFIDModelChecker extends AbstractChecker
                         allSuccNonLeaf = allSuccNonLeaf && !FPIntSet.isLeaf(status);
 
                         // Write out the state when new and asked:
-                        if (status == FPIntSet.NEW && this.allStateWriter != null)
-                        {
-                            this.allStateWriter.writeState(succState);
-                        }
+                        this.allStateWriter.writeState(curState, succState, status == FPIntSet.NEW);
 
                         // Remember succState if it has not been completed at this level:
                         if (!FPIntSet.isCompleted(status))
@@ -683,8 +677,7 @@ public class DFIDModelChecker extends AbstractChecker
         this.theFPSet.close();
         if (this.checkLiveness)
             liveCheck.close();
-        if (this.allStateWriter != null)
-            this.allStateWriter.close();
+        this.allStateWriter.close();
         // SZ Feb 23, 2009:
         // FileUtil.deleteDir(new File(this.metadir), success);
         FileUtil.deleteDir(this.metadir, success);

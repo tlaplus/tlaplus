@@ -203,6 +203,10 @@
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</javac>
+		<!-- Include auxilliary files when compiling classes. -->
+		<copy todir="${test.class.dir}">
+		   <fileset dir="${test.dir}" includes="**/*.dot"/>
+		</copy>		
 		<!-- copy class.dir to path with whitespace -->
 		<!-- this is required by some tests to make sense -->
 		<!-- even throw a non digit in -->

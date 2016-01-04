@@ -13,7 +13,10 @@ import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.Liveness;
 import tlc2.tool.liveness.NoOpLiveCheck;
+import tlc2.util.DotStateWriter;
+import tlc2.util.IStateWriter;
 import tlc2.util.IdThread;
+import tlc2.util.NoopStateWriter;
 import tlc2.util.ObjLongTable;
 import tlc2.util.StateWriter;
 import tlc2.util.statistics.BucketStatistics;
@@ -27,7 +30,6 @@ import util.FilenameToStream;
 /**
  * The abstract checker
  * @author Simon Zambrovski
- * @version $Id$
  */
 public abstract class AbstractChecker implements Cancelable
 {
@@ -58,7 +60,7 @@ public abstract class AbstractChecker implements Cancelable
     public Action[] impliedActions;
     public Action[] impliedInits;
     public Action[] actions;
-    protected StateWriter allStateWriter;
+    protected final IStateWriter allStateWriter;
     protected boolean cancellationFlag;
     private IdThread[] workers;
 	protected final ILiveCheck liveCheck;
@@ -82,7 +84,7 @@ public abstract class AbstractChecker implements Cancelable
      * @param resolver
      * @param spec - pre-built specification object (e.G. from calling SANY from the tool previously)
      */
-    public AbstractChecker(String specFile, String configFile, String dumpFile, boolean deadlock, String fromChkpt,
+    public AbstractChecker(String specFile, String configFile, String dumpFile, final boolean asDot, boolean deadlock, String fromChkpt,
             boolean preprocess, FilenameToStream resolver, SpecObj spec) throws EvalException, IOException
     {
         this.cancellationFlag = false;
@@ -112,7 +114,13 @@ public abstract class AbstractChecker implements Cancelable
         // Initialize dumpFile:
         if (dumpFile != null)
         {
-            this.allStateWriter = new StateWriter(dumpFile);
+        	if (asDot) {
+        		this.allStateWriter = new DotStateWriter(dumpFile);
+        	} else {
+        		this.allStateWriter = new StateWriter(dumpFile);
+        	}
+        } else {
+        	 this.allStateWriter = new NoopStateWriter();
         }
 
         this.impliedInits = this.tool.getImpliedInits(); // implied-inits to be checked

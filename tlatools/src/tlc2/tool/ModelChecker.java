@@ -72,11 +72,11 @@ public class ModelChecker extends AbstractChecker
      * @param specObj external SpecObj added to enable to work on existing specification 
      * Modified on 6 Apr 2010 by Yuan Yu to add fpMemSize parameter.
      */
-    public ModelChecker(String specFile, String configFile, String dumpFile, boolean deadlock, String fromChkpt,
+    public ModelChecker(String specFile, String configFile, String dumpFile, final boolean asDot, boolean deadlock, String fromChkpt,
             FilenameToStream resolver, SpecObj specObj, final FPSetConfiguration fpSetConfig) throws EvalException, IOException
     {
         // call the abstract constructor
-        super(specFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
+        super(specFile, configFile, dumpFile, asDot, deadlock, fromChkpt, true, resolver, specObj);
 
         // SZ Feb 20, 2009: this is a selected alternative
         this.theStateQueue = new DiskStateQueue(this.metadir);
@@ -425,13 +425,10 @@ public class ModelChecker extends AbstractChecker
                     {
 						long fp = succState.fingerPrint();
 						seen = this.theFPSet.put(fp);
+                        // Write out succState when needed:
+                        this.allStateWriter.writeState(curState, succState, !seen);
                         if (!seen)
                         {
-							// Write out succState when needed:
-                            if (this.allStateWriter != null)
-                            {
-								this.allStateWriter.writeState(succState);
-							}
 							// Write succState to trace only if it satisfies the
 							// model constraints. Do not enqueue it yet, but wait
                             // for implied actions and invariants to be checked.
@@ -798,12 +795,11 @@ public class ModelChecker extends AbstractChecker
         this.trace.close();
         if (this.checkLiveness)
             liveCheck.close();
-        if (this.allStateWriter != null)
-            this.allStateWriter.close();
-        	if (!VETO_CLEANUP) {
-        		FileUtil.deleteDir(this.metadir, success);
-        	}
-		}
+        this.allStateWriter.close();
+    	if (!VETO_CLEANUP) {
+    		FileUtil.deleteDir(this.metadir, success);
+    	}
+	}
 
     public final void printSummary(boolean success, final long startTime) throws IOException
     {
@@ -1175,9 +1171,7 @@ public class ModelChecker extends AbstractChecker
 					long fp = curState.fingerPrint();
 					seen = theFPSet.put(fp);
 					if (!seen) {
-						if (allStateWriter != null) {
-							allStateWriter.writeState(curState);
-						}
+						allStateWriter.writeState(curState);
 						curState.uid = trace.writeState(fp);
 						theStateQueue.enqueue(curState);
 

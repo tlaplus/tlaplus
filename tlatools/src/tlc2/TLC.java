@@ -68,6 +68,17 @@ public class TLC
     private String mainFile;
     private String configFile;
     private String dumpFile;
+    /**
+	 * If true, the dumpFile will be written in dot format to be processed by
+	 * GraphViz.
+	 * <p>
+	 * Contrary to plain -dump, -dot will also write out transitions from state
+	 * s to s' if s' is already known. Thus, the resulting graph shows all
+	 * successors of s instead of just s's unexplored ones.
+	 * <p>
+	 * Off/False by default.
+	 */
+    private boolean asDot;
     private String fromChkpt;
 
     private int fpIndex;
@@ -105,6 +116,7 @@ public class TLC
         mainFile = null;
         configFile = null;
         dumpFile = null;
+        asDot = false;
         fromChkpt = null;
         resolver = null;
 
@@ -146,7 +158,8 @@ public class TLC
      *    Defaults to 1
      *  o -dfid num: use depth-first iterative deepening with initial depth num
      *  o -cleanup: clean up the states directory
-     *  o -dump file: dump all the states into file
+     *  o -dump [dot] file: dump all the states into file. If "dot" as sub-parameter
+     *                      is given, the output will be in dot notation.
      *  o -difftrace: when printing trace, show only
      *                the differences between successive states
      *    Defaults to printing full state descriptions if not specified
@@ -298,14 +311,24 @@ public class TLC
                 }
             } else if (args[index].equals("-dump"))
             {
+            	String suffix = ".dump";
+            	
                 index++;
+                if (index < args.length && args[index].equals("dot"))
+                {
+                    asDot = true;
+                    suffix = ".dot";
+                    index++;
+                }
                 if (index < args.length)
                 {
                     dumpFile = args[index];
+					// Require a $suffix file extension unless already given. It
+					// is not clear why this is enforced.
                     int len = dumpFile.length();
-                    if (!(dumpFile.startsWith(".dump", len - 5)))
+                    if (!(dumpFile.startsWith(suffix, len - suffix.length())))
                     {
-                        dumpFile = dumpFile + ".dump";
+                        dumpFile = dumpFile + suffix;
                     }
                     index++;
                 } else
@@ -760,11 +783,11 @@ public class TLC
                 AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
                 {
-                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
+                    mc = new ModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
                     modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc);
                 } else
                 {
-                    mc = new DFIDModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
+                    mc = new DFIDModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, true, resolver, specObj);
                 }
                 TLCGlobals.mainChecker = mc;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
