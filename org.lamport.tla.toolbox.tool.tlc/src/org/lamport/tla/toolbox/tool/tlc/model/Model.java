@@ -858,7 +858,10 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 	
 	private ILaunchConfigurationWorkingCopy getWorkingCopy() throws CoreException {
-		return this.workingCopy == null ? this.launchConfig.getWorkingCopy() : this.workingCopy;
+		if (this.workingCopy == null) {
+			this.workingCopy = this.launchConfig.getWorkingCopy();
+		}
+		return this.workingCopy;
 	}
 	
 	public void unsavedSetEvalExpression(final String expression) {
