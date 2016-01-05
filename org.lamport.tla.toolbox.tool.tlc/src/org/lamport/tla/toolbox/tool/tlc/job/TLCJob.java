@@ -249,7 +249,10 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         // Replace any of the above parameters if explicitly given as extra TLC parameters
 		final ILaunchConfiguration launchConfig = launch.getLaunchConfiguration();
 		final String tlcParameters = launchConfig.getAttribute(LAUNCH_TLC_PARAMETERS, (String) null);
-		arguments.addAll(Arrays.asList(tlcParameters.trim().split("\\s+")));
+		if (!"".equals(tlcParameters.trim())) {
+			final String[] split = tlcParameters.trim().split("\\s+");
+			arguments.addAll(Arrays.asList(split));
+		}
 
         return (String[]) arguments.toArray(new String[arguments.size()]);
     }
