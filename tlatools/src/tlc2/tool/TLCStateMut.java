@@ -156,16 +156,23 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 		Value[] minVals = this.values;
 		if (perms != null) {
 			Value[] vals = new Value[sz];
-			// Find the "smallest" state under the symmetry permutations:
+			// Find the "smallest" state under the symmetry permutations.
+			// The following for loop converges to the smallest state under
+			// symmetry by looping over all permutations applying each. If the
+			// outcome turns out to be smaller than the current smallest, it
+			// replaces it. Once all permutations (perms) have been seen, we
+			// know we have found the smallest state.
 			for (int i = 0; i < perms.length; i++) {
 				int cmp = 0;
 				// For each value in values succinctly permute the current value
-				// and compare it to minVals.
+				// and compare it to its corresponding minValue in minVals.
 				for (int j = 0; j < sz; j++) {
 					vals[j] = this.values[j].permute(perms[i]);
 					if (cmp == 0) {
-						// Compare the permuted values to the minVals unless an
-						// earlier compare has found a different already.
+						// Only compare unless an earlier compare has found a
+						// difference already (if a difference has been found
+						// earlier, still permute the remaining values of the
+						// state to fully permute all state values).
 						cmp = vals[j].compareTo(minVals[j]);
 					}
 				}
