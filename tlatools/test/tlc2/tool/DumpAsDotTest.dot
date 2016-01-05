@@ -1,5 +1,4 @@
-digraph DiskGraph {
-nodesep = 0.7
+strict digraph DiskGraph {
 rankdir=LR;
 609737673425276830 [style = filled] [label="/\\ b = FALSE
 /\\ x = 0"]
