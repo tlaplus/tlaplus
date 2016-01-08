@@ -136,6 +136,9 @@ public class DFIDWorker extends IdThread implements IWorker {
       {
           StatePrinter.printState(this.stateStack[idx], ++idx);
       }
+      // the prefix printed by the while loop should end at s1.
+      assert s1.equals(this.stateStack[idx]);
+      StatePrinter.printState(s1, ++idx);
       if (s2 != null) 
       {
           StatePrinter.printState(s2, idx+1);
