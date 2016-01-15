@@ -190,6 +190,10 @@ public class TLC implements ValueConstants
         return new FcnRcdValue(dom, vals, true);
     }
 
+    /**
+     * f @@ g == [x \in (DOMAIN f) \cup (DOMAIN g) |->
+     *            IF x \in DOMAIN f THEN f[x] ELSE g[x]]
+     */
     public static Value CombineFcn(Value f1, Value f2)
     {
         FcnRcdValue fcn1 = FcnRcdValue.convert(f1);
@@ -247,7 +251,7 @@ public class TLC implements ValueConstants
                 if (!found)
                 {
                     dom.addElement(val);
-                    vals.addElement(vals2[i]);
+                    vals.addElement(vals2[i - intv2.low]);
                 }
             }
         } else
