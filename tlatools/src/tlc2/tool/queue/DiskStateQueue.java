@@ -97,6 +97,16 @@ public class DiskStateQueue extends StateQueue {
 		}
 		return this.deqBuf[this.deqIndex++];
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.StateQueue#peekInner()
+	 */
+	TLCState peekInner() {
+		if (this.deqIndex == this.deqBuf.length) {
+			this.fillDeqBuffer();
+		}
+		return this.deqBuf[this.deqIndex];
+	}
 
 	private final void fillDeqBuffer() {
 		try {

@@ -24,6 +24,12 @@ public interface IStateQueue {
 
 	/* Return the first element in the queue. Wait if empty. */
 	public abstract TLCState sDequeue();
+	
+	/**
+	 * Returns the first element in the queue. Wait if empty. Does not remove the
+	 * element. Can be null and blocks other consumers (sEnqueue and sDequeue).
+	 */
+	public abstract TLCState sPeek();
 
 	/**
 	 * Return (up to) the first count elements in the queue. Wait if empty.

@@ -60,6 +60,13 @@ public final class MemStateQueue extends StateQueue {
     this.start = (this.start + 1) % this.states.length;
     return res;
   }
+  
+  /* (non-Javadoc)
+   * @see tlc2.tool.queue.StateQueue#peekInner()
+   */
+  final TLCState peekInner() {
+	return this.states[this.start];
+  }
 
   // Checkpoint.
   public final void beginChkpt() throws IOException {
@@ -95,5 +102,4 @@ public final class MemStateQueue extends StateQueue {
     }
     vis.close();
   }
-
 }

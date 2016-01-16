@@ -85,6 +85,10 @@ public class StateQueueJPFTest extends TestJPF {
 			return state;
 		}
 
+		TLCState peekInner() {
+			return state;
+		}
+
 		public void beginChkpt() throws IOException {
 			// checkpointing not being verified
 		}

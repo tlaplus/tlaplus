@@ -85,6 +85,13 @@ public abstract class StateQueue implements IStateQueue {
 		}
 	}
 
+	public final synchronized TLCState sPeek() {
+		if (this.isAvail()) {
+			return this.peekInner();
+		}
+		return null;
+	}
+
 	/* Return the first element in the queue. Wait if empty. */
 	/* (non-Javadoc)
 	 * @see tlc2.tool.queue.IStateQueue#sDequeue()
@@ -327,6 +334,9 @@ public abstract class StateQueue implements IStateQueue {
 	/* This method must be implemented in the subclass. */
 	abstract TLCState dequeueInner();
 
+	/* This method must be implemented in the subclass. */
+	abstract TLCState peekInner();
+	
 	/* Checkpoint. */
 	/* (non-Javadoc)
 	 * @see tlc2.tool.queue.IStateQueue#beginChkpt()
