@@ -152,7 +152,7 @@ public class CloudDistributedTLCJob extends Job {
 			// look at the munin/ stats generated for the OS as well as TLC specifically.
 			// (See below where munin gets installed manually)
 			// This now makes us dependent on EC2 (for now)
-			templateOptions.inboundPorts(22, 80);
+			templateOptions.inboundPorts(22, 80, 443);
 			
 			// note this will create a user with the same name as you on the
 			// node. ex. you can connect via ssh public IP
@@ -278,7 +278,8 @@ public class CloudDistributedTLCJob extends Job {
 			// the machine running the toolbox).
 			// TODO Share the tla2tools.jar with the worker nodes by making it
 			// available on the master's webserver for the clients to download.
-			// On the other hand this means we are making the spec world-readable.
+			// On the other hand this means we are making the spec
+			// world-readable. It is cloud-readable already through the RMI api.
 			SshClient sshClient = context.utils().sshForNode().apply(master);
 			sshClient.put("/mnt/tlc/tla2tools.jar",	jarPayLoad);
 			sshClient.disconnect();
@@ -290,52 +291,54 @@ public class CloudDistributedTLCJob extends Job {
 			// Run model checker master
 			monitor.subTask("Starting TLC model checker process on the master node (in background)");
 			compute.runScriptOnNodesMatching(
-					isMaster,
-					// "/mnt/tlc" is on the ephemeral and thus faster storage of the
-					// instance.
-					exec("cd /mnt/tlc/ && "
-							// Execute TLC (java) process inside screen
-							// and shutdown on TLC's completion. But
-							// detach from screen directly. Name screen 
-							// session "tlc".
-							// (see http://stackoverflow.com/a/10126799)
-							+ "screen -dm -S tlc bash -c \" "
-							// This requires a modified version where all parameters and
-							// all spec modules are stored in files in a model/ folder
-							// inside of the jar.
-							// This is done in anticipation of other cloud providers
-							// where one cannot easily pass in parameters on the command
-							// line because there is no command line.
-							+ "java "
-								+ params.getJavaVMArgs() + " "
-								// These properties cannot be "backed" into
-								// the payload jar as java itself does not 
-							    // support this.
-								// It might be able to read the properties from 
-								// the config file with 'com.sun.management.config.file=path',
-								// but I haven't tried if the path can point into the jar.
-								+ "-Dcom.sun.management.jmxremote "
-								+ "-Dcom.sun.management.jmxremote.port=5400 "
-								+ "-Dcom.sun.management.jmxremote.ssl=false "
-								+ "-Dcom.sun.management.jmxremote.authenticate=false "
-								// TLC tuning options
-								+ params.getJavaSystemProperties() + " "
-								+ "-jar /mnt/tlc/tla2tools.jar " 
-								+ params.getTLCParameters() + " "
-								+ "&& "
-							// Let the machine power down immediately after
-							// finishing model checking to cut costs. However,
-							// do not shut down (hence "&&") when TLC finished
-							// with an error.
-							// It uses "sudo" because the script is explicitly
-							// run as a user. No need to run the TLC process as
-							// root.
-							+ "sudo shutdown -h now"
-							+ "\""), // closing opening '"' of screen/bash -c
-					new TemplateOptions().runAsRoot(false).wrapInInitScript(
-							true).blockOnComplete(false).blockUntilRunning(false));
+				isMaster,
+				// "/mnt/tlc" is on the ephemeral and thus faster storage of the
+				// instance.
+				exec("cd /mnt/tlc/ && "
+						// Execute TLC (java) process inside screen
+						// and shutdown on TLC's completion. But
+						// detach from screen directly. Name screen 
+						// session "tlc".
+						// (see http://stackoverflow.com/a/10126799)
+						+ "screen -dm -S tlc bash -c \" "
+						// This requires a modified version where all parameters and
+						// all spec modules are stored in files in a model/ folder
+						// inside of the jar.
+						// This is done in anticipation of other cloud providers
+						// where one cannot easily pass in parameters on the command
+						// line because there is no command line.
+						+ "java "
+							+ params.getJavaVMArgs() + " "
+							// These properties cannot be "backed" into
+							// the payload jar as java itself does not 
+						    // support this.
+							// It might be able to read the properties from 
+							// the config file with 'com.sun.management.config.file=path',
+							// but I haven't tried if the path can point into the jar.
+							+ "-Dcom.sun.management.jmxremote "
+							+ "-Dcom.sun.management.jmxremote.port=5400 "
+							+ "-Dcom.sun.management.jmxremote.ssl=false "
+							+ "-Dcom.sun.management.jmxremote.authenticate=false "
+							// TLC tuning options
+							+ params.getJavaSystemProperties() + " "
+							+ "-jar /mnt/tlc/tla2tools.jar " 
+							+ params.getTLCParameters() + " "
+							+ "&& "
+						// Let the machine power down immediately after
+						// finishing model checking to cut costs. However,
+						// do not shut down (hence "&&") when TLC finished
+						// with an error.
+						// It uses "sudo" because the script is explicitly
+						// run as a user. No need to run the TLC process as
+						// root.
+						+ "sudo shutdown -h now"
+						+ "\""), // closing opening '"' of screen/bash -c
+				new TemplateOptions().runAsRoot(false).wrapInInitScript(
+						true).blockOnComplete(false).blockUntilRunning(false));
 			monitor.worked(5);
 			
+		
+		
 			// Communicate result to user
 			monitor.done();
 			final String hostname = Iterables.getOnlyElement(master.getPublicAddresses()); // master.getHostname() only returns internal name
