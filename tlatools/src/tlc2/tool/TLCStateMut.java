@@ -162,7 +162,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 			// outcome turns out to be smaller than the current smallest, it
 			// replaces it. Once all permutations (perms) have been seen, we
 			// know we have found the smallest state.
-			for (int i = 0; i < perms.length; i++) {
+			NEXT_PERM: for (int i = 0; i < perms.length; i++) {
 				int cmp = 0;
 				// For each value in values succinctly permute the current value
 				// and compare it to its corresponding minValue in minVals.
@@ -174,6 +174,15 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 						// earlier, still permute the remaining values of the
 						// state to fully permute all state values).
 						cmp = vals[j].compareTo(minVals[j]);
+						if (cmp > 0) {
+							// When cmp evaluates to >0, all subsequent
+							// applications of perms[i] for the remaining values
+							// won't make the resulting vals[] smaller than
+							// minVals. Thus, exit preemptively from the loop
+							// over vals. This works because perms is the cross
+							// product of all symmetry sets.
+							continue NEXT_PERM;
+						}
 					}
 				}
 				// cmp < 0 means the current state is part of a symmetry

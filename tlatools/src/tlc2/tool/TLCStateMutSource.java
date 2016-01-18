@@ -171,6 +171,9 @@ implements Cloneable, Serializable {
    * Since the values in this state can be shared by multiple threads
    * via the state queue. They have to be normalized before adding to
    * the state queue.  We do that here.   
+   * 
+   * @see TLCStateMut#fingerPrint() for a commented version of this
+   *      implementation.
    */
   public final long fingerPrint() {
     int sz = this.values.length;
