@@ -223,13 +223,7 @@ public class CloudDistributedTLCJob extends Job {
 							// to the TLC process if logged in to the
 							// instance directly (it's probably already
 							// installed).
-							+ "apt-get install screen -y && "
-							// postfix is an MTA that is used to send warnings
-							// produced by munin off of the system. E.g.
-							// if the hard disc becomes full, the user
-							// will receive an email giving her a chance
-							// to free space and prevent TLC from crashing.
-							+ "apt-get install postfix heirloom-mailx -y"),
+							+ "apt-get install screen -y"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			
 			monitor.worked(10);
