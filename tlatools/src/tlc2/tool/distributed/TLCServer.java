@@ -27,6 +27,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
+import model.InJarFilenameToStream;
+import model.ModelInJar;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -51,7 +53,6 @@ import tlc2.util.FP64;
 import util.Assert;
 import util.FileUtil;
 import util.MailSender;
-import util.SimpleFilenameToStream;
 import util.UniqueString;
 
 @SuppressWarnings("serial")
@@ -783,7 +784,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		String name = new File(file).getName();
 		
 		// Resolve all 
-		File f = new SimpleFilenameToStream().resolve(name);
+		File f = new InJarFilenameToStream(ModelInJar.PATH).resolve(name);
 		return read(f);
 	}
 	
