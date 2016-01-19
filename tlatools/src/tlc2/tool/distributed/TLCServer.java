@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
+import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -417,6 +418,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @throws NotBoundException
 	 */
 	protected void modelCheck() throws IOException, InterruptedException, NotBoundException {
+    	final long startTime = System.currentTimeMillis();
+
 		/*
 		 * Before we initialize the server, we check if recovery is requested 
 		 */
@@ -605,7 +608,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		
 		// Finally print the results
 		printSummary(level, statesGenerated, statesLeftInQueue, finalNumberOfDistinctStates, hasNoErrors());
-		MP.printMessage(EC.TLC_FINISHED);
+		MP.printMessage(EC.TLC_FINISHED,
+				TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
 		MP.flush();
 
 		// Close trace and (distributed) _FPSet_ servers!
