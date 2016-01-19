@@ -31,6 +31,8 @@ import java.util.Properties;
 import org.eclipse.core.runtime.IStatus;
 import org.jclouds.ContextBuilder;
 
+import tlc2.tool.distributed.fp.TLCWorkerAndFPSet;
+
 /**
  * This class serves two purposes.
  * 
@@ -40,26 +42,62 @@ import org.jclouds.ContextBuilder;
 public abstract class CloudTLCInstanceParameters {
 	
 	protected final String tlcParams;
+	protected final int numberOfWorkers;
 	
 	public CloudTLCInstanceParameters(String tlcParams) {
-		this.tlcParams = tlcParams;
+		this(tlcParams, 1);
 	}
 
+	public CloudTLCInstanceParameters(String tlcParams, int numberOfWorkers) {
+		this.tlcParams = tlcParams;
+		this.numberOfWorkers = numberOfWorkers;
+	}
+
+	// system properties
+	
 	public String getJavaSystemProperties() {
+		if (numberOfWorkers == 1) {
+			return getJavaWorkerSystemProperties();
+		}
+		return "-Dtlc2.tool.distributed.TLCServer.expectedFPSetCount=" + (numberOfWorkers - 1);
+	}
+
+	public String getJavaWorkerSystemProperties() {
 		return "-Dtlc2.tool.fp.FPSet.impl=tlc2.tool.fp.OffHeapDiskFPSet";
 	}
-
+	
+	// vm args
+	
 	public String getJavaVMArgs() {
+		if (numberOfWorkers == 1) {
+			return getJavaWorkerVMArgs();
+		}
+		return "-Xmx56G -Xms56G";
+	}
+	
+	public String getJavaWorkerVMArgs() {
 		return "-Xmx24G -Xms24G -XX:MaxDirectMemorySize=32g";
 	}
 
+	// tlc parameters
+	
 	public String getTLCParameters() {
-		if (tlcParams.length() > 0) {
-			return "-workers 12 " + tlcParams;
+		if (numberOfWorkers == 1) {
+			if (tlcParams.length() > 0) {
+				return "-workers 12 " + tlcParams;
+			}
+			return "-workers 12";
+		} else {
+			return "-coverage 0 -checkpoint 0";
 		}
-		return "-workers 12";
 	}
 
+	public String getTLCWorkerParameters() {
+		// TODO Ideally rewrite tla2tools.jar to replace the main-class in
+		// META-INF/MANIFEST.MF when the model/* stuff is stripped.
+		return TLCWorkerAndFPSet.class.getName();
+	}
+	
 	public abstract String getCloudProvider();
 
 	public abstract String getImageId();

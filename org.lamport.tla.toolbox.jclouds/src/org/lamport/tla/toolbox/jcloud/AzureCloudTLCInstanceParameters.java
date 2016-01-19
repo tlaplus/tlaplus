@@ -33,8 +33,8 @@ import org.jclouds.ContextBuilder;
 
 public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 
-	public AzureCloudTLCInstanceParameters(final String tlcParams) {
-        super(tlcParams.trim());
+	public AzureCloudTLCInstanceParameters(final String tlcParams, int numberOfWorkers) {
+        super(tlcParams.trim(), numberOfWorkers);
 	}
 
 	@Override

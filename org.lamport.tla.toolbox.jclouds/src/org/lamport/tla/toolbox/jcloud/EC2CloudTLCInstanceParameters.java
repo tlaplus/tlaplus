@@ -34,8 +34,8 @@ import org.jclouds.aws.ec2.reference.AWSEC2Constants;
 
 public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 
-	public EC2CloudTLCInstanceParameters(final String tlcParams) {
-        super(tlcParams.trim());
+	public EC2CloudTLCInstanceParameters(final String tlcParams, int numberOfWorkers) {
+        super(tlcParams.trim(), numberOfWorkers);
 	}
 
 	private String getOwnerId() {

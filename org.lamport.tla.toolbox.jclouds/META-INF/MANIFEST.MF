@@ -18,4 +18,6 @@ DynamicImport-Package: *
 Bundle-Activator: org.lamport.tla.toolbox.jcloud.JCloudActivator
 Import-Package: org.jclouds.aws.ec2.reference;version="1.7.3",
  org.jclouds.ec2.reference;version="1.7.3",
- org.lamport.tla.toolbox.tool.tlc.job;resolution:=optional
+ org.lamport.tla.toolbox.tool.tlc.job;resolution:=optional,
+ tlc2.tool.distributed,
+ tlc2.tool.distributed.fp

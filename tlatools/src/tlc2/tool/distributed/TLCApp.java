@@ -509,6 +509,7 @@ public class TLCApp extends DistApp {
 			// indicator to check the in-jar model/ folder for a spec.
 			// If a spec is found, use it instead.
 			if (ModelInJar.hasModel()) {
+				ModelInJar.loadProperties(); // Reads result.mail.address and so on.
 				TLCGlobals.tool = true; // always run in Tool mode (to parse output by Toolbox later)
 				TLCGlobals.chkptDuration = 0; // never use checkpoints with distributed TLC (highly inefficient)
 				FP64.Init(fpIndex);

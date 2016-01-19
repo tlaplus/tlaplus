@@ -41,10 +41,13 @@ public class CloudTLCJobFactory implements TLCJobFactory {
 	@Override
 	public Job getTLCJob(String aName, File aModelFolder, int numberOfWorkers, final Properties props, String tlcparams) {
 		Assert.isNotNull(aName);
+		Assert.isLegal(numberOfWorkers > 0);
 		if (AWS_EC2.equals(aName)) {
-			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props, new EC2CloudTLCInstanceParameters(tlcparams));
+			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
+					new EC2CloudTLCInstanceParameters(tlcparams, numberOfWorkers));
 		} else if (AZURECOMPUTE.equals(aName)) {
-			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props, new AzureCloudTLCInstanceParameters(tlcparams));
+			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
+					new AzureCloudTLCInstanceParameters(tlcparams, numberOfWorkers));
 		}
 		throw new IllegalArgumentException(aName + " is an unknown cloud");
 	}

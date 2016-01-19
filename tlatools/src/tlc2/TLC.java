@@ -705,7 +705,7 @@ public class TLC
         
         if (TLCGlobals.debug) 
         {
-            StringBuffer buffer = new StringBuffer("TLC argumens:");
+            StringBuffer buffer = new StringBuffer("TLC arguments:");
             for (int i=0; i < args.length; i++)
             {
                 buffer.append(args[i]);

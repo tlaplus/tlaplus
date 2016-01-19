@@ -86,13 +86,14 @@ public class CloudDistributedTLCJob extends Job {
 	 */
 	private final String groupNameUUID;
 	private final Path modelPath;
-	private final int nodes = 1; //TODO only supports launching TLC on a single node for now
+	private final int nodes;
 	private final Properties props;
 	private final CloudTLCInstanceParameters params;
 
 	public CloudDistributedTLCJob(String aName, File aModelFolder,
 			int numberOfWorkers, final Properties properties, CloudTLCInstanceParameters params) {
 		super(aName);
+		this.nodes = numberOfWorkers;
 		this.params = params;
 		//TODO groupNameUUID is used by some providers (azure) as a hostname/DNS name. Thus, format.
 		groupNameUUID = aName.toLowerCase() + "-" + UUID.randomUUID().toString();
@@ -102,7 +103,7 @@ public class CloudDistributedTLCJob extends Job {
 
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
-		monitor.beginTask("Starting TLC model checker in the cloud", 100);
+		monitor.beginTask("Starting TLC model checker in the cloud", 100 + (nodes > 1 ? 20 : 0));
 		
 		// Validate credentials and fail fast if null or syntactically incorrect
 		if (!params.validateCredentials().equals(Status.OK_STATUS)) {
@@ -223,7 +224,7 @@ public class CloudDistributedTLCJob extends Job {
 							// to the TLC process if logged in to the
 							// instance directly (it's probably already
 							// installed).
-							+ "apt-get install screen -y"),
+							+ "apt-get install screen zip -y"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			
 			monitor.worked(10);
@@ -261,25 +262,17 @@ public class CloudDistributedTLCJob extends Job {
 				return Status.CANCEL_STATUS;
 			}
 
-			// TODO CloudD...TLC currently only supports a single tlc2.TLC
-			// process. Thus the Predicate and isMaster check is not used for
-			// the moment.
 			// Choose one of the nodes to be the master and create an
 			// identifying predicate.
-			monitor.subTask("Copying tla2tools.jar to master node");
 			final NodeMetadata master = Iterables.getLast(createNodesInGroup);
-			final Predicate<NodeMetadata> isMaster = new Predicate<NodeMetadata>() {
-				@Override
-				public boolean apply(NodeMetadata nodeMetadata) {
-					return nodeMetadata.equals(master);
-				};
-			};
+
 			// Copy tlatools.jar to _one_ remote host (do not exhaust upload of
 			// the machine running the toolbox).
 			// TODO Share the tla2tools.jar with the worker nodes by making it
 			// available on the master's webserver for the clients to download.
 			// On the other hand this means we are making the spec
 			// world-readable. It is cloud-readable already through the RMI api.
+			monitor.subTask("Copying tla2tools.jar to master node");
 			SshClient sshClient = context.utils().sshForNode().apply(master);
 			sshClient.put("/mnt/tlc/tla2tools.jar",	jarPayLoad);
 			sshClient.disconnect();
@@ -288,8 +281,19 @@ public class CloudDistributedTLCJob extends Job {
 				return Status.CANCEL_STATUS;
 			}
 
-			// Run model checker master
+			// Run model checker master on master
 			monitor.subTask("Starting TLC model checker process on the master node (in background)");
+			// The predicate will be applied to ALL instances owned by the
+			// cloud account (ie AWS), even the ones in different regions
+			// completely unrelated to TLC.
+			final Predicate<NodeMetadata> isMaster = new Predicate<NodeMetadata>() {
+				private final String masterHostname = master.getHostname();
+				public boolean apply(NodeMetadata nodeMetadata) {
+					// hostname can be null if instance is terminated.
+					final String hostname = nodeMetadata.getHostname();
+					return masterHostname.equals(hostname);
+				};
+			};
 			compute.runScriptOnNodesMatching(
 				isMaster,
 				// "/mnt/tlc" is on the ephemeral and thus faster storage of the
@@ -337,7 +341,64 @@ public class CloudDistributedTLCJob extends Job {
 						true).blockOnComplete(false).blockUntilRunning(false));
 			monitor.worked(5);
 			
-		
+			if (nodes > 1) {
+				// copy the tla2tools.jar to the root of the master's webserver
+				// to make it available to workers. However, strip the spec
+				// (*.tla/*.cfg/...) from the jar file to not share the spec
+				// with the world.
+				monitor.subTask("Make TLC code available to all worker node(s)");
+				compute.runScriptOnNodesMatching(
+						isMaster,
+						exec("cp /mnt/tlc/tla2tools.jar /var/www/html/tla2tools.jar && "
+								+ "zip -d /var/www/html/tla2tools.jar model/*.tla model/*.cfg model/generated.properties"),
+						new TemplateOptions().runAsRoot(true).wrapInInitScript(
+								false));
+				monitor.worked(10);
+				if (monitor.isCanceled()) {
+					return Status.CANCEL_STATUS;
+				}
+				
+				// The predicate will be applied to ALL instances owned by the
+				// AWS account, even the ones in different regions completely
+				// unrelated to TLC.
+				final Predicate<NodeMetadata> onWorkers = new Predicate<NodeMetadata>() {
+					// Remove the master from the set of our nodes.
+					private final Iterable<? extends NodeMetadata> workers = Iterables.filter(createNodesInGroup, new Predicate<NodeMetadata>() {
+						private final String masterHostname = master.getHostname();
+						public boolean apply(NodeMetadata nodeMetadata) {
+							// nodeMetadata.getHostname is null for terminated hosts.
+							return !masterHostname.equals(nodeMetadata.getHostname());
+						};
+					});
+					public boolean apply(NodeMetadata nodeMetadata) {
+						return Iterables.contains(workers, nodeMetadata);
+					};
+				};
+
+				// see master startup for comments
+				monitor.subTask("Starting TLC workers on the remaining node(s) (in background)");
+				compute.runScriptOnNodesMatching(
+					onWorkers,
+					exec("cd /mnt/tlc/ && "
+							+ "wget http://" + master.getHostname() + "/tla2tools.jar && "
+							+ "screen -dm -S tlc bash -c \" "
+							+ "java "
+								+ params.getJavaWorkerVMArgs() + " "
+								+ "-Dcom.sun.management.jmxremote "
+								+ "-Dcom.sun.management.jmxremote.port=5400 "
+								+ "-Dcom.sun.management.jmxremote.ssl=false "
+								+ "-Dcom.sun.management.jmxremote.authenticate=false "
+								+ params.getJavaWorkerSystemProperties() + " "
+								+ "-cp /mnt/tlc/tla2tools.jar " 
+								+ params.getTLCWorkerParameters() + " "
+								+ master.getHostname() + " " // Use host's internal ip due to firewall reasons.
+								+ "&& "
+							+ "sudo shutdown -h now"
+							+ "\""), 
+					new TemplateOptions().runAsRoot(false).wrapInInitScript(
+							true).blockOnComplete(false).blockUntilRunning(false));
+				monitor.worked(10);
+			}
 		
 			// Communicate result to user
 			monitor.done();
