@@ -118,6 +118,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	 * Spinner to set the number of (expected) distributed FPSets.
 	 */
     private Spinner distributedFPSetCountSpinner;
+    private Spinner distributedNodesCountSpinner;
     private Combo networkInterfaceCombo;
     private Scale maxHeapSize;
     private TableViewer invariantsTable;
@@ -337,7 +338,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // distribute FPSet count
         distributedFPSetCountSpinner.setSelection(getModel().getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
 
-    	// comments/description/notes
+        // distribute FPSet count
+        distributedNodesCountSpinner.setSelection(getModel().getAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT));
+        
+        // comments/description/notes
         String commentsStr = getModel().getAttribute(MODEL_COMMENTS, EMPTY_STRING);
        	commentsSource.setDocument(new Document(commentsStr));
     }
@@ -832,6 +836,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         // distributed FPSet count
         getModel().setAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, distributedFPSetCountSpinner.getSelection());
+
+        // distributed FPSet count
+        getModel().setAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, distributedNodesCountSpinner.getSelection());
         
         // network interface
         final String iface = this.networkInterfaceCombo.getItem(this.networkInterfaceCombo.getSelectionIndex());
@@ -1509,11 +1516,55 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         distributedFPSetCountSpinner.setSelection(IConfigurationDefaults.LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT);
 
         dm.bindAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, distributedFPSetCountSpinner, howToRunPart);
+        
+		/*
+		 * Composite wrapping all widgets related to jclouds
+		 */
+        final Composite jcloudsOptions = new Composite(distributedOptions, SWT.NONE);
+        layout = new GridLayout(2, true);
+        jcloudsOptions.setLayout(layout);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        jcloudsOptions.setLayoutData(gd);
+
+ 		/*
+ 		 * Distributed nodes count
+ 		 */
+
+ 		// composite
+         final Composite distributedNodesCount = new Composite(jcloudsOptions, SWT.NONE);
+         layout = new GridLayout(2, false);
+         distributedNodesCount.setLayout(layout);
+         gd = new GridData();
+         gd.horizontalSpan = 2;
+         distributedNodesCount.setLayoutData(gd);
+ 		
+         // label
+         toolkit.createLabel(distributedNodesCount, "Number of compute nodes to use:");
+
+         // field
+         distributedNodesCountSpinner = new Spinner(distributedNodesCount, SWT.NONE);
+         distributedNodesCountSpinner.addSelectionListener(howToRunListener);
+         distributedNodesCountSpinner.addFocusListener(focusListener);
+         gd = new GridData();
+         gd.grabExcessHorizontalSpace = true;
+         gd.horizontalIndent = 10;
+         gd.widthHint = 40;
+         distributedNodesCountSpinner.setLayoutData(gd);
+         
+         distributedNodesCountSpinner.setMinimum(1);
+         distributedNodesCountSpinner.setMaximum(64); // Haven't really tested this many distributed fpsets
+         distributedNodesCountSpinner.setPageIncrement(1);
+		distributedNodesCountSpinner.setToolTipText(
+				"Determines how many compute nodes/VMs will be launched. More VMs means faster results and higher costs.");
+         distributedNodesCountSpinner.setSelection(IConfigurationDefaults.LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT);
+
+         dm.bindAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, distributedNodesCountSpinner, howToRunPart);
 		
 		/*
 		 * Result mail address input
 		 */
-        final Composite resultAddress = new Composite(distributedOptions, SWT.NONE) ;
+        final Composite resultAddress = new Composite(jcloudsOptions, SWT.NONE) ;
         layout = new GridLayout(2, true);
         resultAddress.setLayout(layout);
         
@@ -1556,7 +1607,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         resultMailAddressText.addModifyListener(howToRunListener);
         dm.bindAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddressText, howToRunPart);
 		
-		distributedOptions.setData("jclouds", resultAddress);
+		distributedOptions.setData("jclouds", jcloudsOptions);
 
         distributedCombo.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent e) {

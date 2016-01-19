@@ -45,6 +45,10 @@ public interface IConfigurationConstants
      * Distributed FPSets
      */
 	public static final String LAUNCH_DISTRIBUTED_FPSET_COUNT = "distributedFPSetCount";
+    /**
+     * Distributed Nodes count
+     */
+	public static final String LAUNCH_DISTRIBUTED_NODES_COUNT = "distributedNodesCount";
 	/**
 	 * Network interface under which TLC server process will listen (java.rmi.server.hostname)
 	 */

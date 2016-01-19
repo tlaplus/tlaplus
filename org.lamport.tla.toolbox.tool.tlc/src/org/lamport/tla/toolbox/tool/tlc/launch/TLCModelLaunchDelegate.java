@@ -31,8 +31,11 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.jobs.MultiRule;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.core.model.IStreamsProxy;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
@@ -713,6 +716,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         		job = new DistributedTLCJob(specName, modelName, launch, numberOfWorkers);
                 job.setRule(mutexRule);
         	} else {
+        		numberOfWorkers = config.getAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT);
                 //final IProject iproject = ResourceHelper.getProject(specName);
                 final IFolder launchDir = project.getFolder(modelName);
                 final File file = launchDir.getRawLocation().makeAbsolute().toFile();
@@ -726,10 +730,15 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 				final IConfigurationElement[] elements = registry
 						.getConfigurationElementsFor("org.lamport.tla.toolx.tlc.job");
 				for (IConfigurationElement element : elements) {
+					final DummyProcess process = new DummyProcess(launch);
+					launch.addProcess(process);
 					final TLCJobFactory factory = (TLCJobFactory) element
 							.createExecutableExtension("clazz");
 					final Properties props = new Properties();
 					props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
+					if (numberOfWorkers > 1) {
+						props.put(TLCJobFactory.MAIN_CLASS, tlc2.tool.distributed.TLCServer.class.getName());
+					}
 					props.put(TLCJobFactory.MAIL_ADDRESS, config.getAttribute(
 							LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, "tlc@localhost"));
 					
@@ -759,7 +768,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 					}
 
 					job = factory.getTLCJob(cloud, file, numberOfWorkers, props, tlcParams.toString());
-					job.addJobChangeListener(new WithStatusJobChangeListener(config.getAdapter(Model.class)));
+					job.addJobChangeListener(new WithStatusJobChangeListener(process, config.getAdapter(Model.class)));
 					break;
 				}
 				// Notify the user that something went wrong and ask him to report it. This code path
@@ -794,23 +803,85 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         job.addJobChangeListener(tlcJobListener);
         job.schedule();
     }
+    
+	// A DummyProcess instance has to be attached to the corresponding ILaunch
+	// when the Job launched neither creates an IProcess nor IDebugTarget. In
+    // this case the call to ILaunch#isTerminated will always evaluate to false
+    // regardless of the real job's state.
+	// Remember to call DummyProcess#setTerminated upon completion of the Job
+	// with e.g. a IJobChangeListener.
+	class DummyProcess implements IProcess {
+		private final ILaunch launch;
+		private boolean termiated = false;
+		
+		public DummyProcess(ILaunch aLaunch) {
+			this.launch = aLaunch;
+		}
+
+		public void setTerminated() {
+			this.termiated = true;
+		}
+		
+		public void terminate() throws DebugException {
+		}
+
+		public boolean isTerminated() {
+			return termiated;
+		}
+
+		public boolean canTerminate() {
+			return !termiated;
+		}
+
+		public <T> T getAdapter(Class<T> adapter) {
+			return null;
+		}
+
+		public String getAttribute(String key) {
+			return null;
+		}
+		
+		public void setAttribute(String key, String value) {
+		}
+
+		public IStreamsProxy getStreamsProxy() {
+			return null;
+		}
+
+		public ILaunch getLaunch() {
+			return launch;
+		}
+
+		public String getLabel() {
+			return getClass().getSimpleName();
+		}
+
+		public int getExitValue() throws DebugException {
+			return 0;
+		}
+	}
 
 	// This opens up a dialog at the end of the job showing the status message
     class WithStatusJobChangeListener extends SimpleJobChangeListener {
 
 		private final Model model;
+		private final DummyProcess process;
 
-		public WithStatusJobChangeListener(Model model) {
+		public WithStatusJobChangeListener(DummyProcess process, Model model) {
+			this.process = process;
 			this.model = model;
 		}
 
 		public void done(IJobChangeEvent event) {
 			super.done(event);
 	
+			
 			// TLC models seem to require some clean-up
 			model.setLocked(false);
 			model.setRunning(false);
 			model.recover();
+			
+			process.setTerminated();
 
 			final IStatus status = event.getJob().getResult();
 			final String message = status.getMessage();

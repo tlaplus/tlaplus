@@ -38,6 +38,11 @@ public interface IConfigurationDefaults
 	public static final int LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT = 0;
 	
 	/**
+	 * Distributed nodes default count
+	 */
+	public static final int LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT = 1;
+	
+	/**
 	 * Additional (e.g. RMI specific) VM args for distributed model checker
 	 */
 	public static final String LAUNCH_JVM_ARGS_DEFAULT = "";
