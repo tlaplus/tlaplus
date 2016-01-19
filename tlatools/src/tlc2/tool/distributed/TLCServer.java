@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
+import java.rmi.AccessException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -844,6 +845,18 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		 * @see java.lang.Runnable#run()
 		 */
 		public void run() {
+			try {
+				// No need to attempt to exit the workers if the server itself
+				// isn't registered any longer.
+				LocateRegistry.getRegistry(Port).lookup("TLCServer");
+			} catch (AccessException e1) {
+				return;
+			} catch (RemoteException e1) {
+				return;
+			} catch (NotBoundException e1) {
+				return;
+			}
+
 			for (TLCWorkerRMI worker : server.threadsToWorkers.values()) {
 				try {
 					worker.exit();
