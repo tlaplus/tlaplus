@@ -100,16 +100,16 @@ public class MailSender {
 		// RFC 974
 		if (attr == null) {
 			list.add(new MXRecord(0, aDomain));
-		}
-
-		// split pref from hostname
-		for (int i = 0; i < attr.size(); i++) {
-			Object object = attr.get(i);
-			if (object != null && object instanceof String) {
-				String[] split = ((String) object).split("\\s+");
-				if (split != null && split.length == 2) {
-					Integer weight = Integer.parseInt(split[0]);
-					list.add(new MXRecord(weight, split[1]));
+		} else {
+			// split pref from hostname
+			for (int i = 0; i < attr.size(); i++) {
+				Object object = attr.get(i);
+				if (object != null && object instanceof String) {
+					String[] split = ((String) object).split("\\s+");
+					if (split != null && split.length == 2) {
+						Integer weight = Integer.parseInt(split[0]);
+						list.add(new MXRecord(weight, split[1]));
+					}
 				}
 			}
 		}
