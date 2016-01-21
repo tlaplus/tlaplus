@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.ui.handler;
 
-import java.util.HashMap;
 import java.util.Iterator;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -12,7 +11,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPage;
@@ -22,7 +20,6 @@ import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
-import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * Forget specification.
@@ -109,7 +106,7 @@ public class ForgetSpecHandler extends AbstractHandler implements IHandler
                     	// close the spec handler (in the ui thread)
                     	final WorkspaceSpecManager specManager = Activator.getSpecManager();
                         if (specManager.isSpecLoaded(spec)) {
-                            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap<String, String>());
+                        	new CloseSpecHandler().execute(event);
                         }
                     	
     					// use confirmed rename -> rename

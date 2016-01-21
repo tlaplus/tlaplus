@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.ui.handler;
 
-import java.util.HashMap;
 import java.util.Iterator;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -61,13 +60,13 @@ public class DeleteSpecHandler extends AbstractHandler implements IHandler
                     final Spec spec = (Spec) next;
                     // 3 Aug 2011: LL changed the dialog's message to make it clearer what the Delete command does.
                     boolean answer = MessageDialog.openQuestion(UIHelper.getShellProvider().getShell(), "Delete specification?",
-                            "Do you really want the Toolbox to forget the specification " + spec.getName() + " and delete its models?");
+                            "Do you really want the Toolbox to forget the specification " + spec.getName() + " and delete all its models?");
                     if (answer)
                     {
                     	// close the spec handler (in the ui thread)
                     	final WorkspaceSpecManager specManager = Activator.getSpecManager();
                         if (specManager.isSpecLoaded(spec)) {
-                            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap<String, String>());
+                        	new CloseSpecHandler().execute(event);
                         }
                     	
     					// use confirmed rename -> rename

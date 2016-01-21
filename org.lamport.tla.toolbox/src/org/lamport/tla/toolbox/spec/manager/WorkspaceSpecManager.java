@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.spec.manager;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -417,6 +418,10 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     {
         return null;
     }
+
+	public Collection<Spec> getSpecs() {
+		return Collections.unmodifiableCollection(specStorage.values());
+	}
 
     /**
      * @return The {@link Spec} most recently opened or null if no specs are known
