@@ -28,16 +28,20 @@ package org.lamport.tla.toolbox.spec;
 
 import java.io.File;
 import java.io.IOException;
-
-import junit.framework.TestCase;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.junit.Assert;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
+
+import junit.framework.TestCase;
 
 public class SpecTest extends TestCase {
 
@@ -51,10 +55,10 @@ public class SpecTest extends TestCase {
 	 * org.lamport.tla.toolbox.util.ResourceHelper.isProjectParent(IPath,
 	 * IProject) for the reason why. Maven build sets this VM property.
 	 */
-	public void testCreateSpecStoreRelativePath() throws IOException {
+	public void testCreateSpecStoreRelativePath() throws IOException, CoreException {
 		// Create...
-		final File tempFile = File.createTempFile("TestSpecName", ".tla");
-		final Spec spec = Spec.createNewSpec("TestSpecName", tempFile.getAbsolutePath(), false, new NullProgressMonitor());
+		final File tempFile = File.createTempFile("TestCreateSpecStoreRelativePath", ".tla");
+		final Spec spec = Spec.createNewSpec("TestCreateSpecStoreRelativePath", tempFile.getAbsolutePath(), false, new NullProgressMonitor());
 
 		// ...check it's correct.
 		final IProject project = spec.getProject();
@@ -67,5 +71,29 @@ public class SpecTest extends TestCase {
 		final IFile rootFile = PreferenceStoreHelper.readProjectRootFile(project);
 		assertTrue(rootFile.isLinked());
 		assertTrue(rootFile.isAccessible());
+	}
+	
+	/*
+	 * Tries to create a new spec in a read-only directory. Expects a
+	 * CoreException to be thrown. The CoreException is caught by the Toolbox UI
+	 * eventually telling the user what happened.
+	 * 
+	 * This Test fails on Microsoft Windows because setReadOnly has not the
+	 * desired effect.
+	 */
+	public void testCreateSpecInReadOnlyDirectory() throws IOException {
+		// Create...
+		final Path tempDirectory = Files.createTempDirectory("ReadOnlyDirectory" + System.currentTimeMillis());
+		final File tempFile = Files.createTempFile(tempDirectory, "TestCreateSpecInReadOnlyDirectory", ".tla").toFile();
+		tempDirectory.toFile().setReadOnly();
+		try {
+			Spec.createNewSpec("TestCreateSpecInReadOnlyDirectory", tempFile.getAbsolutePath(), false, new NullProgressMonitor());
+		} catch (CoreException e) {
+			assertTrue(e.getMessage().contains("read-only"));
+			return;
+		} finally {
+			tempDirectory.toFile().setWritable(true);
+		}
+		Assert.fail("Creating a spec in a read-only directory should fail with a CoreException.");
 	}
 }

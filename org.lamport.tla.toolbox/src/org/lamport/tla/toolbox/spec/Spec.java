@@ -154,9 +154,10 @@ public class Spec implements IAdaptable {
      *            complete path name, from which one could extract the path
      *            names of those files and then rewrite them as needed.
      * @param monitor
+     * @throws CoreException 
      */
     public static Spec createNewSpec(String name, String rootFilename,
-            boolean importExisting, IProgressMonitor monitor) {
+            boolean importExisting, IProgressMonitor monitor) throws CoreException {
         IProject project = ResourceHelper.getProject(name, rootFilename, true,
                 importExisting, monitor);
         PreferenceStoreHelper.storeRootFilename(project, rootFilename);

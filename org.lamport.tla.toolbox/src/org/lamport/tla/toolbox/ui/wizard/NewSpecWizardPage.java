@@ -296,7 +296,7 @@ public class NewSpecWizardPage extends WizardPage
                 Spec existingSpec = Activator.getSpecManager().getSpecByName(specName);
                 if (existingSpec != null)
                 {
-                    reportError("The specification with provided name already exists \nand uses "
+                    reportError("The specification with the provided name already exists \nand uses "
                             + existingSpec.getRootFilename() + " as root module.");
                     return;
                 }

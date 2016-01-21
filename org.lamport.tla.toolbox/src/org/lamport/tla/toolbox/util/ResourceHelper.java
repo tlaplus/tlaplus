@@ -214,27 +214,19 @@ public class ResourceHelper
      * <br>Eg. calling <tt>getProject("for", "c:/bar/bar.tla")</tt>
      * will cause the creation of the project (iff this does not exist) with location
      * <tt>"c:/bar/foo.toolbox"</tt>
+     * @throws CoreException 
      * 
      */
-    public static IProject getProject(String name, String rootFilename, boolean createMissing, boolean importExisting, IProgressMonitor monitor)
+    public static IProject getProject(String name, String rootFilename, boolean createMissing, boolean importExisting, IProgressMonitor monitor) throws CoreException
     {
-        if (name == null)
-        {
-            return null;
-        }
-
+    	Assert.isNotNull(name);
+    	Assert.isNotNull(rootFilename);
+    	
         IProject project = getProject(name);
 
         // create a project
         if (!project.exists() && createMissing)
         {
-            try
-            {
-                if (rootFilename == null)
-                {
-                    return null;
-                }
-
                 String parentDirectory = getParentDirName(rootFilename);
 
                 Assert.isNotNull(parentDirectory);
@@ -354,11 +346,6 @@ public class ResourceHelper
                 {
                     relocateFiles(project, new Path(parentDirectory), monitor);
                 }
-
-            } catch (CoreException e)
-            {
-                Activator.getDefault().logError("Error creating the project " + name, e);
-            }
         }
 
         return project;
@@ -973,13 +960,14 @@ public class ResourceHelper
     {
         try
         {
-        	if (isForget) {
-        		// This statement deletes the spec but not the .toolbox directory
-            	project.delete(IResource.NEVER_DELETE_PROJECT_CONTENT, aMonitor);
-        	} else {
-        	// This statement deletes the spec and the .toolbox directory
-            project.delete(true, aMonitor);
-        	}
+			if (isForget) {
+				// This statement deletes the spec but not the .toolbox
+				// directory
+				project.delete(IResource.NEVER_DELETE_PROJECT_CONTENT, aMonitor);
+			} else {
+				// This statement deletes the spec and the .toolbox directory
+				project.delete(true, aMonitor);
+			}
             
         } catch (CoreException e)
         {
