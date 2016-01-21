@@ -377,10 +377,11 @@ public class CloudDistributedTLCJob extends Job {
 
 				// see master startup for comments
 				monitor.subTask("Starting TLC workers on the remaining node(s) (in background)");
+				final String hostname = Iterables.getOnlyElement(master.getPrivateAddresses());
 				compute.runScriptOnNodesMatching(
 					onWorkers,
 					exec("cd /mnt/tlc/ && "
-							+ "wget http://" + master.getHostname() + "/tla2tools.jar && "
+							+ "wget http://" + hostname + "/tla2tools.jar && "
 							+ "screen -dm -S tlc bash -c \" "
 							+ "java "
 								+ params.getJavaWorkerVMArgs() + " "
@@ -391,7 +392,7 @@ public class CloudDistributedTLCJob extends Job {
 								+ params.getJavaWorkerSystemProperties() + " "
 								+ "-cp /mnt/tlc/tla2tools.jar " 
 								+ params.getTLCWorkerParameters() + " "
-								+ master.getHostname() + " " // Use host's internal ip due to firewall reasons.
+								+ hostname + " " // Use host's internal ip due to firewall reasons.
 								+ "&& "
 							+ "sudo shutdown -h now"
 							+ "\""), 
