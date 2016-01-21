@@ -33,10 +33,13 @@ import java.nio.file.Path;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.junit.Assert;
+import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
@@ -59,7 +62,7 @@ public class SpecTest extends TestCase {
 		// Create...
 		final File tempFile = File.createTempFile("TestCreateSpecStoreRelativePath", ".tla");
 		final Spec spec = Spec.createNewSpec("TestCreateSpecStoreRelativePath", tempFile.getAbsolutePath(), false, new NullProgressMonitor());
-
+		
 		// ...check it's correct.
 		final IProject project = spec.getProject();
 		final IPreferenceStore store = PreferenceStoreHelper.getProjectPreferenceStore(project);
@@ -95,5 +98,38 @@ public class SpecTest extends TestCase {
 			tempDirectory.toFile().setWritable(true);
 		}
 		Assert.fail("Creating a spec in a read-only directory should fail with a CoreException.");
+	}
+	
+	/*
+	 * Verify that specs and the their corresponding project are deleted correctly.
+	 */
+	public void testCreateDeleteSpec() throws CoreException, IOException {
+		createDelete("TestCreateDeleteSpec", true);
+	}
+
+	/*
+	 * Verify that specs and the their corresponding project are deleted correctly with forget.
+	 */
+	public void testCreateDeleteSpecForget() throws CoreException, IOException {
+		createDelete("TestCreateDeleteSpecForget", true);
+	}
+
+	private void createDelete(final String specName, boolean forget) throws IOException, CoreException {
+		// Create...
+		final File tempFile = File.createTempFile(specName, ".tla");
+		final Spec spec = Spec.createNewSpec("TestCreateDeleteSpec", tempFile.getAbsolutePath(), false, new NullProgressMonitor());
+		final IProject project = spec.getProject();
+		
+		final WorkspaceSpecManager wsm = new WorkspaceSpecManager(new NullProgressMonitor());
+		wsm.removeSpec(spec, new NullProgressMonitor(), forget);
+		
+		// Make sure that the project has been deleted.
+		assertFalse(project.exists());
+		final IWorkspace ws = ResourcesPlugin.getWorkspace();
+		for (final IProject aProject : ws.getRoot().getProjects()) {
+			assertNotSame(project.getName(), aProject.getName());
+		}
+		
+		assertNull(wsm.getMostRecentlyOpenedSpec());
 	}
 }

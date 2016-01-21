@@ -314,6 +314,12 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_DELETE));
         ResourceHelper.deleteProject(spec.getProject(), aMonitor, isForget);
         specStorage.remove(spec.getName());
+        if (loadedSpec == spec) {
+			// If the spec being deleted is the current open one, unset the
+			// loadedSpec. Otherwise getMostRecentlyOpenedSpec will return the
+			// deleted one later if no other spec is opened in between.
+        	loadedSpec = null;
+        }
     }
 
     /**
