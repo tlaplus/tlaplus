@@ -13,12 +13,14 @@ import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
+import org.eclipse.ui.IEditorPart;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
@@ -69,13 +71,27 @@ public class ModelCheckerTest extends AbstractTest {
 
 		// make unit test wait for model checker job to finish
 		bot.waitUntil((ICondition) listener, SWTBotPreferences.TIMEOUT * 3);
+
+		// Do some unregistration prior to model deletion:
+		Job.getJobManager().removeJobChangeListener(listener);
 		
+		// close corresponding editor if open
+		final IEditorPart editorWithModelOpened = model.getAdapter(ModelEditor.class);
+		if (editorWithModelOpened != null) {
+			UIHelper.runUISync(new Runnable() {
+				public void run() {
+					UIHelper.getActivePage().closeEditor(editorWithModelOpened,
+							false);
+				}
+			});
+		}
+
 		// Delete the newly created model again. It does not use the UI because
 		// SWTBot cannot handle the modal confirmation dialog do delete the
 		// model.
 		// Deleting the model is necessary because repeated test execution would
 		// leave huge numbers of model leftovers contributing to slowed down test
-		// execution (see SizeControlContribution for reason why). 
+		// execution (see SizeControlContribution for reason why).
 		try {
 			model.delete(new NullProgressMonitor());
 		} catch (CoreException e) {
