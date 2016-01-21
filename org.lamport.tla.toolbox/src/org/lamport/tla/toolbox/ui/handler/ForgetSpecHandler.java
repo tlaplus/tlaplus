@@ -73,7 +73,6 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  * should be re-examined if additional features are added to that page.
  * 
   * @author Leslie Lamport
- * @version $Id$
  */
 public class ForgetSpecHandler extends AbstractHandler implements IHandler
 {
@@ -94,10 +93,15 @@ public class ForgetSpecHandler extends AbstractHandler implements IHandler
                     && !((IStructuredSelection) selection).isEmpty())
             {
                 
-                Iterator<Spec> selectionIterator = ((IStructuredSelection) selection).iterator();
+                Iterator<Object> selectionIterator = ((IStructuredSelection) selection).iterator();
                 while (selectionIterator.hasNext()) 
                 {
-                    final Spec spec = selectionIterator.next();
+                	Object next = selectionIterator.next();
+                	if (!(next instanceof Spec)) {
+                		// The selection can contain models and groups too.
+                		continue;
+                	}
+                    final Spec spec = (Spec) next;
                     boolean answer = MessageDialog.openQuestion(UIHelper.getShellProvider().getShell(), "Forget specification?",
                             "Do you really want to remove specification " + spec.getName() + " from the Toolbox's list of specs?");
                     if (answer)

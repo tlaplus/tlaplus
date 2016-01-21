@@ -30,7 +30,6 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * on 3 August 2011 because of the addition of the Forget command.
  * 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class DeleteSpecHandler extends AbstractHandler implements IHandler
 {
@@ -51,10 +50,15 @@ public class DeleteSpecHandler extends AbstractHandler implements IHandler
                     && !((IStructuredSelection) selection).isEmpty())
             {
                 
-                Iterator<Spec> selectionIterator = ((IStructuredSelection) selection).iterator();
+                Iterator<Object> selectionIterator = ((IStructuredSelection) selection).iterator();
                 while (selectionIterator.hasNext()) 
                 {
-                    final Spec spec = selectionIterator.next();
+                	Object next = selectionIterator.next();
+                	if (!(next instanceof Spec)) {
+                		// The selection can contain models and groups too.
+                		continue;
+                	}
+                    final Spec spec = (Spec) next;
                     // 3 Aug 2011: LL changed the dialog's message to make it clearer what the Delete command does.
                     boolean answer = MessageDialog.openQuestion(UIHelper.getShellProvider().getShell(), "Delete specification?",
                             "Do you really want the Toolbox to forget the specification " + spec.getName() + " and delete its models?");
