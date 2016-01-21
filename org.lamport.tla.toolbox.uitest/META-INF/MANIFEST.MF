@@ -19,5 +19,4 @@ Eclipse-RegisterBuddy: org.apache.log4j
 Eclipse-SupplementBundle: org.lamport.tla.toolbox*
 Export-Package: org.lamport.tla.toolbox.test,
  org.lamport.tla.toolbox.test.threading,
- org.lamport.tla.toolbox.ui.handler,
  org.lamport.tla.toolbox.ui.wizard
