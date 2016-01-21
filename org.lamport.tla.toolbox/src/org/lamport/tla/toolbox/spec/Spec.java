@@ -129,6 +129,13 @@ public class Spec implements IAdaptable {
         initProjectProperties();
     }
 
+    public Spec(IProject project, IFile rootFile) {
+    	Assert.isNotNull(project);
+        this.project = project;
+    	Assert.isNotNull(rootFile);
+    	this.rootFile = rootFile;
+    }
+
     /**
      * Factory method Creates a new specification, the underlying IProject link
      * the root file

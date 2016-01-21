@@ -121,7 +121,7 @@ public class ToolboxExplorer extends CommonNavigator
     /**
      * Refreshes the instance of the viewer if any
      */
-    static void refresh()
+    public static void refresh()
     {
         CommonViewer instance = getViewer();
         if (instance != null)

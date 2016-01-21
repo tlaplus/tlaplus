@@ -30,7 +30,9 @@ public class PreferenceStoreHelper
 		// AddModuleHandler will not work. The claim is that spec files are
 		// always in the parent folder of the IProject.
 		final IPath path = new Path(rootFilename);
-		Assert.isTrue(ResourceHelper.isProjectParent(path.removeLastSegments(1), project));
+		Assert.isTrue(ResourceHelper.isProjectParent(path.removeLastSegments(1), project),
+				project.getLocation().toOSString() + " is *not* a subdirectory of " + rootFilename
+						+ ". This is commonly caused by a symlink contained in the latter path.");
 		// Store the filename *without* any path information, but prepend the
 		// magical PARENT-1-PROJECT-LOC. It indicates that the file can be found
 		// *one* level up (hence the "1") from the project location.

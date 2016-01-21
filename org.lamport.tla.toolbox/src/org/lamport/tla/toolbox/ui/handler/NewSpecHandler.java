@@ -6,6 +6,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
@@ -24,6 +25,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
 import org.lamport.tla.toolbox.ui.wizard.NewSpecWizard;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.ToolboxJob;
@@ -83,60 +85,95 @@ public class NewSpecHandler extends AbstractHandler implements IHandler
 		Assert.isNotNull(rootFilename);
 		Assert.isNotNull(specName);
 		
-		final Job job = new ToolboxJob("NewSpecWizard job") {
-			/* (non-Javadoc)
-			 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
-			 */
-			@Override
-			protected IStatus run(final IProgressMonitor monitor) {
-	        	// if the root file does not exist, a module has to be created
-	        	final IPath rootNamePath = new Path(rootFilename);
-	            if (!rootNamePath.toFile().exists())
-	            {
-	            	try
-	            	{
-	            		IWorkspaceRunnable createTLAModuleCreationOperation = ResourceHelper.createTLAModuleCreationOperation(rootNamePath);
-						ResourcesPlugin.getWorkspace().run(createTLAModuleCreationOperation, monitor);
-	            	} catch (final CoreException e)
-	            	{
-	            		final String message = "Error creating module " + rootNamePath;
-	            		Activator.getDefault().logError(message, e);
-	            		// exception, no chance to recover
-	            		return new Status(Status.ERROR, "", message, e);
-	            	}
-	            }
+		final Job job = new NewSpecHandlerJob(specName, rootFilename, importExisting);
+		job.schedule();
+	}
+	
+	public static class NewSpecHandlerJob extends ToolboxJob {
+
+		private final String specName;
+		private final String rootFilename;
+		private final boolean importExisting;
+
+		public NewSpecHandlerJob(String specName, String rootFilename, boolean importExisting) {
+			super("NewSpecWizard job");
+			this.specName = specName;
+			this.rootFilename = rootFilename;
+			this.importExisting = importExisting;
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			final IProject project = ResourceHelper.getProject(specName);
+			if (project.exists() && Activator.getSpecManager().getSpecByName(specName) == null) {
+				// There exists a project by that name already without
+				// a corresponding spec instance. This is most likely
+				// the result of an earlier delete that went south. Ask the user
+				// if the project should be deleted.
+				Activator.getSpecManager().addSpec(new Spec(project, project.getFile("Delete me")));
+				UIHelper.runUIAsync(new Runnable() {
+					public void run() {
+						// This refresh should not be necessary when the
+						// ToolboxExplorer would correctly listen for the spec
+						// created event fired by the spec manager.
+						ToolboxExplorer.refresh();
+					}
+				});
+				return new Status(Status.ERROR, "org.lamport.tla.toolbox",
+						String.format(
+								"The workspace already contains a spec by the name '%1$s' located at '%2$s'. "
+										+ "Please delete the spec '%1$s [ %3$s ]' from the Spec Explorer. "
+										+ "Afterwards, try to create your new spec again.\n"
+										+ "If there is no spec '%1$s [ %3$s ]' in the Spec Explorer, then "
+										+ "this is a bug. Please file a bug report and choose a different "
+										+ "specification name when you create a new spec in the meantime.",
+								specName, project.getLocation().toOSString(), "Delete me"));
+			}
+			
+			// if the root file does not exist, a module has to be created
+			final IPath rootNamePath = new Path(rootFilename);
+			try {
+				if (!rootNamePath.toFile().exists()) {
+					IWorkspaceRunnable createTLAModuleCreationOperation = ResourceHelper
+							.createTLAModuleCreationOperation(rootNamePath);
+					ResourcesPlugin.getWorkspace().run(createTLAModuleCreationOperation, monitor);
+				}
 				
 				// create and add spec to the spec manager
-	            final Spec spec = Spec.createNewSpec(specName, rootFilename, importExisting, monitor);
+				final Spec spec = Spec.createNewSpec(specName, rootFilename, importExisting, monitor);
 				Activator.getSpecManager().addSpec(spec);
-				
+
 				// open editor since the spec has been created now
 				openEditorInUIThread(spec);
-				
-				return Status.OK_STATUS;
+			} catch (final CoreException e) {
+				final String message = "Error creating module " + rootNamePath;
+				Activator.getDefault().logError(message, e);
+				// exception, no chance to recover
+				return new Status(Status.ERROR, "org.lamport.tla.toolbox", message, e);
 			}
 
-			/**
-			 * Opens the editor for the given spec (needs access to the UI thus has to
-			 * run as a UI job)
-			 */
-			private void openEditorInUIThread(final Spec spec) {
-				// with parsing done, we are ready to open the spec editor
-				final UIJob uiJob = new UIJob("NewSpecWizardEditorOpener") {
-					@Override
-					public IStatus runInUIThread(final IProgressMonitor monitor) {
-			            // create parameters for the handler
-			            final HashMap<String, String> parameters = new HashMap<String, String>();
-			            parameters.put(OpenSpecHandler.PARAM_SPEC, spec.getName());
+			return Status.OK_STATUS;
+		}
 
-			            // runs the command
-			            UIHelper.runCommand(OpenSpecHandler.COMMAND_ID, parameters);
-						return Status.OK_STATUS;
-					}
-				};
-				uiJob.schedule();
-			}
-		};
-		job.schedule();
+		/**
+		 * Opens the editor for the given spec (needs access to the UI thus has to
+		 * run as a UI job)
+		 */
+		private void openEditorInUIThread(final Spec spec) {
+			// with parsing done, we are ready to open the spec editor
+			final UIJob uiJob = new UIJob("NewSpecWizardEditorOpener") {
+				@Override
+				public IStatus runInUIThread(final IProgressMonitor monitor) {
+		            // create parameters for the handler
+		            final HashMap<String, String> parameters = new HashMap<String, String>();
+		            parameters.put(OpenSpecHandler.PARAM_SPEC, spec.getName());
+
+		            // runs the command
+		            UIHelper.runCommand(OpenSpecHandler.COMMAND_ID, parameters);
+					return Status.OK_STATUS;
+				}
+			};
+			uiJob.schedule();
+		}
 	}
 }
