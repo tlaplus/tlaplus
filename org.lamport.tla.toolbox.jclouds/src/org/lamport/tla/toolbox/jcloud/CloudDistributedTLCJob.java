@@ -174,16 +174,6 @@ public class CloudDistributedTLCJob extends Job {
 				return Status.CANCEL_STATUS;
 			}
 
-            // Install Java
-			monitor.subTask("Provisioning Java on all node(s)");
-            Statement installOpenJDK = InstallJDK.fromOpenJDK();
-			compute.runScriptOnNodesMatching(inGroup(groupNameUUID),
-					installOpenJDK);
-			monitor.worked(20);
-			if (monitor.isCanceled()) {
-				return Status.CANCEL_STATUS;
-			}
-			
 			// Creating an entry in /etc/alias that makes sure system email sent
 			// to root ends up at the address given by the user. Note that this
 			// has to be done before postfix gets installed later. postfix
@@ -219,12 +209,12 @@ public class CloudDistributedTLCJob extends Job {
 							// Force apt to download and install the
 							// missing dependencies of jmx2munin without
 							// user interaction
-							+ "apt-get install -fy && "
+							+ "apt-get install --no-install-recommends -fy && "
 							// screen is needed to allow us to re-attach
 							// to the TLC process if logged in to the
 							// instance directly (it's probably already
 							// installed).
-							+ "apt-get install screen zip -y"),
+							+ "apt-get install --no-install-recommends screen zip -y"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			
 			monitor.worked(10);
