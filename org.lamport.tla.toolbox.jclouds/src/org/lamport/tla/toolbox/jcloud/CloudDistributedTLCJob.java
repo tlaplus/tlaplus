@@ -55,8 +55,6 @@ import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.io.Payload;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.rest.AuthorizationException;
-import org.jclouds.scriptbuilder.domain.Statement;
-import org.jclouds.scriptbuilder.statements.java.InstallJDK;
 import org.jclouds.scriptbuilder.statements.login.AdminAccess;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.sshj.config.SshjSshClientModule;
@@ -103,8 +101,9 @@ public class CloudDistributedTLCJob extends Job {
 
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
-		monitor.beginTask("Starting TLC model checker in the cloud", 100 + (nodes > 1 ? 20 : 0));
+		final long startUp = System.currentTimeMillis();
 		
+		monitor.beginTask("Starting TLC model checker in the cloud", 85 + (nodes > 1 ? 20 : 0));
 		// Validate credentials and fail fast if null or syntactically incorrect
 		if (!params.validateCredentials().equals(Status.OK_STATUS)) {
 			return params.validateCredentials();
@@ -137,7 +136,7 @@ public class CloudDistributedTLCJob extends Job {
 					.credentials(params.getIdentity(), params.getCredentials()).modules(modules)
 					.overrides(properties);
 			params.mungeBuilder(builder);
-			
+
 			monitor.subTask("Initializing " + builder.getApiMetadata().getName());
 			context = builder.buildView(ComputeServiceContext.class);
 			final ComputeService compute = context.getComputeService();
@@ -145,7 +144,7 @@ public class CloudDistributedTLCJob extends Job {
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
 			}
-			
+
 			// start a node, but first configure it
 			final TemplateOptions templateOptions = compute.templateOptions();
 			
@@ -173,48 +172,59 @@ public class CloudDistributedTLCJob extends Job {
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
 			}
+			final long spinUp = System.currentTimeMillis();
 
-			// Creating an entry in /etc/alias that makes sure system email sent
-			// to root ends up at the address given by the user. Note that this
-			// has to be done before postfix gets installed later. postfix
-			// re-generates the aliases file for us.
-			final String email = props.getProperty(TLCJobFactory.MAIL_ADDRESS);
-			monitor.subTask("Setting up root aliases to " + email
-					+ " on all node(s)");
-			compute.runScriptOnNodesMatching(inGroup(groupNameUUID),
-					exec("echo root: " + email + " >> /etc/aliases"),
-					new TemplateOptions().runAsRoot(true).wrapInInitScript(false));
-			monitor.worked(10);
-			if (monitor.isCanceled()) {
-				return Status.CANCEL_STATUS;
-			}
-			
 			// Install custom tailored jmx2munin to monitor the TLC process. Can
 			// either monitor standalone tlc2.TLC or TLCServer.
-			monitor.subTask("Provisioning TLC Monitoring on all node(s)");
+			monitor.subTask("Provisioning TLC environment on all node(s)");
+			final String email = props.getProperty(TLCJobFactory.MAIL_ADDRESS);
 			compute.runScriptOnNodesMatching(
 					inGroup(groupNameUUID),
-					// Never be prompted for input
-					exec("export DEBIAN_FRONTEND=noninteractive && "
+					// Creating an entry in /etc/alias that makes sure system email sent
+					// to root ends up at the address given by the user. Note that this
+					// has to be done before postfix gets installed later. postfix
+					// re-generates the aliases file for us.
+					exec(	"echo root: " + email + " >> /etc/aliases"
+							+ " && "
+							+ "export DEBIAN_FRONTEND=noninteractive"
+							+ " && "
+							// Never be prompted for input
 							// Download jmx2munin from the INRIA host
 							// TODO make it part of Toolbox and upload from
 							// there (it's tiny 48kb anyway) instead.
 							// This needs some better build-time integration
 							// between TLA and jmx2munin (probably best to make
 							// jmx2munin a submodule of the TLA git repo).
-							+ "wget https://lemmy.github.com/jmx2munin/jmx2munin_1.0_all.deb && "
+							+ "wget https://lemmy.github.com/jmx2munin/jmx2munin_1.0_all.deb"
+							+ " && "
 //							+ "wget http://tla.msr-inria.inria.fr/jmx2munin/jmx2munin_1.0_all.deb && "
 							// Install jmx2munin into the system
 							+ "dpkg -i jmx2munin_1.0_all.deb ; "
 							// Force apt to download and install the
 							// missing dependencies of jmx2munin without
 							// user interaction
-							+ "apt-get install --no-install-recommends -fy && "
+							+ "apt-get install --no-install-recommends -fy"
+							+ " && "
+							// Install all security relevant system packages
+							+ "echo unattended-upgrades unattended-upgrades/enable_auto_updates boolean true | debconf-set-selections"
+							+ " && "
 							// screen is needed to allow us to re-attach
 							// to the TLC process if logged in to the
 							// instance directly (it's probably already
-							// installed).
-							+ "apt-get install --no-install-recommends screen zip -y"),
+							// installed). zip is used to prepare the
+							// worker tla2tools.jar (strip spec) and
+							// unattended-upgrades makes sure the instance
+							// is up-to-date security-wise. 
+							+ "apt-get install --no-install-recommends screen zip unattended-upgrades -y"
+							// Create /mnt/tlc and change permission to be world writable
+							// Requires package 'apache2' to be already installed. apache2
+							// creates /var/www/html.
+							// "/mnt/tlc" is on the ephemeral and thus faster storage of the
+							// instance.
+							+ " && "
+							+ "mkdir -p /mnt/tlc/ && chmod 777 /mnt/tlc/ && "
+							+ "ln -s /tmp/MC.out /var/www/html/MC.out && "
+							+ "ln -s /tmp/MC.err /var/www/html/MC.err"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			
 			monitor.worked(10);
@@ -223,34 +233,14 @@ public class CloudDistributedTLCJob extends Job {
 			}
 
 			// Install all security relevant system packages
-			monitor.subTask("Installing security relevant system packages (in background)");
+			monitor.subTask("Installing security relevant system package upgrades (in background)");
 			compute.runScriptOnNodesMatching(
 					inGroup(groupNameUUID),
-					exec("echo unattended-upgrades unattended-upgrades/enable_auto_updates boolean true | debconf-set-selections"
-							+ " && "
-							+ "apt-get install unattended-upgrades"
-							+ " && "
-							+ "/usr/bin/unattended-upgrades"),
+					exec("/usr/bin/unattended-upgrades"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false).blockOnComplete(false).blockUntilRunning(false));
 			monitor.worked(5);
-		
-			// Create /mnt/tlc and change permission to be world writable
-			// Requires package 'apache2' to be already installed. apache2
-			// creates /var/www/html.
-			monitor.subTask("Creating a TLC environment on all node(s)");
-			compute.runScriptOnNodesMatching(
-					inGroup(groupNameUUID),
-					exec("mkdir /mnt/tlc/ && "
-							+ "chmod 777 /mnt/tlc/ && "
-							+ "ln -s /tmp/MC.out /var/www/html/MC.out && "
-							+ "ln -s /tmp/MC.err /var/www/html/MC.err"),
-					new TemplateOptions().runAsRoot(true).wrapInInitScript(
-							false));
-			monitor.worked(5);
-			if (monitor.isCanceled()) {
-				return Status.CANCEL_STATUS;
-			}
+			final long provision = System.currentTimeMillis();
 
 			// Choose one of the nodes to be the master and create an
 			// identifying predicate.
@@ -264,7 +254,7 @@ public class CloudDistributedTLCJob extends Job {
 			// world-readable. It is cloud-readable already through the RMI api.
 			monitor.subTask("Copying tla2tools.jar to master node");
 			SshClient sshClient = context.utils().sshForNode().apply(master);
-			sshClient.put("/mnt/tlc/tla2tools.jar",	jarPayLoad);
+			sshClient.put("/tmp/tla2tools.jar", jarPayLoad);
 			sshClient.disconnect();
 			monitor.worked(10);
 			if (monitor.isCanceled()) {
@@ -286,9 +276,7 @@ public class CloudDistributedTLCJob extends Job {
 			};
 			compute.runScriptOnNodesMatching(
 				isMaster,
-				// "/mnt/tlc" is on the ephemeral and thus faster storage of the
-				// instance.
-				exec("cd /mnt/tlc/ && "
+				exec(" cd /mnt/tlc/ && "
 						// Execute TLC (java) process inside screen
 						// and shutdown on TLC's completion. But
 						// detach from screen directly. Name screen 
@@ -315,7 +303,7 @@ public class CloudDistributedTLCJob extends Job {
 							+ "-Dcom.sun.management.jmxremote.authenticate=false "
 							// TLC tuning options
 							+ params.getJavaSystemProperties() + " "
-							+ "-jar /mnt/tlc/tla2tools.jar " 
+							+ "-jar /tmp/tla2tools.jar " 
 							+ params.getTLCParameters() + " "
 							+ "&& "
 						// Let the machine power down immediately after
@@ -330,7 +318,8 @@ public class CloudDistributedTLCJob extends Job {
 				new TemplateOptions().runAsRoot(false).wrapInInitScript(
 						true).blockOnComplete(false).blockUntilRunning(false));
 			monitor.worked(5);
-			
+			final long tlcStartUp = System.currentTimeMillis();
+
 			if (nodes > 1) {
 				// copy the tla2tools.jar to the root of the master's webserver
 				// to make it available to workers. However, strip the spec
@@ -339,7 +328,7 @@ public class CloudDistributedTLCJob extends Job {
 				monitor.subTask("Make TLC code available to all worker node(s)");
 				compute.runScriptOnNodesMatching(
 						isMaster,
-						exec("cp /mnt/tlc/tla2tools.jar /var/www/html/tla2tools.jar && "
+						exec("cp /tmp/tla2tools.jar /var/www/html/tla2tools.jar && "
 								+ "zip -d /var/www/html/tla2tools.jar model/*.tla model/*.cfg model/generated.properties"),
 						new TemplateOptions().runAsRoot(true).wrapInInitScript(
 								false));
@@ -390,7 +379,12 @@ public class CloudDistributedTLCJob extends Job {
 							true).blockOnComplete(false).blockUntilRunning(false));
 				monitor.worked(10);
 			}
-		
+
+			// Print runtimes of various work items.
+//			System.out.printf("%s spinUp\n%s provision\n%s start\n%s finish\n", (spinUp - startUp) / 1000,
+//					(provision - spinUp) / 1000, (tlcStartUp - provision) / 1000,
+//					(System.currentTimeMillis() - tlcStartUp) / 1000);
+			
 			// Communicate result to user
 			monitor.done();
 			final String hostname = Iterables.getOnlyElement(master.getPublicAddresses()); // master.getHostname() only returns internal name
