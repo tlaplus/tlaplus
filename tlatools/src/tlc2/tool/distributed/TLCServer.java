@@ -463,10 +463,14 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					MP.printError(EC.TLC_FEATURE_UNSUPPORTED,
 							"TLCSet & TLCGet operators not supported by distributed TLC.");
 				} else {
-					// LL modified error message on 7 April 2012
-					MP.printError(EC.GENERAL, "initializing the server", e); // LL changed call 7 April 2012
-					if (errState != null) {
-						MP.printMessage(EC.TLC_INITIAL_STATE, "While working on the initial state: " + errState);
+					String msg = e.getMessage();
+					if (msg == null) {
+						msg = e.toString();
+					}
+					if (this.errState != null) {
+						MP.printError(EC.TLC_INITIAL_STATE, new String[] { msg, this.errState.toString() });
+					} else {
+						MP.printError(EC.GENERAL, msg);
 					}
 					// We redo the work on the error state, recording the call
 					// stack.
@@ -474,14 +478,16 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					try {
 						initFPs = doInit();
 					} catch (Throwable e1) {
-						MP.printError(EC.GENERAL, "evaluating the nested"   // LL changed call 7 April 2012
-										+ "\nexpressions at the following positions:\n"
-										+ work.printCallStack(), e);
+						// Assert.printStack(e);
+						MP.printError(EC.TLC_NESTED_EXPRESSION, work.printCallStack());
 					}
 				}
 			}
 		}
 		if (done) {
+			printSummary(1, 0, stateQueue.size(), initFPs.size(), false);
+			MP.printMessage(EC.TLC_FINISHED,
+					TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
 			// clean up before exit:
 			close(false);
 			return;

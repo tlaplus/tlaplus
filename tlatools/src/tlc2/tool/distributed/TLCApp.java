@@ -154,6 +154,20 @@ public class TLCApp extends DistApp {
 		}
 		return result;
     }
+	public final TLCState[] getInitStates() throws WorkerException {
+		StateVec theInitStates = this.tool.getInitStates();
+		TLCState[] res = new TLCState[theInitStates.size()];
+		for (int i = 0; i < theInitStates.size(); i++) {
+			TLCState curState = theInitStates.elementAt(i);
+			if (!this.tool.isGoodState(curState)) {
+				String msg = "Error: Initial state is not completely specified by the"
+						+ " initial predicate.";
+				throw new WorkerException(msg, curState, null, false);
+			}
+			res[i] = (TLCState) curState;
+		}
+		return res;
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#getInitStates()
