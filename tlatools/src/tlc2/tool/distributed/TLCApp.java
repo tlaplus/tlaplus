@@ -16,6 +16,7 @@ import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
+import tlc2.tool.IStateFunctor;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
@@ -154,37 +155,12 @@ public class TLCApp extends DistApp {
 		}
 		return result;
     }
-	public final TLCState[] getInitStates() throws WorkerException {
-		StateVec theInitStates = this.tool.getInitStates();
-		TLCState[] res = new TLCState[theInitStates.size()];
-		for (int i = 0; i < theInitStates.size(); i++) {
-			TLCState curState = theInitStates.elementAt(i);
-			if (!this.tool.isGoodState(curState)) {
-				String msg = "Error: Initial state is not completely specified by the"
-						+ " initial predicate.";
-				throw new WorkerException(msg, curState, null, false);
-			}
-			res[i] = (TLCState) curState;
-		}
-		return res;
-	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.DistApp#getInitStates()
+	 * @see tlc2.tool.distributed.DistApp#getInitStates(tlc2.tool.IStateFunctor)
 	 */
-	public final TLCState[] getInitStates() throws WorkerException {
-		StateVec theInitStates = this.tool.getInitStates();
-		TLCState[] res = new TLCState[theInitStates.size()];
-		for (int i = 0; i < theInitStates.size(); i++) {
-			TLCState curState = theInitStates.elementAt(i);
-			if (!this.tool.isGoodState(curState)) {
-				String msg = "Error: Initial state is not completely specified by the"
-						+ " initial predicate.";
-				throw new WorkerException(msg, curState, null, false);
-			}
-			res[i] = (TLCState) curState;
-		}
-		return res;
+	public final void getInitStates(IStateFunctor functor) {
+		this.tool.getInitStates(functor);
 	}
 
 	/* (non-Javadoc)

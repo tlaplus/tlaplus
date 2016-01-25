@@ -7,6 +7,7 @@ package tlc2.tool.distributed;
 
 import java.rmi.RemoteException;
 
+import tlc2.tool.IStateFunctor;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.TraceApp;
@@ -14,7 +15,6 @@ import tlc2.tool.WorkerException;
 
 /**
  * @author Simon Zambrovski
- * @version $Id$
  */
 public abstract class DistApp implements TraceApp {
 
@@ -35,7 +35,7 @@ public abstract class DistApp implements TraceApp {
 
 	// Returns a list of initial states.
 	// TLCServer
-	public abstract TLCState[] getInitStates() throws WorkerException;
+	public abstract void getInitStates(IStateFunctor functor);
 
 	// Returns a list of successor states of the state s. /
 	// TLCServer

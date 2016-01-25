@@ -22,9 +22,6 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,10 +34,10 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.EvalException;
+import tlc2.tool.IStateFunctor;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
-import tlc2.tool.WorkerException;
 import tlc2.tool.distributed.fp.FPSetManager;
 import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.tool.distributed.fp.IFPSetManager;
@@ -366,40 +363,17 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	}
 
 	/**
-	 * @throws Exception
+	 * @throws Throwable 
 	 */
-	private final Set<Long> doInit() throws Exception {
-		final SortedSet<Long> set = new TreeSet<Long>();
-		TLCState curState = null;
-		try {
-			TLCState[] initStates = work.getInitStates();
-			for (int i = 0; i < initStates.length; i++) {
-				curState = initStates[i];
-				boolean inConstraints = work.isInModel(curState);
-				boolean seen = false;
-				if (inConstraints) {
-					long fp = curState.fingerPrint();
-					seen = !set.add(fp);
-					if (!seen) {
-						initStates[i].uid = trace.writeState(fp);
-						stateQueue.enqueue(initStates[i]);
-					}
-				}
-				if (!inConstraints || !seen) {
-					work.checkState(null, curState);
-				}
-			}
-		} catch (Exception e) {
-			this.errState = curState;
-			this.keepCallStack = true;
-			if (e instanceof WorkerException) {
-				this.errState = ((WorkerException) e).state2;
-				this.keepCallStack = ((WorkerException) e).keepCallStack;
-			}
-			this.done = true;
-			throw e;
+	private final void doInit() throws Throwable {
+		final DoInitFunctor functor = new DoInitFunctor();
+		work.getInitStates(functor);
+		
+		// Iff one of the init states' checks violates any properties, the
+		// functor will record it.
+		if (functor.e != null) {
+			throw functor.e;
 		}
-		return set;
 	}
 
 	/**
@@ -435,18 +409,28 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
                     String.valueOf(stateQueue.size())});
 			recovered = true;
 		}
+
+		// Create the central naming authority that is used by _all_ nodes
+		String hostname = InetAddress.getLocalHost().getHostName();
+		Registry rg = LocateRegistry.createRegistry(Port);
+		rg.rebind("TLCServer", this);
+		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_RUNNING, hostname);
+		
+		// First register TLCSERVER with RMI and only then wait for all FPSets
+		// to become registered. This only waits if we use distributed
+		// fingerprint set (FPSet) servers which have to partition the
+		// distributed hash table (fingerprint space) prior to starting model
+		// checking.
+		waitForFPSetManager();
 		
 		/*
 		 * Start initializing the server by calculating the init state(s)
 		 */
-
-		//TODO if init states is huge, this might go OOM
-		Set<Long> initFPs = new TreeSet<Long>();
 		if (!recovered) {
 			// Initialize with the initial states:
 			try {
                 MP.printMessage(EC.TLC_COMPUTING_INIT);
-                initFPs = doInit();
+                doInit();
 				MP.printMessage(EC.TLC_INIT_GENERATED1,
 						new String[] { String.valueOf(stateQueue.size()), "(s)" });
 			} catch (Throwable e) {
@@ -467,7 +451,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					if (msg == null) {
 						msg = e.toString();
 					}
-					if (this.errState != null) {
+					if (!this.hasNoErrors()) {
 						MP.printError(EC.TLC_INITIAL_STATE, new String[] { msg, this.errState.toString() });
 					} else {
 						MP.printError(EC.GENERAL, msg);
@@ -476,7 +460,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					// stack.
 					work.setCallStack();
 					try {
-						initFPs = doInit();
+						doInit();
 					} catch (Throwable e1) {
 						// Assert.printStack(e);
 						MP.printError(EC.TLC_NESTED_EXPRESSION, work.printCallStack());
@@ -485,30 +469,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 		}
 		if (done) {
-			printSummary(1, 0, stateQueue.size(), initFPs.size(), false);
+			printSummary(1, 0, stateQueue.size(), fpSetManager.size(), false);
 			MP.printMessage(EC.TLC_FINISHED,
 					TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
 			// clean up before exit:
 			close(false);
 			return;
-		}
-
-		// Create the central naming authority that is used by _all_ nodes
-		String hostname = InetAddress.getLocalHost().getHostName();
-		Registry rg = LocateRegistry.createRegistry(Port);
-		rg.rebind("TLCServer", this);
-		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_RUNNING, hostname);
-		
-		// First register TLCSERVER with RMI and only then wait for all FPSets
-		// to become registered. This only waits if we use distributed
-		// fingerprint set (FPSet) servers which have to partition the
-		// distributed hash table (fingerprint space) prior to starting model
-		// checking.
-		waitForFPSetManager();
-		
-		// Add the init state(s) to the local FPSet or distributed servers 
-		for (Long fp : initFPs) {
-			fpSetManager.put(fp);
 		}
 		
 		/*
@@ -842,6 +808,41 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		return buffer;
 	}
 	
+	private class DoInitFunctor implements IStateFunctor {
+
+		private Throwable e;
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.IStateFunctor#addElement(tlc2.tool.TLCState)
+		 */
+		public Object addElement(final TLCState curState) {
+			if (e != null) {
+				return curState;
+			}
+
+			try {
+				final boolean inConstraints = work.isInModel(curState);
+				boolean seen = false;
+				if (inConstraints) {
+					long fp = curState.fingerPrint();
+					seen = fpSetManager.put(fp);
+					if (!seen) {
+						curState.uid = trace.writeState(fp);
+						stateQueue.enqueue(curState);
+					}
+				}
+				if (!inConstraints || !seen) {
+					work.checkState(null, curState);
+				}
+			} catch (Exception e) {
+				if (setErrState(curState, true)) {
+					this.e = e;
+				}
+			}
+			
+			return curState;
+		}
+	}
 
 	/**
 	 * Tries to exit all connected workers
