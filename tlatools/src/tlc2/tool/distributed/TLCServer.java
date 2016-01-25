@@ -17,7 +17,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -690,9 +692,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		TLCStandardMBean tlcServerMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
 		MailSender mail = null;
 		TLCServer server = null;
+		TLCApp app = null;
 		try {
 			TLCGlobals.setNumWorkers(0);
-			final TLCApp app = TLCApp.create(argv);
+			app = TLCApp.create(argv);
 			mail = new MailSender(app.getFileName());
 			if (expectedFPSetCount > 0) {
 				server = new DistributedFPSetTLCServer(app, expectedFPSetCount);
@@ -725,7 +728,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			tlcServerMXWrapper.unregister();
 			// When creation of TLCApp fails, we get here as well.
 			if (mail != null) {
-				boolean send = mail.send();
+				List<File> files = new ArrayList<File>();
+				if (app != null) {
+					files = app.getModuleFiles();
+				}
+				boolean send = mail.send(files);
 				// In case sending the mail has failed we treat this as an error.
 				// This is needed when TLC runs on another host and email is
 				// the only means for the user to get access to the model checking

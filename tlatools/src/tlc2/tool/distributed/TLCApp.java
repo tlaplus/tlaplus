@@ -2,14 +2,18 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 // Last modified on Mon 30 Apr 2007 at 15:29:57 PST by lamport  
 //      modified on Fri Jul 27 10:47:59 PDT 2001 by yuanyu   
-
 package tlc2.tool.distributed;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
+import tla2sany.modanalyzer.ParseUnit;
+import tla2sany.modanalyzer.SpecObj;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
 import tlc2.tool.StateVec;
@@ -26,12 +30,10 @@ import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 
-/**
- * @version $Id$
- */
 public class TLCApp extends DistApp {
 
 	private String config;
+	private final SpecObj specObj;
 
 	/* Constructors */
 	public TLCApp(String specFile, String configFile, boolean deadlock,
@@ -72,7 +74,7 @@ public class TLCApp extends DistApp {
 		this.checkDeadlock = deadlock.booleanValue();
 		this.preprocess = preprocess.booleanValue();
 		// SZ Feb 20, 2009: added null reference to SpecObj
-		this.tool.init(this.preprocess, null);
+		specObj = this.tool.init(this.preprocess, null);
 		this.impliedInits = this.tool.getImpliedInits();
 		this.invariants = this.tool.getInvariants();
 		this.impliedActions = this.tool.getImpliedActions();
@@ -139,6 +141,19 @@ public class TLCApp extends DistApp {
 	public final boolean canRecover() {
 		return this.fromChkpt != null;
 	}
+	
+	public List<File> getModuleFiles() {
+		final List<File> result = new ArrayList<File>();
+
+		final Enumeration<ParseUnit> parseUnitContext = this.specObj.parseUnitContext.elements();
+		final FilenameToStream resolver = new InJarFilenameToStream(ModelInJar.PATH);
+		while (parseUnitContext.hasMoreElements()) {
+			ParseUnit pu = (ParseUnit) parseUnitContext.nextElement();
+			File resolve = resolver.resolve(pu.getFileName(), false);
+			result.add(resolve);
+		}
+		return result;
+    }
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#getInitStates()
