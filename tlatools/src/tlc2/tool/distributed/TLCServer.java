@@ -11,9 +11,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.rmi.AccessException;
+import java.rmi.ConnectException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.ServerException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -552,6 +554,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			try {
 				worker.exit();
 			} catch (NoSuchObjectException e) {
+				// worker might have been lost in the meantime
+				MP.printWarning(EC.GENERAL, "Ignoring attempt to exit dead worker");
+			} catch (ConnectException e) {
+				// worker might have been lost in the meantime
+				MP.printWarning(EC.GENERAL, "Ignoring attempt to exit dead worker");
+			} catch (ServerException e) {
 				// worker might have been lost in the meantime
 				MP.printWarning(EC.GENERAL, "Ignoring attempt to exit dead worker");
 			}
