@@ -306,8 +306,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		cdl = new CountDownLatch(numCores);
 		
 		try {
-			String url = "//" + serverName + ":" + TLCServer.Port
-					+ "/TLCServer";
+			final String url = "//" + serverName + ":" + TLCServer.Port
+					+ "/" + TLCServer.SERVER_NAME;
 			
 			// try to repeatedly connect to the server until it becomes available
 			int i = 1;

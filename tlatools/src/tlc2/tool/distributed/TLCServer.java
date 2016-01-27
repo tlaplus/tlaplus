@@ -63,6 +63,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		InternRMI {
 
 	/**
+	 * Name by which {@link FPSetRMI} lookup the {@link TLCServer} (master).
+	 */
+	public static final String SERVER_NAME = "TLCServer";
+	
+	/**
 	 * Prefix master and worker heavy workload threads with this prefix and an incrementing counter to
 	 * make the threads identifiable in jmx2munin statistics, which uses simple string matching.  
 	 */
@@ -415,7 +420,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// Create the central naming authority that is used by _all_ nodes
 		String hostname = InetAddress.getLocalHost().getHostName();
 		Registry rg = LocateRegistry.createRegistry(Port);
-		rg.rebind("TLCServer", this);
+		rg.rebind(SERVER_NAME, this);
 		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_RUNNING, hostname);
 		
 		// First register TLCSERVER with RMI and only then wait for all FPSets
@@ -601,7 +606,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		close(hasNoErrors());
 		
 		// dispose RMI leftovers
-		rg.unbind("TLCServer");
+		rg.unbind(SERVER_NAME);
 		UnicastRemoteObject.unexportObject(this, false);
 	}
 	
@@ -879,7 +884,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				// No need to attempt to exit workers if the server itself
 				// isn't registered any longer. It won't be able to connect to
 				// workers anyway.
-				LocateRegistry.getRegistry(Port).lookup("TLCServer");
+				LocateRegistry.getRegistry(Port).lookup(SERVER_NAME);
 			} catch (AccessException e1) {
 				return;
 			} catch (RemoteException e1) {
