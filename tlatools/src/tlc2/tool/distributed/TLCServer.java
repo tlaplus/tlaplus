@@ -668,7 +668,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
     }
 
 	public static void main(String argv[]) {
-		MP.printMessage(EC.GENERAL, "TLC Server " + TLCGlobals.versionOfTLC);
+		MP.printMessage(EC.TLC_VERSION, "TLC Server " + TLCGlobals.versionOfTLC);
 		TLCStandardMBean tlcServerMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
 		MailSender mail = null;
 		TLCServer server = null;
