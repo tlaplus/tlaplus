@@ -724,6 +724,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				// finished. If we were to shutdown the node even when sending out 
 				// the email has failed, the result would be lost.
 				if (!send) {
+					MP.printMessage(EC.GENERAL, "Sending result mail failed.");
 					System.exit(1);
 				}
 			}
