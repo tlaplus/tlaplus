@@ -562,6 +562,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			} catch (ServerException e) {
 				// worker might have been lost in the meantime
 				MP.printWarning(EC.GENERAL, "Ignoring attempt to exit dead worker");
+			} finally {
+				threadsToWorkers.remove(thread);
 			}
 		}
 		
@@ -867,9 +869,15 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		 * @see java.lang.Runnable#run()
 		 */
 		public void run() {
+			if (server.threadsToWorkers.isEmpty()) {
+				// Nothing to be done here.
+				return;
+			}
+				
 			try {
-				// No need to attempt to exit the workers if the server itself
-				// isn't registered any longer.
+				// No need to attempt to exit workers if the server itself
+				// isn't registered any longer. It won't be able to connect to
+				// workers anyway.
 				LocateRegistry.getRegistry(Port).lookup("TLCServer");
 			} catch (AccessException e1) {
 				return;
