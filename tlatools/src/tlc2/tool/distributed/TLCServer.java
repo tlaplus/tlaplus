@@ -66,6 +66,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * Name by which {@link FPSetRMI} lookup the {@link TLCServer} (master).
 	 */
 	public static final String SERVER_NAME = "TLCServer";
+	/**
+	 * Name by which {@link TLCWorker} lookup the {@link TLCServer} (master).
+	 */
+	public static final String SERVER_WORKER_NAME = SERVER_NAME + "WORKER";
 	
 	/**
 	 * Prefix master and worker heavy workload threads with this prefix and an incrementing counter to
@@ -484,6 +488,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			return;
 		}
 		
+		// Init states have been computed successfully which marks the point in
+		// time where workers can start generating and exploring next states.
+		rg.rebind(SERVER_WORKER_NAME, this);
+
 		/*
 		 * This marks the end of the master and FPSet server initialization.
 		 * Model checking can start now.
@@ -606,6 +614,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		close(hasNoErrors());
 		
 		// dispose RMI leftovers
+		rg.unbind(SERVER_WORKER_NAME);
 		rg.unbind(SERVER_NAME);
 		UnicastRemoteObject.unexportObject(this, false);
 	}
