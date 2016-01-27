@@ -70,7 +70,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * Name by which {@link TLCWorker} lookup the {@link TLCServer} (master).
 	 */
 	public static final String SERVER_WORKER_NAME = SERVER_NAME + "WORKER";
-	
+
 	/**
 	 * Prefix master and worker heavy workload threads with this prefix and an incrementing counter to
 	 * make the threads identifiable in jmx2munin statistics, which uses simple string matching.  
@@ -483,6 +483,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			printSummary(1, 0, stateQueue.size(), fpSetManager.size(), false);
 			MP.printMessage(EC.TLC_FINISHED,
 					TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
+			es.shutdown();
 			// clean up before exit:
 			close(false);
 			return;
@@ -721,6 +722,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				}
 			}
 		} finally {
+			if (!server.es.isShutdown()) {
+				server.es.shutdownNow();
+			}
 			tlcServerMXWrapper.unregister();
 			// When creation of TLCApp fails, we get here as well.
 			if (mail != null) {
