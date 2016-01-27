@@ -66,7 +66,9 @@ public abstract class TLCStandardMBean extends StandardMBean {
 	public boolean unregister() {
 		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		try {
-			mbs.unregisterMBean(mxbeanName);
+			if (mbs.isRegistered(mxbeanName)) {
+				mbs.unregisterMBean(mxbeanName);
+			}
 		} catch (MBeanRegistrationException e) {
 			e.printStackTrace();
 			return false;
