@@ -14,6 +14,7 @@ import java.net.UnknownHostException;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NoSuchObjectException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
@@ -331,6 +332,15 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 						// how to handle
 						throw e;
 					}
+				} catch (NotBoundException e) {
+					// Registry is available but no object by "TLCServer". This
+					// happens when TLCServer makes it registry available but
+					// has't registered itself yet.
+					long sleep = (long) Math.sqrt(i);
+					ToolIO.out.println("Server " + serverName + " reachable but not ready yet, sleeping " + sleep
+							+ "s for server to come online...");
+					Thread.sleep(sleep * 1000);
+					i *= 2;
 				}
 			}
 
