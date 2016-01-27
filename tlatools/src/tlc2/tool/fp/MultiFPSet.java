@@ -157,6 +157,7 @@ public class MultiFPSet extends FPSet {
 	 * @see tlc2.tool.fp.FPSet#exit(boolean)
 	 */
 	public final void exit(boolean cleanup) throws IOException {
+	    super.exit(cleanup);
 		for (int i = 0; i < this.sets.length; i++) {
 			this.sets[i].exit(cleanup);
 		}

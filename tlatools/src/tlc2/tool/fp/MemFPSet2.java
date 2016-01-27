@@ -130,6 +130,7 @@ public final class MemFPSet2 extends FPSet {
   }
 
   public final void exit(boolean cleanup) throws IOException {
+	super.exit(cleanup);
     if (cleanup) {
       // Delete the metadata directory:
       FileUtil.deleteDir(this.metadir, true);
