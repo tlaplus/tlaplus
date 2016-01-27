@@ -342,6 +342,20 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					Thread.sleep(sleep * 1000);
 					i *= 2;
 				}
+				// It is vital to *not* catch NoRouteToHostException or
+				// UnknownHostException. TLCWorker is supposed to terminate when
+				// either of the two is thrown. The rational is that the while
+				// loop could be going while TLCServer is busy generating a huge
+				// set of init states. Close to completion, it finds a violating
+				// state and terminates. In case of cloud distributed TLC 
+				// (see CloudDistributedTLCJob), the host/vm running the master
+				// immediately shuts down. That is when the NoRouteToHostException
+				// will make sure that the set of TLCWorkers will terminate the VM
+				// and shutdown the vm too. There is obviously the chance that
+				// another vm gets the IP of the former master assigned and boots
+				// up during a sleep period above. Even though I do not know what
+				// holding period IP address have across the various cloud providers,
+				// I find this rather unlikely.
 			}
 
 			long irredPoly = server.getIrredPolyForFP();

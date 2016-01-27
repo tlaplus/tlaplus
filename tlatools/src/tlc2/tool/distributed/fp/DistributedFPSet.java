@@ -117,7 +117,9 @@ public class DistributedFPSet  {
 		String url = "//" + serverName + ":" + TLCServer.Port
 				+ "/" + TLCServer.SERVER_NAME;
 
-		// try to repeatedly connect to the server until it becomes available
+		// try to repeatedly connect to the server until it becomes available.
+		// see similar while loop in
+		// tlc2.tool.distributed.TLCWorker.main(String[]) for more comments.
 		int i = 1;
 		while(true) {
 			try {
