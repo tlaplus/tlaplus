@@ -70,7 +70,12 @@ public class TLCApp extends DistApp {
 		// TODO NameResolver
 		this.tool = new Tool(specDir, specFile, configFile, fts);
 		// SZ Feb 24, 2009: setup the user directory
-		ToolIO.setUserDir(specDir);
+		if (ToolIO.getUserDir() == null) {
+			// First one to set specDir wins. This should only ever be the case
+			// With DistributedTLCTestCase which runs TLCServer and TLCWorker in
+			// a single VM.
+			ToolIO.setUserDir(specDir);
+		}
 
 		this.checkDeadlock = deadlock.booleanValue();
 		this.preprocess = preprocess.booleanValue();
