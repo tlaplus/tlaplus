@@ -373,6 +373,11 @@ public class CloudDistributedTLCJob extends Job {
 								+ params.getTLCWorkerParameters() + " "
 								+ hostname + " " // Use host's internal ip due to firewall reasons.
 								+ "&& "
+							// Terminate regardless of TLCWorker process
+							// exit value. E.g. TLCWorker can terminate due
+							// to a NoRouteToHostException when the master
+							// shut down caused by a violation among the
+							// init states.
 							+ "sudo shutdown -h now"
 							+ "\""), 
 					new TemplateOptions().runAsRoot(false).wrapInInitScript(
