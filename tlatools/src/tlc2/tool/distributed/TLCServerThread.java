@@ -255,13 +255,14 @@ public class TLCServerThread extends IdThread {
 				state2 = ((WorkerException) e).state2;
 			}
 			if (this.tlcServer.setErrState(state1, true)) {
-				MP.printError(EC.GENERAL, e);
 				if (state1 != null) {
 					try {
 						this.tlcServer.trace.printTrace(state1, state2);
 					} catch (Exception e1) {
 						MP.printError(EC.GENERAL, e1);
 					}
+				} else {
+					MP.printError(EC.GENERAL, e);
 				}
 				stateQueue.finishAll();
 				synchronized (this.tlcServer) {
