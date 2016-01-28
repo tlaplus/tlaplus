@@ -193,6 +193,10 @@ public class TLCApp extends DistApp {
 						+ " the next-state action.";
 				throw new WorkerException(msg, curState, succState, false);
 			}
+			// isInModel, isInAction and invariant and implied action checks are
+			// carried out later in TLCWorker#getNextStates(..) and below in
+			// checkState(State, State) when it is know that the states are new
+			// (after the call to the fingerprint set).
 			res[i] = succState;
 		}
 		return res;
