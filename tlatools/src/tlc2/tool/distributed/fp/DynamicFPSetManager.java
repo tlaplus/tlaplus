@@ -21,6 +21,12 @@ public class DynamicFPSetManager extends FPSetManager implements Serializable {
 
 	public DynamicFPSetManager(int expectedNumOfServers) throws RemoteException {
 		super();
+		// If expectedNumOfServers is no power of two, a subset of FPSet
+		// servers will act as passive backups. Each time a FPSet from
+		// the active set is lost, all workers switch over to the next
+		// available passive one on a list. The list has to be known
+		// prior to when the workers start (it's possible to send out
+		// list updates, but it hasn't been implemented).
 		this.expectedNumOfServers = expectedNumOfServers;
 		
 		// Guard against invalid values
