@@ -143,7 +143,7 @@ public class MailSender {
 	private String from;
 	private String domain;
 
-	public MailSender(String aMainFile) throws FileNotFoundException, UnknownHostException
+	public MailSender() throws FileNotFoundException, UnknownHostException
 			 {
 		mailto = System.getProperty("result.mail.address");
 		if (mailto != null) {
@@ -153,7 +153,7 @@ public class MailSender {
 					+ System.getProperty("user.name") + "@"
 					+ InetAddress.getLocalHost().getHostName() + ">";
 			
-			mainFile = aMainFile;
+			mainFile = "unknown";
 			
 			// Record/Log output to later send it by email
 			final String tmpdir = System.getProperty("java.io.tmpdir");
@@ -164,6 +164,15 @@ public class MailSender {
 		}
 	}
 	
+	public MailSender(String mainFile) throws FileNotFoundException, UnknownHostException {
+		this();
+		setModelName(mainFile);
+	}
+	
+	public void setModelName(String fileName) {
+		this.mainFile = fileName;
+	}
+
 	public boolean send() {
 		return send(new ArrayList<File>());
 	}

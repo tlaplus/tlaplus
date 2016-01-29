@@ -685,6 +685,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
     }
 
 	public static void main(String argv[]) {
+		// Print version before MailSender has been created. Oh well, it misses
+		// the version output.
 		MP.printMessage(EC.TLC_VERSION, "TLC Server " + TLCGlobals.versionOfTLC);
 		TLCStandardMBean tlcServerMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
 		MailSender mail = null;
@@ -692,8 +694,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		TLCApp app = null;
 		try {
 			TLCGlobals.setNumWorkers(0);
+			// Create MS before TLCApp to capture the parsing output.
+			mail = new MailSender();
+
 			app = TLCApp.create(argv);
-			mail = new MailSender(app.getFileName());
+			mail.setModelName(app.getFileName());
+			
 			if (expectedFPSetCount > 0) {
 				server = new DistributedFPSetTLCServer(app, expectedFPSetCount);
 			} else {
