@@ -59,10 +59,12 @@ public abstract class CloudTLCInstanceParameters {
 		if (numberOfWorkers == 1) {
 			return getJavaWorkerSystemProperties();
 		}
+		//TODO Make this property be read from the generated.properties file
 		return "-Dtlc2.tool.distributed.TLCServer.expectedFPSetCount=" + (numberOfWorkers - 1);
 	}
 
 	public String getJavaWorkerSystemProperties() {
+		//TODO Make this property be read from the generated.properties file
 		return "-Dtlc2.tool.fp.FPSet.impl=tlc2.tool.fp.OffHeapDiskFPSet";
 	}
 	
