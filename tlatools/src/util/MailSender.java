@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -28,6 +29,9 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
+
 // Requires Java >=6 due to javax.activation only part starting with 6
 public class MailSender {
 
@@ -39,7 +43,7 @@ public class MailSender {
 	 * @param messages
 	 */
 	private static boolean send(final String from, final String to,
-			final String domain, final String subject, final File[] files) {
+			final String domain, final String subject, final String body, final File[] files) {
 		
 		final Properties properties = System.getProperties();
 		//properties.put("mail.debug", "true");
@@ -61,6 +65,14 @@ public class MailSender {
 				MimeBodyPart messageBodyPart = new MimeBodyPart();
 
 				final Multipart multipart = new MimeMultipart();
+				
+				// The main body part. Having a main body appears to have a very
+				// positive effect on the spam score compared to emails with
+				// just attachments. It is also visually more appealing to e.g.
+				// Outlook users who otherwise see an empty mail.
+				messageBodyPart = new MimeBodyPart();
+				messageBodyPart.setContent(body, "text/plain");
+				multipart.addBodyPart(messageBodyPart);
 
 				// attach file(s)
 				for (File file : files) {
@@ -185,7 +197,7 @@ public class MailSender {
 				files.add(0, err);
 			}
 			// Try sending the mail with the model checking result to the receiver 
-			return send(from, mailto, domain, "Model Checking result for " + mainFile,
+			return send(from, mailto, domain, "Model Checking result for " + mainFile, extractBody(out),
 					files.toArray(new File[files.size()]));
 		} else {
 			// ignore, just signal everything is fine
@@ -193,6 +205,25 @@ public class MailSender {
 		}
 	}	
     
+	private String extractBody(File out) {
+		String result = "";
+		try {
+			final Scanner scanner = new Scanner(out);
+			while (scanner.hasNext()) {
+				final String line = scanner.nextLine();
+				if (line != null && !line.startsWith(MP.DELIM)
+						&& !line.contains(Integer.toString(EC.TLC_DISTRIBUTED_WORKER_REGISTERED))
+						&& !line.contains(Integer.toString(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED))) {
+					result += line + "\n";
+				}
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			result += "Failed to find file " + out.getAbsolutePath(); 
+		}
+		return result;
+	}
+
 	/**
 	 * A LogPrintStream writes the logging statements to a file _and_ to
 	 * System.out.
