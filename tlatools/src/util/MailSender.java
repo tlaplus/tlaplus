@@ -179,10 +179,10 @@ public class MailSender {
 
 	public boolean send(List<File> files) {
 		if (mailto != null) {
+			files.add(0, out);
 			// Only add the err file if there is actually content 
-			files.add(out);
 			if (err.length() != 0L) {
-				files.add(err);
+				files.add(0, err);
 			}
 			// Try sending the mail with the model checking result to the receiver 
 			return send(from, mailto, domain, "Model Checking result for " + mainFile,
