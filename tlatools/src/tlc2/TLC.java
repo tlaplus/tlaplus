@@ -198,12 +198,15 @@ public class TLC
         // handle parameters
         if (tlc.handleParameters(args))
         {
-        	final MailSender ms = new MailSender(tlc.mainFile);
+        	final MailSender ms = new MailSender();
         	if (MODEL_PART_OF_JAR) {
         		tlc.setResolver(new InJarFilenameToStream(ModelInJar.PATH));
         	} else {
         		tlc.setResolver(new SimpleFilenameToStream());
         	}
+        	ms.setModelName(System.getProperty(MailSender.MODEL_NAME, tlc.mainFile));
+        	ms.setSpecName(System.getProperty(MailSender.SPEC_NAME, tlc.mainFile));
+
             // call the actual processing method
             tlc.process();
 

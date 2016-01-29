@@ -736,6 +736,11 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 							.createExecutableExtension("clazz");
 					final Properties props = new Properties();
 					props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
+					// Add model and spec name to properties to make the model
+					// checker run easily identifiable in the result email.
+			        final Model model = config.getAdapter(Model.class);
+					props.put(TLCJobFactory.MODEL_NAME, model.getName());
+					props.put(TLCJobFactory.SPEC_NAME, model.getSpec().getName());
 					if (numberOfWorkers > 1) {
 						props.put(TLCJobFactory.MAIN_CLASS, tlc2.tool.distributed.TLCServer.class.getName());
 					}

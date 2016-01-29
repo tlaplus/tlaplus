@@ -698,7 +698,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			mail = new MailSender();
 
 			app = TLCApp.create(argv);
-			mail.setModelName(app.getFileName());
+			mail.setModelName(System.getProperty(MailSender.MODEL_NAME, app.getFileName()));
+			mail.setSpecName(System.getProperty(MailSender.SPEC_NAME, app.getFileName()));
 			
 			if (expectedFPSetCount > 0) {
 				server = new DistributedFPSetTLCServer(app, expectedFPSetCount);

@@ -29,11 +29,15 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 
-import tlc2.output.EC;
+import model.ModelInJar;
 import tlc2.output.MP;
 
 // Requires Java >=6 due to javax.activation only part starting with 6
 public class MailSender {
+
+	public static final String MODEL_NAME = "modelName";
+	public static final String SPEC_NAME = "specName";
+	public static final String MAIL_ADDRESS = "result.mail.address";
 
 	/**
 	 * @param from "Foo bar <foo@bar.com>"
@@ -149,23 +153,22 @@ public class MailSender {
 	// if null, no Mail is going to be send
 	private final String mailto;
 	
-	private String mainFile;
+	private String modelName = "unknown model";
+	private String specName = "unknown spec";
 	private File err;
 	private File out;
 	private String from;
 	private String domain;
 
-	public MailSender() throws FileNotFoundException, UnknownHostException
-			 {
-		mailto = System.getProperty("result.mail.address");
+	public MailSender() throws FileNotFoundException, UnknownHostException {
+		ModelInJar.loadProperties(); // Reads result.mail.address and so on.
+		mailto = System.getProperty(MAIL_ADDRESS);
 		if (mailto != null) {
 			domain = mailto.split("@")[1];
 			
 			from = "TLC - The friendly model checker <"
 					+ System.getProperty("user.name") + "@"
 					+ InetAddress.getLocalHost().getHostName() + ">";
-			
-			mainFile = "unknown";
 			
 			// Record/Log output to later send it by email
 			final String tmpdir = System.getProperty("java.io.tmpdir");
@@ -181,8 +184,12 @@ public class MailSender {
 		setModelName(mainFile);
 	}
 	
-	public void setModelName(String fileName) {
-		this.mainFile = fileName;
+	public void setModelName(String modelName) {
+		this.modelName = modelName;
+	}
+
+	public void setSpecName(String specName) {
+		this.specName = specName;
 	}
 
 	public boolean send() {
@@ -197,31 +204,34 @@ public class MailSender {
 				files.add(0, err);
 			}
 			// Try sending the mail with the model checking result to the receiver 
-			return send(from, mailto, domain, "Model Checking result for " + mainFile, extractBody(out),
-					files.toArray(new File[files.size()]));
+			return send(from, mailto, domain, "Model Checking result for " + modelName + " with spec " + specName,
+					extractBody(out), files.toArray(new File[files.size()]));
 		} else {
 			// ignore, just signal everything is fine
 			return true;
 		}
 	}	
     
+	/**
+	 * @return The human readable lines in the log file. 
+	 */
 	private String extractBody(File out) {
-		String result = "";
+		StringBuffer result = new StringBuffer();
 		try {
 			final Scanner scanner = new Scanner(out);
 			while (scanner.hasNext()) {
 				final String line = scanner.nextLine();
-				if (line != null && !line.startsWith(MP.DELIM)
-						&& !line.contains(Integer.toString(EC.TLC_DISTRIBUTED_WORKER_REGISTERED))
-						&& !line.contains(Integer.toString(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED))) {
-					result += line + "\n";
+				if (line != null && !line.startsWith(MP.DELIM)) {
+					result.append(line);
+					result.append("\n");
 				}
 			}
+			scanner.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			result += "Failed to find file " + out.getAbsolutePath(); 
+			result.append("Failed to find file " + out.getAbsolutePath()); 
 		}
-		return result;
+		return result.toString();
 	}
 
 	/**
