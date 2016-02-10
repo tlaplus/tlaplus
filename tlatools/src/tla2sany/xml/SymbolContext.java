@@ -21,7 +21,7 @@ public class SymbolContext {
   public static final int OTHER_BUG = 0;
 
   // some semantic objects are represented using null. this flags array
-  // is used to tell nodes tio expect them so xml exporting will be done properly
+  // is used to tell nodes to expect them so xml exporting will be done properly
   private boolean[] flagArray;
 
   public SymbolContext() {

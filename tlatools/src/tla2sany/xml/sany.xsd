@@ -10,7 +10,8 @@
   <xs:element name="modules">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="context"/> 
+        <xs:element name="RootModule" type="xs:string"/>
+        <xs:element ref="context"/>
         <xs:sequence maxOccurs="unbounded">
           <xs:element ref="ModuleNode"/>
         </xs:sequence>
