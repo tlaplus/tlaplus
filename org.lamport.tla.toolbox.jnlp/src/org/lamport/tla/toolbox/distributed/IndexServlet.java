@@ -111,7 +111,7 @@ public class IndexServlet extends URLHttpServlet {
 				"<li>\n" + 
 					"<p>Run from slave command line:</p>\n" + 
 					"<p><pre>" + 
-						"javaws " + addr + " " + jnlpName +
+						"javaws " + addr + "/" + jnlpName +
 					"</pre></p>\n" + 
 				"</li>");
 		
