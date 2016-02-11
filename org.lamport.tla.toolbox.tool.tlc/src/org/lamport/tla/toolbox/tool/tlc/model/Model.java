@@ -291,7 +291,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	 * when the TLC process crashed (terminated with exit code > 0).
 	 */
 	public boolean isStale() {
-        final IFile resource = this.launchConfig.getFile();
+        final IFile resource = getFile();
 		if (resource.exists()) {
 			IMarker[] foundMarkers;
 			try {
@@ -310,7 +310,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	
 	public void setStale() {
 		try {
-			this.launchConfig.getFile().createMarker(TLC_CRASHED_MARKER);
+			getFile().createMarker(TLC_CRASHED_MARKER);
 		} catch (CoreException shouldNotHappen) {
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 		}
@@ -348,7 +348,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 
 	private boolean isMarkerSet(String markerType, final String attributeName) {
 		// marker
-		final IFile resource = this.launchConfig.getFile();
+		final IFile resource = getFile();
 		if (resource.exists()) {
 			try {
 				final IMarker[] foundMarkers = resource.findMarkers(markerType, false, IResource.DEPTH_ZERO);
@@ -370,7 +370,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 	
 	private void setMarker(final String markerType, final String attributeName, boolean value) {
-		final IFile resource = this.launchConfig.getFile();
+		final IFile resource = getFile();
 		if (resource.exists()) {
 			try {
 				IMarker marker;
@@ -400,7 +400,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
      */
 	public IMarker setMarker(Map<String, Object> properties, String markerType) {
 		try {
-			IMarker marker = this.launchConfig.getFile().createMarker(markerType);
+			IMarker marker = getFile().createMarker(markerType);
 			marker.setAttributes(properties);
 			return marker;
 		} catch (CoreException shouldNotHappen) {
@@ -410,7 +410,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 	
 	public IMarker[] getMarkers() {
-		final IFile resource = this.launchConfig.getFile();
+		final IFile resource = getFile();
 		if (resource.exists()) {
 			try {
 				return resource.findMarkers(TLC_MODEL_ERROR_MARKER, true, IResource.DEPTH_ZERO);
@@ -423,7 +423,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 
 	public void removeMarkers(final String markerType) {
 		try {
-			final IMarker[] foundMarkers = this.launchConfig.getFile().findMarkers(markerType, true,
+			final IMarker[] foundMarkers = getFile().findMarkers(markerType, true,
 					IResource.DEPTH_ONE);
 			for (int i = 0; i < foundMarkers.length; i++) {
 				foundMarkers[i].delete();
@@ -438,7 +438,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
      * It deletes all temporary files on disk and restores the state to unlocked.
      */
 	public void recover() {
-		final IFile resource = this.launchConfig.getFile();
+		final IFile resource = getFile();
 		if (resource.exists()) {
 			try {
 				// remove any crashed markers
