@@ -815,9 +815,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		// into a working copy, which is synced on save. Thus, make sure never
 		// to write to different copies concurrently.
         try {
-			ILaunchConfigurationWorkingCopy workingCopy = launchConfig.getWorkingCopy();
-			workingCopy.setAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, serializedInput);
-			this.launchConfig = workingCopy.doSave();
+        	getWorkingCopy().setAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, serializedInput);
 		} catch (CoreException shouldNotHappen) {
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 		}
@@ -843,10 +841,10 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	public Model save(final IProgressMonitor monitor) {
-		if (workingCopy != null) {
+		if (this.workingCopy != null) {
 			//TODO This is a workspace operation and thus should be decoupled from the UI thread.
 			try {
-				this.launchConfig = workingCopy.doSave();
+				this.launchConfig = this.workingCopy.doSave();
 			} catch (CoreException shouldNotHappen) {
 				TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 			}
