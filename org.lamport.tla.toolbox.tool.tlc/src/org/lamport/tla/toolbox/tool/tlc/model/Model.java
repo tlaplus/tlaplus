@@ -135,8 +135,17 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	private ILaunchConfiguration launchConfig;
 
 	// transient fields
+	/**
+	 * The working copy is the temporary storage for pending model changes until
+	 * they are saved. Upon save, the changes are merged back into launchConfig
+	 * and the working copy is deleted and nulled.
+	 * <p>
+	 * A null workingCopy indicates that the model is *not* dirty/has no pending,
+	 * unsaved changes.
+	 */
 	private ILaunchConfigurationWorkingCopy workingCopy;
 	private ILaunch launch;
+	
 	/**
 	 * Marker indicating the SANY Errors
 	 */
@@ -834,6 +843,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	
 	public void launch(String mode, IProgressMonitor subProgressMonitor, boolean build) {
 		try {
+			Assert.isTrue(this.workingCopy == null, "Cannot launch dirty model, save first.");
 			this.launch = this.launchConfig.launch(mode, subProgressMonitor, build);
 		} catch (CoreException shouldNotHappen) {
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
@@ -845,6 +855,11 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			//TODO This is a workspace operation and thus should be decoupled from the UI thread.
 			try {
 				this.launchConfig = this.workingCopy.doSave();
+				// Delete the temporary working copy and null it. Save
+				// effectively merges the changes in the working copy back into
+				// the launch config.
+				this.workingCopy.delete();
+				this.workingCopy = null;
 			} catch (CoreException shouldNotHappen) {
 				TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 			}
