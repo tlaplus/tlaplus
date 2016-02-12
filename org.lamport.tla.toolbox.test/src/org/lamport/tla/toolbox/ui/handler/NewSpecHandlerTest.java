@@ -79,7 +79,7 @@ public class NewSpecHandlerTest extends TestCase {
 
 	private IStatus runJob(String specName) throws IOException, InterruptedException {
 		final NewSpecHandlerJob job = new NewSpecHandlerJob(specName,
-				Files.createTempDirectory(specName).toFile().getAbsolutePath(), false);
+				Files.createTempFile(specName, ".tla").toFile().getAbsolutePath(), false);
 		MyJobChangeAdapter listener = new MyJobChangeAdapter();
 		job.addJobChangeListener(listener);
 		job.schedule();
