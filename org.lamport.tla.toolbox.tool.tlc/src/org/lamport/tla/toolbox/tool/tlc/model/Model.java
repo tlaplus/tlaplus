@@ -138,7 +138,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	/**
 	 * The working copy is the temporary storage for pending model changes until
 	 * they are saved. Upon save, the changes are merged back into launchConfig
-	 * and the working copy is deleted and nulled.
+	 * and the working copy is nulled.
 	 * <p>
 	 * A null workingCopy indicates that the model is *not* dirty/has no pending,
 	 * unsaved changes.
@@ -855,10 +855,8 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			//TODO This is a workspace operation and thus should be decoupled from the UI thread.
 			try {
 				this.launchConfig = this.workingCopy.doSave();
-				// Delete the temporary working copy and null it. Save
-				// effectively merges the changes in the working copy back into
-				// the launch config.
-				this.workingCopy.delete();
+				// Null the temporary working copy . Save effectively merges the
+				// changes in the working copy back into the launch config.
 				this.workingCopy = null;
 			} catch (CoreException shouldNotHappen) {
 				TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
