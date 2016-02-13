@@ -130,6 +130,7 @@ public class SpecTest extends TestCase {
 			assertNotSame(project.getName(), aProject.getName());
 		}
 		
-		assertNull(wsm.getMostRecentlyOpenedSpec());
+		Spec mostRecentlyOpenedSpec = wsm.getMostRecentlyOpenedSpec();
+		assertNull(mostRecentlyOpenedSpec != null ? mostRecentlyOpenedSpec.getName() : "", mostRecentlyOpenedSpec);
 	}
 }
