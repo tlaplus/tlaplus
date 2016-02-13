@@ -48,6 +48,11 @@ public class NewSpecHandlerTest extends TestCase {
 
 	public void testNewSpecHandlerSuccess() throws InterruptedException, IOException {
 		assertTrue(runJob("TestNewSpecHandlerSuccess").isOK());
+		
+		// Do some cleanup, leftovers seem to interfere with other tests.
+		final Spec spec = Activator.getSpecManager().getSpecByName("TestNewSpecHandlerSuccess");
+		Activator.getSpecManager().removeSpec(spec, new NullProgressMonitor(), true);
+		assertNull(Activator.getSpecManager().getSpecByName("TestNewSpecHandlerSuccess"));
 	}
 
 	public void testNewSpecHandlerFail() throws InterruptedException, IOException, CoreException {
