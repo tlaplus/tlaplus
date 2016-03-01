@@ -227,8 +227,8 @@ public class CloudDistributedTLCJob extends Job {
 							// instance.
 							+ " && "
 							+ "mkdir -p /mnt/tlc/ && chmod 777 /mnt/tlc/ && "
-							+ "ln -s /tmp/MC.out /var/www/html/MC.out && "
-							+ "ln -s /tmp/MC.err /var/www/html/MC.err"),
+							+ "ln -s /mnt/tlc/MC.out /var/www/html/MC.out && "
+							+ "ln -s /mnt/tlc/MC.err /var/www/html/MC.err"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			
 			monitor.worked(10);
@@ -295,6 +295,10 @@ public class CloudDistributedTLCJob extends Job {
 						// line because there is no command line.
 						+ "java "
 							+ params.getJavaVMArgs() + " "
+							// Write all tmp files to the ephemeral instance
+							// storage which is expected to have a higher IOPS
+							// compared to non-local storage.
+							+ "-Djava.io.tmpdir=/mnt/tlc/ "
 							// These properties cannot be "backed" into
 							// the payload jar as java itself does not 
 						    // support this.
@@ -368,6 +372,7 @@ public class CloudDistributedTLCJob extends Job {
 							+ "screen -dm -S tlc bash -c \" "
 							+ "java "
 								+ params.getJavaWorkerVMArgs() + " "
+								+ "-Djava.io.tmpdir=/mnt/tlc/ "
 								+ "-Dcom.sun.management.jmxremote "
 								+ "-Dcom.sun.management.jmxremote.port=5400 "
 								+ "-Dcom.sun.management.jmxremote.ssl=false "
