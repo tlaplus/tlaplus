@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="70">
+<?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="71">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.4.e45x-20150206-1600"/>
@@ -34,21 +34,21 @@
 <repository location="http://lemmy.github.com/jclouds2p2/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.rcp.id" version="4.5.1.M20150904-0015"/>
-<unit id="org.eclipse.help.feature.group" version="2.1.1.v20150904-0015"/>
-<unit id="org.eclipse.equinox.core.sdk.feature.group" version="3.11.1.v20150831-1342"/>
-<unit id="org.eclipse.rcp.sdk.id" version="4.5.1.M20150904-0015"/>
-<unit id="org.eclipse.platform.ide" version="4.5.1.M20150904-0015"/>
-<unit id="org.eclipse.rcp.configuration.feature.group" version="1.0.101.v20150904-0015"/>
-<unit id="org.eclipse.emf.ecore.feature.group" version="2.11.1.v20150805-0538"/>
+<unit id="org.eclipse.rcp.id" version="4.5.2.M20160212-1500"/>
+<unit id="org.eclipse.help.feature.group" version="2.1.2.v20160212-1500"/>
+<unit id="org.eclipse.equinox.core.sdk.feature.group" version="3.11.2.v20160128-1406"/>
+<unit id="org.eclipse.rcp.sdk.id" version="4.5.2.M20160212-1500"/>
+<unit id="org.eclipse.platform.ide" version="4.5.2.M20160212-1500"/>
+<unit id="org.eclipse.rcp.configuration.feature.group" version="1.0.102.v20160212-1500"/>
+<unit id="org.eclipse.emf.ecore.feature.group" version="2.11.2.v20160208-0816"/>
 <unit id="org.eclipse.equinox.executable" version="3.6.200.v20150602-1417"/>
-<unit id="org.eclipse.ecf.core.feature.feature.group" version="1.1.0.v20150810-1719"/>
-<unit id="org.eclipse.e4.rcp.feature.group" version="1.4.0.v20150903-1804"/>
-<unit id="org.eclipse.platform.sdk" version="4.5.1.M20150904-0015"/>
-<unit id="org.eclipse.emf.common.feature.group" version="2.11.0.v20150805-0538"/>
-<unit id="org.eclipse.equinox.sdk.feature.group" version="3.11.1.v20150831-1342"/>
-<unit id="org.eclipse.core.runtime.feature.feature.group" version="1.1.101.v20150903-1804"/>
-<unit id="org.eclipse.sdk.ide" version="4.5.1.M20150904-0015"/>
+<unit id="org.eclipse.ecf.core.feature.feature.group" version="1.2.0.v20151130-0157"/>
+<unit id="org.eclipse.e4.rcp.feature.group" version="1.4.1.v20160212-1350"/>
+<unit id="org.eclipse.platform.sdk" version="4.5.2.M20160212-1500"/>
+<unit id="org.eclipse.emf.common.feature.group" version="2.11.1.v20160208-0816"/>
+<unit id="org.eclipse.equinox.sdk.feature.group" version="3.11.2.v20160202-2102"/>
+<unit id="org.eclipse.core.runtime.feature.feature.group" version="1.1.102.v20160128-1558"/>
+<unit id="org.eclipse.sdk.ide" version="4.5.2.M20160212-1500"/>
 <repository location="http://download.eclipse.org/eclipse/updates/4.5/"/>
 </location>
 </locations>
