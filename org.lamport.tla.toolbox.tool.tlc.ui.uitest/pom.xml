@@ -16,31 +16,7 @@
 
 	<build>
 		<plugins>
-          <!-- Forcefully install Equinox Weaving jar into local repo -->
-          <!-- remove once https://issues.sonatype.org/browse/TYCHO-333 fixed -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-install-plugin</artifactId>
-				<version>2.2</version>
-				<executions>
-					<execution>
-					
-						<id>it-preparation</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>install-file</goal>
-						</goals>
-						<configuration>
-							<file>${settings.localRepository}/p2/osgi/bundle/org.eclipse.equinox.weaving.hook/1.1.100.v20140821-1915/org.eclipse.equinox.weaving.hook-1.1.100.v20140821-1915.jar</file>
-							<groupId>tlatoolbox</groupId>
-							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-							<version>1.1.100.v20140821-1915</version>
-							<packaging>jar</packaging>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
+ 
 			<!-- Run JUnit tests -->
       		<plugin>
 				<groupId>org.eclipse.tycho</groupId>
@@ -118,7 +94,7 @@
 					<!-- Enable JDT weaving -->
 					<frameworkExtensions>
 						<frameworkExtension>
-							<groupId>tlatoolbox</groupId> 
+							<groupId>p2.osgi.bundle</groupId>
 							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
 							<version>1.1.100.v20140821-1915</version>
 						</frameworkExtension>
