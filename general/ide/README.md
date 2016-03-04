@@ -5,12 +5,12 @@ Eclipse Oomph is a tool to simplify and automate the setup of Eclipse developmen
 2. Start the downloaded Oomph installer
 3. Switch to "Advanced Mode" by clicking the button in the right upper corner depited with three horizontal lines
 4. Select "Eclipse Platform" on the Product list (expand "Eclipse.org" node)
-..1. Choose "Mars" as the product version at the bottom
+  1. Choose "Mars" as the product version at the bottom
 5. On the next screen, click the green "+" sign at the upper right corner
-..1. Select "Github Project" as the Category
-..2. As "Resource URI" add 'https://raw.githubusercontent.com/tlaplus/tlaplus/master/general/ide/TLA.setup'
-..3. Double click newly created "TLA+" item
-..4. Make sure "<User>- TLA+" shows up under "Project" at the bottom table
+  1. Select "Github Project" as the Category
+  2. As "Resource URI" add 'https://raw.githubusercontent.com/tlaplus/tlaplus/master/general/ide/TLA.setup'
+  3. Double click newly created "TLA+" item
+  4. Make sure "<User>- TLA+" shows up under "Project" at the bottom table
 6. On the next page, select whether to use anonymous access to github or not from the "TLA+ Github Repository" dropdown list
 7. Hit Finish and have a coffee or tee (though you might have to accept a license dialog...)
 
