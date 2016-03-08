@@ -12,5 +12,5 @@ Eclipse Oomph is a tool to simplify and automate the setup of Eclipse developmen
   3. Double click newly created "TLA+" item
   4. Make sure "<User>- TLA+" shows up under "Project" at the bottom table
 6. On the next page, select whether to use anonymous access to github or not from the "TLA+ Github Repository" dropdown list
-7. Hit Finish and have a coffee or tee (though you might have to accept a license dialog...)
+7. Hit Finish and have a coffee or tea (though you might have to accept a license dialog...)
 
