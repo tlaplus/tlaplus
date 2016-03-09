@@ -3,7 +3,7 @@ Eclipse Oomph is a tool to simplify and automate the setup of Eclipse developmen
 0. Requires a recent - at the time of writing this is 1.8 - JDK (Java Development Environment)
 1. Install the Oomph Eclipse installer from https://wiki.eclipse.org/Eclipse_Installer
 2. Start the downloaded Oomph installer
-3. Switch to "Advanced Mode" by clicking the button in the right upper corner depited with three horizontal lines
+3. Switch to "Advanced Mode" by clicking the button in the right upper corner depicted with three horizontal lines
 4. Select "Eclipse Platform" on the Product list (expand "Eclipse.org" node)
   1. Choose "Mars" as the product version at the bottom
 5. On the next screen, click the green "+" sign at the upper right corner
