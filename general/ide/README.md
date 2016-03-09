@@ -1,4 +1,4 @@
-Eclipse Oomph is a tool to simplify and automate the setup of Eclipse development environments. In this case, it creates a developement environment for the TLA+Tools (TLC, SANY, ...) and the Eclipse-based TLA+Toolbox. In order to use the TLA.setup script in this folder, one has to:
+Eclipse Oomph is a tool to simplify and automate the setup of Eclipse development environments. In this case, it creates a development environment for the TLA+Tools (TLC, SANY, ...) and the Eclipse-based TLA+Toolbox. In order to use the TLA.setup script in this folder, one has to:
 
 0. Requires a recent - at the time of writing this is 1.8 - JDK (Java Development Environment)
 1. Install the Oomph Eclipse installer from https://wiki.eclipse.org/Eclipse_Installer
