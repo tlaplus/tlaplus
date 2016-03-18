@@ -425,7 +425,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		String hostname = InetAddress.getLocalHost().getHostName();
 		Registry rg = LocateRegistry.createRegistry(Port);
 		rg.rebind(SERVER_NAME, this);
-		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_RUNNING, hostname);
 		
 		// First register TLCSERVER with RMI and only then wait for all FPSets
 		// to become registered. This only waits if we use distributed
@@ -496,7 +495,13 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		/*
 		 * This marks the end of the master and FPSet server initialization.
 		 * Model checking can start now.
+		 * Print the startup message now, because the Toolbox is supposed to
+		 * show that it's waiting for workers to connect. If the messaage
+		 * gets printed earlier, it's replaced by EC.TLC_INIT_GENERATED1
+		 * right away and the user can consequently miss that TLCServer is
+		 * running.
 		 */
+		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_RUNNING, hostname);
 
 		// Model checking results to be collected after model checking has finished
 		long oldNumOfGenStates = 0;
