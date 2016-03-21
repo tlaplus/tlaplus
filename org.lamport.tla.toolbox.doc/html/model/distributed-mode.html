@@ -16,7 +16,8 @@
 
 <pre>
 Contents
-  <a href="#how-it-works">How Distributed TLC Works</a>
+  <a href="#different-modes">Different modes of Distributed TLC</a>
+  <a href="#how-it-works">How Distributed TLC in <i>Ad Hoc</i> Mode Works</a>
   <a href="#running-master">Running the Master</a>
   <a href="#running-workers">Running the Slave Computers</a>
   <a href="#limitations">Limitations of Distributed Mode </a>
@@ -24,7 +25,19 @@ Contents
 </pre>
 
 
-<a name="how-it-works"></a><h2>How Distributed TLC Works</h2>
+<a name="different-modes"></a><h2>Different modes of Distributed TLC</h2>
+
+The TLA+ Toolbox has support to run distributed TLC in different modes (<i>ad hoc</i>, <i>Azure</i>, <i>aws-ec2</i>), which can be
+generalized into <i>ad hoc</i> mode and <i>Cloud Distributed TLC</i>. The former (ad hoc) runs
+TLC on a set of your own computers. It is up to you to install all necessary 
+prerequisites (<a href="#how-it-works">see below</a>) on each of the computers. The latter mode (Cloud Distributed TLC)
+on the other hand, moves Distributed TLC into the <a href="https://en.wikipedia.org/wiki/Cloud_computing">cloud</a>
+and thus can automate all the install steps of ad hoc mode for you. It comes at the price service charges by the cloud compute providers.
+For Cloud Distributed TLC, please <a href="../cloudtlc/index.html">switch over to its dedicated documentation</a>
+
+<hr>
+
+<a name="how-it-works"></a><h2>How Distributed TLC in <i>Ad Hoc</i> Mode Works</h2>
 
 TLC has a collection of worker threads that do the actual
 model checking--that is, they compute the graph of reachable states
@@ -143,13 +156,6 @@ and the Toolbox's installation directory in /opt, the command line will look lik
 </pre>
 -->
 </p>
-
-<div align="center">
-<div align="center" style="width:500px;height:85px;border:1px solid #000;">
-If you need to check liveness properties (see <a href="#limitations">Limitations</a> below) or cannot
-leave the master computer running for days or weeks, you can switch to the new <a href="../cloudtlc/index.html">cloud-based distributed TLC</a> Toolbox feature.
-</div>
-</div>
 
 <a name="running-workers"></a><h2>Running the Slave Computers</h2>
 
