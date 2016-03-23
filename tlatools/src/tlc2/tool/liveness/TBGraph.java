@@ -15,9 +15,61 @@ public class TBGraph extends Vect {
 	public final LiveExprNode tf;
 	private int initCnt;
 
-	public TBGraph(LiveExprNode tf) {
+	public TBGraph() {
+		this.tf = null;
+		this.initCnt = 0;
+	}
+
+	/**
+	 * Given a starting TBGraphNode, constructTableau constructs the tableau for
+	 * it. Read MP for details. It returns a list of all the nodes in the
+	 * tableau graph.
+	 */
+	public TBGraph(final LiveExprNode tf) {
 		this.tf = tf;
 		this.initCnt = 0;
+		
+		final TBPar initTerms = new TBPar(1);
+		initTerms.addElement(tf);
+		final TBParVec pars = initTerms.particleClosure();
+
+		for (int i = 0; i < pars.size(); i++) {
+			final TBGraphNode gn = new TBGraphNode(pars.parAt(i));
+			this.addElement(gn);
+		}
+		this.setInitCnt(this.size());
+		// We now repeatedly compute the outlinks of each node:
+		for (int i = 0; i < this.size(); i++) {
+			final TBGraphNode gnSrc = (TBGraphNode) this.elementAt(i);
+			final TBPar imps = gnSrc.getPar().impliedSuccessors();
+			final TBParVec succs = imps.particleClosure();
+			for (int j = 0; j < succs.size(); j++) {
+				final TBPar par = succs.parAt(j);
+				final TBGraphNode gnDst = findOrCreateNode(par);
+				gnSrc.nexts.addElement(gnDst);
+			}
+		}
+		// Assign each node in the tableau an index.
+		for (int i = 0; i < this.size(); i++) {
+			this.getNode(i).setIndex(i);
+		}
+	}
+	
+	/**
+	 * The method findOrCreateNode, given a list of particles, either finds the
+	 * particle in that list, or creates a new one and puts it in the list. If
+	 * it does create a node, then it also sticks that node into allnodes.
+	 */
+	private TBGraphNode findOrCreateNode(final TBPar par) {
+		for (int i = 0; i < this.size(); i++) {
+			final TBGraphNode gn = (TBGraphNode) this.elementAt(i);
+			if (par.equals(gn.getPar())) {
+				return gn;
+			}
+		}
+		final TBGraphNode gn = new TBGraphNode(par);
+		this.addElement(gn);
+		return gn;
 	}
 
 	public TBGraphNode getNode(int idx) {

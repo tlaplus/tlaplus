@@ -118,7 +118,7 @@ public class LiveCheckTest {
 		EasyMock.expect(node.getIndex()).andReturn(0).anyTimes();
 		EasyMock.replay(node);
 		
-		final TBGraph tbGraph = new TBGraph(null);
+		final TBGraph tbGraph = new TBGraph();
 		tbGraph.addElement(node);
 		tbGraph.setInitCnt(1);
 		

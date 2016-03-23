@@ -103,6 +103,105 @@ public class TBPar extends Vect {
 	}
 
 	/**
+	 * The method particleClosure, given a list of terms (initially just a
+	 * single term), returns a list of all particles containing those terms.
+	 * It's a recursive tree search.
+	 */
+	public TBParVec particleClosure() {
+		TBPar positive_closure = this.positiveClosure();
+		Vect alphas = positive_closure.alphaTriples();
+		Vect betas = positive_closure.betaTriples();
+		return particleClosure(this, alphas, betas);
+	}
+
+	private TBParVec particleClosure(TBPar terms, Vect alphas, Vect betas) {
+		// if terms is not locally consistent, then terminate.
+		if (!terms.isLocallyConsistent()) {
+			return new TBParVec(0);
+		}
+		// if terms is not alpha-closed, then close it.
+		// first, try alpha expansion. See MP page 403 
+		// figure 5.1. for alpha expansion rules.
+		TBPar terms1 = terms;
+		for (int i = 0; i < terms1.size(); i++) {
+			LiveExprNode ln = terms1.exprAt(i);
+			LiveExprNode kappa1 = null, kappa2 = null;
+			if (ln instanceof LNAll) {
+				// Alpha-Expansion: []p expands to p, ()[]p
+				kappa1 = ((LNAll) ln).getBody();
+				kappa2 = new LNNext(ln);
+			} else if (ln instanceof LNConj) {
+				// Alpha-Expansion: p /\ q expands to p, q
+				kappa1 = ((LNConj) ln).getBody(0);
+				kappa2 = ((LNConj) ln).getBody(1);
+			}
+			if (kappa1 != null) {
+				if (terms1.member(kappa1)) {
+					if (!terms1.member(kappa2)) {
+						terms1 = terms1.append(kappa2);
+					}
+				} else if (terms1.member(kappa2)) {
+					terms1 = terms1.append(kappa1);
+				} else {
+					terms1 = terms1.append(kappa1, kappa2);
+				}
+			}
+		}
+		// second, try alpha^-1 expansion
+		boolean done;
+		do {
+			done = true;
+			for (int i = 0; i < alphas.size(); i++) {
+				TBTriple alpha = (TBTriple) alphas.elementAt(i);
+				if (terms1.member(alpha.getB()) && terms1.member(alpha.getC()) && !terms1.member(alpha.getA())) {
+					terms1.addElement(alpha.getA());
+					done = false;
+				}
+			}
+		} while (!done);
+		// finally, recurse only when locally consistent
+		if ((terms1.size() > terms.size()) && (!terms1.isLocallyConsistent())) {
+			return new TBParVec(0);
+		}
+		return particleClosureBeta(terms1, alphas, betas);
+	}
+
+	private TBParVec particleClosureBeta(TBPar terms, Vect alphas, Vect betas) {
+		// try a beta expansion. See MP page 403 
+		// figure 5.1. for beta expansion rules.
+		for (int i = 0; i < terms.size(); i++) {
+			LiveExprNode ln = terms.exprAt(i);
+			LiveExprNode kappa1 = null, kappa2 = null;
+			if (ln instanceof LNEven) {
+				// Beta-Expansion: <>p expands to p, ()<>p
+				kappa1 = ((LNEven) ln).getBody();
+				kappa2 = new LNNext(ln);
+			} else if (ln instanceof LNDisj) {
+				// Beta-Expansion: p \/ expands to p, q
+				kappa1 = ((LNDisj) ln).getBody(0);
+				kappa2 = ((LNDisj) ln).getBody(1);
+			}
+			if ((kappa1 != null) && !terms.member(kappa1) && !terms.member(kappa2)) {
+				TBParVec ps1 = particleClosure(terms.append(kappa1), alphas, betas);
+				TBParVec ps2 = particleClosure(terms.append(kappa2), alphas, betas);
+				return ps1.union(ps2);
+			}
+		}
+		// try a beta^-1 expansion
+		for (int i = 0; i < betas.size(); i++) {
+			TBTriple beta = (TBTriple) betas.elementAt(i);
+			if ((terms.member(beta.getB()) || terms.member(beta.getC())) && !terms.member(beta.getA())) {
+				return particleClosure(terms.append(beta.getA()), alphas, betas);
+			}
+		}
+		// if there are not any more expansions to do, return the terms
+		// we've got as the only particle in a list of particles.
+		TBParVec res = new TBParVec(1);
+		res.addElement(terms);
+		return res;
+	}
+
+	/**
 	 * The methods alphaTriples and betaTriples, given a positive closure,
 	 * figure out the alpha and beta triples. The way the algorithm works, by
 	 * the time we extract triples, it should already have been positively
@@ -234,7 +333,7 @@ public class TBPar extends Vect {
 	 * This methods returns true iff this particle (TBPar) fulfills the given
 	 * promise.
 	 * <p>
-	 * A particle A is said to fulfill formula &#966; which promises r if either:
+	 * A particle/atom A is said to fulfill formula &#966; which promises r if either:
 	 * <ul>
 	 * <li>&#966; \notin A</li>
 	 * <li>r \in A</li>

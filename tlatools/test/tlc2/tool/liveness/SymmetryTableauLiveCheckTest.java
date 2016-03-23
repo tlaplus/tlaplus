@@ -132,7 +132,7 @@ public class SymmetryTableauLiveCheckTest {
 		EasyMock.expect(node0.getIndex()).andReturn(0).anyTimes();
 		EasyMock.replay(node0);
 
-		final TBGraph tbGraph = new TBGraph(null);
+		final TBGraph tbGraph = new TBGraph();
 		tbGraph.addElement(node0);
 		tbGraph.addElement(node1);
 		tbGraph.setInitCnt(1);
@@ -333,7 +333,7 @@ public class SymmetryTableauLiveCheckTest {
 		EasyMock.expect(node0.nextAt(1)).andReturn(node1).anyTimes();
 		EasyMock.replay(node0);
 
-		final TBGraph tbGraph = new TBGraph(null);
+		final TBGraph tbGraph = new TBGraph();
 		tbGraph.addElement(node0);
 		tbGraph.addElement(node1);
 		tbGraph.addElement(node2);
