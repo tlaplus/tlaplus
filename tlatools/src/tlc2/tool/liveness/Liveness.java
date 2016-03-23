@@ -395,27 +395,30 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			return new TBParVec(0);
 		}
 		// if terms is not alpha-closed, then close it.
-		// first, try alpha expansion
+		// first, try alpha expansion. See MP page 403 
+		// figure 5.1. for alpha expansion rules.
 		TBPar terms1 = terms;
 		for (int i = 0; i < terms1.size(); i++) {
 			LiveExprNode ln = terms1.exprAt(i);
-			LiveExprNode k1 = null, k2 = null;
+			LiveExprNode kappa1 = null, kappa2 = null;
 			if (ln instanceof LNAll) {
-				k1 = ((LNAll) ln).getBody();
-				k2 = new LNNext(ln);
+				// Alpha-Expansion: []p expands to p, ()[]p
+				kappa1 = ((LNAll) ln).getBody();
+				kappa2 = new LNNext(ln);
 			} else if (ln instanceof LNConj) {
-				k1 = ((LNConj) ln).getBody(0);
-				k2 = ((LNConj) ln).getBody(1);
+				// Alpha-Expansion: p /\ q expands to p, q
+				kappa1 = ((LNConj) ln).getBody(0);
+				kappa2 = ((LNConj) ln).getBody(1);
 			}
-			if (k1 != null) {
-				if (terms1.member(k1)) {
-					if (!terms1.member(k2)) {
-						terms1 = terms1.append(k2);
+			if (kappa1 != null) {
+				if (terms1.member(kappa1)) {
+					if (!terms1.member(kappa2)) {
+						terms1 = terms1.append(kappa2);
 					}
-				} else if (terms1.member(k2)) {
-					terms1 = terms1.append(k1);
+				} else if (terms1.member(kappa2)) {
+					terms1 = terms1.append(kappa1);
 				} else {
-					terms1 = terms1.append(k1, k2);
+					terms1 = terms1.append(kappa1, kappa2);
 				}
 			}
 		}
@@ -439,20 +442,23 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	}
 
 	private static TBParVec particleClosureBeta(TBPar terms, Vect alphas, Vect betas) {
-		// try a beta expansion
+		// try a beta expansion. See MP page 403 
+		// figure 5.1. for beta expansion rules.
 		for (int i = 0; i < terms.size(); i++) {
 			LiveExprNode ln = terms.exprAt(i);
-			LiveExprNode k1 = null, k2 = null;
+			LiveExprNode kappa1 = null, kappa2 = null;
 			if (ln instanceof LNEven) {
-				k1 = ((LNEven) ln).getBody();
-				k2 = new LNNext(ln);
+				// Beta-Expansion: <>p expands to p, ()<>p
+				kappa1 = ((LNEven) ln).getBody();
+				kappa2 = new LNNext(ln);
 			} else if (ln instanceof LNDisj) {
-				k1 = ((LNDisj) ln).getBody(0);
-				k2 = ((LNDisj) ln).getBody(1);
+				// Beta-Expansion: p \/ expands to p, q
+				kappa1 = ((LNDisj) ln).getBody(0);
+				kappa2 = ((LNDisj) ln).getBody(1);
 			}
-			if ((k1 != null) && !terms.member(k1) && !terms.member(k2)) {
-				TBParVec ps1 = particleClosure(terms.append(k1), alphas, betas);
-				TBParVec ps2 = particleClosure(terms.append(k2), alphas, betas);
+			if ((kappa1 != null) && !terms.member(kappa1) && !terms.member(kappa2)) {
+				TBParVec ps1 = particleClosure(terms.append(kappa1), alphas, betas);
+				TBParVec ps2 = particleClosure(terms.append(kappa2), alphas, betas);
 				return ps1.union(ps2);
 			}
 		}
@@ -550,6 +556,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			final LiveExprNode ln = dnf.getBody(i).flattenSingleJunctions();
 			final OSExprPem pem = new OSExprPem();
 			pems[i] = pem;
+			//TODO Is this the place where TLC splits conjuncts into non-symmetric subformulas?
 			if (ln instanceof LNConj) {
 				final LNConj lnc2 = (LNConj) ln;
 				for (int j = 0; j < lnc2.getCount(); j++) {
@@ -680,7 +687,14 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * tests. This method classifies an expression into <>[]act, []<>act,
 	 * []<>state, temporal formulas (without actions), or erroneous things.
 	 */
+	// TODO Explore the idea to syntactically rewrite an LNActions A into a
+	// ordinary predicate and the next state operator ()A in the tableau.
 	private static void classifyExpr(LiveExprNode ln, OSExprPem pem) {
+		// TLC is clever enough to optimize the case where some temporal formula
+		// can be handled WITHOUT a tableau. In this case, the state graph IS
+		// the behavior graph and thus the overall verification time is reduced.
+		// Additionally, the tableau generation does not support formulas 
+		// containing (nested) LNActions.
 		if (ln instanceof LNEven) {
 			LiveExprNode ln1 = ((LNEven) ln).getBody();
 			if (ln1 instanceof LNAll) {
@@ -708,6 +722,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		if (ln.containAction()) {
 			Assert.fail(EC.TLC_LIVE_WRONG_FORMULA_FORMAT);
 		}
+		// If we get here (because of a temporal formula), at tableau is
+		// consequently going to be created. This part corresponds to the
+		// ideas in the MP book.
 		pem.tfs.addElement(ln);
 	}
 

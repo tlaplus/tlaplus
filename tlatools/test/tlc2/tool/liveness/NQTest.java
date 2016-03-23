@@ -42,6 +42,16 @@ public class NQTest extends ModelCheckerTestCase {
 		super("MC", "symmetry" + File.separator + "NQ");
 	}
 	
+	/*
+	 * WRT @Ignore:
+	 * Without symmetry defined, TLC finds no counterexample. With symmetry,
+	 * which is the case for this test, TLC incorrectly finds a counterexample
+	 * which it subsequently fails to recreate. In the end, this causes TLC to
+	 * claim that the spec is not symmetric.
+	 * 
+	 * So why does TLC think the PossibleErrorModel is P-Satisfiable and
+	 * consequently tries to produce a counterexample?
+	 */
 	@Test
 	@Ignore("Ignored for as long as symmetry is incorrectly handled by TLC with liveness checking.")
 	public void testSpec() {
