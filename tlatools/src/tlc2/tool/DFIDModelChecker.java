@@ -13,6 +13,7 @@ import tlc2.output.MP;
 import tlc2.tool.fp.dfid.FPIntSet;
 import tlc2.tool.fp.dfid.MemFPIntSet;
 import tlc2.tool.liveness.LiveException;
+import tlc2.util.IStateWriter;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
@@ -521,9 +522,10 @@ public class DFIDModelChecker extends AbstractChecker
             // Finally, add curState into the behavior graph for liveness checking:
             if (this.checkLiveness && isLeaf)
             {
+            	final long curStateFP = curState.fingerPrint();
                 // Add a stuttering step for curState:
-                long curStateFP = curState.fingerPrint();
                 liveNextStates.put(curStateFP, curState);
+            	this.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
                 // Add curState to the behavior graph:
                 liveCheck.addNextState(curState, curStateFP, liveNextStates);
 

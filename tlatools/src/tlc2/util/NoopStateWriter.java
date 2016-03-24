@@ -44,9 +44,17 @@ public final class NoopStateWriter implements IStateWriter {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.util.IStateWriter.Visualization)
+	 */
+	public void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
+		// noop
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.util.IStateWriter#close()
 	 */
 	public final void close() {
 		// noop
 	}
+
 }

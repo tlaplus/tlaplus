@@ -19,6 +19,7 @@ import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
+import tlc2.util.IStateWriter;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.util.SetOfStates;
@@ -612,10 +613,13 @@ public class ModelChecker extends AbstractChecker
             // Finally, add curState into the behavior graph for liveness checking:
             if (this.checkLiveness)
             {
+				final long curStateFP = curState.fingerPrint();
+
 				// Add the stuttering step:
-				long curStateFP = curState.fingerPrint();
 				liveNextStates.put(curStateFP, curState);
-				liveCheck.addNextState(curState, curStateFP, liveNextStates);
+            	this.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
+
+            	liveCheck.addNextState(curState, curStateFP, liveNextStates);
 
 				// Poor man's version of a controller. If necessary, try e.g.
 				// PID controller instead.

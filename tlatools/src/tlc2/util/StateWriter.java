@@ -42,6 +42,15 @@ public class StateWriter implements IStateWriter
     	}
     }
 
+    /* (non-Javadoc)
+     * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.util.IStateWriter.Visualization)
+     */
+    public void writeState(TLCState state, TLCState successor, final boolean successorStateIsNew, final Visualization visualization) {
+    	if (successorStateIsNew) {
+    		this.writeState(state);
+    	}
+    }
+    
     public void close()
     {
         this.writer.close();

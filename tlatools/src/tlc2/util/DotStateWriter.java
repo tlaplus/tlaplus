@@ -61,16 +61,28 @@ public class DotStateWriter extends StateWriter {
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean)
 	 */
 	public synchronized void writeState(TLCState state, TLCState successor, boolean successorStateIsNew) {
+		writeState(state, successor, successorStateIsNew, Visualization.DEFAULT);
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, java.lang.String)
+	 */
+	public void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
 		final String successorsFP = Long.toString(successor.fingerPrint());
 
 		// Write the transition
 		this.writer.append(Long.toString(state.fingerPrint()));
 		this.writer.append(" -> ");
 		this.writer.append(successorsFP);
+		if (visualization == Visualization.STUTTERING) {
+			this.writer.append(" [style=\"dashed\"]");
+		}
 		this.writer.append(";\n");
 
-		// If the successor is new, we have to print the label of the state.
-		// Otherwise we would print its fingerprint.
+		// If the successor is new, print the state's label. Labels are printed
+		// when writeState sees the successor. It does not print the label for
+		// the current state. If it would print the label for the current state,
+		// the init state labels would be printed twice.
 		if (successorStateIsNew) {
 			// Write the successor's label
 			this.writer.append(successorsFP);
@@ -80,7 +92,7 @@ public class DotStateWriter extends StateWriter {
 			this.writer.append(";\n");
 		}
 	}
-	
+
 	private static String states2dot(final TLCState state) {
 		// Replace "\" with "\\" and """ with "\"".	
 		return state.toString().replace("\\", "\\\\").replace("\"", "\\\"").trim();

@@ -28,10 +28,24 @@ package tlc2.util;
 import tlc2.tool.TLCState;
 
 public interface IStateWriter {
+	
+	public enum Visualization {
+		/**
+		 * If successor and the current state are identical and the transition
+		 * is due to stuttering.
+		 */
+		STUTTERING,
+		/**
+		 * No extra visualization hint is given.
+		 */
+		DEFAULT;
+	}
 
 	void writeState(TLCState state);
 
 	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew);
 
+	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visulation);
+	
 	void close();
 }
