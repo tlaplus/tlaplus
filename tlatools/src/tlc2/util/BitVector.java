@@ -128,6 +128,25 @@ public class BitVector implements Serializable {
     }
   }
   
+  	/**
+	 * Returns this {@link BitVector} is a bit string with the MSB to the left
+	 * and the LSB to the right.
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+  public String toString() {
+	  final StringBuffer buf = new StringBuffer(this.word.length * 64);
+	  for (int i = this.word.length * 64; i >= 0; i--) {
+		  if (get(i)) {
+			  buf.append("1");
+		  } else {
+			  buf.append("0");
+		  }
+	  }
+	  buf.append("]");
+	  return buf.toString().replaceAll("^0*","["); // Replace leading zeros with "["
+  }
+  
 	/**
 	 * @return The number of bits set true
 	 */
