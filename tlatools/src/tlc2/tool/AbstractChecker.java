@@ -114,6 +114,13 @@ public abstract class AbstractChecker implements Cancelable
         // Initialize dumpFile:
         if (dumpFile != null)
         {
+        	if (dumpFile.startsWith("${metadir}")) {
+				// prefix dumpfile with the known value of this.metadir. There
+				// is no way to determine the actual value of this.metadir
+				// before TLC startup and thus it's impossible to make the
+				// dumpfile end up in the metadir if desired.
+        		dumpFile = dumpFile.replace("${metadir}", this.metadir);
+        	}
         	if (asDot) {
         		this.allStateWriter = new DotStateWriter(dumpFile);
         	} else {
