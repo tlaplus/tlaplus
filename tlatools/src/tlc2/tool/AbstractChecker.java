@@ -44,7 +44,11 @@ public abstract class AbstractChecker implements Cancelable
 	
 	protected static final boolean LIVENESS_STATS = Boolean.getBoolean(Liveness.class.getPackage().getName() + ".statistics");
 	
-    // SZ Mar 9, 2009: static modifier removed
+	//TODO Replace with distributed counter?!
+	// http://concurrencyfreaks.blogspot.de/2013/08/concurrency-pattern-distributed-cache.html
+	// If the next state relation is small, this atomic counter might pose a
+	// scalability bottleneck. My gut feeling however is, that TLC only suffers
+	// a negligible performance penalty from it.
     protected AtomicLong numOfGenStates;
     protected TLCState predErrState;
     protected TLCState errState;
