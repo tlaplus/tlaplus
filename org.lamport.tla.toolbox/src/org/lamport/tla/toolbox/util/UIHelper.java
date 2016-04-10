@@ -363,9 +363,17 @@ public class UIHelper {
 	 * @throws PartInitException
 	 */
 	public static IEditorPart openEditorUnchecked(String editorId, IFile file) throws PartInitException {
-		return openEditorUnchecked(editorId, new FileEditorInput(file));
+		return openEditorUnchecked(editorId, new FileEditorInput(file), true);
+	}
+	
+	public static IEditorPart openEditorUnchecked(String editorId, IFile file, boolean activate) throws PartInitException {
+		return openEditorUnchecked(editorId, new FileEditorInput(file), activate);
 	}
 
+	public static IEditorPart openEditorUnchecked(String editorId, IEditorInput input) throws PartInitException {
+		return openEditorUnchecked(editorId, input, true);
+	}
+	
 	/**
 	 * Opens an editor in current workbench window
 	 * 
@@ -374,10 +382,10 @@ public class UIHelper {
 	 * @return the created or reopened IEditorPart
 	 * @throws PartInitException
 	 */
-	public static IEditorPart openEditorUnchecked(String editorId, IEditorInput input) throws PartInitException {
+	public static IEditorPart openEditorUnchecked(String editorId, IEditorInput input, boolean activate) throws PartInitException {
 		final IWorkbenchPage activePage = getActivePage();
 		if (activePage != null) {
-			final IEditorPart openEditor = activePage.openEditor(input, editorId);
+			final IEditorPart openEditor = activePage.openEditor(input, editorId, activate);
 
 			// Trigger re-evaluation of the handler enablement state by
 			// cycling the activepage. Cycling the active page causes an

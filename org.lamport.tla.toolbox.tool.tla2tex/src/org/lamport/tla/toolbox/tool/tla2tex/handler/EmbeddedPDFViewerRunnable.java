@@ -62,7 +62,8 @@ public class EmbeddedPDFViewerRunnable extends AbstractPDFViewerRunnable impleme
 					// explicit in the bundle's
 					// Manifest
 					"de.vonloesch.pdf4eclipse.editors.PDFEditor",
-					outputFile);
+					outputFile,
+					false); // don't activate (give focus) the editor
 		} catch (PartInitException e) {
 			MessageDialog.openWarning(UIHelper.getShellProvider().getShell(),
 					"PDF File Not Modified",
