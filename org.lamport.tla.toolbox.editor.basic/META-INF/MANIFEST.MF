@@ -17,6 +17,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.forms
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
-Import-Package: org.eclipse.ui.forms
+Import-Package: org.eclipse.e4.core.services.events,
+ org.eclipse.ui.forms
 Export-Package: org.lamport.tla.toolbox.editor.basic,
  org.lamport.tla.toolbox.editor.basic.util

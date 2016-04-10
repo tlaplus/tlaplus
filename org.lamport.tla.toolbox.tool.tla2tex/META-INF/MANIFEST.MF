@@ -13,5 +13,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Vendor: Daniel Ricketts
 Import-Package: org.eclipse.core.resources,
+ org.eclipse.e4.core.services.events,
  org.eclipse.ui,
- org.eclipse.ui.forms.editor
+ org.eclipse.ui.forms.editor,
+ org.osgi.service.event;version="1.3.1"

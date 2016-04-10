@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
@@ -102,7 +103,13 @@ import pcal.TLAtoPCalMapping;
  */
 public class TLAEditor extends TextEditor
 {
-    public static final String ID = "org.lamport.tla.toolbox.editor.basic.TLAEditor";
+	/**
+	 * The IEventBroker topic identifying the event sent out when the editor is
+	 * saved.
+	 */
+	public static final String SAVE_EVENT = "TLAEditor/save";
+	
+	public static final String ID = "org.lamport.tla.toolbox.editor.basic.TLAEditor";
     private IContextService contextService = null;
     private IContextActivation contextActivation = null;
 
@@ -139,6 +146,7 @@ public class TLAEditor extends TextEditor
      * Calls {@link TLAEditor#refresh()} when this happens.
      */
     private IResourceChangeListener moduleFileChangeListener;
+	private IEventBroker service;
 
     /**
      * Constructor
@@ -314,7 +322,8 @@ public class TLAEditor extends TextEditor
         refresh();
 
         // tlapmColoring = new TLAPMColoringOutputListener(this);
-
+        
+        service = this.getSite().getService(IEventBroker.class);
     }
 
     /**
@@ -436,7 +445,8 @@ public class TLAEditor extends TextEditor
      */
     public void doSave(IProgressMonitor progressMonitor)
     {
-        IDocument doc = this.getDocumentProvider().getDocument(this.getEditorInput());
+        final IEditorInput editorInput = this.getEditorInput();
+		IDocument doc = this.getDocumentProvider().getDocument(editorInput);
         String text = doc.get();
 
         // Set historyStart to the offset at the start of the
@@ -534,7 +544,17 @@ public class TLAEditor extends TextEditor
             }
 
         } // end if (historyStart > -1)
-
+        
+        
+		// Send out a save event through the event bus. There might be parties
+		// interested in this, e.g. to regenerate the pretty printed pdf.
+        // This instanceof check should always evaluate to true.
+        if (editorInput instanceof FileEditorInput) {
+        	final FileEditorInput fei = (FileEditorInput) editorInput;
+        	final IFile spec = fei.getFile();
+        	service.post(SAVE_EVENT, spec);
+        }
+        
         super.doSave(progressMonitor);
     }
 

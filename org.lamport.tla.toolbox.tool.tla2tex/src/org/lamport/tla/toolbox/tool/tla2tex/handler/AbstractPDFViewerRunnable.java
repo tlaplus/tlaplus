@@ -2,6 +2,7 @@
 package org.lamport.tla.toolbox.tool.tla2tex.handler;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
@@ -12,7 +13,7 @@ public abstract class AbstractPDFViewerRunnable implements Runnable {
 	protected IProgressMonitor monitor;
 	protected String outputFileName;
 
-	public void setFile(String outputFileName) {
+	public void setFile(String outputFileName) throws CoreException {
         this.outputFileName = outputFileName;
 		this.outputFile = (IFile) ResourceHelper.getResourceByName(outputFileName);
 	}

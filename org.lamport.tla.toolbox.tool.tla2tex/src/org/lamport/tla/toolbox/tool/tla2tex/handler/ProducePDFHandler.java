@@ -63,7 +63,8 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 			if (fileToTranslate != null
 					&& ResourceHelper.isModule(fileToTranslate)) {
 				if (useEmbeddedViewer) {
-					runPDFJob(new EmbeddedPDFViewerRunnable(), fileToTranslate);
+					runPDFJob(new EmbeddedPDFViewerRunnable(this, activeEditor.getSite(), fileToTranslate),
+							fileToTranslate);
 				} else {
 					useStandalonePDFViewer(fileToTranslate);
 				}
@@ -193,7 +194,7 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 	 * @param tlaEditorAndPDFViewer
 	 * @param fileToTranslate
 	 */
-	private void runPDFJob(final AbstractPDFViewerRunnable runnable, 
+	void runPDFJob(final AbstractPDFViewerRunnable runnable, 
 			final IResource fileToTranslate) {
 		Job tla2TexJob = new WorkspaceJob("Produce PDF") {
 
@@ -261,7 +262,7 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 					// created outside of the Eclipse Resource realm. This makes
 					// sure that the Eclipse resource layer sees the newly
 					// created (PDF) file.
-					// Without an explicit refresh, one might see the symtoms
+					// Without an explicit refresh, one might see the symptoms
 					// outlined in bug #317 (http://bugzilla.tlaplus.net/show_bug.cgi?id=317)
 					// (org.eclipse.core.internal.resources.ResourceException:
 					// Resource '/Test/Test.pdf' does not exist.)
