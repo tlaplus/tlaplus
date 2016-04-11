@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -422,7 +421,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			long l = System.currentTimeMillis() - timestamp;
 			flushTime += l;
 			
-			LOGGER.log(Level.FINE, "Flushed disk {0} {1}. tine, in {2} sec", new Object[] {
+			LOGGER.log(Level.FINE, "Flushed disk {0} {1}. time, in {2} sec", new Object[] {
 					((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l});
 		}
 		w.unlock();
@@ -868,9 +867,6 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		// the fingerprints from the TLCTrace file. Not from its own .fp file. 
 	}
 
-	private long[] recoveryBuff = null;
-	private int recoveryIdx = -1;
-
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#prepareRecovery()
 	 */
@@ -882,20 +878,41 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		for (int i = 0; i < this.brafPool.length; i++) {
 			this.brafPool[i].close();
 		}
-
-		recoveryBuff = new long[1 << 21];
-		recoveryIdx = 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#recoverFP(long)
 	 */
 	public final void recoverFP(long fp) throws IOException {
-		recoveryBuff[recoveryIdx++] = (fp & 0x7FFFFFFFFFFFFFFFL);
-		if (recoveryIdx == recoveryBuff.length) {
-			Arrays.sort(recoveryBuff, 0, recoveryIdx);
-			flusher.mergeNewEntries(recoveryBuff, recoveryIdx);
-			recoveryIdx = 0;
+		// This implementation used to group n fingerprints into a sorted
+		// in-memory page. Pages were subsequently merged on-disk directly,
+		// creating the on-disk storage file for DiskFPSets.
+		//
+		// The new algorithm simply "replays" the fingerprints found in the
+		// trace file. It's biggest disadvantage is a performance penalty it
+		// pays because it doesn't group fingerprints. On the other hand, it has
+		// advantages over the old algorithm:
+		// 
+		// - Simplified logic/code
+		// - No need for a long[] recovery buffer
+		// - TLC runs with a warm in-memory fingerprint cache
+		// - With large amounts of available fingerprint set memory, the .fp
+		// file might actually never be written. This means that the FPSet never
+		// has to go to disk during contains/put which yields a better overall
+		// runtime performance.
+		// 
+		// TODO Use original on-disk merge if it is known that the fingerprints
+		// won't fit into memory anyway.
+		
+		// The code below is put(long) stripped from synchronization and
+		// statistics code to speed up recovery. Thus, recovery relys on
+		// exclusive access to the fingerprint set, which it has during
+		// recovery.
+		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
+		boolean unique = !this.memInsert(fp0);
+		Assert.check(unique, EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT);
+		if (needsDiskFlush()) {
+			this.flusher.flushTable();
 		}
 	}
 
@@ -903,11 +920,6 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#completeRecovery()
 	 */
 	public final void completeRecovery() throws IOException {
-		Arrays.sort(recoveryBuff, 0, recoveryIdx);
-		flusher.mergeNewEntries(recoveryBuff, recoveryIdx);
-		recoveryBuff = null;
-		recoveryIdx = -1;
-
 		// Reopen a BufferedRAF for each thread
 		for (int i = 0; i < this.braf.length; i++) {
 			this.braf[i] = new BufferedRandomAccessFile(this.fpFilename,
@@ -935,7 +947,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			// drop readLongNat
 			if (braf.readInt() < 0)
 				braf.readInt();
-
+			
 			long fp = braf.readLong();
 			this.recoverFP(fp);
 		}
@@ -1284,26 +1296,6 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 				brafPool[i] = new BufferedRandomAccessFile(realName, "r");
 			}
 			poolIndex = 0;
-		}
-
-		public final void mergeNewEntries(long[] buff, int buffLen)
-				throws IOException {
-			// create temporary file
-			File tmpFile = new File(tmpFilename);
-			tmpFile.delete();
-			RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
-			File currFile = new File(fpFilename);
-			RandomAccessFile currRAF = new BufferedRandomAccessFile(currFile, "r");
-
-			// merge
-			this.mergeNewEntries(currRAF, tmpRAF);
-
-			// clean up
-			currRAF.close();
-			tmpRAF.close();
-			currFile.delete();
-			boolean status = tmpFile.renameTo(currFile);
-			Assert.check(status, EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
 		}
 		
 		protected abstract void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException;

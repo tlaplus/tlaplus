@@ -1,10 +1,17 @@
 // Copyright (c) 2012 Markus Alexander Kuppe. All rights reserved.
 package tlc2.tool.fp;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
+
 import org.junit.Test;
+
+import tlc2.tool.TLCState;
+import tlc2.tool.TLCTrace;
+import tlc2.tool.queue.DummyTLCState;
 
 public abstract class AbstractHeapBasedDiskFPSetTest {
 	
@@ -74,6 +81,43 @@ public abstract class AbstractHeapBasedDiskFPSetTest {
 		doTest((getUpperLimit() << 1) - 1);
 	}
 	
+	@Test
+	public void testFPSetRecovery() throws IOException {
+		final int limit = 99999;
+		final String metadir = System.getProperty("java.io.tmpdir");
+		final String filename = this.getClass().getCanonicalName();
+		
+		// First, create a trace file to recover from.
+		final TLCTrace trace = new TLCTrace(metadir, filename,
+				null);
+		
+		// Fill the trace file with random fingerprints
+		final TLCState predecessor = new DummyTLCState();
+		predecessor.uid = 1L;
+		// an init state
+		trace.writeState(predecessor.uid);
+		// successor states
+		for (long fp = predecessor.uid + 1; fp < limit; fp++) {
+			trace.writeState(predecessor, fp);
+			predecessor.uid = fp;
+		}
+		
+		// Create a checkpoint file
+		trace.beginChkpt();
+		trace.commitChkpt();
+		
+		// Create a DiskFPSet 
+		final DiskFPSet fpSet = getDiskFPSet(new FPSetConfiguration());
+		fpSet.init(1, metadir, filename);
+		fpSet.recover();
+
+		// Verify successful recovery
+		assertEquals(limit-1, fpSet.size());
+		for (long fp = 1L; fp < limit; fp++) {
+			assertTrue(fpSet.contains(fp));
+		}
+	}
+
 	/* Helper */
 
 	@SuppressWarnings("deprecation")
