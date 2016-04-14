@@ -379,6 +379,10 @@ public class GraphNode extends AbstractGraphNode {
 	}
 
 	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen) {
+		return toDotViz(isInitState, hasTableau, slen, alen, null);
+	}
+
+	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen, TableauNodePtrTable filter) {
 		// The node's id including its tidx if any
 		String id = Long.toString(this.stateFP);
 		if (id.length() >=6) {
@@ -396,7 +400,15 @@ public class GraphNode extends AbstractGraphNode {
 		
 		// Each outgoing transition
 		for (int i = 0; i < succSize(); i++) {
-			String fp = Long.toString(getStateFP(i));
+			final long stateFP = getStateFP(i);
+			final int tidx = getTidx(i);
+			
+			// If a filter is given, check if this node is in filter
+			if (filter != null && filter.get(stateFP, tidx) == -1) {
+				continue;
+			}
+			
+			String fp = Long.toString(stateFP);
 			if (fp.length() >= 6) {
 				fp = fp.substring(0, 6);
 			}
@@ -404,9 +416,9 @@ public class GraphNode extends AbstractGraphNode {
 //				// skip self loops if edge count to large for dotViz to handle.
 //				continue;
 //			}
+			
 			buf.append("\"" + id + "\" -> ");
 			if (hasTableau) {
-				final int tidx = getTidx(i);
 				buf.append(("\"" + fp) + "." + tidx + "\"");
 			} else {
 				//Omit tableau index when it's -1 (indicating no tableau)
