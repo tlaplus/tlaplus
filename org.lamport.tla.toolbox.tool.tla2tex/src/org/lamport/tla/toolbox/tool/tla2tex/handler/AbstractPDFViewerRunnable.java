@@ -12,6 +12,8 @@ import org.eclipse.ui.IPartService;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator;
+import org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
@@ -33,20 +35,24 @@ public abstract class AbstractPDFViewerRunnable  implements EventHandler, IPartL
 		this.handler = handler;
 		this.specFile = aSpecFile;
 		
-		// Subscribe to the event bus with which the TLA Editor save events are
-		// distributed. In other words, every time the user saves a spec, we
-		// receive an event and provided the spec corresponds to this PDF, we
-		// regenerate it.
-		// Don't subscribe in EmbeddedPDFViewerRunnable#though, because it is run
-		// repeatedly and thus would cause us to subscribe multiple times.
-		final IEventBroker eventService = site.getService(IEventBroker.class);
-		Assert.isTrue(eventService.subscribe(TLAEditor.SAVE_EVENT, this));
-		
-		// Register for part close events to deregister the event handler
-		// subscribed to the event bus. There is no point in regenerating
-		// the PDF if no PDFEditor is open anymore.
-		final IPartService partService = site.getService(IPartService.class);
-		partService.addPartListener(this);
+		final boolean autoRegenerate = TLA2TeXActivator.getDefault().getPreferenceStore()
+				.getBoolean(ITLA2TeXPreferenceConstants.AUTO_REGENERATE);
+		if (autoRegenerate) {
+			// Subscribe to the event bus with which the TLA Editor save events are
+			// distributed. In other words, every time the user saves a spec, we
+			// receive an event and provided the spec corresponds to this PDF, we
+			// regenerate it.
+			// Don't subscribe in EmbeddedPDFViewerRunnable#though, because it is run
+			// repeatedly and thus would cause us to subscribe multiple times.
+			final IEventBroker eventService = site.getService(IEventBroker.class);
+			Assert.isTrue(eventService.subscribe(TLAEditor.SAVE_EVENT, this));
+			
+			// Register for part close events to deregister the event handler
+			// subscribed to the event bus. There is no point in regenerating
+			// the PDF if no PDFEditor is open anymore.
+			final IPartService partService = site.getService(IPartService.class);
+			partService.addPartListener(this);
+		}
 	}
 
 	public void setFile(String outputFileName) throws CoreException {

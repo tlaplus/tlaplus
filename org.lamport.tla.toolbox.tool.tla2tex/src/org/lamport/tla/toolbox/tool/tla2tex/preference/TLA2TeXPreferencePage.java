@@ -42,6 +42,11 @@ public class TLA2TeXPreferencePage extends FieldEditorPreferencePage implements
 					ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER,
 					"&Use built-in PDF viewer", getFieldEditorParent()));
 		}
+		// Preference to regenerate PDF upon spec save?
+		addField(new BooleanFieldEditor(
+				ITLA2TeXPreferenceConstants.AUTO_REGENERATE, "&Regenerate pretty-printed PDF on spec save.",
+				getFieldEditorParent()));
+
 		addField(new BooleanFieldEditor(
 				ITLA2TeXPreferenceConstants.SHADE_COMMENTS, "&Shade comments",
 				getFieldEditorParent()));

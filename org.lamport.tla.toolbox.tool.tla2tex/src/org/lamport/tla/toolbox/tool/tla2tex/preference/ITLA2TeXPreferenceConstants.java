@@ -4,10 +4,15 @@ package org.lamport.tla.toolbox.tool.tla2tex.preference;
  * TLA2TeX preferences
  * 
  * @author Daniel Ricketts
- * @version $Id$
  */
 public interface ITLA2TeXPreferenceConstants
 {
+    /**
+     * Automatically regenerate the pretty-printed PDF when the
+     * corresponding spec is saved.
+     */
+    public static final String AUTO_REGENERATE = "autoRegenerateOnSave";
+    
     /**
      * Shade comments in tla2tex output file
      */
