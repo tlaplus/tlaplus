@@ -321,7 +321,7 @@ public class TLCServerThread extends IdThread {
 		// This call has to be idempotent, otherwise we see bugs as in 
 		// https://bugzilla.tlaplus.net/show_bug.cgi?id=234
 		//
-		// Prevent second invocation of worker de-registration which stamps from
+		// Prevent second invocation of worker de-registration which stems from
 		// a race condition between the TimerTask (that periodically checks
 		// server aliveness) and the exception handling that kicks in when the
 		// run() method catches an RMI exception.

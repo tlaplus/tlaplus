@@ -1124,6 +1124,8 @@ public class ModelChecker extends AbstractChecker
         DebugPrinter.print(e);
     }
 
+	// TODO how often does JMX pull this value? If the underlying counter is
+	// converted to a distributed counter, we shouldn't be pulling too often.
     public long getStatesGenerated() {
     	return numOfGenStates.get();
     }
