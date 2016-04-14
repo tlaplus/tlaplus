@@ -1,34 +1,35 @@
 // Copyright (c) 2012 Microsoft Corporation.  All rights reserved.
 package org.lamport.tla.toolbox.tool.tla2tex.handler;
 
-import java.io.File;
-
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.lamport.tla.toolbox.tool.tla2tex.view.PDFBrowser;
 import org.lamport.tla.toolbox.util.UIHelper;
-
 
 public class StandalonePDFViewerRunnable extends AbstractPDFViewerRunnable {
 
-	private final TLAEditorAndPDFViewer tlaEditorAndPDFViewer;
-
-	public StandalonePDFViewerRunnable(
-			TLAEditorAndPDFViewer tlaEditorAndPDFViewer) {
-				this.tlaEditorAndPDFViewer = tlaEditorAndPDFViewer;
+	public StandalonePDFViewerRunnable(ProducePDFHandler handler, IWorkbenchPartSite site, IResource aSpecFile) {
+		super(handler, site, aSpecFile);
 	}
 
 	public void run() {
         monitor.subTask("Opening PDF File");
-        tlaEditorAndPDFViewer.setActivePage(TLAEditorAndPDFViewer.PDFPage_ID);
-        tlaEditorAndPDFViewer.getPDFViewingPage().getBrowser().setUrl(outputFileName);
-        monitor.worked(1);
+        
+        // Can't use OS specific outputFileName as secondy id. On Windows, it 
+        // contains illegal characters. Thus, use the portableString which 
+        // fully identifies a module in a spec and only consists out of legal
+        // chars.
+        final String secondary = this.specFile.getFullPath().toPortableString();
+		part = (PDFBrowser) UIHelper.openViewNoFocus(PDFBrowser.ID, secondary);
+		((PDFBrowser) part).setInput(this.specFile.getName(), outputFileName);
 
-        if (new File(outputFileName).lastModified() < translationStartTime)
-        {
-            MessageDialog.openWarning(UIHelper.getShellProvider().getShell(),
-                    "PDF File Not Modified", "The pdf file could not be modified. "
-                            + "Make sure that the file " + outputFileName
-                            + " is not open in any external programs.");
-        }
+        monitor.worked(1);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tla2tex.handler.AbstractPDFViewerRunnable#preUpdate()
+	 */
+	protected void preUpdate() {
+		((PDFBrowser) part).setBlank();
 	}
 }

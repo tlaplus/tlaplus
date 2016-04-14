@@ -62,5 +62,16 @@
             class="org.lamport.tla.toolbox.tool.tla2tex.preference.TLA2TeXPreferenceInitializer">
       </initializer>
    </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="true"
+            class="org.lamport.tla.toolbox.tool.tla2tex.view.PDFBrowser"
+            icon="icons/document-pdf.png"
+            id="org.lamport.tla.toolbox.tool.tla2tex.PDFBrowser"
+            name="PDFBrowser"
+            restorable="false">
+      </view>
+   </extension>
 
 </plugin>

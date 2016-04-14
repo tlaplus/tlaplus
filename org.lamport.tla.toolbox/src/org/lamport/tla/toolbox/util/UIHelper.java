@@ -196,11 +196,23 @@ public class UIHelper {
 	 * @return the reference to the view
 	 */
 	public static IViewPart openViewNoFocus(final String viewId) {
+		return openViewNoFocus(viewId, null);
+	}
+	
+	/**
+	 * Opens a view but does *not* give it focus (useful for informational views
+	 * that should not distract the user's workflow (e.g. typing in the editor).
+	 * 
+	 * @param viewId
+	 * @param secondId Secondary view id
+	 * @return the reference to the view
+	 */
+	public static IViewPart openViewNoFocus(final String viewId, final String secondaryId) {
 		IViewPart view = null;
 		try {
 			IWorkbenchPage activePage = getActivePage();
 			if (activePage != null) {
-				view = activePage.showView(viewId, null, IWorkbenchPage.VIEW_VISIBLE);
+				view = activePage.showView(viewId, secondaryId, IWorkbenchPage.VIEW_VISIBLE);
 			}
 		} catch (PartInitException e) {
 			Activator.getDefault().logError("Error opening a view " + viewId, e);
