@@ -144,6 +144,13 @@ public class StartLaunchHandler extends AbstractHandler {
 				}
 			}
 		}
+		// Validate that the lastModelEditor still belongs to the current
+		// open spec. E.g. lastModelEditor might still be around from when
+		// the user ran a it on spec X, but has switched to spec Y in the
+		// meantime. Closing the spec nulls the ModelEditor
+		if (lastModelEditor.isDisposed()) {
+			lastModelEditor = null;
+		}
 		
 		// If the previous two attempts to find a model editor have failed, lets
 		// return whatever we have... which might be null.
