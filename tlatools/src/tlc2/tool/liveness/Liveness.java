@@ -152,6 +152,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				}
 				return astToLive(tool, expr, con, level);
 			} catch (Exception e) {
+				// Catching Exception here seem dangerous
 				// Assert.printStack(e);
 				int level = Spec.getLevel(expr, con);
 				if (level > 2) {
@@ -178,6 +179,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				}
 				return astToLive(tool, expr, con, level);
 			} catch (Exception e) {
+				// Catching Exception here seem dangerous
 				// Assert.printStack(e);
 				int level = Spec.getLevel(expr, con);
 				if (level > 2) {
@@ -230,6 +232,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 					}
 				}
 			} catch (Exception e) { /* SKIP */
+				// Swallowing Exception here seem dangerous
 			}
 			int level = expr.getLevel();
 			if (level > 2) {
@@ -292,8 +295,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		}
 		case OPCODE_leadto: {
 			// F ~> G equals [](F => <>G), however TLC does not have an
-			// implementation for logical implication. Thus, the rule of material
-			// implication is used to transform it into a disjunct.
+			// implementation for logical implication. Thus, the rule of
+			// material implication ("->") is used to transform it into a
+			// disjunct.
 			LiveExprNode lnLeft = astToLive(tool, (ExprNode) args[0], con);
 			LiveExprNode lnRight = astToLive(tool, (ExprNode) args[1], con);
 			// expand a ~> b into [](-a \/ <>b) 
@@ -368,13 +372,41 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * manner in which things should ultimately be checked. This method returns
 	 * a handle, which can subsequently be passed to the other liveness things.
 	 *
-	 * Theory: we're looking for counterexamples to: spec /\ livespec => []inv
-	 * /\ livecheck i.e. (spec /\ livespec /\ <>-inv) \/ (spec /\ livespec /\
-	 * -livecheck) The first half of this disjunction (inv) is already checked
-	 * by the model checker on the fly. We're converting the second half into
-	 * normal form. We actually omit spec in what we produce. It will be left
-	 * implicit. So, the only job is to turn livespec /\ -livecheck: live1 /\
-	 * live2 ... /\ (-check1 \/ -check2 ...) into normal form.
+	 * Theory: we're looking for counterexamples to:
+	 * 
+	 * <pre>
+	 * spec /\ livespec => []inv /\ livecheck
+	 * </pre>
+	 * 
+	 * i.e.
+	 * 
+	 * <pre>
+	 * \/ (spec /\ livespec /\ <>-inv)
+	 * \/ (spec /\ livespec /\ -livecheck)
+	 * </pre>
+	 * 
+	 * <p>
+	 * The first half of this disjunction (inv) is already checked by the model
+	 * checker on the fly (@see
+	 * {@link ModelChecker#doNext(TLCState, tlc2.util.ObjLongTable)}).
+	 * <p>
+	 * We're converting the second half into <i>normal form</i>. We actually
+	 * omit spec in what we produce. It will be left implicit. So, the only job
+	 * is to turn:
+	 * 
+	 * <pre>
+	 * livespec /\ -livecheck
+	 * </pre>
+	 * 
+	 * into:
+	 * 
+	 * <pre>
+	 * live1 /\ live2 ... /\ (-check1 \/ -check2 ...)
+	 * </pre>
+	 * 
+	 * into <i>normal form</i>. livespec corresponds to the spec's
+	 * <i>fairness</i> formulae where check1, check2, ... are the actual
+	 * <i>liveness properties</i> to be checked.
 	 */
 	public static OrderOfSolution[] processLiveness(Tool tool) {
 		LiveExprNode lexpr = parseLiveness(tool);
@@ -406,7 +438,6 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			final LiveExprNode ln = dnf.getBody(i).flattenSingleJunctions();
 			final OSExprPem pem = new OSExprPem();
 			pems[i] = pem;
-			//TODO Is this the place where TLC splits conjuncts into non-symmetric subformulas?
 			if (ln instanceof LNConj) {
 				final LNConj lnc2 = (LNConj) ln;
 				for (int j = 0; j < lnc2.getCount(); j++) {
