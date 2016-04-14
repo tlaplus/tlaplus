@@ -1216,6 +1216,11 @@ public class LiveWorker extends IdThread {
 	 * @param file
 	 */
 	public void writeDotViz(final long state, final int tidx, final TableauNodePtrTable tnpt, final java.io.File file) {
+		// Ignore trivial SCCs consisting of a single node.
+		if (tnpt.size() <= 1) {
+			return;
+		}
+		
 		try {
 			final java.io.BufferedWriter bwr = new java.io.BufferedWriter(new java.io.FileWriter(file));
 
