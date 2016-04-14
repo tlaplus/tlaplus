@@ -63,6 +63,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		filters.add("org.eclipse.ui.trace");
 		filters.add("org.eclipse.jsch.ui");
 
+		// Filter out Pdf4Eclipse preference page.
+		filters.add("de.vonloesch.pdf4Eclipse");
+		
 		// Clean the preferences
 		final List elements = preferenceManager.getElements(PreferenceManager.POST_ORDER);
 		for (Iterator iterator = elements.iterator(); iterator.hasNext();) {
