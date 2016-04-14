@@ -67,7 +67,7 @@ public class DotStateWriter extends StateWriter {
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, java.lang.String)
 	 */
-	public void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
+	public synchronized void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
 		final String successorsFP = Long.toString(successor.fingerPrint());
 
 		// Write the transition
