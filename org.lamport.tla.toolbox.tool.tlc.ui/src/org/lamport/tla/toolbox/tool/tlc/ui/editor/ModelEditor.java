@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResource;
@@ -338,6 +340,11 @@ public class ModelEditor extends FormEditor
         model = null;
         // TLCUIActivator.getDefault().logDebug("leaving ModelEditor#dispose()");
     }
+	
+
+	public boolean isDisposed() {
+		return model == null;
+	}
 
     /**
      * This method saves the model even if the spec is not parsed.  This is probably
@@ -409,6 +416,13 @@ public class ModelEditor extends FormEditor
             {
                 return (T) provider;
             }
+        }  else if (IFile.class.equals(required)) {
+			// The GraphViz viewer tries to get a .dot from an editor. The
+			// Toolbox's model editor is the closest thing corresponding to the
+			// state graph (stored as dot).
+        	final IFolder folder = model.getFolder();
+			final String name = model.getName().concat(".dot");
+			return (T) folder.getFile(name);
         }
         return super.getAdapter(required);
     }

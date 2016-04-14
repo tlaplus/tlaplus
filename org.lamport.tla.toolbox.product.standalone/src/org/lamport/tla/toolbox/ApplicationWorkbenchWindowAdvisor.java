@@ -66,6 +66,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		// Filter out Pdf4Eclipse preference page.
 		filters.add("de.vonloesch.pdf4Eclipse");
 		
+		// Filter out GraphViz
+		//TODO Move its configuration (path to dot) into Toolbox specific preference page.
+		filters.add("com.abstratt.graphviz.ui");
+		
 		// Clean the preferences
 		final List elements = preferenceManager.getElements(PreferenceManager.POST_ORDER);
 		for (Iterator iterator = elements.iterator(); iterator.hasNext();) {
