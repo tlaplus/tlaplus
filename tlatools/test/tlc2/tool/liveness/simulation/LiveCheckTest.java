@@ -106,7 +106,7 @@ public class LiveCheckTest {
 		EasyMock.replay(oos);
 		
 		return new LiveCheck(EasyMock.createNiceMock(Tool.class), new Action[0],
-				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
+				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics(), null);
 	}
 	
 	private ILiveCheck getLiveCheckWithTableau() throws IOException {
@@ -133,7 +133,7 @@ public class LiveCheckTest {
 		EasyMock.replay(oos);
 		
 		return new LiveCheck(EasyMock.createNiceMock(Tool.class), new Action[0],
-				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
+				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics(), null);
 	}
 }
 

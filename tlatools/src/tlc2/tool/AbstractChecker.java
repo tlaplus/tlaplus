@@ -150,7 +150,7 @@ public abstract class AbstractChecker implements Cancelable
 			if (LIVENESS_TESTING_IMPLEMENTATION) {
 				this.liveCheck = new AddAndCheckLiveCheck(this.tool, this.actions, this.metadir, stats);
 			} else {
-				this.liveCheck = new LiveCheck(this.tool, this.actions, this.metadir, stats);
+				this.liveCheck = new LiveCheck(this.tool, this.actions, this.metadir, stats, dumpFile);
 			}
             report("liveness checking initialized");
         } else {

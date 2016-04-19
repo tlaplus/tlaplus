@@ -23,33 +23,15 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package tlc2.util;
+package tlc2.tool.liveness;
 
 import tlc2.tool.TLCState;
+import tlc2.util.IStateWriter;
 
-public interface IStateWriter {
-	
-	public enum Visualization {
-		/**
-		 * If successor and the current state are identical and the transition
-		 * is due to stuttering.
-		 */
-		STUTTERING,
-		/**
-		 * No extra visualization hint is given.
-		 */
-		DEFAULT,
-		/**
-		 * A dotted line.
-		 */
-		DOTTED;
-	}
+public interface ILivenessStateWriter extends IStateWriter {
+	void writeState(TLCState state, TBGraphNode tableauNode);
 
-	void writeState(TLCState state);
+	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, String actionChecks, boolean successorStateIsNew);
 
-	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew);
-
-	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visulation);
-	
-	void close();
+	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, String actionChecks, boolean successorStateIsNew, Visualization visulation);
 }

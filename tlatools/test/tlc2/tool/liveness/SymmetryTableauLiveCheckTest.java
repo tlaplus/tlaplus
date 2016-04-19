@@ -149,7 +149,7 @@ public class SymmetryTableauLiveCheckTest {
 		EasyMock.replay(oos);
 		
 		return new LiveCheck(EasyMock.createNiceMock(Tool.class), new Action[0],
-				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
+				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics(), null);
 	}
 	
 	@Test
@@ -368,6 +368,6 @@ public class SymmetryTableauLiveCheckTest {
 		EasyMock.expect(tool.isInActions((TLCState) EasyMock.anyObject(), (TLCState) EasyMock.anyObject())).andReturn(true).anyTimes();
 		EasyMock.replay(tool);
 		return new LiveCheck(tool, new Action[1],
-				new OrderOfSolution[] { oos }, "states", new DummyBucketStatistics());
+				new OrderOfSolution[] { oos }, "states", new DummyBucketStatistics(), null);
 	}
 }

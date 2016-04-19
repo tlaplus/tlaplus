@@ -22,6 +22,7 @@ import tlc2.tool.Tool;
 import tlc2.util.BitVector;
 import tlc2.util.FP64;
 import tlc2.util.SetOfStates;
+import tlc2.util.IStateWriter.Visualization;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import util.Assert;
@@ -36,10 +37,14 @@ public class LiveCheck implements ILiveCheck {
 	private final ILiveChecker[] checker;
 	
 	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics) throws IOException {
-		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics);
+		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics, null);
+	}
+	
+	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics, String dumpFile) throws IOException {
+		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics, dumpFile);
 	}
 
-	public LiveCheck(Tool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics) throws IOException {
+	public LiveCheck(Tool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics, String dumpFile) throws IOException {
 		myTool = tool;
 		actions = acts;
 		metadir = mdir;
@@ -47,9 +52,9 @@ public class LiveCheck implements ILiveCheck {
 		checker = new ILiveChecker[solutions.length];
 		for (int soln = 0; soln < solutions.length; soln++) {
 			if (!solutions[soln].hasTableau()) {
-				checker[soln] = new LiveChecker(solutions[soln], soln, bucketStatistics);
+				checker[soln] = new LiveChecker(solutions[soln], soln, bucketStatistics, dumpFile == null ? new NoopLivenessStateWriter() : new DotLivenessStateWriter(dumpFile));
 			} else {
-				checker[soln] = new TableauLiveChecker(solutions[soln], soln, bucketStatistics);
+				checker[soln] = new TableauLiveChecker(solutions[soln], soln, bucketStatistics, dumpFile == null ? new NoopLivenessStateWriter() : new DotLivenessStateWriter(dumpFile));
 			}
 		}
 	}
@@ -384,11 +389,14 @@ public class LiveCheck implements ILiveCheck {
 	}
 	
 	static abstract class AbstractLiveChecker implements ILiveChecker {
-
+		
+		protected final ILivenessStateWriter writer;
+		
 		protected final OrderOfSolution oos;
 
-		public AbstractLiveChecker(OrderOfSolution oos) {
+		public AbstractLiveChecker(OrderOfSolution oos, ILivenessStateWriter writer) {
 			this.oos = oos;
+			this.writer = writer;
 		}
 
 		/* (non-Javadoc)
@@ -403,6 +411,7 @@ public class LiveCheck implements ILiveCheck {
 		 */
 		public void close() throws IOException {
 			this.getDiskGraph().close();
+			this.writer.close();
 		}
 	}
 	
@@ -410,9 +419,9 @@ public class LiveCheck implements ILiveCheck {
 
 		private final DiskGraph dgraph;
 
-		public LiveChecker(OrderOfSolution oos, int soln, IBucketStatistics bucketStatistics)
+		public LiveChecker(OrderOfSolution oos, int soln, IBucketStatistics bucketStatistics, ILivenessStateWriter writer)
 			throws IOException {
-			super(oos);
+			super(oos, writer);
 			this.dgraph = new DiskGraph(metadir, soln, bucketStatistics);
 		}
 
@@ -421,6 +430,7 @@ public class LiveCheck implements ILiveCheck {
 		 */
 		public void addInitState(TLCState state, long stateFP) {
 			dgraph.addInitNode(stateFP, -1);
+			writer.writeState(state);
 		}
 
 		/* (non-Javadoc)
@@ -437,7 +447,8 @@ public class LiveCheck implements ILiveCheck {
 				final int s = node0.succSize();
 				node0.setCheckState(checkStateResults);
 				for (int sidx = 0; sidx < succCnt; sidx++) {
-					final long successor = nextStates.next().fingerPrint();
+					final TLCState successorState = nextStates.next();
+					final long successor = successorState.fingerPrint();
 					// Only add the transition if:
 					// a) The successor itself has not been written to disk
 					//    TODO Why is an existing successor ignored?
@@ -463,6 +474,7 @@ public class LiveCheck implements ILiveCheck {
 					} else {
 						cnt++;
 					}
+					writer.writeState(s0, successorState, sidx == 0);
 				}
 				nextStates.resetNext();
 				// In simulation mode (see Simulator), it's possible that this
@@ -499,9 +511,9 @@ public class LiveCheck implements ILiveCheck {
 
 		private final TableauDiskGraph dgraph;
 
-		public TableauLiveChecker(OrderOfSolution oos, int soln, IBucketStatistics statistics)
+		public TableauLiveChecker(OrderOfSolution oos, int soln, IBucketStatistics statistics, ILivenessStateWriter writer)
 				throws IOException {
-			super(oos);
+			super(oos, writer);
 			this.dgraph = new TableauDiskGraph(metadir, soln, statistics);
 		}
 
@@ -517,6 +529,7 @@ public class LiveCheck implements ILiveCheck {
 				if (tnode.isConsistent(state, myTool)) {
 					dgraph.addInitNode(stateFP, tnode.getIndex());
 					dgraph.recordNode(stateFP, tnode.getIndex());
+					writer.writeState(state, tnode);
 				}
 			}
 		}
@@ -613,6 +626,7 @@ public class LiveCheck implements ILiveCheck {
 							// Increment cnt even if addTrasition is not called. After all, 
 							// the for loop has completed yet another iteration.
 							cnt++;
+							writer.writeState(s0, tnode0, s1, tnode1, checkActionResults.toString(sidx * alen, alen), true);
 						}
 					}
 					nextStates.resetNext();
@@ -704,6 +718,7 @@ public class LiveCheck implements ILiveCheck {
 								}
 							}
 							cnt++;
+							writer.writeState(s, tnode, s1, tnode1, checkActionRes.toString(0, alen), false, Visualization.DOTTED);
 						}
 					} else {
 						cnt++;
