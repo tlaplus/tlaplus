@@ -147,6 +147,18 @@ public class BitVector implements Serializable {
 	  return buf.toString().replaceAll("^0*","["); // Replace leading zeros with "["
   }
   
+  public String toString(int start, int length) {
+	  final StringBuffer buf = new StringBuffer(length);
+	  for (int i = 0; i < length; i++) {
+		  if (get(start + i)) {
+			  buf.append("1");
+		  } else {
+			  buf.append("0");
+		  }
+	  }
+	  return "[" + buf.reverse().toString() + "]";
+  }
+  
 	/**
 	 * @return The number of bits set true
 	 */
@@ -269,5 +281,4 @@ public class BitVector implements Serializable {
       return -1;
     }
   }
-
 }

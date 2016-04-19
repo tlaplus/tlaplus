@@ -49,4 +49,19 @@ public class BitVectorTest {
 		
 		assertEquals("[10011011]", bitVector.toString());
 	}
+
+	@Test
+	public void testToStringRange() {
+		final BitVector bitVector = new BitVector(8);
+		bitVector.set(0);
+		bitVector.set(1);
+		// unset
+		bitVector.set(3);
+		bitVector.set(4);
+		// unset
+		// unset
+		bitVector.set(7);
+		
+		assertEquals("[001]", bitVector.toString(4, 3));
+	}
 }
