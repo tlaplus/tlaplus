@@ -319,7 +319,7 @@ public class LiveCheck implements ILiveCheck {
 	 */
 	public void close() throws IOException {
 		for (int i = 0; i < checker.length; i++) {
-			checker[i].getDiskGraph().close();
+			checker[i].close();
 		}
 	}
 
@@ -396,6 +396,13 @@ public class LiveCheck implements ILiveCheck {
 		 */
 		public OrderOfSolution getSolution() {
 			return oos;
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.liveness.ILiveChecker#close()
+		 */
+		public void close() throws IOException {
+			this.getDiskGraph().close();
 		}
 	}
 	

@@ -51,4 +51,6 @@ public interface ILiveChecker {
 
 	OrderOfSolution getSolution();
 
+	void close() throws IOException;
+
 }
