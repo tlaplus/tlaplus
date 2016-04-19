@@ -383,19 +383,25 @@ public class GraphNode extends AbstractGraphNode {
 	}
 
 	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen, TableauNodePtrTable filter) {
-		// The node's id including its tidx if any
+		// The node's id including its tidx if any. It uses the complete
+		// fingerprint.
 		String id = Long.toString(this.stateFP);
-		if (id.length() >=6) {
-			id = id.substring(0, 6);
-		}
 		if (hasTableau) {
 			id += "." + this.tindex;
 		}
-		
-		// marker if it is an init state
+			
+		// Nodes label and a marker if it is an init state. The label is
+		// shortened to 8 chars max to avoid screen clutter. It's possible
+		// that the resulting graph will have multiple nodes with an identical
+		// label iff the first 6 (+2) chars of their fingerprint match. However
+		// the graph will still contain all nodes regardless of the label
+		// collision due to id.
+		final String label = Long.toString(this.stateFP).substring(0, 6) + (hasTableau ? "." + this.tindex : "");
 		final StringBuffer buf = new StringBuffer();
 		if (isInitState) {
-			buf.append("\"" + id + "\" [style = filled]\n"); // node's label
+			buf.append("\"" + id + "\" [style = filled][label = \"" + label + "\"]\n"); // node's label
+		} else {
+			buf.append("\"" + id + "\" [label = \"" + label + "\"]\n");
 		}
 		
 		// Each outgoing transition
@@ -409,9 +415,6 @@ public class GraphNode extends AbstractGraphNode {
 			}
 			
 			String fp = Long.toString(stateFP);
-			if (fp.length() >= 6) {
-				fp = fp.substring(0, 6);
-			}
 //			if (fp == this.stateFP) {
 //				// skip self loops if edge count to large for dotViz to handle.
 //				continue;
