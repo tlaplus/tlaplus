@@ -38,8 +38,12 @@ import tlc2.tool.TLCState;
 public class DotStateWriter extends StateWriter {
 
 	public DotStateWriter(final String fname) throws IOException {
+		this(fname, "strict ");
+	}
+	
+	public DotStateWriter(final String fname, final String strict) throws IOException {
 		super(fname);
-		this.writer.append("strict digraph DiskGraph {\n"); // strict removes redundant edges
+		this.writer.append(strict + "digraph DiskGraph {\n"); // strict removes redundant edges
 		this.writer.append("rankdir=LR;\n"); // Left to right rather than top to bottom
 	}
 
