@@ -474,7 +474,7 @@ public class LiveCheck implements ILiveCheck {
 					} else {
 						cnt++;
 					}
-					writer.writeState(s0, successorState, sidx == 0);
+					writer.writeState(s0, successorState, checkActionResults.toString(sidx * alen, alen), ptr1 == -1);
 				}
 				nextStates.resetNext();
 				// In simulation mode (see Simulator), it's possible that this

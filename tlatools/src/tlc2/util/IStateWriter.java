@@ -51,5 +51,9 @@ public interface IStateWriter {
 
 	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visulation);
 	
+	void writeState(TLCState state, TLCState successor, String actionChecks, boolean successorStateIsNew);
+
+	void writeState(TLCState state, TLCState successor, String actionChecks, boolean successorStateIsNew, Visualization visulation);
+	
 	void close();
 }

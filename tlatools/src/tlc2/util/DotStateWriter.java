@@ -29,7 +29,6 @@ package tlc2.util;
 import java.io.IOException;
 
 import tlc2.tool.TLCState;
-import tlc2.util.StateWriter;
 
 /**
  * Writes the given state in dot notation.
@@ -68,6 +67,21 @@ public class DotStateWriter extends StateWriter {
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, java.lang.String)
 	 */
 	public synchronized void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
+		writeState(state, successor, null, successorStateIsNew, visualization);
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean)
+	 */
+	public void writeState(TLCState state, TLCState successor, String actionChecks, boolean successorStateIsNew) {
+		writeState(state, successor, actionChecks, successorStateIsNew, Visualization.DEFAULT);
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean, tlc2.util.IStateWriter.Visualization)
+	 */
+	public void writeState(TLCState state, TLCState successor, String actionChecks, boolean successorStateIsNew,
+			Visualization visualization) {
 		final String successorsFP = Long.toString(successor.fingerPrint());
 
 		// Write the transition
@@ -76,6 +90,9 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(successorsFP);
 		if (visualization == Visualization.STUTTERING) {
 			this.writer.append(" [style=\"dashed\"]");
+		}
+		if (actionChecks != null) {
+			this.writer.append(" [label=\"" + actionChecks + "\"]");
 		}
 		this.writer.append(";\n");
 

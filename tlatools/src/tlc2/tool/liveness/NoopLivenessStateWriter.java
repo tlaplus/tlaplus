@@ -79,4 +79,19 @@ public class NoopLivenessStateWriter implements ILivenessStateWriter {
 			TBGraphNode tableauNodeSuccessor, String actionChecks, boolean successorStateIsNew, Visualization visulation) {
 		// noop
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean)
+	 */
+	public void writeState(TLCState state, TLCState successor, String actionChecks, boolean successorStateIsNew) {
+		// noop
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean, tlc2.util.IStateWriter.Visualization)
+	 */
+	public void writeState(TLCState state, TLCState successor, String actionChecks, boolean successorStateIsNew,
+			Visualization visulation) {
+		// noop
+	}
 }
