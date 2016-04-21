@@ -169,10 +169,39 @@ typed model values with different types.
 TLC does not check if a set you declare to be a symmetry set really
 is one.&nbsp;  If you declare a set to be a symmetry set and it isn't, then
 TLC can fail to find an error
-that it otherwise would find.&nbsp;  Also, beware that using symmetry sets can
-cause TLC to make mistakes when checking liveness properties.&nbsp;  Do not
-use symmetry sets when checking liveness unless you know what you're
-doing.
+that it otherwise would find.&nbsp;  
+
+An expression is <i>symmetric</i> for a set <code>S</code> if and only if
+interchanging any two values of <code>S</code> does not
+change the value of the expression.&nbsp;  The expression
+  <code>{{v1, v2}, {v1, v3}, {v2, v3}}</code>
+is symmetric for the set
+  <code>{v1, v2, v3}</code> --
+for example, interchanging <code>v1</code> and <code>v3</code>
+in this expression produces 
+  <code>{{v3, v2}, {v3, v1}, {v2, v1}}</code>,
+which is equal to the original expression.&nbsp;
+
+You should declare a set <code>S</code> of model values to be a symmetry set only if
+the specification and all properties you are checking are symmetric for <code>S</code>
+after the substitutions for constants and defined operators specified by the model
+are made.&nbsp;  
+
+For example, you should not declare 
+   <code>{v1, v2, v3}</code>
+to be a symmetry set if the model substitutes <code>v1</code> for some constant.&nbsp;
+
+The only TLA+ operator that can produce a non-symmetric expression when applied to
+a symmetric expression is <code>CHOOSE</code>.&nbsp;  For example, the expression
+  <pre>    CHOOSE x \in {v1, v2, v3} : TRUE </pre>
+is not symmetric for <code>{v1, v2, v3}</code>.
+</p>
+
+
+<p>
+Symmetry sets should not be used when checking liveness properties.&nbsp;  
+Doing so can make TLC fail to find errors, or to report nonexistent errors.
+
 </p>
 <!-- 
 <p>
