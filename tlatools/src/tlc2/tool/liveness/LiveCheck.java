@@ -612,6 +612,7 @@ public class LiveCheck implements ILiveCheck {
 									&& (ptr1 == -1 || !node0.transExists(successor, tnode1.getIndex()))) {
 								node0.addTransition(successor, tnode1.getIndex(), checkStateResults.length, alen,
 										checkActionResults, sidx * alen, allocationHint - cnt);
+								writer.writeState(s0, tnode0, s1, tnode1, checkActionResults, sidx * alen, alen, true);
 								// Record that we have seen <fp1,
 								// tnode1>. If fp1 is done, we have
 								// to compute the next states for <fp1,
@@ -626,7 +627,6 @@ public class LiveCheck implements ILiveCheck {
 							// Increment cnt even if addTrasition is not called. After all, 
 							// the for loop has completed yet another iteration.
 							cnt++;
-							writer.writeState(s0, tnode0, s1, tnode1, checkActionResults, sidx * alen, alen, true);
 						}
 					}
 					nextStates.resetNext();
@@ -707,6 +707,7 @@ public class LiveCheck implements ILiveCheck {
 							final int total = actions.length * nextCnt * tnode.nextSize();
 							if (tnode1.isConsistent(s1, myTool) && (ptr1 == -1 || !node.transExists(fp1, tidx1))) {
 								node.addTransition(fp1, tidx1, slen, alen, checkActionRes, 0, (total - cnt));
+								writer.writeState(s, tnode, s1, tnode1, checkActionRes, 0, alen, false, Visualization.DOTTED);
 								// Record that we have seen <fp1, tnode1>. If
 								// fp1 is done, we have to compute the next
 								// states for <fp1, tnode1>.
@@ -718,7 +719,6 @@ public class LiveCheck implements ILiveCheck {
 								}
 							}
 							cnt++;
-							writer.writeState(s, tnode, s1, tnode1, checkActionRes, 0, alen, false, Visualization.DOTTED);
 						}
 					} else {
 						cnt++;
