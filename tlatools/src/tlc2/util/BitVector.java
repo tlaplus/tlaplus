@@ -146,14 +146,17 @@ public class BitVector implements Serializable {
 	  buf.append("]");
 	  return buf.toString().replaceAll("^0*","["); // Replace leading zeros with "["
   }
-  
   public String toString(int start, int length) {
+	  return toString(start, length, '1', '0');
+  }
+  
+  public String toString(int start, int length, char one, char zero) {
 	  final StringBuffer buf = new StringBuffer(length);
 	  for (int i = 0; i < length; i++) {
 		  if (get(start + i)) {
-			  buf.append("1");
+			  buf.append(one);
 		  } else {
-			  buf.append("0");
+			  buf.append(zero);
 		  }
 	  }
 	  return "[" + buf.reverse().toString() + "]";

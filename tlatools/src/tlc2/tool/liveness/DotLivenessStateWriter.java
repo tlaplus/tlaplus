@@ -92,7 +92,7 @@ public class DotLivenessStateWriter extends DotStateWriter implements ILivenessS
 			this.writer.append(" [style=\"dotted\"]");
 		}
 		if (length > 0) {
-			this.writer.append(" [label=\"" + actionChecks.toString(from, length) + "\"]");
+			this.writer.append(" [label=\"" + actionChecks.toString(from, length, 't', 'f') + "\"]");
 		}
 		this.writer.append(";\n");
 

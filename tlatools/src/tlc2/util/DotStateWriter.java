@@ -96,7 +96,7 @@ public class DotStateWriter extends StateWriter {
 			this.writer.append(" [style=\"dashed\"]");
 		}
 		if (length > 0) { // omit if no actions
-			this.writer.append(" [label=\"" + actionChecks.toString(from, length) + "\"]");
+			this.writer.append(" [label=\"" + actionChecks.toString(from, length, 't', 'f') + "\"]");
 		}
 		this.writer.append(";\n");
 
