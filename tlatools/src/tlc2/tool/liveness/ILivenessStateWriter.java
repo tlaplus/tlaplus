@@ -26,12 +26,13 @@
 package tlc2.tool.liveness;
 
 import tlc2.tool.TLCState;
+import tlc2.util.BitVector;
 import tlc2.util.IStateWriter;
 
 public interface ILivenessStateWriter extends IStateWriter {
 	void writeState(TLCState state, TBGraphNode tableauNode);
 
-	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, String actionChecks, boolean successorStateIsNew);
+	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew);
 
-	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, String actionChecks, boolean successorStateIsNew, Visualization visulation);
+	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew, Visualization visulation);
 }

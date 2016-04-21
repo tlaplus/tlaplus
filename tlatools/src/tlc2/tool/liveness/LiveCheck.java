@@ -474,7 +474,7 @@ public class LiveCheck implements ILiveCheck {
 					} else {
 						cnt++;
 					}
-					writer.writeState(s0, successorState, checkActionResults.toString(sidx * alen, alen), ptr1 == -1);
+					writer.writeState(s0, successorState, checkActionResults, sidx * alen, alen, ptr1 == -1);
 				}
 				nextStates.resetNext();
 				// In simulation mode (see Simulator), it's possible that this
@@ -626,7 +626,7 @@ public class LiveCheck implements ILiveCheck {
 							// Increment cnt even if addTrasition is not called. After all, 
 							// the for loop has completed yet another iteration.
 							cnt++;
-							writer.writeState(s0, tnode0, s1, tnode1, checkActionResults.toString(sidx * alen, alen), true);
+							writer.writeState(s0, tnode0, s1, tnode1, checkActionResults, sidx * alen, alen, true);
 						}
 					}
 					nextStates.resetNext();
@@ -718,7 +718,7 @@ public class LiveCheck implements ILiveCheck {
 								}
 							}
 							cnt++;
-							writer.writeState(s, tnode, s1, tnode1, checkActionRes.toString(0, alen), false, Visualization.DOTTED);
+							writer.writeState(s, tnode, s1, tnode1, checkActionRes, 0, alen, false, Visualization.DOTTED);
 						}
 					} else {
 						cnt++;

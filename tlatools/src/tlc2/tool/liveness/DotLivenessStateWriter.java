@@ -28,6 +28,7 @@ package tlc2.tool.liveness;
 import java.io.IOException;
 
 import tlc2.tool.TLCState;
+import tlc2.util.BitVector;
 import tlc2.util.DotStateWriter;
 
 public class DotLivenessStateWriter extends DotStateWriter implements ILivenessStateWriter {
@@ -60,15 +61,15 @@ public class DotLivenessStateWriter extends DotStateWriter implements ILivenessS
 	 * @see tlc2.tool.liveness.ILivenessStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.liveness.TBGraphNode, tlc2.tool.TLCState, tlc2.tool.liveness.TBGraphNode, boolean)
 	 */
 	public void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor,
-			TBGraphNode tableauNodeSuccessor, String actionChecks, boolean successorStateIsNew) {
-		writeState(state, tableauNode, successor, tableauNodeSuccessor, actionChecks, successorStateIsNew, Visualization.DEFAULT);
+			TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew) {
+		writeState(state, tableauNode, successor, tableauNodeSuccessor, actionChecks, from, length, successorStateIsNew, Visualization.DEFAULT);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILivenessStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.liveness.TBGraphNode, tlc2.tool.TLCState, tlc2.tool.liveness.TBGraphNode, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
 	public void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor,
-			TBGraphNode tableauNodeSuccessor, String actionChecks, boolean successorStateIsNew, Visualization visualization) {
+			TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew, Visualization visualization) {
 
 		final String successorsFP = Long.toString(successor.fingerPrint());
 
@@ -90,7 +91,9 @@ public class DotLivenessStateWriter extends DotStateWriter implements ILivenessS
 		if (visualization == Visualization.DOTTED) {
 			this.writer.append(" [style=\"dotted\"]");
 		}
-		this.writer.append(" [label=\"" + actionChecks + "\"]");
+		if (length > 0) {
+			this.writer.append(" [label=\"" + actionChecks.toString(from, length) + "\"]");
+		}
 		this.writer.append(";\n");
 
 		// If the successor is new, print the state's label. Labels are printed

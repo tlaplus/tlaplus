@@ -68,23 +68,23 @@ public class DotStateWriter extends StateWriter {
 	}
 	
 	/* (non-Javadoc)
-	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, java.lang.String)
+	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
 	public synchronized void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
-		writeState(state, successor, null, successorStateIsNew, visualization);
+		writeState(state, successor, null, 0, 0, successorStateIsNew, visualization);
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean)
+	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, tlc2.util.BitVector, int, int, boolean)
 	 */
-	public void writeState(TLCState state, TLCState successor, String actionChecks, boolean successorStateIsNew) {
-		writeState(state, successor, actionChecks, successorStateIsNew, Visualization.DEFAULT);
+	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew) {
+		writeState(state, successor, actionChecks, from, length, successorStateIsNew, Visualization.DEFAULT);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
-	public void writeState(TLCState state, TLCState successor, String actionChecks, boolean successorStateIsNew,
+	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew,
 			Visualization visualization) {
 		final String successorsFP = Long.toString(successor.fingerPrint());
 
@@ -95,8 +95,8 @@ public class DotStateWriter extends StateWriter {
 		if (visualization == Visualization.STUTTERING) {
 			this.writer.append(" [style=\"dashed\"]");
 		}
-		if (actionChecks != null) {
-			this.writer.append(" [label=\"" + actionChecks + "\"]");
+		if (length > 0) { // omit if no actions
+			this.writer.append(" [label=\"" + actionChecks.toString(from, length) + "\"]");
 		}
 		this.writer.append(";\n");
 
