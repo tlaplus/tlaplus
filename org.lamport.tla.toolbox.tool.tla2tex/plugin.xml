@@ -73,5 +73,14 @@
             restorable="false">
       </view>
    </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="toolbox.command.tla2tex.producePDF"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+P">
+      </key>
+   </extension>
 
 </plugin>
