@@ -64,8 +64,6 @@
     <requirement
         name="org.eclipse.ajdt.feature.group"/>
     <requirement
-        name="org.eclipse.swtbot.eclipse.test.junit.feature.group"/>
-    <requirement
         name="org.eclipse.m2e.feature.feature.group"/>
     <requirement
         name="org.eclipse.pde.feature.group"/>
