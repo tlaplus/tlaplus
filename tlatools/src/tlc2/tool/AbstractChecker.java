@@ -165,7 +165,11 @@ public abstract class AbstractChecker implements Cancelable
 
     protected final void incNumOfGenStates(int n)
     {
-        this.numOfGenStates.getAndAdd(n);
+		// Don't update a shared atomic counter unless needed. The majority of
+		// invocations actually has n=0.
+    	if (n != 0) {
+    		this.numOfGenStates.getAndAdd(n);
+    	}
     }
 
     /**
