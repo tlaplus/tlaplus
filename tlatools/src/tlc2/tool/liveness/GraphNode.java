@@ -369,9 +369,25 @@ public class GraphNode extends AbstractGraphNode {
 	}
 
 	public final String toString() {
+		// A GraphNode does not know the action length. This is kept elsewhere in the code.
+		return toString(0).replace("[] ", "");
+	}
+
+	public final String toString(final int alen) {
 		StringBuffer buf = new StringBuffer();
 		buf.append("<" + this.stateFP + "," + this.tindex + "> --> ");
 		for (int i = 0; i < succSize(); i++) {
+			// action checks
+			buf.append("[");
+			for (int j = 0; j < alen; j++) {
+				if (getCheckAction(0, 2, i, j)) {
+					buf.append("t");
+				} else {
+					buf.append("f");
+				}
+			}
+			buf.append("] ");
+			// fingerprint/tableau id
 			buf.append("<" + getStateFP(i) + "," + getTidx(i) + ">");
 			buf.append(", ");
 		}
