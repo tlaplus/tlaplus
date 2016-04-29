@@ -17,7 +17,27 @@
 
     <build>
     <plugins>
-	   <plugin>
+		<!-- Delete the ../states/ folder created by the Ant JUnit tests as part 
+			of the maven-antrun-plugin of customBuild.xml. On the CI-machine, the ../states/ 
+			folder gradually grows to eventually fill-up the entire disk. -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+                <filesets>
+                    <fileset>
+                        <directory>../states/</directory>
+                        <includes>
+                            <include>**/*</include>
+                        </includes>
+                        <followSymlinks>false</followSymlinks>
+                    </fileset>
+                </filesets>
+            </configuration>
+        </plugin>
+        
+        <plugin>
 	    <groupId>org.apache.maven.plugins</groupId>
 	    <artifactId>maven-antrun-plugin</artifactId>
 	    <executions>
