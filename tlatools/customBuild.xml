@@ -83,6 +83,10 @@
 			<fileset dir="${class.dir}" includes="*/**" />
 			<fileset dir="${test.class.dir}" includes="*/**" />
 		</delete>
+		<!-- Delete leftovers from previous junit invocation -->
+		<delete includeemptydirs="true" failonerror="false">
+			<fileset dir="states/" includes="*/**" />
+		</delete>
 	</target>
 
 	<!-- Compiles the TLA+ tools code -->
