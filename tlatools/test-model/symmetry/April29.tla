@@ -1,9 +1,6 @@
 --------------------------- MODULE April29 ---------------------------
 CONSTANT S
 
-(* Function to choose the other element from the two-element set S *)
-Other(n) == CHOOSE x \in S \ {n} : TRUE
-
 VARIABLES x,y
 vars == <<x,y>>
 
@@ -20,7 +17,7 @@ Spec == Init /\ [][NextA \/ NextB]_vars /\ WF_vars(NextA \/ NextB)
 
 NextC == /\ y = 1
          /\ y' = 1
-         /\ x' = Other(x)
+         /\ \E i \in (S \ {x}): x' = i
 SpecD == Init /\ [][NextA \/ NextB \/ NextC]_vars /\ WF_vars(NextA \/ NextB \/ NextC)
 
 =============================================================================
