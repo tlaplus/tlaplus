@@ -275,9 +275,19 @@ public class GraphNode extends AbstractGraphNode {
 	}
 	
 	public Set<Transition> getTransition() {
+		return getTransition(0, 0);
+	}
+	
+	public Set<Transition> getTransition(final int slen, final int alen) {
 		final Set<Transition> transitions = new HashSet<Transition>();
 		for (int i = 0; i < succSize(); i++) {
-			transitions.add(new Transition(getStateFP(i), getTidx(i), new BitVector(0)));
+			final BitVector bv = new BitVector(alen);
+			for (int j = 0; j < alen; j++) {
+				if (getCheckAction(slen, alen, i, j)) {
+					bv.set(j);
+				}
+			}
+			transitions.add(new Transition(getStateFP(i), getTidx(i), bv));
 		}
 		return transitions;
 	}
@@ -327,6 +337,18 @@ public class GraphNode extends AbstractGraphNode {
 			if (tidx != other.tidx)
 				return false;
 			return true;
+		}
+		
+		public BitVector getChecks() {
+			return bv;
+		}
+
+		public long getFP() {
+			return fp;
+		}
+		
+		public int getTidx() {
+			return tidx;
 		}
 	}
 
