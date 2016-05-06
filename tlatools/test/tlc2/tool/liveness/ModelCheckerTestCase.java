@@ -27,6 +27,7 @@ package tlc2.tool.liveness;
 
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,6 +47,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	protected String path = "";
 	protected final String spec;
 	protected String[] extraArguments = new String[0];
+	protected TLC tlc;
 
 	public ModelCheckerTestCase(String spec) {
 		super(new TestMPRecorder());
@@ -80,7 +82,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			// generated.
 			TLCGlobals.livenessThreshold = Double.MAX_VALUE;
 			
-			final TLC tlc = new TLC();
+			tlc = new TLC();
 			// * We want *no* deadlock checking to find the violation of the
 			// temporal formula
 			// * We use (unless overridden) a single worker to simplify
@@ -125,5 +127,27 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	 */
 	protected int getNumberOfThreads() {
 		return 1;
+	}
+	
+	/**
+	 * E.g. 
+	 * ILiveCheck liveCheck = (ILiveCheck) getField(AbstractChecker.class, "liveCheck",
+	 * 				getField(TLC.class, "instance", tlc));
+	 */
+	protected Object getField(Class<?> targetClass, String fieldName, Object instance) {
+		try {
+			Field field = targetClass.getDeclaredField(fieldName);
+			field.setAccessible(true);
+			return field.get(instance);
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
