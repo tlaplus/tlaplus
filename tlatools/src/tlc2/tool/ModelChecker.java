@@ -797,8 +797,9 @@ public class ModelChecker extends AbstractChecker
     {
         this.theFPSet.close();
         this.trace.close();
-        if (this.checkLiveness)
-            liveCheck.close();
+        if (this.checkLiveness && !VETO_CLEANUP) {
+        	liveCheck.close();
+        }
         this.allStateWriter.close();
     	if (!VETO_CLEANUP) {
     		FileUtil.deleteDir(this.metadir, success);

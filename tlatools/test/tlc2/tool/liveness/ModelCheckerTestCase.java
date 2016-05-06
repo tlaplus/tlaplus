@@ -39,6 +39,7 @@ import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
 import tlc2.output.MP;
 import tlc2.tool.CommonTestCase;
+import tlc2.tool.ModelChecker;
 import util.FileUtil;
 import util.ToolIO;
 
@@ -69,6 +70,11 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	 */
 	@Before
 	public void setUp() {
+		// some tests might want to access the liveness graph after model
+		// checking completed. Thus, prevent the liveness graph from being
+		// closed too earlier.
+		System.setProperty(ModelChecker.class.getName() + ".vetoCleanup", "true");
+
 		try {
 			// TEST_MODEL is where TLC should look for user defined .tla files
 			ToolIO.setUserDir(BASE_DIR + TEST_MODEL + path);
