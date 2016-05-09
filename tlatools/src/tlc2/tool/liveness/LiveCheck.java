@@ -16,6 +16,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
 import tlc2.tool.IStateFunctor;
+import tlc2.tool.ModelChecker;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
@@ -410,7 +411,9 @@ public class LiveCheck implements ILiveCheck {
 		 * @see tlc2.tool.liveness.ILiveChecker#close()
 		 */
 		public void close() throws IOException {
-			this.getDiskGraph().close();
+			if (!ModelChecker.VETO_CLEANUP) {
+				this.getDiskGraph().close();
+			}
 			this.writer.close();
 		}
 	}

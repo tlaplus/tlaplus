@@ -43,7 +43,7 @@ public class ModelChecker extends AbstractChecker
 	/**
 	 * If the state/ dir should be cleaned up after a successful model run
 	 */
-	private static final boolean VETO_CLEANUP = Boolean.getBoolean(ModelChecker.class.getName() + ".vetoCleanup");
+	public static final boolean VETO_CLEANUP = Boolean.getBoolean(ModelChecker.class.getName() + ".vetoCleanup");
 
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
     public IStateQueue theStateQueue; // the state queue
@@ -797,7 +797,7 @@ public class ModelChecker extends AbstractChecker
     {
         this.theFPSet.close();
         this.trace.close();
-        if (this.checkLiveness && !VETO_CLEANUP) {
+        if (this.checkLiveness) {
         	liveCheck.close();
         }
         this.allStateWriter.close();
