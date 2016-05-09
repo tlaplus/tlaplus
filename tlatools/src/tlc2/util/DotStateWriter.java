@@ -45,6 +45,7 @@ public class DotStateWriter extends StateWriter {
 		super(fname);
 		this.writer.append(strict + "digraph DiskGraph {\n"); // strict removes redundant edges
 		this.writer.append("rankdir=LR;\n"); // Left to right rather than top to bottom
+		this.writer.flush();
 	}
 
 	/* (non-Javadoc)
@@ -77,14 +78,14 @@ public class DotStateWriter extends StateWriter {
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, tlc2.util.BitVector, int, int, boolean)
 	 */
-	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew) {
+	public synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew) {
 		writeState(state, successor, actionChecks, from, length, successorStateIsNew, Visualization.DEFAULT);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
-	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew,
+	public synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew,
 			Visualization visualization) {
 		final String successorsFP = Long.toString(successor.fingerPrint());
 
