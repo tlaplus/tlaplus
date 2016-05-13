@@ -28,6 +28,11 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
         // store.setDefault(IPreferenceConstants.I_PARSE_FILES_ON_MODIFY, true);
         store.setDefault(IPreferenceConstants.I_PARSE_SPEC_ON_MODIFY, true);
         
+        /*
+         * Set default (and only) option for PlusCal translator.  (Added by LL on 13 May 2016.)
+         */
+        store.setDefault(IPreferenceConstants.PCAL_CAL_PARAMS, "-nocfg"); 
+        
         // set editor page preference defaults
         store.setDefault(EditorPreferencePage.EDITOR_RIGHT_MARGIN, 
                 EditorPreferencePage.EDITOR_RIGHT_MARGIN_DEFAULT);
@@ -41,6 +46,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
         store.setDefault(EditorPreferencePage.RENUMBER_KEY,  
         		EditorPreferencePage.ALL_NAMES);
         store.setDefault(EditorPreferencePage.SAVE_MODULE, true);
+        
     }
 
 }
