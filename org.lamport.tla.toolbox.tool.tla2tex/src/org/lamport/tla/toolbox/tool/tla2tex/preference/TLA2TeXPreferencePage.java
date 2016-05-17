@@ -44,7 +44,7 @@ public class TLA2TeXPreferencePage extends FieldEditorPreferencePage implements
 		}
 		// Preference to regenerate PDF upon spec save?
 		addField(new BooleanFieldEditor(
-				ITLA2TeXPreferenceConstants.AUTO_REGENERATE, "&Regenerate pretty-printed PDF on spec save.",
+				ITLA2TeXPreferenceConstants.AUTO_REGENERATE, "&Regenerate pretty-printed PDF on spec save (takes effect once spec re-opened).",
 				getFieldEditorParent()));
 
 		addField(new BooleanFieldEditor(
