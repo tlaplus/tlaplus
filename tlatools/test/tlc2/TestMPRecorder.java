@@ -59,6 +59,30 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 		}
 	}
 
+	public boolean recordedWithSubStringValue(int code, String substring) {
+		return recordedWithSubStringValue(code, substring, 0);
+	}
+	
+	public boolean recordedWithSubStringValue(int code, String substring, int idx) {
+		try {
+			Object object = records.get(code).get(0);
+			if (object instanceof String[]) {
+				String[] strs = (String[]) object;
+				for (String string : strs) {
+					if (string.contains(substring)) {
+						return true;
+					}
+				}
+				return false;
+			} else if (object instanceof String) {
+				return ((String) object).contains(substring);
+			}
+			return false;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
 	public boolean recordedWithStringValueAt(int code, String str, int idx) {
 		try {
 			Object object = records.get(code).get(0);
@@ -83,5 +107,32 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 			return true;
 		}
 		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		final StringBuffer buf = new StringBuffer(records.size());
+		for(Integer key : records.keySet()) {
+			final List<Object> list = records.get(key);
+			for (Object elem : list) {
+				if (elem instanceof String[]) {
+					String[] strs = (String[]) elem;
+					for (String s : strs) {
+						buf.append(key);
+						buf.append(" -> ");
+						buf.append(s);
+						buf.append("\n");
+					}
+				} else if (elem instanceof String) {
+					buf.append(key);
+					buf.append(" -> ");
+					buf.append(elem);
+					buf.append("\n");
+				}
+			}
+		}
+		return buf.toString();
 	}
 }

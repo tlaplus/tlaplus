@@ -46,7 +46,7 @@ import util.ToolIO;
 public abstract class ModelCheckerTestCase extends CommonTestCase {
 	
 	protected String path = "";
-	protected final String spec;
+	protected String spec;
 	protected String[] extraArguments = new String[0];
 	protected TLC tlc;
 
@@ -100,7 +100,9 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			// *Don't* check for deadlocks. All tests are interested in liveness
 			// checks which are shielded away by deadlock checking. TLC finds a
 			// deadlock (if it exists) before it finds most liveness violations.
-			args.add("-deadlock");
+			if (!checkDeadLock()) {
+				args.add("-deadlock");
+			}
 			
 			args.add("-workers");
 			args.add(Integer.toString(getNumberOfThreads()));
@@ -126,6 +128,13 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
+	}
+
+	/**
+	 * @return True if TLC is to be called with "-deadlock".
+	 */
+	protected boolean checkDeadLock() {
+		return false;
 	}
 
 	/**

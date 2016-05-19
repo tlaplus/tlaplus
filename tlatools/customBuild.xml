@@ -251,6 +251,8 @@
 						<include name="**/*Test*.java" />
 						<exclude name="**/CommonTestCase.java" />
 						<exclude name="**/ModelCheckerTestCase.java" />
+						<exclude name="**/SuiteTestCase.java" />
+						<exclude name="**/SuiteETestCase.java" />
 						<exclude name="**/DistributedTLCTestCase.java" />
 						<exclude name="**/TLCServerTestCase.java" />
 						<exclude name="**/SuccessfulSimulationTestCase.java" />
@@ -294,6 +296,8 @@
 					<include name="**/*Test*.java" />
 					<exclude name="**/CommonTestCase.java" />
 					<exclude name="**/ModelCheckerTestCase.java" />
+					<exclude name="**/SuiteTestCase.java" />
+					<exclude name="**/SuiteETestCase.java" />
 					<exclude name="**/DistributedTLCTestCase.java" />
 					<exclude name="**/TLCServerTestCase.java" />
 					<exclude name="**/SuccessfulSimulationTestCase.java" />
