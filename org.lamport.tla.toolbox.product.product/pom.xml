@@ -85,6 +85,48 @@
           </products>
         </configuration>
       </plugin>
+      
+      <!-- Package Toolbox's Linux zip for Debian/Ubuntu -->
+		<plugin>
+			<artifactId>jdeb</artifactId>
+			<groupId>org.vafer</groupId>
+			<version>1.5</version>
+			<executions>
+				<execution>
+					<phase>package</phase>
+					<goals>
+						<goal>jdeb</goal>
+					</goals>
+					<configuration>
+					    <deb>${project.build.directory}/products/TLAToolbox-1.5.3-linux.gtk.amd64.deb</deb>
+						<snapshotExpand>true</snapshotExpand>
+						<verbose>false</verbose>
+						<dataSet>
+							<data>
+								<src>${project.build.directory}/products/org.lamport.tla.toolbox.product.product/linux/gtk/x86_64/toolbox</src>
+								<type>directory</type>
+								<!-- Disable Toolbox's built-in update 
+                                     manager. Using the .deb archives
+                                     is mutually exclusive with the 
+                                     built-in updater.
+                                     
+                                     Technically, simply remove p2's
+                                     complete metadata from final
+                                     installation.
+                                 -->
+                  				<excludes>p2/</excludes>
+								<mapper>
+									<type>perm</type>
+									<prefix>/opt/TLA+Toolbox</prefix>
+									<user>root</user>
+									<group>root</group>
+								</mapper>
+							</data>
+						</dataSet>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
 
     </plugins>
   </build>

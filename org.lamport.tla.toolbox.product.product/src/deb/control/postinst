@@ -1,0 +1,22 @@
+#!/bin/sh
+
+## Fix permissions of executable
+chmod 755 /opt/TLA+Toolbox/toolbox
+
+## Place Toolbox's workspace directory
+## in her home directory to support
+## multi-user installation and not 
+## require user write access to
+## /opt/TLA+Toolbox/. Also makes 
+## replacing the Toolbox less error
+## prone when TLA+Toolbox is never 
+## touched except for dpkg.
+## Having a fixed workspace location
+## is also better than creating a 
+## workspace directory in ever directory
+## from which the Toolbox is launched.
+echo "-Dosgi.instance.area.default=@user.home/.tlaplus/" >> /opt/TLA+Toolbox/toolbox.ini
+
+#- Apt repo
+#-- Jenkins Plugin
+#-- https://github.com/theoweiss/apt-repo
