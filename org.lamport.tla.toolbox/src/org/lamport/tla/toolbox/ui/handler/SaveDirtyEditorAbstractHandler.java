@@ -6,9 +6,11 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -23,36 +25,51 @@ public abstract class SaveDirtyEditorAbstractHandler extends AbstractHandler {
 	 * @return true iff the dirty editor has been saved, false otherwise
 	 */
 	public boolean saveDirtyEditor(final ExecutionEvent event) {
-        activeEditor = UIHelper.getActiveEditor();
-        if (activeEditor.isDirty())
-        {
-			final Shell shell = HandlerUtil.getActiveShell(event);
-			final MessageDialog dialog = new SaveMessageDialog(shell, getDialogTitle(), getDialogMessage());
-			int res = dialog.open();
-			if (res == MessageDialog.OK || res == MessageDialog.CONFIRM) {
+		activeEditor = UIHelper.getActiveEditor();
+		if (activeEditor.isDirty()) {
+			getPrefs().setDefault(this.getClass() + ".dontBother", false);
+			if (getPrefs().getBoolean(this.getClass() + ".dontBother")) {
 				// TODO decouple from ui thread
 				activeEditor.doSave(new NullProgressMonitor());
 			} else {
-				return false;
+				final Shell shell = HandlerUtil.getActiveShell(event);
+				final MessageDialog dialog = new SaveMessageDialog(shell, getDialogTitle(), getDialogMessage());
+				int res = dialog.open();
+				if (res == 2) { // 2 is index of button in string[] below
+					// User doesn't want to be warned about a dirty editor any longer.
+					// Remember it for this handler (this.getClass).
+					getPrefs().setValue(this.getClass() + ".dontBother", true);
+					res = MessageDialog.OK;
+				}
+				if (res == MessageDialog.OK || res == MessageDialog.CONFIRM) {
+					// TODO decouple from ui thread
+					activeEditor.doSave(new NullProgressMonitor());
+				} else {
+					return false;
+				}
 			}
 
 			// Use NullProgressMonitor instead of newly created monitor. The
 			// parent ProgressMonitorDialog would need to be properly
 			// initialized first.
-        	// @see https://bugzilla.tlaplus.net/show_activity.cgi?id=256
-        	//
+			// @see https://bugzilla.tlaplus.net/show_activity.cgi?id=256
+			//
 			// Generally though, saving a resource involves I/O which should be
 			// decoupled from the UI thread in the first place. Properly doing
 			// this, would be from inside a Job which provides a ProgressMonitor
-            activeEditor.doSave(new NullProgressMonitor());
-        }
+			activeEditor.doSave(new NullProgressMonitor());
+		}
 		return true;
 	}
-	
+
+	private IPreferenceStore getPrefs() {
+		return Activator.getDefault().getPreferenceStore();
+	}
+
 	protected String getDialogMessage() {
 		return "The current editor has not been saved, should the editor be saved first?";
 	}
-	
+
 	protected String getDialogTitle() {
 		return "Save " + activeEditor.getTitle() + " editor?";
 	}
@@ -73,10 +90,9 @@ public abstract class SaveDirtyEditorAbstractHandler extends AbstractHandler {
 	 */
 	private class SaveMessageDialog extends MessageDialog {
 
-		public SaveMessageDialog(Shell parentShell, String dialogTitle,
-				String dialogMessage) {
+		public SaveMessageDialog(Shell parentShell, String dialogTitle, String dialogMessage) {
 			super(parentShell, dialogTitle, null, dialogMessage, QUESTION,
-					new String[] { "Save", "Cancel" }, 0);
+					new String[] { "&Save", "&Cancel", "Save and &never ask again" }, 0);
 		}
 	}
 }
