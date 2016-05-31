@@ -98,7 +98,7 @@
 						<goal>jdeb</goal>
 					</goals>
 					<configuration>
-					    <deb>${project.build.directory}/products/TLAToolbox-1.5.3-linux.gtk.amd64.deb</deb>
+					    <deb>${project.build.directory}/TLAToolbox-1.5.3-linux.gtk.amd64.deb</deb>
 						<snapshotExpand>true</snapshotExpand>
 						<verbose>false</verbose>
 						<dataSet>
@@ -127,6 +127,24 @@
 				</execution>
 			</executions>
 		</plugin>
+		
+		
+	      <plugin>
+	        <artifactId>apt-repo</artifactId>
+	        <groupId>org.m1theo</groupId>
+	        <version>0.2.1</version>
+	        <configuration>
+	         <repoDir>${project.build.directory}/repository/</repoDir>
+	        </configuration>
+	        <executions>
+	          <execution>
+	            <phase>package</phase>
+	            <goals>
+	              <goal>apt-repo</goal>
+	            </goals>
+	          </execution>
+	        </executions>
+	      </plugin>
 
     </plugins>
   </build>
