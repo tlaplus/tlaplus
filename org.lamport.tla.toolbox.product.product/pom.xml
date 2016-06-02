@@ -14,6 +14,15 @@
   <!-- Release version goes here. -->
   <version>1.4.0-SNAPSHOT</version>
   <packaging>eclipse-repository</packaging>
+  
+  <properties>
+    <!-- Align product.version with the version in 
+         org.lamport.tla.toolbox.product.product.product
+         product.version. -->
+    <product.version>1.5.3</product.version>
+    <product.build>${maven.build.timestamp}</product.build>
+  </properties>
+  
   <build>
 	<plugins>
 		<!-- attach the .target file definition to is artifact so it can be referred 
@@ -75,7 +84,7 @@
                    over features. The version segment has to be manually increment
                    upon a release.  
                    see https://bugs.eclipse.org/bugs/show_bug.cgi?id=357503#c22 -->
-              <archiveFileName>TLAToolbox-1.5.3</archiveFileName>
+              <archiveFileName>TLAToolbox-${product.version}</archiveFileName>
               <rootFolder>toolbox</rootFolder>
 			   <!-- This causes the Toolbox to be packaged as a single Application Bundle 
 					on Mac. Applciation Bundles are the default packaging for Mac where the single 
@@ -98,7 +107,7 @@
 						<goal>jdeb</goal>
 					</goals>
 					<configuration>
-					    <deb>${project.build.directory}/TLAToolbox-1.5.3-linux.gtk.amd64.deb</deb>
+					    <deb>${project.build.directory}/TLAToolbox-${product.version}-linux.gtk.amd64.deb</deb>
 						<snapshotExpand>true</snapshotExpand>
 						<verbose>false</verbose>
 						<dataSet>

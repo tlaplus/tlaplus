@@ -1,5 +1,5 @@
 Package: TLA+Toolbox
-Version: 1.5.3
+Version: [[product.version]]~[[product.build]]
 Section: misc
 Distribution: development
 Priority: optional
