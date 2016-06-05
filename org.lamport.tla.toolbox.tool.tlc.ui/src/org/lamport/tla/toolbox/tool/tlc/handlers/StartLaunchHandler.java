@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
+import java.util.Map;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -14,10 +16,13 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Initiates a model checker run
@@ -30,7 +35,21 @@ public class StartLaunchHandler extends AbstractHandler {
 	private ModelEditor lastModelEditor;
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		final ModelEditor modelEditor = getModelEditor(event);
+		ModelEditor modelEditor = getModelEditor(event);
+		
+		// Iff no previously opened modeleditor is still around and iff the spec
+		// has only a single model, open its modeleditor and run it.
+		if (modelEditor == null) {
+			final TLCSpec spec = ToolboxHandle.getCurrentSpec().getAdapter(TLCSpec.class);
+			if (spec != null) {
+				final Map<String, Model> models = spec.getModels();
+				if (models.size() == 1) {
+					Model model = models.values().toArray(new Model[1])[0];
+					modelEditor = (ModelEditor) UIHelper.openEditor(ModelEditor.ID, model.getFile());
+				}
+			}
+		}
+		
 		if (modelEditor != null) {
 
 			final Model model = modelEditor.getModel();
@@ -148,7 +167,7 @@ public class StartLaunchHandler extends AbstractHandler {
 		// open spec. E.g. lastModelEditor might still be around from when
 		// the user ran a it on spec X, but has switched to spec Y in the
 		// meantime. Closing the spec nulls the ModelEditor
-		if (lastModelEditor.isDisposed()) {
+		if (lastModelEditor != null && lastModelEditor.isDisposed()) {
 			lastModelEditor = null;
 		}
 		
