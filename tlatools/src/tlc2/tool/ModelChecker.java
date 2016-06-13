@@ -406,11 +406,7 @@ public class ModelChecker extends AbstractChecker
                     			MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT);
                     			this.trace.printTrace(curState, succState);
                     			this.theStateQueue.finishAll();
-                    			
-                    			synchronized (this)
-                    			{
-                    				this.notify();
-                    			}
+                    			this.notify();
                     		}
                     		return true;
                     	}
