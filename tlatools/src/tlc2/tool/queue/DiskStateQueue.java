@@ -42,7 +42,7 @@ public class DiskStateQueue extends StateQueue {
 	protected StatePoolReader reader;
 	protected StatePoolWriter writer;
 	/**
-	 * The SPC takes care or deleting swap files on the lower end of the range
+	 * The SPC takes care of deleting swap files on the lower end of the range
 	 * (loPool, hiPool). It terminates, when the first checkpoint is written at
 	 * which point checkpointing itself takes care of removing obsolete swap
 	 * files.
