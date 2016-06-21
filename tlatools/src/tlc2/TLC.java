@@ -204,8 +204,8 @@ public class TLC
         	} else {
         		tlc.setResolver(new SimpleFilenameToStream());
         	}
-        	ms.setModelName(System.getProperty(MailSender.MODEL_NAME, tlc.mainFile));
-        	ms.setSpecName(System.getProperty(MailSender.SPEC_NAME, tlc.mainFile));
+        	ms.setModelName(tlc.getModelName());
+        	ms.setSpecName(tlc.getSpecName());
 
             // call the actual processing method
             tlc.process();
@@ -708,15 +708,15 @@ public class TLC
         
         if (TLCGlobals.debug) 
         {
-            StringBuffer buffer = new StringBuffer("TLC arguments:");
-            for (int i=0; i < args.length; i++)
-            {
-                buffer.append(args[i]);
-                if (i < args.length - 1) 
-                {
-                    buffer.append(" ");
-                }
-            }
+		StringBuffer buffer = new StringBuffer("TLC arguments:");
+		for (int i=0; i < args.length; i++)
+		{
+		    buffer.append(args[i]);
+		    if (i < args.length - 1) 
+		    {
+		        buffer.append(" ");
+		    }
+		}
             buffer.append("\n");
             DebugPrinter.print(buffer.toString());
         }
@@ -725,7 +725,7 @@ public class TLC
         printWelcome();
         
         return true;
-    }
+	}
     
     /**
      * The processing method
@@ -787,7 +787,7 @@ public class TLC
                 if (TLCGlobals.DFIDMax == -1)
                 {
                     mc = new ModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
-                    modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc);
+                    modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
                 } else
                 {
                     mc = new DFIDModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, true, resolver, specObj);
@@ -943,4 +943,12 @@ public class TLC
     FPSetConfiguration getFPSetConfiguration() {
     	return fpSetConfiguration;
     }
+
+	public String getModelName() {
+		return System.getProperty(MailSender.MODEL_NAME, this.mainFile);
+	}
+	
+	public String getSpecName() {
+		return System.getProperty(MailSender.SPEC_NAME, this.mainFile);
+	}
 }

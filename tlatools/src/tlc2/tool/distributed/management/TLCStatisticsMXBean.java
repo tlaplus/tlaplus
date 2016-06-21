@@ -72,4 +72,14 @@ public interface TLCStatisticsMXBean {
 	 * has recently checked.
 	 */
 	String getCurrentState();
+	
+	/**
+	 * @return The name of the spec currently being checked by TLC.
+	 */
+	String getSpecName();
+	
+	/**
+	 * @return The name of the model curreclty being checked by TLC.
+	 */
+	String getModelName();
 }

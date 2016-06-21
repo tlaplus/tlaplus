@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import javax.management.NotCompliantMBeanException;
 
+import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.TLCState;
@@ -18,11 +19,13 @@ import tlc2.tool.fp.DiskFPSet;
 public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatisticsMXBean {
 
 	private final ModelChecker modelChecker;
+	private final TLC tlc;
 
-	public ModelCheckerMXWrapper(final ModelChecker aModelChecker)
+	public ModelCheckerMXWrapper(final ModelChecker aModelChecker, final TLC tlc)
 			throws NotCompliantMBeanException {
 		super(TLCStatisticsMXBean.class);
 		this.modelChecker = aModelChecker;
+		this.tlc = tlc;
 		// register all TLCStatisticsMXBeans under the same name
 		registerMBean("tlc2.tool:type=ModelChecker");
 	}
@@ -127,5 +130,19 @@ public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatis
 			return state.toString();
 		}
 		return "N/A";
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getSpecName()
+	 */
+	public String getSpecName() {
+		return tlc.getSpecName();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getModelName()
+	 */
+	public String getModelName() {
+		return tlc.getModelName();
 	}
 }
