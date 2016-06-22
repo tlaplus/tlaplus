@@ -1,0 +1,246 @@
+<!--
+	This is an example configuration file. It should be edited to capture the MBean 
+	attributes you are interested in.
+	
+	Use it with the agent in the following manner:
+	java -javaagent:<path to jmx2jfr.jar>=<path to this file> <your normal vmargs>	
+-->
+<jmx2jfr>
+    <!-- Time to wait before retrying getting an MBean attribute in ms -->
+	<retrytime>60000</retrytime>
+	
+	<!-- Time to wait until starting in ms --> 
+	<delay>10000</delay>
+	
+	<!-- How often to get the attributes and emit events for them, in ms -->
+	<period>30000</period>
+	
+	<!-- clean: Use name or type keys for event name. Leads to cleaner event 
+	     type names, but can result in name collisions if you have MBeans with 
+	     the same name in the same domain.
+	     canonical: ugly event type names, but guaranteed not to collide -->
+	<namingmode>clean</namingmode>
+	
+	<!-- objectname:    MBean name - look it up in JMC
+	     attributename: Attribute name - look it up in JMC
+	     contenttype:   [None | Bytes | Timestamp | Millis | Nanos | Ticks | Address] -->
+	<attributes>
+		<attribute>
+			<objectname>java.lang:type=OperatingSystem</objectname>
+			<attributename>FreeSwapSpaceSize</attributename>
+			<contenttype>Bytes</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>java.lang:type=OperatingSystem</objectname>
+			<attributename>TotalSwapSpaceSize</attributename>
+			<contenttype>Bytes</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>java.lang:type=OperatingSystem</objectname>
+			<attributename>AvailableProcessors</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>java.lang:type=OperatingSystem</objectname>
+			<attributename>AvailableProcessors</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>java.lang:type=OperatingSystem</objectname>
+			<attributename>Name</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>java.lang:type=Threading</objectname>
+			<attributename>PeakThreadCount</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>java.lang:type=Threading</objectname>
+			<attributename>CurrentThreadCpuTime</attributename>
+			<contenttype>Nanos</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>java.lang:type=Runtime</objectname>
+			<attributename>StartTime</attributename>
+			<contenttype>Timestamp</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>java.lang:type=Runtime</objectname>
+			<attributename>StartTime</attributename>
+			<contenttype>Timestamp</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>java.lang:type=Runtime</objectname>
+			<attributename>Uptime</attributename>
+			<contenttype>Millis</contenttype>
+		</attribute>
+		<!-- tlc2.tool:type=ModelChecker -->
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>StatesGenerated</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>StatesGeneratedPerMinute</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>DistinctStatesGenerated</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>DistinctStatesGeneratedPerMinute</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>StateQueueSize</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>Progress</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>WorkerCount</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>AverageBlockCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>RuntimeRatio</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>SpecName</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>ModelName</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool:type=ModelChecker</objectname>
+			<attributename>CommandLine</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<!-- tlc2.tool.fp:type=DiskFPSet0 -->
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>BucketCapacity</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>TblCapacity</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>IndexCapacity</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>OverallCapacity</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>TblLoad</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>TblCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>MaxTblCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>FileCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>DiskLookupCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>MemHitCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>DiskHitCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>DiskWriteCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>DiskSeekCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>DiskSeekCache</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>GrowDiskMark</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>CheckPointMark</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>FlushTime</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>ReaderWriterCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>CollisionBucketCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>CollisionRatio</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>LoadFactor</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
+	</attributes>
+</jmx2jfr>
