@@ -358,6 +358,7 @@ public class ModelChecker extends AbstractChecker
             return false;
         }
 
+        int sum = 0; // amount of states generated during the invocation of doNext(..)
         boolean deadLocked = true;
         TLCState succState = null;
         SetOfStates liveNextStates = null;
@@ -391,7 +392,7 @@ public class ModelChecker extends AbstractChecker
 				// removed, the functor pattern could be applied to doNext too.
 				StateVec nextStates = this.tool.getNextStates(this.actions[i], curState);
 				int sz = nextStates.size();
-				this.incNumOfGenStates(sz);
+				sum = sum + sz;
 				deadLocked = deadLocked && (sz == 0);
 
                 SUCCESSORS: for (int j = 0; j < sz; j++)
@@ -400,6 +401,9 @@ public class ModelChecker extends AbstractChecker
 					// Check if succState is a legal state.
                     if (!this.tool.isGoodState(succState))
                     {
+                        // Report and reset statistics
+            			this.incNumOfGenStates(sum);
+            			sum = 0;
                     	synchronized (this) {
                     		if (this.setErrState(curState, succState, false))
                     		{
@@ -454,11 +458,15 @@ public class ModelChecker extends AbstractChecker
 								// SZ Feb 23, 2009: cancel the calculation
                                 if (this.cancellationFlag)
                                 {
+                        			this.incNumOfGenStates(sum);
 									return false;
 								}
 
                                 if (!tool.isValid(this.invariants[k], succState))
                                 {
+                                    // Report and reset statistics
+                        			this.incNumOfGenStates(sum);
+                        			sum = 0;
                                     // We get here because of invariant violation:
                                     synchronized (this)
                                     {
@@ -499,6 +507,9 @@ public class ModelChecker extends AbstractChecker
 							}
                         } catch (Exception e)
                         {
+                            // Report and reset statistics
+                			this.incNumOfGenStates(sum);
+                			sum = 0;
                         	synchronized (this) {
                         		if (this.setErrState(curState, succState, true))
                         		{
@@ -523,11 +534,15 @@ public class ModelChecker extends AbstractChecker
 							// SZ Feb 23, 2009: cancel the calculation
                             if (this.cancellationFlag)
                             {
+                    			this.incNumOfGenStates(sum);
 								return false;
 							}
 
                             if (!tool.isValid(this.impliedActions[k], curState, succState))
                             {
+                                // Report and reset statistics
+                    			this.incNumOfGenStates(sum);
+                    			sum = 0;
                                 // We get here because of implied-action violation:
                                 synchronized (this)
                                 {
@@ -568,6 +583,9 @@ public class ModelChecker extends AbstractChecker
 						}
                     } catch (Exception e)
                     {
+                        // Report and reset statistics
+            			this.incNumOfGenStates(sum);
+            			sum = 0;
                     	synchronized (this) {
 	                        if (this.setErrState(curState, succState, true))
 	                        {
@@ -591,6 +609,10 @@ public class ModelChecker extends AbstractChecker
 				// Must set state to null!!!
 				succState = null;
 			}
+            // Report and reset statistics
+			this.incNumOfGenStates(sum);
+			sum = 0;
+
 			// Check for deadlock:
             if (deadLocked && this.checkDeadlock)
             {
@@ -628,6 +650,10 @@ public class ModelChecker extends AbstractChecker
 			return false;
         } catch (Throwable e)
         {
+            // Report and reset statistics
+			this.incNumOfGenStates(sum);
+			sum = 0;
+			
 			// Assert.printStack(e);
 			boolean keep = ((e instanceof StackOverflowError) || (e instanceof OutOfMemoryError)
 					|| (e instanceof AssertionError));
