@@ -44,7 +44,7 @@ public class PrintTraceRaceTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "2", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "2", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));

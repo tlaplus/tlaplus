@@ -1,7 +1,6 @@
 package tlc2.tool;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLong;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.SemanticNode;
@@ -44,12 +43,6 @@ public abstract class AbstractChecker implements Cancelable
 	
 	protected static final boolean LIVENESS_STATS = Boolean.getBoolean(Liveness.class.getPackage().getName() + ".statistics");
 	
-	//TODO Replace with distributed counter?!
-	// http://concurrencyfreaks.blogspot.de/2013/08/concurrency-pattern-distributed-cache.html
-	// If the next state relation is small, this atomic counter might pose a
-	// scalability bottleneck. My gut feeling however is, that TLC only suffers
-	// a negligible performance penalty from it.
-    protected AtomicLong numOfGenStates;
     protected TLCState predErrState;
     protected TLCState errState;
     protected boolean done;
@@ -107,7 +100,6 @@ public abstract class AbstractChecker implements Cancelable
         // moved to file utilities
         this.metadir = FileUtil.makeMetaDir(specDir, fromChkpt);
         
-        this.numOfGenStates = new AtomicLong(0);
         this.errState = null;
         this.predErrState = null;
         this.done = false;
@@ -161,15 +153,6 @@ public abstract class AbstractChecker implements Cancelable
     public final void setDone()
     {
         this.done = true;
-    }
-
-    protected final void incNumOfGenStates(int n)
-    {
-		// Don't update a shared atomic counter unless needed. The majority of
-		// invocations actually has n=0.
-    	if (n != 0) {
-    		this.numOfGenStates.getAndAdd(n);
-    	}
     }
 
     /**

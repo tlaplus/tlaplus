@@ -6,7 +6,6 @@
 package tlc2.tool;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLong;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
@@ -45,6 +44,7 @@ public class ModelChecker extends AbstractChecker
 	 */
 	public static final boolean VETO_CLEANUP = Boolean.getBoolean(ModelChecker.class.getName() + ".vetoCleanup");
 
+	private long numberOfInitialStates;
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
     public IStateQueue theStateQueue; // the state queue
     public TLCTrace trace; // the trace file
@@ -162,7 +162,7 @@ public class ModelChecker extends AbstractChecker
                 this.tool.setCallStack();
                 try
                 {
-                    this.numOfGenStates = new AtomicLong(0);
+                    numberOfInitialStates = 0;
                     // SZ Feb 23, 2009: ignore cancel on error reporting
                     this.doInit(true);
                 } catch (Throwable e1)
@@ -176,13 +176,14 @@ public class ModelChecker extends AbstractChecker
                 return;
             }
 
-            final String plural = (this.numOfGenStates.get() == 1) ? "" : "s";
-            if (this.numOfGenStates.get() == this.theFPSet.size())
+            long statesGenerated = getStatesGenerated();
+            final String plural = (statesGenerated == 1) ? "" : "s";
+            if (statesGenerated == this.theFPSet.size())
             {
-                MP.printMessage(EC.TLC_INIT_GENERATED1, new String[] { String.valueOf(this.numOfGenStates), plural });
+                MP.printMessage(EC.TLC_INIT_GENERATED1, new String[] { String.valueOf(statesGenerated), plural });
             } else
             {
-                MP.printMessage(EC.TLC_INIT_GENERATED2, new String[] { String.valueOf(this.numOfGenStates), plural,
+                MP.printMessage(EC.TLC_INIT_GENERATED2, new String[] { String.valueOf(statesGenerated), plural,
                         String.valueOf(this.theFPSet.size()) });
             }
         }
@@ -192,7 +193,7 @@ public class ModelChecker extends AbstractChecker
         if (this.actions.length == 0)
         {
         	if (this.theStateQueue.isEmpty()) {
-        		reportSuccess(this.theFPSet, this.numOfGenStates.get());
+        		reportSuccess(this.theFPSet, getStatesGenerated());
         		this.printSummary(true, startTime);
         	} else {
         		MP.printError(EC.TLC_STATES_AND_NO_NEXT_ACTION);
@@ -222,7 +223,7 @@ public class ModelChecker extends AbstractChecker
 					// and thus give the user some clues at what stage safety
 					// checking is.
             		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
-                            String.valueOf(this.numOfGenStates), String.valueOf(theFPSet.size()),
+                            String.valueOf(getStatesGenerated()), String.valueOf(theFPSet.size()),
                             String.valueOf(this.theStateQueue.size()) });
                 	
                     report("checking liveness");
@@ -237,14 +238,14 @@ public class ModelChecker extends AbstractChecker
 
                 // We get here because the checking has been completed.
                 success = true;
-                reportSuccess(this.theFPSet, this.numOfGenStates.get());
+                reportSuccess(this.theFPSet, getStatesGenerated());
             } else if (this.keepCallStack)
             {
                 // Replay the error with the error stack recorded:
                 this.tool.setCallStack();
                 try
                 {
-                    this.doNext(this.predErrState, new ObjLongTable(10));
+                    this.doNext(this.predErrState, new ObjLongTable(10), new Worker(4223, this));
                 } catch (Throwable e)
                 {
                     // Assert.printStack(e);
@@ -350,7 +351,7 @@ public class ModelChecker extends AbstractChecker
      * 
      * This method is called from the workers on every step
      */
-    public final boolean doNext(TLCState curState, ObjLongTable counts) throws Throwable
+    public final boolean doNext(TLCState curState, ObjLongTable counts, final Worker worker) throws Throwable
     {
         // SZ Feb 23, 2009: cancel the calculation
         if (this.cancellationFlag)
@@ -358,7 +359,6 @@ public class ModelChecker extends AbstractChecker
             return false;
         }
 
-        int sum = 0; // amount of states generated during the invocation of doNext(..)
         boolean deadLocked = true;
         TLCState succState = null;
         SetOfStates liveNextStates = null;
@@ -392,7 +392,7 @@ public class ModelChecker extends AbstractChecker
 				// removed, the functor pattern could be applied to doNext too.
 				StateVec nextStates = this.tool.getNextStates(this.actions[i], curState);
 				int sz = nextStates.size();
-				sum = sum + sz;
+				worker.incrementStatesGenerated(sz);
 				deadLocked = deadLocked && (sz == 0);
 
                 SUCCESSORS: for (int j = 0; j < sz; j++)
@@ -401,9 +401,6 @@ public class ModelChecker extends AbstractChecker
 					// Check if succState is a legal state.
                     if (!this.tool.isGoodState(succState))
                     {
-                        // Report and reset statistics
-            			this.incNumOfGenStates(sum);
-            			sum = 0;
                     	synchronized (this) {
                     		if (this.setErrState(curState, succState, false))
                     		{
@@ -458,15 +455,11 @@ public class ModelChecker extends AbstractChecker
 								// SZ Feb 23, 2009: cancel the calculation
                                 if (this.cancellationFlag)
                                 {
-                        			this.incNumOfGenStates(sum);
 									return false;
 								}
 
                                 if (!tool.isValid(this.invariants[k], succState))
                                 {
-                                    // Report and reset statistics
-                        			this.incNumOfGenStates(sum);
-                        			sum = 0;
                                     // We get here because of invariant violation:
                                     synchronized (this)
                                     {
@@ -507,9 +500,6 @@ public class ModelChecker extends AbstractChecker
 							}
                         } catch (Exception e)
                         {
-                            // Report and reset statistics
-                			this.incNumOfGenStates(sum);
-                			sum = 0;
                         	synchronized (this) {
                         		if (this.setErrState(curState, succState, true))
                         		{
@@ -534,15 +524,11 @@ public class ModelChecker extends AbstractChecker
 							// SZ Feb 23, 2009: cancel the calculation
                             if (this.cancellationFlag)
                             {
-                    			this.incNumOfGenStates(sum);
 								return false;
 							}
 
                             if (!tool.isValid(this.impliedActions[k], curState, succState))
                             {
-                                // Report and reset statistics
-                    			this.incNumOfGenStates(sum);
-                    			sum = 0;
                                 // We get here because of implied-action violation:
                                 synchronized (this)
                                 {
@@ -583,9 +569,6 @@ public class ModelChecker extends AbstractChecker
 						}
                     } catch (Exception e)
                     {
-                        // Report and reset statistics
-            			this.incNumOfGenStates(sum);
-            			sum = 0;
                     	synchronized (this) {
 	                        if (this.setErrState(curState, succState, true))
 	                        {
@@ -609,10 +592,6 @@ public class ModelChecker extends AbstractChecker
 				// Must set state to null!!!
 				succState = null;
 			}
-            // Report and reset statistics
-			this.incNumOfGenStates(sum);
-			sum = 0;
-
 			// Check for deadlock:
             if (deadLocked && this.checkDeadlock)
             {
@@ -650,10 +629,6 @@ public class ModelChecker extends AbstractChecker
 			return false;
         } catch (Throwable e)
         {
-            // Report and reset statistics
-			this.incNumOfGenStates(sum);
-			sum = 0;
-			
 			// Assert.printStack(e);
 			boolean keep = ((e instanceof StackOverflowError) || (e instanceof OutOfMemoryError)
 					|| (e instanceof AssertionError));
@@ -810,7 +785,8 @@ public class ModelChecker extends AbstractChecker
             MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, new String[] { String.valueOf(this.theFPSet.size()),
                     String.valueOf(this.theStateQueue.size()) });
             recovered = true;
-            this.numOfGenStates.set(this.theFPSet.size());
+            // Not all states are true initial states, but who cares at this point?
+            numberOfInitialStates = this.theFPSet.size();
         }
         return recovered;
     }
@@ -842,7 +818,7 @@ public class ModelChecker extends AbstractChecker
         	printProgresStats(startTime);
         }
 
-        MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(this.numOfGenStates),
+        MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(getStatesGenerated()),
                 String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size()) });
         if (success)
         {
@@ -863,14 +839,14 @@ public class ModelChecker extends AbstractChecker
         	oldFPSetSize = 0;
         	factor = (System.currentTimeMillis() - startTime) / 60000d;
         }
-		long l = numOfGenStates.get();
+		final long l = getStatesGenerated();
 		statesPerMinute = (long) ((l - oldNumOfGenStates) / factor);
         oldNumOfGenStates = l;
         distinctStatesPerMinute = (long) ((fpSetSize - oldFPSetSize) / factor);
         oldFPSetSize = fpSetSize;
         
 		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
-                String.valueOf(this.numOfGenStates), String.valueOf(fpSetSize),
+                String.valueOf(l), String.valueOf(fpSetSize),
                 String.valueOf(this.theStateQueue.size()), String.valueOf(statesPerMinute), String.valueOf(distinctStatesPerMinute) });
     }
 
@@ -1147,10 +1123,12 @@ public class ModelChecker extends AbstractChecker
         DebugPrinter.print(e);
     }
 
-	// TODO how often does JMX pull this value? If the underlying counter is
-	// converted to a distributed counter, we shouldn't be pulling too often.
     public long getStatesGenerated() {
-    	return numOfGenStates.get();
+    	long sum = numberOfInitialStates;
+    	for (final Worker worker : workers) {
+			sum += worker.getStatesGenerated();
+		}
+    	return sum;
     }
     
 	/**
@@ -1176,7 +1154,7 @@ public class ModelChecker extends AbstractChecker
 		 * @see tlc2.tool.IStateFunctor#addElement(tlc2.tool.TLCState)
 		 */
 		public Object addElement(final TLCState curState) {
-			incNumOfGenStates(1);
+			numberOfInitialStates++;
 			
 			// getInitStates() does not support aborting init state generation
 			// once a violation has been found (that is why the return values of

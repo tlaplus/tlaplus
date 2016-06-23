@@ -21,6 +21,7 @@ public class Worker extends IdThread implements IWorker {
 	private ModelChecker tlc;
 	private IStateQueue squeue;
 	private ObjLongTable astCounts;
+	private long statesGenerated;
 
 	// SZ Feb 20, 2009: changed due to super type introduction
 	public Worker(int id, AbstractChecker tlc) {
@@ -53,7 +54,7 @@ public class Worker extends IdThread implements IWorker {
 					this.squeue.finishAll();
 					return;
 				}
-				if (this.tlc.doNext(curState, this.astCounts))
+				if (this.tlc.doNext(curState, this.astCounts, this))
 					return;
 			}
 		} catch (Throwable e) {
@@ -69,5 +70,13 @@ public class Worker extends IdThread implements IWorker {
 			}
 			return;
 		}
+	}
+
+	void incrementStatesGenerated(long l) {
+		this.statesGenerated += l;		
+	}
+	
+	long getStatesGenerated() {
+		return this.statesGenerated;
 	}
 }

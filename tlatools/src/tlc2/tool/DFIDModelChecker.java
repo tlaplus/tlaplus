@@ -38,6 +38,7 @@ public class DFIDModelChecker extends AbstractChecker
     public long[] theInitFPs; // ... and their fps
     public FPIntSet theFPSet; // the set of reachable states (SZ: note the type)
     protected DFIDWorker[] workers; // the workers
+    private final AtomicLong numOfGenStates;
 
     /** 
      * Constructor for running DFID   
@@ -56,6 +57,7 @@ public class DFIDModelChecker extends AbstractChecker
 
         // Initialize all the workers:
         this.workers = new DFIDWorker[TLCGlobals.getNumWorkers()];
+        this.numOfGenStates = new AtomicLong(0);
     }
 
     /**
@@ -86,7 +88,7 @@ public class DFIDModelChecker extends AbstractChecker
             this.tool.setCallStack();
             try
             {
-                this.numOfGenStates = new AtomicLong(0);
+                this.numOfGenStates.set(0);
                 this.doInit(true);
             } catch (Throwable e1)
             {
@@ -356,7 +358,7 @@ public class DFIDModelChecker extends AbstractChecker
             {
                 StateVec nextStates = this.tool.getNextStates(this.actions[i], curState);
                 int sz = nextStates.size();
-                this.incNumOfGenStates(sz);
+                this.numOfGenStates.getAndAdd(sz);
                 deadLocked = deadLocked && (sz == 0);
 
                 for (int j = 0; j < sz; j++)
