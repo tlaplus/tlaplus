@@ -52,7 +52,7 @@
 <repository location="http://lemmy.github.com/Pdf4Eclipse/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="2.1.201501.201603241607"/>
+<unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="2.1.201501.201606170005"/>
 <repository location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.oss.repository/2.1/com.abstratt.mdd.oss.repository-2.1.zip!/"/>
 </location>
 </locations>
