@@ -242,5 +242,10 @@
 			<attributename>LoadFactor</attributename>
 			<contenttype>None</contenttype>
 		</attribute>
+		<attribute>
+			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
+			<attributename>LockCnt</attributename>
+			<contenttype>None</contenttype>
+		</attribute>
 	</attributes>
 </jmx2jfr>
