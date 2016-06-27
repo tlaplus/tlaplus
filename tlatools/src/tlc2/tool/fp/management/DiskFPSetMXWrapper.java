@@ -21,8 +21,11 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 		super(DiskFPSetMXBean.class);
 		fpset = diskFPSet;
 		
+		// Append ",name=COUNT" suffix to objectname to expose all DiskFPSet instances
+		// as children of type DiskFPSet. However, jfr2jmx does not support it, nor does
+		// jmx2munin used by cloud based distributed TLC.
 		objectName = "DiskFPSet" + COUNT++;
-		registerMBean("tlc2.tool.fp:type=" + objectName);
+		registerMBean("tlc2.tool.fp:type=" + objectName/* + ",name=" + COUNT++*/);
 	}
 	
 	public String getObjectName() {
