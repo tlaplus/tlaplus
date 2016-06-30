@@ -162,22 +162,22 @@ public class BucketStatistics implements IBucketStatistics {
 	 */
 	public String toString() {
 		final StringBuffer buf = new StringBuffer();
-		buf.append("============================\n");
-		buf.append("=" + title + "=\n");
-		buf.append("============================\n");
-		buf.append(String.format("Observations: %d\n", observations.get()));
-		buf.append(String.format("Min: %d\n", getMin()));
-		buf.append(String.format("Max: %d\n", getMax()));
-		buf.append(String.format("Mean: %.2f\n", getMean()));
-		buf.append(String.format("Median: %d\n", getMedian()));
-		buf.append(String.format("Standard deviation: %.2f\n", getStdDev()));
-		buf.append(String.format("75%%: %.2f\n", getPercentile(0.75d)));
-		buf.append(String.format("95%%: %.2f\n", getPercentile(0.95d)));
-		buf.append(String.format("98%%: %.2f\n", getPercentile(0.98d)));
-		buf.append(String.format("99%%: %.2f\n", getPercentile(0.99d)));
-		buf.append(String.format("99.9%%: %.2f\n", getPercentile(0.999d)));
-		buf.append("numEdges/occurrences (log scale)\n");
-		buf.append("--------------------------------\n");
+		buf.append("============================%n");
+		buf.append("=" + title + "=%n");
+		buf.append("============================%n");
+		buf.append(String.format("Observations: %d%n", observations.get()));
+		buf.append(String.format("Min: %d%n", getMin()));
+		buf.append(String.format("Max: %d%n", getMax()));
+		buf.append(String.format("Mean: %.2f%n", getMean()));
+		buf.append(String.format("Median: %d%n", getMedian()));
+		buf.append(String.format("Standard deviation: %.2f%n", getStdDev()));
+		buf.append(String.format("75%%: %.2f%n", getPercentile(0.75d)));
+		buf.append(String.format("95%%: %.2f%n", getPercentile(0.95d)));
+		buf.append(String.format("98%%: %.2f%n", getPercentile(0.98d)));
+		buf.append(String.format("99%%: %.2f%n", getPercentile(0.99d)));
+		buf.append(String.format("99.9%%: %.2f%n", getPercentile(0.999d)));
+		buf.append("numEdges/occurrences (log scale)%n");
+		buf.append("--------------------------------%n");
 		final Iterator<Entry<Integer, AtomicLong>> iterator = buckets.entrySet().iterator();
 		while(iterator.hasNext()) {
 			Entry<Integer, AtomicLong> next = iterator.next();
@@ -190,7 +190,7 @@ public class BucketStatistics implements IBucketStatistics {
 			for (int j = 0; j < Math.log(amount); j++) {
 				buf.append("#");
 			}
-			buf.append("\n");
+			buf.append("%n");
 		}
 		buf.append("============================");
 		return buf.toString();
