@@ -14,13 +14,13 @@
 	</organization>
 
 	<issueManagement>
-		<system>Bugzilla</system>
-		<url>http://bugzilla.tlaplus.net</url>
+		<system>CodePlex</system>
+		<url>http://tlaplus.codeplex.com/workitem/list/basic</url>
 	</issueManagement>
 
 	<scm>
-		<connection>scm:svn:svn+ssh://svn.msr-inria.inria.fr/var/lib/svn/repository</connection>
-		<developerConnection>scm:svn:svn+ssh://svn.msr-inria.inria.fr/var/lib/svn/repository</developerConnection>
+		<connection>scm:git:https://github.com/tlaplus/tlaplus</connection>
+		<developerConnection>scm:git:https://github.com/tlaplus/tlaplus</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
