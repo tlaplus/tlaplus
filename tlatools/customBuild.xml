@@ -246,6 +246,7 @@
 
 				<!-- Pass the base path of the tlatools project to unit tests in case they need it to locate TLA+ specs or configs -->
 				<sysproperty key="basedir" value="${basedir}/"/>
+				<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 				<batchtest fork="yes" todir="${test.reports}">
 					<fileset dir="${test.dir}">
 						<include name="**/*Test*.java" />
@@ -290,6 +291,7 @@
 
 			<formatter type="xml" />
 			<sysproperty key="basedir" value="${basedir}/"/>
+			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 
 			<batchtest fork="yes" todir="${test.reports}/onJar">
 				<fileset dir="${test.dir}">

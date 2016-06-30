@@ -216,7 +216,12 @@ public class FileUtil
             metadir = specDir + TLCGlobals.metaRoot + FileUtil.separator;
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
+        SimpleDateFormat sdf;
+        if (Boolean.getBoolean(FileUtil.class.getName() + ".milliseconds")) {
+        	sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss.SSS");
+        } else {
+        	sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
+        }
         metadir += sdf.format(new Date());
         File filedir = new File(metadir);
 
