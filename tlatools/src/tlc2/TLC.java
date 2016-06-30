@@ -781,7 +781,8 @@ public class TLC
             } else
             {
                 // model checking
-                MP.printMessage(EC.TLC_MODE_MC);
+				MP.printMessage(EC.TLC_MODE_MC, new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
+						TLCGlobals.getNumWorkers() == 1 ? "" : "s" });
                 
                 AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)

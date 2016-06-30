@@ -743,7 +743,7 @@ public class MP
             b.append("Finished in %1% at (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_MODE_MC:
-            b.append("Running in Model-Checking mode.");
+            b.append("Running in Model-Checking mode with %1% worker%2%.");
             break;
         case EC.TLC_MODE_SIMU:
             b.append("Running Random Simulation with seed %1%.");
