@@ -41,6 +41,7 @@ import tlc2.output.MP;
 import tlc2.tool.CommonTestCase;
 import tlc2.tool.ModelChecker;
 import util.FileUtil;
+import util.SimpleFilenameToStream;
 import util.ToolIO;
 
 public abstract class ModelCheckerTestCase extends CommonTestCase {
@@ -89,6 +90,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			TLCGlobals.livenessThreshold = Double.MAX_VALUE;
 			
 			tlc = new TLC();
+			tlc.setResolver(new SimpleFilenameToStream());
 			// * We want *no* deadlock checking to find the violation of the
 			// temporal formula
 			// * We use (unless overridden) a single worker to simplify

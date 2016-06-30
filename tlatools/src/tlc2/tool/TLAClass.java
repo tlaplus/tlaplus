@@ -5,8 +5,13 @@
 
 package tlc2.tool;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+
 import tlc2.output.EC;
 import util.Assert;
+import util.FilenameToStream;
 
 /**
  * 
@@ -16,11 +21,13 @@ import util.Assert;
 public class TLAClass
 {
     /* Load a class from a file. */
-    private String pkg;
+    private final String pkg;
+	private final FilenameToStream resolver;
 
-    public TLAClass(String pkg)
+    public TLAClass(String pkg, FilenameToStream resolver)
     {
-        if (pkg.length() != 0 && pkg.charAt(pkg.length() - 1) != '.')
+        this.resolver = resolver;
+		if (pkg.length() != 0 && pkg.charAt(pkg.length() - 1) != '.')
         {
             this.pkg = pkg + '.';
         } else
@@ -37,12 +44,24 @@ public class TLAClass
         Class cl = null;
         try
         {
-            try
-            {
-                cl = Class.forName(name);
-            } catch (Exception e)
-            { /*SKIP*/
-            }
+        	try {
+    			final File module = resolver.resolve(name + ".class", false);
+    			if (module != null && module.getAbsoluteFile() != null) {
+    				final URL url = module.getAbsoluteFile().getParentFile().toURI().toURL();
+					cl = new URLClassLoader(new URL[] {url}).loadClass(name);
+    			}
+        	} catch (Exception ignored1) {
+        		/*SKIP*/
+        	} finally {
+        		if (cl == null) {
+        			try
+        			{
+        				cl = Class.forName(name);
+        			} catch (Exception e)
+        			{ /*SKIP*/
+        			}
+        		}
+        	}
             if (cl == null)
             {
                 try
@@ -59,14 +78,15 @@ public class TLAClass
         }
         return cl;
     }
-
-    public static void main(String argv[])
-    {
-        TLAClass tc = new TLAClass("tlc2.module");
-        Class c = tc.loadClass("Strings"); // must set CLASSPATH correctly
-        System.err.println("c = " + c);
-        // Class c1 = tc.loadClass("Class");
-        // System.err.println("c1 = " + c1);
-    }
-
+    
+//
+//    public static void main(String argv[])
+//    {
+//        TLAClass tc = new TLAClass("tlc2.module");
+//        Class c = tc.loadClass("Strings"); // must set CLASSPATH correctly
+//        System.err.println("c = " + c);
+//        // Class c1 = tc.loadClass("Class");
+//        // System.err.println("c1 = " + c1);
+//    }
+//
 }
