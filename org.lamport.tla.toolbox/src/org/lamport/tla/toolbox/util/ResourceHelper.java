@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -658,6 +659,27 @@ public class ResourceHelper
             return moduleName.concat(".").concat(TLA_EXTENSION);
         }
     }
+
+	/**
+	 * Returns IFile handles to user module overrides. Let moduleFile be Foo.tla and its 
+	 * corresponding folder contain to files Foo.class and Foo.java, the IFile[] will
+	 * contain two handles to Foo.class and Foo.java.
+	 */
+	public static IFile[] getModuleOverrides(final IProject project, final IFile moduleFile) {
+		final int indexOfFileExtension = moduleFile.getFileExtension().length() + 1;
+		final String moduleName = moduleFile.getName().substring(0, moduleFile.getName().length() - indexOfFileExtension);
+
+		final List<IFile> res = new ArrayList<IFile>();
+		final String[] extensions = new String[] { ".class", ".java" };
+		for (final String extension : extensions) {
+			final IFile userModuleOverride = ResourceHelper.getLinkedFile(project,
+					ResourceHelper.PARENT_ONE_PROJECT_LOC + moduleName + extension, true);
+			if (userModuleOverride.exists()) {
+				res.add(userModuleOverride);
+			}
+		}
+		return res.toArray(new IFile[0]);
+	}
 
     /**
      * Determines if the given member is a TLA+ module

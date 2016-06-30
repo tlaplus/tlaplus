@@ -334,10 +334,21 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                     moduleFile = ResourceHelper.getLinkedFile(project, module, false);
                     if (moduleFile != null)
                     {
-                    	try {
-                        moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
-                                | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
-                    	} catch (ResourceException re) {
+						try {
+	                        moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
+	                                | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
+							// Copy userModule overrides (see tlc2.tool.Spec.processSpec(SpecObj)) if
+							// any. An override is an Java implementation of a user defined module. By
+							// convention, the Java class file name has to be aligned with the module
+							// name (i.e. Bits.tla -> Bits.class). For completeness, also copy the 
+							// Java source file from which the user manually compiled the class file.
+							final IFile[] userModuleOverrides = ResourceHelper.getModuleOverrides(project, moduleFile);
+							for (IFile userModuleOverride : userModuleOverrides) {
+								userModuleOverride.copy(targetFolderPath.append(userModuleOverride.getProjectRelativePath()),
+										IResource.DERIVED | IResource.FORCE,
+										new SubProgressMonitor(monitor, STEP / extendedModules.size()));
+							}
+						} catch (ResourceException re) {
                     		// Trying to copy the file to the targetFolderPath produces an exception.
                     		// The most common cause is a dangling linked file in the .project metadata 
                     		// of the Toolbox project. Usually, a dangling link is the effect of copying
