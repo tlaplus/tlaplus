@@ -379,7 +379,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			// calculate hash value (just n most significant bits of fp) which is
 			// used as an index address
 			final long idx = (fp & prefixMask) >> lockMoveBy;
-			Assert.check(0 <= idx && idx < lockCnt, EC.GENERAL);
+			assert 0 <= idx && idx < lockCnt;
 			return (int) idx;
 		}
 
@@ -391,7 +391,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 			// push MSBs for moveBy positions to the right and align with a bucket address
 			long position = (fp & prefixMask) >> moveBy;
 			position = floorToBucket(position);
-			Assert.check(0 <= position && position < maxTblCnt, EC.GENERAL);
+			assert 0 <= position && position < maxTblCnt;
 			return position;
 		}
 
