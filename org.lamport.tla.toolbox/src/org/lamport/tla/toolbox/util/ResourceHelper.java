@@ -674,7 +674,7 @@ public class ResourceHelper
 		for (final String extension : extensions) {
 			final IFile userModuleOverride = ResourceHelper.getLinkedFile(project,
 					ResourceHelper.PARENT_ONE_PROJECT_LOC + moduleName + extension, true);
-			if (userModuleOverride.exists()) {
+			if (userModuleOverride != null && userModuleOverride.exists()) {
 				res.add(userModuleOverride);
 			}
 		}
