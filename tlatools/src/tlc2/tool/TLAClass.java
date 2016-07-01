@@ -36,9 +36,24 @@ public class TLAClass
         }
     }
 
-    /**
-     * This method attempts to load the java class with the given name.
-     **/
+	/**
+	 * This method attempts to load the java class with the given name.
+	 * 
+	 * Loading classes is done in three steps:
+	 * 
+	 * <ul>
+	 * <li>1) TLC's {@link FilenameToStream} resolver is used to locate a class
+	 * file in the resolver's lookup path. Check {@link FilenameToStream}'s
+	 * documentation on the lookup order. If a class file with name "name.class"
+	 * can be found, it is loaded.</li>
+	 * <li>2) With the unqualified name, we try to lookup the class in the
+	 * regular VM's CLASSPATH.</li>
+	 * <li>3) As a last resort, we try to load a class fully qualified with the
+	 * package name given in {@link TLAClass#pkg}.</li>
+	 * </ul>
+	 * <p>
+	 * If no class could be loaded, <code>null</code> is returned.
+	 **/
     public synchronized Class loadClass(String name)
     {
         Class cl = null;
