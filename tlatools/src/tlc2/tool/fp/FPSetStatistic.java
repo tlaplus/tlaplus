@@ -97,6 +97,11 @@ public interface FPSetStatistic {
 	public long getFlushTime();
 	
 	/**
+	 * @return DiskFPSet#getLockCnt()
+	 */
+	public int getLockCnt();
+	
+	/**
 	 * @see DiskFPSet#getReaderWriterCnt()
 	 */
 	public int getReaderWriterCnt();

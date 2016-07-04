@@ -1122,6 +1122,13 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	}
 	
 	/**
+	 * @return The (static) number of locks used to guard the set. 
+	 */
+	public int getLockCnt() {
+		return this.rwLock.size();
+	}
+	
+	/**
 	 * @return The technical maximum of readers/writers this {@link DiskFPSet}
 	 *         can handle. It doesn't show the actual numbers of active clients.
 	 *         This value is equivalent to the amount of

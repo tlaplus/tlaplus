@@ -90,6 +90,11 @@ public interface DiskFPSetMXBean {
 	long getFlushTime();
 	
 	/**
+	 * @see DiskFPSet#getLockCnt()
+	 */
+	int getLockCnt();
+	
+	/**
 	 * @see DiskFPSet#getReaderWriterCnt()
 	 */
 	int getReaderWriterCnt();

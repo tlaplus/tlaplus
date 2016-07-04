@@ -201,4 +201,11 @@ public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXB
 	public boolean checkInvariant() throws IOException {
 		return fpset.checkInvariant();
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.management.DiskFPSetMXBean#getLockCnt()
+	 */
+	public int getLockCnt() {
+		return fpset.getLockCnt();
+	}
 }
