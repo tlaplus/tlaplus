@@ -18,7 +18,7 @@ import tlc2.output.MP;
 import util.Assert;
 
 @SuppressWarnings({ "serial", "restriction" })
-public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
+public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
 	protected static final double COLLISION_BUCKET_RATIO = .025d;
 	
@@ -59,7 +59,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * obsolete halving the memory footprint.
 	 * </p>
 	 */
-	protected CollisionBucket collisionBucket;
+	protected final CollisionBucket collisionBucket;
 	
 	/**
 	 * The indexer maps a fingerprint to a in-memory bucket and the associated lock
@@ -165,7 +165,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#needsDiskFlush()
 	 */
-	protected boolean needsDiskFlush() {
+	protected final boolean needsDiskFlush() {
 		// Only flush due to collision ratio when primary hash table is at least
 		// 25% full. Otherwise a second flush potentially immediately follows a
 		// first one, when both values for tblCnt and collision size can be small.
@@ -182,7 +182,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 *            from growing past it.
 	 * @return true iff the current hash table load exceeds the given limit
 	 */
-	private boolean loadFactorExceeds(final double limit) {
+	private final boolean loadFactorExceeds(final double limit) {
 		// Base this one the primary hash table only and exclude the
 		// collision bucket
 		final double d = (this.tblCnt.doubleValue() - collisionBucket.size()) / (double) this.maxTblCnt;
@@ -194,7 +194,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @return The proportional size of the collision bucket compared to the
 	 *         size of the set.
 	 */
-	private boolean collisionRatioExceeds(final double limit) {
+	private final boolean collisionRatioExceeds(final double limit) {
 		// Do not use the thread safe getCollisionRatio here to avoid
 		// unnecessary locking. put() calls us holding a memory write locking
 		// which also blocks writers to collisionBucket.
@@ -209,14 +209,14 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.DiskFPSet#getLockIndex(long)
 	 */
 	@Override
-	protected int getLockIndex(long fp) {
+	protected final int getLockIndex(long fp) {
 		return this.indexer.getLockIndex(fp);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memLookup(long)
 	 */
-	boolean memLookup(long fp) {
+	final boolean memLookup(long fp) {
 		final long position = indexer.getLogicalPosition(fp);
 		
 		// Linearly search the logical bucket; 0L is an invalid fp and marks the
@@ -238,7 +238,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @param fp
 	 * @return true iff fp is in the collision bucket
 	 */
-	protected boolean csLookup(long fp) {
+	protected final boolean csLookup(long fp) {
 		try {
 			csRWLock.readLock().lock();
 			return collisionBucket.contains(fp);
@@ -250,7 +250,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memInsert(long)
 	 */
-	boolean memInsert(long fp) {
+	final boolean memInsert(long fp) {
 		final long position = indexer.getLogicalPosition(fp);
 
 		long l = -1;
@@ -294,7 +294,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @param fp
 	 * @return true iff fp has been added to the collision bucket
 	 */
-	protected boolean csInsert(long fp) {
+	protected final boolean csInsert(long fp) {
 		try {
 			csRWLock.writeLock().lock();
 			return collisionBucket.add(fp);
@@ -311,7 +311,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @param inBucketPosition
 	 * @return The physical address of the fp slot
 	 */
-	private long log2phy(long bucketNumber, long inBucketPosition) {
+	private final long log2phy(long bucketNumber, long inBucketPosition) {
 		return log2phy(bucketNumber + inBucketPosition);
 	}
 	
@@ -322,7 +322,7 @@ public class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	 * @param logicalAddress
 	 * @return The physical address of the fp slot
 	 */
-	private long log2phy(long logicalAddress) {
+	private final long log2phy(long logicalAddress) {
 		return baseAddress + (logicalAddress << logAddressSize);
 	}
 

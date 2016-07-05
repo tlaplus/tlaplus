@@ -4,7 +4,7 @@ package tlc2.util;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class Striped {
+public final class Striped {
 
 	public static Striped readWriteLock(final int lockCnt) {
 		return new Striped(lockCnt);
@@ -19,21 +19,21 @@ public class Striped {
 		}
 	}
 
-	public ReadWriteLock getAt(int lockIndex) {
+	public final ReadWriteLock getAt(int lockIndex) {
 		return this.locks[lockIndex];
 	}
 
-	public int size() {
+	public final int size() {
 		return locks.length;
 	}
 
-	public void releaseAllLocks() {
+	public final void releaseAllLocks() {
 		for (int i = size() - 1; i >= 0; i--) {
 			this.locks[i].writeLock().unlock();
 		}
 	}
 
-	public void acquireAllLocks() {
+	public final void acquireAllLocks() {
 		//TODO find way to do this more efficiently
 		for (int i = 0; i < size(); i++) {
 			this.locks[i].writeLock().lock();
