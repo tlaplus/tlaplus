@@ -27,17 +27,29 @@
 			<pathelement location="lib/aspectjtools-1.8.5.jar" />
 		</classpath>
 	</taskdef>
-
+	
 	<condition property="test.skip">
 		<istrue value="${maven.test.skip}"/>
 	</condition>
 
-	<target name="info" description="Prints information">
+	<!-- https://github.com/alx3apps/jgit-buildnumber -->
+	<target name="git-revision">
+	    <taskdef name="jgit-buildnumber" classname="ru.concerteza.util.buildnumber.JGitBuildNumberAntTask">
+			<classpath>
+				<pathelement location="lib/org.eclipse.jgit-2.3.1.201302201838-r.jar"/>
+				<pathelement location="lib/jgit-buildnumber-ant-task-1.2.10.jar" />
+			</classpath>
+	    </taskdef>
+	    <jgit-buildnumber/>
+	</target>
+	
+	<target name="info" description="Prints information" depends="git-revision">
 		<echo message="ANT_HOME     : ${env.ANT_HOME}" />
 		<echo message="Ant Version  : ${ant.version}" />
 		<echo message="Java Version : ${ant.java.version}" />
 		<echo message="Skipping Tests : ${test.skip}" />
 		<echo message="With AspectJ: ${withaj}" />
+		<echo message="Git BuildNumber: ${git.branch}_${git.tag}_${git.shortRevision}" />
 	</target>
 
 	<target name="default" depends="info" description="Default">
@@ -45,6 +57,7 @@
 		<antcall target="compile-aj" inheritall="true" inheritrefs="true" />
 		<antcall target="compile-test" inheritall="true" inheritrefs="true" />
 		<antcall target="test" inheritall="true" inheritrefs="true" />
+		<antcall target="git-revision" inheritall="true" inheritrefs="true" />
 		<antcall target="dist" inheritall="true" inheritrefs="true" />
 		<antcall target="test-dist" inheritall="true" inheritrefs="true" />
 	</target>
@@ -185,6 +198,13 @@
 				<attribute name="Implementation-Title" value="TLA+ Tools" />
 				<attribute name="Implementation-Version" value="${version} ${TODAY}" />
 				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
+				<!-- Git revision -->
+				<attribute name="X-Git-Branch" value="${git.branch}" />
+				<attribute name="X-Git-Tag" value="${git.tag}" />
+				<attribute name="X-Git-Revision" value="${git.revision}" />
+				<attribute name="X-Git-ShortRevision" value="${git.shortRevision}" />
+				<attribute name="X-Git-BuildNumber" value="${git.branch}_${git.tag}_${git.shortRevision}" />
+				<attribute name="X-Git-Commits-Count" value="${git.commitsCount}" />
 				<!-- App-Name and Permissions is required by Java Webstart used by distributed TLC -->
 				<!-- Depending on security level, the user will see a warning otherwise. -->
 				<!-- http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/security/manifest.html -->
