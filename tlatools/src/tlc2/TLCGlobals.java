@@ -2,6 +2,11 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2;
 
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
 import tla2sany.semantic.FrontEnd;
 import tlc2.tool.AbstractChecker;
 import tlc2.tool.Simulator;
@@ -19,6 +24,8 @@ public class TLCGlobals
     // The current version of TLC
     public static String versionOfTLC = "Version 2.09 of 28 January 2016";
 
+    public static String revision = getRevision();
+    
     // The bound for set enumeration, used for pretty printing
     public static int enumBound = 2000;
 
@@ -159,5 +166,24 @@ public class TLCGlobals
 			return false;
 		}
 		return true;
+	}
+	
+	private static String getRevision() {
+		try {
+			final Enumeration<URL> resources = TLCGlobals.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+			while (resources.hasMoreElements()) {
+				final Manifest manifest = new Manifest(resources.nextElement().openStream());
+				final Attributes attributes = manifest.getMainAttributes();
+				if("TLA+ Tools".equals(attributes.getValue("Implementation-Title"))) {
+					if(attributes.getValue("X-Git-ShortRevision") != null) {
+						return attributes.getValue("X-Git-ShortRevision");
+					} else {
+						return null;
+					}
+				}
+			}
+		} catch (Exception ignore) {
+		}
+		return null;
 	}
 }

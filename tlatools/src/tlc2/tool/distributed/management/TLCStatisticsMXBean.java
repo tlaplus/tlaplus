@@ -11,6 +11,16 @@ import tlc2.tool.TLCState;
 public interface TLCStatisticsMXBean {
 
 	/**
+	 * @return The version of TLC.
+	 */
+	String getVersion();
+	
+	/**
+	 * @return The code revision corresponding to this version of TLC.
+	 */
+	String getRevision();
+	
+	/**
 	 * @return The amount of states generated (non-distinct).
 	 *         {@link TLCStatisticsMXBean#getStatesGenerated()} >=
 	 *         {@link TLCStatisticsMXBean#getDistinctStatesGenerated()}
