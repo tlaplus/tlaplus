@@ -485,11 +485,13 @@ public class LiveCheck implements ILiveCheck {
 				// but with changing successors caused by the random successor
 				// selection. If the successor is truly new (it has not been
 				// added before), the GraphNode instance has to be updated
-				// (creating a new record on disk). However, when the the
-				// successor parameter happens to pass known successors, there
-				// is no point in adding the GraphNode again. It is assumed that
-				// it wouldn't invalidate the result, but it wastes disk space.
-				if (s < node0.succSize()) {
+				// (creating a new record on disk). However, when the successor
+				// parameter happens to pass known successors only, there is no
+				// point in adding the GraphNode again. It would just waste disk
+				// space.
+				// The amount of successors is either 0 (no new successor has
+				// been added) or used to be less than it is now.
+				if ((s == 0 && s == node0.succSize()) || s < node0.succSize()) {
 					node0.realign(); // see node0.addTransition() hint
 					// Add a node for the current state. It gets added *after*
 					// all transitions have been added because addNode
@@ -634,7 +636,7 @@ public class LiveCheck implements ILiveCheck {
 					}
 					nextStates.resetNext();
 					// See same case in LiveChecker#addNextState
-					if (s < node0.succSize()) {
+					if ((s == 0 && s == node0.succSize()) || s < node0.succSize()) {
 						node0.realign(); // see node0.addTransition() hint
 						dgraph.addNode(node0);
 					} else {
