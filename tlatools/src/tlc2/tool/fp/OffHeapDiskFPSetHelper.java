@@ -19,14 +19,16 @@ import sun.misc.Unsafe;
 @SuppressWarnings("restriction")
 public final class OffHeapDiskFPSetHelper {
 
-	private OffHeapDiskFPSetHelper() {
-		// no instantiation!
+	private Unsafe unsafe;
+
+	OffHeapDiskFPSetHelper() {
+		this.unsafe = getUnsafe();
 	}
 
 	/**
 	 * @return An Unsafe object or a {@link RuntimeException} wrapping any {@link Exception}. 
 	 */
-	public static sun.misc.Unsafe getUnsafe() {
+	private static sun.misc.Unsafe getUnsafe() {
 		// More Details can be found at: http://www.mydailyjava.blogspot.no/2013/12/sunmiscunsafe.html
 		try {
 			// Use reflection API to unhide Unsafe
@@ -54,10 +56,10 @@ public final class OffHeapDiskFPSetHelper {
 	 * @param fingerprintCount Number of fingerprint for which the memory should be initialized
 	 * @throws IOException
 	 */
-	public static void zeroMemory(final Unsafe u, final long baseAddress, int numThreads, final long fingerprintCount)
+	public final void zeroMemory(final long baseAddress, int numThreads, final long fingerprintCount)
 			throws IOException {
 		
-		final int addressSize = u.addressSize();
+		final int addressSize = addressSize();
 		final long segmentSize = fingerprintCount / numThreads;
 
 		final ExecutorService es = Executors.newFixedThreadPool(numThreads);
@@ -79,7 +81,7 @@ public final class OffHeapDiskFPSetHelper {
 						final long upperBound = (1 + offset) * segmentSize;
 						for (long i = lowerBound; i < upperBound; i++) {
 							final long address = baseAddress + (i * addressSize);
-							u.putAddress(address, 0L);
+							writeFP(address, 0L);
 						}
 						return true;
 					}
@@ -93,5 +95,22 @@ public final class OffHeapDiskFPSetHelper {
 		} finally {
 			es.shutdown();
 		}
+	}
+
+	public long allocateMemory(long bytes) {
+		return this.unsafe.allocateMemory(bytes);
+	}
+
+	public int addressSize() {
+		return this.unsafe.addressSize();
+	}
+	
+	public final void writeFP(final long address, final long fp) {
+		this.unsafe.putAddress(address, fp);
+//		System.out.printf("Inserted %s at address %s\n", fp, address);
+	}
+
+	public final long readFP(final long address) {
+		return this.unsafe.getAddress(address);
 	}
 }
