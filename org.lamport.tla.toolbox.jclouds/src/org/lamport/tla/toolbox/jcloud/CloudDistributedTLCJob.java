@@ -188,6 +188,13 @@ public class CloudDistributedTLCJob extends Job {
 							+ " && "
 							+ "export DEBIAN_FRONTEND=noninteractive"
 							+ " && "
+							// Update Ubuntu's package index. The public/remote
+							// package mirrors might have updated. Without
+							// update, we might try to install outdated packages
+							// below. This most likely fails with a 404 because
+							// the packages have been purged from the mirrors.
+							+ "apt-get update"
+							+ " && "
 							// Never be prompted for input
 							// Download jmx2munin from the INRIA host
 							// TODO make it part of Toolbox and upload from
