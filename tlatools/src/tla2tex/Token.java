@@ -229,7 +229,7 @@ public class Token
     * tokens created by TokenizeSpec for something like "<42>" or          *
     * "<42>1a." into a single token of type PF_STEP.                       *
     ***********************************************************************/
-    static void FindPfStepTokens(Token[][] toks) {
+    public static void FindPfStepTokens(Token[][] toks) {
       for (int k = 0 ; k < toks.length ; k++) 
         { Token[] input = toks[k] ;
           Vector outputVec = new Vector(input.length) ;

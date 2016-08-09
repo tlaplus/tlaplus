@@ -19,19 +19,26 @@
 package tla2tex;
 
 public class Symbol
-  { public String TLAString;
+  { public final String TLAString;
       /*********************************************************************
       * The TLA representation of the symbol.  There is a different        *
       * Symbol object for each way of writing the same symbol--for         *
       * example, there are separate symbol objects for "#" and "/=".       *
       *********************************************************************/
+    public final boolean unicode;
 
-    public String TeXString;
+    public final String alternate;
+    /***********************************************************************
+     * if TLAString is ASCII, this is Unicode; if TLAString is Unicode     *
+     * this is the canonical ASCII                                         *
+     **********************************************************************/
+    
+    public final String TeXString;
       /*********************************************************************
       * The TeX input that prints the symbol.                              *
       *********************************************************************/
       
-    public int symbolType ;
+    public final int symbolType ;
       /*********************************************************************
       * The type of symbol it is.  Here are the possibilities:             *
       *********************************************************************/
@@ -62,27 +69,39 @@ public class Symbol
       * explanation of inner-alignment.                                    *
       *********************************************************************/
  
-    public Symbol(String tla, String tex, int stype, int atype)
+    public Symbol(String tla, String alt, String tex, int stype, int atype)
       /*********************************************************************
       * The constructor for a non-PlusCal Symbol object.                   *
       *********************************************************************/
       { TLAString     = tla   ;
+        alternate     = alt   ;
         TeXString     = tex   ;
         symbolType    = stype ;
         alignmentType = atype ;
         pcal          = false ;
+        unicode       = tla.charAt(0) > 255;
       };
 
-    public Symbol(String tla, String tex, int stype, int atype, boolean plusCal)
+    public Symbol(String tla, String alt, String tex, int stype, int atype, boolean plusCal)
       /*********************************************************************
       * The constructor used for a PlusCal Symbol object.                  *
       *********************************************************************/
       { TLAString     = tla   ;
+        alternate     = alt   ;
         TeXString     = tex   ;
         symbolType    = stype ;
         alignmentType = atype ;
         pcal          = plusCal ;
+        unicode       = tla.charAt(0) > 255;
       };
+      
+      public Symbol(String tla, String tex, int stype, int atype) {
+      	this(tla, tla, tex, stype, atype);
+      }
+
+      public Symbol(String tla, String tex, int stype, int atype, boolean plusCal) {
+      	this(tla, tla, tex, stype, atype, plusCal);
+      }
 
       public String toString() 
       /*********************************************************************
