@@ -25,7 +25,6 @@ public class Symbol
       * Symbol object for each way of writing the same symbol--for         *
       * example, there are separate symbol objects for "#" and "/=".       *
       *********************************************************************/
-    public final boolean unicode;
 
     public final String alternate;
     /***********************************************************************
@@ -79,7 +78,6 @@ public class Symbol
         symbolType    = stype ;
         alignmentType = atype ;
         pcal          = false ;
-        unicode       = tla.charAt(0) > 255;
       };
 
     public Symbol(String tla, String alt, String tex, int stype, int atype, boolean plusCal)
@@ -92,7 +90,6 @@ public class Symbol
         symbolType    = stype ;
         alignmentType = atype ;
         pcal          = plusCal ;
-        unicode       = tla.charAt(0) > 255;
       };
       
       public Symbol(String tla, String tex, int stype, int atype) {
@@ -113,6 +110,13 @@ public class Symbol
                  + ", alignmentType |-> " + alignmentType + "]";
       };  
 
+      public static boolean isUnicode(int c) {
+    	  return  c > 255;
+      }
+      
+      public static boolean isUnicode(String str) {
+    	  return isUnicode(str.codePointAt(0));
+      }
   }
 
 /* Last modified on Tue 18 Sep 2007 at  6:51:56 PST by lamport */

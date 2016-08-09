@@ -9,24 +9,42 @@
 ***************************************************************************/
 package tla2tex;
 
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 
 public class OutputFileWriter
- { private FileWriter fileWriter = null ;
+ { private static final Charset UTF8;
+   static {
+	   try {
+		   UTF8 = Charset.forName("UTF-8");
+	   } catch (IllegalCharsetNameException e) {
+		   throw new AssertionError(e);
+	   }
+   }
+   private OutputStreamWriter fileWriter = null ;
    private String name = "" ;
 
    public OutputFileWriter(String fileName)
-     /**********************************************************************
-     * Construct an OutputFileWriter from a file name.                     *
-     **********************************************************************/
-    { name = fileName ;
-      try {fileWriter = new FileWriter(fileName) ;}
-      catch (java.io.IOException e)
-       { Debug.ReportError( 
-           "TLATeX cannot open output file " + name + ".\n"
-         + "    Perhaps the file is write-protected");
-       };
-    }
+   /**********************************************************************
+   * Construct an OutputFileWriter from a file name.                     *
+   **********************************************************************/
+  { name = fileName ;
+    try {fileWriter = new OutputStreamWriter(new FileOutputStream(fileName), UTF8) ;}
+    catch (java.io.IOException e)
+     { Debug.ReportError( 
+         "TLATeX cannot open output file " + name + ".\n"
+       + "    Perhaps the file is write-protected");
+     };
+  }
+
+   public OutputFileWriter(OutputStream out, String fileName)
+  { name = fileName ;
+    fileWriter = new OutputStreamWriter(out, UTF8) ;
+  }
 
    public void putLine(String out)
      /**********************************************************************
