@@ -318,7 +318,10 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error copying "
                         + specRootFilename + " into " + targetFolderPath.toOSString()));
             }
-
+            
+            // Copy the spec's root file userModule override if any.
+            copyUserModuleOverride(monitor, 2, project, targetFolderPath, specRootFile);
+            
             // get the list of dependent modules
             List extendedModules = ToolboxHandle.getExtendedModules(specRootFile.getName());
 
@@ -337,17 +340,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 						try {
 	                        moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
 	                                | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
-							// Copy userModule overrides (see tlc2.tool.Spec.processSpec(SpecObj)) if
-							// any. An override is an Java implementation of a user defined module. By
-							// convention, the Java class file name has to be aligned with the module
-							// name (i.e. Bits.tla -> Bits.class). For completeness, also copy the 
-							// Java source file from which the user manually compiled the class file.
-							final IFile[] userModuleOverrides = ResourceHelper.getModuleOverrides(project, moduleFile);
-							for (IFile userModuleOverride : userModuleOverrides) {
-								userModuleOverride.copy(targetFolderPath.append(userModuleOverride.getProjectRelativePath()),
-										IResource.DERIVED | IResource.FORCE,
-										new SubProgressMonitor(monitor, STEP / extendedModules.size()));
-							}
+							copyUserModuleOverride(monitor, STEP / extendedModules.size(), project, targetFolderPath, moduleFile);
 						} catch (ResourceException re) {
                     		// Trying to copy the file to the targetFolderPath produces an exception.
                     		// The most common cause is a dangling linked file in the .project metadata 
@@ -549,6 +542,20 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         // we don't want to rebuild the workspace
         return false;
     }
+
+	// Copy userModule overrides (see tlc2.tool.Spec.processSpec(SpecObj)) if
+	// any. An override is an Java implementation of a user defined module. By
+	// convention, the Java class file name has to be aligned with the module
+	// name (i.e. Bits.tla -> Bits.class). For completeness, also copy the
+	// Java source file from which the user manually compiled the class file.
+	private void copyUserModuleOverride(IProgressMonitor monitor, int ticks, IProject project, IPath targetFolderPath,
+			IFile tlaFile) throws CoreException {
+		final IFile[] userModuleOverrides = ResourceHelper.getModuleOverrides(project, tlaFile);
+		for (IFile userModuleOverride : userModuleOverrides) {
+			userModuleOverride.copy(targetFolderPath.append(userModuleOverride.getProjectRelativePath()),
+					IResource.DERIVED | IResource.FORCE, new SubProgressMonitor(monitor, ticks));
+		}
+	}
 
     /**
      * Launch the module parser on the root module and handle the errors
