@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -33,6 +34,9 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 {
     public static final String BUILDER_ID = "toolbox.builder.TLAParserBuilder";
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.resources.IncrementalProjectBuilder#clean(org.eclipse.core.runtime.IProgressMonitor)
+     */
     protected void clean(IProgressMonitor monitor) throws CoreException
     {
         Activator.getDefault().logDebug("Clean has been invoked");
@@ -52,6 +56,15 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
      */
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException
     {
+    	if (!Activator.isSpecManagerInstantiated()) {
+			// Reschedule the build assuming the spec manager will be
+			// instantiated later. The spec manager gets created by a workspace
+			// job in Activator#start, thus belonging to the same job family 
+    		// which is why it can run with us concurrently.
+			ResourcesPlugin.getWorkspace().build(kind, null);
+            return null;
+    	}
+    	
         Spec spec = Activator.getSpecManager().getSpecLoaded();
         if (spec == null || getProject() != spec.getProject())
         {
