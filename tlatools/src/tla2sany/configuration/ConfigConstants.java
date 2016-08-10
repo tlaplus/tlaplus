@@ -103,9 +103,9 @@ interface ConfigConstants {
     "synonym  \u21D2 =>\n" + // ⇒
     //\n" +
     "operator [] 40 150 None prefix \n" +
-    "synonym  \u25FB []\n" + // ◻
+    "synonym  \u2610︎ []\n" + // ☐
     "operator <> 40 150 None prefix \n" +
-    "synonym  \u2B26 <>\n" + // ⬦ 
+    "synonym  \u2662 <>\n" + // ♢
     "operator ENABLED 40 150 None prefix \n" +
     "operator UNCHANGED 40 150 None prefix \n" +
     "operator SUBSET 100 130 None prefix \n" +

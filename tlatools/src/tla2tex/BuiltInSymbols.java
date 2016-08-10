@@ -310,8 +310,8 @@ public final class BuiltInSymbols
         add("\\lnot",      "\u00ac",       "{\\lnot}",       Symbol.PREFIX, 0); // ¬
         add("\u00ac",      "~",            "{\\lnot}",       Symbol.PREFIX, 0); // ¬
         add("\\neg",       "\u2203",       "{\\neg}",        Symbol.PREFIX, 0); // ¬
-        add("<>",          "\u2B26",       "{\\Diamond}",    Symbol.PREFIX, 0); // ⬦
-        add("\u2B26",      "<>",           "{\\Diamond}",    Symbol.PREFIX, 0); // ⬦
+        add("<>",          "\u2662",       "{\\Diamond}",    Symbol.PREFIX, 0); // ♢
+        add("\u2662",      "<>",           "{\\Diamond}",    Symbol.PREFIX, 0); // ♢
         add("CHOOSE",      "{\\CHOOSE}",     Symbol.PREFIX, 0);
         add("ENABLED",     "{\\ENABLED}",    Symbol.PREFIX, 0);
         add("UNCHANGED",   "{\\UNCHANGED}",  Symbol.PREFIX, 0);
@@ -501,8 +501,8 @@ public final class BuiltInSymbols
         add("THEN",         "\\.{\\THEN}",       Symbol.PREFIX, 58); 
         add("LET",          "\\.{\\LET}",        Symbol.INFIX, 59); // Changed by LL  on 21 Jul 22
         add("IN",           "\\.{\\IN}",         Symbol.INFIX, 59); //    from PREFIX to fix alignment bug
-        add("[]",           "\u25FB",      "{\\Box}",         Symbol.INFIX, 60); // ◻︎ Changed from PREFIX to left-align with CASE
-        add( "\u25FB",      "[]",          "{\\Box}",         Symbol.INFIX, 60); // ◻︎ Changed from PREFIX to left-align with CASE
+        add("[]",           "\u2610︎",      "{\\Box}",         Symbol.INFIX, 60); // ☐ Changed from PREFIX to left-align with CASE
+        add( "\u2610︎",      "[]",          "{\\Box}",         Symbol.INFIX, 60); // ☐︎ Changed from PREFIX to left-align with CASE
         add("::",          "{\\coloncolon}",     Symbol.INFIX,  61);
         add("ASSUME",      "{\\ASSUME}",         Symbol.KEYWORD, 62);
         add("PROVE",       "{\\PROVE}",          Symbol.KEYWORD, 62);
