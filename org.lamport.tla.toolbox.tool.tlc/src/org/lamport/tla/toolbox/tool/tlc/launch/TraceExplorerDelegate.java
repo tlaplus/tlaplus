@@ -330,7 +330,16 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                                         || members[i].getName().equals(ModelHelper.FILE_CFG)
                                         || members[i].getName().equals(ModelHelper.FILE_TLA)
                                         || members[i].getName().equals(ModelHelper.FILE_OUT)
-                                        || members[i].getName().equals(ModelHelper.TE_TRACE_SOURCE))
+                                        || members[i].getName().equals(ModelHelper.TE_TRACE_SOURCE)
+										// Iff the model has been run with a module
+										// override, then there is a .class (and
+										// optionally a .java) file in the folder.
+                                        // We must not delete the .class file.
+                                        // The TraceExplorer won't work unless
+                                        // the module overrides also come with a
+                                        // pure TLA+ implementation.
+                                        || members[i].getName().endsWith(".class")
+                                        || members[i].getName().endsWith(".java"))
                                 {
                                     // We don't want to delete the checkpoints folder
                                     // or any of the MC files or the MC_TE.out file.
