@@ -360,9 +360,9 @@ public final class BuiltInSymbols
           *****************************************************************/
           
         add("\\",                          "\\.{\\,\\backslash\\,}",  Symbol.INFIX, 9);
-        add("\\cap",        "\u2229",      "\\.{\\cap}",      Symbol.INFIX, 10); // ∩ 
-        add("\u2229",       "\\cap",       "\\.{\\cap}",      Symbol.INFIX, 10); // ∩ 
-        add("\\intersect",  "\u2229",      "\\.{\\cap}",      Symbol.INFIX, 11); // ∩ 
+        add("\\cap",        "\u2229",      "\\.{\\cap}",      Symbol.INFIX, 10); // ∩
+        add("\u2229",       "\\cap",       "\\.{\\cap}",      Symbol.INFIX, 10); // ∩
+        add("\\intersect",  "\u2229",      "\\.{\\cap}",      Symbol.INFIX, 11); // ∩
         add("\\cup",        "\u222A",      "\\.{\\cup}",      Symbol.INFIX, 12); // ∪
         add("\u222A",       "\\cup",       "\\.{\\cup}",      Symbol.INFIX, 12); // ∪
         add("\\union",      "\u222A",      "\\.{\\cup}",      Symbol.INFIX, 13); // ∪
