@@ -26,7 +26,7 @@ public class Symbol
       * example, there are separate symbol objects for "#" and "/=".       *
       *********************************************************************/
 
-    public final String alternate;
+    public final String alternate; // used by unicode converter only
     /***********************************************************************
      * if TLAString is ASCII, this is Unicode; if TLAString is Unicode     *
      * this is the canonical ASCII                                         *
