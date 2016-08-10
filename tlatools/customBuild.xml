@@ -248,6 +248,9 @@
 			<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes">
 				<!-- enable all assertions -->
 				<jvmarg value="-ea"/>
+				<!-- Uncomment to run TLC with alternative fingerprintset impl. See sysproperty below too.
+				<jvmarg value="-XX:MaxDirectMemorySize=32m"/>
+				-->
 				<!-- Uncomment to open a debug port in each forked VM to remote attach your Eclipse at port 1044.
 	            <jvmarg value="-Xdebug" />
 		        <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044" />
@@ -266,6 +269,9 @@
 
 				<!-- Pass the base path of the tlatools project to unit tests in case they need it to locate TLA+ specs or configs -->
 				<sysproperty key="basedir" value="${basedir}/"/>
+				<!-- Uncomment to run TLC with alternative fingerprintset impl. See jvmarg above too.
+				<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
+				-->
 				<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 				<batchtest fork="yes" todir="${test.reports}">
 					<fileset dir="${test.dir}">
