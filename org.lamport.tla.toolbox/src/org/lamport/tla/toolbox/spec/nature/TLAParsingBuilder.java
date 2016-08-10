@@ -61,6 +61,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 			// instantiated later. The spec manager gets created by a workspace
 			// job in Activator#start, thus belonging to the same job family 
     		// which is why it can run with us concurrently.
+    		// Also see PCalDetectingBuilder.
 			ResourcesPlugin.getWorkspace().build(kind, null);
             return null;
     	}

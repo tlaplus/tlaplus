@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -39,6 +40,16 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
      */
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException
     {
+    	if (!Activator.isSpecManagerInstantiated()) {
+			// Reschedule the build assuming the spec manager will be
+			// instantiated later. The spec manager gets created by a workspace
+			// job in Activator#start, thus belonging to the same job family 
+    		// which is why it can run with us concurrently.
+    		// Also see TLAParsingBuilder.
+			ResourcesPlugin.getWorkspace().build(kind, null);
+            return null;
+    	}
+    	
         final Spec spec = Activator.getSpecManager().getSpecLoaded();
         if (spec == null)
         {
