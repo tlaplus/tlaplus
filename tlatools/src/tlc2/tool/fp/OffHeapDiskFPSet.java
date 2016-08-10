@@ -273,14 +273,13 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 			}
 		}
 
-		// index slot overflow, thus add to collisionBucket of write to free
-		// position.
 		if (freePosition > -1 && !csLookup(fp)) {
 			// Write to free slot
 			this.helper.writeFP(freePosition, fp);
 			this.tblCnt.getAndIncrement();
 			return false;
 		} else {
+			// Index slot (bucket) overflow, thus add to collisionBucket
 			boolean success = csInsert(fp);
 			if (success) {
 				this.tblCnt.getAndIncrement();
@@ -462,7 +461,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		 */
 		@Override
 		public boolean isBucketBasePosition(long logicalPosition) {
-			return (logicalPosition & (InitialBucketCapacity - 1)) == 0;
+			return (logicalPosition & (bucketCapacity - 1)) == 0;
 		}
 	}
 	

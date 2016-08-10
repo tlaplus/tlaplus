@@ -21,12 +21,16 @@ public class FPSetConfiguration implements Serializable {
 	}
 	
 	public FPSetConfiguration(Double aRatio) {
-		this.ratio = aRatio;
 		// Read the implementation class from the System properties instead of
 		// the cmd line. Right now I'm reluctant to expose the impl class as a 
 		// cmd line parameter and carry it forth forever.
-		this.implementation = System.getProperty(FPSetFactory.IMPL_PROPERTY,
-				FPSetFactory.getImplementationDefault());
+		this(aRatio, System.getProperty(FPSetFactory.IMPL_PROPERTY,
+				FPSetFactory.getImplementationDefault()));
+	}
+	
+	public FPSetConfiguration(Double aRatio, String implementation) {
+		this.ratio = aRatio;
+		this.implementation = implementation;
 	}
 
 	public boolean allowsNesting() {

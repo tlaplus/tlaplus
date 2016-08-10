@@ -67,7 +67,8 @@ public class OffHeapDiskFPSetTest extends FPSetTest {
 	 * @see tlc2.tool.fp.AbstractFPSetTest#getFPSet(long)
 	 */
 	@Override
-	protected FPSet getFPSet(final FPSetConfiguration fpSetConfig) throws IOException {
-		return new OffHeapDiskFPSet(new FPSetConfiguration(1.0d));
+	protected FPSet getFPSet(final FPSetConfiguration ignored) throws IOException {
+		final FPSetConfiguration config = new FPSetConfiguration(1.0d, OffHeapDiskFPSet.class.getName());
+		return new OffHeapDiskFPSet(config);
 	}
 }

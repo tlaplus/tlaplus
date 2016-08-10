@@ -10,6 +10,6 @@ public class MultiThreadedOffHeapDiskFPSetTest extends MultiThreadedFPSetTest {
 	 */
 	@Override
 	protected FPSet getFPSet(final FPSetConfiguration fpSetConfig) throws IOException {
-		return new OffHeapDiskFPSet(new FPSetConfiguration(1.0d));
+		return new OffHeapDiskFPSet(new FPSetConfiguration(1.0d, OffHeapDiskFPSet.class.getName()));
 	}
 }
