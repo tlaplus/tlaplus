@@ -122,647 +122,240 @@
 ***************************************************************************/
 package unicasc;
 
-import java.io.File;
-import java.io.IOException;
-
 import tla2tex.BuiltInSymbols;
 import tla2tex.CommentToken;
 import tla2tex.Debug;
-import tla2tex.ExecuteCommand;
 import tla2tex.FileCharReader;
 import tla2tex.FindAlignments;
 import tla2tex.FormatComments;
-import tla2tex.LaTeXOutput;
-import tla2tex.Misc;
-import tla2tex.Parameters;
+import tla2tex.OutputFileWriter;
 import tla2tex.ResourceFileReader;
 import tla2tex.TLA2TexException;
 import tla2tex.Token;
 import tla2tex.TokenizeSpec;
-import tla2tex.WriteTLAFile;
-import util.FileUtil;
 import util.ToolIO;
 
-public class TLA
-{
-    static final String lastModified =
-    /***********************************************************************
-    * The following string is inserted by an Emacs macro when a new        *
-    * version is saved.                                                    *
-    ***********************************************************************/
-    "last modified on Wed  12 Apr 2013 at 16:06:38 PST by lamport";
+public class TLA {
+	static final String lastModified =
+			"last modified on Wed  12 Apr 2013 at 16:06:38 PST by lamport";
 
-    static String modDate = lastModified.substring(21, 33);
-    /***********************************************************************
-    * The modification date.                                               *
-    ***********************************************************************/
+	static String modDate = lastModified.substring(21, 33);
+	// The modification date.
 
-    static String version = "tla2tex.TLA Version 1.0 created " + modDate;
+	static String version = "tla2tex.TLA Version 1.0 created " + modDate;
 
-    public static void main(String[] args)
-    {
-        runTranslation(args);
-    }
+	public static void main(String[] args) {
+		runTranslation(args);
+	}
 
-    /**
-     * @param args
-     */
-    public static void runTranslation(String[] args)
-    {  
-        /*********************************************************************
-        * Get the command-line arguments.                                    *
-        *********************************************************************/
-        long startTime = Debug.now();
-        ToolIO.out.println(version);
-        GetArguments(args);
+	public static void runTranslation(String[] args) {
+		// Get the command-line arguments.
+		long startTime = Debug.now();
+		// ToolIO.out.println(version);
+		GetArguments(args);
 
-        /*********************************************************************
-        * Initialize class BuiltInSymbols.                                   *
-        *********************************************************************/
-        Starting("BuiltInSymbols.Initialize");
-        BuiltInSymbols.Initialize();
-        Finished("BuiltInSymbols.Initialize");
+		// Initialize class BuiltInSymbols
+		Starting("BuiltInSymbols.Initialize");
+		BuiltInSymbols.Initialize();
+		Finished("BuiltInSymbols.Initialize");
 
-        /*********************************************************************
-        * Read and tokenize the spec.                                        *
-        *********************************************************************/
-        FileCharReader testlr = new FileCharReader(Parameters.TLAInputFile);
-        Starting("TokenizeSpec.Tokenize");
-        Token[][] spec = TokenizeSpec.Tokenize(testlr, TokenizeSpec.MODULE);
+		// Read and tokenize the spec.
+		FileCharReader testlr = new FileCharReader(Parameters.TLAInputFile);
+		Starting("TokenizeSpec.Tokenize");
+		final Token[][] spec = TokenizeSpec.Tokenize(testlr, TokenizeSpec.MODULE);
 
-//System.out.println(TokenizeSpec.skipToUnmatchedEnd(new Position(5, 1), 
-//                 spec, false).toString()) ;
-//System.out.println(TokenizeSpec.skipToUnmatchedEnd(new Position(5, 1), 
-//        spec, true).toString()) ;
-//        System.out.println("pcalStart = " + TokenizeSpec.pcalStart.toString());
-//        System.out.println("pcalEnd = " + TokenizeSpec.pcalEnd.toString());
-        /*********************************************************************
-        * Finish the tokenization by converting sequences of tokens that     *
-        * represent proof-step numbers to PF_STEP tokens.                    *
-        *********************************************************************/
-        Token.FindPfStepTokens(spec);
-        Finished("TokenizeSpec.Tokenize");
-        // Debug.print2DArray(spec, "tok");
-        
-        /*********************************************************************
-        * Really finish the tokenization by parentheses and braces that are  *
-        * part of the PlusCal C-syntax to tokens that are printed            *
-        * appropriately.                                                     *
-        *********************************************************************/
-        Starting("TokenizeSpec.FixPlusCal");
-        TokenizeSpec.FixPlusCal(spec, false) ;
-        Finished("TokenizeSpec.FixPlusCal");
+		 // Finish tokenization by converting proof-step numbers to PF_STEP tokens.
+		Token.FindPfStepTokens(spec);
+		Finished("TokenizeSpec.Tokenize");
+		// Debug.print2DArray(spec, "tok");
 
-        /*********************************************************************
-        * Process the comment tokens.                                        *
-        *********************************************************************/
-        Starting("CommentToken.ProcessComments");
-        CommentToken.ProcessComments(spec);
-        Finished("CommentToken.ProcessComments");
-        // Debug.print2DArray(spec, "com");
+//		/*********************************************************************
+//		 * Really finish the tokenization by parentheses and braces that are
+//		 * part of the PlusCal C-syntax to tokens that are printed
+//		 * appropriately.
+//		 *********************************************************************/
+//		Starting("TokenizeSpec.FixPlusCal");
+//		TokenizeSpec.FixPlusCal(spec, false);
+//		Finished("TokenizeSpec.FixPlusCal");
 
-        /*********************************************************************
-        * Initialize class FormatComments.                                   *
-        *********************************************************************/
-        // pron: ????
-        Starting("FormatComments.Initialize");
-        FormatComments.Initialize();
-        Finished("FormatComments.Initialize");
+		// Process the comment tokens. *
+		Starting("CommentToken.ProcessComments");
+		CommentToken.ProcessComments(spec);
+		Finished("CommentToken.ProcessComments");
+		// Debug.print2DArray(spec, "com");
 
-        /*********************************************************************
-        * Add the alignment pointers to spec.                                *
-        *********************************************************************/
-        Starting("FindAlignments.FindAlignments");
-        FindAlignments.FindAlignments(spec);
-        Finished("FindAlignments.FindAlignments");
-        // Debug.print2DArray(spec, "align");
+		// Initialize class FormatComments
+		// pron: ????
+		Starting("FormatComments.Initialize");
+		FormatComments.Initialize();
+		Finished("FormatComments.Initialize");
 
-        /*********************************************************************
-        * Write out the tla file with deleted comments removed, if the       *
-        * -tlaOut option is chosen.                                          *
-        *********************************************************************/
+		// Add the alignment pointers to spec. *
+		Starting("FindAlignments.FindAlignments");
+		FindAlignments.FindAlignments(spec);
+		Finished("FindAlignments.FindAlignments");
+		// Debug.print2DArray(spec, "align");
 
-            WriteTLAFile.Write(spec, Parameters.TLAOutFile);
-            ToolIO.out.println("Wrote -tlaOut file " + Parameters.TLAOutFile);
+		// Write output
+		Starting("LaTeXOutput.WriteAlignmentFile");
+		A2U.a2u(spec, new OutputFileWriter(System.out, "STDOUT"));
+		Finished("LaTeXOutput.WriteAlignmentFile");
 
-//        Starting("LaTeXOutput.WriteAlignmentFile");
-//        LaTeXOutput.WriteAlignmentFile(spec);
-//        Finished("LaTeXOutput.WriteAlignmentFile");
+		Debug.printElapsedTime(startTime, "Total execution time:");
+	}
 
-        /*********************************************************************
-        * Write the final LaTeX output and run it through LaTeX.             *
-        *********************************************************************/
-        Debug.printElapsedTime(startTime, "Total execution time:");
-    } // END main
+	private static void GetArguments(String[] args) {
+		/**********************************************************************
+		 * Get the command-line arguments and set the appropriate parameters.
+		 **********************************************************************/
 
-    private static void GetArguments(String[] args)
-    /**********************************************************************
-    * Get the command-line arguments and set the appropriate parameters.  *
-    **********************************************************************/
-    {
-        /********************************************************************
-        * The following flags are set if the indicated option is present.   *
-        ********************************************************************/
-        boolean outOption = false;
-        boolean alignOutOption = false;
-        boolean psOption = false;
-        boolean nopsOption = false;
-        
-        /********************************************************************
-         * These static variables are set to true later in the method if    *
-         * the user passes the appropriate argument.                        *
-         ********************************************************************/
-        Parameters.CommentShading = false;
-        Parameters.PrintLineNumbers = false;
-        
-        int nextArg = 0;
-        /******************************************************************
-        * The number of the argument being processed.                     *
-        ******************************************************************/
-        int maxArg = args.length - 1;
-        /******************************************************************
-        * The number of the final argument, which is the input file name. *
-        ******************************************************************/
-        if (maxArg < 0)
-        {
-            CommandLineError("No arguments specified");
-        }
-        ;
+		/********************************************************************
+		 * The following flags are set if the indicated option is present.
+		 ********************************************************************/
+		boolean outOption = false;
 
-        if ((args[maxArg].length() != 0) && (args[maxArg].charAt(0) == '-'))
-        /******************************************************************
-        * If the last argument begins with "-", then no file has been     *
-        * specified.  This should mean that the user has typed "-help"    *
-        * or "-info", but it could be another mistake.                    *
-        ******************************************************************/
-        {
-            maxArg = maxArg + 1;
-        }
-        ;
+		int nextArg = 0; // The number of the argument being processed.
+		int maxArg = args.length - 1; // The number of the final argument, the input file name.
+		if (maxArg < 0)
+			CommandLineError("No arguments specified");
 
-        while (nextArg < maxArg)
-        /*******************************************************************
-        * Process all the arguments, except for the last (unless it's a    *
-        * "-" argument).                                                   *
-        *******************************************************************/
-        {
-            String option = args[nextArg];
-            if (option.equals("-help"))
-            {
-                OutputMessageFile(Parameters.HelpFile);
-                System.exit(0);
-            } else if (option.equals("-info"))
-            {
-                OutputMessageFile(Parameters.InfoFile);
-                System.exit(0);
-            } else if (option.equals("-grayLevel"))
-            {
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                try
-                {
-                    Parameters.PSGrayLevel = Misc.stringToFloat(args[nextArg]);
-                } catch (Exception e)
-                {
-                    CommandLineError("Bad -grayLevel value " + args[nextArg]);
-                }
-                ;
-                // bug found by Yuan Yu in following if statement
-                // corrected 9 May 2001
-                if ((Parameters.PSGrayLevel > 1) || (Parameters.PSGrayLevel < 0))
-                {
-                    CommandLineError("-grayLevel value should be between 0 and 1, not "
-                            + Misc.floatToString(Parameters.PSGrayLevel, 3));
-                }
-            } else if (option.equals("-ps"))
-            {
-                psOption = true;
-            } else if (option.equals("-nops"))
-            {
-                nopsOption = true;
-            } else if (option.equals("-psCommand"))
-            {
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.PSCommand = args[nextArg];
-            } else if (option.equals("-latexCommand"))
-            {
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.LaTeXCommand = args[nextArg];
-            } else if (option.equals("-out"))
-            {
-                /*************************************************************
-                * The LaTeX output file.                                     *
-                *************************************************************/
-                outOption = true;
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.LaTeXOutputFile = RemoveExtension(args[nextArg]);
-                if (HasPathPrefix(Parameters.LaTeXOutputFile))
-                {
-                    CommandLineError("-out file contains a path specifier.\n"
-                            + "It must be a file in the current directory.");
-                }
-                ;
-            } else if (option.equals("-tlaOut"))
-            {
-                /*************************************************************
-                * The tla output file, with TEX comments removed.  Add a     *
-                * ".tla" extension if no extension is specified.             *
-                *************************************************************/
-                Parameters.TLAOut = true;
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.TLAOutFile = args[nextArg];
-                if (Parameters.TLAOutFile.indexOf(".") == -1)
-                {
-                    Parameters.TLAOutFile = Parameters.TLAOutFile + ".tla";
-                }
-                if (HasPathPrefix(Parameters.TLAOutFile))
-                {
-                    CommandLineError("-tlaOut file contains a path specifier.\n"
-                            + "It must be a file in the current directory.");
-                }
-                ;
-            } else if (option.equals("-alignOut"))
-            {
-                /*************************************************************
-                * The alignment file.                                        *
-                *************************************************************/
-                alignOutOption = true;
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.LaTeXAlignmentFile = RemoveExtension(args[nextArg]);
-                if (HasPathPrefix(Parameters.LaTeXAlignmentFile))
-                {
-                    CommandLineError("-alignOut file contains a path specifier.\n"
-                            + "It must be a file in the current directory.");
-                }
-                ;
-            } else if (option.equals("-debug"))
-            {
-                Parameters.Debug = true;
-            } else if (option.equals("-tlaComment"))
-            /***************************************************************
-            * This option tells TLATeX to interpret all ambiguous          *
-            * identifiers in comments as TLA symbols.                      *
-            ***************************************************************/
-            {
-                Parameters.TLACommentOption = true;
-            }
-            // else if (option.equals("-notlaComment"))
-            // /***************************************************************
-            // * The FormatComments.adjustIsTLA method normally sets an *
-            // * ambiguous Identifier to a TLA token if it appears somewhere *
-            // * in the current comment as a TLA token. This option causes *
-            // * the method to do this only if the Identifier is not an *
-            // * English word. This option has no effect if the -tlaComment *
-            // * option is chosen. *
-            // ***************************************************************/
-            // { Parameters.NoTLACommentOption = true;
-            // }
-            else if (option.equals("-shade"))
-            {
-                Parameters.CommentShading = true;
-            } else if (option.equals("-noPcalShade"))
-            {
-                Parameters.NoPlusCalShading = true;
-            }else if (option.equals("-noProlog"))
-            {
-                Parameters.PrintProlog = false;
-            } else if (option.equals("-noEpilog"))
-            {
-                Parameters.PrintEpilog = false;
-            } else if (option.equals("-number"))
-            {
-                Parameters.PrintLineNumbers = true;
-            } else if (option.equals("-style"))
-            {
-                /*************************************************************
-                * Use the specified file as style file in place of           *
-                * Parameters.LaTeXModuleProlog.                              *
-                *************************************************************/
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.UserStyleFile = RemoveExtension(args[nextArg]);
-                if ((!Parameters.UserStyleFile.equals(args[nextArg]))
-                        && (args[nextArg].indexOf(".sty") != args[nextArg].length() - 4))
-                {
-                    CommandLineError("-style file must have extension `.sty'");
-                }
-            } else if (option.equals("-ptSize"))
-            {
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.LaTeXptSize = GetIntArg(args[nextArg], option);
-                if ((Parameters.LaTeXptSize < 10) || (Parameters.LaTeXptSize > 12))
-                {
-                    CommandLineError("-ptSize option must be 10, 11, or 12");
-                }
-                ;
-            } else if (option.equals("-textwidth"))
-            {
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.LaTeXtextwidth = GetIntArg(args[nextArg], option);
-                if ((Parameters.LaTeXtextwidth < 100) || (Parameters.LaTeXtextwidth > 1000))
-                {
-                    CommandLineError("-textwidth value of " + Parameters.LaTeXtextwidth + " points is implausible");
-                }
-                ;
-            } else if (option.equals("-textheight"))
-            {
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.LaTeXtextheight = GetIntArg(args[nextArg], option);
-                if ((Parameters.LaTeXtextheight < 75) || (Parameters.LaTeXtextheight > 1500))
-                {
-                    CommandLineError("-textheight value of " + Parameters.LaTeXtextheight + " points is implausible");
-                }
-                ;
-            } else if (option.equals("-hoffset"))
-            {
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.LaTeXhoffset = GetIntArg(args[nextArg], option);
-                if ((Parameters.LaTeXhoffset < -250) || (Parameters.LaTeXhoffset > 250))
-                {
-                    CommandLineError("-hoffset value of " + Parameters.LaTeXhoffset + " points is implausible");
-                }
-                ;
-            } else if (option.equals("-voffset"))
-            {
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.LaTeXvoffset = GetIntArg(args[nextArg], option);
-                if ((Parameters.LaTeXvoffset < -250) || (Parameters.LaTeXvoffset > 250))
-                {
-                    CommandLineError("-voffset value of " + Parameters.LaTeXvoffset + " points is implausible");
-                }
-                ;
-            } else if (option.equals("-metadir"))
-            {
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                ;
-                Parameters.MetaDir = args[nextArg];
-                Parameters.ParentDir = new File(Parameters.MetaDir);
-                if (! Parameters.ParentDir.exists()) {
-                  CommandLineError("Specified metdir " + Parameters.MetaDir + 
-                          " does not exist.");
-                }
-            } else if (option.equals("-latexOutputExt"))
-            {
-                nextArg = nextArg + 1;
-                if (nextArg >= args.length)
-                {
-                    CommandLineError("No input file specified");
-                }
-                
-                Parameters.LatexOutputExt = args[nextArg];
-            } else
-            {
-                CommandLineError("Unknown option: " + option);
-            }
-            ;
-            nextArg = nextArg + 1;
-        } // END while (nextArg < maxArg)
+		/******************************************************************
+		 * If the last argument begins with "-", then no file has been
+		 * specified. This should mean that the user has typed "-help" or
+		 * "-info", but it could be another mistake.
+		 ******************************************************************/
+		if ((args[maxArg].length() != 0) && (args[maxArg].charAt(0) == '-'))
+			maxArg = maxArg + 1;
 
-        if (nextArg > maxArg)
-        /******************************************************************
-        * The last option took an argument that was the last              *
-        * command-line argument.                                          *
-        ******************************************************************/
-        {
-            CommandLineError("No input file specified");
-        }
-        ;
+		while (nextArg < maxArg) {
+			// Process all the arguments, except for the last (unless it's a "-" argument). *
+			String option = args[nextArg];
+			if (option.equals("-help")) {
+				OutputMessageFile(Parameters.HelpFile);
+				System.exit(0);
+			} else if (option.equals("-info")) {
+				OutputMessageFile(Parameters.InfoFile);
+				System.exit(0);
+			} else if (option.equals("-out")) {
+				// The LaTeX output file.
+				outOption = true;
+				nextArg = nextArg + 1;
+				if (nextArg >= args.length)
+					CommandLineError("No input file specified");
 
-        /********************************************************************
-        * Set Parameters.TLAInputFile to the last argument, adding ".tla"   *
-        * if it has no extension already.                                   *
-        ********************************************************************/
-        if (args[maxArg].indexOf(".") == -1)
-        {
-            Parameters.TLAInputFile = args[maxArg] + ".tla";
-        } else
-        {
-            Parameters.TLAInputFile = args[maxArg];
-        }
-        ;
+				Parameters.LaTeXOutputFile = RemoveExtension(args[nextArg]);
+				if (HasPathPrefix(Parameters.LaTeXOutputFile)) {
+					CommandLineError(
+							"-out file contains a path specifier.\n" + "It must be a file in the current directory.");
+				}
+			} else if (option.equals("-tlaOut")) {
+				Parameters.TLAOut = true;
+				nextArg = nextArg + 1;
+				if (nextArg >= args.length)
+					CommandLineError("No input file specified");
 
-        /********************************************************************
-        * Report an error if TLAInputFile = TLAOutFile.                     *
-        ********************************************************************/
-        if (Parameters.TLAOutFile.equals(Parameters.TLAInputFile))
-        {
-            CommandLineError("\n  -tlaOut file the same as the tla input file.\n"
-                    + "  This would overwrite your input file, so I won't do it");
-        }
-        ;
+				Parameters.TLAOutFile = args[nextArg];
+				if (Parameters.TLAOutFile.indexOf(".") == -1)
+					Parameters.TLAOutFile = Parameters.TLAOutFile + ".tla";
 
-        /********************************************************************
-        * Set default options.                                              *
-        ********************************************************************/
-        if (!outOption)
-        {
-            Parameters.LaTeXOutputFile = RemoveExtension(RemovePathPrefix(Parameters.TLAInputFile));
-        }
-        ;
-        if (!alignOutOption)
-        {
-            Parameters.LaTeXAlignmentFile = Parameters.LaTeXOutputFile;
-        }
-        ;
+				if (HasPathPrefix(Parameters.TLAOutFile))
+					CommandLineError("-tlaOut file contains a path specifier.\n"
+							+ "It must be a file in the current directory.");
 
-        /********************************************************************
-        * Produce Postscript output if either                               *
-        *   (i) -ps, or                                                     *
-        *  (ii) -shade but not -nops                                        *
-        * was specified.                                                    *
-        ********************************************************************/
-        if (psOption || (Parameters.CommentShading && !nopsOption))
+			} else if (option.equals("-debug"))
+				Parameters.Debug = true;
+			else
+				CommandLineError("Unknown option: " + option);
 
-        {
-            Parameters.PSOutput = true;
-        }
-    }
+			nextArg = nextArg + 1;
+		}
 
-    private static int GetIntArg(String str, String option)
-    /*********************************************************************
-    * Returns str interpreted as an integer, or generates an error       *
-    * message for the indicated option.                                  *
-    *********************************************************************/
-    {
-        int val = 0;
-        try
-        {
-            val = Integer.parseInt(str);
-        } catch (NumberFormatException e)
-        {
-            CommandLineError(option + " option must specify an integer value");
-        }
-        ;
-        return val;
-    }
+		if (nextArg > maxArg) {
+			// The last option took an argument that was the last command-line argument.
+			CommandLineError("No input file specified");
+		}
 
-    private static String RemoveExtension(String fileName)
-    /*********************************************************************
-    * The string fileName with any extensions removed.                   *
-    *********************************************************************/
-    {
-        if (fileName.indexOf(".") == -1)
-        {
-            return fileName;
-        } else
-        {
-            return fileName.substring(0, fileName.indexOf("."));
-        }
-    }
+		/********************************************************************
+		 * Set Parameters.TLAInputFile to the last argument, adding ".tla" * if
+		 * it has no extension already. *
+		 ********************************************************************/
+		if (args[maxArg].indexOf(".") == -1)
+			Parameters.TLAInputFile = args[maxArg] + ".tla";
+		else
+			Parameters.TLAInputFile = args[maxArg];
 
-    private static String RemovePathPrefix(String str)
-    /***********************************************************************
-    * Returns str with all any leading path specifiers removed.  For       *
-    * example, calling it on "c:frob\bar\name.txt" or "~/frob/bar/name.txt"  *
-    * will return "name.txt".                                              *
-    ***********************************************************************/
-    {
-        String result = str;
-        if (result.indexOf(":") != -1)
-        {
-            result = result.substring(result.lastIndexOf(":") + 1);
-        }
-        ;
-        if (result.indexOf("/") != -1)
-        {
-            result = result.substring(result.lastIndexOf("/") + 1);
-        }
-        ;
-        if (result.indexOf("\\") != -1)
-        {
-            result = result.substring(result.lastIndexOf("\\") + 1);
-        }
-        ;
-        return result;
-    }
+		// Report an error if TLAInputFile = TLAOutFile. *
+		if (Parameters.TLAOutFile.equals(Parameters.TLAInputFile))
+			CommandLineError("\n  -tlaOut file the same as the tla input file.\n"
+					+ "  This would overwrite your input file, so I won't do it");
 
-    private static boolean HasPathPrefix(String str)
-    /***********************************************************************
-    * True iff str has a leading path specifier--that is, if it contains   *
-    * a ":", "/" or "\".                                                   *
-    ***********************************************************************/
-    {
-        return (str.indexOf(":") != -1) || (str.indexOf("/") != -1) || (str.indexOf("\\") != -1);
-    }
+		// Set default options.
+		if (!outOption)
+			Parameters.LaTeXOutputFile = RemoveExtension(RemovePathPrefix(Parameters.TLAInputFile));
+	}
 
-    private static void CommandLineError(String msg)
-    /*********************************************************************
-    * Announce a command line error with the string indicating the       *
-    * explanation, write the help message, and halt.                     *
-    *********************************************************************/
-    {
-        ToolIO.out.println("TLATeX command-line error: " + msg + ".");
-        ToolIO.out.println("Use -help option for more information.");
-        // OutputMessageFile(Parameters.HelpFile) ;
-        throw new TLA2TexException("TLATeX command-line error: " + msg + "." + "Use -help option for more information.");
-    }
+	private static String RemoveExtension(String fileName) {
+		// The string fileName with any extensions removed.
+		if (fileName.indexOf(".") == -1)
+			return fileName;
+		else
+			return fileName.substring(0, fileName.indexOf("."));
+	}
 
-    private static void OutputMessageFile(String fileName)
-    /**********************************************************************
-    * Write the resource file named fileName to stdout.                   *
-    **********************************************************************/
-    {
-        ResourceFileReader input = new ResourceFileReader(fileName);
-        String line = input.getLine();
-        while (line != null)
-        {
-            ToolIO.out.println(line);
-            line = input.getLine();
-        }
-        ;
-        input.close();
-    };
+	private static String RemovePathPrefix(String str) {
+	/***********************************************************************
+	 * Returns str with all any leading path specifiers removed. For * example,
+	 * calling it on "c:frob\bar\name.txt" or "~/frob/bar/name.txt" * will
+	 * return "name.txt". *
+	 ***********************************************************************/
+		String result = str;
+		if (result.indexOf(":") != -1)
+			result = result.substring(result.lastIndexOf(":") + 1);
+		if (result.indexOf("/") != -1)
+			result = result.substring(result.lastIndexOf("/") + 1);
+		if (result.indexOf("\\") != -1)
+			result = result.substring(result.lastIndexOf("\\") + 1);
+		return result;
+	}
 
-    private static long start = Debug.now();
+	private static boolean HasPathPrefix(String str) {
+		// True iff str has a leading path specifier--that is, if it contains a ":", "/" or "\".
+		return (str.indexOf(":") != -1) || (str.indexOf("/") != -1) || (str.indexOf("\\") != -1);
+	}
 
-    /***********************************************************************
-    * Starting / Finished used to print debugging information.            *
-    ***********************************************************************/
-    private static void Starting(String name)
-    {
-        if (Parameters.Debug)
-        {
-            start = Debug.now();
-            ToolIO.out.println("Starting " + name);
-        }
-    }
+	private static void CommandLineError(String msg) {
+		// Announce a command line error, write the help message, and halt.
+		ToolIO.out.println("TLATeX command-line error: " + msg + ".");
+		ToolIO.out.println("Use -help option for more information.");
+		// OutputMessageFile(Parameters.HelpFile) ;
+		throw new TLA2TexException(
+				"TLATeX command-line error: " + msg + "." + "Use -help option for more information.");
+	}
 
-    private static void Finished(String name)
-    {
-        if (Parameters.Debug)
-        {
-            Debug.printElapsedTime(start, name + " finished in");
-        }
-    }
+	private static void OutputMessageFile(String fileName) {
+		// Write the resource file named fileName to stdout. *
+		ResourceFileReader input = new ResourceFileReader(fileName);
+		String line = input.getLine();
+		while (line != null) {
+			ToolIO.out.println(line);
+			line = input.getLine();
+		}
 
-    private static void MakePSFile()
-    {
-        String Command = Parameters.PSCommand + " " + Parameters.LaTeXOutputFile + ".dvi";
-        ExecuteCommand.executeCommand(Command);
-        /*******************************************************************
-        * Modified on 11 November 2001 to call ExecuteCommand.             *
-        *******************************************************************/
-    }
+		input.close();
+	}
+
+	private static long start = Debug.now();
+
+	// Starting / Finished used to print debugging information.
+	private static void Starting(String name) {
+		if (Parameters.Debug) {
+			start = Debug.now();
+			ToolIO.out.println("Starting " + name);
+		}
+	}
+
+	private static void Finished(String name) {
+		if (Parameters.Debug)
+			Debug.printElapsedTime(start, name + " finished in");
+	}
 }

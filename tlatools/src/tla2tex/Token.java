@@ -43,17 +43,29 @@ public class Token
   * this class.                                                            *
   *************************************************************************/
   { public String string ;
-      /*********************************************************************
-      * The string of the token.  This is usually what the user has        *
-      * typed, but it may also be something else.                          *
-      *********************************************************************/
+  /*********************************************************************
+  * The string of the token.  This is usually what the user has        *
+  * typed, but it may also be something else.                          *
+  *********************************************************************/
+
+  	public String outstring ; // used by unicode converter only
+  	/*********************************************************************
+  	* The string of the token in the output                              *
+    * typed, but it may also be something else.                          *
+    *********************************************************************/
 
     public int column ;
       /*********************************************************************
       * The column in which the first character of the token appears in    *
       * the input.                                                         *
       *********************************************************************/
-      
+
+    public int outcolumn = -1 ; // used by unicode converter only
+      /*********************************************************************
+      * The column in which the first character of the token appears in    *
+      * the output.                                                        *
+      *********************************************************************/
+
     public int type ;
        /********************************************************************
        * The type of the token.  Here are the possibilities:               *
