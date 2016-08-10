@@ -289,14 +289,14 @@ public final class BuiltInSymbols
         add("(",   "(",           Symbol.LEFT_PAREN, 0);
         add("[",   "[",           Symbol.LEFT_PAREN, 0);
         add("{",   "\\{",         Symbol.LEFT_PAREN, 0);
-        add("<<",  "{\\langle}",  Symbol.LEFT_PAREN, 0);
-        add("\u27E8", "{\\langle}", Symbol.LEFT_PAREN, 0); // ⟨
+        add("<<",          "\u27E8",       "{\\langle}",     Symbol.LEFT_PAREN, 0);
+        add("\u27E8",      "<<",           "{\\langle}",     Symbol.LEFT_PAREN, 0); // ⟨
 
         add(")",   ")",           Symbol.RIGHT_PAREN, 0);
         add("}",   "\\}",         Symbol.RIGHT_PAREN, 0);
         add("]",   "]",           Symbol.RIGHT_PAREN, 0);
-        add(">>",  "{\\rangle}",  Symbol.RIGHT_PAREN, 0);
-        add("\u27E9", "{\\rangle}", Symbol.RIGHT_PAREN, 0); // ⟩
+        add(">>",          "\u27E9",       "{\\rangle}",     Symbol.RIGHT_PAREN, 0);
+        add("\u27E9",      ">>",           "{\\rangle}",     Symbol.RIGHT_PAREN, 0); // ⟩
 
         add("\\A",         "\u2200",       "\\A\\,",         Symbol.PREFIX, 0); // ∀
         add("\\forall",    "\u2200",       "\\forall\\,",    Symbol.PREFIX, 0); // ∀
