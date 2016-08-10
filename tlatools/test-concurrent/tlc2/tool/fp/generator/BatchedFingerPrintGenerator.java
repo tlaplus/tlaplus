@@ -14,8 +14,8 @@ public class BatchedFingerPrintGenerator extends FingerPrintGenerator {
 
 	private static final int batch = 1024;
 	
-	public BatchedFingerPrintGenerator(MultiThreadedFPSetTest test, int id, FPSet fpSet, CountDownLatch latch, long seed, long insertions) {
-		super(test, id, fpSet, latch, seed, insertions);
+	public BatchedFingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch, long seed, long insertions) {
+		super(test, id, numThreads, fpSet, latch, seed, insertions);
 	}
 	
 	/* (non-Javadoc)

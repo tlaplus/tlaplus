@@ -16,8 +16,8 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 
 	private static final int batch = 1024;
 	
-	public LongVecFingerPrintGenerator(MultiThreadedFPSetTest test, int id, FPSet fpSet, CountDownLatch latch, long seed, long insertions) {
-		super(test, id, fpSet, latch, seed, insertions);
+	public LongVecFingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch, long seed, long insertions) {
+		super(test, id, numThreads, fpSet, latch, seed, insertions);
 	}
 	
 	/* (non-Javadoc)

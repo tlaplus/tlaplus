@@ -17,13 +17,15 @@ public class FingerPrintGenerator implements Runnable {
 	protected final FPSet fpSet;
 	protected final CountDownLatch latch;
 	protected final int id;
+	protected final int numThreads;
 	protected final MultiThreadedFPSetTest test;
 	protected long puts = 0L;
 	protected long collisions = 0L;
 
-	public FingerPrintGenerator(MultiThreadedFPSetTest test, int id, FPSet fpSet, CountDownLatch latch, long seed, long insertions) {
+	public FingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch, long seed, long insertions) {
 		this.test = test;
 		this.id = id;
+		this.numThreads = numThreads;
 		this.fpSet = fpSet;
 		this.latch = latch;
 		this.rnd = new Random(seed);

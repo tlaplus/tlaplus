@@ -14,6 +14,7 @@ import org.junit.Test;
 import tlc2.tool.fp.generator.BatchedFingerPrintGenerator;
 import tlc2.tool.fp.generator.FingerPrintGenerator;
 import tlc2.tool.fp.generator.LongVecFingerPrintGenerator;
+import tlc2.tool.fp.generator.PartitionedFingerPrintGenerator;
 
 public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 
@@ -60,6 +61,17 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 	}
 	
 	/**
+	 * Test filling a {@link FPSet} with multiple threads. Each thread accesses
+	 * a disjunct partition of the key space and fills it up linearly. This
+	 * prevents hash collisions as well as lock contention. Essentially, this is
+	 * the best case scenario. It ignores INSERTIONS for now.
+	 */
+	@Test
+	public void testMaxFPSetSizePartitioned() throws IOException, InterruptedException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		doTest(PartitionedFingerPrintGenerator.class);
+	}
+	
+	/**
 	 * @param fpgClass
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -75,13 +87,13 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		final CountDownLatch latch = new CountDownLatch(NUM_THREADS);
 
 		final Constructor<?> constructor = fpgClass
-				.getConstructor(new Class[] { MultiThreadedFPSetTest.class, int.class, FPSet.class, CountDownLatch.class, long.class, long.class });
+				.getConstructor(new Class[] { MultiThreadedFPSetTest.class, int.class, int.class, FPSet.class, CountDownLatch.class, long.class, long.class });
 		
 		long seed = RNG_SEED;
 		final FingerPrintGenerator[] fpgs = new FingerPrintGenerator[NUM_THREADS];
 		for (int i = 0; i < fpgs.length; i++) {
 			fpgs[i] = (FingerPrintGenerator) constructor.newInstance(
-					this, i, fpSet, latch, seed++, INSERTIONS);
+					this, i, fpgs.length, fpSet, latch, seed++, INSERTIONS);
 			Thread thread = new Thread(fpgs[i], "Producer#" + i);
 			thread.start();
 		}
