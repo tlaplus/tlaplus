@@ -53,7 +53,7 @@ public class FingerPrintGenerator implements Runnable {
 
 				// First producer prints stats
 				if (id == 0) {
-					test.printInsertionSpeed(fpSet.size());
+					test.printInsertionSpeed(fpSet);
 				}
 
 			} catch (IOException e) {

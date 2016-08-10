@@ -57,7 +57,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 			long currentSize = fpSet.size();
 			assertTrue(i == currentSize);
 
-			printInsertionSpeed(currentSize);
+			printInsertionSpeed(fpSet);
 		}
 	
 		// try creating a check point
@@ -100,7 +100,7 @@ public abstract class FPSetTest extends AbstractFPSetTest {
 			long currentSize = fpSet.size();
 			assertTrue(++counter == currentSize);
 			
-			printInsertionSpeed(currentSize);
+			printInsertionSpeed(fpSet);
 		}
 	
 		// try creating a check point

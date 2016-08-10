@@ -17,6 +17,7 @@ public abstract class AbstractFPSetTest {
 					+ System.currentTimeMillis();
 	protected static final String filename = "FPSetTestTest";
 	protected static final DecimalFormat df = new DecimalFormat("###,###.###");
+	protected static final DecimalFormat pf = new DecimalFormat("#.##");
 
 	protected long previousTimestamp;
 	protected long previousSize;
@@ -80,6 +81,8 @@ public abstract class AbstractFPSetTest {
 			System.out.println("Maximum FPSet bucket count is: "
 					+ df.format(maxTblCnt) + " (approx: "
 					+ df.format(maxTblCnt * FPSet.LongSize >> 20) + " GiB)");
+			System.out.println("FPSet lock count is: " + fpSetStats.getLockCnt());
+			System.out.println("FPSet bucket count is: " + fpSetStats.getTblCapacity());
 		}
 
 		System.out.println("Testing " + fpSet.getClass().getCanonicalName());
@@ -87,13 +90,19 @@ public abstract class AbstractFPSetTest {
 	}
 
 	// insertion speed
-	public void printInsertionSpeed(final long currentSize) {
+	public void printInsertionSpeed(final FPSet fpSet) {
+		final long currentSize = fpSet.size();
 		final long currentTimestamp = System.currentTimeMillis();
 		// print every minute
 		final double factor = (currentTimestamp - previousTimestamp) / 60000d;
 		if (factor >= 1d) {
 			long insertions = (long) ((currentSize - previousSize) * factor);
-			System.out.println(df.format(insertions) + " insertions/min");
+			if (fpSet instanceof FPSetStatistic) {
+				FPSetStatistic fpSetStatistics = (FPSetStatistic) fpSet;
+				System.out.println(System.currentTimeMillis() + " s; " + df.format(insertions) + " insertions/min; " + pf.format(fpSetStatistics.getLoadFactor()) + " load factor");
+			} else {
+				System.out.println(System.currentTimeMillis() + " s (epoch); " + df.format(insertions) + " insertions/min");
+			}
 			previousTimestamp = currentTimestamp;
 			previousSize = currentSize;
 		}

@@ -48,7 +48,7 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 
 				// First producer prints stats
 				if (id == 0) {
-					test.printInsertionSpeed(fpSet.size());
+					test.printInsertionSpeed(fpSet);
 				}
 
 			} catch (IOException e) {
