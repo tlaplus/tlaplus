@@ -394,6 +394,32 @@ public class ResourceHelper
         return file;
     }
 
+    public static IFile getLinkedFileUnchecked(IContainer project, String name, boolean createNew) throws CoreException
+    {
+        if (name == null || project == null)
+        {
+            return null;
+        }
+        IPath location = new Path(name);
+        IFile file = project.getFile(new Path(location.lastSegment()));
+        if (createNew)
+        {
+            if (!file.isLinked())
+            {
+                    file.createLink(location, IResource.NONE, new NullProgressMonitor());
+                    return file;
+            }
+            if (file.exists())
+            {
+                return file;
+            } else
+            {
+                return null;
+            }
+        }
+        return file;
+    }
+
     /**
      * On relocation, all linked files in the project become invalid. This method fixes this issue
      * @param project project containing links to the non-existing files
@@ -672,10 +698,13 @@ public class ResourceHelper
 		final List<IFile> res = new ArrayList<IFile>();
 		final String[] extensions = new String[] { ".class", ".java" };
 		for (final String extension : extensions) {
-			final IFile userModuleOverride = ResourceHelper.getLinkedFile(project,
-					ResourceHelper.PARENT_ONE_PROJECT_LOC + moduleName + extension, true);
-			if (userModuleOverride != null && userModuleOverride.exists()) {
-				res.add(userModuleOverride);
+			try {
+				IFile userModuleOverride = ResourceHelper.getLinkedFileUnchecked(project,
+						ResourceHelper.PARENT_ONE_PROJECT_LOC + moduleName + extension, true);
+				if (userModuleOverride != null && userModuleOverride.exists()) {
+					res.add(userModuleOverride);
+				}
+			} catch (CoreException ignoredOnPurpose) {
 			}
 		}
 		return res.toArray(new IFile[0]);

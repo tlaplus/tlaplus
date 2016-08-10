@@ -552,8 +552,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 			IFile tlaFile) throws CoreException {
 		final IFile[] userModuleOverrides = ResourceHelper.getModuleOverrides(project, tlaFile);
 		for (IFile userModuleOverride : userModuleOverrides) {
-			userModuleOverride.copy(targetFolderPath.append(userModuleOverride.getProjectRelativePath()),
-					IResource.DERIVED | IResource.FORCE, new SubProgressMonitor(monitor, ticks));
+			try {
+				userModuleOverride.copy(targetFolderPath.append(userModuleOverride.getProjectRelativePath()),
+						IResource.DERIVED | IResource.FORCE, new SubProgressMonitor(monitor, ticks));
+			} catch (CoreException e) {
+				// If the file could not be copied, the link is obviously stale
+				// and has to be removed to not create any problems in the
+				// future. A link gets stale if e.g. the user removed the module
+				// override manually in the file system.
+				userModuleOverride.delete(true, monitor);
+			}
 		}
 	}
 
