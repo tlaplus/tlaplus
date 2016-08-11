@@ -24,6 +24,8 @@ Please send us reports of problems or suggestions; see https://groups.google.com
    </configIni>
 
    <launcherArgs>
+      <programArgsLin>--launcher.GTK_version 2
+      </programArgsLin>
       <vmArgs>-Xmx1000m
 -Dorg.eclipse.equinox.http.jetty.http.port=10996
 -Dosgi.splashPath=platform:/base/
