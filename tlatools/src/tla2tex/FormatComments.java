@@ -67,6 +67,8 @@ package tla2tex;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import unicasc.Unicode;
+
 public final class FormatComments
 { public static void WriteComment(OutputFileWriter writer, 
                                   Vector           vec, 
@@ -362,6 +364,8 @@ public final class FormatComments
     * Adds an entry to the alignTokenHashTable.                             *
     ***********************************************************************/
     { alignTokenHashTable.put(str, nullString);
+      if (Unicode.a2uc(str) != null)
+    	  alignTokenHashTable.put(Unicode.a2uc(str), nullString);
     } ;
 
   private static void InitializeAlignTokenHashtable()
@@ -371,43 +375,29 @@ public final class FormatComments
     * lead to spurious alignments in ordinary text.                        *
     ***********************************************************************/
     {   addAlignToken("=>");
-    	addAlignToken("\u21D2"); // ⇒
         addAlignToken("\\cdot");
-        addAlignToken("\u22C5"); // ⋅
         addAlignToken("<=>");
         addAlignToken("\\equiv");
-        addAlignToken("\u2263"); // ≣
         addAlignToken("~>");
-        addAlignToken("\u2933"); // ⤳
         addAlignToken("-+->");
-        addAlignToken("\u2945"); // ⥅
         addAlignToken("\\ll");
-        addAlignToken("\u226A"); // ≪
         addAlignToken("\\gg");
-        addAlignToken("\u226B"); // ≫
         addAlignToken("\\");
         addAlignToken("\\cap");
         addAlignToken("\\intersect");
-        addAlignToken("\u2229"); // ∩
         addAlignToken("\\cup");
         addAlignToken("\\union");
-        addAlignToken("\u222A"); // ∪
         addAlignToken("/\\");
-        addAlignToken("\\land");
-        addAlignToken("\u2227"); // ∧
         addAlignToken("\\/");
+        addAlignToken("\\land");
         addAlignToken("\\lor");
-        addAlignToken("\u2228"); // ∨
         addAlignToken("\\X");
-        addAlignToken("\\times");
-        addAlignToken("\u00D7"); // ×
         addAlignToken("-");
         addAlignToken("+");
         addAlignToken("*");
         addAlignToken("^");
         addAlignToken("|");
         addAlignToken("||");
-        addAlignToken("\u2016"); // ‖
         addAlignToken("&");
         addAlignToken("&&");
         addAlignToken("++");
@@ -415,108 +405,65 @@ public final class FormatComments
         addAlignToken("**");
         addAlignToken("^^");
         addAlignToken("|-");
-        addAlignToken("\u22A2"); // ⊢
         addAlignToken("|=");
-        addAlignToken("\u22A8"); // ⊨
         addAlignToken("-|");
-        addAlignToken("\u22A3"); // ⊣ 
         addAlignToken("=|");
-        addAlignToken("\u2AE4"); // ⫤
         addAlignToken("<:");
         addAlignToken(":>");
         addAlignToken(":=");
         addAlignToken("::=");
         addAlignToken("(+)");
-        addAlignToken("\\oplus");
-        addAlignToken("\u2295"); // ⊕
         addAlignToken("(-)");
+        addAlignToken("\\oplus");
         addAlignToken("\\ominus");
-        addAlignToken("\u2296"); // ⊖
         addAlignToken("(.)");
         addAlignToken("\\odot");
-        addAlignToken("\u2299"); // ⊙
         addAlignToken("(/)");
         addAlignToken("\\oslash");
-        addAlignToken("\u2298"); // ⊘
         addAlignToken("(\\X)");
         addAlignToken("\\otimes");
-        addAlignToken("\u2297"); // ⊗
         addAlignToken("\\uplus");
-        addAlignToken("\u228E"); // ⊎
         addAlignToken("\\sqcap");
-        addAlignToken("\u2293"); // ⊓
         addAlignToken("\\sqcup");
-        addAlignToken("\u2294"); // ⊔
         addAlignToken("\\div");
-        addAlignToken("\u00F7"); // ÷
         addAlignToken("\\star");
-        addAlignToken("\u2B51"); // ⭑
         addAlignToken("\\o");
         addAlignToken("\\circ");
-        addAlignToken("\u25CB"); // ○
         addAlignToken("\\bigcirc");
-        addAlignToken("\u25EF"); // ◯
         addAlignToken("\\bullet");
-        addAlignToken("\u2022"); // •
         addAlignToken("\\in");
-        addAlignToken("\u2208"); // ∈
         addAlignToken("\\notin");
-        addAlignToken("\u2209"); // ∉
         addAlignToken("=");
         addAlignToken("#");
         addAlignToken("/=");
-        addAlignToken("\u2260"); // ≠
         addAlignToken("<");
         addAlignToken(">");
         addAlignToken("=<");
-        addAlignToken("\\leq");
-        addAlignToken("\u2264"); // ≤
         addAlignToken(">=");
-        addAlignToken("\\geq");
-        addAlignToken("\u2265"); // ≥
         addAlignToken("\\prec");
-        addAlignToken("\u227A"); // ≺
         addAlignToken("\\succ");
-        addAlignToken("\u227B"); // ≻
         addAlignToken("\\preceq");
-        addAlignToken("\u2AAF"); // ⪯
         addAlignToken("\\succeq");
-        addAlignToken("\u2AB0"); // ⪰
         addAlignToken("\\sim");
-        addAlignToken("\uFF5E"); // ～
         addAlignToken("\\simeq");
-        addAlignToken("\u2243"); // ≃
         addAlignToken("\\approx");
-        addAlignToken("\u2248"); // ≈
         addAlignToken("\\doteq");
-        addAlignToken("\u2250"); // ≐
         addAlignToken("\\asymp");
-        addAlignToken("\u224D"); // ≍
         addAlignToken("\\sqsubset");
-        addAlignToken("\u228F"); // ⊏
         addAlignToken("\\sqsupset");
-        addAlignToken("\u2290"); // ⊐
         addAlignToken("\\sqsubseteq");
-        addAlignToken("\u2291"); // ⊑
         addAlignToken("\\sqsupseteq");
-        addAlignToken("\u2292"); // ⊒
         addAlignToken("\\propto");
-        addAlignToken("\u221D"); // ∝
         addAlignToken(":");
         addAlignToken("->");
-        addAlignToken("\u2192"); // →
         addAlignToken("|->");
-        addAlignToken("\u21A6"); // ↦
         addAlignToken("<-");
-        addAlignToken("\u2190"); // ←
         addAlignToken("==");
-        addAlignToken("\u225C"); // ≜
         addAlignToken("ELSE");
         addAlignToken("THEN");
         addAlignToken("LET");
         addAlignToken("IN");
         addAlignToken("[]");
-        addAlignToken("\u25FB"); // ◻
         addAlignToken("..");
         addAlignToken("...");
         addAlignToken("$");
@@ -525,11 +472,12 @@ public final class FormatComments
         addAlignToken("%%");
         addAlignToken("##");
         addAlignToken("@@");
+        addAlignToken("\\times");
+        addAlignToken("\\leq");
+        addAlignToken("\\geq");
         addAlignToken("\\mod");
         addAlignToken("\\wr");
-        addAlignToken("\u2240"); // ≀
         addAlignToken("\\cong");
-        addAlignToken("\u2245"); // ≅
         addAlignToken("-.");
         addAlignToken("@");
 
