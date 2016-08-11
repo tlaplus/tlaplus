@@ -88,8 +88,8 @@ interface ConfigConstants {
     "operator + 100 100 Left infix\n" +
     "operator = 50 50 None infix\n" +
     "operator \\lnot 40 40 Left prefix \n" +
-    "synonym  \u00ac \\lnot\n" + // ¬
     "synonym  ~ \\lnot\n" +
+    "synonym  \u00ac \\lnot\n" + // ¬
     "synonym \\neg \\lnot\n" +
     "operator \\land 30 30 Left infix\n" +
     "synonym  /\\ \\land\n" +
@@ -159,7 +159,7 @@ interface ConfigConstants {
     "operator .. 90 90 None infix\n" +
     "operator | 100 110 Left infix\n" +
     "operator || 100 110 Left infix\n" +
-    "synonym  \u2016 ||\n" +
+    "synonym  \u2016 ||\n" + // ‖
     "operator && 130 130 Left infix\n" +
     "operator & 130 130 Left infix\n" +
     "operator $$ 90 130 Left infix\n" +
