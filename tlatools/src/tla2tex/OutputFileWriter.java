@@ -68,6 +68,4 @@ public class OutputFileWriter
          + "    Perhaps there is a file-system problem.");
        };
     }
-
-
  }  // END class
