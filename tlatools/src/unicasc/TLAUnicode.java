@@ -39,13 +39,19 @@
 *    whose left-hand edge is a point used by some other token for its      *
 *    alignment.                                                            *
 *                                                                          *
+*                                                                          *                   
+* ------------------------------------------------------------------------ *
+*                                                                          *
+* Bug: When a line ends like so `\* abc (* def *)`, the `def` token is     *
+*      lost. (Bug in TokenizeSpec)                                         *
+*                                                                          *
 ***************************************************************************/
 package unicasc;
 
 import java.nio.file.Paths;
-import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Queue;
 
 import tla2tex.BuiltInSymbols;
 import tla2tex.CharReader;
@@ -54,7 +60,6 @@ import tla2tex.Debug;
 import tla2tex.FileCharReader;
 import tla2tex.FindAlignments;
 import tla2tex.OutputFileWriter;
-import tla2tex.Symbol;
 import tla2tex.TLA2TexException;
 import tla2tex.Token;
 import tla2tex.TokenizeSpec;
@@ -101,23 +106,57 @@ public class TLAUnicode {
 	public static void convert(Token[][] spec, boolean toU, OutputFileWriter writer) {
 		// This method performs the actual conversion
 		
-		final Queue<CommentToken> leftComments = new ArrayDeque<>();
+		List<CommentToken> leftComments = null;
+		
 		for (int line = 0; line < spec.length; line++) {
 			final StringBuilder out = new StringBuilder();
+			leftComments = new ArrayList<>(); // left comments that we may need to move to the end of the line 
+			boolean onlyComments = true; // we've only encountered comment tokens on this line so far
+			boolean keepLeftComments = false;
+			
 			for (int item = 0; item < spec[line].length; item++) {
 				final Token tok = spec[line][item];
-				// out.append("$" + tok + "$");
+//				System.out.println(tok);
+//				if (item == spec[line].length - 1)
+//					System.out.println("$$$$$$$$$");
+				
+				// if line ends with an open comment or a line comment and we have left comments to move, 
+			    // we wait to output the comment.
+				if (keepLeftComments && item == spec[line].length - 1 && tok.type == Token.COMMENT) {
+					final CommentToken ctok = (CommentToken) tok;
+					// append skipped last comment token
+					if (ctok.rsubtype == CommentToken.BEGIN_OVERRUN || ctok.rsubtype == CommentToken.LINE)
+						continue;
+				}
+				
+				//---- Align token ----
 				
 				int space = -1; // how much space to leave before the token
 				if (tok.aboveAlign.line != -1) {
-					// if aligned to a token above -- keep alignment
+					// if aligned to a token above -- try to keep alignment
 					final Token align = tok.aboveAlign.toToken(spec);
-					if (align.column == tok.column) {
+					if (align.column == tok.column && align.outcolumn >= 0) {
 						final int column = out.length();
 						space = align.outcolumn - column;
 						
-						if (space < 0/* && !isFirstNonCommentToken(spec, line, item)*/)
-							out.append("$" + space + "$");
+						// If we're the first non-comment token and we can't align
+						// we move all left comments to the end of the line. 
+						// We drop them from the line, and keep them in leftComments
+						if (space < 0 && onlyComments && tok.type != Token.COMMENT) {
+							Debug.Assert(toU); // can't happen in U -> A
+							
+							out.delete(0, out.length()); // reset line
+							space = align.outcolumn;
+							
+							keepLeftComments = true;
+							for (CommentToken ctok : leftComments)
+								ctok.outcolumn = -1;
+							
+							if (!leftComments.isEmpty() && leftComments.get(0).rsubtype == CommentToken.END_OVERRUN) {
+								out.append("*)");
+								space -= 2;
+							}
+						}
 					}
 				}
 				if (space < 0) // otherwise, keep original spacing
@@ -126,12 +165,20 @@ public class TLAUnicode {
 				Debug.Assert(space >= 0, tok + (item > 0 ? " :: " + spec[line][item - 1] : ""));
 				appendSpaces(out, space);
 				
+				if (tok.type != Token.COMMENT) {
+					onlyComments = false;
+					if (!keepLeftComments)
+						leftComments = null;
+				}
+				
 				tok.outcolumn = out.length();
 				Debug.Assert(toU 
 						? tok.outcolumn <= tok.column
 						: tok.outcolumn >= tok.column, 
 					tok.toString());
 
+				//----- Output token ----
+				
 				switch (tok.type) {
 				case Token.BUILTIN: {
 					// Here we actually convert the symbol
@@ -155,6 +202,8 @@ public class TLAUnicode {
 
 				case Token.COMMENT:
 					final CommentToken ctok = (CommentToken) tok; // the current comment token
+					if (onlyComments && leftComments != null)
+						leftComments.add(ctok);
 					appendCommentToken(out, ctok);
 					break;
 
@@ -163,6 +212,21 @@ public class TLAUnicode {
 					break;
 				}
 			}
+			
+			if (keepLeftComments) { // we have comments to move to the end of the line
+				for (CommentToken ctok : leftComments)
+					out.append(" (*" + ctok.string + "*)");
+				final Token last = spec[line][spec[line].length-1]; 
+				if (last.type == Token.COMMENT) {
+					final CommentToken ctok = (CommentToken) last;
+					// append skipped last comment token
+					if (ctok.rsubtype == CommentToken.BEGIN_OVERRUN || ctok.rsubtype == CommentToken.LINE) {
+						out.append(" ");
+						appendCommentToken(out, ctok);
+					}
+				}
+			}
+			
 			writer.putLine(out.toString());
 		}
 		writer.close();
@@ -192,14 +256,6 @@ public class TLAUnicode {
 		}
 	}
 	
-	private static boolean isFirstNonCommentToken(Token[][] spec, int line, int item) {
-		for (int i = 0; i < item; i++) {
-			if (spec[line][i].type != Token.COMMENT)
-				return false;
-		}
-		return true;
-	}
-	
 	private static void appendSpaces(StringBuilder sb, int n) {
 		for (int i = 0; i < n; i++)
 			sb.append(' ');
@@ -208,18 +264,11 @@ public class TLAUnicode {
 	private static boolean isInPcal(int line, int item) {
 		return TokenizeSpec.hasPcal 
 				&& line >= TokenizeSpec.pcalStart.line && item >= TokenizeSpec.pcalStart.item
-				&& (line < TokenizeSpec.pcalEnd.line || (line == TokenizeSpec.pcalEnd.line && item < TokenizeSpec.pcalStart.item));
+				&& (line < TokenizeSpec.pcalEnd.line 
+						|| (line == TokenizeSpec.pcalEnd.line && item < TokenizeSpec.pcalStart.item));
 	}
-	
-    private static boolean isUnicode(int c) {
-  	  return  c > 255;
-    }
     
-    private static boolean isUnicode(String str) {
-  	  return isUnicode(str.codePointAt(0));
-    }
-    
-	// COMMAND LINE PARSING
+	// ----------- COMMAND LINE PARSING ---------------------------------------
 	
 	private static void getArguments(String[] args) {
 		 // Get the command-line arguments and set the appropriate static fields.
