@@ -332,6 +332,8 @@ public class Token
                          + ",\t type |-> "  + typeName
                          + ",\t col |-> "   + column
                          + ",\t width |-> " + getWidth() ;
+        if (outcolumn >= 0)
+        	 {result = result + ",\t outcolumn |-> " + outcolumn;} ;
         if (aboveAlign.line != -1)
              {result = result + ",\t above |-> " + aboveAlign.toString();} ;
         if (belowAlign.line  != -1)
