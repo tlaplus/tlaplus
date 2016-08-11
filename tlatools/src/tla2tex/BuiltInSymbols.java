@@ -282,8 +282,8 @@ public final class BuiltInSymbols
         add("COROLLARY",  "{\\COROLLARY}",   Symbol.KEYWORD, 0);  // added by LL on 22 Oct 2010
         add("WF_", "{\\WF}",        Symbol.SUBSCRIPTED, 0);
         add("SF_", "{\\SF}",        Symbol.SUBSCRIPTED, 0);
-        add(">>_", "{\\rangle}",    Symbol.SUBSCRIPTED, 0);
-        add('\u27E9' + "_", "{\\rangle}",    Symbol.SUBSCRIPTED, 0); // ⟩_
+        add(">>_", "\u27E9_", "{\\rangle}",    Symbol.SUBSCRIPTED, 0); // ⟩_
+        add("\u27E9_", ">>_", "{\\rangle}",    Symbol.SUBSCRIPTED, 0); // ⟩_
         add("]_",  "]",           Symbol.SUBSCRIPTED, 0);
 
         add("(",   "(",           Symbol.LEFT_PAREN, 0);
