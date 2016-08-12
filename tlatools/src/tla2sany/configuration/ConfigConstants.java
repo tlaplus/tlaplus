@@ -21,56 +21,6 @@ interface ConfigConstants {
   int rightAssoc = 11;
   int noAssoc = 12;
 
-  int EOF = 0;
-  int SINGLE_LINE = 4;
-  int CONSTANT = 7;
-  int OPERATOR = 8;
-  int INFIX = 9;
-  int POSTFIX = 10;
-  int PREFIX = 11;
-  int NFIX = 12;
-  int NOTOP = 13;
-  int SYNONYM = 14;
-  int LEFTASSOC = 15;
-  int RIGHTASSOC = 16;
-  int NOASSOC = 17;
-  int BUILTIN = 18;
-  int OPCHAR = 19;
-  int LETTER = 20;
-  int OPID = 21;
-  int NUMBER = 22;
-  int RESTRICTED = 23;
-
-  int DEFAULT = 0;
-  int IN_COMMENT = 1;
-
-  String[] tokenImage = {
-    "<EOF>",
-    "\" \"",
-    "\"\\t\"",
-    "\"\\n\"",
-    "\"(*\"",
-    "\"*)\"",
-    "<token of kind 6>",
-    "<CONSTANT>",
-    "<OPERATOR>",
-    "<INFIX>",
-    "<POSTFIX>",
-    "<PREFIX>",
-    "<NFIX>",
-    "<NOTOP>",
-    "<SYNONYM>",
-    "<LEFTASSOC>",
-    "<RIGHTASSOC>",
-    "<NOASSOC>",
-    "<BUILTIN>",
-    "<OPCHAR>",
-    "<LETTER>",
-    "<OPID>",
-    "<NUMBER>",
-    "<RESTRICTED>",
-  };
-
   String defaultConfig =
     /***********************************************************************
     * This is used in config/Configuration.java to create Operator         *
