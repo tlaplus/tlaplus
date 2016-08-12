@@ -8437,6 +8437,11 @@ ClosedStart() : {
     finally { jj_save(76, xla); }
   }
 
+  final private boolean jj_3R_155() {
+    if (jj_3R_145()) return true;
+    return false;
+  }
+
   final private boolean jj_3_64() {
     if (jj_scan_token(LSB)) return true;
     return false;
@@ -11665,11 +11670,6 @@ ClosedStart() : {
     lookingAhead = false;
     if (!jj_semLA || jj_3R_106()) return true;
     }
-    return false;
-  }
-
-  final private boolean jj_3R_155() {
-    if (jj_3R_145()) return true;
     return false;
   }
 
