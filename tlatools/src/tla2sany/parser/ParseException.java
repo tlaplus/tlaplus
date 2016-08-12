@@ -84,6 +84,7 @@ public class ParseException extends Exception {
    */
   public String[] tokenImage;
 
+  ////////////////////// ADDED TO GENERATED CODE /////////////////////
   /**
    *  * shorter variation on the following
    *
@@ -114,6 +115,7 @@ public class ParseException extends Exception {
     retval += "\" at line " + currentToken.next.beginLine + ", column " + currentToken.next.beginColumn;
     return retval;
   }
+  ////////////////////// END OF ADDED CODE //////////////////////////// 
 
   /**
    * This method has the standard behavior when this object has been
