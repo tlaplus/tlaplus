@@ -10,11 +10,12 @@ import java.util.Map;
 public final class Unicode {
 	private Unicode() {}
 	
-	private static final Map<String, String> u2a = new HashMap<>();
-	private static final Map<String, String> a2u = new HashMap<>();
-	private static final Map<Character, String> cu2a = new HashMap<>();
-
+	// Unicode/ASCII conversion table
 	private static final String[][] table = { 
+			// The first element is the Unicode character.
+			// The second element is the canonical ASCII representation.
+			// Subsequent elements are alternate ASCII representations.
+
 			{ "\u225C", "==" },  // ≜ DELTA EQUAL TO 
 			{ "\u2190", "<-" },  // ← LEFTWARDS ARROW
 			{ "\u2192", "->" },  // → RIGHTWARDS ARROW
@@ -59,7 +60,7 @@ public final class Unicode {
 			{ "\u226A", "\\ll" },              // ≪ MUCH LESS-THAN
 			{ "\u226B", "\\gg" },              // ≫ MUCH GREATER-THAN
 
-			// { "%", "%", "\\mod" }, 
+			{ "%", "%", "\\mod" }, 
 			{ "\u00D7", "\\X", "\\times" }, // × MULTIPLICATION SIGN
 			{ "\u00F7", "\\div" },          // ÷ DIVISION SIGN
 			{ "\u22C5", "\\cdot" },         // ⋅ DOT OPERATOR
@@ -70,7 +71,7 @@ public final class Unicode {
 			{ "\u2298", "(/)", "\\oslash" },   // ⊘ CIRCLED DIVISION SLASH
 			{ "\u2299", "(.)", "\\odot" },     // ⊙ CIRCLED DOT OPERATOR
 
-			{ "\u25CB", "\\o", "\\circ" }, // ○ WHITE CIRCL
+			{ "\u25CB", "\\o", "\\circ" }, // ○ WHITE CIRCLE
 			{ "\u25EF", "\\bigcirc" },     // ◯ LARGE CIRCLE 
 			{ "\u2022", "\\bullet" },      // • BULLET 
 			{ "\u2B51", "\\star" },        // ⭑ BLACK SMALL STAR / ★ \u2605 BLACK STAR / ☆ \u2606 WHITE STAR / ⭐︎ \u2B50 \uFE0E White medium star
@@ -103,8 +104,71 @@ public final class Unicode {
 			{ "\u2AE4", "=|" }, // ⫤ VERTICAL BAR DOUBLE LEFT TURNSTILE
 
 			{ "\u2016", "||" }, // ‖ DOUBLE VERTICAL LINE
-			// { "\u207A", "^+" }, // ⁺ SUPERSCRIPT PLUS SIGN 
+			// { SUPERSCRIPT_PLUS, "^+" }, // ⁺ SUPERSCRIPT PLUS SIGN 
 	};
+	
+	// Subscript and superscript
+	public static final char subscriptDigit(int num) {
+		// ₀₁₂₃₄₅₆₇₈₉
+		assert num >= 0 && num <= 9;
+		return (char)(0x2080 + num);
+	}
+	
+	private static final char[] SUPERSCRIPT_DIGIT = {
+			'\u2070', '\u00B9', '\u00B2', '\u00B3', '\u2074', '\u2075', '\u2076', '\u2077', '\u2078', '\u2079'
+	};
+	
+	public static final char superscriptDigit(int num) {
+		// ⁰¹²³⁴⁵⁶⁷⁸⁹
+		assert num >= 0 && num <= 9;
+		return SUPERSCRIPT_DIGIT[num];
+	}
+
+	public static final char SUBSCRIPT_i = '\u1D62'; // ᵢ LATIN SUBSCRIPT SMALL LETTER I
+	public static final char SUBSCRIPT_j = '\u2C7C'; // ⱼ LATIN SUBSCRIPT SMALL LETTER J
+	public static final char SUBSCRIPT_k = '\u2096'; // ₖ LATIN SUBSCRIPT SMALL LETTER K
+	
+	public static final char SUPERSCRIPT_PLUS = '\u207A'; // ⁺ SUPERSCRIPT PLUS SIGN 
+	public static final char SUBSCRIPT_PLUS = '\u208A'; // ₊ SUBSCRIPT PLUS SIGN
+	public static final char SUBSCRIPT_ASTERISK = '\u204E'; // ⁎ LOW ASTERISK
+	
+	// Greek letters
+	public static final char CAPITAL_GAMMA   = '\u0393'; // Γ GREEK CAPITAL LETTER GAMMA
+	public static final char CAPITAL_DELTA   = '\u0394'; // Δ GREEK CAPITAL LETTER DELTA
+	public static final char CAPITAL_THETA   = '\u0398'; // Θ GREEK CAPITAL LETTER THETA
+	public static final char CAPITAL_LAMBDA  = '\u039B'; // Λ GREEK CAPITAL LETTER LAMDA
+	public static final char CAPITAL_XI      = '\u039E'; // Ξ GREEK CAPITAL LETTER XI
+	public static final char CAPITAL_PI      = '\u03A0'; // Π GREEK CAPITAL LETTER PI
+	public static final char CAPITAL_SIGMA   = '\u03A3'; // Σ GREEK CAPITAL LETTER SIGMA
+	public static final char CAPITAL_UPSILON = '\u03A5'; // Υ GREEK CAPITAL LETTER UPSILON
+	public static final char CAPITAL_PHI     = '\u03A6'; // Φ GREEK CAPITAL LETTER PHI
+	public static final char CAPITAL_PSI     = '\u03A8'; // Ψ GREEK CAPITAL LETTER PSI
+	public static final char CAPITAL_OMEGA   = '\u03A9'; // Ω GREEK CAPITAL LETTER OMEGA
+	
+	public static final char SMALL_ALPHA   = '\u03B1'; // α GREEK SMALL LETTER ALPHA
+	public static final char SMALL_BETA_   = '\u03B2'; // β GREEK SMALL LETTER BETA
+	public static final char SMALL_GAMMA   = '\u03B3'; // γ GREEK SMALL LETTER GAMMA
+	public static final char SMALL_DELTA   = '\u03B4'; // δ GREEK SMALL LETTER DELTA
+	public static final char SMALL_EPSILON = '\u03B5'; // ε GREEK SMALL LETTER EPSILON
+	public static final char SMALL_ZETA    = '\u03B6'; // ζ GREEK SMALL LETTER ZETA
+	public static final char SMALL_ETA     = '\u03B7'; // η GREEK SMALL LETTER ETA
+	public static final char SMALL_THETA   = '\u03B8'; // θ GREEK SMALL LETTER THETA
+	public static final char SMALL_IOTA    = '\u03B9'; // ι GREEK SMALL LETTER IOTA
+	public static final char SMALL_KAPPA   = '\u03BA'; // κ GREEK SMALL LETTER KAPPA
+	public static final char SMALL_LAMBDA  = '\u03BB'; // λ GREEK SMALL LETTER LAMDA
+	public static final char SMALL_MU      = '\u03BC'; // μ GREEK SMALL LETTER MU
+	public static final char SMALL_NU      = '\u03BD'; // ν GREEK SMALL LETTER NU
+	public static final char SMALL_XI      = '\u03BE'; // ξ GREEK SMALL LETTER XI
+	public static final char SMALL_PI      = '\u03C0'; // π GREEK SMALL LETTER PI
+	public static final char SMALL_RHO     = '\u03C1'; // ρ GREEK SMALL LETTER RHO
+	public static final char SMALL_SIGMA   = '\u03C3'; // σ GREEK SMALL LETTER SIGMA
+	public static final char SMALL_TAU     = '\u03C4'; // τ GREEK SMALL LETTER TAU
+	public static final char SMALL_UPSILON = '\u03C5'; // υ GREEK SMALL LETTER UPSILON
+	public static final char SMALL_PHI     = '\u03C6'; // φ GREEK SMALL LETTER PHI
+	public static final char SMALL_PHI_1   = '\u0278'; // ɸ LATIN SMALL LETTER PHI
+	public static final char SMALL_CHI     = '\u03C7'; // χ GREEK SMALL LETTER CHI
+	public static final char SMALL_PSI     = '\u03C8'; // ψ GREEK SMALL LETTER PSI
+	public static final char SMALL_OMEGA   = '\u03C9'; // ω GREEK SMALL LETTER OMEGA
 	
 //	Box drawing:
 
@@ -116,6 +180,12 @@ public final class Unicode {
 	public static final char EMODULE_BEGIN   = '\u2514'; // └ BOX DRAWINGS LIGHT UP AND RIGHT       / ┗ \u2517 HEAVY
 	public static final char EMODULE_END     = '\u2518'; // ┘ BOX DRAWINGS LIGHT UP AND LEFT        / ┛ \u251B HEAVY
 	
+	///////////////////////////////////////////////////////////////////////////////////
+	
+	private static final Map<String, String> u2a = new HashMap<>();
+	private static final Map<String, String> a2u = new HashMap<>();
+	private static final Map<Character, String> cu2a = new HashMap<>();
+	
 	static {
 		// initialize maps
 		for (String[] row : table) {
@@ -126,6 +196,7 @@ public final class Unicode {
 				a2u.put(row[i], u);
 		}
 	}
+
 
 	/**
 	 * The canonical ASCII representation of a Unicode string
