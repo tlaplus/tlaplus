@@ -12,6 +12,7 @@ public final class Unicode {
 	
 	private static final Map<String, String> u2a = new HashMap<>();
 	private static final Map<String, String> a2u = new HashMap<>();
+	private static final Map<Character, String> cu2a = new HashMap<>();
 
 	private static final String[][] table = { 
 			{ "\u225C", "==" },  // ≜
@@ -109,6 +110,7 @@ public final class Unicode {
 		for (String[] row : table) {
 			final String u = row[0]; // unicode
 			u2a.put(u, row[1]);
+			cu2a.put(u.charAt(0), row[1]);
 			for (int i = 1; i < row.length; i++)
 				a2u.put(row[i], u);
 		}
@@ -123,6 +125,17 @@ public final class Unicode {
 	 */
 	public static String u2a(String u) {
 		return u2a.get(u);
+	}
+	
+	/**
+	 * The canonical ASCII representation of a Unicode character
+	 * 
+	 * @param u the Unicode string
+	 * @return the canonical ASCII string or {@code null} if no alternate
+	 *         representation
+	 */
+	public static String cu2a(char u) {
+		return cu2a.get(u);
 	}
 
 	/**
@@ -229,5 +242,12 @@ public final class Unicode {
 			out.append(res != null ? res : token);
 		}
 		token.setLength(0);
+	}
+	
+	/**
+	 * Whether or not a string contains only BMP characters (TLA+ only supports those).
+	 */
+	public static boolean isBMP(String str) {
+		return str.length() == str.codePointCount(0, str.length());
 	}
 }

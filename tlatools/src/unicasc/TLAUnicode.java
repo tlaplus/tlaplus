@@ -5,6 +5,10 @@
 * This program converts TLA+ specifications from ASCII to Unicode          * 
 * representation and vice-versa.                                           *
 *                                                                          *
+* When converting to Unicode, symbols in comments are not converted.       *
+* When converting to ASCII, symbols in comments are converted char-by-char *
+* to ensure no Unicode characters are left in the file.                    *
+*                                                                          *
 * BuiltInSymbols.Initialize                                                *
 *    Initializes tables containing information about TLA's built-in        *
 *    symbols.                                                              *
@@ -116,9 +120,7 @@ public class TLAUnicode {
 			
 			for (int item = 0; item < spec[line].length; item++) {
 				final Token tok = spec[line][item];
-//				System.out.println(tok);
-//				if (item == spec[line].length - 1)
-//					System.out.println("$$$$$$$$$");
+				// System.out.println(tok); if (item == spec[line].length - 1) System.out.println("$$$$$$$$$");
 				
 				// if line ends with an open comment or a line comment and we have left comments to move, 
 			    // we wait to output the comment.
@@ -131,20 +133,18 @@ public class TLAUnicode {
 				
 				//---- Align token ----
 				
-				int space = -1; // how much space to leave before the token
+				int space = -1; // How much space to leave before the token
 				if (tok.aboveAlign.line != -1) {
-					// if aligned to a token above -- try to keep alignment
+					// If aligned to a token above -- try to keep alignment
 					final Token align = tok.aboveAlign.toToken(spec);
 					if (align.column == tok.column && align.outcolumn >= 0) {
 						final int column = out.length();
 						space = align.outcolumn - column;
 						
-						// If we're the first non-comment token and we can't align
-						// we move all left comments to the end of the line. 
-						// We drop them from the line, and keep them in leftComments
+						// If we're the first non-comment token, we must align.
+						// If we can't, we move all left comments to the end of the line. 
+						// We drop them from the output line, and keep them in leftComments.
 						if (space < 0 && onlyComments && tok.type != Token.COMMENT) {
-							Debug.Assert(toU); // can't happen in U -> A
-							
 							out.delete(0, out.length()); // reset line
 							space = align.outcolumn;
 							
@@ -159,7 +159,7 @@ public class TLAUnicode {
 						}
 					}
 				}
-				if (space < 0) // otherwise, keep original spacing
+				if (space < 0) // If we don't need to or can't align, keep original spacing.
 					space = tok.column - (item > 0 ? spec[line][item - 1].column + spec[line][item - 1].getWidth() : 0);
 				
 				Debug.Assert(space >= 0, tok + (item > 0 ? " :: " + spec[line][item - 1] : ""));
@@ -172,9 +172,9 @@ public class TLAUnicode {
 				}
 				
 				tok.outcolumn = out.length();
-				Debug.Assert(toU 
-						? tok.outcolumn <= tok.column
-						: tok.outcolumn >= tok.column, 
+				Debug.Assert(toU // The following invariant always holds:
+						? tok.outcolumn <= tok.column  // when -> U, token moves to the left  (or not at all)
+						: tok.outcolumn >= tok.column, // when -> A, token moves to the right (or not at all)
 					tok.toString());
 
 				//----- Output token ----
@@ -214,8 +214,11 @@ public class TLAUnicode {
 			}
 			
 			if (keepLeftComments) { // we have comments to move to the end of the line
-				for (CommentToken ctok : leftComments)
-					out.append(" (*" + ctok.string + "*)");
+				for (CommentToken ctok : leftComments) {
+					out.append(" (*");
+					appendAndConvertCommentString(out, ctok.string, toU);
+					out.append("*)");
+				}
 				final Token last = spec[line][spec[line].length-1]; 
 				if (last.type == Token.COMMENT) {
 					final CommentToken ctok = (CommentToken) last;
@@ -236,23 +239,54 @@ public class TLAUnicode {
 		final String commentString = ctok.string;
 		switch (ctok.rsubtype) {
 		case CommentToken.NORMAL:
-			out.append("(*" + commentString + "*)");
+			out.append("(*");
+			appendAndConvertCommentString(out, commentString, toU);
+			out.append("*)");
 			break;
 		case CommentToken.LINE:
-			out.append("\\*" + commentString);
+			out.append("\\*");
+			appendAndConvertCommentString(out, commentString, toU);
 			break;
 		case CommentToken.BEGIN_OVERRUN:
 			if (ctok.getWidth() > 0)
-				out.append("(*" + commentString);
+				out.append("(*");
+				appendAndConvertCommentString(out, commentString, toU);
 			break;
 		case CommentToken.END_OVERRUN:
-			out.append(commentString + "*)");
+			appendAndConvertCommentString(out, commentString, toU);
+			out.append("*)");
 			break;
 		case CommentToken.OVERRUN:
-			out.append(commentString);
+			appendAndConvertCommentString(out, commentString, toU);
 			break;
 		default:
 			Debug.ReportBug("Bad CommentToken subtype found.");
+		}
+	}
+	
+	private static void appendAndConvertCommentString(StringBuilder out, String commentString, boolean toU) {
+		if (toU)
+			out.append(commentString);
+		else {
+			// We only support BMP chars, i.e. fit in a `char`, so we can work with chars rather than codepoints
+			// Debug.Assert(isBMP(commentString), "Comment " + commentString + " contains non-BMP Unicode characters");
+			char prev = 0; // the previous character
+			for (int i = 0; i < commentString.length(); i++) { 
+				final char c = commentString.charAt(i);
+				if (!isASCII(c)) {
+					String s = Unicode.cu2a(c);
+					Debug.Assert(s != null, "An unrecognized Unicode character " + c
+							+ " was found in comment " + commentString);
+					if (!Character.isWhitespace(prev))
+						out.append(' '); // add whitespace before a unicode char
+					out.append(s);
+				} else {
+					if (!isASCII(prev))
+						out.append(' '); // add whitespace following a unicode char (or else /\x)
+					out.append(c);
+				}
+				prev = c;
+			}
 		}
 	}
 	
@@ -268,6 +302,9 @@ public class TLAUnicode {
 						|| (line == TokenizeSpec.pcalEnd.line && item < TokenizeSpec.pcalStart.item));
 	}
     
+	private static boolean isASCII(char c) {
+		return c <= 0xff;
+	}
 	// ----------- COMMAND LINE PARSING ---------------------------------------
 	
 	private static void getArguments(String[] args) {
@@ -276,8 +313,8 @@ public class TLAUnicode {
 		if (args.length == 0)
 			commandLineError("No arguments specified");
 		
-		int argi = 0; // The index of the command line argument being processed.
 		boolean hasOp = false; // Whether or not -a2u or -u2a has been encountered.
+		int argi = 0; // The index of the command line argument being processed.
 		loop:
 		while (argi < args.length) {
 			// Process all the arguments, except for the last (unless it's a "-" argument).
