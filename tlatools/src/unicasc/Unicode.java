@@ -15,96 +15,107 @@ public final class Unicode {
 	private static final Map<Character, String> cu2a = new HashMap<>();
 
 	private static final String[][] table = { 
-			{ "\u225C", "==" },  // ≜
-			{ "\u2190", "<-" },  // ←
-			{ "\u2192", "->" },  // →
-			{ "\u21A6", "|->" }, // ↦
+			{ "\u225C", "==" },  // ≜ DELTA EQUAL TO 
+			{ "\u2190", "<-" },  // ← LEFTWARDS ARROW
+			{ "\u2192", "->" },  // → RIGHTWARDS ARROW
+			{ "\u21A6", "|->" }, // ↦ RIGHTWARDS ARROW FROM BAR
 
-			{ "\u27E8", "<<" },   // ⟨
-			{ "\u27E9", ">>" },   // ⟩
+			{ "\u27E8", "<<" },   // ⟨ MATHEMATICAL LEFT ANGLE BRACKET
+			{ "\u27E9", ">>" },   // ⟩ MATHEMATICAL RIGHT ANGLE BRACKET
 			{ "\u27E9_", ">>_" }, // ⟩_
 
 			{ "\u2200\u2200", "\\AA" }, // ∀∀
 			{ "\u2203\u2203", "\\EE" }, // ∃∃
-			{ "\u2610︎", "[]" }, // ☐ / □ \u25A1 WHITE SQUARE / ◻︎ \u25FB \uFE0E White medium square
-			{ "\u2662", "<>" }, // ♢ / ⬦ \u2B26 WHITE MEDIUM DIAMOND
-			{ "\u2933", "~>" },   // ⤳
-			{ "\u2945", "-+->" }, // ⥅
+			{ "\u25FB", "[]" }, // ◻ White medium square / □ \u25A1 WHITE SQUARE / \u2610︎ ☐ BALLOT BOX 
+			{ "\u2B26", "<>" }, // ⬦ WHITE MEDIUM DIAMOND / ♢ \u2662 WHITE DIAMOND SUIT
+			{ "\u2032", "'" },  // ′ PRIME
+			{ "\u2933", "~>" },   // ⤳ WAVE ARROW POINTING DIRECTLY RIGHT
+			{ "\u2945", "-+->" }, // ⥅ RIGHTWARDS ARROW WITH PLUS BELOW/ ⇾ \u21FE RIGHTWARDS OPEN-HEADED ARROW
 
-			{ "\u2200", "\\A", "\\forall" }, // ∀
-			{ "\u2203", "\\E", "\\exists" }, // ∃
+			{ "\u2200", "\\A", "\\forall" }, // ∀ FOR ALL
+			{ "\u2203", "\\E", "\\exists" }, // ∃ THERE EXISTS
 
-			{ "\u00ac", "~", "\\lnot", "\\neg" }, // ¬
-			{ "\u2227", "/\\", "\\land" },        // ∧
-			{ "\u2228", "\\/", "\\lor" },         // ∨
-			{ "\u21D2", "=>" },                   // ⇒
-			{ "\u2263", "<=>", "\\equiv" },       // ≣ / ⇔ \u21D4
+			{ "\u00ac", "~", "\\lnot", "\\neg" }, // ¬ NOT SIGN
+			{ "\u2227", "/\\", "\\land" },        // ∧ LOGICAL AND 
+			{ "\u2228", "\\/", "\\lor" },         // ∨ LOGICAL OR
+			{ "\u21D2", "=>" },                   // ⇒ RIGHTWARDS DOUBLE ARROW
+			{ "\u2263", "<=>", "\\equiv" },       // ≣ STRICTLY EQUIVALENT TO / ⇔ \u21D4 LEFT RIGHT DOUBLE ARROW
 
-			{ "\u2260", "#", "/=" }, // ≠
+			{ "\u2260", "#", "/=" }, // ≠ NOT EQUAL TO
 
-			{ "\u2208", "\\in" },       // ∈
-			{ "\u2209", "\\notin" },    // ∉
-			{ "\u2282", "\\subset" },   // ⊂
-			{ "\u2286", "\\subseteq" }, // ⊆
-			{ "\u2283", "\\supset" },   // ⊃
-			{ "\u2287", "\\supseteq" }, // ⊇
+			{ "\u2208", "\\in" },       // ∈ ELEMENT OF
+			{ "\u2209", "\\notin" },    // ∉ NOT AN ELEMENT OF
+			{ "\u2282", "\\subset" },   // ⊂ SUBSET OF
+			{ "\u2286", "\\subseteq" }, // ⊆ SUBSET OF OR EQUAL TO
+			{ "\u2283", "\\supset" },   // ⊃ SUPERSET OF
+			{ "\u2287", "\\supseteq" }, // ⊇ SUPERSET OF OR EQUAL TO
 
-			{ "\u2229", "\\cap", "\\intersect" }, // ∩
-			{ "\u222A", "\\cup", "\\union" },     // ∪
-			{ "\u228E", "\\uplus" },              // ⊎
+			{ "\u2229", "\\cap", "\\intersect" }, // ∩ INTERSECTION
+			{ "\u222A", "\\cup", "\\union" },     // ∪ UNION
+			{ "\u228E", "\\uplus" },              // ⊎ MULTISET UNION
 
-			{ "\u2264", "<=", "=<", "\\leq" }, // ≤
-			{ "\u2265", ">=", "\\geq" },       // ≥
-			{ "\u226A", "\\ll" },              // ≪
-			{ "\u226B", "\\gg" },              // ≫
+			{ "\u2264", "<=", "=<", "\\leq" }, // ≤ LESS-THAN OR EQUAL TO
+			{ "\u2265", ">=", "\\geq" },       // ≥ GREATER-THAN OR EQUAL TO
+			{ "\u226A", "\\ll" },              // ≪ MUCH LESS-THAN
+			{ "\u226B", "\\gg" },              // ≫ MUCH GREATER-THAN
 
-			{ "%", "%", "\\mod" }, 
-			{ "\u00D7", "\\X", "\\times" }, // ×
-			{ "\u00F7", "\\div" },          // ÷
-			{ "\u22C5", "\\cdot" },         // ⋅
+			// { "%", "%", "\\mod" }, 
+			{ "\u00D7", "\\X", "\\times" }, // × MULTIPLICATION SIGN
+			{ "\u00F7", "\\div" },          // ÷ DIVISION SIGN
+			{ "\u22C5", "\\cdot" },         // ⋅ DOT OPERATOR
 
-			{ "\u2295", "(+)", "\\oplus" },    // ⊕
-			{ "\u2296", "(-)", "\\ominus" },   // ⊖
-			{ "\u2297", "(\\X)", "\\otimes" }, // ⊗
-			{ "\u2298", "(/)", "\\oslash" },   // ⊘
-			{ "\u2299", "(.)", "\\odot" },     // ⊙
+			{ "\u2295", "(+)", "\\oplus" },    // ⊕ CIRCLED PLUS
+			{ "\u2296", "(-)", "\\ominus" },   // ⊖ CIRCLED MINUS
+			{ "\u2297", "(\\X)", "\\otimes" }, // ⊗ CIRCLED TIMES
+			{ "\u2298", "(/)", "\\oslash" },   // ⊘ CIRCLED DIVISION SLASH
+			{ "\u2299", "(.)", "\\odot" },     // ⊙ CIRCLED DOT OPERATOR
 
-			{ "\u25CB", "\\o", "\\circ" }, // ○
-			{ "\u25EF", "\\bigcirc" },     // ◯
-			{ "\u2022", "\\bullet" },      // •
-			{ "\u2B51", "\\star" },        // ⭑
+			{ "\u25CB", "\\o", "\\circ" }, // ○ WHITE CIRCL
+			{ "\u25EF", "\\bigcirc" },     // ◯ LARGE CIRCLE 
+			{ "\u2022", "\\bullet" },      // • BULLET 
+			{ "\u2B51", "\\star" },        // ⭑ BLACK SMALL STAR / ★ \u2605 BLACK STAR / ☆ \u2606 WHITE STAR / ⭐︎ \u2B50 \uFE0E White medium star
 
-			{ "\u227A", "\\prec" },   // ≺
-			{ "\u2AAF", "\\preceq" }, // ⪯
-			{ "\u227B", "\\succ" },   // ≻
-			{ "\u2AB0", "\\succeq" }, // ⪰
+			{ "\u227A", "\\prec" },   // ≺ PRECEDES
+			{ "\u227C", "\\preceq" }, // ≼ PRECEDES OR EQUAL TO / ⪯ \u2AAF PRECEDES ABOVE SINGLE-LINE EQUALS SIGN
+			{ "\u227B", "\\succ" },   // ≻ SUCCEEDS
+			{ "\u227D", "\\succeq" }, // ≽ SUCCEEDS OR EQUAL TO / \u2AB0 ⪰ SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN
 
-			{ "\u228F", "\\sqsubset" },   // ⊏
-			{ "\u2291", "\\sqsubseteq" }, // ⊑
-			{ "\u2290", "\\sqsupset" },   // ⊐
-			{ "\u2292", "\\sqsupseteq" }, // ⊒
+			{ "\u228F", "\\sqsubset" },   // ⊏ SQUARE IMAGE OF
+			{ "\u2291", "\\sqsubseteq" }, // ⊑ SQUARE IMAGE OF OR EQUAL TO
+			{ "\u2290", "\\sqsupset" },   // ⊐ SQUARE ORIGINAL OF
+			{ "\u2292", "\\sqsupseteq" }, // ⊒ SQUARE ORIGINAL OF OR EQUAL TO
 
-			{ "\u2293", "\\sqcap" }, // ⊓
-			{ "\u2294", "\\sqcup" }, // ⊔
+			{ "\u2293", "\\sqcap" }, // ⊓ SQUARE CAP
+			{ "\u2294", "\\sqcup" }, // ⊔ SQUARE CUP
 
-			{ "\u224D", "\\asymp" },  // ≍
-			{ "\u2240", "\\wr" },     // ≀
-			{ "\u2245", "\\cong" },   // ≅
-			{ "\u221D", "\\propto" }, // ∝
-			{ "\u2248", "\\approx" }, // ≈
-			{ "\u2250", "\\doteq" },  // ≐
-			{ "\u2243", "\\simeq" },  // ≃
-			{ "\uFF5E", "\\sim" },    // ～
+			{ "\u224D", "\\asymp" },  // ≍ EQUIVALENT TO
+			{ "\u2240", "\\wr" },     // ≀ WREATH PRODUCT
+			{ "\u2245", "\\cong" },   // ≅ APPROXIMATELY EQUAL TO
+			{ "\u221D", "\\propto" }, // ∝ PROPORTIONAL TO
+			{ "\u2248", "\\approx" }, // ≈ ALMOST EQUAL TO
+			{ "\u2250", "\\doteq" },  // ≐ APPROACHES THE LIMIT
+			{ "\u2243", "\\simeq" },  // ≃ ASYMPTOTICALLY EQUAL TO
+			{ "\uFF5E", "\\sim" },    // ～ FULLWIDTH TILDE / ⩬ \u2A6C, SIMILAR MINUS SIMILAR / ⋍ \u22CD REVERSED TILDE EQUALS
 
-			{ "\u22A2", "|-" }, // ⊢
-			{ "\u22A8", "|=" }, // ⊨
-			{ "\u22A3", "-|" }, // ⊣
-			{ "\u2AE4", "=|" }, // ⫤
+			{ "\u22A2", "|-" }, // ⊢ RIGHT TACK
+			{ "\u22A3", "-|" }, // ⊣ LEFT TACK 
+			{ "\u22A8", "|=" }, // ⊨ TRUE
+			{ "\u2AE4", "=|" }, // ⫤ VERTICAL BAR DOUBLE LEFT TURNSTILE
 
-			{ "\u2016", "||" }, // ‖
-			// { "\u207A", "^+" }, // ⁺
+			{ "\u2016", "||" }, // ‖ DOUBLE VERTICAL LINE
+			// { "\u207A", "^+" }, // ⁺ SUPERSCRIPT PLUS SIGN 
 	};
+	
+//	Box drawing:
 
+	public static final char HORIZONTAL      = '\u2500'; // ─ BOX DRAWINGS LIGHT HORIZONTAL         /  ━ \u2501 HEAVY
+	public static final char BMODULE_BEGIN   = '\u250C'; // ┌ BOX DRAWINGS LIGHT DOWN AND RIGHT     / ┏ \u250F HEAVY
+	public static final char BMODULE_END     = '\u2510'; // ┐ BOX DRAWINGS LIGHT DOWN AND LEFT      /  ┓ \u2513 HEAVY
+	public static final char SEPARATOR_BEGIN = '\u251C'; // ├ BOX DRAWINGS LIGHT VERTICAL AND RIGHT / ┣ \u2523 HEAVY
+	public static final char SEPARATOR_END   = '\u2524'; // ┤ BOX DRAWINGS LIGHT VERTICAL AND LEFT  / ┫ \u252B HEAVY
+	public static final char EMODULE_BEGIN   = '\u2514'; // └ BOX DRAWINGS LIGHT UP AND RIGHT       / ┗ \u2517 HEAVY
+	public static final char EMODULE_END     = '\u2518'; // ┘ BOX DRAWINGS LIGHT UP AND LEFT        / ┛ \u251B HEAVY
+	
 	static {
 		// initialize maps
 		for (String[] row : table) {
