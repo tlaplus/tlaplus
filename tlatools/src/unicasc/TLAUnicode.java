@@ -273,15 +273,16 @@ public class TLAUnicode {
 			char prev = 0; // the previous character
 			for (int i = 0; i < commentString.length(); i++) { 
 				final char c = commentString.charAt(i);
-				if (!isASCII(c)) {
+				if (Unicode.cu2a(c) != null /*!isASCII(c)*/) {
 					String s = Unicode.cu2a(c);
-					Debug.Assert(s != null, "An unrecognized Unicode character " + c
-							+ " was found in comment " + commentString);
 					if (!Character.isWhitespace(prev))
 						out.append(' '); // add whitespace before a unicode char
 					out.append(s);
+				} else if (!isASCII(c)) {
+					Debug.Assert(false, "An unrecognized Unicode character " + c
+							+ " was found in comment " + commentString);
 				} else {
-					if (!isASCII(prev))
+					if (Unicode.cu2a(prev) != null)
 						out.append(' '); // add whitespace following a unicode char (or else /\x)
 					out.append(c);
 				}
