@@ -150,32 +150,32 @@ public final class Unicode {
 		return res;
 	}
 
-	/**
-	 * Convert to Unicode representation
-	 * 
-	 * @param a the ASCII string
-	 * @return the Unicode string or {@code a} if no alternate representation
-	 */
-	public static String toU(String a) {
-		return convert(a, true);
-//		String u;
-//		return ((u = a2u(a)) != null ? u : a);
-	}
-
-	/**
-	 * Convert to ASCII representation of a string
-	 * 
-	 * @param u the Unicode string
-	 * @return the canonical ASCII string or {@code a} if no alternate
-	 *         representation
-	 */
-	public static String toA(String u) {
-		return convert(u, false);
-//		String a;
-//		return ((a = u2a(u)) != null ? a : u);
-	}
-	
-	private static final String ASCII_GLYPHS = "=<>()+-\\/#.|~";
+//	/**
+//	 * Convert to Unicode representation
+//	 * 
+//	 * @param a the ASCII string
+//	 * @return the Unicode string or {@code a} if no alternate representation
+//	 */
+//	public static String toU(String a) {
+//		return convert(a, true);
+////		String u;
+////		return ((u = a2u(a)) != null ? u : a);
+//	}
+//
+//	/**
+//	 * Convert to ASCII representation of a string
+//	 * 
+//	 * @param u the Unicode string
+//	 * @return the canonical ASCII string or {@code a} if no alternate
+//	 *         representation
+//	 */
+//	public static String toA(String u) {
+//		return convert(u, false);
+////		String a;
+////		return ((a = u2a(u)) != null ? a : u);
+//	}
+//	
+//	private static final String ASCII_GLYPHS = "=<>()+-\\/#.|~";
 	
 	// <<-3>>
 	// <-3
