@@ -180,48 +180,48 @@ public final class Unicode {
 	// <<-3>>
 	// <-3
 	
-	private static String convert(String in, boolean toU) {
-		StringBuilder out = new StringBuilder();
-		StringBuilder token = new StringBuilder();
-		for (int i = 0; i < in.length();) {
-			char c = in.charAt(i);
-			
-			if (c == '\\') {
-				if --- comment, \/, /\
-				convertToken(out, token, toU);
-				for (; i < in.length() && Character.isLetter(in.charAt(i)); i++)
-					token.append(c);
-				convertToken(out, token, toU);
-				continue;
-			}
-						
-			if (i < in.length() - 1) {
-				final char c1 = in.charAt(i + 1);
-				if ((c == '<' && (in.charAt(i + 1) == '<' || in.charAt(i + 1) == '>'))
-							|| (c == '[' && in.charAt(i + 1) == ']')) {
-					convertToken(out, token, toU);
-					token.append(c).append(c1); 
-					convertToken(out, token, toU);
-					i += 2;
-					continue;
-				}
-			}
-			
-			if (ASCII_GLYPHS.indexOf(c) >= 0) {
-				token.append(c);
-				i++;
-				continue;
-			}
-			
-			if (true /*Character.isWhitespace(c) || Character.isLetterOrDigit(c) || c == '_'*/) {
-				convertToken(out, token, toU);
-				out.append(c);
-				i++;
-				continue;
-			}
-		}
-		return out.toString();
-	}
+//	private static String convert(String in, boolean toU) {
+//		StringBuilder out = new StringBuilder();
+//		StringBuilder token = new StringBuilder();
+//		for (int i = 0; i < in.length();) {
+//			char c = in.charAt(i);
+//			
+//			if (c == '\\') {
+//				if --- comment, \/, /\
+//				convertToken(out, token, toU);
+//				for (; i < in.length() && Character.isLetter(in.charAt(i)); i++)
+//					token.append(c);
+//				convertToken(out, token, toU);
+//				continue;
+//			}
+//						
+//			if (i < in.length() - 1) {
+//				final char c1 = in.charAt(i + 1);
+//				if ((c == '<' && (in.charAt(i + 1) == '<' || in.charAt(i + 1) == '>'))
+//							|| (c == '[' && in.charAt(i + 1) == ']')) {
+//					convertToken(out, token, toU);
+//					token.append(c).append(c1); 
+//					convertToken(out, token, toU);
+//					i += 2;
+//					continue;
+//				}
+//			}
+//			
+//			if (ASCII_GLYPHS.indexOf(c) >= 0) {
+//				token.append(c);
+//				i++;
+//				continue;
+//			}
+//			
+//			if (true /*Character.isWhitespace(c) || Character.isLetterOrDigit(c) || c == '_'*/) {
+//				convertToken(out, token, toU);
+//				out.append(c);
+//				i++;
+//				continue;
+//			}
+//		}
+//		return out.toString();
+//	}
 	
 	private static void convertToken(StringBuilder out, StringBuilder token, boolean toU) {
 		if (token.length() > 0) {
