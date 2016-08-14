@@ -107,32 +107,8 @@ public final class Unicode {
 			// { SUPERSCRIPT_PLUS, "^+" }, // ⁺ SUPERSCRIPT PLUS SIGN 
 	};
 	
-	// Subscript and superscript
-	public static final char subscriptDigit(int num) {
-		// ₀₁₂₃₄₅₆₇₈₉
-		assert num >= 0 && num <= 9;
-		return (char)(0x2080 + num);
-	}
-	
-	private static final char[] SUPERSCRIPT_DIGIT = {
-			'\u2070', '\u00B9', '\u00B2', '\u00B3', '\u2074', '\u2075', '\u2076', '\u2077', '\u2078', '\u2079'
-	};
-	
-	public static final char superscriptDigit(int num) {
-		// ⁰¹²³⁴⁵⁶⁷⁸⁹
-		assert num >= 0 && num <= 9;
-		return SUPERSCRIPT_DIGIT[num];
-	}
-
-	public static final char SUBSCRIPT_i = '\u1D62'; // ᵢ LATIN SUBSCRIPT SMALL LETTER I
-	public static final char SUBSCRIPT_j = '\u2C7C'; // ⱼ LATIN SUBSCRIPT SMALL LETTER J
-	public static final char SUBSCRIPT_k = '\u2096'; // ₖ LATIN SUBSCRIPT SMALL LETTER K
-	
-	public static final char SUPERSCRIPT_PLUS = '\u207A'; // ⁺ SUPERSCRIPT PLUS SIGN 
-	public static final char SUBSCRIPT_PLUS = '\u208A'; // ₊ SUBSCRIPT PLUS SIGN
-	public static final char SUBSCRIPT_ASTERISK = '\u204E'; // ⁎ LOW ASTERISK
-	
 	// Greek letters
+	
 	public static final char CAPITAL_GAMMA   = '\u0393'; // Γ GREEK CAPITAL LETTER GAMMA
 	public static final char CAPITAL_DELTA   = '\u0394'; // Δ GREEK CAPITAL LETTER DELTA
 	public static final char CAPITAL_THETA   = '\u0398'; // Θ GREEK CAPITAL LETTER THETA
@@ -169,7 +145,52 @@ public final class Unicode {
 	public static final char SMALL_CHI     = '\u03C7'; // χ GREEK SMALL LETTER CHI
 	public static final char SMALL_PSI     = '\u03C8'; // ψ GREEK SMALL LETTER PSI
 	public static final char SMALL_OMEGA   = '\u03C9'; // ω GREEK SMALL LETTER OMEGA
+
+	// Subscripts (◻[Next]ᵥₐᵣₛ)
 	
+	public static final char subscriptDigit(int num) { // ₀₁₂₃₄₅₆₇₈₉
+		assert num >= 0 && num <= 9;
+		return (char)(0x2080 + num);
+	}
+
+	public static final char SUBSCRIPT_a = '\u2090'; // ₐ LATIN SUBSCRIPT SMALL LETTER A
+	public static final char SUBSCRIPT_e = '\u2091'; // ₑ LATIN SUBSCRIPT SMALL LETTER E
+	public static final char SUBSCRIPT_h = '\u2095'; // ₕ LATIN SUBSCRIPT SMALL LETTER H
+	public static final char SUBSCRIPT_i = '\u1D62'; // ᵢ LATIN SUBSCRIPT SMALL LETTER I
+	public static final char SUBSCRIPT_j = '\u2C7C'; // ⱼ LATIN SUBSCRIPT SMALL LETTER J
+	public static final char SUBSCRIPT_k = '\u2096'; // ₖ LATIN SUBSCRIPT SMALL LETTER K
+	public static final char SUBSCRIPT_l = '\u2097'; // ₗ LATIN SUBSCRIPT SMALL LETTER L
+	public static final char SUBSCRIPT_m = '\u2098'; // ₘ LATIN SUBSCRIPT SMALL LETTER M
+	public static final char SUBSCRIPT_n = '\u2099'; // ₙ LATIN SUBSCRIPT SMALL LETTER N
+	public static final char SUBSCRIPT_o = '\u2092'; // ₒ LATIN SUBSCRIPT SMALL LETTER O
+	public static final char SUBSCRIPT_p = '\u209A'; // ₚ LATIN SUBSCRIPT SMALL LETTER P
+	public static final char SUBSCRIPT_r = '\u1D63'; // ᵣ LATIN SUBSCRIPT SMALL LETTER R
+	public static final char SUBSCRIPT_s = '\u209B'; // ₛ LATIN SUBSCRIPT SMALL LETTER S
+	public static final char SUBSCRIPT_t = '\u209C'; // ₜ LATIN SUBSCRIPT SMALL LETTER T
+	public static final char SUBSCRIPT_u = '\u1D64'; // ᵤ LATIN SUBSCRIPT SMALL LETTER U
+	public static final char SUBSCRIPT_v = '\u1D65'; // ᵥ LATIN SUBSCRIPT SMALL LETTER V
+	public static final char SUBSCRIPT_x = '\u2093'; // ₓ LATIN SUBSCRIPT SMALL LETTER X
+	public static final char SUBSCRIPT_SMALL_BETA  = '\u1D66'; // ᵦ GREEK SUBSCRIPT SMALL LETTER BETA
+	public static final char SUBSCRIPT_SMALL_GAMMA = '\u1D67'; // ᵧ GREEK SUBSCRIPT SMALL LETTER GAMMA
+	public static final char SUBSCRIPT_SMALL_PHI   = '\u1D69'; // ᵩ GREEK SUBSCRIPT SMALL LETTER PHI
+	public static final char SUBSCRIPT_SMALL_CHI   = '\u1D6A'; // ᵪ GREEK SUBSCRIPT SMALL LETTER CHI
+
+	public static final char SUBSCRIPT_PLUS = '\u208A'; // ₊ SUBSCRIPT PLUS SIGN
+
+	// Superscripts
+	
+	private static final char[] SUPERSCRIPT_DIGIT = { 
+			'\u2070', '\u00B9', '\u00B2', '\u00B3', '\u2074', '\u2075', '\u2076', '\u2077', '\u2078', '\u2079'
+		};
+
+	public static final char superscriptDigit(int num) { // ⁰¹²³⁴⁵⁶⁷⁸⁹
+		assert num >= 0 && num <= 9;
+		return SUPERSCRIPT_DIGIT[num];
+	}	
+	
+	public static final char SUPERSCRIPT_PLUS = '\u207A'; // ⁺ SUPERSCRIPT PLUS SIGN 
+	public static final char SUBSCRIPT_ASTERISK = '\u204E'; // ⁎ LOW ASTERISK
+		
 //	Box drawing:
 
 	public static final char HORIZONTAL      = '\u2500'; // ─ BOX DRAWINGS LIGHT HORIZONTAL         /  ━ \u2501 HEAVY
