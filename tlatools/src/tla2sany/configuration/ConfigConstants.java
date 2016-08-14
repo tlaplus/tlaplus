@@ -10,18 +10,8 @@
 
 package tla2sany.configuration;
 
-interface ConfigConstants {
-  int nada = 0;
-  int infixOP = 1;
-  int prefixOP = 2;
-  int postfixOP = 3;
-  int preINfixOP = 4;
-
-  int leftAssoc = 10;
-  int rightAssoc = 11;
-  int noAssoc = 12;
-
-  String defaultConfig =
+class ConfigConstants {
+  public static String defaultConfig =
     /***********************************************************************
     * This is used in config/Configuration.java to create Operator         *
     * objects for each operator, which are put in the hashtable            *
@@ -242,4 +232,3 @@ interface ConfigConstants {
 
   ;
 }
-
