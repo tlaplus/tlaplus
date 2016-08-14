@@ -39,23 +39,16 @@ interface ConfigConstants {
     "operator = 50 50 None infix\n" +
     "operator \\lnot 40 40 Left prefix \n" +
     "synonym  ~ \\lnot\n" +
-    "synonym  \u00ac \\lnot\n" + // ¬
     "synonym \\neg \\lnot\n" +
     "operator \\land 30 30 Left infix\n" +
     "synonym  /\\ \\land\n" +
-    "synonym  \u2227 \\land\n" + // ∧
     "operator \\lor 30 30 Left infix\n" +
     "synonym  \\/ \\lor\n" +
-    "synonym  \u2228 \\lor\n" + // ∨
     "operator ~> 20 20 None infix\n" +
-    "synonym  \u2933 ~>\n" + // ⤳
     "operator => 10 10  None infix\n" +
-    "synonym  \u21D2 =>\n" + // ⇒
     //\n" +
     "operator [] 40 150 None prefix \n" +
-    "synonym  \u2610︎ []\n" + // ☐
     "operator <> 40 150 None prefix \n" +
-    "synonym  \u2662 <>\n" + // ♢
     "operator ENABLED 40 150 None prefix \n" +
     "operator UNCHANGED 40 150 None prefix \n" +
     "operator SUBSET 100 130 None prefix \n" +
@@ -67,49 +60,36 @@ interface ConfigConstants {
     "operator ^# 150 150 None postfix\n" +
     //\n" +
     "operator \\cdot 50 140  Left infix\n" +
-    "synonym  \u22C5 \\cdot\n" + // ⋅
     //\n" +
     "operator \\equiv 20 20  None infix\n" +
     "synonym <=> \\equiv\n" +
-    "synonym  \u2263 \\equiv\n" + // ≣
     //\n" +
     "operator -+-> 20 20 None infix\n" +
-    "synonym  \u2945 -+->\n" + // ⥅
     "operator /= 50 50 None infix\n" +
     "synonym # /=\n" +
-    "synonym  \u2260 /=\n" + // ≠
     "operator \\subseteq 50 50 None infix\n" +
-    "synonym  \u2286 \\subseteq\n" + // ⊆
     "operator \\in 50 50 None infix\n" +
-    "synonym  \u2208 \\in\n" + // ∈
     "operator \\notin 50 50 None infix\n" +
-    "synonym  \u2209 \\notin\n" + // ∉
     "operator < 50 50 None infix\n" +
     "operator \\leq 50 50 None infix\n" +
     "synonym <= \\leq\n" +
     "synonym =< \\leq\n" +
-    "synonym \u2264 \\leq\n" + // ≤
     "operator > 50 50 None infix\n" +
     "operator \\geq 50 50 None infix\n" +
     "synonym >= \\geq\n" +
-    "synonym \u2265 \\geq\n" + // ≥
     //\n" +
     "operator \\times 100 130 Left nfix\n" +
     "synonym  \\X \\times\n" +
-    "synonym  \u00D7 \\times\n" + // ×
     "operator \\ 80 80 None infix\n" +
     "operator \\intersect 80 80 Left infix\n" +
     "synonym \\cap \\intersect \n" +
-    "synonym  \u2229 \\intersect\n" + // ∩
     "operator \\union 80 80 Left infix\n" +
     "synonym \\cup \\union\n" +
-    "synonym \u222A \\union\n" + // ∪
     //\n" +
     "operator ... 90 90 None infix\n" +
     "operator .. 90 90 None infix\n" +
     "operator | 100 110 Left infix\n" +
     "operator || 100 110 Left infix\n" +
-    "synonym  \u2016 ||\n" + // ‖
     "operator && 130 130 Left infix\n" +
     "operator & 130 130 Left infix\n" +
     "operator $$ 90 130 Left infix\n" +
@@ -128,13 +108,9 @@ interface ConfigConstants {
     "operator @@ 60 60 Left infix\n" +
     "operator !! 90 130 None infix\n" +
     "operator |- 50 50 None infix\n" +
-    "synonym  \u22A2 |-\n" + // ⊢
     "operator |= 50 50 None infix\n" +
-    "synonym  \u22A8 |=\n" + // ⊨
     "operator -| 50 50 None infix\n" +
-    "synonym  \u22A3 -|\n" + // ⊣
     "operator =| 50 50 None infix\n" +
-    "synonym  \u2AE4 =|\n" + // ⫤
     "operator <: 70 70 None infix\n" +
     "operator :> 70 70 None infix\n" +
     "operator := 50 50 None infix\n" +
@@ -142,79 +118,45 @@ interface ConfigConstants {
 // \n" +
     "operator \\oplus 100 100 Left infix\n" +
     "synonym (+) \\oplus\n" +
-    "synonym \u2295 \\oplus\n" + // ⊕
     "operator \\ominus 110 110 Left infix\n" +
     "synonym (-) \\ominus\n" +
-    "synonym \u2296 \\ominus\n" + // ⊖
     "operator \\odot 130 130 Left infix\n" +
     "synonym (.) \\odot\n" +
-    "synonym \u2299 \\odot\n" + // ⊙
     "operator \\oslash 130 130 None infix\n" +
     "synonym (/) \\oslash\n" +
-    "synonym \u2298 \\oslash\n" + // ⊘
     "operator \\otimes 130 130 Left infix\n" +
     "synonym (\\X) \\otimes\n" +
-    "synonym \u2297 \\otimes\n" + // ⊗
 // \n" +
     "operator \\uplus 90 130 Left infix\n" +
-    "synonym  \u228E \\uplus\n" + // ⊎
     "operator \\sqcap 90 130 Left infix\n" +
-    "synonym  \u2293 \\sqcap\n" + // ⊓
     "operator \\sqcup 90 130 Left infix\n" +
-    "synonym  \u2294 \\sqcup\n" + // ⊔
     "operator \\div 130 130 None infix\n" +
-    "synonym  \u00F7 \\div\n" + // ÷ 
     "operator \\wr 90 140 None infix\n" +
-    "synonym  \u2240 \\wr\n" + // ≀ 
     "operator \\star 130 130 Left infix\n" +
-    "synonym  \u2B51 \\star\n" + // ⭑
-    "operator \\o 130 130 Left infix\n" + 
-    "synonym  \\circ \\o\n" +
-    "synonym  \u25CB \\o\n" + // ○
+    "operator \\o 130 130 Left infix\n" +
+    "synonym  \\circ \\o \n" +
     "operator \\bigcirc 130 130 Left infix\n" +
-    "synonym  \u25EF \\bigcirc\n" + // ◯
     "operator \\bullet 130 130 Left infix\n" +
-    "synonym  \u2022 \\bullet\n" + // •
     "operator \\prec 50 50 None infix\n" +
-    "synonym  \u227A \\prec\n" + // ≺
     "operator \\succ 50 50 None infix\n" +
-    "synonym  \u227B \\succ\n" + // ≻
     "operator \\preceq 50 50 None infix\n" +
-    "synonym  \u2AAF \\preceq\n" + // ⪯
     "operator \\succeq 50 50 None infix\n" +
-    "synonym  \u2AB0 \\succeq\n" + // ⪰
     "operator \\sim 50 50 None infix\n" +
-    "synonym  \uFF5E \\sim\n" + // ～
     "operator \\simeq 50 50 None infix\n" +
-    "synonym  \u2243 \\simeq\n" + // ≃
     "operator \\ll 50 50 None infix\n" +
-    "synonym  \u226A \\ll\n" + // ≪
     "operator \\gg 50 50 None infix\n" +
-    "synonym  \u226B \\gg\n" + // ≫
     "operator \\asymp 50 50 None infix\n" +
-    "synonym  \u224D \\asymp\n" + // ≍
-    "operator \\subset 50 50 None infix\n" +
-    "synonym  \u2282 \\subset\n" + // ⊂
+    "operator \\subset 50 50 None infix\n" + // subseteq is builtin
     "operator \\supset 50 50 None infix\n" +
-    "synonym  \u2283 \\supset\n" + // ⊃
     "operator \\supseteq 50 50 None infix\n" +
-    "synonym  \u2287 \\supseteq\n" + // ⊇
     "operator \\approx 50 50 None infix\n" +
-    "synonym  \u2248 \\approx\n" + // ≈
     "operator \\cong 50 50 None infix\n" +
-    "synonym  \u2245 \\cong\n" + // ≅
     "operator \\sqsubset 50 50 None infix\n" +
-    "synonym  \u228F \\sqsubset\n" + // ⊏
     "operator \\sqsubseteq 50 50 None infix\n" +
-    "synonym  \u2291 \\sqsubseteq\n" + // ⊑
     "operator \\sqsupset 50 50 None infix\n" +
-    "synonym  \u2290 \\sqsupset\n" + // ⊐
     "operator \\sqsupseteq 50 50 None infix\n" +
-    "synonym  \u2292 \\sqsupseteq\n" + // ⊒
     "operator \\doteq 50 50 None infix\n" +
-    "synonym  \u2250 \\doteq\n" + // ≐
-    "operator \\propto 50 50 None infix\n" + 
-    "synonym  \u221D \\propto\n" + // ∝
+    "operator \\propto 50 50 None infix\n" +
     //\n" +
     "builtin STRING    $$_string     constant\n" +
     "builtin FALSE     $$_false      constant\n" +
