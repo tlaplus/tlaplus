@@ -932,6 +932,9 @@ static private final int jjMoveNfa_0(int startState, int curPos)
       }
       else
       {
+         int hiByte = (int)(curChar >> 8);
+         int i1 = hiByte >> 6;
+         long l1 = 1L << (hiByte & 077);
          int i2 = (curChar & 0xff) >> 6;
          long l2 = 1L << (curChar & 077);
          MatchLoop: do
@@ -1008,23 +1011,23 @@ static final long[] jjtoSpecial = {
 static final long[] jjtoMore = {
    0x50L, 
 };
-static protected SimpleCharStream input_stream;
+static protected JavaCharStream input_stream;
 static private final int[] jjrounds = new int[174];
 static private final int[] jjstateSet = new int[348];
 static StringBuffer image;
 static int jjimageLen;
 static int lengthOfMatch;
 static protected char curChar;
-public ConfigurationTokenManager(SimpleCharStream stream){
+public ConfigurationTokenManager(JavaCharStream stream){
    if (input_stream != null)
       throw new TokenMgrError("ERROR: Second call to constructor of static lexer. You must use ReInit() to initialize the static variables.", TokenMgrError.STATIC_LEXER_ERROR);
    input_stream = stream;
 }
-public ConfigurationTokenManager(SimpleCharStream stream, int lexState){
+public ConfigurationTokenManager(JavaCharStream stream, int lexState){
    this(stream);
    SwitchTo(lexState);
 }
-static public void ReInit(SimpleCharStream stream)
+static public void ReInit(JavaCharStream stream)
 {
    jjmatchedPos = jjnewStateCnt = 0;
    curLexState = defaultLexState;
@@ -1038,7 +1041,7 @@ static private final void ReInitRounds()
    for (i = 174; i-- > 0;)
       jjrounds[i] = 0x80000000;
 }
-static public void ReInit(SimpleCharStream stream, int lexState)
+static public void ReInit(JavaCharStream stream, int lexState)
 {
    ReInit(stream);
    SwitchTo(lexState);

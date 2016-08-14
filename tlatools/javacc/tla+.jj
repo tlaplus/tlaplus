@@ -83,7 +83,7 @@ config.jj.
 options {
   LOOKAHEAD = 1;
   JAVA_UNICODE_ESCAPE = false; // disable processing of \\u
-  UNICODE_INPUT = false;
+  UNICODE_INPUT = true;
   DEBUG_PARSER = false;    // true;  
   DEBUG_LOOKAHEAD = false; // true; 
   DEBUG_TOKEN_MANAGER = false; // true; 

@@ -242,7 +242,7 @@ public final class Configuration implements ConfigConstants, ConfigurationConsta
 
   static private boolean jj_initialized_once = false;
   static public ConfigurationTokenManager token_source;
-  static SimpleCharStream jj_input_stream;
+  static JavaCharStream jj_input_stream;
   static public Token token, jj_nt;
   static private int jj_ntk;
   static private int jj_gen;
@@ -266,7 +266,7 @@ public final class Configuration implements ConfigConstants, ConfigurationConsta
       throw new Error();
     }
     jj_initialized_once = true;
-    try { jj_input_stream = new SimpleCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
+    try { jj_input_stream = new JavaCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source = new ConfigurationTokenManager(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
@@ -294,7 +294,7 @@ public final class Configuration implements ConfigConstants, ConfigurationConsta
       throw new Error();
     }
     jj_initialized_once = true;
-    jj_input_stream = new SimpleCharStream(stream, 1, 1);
+    jj_input_stream = new JavaCharStream(stream, 1, 1);
     token_source = new ConfigurationTokenManager(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
