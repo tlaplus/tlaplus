@@ -25,13 +25,13 @@ public final class Unicode {
 			{ "\u27E9", ">>" },   // ⟩ MATHEMATICAL RIGHT ANGLE BRACKET
 			{ "\u27E9_", ">>_" }, // ⟩_
 
-			{ "\u2200\u2200", "\\AA" }, // ∀∀
-			{ "\u2203\u2203", "\\EE" }, // ∃∃
+			{ "\u2032", "'" },  // ′ PRIME
 			{ "\u25FB", "[]" }, // ◻ White medium square / □ \u25A1 WHITE SQUARE / \u2610︎ ☐ BALLOT BOX 
 			{ "\u2B26", "<>" }, // ⬦ WHITE MEDIUM DIAMOND / ♢ \u2662 WHITE DIAMOND SUIT
-			{ "\u2032", "'" },  // ′ PRIME
 			{ "\u2933", "~>" },   // ⤳ WAVE ARROW POINTING DIRECTLY RIGHT
 			{ "\u2945", "-+->" }, // ⥅ RIGHTWARDS ARROW WITH PLUS BELOW/ ⇾ \u21FE RIGHTWARDS OPEN-HEADED ARROW
+			{ "\u2200\u2200", "\\AA" }, // ∀∀
+			{ "\u2203\u2203", "\\EE" }, // ∃∃
 
 			{ "\u2200", "\\A", "\\forall" }, // ∀ FOR ALL
 			{ "\u2203", "\\E", "\\exists" }, // ∃ THERE EXISTS
@@ -291,7 +291,7 @@ public final class Unicode {
 ////		return ((a = u2a(u)) != null ? a : u);
 //	}
 //	
-//	private static final String ASCII_GLYPHS = "=<>()+-\\/#.|~";
+	private static final String ASCII_GLYPHS = "=<>()+-\\/#.|~";
 	
 	// <<-3>>
 	// <-3
@@ -338,6 +338,22 @@ public final class Unicode {
 //		}
 //		return out.toString();
 //	}
+	
+	public static String toSuperscript(int num) {
+		String decimal = Integer.toString(num);
+		StringBuilder sb = new StringBuilder(decimal.length());
+		for (int i = 0; i < decimal.length(); i++)
+			sb.append(superscriptDigit(decimal.charAt(i) - '\0'));
+		return sb.toString();
+	}
+	
+	public static String toSubrscript(int num) {
+		String decimal = Integer.toString(num);
+		StringBuilder sb = new StringBuilder(decimal.length());
+		for (int i = 0; i < decimal.length(); i++)
+			sb.append(subscriptDigit(decimal.charAt(i) - '\0'));
+		return sb.toString();
+	}
 	
 	private static void convertToken(StringBuilder out, StringBuilder token, boolean toU) {
 		if (token.length() > 0) {
