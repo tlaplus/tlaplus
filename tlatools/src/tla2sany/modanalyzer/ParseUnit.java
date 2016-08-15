@@ -23,6 +23,7 @@ package tla2sany.modanalyzer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
 import tla2sany.semantic.AbortException;
@@ -165,8 +166,9 @@ public class ParseUnit {
           // FileOutputStream output = new FileOutputStream( compiled );
 
           // Go ahead and write the tree out
-          pw = new PrintWriter(FileUtil.newFOS(compiled)); 
+          pw = new PrintWriter(new OutputStreamWriter(FileUtil.newFOS(compiled), FileUtil.UTF8)); 
           
+
           // This is different from parseTree.SyntaxTreeNode.printST()
           SyntaxTreePrinter.print( parseTree, pw );
           pw.flush(); 
@@ -178,7 +180,7 @@ public class ParseUnit {
           // errors.addAbort("Error: Failed to open output file " + sinkName +
           //        "\n" + e.getMessage());        }
       } else {
-          pw = new PrintWriter(ToolIO.out);
+          pw = new PrintWriter(new OutputStreamWriter(ToolIO.out, FileUtil.UTF8));
           SyntaxTreePrinter.print( parseTree, pw );
           pw.flush();
       }
@@ -254,7 +256,7 @@ public class ParseUnit {
         try 
         {
             // create parser object
-            parseTree = new tla2sany.parser.TLAplusParser(nis);
+            parseTree = new tla2sany.parser.TLAplusParser(nis, "UTF-8");
 
             // Here is the one true REAL call to the parseTree.parse() for a file;
             // The root node of the parse tree is left in parseTree.
