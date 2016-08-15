@@ -1154,14 +1154,14 @@ TOKEN: {
 | < BOXASSUME: "[]ASSUME" >  // added by LL 9 Feb 2011
 | < ASSUMPTION: "ASSUMPTION" | "AXIOM" >
 | < CASE: "CASE" >
-| < CHOOSE: "CHOOSE" >
+| < CHOOSE: "CHOOSE" > // Unicode ???
 | < CONSTANT: "CONSTANT" | "CONSTANTS" >
 | < ELSE: "ELSE" >
 // | < ENDPROOF: "ENDPROOF" | "EndProof" | "Endproof" >
 | < EXCEPT: "EXCEPT" >
-| < EXISTS: "\\E" | "\\exists" >
+| < EXISTS: "\\E" | "\\exists" | "\u2203" > // ∃
 | < EXTENDS: "EXTENDS" >
-| < FORALL: "\\A" | "\\forall" >
+| < FORALL: "\\A" | "\\forall" | "\u2200" > // ∀
 // | < FUNCTION: "FUNCTION" | "FCN" | "FUNCTIONS" | "FCNS" >
 | < IF: "IF" >
 // | < IN: "\\in" > will become a backslash op.
@@ -1179,8 +1179,8 @@ TOKEN: {
 | < PROPOSITION: "PROPOSITION" | "LEMMA" | "COROLLARY" >
 | < SF: "SF_" >
 // | < ST: "S.T." >
-| < T_EXISTS: "\\EE">
-| < T_FORALL: "\\AA">
+| < T_EXISTS: "\\EE" | "\u2203\u2203"> // ∃∃
+| < T_FORALL: "\\AA" | "\u2200\u2200"> // ∀∀
 | < THEN: "THEN" >
 | < BY: "BY">
 | < ONLY: "ONLY">
@@ -1192,7 +1192,7 @@ TOKEN: {
 | < HAVE: "HAVE">
 | < OBVIOUS: "OBVIOUS">
 | < OMITTED: "OMITTED">
-| < LAMBDA: "LAMBDA">
+| < LAMBDA: "LAMBDA"> // Unicode ???
 | < TAKE: "TAKE">
 | < PROOF: "PROOF" > // | "Proof" > removed by LL 22 Jul 2007
 | < PROVE: "PROVE" >
@@ -1213,7 +1213,7 @@ TOKEN: {
 | < COLONCOLON: "::" >
 | < DOT: "." >
 | < US:   "_" >
-| < DEF: "==" >
+| < DEF: "==" | "\u225C" > // ≜
 // | < EQUAL: "=" >
 | < LBR: "(" >
 | < RBR: ")" >
@@ -1226,13 +1226,13 @@ TOKEN: {
 | < RWB: "|}" >  // Obsolete
 | < LBC: "{" >
 | < RBC: "}" >
-| < LAB: "<<" >
-| < ARAB: ">>_" >
-| < RAB: ">>" >
+| < LAB: "<<" | "\u27E8" > // ⟨
+| < ARAB: ">>_" | "\u27E9_" > // ⟩_
+| < RAB: ">>" | "\u27E9" > // ⟩
 | < BANG: "!" >
-| < ARROW: "->" >
-| < SUBSTITUTE: "<-" >
-| < MAPTO: "|->" >
+| < ARROW: "->" | "\u2192" > // →
+| < SUBSTITUTE: "<-" | "\u2190" > // ← 
+| < MAPTO: "|->" | "\u21A6" > // ↦ 
 // | < ENDBY: "[.]">
 // | < PROOFCASE: "PROOFCASE">
 }
@@ -1265,104 +1265,104 @@ TOKEN: {
 }
 
 <SPEC> TOKEN : { < // -> postfix
-  op_57 : "'" > | <
+  op_57 : "'" | "\u2032" > | < // ′
   op_68 : "^+" > | <
   op_69 : "^*" > | <
   op_70 : "^#" > | < // prefix ->
   op_76 : "-." > | <
   op_26 : "\\lnot" > | <
   op_29 : "\\neg" > | <
-  op_58 : "~" > | <
-  CASESEP : "[]" > | <
-  op_61 : "<>" > | <
+  op_58 : "~" | "\u00ac" > | < // ¬
+  CASESEP : "[]" | "\u25FB" > | < // ◻
+  op_61 : "<>" | "\u2B26" > | < // ⬦
   op_112 : "ENABLED" > | <
   op_113 : "UNCHANGED" > | <
   op_114 : "SUBSET" > | <
   op_115 : "UNION" > | <
   op_116 : "DOMAIN" > | < // infix ->
   op_1 : "//" > | <
-AND : "/\\" > | < //  op_2 : "/\" > | <
-  op_3 : "/=" > | <
+AND : "/\\" | "\u2227"> | < //  op_2 : "/\" > | < // ∧
+  op_3 : "/=" | "\u2260" > | < // ≠
   op_4 : "/" > | <
-OR : "\\/" > | <  //  op_5 : "\/" > | <
-  op_6 : "\\approx" > | <
-  op_7 : "\\asymp" > | <
-  op_8 : "\\bigcirc" > | <
-  op_9 : "\\bullet" > | <
-  op_10 : "\\cap" > | <
-  op_11 : "\\cdot" > | <
+OR : "\\/" | "\u2228" > | <  //  op_5 : "\/" > | < // ∨
+  op_6 : "\\approx" | "\u2248" > | < // ≈
+  op_7 : "\\asymp" | "\u224D" > | < // ≍
+  op_8 : "\\bigcirc" | "\u25EF" > | < // ◯
+  op_9 : "\\bullet" | "\u2022" > | < // •
+  op_10 : "\\cap" | "\u2229" > | < // ∩
+  op_11 : "\\cdot" | "\u22C5" > | < // ⋅ 
   op_12 : "\\circ" > | <
-  op_13 : "\\cong" > | <
-  op_14 : "\\cup" > | <
-  op_15 : "\\div" > | <
-  op_16 : "\\doteq" > | <
-  op_17 : "\\equiv" > | <
+  op_13 : "\\cong" | "\u2245" > | < // ≅
+  op_14 : "\\cup" | "\u222A" > | < // ∪
+  op_15 : "\\div" | "\u00F7" > | < // ÷
+  op_16 : "\\doteq" | "\u2250" > | < // ≐
+  op_17 : "\\equiv" > | < 
   op_18 : "\\geq" > | <
-  op_19 : "\\gg" > | <
-  IN : "\\in" > | <
+  op_19 : "\\gg" | "\u226B" > | < // ≫
+  IN : "\\in" | "\u2208" > | < // ∈
   op_21 : "\\intersect" > | <
   op_22 : "\\union" > | <
   op_23 : "\\land" > | <
   op_24 : "\\leq" > | <
-  op_25 : "\\ll" > | <
+  op_25 : "\\ll" | "\u226A" > | < // ≪
   op_27 : "\\lor" > | <
 //  op_28 : "\\mod" > | <
-  op_30 : "\\o" > | <
+  op_30 : "\\o" | "\u25CB" > | < // ○ 
   op_31 : "\\odot" > | <
   op_32 : "\\ominus" > | <
   op_33 : "\\oplus" > | <
   op_34 : "\\oslash" > | <
   op_35 : "\\otimes" > | <
-  op_36 : "\\prec" > | <
-  op_37 : "\\preceq" > | <
-  op_38 : "\\propto" > | <
-  op_39 : "\\sim" > | <
-  op_40 : "\\simeq" > | <
-  op_41 : "\\sqcap" > | <
-  op_42 : "\\sqcup" > | <
-  op_43 : "\\sqsubset" > | <
-  op_44 : "\\sqsupset" > | <
-  op_45 : "\\sqsubseteq" > | <
-  op_46 : "\\sqsupseteq" > | <
-  op_47 : "\\star" > | <
-  op_48 : "\\subset" > | <
-  op_49 : "\\subseteq" > | <
-  op_50 : "\\succ" > | <
-  op_51 : "\\succeq" > | <
-  op_52 : "\\supset" > | <
-  op_53 : "\\supseteq" > | <
-  op_54 : "\\uplus" > | <
-  op_55 : "\\wr" > | <
+  op_36 : "\\prec" | "\u227A" > | < // ≺
+  op_37 : "\\preceq" | "\u227C" > | < // ≼
+  op_38 : "\\propto" | "\u221D" > | < // ∝
+  op_39 : "\\sim" | "\uFF5E" > | < // ～
+  op_40 : "\\simeq" | "\u2243" > | < // ≃
+  op_41 : "\\sqcap" | "\u2293" > | < // ⊓
+  op_42 : "\\sqcup" | "\u2294" > | < // ⊔
+  op_43 : "\\sqsubset" | "\u228F" > | < // ⊏
+  op_44 : "\\sqsupset" | "\u2290" > | < // ⊐
+  op_45 : "\\sqsubseteq" | "\u2291" > | < // ⊑
+  op_46 : "\\sqsupseteq" | "\u2292" > | < // ⊒
+  op_47 : "\\star" | "\u2B51" > | < // ⭑
+  op_48 : "\\subset" | "\u2282" > | < // ⊂
+  op_49 : "\\subseteq" | "\u2286" > | < // ⊆
+  op_50 : "\\succ" | "\u227B" > | < // ≻
+  op_51 : "\\succeq" | "\u227D" > | < // ≽
+  op_52 : "\\supset" | "\u2283" > | < // ⊃
+  op_53 : "\\supseteq" | "\u2287" > | < // ⊇
+  op_54 : "\\uplus" | "\u228E" > | < // ⊎
+  op_55 : "\\wr" | "\u2240" > | < // ≀
   op_56 : "\\" > | <
-  op_59 : "~>" > | <
-  op_62 : "=>" > | <
+  op_59 : "~>" | "\u2933" > | < // ⤳
+  op_62 : "=>" | "\u21D2" > | < // ⇒
   op_63 : "=<" > | <
-  op_64 : "=|" > | <
+  op_64 : "=|" | "\u2AE4" > | < // ⫤
   EQUALS : "=" > | <
   op_66 : "##" > | <
   op_67 : "#" > | <
   op_71 : "^^" > | <
   op_72 : "^" > | <
   op_73 : "--" > | <
-  op_74 : "-|" > | <
-  op_75 : "-+->" > | <
+  op_74 : "-|"  | "\u22A3" > | < // ⊣
+  op_75 : "-+->" | "\u2945" > | < // ⥅ 
   op_77 : "-" > | <
   op_78 : "**" > | <
   op_79 : "*" > | <
   op_80 : "++" > | <
   op_81 : "+" > | <
-  op_82 : "<=>" > | <
+  op_82 : "<=>" | "\u2263" > | < // ≣ 
   op_83 : "<:" > | <
-  op_84 : "<=" > | <
+  op_84 : "<=" | "\u2264" > | < // ≤
   op_85 : "<" > | <
-  op_86 : ">=" > | <
+  op_86 : ">=" | "\u2265" > | < // ≥ 
   op_87 : ">" > | <
   op_88 : "..." > | <
   op_89 : ".." > | <
-  op_90 : "||" > | <
+  op_90 : "||" | "\u2016" > | < // ‖
   op_91 : "|" > | <
-  op_92 : "|-" > | <
-  op_93 : "|=" > | <
+  op_92 : "|-" | "\u22A2" > | < // ⊢
+  op_93 : "|=" | "\u22A8" > | < // ⊨
   op_94 : "&&" > | <
   op_95 : "&" > | <
   op_96 : "$$" > | <
@@ -1376,14 +1376,14 @@ OR : "\\/" > | <  //  op_5 : "\/" > | <
   op_104 : ":>" > | <
   op_105 : ":=" > | <
   op_106 : "::=" > | <
-  op_107 : "(+)" > | <
-  op_108 : "(-)" > | <
-  op_109 : "(.)" > | <
-  op_110 : "(/)" > | <
-  op_111 : "(\\X)"> | <
-  op_117 : "\\notin"> | <
+  op_107 : "(+)" | "\u2295" > | < // ⊕
+  op_108 : "(-)" | "\u2296" > | < // ⊖
+  op_109 : "(.)" | "\u2299" > | < // ⊙
+  op_110 : "(/)" | "\u2298" > | < // ⊘
+  op_111 : "(\\X)" | "\u2297" > | < // ⊗
+  op_117 : "\\notin" | "\u2209" > | < // ∉ 
   op_118 : "\\times"> | <
-  op_119 : "\\X">  
+  op_119 : "\\X" | "\u00D7" > // ×  
 }
 // op_119 : dernier compteur : impact sur ClosedStart et autres !!!
 

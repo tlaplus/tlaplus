@@ -21,7 +21,7 @@
 */
 options {
   LOOKAHEAD = 1;
-  JAVA_UNICODE_ESCAPE = true;
+  JAVA_UNICODE_ESCAPE = false; // disable processing of \\u
   UNICODE_INPUT = true;
   DEBUG_PARSER = false;
   DEBUG_LOOKAHEAD = false;
