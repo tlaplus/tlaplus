@@ -2,7 +2,6 @@
 package tla2sany.configuration;
 
 import java.io.File;
-import java.io.FileInputStream;
 
 import tla2sany.parser.Operator;
 import tla2sany.parser.Operators;
@@ -13,7 +12,6 @@ import tla2sany.semantic.Errors;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.st.Location;
-import util.FileUtil;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -38,7 +36,7 @@ public final class Configuration implements ConfigurationConstants {
 
       if ( source.exists() ) {
 //      java.io.OutputStream output;
-        input = new java.io.InputStreamReader( new FileInputStream(source), FileUtil.UTF8 );
+        input = new java.io.FileReader( source );
         origin = " from local config.src file.";
       } else {
         input = new java.io.StringReader( ConfigConstants.defaultConfig );
@@ -62,10 +60,9 @@ public final class Configuration implements ConfigurationConstants {
   // The following method added by DRJ.
   static public void ReInit() {
     jj_initialized_once = false;
-    if (jj_input_stream != null) {
+    if (jj_input_stream != null)
         jj_input_stream.ReInit(input, 1, 1);
-        token_source.ReInit(jj_input_stream);
-    }
+    token_source.ReInit(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
