@@ -52,6 +52,8 @@
 ***************************************************************************/
 package unicasc;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +65,7 @@ import tla2tex.CommentToken;
 import tla2tex.Debug;
 import tla2tex.FileCharReader;
 import tla2tex.FindAlignments;
+import tla2tex.InputStreamCharReader;
 import tla2tex.OutputFileWriter;
 import tla2tex.TLA2TexException;
 import tla2tex.Token;
@@ -78,19 +81,17 @@ public class TLAUnicode {
 			+ "\nIf the output file isn't specified, the conversion is printed to the standard output.";
 	
   	private static boolean debug = false ; // True if the -debug option is chosen.
-  	private static boolean toU; // True for ASCII -> Unicode, false for Unicode -> ASCII
-  	private static String inputFile = "" ; // The name of the input file
-  	private static String outputFile = "" ; // The name of the output file
-  
-	public static void main(String[] args) {
-		// ToolIO.out.println(version);
-		getArguments(args); // Get the command-line arguments.
-
+	
+	public static void convert(boolean toU, InputStream input, OutputStream output) {
+		convert(toU, new InputStreamCharReader(input), new OutputFileWriter(output, null));
+	}
+	
+	// Main entry point
+	public static void convert(boolean toU, CharReader input, OutputFileWriter output) {
 		BuiltInSymbols.Initialize(); // Initialize class BuiltInSymbols
 
 		// Read and tokenize the spec.
-		final CharReader testlr = new FileCharReader(inputFile);
-		final Token[][] spec = TokenizeSpec.Tokenize(testlr, TokenizeSpec.MODULE);
+		final Token[][] spec = TokenizeSpec.Tokenize(input, TokenizeSpec.MODULE);
 
 		Token.FindPfStepTokens(spec); // Convert proof-step numbers to PF_STEP tokens.
 		// Debug.print2DArray(spec, "tok");
@@ -101,13 +102,10 @@ public class TLAUnicode {
 		FindAlignments.FindAlignments(spec); // Add the alignment pointers to spec.
 		// Debug.print2DArray(spec, "align");
 		
-		convert(spec, toU, // Write output
-				outputFile != null 
-					? new OutputFileWriter(outputFile)
-					: new OutputFileWriter(System.out, "STDOUT"));
+		convert(spec, toU, output); // Write output
 	}
 
-	public static void convert(Token[][] spec, boolean toU, OutputFileWriter writer) {
+	private static void convert(Token[][] spec, boolean toU, OutputFileWriter writer) {
 		// This method performs the actual conversion
 		
 		List<CommentToken> leftComments = null;
@@ -306,7 +304,24 @@ public class TLAUnicode {
 	private static boolean isASCII(char c) {
 		return c <= 0xff;
 	}
+	
 	// ----------- COMMAND LINE PARSING ---------------------------------------
+	
+  	private static boolean toU; // True for ASCII -> Unicode, false for Unicode -> ASCII
+  	private static String inputFile = null ; // The name of the input file
+  	private static String outputFile = null ; // The name of the output file
+  
+	public static void main(String[] args) {
+		// ToolIO.out.println(version);
+		getArguments(args); // Get the command-line arguments.
+
+		final CharReader input = inputFile != null ? 
+				new FileCharReader(inputFile) : new InputStreamCharReader(System.in);
+		final OutputFileWriter output = outputFile != null 
+				? new OutputFileWriter(outputFile) : new OutputFileWriter(System.out, "STDOUT");
+				
+		convert(toU, input, output);
+	}
 	
 	private static void getArguments(String[] args) {
 		 // Get the command-line arguments and set the appropriate static fields.
@@ -351,23 +366,27 @@ public class TLAUnicode {
 			commandLineError("One of -a2u or -u2a must be specified");
 
 		// Input file
-		if (argi >= args.length)
-			commandLineError("Input file not specified");
+		if (argi >= args.length) {
+			inputFile = null;
+			return;
+		}
+		
 		inputFile = args[argi];
 		
 		argi++;
 		
 		// Output file
-		if (argi >= args.length)
+		if (argi >= args.length) {
 			outputFile = null;
-		else {
-			outputFile = args[argi];
-			// Report an error if inputFile = outFile.
-			if (Objects.equals(Paths.get(inputFile).normalize().toAbsolutePath(),
-					Paths.get(outputFile).normalize().toAbsolutePath()))
-				commandLineError("Output file is the same as the tla input file."
-						+ " This would overwrite your input file, so I won't do it");
+			return;
 		}
+		
+		outputFile = args[argi];
+		// Report an error if inputFile = outFile.
+		if (Objects.equals(Paths.get(inputFile).normalize().toAbsolutePath(),
+				Paths.get(outputFile).normalize().toAbsolutePath()))
+			commandLineError("Output file is the same as the tla input file."
+					+ " This would overwrite your input file, so I won't do it");
 	}
 
 	private static void commandLineError(String msg) {
