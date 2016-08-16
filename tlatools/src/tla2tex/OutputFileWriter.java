@@ -16,16 +16,10 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 
+import util.FileUtil;
+
 public class OutputFileWriter
- { private static final Charset UTF8;
-   static {
-	   try {
-		   UTF8 = Charset.forName("UTF-8");
-	   } catch (IllegalCharsetNameException e) {
-		   throw new AssertionError(e);
-	   }
-   }
-   private OutputStreamWriter fileWriter = null ;
+ { private OutputStreamWriter fileWriter = null ;
    private String name = "" ;
 
    public OutputFileWriter(String fileName)
@@ -33,7 +27,7 @@ public class OutputFileWriter
    * Construct an OutputFileWriter from a file name.                     *
    **********************************************************************/
   { name = fileName ;
-    try {fileWriter = new OutputStreamWriter(new FileOutputStream(fileName), UTF8) ;}
+    try {fileWriter = new OutputStreamWriter(new FileOutputStream(fileName), FileUtil.UTF8) ;}
     catch (java.io.IOException e)
      { Debug.ReportError( 
          "TLATeX cannot open output file " + name + ".\n"
@@ -43,7 +37,7 @@ public class OutputFileWriter
 
    public OutputFileWriter(OutputStream out, String fileName)
   { name = fileName ;
-    fileWriter = new OutputStreamWriter(out, UTF8) ;
+    fileWriter = new OutputStreamWriter(out, FileUtil.UTF8) ;
   }
 
    public void putLine(String out)
