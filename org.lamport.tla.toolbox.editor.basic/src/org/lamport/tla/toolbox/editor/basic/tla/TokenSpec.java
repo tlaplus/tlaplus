@@ -3,6 +3,9 @@
  */
 package org.lamport.tla.toolbox.editor.basic.tla;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
@@ -19,6 +22,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
+import tla2unicode.Unicode;
 import util.UniqueString;
 
 /**
@@ -267,7 +271,7 @@ public class TokenSpec
         } else
         {
             if ((!(Character.isLetterOrDigit(line.charAt(curPos)) || (line.charAt(curPos) == '_')))
-                    && (findTokenIn(line, curPos, Operators) == null))
+                    && findTokenIn(line, curPos, Operators) == null && findTokenIn(line, curPos, UnicodeOperators) == null)
             {
                 curPos = curPos - 1;
             }
@@ -344,7 +348,11 @@ public class TokenSpec
             currentToken = findTokenIn(line, curPos, Operators);
             if (currentToken == null)
             {
-                return new TokenSpec[0];
+            	currentToken = findTokenIn(line, curPos, UnicodeOperators);
+            	if (currentToken == null) 
+            	{
+            		return new TokenSpec[0];
+            	}
             }
             ;
             TokenSpec returnVal = findTokenIn(line, curPos, NonOperators);
@@ -763,6 +771,7 @@ public class TokenSpec
      */
     private static final String[] XOperators = { "(\\X)" };
 
+    
     // private static final String[] ParenOperators = new String[] { "(+)", "(-)", "(.)", "(/)", "(\\X)" };
 
     private static final String[] TeXSymbols = new String[] { "\\neg", "\\lnot", "\\approx", "\\asymp", "\\bigcirc",
@@ -772,8 +781,22 @@ public class TokenSpec
             "\\sqcup", "\\sqsubset", "\\sqsupset", "\\sqsubseteq", "\\sqsupseteq", "\\star", "\\subset", "\\subseteq",
             "\\succ", "\\succeq", "\\supset", "\\supseteq", "\\uplus", "\\wr", "\\notin", "\\times", "\\X" };
 
+    private static final String[] UnicodeOperators;
+    static {
+    	List<String> uo = new ArrayList<String>();
+    	for (String[] oa : new String[][]{Operators, XOperators, TeXSymbols}) {
+	    	for (String s : oa) {
+	    		String u = Unicode.a2u(s);
+	    		if (u != null)
+	    			uo.add(u);
+	    	}
+    	}
+    	UnicodeOperators = uo.toArray(new String[0]);
+    }
+    
     private static final String[] NonOperators = new String[] { "==", "---", "->", "<-", "***", "<<", ">>" };
 
+    
     /**
      * Returns true iff str is an element of the array TeXSymbols.
      * 

@@ -1,7 +1,10 @@
 package tla2unicode;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Converts between ASCII and Unicode represeantations of TLA+ symbols.
@@ -9,6 +12,12 @@ import java.util.Map;
  */
 public final class Unicode {
 	private Unicode() {}
+	
+	private static final Set<String> IMMEDIATE_REPLACE = new HashSet<String>(Arrays.asList(
+			"\\/", "/\\", "[]", "<>", "<<", ">>", "|->", "->", "<-"
+		));
+	
+	private static final String ASCII_GLYPHS = "=<>()+-\\/#.|~";
 	
 	// Unicode/ASCII conversion table
 	private static final String[][] table = { 
@@ -67,7 +76,7 @@ public final class Unicode {
 
 			{ "\u2295", "(+)", "\\oplus" },    // ⊕ CIRCLED PLUS
 			{ "\u2296", "(-)", "\\ominus" },   // ⊖ CIRCLED MINUS
-			{ "\u2297", "(\\X)", "\\otimes" }, // ⊗ CIRCLED TIMES
+			{ "\u2297", "(X)", "\\otimes" }, // ⊗ CIRCLED TIMES
 			{ "\u2298", "(/)", "\\oslash" },   // ⊘ CIRCLED DIVISION SLASH
 			{ "\u2299", "(.)", "\\odot" },     // ⊙ CIRCLED DOT OPERATOR
 
@@ -212,7 +221,8 @@ public final class Unicode {
 		for (String[] row : table) {
 			final String u = row[0]; // unicode
 			u2a.put(u, row[1]);
-			cu2a.put(u.charAt(0), row[1]);
+			if(u.length() == 1)
+				cu2a.put(u.charAt(0), row[1]);
 			for (int i = 1; i < row.length; i++)
 				a2u.put(row[i], u);
 		}
@@ -265,79 +275,45 @@ public final class Unicode {
 			res = null;
 		return res;
 	}
-
-//	/**
-//	 * Convert to Unicode representation
-//	 * 
-//	 * @param a the ASCII string
-//	 * @return the Unicode string or {@code a} if no alternate representation
-//	 */
-//	public static String toU(String a) {
-//		return convert(a, true);
-////		String u;
-////		return ((u = a2u(a)) != null ? u : a);
-//	}
-//
-//	/**
-//	 * Convert to ASCII representation of a string
-//	 * 
-//	 * @param u the Unicode string
-//	 * @return the canonical ASCII string or {@code a} if no alternate
-//	 *         representation
-//	 */
-//	public static String toA(String u) {
-//		return convert(u, false);
-////		String a;
-////		return ((a = u2a(u)) != null ? a : u);
-//	}
-//	
-	private static final String ASCII_GLYPHS = "=<>()+-\\/#.|~";
 	
-	// <<-3>>
-	// <-3
+	/**
+	 * Converts all relevant ASCII symbols in the given string to their Unicode representation. 
+	 * @param in a string
+	 * @return a string with ASCII symbols replaced
+	 */
+	public static String convertToUnicode(String in) {
+		final StringBuilder out = new StringBuilder();
+		final OnlineReplacer r = new OnlineReplacer() {
+			@Override
+			protected void replace(int start, int length, String u) {
+				out.replace(start, start + length, u);
+			}
+		};
+		for (int i = 0; i < in.length(); i++) {
+			char c = in.charAt(i);
+			out.append(c);
+			r.addChar(out.length() - 1, c);
+		}
+		return out.toString();
+	}
 	
-//	private static String convert(String in, boolean toU) {
-//		StringBuilder out = new StringBuilder();
-//		StringBuilder token = new StringBuilder();
-//		for (int i = 0; i < in.length();) {
-//			char c = in.charAt(i);
-//			
-//			if (c == '\\') {
-//				if --- comment, \/, /\
-//				convertToken(out, token, toU);
-//				for (; i < in.length() && Character.isLetter(in.charAt(i)); i++)
-//					token.append(c);
-//				convertToken(out, token, toU);
-//				continue;
-//			}
-//						
-//			if (i < in.length() - 1) {
-//				final char c1 = in.charAt(i + 1);
-//				if ((c == '<' && (in.charAt(i + 1) == '<' || in.charAt(i + 1) == '>'))
-//							|| (c == '[' && in.charAt(i + 1) == ']')) {
-//					convertToken(out, token, toU);
-//					token.append(c).append(c1); 
-//					convertToken(out, token, toU);
-//					i += 2;
-//					continue;
-//				}
-//			}
-//			
-//			if (ASCII_GLYPHS.indexOf(c) >= 0) {
-//				token.append(c);
-//				i++;
-//				continue;
-//			}
-//			
-//			if (true /*Character.isWhitespace(c) || Character.isLetterOrDigit(c) || c == '_'*/) {
-//				convertToken(out, token, toU);
-//				out.append(c);
-//				i++;
-//				continue;
-//			}
-//		}
-//		return out.toString();
-//	}
+	/**
+	 * Converts all Unicode symbols in the given string to their ASCII representation. 
+	 * @param in a string
+	 * @return a string with Unicode symbols replaced
+	 */
+	public static String convertToASCII(String in) {
+		final StringBuilder out = new StringBuilder();
+		for (int i = 0; i < in.length(); i++) {
+			char c = in.charAt(i);
+			String u = cu2a(c);
+			if (u != null)
+				out.append(u);
+			else
+				out.append(c);
+		}
+		return out.toString();
+	}
 	
 	public static String toSuperscript(int num) {
 		String decimal = Integer.toString(num);
@@ -354,19 +330,105 @@ public final class Unicode {
 			sb.append(subscriptDigit(decimal.charAt(i) - '\0'));
 		return sb.toString();
 	}
-	
-	private static void convertToken(StringBuilder out, StringBuilder token, boolean toU) {
-		if (token.length() > 0) {
-			String res = toU ? a2u(token.toString()) : u2a(token.toString());
-			out.append(res != null ? res : token);
+		
+	/**
+	 * Online replacement of ASCII -> Unicode as you type
+	 */
+	public static abstract class OnlineReplacer {
+		private StringBuilder token; // The current symbol token. Starts with '\' or contains only Unicode.ASCII_GLYPHS 
+		private int startOffset; // the token's starting offset in the document
+		private int nextOffset; // the position following the end of token (used in the state machine)
+
+		public OnlineReplacer() {
+			reset();
 		}
-		token.setLength(0);
+		
+		public int getNextOffset() {
+			return nextOffset;
+		}
+		
+		// resets the token
+		public void reset() {
+			// System.out.println("RESET");
+			if (token == null || token.length() > 0)
+				token = new StringBuilder();
+			nextOffset = -1;
+			startOffset = -1;
+		}
+		
+		public void backspace() {
+			// System.out.println("backspace  start: " + startOffset + " next: " + nextOffset + " token: \"" + token + "\"");
+			token.delete(token.length() - 1, token.length());
+			nextOffset--;
+		}
+		
+		public void addChar(int offset, char c) {
+			// This is the core of the state machine adding characters to token
+			// and sending tokens for replacement.
+			assert nextOffset < 0 || offset == nextOffset;
+			
+			// System.out.println("addChar  start: " + startOffset + " next: " + nextOffset + " token: \"" + token + "\"");
+			
+			if (token.length() > 0 && token.charAt(0) == '\\') {
+				if (token.length() == 1 && c == '/') { // Special case: \/
+					appendToToken(offset, c);
+					replace();
+				} else if (isBackslashOperatorChar(c)) {
+					appendToToken(offset, c);
+				} else {
+					replace();
+					addChar(offset, c);
+				}
+			} else if (Unicode.ASCII_GLYPHS.indexOf(c) >= 0
+						|| (c == 'X' && token.length() == 1 && token.charAt(0) == '(')) { // Special case: (X)
+				appendToToken(offset, c);
+				if(IMMEDIATE_REPLACE.contains(token.toString()))
+					replace();
+			} else // if (Character.isWhitespace(c))
+				replace();
+		}
+		
+		private void appendToToken(int offset, char c) {
+			if (nextOffset < 0) {
+				nextOffset = offset;
+				startOffset = offset;
+			}
+			token.append(c);
+			nextOffset++;
+			// System.out.println("APPEND: " + token);
+		}
+		
+		// Whether this char can be a part of a backslash operator
+		private static boolean isBackslashOperatorChar(char c) {
+			return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+		}
+		
+		public void replace() {
+			if (token.length() == 0)
+				return;
+			final String u = Unicode.a2u(token.toString());
+			if (u != null) {
+				// System.out.println("REPLACE " + token);
+				replace(startOffset, token.length(), u);
+			}
+			reset();
+		}
+		
+		protected abstract void replace(int start, int length, String u);
 	}
-	
 	/**
 	 * Whether or not a string contains only BMP characters (TLA+ only supports those).
 	 */
 	public static boolean isBMP(String str) {
 		return str.length() == str.codePointCount(0, str.length());
 	}
+	
+//	public static void main(String[] args) {
+//		for (String a : new String[] {"<<-3>>", "<-3", "===", "==1"}) {
+//			System.out.println(a);
+//			System.out.println(convertToUnicode(a));
+//			System.out.println(convertToASCII(convertToUnicode(a)));
+//			System.out.println("-----");
+//		}
+//	}
 }

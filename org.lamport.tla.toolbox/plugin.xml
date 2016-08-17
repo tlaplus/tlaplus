@@ -317,6 +317,18 @@
             id="toolbox.command.module.translate.active"
             name="Translate module">
       </command>
+      <command
+            categoryId="toolbox.command.category.module"
+            description="Convert module in the active editor to Unicode"
+            id="toolbox.command.module.a2u.active"
+            name="Module To Unicode">
+      </command>
+       <command
+            categoryId="toolbox.command.category.module"
+            description="Export module in the active editor to ASCII"
+            id="toolbox.command.module.exportascii.active"
+            name="Module To ASCII">
+      </command>
       <!-- Module preferences are disabled -->
       <!-- command
             categoryId="toolbox.command.category.module"
@@ -553,6 +565,41 @@
                </with>
             </visibleWhen>
          </command>
+         <command
+               commandId="toolbox.command.module.a2u.active"
+               id="toolbox.command.module.a2u"
+               label="Module To Unicode">
+               <!-- icon="icons/full/obj16/complete_task.gif" -->
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="toolbox.command.module.exportascii.active"
+               id="toolbox.command.module.exportascii"
+               label="Export As ASCII...">
+               <!-- icon="icons/full/obj16/complete_task.gif" -->
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command>
+         
          <!-- disable module properties -->
          <!-- command
                commandId="toolbox.command.module.props"
@@ -901,6 +948,14 @@
       <handler
             class="org.lamport.tla.toolbox.ui.handler.ParseModuleHandler"
             commandId="toolbox.command.module.parse.active">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.Module2UnicodeHandler"
+            commandId="toolbox.command.module.a2u.active">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.Module2UnicodeHandler"
+            commandId="toolbox.command.module.exportascii.active">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.AddModuleHandler"

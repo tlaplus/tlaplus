@@ -39,12 +39,14 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextListener;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewerExtension6;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.IUndoManagerExtension;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
@@ -147,6 +149,8 @@ public class TLAEditor extends TextEditor
      */
     private IResourceChangeListener moduleFileChangeListener;
 	private IEventBroker service;
+	
+	private final TLAUnicodeReplacer unicode = new TLAUnicodeReplacer(this);
 
     /**
      * Constructor
@@ -273,6 +277,9 @@ public class TLAEditor extends TextEditor
 				}
 			}
 		});
+		
+		unicode.init(input);
+		
     }
 
 	private IUndoContext getUndoContext() {
@@ -294,6 +301,7 @@ public class TLAEditor extends TextEditor
         // ensure decoration support has been created and configured.
         // @see org.eclipse.ui.texteditor.ExtendedTextEditor#createSourceViewer
         getSourceViewerDecorationSupport(viewer);
+        
         return viewer;
     }
 
