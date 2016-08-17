@@ -60,9 +60,8 @@ public final class Configuration implements ConfigurationConstants {
   // The following method added by DRJ.
   static public void ReInit() {
     jj_initialized_once = false;
-    if (jj_input_stream != null)
-        jj_input_stream.ReInit(input, 1, 1);
-    token_source.ReInit(jj_input_stream);
+    jj_input_stream = null;
+    ConfigurationTokenManager.ReInit(null);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
