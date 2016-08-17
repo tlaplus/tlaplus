@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 
 import util.FileUtil;
 
@@ -22,8 +23,13 @@ public class InputStreamCharReader extends CharReader
 
     public InputStreamCharReader(InputStream is) 
       { bufferedReader = 
-                  new BufferedReader(new InputStreamReader(
-                		  is, FileUtil.UTF8)) ;
+      		new BufferedReader(new InputStreamReader(is, FileUtil.UTF8)) ;
+      } ;
+
+      public InputStreamCharReader(Reader reader) 
+      { bufferedReader = reader instanceof BufferedReader
+      		? (BufferedReader) reader
+      		: new BufferedReader(reader) ;
       } ;
 
     public String innerGetNextLine()

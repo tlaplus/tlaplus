@@ -13,13 +13,14 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 
 import util.FileUtil;
 
 public class OutputFileWriter
- { private OutputStreamWriter fileWriter = null ;
+ { private Writer fileWriter = null ;
    private String name = "" ;
 
    public OutputFileWriter(String fileName)
@@ -38,6 +39,11 @@ public class OutputFileWriter
    public OutputFileWriter(OutputStream out, String fileName)
   { name = fileName ;
     fileWriter = new OutputStreamWriter(out, FileUtil.UTF8) ;
+  }
+
+   public OutputFileWriter(Writer out, String fileName)
+  { name = fileName ;
+    fileWriter = out ;
   }
 
    public void putLine(String out)
