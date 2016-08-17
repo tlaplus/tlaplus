@@ -598,4 +598,12 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     };
     return res ;
   }
+  
+  public String toString() {
+	  return "STN["
+			  + image
+			  + (location != null ? " " + location[0] + ":" + location[1] + "-" +  location[2] + ":" + location[3]: "")
+			  + (fileName != null ? " " + fileName : "")
+			  + "]";
+  }
   }
