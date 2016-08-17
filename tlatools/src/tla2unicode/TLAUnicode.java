@@ -1,4 +1,4 @@
-// Copyright (c) 2003 Compaq Corporation.  All rights reserved.
+// Copyright (c) 2016 Microsoft Corporation.  All rights reserved.
 
 /***************************************************************************
 *                                                                          *
@@ -43,17 +43,13 @@
 *    whose left-hand edge is a point used by some other token for its      *
 *    alignment.                                                            *
 *                                                                          *
-*                                                                          *                   
-* ------------------------------------------------------------------------ *
-*                                                                          *
-* Bug: When a line ends like so `\* abc (* def *)`, the `def` token is     *
-*      lost. (Bug in TokenizeSpec)                                         *
-*                                                                          *
 ***************************************************************************/
-package unicasc;
+package tla2unicode;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +79,10 @@ public class TLAUnicode {
   	private static boolean debug = false ; // True if the -debug option is chosen.
 	
 	public static void convert(boolean toU, InputStream input, OutputStream output) {
+		convert(toU, new InputStreamCharReader(input), new OutputFileWriter(output, null));
+	}
+	
+	public static void convert(boolean toU, Reader input, Writer output) {
 		convert(toU, new InputStreamCharReader(input), new OutputFileWriter(output, null));
 	}
 	

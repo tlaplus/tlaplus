@@ -9,7 +9,7 @@ package tla2sany.parser;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import unicasc.Unicode;
+import tla2unicode.Unicode;
 import util.UniqueString;
 
 public class Operators {

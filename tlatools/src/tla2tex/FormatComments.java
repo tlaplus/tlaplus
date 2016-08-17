@@ -67,7 +67,7 @@ package tla2tex;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import unicasc.Unicode;
+import tla2unicode.Unicode;
 
 public final class FormatComments
 { public static void WriteComment(OutputFileWriter writer, 

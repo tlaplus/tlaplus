@@ -32,7 +32,8 @@
 package tla2tex;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import unicasc.Unicode;
+
+import tla2unicode.Unicode;
 
 public final class BuiltInSymbols
   { 

@@ -1,4 +1,4 @@
-package unicasc;
+package tla2unicode;
 
 import java.util.HashMap;
 import java.util.Map;
