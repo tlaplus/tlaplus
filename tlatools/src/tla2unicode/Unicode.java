@@ -19,7 +19,7 @@ public final class Unicode {
 			"\\/", "/\\", "[]", "<>", "<<", ">>", "|->", "->", "<-"
 		));
 	
-	private static final String ASCII_GLYPHS = "=<>[]()+-\\/#.|~!$&*:";
+	private static final String ASCII_GLYPHS = "=<>[]()+-\\/#.|~!$&*:'^";
 	
 	// Unicode/ASCII conversion table
 	private static final String[][] table = { 
