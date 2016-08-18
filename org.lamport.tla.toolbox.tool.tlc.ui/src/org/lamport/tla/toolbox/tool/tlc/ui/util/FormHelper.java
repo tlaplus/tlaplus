@@ -25,6 +25,7 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
+import org.lamport.tla.toolbox.editor.basic.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
@@ -215,6 +216,9 @@ public class FormHelper
         control.setWordWrap(true);
         control.setFont(TLCUIActivator.getDefault().getCourierFont());
         control.setEditable(true);
+        
+        new TLAUnicodeReplacer().init(sourceViewer);
+        
         return sourceViewer;
     }
 
