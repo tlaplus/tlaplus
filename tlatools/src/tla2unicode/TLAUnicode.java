@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +85,12 @@ public class TLAUnicode {
 	
 	public static void convert(boolean toU, Reader input, Writer output) {
 		convert(toU, new InputStreamCharReader(input), new OutputFileWriter(output, null));
+	}
+	
+	public static void convert(boolean toU, Path inFile, Path outFile) {
+		final CharReader input = new FileCharReader(inFile.normalize().toAbsolutePath().toString());
+		final OutputFileWriter output = new OutputFileWriter(outFile.normalize().toAbsolutePath().toString());
+		convert(toU, input, output);
 	}
 	
 	// Main entry point
