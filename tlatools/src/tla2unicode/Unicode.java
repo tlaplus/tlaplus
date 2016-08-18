@@ -1,5 +1,7 @@
 package tla2unicode;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +19,7 @@ public final class Unicode {
 			"\\/", "/\\", "[]", "<>", "<<", ">>", "|->", "->", "<-"
 		));
 	
-	private static final String ASCII_GLYPHS = "=<>()+-\\/#.|~";
+	private static final String ASCII_GLYPHS = "=<>()+-\\/#.|~!$&*:";
 	
 	// Unicode/ASCII conversion table
 	private static final String[][] table = { 
@@ -277,23 +279,49 @@ public final class Unicode {
 	}
 	
 	/**
+	 * A convenience method that returns the Unicode representation of a symbol (whether ASCII or Unicode)
+	 * @param s the symbol (ASCII or Unicode)
+	 * @return the possibly converted symbol
+	 */
+	public static String sym2u(String s) {
+		String res;
+		return (res = a2u(s)) != null ? res : s;
+	}
+	
+	/**
+	 * A convenience method that returns the ASCII representation of a symbol (whether Unicode or ASCII)
+	 * @param s the symbol (Unicode or ASCII)
+	 * @return the possibly converted symbol
+	 */
+	public static String sym2a(String s) {
+		String res;
+		return (res = u2a(s)) != null ? res : s;
+	}
+	
+	/**
 	 * Converts all relevant ASCII symbols in the given string to their Unicode representation. 
 	 * @param in a string
 	 * @return a string with ASCII symbols replaced
 	 */
 	public static String convertToUnicode(String in) {
 		final StringBuilder out = new StringBuilder();
-		final OnlineReplacer r = new OnlineReplacer() {
+		final OnlineFilter r = new OnlineFilter() {
 			@Override
-			protected void replace(int start, int length, String u) {
-				out.replace(start, start + length, u);
+			protected void putChar(char c) {
+				out.append(c);
+			}
+			
+			@Override
+			protected void putString(CharSequence s) {
+				out.append(s);
 			}
 		};
+
 		for (int i = 0; i < in.length(); i++) {
 			char c = in.charAt(i);
-			out.append(c);
-			r.addChar(out.length() - 1, c);
+			r.addChar(c);
 		}
+		r.flush();
 		return out.toString();
 	}
 	
@@ -330,12 +358,12 @@ public final class Unicode {
 			sb.append(subscriptDigit(decimal.charAt(i) - '\0'));
 		return sb.toString();
 	}
-		
+	
 	/**
 	 * Online replacement of ASCII -> Unicode as you type
 	 */
 	public static abstract class OnlineReplacer {
-		private StringBuilder token; // The current symbol token. Starts with '\' or contains only Unicode.ASCII_GLYPHS 
+		protected StringBuilder token; // The current symbol token. Starts with '\' or contains only Unicode.ASCII_GLYPHS 
 		private int startOffset; // the token's starting offset in the document
 		private int nextOffset; // the position following the end of token (used in the state machine)
 
@@ -343,12 +371,12 @@ public final class Unicode {
 			reset();
 		}
 		
-		public int getNextOffset() {
+		public final int getNextOffset() {
 			return nextOffset;
 		}
 		
 		// resets the token
-		public void reset() {
+		public final void reset() {
 			// System.out.println("RESET");
 			if (token == null || token.length() > 0)
 				token = new StringBuilder();
@@ -356,13 +384,13 @@ public final class Unicode {
 			startOffset = -1;
 		}
 		
-		public void backspace() {
+		public final void backspace() {
 			// System.out.println("backspace  start: " + startOffset + " next: " + nextOffset + " token: \"" + token + "\"");
 			token.delete(token.length() - 1, token.length());
 			nextOffset--;
 		}
 		
-		public void addChar(int offset, char c) {
+		public final void addChar(int offset, char c) {
 			// This is the core of the state machine adding characters to token
 			// and sending tokens for replacement.
 			assert nextOffset < 0 || offset == nextOffset;
@@ -384,8 +412,10 @@ public final class Unicode {
 				appendToToken(offset, c);
 				if(IMMEDIATE_REPLACE.contains(token.toString()))
 					replace();
-			} else // if (Character.isWhitespace(c))
+			} else {
 				replace();
+				putChar(c);
+			}
 		}
 		
 		private void appendToToken(int offset, char c) {
@@ -403,19 +433,116 @@ public final class Unicode {
 			return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 		}
 		
-		public void replace() {
+		public final void replace() {
 			if (token.length() == 0)
 				return;
 			final String u = Unicode.a2u(token.toString());
 			if (u != null) {
 				// System.out.println("REPLACE " + token);
 				replace(startOffset, token.length(), u);
-			}
+			} else
+				putString(token);
 			reset();
 		}
 		
 		protected abstract void replace(int start, int length, String u);
+		
+		protected void putString(CharSequence s) {
+			for (int i = 0; i < s.length(); i++)
+				putChar(s.charAt(i));
+		}
+		
+		protected void putChar(char c) {
+		}
 	}
+	
+	/**
+	 * Online Unicode filter with a simpler API than OnlineReplacer
+	 * for simple, non-navigable streams.
+	 */
+	static abstract class OnlineFilter extends OnlineReplacer {
+		public final void addChar(char c) {
+			addChar(-1, c);
+		}
+		
+		protected final void replace(int start, int length, String u) {
+			putString(u);
+		}
+		
+		public final void flush() {
+			replace();
+		}
+		
+		protected abstract void putChar(char c);
+	}
+	
+	/**
+	 * A Writer that replaces TLA ASCII symbols with their Unicode
+	 * representation when relevant.
+	 */
+	public static final class TLAUnicodeWriter extends Writer {
+		private final Writer out;
+		private final OnlineFilter filter = new OnlineFilter() {
+			@Override
+			protected void putChar(char c) {
+				try {
+					out.append(c);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			@Override
+			protected void putString(CharSequence s) {
+				try {
+					out.append(s);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		};
+		
+		public TLAUnicodeWriter(Writer out) {
+			this.out = out;
+		}
+
+		@Override
+		public void write(char[] cbuf, int off, int len) throws IOException {
+			for (int i = 0; i < len; i++)
+				write(cbuf[off + i]);
+		}
+
+		@Override
+		public Writer append(CharSequence s) throws IOException {
+			for (int i = 0; i < s.length(); i++)
+				write(s.charAt(i));
+			return this;
+		}
+
+		@Override
+		public void write(int c) throws IOException {
+			try {
+				filter.addChar((char) c); 
+			} catch (RuntimeException e) {
+				if (e.getCause() instanceof IOException)
+					throw (IOException) e.getCause();
+				throw e;
+			}
+		}
+
+		@Override
+		public void flush() throws IOException {
+			filter.flush();
+			out.flush();
+		}
+
+		@Override
+		public void close() throws IOException {
+			filter.flush();
+			out.close();
+		}
+	}
+	
 	/**
 	 * Whether or not a string contains only BMP characters (TLA+ only supports those).
 	 */
@@ -423,12 +550,12 @@ public final class Unicode {
 		return str.length() == str.codePointCount(0, str.length());
 	}
 	
-//	public static void main(String[] args) {
-//		for (String a : new String[] {"<<-3>>", "<-3", "===", "==1"}) {
-//			System.out.println(a);
-//			System.out.println(convertToUnicode(a));
-//			System.out.println(convertToASCII(convertToUnicode(a)));
-//			System.out.println("-----");
-//		}
-//	}
+	public static void main(String[] args) {
+		for (String a : new String[] {"<<-3>>", "<-3", "===", "==1"}) {
+			System.out.println(a);
+			System.out.println(convertToUnicode(a));
+			System.out.println(convertToASCII(convertToUnicode(a)));
+			System.out.println("-----");
+		}
+	}
 }
