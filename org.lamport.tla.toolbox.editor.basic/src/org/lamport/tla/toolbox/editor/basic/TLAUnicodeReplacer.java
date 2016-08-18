@@ -4,52 +4,89 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.ITextInputListener;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.editors.text.TextEditor;
+import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2unicode.Unicode;
 
 /**
  * This class is responsible for replacing ASCII TLA special symbols with their Unicode counterparts
- * as you type in the editor.
+ * as you type in an editor.
  * 
  * @author pron
  */
 public class TLAUnicodeReplacer {
-	private final TLAEditor editor;
-	private IDocument doc;
-	private Unicode.OnlineReplacer replacer;
+	public static volatile boolean UNICODE_MODE = true;
 	
-	public TLAUnicodeReplacer(TLAEditor editor) {
-		this.editor = editor;
-	}
-
-	public void init(IEditorInput input) {
+//	RightMargin = Activator.getDefault().getPreferenceStore().getInt(
+//			EditorPreferencePage.EDITOR_RIGHT_MARGIN);
+	
+	private Object editor;
+	private IDocument doc;
+	private final Unicode.OnlineReplacer replacer;
+	private final IDocumentListener listener = new IDocumentListener() {
+		public void documentChanged(DocumentEvent event) {
+			if (UNICODE_MODE)
+				handle(event);				
+		}
+		
+		public void documentAboutToBeChanged(DocumentEvent event) {
+		}
+	};
+	
+	public TLAUnicodeReplacer() {	
 		this.replacer = new Unicode.OnlineReplacer() {
 			@Override
 			protected void replace(final int start, final int length, final String u) {
 				final IDocument doc0 = doc;
+				final Object ed = editor;
 				UIHelper.runUIAsync(new Runnable() {
 					public void run() {
 						 try {
-							  doc0.replace(start, length, u);
+							 doc0.replace(start, length, u);
+							 
+							 // fix caret position in a special case
+							 if (ed instanceof ISourceViewer) {
+								 if (start == 0)
+									 ((ISourceViewer) ed).getTextWidget().setCaretOffset(length);
+							 }
 						  } catch (BadLocationException e) {
 								throw new AssertionError(e);
 						  }
 					}
-				});	
+				});
 			}
 		};
-		// editor.getEditorInput()
-		
-		editor.getDocumentProvider().getDocument(input).addDocumentListener(new IDocumentListener() {
-			public void documentChanged(DocumentEvent event) {
-				handle(event);				
+	}
+
+	public void init(ISourceViewer editor) {
+		this.editor = editor;
+		editor.addTextInputListener(new ITextInputListener() {
+			public void inputDocumentChanged(IDocument oldInput, IDocument newInput) {
+				if (oldInput != null)
+					oldInput.removeDocumentListener(listener);
+				init(newInput);
 			}
 			
-			public void documentAboutToBeChanged(DocumentEvent event) {
+			public void inputDocumentAboutToBeChanged(IDocument oldInput, IDocument newInput) {
 			}
 		});
+		init(editor.getDocument());
+	}
+	
+	public void init(TextEditor editor) {
+		final IEditorInput input = editor.getEditorInput();
+		init(editor.getDocumentProvider().getDocument(input));
+	}
+	
+	public void init(IDocument document) {
+		if (document != null)
+			document.addDocumentListener(listener);
 	}
 	
 	private void handle(DocumentEvent event) {

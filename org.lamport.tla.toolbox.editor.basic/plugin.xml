@@ -238,6 +238,20 @@
             id="org.lamport.tla.toolbox.editor.basic.formatAndBoxComment"
             name="Format and Box Comment">
       </command>
+            <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.UnicodeConversionHandler"
+            description="Converts selection to Unicode."
+            id="org.lamport.tla.toolbox.editor.basic.convertToUnicode"
+            name="Convert to Unicode">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.UnicodeConversionHandler"
+            description="Converts selection to ASCII."
+            id="org.lamport.tla.toolbox.editor.basic.convertToASCII"
+            name="Convert to ASCII">
+      </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
             defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.RenumberProofHandler"
@@ -627,6 +641,21 @@
               </command>
               <command
                     commandId="org.lamport.tla.toolbox.editor.basic.gotoMatchingParen"
+                    style="push">
+              </command>
+              <separator
+                    name="org.lamport.tla.toolbox.editor.basic.unicodeseparator"
+                    visible="true">
+              </separator>
+           </menuContribution>
+           <menuContribution
+                 locationURI="popup:#TextEditorContext?after=org.lamport.tla.toolbox.editor.basic.unicodeseparator">
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.convertToUnicode"
+                    style="push">
+              </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.convertToASCII"
                     style="push">
               </command>
            </menuContribution>

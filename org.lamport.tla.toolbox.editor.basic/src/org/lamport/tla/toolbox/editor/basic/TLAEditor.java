@@ -150,7 +150,7 @@ public class TLAEditor extends TextEditor
     private IResourceChangeListener moduleFileChangeListener;
 	private IEventBroker service;
 	
-	private final TLAUnicodeReplacer unicode = new TLAUnicodeReplacer(this);
+	private final TLAUnicodeReplacer unicode = new TLAUnicodeReplacer();
 
     /**
      * Constructor
@@ -278,7 +278,7 @@ public class TLAEditor extends TextEditor
 			}
 		});
 		
-		unicode.init(input);
+		unicode.init(this);
 		
     }
 
