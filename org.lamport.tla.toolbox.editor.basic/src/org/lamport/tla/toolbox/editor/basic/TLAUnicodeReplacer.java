@@ -8,8 +8,6 @@ import org.eclipse.jface.text.ITextInputListener;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2unicode.Unicode;
