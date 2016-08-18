@@ -19,7 +19,7 @@ public final class Unicode {
 			"\\/", "/\\", "[]", "<>", "<<", ">>", "|->", "->", "<-"
 		));
 	
-	private static final String ASCII_GLYPHS = "=<>()+-\\/#.|~!$&*:";
+	private static final String ASCII_GLYPHS = "=<>[]()+-\\/#.|~!$&*:";
 	
 	// Unicode/ASCII conversion table
 	private static final String[][] table = { 
@@ -550,12 +550,12 @@ public final class Unicode {
 		return str.length() == str.codePointCount(0, str.length());
 	}
 	
-	public static void main(String[] args) {
-		for (String a : new String[] {"<<-3>>", "<-3", "===", "==1"}) {
-			System.out.println(a);
-			System.out.println(convertToUnicode(a));
-			System.out.println(convertToASCII(convertToUnicode(a)));
-			System.out.println("-----");
-		}
-	}
+//	public static void main(String[] args) {
+//		for (String a : new String[] {"<<-3>>", "<-3", "===", "==1"}) {
+//			System.out.println(a);
+//			System.out.println(convertToUnicode(a));
+//			System.out.println(convertToASCII(convertToUnicode(a)));
+//			System.out.println("-----");
+//		}
+//	}
 }
