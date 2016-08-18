@@ -157,6 +157,15 @@ public final class Unicode {
 	public static final char SMALL_PSI     = '\u03C8'; // ψ GREEK SMALL LETTER PSI
 	public static final char SMALL_OMEGA   = '\u03C9'; // ω GREEK SMALL LETTER OMEGA
 
+	// Special 
+	
+	public static final char DOUBLE_STRUCK_N   = '\u2115'; // ℕ DOUBLE-STRUCK CAPITAL N
+	public static final char DOUBLE_STRUCK_Z   = '\u2124'; // ℤ DOUBLE-STRUCK CAPITAL Z
+	public static final char DOUBLE_STRUCK_Q   = '\u211A'; // ℚ DOUBLE-STRUCK CAPITAL Q
+	public static final char DOUBLE_STRUCK_R   = '\u211D'; // ℝ DOUBLE-STRUCK CAPITAL R
+
+	public static final char EMPTY_SET   = '\u2205'; // ∅ EMPTY SET
+
 	// Subscripts (◻[Next]ᵥₐᵣₛ)
 	
 	public static final char subscriptDigit(int num) { // ₀₁₂₃₄₅₆₇₈₉
