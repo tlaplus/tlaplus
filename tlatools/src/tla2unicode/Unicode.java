@@ -17,12 +17,12 @@ public final class Unicode {
 	
 	private Unicode() {}
 	
+	// The following two constants are used in online Unicode replacement
+	private static final String ASCII_GLYPHS = "=<>[]()+-\\/#.|~!$&*:'^";
 	private static final Set<String> IMMEDIATE_REPLACE = new HashSet<String>(Arrays.asList(
 			"\\/", "/\\", "[]", "<>", "<<", ">>", "|->", "->", "<-"
 		));
-	
-	private static final String ASCII_GLYPHS = "=<>[]()+-\\/#.|~!$&*:'^";
-	
+		
 	// Unicode/ASCII conversion table
 	private static final String[][] table = { 
 			// The first element is the Unicode character.
