@@ -57,6 +57,7 @@ public final class LoadFont {
 	    	
 	    	try {
 	    		display.loadFont(fontFilePath);
+	    		Activator.getDefault().logError("Font " + fileName + " has been loaded successfully from file " + fontFilePath);
 	    	} catch  (Exception e) {
 	    		Activator.getDefault().logError("Font " + fileName + " cannot be loaded from file " + fontFilePath);
 	    	}
