@@ -2298,7 +2298,7 @@ static final long[] jjbitVec40 = {
    0x0L, 0x0L, 0x20000L, 0x0L
 };
 static final long[] jjbitVec41 = {
-   0x0L, 0x20000L, 0x0L, 0x0L
+   0x0L, 0x0L, 0x0L, 0x40L
 };
 static final long[] jjbitVec42 = {
    0x0L, 0x0L, 0x4L, 0x0L
@@ -6425,7 +6425,7 @@ private static final boolean jjCanMove_41(int hiByte, int i1, int i2, long l1, l
 {
    switch(hiByte)
    {
-      case 43:
+      case 34:
          return ((jjbitVec41[i2] & l2) != 0L);
       default : 
          return false;

@@ -40,8 +40,8 @@ public final class Unicode {
 
 			{ "\u2032", "'" },  // ′ PRIME
 			{ "\u25A1", "[]" }, // □ \u25A1 WHITE SQUARE / ◻ \u25FB White medium square / \u2610︎ ☐ BALLOT BOX  / \u2B1C ⬜ White large square
-			{ "\u25C7", "<>" }, // ◇ WHITE DIAMOND/ ⬦ \u2B26 WHITE MEDIUM DIAMOND / ♢ \u2662 WHITE DIAMOND SUIT 
-			{ "\u219D", "~>" },   // ↝ RIGHTWARDS WAVE ARROW / ⤳ \u2933 WAVE ARROW POINTING DIRECTLY RIGHT
+			{ "\u25C7", "<>" }, // ◇ \u25C7 WHITE DIAMOND/ ⬦ \u2B26 WHITE MEDIUM DIAMOND / ♢ \u2662 WHITE DIAMOND SUIT 
+			{ "\u219D", "~>" },   // ↝ \u219D RIGHTWARDS WAVE ARROW / ⤳ \u2933 WAVE ARROW POINTING DIRECTLY RIGHT
 			{ "\u2945", "-+->" }, // ⥅ RIGHTWARDS ARROW WITH PLUS BELOW/ ⇾ \u21FE RIGHTWARDS OPEN-HEADED ARROW
 			{ "\u2200\u2200", "\\AA" }, // ∀∀
 			{ "\u2203\u2203", "\\EE" }, // ∃∃
@@ -87,7 +87,7 @@ public final class Unicode {
 			{ "\u25CB", "\\o", "\\circ" }, // ○ \u25CB WHITE CIRCLE / ∘ \u2218 RING OPERATOR 
 			{ "\u25EF", "\\bigcirc" },     // ◯ LARGE CIRCLE 
 			{ "\u2022", "\\bullet" },      // • BULLET 
-			{ "\u22c6", "\\star" },        // ⋆ STAR OPERATOR / ⭑ \u2B51 BLACK SMALL STAR / ★ \u2605 BLACK STAR / ☆ \u2606 WHITE STAR / ⭐︎ \u2B50 \uFE0E White medium star
+			{ "\u22c6", "\\star" },        // ⋆ \u22c6 STAR OPERATOR / ⭑ \u2B51 BLACK SMALL STAR / ★ \u2605 BLACK STAR / ☆ \u2606 WHITE STAR / ⭐︎ \u2B50 \uFE0E White medium star
 
 			{ "\u227A", "\\prec" },   // ≺ PRECEDES
 			{ "\u227C", "\\preceq" }, // ≼ PRECEDES OR EQUAL TO / ⪯ \u2AAF PRECEDES ABOVE SINGLE-LINE EQUALS SIGN
