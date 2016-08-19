@@ -13,6 +13,8 @@ import java.util.Set;
  * @author pron
  */
 public final class Unicode {
+	// See Isabelle/etc/symbols https://github.com/seL4/isabelle/blob/master/etc/symbols
+	
 	private Unicode() {}
 	
 	private static final Set<String> IMMEDIATE_REPLACE = new HashSet<String>(Arrays.asList(
@@ -37,9 +39,9 @@ public final class Unicode {
 			{ "\u27E9_", ">>_" }, // ⟩_
 
 			{ "\u2032", "'" },  // ′ PRIME
-			{ "\u25FB", "[]" }, // ◻ White medium square / □ \u25A1 WHITE SQUARE / \u2610︎ ☐ BALLOT BOX 
-			{ "\u2B26", "<>" }, // ⬦ WHITE MEDIUM DIAMOND / ♢ \u2662 WHITE DIAMOND SUIT
-			{ "\u2933", "~>" },   // ⤳ WAVE ARROW POINTING DIRECTLY RIGHT
+			{ "\u25A1", "[]" }, // □ \u25A1 WHITE SQUARE / ◻ \u25FB White medium square / \u2610︎ ☐ BALLOT BOX  / \u2B1C ⬜ White large square
+			{ "\u25C7", "<>" }, // ◇ WHITE DIAMOND/ ⬦ \u2B26 WHITE MEDIUM DIAMOND / ♢ \u2662 WHITE DIAMOND SUIT 
+			{ "\u219D", "~>" },   // ↝ RIGHTWARDS WAVE ARROW / ⤳ \u2933 WAVE ARROW POINTING DIRECTLY RIGHT
 			{ "\u2945", "-+->" }, // ⥅ RIGHTWARDS ARROW WITH PLUS BELOW/ ⇾ \u21FE RIGHTWARDS OPEN-HEADED ARROW
 			{ "\u2200\u2200", "\\AA" }, // ∀∀
 			{ "\u2203\u2203", "\\EE" }, // ∃∃
@@ -76,16 +78,16 @@ public final class Unicode {
 			{ "\u00F7", "\\div" },          // ÷ DIVISION SIGN
 			{ "\u22C5", "\\cdot" },         // ⋅ DOT OPERATOR
 
-			{ "\u2295", "(+)", "\\oplus" },    // ⊕ CIRCLED PLUS
-			{ "\u2296", "(-)", "\\ominus" },   // ⊖ CIRCLED MINUS
+			{ "\u2295", "(+)", "\\oplus" },  // ⊕ CIRCLED PLUS
+			{ "\u2296", "(-)", "\\ominus" }, // ⊖ CIRCLED MINUS
 			{ "\u2297", "(X)", "\\otimes" }, // ⊗ CIRCLED TIMES
-			{ "\u2298", "(/)", "\\oslash" },   // ⊘ CIRCLED DIVISION SLASH
-			{ "\u2299", "(.)", "\\odot" },     // ⊙ CIRCLED DOT OPERATOR
+			{ "\u2298", "(/)", "\\oslash" }, // ⊘ CIRCLED DIVISION SLASH
+			{ "\u2299", "(.)", "\\odot" },   // ⊙ CIRCLED DOT OPERATOR
 
-			{ "\u25CB", "\\o", "\\circ" }, // ○ WHITE CIRCLE
+			{ "\u25CB", "\\o", "\\circ" }, // ○ \u25CB WHITE CIRCLE / ∘ \u2218 RING OPERATOR 
 			{ "\u25EF", "\\bigcirc" },     // ◯ LARGE CIRCLE 
 			{ "\u2022", "\\bullet" },      // • BULLET 
-			{ "\u2B51", "\\star" },        // ⭑ BLACK SMALL STAR / ★ \u2605 BLACK STAR / ☆ \u2606 WHITE STAR / ⭐︎ \u2B50 \uFE0E White medium star
+			{ "\u22c6", "\\star" },        // ⋆ STAR OPERATOR / ⭑ \u2B51 BLACK SMALL STAR / ★ \u2605 BLACK STAR / ☆ \u2606 WHITE STAR / ⭐︎ \u2B50 \uFE0E White medium star
 
 			{ "\u227A", "\\prec" },   // ≺ PRECEDES
 			{ "\u227C", "\\preceq" }, // ≼ PRECEDES OR EQUAL TO / ⪯ \u2AAF PRECEDES ABOVE SINGLE-LINE EQUALS SIGN
@@ -164,7 +166,10 @@ public final class Unicode {
 	public static final char DOUBLE_STRUCK_Q   = '\u211A'; // ℚ DOUBLE-STRUCK CAPITAL Q
 	public static final char DOUBLE_STRUCK_R   = '\u211D'; // ℝ DOUBLE-STRUCK CAPITAL R
 
-	public static final char EMPTY_SET   = '\u2205'; // ∅ EMPTY SET
+	public static final char EMPTY_SET = '\u2205'; // ∅ EMPTY SET
+	
+	public static final char BOTTOM = '\u22a5'; // ⊥ UP TACK \bottom 
+	public static final char TOP    = '\u22a4'; // ⊤ DOWN TACK \top 
 
 	// Subscripts (◻[Next]ᵥₐᵣₛ)
 	
