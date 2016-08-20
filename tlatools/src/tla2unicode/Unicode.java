@@ -84,7 +84,7 @@ public final class Unicode {
 			{ "\u2298", "(/)", "\\oslash" }, // ⊘ CIRCLED DIVISION SLASH
 			{ "\u2299", "(.)", "\\odot" },   // ⊙ CIRCLED DOT OPERATOR
 
-			{ "\u25CB", "\\o", "\\circ" }, // ○ \u25CB WHITE CIRCLE / ∘ \u2218 RING OPERATOR 
+			{ "\u2218", "\\o", "\\circ" }, // ∘ \u2218 RING OPERATOR / ○ \u25CB WHITE CIRCLE
 			{ "\u25EF", "\\bigcirc" },     // ◯ LARGE CIRCLE 
 			{ "\u2022", "\\bullet" },      // • BULLET 
 			{ "\u22c6", "\\star" },        // ⋆ \u22c6 STAR OPERATOR / ⭑ \u2B51 BLACK SMALL STAR / ★ \u2605 BLACK STAR / ☆ \u2606 WHITE STAR / ⭐︎ \u2B50 \uFE0E White medium star
