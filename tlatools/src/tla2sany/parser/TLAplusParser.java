@@ -6521,7 +6521,7 @@ SyntaxTreeNode tn;
   }
 
   final public SyntaxTreeNode Junctions() throws ParseException {
-  BStack.newReference(getToken(1).endColumn, getToken(1).kind);
+  BStack.newReference(getToken(1).beginColumn, getToken(1).kind);
     /***********************************************************************
     * Pushes onto BStack an element of the appropriate kind with offest    *
     * equal to the column of the last character in the /\ or \/ token.     *
@@ -6551,7 +6551,7 @@ SyntaxTreeNode tn;
     addHeir(tn);
     label_46:
     while (true) {
-      if (BStack.onReference( getToken(1).endColumn, getToken(1).kind )) {
+      if (BStack.onReference( getToken(1).beginColumn, getToken(1).kind )) {
         ;
       } else {
         break label_46;
@@ -6567,7 +6567,7 @@ SyntaxTreeNode tn;
     addHeir( tn );
     label_47:
     while (true) {
-      if (BStack.onReference( getToken(1).endColumn, getToken(1).kind )) {
+      if (BStack.onReference( getToken(1).beginColumn, getToken(1).kind )) {
         ;
       } else {
         break label_47;

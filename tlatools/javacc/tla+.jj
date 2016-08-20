@@ -4368,7 +4368,7 @@ LetDefinitions() : {
 
 SyntaxTreeNode
 Junctions () : {
-  BStack.newReference(getToken(1).endColumn, getToken(1).kind);
+  BStack.newReference(getToken(1).beginColumn, getToken(1).kind);
     /***********************************************************************
     * Pushes onto BStack an element of the appropriate kind with offest    *
     * equal to the column of the last character in the /\ or \/ token.     *
@@ -4391,7 +4391,7 @@ DisjList() : {
 } {
   tn = JuncItem( N_DisjItem) {
     addHeir(tn); }
-  ( LOOKAHEAD( { BStack.onReference( getToken(1).endColumn, getToken(1).kind ) })
+  ( LOOKAHEAD( { BStack.onReference( getToken(1).beginColumn, getToken(1).kind ) })
     tn = JuncItem( N_DisjItem) { addHeir(tn); }
   )*
 }
@@ -4402,7 +4402,7 @@ ConjList() : {
 } {
   tn = JuncItem( N_ConjItem) {
     addHeir( tn );}
-  ( LOOKAHEAD( { BStack.onReference( getToken(1).endColumn, getToken(1).kind ) })
+  ( LOOKAHEAD( { BStack.onReference( getToken(1).beginColumn, getToken(1).kind ) })
     tn = JuncItem( N_ConjItem) { addHeir( tn ); }
   )*
 }

@@ -128,7 +128,7 @@ public class BracketStack implements //LogCategories,
     * Returns true iff the Offset field of the top element on the stack    *
     * is less than or equal to o.                                          *
     ***********************************************************************/
-      se.Offset-1 < o; /* careful here. o is a beginning column, while
+      se.Offset < o; /* careful here. o is a beginning column, while
                           Offset is the end column of the token ...\/ ou .../\
                           on utilise - 1 pour comparer au de'but de la partie
                           significative du symbole.
