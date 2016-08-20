@@ -6,4 +6,9 @@ class StackElement {
   int Offset;
 
   StackElement( int o, int k) { Kind = k; Offset = o; }
+
+	@Override
+	public String toString() {
+		return "StackElement [Kind=" + Kind + ", Offset=" + Offset + "]";
+	}
 }
