@@ -106,13 +106,20 @@ public class TLAUnicode {
 		CommentToken.ProcessComments(spec); // Process the comment tokens.
 		// Debug.print2DArray(spec, "com");
 
-		FindAlignments.FindAlignments(spec); // Add the alignment pointers to spec.
+		// As comments aren't converted to U, mistakenly keeping alignment with a comment
+		// can break significant alignment, so we align without comments
+		final Token[][] noCommentSpec = filterOutComments(spec);
+		FindAlignments.FindAlignments(noCommentSpec); // Add the alignment pointers to spec.
+		
+		Debug.print2DArray(spec, "spec");
+		Debug.print2DArray(noCommentSpec, "noCommentSpec");
+		
 		// Debug.print2DArray(spec, "align");
 		
-		convert(spec, toU, output); // Write output
+		convert(toU, spec, noCommentSpec, output); // Write output
 	}
 
-	private static void convert(Token[][] spec, boolean toU, OutputFileWriter writer) {
+	private static void convert(boolean toU, Token[][] spec, Token[][] noCommentSpec, OutputFileWriter writer) {
 		// This method performs the actual conversion
 		
 		List<CommentToken> leftComments = null;
@@ -125,7 +132,7 @@ public class TLAUnicode {
 			
 			for (int item = 0; item < spec[line].length; item++) {
 				final Token tok = spec[line][item];
-				// System.out.println(tok); if (item == spec[line].length - 1) System.out.println("$$$$$$$$$");
+				// System.out.println("(" + line + ", " + item + "): " + tok); if (item == spec[line].length - 1) System.out.println("$$$$$$$$$");
 				
 				// if line ends with an open comment or a line comment and we have left comments to move, 
 			    // we wait to output the comment.
@@ -139,9 +146,21 @@ public class TLAUnicode {
 				//---- Align token ----
 				
 				int space = -1; // How much space to leave before the token
-				if (tok.aboveAlign.line != -1) {
+				if (tok.aboveAlign.line != -1 && tok.type != Token.COMMENT) {
 					// If aligned to a token above -- try to keep alignment
-					final Token align = tok.aboveAlign.toToken(spec);
+					Token align = tok.aboveAlign.toToken(noCommentSpec);
+					
+					// If this token isn't a comment but it's been aligned with a comment
+					// try to see if it can be aligned with a higher, non-comment line
+					// As comments aren't converted to U, mistakenly keeping alignment with a comment
+					// can break significant alignment
+//					if (tok.type != Token.COMMENT) {
+//						while (align.type == Token.COMMENT && align.aboveAlign.line != -1) {
+//							// System.out.println("Fixing alignment of " + tok + " from " + align + " to " + align.aboveAlign.toToken(noCommentSpec));
+//							align = align.aboveAlign.toToken(noCommentSpec);
+//						}
+//					}
+					
 					if (align.column == tok.column && align.outcolumn >= 0) {
 						final int column = out.length();
 						space = align.outcolumn - column;
@@ -312,6 +331,20 @@ public class TLAUnicode {
 		return c <= 0xff;
 	}
 	
+	private static Token[][] filterOutComments(Token[][] spec) {
+		List<Token[]> lines = new ArrayList<>();
+		for (int i = 0; i < spec.length; i++) {
+			List<Token> line = new ArrayList<>();
+			for (int j = 0; j < spec[i].length; j++) {
+				Token t = spec[i][j];
+				if (t.type != Token.COMMENT)
+					line.add(t);
+			}
+			lines.add(line.toArray(new Token[0]));
+		}
+		return lines.toArray(new Token[0][]);
+	}
+	
 	// ----------- COMMAND LINE PARSING ---------------------------------------
 	
   	private static boolean toU; // True for ASCII -> Unicode, false for Unicode -> ASCII
@@ -403,3 +436,37 @@ public class TLAUnicode {
 				APP + " command-line error: " + msg + "." + "Use -help option for more information.");
 	}
 }
+
+/*
+Interesting test cases:
+-------------------------
+
+------------------------------- MODULE Bar -------------------------------
+\* Comment replacement in A->U:
+
+A == x /\ y /\ z /\ w
+(*a1234ssasass*) /\ k
+(*a12*)(*a*)(*c*)/\ a \* foo
+(*a123*)         /\ k
+(*a*)(*a*)       /\ a
+
+B == x /\ y /\ z /\ w (* asasvjhsad
+a1234ssasassas*) /\ k (* saiork
+kinda*)          /\ t
+
+\* "Accidental comment anchoring" in A->U:
+Foo(a, b) == /\ a \/ b
+          \* /\ a => b
+             /\ b => a
+=============================================================================
+
+
+
+------------------------------- MODULE Bar -------------------------------
+\* Comment replacement in U->A
+
+A ≜ abcdefgd ∧ defjhfkjkh
+(*a∧b∧c∧d∧e*)∧ k
+=============================================================================
+
+ */
