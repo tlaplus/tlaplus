@@ -53,7 +53,7 @@ public final class Unicode {
 			{ "\u2227", "/\\", "\\land" },        // ∧ LOGICAL AND 
 			{ "\u2228", "\\/", "\\lor" },         // ∨ LOGICAL OR
 			{ "\u21D2", "=>" },                   // ⇒ RIGHTWARDS DOUBLE ARROW
-			{ "\u2263", "<=>", "\\equiv" },       // ≣ STRICTLY EQUIVALENT TO / ⇔ \u21D4 LEFT RIGHT DOUBLE ARROW
+			{ "\u2261", "<=>", "\\equiv" },       // ≡ IDENTICAL TO / ⇔ \u21D4 LEFT RIGHT DOUBLE ARROW 
 
 			{ "\u2260", "#", "/=" }, // ≠ NOT EQUAL TO
 
