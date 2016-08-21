@@ -18,6 +18,7 @@ import org.lamport.tla.toolbox.Activator;
 public final class LoadFont {
 	private LoadFont() {}
 	
+	// DejaVu License: http://dejavu-fonts.org/wiki/License
 	public static final String TLAPLUS_FONT_NAME = "DejaVuSansMono";
 	public static final String BOLD = "-Bold";
 	public static final String ITALIC = "-Oblique";
