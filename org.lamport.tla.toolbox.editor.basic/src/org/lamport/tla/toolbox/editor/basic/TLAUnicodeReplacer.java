@@ -19,6 +19,8 @@ import tla2unicode.Unicode;
  * @author pron
  */
 public class TLAUnicodeReplacer {
+	// consider using IAutoEditStrategy
+	
 	public static volatile boolean UNICODE_MODE = true;
 	
 //	RightMargin = Activator.getDefault().getPreferenceStore().getInt(

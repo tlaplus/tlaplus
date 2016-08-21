@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.widgets.Display;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
@@ -20,22 +21,28 @@ import tla2unicode.Unicode;
 /**
  * This is the handler method for the following commands:
  * 
- * Convert selection to Unicode
- * Convert selection to ASCII
- * 
+ * Paste as Unicode
  * 
  * @author pron
  * 
  */
-public class UnicodeConversionHandler extends AbstractHandler implements IHandler {
+public class UnicodePasteHandler extends AbstractHandler implements IHandler {
 	/*
 	 * Command ids.
 	 */
-	public static final String ID_CONVERT_SELECTION_TO_UNICODE = "org.lamport.tla.toolbox.editor.basic.convertToUnicode";
-	public static final String ID_CONVERT_SELECTION_TO_ASCII = "org.lamport.tla.toolbox.editor.basic.convertToASCII";
-	public static final String ID_COPY_AS_ASCII = "org.lamport.tla.toolbox.editor.basic.copyAsASCII";
 	public static final String ID_PASTE_AS_UNICODE = "org.lamport.tla.toolbox.editor.basic.pasteAsUnicode";
 
+//	private final Clipboard cb;
+//	
+//	public UnicodePasteHandler() {
+//		this.cb = new Clipboard(null);
+//	}
+//	
+//	@Override
+//	public void dispose() {
+//		cb.dispose();
+//		super.dispose();
+//	}
 	
 	/*
 	 * (non-Javadoc)
@@ -51,32 +58,24 @@ public class UnicodeConversionHandler extends AbstractHandler implements IHandle
 		final IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 		final ISelectionProvider selectionProvider = editor.getSelectionProvider();
 		final TextSelection selection = (TextSelection) selectionProvider.getSelection();
-		if (selection.isEmpty())
-			return null;
-		if (selection.getOffset() < 0)
+		
+		final String text;
+
+		final TextTransfer transfer = TextTransfer.getInstance();
+		Clipboard cb = new Clipboard(null);
+		try {
+			text = (String)cb.getContents(transfer);
+		} finally {
+			cb.dispose();
+		}
+		
+		if (text == null || text.isEmpty())
 			return null;
 		
-		final String selectedText = selection.getText();
-		String result = null;
+		String result = Unicode.convertToUnicode(text);
 		try {
-			// final IRegion lineInfo = doc.getLineInformationOfOffset(offset);
-			switch(event.getCommand().getId()) {
-			case ID_CONVERT_SELECTION_TO_UNICODE:
-				result = Unicode.convertToUnicode(selectedText);
-				break;
-			case ID_CONVERT_SELECTION_TO_ASCII:
-			case ID_COPY_AS_ASCII:
-				result = Unicode.convertToASCII(selectedText);
-				break;
-			default:
-				Activator.getDefault().logInfo("Unrecognized unicode conversion command.");
-				return null;
-			}
-
-			if (event.getCommand().getId().equals(ID_COPY_AS_ASCII)) 
-				copyToClipboard(result);
-			else
-				doc.replace(selection.getOffset(), selection.getLength(), result);
+			doc.replace(selection.getOffset(), selection.getLength(), result);
+			selectionProvider.setSelection(new TextSelection(selection.getOffset() + result.length(), 0));
 		} catch (org.eclipse.jface.text.BadLocationException e) {
 			Activator.getDefault().logError("Error executing ccommand", e);
 			// just do nothing
@@ -84,15 +83,7 @@ public class UnicodeConversionHandler extends AbstractHandler implements IHandle
 
 		return null;
 	}
-	
-	private static void copyToClipboard(String text) {
-		final Clipboard cb = new Clipboard(null);
-		try {
-			cb.setContents(new Object[]{text}, new Transfer[] {TextTransfer.getInstance()});
-		} finally {
-			cb.dispose();
-		}
-	}
+
 	
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
@@ -102,7 +93,21 @@ public class UnicodeConversionHandler extends AbstractHandler implements IHandle
 		final TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
 		if (editor == null)
 			return false;
-		if (((TextSelection) editor.getSelectionProvider().getSelection()).isEmpty())
+		
+		boolean enabled = false;		
+		Clipboard cb = new Clipboard(null);
+		try {
+			final TransferData[] available= cb.getAvailableTypes();
+			for (int i = 0; i < available.length; i++) {
+				if (TextTransfer.getInstance().isSupportedType(available[i])) {
+					enabled = true;
+					break;
+				}
+			}
+		} finally {
+			cb.dispose();
+		}
+		if (!enabled)
 			return false;
 		return super.isEnabled();
 	}

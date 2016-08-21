@@ -254,6 +254,20 @@
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.UnicodeConversionHandler"
+            description="Copies to the clipboard the selection converted to ASCII."
+            id="org.lamport.tla.toolbox.editor.basic.copyAsASCII"
+            name="Copy as ASCII">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.UnicodePasteHandler"
+            description="Pastes clipboard contents, converted to Unicode."
+            id="org.lamport.tla.toolbox.editor.basic.pasteAsUnicode"
+            name="Paste as Unicode">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
             defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.RenumberProofHandler"
             description="Renumbers steps of a statement&apos;s proof"
             id="org.lamport.tla.toolbox.editor.basic.renumberProof"
@@ -656,6 +670,14 @@
               </command>
               <command
                     commandId="org.lamport.tla.toolbox.editor.basic.convertToASCII"
+                    style="push">
+              </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.copyAsASCII"
+                    style="push">
+              </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.pasteAsUnicode"
                     style="push">
               </command>
            </menuContribution>
