@@ -21,10 +21,10 @@ public final class LoadFont {
 	public static final String TLAPLUS_FONT_NAME = "IsabelleText";
 	
 	public static void loadTLAPlusFont() {
-		Display display = Display.getCurrent();
+		final Display display = Display.getCurrent();
 
 	    // Check if any of the fonts already exist in the system
-	    FontData[] fonts = display.getFontList(null, true);
+	    final FontData[] fonts = display.getFontList(null, true);
 	    boolean hasPlain = false;
 	    boolean hasBold = false;
 	    for (FontData f : fonts) {
