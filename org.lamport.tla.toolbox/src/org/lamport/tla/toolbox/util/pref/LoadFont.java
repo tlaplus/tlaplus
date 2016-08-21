@@ -25,6 +25,13 @@ public final class LoadFont {
 	public static final String BOLD_ITALIC = "-BoldOblique";
 	public static final String TYPE = "ttf";
 	
+	// How to set as default?
+	// Answers may lie in:
+	//     org.lamport.tla.toolbox.util.pref.PreferenceInitializer
+	//     org.eclipse.ui.internal.themes.ColorsAndFontsPreferencePage
+	//     org.eclipse.jface.resource.FontRegistry
+	//     org.eclipse.ui.internal.themes.FontDefinition
+	
 	public static void loadTLAPlusFont() {
 		final Display display = Display.getCurrent();
 
