@@ -111,9 +111,6 @@ public class TLAUnicode {
 		final Token[][] noCommentSpec = filterOutComments(spec);
 		FindAlignments.FindAlignments(noCommentSpec); // Add the alignment pointers to spec.
 		
-		Debug.print2DArray(spec, "spec");
-		Debug.print2DArray(noCommentSpec, "noCommentSpec");
-		
 		// Debug.print2DArray(spec, "align");
 		
 		convert(toU, spec, noCommentSpec, output); // Write output
