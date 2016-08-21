@@ -18,7 +18,11 @@ import org.lamport.tla.toolbox.Activator;
 public final class LoadFont {
 	private LoadFont() {}
 	
-	public static final String TLAPLUS_FONT_NAME = "IsabelleText";
+	public static final String TLAPLUS_FONT_NAME = "DejaVuSansMono";
+	public static final String BOLD = "-Bold";
+	public static final String ITALIC = "-Oblique";
+	public static final String BOLD_ITALIC = "-BoldOblique";
+	public static final String TYPE = "ttf";
 	
 	public static void loadTLAPlusFont() {
 		final Display display = Display.getCurrent();
@@ -27,20 +31,30 @@ public final class LoadFont {
 	    final FontData[] fonts = display.getFontList(null, true);
 	    boolean hasPlain = false;
 	    boolean hasBold = false;
+	    boolean hasItalic = false;
+	    boolean hasBoldItalic = false;
 	    for (FontData f : fonts) {
 	    	if (f.getName().equals(TLAPLUS_FONT_NAME)) {
-	    		if (f.getStyle() == SWT.NONE)
+	    		if (f.getStyle() == SWT.NORMAL)
 	    			hasPlain = true;
 	    		if (f.getStyle() == SWT.BOLD)
 	    			hasBold = true;
+	    		if (f.getStyle() == SWT.ITALIC)
+	    			hasItalic = true;
+	    		if (f.getStyle() == (SWT.ITALIC | SWT.BOLD))
+	    			hasBoldItalic = true;
 	    	}
 	    }
 	    
 	    // load fonts
 	    if (!hasPlain) 
-	    	loadFont(display, TLAPLUS_FONT_NAME + ".ttf");
-	    if (!hasBold) 
-	    	loadFont(display, TLAPLUS_FONT_NAME + "Bold.ttf");
+	    	loadFont(display, TLAPLUS_FONT_NAME + "." + TYPE);
+	    if (BOLD != null && !hasBold) 
+	    	loadFont(display, TLAPLUS_FONT_NAME + BOLD + "." + TYPE);
+	    if (ITALIC != null && !hasItalic) 
+	    	loadFont(display, TLAPLUS_FONT_NAME + ITALIC + "." + TYPE);
+	    if (BOLD_ITALIC != null && !hasBoldItalic) 
+	    	loadFont(display, TLAPLUS_FONT_NAME + BOLD_ITALIC + "." + TYPE);
 	}
 	
 	private static void loadFont(Display display, String fileName) {
