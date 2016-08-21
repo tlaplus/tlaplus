@@ -148,7 +148,7 @@ public class TLAUnicode {
 				int space = -1; // How much space to leave before the token
 				if (tok.aboveAlign.line != -1 && tok.type != Token.COMMENT) {
 					// If aligned to a token above -- try to keep alignment
-					Token align = tok.aboveAlign.toToken(noCommentSpec);
+					final Token align = tok.aboveAlign.toToken(noCommentSpec);
 					
 					// If this token isn't a comment but it's been aligned with a comment
 					// try to see if it can be aligned with a higher, non-comment line
