@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# To run:
+# test.sh <A directory for module dependencies> <TLA file w/o suffix>
+
 DIR=$1
 FILE=$2
 CP=`dirname $0`/../../dist/tla2tools.jar
