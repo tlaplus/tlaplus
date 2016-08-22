@@ -50,7 +50,7 @@ diff ${FILE}_1.tla ${FILE}_a.tla || fail "idempotence 1"
 convert u2a ${FILE}_2 b
 diff ${FILE}_b.tla ${FILE}_b.tla || fail "idempotence 2"
 
-rm ${FILE}_2.tla ${FILE}_a.tla ${FILE}_b.tla
+rm ${FILE}_a.tla ${FILE}_b.tla
 
 # Equivalence
 # Coversion maintains semantic parsing
@@ -71,8 +71,12 @@ function toxml { # parse to XML
 toxml $FILE
 >&2 echo Parse Unicode
 toxml ${FILE}_1
-diff ${FILE}.xml ${FILE}_1.xml || fail "equivalence"
+>&2 echo Parse ASCII 2
+toxml ${FILE}_2
 
-rm ${FILE}_1.tla ${FILE}_1.xml ${FILE}.xml
+diff ${FILE}.xml ${FILE}_1.xml || fail "equivalence 1"
+diff ${FILE}.xml ${FILE}_2.xml || fail "equivalence 2"
+
+rm ${FILE}.xml ${FILE}_1.tla ${FILE}_1.xml ${FILE}_2.tla ${FILE}_2.xml 
 
 echo "SUCCESS!"
