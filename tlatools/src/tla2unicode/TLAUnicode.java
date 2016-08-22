@@ -141,7 +141,7 @@ public class TLAUnicode {
 				}
 				
 				//---- Align token ----
-				
+				final int origSpace = tok.column - (item > 0 ? spec[line][item - 1].column + spec[line][item - 1].getWidth() : 0);
 				int space = -1; // How much space to leave before the token
 				if (tok.aboveAlign.line != -1 && tok.type != Token.COMMENT) {
 					// If aligned to a token above -- try to keep alignment
@@ -178,10 +178,12 @@ public class TLAUnicode {
 								space -= 2;
 							}
 						}
+//						else if (space == 0 && origSpace > 1) // maybe necessary
+//							space = 1;
 					}
 				}
-				if (space <= 0) // If we don't need to or can't align, keep original spacing.
-					space = tok.column - (item > 0 ? spec[line][item - 1].column + spec[line][item - 1].getWidth() : 0);
+				if (space < 0) // If we don't need to or can't align, keep original spacing.
+					space = origSpace;
 				
 				Debug.Assert(space >= 0, tok + (item > 0 ? " :: " + spec[line][item - 1] : ""));
 				
