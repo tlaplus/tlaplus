@@ -151,6 +151,11 @@ public class LiveCheck implements ILiveCheck {
 		if (forceCheck) {
 			return check0(false);
 		}
+		if (Boolean.getBoolean(Liveness.class.getName() + ".finalCheckOnly")) {
+			// The user requested to only check liveness once, on the complete
+			// state graph.
+			return true;
+		}
 		for (int i = 0; i < checker.length; i++) {
 			// see note in doLiveCheck() above!
 			final AbstractDiskGraph diskGraph = checker[i].getDiskGraph();
