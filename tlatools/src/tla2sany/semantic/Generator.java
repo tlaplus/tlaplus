@@ -28,6 +28,7 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Stack;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
+import tla2unicode.Alternates;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import util.UniqueString;
@@ -104,19 +105,17 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
     ***********************************************************************/
   protected OpArgNode       nullOpArg;
 
-  private final static UniqueString S_e      = UniqueString.uniqueStringOf("\\E");
-  private final static UniqueString S_ex     = UniqueString.uniqueStringOf("\\exists");
-  private final static UniqueString S_f      = UniqueString.uniqueStringOf("\\A");
-  private final static UniqueString S_fx     = UniqueString.uniqueStringOf("\\always");
-  private final static UniqueString S_te     = UniqueString.uniqueStringOf("\\EE");
-  private final static UniqueString S_tf     = UniqueString.uniqueStringOf("\\AA");
-  private final static UniqueString S_a      = UniqueString.uniqueStringOf("<<");
-  private final static UniqueString S_brack  = UniqueString.uniqueStringOf("[");
-  private final static UniqueString S_sf     = UniqueString.uniqueStringOf("SF_");
-  private final static UniqueString S_wf     = UniqueString.uniqueStringOf("WF_");
-  private final static UniqueString S_at     = UniqueString.uniqueStringOf("@");
-  private final static UniqueString S_lambda = 
-                           UniqueString.uniqueStringOf("LAMBDA");
+  private final static Alternates S_e      = new Alternates("\\E", "\\exists");
+  private final static Alternates S_f      = new Alternates("\\A", "\\forall");
+  private final static Alternates S_te     = new Alternates("\\EE");
+  private final static Alternates S_tf     = new Alternates("\\AA");
+  private final static Alternates S_a      = new Alternates("<<");
+  private final static Alternates S_brack  = new Alternates("[");
+  private final static Alternates S_sf     = new Alternates("SF_");
+  private final static Alternates S_wf     = new Alternates("WF_");
+  private final static Alternates S_at     = new Alternates("@");
+  private final static Alternates S_lambda = new Alternates("LAMBDA");
+  private final static UniqueString S_lambda0 = UniqueString.uniqueStringOf("LAMBDA");
   private final static UniqueString S_subexpression = 
                            UniqueString.uniqueStringOf("$Subexpression");
 
@@ -275,7 +274,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
       // look up the full name in the SymbolTable (may return null)
       fullyQualifiedOp = symbolTable.resolveSymbol(Operators.resolveSynonym(compoundIDUS));
 
-      if (fullyQualifiedOp == null && compoundIDUS != S_at) {
+      if (fullyQualifiedOp == null && !S_at.matches(compoundIDUS)) {
         // if not in the symbol table and not "@", then it is an unresolved symbol
         errors.addError(treeNode.getLocation(),
                         "Could not find declaration or definition of symbol '" +
@@ -397,9 +396,9 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
      /**********************************************************************
      * Constants not needed elsewhere.                                     *
      **********************************************************************/
-     final UniqueString GGUS    = UniqueString.uniqueStringOf(">>") ;
-     final UniqueString LLUS    = UniqueString.uniqueStringOf("<<") ;
-     final UniqueString ColonUS = UniqueString.uniqueStringOf(":") ;
+     final Alternates GGUS    = new Alternates(">>") ;
+     final Alternates LLUS    = new Alternates("<<") ;
+     final Alternates ColonUS = new Alternates(":") ;
 
      /**********************************************************************
      * The constructor.                                                    *
@@ -460,10 +459,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
                * This is not a number, so it is ">>", "<<", "@", or ":".   *
                ************************************************************/
                UniqueString us = stn.getUS() ;
-                 if (us == GGUS)         {ops[i] = GGSel ;}
-                 else if (us == LLUS)    {ops[i] = LLSel ;}
-                 else if (us == ColonUS) {ops[i] = ColonSel ;}
-                 else if (us == AtUS)    {ops[i] = AtSel ; }
+                 if (GGUS.matches(us))         {ops[i] = GGSel ;}
+                 else if (LLUS.matches(us))    {ops[i] = LLSel ;}
+                 else if (ColonUS.matches(us)) {ops[i] = ColonSel ;}
+                 else if (us == AtUS)          {ops[i] = AtSel ; }
                  else { errors.addAbort(
                          stn.getLocation(),
                          "Internal error: Unexpected selector `" + 
@@ -1431,7 +1430,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
          else if (curNode.getKind() == OpArgKind) { 
            SymbolNode opNode = ((OpArgNode) curNode).getOp() ;
            if (   (opNode.getKind() != UserDefinedOpKind)
-               || (opNode.getName() !=S_lambda)) {
+               || (!S_lambda.matches(opNode.getName()))) {
              errors.addError(
                 sel.opsSTN[idx].getLocation(),
                 "Trying to select subexpression of an operator argument.");
@@ -1932,7 +1931,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
     OpDefNode newLambda = null ;
     if (paramsArray.length > 0) {
       newLambda =
-        new OpDefNode(S_lambda,          // The operator name is "LAMBDA"
+        new OpDefNode(S_lambda0,         // The operator name is "LAMBDA"
                       UserDefinedOpKind, // The node kind 
                       paramsArray,       // the array of formal parameters
                       false ,            // localness, which is meaningless
@@ -2300,7 +2299,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
     for (int lvi = 1; lvi < treeNodes.length; lvi += 2) {
       UniqueString us = treeNodes[ lvi ].getUS();
 
-      if (us == S_at) {
+      if (S_at.matches(us)) {
         errors.addError(treeNodes[lvi].getLocation(),
                         "Attempted to declare '@' as a variable.");
       }
@@ -2380,7 +2379,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
 
   private final void processParameters(TreeNode treeNodes[], ModuleNode cm) {
     for (int lvi = 1; lvi < treeNodes.length; lvi +=2 ) {
-      if (treeNodes[lvi].getUS() == S_at) {
+      if (S_at.matches(treeNodes[lvi].getUS())) {
         errors.addError(treeNodes[lvi].getLocation(),
                         "Attempted to declare '@' as a constant.");
        } ;
@@ -3856,8 +3855,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
 
     // then return new node.
     // which variety? look under first child.
-    boolean isExists =    children[0].getUS().equals( S_e ) 
-                       || children[0].getUS().equals( S_ex );
+    boolean isExists = S_e.matches(children[0].getUS()); 
     if (isExists) {
       return new OpApplNode(OP_be, null, semanticNode, odna, 
                             bt, ea, treeNode, cm);
@@ -3877,11 +3875,9 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
    UniqueString r_us;
    int level;
 
-   if      ( us.equals (S_e ) ) { r_us = OP_ue; level = 0; } // \E
-   else if ( us.equals (S_ex) ) { r_us = OP_ue; level = 0; } // \exists
-   else if ( us.equals (S_f ) ) { r_us = OP_uf; level = 0; } // \A
-   else if ( us.equals (S_fx) ) { r_us = OP_uf; level = 0; } // \always
-   else if ( us.equals (S_te) ) { r_us = OP_te; level = 1; } // \EE
+   if      ( S_e.matches(us) ) { r_us = OP_ue; level = 0; } // \E
+   else if ( S_f.matches(us) ) { r_us = OP_uf; level = 0; } // \A
+   else if ( S_te.matches(us) ) { r_us = OP_te; level = 1; } // \EE
    else                         { r_us = OP_tf; level = 1; } // \AA
 
    // Process all identifiers bound by thus quantifier
@@ -4079,13 +4075,13 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
   private final ExprNode processAction(TreeNode treeNode, TreeNode children[], ModuleNode cm) 
   throws AbortException {
     UniqueString match = children[0].getUS();
-    if      ( match.equals( S_a ) )
+    if      ( S_a.matches(match) )
       match = OP_aa;
-    else if ( match.equals( S_brack ) )
+    else if ( S_brack.matches(match) )
       match = OP_sa;
-    else if ( match.equals( S_sf) )
+    else if ( S_sf.matches(match) )
       match = OP_sf;
-    else if ( match.equals( S_wf) )
+    else if ( S_wf.matches(match) )
       match = OP_wf;
 
     ExprNode ops[] = new ExprNode[2];
@@ -4547,7 +4543,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
       * Restore original context.                                          *
       *********************************************************************/
     return new OpDefNode(
-               S_lambda,          // The operator name is "LAMBDA"
+               S_lambda0,         // The operator name is "LAMBDA"
                UserDefinedOpKind, // The node kind for a lambda expression
                params,            // the array of formal parameters
                false ,            // localness, which is meaningless
