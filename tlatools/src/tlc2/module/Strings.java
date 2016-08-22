@@ -15,6 +15,7 @@ import tlc2.value.Value;
 
 public class Strings extends UserObj
 {
+	public static final long serialVersionUID = 20160822L;
 
     private static Value SetString = new UserValue(new Strings());
 

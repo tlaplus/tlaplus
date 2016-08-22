@@ -106,6 +106,7 @@ public interface EC
 
     public static final int TLC_VALUE_ASSERT_FAILED = 2132;
 	public static final int TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE = 2154;
+    public static final int TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED = 2168;
 
     public static final int TLC_FP_NOT_IN_SET = 2133;
     public static final int TLC_FP_VALUE_ALREADY_ON_DISK = 2166;

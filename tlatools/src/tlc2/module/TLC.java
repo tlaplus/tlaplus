@@ -36,6 +36,7 @@ import util.ToolIO;
 
 public class TLC implements ValueConstants
 {
+	public static final long serialVersionUID = 20160822L;
 
     private static RandomGenerator rng;
 	public static BufferedWriter OUTPUT;

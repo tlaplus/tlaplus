@@ -21,6 +21,7 @@ import tlc2.value.ValueVec;
 
 public class Bags implements ValueConstants
 {
+	public static final long serialVersionUID = 20160822L;
 
     static
     {

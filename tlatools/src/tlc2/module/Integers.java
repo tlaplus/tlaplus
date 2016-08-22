@@ -19,6 +19,7 @@ import tlc2.value.ValueConstants;
 
 public class Integers extends UserObj implements ValueConstants
 {
+	public static final long serialVersionUID = 20160822L;
 
     static
     {

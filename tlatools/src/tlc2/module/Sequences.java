@@ -27,6 +27,8 @@ import util.UniqueString;
 
 public class Sequences extends UserObj implements ValueConstants
 {
+	public static final long serialVersionUID = 20160822L;
+	
     private Value range;
     private int size;
 

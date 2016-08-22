@@ -8,6 +8,7 @@ package tlc2.tool;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -41,6 +42,7 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tlc2.TLCGlobals;
+import tlc2.module.BuiltInModuleHelper;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.util.Context;
@@ -362,6 +364,11 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                         boolean isConstant = (acnt == 0) && Modifier.isFinal(mdf);
                         Value val = isConstant ? mv.apply(EmptyArgs, EvalControl.Clear) : mv;
                         javaDefs.put(uname, val);
+                        
+                        if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
+            			   final URL resource = userModule.getResource(userModule.getSimpleName() + ".class");
+                           MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED, new String[] {uname.toString(), resource.toExternalForm(), mv.toString()});
+                        }
                     }
                 }
                 // Adds/overrides new definitions:

@@ -15,6 +15,7 @@ import tlc2.value.ValueConstants;
 
 public class FiniteSets implements ValueConstants
 {
+	public static final long serialVersionUID = 20160822L;
 
     public static BoolValue IsFiniteSet(Value val)
     {

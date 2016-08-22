@@ -618,6 +618,9 @@ public class MP
             b.append("Attempted to apply the operator overridden by the Java method"
                     + "\n%1%,\nbut it produced the following error:\n%2%");
             break;
+        case EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED:
+            b.append("Loading %1% operator override from %2% with signature: %3%.");
+            break;
         case EC.TLC_FEATURE_UNSUPPORTED:
             b.append("%1%");
             break;

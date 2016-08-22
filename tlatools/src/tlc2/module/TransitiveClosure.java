@@ -20,6 +20,7 @@ import tlc2.value.ValueVec;
 
 public class TransitiveClosure implements ValueConstants
 {
+	public static final long serialVersionUID = 20160822L;
 
     /* Implement the Warshall algorithm for transitive closure. */
     public static Value Warshall(Value rel)

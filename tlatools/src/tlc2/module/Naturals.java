@@ -19,7 +19,8 @@ import tlc2.value.ValueConstants;
 
 public class Naturals extends UserObj implements ValueConstants
 {
-
+	public static final long serialVersionUID = 20160822L;
+	
     static
     {
         TLARegistry.put("Plus", "+");
