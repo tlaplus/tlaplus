@@ -345,6 +345,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_STATS_SIMU:
                 case EC.TLC_SEARCH_DEPTH:
                 case EC.TLC_LIVE_IMPLIED:
+                case EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED:
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_SUCCESS:
