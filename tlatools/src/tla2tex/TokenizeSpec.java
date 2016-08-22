@@ -1182,7 +1182,7 @@ public class TokenizeSpec
                             };
                           token = token.substring(0, token.length()-1);
                         } ;
-                        nextChar = reader.getNextChar();
+                        skipNextChar();
                       } ;
                       boolean saved = BuiltInSymbols.CanPrecedeLabel(token) ;
                       TokenOut(Token.BUILTIN) ;
