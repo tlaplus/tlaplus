@@ -325,7 +325,7 @@
       </command>
        <command
             categoryId="toolbox.command.category.module"
-            description="Export module in the active editor to ASCII"
+            description="Export current spec to ASCII"
             id="toolbox.command.module.exportascii.active"
             name="Module To ASCII">
       </command>
@@ -656,11 +656,16 @@
                   commandId="org.eclipse.ui.edit.cut">
             </command>
             <command
-                  commandId="org.eclipse.ui.edit.copy"
-                  >
+                  commandId="org.eclipse.ui.edit.copy">
+            </command>
+            <command
+                  commandId="org.lamport.tla.toolbox.editor.basic.copyAsASCII">
             </command>
             <command
                   commandId="org.eclipse.ui.edit.paste">
+            </command>
+            <command
+                  commandId="org.lamport.tla.toolbox.editor.basic.pasteAsUnicode">
             </command>
             <separator
                   name="toolbox.edit.separator2"
