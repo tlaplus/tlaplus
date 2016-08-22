@@ -180,10 +180,11 @@ public class TLAUnicode {
 						}
 					}
 				}
-				if (space < 0) // If we don't need to or can't align, keep original spacing.
+				if (space <= 0) // If we don't need to or can't align, keep original spacing.
 					space = tok.column - (item > 0 ? spec[line][item - 1].column + spec[line][item - 1].getWidth() : 0);
 				
 				Debug.Assert(space >= 0, tok + (item > 0 ? " :: " + spec[line][item - 1] : ""));
+				
 				appendSpaces(out, space);
 				
 				if (tok.type != Token.COMMENT) {
@@ -196,7 +197,7 @@ public class TLAUnicode {
 				Debug.Assert(toU // The following invariant always holds:
 						? tok.outcolumn <= tok.column  // when -> U, token moves to the left  (or not at all)
 						: tok.outcolumn >= tok.column, // when -> A, token moves to the right (or not at all)
-					tok.toString());
+					tok.toString() + " :: column: " + tok.column + " outcolumn: " + tok.outcolumn);
 
 				//----- Output token ----
 				
