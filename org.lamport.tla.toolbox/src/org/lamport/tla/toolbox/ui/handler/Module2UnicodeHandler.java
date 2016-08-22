@@ -15,6 +15,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -77,8 +78,6 @@ public class Module2UnicodeHandler extends SaveDirtyEditorAbstractHandler implem
     
     private void exportToASCII(ExecutionEvent event) {
     	final ITextEditor activeEditor = (ITextEditor)UIHelper.getActiveEditor();
-    	if (!saveDirtyEditor(event))
-    		return;
     	// prompt to save any unsaved resources
         // the module open in the active editor could be dependent upon
         // any open module
@@ -132,7 +131,6 @@ public class Module2UnicodeHandler extends SaveDirtyEditorAbstractHandler implem
                 	MessageDialog.openError(shell, "Error creating directory.", "Directory could not be created");
                 	continue;
                 }
-                
             }
 
             break;
@@ -149,11 +147,9 @@ public class Module2UnicodeHandler extends SaveDirtyEditorAbstractHandler implem
     }
     
     private String showDialog(Shell shell, String path) {
-    	final FileDialog dialog = new FileDialog(shell, SWT.SAVE);
-    	dialog.setOverwrite(true);
-    	dialog.setText("Select a directory for the exported spec...");
-        // dialog.setFilterExtensions(new String[] { "*.tla" });
-        // dialog.setFilterNames(new String[] { "TLA+ Files" });
+    	final DirectoryDialog dialog = new DirectoryDialog(shell, SWT.SAVE);
+    	// dialog.setOverwrite(true);
+    	dialog.setMessage("Select a directory for the exported spec");
         dialog.setFilterPath(path);
         return dialog.open();
     }
