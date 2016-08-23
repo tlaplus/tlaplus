@@ -459,6 +459,37 @@ public class TLCErrorView extends ViewPart
         variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer));
         variableViewer.getTree().addKeyListener(new ActionClickListener(variableViewer));
 
+// This is working but I'm not sure we need it. ActionClickListener
+// has a keystroke to collapse the viewer.        
+//        // Add a right click context menu to expand and collapse all variables. 
+//		final MenuManager contextMenu = new MenuManager("#ViewerMenu"); //$NON-NLS-1$
+//		contextMenu.setRemoveAllWhenShown(true);
+//		contextMenu.addMenuListener(new IMenuListener() {
+//			@Override
+//			public void menuAboutToShow(IMenuManager mgr) {
+//				mgr.add(new Action("&Collapse All") {
+//					public void run() {
+//						variableViewer.collapseAll();
+//					}
+//				});
+//				mgr.add(new Action("Expand to &default level") {
+//					public void run() {
+//						// expandAll() followed by expandToLevel(2) requires us
+//						// to collapse the viewer first.
+//						variableViewer.collapseAll();
+//						variableViewer.expandToLevel(2);
+//					}
+//				});
+//				mgr.add(new Action("&Expand All") {
+//					public void run() {
+//						variableViewer.expandAll();
+//					}
+//				});
+//			}
+//		});
+//		final Menu menu = contextMenu.createContextMenu(variableViewer.getControl());
+//		variableViewer.getControl().setMenu(menu);
+//
         variableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
             public void selectionChanged(SelectionChangedEvent event)

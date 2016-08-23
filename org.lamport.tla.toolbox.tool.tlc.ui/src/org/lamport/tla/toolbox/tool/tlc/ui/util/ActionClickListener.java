@@ -38,7 +38,7 @@ import tla2sany.st.Location;
  * 
  */
 public class ActionClickListener implements MouseListener, KeyListener {
-
+	
 	private final Viewer viewer;
 
 	public ActionClickListener(final Viewer viewer) {
@@ -73,6 +73,9 @@ public class ActionClickListener implements MouseListener, KeyListener {
 	public void keyReleased(final KeyEvent event) {
 		if (event.keyCode == SWT.CR) {
 			goToAction(viewer.getSelection(), (event.stateMask & SWT.CTRL) != 0);
+		} else if (event.keyCode == SWT.KEYPAD_DIVIDE && (event.stateMask & SWT.ALT) != 0
+				&& this.viewer instanceof TreeViewer) {
+			((TreeViewer) this.viewer).collapseAll();
 		}
 	}
 	
