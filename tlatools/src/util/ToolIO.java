@@ -76,7 +76,7 @@ public class ToolIO
 	 * Care must be taken with out and err not being synchronized. Concurrent
 	 * writes will cause interleaved output.
 	 * 
-	 * @see https://bugzilla.tlaplus.net/show_bug.cgi?id=221
+	 * @see Bug #221 in general/bugzilla/index.html
 	 */
     public static PrintStream err = System.err;
 

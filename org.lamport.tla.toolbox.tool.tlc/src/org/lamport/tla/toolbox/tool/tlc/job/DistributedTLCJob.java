@@ -26,7 +26,7 @@ public class DistributedTLCJob extends TLCProcessJob {
 		WHITELIST.add("-nowarning");
 		
 		WHITELIST_WITH_ARG.add("-checkpoint");
-// Temporarily removed due to http://bugzilla.tlaplus.net/show_bug.cgi?id=212
+// Temporarily removed due to Bug #212 in general/bugzilla/index.html
 //		WHITELIST_WITH_ARG.add("-coverage");
 		WHITELIST_WITH_ARG.add("-fp");
 		WHITELIST_WITH_ARG.add("-recover");

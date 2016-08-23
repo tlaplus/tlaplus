@@ -68,7 +68,7 @@ public class Activator extends AbstractTLCActivator
 		// (start/stop) methods. Initializing the WorkspaceSpecManager involves
 		// I/O though, which makes it a potentially long-running task.
         //
-        // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=260
+        // @see Bug #260 in general/bugzilla/index.html
         final Job initializerJob = new WorkspaceJob("Initializing workspace...") {
 			/* (non-Javadoc)
 			 * @see org.eclipse.core.resources.WorkspaceJob#runInWorkspace(org.eclipse.core.runtime.IProgressMonitor)

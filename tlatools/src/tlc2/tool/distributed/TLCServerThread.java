@@ -319,7 +319,7 @@ public class TLCServerThread extends IdThread {
 		keepAliveTimer.cancel();
 		
 		// This call has to be idempotent, otherwise we see bugs as in 
-		// https://bugzilla.tlaplus.net/show_bug.cgi?id=234
+		// Bug #234 in general/bugzilla/index.html
 		//
 		// Prevent second invocation of worker de-registration which stems from
 		// a race condition between the TimerTask (that periodically checks

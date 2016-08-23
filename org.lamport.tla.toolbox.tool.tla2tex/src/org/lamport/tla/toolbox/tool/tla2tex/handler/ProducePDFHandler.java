@@ -149,7 +149,7 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 					// sure that the Eclipse resource layer sees the newly
 					// created (PDF) file.
 					// Without an explicit refresh, one might see the symptoms
-					// outlined in bug #317 (http://bugzilla.tlaplus.net/show_bug.cgi?id=317)
+					// outlined in Bug #317 in general/bugzilla/index.html
 					// (org.eclipse.core.internal.resources.ResourceException:
 					// Resource '/Test/Test.pdf' does not exist.)
 					fileToTranslate.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);

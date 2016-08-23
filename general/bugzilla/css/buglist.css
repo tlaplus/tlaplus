@@ -1,0 +1,131 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, v. 2.0.
+ */
+.bz_query_head {
+  text-align: center;
+}
+
+.bz_query_timestamp {
+  font-weight: bold;
+}
+
+.search_description {
+  margin: .5em 0;
+  padding: 0;
+}
+.search_description li {
+  list-style-type: none;
+  display: inline;
+  margin-right: 2em;
+}
+
+.zero_results, .zero_result_links {
+  font-size: 120%;
+  font-weight: bold;
+}
+
+.bz_buglist_header th {
+  text-align: left;
+}
+
+.bz_sort_order_primary,
+.bz_sort_order_secondary {
+    display: inline-block;
+    padding-left: .2em;
+    text-decoration: none;
+}
+.bz_sort_order_primary   { color: black; }
+.bz_sort_order_secondary { color: #777;  }
+
+
+.bz_id_column {
+}
+
+.bz_row_odd {
+    background-color: #F7F7F7;
+    color: #000000;
+}
+
+.bz_row_even {
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+/* Style bug rows according to severity. */
+.bz_blocker { color: red; font-weight: bold; }
+.bz_critical { color: red; }
+.bz_enhancement { color: #666; background-color: white; }
+
+/* Align columns in the "change multiple bugs" form to the right. */
+table#form tr th { text-align: right; }
+
+table.bz_buglist td, table.bz_buglist th { 
+}
+
+/* we use a first-child class and not the pseudo-class because IE
+ * doesn't support it :-( */
+tr.bz_secure td.first-child, a.bz_secure { 
+  background-image: url("../../images/padlock.png");
+  background-position: center left;
+  background-repeat: no-repeat;
+  background-color: inherit;
+}
+
+th.first-child, td.first-child, a.bz_secure {
+  padding-left: 20px;
+}
+
+tr.bz_secure_mode_implied td.first-child {
+}
+
+tr.bz_secure_mode_manual td.first-child {
+}
+
+td.bz_estimated_time_column,
+td.bz_remaining_time_column,
+td.bz_actual_time_column,
+td.bz_percentage_complete_column {
+    text-align: right;
+}
+
+td.bz_total_label {
+    font-weight: bold;
+}
+
+td.bz_total {
+    border-top-style: solid;
+    border-top-color: #929bb1;
+    border-top-width: 3px;
+    text-align: right;
+}
+
+#commit, #action {
+  margin-top: .25em;
+}
+
+.bz_query_debug {
+    text-align: left;
+}
+
+.bz_short_desc_column a, .bz_short_short_desc_column a {
+    color: inherit;
+}
+
+/* The "filtering" table is specific to request.cgi.
+ * Same for the "requests" class used for tables. */
+
+#filtering #requester, #filtering #requestee {
+    min-width: 8em;
+}
+
+#filtering th {
+    text-align: right;
+}
+
+table.requests th {
+    text-align: left;
+}

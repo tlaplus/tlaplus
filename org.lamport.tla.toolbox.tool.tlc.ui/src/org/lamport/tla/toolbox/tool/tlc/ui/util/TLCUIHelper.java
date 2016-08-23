@@ -105,7 +105,7 @@ public class TLCUIHelper
                 final String locationString = matcher.group();
                 
                 // "consume" location string to prevent pcal matcher from consuming the same text again
-                // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=269
+                // @see Bug #269 in general/bugzilla/index.html
                 text = text.replace(locationString, "");
                 
                 Location location = Location.parseLocation(locationString);

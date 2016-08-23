@@ -75,7 +75,7 @@ public class RenameSpecHandlerTest extends AbstractTest {
 	}
 	
 	/**
-	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=58
+	 * @see Bug #58 in general/bugzilla/index.html
 	 */
 	@Test
 	public void renameSpec() throws InterruptedException {

@@ -340,7 +340,7 @@ public class TableauDiskGraphTest extends DiskGraphTest {
 	 * 
 	 * The specialty here is that there are *two* init nodes and one them has *no* successors.
 	 * 
-	 * @see https://bugzilla.tlaplus.net/show_bug.cgi?id=293
+	 * @see Bug #293 in general/bugzilla/index.html
 	 */
 	@Test
 	public void testPathWithTwoInitNodesWithTableau() throws IOException {

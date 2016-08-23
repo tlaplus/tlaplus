@@ -288,7 +288,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		 * leaving the TimerTask running. This occurs by design if the TimerTask
 		 * has already been marked for execution)
 		 * 
-		 * @see https://bugzilla.tlaplus.net/show_bug.cgi?id=216
+		 * @see Bug #216 in general/bugzilla/index.html
 		 */
 		if (worker != null) {
 			MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, thread.getUri().toString());

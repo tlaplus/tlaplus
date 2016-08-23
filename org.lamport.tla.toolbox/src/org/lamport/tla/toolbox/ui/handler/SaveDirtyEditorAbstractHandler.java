@@ -52,7 +52,7 @@ public abstract class SaveDirtyEditorAbstractHandler extends AbstractHandler {
 			// Use NullProgressMonitor instead of newly created monitor. The
 			// parent ProgressMonitorDialog would need to be properly
 			// initialized first.
-			// @see https://bugzilla.tlaplus.net/show_activity.cgi?id=256
+			// @see Bug #256 in general/bugzilla/index.html
 			//
 			// Generally though, saving a resource involves I/O which should be
 			// decoupled from the UI thread in the first place. Properly doing

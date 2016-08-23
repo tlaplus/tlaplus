@@ -20,7 +20,7 @@ public class Bug210DiskFPSetTest extends AbstractFPSetTest {
 	}
 
 	/**
-	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=210
+	 * @see Bug #210 in general/bugzilla/index.html
 	 * @throws IOException
 	 */
 	@Test

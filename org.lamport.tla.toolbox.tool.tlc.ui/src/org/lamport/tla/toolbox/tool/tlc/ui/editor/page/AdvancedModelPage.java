@@ -81,7 +81,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Spinner fpBits;
     /**
      * -maxSetSize input to set the upper bound of the TLA set
-     * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=264
+     * @see Bug #264 in general/bugzilla/index.html
      */
     private Spinner maxSetSize;
     /**

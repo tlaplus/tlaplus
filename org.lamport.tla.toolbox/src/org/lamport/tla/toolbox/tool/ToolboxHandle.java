@@ -171,7 +171,7 @@ public class ToolboxHandle
 				// Without this explicitly version check, the Toolbox
 				// might accidentally use an old tla version which leads to
 				// undefined behavior.
-				// @see https://bugzilla.tlaplus.net/show_bug.cgi?id=285
+				// @see Bug #285 in general/bugzilla/index.html
 				Version otherVersion = bundle != null ? bundle.getVersion()
 						: Version.parseVersion("0.0.0");
 				if (aBundle.getVersion().compareTo(otherVersion) > 0) {

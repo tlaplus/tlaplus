@@ -29,7 +29,7 @@ public class Bug242DiskFPSetTest extends AbstractFPSetTest {
 	}
 	
 	/**
-	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=242
+	 * @see Bug #242 in general/bugzilla/index.html
 	 */
 	@Test
 	public void testDiskFPSetWithHighMem() throws RemoteException {

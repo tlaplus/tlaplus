@@ -239,7 +239,7 @@ public class NewSpecWizardPage extends WizardPage
                 reportError("Root file name should have a file-system path");
                 return;
                 // make sure module name does not violate valid spec name rules
-                // see http://bugzilla.tlaplus.net/show_bug.cgi?id=112
+                // see Bug #112 in general/bugzilla/index.html
             } else if(!ResourceHelper.isValidSpecName(ResourceHelper.getModuleNameChecked(rootfilePath, false))) {
             	// Give the user a hint what a valid spec name might be. E.g. if "Foo.tla" is given,
             	// a valid spec name is "Foo" (without the ".tla" file extension).

@@ -54,7 +54,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		final PreferenceManager preferenceManager = PlatformUI.getWorkbench().getPreferenceManager();
 		final IPreferenceNode[] rootSubNodes = preferenceManager.getRootSubNodes();
 
-		// @see http://bugzilla.tlaplus.net/show_bug.cgi?id=191
+		// @see Bug #191 in general/bugzilla/index.html
 		final List filters = new ArrayList();
 		filters.add("org.eclipse.compare");
 		// The following three preferences are shown because the Toolbox uses

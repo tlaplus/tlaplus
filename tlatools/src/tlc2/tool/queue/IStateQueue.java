@@ -68,7 +68,7 @@ public interface IStateQueue {
 	 * free when workers behave correctly except for the single case when a
 	 * remote worker dies unexpectedly.
 	 * 
-	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=175
+	 * @see Bug #175 in general/bugzilla/index.html
 	 */
 	public abstract void resumeAllStuck();
 

@@ -57,7 +57,7 @@ public class HandlerThreadingTest extends AbstractTest {
 	 * Adds a new spec to the toolbox, opens it and tests if parsing is done on
 	 * a non-UI thread
 	 * 
-	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=103
+	 * @see Bug #103 in general/bugzilla/index.html
 	 */
 	@Test
 	public void parseSpecInNonUIThread() {

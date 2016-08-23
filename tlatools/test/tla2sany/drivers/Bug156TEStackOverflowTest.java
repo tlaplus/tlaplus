@@ -8,7 +8,7 @@ import util.SimpleFilenameToStream;
 import util.ToolIO;
 
 /**
- * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=156
+ * @see Bug #156 in general/bugzilla/index.html
  */
 public class Bug156TEStackOverflowTest {
 

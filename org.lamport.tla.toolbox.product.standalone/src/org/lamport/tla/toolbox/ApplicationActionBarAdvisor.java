@@ -126,7 +126,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         // Menu bar contributions via plugin.xmls
         final Separator separator = new Separator("toolbox.tools.separator");
-        separator.setVisible(false); // @see http://bugzilla.tlaplus.net/show_bug.cgi?id=27
+        separator.setVisible(false); // @see Bug #27 in general/bugzilla/index.html
 
         // finally add to menu bar
         menuBar.add(fileMenu);

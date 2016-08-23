@@ -116,7 +116,7 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
     {
         super(GRID);
         // Using somebody's else PreferenceStore is not a good idea!
-        // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
+        // @see Bug #261 in general/bugzilla/index.html
         final IPreferenceStore[] preferenceStores = new IPreferenceStore[2];
         preferenceStores[0] = EditorsUI.getPreferenceStore();
         preferenceStores[1] = ProverUIActivator.getDefault().getPreferenceStore();

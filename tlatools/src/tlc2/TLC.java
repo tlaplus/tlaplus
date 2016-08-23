@@ -148,7 +148,7 @@ public class TLC
      *  o -recover path: recover from the checkpoint at path
      *    Defaults to scratch run if not specified
      *  o -bound: The upper limit for sets effectively limiting the number of init states
-     *    (@see http://bugzilla.tlaplus.net/show_bug.cgi?id=264)
+     *    (@see Bug #264 in general/bugzilla/index.html)
      *    Defaults to 1000000 if not specified
      *  o -metadir path: store metadata in the directory at path
      *    Defaults to specdir/states if not specified

@@ -1,0 +1,551 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, v. 2.0.
+ */
+
+/* global (begin) */
+    body {
+        font-family: sans-serif;
+        color: #000;
+        background: #fff url("global/body-back.gif") repeat-x;
+    }
+    body, td, th, input {
+        font-family: Verdana, sans-serif;
+        font-size: small;
+    }
+    /* monospace is much smaller than Verdana by default, so we make it a bit bigger. */
+    pre, code, kbd {
+        font-size: medium;
+    }
+/* global (end) */
+
+/* header (begin) */
+    #header {
+        margin-bottom: 1em;
+    }
+
+    #header form, #header form input,
+    #footer form, #footer form input
+    {
+        font-size: 95%;
+        display: inline;
+    }
+
+    #header .links {
+        border-left: 1px solid #747E93;
+        border-right: 1px solid #747E93;
+        border-bottom: 1px solid #747E93;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+        padding: 0.5em;
+    }
+
+    #lang_links_container {
+        float: right;
+    }
+    #lang_links_container .links {
+        border: none;
+        padding: .5em;
+    }
+
+    .lang_current {
+        font-weight: bold;
+    }
+
+    #message {
+        border: 1px solid red;
+        margin: 0.3em 0em;
+        padding: 0.3em;
+        color: green;
+    }
+
+    form.mini_login input.bz_login  {
+        width: 10em;
+    }
+    form.mini_login input.bz_password {
+        width: 6em;
+    }
+    form.mini_login input.bz_remember {
+        margin: 0;
+    }
+    .bz_mini_login_help {
+        color: #777;
+    }
+
+/* header (end)   */
+
+/* banner (begin) */
+    #banner {
+    }
+
+/* banner (end) */
+
+/* titles (begin) */
+    #titles {
+        width: 100%;
+        background-color: #404D6C;
+        color: #fff;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        font-size: 110%;
+        margin: 0;
+        padding: 0.5em;
+        vertical-align: bottom;
+    }
+
+    #titles a {
+        color: #fff;
+    }
+
+    #titles p {
+        margin: 0;
+        padding: 0;
+    }
+
+    #titles #title {
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    #titles #subtitle {
+        font-weight: normal;
+        width: 100%;
+        text-align: center;
+    }
+
+    #titles #information {
+        font-weight: normal;
+        text-align: right;
+        font-size: 90%;
+        white-space: nowrap;
+    }
+
+/* titles (end) */
+
+/* footer (begin)
+ * See also the "header" section for styles that apply
+ * to both the header and footer. 
+ */
+    #footer {
+        clear: both;
+        margin-top: 1em;
+        width: 100%;
+        background: #edf2f2;
+        border-top: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
+    }
+
+    #footer #useful-links {
+        padding-left: 1ex;
+        padding-right: 1ex;
+    }
+
+    #footer ul {
+        list-style-type: none;
+    }
+    #links-saved ul {
+        display: inline;
+    }
+    #links-saved th {
+        vertical-align: top;
+    }
+
+    #footer .label {
+        white-space: nowrap;
+        vertical-align: top;
+    }
+
+    #footer .links {
+        vertical-align: top;
+    }
+/* footer (end) */
+
+/* link lists (begin) */
+    ul.links {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+    }
+
+    ul.links li {
+        display: inline;
+        white-space: nowrap;
+    }
+/* link lists (end) */
+
+/* tabs (begin) */
+    .tabs td {
+        background: #eee;
+        text-align: center;
+        border-style: solid;
+        border-color: black;
+        border-width: 0px 0px 2px 0px;
+    }
+        
+    .tabs td.selected {
+        background: white;
+        border-width: 2px 2px 0px 2px;
+    }
+
+    .tabs td.spacer {
+        background: white;
+    }
+/* tabs (end) */
+
+/* generic (begin) */
+    a {
+        color: #039;
+    }
+
+    a:visited {
+        color: #636;
+    }
+
+    a:hover {
+        color: #333;
+    }
+
+    a:active {
+        color: #000;
+    }
+
+    .clickable_area {
+        cursor: pointer;
+    }
+
+    textarea {
+        font-family: monospace;
+    }
+/* generic (end) */
+
+/* Links that control whether or not something is visible. */
+a.controller {
+    font-size: 115%;
+}
+
+div#docslinks {
+    float: right;
+    border: 1px solid black;
+    padding: 1ex;
+    font-size: 80%;
+}
+
+#docslinks h2 {
+    margin: 0;
+}
+
+/**************************/
+/* Bug links and statuses */
+/**************************/
+
+.bz_bug_link {
+    /* Catch-all if you want common styles for all bug links */
+}
+
+.bz_bug_link .bz_status_UNCONFIRMED {
+    font-style: italic;
+}
+
+.bz_obsolete {
+    text-decoration: line-through;
+}
+.bz_inactive {
+    text-decoration: line-through;
+}
+.bz_closed,
+.bz_CLOSED td {
+    text-decoration: line-through;
+}
+.bz_private {
+    color: darkred;
+    background: #f3eeee;
+}
+.bz_disabled {
+    color: #a0a0a0;
+}
+
+/************/
+/* Comments */
+/************/
+
+.bz_comment_table td {
+    vertical-align: top;
+}
+
+.bz_comment {
+    margin-bottom: 2em;
+}
+
+/* tbody.file pre is for the Diff view of attachments. */
+.bz_comment_text, .uneditable_textarea, tbody.file pre {
+     font-family: monospace;
+     white-space: pre-wrap;
+}
+
+.bz_comment_text {
+     width: 50em;
+}
+
+.bz_comment_user, .bz_comment_time, .bz_comment_number, 
+.bz_private_checkbox, .bz_comment_actions
+{
+    margin: 0 .5em;
+}
+
+.bz_comment_actions, .bz_comment_number, .bz_private_checkbox {
+    float: right;
+}
+
+.bz_collapse_expand_comments {
+    padding: 0;
+    margin: 0 0 0 1em;
+    list-style-type: none;
+}
+.bz_collapse_expand_comments li {
+    margin-bottom: .5em;
+}
+.bz_collapse_comment {
+    text-decoration: none;
+}
+
+.bz_private_checkbox input { 
+    margin: 0;
+    vertical-align: middle;
+}
+
+.bz_comment_head, .bz_first_comment_head {
+    padding-top: .1em;
+    padding-bottom: .1em;
+    padding-left: .5em;
+    background-color: #e0e0e0;
+}
+
+.bz_comment_user_images img {
+    vertical-align: bottom;
+}
+
+.bz_comment_hilite pre {
+    background-color: lightgreen;
+    margin: 0;
+    padding: 1em 0;
+}
+
+/** End Comments **/
+
+.bz_default_hidden, .bz_tui_hidden, .bz_hidden_field, .bz_hidden_option {
+    /* We have !important because we want elements with these classes to always
+     * be hidden, even if there is some CSS that overrides it (we use these
+     * classes inside JavaScript to hide things). */
+    display: none !important;
+}
+
+.bz_comment_text span.quote {
+    color: #65379c;
+    /* Make quoted text not wrap. */
+    white-space: pre;
+}
+
+table#flags th,
+table#flags td {
+    vertical-align: middle;
+    text-align: left;
+}
+
+.flag_select {
+    min-width: 3em;
+}
+
+input.requestee {
+    width: 15em;
+}
+
+#error_msg {
+    font-size: x-large;
+}
+
+.warning {
+  color: red;
+}
+
+.throw_error {
+    background-color: #ff0000;
+    color: black;
+    font-size: 120%;
+    margin: 1em;
+    padding: 0.5em 1em;
+}
+
+dt {
+    font-weight: bold;
+}
+body > dl > dt {
+    border-top: dotted gray thin;
+}
+dl dl > dt {
+    border-top: none;
+}
+
+#admin_table th {
+    white-space: normal !important;
+}
+
+/* Arrow buttons are buttons with only &uarr;, &darr;, &larr; or &rarr; on
+ * them. We want these to look a little less spidery. */
+.arrow_button {
+    font-size: 150%;
+}
+
+/* Style of the attachment table and time tracking table */
+#attachment_table {
+    border-collapse: collapse;
+    border: 1px solid #333333;
+}
+
+#attachment_table th, .bz_attach_footer, .bz_time_tracking_table th {
+    background-color: #E0E0E0;
+    color: black;
+}
+
+#attachment_table td, .bz_time_tracking_table th, .bz_time_tracking_table td {
+    border: 1px solid #333333;
+}
+
+.bz_attach_extra_info {
+    font-size: smaller;
+}
+
+.bz_attach_flags, .bz_attach_footer {
+    white-space: nowrap;
+}
+
+.bz_attach_view_hide {
+    float: right;
+    padding-left: 1em;
+}
+
+div.user_match {
+    margin-bottom: 1em;
+}
+
+.box {
+    border: 1px solid black;
+    color: black;
+    background-color: #ffc;
+    margin: 1em;
+    padding: 0.5em 1em;
+}
+
+.collapsed {
+    display: none;
+}
+
+/* Rules specific for printing */
+@media print {
+    #header, #footer {
+        display: none;
+    }
+
+    div.bz_query_buttons {
+        display: none;
+    }
+
+    body {
+        background-image: none;
+        background-color: #fff;
+    }
+}
+
+/**************/
+/* Bug Fields */
+/**************/
+
+.field_label {
+    text-align: right;
+    vertical-align: top;
+    font-weight: bold;
+}
+.field_help_link {
+    cursor: help;
+}
+.field_value, form#Create th, form#Create td {
+    vertical-align: top;
+}
+.field_value .text_input {
+  width: 100%;
+  min-width: 25em;
+}
+
+.uneditable_textarea {
+    width: 30em;
+    font-size: medium;
+}
+
+th.required:before {
+    content: "* ";
+}
+th.required:before, span.required_star {
+    color: red;
+}
+input.required, select.required, span.required_explanation {
+    background-color: #fff7cd;
+    color: #000;
+}
+
+.calendar_button {
+    background: transparent url("global/calendar.png") no-repeat;
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+}
+.calendar_button span { display: none }
+/* These classes are set by YUI. */
+.yui-calcontainer {
+    display: none; 
+    background-color: white; 
+    padding: 10px;
+    border: 1px solid #404D6C;
+}
+
+.bug_urls {
+    margin: 0 0 1em 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+/* custom styles for inline instances of autocomplete input fields */
+.yui-skin-sam .yui-ac-input { position:static !important; 
+                              vertical-align:middle !important; }
+.yui-skin-sam .yui-ac-container { left:0px !important; }
+.yui-skin-sam .yui-ac { display: inline-block; }
+#bugzilla-body .yui-ac-content {
+    max-height: 19em;
+    overflow: auto;
+    overflow-x: hidden;
+}
+
+#keywords_container {
+    padding-top: .2em;
+}
+
+
+#keywords_container .yui-ac-content {
+    margin-left: -1px;
+}
+
+/*******************/
+/* Form Validation */
+/*******************/
+
+.validation_error_text {
+    font-size: 120%;
+    color: #B70000;
+    font-weight: bold;
+}
+
+.validation_error_field, input.validation_error_field {
+    border: 2px solid #B70000;
+    background-color: #FFEBEB;
+}

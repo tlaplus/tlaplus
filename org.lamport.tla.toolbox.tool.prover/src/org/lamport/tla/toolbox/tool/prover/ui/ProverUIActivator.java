@@ -39,7 +39,7 @@ public class ProverUIActivator extends AbstractTLCActivator
 //			public void run() {
 //	            // Using somebody's else PreferenceStore is not a good idea!
 //	        	// Use ProverUIActivator.getDefault().getPreferenceStore() instead.
-//	            // @see https://bugzilla.tlaplus.net/show_bug.cgi?id=261
+//	            // @see Bug #261 in general/bugzilla/index.html
 //		        IPreferenceStore store = getDefault().getPreferenceStore();
 //
 //		        /*
