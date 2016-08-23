@@ -1,0 +1,36 @@
+You need FontForge to build the fonts, on Debian known as "fontforge" package.
+http://fontforge.github.io/en-US/
+Also pearl module Font::TTF, Debian package "libfont-ttf-perl".
+https://metacpan.org/release/Font-TTF/
+Tool "make" to make, Debian package "make".
+
+
+
+$ make full-ttf
+
+will all fonts to TrueType format with all glyphs included
+
+
+
+$ make  lgc-ttf
+
+will build the fonts with only the LGC (Latin-Greek-Cyrillic) subset
+
+
+
+If you just do
+
+$ make
+
+you will also make new status files. In that case you need to have the following files
+
+- Get the current Unicode files and copy them into the "resources" folder
+wget http://www.unicode.org/Public/UNIDATA/UnicodeData.txt
+wget http://www.unicode.org/Public/UNIDATA/Blocks.txt
+
+- Get the current fc-lang orthographies from the fontconfig repository:
+git clone git://anongit.freedesktop.org/git/fontconfig ~/repos/fontconfig
+
+- Create a symlink to the appropriate folder:
+ln -s ~/repos/fontconfig/fc-lang resources/fc-lang
+

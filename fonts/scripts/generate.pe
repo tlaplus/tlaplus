@@ -1,0 +1,43 @@
+#!/usr/bin/env fontforge
+# $Id$
+
+# script file for FontForge for TTF generation
+# usage:
+#   mkdir generated
+#   chmod +x generate.pe
+#   ./generate.pe *.sfd
+
+# font generation flags:
+#      8 => do not include TT instructions (for experimental typefaces)
+#   0x20 => generate a 'PfEd' table and store glyph comments
+#   0x40 => generate a 'PfEd' table and store glyph colors
+#   0x800 => generate old fashioned kern tables.
+#           - this one is important because it generates correct kerning tables
+def_gen_flags = 0x20 + 0x40 + 0x800
+exp_gen_flags = def_gen_flags + 8
+
+if ($version < "20080330")
+  Error("Your version of FontForge is too old - 20080330 or newer is required");
+endif
+# FoundryName is not used in TTF generation
+SetPref("FoundryName", "DejaVu")
+# first 4 characters of TTFFoundry are used for achVendId
+SetPref("TTFFoundry", "DejaVu")
+i = 1
+while ( i < $argc )
+  Open($argv[i], 1)
+  gen_flags = def_gen_flags
+  # Serif Italic and Serif Bold Italic are experimental
+  if ((Strcasestr ($fontname, "Serif") > -1) && (Strcasestr ($fontname, "Italic") > -1))
+    gen_flags = exp_gen_flags
+  endif
+  if (Strcasestr ($fontname, "Condensed") > -1)
+    gen_flags = exp_gen_flags
+  endif
+  if (Strcasestr ($fontname, "ExtraLight") > -1)
+    gen_flags = exp_gen_flags
+  endif
+  Generate( $curfont + ".ttf", "", gen_flags)
+  Close()
+  i++
+endloop
