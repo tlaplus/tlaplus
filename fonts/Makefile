@@ -1,4 +1,4 @@
-.PHONY: all check munge full sans lgc ttf full-ttf sans-ttf lgc-ttf status dist src-dist full-dist sans-dist lgc-dist norm check-harder pre-patch clean
+.PHONY: all check munge full sans lgc ttf full-ttf lgc-ttf status dist src-dist full-dist lgc-dist norm check-harder pre-patch clean
 
 # Release version
 VERSION = 2.37
@@ -28,7 +28,6 @@ endif
 
 SRCARCHIVE  = dejavu-fonts-$(ARCHIVEVER)
 FULLARCHIVE = dejavu-fonts-ttf-$(ARCHIVEVER)
-SANSARCHIVE = dejavu-sans-ttf-$(ARCHIVEVER)
 LGCARCHIVE  = dejavu-lgc-fonts-ttf-$(ARCHIVEVER)
 
 ARCHIVEEXT = .zip .tar.bz2
@@ -179,7 +178,7 @@ full : $(FULLTTF) $(addprefix $(BUILDDIR)/, $(GENDOCFULL))
 
 lgc : $(LGCTTF) $(addprefix $(BUILDDIR)/, $(GENDOCLGC))
 
-ttf : full-ttf sans-ttf lgc-ttf
+ttf : full-ttf lgc-ttf
 
 full-ttf : $(FULLTTF)
 
@@ -192,8 +191,6 @@ dist : src-dist full-dist sans-dist lgc-dist
 src-dist :  $(addprefix $(DISTDIR)/$(SRCARCHIVE),  $(ARCHIVEEXT) $(SUMEXT))
 
 full-dist : $(addprefix $(DISTDIR)/$(FULLARCHIVE), $(ARCHIVEEXT) $(SUMEXT))
-
-sans-dist : $(addprefix $(DISTDIR)/$(SANSARCHIVE), $(ARCHIVEEXT) $(SUMEXT))
 
 lgc-dist :  $(addprefix $(DISTDIR)/$(LGCARCHIVE),  $(ARCHIVEEXT) $(SUMEXT))
 
