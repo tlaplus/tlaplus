@@ -1,6 +1,7 @@
 To Fix Eclipse if it can't find a bunch of imported classes:
    Try re-setting the target platform.  To do so, open the
-   TLAToolbox.target platform and click the "Set as Target Platform"
+   org.lamport.tla.toolbox.product.product/TLAToolbox.target file  
+   and click the "Set as Target Platform"
    label in the right upper corner.  After a while (Eclipse might
    download stuff), it should re-compile your workspace.
    If that doesn't work, select all the URLs shown in that window
