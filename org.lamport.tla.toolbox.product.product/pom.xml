@@ -136,25 +136,6 @@
 				</execution>
 			</executions>
 		</plugin>
-		
-		
-	      <plugin>
-	        <artifactId>apt-repo</artifactId>
-	        <groupId>org.m1theo</groupId>
-	        <version>0.2.1</version>
-	        <configuration>
-	         <repoDir>${project.build.directory}/repository/</repoDir>
-	        </configuration>
-	        <executions>
-	          <execution>
-	            <phase>package</phase>
-	            <goals>
-	              <goal>apt-repo</goal>
-	            </goals>
-	          </execution>
-	        </executions>
-	      </plugin>
-
     </plugins>
   </build>
 </project>
