@@ -27,6 +27,7 @@
 package tlc2.util.statistics;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -48,35 +49,35 @@ public class BucketStatisticsTest {
 	@Test
 	public void testMean() {
 		final IBucketStatistics gs = new BucketStatistics();
-		assertEquals(-1.0d, gs.getMean(), 0);
+		assertTrue(Double.compare(-1.0d, gs.getMean()) == 0);
 
 		gs.addSample(0);
-		assertEquals(0.0d, gs.getMean(), 0);
+		assertTrue(Double.compare(0.0d, gs.getMean()) == 0);
 		
 		gs.addSample(1);
 		gs.addSample(2);
-		assertEquals(1.0d, gs.getMean(), 0);
+		assertTrue(Double.compare(1.0d, gs.getMean()) == 0);
 
 		gs.addSample(2);
 		gs.addSample(2);
-		assertEquals(1.4d, gs.getMean(), 0);
+		assertTrue(Double.compare(1.4d, gs.getMean()) == 0);
 	}
 
 	@Test
 	public void testMedian() {
 		final IBucketStatistics gs = new BucketStatistics();
-		assertEquals(-1, gs.getMedian(), 0);
+		assertEquals(-1, gs.getMedian());
 
 		gs.addSample(0);
-		assertEquals(0, gs.getMedian(), 0);
+		assertEquals(0, gs.getMedian());
 		
 		gs.addSample(1);
 		gs.addSample(2);
-		assertEquals(1, gs.getMedian(), 0);
+		assertEquals(1, gs.getMedian());
 
 		gs.addSample(2);
 		gs.addSample(2);
-		assertEquals(2, gs.getMedian(), 0);
+		assertEquals(2, gs.getMedian());
 	}
 
 	@Test
@@ -128,7 +129,7 @@ public class BucketStatisticsTest {
 		gs.addSample(2);
 		gs.addSample(2);
 		gs.addSample(3);
-		assertEquals(1.005d, (Math.round(gs.getStdDev() * 10000d) / 10000d), 0);
+		assertTrue(Double.compare(1.005d, (Math.round(gs.getStdDev() * 10000d) / 10000d)) == 0);
 	}
 
 	@Test
@@ -150,9 +151,10 @@ public class BucketStatisticsTest {
 		gs.addSample(2);
 		gs.addSample(2);
 		gs.addSample(3);
-		assertEquals(2.0d, gs.getPercentile(0.5d), 0);
-		assertEquals(2.0d, gs.getPercentile(0.75d), 0);
-		assertEquals(3.0d, gs.getPercentile(0.999d), 0);
+		assertTrue(Double.compare(2.0d, gs.getPercentile(0.5d)) == 0);
+		assertTrue(Double.compare(2.0d, gs.getPercentile(0.5d)) == 0);
+		assertTrue(Double.compare(2.0d, gs.getPercentile(0.75d)) == 0);
+		assertTrue(Double.compare(3.0d, gs.getPercentile(0.999d)) == 0);
 	}
 	// NaN test
 	@Test
