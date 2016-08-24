@@ -1139,23 +1139,6 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	}
 	
 	/**
-	 * @return The amount of elements in the {@link DiskFPSet#collisionBucket}
-	 *         if the {@link DiskFPSet} has a collisionBucket. -1L otherwise.
-	 */
-	public long getCollisionBucketCnt() {
-		return -1L;
-	}
-	
-	/**
-	 * @return The proportional size of the collision bucket compared to the
-	 *         size of the set or <code>-1d</code> if implementation does not
-	 *         use a collision bucket. Domain is [0, 1].
-	 */
-	public double getCollisionRatio() {
-		return -1d;
-	}
-	
-	/**
 	 * The load factor is a measure of how full the (primary) in-memory hash
 	 * table is.
 	 * 

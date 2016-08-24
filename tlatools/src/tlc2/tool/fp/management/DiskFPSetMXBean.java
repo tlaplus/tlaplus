@@ -110,16 +110,6 @@ public interface DiskFPSetMXBean {
 	int getReaderWriterCnt();
 	
 	/**
-	 * @see DiskFPSet#getCollisionBucketCnt()
-	 */
-	long getCollisionBucketCnt();
-	
-	/**
-	 * @see DiskFPSet#getCollisionRatio()
-	 */
-	double getCollisionRatio();
-	
-	/**
 	 * @see DiskFPSet#getLoadFactor()
 	 */
 	double getLoadFactor();

@@ -107,16 +107,6 @@ public interface FPSetStatistic {
 	public int getReaderWriterCnt();
 	
 	/**
-	 * @return DiskFPSet#getCollisionBucketCnt()
-	 */
-	public long getCollisionBucketCnt();
-
-	/**
-	 * @return DiskFPSet#getCollisionRatio()
-	 */
-	public double getCollisionRatio();
-	
-	/**
 	 * @return DiskFPSet#getLoadFactor();
 	 */
 	double getLoadFactor();
