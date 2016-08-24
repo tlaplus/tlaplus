@@ -11,18 +11,52 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import sun.misc.Unsafe;
 import tlc2.output.EC;
 import util.Assert;
 
-import sun.misc.Unsafe;
-
+/**
+ * This implementation uses sun.misc.Unsafe instead of a wrapping
+ * java.nio.ByteBuffer due to the fact that the former's allocateMemory
+ * takes a long argument, while the latter is restricted to
+ * Integer.MAX_VALUE as its capacity.<br>
+ * In 2012 this poses a too hard limit on the usable memory, hence we trade
+ * generality for performance.
+ */
 @SuppressWarnings("restriction")
-public final class OffHeapDiskFPSetHelper {
+public final class LongArray {
 
-	private Unsafe unsafe;
+	private final Unsafe unsafe;
+	
+	/**
+	 * The base address of this direct memory allocated with Unsafe.
+	 */
+	private final long baseAddress;
+	
+	private final int logAddressSize;
 
-	OffHeapDiskFPSetHelper() {
+	/**
+	 * Maximum number of elements that can be contained in this array.
+	 */
+	private final long positions;
+
+	LongArray(final long positions) {
+		this.positions = positions;
 		this.unsafe = getUnsafe();
+		
+		// Determine base address which varies depending on machine architecture.
+		int addressSize = addressSize();
+		
+		int cnt = -1;
+		while (addressSize > 0) {
+			cnt++;
+			addressSize = addressSize >>> 1; // == (n/2)
+		}
+		logAddressSize = cnt;
+
+		// Allocate non-heap memory
+		long bytes = positions << logAddressSize;
+		baseAddress = allocateMemory(bytes);
 	}
 
 	/**
@@ -51,16 +85,14 @@ public final class OffHeapDiskFPSetHelper {
 	 * thread count with which zeroing is then done in parallel.
 	 * 
 	 * @param u
-	 * @param baseAddress Base address of the (previously) allocated memory 
 	 * @param numThreads Number of threads used to zero memory
-	 * @param fingerprintCount Number of fingerprint for which the memory should be initialized
 	 * @throws IOException
 	 */
-	public final void zeroMemory(final long baseAddress, int numThreads, final long fingerprintCount)
+	public final void zeroMemory(final int numThreads)
 			throws IOException {
 		
 		final int addressSize = addressSize();
-		final long segmentSize = fingerprintCount / numThreads;
+		final long segmentSize = positions / numThreads;
 
 		final ExecutorService es = Executors.newFixedThreadPool(numThreads);
 		try {
@@ -81,7 +113,7 @@ public final class OffHeapDiskFPSetHelper {
 						final long upperBound = (1 + offset) * segmentSize;
 						for (long i = lowerBound; i < upperBound; i++) {
 							final long address = baseAddress + (i * addressSize);
-							writeFP(address, 0L);
+							unsafe.putAddress(address, 0L);
 						}
 						return true;
 					}
@@ -97,20 +129,55 @@ public final class OffHeapDiskFPSetHelper {
 		}
 	}
 
-	public long allocateMemory(long bytes) {
+	private long allocateMemory(long bytes) {
 		return this.unsafe.allocateMemory(bytes);
 	}
 
-	public int addressSize() {
+	private int addressSize() {
 		return this.unsafe.addressSize();
 	}
+
+	/**
+	 * Converts from logical positions to 
+	 * physical memory addresses.
+	 * 
+	 * @param logical position (zero indexed)
+	 * @return The physical address of the fp slot
+	 */
+	private final long log2phy(long logicalAddress) {
+		return baseAddress + (logicalAddress << logAddressSize);
+	}
 	
-	public final void writeFP(final long address, final long fp) {
-		this.unsafe.putAddress(address, fp);
-//		System.out.printf("Inserted %s at address %s\n", fp, address);
+    private void rangeCheck(final long position) {
+		// Might want to replace with assert eventually to avoid comparison on
+		// each set/get.
+		//assert position >= 0 && position < this.positions;
+    	
+        if (position < 0 || position >= positions) {
+        	throw new IndexOutOfBoundsException("Index: "+position+", Size: "+positions);
+        }
+    }
+	
+	/**
+	 * CAS (compare and swap)
+	 * 
+	 * @param position
+	 * @param expected
+	 * @param value
+	 * @return true iff successful 
+	 */
+	public final boolean trySet(final long position, final long expected, final long value) {
+		rangeCheck(position);
+		return this.unsafe.compareAndSwapLong(null, log2phy(position), expected, value);
+	}
+	
+	public final void set(final long position, final long value) {
+		rangeCheck(position);
+		this.unsafe.putAddress(log2phy(position), value);
 	}
 
-	public final long readFP(final long address) {
-		return this.unsafe.getAddress(address);
+	public final long get(final long position) {
+		rangeCheck(position);
+		return this.unsafe.getAddress(log2phy(position));
 	}
 }

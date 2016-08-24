@@ -23,25 +23,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 	
 	protected final int bucketCapacity;
 
-	/**
-	 * This implementation uses sun.misc.Unsafe instead of a wrapping
-	 * java.nio.ByteBuffer due to the fact that the former's allocateMemory
-	 * takes a long argument, while the latter is restricted to
-	 * Integer.MAX_VALUE as its capacity.<br>
-	 * In 2012 this poses a too hard limit on the usable memory, hence we trade
-	 * generality for performance.
-	 */
-	private final OffHeapDiskFPSetHelper helper;
-	
-	/**
-	 * The base address allocated for fingerprints
-	 */
-	private final long baseAddress;
-	
-	/**
-	 * Address size (either 4 or 8 bytes) depending on current architecture
-	 */
-	private final int logAddressSize;
+	private final LongArray array;
 
 	/**
 	 * A bucket containing collision elements which is used as a fall-back if a
@@ -73,19 +55,8 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		final long memoryInFingerprintCnt = fpSetConfig.getMemoryInFingerprintCnt();
 		
 		// Determine base address which varies depending on machine architecture.
-		this.helper = new OffHeapDiskFPSetHelper();
-		int addressSize = helper.addressSize();
-		int cnt = -1;
-		while (addressSize > 0) {
-			cnt++;
-			addressSize = addressSize >>> 1; // == (n/2)
-		}
-		logAddressSize = cnt;
-
-		// Allocate non-heap memory for maxInMemoryCapacity fingerprints
-		long bytes = memoryInFingerprintCnt << logAddressSize;
-		
-		baseAddress = helper.allocateMemory(bytes);
+		this.array = new LongArray(memoryInFingerprintCnt);
+		this.bucketCapacity = InitialBucketCapacity;
 
 		final int csCapacity = (int) (maxTblCnt * COLLISION_BUCKET_RATIO);
 		this.collisionBucket = new TreeSetCollisionBucket(csCapacity);
@@ -115,26 +86,8 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		// increased linear search. But linear search on maximally 31 elements
 		// still outperforms disk I/0.
 		if (bitCount == 1) {
-			bucketCapacity = InitialBucketCapacity;
 			this.indexer = new BitshiftingIndexer(moveBy, fpSetConfig.getFpBits());
 		} else {
-			// Round maxInMemoryCapacity to next lower 2^n power
-			cnt = -1;
-			while (bytes > 0) {
-				cnt++;
-				bytes = bytes >>> 1;
-			}
-			
-			// Extra memory that cannot be addressed by BitshiftingIndexer
-			final long extraMem = (memoryInFingerprintCnt * LongSize) - (long) Math.pow(2, cnt);
-			
-			// Divide extra memory across addressable buckets
-			int x = (int) (extraMem / ((n + 1) / InitialBucketCapacity));
-			bucketCapacity = InitialBucketCapacity + (x / LongSize) ;
-			// Twice InitialBucketCapacity would mean we could have used one
-			// more bit for addressing.
-			Assert.check(bucketCapacity < (2 * InitialBucketCapacity), EC.GENERAL);
-
 			// non 2^n buckets cannot use a bit shifting indexer
 			this.indexer = new Indexer(moveBy, fpSetConfig.getFpBits());
 		}
@@ -147,7 +100,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 			throws IOException {
 		super.init(numThreads, aMetadir, filename);
 		
-		helper.zeroMemory(baseAddress, numThreads, fpSetConfig.getMemoryInFingerprintCnt());
+		array.zeroMemory(numThreads);
 	}
 
 	/* (non-Javadoc)
@@ -222,7 +175,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		// end of the allocated bucket
 		long l = -1L;
 		for (int i = 0; i < bucketCapacity && l != 0L; i++) {
-			l = helper.readFP(log2phy(position, i));
+			l = array.get(position + i);
 			// zero the long msb (which is 1 if fp has been flushed to disk)
 			if (fp == (l & 0x7FFFFFFFFFFFFFFFL)) {
 				return true;
@@ -255,7 +208,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		long l = -1;
 		long freePosition = -1L;
 		for (int i = 0; i < bucketCapacity && l != 0L; i++) {
-			l = helper.readFP(log2phy(position, i));
+			l = array.get(position + i);
 			// zero the long msb (which is 1 if fp has been flushed to disk)
 			if (fp == (l & 0x7FFFFFFFFFFFFFFFL)) {
 				return true;
@@ -264,18 +217,18 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 					tblLoad++;
 				}
 				// empty or disk written slot found, simply insert at _current_ position
-				this.helper.writeFP(log2phy(position, i), fp);
+				this.array.set(position + i, fp);
 				this.tblCnt.getAndIncrement();
 				return false;
 			} else if (l < 0L && freePosition == -1) {
 				// record free (disk written fp) slot
-				freePosition = log2phy(position, i);
+				freePosition = position + i;
 			}
 		}
 
 		if (freePosition > -1 && !csLookup(fp)) {
 			// Write to free slot
-			this.helper.writeFP(freePosition, fp);
+			this.array.set(freePosition, fp);
 			this.tblCnt.getAndIncrement();
 			return false;
 		} else {
@@ -300,29 +253,6 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		} finally {
 			csRWLock.writeLock().unlock();
 		}
-	}
-
-	/**
-	 * Converts from logical bucket index numbers and in-bucket position to a
-	 * physical memory address.
-	 * 
-	 * @param bucketNumber
-	 * @param inBucketPosition
-	 * @return The physical address of the fp slot
-	 */
-	private final long log2phy(long bucketNumber, long inBucketPosition) {
-		return log2phy(bucketNumber + inBucketPosition);
-	}
-	
-	/**
-	 * Converts from logical addresses to 
-	 * physical memory addresses.
-	 * 
-	 * @param logicalAddress
-	 * @return The physical address of the fp slot
-	 */
-	private final long log2phy(long logicalAddress) {
-		return baseAddress + (logicalAddress << logAddressSize);
 	}
 
 	/* (non-Javadoc)
@@ -484,7 +414,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		@Override
 		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
 			final long buffLen = tblCnt.get();
-			ByteBufferIterator itr = new ByteBufferIterator(helper, baseAddress, collisionBucket, buffLen);
+			ByteBufferIterator itr = new ByteBufferIterator(array, collisionBucket, buffLen);
 
 			// Precompute the maximum value of the new file
 			long maxVal = itr.getLast();
@@ -584,10 +514,10 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		private long readElements = 0L;
 
 		private long cache = -1L;
-		private final OffHeapDiskFPSetHelper helper;
+		private final LongArray array;
 
-		public ByteBufferIterator(OffHeapDiskFPSetHelper helper, long baseAddress, CollisionBucket collisionBucket, long expectedElements) {
-			this.helper = helper;
+		public ByteBufferIterator(LongArray helper, CollisionBucket collisionBucket, long expectedElements) {
+			this.array = helper;
 			this.logicalPosition = 0L;
 			this.totalElements = expectedElements;
 			
@@ -643,20 +573,20 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		private long getNextFromBuffer() {
 			sortNextBucket();
 			
-			long l = helper.readFP(log2phy(logicalPosition));
+			long l = array.get(logicalPosition);
 			if (l > 0L) {
-				helper.writeFP(log2phy(logicalPosition++), l | 0x8000000000000000L);
+				array.set(logicalPosition++, l | 0x8000000000000000L);
 				return l;
 			}
 			
-			while ((l = helper.readFP(log2phy(logicalPosition))) <= 0L && logicalPosition < maxTblCnt) {
+			while ((l = array.get(logicalPosition)) <= 0L && logicalPosition < maxTblCnt) {
 				// increment position to next bucket
 				logicalPosition = indexer.getNextBucketBasePosition(logicalPosition);
 				sortNextBucket();
 			}
 			
 			if (l > 0L) {
-				helper.writeFP(log2phy(logicalPosition++), l | 0x8000000000000000L);
+				array.set(logicalPosition++, l | 0x8000000000000000L);
 				return l;
 			}
 			throw new NoSuchElementException();
@@ -669,7 +599,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 				long[] longBuffer = new long[bucketCapacity];
 				int i = 0;
 				for (; i < bucketCapacity; i++) {
-					long l = helper.readFP(log2phy(logicalPosition + i));
+					long l = array.get(logicalPosition + i);
 					if (l <= 0L) {
 						break;
 					} else {
@@ -679,7 +609,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 				if (i > 0) {
 					Arrays.sort(longBuffer, 0, i);
 					for (int j = 0; j < i; j++) {
-						helper.writeFP(log2phy(logicalPosition, j),
+						array.set(logicalPosition + j,
 								longBuffer[j]);
 					}
 				}
@@ -714,7 +644,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 			// this could be achieved recursively, but this can cause a
 			// stack overflow).
 			long l = 1L;
-			while ((l = helper.readFP(log2phy(logicalPosition-- + bucketCapacity - 1))) <= 0L) {
+			while ((l = array.get(logicalPosition-- + bucketCapacity - 1)) <= 0L) {
 				sortNextBucket();
 			}
 			
@@ -733,14 +663,6 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 				return l;
 			}
 			throw new NoSuchElementException();
-		}
-		
-		// prevent synthetic methods
-		private long log2phy(long logicalAddress) {
-			return OffHeapDiskFPSet.this.log2phy(logicalAddress);
-		}
-		private long log2phy(long bucketAddress, long inBucketAddress) {
-			return OffHeapDiskFPSet.this.log2phy(bucketAddress, inBucketAddress);
 		}
 	}
 	
@@ -840,51 +762,6 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		 */
 		public long size() {
 			return set.size();
-		}
-	}
-	
-	public class PrettyPrinter {
-		/**
-		 * Print the current in-memory hash table to System.out with increments
-		 */
-		public void printDistribution(final int increments) {
-			final int mask = increments - 1;
-			int cnt = 0;
-			int min = Integer.MAX_VALUE;
-			int max = 0;
-			for (long i = maxTblCnt - 1; i >= 0; i--) {
-				if ((i & mask) == 0) {
-					if (cnt > max) {
-						max = cnt;
-					}
-					if (cnt < min) {
-						min = cnt;
-					}
-					System.out.println(i + " " + cnt);
-					cnt = 0;
-				}
-				if (helper.readFP(log2phy(i)) > 0L) {
-					cnt++;
-				}
-			}
-			System.out.println("max: " + max + " min: " + min + " avg:" + (tblLoad / tblCnt.doubleValue()));
-		}
-		
-		public void printBuckets() {
-			printBuckets(0, maxTblCnt);
-		}
-		
-		/**
-		 * @param from inclusive lower bound
-		 * @param to exclusive upper bound
-		 */
-		public void printBuckets(int from, long to) {
-			for (long i = from; i < maxTblCnt && i < to; i++) {
-				if (i % bucketCapacity == 0) {
-					System.out.println("Bucket idx: " + i);
-				}
-				System.out.println(helper.readFP(log2phy(i)));
-			}
 		}
 	}
 }
