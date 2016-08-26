@@ -55,20 +55,10 @@ public abstract class FPSetFactory {
 		
 		// fpBits > 0 indicates that the consumer requires a MultiFPSet
 		if (fpSetConfig.allowsNesting()) {
-			// A MultiFPSet comes in two flavors:
-			// a) For FPSets that sort on LSB
-			// b) For FPSets that use the MSB to sort the internal hash map
-			if (msbBasedFPSet(implClassname)) {
-				// Pass physical memory instead of logical FP count to adhere to
-				// the general FPSet ctor contract.
-				// @see http://bugzilla.tlaplus.net/show_bug.cgi?id=290
-				return new MSBMultiFPSet(fpSetConfig);
-			} else {
-				// Pass physical memory instead of logical FP count to adhere to
-				// the general FPSet ctor contract.
-				// @see http://bugzilla.tlaplus.net/show_bug.cgi?id=290
-				return new MultiFPSet(fpSetConfig);
-			}
+			// Pass physical memory instead of logical FP count to adhere to
+			// the general FPSet ctor contract.
+			// @see http://bugzilla.tlaplus.net/show_bug.cgi?id=290
+			return new MultiFPSet(fpSetConfig);
 		} else {
 			if (implClassname != null) {
 				return loadImplementation(implClassname, fpSetConfig);
@@ -162,19 +152,5 @@ public abstract class FPSetFactory {
 		// LL modified error message on 7 April 2012
 		MP.printWarning(EC.GENERAL, "unsuccessfully trying to load custom FPSet class: " + clazz, exp);
 		return null;
-	}
-
-	/**
-	 * @param userFpsetImplClassname
-	 * @return true iff the given class uses the MSB to pre-sort its fingerprints
-	 */
-	private static boolean msbBasedFPSet(String userFpsetImplClassname) {
-		if (!allocatesOnHeap(userFpsetImplClassname)) {
-			return true;
-		}
-		if (userFpsetImplClassname.equals(MSBDiskFPSet.class.getName())) {
-			return true;
-		}
-		return false;
 	}
 }
