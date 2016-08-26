@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import tlc2.output.EC;
 import tlc2.tool.distributed.fp.callable.BitVectorWrapper;
 import tlc2.tool.distributed.fp.callable.CheckFPsCallable;
+import tlc2.tool.distributed.fp.callable.CheckInvariantCallable;
 import tlc2.tool.distributed.fp.callable.ContainsBlockCallable;
 import tlc2.tool.distributed.fp.callable.PutBlockCallable;
 import tlc2.util.BitVector;
@@ -452,6 +453,43 @@ public abstract class FPSetManager implements IFPSetManager {
 				}
 			}
 			return res;
+		} finally {
+			// Always shutdown the executor service
+			executorService.shutdown();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.fp.IFPSetManager#checkInvariant()
+	 */
+	public boolean checkInvariant() {
+		final int len = this.fpSets.size();
+		// Instantiation of a thread pool here is fine, as long as checkFPs is only called seldomly.
+		final ExecutorService executorService = Executors.newFixedThreadPool(len);
+		try {
+			// Start checkFP on all FPSets concurrently
+			// (checkFPs scans the full set sequentially!)
+			final CompletionService<Boolean> ecs = new ExecutorCompletionService<Boolean>(executorService);
+			for (int i = 0; i < len; i++) {
+				ecs.submit(new CheckInvariantCallable(fpSets.get(i).getFpset()));
+			}
+			// Return minimum value
+			for (int i = 0; i < len; i++) {
+				try {
+					if(!ecs.take().get()) {
+						return false;
+					}
+				} catch (InterruptedException e) {
+					// not expected to happen, could return an approximation
+					// if happens (but fail fast for the moment).
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// not expected to happen, could return an approximation
+					// if happens (but fail fast for the moment).
+					e.printStackTrace();
+				}
+			}
+			return true;
 		} finally {
 			// Always shutdown the executor service
 			executorService.shutdown();

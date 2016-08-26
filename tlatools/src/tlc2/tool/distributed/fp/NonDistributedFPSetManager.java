@@ -148,6 +148,19 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.fp.IFPSetManager#checkInvariant()
+	 */
+	public boolean checkInvariant() {
+		try {
+			return this.fpSet.checkInvariant();
+		} catch (IOException e) {
+			// not expected to happen
+			MP.printError(EC.GENERAL, e);
+			return false;
+		}
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.fp.FPSetManager#size()
 	 */
 	public long size() {

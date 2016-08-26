@@ -33,7 +33,12 @@ public interface FPSetRMI extends Remote {
 	 *         collision.
 	 */
 	double checkFPs() throws IOException;
-
+	
+	/**
+	 * @see FPSet#checkInvariant()
+	 */
+	boolean checkInvariant() throws IOException;
+	
 	/**
 	 * Disposes this {@link FPSet}. It cannot be used afterwards anymore.
 	 * 

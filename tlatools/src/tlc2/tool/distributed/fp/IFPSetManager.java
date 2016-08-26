@@ -6,6 +6,9 @@ import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 
 import tlc2.tool.distributed.fp.FPSetManager.FPSets;
+import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.FPSetConfiguration;
+import tlc2.tool.fp.MSBDiskFPSet;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
@@ -19,6 +22,11 @@ public interface IFPSetManager extends Serializable {
 	 */
 	double checkFPs();
 
+	/**
+	 * @see FPSetRMI#checkInvariant()
+	 */
+	boolean checkInvariant();
+	
 	/**
 	 */
 	void checkpoint(String fname) throws InterruptedException, IOException;

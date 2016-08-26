@@ -154,6 +154,18 @@ public class MultiFPSet extends FPSet {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.FPSet#checkInvariant()
+	 */
+	public boolean checkInvariant() throws IOException {
+		for (int i = 0; i < this.sets.length; i++) {
+			if (!this.sets[i].checkInvariant()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#exit(boolean)
 	 */
 	public final void exit(boolean cleanup) throws IOException {
