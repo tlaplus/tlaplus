@@ -25,9 +25,26 @@ public abstract class FPSetFactory {
 	static boolean allocatesOnHeap(final String clazz) {
 		try {
 			final ClassLoader classLoader = FPSet.class.getClassLoader();
+			@SuppressWarnings("unchecked")
 			Class<? extends FPSet> cls = (Class<? extends FPSet>) classLoader
 					.loadClass(clazz);
 			return allocatesOnHeap(cls);
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+	}
+	
+	private static boolean isDiskFPSet(Class<? extends FPSet> cls) {
+		return DiskFPSet.class.isAssignableFrom(cls);
+	}
+
+	static boolean isDiskFPSet(final String clazz) {
+		try {
+			final ClassLoader classLoader = FPSet.class.getClassLoader();
+			@SuppressWarnings("unchecked")
+			Class<? extends FPSet> cls = (Class<? extends FPSet>) classLoader
+					.loadClass(clazz);
+			return isDiskFPSet(cls);
 		} catch (ClassNotFoundException e) {
 			return false;
 		}

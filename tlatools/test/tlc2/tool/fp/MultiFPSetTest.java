@@ -34,6 +34,7 @@ public class MultiFPSetTest {
 	 */
 	@Test
 	public void testCTorLowerMin() throws IOException {
+		System.setProperty(FPSetFactory.IMPL_PROPERTY, MemFPSet.class.getName());
 		try {
 			System.setProperty(FPSetFactory.IMPL_PROPERTY, MemFPSet.class.getName());
 			FPSetConfiguration conf = new FPSetConfiguration();

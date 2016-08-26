@@ -2,11 +2,14 @@
 package tlc2.tool.fp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import org.junit.Test;
+
+import tlc2.tool.distributed.fp.FPSetRMI;
 
 @SuppressWarnings("deprecation")
 public class FPSetFactoryTest {
@@ -15,6 +18,30 @@ public class FPSetFactoryTest {
 	// 64mb). 64mb is also the default used by util.TLCRuntime.getNonHeapPhysicalMemory().
 	private static final long MEMORY = 64L * 1024L * 1024L;
 
+	/* Test diskfpset subclasses which always require two instances */
+	
+	@Test
+	public void testGetDiskFPSet() {
+		assertTrue(FPSetFactory.isDiskFPSet(DiskFPSet.class.getName()));
+		assertTrue(FPSetFactory.isDiskFPSet(HeapBasedDiskFPSet.class.getName()));
+		assertTrue(FPSetFactory.isDiskFPSet(OffHeapDiskFPSet.class.getName()));
+		assertTrue(FPSetFactory.isDiskFPSet(LSBDiskFPSet.class.getName()));
+		assertTrue(FPSetFactory.isDiskFPSet(MSBDiskFPSet.class.getName()));
+
+		assertFalse(FPSetFactory.isDiskFPSet(FPSet.class.getName()));
+		assertFalse(FPSetFactory.isDiskFPSet(FPSetRMI.class.getName()));
+		
+		assertFalse(FPSetFactory.isDiskFPSet(MultiFPSet.class.getName()));
+		
+		assertFalse(FPSetFactory.isDiskFPSet(MemFPSet.class.getName()));
+		assertFalse(FPSetFactory.isDiskFPSet(MemFPSet1.class.getName()));
+		assertFalse(FPSetFactory.isDiskFPSet(MemFPSet2.class.getName()));
+		
+		System.setProperty(FPSetFactory.IMPL_PROPERTY, MSBDiskFPSet.class.getName());
+		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
+		assertTrue(fpSetConfiguration.allowsNesting());
+	}
+	
 	/* Test single FPSet with default memory */
 
 	@Test
@@ -50,11 +77,8 @@ public class FPSetFactoryTest {
 		fpSetConfiguration.setRatio(1.0d);
 		FPSet fpSet = doTestGetFPSet(MSBDiskFPSet.class, fpSetConfiguration);
 		assertEquals(MEMORY, fpSet.getConfiguration().getMemoryInBytes());
-		
-		// non-multifpsets can be cast to diskfpsets to expose statistics
-		// interface
-		final DiskFPSet diskFPSet = (DiskFPSet) fpSet;
-		assertTrue((MEMORY / FPSet.LongSize) > diskFPSet.getMaxTblCnt());
+
+		doTestNested(MSBDiskFPSet.class, fpSetConfiguration, (MultiFPSet) fpSet);
 	}
 
 	@Test
@@ -66,12 +90,7 @@ public class FPSetFactoryTest {
 		FPSet fpSet = doTestGetFPSet(LSBDiskFPSet.class, fpSetConfiguration);
 		assertEquals(MEMORY, fpSet.getConfiguration().getMemoryInBytes());
 
-		// non-multifpsets can be cast to diskfpsets to expose statistics
-		// interface
-		final DiskFPSet diskFPSet = (DiskFPSet) fpSet;
-		// LSB implementation can only allocate half of its memory for primary
-		// fingerprint storage (see auxiliary storage)
-		assertTrue(((MEMORY / FPSet.LongSize) / 2) > diskFPSet.getMaxTblCnt());
+		doTestNested(LSBDiskFPSet.class, fpSetConfiguration, (MultiFPSet) fpSet);
 	}
 
 	@Test
@@ -83,10 +102,7 @@ public class FPSetFactoryTest {
 		FPSet fpSet = doTestGetFPSet(OffHeapDiskFPSet.class, fpSetConfiguration);
 		assertEquals(MEMORY, fpSet.getConfiguration().getMemoryInBytes());
 
-		// non-multifpsets can be cast to diskfpsets to expose statistics
-		// interface
-		final DiskFPSet diskFPSet = (DiskFPSet) fpSet;
-		assertEquals((MEMORY / FPSet.LongSize), diskFPSet.getMaxTblCnt());
+		doTestNested(OffHeapDiskFPSet.class, fpSetConfiguration, (MultiFPSet) fpSet);
 	}
 	
 	/* Test single FPSet with explicit memory and ratio */
@@ -100,11 +116,8 @@ public class FPSetFactoryTest {
 		fpSetConfiguration.setRatio(.5d);
 		FPSet fpSet = doTestGetFPSet(MSBDiskFPSet.class, fpSetConfiguration);
 		assertEquals(MEMORY / 2, fpSet.getConfiguration().getMemoryInBytes());
-		
-		// non-multifpsets can be cast to diskfpsets to expose statistics
-		// interface
-		final DiskFPSet diskFPSet = (DiskFPSet) fpSet;
-		assertTrue((MEMORY / FPSet.LongSize) > diskFPSet.getMaxTblCnt());
+
+		doTestNested(MSBDiskFPSet.class, fpSetConfiguration, (MultiFPSet) fpSet);
 	}
 
 	@Test
@@ -116,12 +129,8 @@ public class FPSetFactoryTest {
 		FPSet fpSet = doTestGetFPSet(LSBDiskFPSet.class, fpSetConfiguration);
 		assertEquals(MEMORY / 2, fpSet.getConfiguration().getMemoryInBytes());
 
-		// non-multifpsets can be cast to diskfpsets to expose statistics
-		// interface
-		final DiskFPSet diskFPSet = (DiskFPSet) fpSet;
-		// LSB implementation can only allocate half of its memory for primary
-		// fingerprint storage (see auxiliary storage)
-		assertTrue((MEMORY / FPSet.LongSize) > diskFPSet.getMaxTblCnt());
+
+		doTestNested(LSBDiskFPSet.class, fpSetConfiguration, (MultiFPSet) fpSet);
 	}
 
 	@Test
@@ -136,10 +145,7 @@ public class FPSetFactoryTest {
 		// non-heap memory
 		assertEquals(MEMORY, fpSet.getConfiguration().getMemoryInBytes());
 
-		// non-multifpsets can be cast to diskfpsets to expose statistics
-		// interface
-		final DiskFPSet diskFPSet = (DiskFPSet) fpSet;
-		assertEquals((MEMORY / FPSet.LongSize), diskFPSet.getMaxTblCnt());
+		doTestNested(OffHeapDiskFPSet.class, fpSetConfiguration, (MultiFPSet) fpSet);
 	}
 	
 	/* Test MultiFPSet with default memory */
@@ -150,7 +156,7 @@ public class FPSetFactoryTest {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, MSBDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
 		fpSetConfiguration.setFpBits(1);
-		final MultiFPSet mFPSet = (MultiFPSet) doTestGetFPSet(MSBMultiFPSet.class, fpSetConfiguration);
+		final MultiFPSet mFPSet = (MultiFPSet) doTestGetFPSet(MultiFPSet.class, fpSetConfiguration);
 		
 		doTestNested(MSBDiskFPSet.class, fpSetConfiguration, mFPSet);
 	}
@@ -170,7 +176,7 @@ public class FPSetFactoryTest {
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
 		fpSetConfiguration.setFpBits(1);
-		final MultiFPSet mFPSet = (MultiFPSet) doTestGetFPSet(MSBMultiFPSet.class, fpSetConfiguration);
+		final MultiFPSet mFPSet = (MultiFPSet) doTestGetFPSet(MultiFPSet.class, fpSetConfiguration);
 
 		doTestNested(OffHeapDiskFPSet.class, fpSetConfiguration, mFPSet);
 	}
@@ -185,7 +191,7 @@ public class FPSetFactoryTest {
 		fpSetConfiguration.setMemory(MEMORY);
 		fpSetConfiguration.setFpBits(1);
 		fpSetConfiguration.setRatio(1.0d);
-		final MultiFPSet mFPSet = (MultiFPSet) doTestGetFPSet(MSBMultiFPSet.class, fpSetConfiguration);
+		final MultiFPSet mFPSet = (MultiFPSet) doTestGetFPSet(MultiFPSet.class, fpSetConfiguration);
 		
 		doTestNested(MSBDiskFPSet.class, fpSetConfiguration, mFPSet);
 	}
@@ -209,7 +215,7 @@ public class FPSetFactoryTest {
 		fpSetConfiguration.setMemory(MEMORY);
 		fpSetConfiguration.setFpBits(1);
 		fpSetConfiguration.setRatio(1.0d);
-		final MultiFPSet mFPSet = (MultiFPSet) doTestGetFPSet(MSBMultiFPSet.class, fpSetConfiguration);
+		final MultiFPSet mFPSet = (MultiFPSet) doTestGetFPSet(MultiFPSet.class, fpSetConfiguration);
 
 		doTestNested(OffHeapDiskFPSet.class, fpSetConfiguration, mFPSet);
 	}
@@ -218,7 +224,9 @@ public class FPSetFactoryTest {
 	
 	private FPSet doTestGetFPSet(final Class<? extends FPSet> class1, final FPSetConfiguration fpSetConfig) throws RemoteException, NoSuchObjectException {
 		final FPSet fpSet = FPSetFactory.getFPSet(fpSetConfig);
-		assertTrue(class1.isAssignableFrom(fpSet.getClass()));
+		if (!FPSetFactory.isDiskFPSet(class1.getName())) {
+			assertTrue(class1.isAssignableFrom(fpSet.getClass()));
+		}
 		
 		return fpSet;
 	}

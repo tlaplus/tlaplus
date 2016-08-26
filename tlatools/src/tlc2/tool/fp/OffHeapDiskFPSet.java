@@ -95,7 +95,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		// Move n as many times to the right to calculate moveBy. moveBy is the
 		// number of bits the (fp & mask) has to be right shifted to make the
 		// logical bucket index.
-		long n = (Long.MAX_VALUE >>> fpSetConfig.getPrefixBits()) - (memoryInFingerprintCnt - 1);
+		long n = (Long.MAX_VALUE >>> fpSetConfig.getFpBits()) - (memoryInFingerprintCnt - 1);
 		int moveBy = 0;
 		while (n >= memoryInFingerprintCnt) {
 			moveBy++;
@@ -116,7 +116,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		// still outperforms disk I/0.
 		if (bitCount == 1) {
 			bucketCapacity = InitialBucketCapacity;
-			this.indexer = new BitshiftingIndexer(moveBy, fpSetConfig.getPrefixBits());
+			this.indexer = new BitshiftingIndexer(moveBy, fpSetConfig.getFpBits());
 		} else {
 			// Round maxInMemoryCapacity to next lower 2^n power
 			cnt = -1;
@@ -136,7 +136,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 			Assert.check(bucketCapacity < (2 * InitialBucketCapacity), EC.GENERAL);
 
 			// non 2^n buckets cannot use a bit shifting indexer
-			this.indexer = new Indexer(moveBy, fpSetConfig.getPrefixBits());
+			this.indexer = new Indexer(moveBy, fpSetConfig.getFpBits());
 		}
 	}
 	

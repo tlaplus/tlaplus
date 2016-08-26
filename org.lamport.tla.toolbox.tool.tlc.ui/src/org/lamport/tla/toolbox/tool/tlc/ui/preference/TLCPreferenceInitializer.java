@@ -28,6 +28,7 @@ public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
         store.setDefault(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY, true);
         store.setDefault(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT, MAX_HEAP_SIZE_DEFAULT);
         store.setDefault(ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT, TLCGlobals.setBound);
+        store.setDefault(ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT, 1);
         store.setDefault(ITLCPreferenceConstants.I_TLC_FPSETIMPL_DEFAULT, FPSetFactory.getImplementationDefault());
         store.setDefault(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME,
                 IModelConfigurationDefaults.MODEL_AUTO_LOCK_TIME_DEFAULT);

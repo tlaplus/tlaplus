@@ -19,7 +19,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 	protected long mask;
 	
 	/**
-	 * The calculated capacity of tbl
+	 * The calculated capacity of tbl. Will always be a power of two.
 	 */
 	protected final int capacity;
 	
