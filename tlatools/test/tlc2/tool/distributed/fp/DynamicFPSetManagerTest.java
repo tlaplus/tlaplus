@@ -175,7 +175,7 @@ public class DynamicFPSetManagerTest {
 		
 		for (Entry<Long, Integer> pair : pairs.entrySet()) {
 			long fp = pair.getKey();
-			int index = dfm.getIndex(fp);
+			int index = dfm.getFPSetIndex(fp);
 			int expected = pair.getValue();
 			assertEquals(expected, index);
 		}
@@ -295,7 +295,7 @@ public class DynamicFPSetManagerTest {
 		
 		final long fp = 2L;
 		
-		assertEquals("Assert fingerprint corresponds to TestFPSet", 0, dfm.getIndex(fp));
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 0, dfm.getFPSetIndex(fp));
 		
 		// Test DFM correctly behaves first time when TestFPSet works as expected
 		assertFalse(dfm.put(fp));
@@ -325,10 +325,10 @@ public class DynamicFPSetManagerTest {
 		final LongVec[] fps = new LongVec[numOfServers]; 
 		fps[0] = new LongVec();
 		fps[0].addElement(0L);
-		assertEquals("Assert fingerprint corresponds to TestFPSet", 0, dfm.getIndex(0L));
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 0, dfm.getFPSetIndex(0L));
 		fps[1] = new LongVec();
 		fps[1].addElement(1L);
-		assertEquals("Assert fingerprint corresponds to TestFPSet", 1, dfm.getIndex(1L));
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 1, dfm.getFPSetIndex(1L));
 		
 		/* Test DFM correctly behaves first time when TestFPSet works as expected */
 
@@ -379,10 +379,10 @@ public class DynamicFPSetManagerTest {
 		final LongVec[] fps = new LongVec[numOfServers]; 
 		fps[0] = new LongVec();
 		fps[0].addElement(0L);
-		assertEquals("Assert fingerprint corresponds to TestFPSet", 0, dfm.getIndex(0L));
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 0, dfm.getFPSetIndex(0L));
 		fps[1] = new LongVec();
 		fps[1].addElement(1L);
-		assertEquals("Assert fingerprint corresponds to TestFPSet", 1, dfm.getIndex(1L));
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 1, dfm.getFPSetIndex(1L));
 		
 		/* Test DFM correctly behaves first time when TestFPSet works as expected */
 
@@ -433,10 +433,10 @@ public class DynamicFPSetManagerTest {
 		final LongVec[] fps = new LongVec[numOfServers]; 
 		fps[0] = new LongVec();
 		fps[0].addElement(0L);
-		assertEquals("Assert fingerprint corresponds to TestFPSet", 0, dfm.getIndex(0L));
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 0, dfm.getFPSetIndex(0L));
 		fps[1] = new LongVec();
 		fps[1].addElement(1L);
-		assertEquals("Assert fingerprint corresponds to TestFPSet", 1, dfm.getIndex(1L));
+		assertEquals("Assert fingerprint corresponds to TestFPSet", 1, dfm.getFPSetIndex(1L));
 		
 		/* Test DFM correctly behaves first time when TestFPSet works as expected */
 		final ExecutorService es = Executors.newCachedThreadPool();

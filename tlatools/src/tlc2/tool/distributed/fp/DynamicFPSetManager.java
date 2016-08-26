@@ -42,7 +42,7 @@ public class DynamicFPSetManager extends FPSetManager implements Serializable {
 		}
 		
 		// Zero upper bits of mask which won't be used when addressing the
-		// fingerprint servers anyway.
+		// fingerprint servers anyway. See IFPSetManager#getFPSetIndex.
 		this.mask = (1L << log) - 1L;
 	}
 

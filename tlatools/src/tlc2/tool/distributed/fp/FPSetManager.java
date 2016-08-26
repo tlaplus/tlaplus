@@ -207,16 +207,11 @@ public abstract class FPSetManager implements IFPSetManager {
 		return hostname;
 	}
 
-	protected int getIndex(long fp) {
-		long l = fp & mask;
-		return (int) (l % this.fpSets.size());
-	}
-
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.IFPSetManager#put(long)
 	 */
 	public boolean put(long fp) {
-		int fpIdx = getIndex(fp);
+		int fpIdx = getFPSetIndex(fp);
 		while (true) {
 			try {
 				return this.fpSets.get(fpIdx).put(fp);
@@ -237,7 +232,7 @@ public abstract class FPSetManager implements IFPSetManager {
 	 * @see tlc2.tool.distributed.IFPSetManager#contains(long)
 	 */
 	public boolean contains(long fp) {
-		int fpIdx = getIndex(fp);
+		int fpIdx = getFPSetIndex(fp);
 		while (true) {
 			try {
 				return this.fpSets.get(fpIdx).contains(fp);

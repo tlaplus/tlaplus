@@ -70,13 +70,27 @@ public interface IFPSetManager extends Serializable {
 	BitVector[] containsBlock(LongVec[] fps, ExecutorService executorService);
 
 	/**
-	 * The index address of the {@link FPSetRMI} corresponding with the given
+	 * The index of the {@link FPSetRMI} corresponding with the given
 	 * fingerprint in this {@link IFPSetManager}. It is used by worker nodes to
 	 * pre-sort the fingerprints in {@link LongVec} according to the index of
-	 * the {@link FPSetRMI} responsible for the partition of the fingerprint
-	 * space.
+	 * the {@link FPSetRMI} responsible for the subset of the fingerprint space.
+	 * 
+	 * @param fp
+	 *            The fingerprint for which the index should be calculated.
+	 * @return The index of the {@link FPSet} that is assigned this subset of
+	 *         the fingerprint space.
+	 *         <p>
+	 *         Assignment is based on the least significant bits. This selection
+	 *         of fingerprint bits is important. Selecting the most significant
+	 *         bits of a fingerprint to assign an {@link FPSet} would violate
+	 *         the invariant of MSB-based {@link FPSet}s such as
+	 *         {@link MSBDiskFPSet}. They assume that the
+	 *         {@link FPSetConfiguration#getFpBits()} are fixed. FPSetManager
+	 *         may dynamically reassign additional subsets of the fingerprint
+	 *         space to an existing {@link FPSet}, when the previously assigned
+	 *         {@link FPSet} is lost due to a network or hardware failure.
 	 */
-	int getFPSetIndex(long fp);
+	int getFPSetIndex(final long fp);
 
 	/**
 	 * @see FPSetRMI#getStatesSeen()
