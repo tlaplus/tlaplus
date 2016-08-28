@@ -267,29 +267,35 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		protected final int lockMoveBy;
 
 		public Indexer(final int bucketCapacity, final long positions, int prefixBits) {
-			// same for lockCnt
 			this.bcktCapacity = bucketCapacity;
-			this.prefixMask = 0x7FFFFFFFFFFFFFFFL >>> prefixBits;
+			this.prefixMask = 0xFFFFFFFFFFFFFFFFL >>> prefixBits;
+
 			// Move n as many times to the right to calculate moveBy. moveBy is the
 			// number of bits the (fp & mask) has to be right shifted to make the
 			// logical bucket index.
-			long n = (Long.MAX_VALUE >>> prefixBits) - (positions - 1);
+			long n = (0xFFFFFFFFFFFFFFFFL >>> prefixBits) - (positions - 1);
 			int moveBy = 0;
 			while (n >= positions) {
 				moveBy++;
 				n = n >>> 1; // == (n/2)
 			}
 			this.moveBy = moveBy;
-			this.lockMoveBy = 63 - prefixBits - LogLockCnt;
+			
+			// ...same for lock index.
+			n = (0xFFFFFFFFFFFFFFFFL >>> prefixBits) - ((1 << LogLockCnt) - 1);
+			moveBy = 0;
+			while (n >= 1 << LogLockCnt) {
+				moveBy++;
+				n = n >>> 1; // == (n/2)
+			}
+			this.lockMoveBy = moveBy;
 		}
 		
 		/* (non-Javadoc)
 		 * @see tlc2.tool.fp.DiskFPSet#getLockIndex(long)
 		 */
 		protected int getLockIndex(long fp) {
-			// calculate hash value (just n most significant bits of fp) which is
-			// used as an index address
-			return (int) (fp & prefixMask) >> lockMoveBy;
+			return (int) ((fp & prefixMask) >> lockMoveBy);
 		}
 
 		/**
@@ -343,7 +349,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 
 		public BitshiftingIndexer(final int bucketCapacity, final long memoryInFingerprintCnt, final int prefixBits) throws RemoteException {
 			super(bucketCapacity, memoryInFingerprintCnt, prefixBits);
-			this.bucketBaseIdx = 0x7FFFFFFFFFFFFFFFL - (bcktCapacity - 1);
+			this.bucketBaseIdx = 0xFFFFFFFFFFFFFFFFL - (bcktCapacity - 1);
 		}
 		
 		/* (non-Javadoc)
