@@ -32,6 +32,12 @@ import junit.framework.TestCase;
 public class LongArrayTest extends TestCase {
 
 	public void testGetAndSet() throws IOException {
+		if (!System.getProperty("sun.arch.data.model").equals("64")) {
+			// LongArray only works on 64bit architectures. See comment in
+			// LongArray ctor.
+			return;
+		}
+		
 		final int elements = 100;
 
 		final LongArray array = new LongArray(elements);
