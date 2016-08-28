@@ -17,108 +17,118 @@ public final class Unicode {
 	
 	private Unicode() {}
 	
-	// The following two constants are used in online Unicode replacement
-	private static final String ASCII_GLYPHS = "=<>[]()+-\\/#.|~!$&*:'^";
-	private static final Set<String> IMMEDIATE_REPLACE = new HashSet<String>(Arrays.asList(
-			"\\/", "/\\", "[]", "<>", "<<", ">>", "|->", "->", "<-"
-		));
+	public static final char DELTA_EQUAL_TO      = '\u225C'; // ≜
+	public static final char LEFTWARDS_ARROW     = '\u2190'; // ←
+	public static final char RIGHTWARDS_ARROW    = '\u2192'; // → 
+	public static final char MAPS_TO             = '\u21A6'; // ↦ RIGHTWARDS ARROW FROM BAR
+	public static final char LEFT_ANGLE_BRACKET  = '\u27E8'; // ⟨ MATHEMATICAL LEFT ANGLE BRACKET
+    public static final char RIGHT_ANGLE_BRACKET = '\u27E9'; // ⟩ MATHEMATICAL RIGHT ANGLE BRACKET
+	public static final char RIGHTWARDS_WAVE_ARROW = '\u219D'; // ↝ \u219D
+	public static final char RIGHTWARDS_ARROW_PLUS = '\u2945'; // ⥅ RIGHTWARDS ARROW WITH PLUS BELOW
+	public static final char PRIME   = '\u2032'; // ′ 
+	public static final char FORALL  = '\u2200'; // ∀ FOR ALL
+	public static final char EXISTS  = '\u2203'; // ∃ THERE EXISTS
+	public static final char NOT     = '\u00ac'; // ¬ NOT SIGN
+	public static final char AND     = '\u2227'; // ∧ LOGICAL AND 
+	public static final char OR      = '\u2228'; // ∨ LOGICAL OR
+	public static final char IMPLIES = '\u21D2'; // ⇒ RIGHTWARDS DOUBLE ARROW
+	public static final char IDENT   = '\u2261'; // ≡ IDENTICAL TO
+	public static final char NEQUAL  = '\u2260'; // ≠ NOT EQUAL TO
+    public static final char ELEM    = '\u2208';  // ∈ ELEMENT OF
+	public static final char NELEM   = '\u2209'; // ∉ NOT AN ELEMENT OF
+	public static final char SUBSET  = '\u2282'; // ⊂ SUBSET OF
+	public static final char SUBSETEQ= '\u2286'; // ⊆ SUBSET OF OR EQUAL TO
+	public static final char SUPSET  = '\u2283'; // ⊃ SUPERSET OF
+	public static final char SUPSETEQ= '\u2287'; // ⊇ SUPERSET OF OR EQUAL TO
+	public static final char NSUBSET = '\u2284'; // ⊄ NOT A SUBSET OF	
+	public static final char NSUPSET = '\u2285'; // ⊅ NOT A SUPERSET OF
+	public static final char NSUBSETEQ = '\u2288'; // ⊈ NEITHER A SUBSET OF NOR EQUAL TO
+	public static final char NSUPSETEQ = '\u2289'; // ⊉ NEITHER A SUPERSET OF NOR EQUAL TO
+
+	public static final char XION    = '\u2229'; // ∩ INTERSECTION
+	public static final char UNION   = '\u222A'; // ∪ UNION
+	public static final char UPLUS = '\u228E'; // ⊎ MULTISET UNION
+	
+    public static final char LEQ  = '\u2264'; // ≤ LESS-THAN OR EQUAL TO
+	public static final char GEQ  = '\u2265'; // ≥ GREATER-THAN OR EQUAL TO
+	public static final char LTLT = '\u226A'; // ≪ MUCH LESS-THAN
+	public static final char GTGT = '\u226B'; // ≫ MUCH GREATER-THAN
+	
+	public static final char MULT = '\u00D7'; // × MULTIPLICATION SIGN
+	public static final char DIV  = '\u00F7'; // ÷ DIVISION SIGN
+	public static final char DOT  = '\u22C5'; // ⋅ DOT OPERATOR
+	
+	public static final char OPLUS  = '\u2295'; // ⊕ CIRCLED PLUS
+	public static final char OMINUS = '\u2296'; // ⊖ CIRCLED MINUS
+	public static final char OTIMES = '\u2297'; // ⊗ CIRCLED TIMES
+    public static final char OSLASH = '\u2298'; // ⊘ CIRCLED DIVISION SLASH
+	public static final char ODOT = '\u2299'; // ⊙ CIRCLED DOT OPERATOR
+	public static final char RING = '\u2218'; // ∘ RING OPERATOR
+	
+	public static final char LARGE_CIRCLE = '\u25EF'; // ◯
+	public static final char BULLET = '\u2022'; // • 
+	public static final char STAR   = '\u22c6'; // ⋆ STAR OPERATOR
+	
+	public static final char PREC    = '\u227A'; // ≺ PRECEDES
+	public static final char PRECEQ  = '\u227C'; // ≼ PRECEDES OR EQUAL TO
+	public static final char SUCC    = '\u227B';  // ≻ SUCCEEDS
+	public static final char SUCCEQ  = '\u227D'; // ≽ SUCCEEDS OR EQUAL TO
+	
+	public static final char SQSUB   = '\u228F'; // ⊏ SQUARE IMAGE OF
+	public static final char SQSUBEQ = '\u2291'; // ⊑ SQUARE IMAGE OF OR EQUAL TO
+	public static final char SQSUP   = '\u2290'; // ⊐ SQUARE ORIGINAL OF
+	public static final char SQSUPEQ = '\u2292'; // ⊒ SQUARE ORIGINAL OF OR EQUAL TO
+	public static final char SQCAP = '\u2293'; // ⊓ SQUARE CAP
+	public static final char SQCUP = '\u2294'; // ⊔ SQUARE CUP
+	
+	public static final char EQUIVALENT_TO = '\u224D'; // ≍ EQUIVALENT TO
+	public static final char WREATH = '\u2240'; // ≀ WREATH PRODUCT
+	public static final char APPROXEQ = '\u2245'; // ≅ APPROXIMATELY EQUAL TO
+	public static final char PROPTO  = '\u221D';  // ∝ PROPORTIONAL TO
+	public static final char APPROX = '\u2248'; // ≈ ALMOST EQUAL TO
+	public static final char DOTEQ = '\u2250'; // ≐ APPROACHES THE LIMIT
+	public static final char SIMEQ = '\u2243'; // ≃ ASYMPTOTICALLY EQUAL TO
+	public static final char FULLWIDTH_TILDE = '\uFF5E'; // ～ FULLWIDTH TILDE
+	public static final char SIM_MINUS_SIM = '\u2A6C'; // ⩬ SIMILAR MINUS SIMILAR
+	public static final char PAR = '\u2016'; // ‖ DOUBLE VERTICAL LINE
+	
+	public static final char RIGHT_TACK = '\u22A2'; // ⊢ RIGHT TACK
+	public static final char LEFT_TACK  = '\u22A3'; // ⊣ LEFT TACK 
+	public static final char BOTTOM     = '\u22a5'; // ⊥ UP TACK \bottom 
+	public static final char TOP        = '\u22a4'; // ⊤ DOWN TACK \top 
+	public static final char DOUBLE_RIGHT_TURNSTILE = '\u22A8'; // ⊨ TRUE
+	public static final char DOUBLE_LEFT_TURNSTILE = '\u2AE4'; // ⫤ VERTICAL BAR DOUBLE LEFT TURNSTILE
+	
+	public static final char WHITE_SQUARE = '\u25A1'; // □ WHITE SQUARE
+	public static final char WHITE_DIAMOND = '\u25C7'; // ◇ WHITE DIAMOND
+	public static final char WHITE_MEDIUM_SQUARE = '\u25FB'; // ◻ WHITE MEDIUM SQUARE
+	public static final char WHITE_MEDIUM_DIAMOND = '\u2B26'; // ⬦ WHITE MEDIUM DIAMOND
+	
+	public static final char RATIO = '\u2236'; // ∶ RATIO
+	public static final char PROPORTION = '\u2237'; // ∷ PROPORTION
+
+	public static final char SUBGROUP = '\u22B2'; // ⊲ NORMAL SUBGROUP OF
+	public static final char SUPGROUP = '\u22B3'; // ⊳ CONTAINS AS NORMAL SUBGROUP
+	public static final char SUBGROUPEQ = '\u22B4'; // ⊴ NORMAL SUBGROUP OF OR EQUAL TO
+	public static final char SUPGROUPEQ = '\u22B5'; // ⊵ CONTAINS AS NORMAL SUBGROUP OR EQUAL TO
+	public static final char DOUBLE_COLON_EQUAL = '\u2A74'; // ⩴ DOUBLE COLON EQUAL
+	public static final char COLON_EQUAL = '\u2254'; // ≔ COLON EQUALS
+	
+	public static final char SUM      = '\u2211'; // ∑ N-ARY SUMMATION
+	public static final char PRODUCT  = '\u220F'; // ∏ N-ARY PRODUCT
+	public static final char NARY_AND = '\u22C0'; // ⋀ N-ARY LOGICAL AND
+	public static final char NARY_OR  = '\u22C1'; // ⋁ N-ARY LOGICAL OR
+	public static final char NARY_CAP = '\u22C2'; // ⋂ N-ARY INTERSECTION
+	public static final char NARY_CUP = '\u22C3'; // ⋃ N-ARY UNION
+	public static final char NARY_UPLUS= '\u2A04'; // ⨄ N-ARY UNION OPERATOR WITH PLUS
 		
-	// Unicode/ASCII conversion table
-	private static final String[][] table = { 
-			// The first element is the Unicode character.
-			// The second element is the canonical ASCII representation.
-			// Subsequent elements are alternate ASCII representations.
+	public static final char DOUBLE_STRUCK_N   = '\u2115'; // ℕ DOUBLE-STRUCK CAPITAL N
+	public static final char DOUBLE_STRUCK_Z   = '\u2124'; // ℤ DOUBLE-STRUCK CAPITAL Z
+	public static final char DOUBLE_STRUCK_Q   = '\u211A'; // ℚ DOUBLE-STRUCK CAPITAL Q
+	public static final char DOUBLE_STRUCK_R   = '\u211D'; // ℝ DOUBLE-STRUCK CAPITAL R
 
-			{ "\u225C", "==" },  // ≜ DELTA EQUAL TO 
-			{ "\u2190", "<-" },  // ← LEFTWARDS ARROW
-			{ "\u2192", "->" },  // → RIGHTWARDS ARROW
-			{ "\u21A6", "|->" }, // ↦ RIGHTWARDS ARROW FROM BAR
-
-			{ "\u27E8", "<<" },   // ⟨ MATHEMATICAL LEFT ANGLE BRACKET
-			{ "\u27E9", ">>" },   // ⟩ MATHEMATICAL RIGHT ANGLE BRACKET
-			{ "\u27E9_", ">>_" }, // ⟩_
-
-			{ "\u2032", "'" },  // ′ PRIME
-			{ "\u25A1", "[]" }, // □ \u25A1 WHITE SQUARE / ◻ \u25FB White medium square / \u2610︎ ☐ BALLOT BOX  / \u2B1C ⬜ White large square
-			{ "\u25C7", "<>" }, // ◇ \u25C7 WHITE DIAMOND/ ⬦ \u2B26 WHITE MEDIUM DIAMOND / ♢ \u2662 WHITE DIAMOND SUIT 
-			{ "\u219D", "~>" },   // ↝ \u219D RIGHTWARDS WAVE ARROW / ⤳ \u2933 WAVE ARROW POINTING DIRECTLY RIGHT
-			{ "\u2945", "-+->" }, // ⥅ RIGHTWARDS ARROW WITH PLUS BELOW/ ⇾ \u21FE RIGHTWARDS OPEN-HEADED ARROW
-			{ "\u2200\u2200", "\\AA" }, // ∀∀
-			{ "\u2203\u2203", "\\EE" }, // ∃∃
-
-			{ "\u2200", "\\A", "\\forall" }, // ∀ FOR ALL
-			{ "\u2203", "\\E", "\\exists" }, // ∃ THERE EXISTS
-
-			{ "\u00ac", "~", "\\lnot", "\\neg" }, // ¬ NOT SIGN
-			{ "\u2227", "/\\", "\\land" },        // ∧ LOGICAL AND 
-			{ "\u2228", "\\/", "\\lor" },         // ∨ LOGICAL OR
-			{ "\u21D2", "=>" },                   // ⇒ RIGHTWARDS DOUBLE ARROW
-			{ "\u2261", "<=>", "\\equiv" },       // ≡ IDENTICAL TO / ⇔ \u21D4 LEFT RIGHT DOUBLE ARROW 
-
-			{ "\u2260", "#", "/=" }, // ≠ NOT EQUAL TO
-
-			{ "\u2208", "\\in" },       // ∈ ELEMENT OF
-			{ "\u2209", "\\notin" },    // ∉ NOT AN ELEMENT OF
-			{ "\u2282", "\\subset" },   // ⊂ SUBSET OF
-			{ "\u2286", "\\subseteq" }, // ⊆ SUBSET OF OR EQUAL TO
-			{ "\u2283", "\\supset" },   // ⊃ SUPERSET OF
-			{ "\u2287", "\\supseteq" }, // ⊇ SUPERSET OF OR EQUAL TO
-
-			{ "\u2229", "\\cap", "\\intersect" }, // ∩ INTERSECTION
-			{ "\u222A", "\\cup", "\\union" },     // ∪ UNION
-			{ "\u228E", "\\uplus" },              // ⊎ MULTISET UNION
-
-			{ "\u2264", "<=", "=<", "\\leq" }, // ≤ LESS-THAN OR EQUAL TO
-			{ "\u2265", ">=", "\\geq" },       // ≥ GREATER-THAN OR EQUAL TO
-			{ "\u226A", "\\ll" },              // ≪ MUCH LESS-THAN
-			{ "\u226B", "\\gg" },              // ≫ MUCH GREATER-THAN
-
-			{ "%", "%", "\\mod" }, 
-			{ "\u00D7", "\\X", "\\times" }, // × MULTIPLICATION SIGN
-			{ "\u00F7", "\\div" },          // ÷ DIVISION SIGN
-			{ "\u22C5", "\\cdot" },         // ⋅ DOT OPERATOR
-
-			{ "\u2295", "(+)", "\\oplus" },  // ⊕ CIRCLED PLUS
-			{ "\u2296", "(-)", "\\ominus" }, // ⊖ CIRCLED MINUS
-			{ "\u2297", "(X)", "\\otimes" }, // ⊗ CIRCLED TIMES
-			{ "\u2298", "(/)", "\\oslash" }, // ⊘ CIRCLED DIVISION SLASH
-			{ "\u2299", "(.)", "\\odot" },   // ⊙ CIRCLED DOT OPERATOR
-
-			{ "\u2218", "\\o", "\\circ" }, // ∘ \u2218 RING OPERATOR / ○ \u25CB WHITE CIRCLE
-			{ "\u25EF", "\\bigcirc" },     // ◯ LARGE CIRCLE 
-			{ "\u2022", "\\bullet" },      // • BULLET 
-			{ "\u22c6", "\\star" },        // ⋆ \u22c6 STAR OPERATOR / ⭑ \u2B51 BLACK SMALL STAR / ★ \u2605 BLACK STAR / ☆ \u2606 WHITE STAR / ⭐︎ \u2B50 \uFE0E White medium star
-
-			{ "\u227A", "\\prec" },   // ≺ PRECEDES
-			{ "\u227C", "\\preceq" }, // ≼ PRECEDES OR EQUAL TO / ⪯ \u2AAF PRECEDES ABOVE SINGLE-LINE EQUALS SIGN
-			{ "\u227B", "\\succ" },   // ≻ SUCCEEDS
-			{ "\u227D", "\\succeq" }, // ≽ SUCCEEDS OR EQUAL TO / \u2AB0 ⪰ SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN
-
-			{ "\u228F", "\\sqsubset" },   // ⊏ SQUARE IMAGE OF
-			{ "\u2291", "\\sqsubseteq" }, // ⊑ SQUARE IMAGE OF OR EQUAL TO
-			{ "\u2290", "\\sqsupset" },   // ⊐ SQUARE ORIGINAL OF
-			{ "\u2292", "\\sqsupseteq" }, // ⊒ SQUARE ORIGINAL OF OR EQUAL TO
-
-			{ "\u2293", "\\sqcap" }, // ⊓ SQUARE CAP
-			{ "\u2294", "\\sqcup" }, // ⊔ SQUARE CUP
-
-			{ "\u224D", "\\asymp" },  // ≍ EQUIVALENT TO
-			{ "\u2240", "\\wr" },     // ≀ WREATH PRODUCT
-			{ "\u2245", "\\cong" },   // ≅ APPROXIMATELY EQUAL TO
-			{ "\u221D", "\\propto" }, // ∝ PROPORTIONAL TO
-			{ "\u2248", "\\approx" }, // ≈ ALMOST EQUAL TO
-			{ "\u2250", "\\doteq" },  // ≐ APPROACHES THE LIMIT
-			{ "\u2243", "\\simeq" },  // ≃ ASYMPTOTICALLY EQUAL TO
-			{ "\uFF5E", "\\sim" },    // ～ FULLWIDTH TILDE / ⩬ \u2A6C, SIMILAR MINUS SIMILAR / ⋍ \u22CD REVERSED TILDE EQUALS
-
-			{ "\u22A2", "|-" }, // ⊢ RIGHT TACK
-			{ "\u22A3", "-|" }, // ⊣ LEFT TACK 
-			{ "\u22A8", "|=" }, // ⊨ TRUE
-			{ "\u2AE4", "=|" }, // ⫤ VERTICAL BAR DOUBLE LEFT TURNSTILE
-
-			{ "\u2016", "||" }, // ‖ DOUBLE VERTICAL LINE
-			// { SUPERSCRIPT_PLUS, "^+" }, // ⁺ SUPERSCRIPT PLUS SIGN 
-	};
+	public static final char EMPTY_SET = '\u2205'; // ∅ EMPTY SET
+	
 	
 	// Greek letters
 	
@@ -158,18 +168,6 @@ public final class Unicode {
 	public static final char SMALL_CHI     = '\u03C7'; // χ GREEK SMALL LETTER CHI
 	public static final char SMALL_PSI     = '\u03C8'; // ψ GREEK SMALL LETTER PSI
 	public static final char SMALL_OMEGA   = '\u03C9'; // ω GREEK SMALL LETTER OMEGA
-
-	// Special 
-	
-	public static final char DOUBLE_STRUCK_N   = '\u2115'; // ℕ DOUBLE-STRUCK CAPITAL N
-	public static final char DOUBLE_STRUCK_Z   = '\u2124'; // ℤ DOUBLE-STRUCK CAPITAL Z
-	public static final char DOUBLE_STRUCK_Q   = '\u211A'; // ℚ DOUBLE-STRUCK CAPITAL Q
-	public static final char DOUBLE_STRUCK_R   = '\u211D'; // ℝ DOUBLE-STRUCK CAPITAL R
-
-	public static final char EMPTY_SET = '\u2205'; // ∅ EMPTY SET
-	
-	public static final char BOTTOM = '\u22a5'; // ⊥ UP TACK \bottom 
-	public static final char TOP    = '\u22a4'; // ⊤ DOWN TACK \top 
 
 	// Subscripts (◻[Next]ᵥₐᵣₛ)
 	
@@ -226,7 +224,134 @@ public final class Unicode {
 	public static final char EMODULE_BEGIN   = '\u2514'; // └ BOX DRAWINGS LIGHT UP AND RIGHT       / ┗ \u2517 HEAVY
 	public static final char EMODULE_END     = '\u2518'; // ┘ BOX DRAWINGS LIGHT UP AND LEFT        / ┛ \u251B HEAVY
 	
+	public static final char LEFT_PARENTHESES_UPPER_HOOK  = '\u239B'; // ⎛ LEFT PARENTHESIS UPPER HOOK
+	public static final char LEFT_PARENTHESES_EXTENSION   = '\u239C'; // ⎜ LEFT PARENTHESIS EXTENSION
+	public static final char LEFT_PARENTHESES_LOWER_HOOK  = '\u239D'; // ⎝ LEFT PARENTHESIS LOWER HOOK
+	public static final char RIGHT_PARENTHESES_UPPER_HOOK = '\u239E'; // ⎞ RIGHT PARENTHESIS UPPER HOOK
+	public static final char RIGHT_PARENTHESES_EXTENSION  = '\u239F'; // ⎟ RIGHT PARENTHESIS EXTENSION
+	public static final char RIGHT_PARENTHESES_LOWER_HOOK = '\u23A0'; // ⎠ RIGHT PARENTHESIS LOWER HOOK
+
+	public static final char LEFT_SQUARE_BRACKET_UPPER_CORNER  = '\u23A1'; // ⎡ LEFT SQUARE BRACKET UPPER CORNER
+	public static final char LEFT_SQUARE_BRACKET_EXTENSION     = '\u23A2'; // ⎢ LEFT SQUARE BRACKET EXTENSION
+	public static final char LEFT_SQUARE_BRACKET_LOWER_CORNER  = '\u23A3'; // ⎣ LEFT SQUARE BRACKET LOWER CORNER
+	public static final char RIGHT_SQUARE_BRACKET_UPPER_CORNER = '\u23A4'; // ⎤ RIGHT SQUARE BRACKET UPPER CORNER
+	public static final char RIGHT_SQUARE_BRACKET_EXTENSION    = '\u23A5'; // ⎥ RIGHT SQUARE BRACKET EXTENSION
+	public static final char RIGHT_SQUARE_BRACKET_LOWER_CORNER = '\u23A6'; // ⎦ RIGHT SQUARE BRACKET LOWER CORNER
+
+	public static final char LEFT_BRACE_UPPER_HOOK    = '\u23A7'; // ⎧ LEFT CURLY BRACKET UPPER HOOK
+	public static final char LEFT_BRACE_MIDDLE_PIECE  = '\u23A8'; // ⎨ LEFT CURLY BRACKET MIDDLE PIECE
+	public static final char LEFT_BRACE_LOWER_HOOK    = '\u23A9'; // ⎩ LEFT CURLY BRACKET LOWER HOOK
+	public static final char RIGHT_BRACE_UPPER_HOOK   = '\u23AB'; // ⎫ RIGHT CURLY BRACKET UPPER HOOK
+	public static final char RIGHT_BRACE_MIDDLE_PIECE = '\u23AC'; // ⎬ RIGHT CURLY BRACKET MIDDLE PIECE
+	public static final char RIGHT_BRACE_LOWER_HOOK   = '\u23AD'; // ⎭ RIGHT CURLY BRACKET LOWER HOOK
+	public static final char BRACE_EXTENSION          = '\u23AA'; // ⎪ CURLY BRACKET EXTENSION	
+
 	///////////////////////////////////////////////////////////////////////////////////
+	
+	// The following two constants are used in online Unicode replacement
+	private static final String ASCII_GLYPHS = "=<>[]()+-\\/#.|~!$&*:'^";
+	private static final Set<String> IMMEDIATE_REPLACE = new HashSet<String>(Arrays.asList(
+			"\\/", "/\\", "[]", "<>", "<<", ">>", "|->", "->", "<-"
+		));
+
+	// Unicode/ASCII conversion table
+	private static final String[][] table = { 
+			// The first element is the Unicode character.
+			// The second element is the canonical ASCII representation.
+			// Subsequent elements are alternate ASCII representations.
+
+			{ "" + DELTA_EQUAL_TO,   "==" },  // ≜ DELTA EQUAL TO 
+			{ "" + LEFTWARDS_ARROW,  "<-" },  // ← LEFTWARDS ARROW
+			{ "" + RIGHTWARDS_ARROW, "->" },  // → RIGHTWARDS ARROW
+			{ "" + MAPS_TO,          "|->" }, // ↦ RIGHTWARDS ARROW FROM BAR
+
+			{ "" + LEFT_ANGLE_BRACKET,        "<<" },  // ⟨ MATHEMATICAL LEFT ANGLE BRACKET
+			{ "" + RIGHT_ANGLE_BRACKET,       ">>" },  // ⟩ MATHEMATICAL RIGHT ANGLE BRACKET
+			{ "" + RIGHT_ANGLE_BRACKET + "_", ">>_" }, // ⟩_
+
+			{ "" + PRIME, "'" },  // ′ PRIME
+			{ "" + WHITE_SQUARE, "[]" }, // □ \u25A1 WHITE SQUARE / ◻ \u25FB White medium square / \u2610︎ ☐ BALLOT BOX  / \u2B1C ⬜ White large square
+			{ "" + WHITE_DIAMOND, "<>" }, // ◇ \u25C7 WHITE DIAMOND/ ⬦ \u2B26 WHITE MEDIUM DIAMOND / ♢ \u2662 WHITE DIAMOND SUIT 
+			{ "" + RIGHTWARDS_WAVE_ARROW, "~>" },   // ↝ \u219D RIGHTWARDS WAVE ARROW / ⤳ \u2933 WAVE ARROW POINTING DIRECTLY RIGHT
+			{ "" + RIGHTWARDS_ARROW_PLUS, "-+->" }, // ⥅ RIGHTWARDS ARROW WITH PLUS BELOW/ ⇾ \u21FE RIGHTWARDS OPEN-HEADED ARROW
+			{ "" + FORALL + FORALL, "\\AA" }, // ∀∀
+			{ "" + EXISTS + EXISTS, "\\EE" }, // ∃∃
+
+			{ "" + FORALL, "\\A", "\\forall" }, // ∀ FOR ALL
+			{ "" + EXISTS, "\\E", "\\exists" }, // ∃ THERE EXISTS
+
+			{ "" + NOT,     "~", "\\lnot", "\\neg" }, // ¬ NOT SIGN
+			{ "" + AND,     "/\\", "\\land" },        // ∧ LOGICAL AND 
+			{ "" + OR,      "\\/", "\\lor" },         // ∨ LOGICAL OR
+			{ "" + IMPLIES, "=>" },                   // ⇒ RIGHTWARDS DOUBLE ARROW
+			{ "" + IDENT,   "<=>", "\\equiv" },       // ≡ IDENTICAL TO / ⇔ \u21D4 LEFT RIGHT DOUBLE ARROW 
+
+			{ "" + NEQUAL, "#", "/=" }, // ≠ NOT EQUAL TO
+
+			{ "" + ELEM,     "\\in" },       // ∈ ELEMENT OF
+			{ "" + NELEM,    "\\notin" },    // ∉ NOT AN ELEMENT OF
+			{ "" + SUBSET,   "\\subset" },   // ⊂ SUBSET OF
+			{ "" + SUBSETEQ, "\\subseteq" }, // ⊆ SUBSET OF OR EQUAL TO
+			{ "" + SUPSET,   "\\supset" },   // ⊃ SUPERSET OF
+			{ "" + SUPSETEQ, "\\supseteq" }, // ⊇ SUPERSET OF OR EQUAL TO
+
+			{ "" + XION , "\\cap", "\\intersect" }, // ∩ INTERSECTION
+			{ "" + UNION, "\\cup", "\\union" },     // ∪ UNION
+			{ "" + UPLUS, "\\uplus" },              // ⊎ MULTISET UNION
+
+			{ "" + LEQ,  "<=", "=<", "\\leq" }, // ≤ LESS-THAN OR EQUAL TO
+			{ "" + GEQ,  ">=", "\\geq" },       // ≥ GREATER-THAN OR EQUAL TO
+			{ "" + LTLT, "\\ll" },              // ≪ MUCH LESS-THAN
+			{ "" + GTGT, "\\gg" },              // ≫ MUCH GREATER-THAN
+
+			{ "%", "%", "\\mod" }, 
+			{ "" + MULT, "\\X", "\\times" }, // × MULTIPLICATION SIGN
+			{ "" + DIV,  "\\div" },          // ÷ DIVISION SIGN
+			{ "" + DOT,  "\\cdot" },         // ⋅ DOT OPERATOR
+
+			{ "" + OPLUS,  "(+)", "\\oplus" },  // ⊕ CIRCLED PLUS
+			{ "" + OMINUS, "(-)", "\\ominus" }, // ⊖ CIRCLED MINUS
+			{ "" + OTIMES, "(X)", "\\otimes" }, // ⊗ CIRCLED TIMES
+			{ "" + OSLASH, "(/)", "\\oslash" }, // ⊘ CIRCLED DIVISION SLASH
+			{ "" + ODOT,   "(.)", "\\odot" },   // ⊙ CIRCLED DOT OPERATOR
+
+			{ "" + RING,         "\\o", "\\circ" }, // ∘ \u2218 RING OPERATOR / ○ \u25CB WHITE CIRCLE
+			{ "" + LARGE_CIRCLE, "\\bigcirc" },     // ◯ LARGE CIRCLE 
+			{ "" + BULLET,       "\\bullet" },      // • BULLET 
+			{ "" + STAR,         "\\star" },        // ⋆ \u22c6 STAR OPERATOR / ⭑ \u2B51 BLACK SMALL STAR / ★ \u2605 BLACK STAR / ☆ \u2606 WHITE STAR / ⭐︎ \u2B50 \uFE0E White medium star
+			
+			{ "" + PREC,   "\\prec" },   // ≺ PRECEDES
+			{ "" + PRECEQ, "\\preceq" }, // ≼ PRECEDES OR EQUAL TO / ⪯ \u2AAF PRECEDES ABOVE SINGLE-LINE EQUALS SIGN
+			{ "" + SUCC,   "\\succ" },   // ≻ SUCCEEDS
+			{ "" + SUCCEQ, "\\succeq" }, // ≽ SUCCEEDS OR EQUAL TO / \u2AB0 ⪰ SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN
+
+			{ "" + SQSUB,   "\\sqsubset" },   // ⊏ SQUARE IMAGE OF
+			{ "" + SQSUBEQ, "\\sqsubseteq" }, // ⊑ SQUARE IMAGE OF OR EQUAL TO
+			{ "" + SQSUP,   "\\sqsupset" },   // ⊐ SQUARE ORIGINAL OF
+			{ "" + SQSUPEQ, "\\sqsupseteq" }, // ⊒ SQUARE ORIGINAL OF OR EQUAL TO
+
+			{ "" + SQCAP, "\\sqcap" }, // ⊓ SQUARE CAP
+			{ "" + SQCUP, "\\sqcup" }, // ⊔ SQUARE CUP
+
+			{ "" + EQUIVALENT_TO, "\\asymp" },  // ≍ EQUIVALENT TO
+			{ "" + WREATH,   "\\wr" },     // ≀ WREATH PRODUCT
+			{ "" + APPROXEQ, "\\cong" },   // ≅ APPROXIMATELY EQUAL TO
+			{ "" + PROPTO,   "\\propto" }, // ∝ PROPORTIONAL TO
+			{ "" + APPROX,   "\\approx" }, // ≈ ALMOST EQUAL TO
+			{ "" + DOTEQ,    "\\doteq" },  // ≐ APPROACHES THE LIMIT
+			{ "" + SIMEQ,    "\\simeq" },  // ≃ ASYMPTOTICALLY EQUAL TO
+			{ "" + FULLWIDTH_TILDE, "\\sim" },    // ～ FULLWIDTH TILDE / ⩬ \u2A6C, SIMILAR MINUS SIMILAR / ⋍ \u22CD REVERSED TILDE EQUALS
+
+			{ "" + RIGHT_TACK, "|-" }, // ⊢ RIGHT TACK
+			{ "" + LEFT_TACK, "-|" }, // ⊣ LEFT TACK 
+			{ "" + DOUBLE_RIGHT_TURNSTILE, "|=" }, // ⊨ TRUE
+			{ "" + DOUBLE_LEFT_TURNSTILE, "=|" }, // ⫤ VERTICAL BAR DOUBLE LEFT TURNSTILE
+
+			{ "" + PAR, "||" }, // ‖ DOUBLE VERTICAL LINE
+			// { "" + SUPERSCRIPT_PLUS, "^+" }, // ⁺ SUPERSCRIPT PLUS SIGN 
+	};
+
+	////////////////////////////////////////////////////////////////////
 	
 	private static final Map<String, String> u2a = new HashMap<>();
 	private static final Map<String, String> a2u = new HashMap<>();
