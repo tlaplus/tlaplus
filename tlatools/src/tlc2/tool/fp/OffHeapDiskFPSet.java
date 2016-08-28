@@ -63,16 +63,6 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		
 		this.flusher = new OffHeapMSBFlusher();
 		
-		// Move n as many times to the right to calculate moveBy. moveBy is the
-		// number of bits the (fp & mask) has to be right shifted to make the
-		// logical bucket index.
-		long n = (Long.MAX_VALUE >>> fpSetConfig.getFpBits()) - (memoryInFingerprintCnt - 1);
-		int moveBy = 0;
-		while (n >= memoryInFingerprintCnt) {
-			moveBy++;
-			n = n >>> 1; // == (n/2)
-		}
-		
 		// Calculate Hamming weight of maxTblCnt
 		final int bitCount = Long.bitCount(memoryInFingerprintCnt);
 		
@@ -86,10 +76,10 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		// increased linear search. But linear search on maximally 31 elements
 		// still outperforms disk I/0.
 		if (bitCount == 1) {
-			this.indexer = new BitshiftingIndexer(moveBy, fpSetConfig.getFpBits());
+			this.indexer = new BitshiftingIndexer(bucketCapacity, memoryInFingerprintCnt, fpSetConfig.getFpBits());
 		} else {
 			// non 2^n buckets cannot use a bit shifting indexer
-			this.indexer = new Indexer(moveBy, fpSetConfig.getFpBits());
+			this.indexer = new Indexer(bucketCapacity, memoryInFingerprintCnt, fpSetConfig.getFpBits());
 		}
 	}
 	
@@ -261,7 +251,9 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		return maxTblCnt;
 	}
 
-	public class Indexer {
+	public static class Indexer {
+		protected final int bcktCapacity;
+		
 		protected final long prefixMask;
 		/**
 		 * Number of bits to right shift bits during index calculation
@@ -274,9 +266,19 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		 */
 		protected final int lockMoveBy;
 
-		public Indexer(final int moveBy, int prefixBits) {
+		public Indexer(final int bucketCapacity, final long positions, int prefixBits) {
 			// same for lockCnt
+			this.bcktCapacity = bucketCapacity;
 			this.prefixMask = 0x7FFFFFFFFFFFFFFFL >>> prefixBits;
+			// Move n as many times to the right to calculate moveBy. moveBy is the
+			// number of bits the (fp & mask) has to be right shifted to make the
+			// logical bucket index.
+			long n = (Long.MAX_VALUE >>> prefixBits) - (positions - 1);
+			int moveBy = 0;
+			while (n >= positions) {
+				moveBy++;
+				n = n >>> 1; // == (n/2)
+			}
 			this.moveBy = moveBy;
 			this.lockMoveBy = 63 - prefixBits - LogLockCnt;
 		}
@@ -287,9 +289,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		protected int getLockIndex(long fp) {
 			// calculate hash value (just n most significant bits of fp) which is
 			// used as an index address
-			final long idx = (fp & prefixMask) >> lockMoveBy;
-			assert 0 <= idx && idx < lockCnt;
-			return (int) idx;
+			return (int) (fp & prefixMask) >> lockMoveBy;
 		}
 
 		/**
@@ -300,12 +300,11 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 			// push MSBs for moveBy positions to the right and align with a bucket address
 			long position = (fp & prefixMask) >> moveBy;
 			position = floorToBucket(position);
-			assert 0 <= position && position < maxTblCnt;
 			return position;
 		}
 
 		public long getNextBucketBasePosition(long logicalPosition) {
-			return floorToBucket(logicalPosition + bucketCapacity);
+			return floorToBucket(logicalPosition + bcktCapacity);
 		}
 		
 		/**
@@ -316,8 +315,8 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		 * @return
 		 */
 		private long floorToBucket(long logicalPosition) {
-			long d = (long) Math.floor(logicalPosition / bucketCapacity);
-			return bucketCapacity * d;
+			long d = (long) Math.floor(logicalPosition / bcktCapacity);
+			return bcktCapacity * d;
 		}
 
 		/**
@@ -325,7 +324,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		 * @return true iff logicalPosition is a multiple of bucketCapacity
 		 */
 		public boolean isBucketBasePosition(long logicalPosition) {
-			return logicalPosition % bucketCapacity == 0;
+			return logicalPosition % bcktCapacity == 0;
 		}
 	}
 	
@@ -335,16 +334,16 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 	 * executed on every {@link FPSet#put(long)} or {@link FPSet#contains(long)}
 	 * , it is worthwhile to minimize is execution overhead.
 	 */
-	public class BitshiftingIndexer extends Indexer {
+	public static class BitshiftingIndexer extends Indexer {
 		
 		/**
 		 * Mask used to round of to a bucket address which is a power of 2.
 		 */
 		protected final long bucketBaseIdx;
 
-		public BitshiftingIndexer(final int moveBy, final int prefixBits) throws RemoteException {
-			super(moveBy, prefixBits);
-			this.bucketBaseIdx = 0x7FFFFFFFFFFFFFFFL - (bucketCapacity - 1);
+		public BitshiftingIndexer(final int bucketCapacity, final long memoryInFingerprintCnt, final int prefixBits) throws RemoteException {
+			super(bucketCapacity, memoryInFingerprintCnt, prefixBits);
+			this.bucketBaseIdx = 0x7FFFFFFFFFFFFFFFL - (bcktCapacity - 1);
 		}
 		
 		/* (non-Javadoc)
@@ -353,9 +352,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		@Override
 		protected long getLogicalPosition(final long fp) {
 			// push MSBs for moveBy positions to the right and align with a bucket address
-			long position = ((fp & prefixMask) >> moveBy)  & bucketBaseIdx; 
-			//Assert.check(0 <= position && position < maxTblCnt, EC.GENERAL);
-			return position;
+			return ((fp & prefixMask) >> moveBy)  & bucketBaseIdx; 
 		}
 
 		/* (non-Javadoc)
@@ -363,7 +360,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		 */
 		@Override
 		public long getNextBucketBasePosition(long logicalPosition) {
-			return (logicalPosition + bucketCapacity) & bucketBaseIdx;
+			return (logicalPosition + bcktCapacity) & bucketBaseIdx;
 		}
 
 		/* (non-Javadoc)
@@ -371,7 +368,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		 */
 		@Override
 		public boolean isBucketBasePosition(long logicalPosition) {
-			return (logicalPosition & (bucketCapacity - 1)) == 0;
+			return (logicalPosition & (bcktCapacity - 1)) == 0;
 		}
 	}
 	
