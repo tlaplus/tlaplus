@@ -8,9 +8,6 @@ import java.nio.LongBuffer;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
-import java.util.TreeSet;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -19,35 +16,14 @@ import util.Assert;
 @SuppressWarnings({ "serial" })
 public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
 	
-	protected static final double COLLISION_BUCKET_RATIO = .025d;
-	
 	protected final int bucketCapacity;
 
 	private final LongArray array;
-
-	/**
-	 * A bucket containing collision elements which is used as a fall-back if a
-	 * bucket is fully used up. Buckets cannot grow as the whole in-memory
-	 * data-structure is static and not designed to be resized.
-	 * 
-	 * <p>
-	 * Open addressing - contrary to separate chaining - is not an option for an
-	 * {@link OffHeapDiskFPSet}, because it does not support the invariant of
-	 * monotonic increasing buckets required by the {@link Indexer}. Adhering to
-	 * this invariant has the benefit, that only the elements in a bucket have
-	 * to be sorted, but they don't change buckets during sort. Thus, a
-	 * temporary sort array as in {@link LSBDiskFPSet.LSBFlusher#prepareTable()} is
-	 * obsolete halving the memory footprint.
-	 * </p>
-	 */
-	protected final CollisionBucket collisionBucket;
 	
 	/**
 	 * The indexer maps a fingerprint to a in-memory bucket and the associated lock
 	 */
 	private final Indexer indexer;
-	
-	private final ReadWriteLock csRWLock = new ReentrantReadWriteLock();
 
 	protected OffHeapDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
 		super(fpSetConfig);
@@ -57,14 +33,8 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		// Determine base address which varies depending on machine architecture.
 		this.array = new LongArray(memoryInFingerprintCnt);
 		this.bucketCapacity = InitialBucketCapacity;
-
-		final int csCapacity = (int) (maxTblCnt * COLLISION_BUCKET_RATIO);
-		this.collisionBucket = new TreeSetCollisionBucket(csCapacity);
 		
 		this.flusher = new OffHeapMSBFlusher();
-		
-		// Calculate Hamming weight of maxTblCnt
-		final int bitCount = Long.bitCount(memoryInFingerprintCnt);
 		
 		// If Hamming weight is 1, the logical index address can be calculated
 		// significantly faster by bit-shifting. However, with large memory
@@ -75,7 +45,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		// use of extra memory. The down side is, that larger buckets mean
 		// increased linear search. But linear search on maximally 31 elements
 		// still outperforms disk I/0.
-		if (bitCount == 1) {
+		if (Long.bitCount(memoryInFingerprintCnt) == 1) {
 			this.indexer = new BitshiftingIndexer(bucketCapacity, memoryInFingerprintCnt, fpSetConfig.getFpBits());
 		} else {
 			// non 2^n buckets cannot use a bit shifting indexer
@@ -107,11 +77,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 	 * @see tlc2.tool.fp.DiskFPSet#needsDiskFlush()
 	 */
 	protected final boolean needsDiskFlush() {
-		// Only flush due to collision ratio when primary hash table is at least
-		// 25% full. Otherwise a second flush potentially immediately follows a
-		// first one, when both values for tblCnt and collision size can be small.
-		return (collisionRatioExceeds(COLLISION_BUCKET_RATIO) && loadFactorExceeds(.25d)) 
-				|| loadFactorExceeds(1d) || forceFlush;
+		return loadFactorExceeds(1d) || forceFlush;
 	}
 	
 	/**
@@ -124,25 +90,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 	 * @return true iff the current hash table load exceeds the given limit
 	 */
 	private final boolean loadFactorExceeds(final double limit) {
-		// Base this one the primary hash table only and exclude the
-		// collision bucket
-		final double d = (this.tblCnt.doubleValue() - collisionBucket.size()) / (double) this.maxTblCnt;
-		return d >= limit;
-	}
-
-	/**
-	 * @param limit A limit the collsionBucket is not allowed to exceed
-	 * @return The proportional size of the collision bucket compared to the
-	 *         size of the set.
-	 */
-	private final boolean collisionRatioExceeds(final double limit) {
-		// Do not use the thread safe getCollisionRatio here to avoid
-		// unnecessary locking. put() calls us holding a memory write locking
-		// which also blocks writers to collisionBucket.
-		final long size = collisionBucket.size();
-		// Subtract size from overall tblCnt as it includes the cs size
-		// @see put(long)
-		final double d = (double) size / (tblCnt.doubleValue() - size);
+		final double d = (this.tblCnt.doubleValue()) / (double) this.maxTblCnt;
 		return d >= limit;
 	}
 	
@@ -171,21 +119,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 			}
 		}
 		
-		return csLookup(fp);
-	}
-	
-	/**
-	 * Probes {@link OffHeapDiskFPSet#collisionBucket} for the given fingerprint.
-	 * @param fp
-	 * @return true iff fp is in the collision bucket
-	 */
-	protected final boolean csLookup(long fp) {
-		try {
-			csRWLock.readLock().lock();
-			return collisionBucket.contains(fp);
-		} finally {
-			csRWLock.readLock().unlock();
-		}
+		return false;
 	}
 
 	/* (non-Javadoc)
@@ -215,33 +149,21 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 			}
 		}
 
-		if (freePosition > -1 && !csLookup(fp)) {
+		if (freePosition > -1) {
 			// Write to free slot
 			this.array.set(freePosition, fp);
 			this.tblCnt.getAndIncrement();
 			return false;
-		} else {
-			// Index slot (bucket) overflow, thus add to collisionBucket
-			boolean success = csInsert(fp);
-			if (success) {
-				this.tblCnt.getAndIncrement();
-			}
-			return !success;
 		}
-	}
-	
-	/**
-	 * Inserts the given fingerprint into the {@link OffHeapDiskFPSet#collisionBucket}.
-	 * @param fp
-	 * @return true iff fp has been added to the collision bucket
-	 */
-	protected final boolean csInsert(long fp) {
-		try {
-			csRWLock.writeLock().lock();
-			return collisionBucket.add(fp);
-		} finally {
-			csRWLock.writeLock().unlock();
-		}
+		// We failed to insert the fingerprint into the set. Since we cannot
+		// easily trigger a flush from in-here because of locking, we just
+		// skip adding the fingerprint for now.
+		// It does not invalidate the model checking result. If the state
+		// corresponding to this fingerprint is found again, it will be
+		// re-explored again. We assume that it eventually succeeds to
+		// insert the fingerprint. Otherwise, model checking will not
+		// terminate.
+		return false;
 	}
 
 	/* (non-Javadoc)
@@ -381,23 +303,12 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 	public class OffHeapMSBFlusher extends Flusher {
 		
 		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.DiskFPSet.Flusher#flushTable()
-		 */
-		@Override
-		void flushTable() throws IOException {
-			super.flushTable();
-			
-			// garbage old values in collision bucket
-			collisionBucket.clear();
-		}
-		
-		/* (non-Javadoc)
 		 * @see tlc2.tool.fp.MSBDiskFPSet#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
 		@Override
 		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
 			final long buffLen = tblCnt.get();
-			ByteBufferIterator itr = new ByteBufferIterator(array, collisionBucket, buffLen);
+			ByteBufferIterator itr = new ByteBufferIterator(array, buffLen);
 
 			// Precompute the maximum value of the new file
 			long maxVal = itr.getLast();
@@ -471,8 +382,6 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 	 * A non-thread safe Iterator 
 	 */
 	public class ByteBufferIterator {
-
-		private final CollisionBucket cs;
 		/**
 		 * Number of elements in the buffer
 		 */
@@ -499,16 +408,11 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		private long cache = -1L;
 		private final LongArray array;
 
-		public ByteBufferIterator(LongArray helper, CollisionBucket collisionBucket, long expectedElements) {
+		public ByteBufferIterator(LongArray helper, long expectedElements) {
 			this.array = helper;
 			this.logicalPosition = 0L;
 			this.totalElements = expectedElements;
-			
-			// Do calculation before prepareForFlush() potentially empties the cs causing size() to return 0 
-			this.bufferElements = expectedElements - collisionBucket.size();
-			
-			this.cs = collisionBucket;
-			this.cs.prepareForFlush();
+			this.bufferElements = expectedElements;
 		}
 
 	    /**
@@ -528,15 +432,6 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 				cache = -1L;
 			}
 
-			if (!cs.isEmpty()) {
-				long first = cs.first();
-				if (result > first || result == -1L) {
-					cs.remove(first);
-					cache = result;
-					result = first;
-				}
-			}
-			
 			// adhere to the general Iterator contract to fail fast and not hand out
 			// meaningless values
 			if (result == -1L) {
@@ -635,116 +530,11 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 			// original value.
 			logicalPosition = tmpLogicalPosition;
 			
-			// Compare max element found in main in-memory buffer to man
-			// element in collisionBucket. Return max of the two.
-			if (!cs.isEmpty()) {
-				l = Math.max(cs.last(), l);
-			}
-			
 			// Either return the maximum element or fail fast.
 			if (l > 0L) {
 				return l;
 			}
 			throw new NoSuchElementException();
-		}
-	}
-	
-	public interface CollisionBucket {
-		void clear();
-
-		void prepareForFlush();
-
-		void remove(long first);
-
-		long first();
-		
-		long last();
-
-		boolean isEmpty();
-
-		/**
-		 * @param fp
-	     * @return {@code true} if this set did not already contain the specified
-	     *         fingerprint
-		 */
-		boolean add(long fp);
-
-		boolean contains(long fp);
-
-		long size();
-	}
-	
-	public class TreeSetCollisionBucket implements CollisionBucket {
-		private final TreeSet<Long> set;
-
-		public TreeSetCollisionBucket(int initialCapacity) {
-			this.set = new TreeSet<Long>();
-		}
-
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#clear()
-		 */
-		public void clear() {
-			set.clear();
-		}
-
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#prepareForFlush()
-		 */
-		public void prepareForFlush() {
-			// no-op
-		}
-
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#remove(long)
-		 */
-		public void remove(long first) {
-			set.remove(first);
-		}
-
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#first()
-		 */
-		public long first() {
-			return set.first();
-		}
-		
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#last()
-		 */
-		public long last() {
-			return set.last();
-		}
-
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#isEmpty()
-		 */
-		public boolean isEmpty() {
-			return set.isEmpty();
-		}
-
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#add(long)
-		 * 
-		 * If this set already contains the element, the call leaves the set
-		 * unchanged and returns false.
-		 */
-		public boolean add(long fp) {
-			return set.add(fp);
-		}
-
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#contains(long)
-		 */
-		public boolean contains(long fp) {
-			return set.contains(fp);
-		}
-
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.OffHeapDiskFPSet.CollisionBucket#size()
-		 */
-		public long size() {
-			return set.size();
 		}
 	}
 }
