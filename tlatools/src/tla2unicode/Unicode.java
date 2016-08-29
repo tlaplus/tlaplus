@@ -110,7 +110,7 @@ public final class Unicode {
 			{ "" + APPROX,   "\\approx" }, // ≈ ALMOST EQUAL TO
 			{ "" + DOTEQ,    "\\doteq" },  // ≐ APPROACHES THE LIMIT
 			{ "" + SIMEQ,    "\\simeq" },  // ≃ ASYMPTOTICALLY EQUAL TO
-			{ "" + FULLWIDTH_TILDE, "\\sim" },    // ～ FULLWIDTH TILDE / ⩬ \u2A6C, SIMILAR MINUS SIMILAR / ⋍ \u22CD REVERSED TILDE EQUALS
+			{ "" + FULLWIDTH_TILDE, "\\sim" },    // ～ FULLWIDTH TILDE / ⩬ \u2A6C, SIMILAR MINUS SIMILAR
 
 			{ "" + RIGHT_TACK, "|-" }, // ⊢ RIGHT TACK
 			{ "" + LEFT_TACK, "-|" }, // ⊣ LEFT TACK 
