@@ -14,7 +14,7 @@ import tlc2.output.MP;
 import util.Assert;
 
 @SuppressWarnings({ "serial" })
-public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic {
+public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implements FPSetStatistic {
 	
 	protected final int bucketCapacity;
 

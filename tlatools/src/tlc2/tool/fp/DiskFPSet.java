@@ -784,7 +784,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#beginChkpt(java.lang.String)
 	 */
-	public final void beginChkpt(String fname) throws IOException {
+	public void beginChkpt(String fname) throws IOException {
 		
 		this.flusherChosen.set(true);
 		rwLock.acquireAllLocks();
@@ -801,7 +801,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#commitChkpt(java.lang.String)
 	 */
-	public final void commitChkpt(String fname) throws IOException {
+	public void commitChkpt(String fname) throws IOException {
 		File oldChkpt = new File(this.getChkptName(fname, "chkpt"));
 		File newChkpt = new File(this.getChkptName(fname, "tmp"));
 		if (!newChkpt.renameTo(oldChkpt)) {
@@ -813,7 +813,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#recover(java.lang.String)
 	 */
-	public final void recover(String fname) throws IOException {
+	public void recover(String fname) throws IOException {
 		RandomAccessFile chkptRAF = new BufferedRandomAccessFile(
 				this.getChkptName(fname, "chkpt"), "r");
 		RandomAccessFile currRAF = new BufferedRandomAccessFile(
