@@ -243,14 +243,6 @@ public class MailSender {
     	public LogPrintStream(File file) throws FileNotFoundException  {
     		super(new FileOutputStream(file));
 		}
-    	
-    	/* (non-Javadoc)
-    	 * @see java.io.PrintStream#print(java.lang.String)
-    	 */
-    	public void print(String str) {
-    		System.out.print(str);
-    		super.print(str);
-    	}
 
     	/* (non-Javadoc)
     	 * @see java.io.PrintStream#println(java.lang.String)
