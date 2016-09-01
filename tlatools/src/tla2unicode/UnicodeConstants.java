@@ -3,6 +3,8 @@ package tla2unicode;
 public final class UnicodeConstants {
 	private UnicodeConstants() {}
 	
+	// Mathematical/logic symbols
+	
 	public static final char DELTA_EQUAL_TO      = '\u225C'; // ≜
 	public static final char LEFTWARDS_ARROW     = '\u2190'; // ←
 	public static final char RIGHTWARDS_ARROW    = '\u2192'; // → 
@@ -11,30 +13,31 @@ public final class UnicodeConstants {
     public static final char RIGHT_ANGLE_BRACKET = '\u27E9'; // ⟩ MATHEMATICAL RIGHT ANGLE BRACKET
 	public static final char RIGHTWARDS_WAVE_ARROW = '\u219D'; // ↝ \u219D
 	public static final char RIGHTWARDS_ARROW_PLUS = '\u2945'; // ⥅ RIGHTWARDS ARROW WITH PLUS BELOW
-	public static final char PRIME   = '\u2032'; // ′ 
-	public static final char FORALL  = '\u2200'; // ∀ FOR ALL
-	public static final char EXISTS  = '\u2203'; // ∃ THERE EXISTS
-	public static final char NOT     = '\u00ac'; // ¬ NOT SIGN
-	public static final char AND     = '\u2227'; // ∧ LOGICAL AND 
-	public static final char OR      = '\u2228'; // ∨ LOGICAL OR
-	public static final char IMPLIES = '\u21D2'; // ⇒ RIGHTWARDS DOUBLE ARROW
-	public static final char IDENT   = '\u2261'; // ≡ IDENTICAL TO
-	public static final char NEQUAL  = '\u2260'; // ≠ NOT EQUAL TO
-    public static final char ELEM    = '\u2208';  // ∈ ELEMENT OF
-	public static final char NELEM   = '\u2209'; // ∉ NOT AN ELEMENT OF
-	public static final char SUBSET  = '\u2282'; // ⊂ SUBSET OF
-	public static final char SUBSETEQ= '\u2286'; // ⊆ SUBSET OF OR EQUAL TO
-	public static final char SUPSET  = '\u2283'; // ⊃ SUPERSET OF
-	public static final char SUPSETEQ= '\u2287'; // ⊇ SUPERSET OF OR EQUAL TO
-	public static final char NSUBSET = '\u2284'; // ⊄ NOT A SUBSET OF	
-	public static final char NSUPSET = '\u2285'; // ⊅ NOT A SUPERSET OF
+	public static final char PRIME     = '\u2032'; // ′ 
+	public static final char FORALL    = '\u2200'; // ∀ FOR ALL
+	public static final char EXISTS    = '\u2203'; // ∃ THERE EXISTS
+	public static final char NOT       = '\u00ac'; // ¬ NOT SIGN
+	public static final char AND       = '\u2227'; // ∧ LOGICAL AND 
+	public static final char OR        = '\u2228'; // ∨ LOGICAL OR
+	public static final char IMPLIES   = '\u21D2'; // ⇒ RIGHTWARDS DOUBLE ARROW
+	public static final char IDENT     = '\u2261'; // ≡ IDENTICAL TO
+	public static final char IFF       = '\u21D4'; // ⇔ LEFT RIGHT DOUBLE ARROW
+	public static final char NEQUAL    = '\u2260'; // ≠ NOT EQUAL TO
+    public static final char ELEM      = '\u2208';  // ∈ ELEMENT OF
+	public static final char NELEM     = '\u2209'; // ∉ NOT AN ELEMENT OF
+	public static final char SUBSET    = '\u2282'; // ⊂ SUBSET OF
+	public static final char SUBSETEQ  = '\u2286'; // ⊆ SUBSET OF OR EQUAL TO
+	public static final char SUPSET    = '\u2283'; // ⊃ SUPERSET OF
+	public static final char SUPSETEQ  = '\u2287'; // ⊇ SUPERSET OF OR EQUAL TO
+	public static final char NSUBSET   = '\u2284'; // ⊄ NOT A SUBSET OF	
+	public static final char NSUPSET   = '\u2285'; // ⊅ NOT A SUPERSET OF
 	public static final char NSUBSETEQ = '\u2288'; // ⊈ NEITHER A SUBSET OF NOR EQUAL TO
 	public static final char NSUPSETEQ = '\u2289'; // ⊉ NEITHER A SUPERSET OF NOR EQUAL TO
+	public static final char XION      = '\u2229'; // ∩ INTERSECTION
+	public static final char UNION     = '\u222A'; // ∪ UNION
+	public static final char UPLUS     = '\u228E'; // ⊎ MULTISET UNION
+	public static final char EMPTY_SET = '\u2205'; // ∅ EMPTY SET
 
-	public static final char XION    = '\u2229'; // ∩ INTERSECTION
-	public static final char UNION   = '\u222A'; // ∪ UNION
-	public static final char UPLUS = '\u228E'; // ⊎ MULTISET UNION
-	
     public static final char LEQ  = '\u2264'; // ≤ LESS-THAN OR EQUAL TO
 	public static final char GEQ  = '\u2265'; // ≥ GREATER-THAN OR EQUAL TO
 	public static final char LTLT = '\u226A'; // ≪ MUCH LESS-THAN
@@ -48,73 +51,71 @@ public final class UnicodeConstants {
 	public static final char OMINUS = '\u2296'; // ⊖ CIRCLED MINUS
 	public static final char OTIMES = '\u2297'; // ⊗ CIRCLED TIMES
     public static final char OSLASH = '\u2298'; // ⊘ CIRCLED DIVISION SLASH
-	public static final char ODOT = '\u2299'; // ⊙ CIRCLED DOT OPERATOR
-	public static final char RING = '\u2218'; // ∘ RING OPERATOR
-	
-	public static final char LARGE_CIRCLE = '\u25EF'; // ◯
-	public static final char BULLET = '\u2022'; // • 
-	public static final char STAR   = '\u22c6'; // ⋆ STAR OPERATOR
-	
+	public static final char ODOT   = '\u2299'; // ⊙ CIRCLED DOT OPERATOR
+		
 	public static final char PREC    = '\u227A'; // ≺ PRECEDES
 	public static final char PRECEQ  = '\u227C'; // ≼ PRECEDES OR EQUAL TO
-	public static final char SUCC    = '\u227B';  // ≻ SUCCEEDS
+	public static final char SUCC    = '\u227B'; // ≻ SUCCEEDS
 	public static final char SUCCEQ  = '\u227D'; // ≽ SUCCEEDS OR EQUAL TO
 	
 	public static final char SQSUB   = '\u228F'; // ⊏ SQUARE IMAGE OF
 	public static final char SQSUBEQ = '\u2291'; // ⊑ SQUARE IMAGE OF OR EQUAL TO
 	public static final char SQSUP   = '\u2290'; // ⊐ SQUARE ORIGINAL OF
 	public static final char SQSUPEQ = '\u2292'; // ⊒ SQUARE ORIGINAL OF OR EQUAL TO
-	public static final char SQCAP = '\u2293'; // ⊓ SQUARE CAP
-	public static final char SQCUP = '\u2294'; // ⊔ SQUARE CUP
+	public static final char SQCAP   = '\u2293'; // ⊓ SQUARE CAP
+	public static final char SQCUP   = '\u2294'; // ⊔ SQUARE CUP
 	
-	public static final char EQUIVALENT_TO = '\u224D'; // ≍ EQUIVALENT TO
-	public static final char WREATH = '\u2240'; // ≀ WREATH PRODUCT
+	public static final char RING    = '\u2218'; // ∘ RING OPERATOR	
+	public static final char BULLET  = '\u2022'; // • 
+	public static final char STAR    = '\u22c6'; // ⋆ STAR OPERATOR
+	public static final char LARGE_CIRCLE = '\u25EF'; // ◯
+
+	public static final char WREATH   = '\u2240'; // ≀ WREATH PRODUCT
 	public static final char APPROXEQ = '\u2245'; // ≅ APPROXIMATELY EQUAL TO
-	public static final char PROPTO  = '\u221D';  // ∝ PROPORTIONAL TO
-	public static final char APPROX = '\u2248'; // ≈ ALMOST EQUAL TO
-	public static final char DOTEQ = '\u2250'; // ≐ APPROACHES THE LIMIT
-	public static final char SIMEQ = '\u2243'; // ≃ ASYMPTOTICALLY EQUAL TO
+	public static final char PROPTO   = '\u221D'; // ∝ PROPORTIONAL TO
+	public static final char APPROX   = '\u2248'; // ≈ ALMOST EQUAL TO
+	public static final char DOTEQ    = '\u2250'; // ≐ APPROACHES THE LIMIT
+	public static final char SIMEQ    = '\u2243'; // ≃ ASYMPTOTICALLY EQUAL TO
+	public static final char PAR      = '\u2016'; // ‖ DOUBLE VERTICAL LINE
 	public static final char FULLWIDTH_TILDE = '\uFF5E'; // ～ FULLWIDTH TILDE
-	public static final char SIM_MINUS_SIM = '\u2A6C'; // ⩬ SIMILAR MINUS SIMILAR
-	public static final char PAR = '\u2016'; // ‖ DOUBLE VERTICAL LINE
+	public static final char SIM_MINUS_SIM   = '\u2A6C'; // ⩬ SIMILAR MINUS SIMILAR
+	public static final char EQUIVALENT_TO   = '\u224D'; // ≍ EQUIVALENT TO
+	public static final char RATIO      = '\u2236'; // ∶ RATIO
+	public static final char PROPORTION = '\u2237'; // ∷ PROPORTION
 	
-	public static final char RIGHT_TACK = '\u22A2'; // ⊢ RIGHT TACK
-	public static final char LEFT_TACK  = '\u22A3'; // ⊣ LEFT TACK 
-	public static final char BOTTOM     = '\u22a5'; // ⊥ UP TACK \bottom 
-	public static final char TOP        = '\u22a4'; // ⊤ DOWN TACK \top 
-	public static final char DOUBLE_RIGHT_TURNSTILE = '\u22A8'; // ⊨ TRUE
+	public static final char TURNSTILE             = '\u22A2'; // ⊢ RIGHT TACK
+	public static final char LEFT_TURNSTILE        = '\u22A3'; // ⊣ LEFT TACK 
+	public static final char BOTTOM                = '\u22a5'; // ⊥ UP TACK \bottom 
+	public static final char TOP                   = '\u22a4'; // ⊤ DOWN TACK \top 
+	public static final char DOUBLE_TURNSTILE      = '\u22A8'; // ⊨ TRUE
 	public static final char DOUBLE_LEFT_TURNSTILE = '\u2AE4'; // ⫤ VERTICAL BAR DOUBLE LEFT TURNSTILE
 	
-	public static final char WHITE_SQUARE = '\u25A1'; // □ WHITE SQUARE
-	public static final char WHITE_DIAMOND = '\u25C7'; // ◇ WHITE DIAMOND
-	public static final char WHITE_MEDIUM_SQUARE = '\u25FB'; // ◻ WHITE MEDIUM SQUARE
-	public static final char WHITE_MEDIUM_DIAMOND = '\u2B26'; // ⬦ WHITE MEDIUM DIAMOND
-	
-	public static final char RATIO = '\u2236'; // ∶ RATIO
-	public static final char PROPORTION = '\u2237'; // ∷ PROPORTION
+	public static final char WHITE_SQUARE        = '\u25A1';  // □ WHITE SQUARE
+	public static final char WHITE_MEDIUM_SQUARE = '\u25FB';  // ◻ WHITE MEDIUM SQUARE
 
-	public static final char SUBGROUP = '\u22B2'; // ⊲ NORMAL SUBGROUP OF
-	public static final char SUPGROUP = '\u22B3'; // ⊳ CONTAINS AS NORMAL SUBGROUP
+	public static final char WHITE_DIAMOND        = '\u25C7'; // ◇ WHITE DIAMOND
+	public static final char WHITE_MEDIUM_DIAMOND = '\u2B26'; // ⬦ WHITE MEDIUM DIAMOND
+	public static final char DIAMOND_OPERATOR     = '\u22C4'; // ⋄ DIAMOND OPERATOR
+
+	public static final char SUBGROUP   = '\u22B2'; // ⊲ NORMAL SUBGROUP OF
+	public static final char SUPGROUP   = '\u22B3'; // ⊳ CONTAINS AS NORMAL SUBGROUP
 	public static final char SUBGROUPEQ = '\u22B4'; // ⊴ NORMAL SUBGROUP OF OR EQUAL TO
 	public static final char SUPGROUPEQ = '\u22B5'; // ⊵ CONTAINS AS NORMAL SUBGROUP OR EQUAL TO
 	public static final char DOUBLE_COLON_EQUAL = '\u2A74'; // ⩴ DOUBLE COLON EQUAL
-	public static final char COLON_EQUAL = '\u2254'; // ≔ COLON EQUALS
+	public static final char COLON_EQUAL        = '\u2254'; // ≔ COLON EQUALS
 	
-	public static final char SUM      = '\u2211'; // ∑ N-ARY SUMMATION
-	public static final char PRODUCT  = '\u220F'; // ∏ N-ARY PRODUCT
-	public static final char NARY_AND = '\u22C0'; // ⋀ N-ARY LOGICAL AND
-	public static final char NARY_OR  = '\u22C1'; // ⋁ N-ARY LOGICAL OR
-	public static final char NARY_CAP = '\u22C2'; // ⋂ N-ARY INTERSECTION
-	public static final char NARY_CUP = '\u22C3'; // ⋃ N-ARY UNION
-	public static final char NARY_UPLUS= '\u2A04'; // ⨄ N-ARY UNION OPERATOR WITH PLUS
+	public static final char SUM        = '\u2211'; // ∑ N-ARY SUMMATION
+	public static final char PRODUCT    = '\u220F'; // ∏ N-ARY PRODUCT
+	public static final char NARY_AND   = '\u22C0'; // ⋀ N-ARY LOGICAL AND
+	public static final char NARY_OR    = '\u22C1'; // ⋁ N-ARY LOGICAL OR
+	public static final char NARY_CAP   = '\u22C2'; // ⋂ N-ARY INTERSECTION
+	public static final char NARY_CUP   = '\u22C3'; // ⋃ N-ARY UNION
+	public static final char NARY_UPLUS = '\u2A04'; // ⨄ N-ARY UNION OPERATOR WITH PLUS
 		
 	public static final char DOUBLE_STRUCK_N   = '\u2115'; // ℕ DOUBLE-STRUCK CAPITAL N
 	public static final char DOUBLE_STRUCK_Z   = '\u2124'; // ℤ DOUBLE-STRUCK CAPITAL Z
 	public static final char DOUBLE_STRUCK_Q   = '\u211A'; // ℚ DOUBLE-STRUCK CAPITAL Q
-	public static final char DOUBLE_STRUCK_R   = '\u211D'; // ℝ DOUBLE-STRUCK CAPITAL R
-
-	public static final char EMPTY_SET = '\u2205'; // ∅ EMPTY SET
-	
+	public static final char DOUBLE_STRUCK_R   = '\u211D'; // ℝ DOUBLE-STRUCK CAPITAL R	
 	
 	// Greek letters
 	
@@ -184,8 +185,9 @@ public final class UnicodeConstants {
 	public static final char SUBSCRIPT_SMALL_PHI   = '\u1D69'; // ᵩ GREEK SUBSCRIPT SMALL LETTER PHI
 	public static final char SUBSCRIPT_SMALL_CHI   = '\u1D6A'; // ᵪ GREEK SUBSCRIPT SMALL LETTER CHI
 
-	public static final char SUBSCRIPT_PLUS = '\u208A'; // ₊ SUBSCRIPT PLUS SIGN
-
+	public static final char SUBSCRIPT_PLUS = '\u208A';     // ₊ SUBSCRIPT PLUS SIGN
+	public static final char SUBSCRIPT_ASTERISK = '\u204E'; // ⁎ LOW ASTERISK
+	
 	// Superscripts
 	
 	private static final char[] SUPERSCRIPT_DIGIT = { 
@@ -198,17 +200,26 @@ public final class UnicodeConstants {
 	}	
 	
 	public static final char SUPERSCRIPT_PLUS = '\u207A'; // ⁺ SUPERSCRIPT PLUS SIGN 
-	public static final char SUBSCRIPT_ASTERISK = '\u204E'; // ⁎ LOW ASTERISK
-		
-//	Box drawing:
 
-	public static final char HORIZONTAL      = '\u2500'; // ─ BOX DRAWINGS LIGHT HORIZONTAL         /  ━ \u2501 HEAVY
-	public static final char BMODULE_BEGIN   = '\u250C'; // ┌ BOX DRAWINGS LIGHT DOWN AND RIGHT     / ┏ \u250F HEAVY
-	public static final char BMODULE_END     = '\u2510'; // ┐ BOX DRAWINGS LIGHT DOWN AND LEFT      /  ┓ \u2513 HEAVY
-	public static final char SEPARATOR_BEGIN = '\u251C'; // ├ BOX DRAWINGS LIGHT VERTICAL AND RIGHT / ┣ \u2523 HEAVY
-	public static final char SEPARATOR_END   = '\u2524'; // ┤ BOX DRAWINGS LIGHT VERTICAL AND LEFT  / ┫ \u252B HEAVY
-	public static final char EMODULE_BEGIN   = '\u2514'; // └ BOX DRAWINGS LIGHT UP AND RIGHT       / ┗ \u2517 HEAVY
-	public static final char EMODULE_END     = '\u2518'; // ┘ BOX DRAWINGS LIGHT UP AND LEFT        / ┛ \u251B HEAVY
+	// Box drawing
+
+	public static final char HORIZONTAL         = '\u2500'; // ─ BOX DRAWINGS LIGHT HORIZONTAL
+	public static final char DOWN_AND_RIGHT     = '\u250C'; // ┌ BOX DRAWINGS LIGHT DOWN AND RIGHT
+	public static final char DOWN_AND_LEFT      = '\u2510'; // ┐ BOX DRAWINGS LIGHT DOWN AND LEFT
+	public static final char VERTICAL_AND_RIGHT = '\u251C'; // ├ BOX DRAWINGS LIGHT VERTICAL AND RIGHT
+	public static final char VERTICAL_AND_LEFT  = '\u2524'; // ┤ BOX DRAWINGS LIGHT VERTICAL AND LEFT
+	public static final char UP_AND_RIGHT       = '\u2514'; // └ BOX DRAWINGS LIGHT UP AND RIGHT
+	public static final char UP_AND_LEFT        = '\u2518'; // ┘ BOX DRAWINGS LIGHT UP AND LEFT
+	
+	public static final char HEAVY_HORIZONTAL         = '\u2501'; // ━ BOX DRAWINGS HEAVY HORIZONTAL
+	public static final char HEAVY_DOWN_AND_RIGHT     = '\u250F'; // ┏ BOX DRAWINGS HEAVY DOWN AND RIGHT
+	public static final char HEAVY_DOWN_AND_LEFT      = '\u2513'; // ┓ BOX DRAWINGS HEAVY DOWN AND LEFT
+	public static final char HEAVY_VERTICAL_AND_RIGHT = '\u2523'; // ┣ BOX DRAWINGS HEAVY VERTICAL AND RIGHT
+	public static final char HEAVY_VERTICAL_AND_LEFT  = '\u252B'; // ┫ BOX DRAWINGS HEAVY VERTICAL AND LEFT
+	public static final char HEAVY_UP_AND_RIGHT       = '\u2517'; // ┗ BOX DRAWINGS HEAVY UP AND RIGHT
+	public static final char HEAVY_UP_AND_LEFT        = '\u251B'; // ┛ BOX DRAWINGS HEAVY UP AND LEFT
+	
+	// Extended brackets
 	
 	public static final char LEFT_PARENTHESES_UPPER_HOOK  = '\u239B'; // ⎛ LEFT PARENTHESIS UPPER HOOK
 	public static final char LEFT_PARENTHESES_EXTENSION   = '\u239C'; // ⎜ LEFT PARENTHESIS EXTENSION

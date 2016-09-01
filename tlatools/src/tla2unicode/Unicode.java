@@ -112,9 +112,9 @@ public final class Unicode {
 			{ "" + SIMEQ,    "\\simeq" },  // ≃ ASYMPTOTICALLY EQUAL TO
 			{ "" + FULLWIDTH_TILDE, "\\sim" },    // ～ FULLWIDTH TILDE / ⩬ \u2A6C, SIMILAR MINUS SIMILAR
 
-			{ "" + RIGHT_TACK, "|-" }, // ⊢ RIGHT TACK
-			{ "" + LEFT_TACK, "-|" }, // ⊣ LEFT TACK 
-			{ "" + DOUBLE_RIGHT_TURNSTILE, "|=" }, // ⊨ TRUE
+			{ "" + TURNSTILE,             "|-" }, // ⊢ RIGHT TACK
+			{ "" + LEFT_TURNSTILE,        "-|" }, // ⊣ LEFT TACK 
+			{ "" + DOUBLE_TURNSTILE,      "|=" }, // ⊨ TRUE
 			{ "" + DOUBLE_LEFT_TURNSTILE, "=|" }, // ⫤ VERTICAL BAR DOUBLE LEFT TURNSTILE
 
 			{ "" + PAR, "||" }, // ‖ DOUBLE VERTICAL LINE
