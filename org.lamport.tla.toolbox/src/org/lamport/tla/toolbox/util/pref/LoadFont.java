@@ -9,6 +9,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Display;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Loads bundled fonts
@@ -33,14 +34,23 @@ public final class LoadFont {
 	//     org.eclipse.ui.internal.themes.FontDefinition
 	
 	public static void loadTLAPlusFont() {
+		// Must run in UI thread because we access the display to get the list of fonts.
+		UIHelper.runUIAsync(new Runnable() {
+			public void run() {
+				loadTLAPlusFont0();
+			}
+		});
+	}
+	
+	private static void loadTLAPlusFont0() {
 		final Display display = Display.getCurrent();
 
-	    // Check if any of the fonts already exist in the system
-	    final FontData[] fonts = display.getFontList(null, true);
 	    boolean hasPlain = false;
 	    boolean hasBold = false;
 	    boolean hasItalic = false;
 	    boolean hasBoldItalic = false;
+	    // Check if any of the fonts already exist in the system
+	    final FontData[] fonts = display.getFontList(null, true);
 	    for (FontData f : fonts) {
 	    	if (f.getName().equals(TLAPLUS_FONT_NAME)) {
 	    		if (f.getStyle() == SWT.NORMAL)
@@ -79,7 +89,7 @@ public final class LoadFont {
 	    	
 	    	try {
 	    		display.loadFont(fontFilePath);
-	    		Activator.getDefault().logError("Font " + fileName + " has been loaded successfully from file " + fontFilePath);
+	    		Activator.getDefault().logInfo("Font " + fileName + " has been loaded successfully from file " + fontFilePath);
 	    	} catch  (Exception e) {
 	    		Activator.getDefault().logError("Font " + fileName + " cannot be loaded from file " + fontFilePath);
 	    	}
