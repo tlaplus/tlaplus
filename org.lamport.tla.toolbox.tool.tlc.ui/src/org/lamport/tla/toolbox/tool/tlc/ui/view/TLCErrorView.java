@@ -3,7 +3,9 @@ package org.lamport.tla.toolbox.tool.tlc.ui.view;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Assert;
@@ -84,6 +86,7 @@ import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.st.Location;
 import tlc2.output.MP;
 
 /**
@@ -1145,13 +1148,17 @@ public class TLCErrorView extends ViewPart
             return null;
         }
 
+		private static final Map<String, Color> location2color = new ConcurrentHashMap<String, Color>();
+		//TODO Convert to Toolbox preference once this features proves useful.
+		private static final boolean coloring = Boolean.getBoolean(TLCErrorView.class.getName() + ".coloring");
+
         /**
          * The following method sets the background color of a row or column of
          * the table. It highlights the entire row for an added or deleted item.
          * For a changed value, only the value is highlighted.
          */
 		private Color getBackground(Object element, int column) {
-			if (element instanceof TLCVariable) {
+            if (element instanceof TLCVariable) {
 				final TLCVariable var = (TLCVariable) element;
 				if (var.isChanged() && column == VALUE) {
 					return TLCUIActivator.getDefault().getChangedColor();
@@ -1167,6 +1174,21 @@ public class TLCErrorView extends ViewPart
 				} else if (value.isDeleted()) {
 					return TLCUIActivator.getDefault().getDeletedColor();
 				}
+			} else if (coloring && element instanceof TLCState) {
+				// Assign a color to each location to make actions in the error
+				// viewer easier distinguishable.
+				final TLCState state = (TLCState) element;
+				Location moduleLocation = state.getModuleLocation();
+				if (moduleLocation == null) {
+					return null;
+				}
+				Color c = location2color.get(moduleLocation.toString());
+				if (c == null) {
+					int color = SWT.COLOR_WHITE + (2 * location2color.size());
+					c = TLCUIActivator.getColor(color);
+					location2color.put(state.getModuleLocation().toString(), c);
+				}
+				return c;
 			}
 			return null;
 		}
