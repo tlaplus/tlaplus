@@ -323,6 +323,12 @@
             id="toolbox.command.module.a2u.active"
             name="Module To Unicode">
       </command>
+      <command
+            categoryId="toolbox.command.category.module"
+            description="View module in the active editor as ASCII"
+            id="toolbox.command.module.u2a.active"
+            name="Module To ASCII">
+      </command>
        <command
             categoryId="toolbox.command.category.module"
             description="Export current spec to ASCII"
@@ -569,6 +575,23 @@
                commandId="toolbox.command.module.a2u.active"
                id="toolbox.command.module.a2u"
                label="Module To Unicode">
+               <!-- icon="icons/full/obj16/complete_task.gif" -->
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="toolbox.command.module.u2a.active"
+               id="toolbox.command.module.u2a"
+               label="View module as ASCII">
                <!-- icon="icons/full/obj16/complete_task.gif" -->
             <visibleWhen
                   checkEnabled="true">
@@ -957,6 +980,10 @@
       <handler
             class="org.lamport.tla.toolbox.ui.handler.Module2UnicodeHandler"
             commandId="toolbox.command.module.a2u.active">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.Module2UnicodeHandler"
+            commandId="toolbox.command.module.u2a.active">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.Module2UnicodeHandler"

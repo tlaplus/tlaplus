@@ -16,20 +16,22 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IStorageEditorInput;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.util.InMemoryStorage;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.StorageEditorInput;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2unicode.TLAUnicode;
+import util.FileUtil;
 
 /**
  * Parses the current module in the editor
@@ -38,7 +40,8 @@ import tla2unicode.TLAUnicode;
  */
 public class Module2UnicodeHandler extends SaveDirtyEditorAbstractHandler implements IHandler {
 	public static final String ID_CONVERT_MODULE_TO_UNICODE = "toolbox.command.module.a2u.active";
-	public static final String ID_EXPORT_SPEC_AS_UNICODE = "toolbox.command.module.exportascii.active";
+	public static final String ID_CONVERT_MODULE_TO_ASCII = "toolbox.command.module.u2a.active";
+	public static final String ID_EXPORT_SPEC_AS_ASCII = "toolbox.command.module.exportascii.active";
 	
     /* (non-Javadoc)
      * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
@@ -54,7 +57,11 @@ public class Module2UnicodeHandler extends SaveDirtyEditorAbstractHandler implem
         	convertEditorToUnicode(event);
         	return null;
         	
-        case ID_EXPORT_SPEC_AS_UNICODE:
+        case ID_CONVERT_MODULE_TO_ASCII:
+        	newEditorWithASCII(event);
+        	return null;
+        	
+        case ID_EXPORT_SPEC_AS_ASCII:
         	exportToASCII(event);
             return null;
             
@@ -76,6 +83,35 @@ public class Module2UnicodeHandler extends SaveDirtyEditorAbstractHandler implem
         }
     }
     
+    private void newEditorWithASCII(ExecutionEvent event) {
+    	final ITextEditor activeEditor = (ITextEditor)UIHelper.getActiveEditor();
+    	final IEditorInput editorInput = activeEditor.getEditorInput();
+    	if (editorInput instanceof IStorageEditorInput) { // IFileEditorInput
+        	// final IStorageEditorInput input1 = (IStorageEditorInput)editorInput;
+    		final IDocument doc = activeEditor.getDocumentProvider().getDocument(editorInput);
+        	final StringWriter out = new StringWriter();
+        	TLAUnicode.convert(false, new StringReader(doc.get()), out);
+
+        	// System.out.println("XXXX: " + activeEditor.getClass()); // -> TLAEditorAndPDFViewer
+        	
+        	final String fileName = editorInput.getName();
+        	final String moduleName = fileName.endsWith(".tla") ? fileName.substring(0, fileName.length() - 4) : fileName;
+        	final byte[] contents = out.toString().getBytes(FileUtil.UTF8);
+        	final InMemoryStorage storage = new InMemoryStorage(moduleName + " ASCII", contents); 
+        	final StorageEditorInput viewerInput = new StorageEditorInput(storage);
+        	try {
+        		UIHelper.openEditorUnchecked(
+        			"org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly",
+        			viewerInput,
+					true);
+    		} catch (PartInitException e) {
+    			MessageDialog.openWarning(UIHelper.getShellProvider().getShell(),
+					"ASCII version error",
+					"The ASCII version could not be created.");
+    		}
+        }
+    }
+    
     private void exportToASCII(ExecutionEvent event) {
     	final ITextEditor activeEditor = (ITextEditor)UIHelper.getActiveEditor();
     	// prompt to save any unsaved resources
@@ -90,7 +126,7 @@ public class Module2UnicodeHandler extends SaveDirtyEditorAbstractHandler implem
         final Spec spec = Activator.getSpecManager().getSpecLoaded();
         if (spec == null)
         	return;
-        final IResource rootModule = spec.getRootFile(); ToolboxHandle.getRootModule();
+        final IResource rootModule = spec.getRootFile(); // ToolboxHandle.getRootModule();
         final Path specRootPrefix = Paths.get(ResourceHelper.getParentDirName(rootModule)).normalize().toAbsolutePath();
         
         final IEditorInput editorInput = activeEditor.getEditorInput();
