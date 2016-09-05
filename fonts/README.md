@@ -1,4 +1,27 @@
-[![Build Status](https://travis-ci.org/dejavu-fonts/dejavu-fonts.svg)](https://travis-ci.org/dejavu-fonts/dejavu-fonts)
+## TLA+ Fonts
+
+The TLA+ fonts are slightly modified DejaVu Sans Mono fonts.
+
+The following glyphs have been modified (enlarged and thinned):
+
+	U+2190 ← LEFTWARDS ARROW
+	U+2192 → RIGHTWARDS ARROW
+	U+21A6 ↦ RIGHTWARDS ARROW FROM BAR
+	U+21D2 ⇒ RIGHTWARDS DOUBLE ARROW
+	U+2227 ∧ LOGICAL AND 
+	U+2228 ∨ LOGICAL OR
+	U+225C ≜ DELTA EQUAL TO 
+	U+25A1 □ U+25A1 WHITE SQUARE / ◻ U+25FB White medium square / U+2610︎ ☐ BALLOT BOX
+	U+25C7 ◇ U+25C7 WHITE DIAMOND/ ⬦ U+2B26 WHITE MEDIUM DIAMOND / ♢ U+2662 WHITE DIAMOND SUIT 
+
+	U+2218 ∘ RING OPERATOR / ○ U+25CB WHITE CIRCLE
+	U+22c6 ⋆ STAR OPERATOR 
+
+	U+219D ↝ RIGHTWARDS WAVE ARROW / ⤳ U+2933 WAVE ARROW POINTING DIRECTLY RIGHT
+
+	U+27E8 ⟨ MATHEMATICAL LEFT ANGLE BRACKET
+	U+27E9 ⟩ MATHEMATICAL RIGHT ANGLE BRACK
+
 
 DejaVu fonts 2.37 (c)2004-2016 DejaVu fonts team
 ------------------------------------------------
@@ -16,24 +39,6 @@ DejaVu Sans Mono
 DejaVu Sans Mono Bold
 DejaVu Sans Mono Bold Oblique
 DejaVu Sans Mono Oblique
-DejaVu Sans
-DejaVu Sans Bold
-DejaVu Sans Bold Oblique
-DejaVu Sans Oblique
-DejaVu Sans ExtraLight (experimental)
-DejaVu Serif
-DejaVu Serif Bold
-DejaVu Serif Bold Italic (experimental)
-DejaVu Serif Italic (experimental)
-DejaVu Sans Condensed (experimental)
-DejaVu Sans Condensed Bold (experimental)
-DejaVu Sans Condensed Bold Oblique (experimental)
-DejaVu Sans Condensed Oblique (experimental)
-DejaVu Serif Condensed (experimental)
-DejaVu Serif Condensed Bold (experimental)
-DejaVu Serif Condensed Bold Italic (experimental)
-DejaVu Serif Condensed Italic (experimental)
-DejaVu Math TeX Gyre
 
 All fonts are also available as derivative called DejaVu LGC with support
 only for Latin, Greek and Cyrillic scripts.
@@ -59,9 +64,3 @@ U+213C-U+2140, U+2295-U+2298, U+2308-U+230B, U+26A2-U+26B1, U+2701-U+2704,
 U+2706-U+2709, U+270C-U+274B, U+2758-U+275A, U+2761-U+2775, U+2780-U+2794,
 U+2798-U+27AF, U+27B1-U+27BE, U+FB05-U+FB06
 
-DejaVu Math TeX Gyre
---------------------
-TeX Gyre DJV Math by B. Jackowski, P. Strzelczyk and P. Pianowski
-(on behalf of TeX users groups).
-
-$Id$

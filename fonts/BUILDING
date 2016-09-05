@@ -1,26 +1,32 @@
 You need FontForge to build the fonts, on Debian known as "fontforge" package.
 http://fontforge.github.io/en-US/
+
+On Mac, add the following to `PATH`:
+
+    /Applications/FontForge.app/Contents/Resources/opt/local/bin
+
 Also pearl module Font::TTF, Debian package "libfont-ttf-perl".
 https://metacpan.org/release/Font-TTF/
+
+To install:
+
+    $ cpan App::cpanminus 
+    $ cpanm Font::TTF::Font
+
 Tool "make" to make, Debian package "make".
 
 
-
-$ make full-ttf
+    $ make full-ttf
 
 will all fonts to TrueType format with all glyphs included
 
-
-
-$ make  lgc-ttf
+    $ make  lgc-ttf
 
 will build the fonts with only the LGC (Latin-Greek-Cyrillic) subset
 
-
-
 If you just do
 
-$ make
+    $ make
 
 you will also make new status files. In that case you need to have the following files
 
