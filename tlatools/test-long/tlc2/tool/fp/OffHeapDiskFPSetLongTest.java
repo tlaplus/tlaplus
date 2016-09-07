@@ -9,7 +9,7 @@ import java.util.Random;
 import org.junit.Test;
 import util.TLCRuntime;
 
-public class OffHeapDiskFPSetTest extends FPSetTest {
+public class OffHeapDiskFPSetLongTest extends FPSetTest {
 	
 	private static final int FLUSHES = 4;
 
