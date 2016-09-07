@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 
 import javax.management.NotCompliantMBeanException;
 
@@ -53,6 +54,8 @@ import util.FileUtil;
 // for multiple concurrent readers)
 @SuppressWarnings("serial")
 public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
+
+	protected final static Logger LOGGER = Logger.getLogger(DiskFPSet.class.getName());
 
 	protected static final long MARK_FLUSHED = 0x8000000000000000L;
 	protected static final long FLUSHED_MASK = 0x7FFFFFFFFFFFFFFFL;

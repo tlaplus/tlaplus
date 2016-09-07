@@ -9,9 +9,11 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import util.Assert;
 
 /**
@@ -77,6 +79,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// are thus comparably expensive.
 		barrier = new CyclicBarrier(numThreads, new Runnable() {
 			public void run() {
+				// statistics
+				growDiskMark++;
+				final long timestamp = System.currentTimeMillis();
+				final long insertions = tblCnt.longValue();
+				final double lf = tblCnt.doubleValue() / (double) maxTblCnt;
+				final int r = reprobe.intValue();
+
 				// Atomically evict and reset flusherChosen to make sure no
 				// thread re-read flusherChosen=true after an eviction and
 				// wait again.
@@ -85,6 +94,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				} catch (Exception notExpectedToHappen) {
 					notExpectedToHappen.printStackTrace();
 				} 
+
+				long l = System.currentTimeMillis() - timestamp;
+				flushTime += l;
+				
+				LOGGER.log(Level.FINE,
+						"Flushed disk {0} {1}. time, in {2} sec after {3} insertions, load factor {4} and reprobe of {5}.",
+						new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l,
+								insertions, lf, r });
 
 				// Release exclusive access.
 				flusherChosen.set(false);
@@ -194,7 +211,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		
 		// We failed to insert into primary. Consequently, lets try and make
 		// some room by signaling all threads to wait for eviction.
-		flusherChosen.compareAndSet(false, true);
+		forceFlush();
 		// We've signaled for eviction to start or failed because some other
 		// thread beat us to it. Actual eviction and setting flusherChosen back
 		// to false is done by the Barrier's Runnable. We cannot set
@@ -257,6 +274,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		}
 		
 		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#forceFlush()
+	 */
+	public void forceFlush() {
+		flusherChosen.compareAndSet(false, true);
 	}
 
 	/* (non-Javadoc)

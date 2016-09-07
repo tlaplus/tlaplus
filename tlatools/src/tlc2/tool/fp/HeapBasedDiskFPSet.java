@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import tlc2.TLCGlobals;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
@@ -14,8 +13,6 @@ import util.Assert;
 
 @SuppressWarnings("serial")
 public abstract class HeapBasedDiskFPSet extends DiskFPSet {
-
-	private final static Logger LOGGER = Logger.getLogger(DiskFPSet.class.getName());
 
 	/**
 	 * Number of locks in the striped lock (#StripeLocks = 2^LogLockCnt).<br>
@@ -301,7 +298,8 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 			
 			// statistics
 			growDiskMark++;
-			long timestamp = System.currentTimeMillis();
+			final long timestamp = System.currentTimeMillis();
+			final long insertions = getTblCnt();
 			
 			// acquire _all_ write locks
 			rwLock.acquireAllLocks();
@@ -321,8 +319,8 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 			long l = System.currentTimeMillis() - timestamp;
 			flushTime += l;
 			
-			LOGGER.log(Level.FINE, "Flushed disk {0} {1}. time, in {2} sec", new Object[] {
-					((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l});
+			LOGGER.log(Level.FINE, "Flushed disk {0} {1}. time, in {2} sec after {3} insertions.", new Object[] {
+					((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l, insertions});
 		}
 		w.unlock();
 		return false;
