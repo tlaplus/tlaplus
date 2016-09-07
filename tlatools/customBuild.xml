@@ -118,7 +118,7 @@
 		</echo>
 		<!-- compile -->
 		<mkdir dir="${class.dir}" />
-		<javac includeantruntime="false" srcdir="${src.dir}" destdir="${class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+		<javac includeantruntime="false" srcdir="${src.dir}" destdir="${class.dir}" debug="true" verbose="false" source="1.8" target="1.8">
 			<!-- compilerarg value="-Xlint:deprecation"/-->
 			<classpath refid="project.classpath" />
 			<classpath>

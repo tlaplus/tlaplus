@@ -130,8 +130,8 @@
 	        	<artifactId>tycho-compiler-plugin</artifactId>
 	        	<version>${tycho-version}</version>
 			    <configuration>
-			    	<source>1.5</source>
-			    	<target>1.5</target>
+			    	<source>1.8</source>
+			    	<target>1.8</target>
 					<encoding>UTF-8</encoding>
 			    </configuration>
 			</plugin>
@@ -191,13 +191,13 @@
 					 </artifact>
 					</target>
 					
-					<!-- Need to specify miminum Java version. This defines what
+					<!-- Need to specify mininum Java version. This defines what
 					     java.* packages are available during dependency resolution. The default
 					     is Java 1.4 which e.g. does not come with "java.security.sasl", a
 					     package that is indirectly referenced by the toolbox (indirectly via
 					     org.apache.mina.core).
 					     see http://dev.eclipse.org/mhonarc/lists/cbi-dev/msg00166.html --> 
-		 			<executionEnvironment>JavaSE-1.7</executionEnvironment>
+		 			<executionEnvironment>JavaSE-1.8</executionEnvironment>
 
 					<!-- configure the p2 target environments for multi-platform build -->
 					<environments>
