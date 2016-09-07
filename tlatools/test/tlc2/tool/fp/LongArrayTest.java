@@ -92,6 +92,49 @@ public class LongArrayTest extends TestCase {
 		fail();
 	}
 	
+	public void testGetAndTrySet() throws IOException {
+		if (!System.getProperty("sun.arch.data.model").equals("64")) {
+			// LongArray only works on 64bit architectures. See comment in
+			// LongArray ctor.
+			return;
+		}
+		
+		final int elements = 100;
+
+		final LongArray array = new LongArray(elements);
+		array.zeroMemory(1);
+		
+		// Assert zero successful
+		for (long i = 0L; i < elements; i++) {
+			assertEquals(0L, array.get(i));
+		}
+
+		// trySet linear elements.
+		for (long i = 0L; i < elements; i++) {
+			assertTrue(array.trySet(i, 0, i));
+		}
+		for (long i = 0L; i < elements; i++) {
+			assertEquals(i, array.get(i));
+		}
+
+		// Replace with largest possible values
+		for (long i = 0L; i < elements; i++) {
+			array.trySet(i, i, Long.MAX_VALUE - i);
+		}
+		for (long i = 0L; i < elements; i++) {
+			assertEquals(Long.MAX_VALUE - i, array.get(i));
+		}
+		
+
+		// Replace with smallest possible values
+		for (long i = 0L; i < elements; i++) {
+			array.trySet(i, Long.MAX_VALUE - i, Long.MIN_VALUE + i);
+		}
+		for (long i = 0L; i < elements; i++) {
+			assertEquals(Long.MIN_VALUE + i, array.get(i));
+		}
+	}
+	
 	public void testZeroMemory() throws IOException {
 		for (int k = 1; k < 8; k++) {
 			for (int i = 1; i < 128; i++) {

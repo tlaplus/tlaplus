@@ -180,6 +180,18 @@ public final class LongArray {
 		rangeCheck(position);
 		return this.unsafe.getAddress(log2phy(position));
 	}
+
+	/**
+	 * Swaps elements at pos1 and pos2. This is not atomic. The element at pos1
+	 * will for a moment not be an element of {@link LongArray}.
+	 */
+	public final void swap(final long position1, final long position2) {
+		rangeCheck(position1);
+		rangeCheck(position2);
+		final long tmp = get(position1);
+		set(position1, get(position2));
+		set(position2, tmp);
+	}
 	
     /**
      * Returns the number of elements in this array.
