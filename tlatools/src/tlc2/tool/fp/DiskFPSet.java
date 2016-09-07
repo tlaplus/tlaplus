@@ -10,7 +10,7 @@ import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.logging.Logger;
 
 import javax.management.NotCompliantMBeanException;
@@ -92,13 +92,13 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * number of entries in "tbl". This is equivalent to the current number of fingerprints stored in in-memory cache/index.
 	 * @see DiskFPSet#getTblCnt()
 	 */
-	protected AtomicLong tblCnt; 
-
+	protected LongAdder tblCnt; 
+	// http://concurrencyfreaks.blogspot.de/2013/09/longadder-is-not-sequentially-consistent.html
 	/**
 	 * Number of used slots in tbl by a bucket
 	 * @see DiskFPSet#getTblLoad()
 	 */
-	protected AtomicLong tblLoad;
+	protected LongAdder tblLoad;
 	
 	/**
 	 * Number of allocated bucket slots across the complete index table. tblCnt will always <= bucketCnt;
@@ -124,12 +124,12 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	protected long[] index;
 	
 	// statistics
-	protected AtomicLong memHitCnt = new AtomicLong(0);
-	protected AtomicLong diskLookupCnt = new AtomicLong(0);
-	protected AtomicLong diskHitCnt = new AtomicLong(0);
-	private AtomicLong diskWriteCnt = new AtomicLong(0);
-	private AtomicLong diskSeekCnt = new AtomicLong(0);
-	private AtomicLong diskSeekCache = new AtomicLong(0);
+	protected LongAdder memHitCnt = new LongAdder();
+	protected LongAdder diskHitCnt = new LongAdder();
+	private LongAdder diskLookupCnt = new LongAdder();
+	private LongAdder diskWriteCnt = new LongAdder();
+	private LongAdder diskSeekCnt = new LongAdder();
+	private LongAdder diskSeekCache = new LongAdder();
 	
 	// indicate how many cp or disk grow in put(long) has occurred
 	private int checkPointMark;
@@ -188,8 +188,8 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			throw new IllegalArgumentException("Negative or zero upper storage limit");
 		}
 		this.fileCnt = 0;
-		this.tblCnt = new AtomicLong(0);
-		this.tblLoad = new AtomicLong(0);
+		this.tblCnt = new LongAdder();
+		this.tblLoad = new LongAdder();
 		this.flusherChosen = new AtomicBoolean(false);
 		this.index = null;
 		
@@ -270,7 +270,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#size()
 	 */
 	public long size() {
-		return this.tblCnt.get() + this.fileCnt;
+		return this.tblCnt.sum() + this.fileCnt;
 	}
 
 	public abstract long sizeof();
@@ -319,7 +319,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		// A) the FP distribution causes the index tbl to be unevenly populated.
 		// B) the FP distribution reassembles linear fill-up/down which 
 		// causes tblCnt * buckets with initial load factor to be allocated.
-		return (this.tblCnt.get() >= this.maxTblCnt) || forceFlush ;
+		return (this.tblCnt.sum() >= this.maxTblCnt) || forceFlush ;
 	}
 
 	/**
@@ -371,7 +371,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			return false;
 		
 		// Increment disk lookup counter
-		this.diskLookupCnt.getAndIncrement();
+		this.diskLookupCnt.increment();
 		
 		// search in index for position to seek to
 		// do interpolated binary search
@@ -463,9 +463,9 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 				// midEntry calculation done on logical indices,
 				// addressing done on bytes, thus convert to long-addressing (* LongSize)
 				if (raf.seeek(midEntry * LongSize)) {
-					diskSeekCnt.getAndIncrement();
+					diskSeekCnt.increment();
 				} else {
-					diskSeekCache.getAndIncrement();
+					diskSeekCache.increment();
 				}
 				long v = raf.readLong();
 
@@ -537,7 +537,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	protected final void writeFP(RandomAccessFile outRAF, long fp)
 			throws IOException {
 		outRAF.writeLong(fp);
-		diskWriteCnt.getAndIncrement();
+		diskWriteCnt.increment();
 		// update in-memory index file
 		if (this.counter == 0) {
 			this.index[this.currIndex++] = fp;
@@ -851,14 +851,14 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * {@link DiskFPSet#getTblLoad()} <= {@link DiskFPSet#getTblCnt()}
 	 */
 	public long getTblLoad() {
-		return tblLoad.get();
+		return tblLoad.sum();
 	}
 	
 	/**
 	 * @return the amount of fingerprints stored in memory. This is less or equal to {@link DiskFPSet#getTblCnt()} depending on if there collision buckets exist. 
 	 */
 	public long getTblCnt() {
-		return tblCnt.get();
+		return tblCnt.sum();
 	}
 	
 	/**
@@ -879,42 +879,42 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @return the diskLookupCnt
 	 */
 	public long getDiskLookupCnt() {
-		return diskLookupCnt.get();
+		return diskLookupCnt.sum();
 	}
 
 	/**
 	 * @return the diskHitCnt
 	 */
 	public long getMemHitCnt() {
-		return memHitCnt.get();
+		return memHitCnt.sum();
 	}
 
 	/**
 	 * @return the diskHitCnt
 	 */
 	public long getDiskHitCnt() {
-		return diskHitCnt.get();
+		return diskHitCnt.sum();
 	}
 
 	/**
 	 * @return the diskWriteCnt
 	 */
 	public long getDiskWriteCnt() {
-		return diskWriteCnt.get();
+		return diskWriteCnt.sum();
 	}
 
 	/**
 	 * @return the diskSeekCnt
 	 */
 	public long getDiskSeekCnt() {
-		return diskSeekCnt.get();
+		return diskSeekCnt.sum();
 	}
 	
 	/**
 	 * @return the diskSeekCache
 	 */
 	public long getDiskSeekCache() {
-		return diskSeekCache.get();
+		return diskSeekCache.sum();
 	}
 
 	/**
@@ -1030,7 +1030,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		 * for writing by the caller, and that the mutex "this.rwLock" is also held.
 		 */
 		void flushTable() throws IOException {
-			if (tblCnt.get() == 0)
+			if (tblCnt.sum() == 0)
 				return;
 			
 			prepareTable();
@@ -1052,9 +1052,9 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 				throw new IOException(msg);
 			}
 
-			tblCnt.set(0);
+			tblCnt.reset();
 			bucketsCapacity = 0;
-			tblLoad.set(0);
+			tblLoad.reset();
 		}
 
 		/**

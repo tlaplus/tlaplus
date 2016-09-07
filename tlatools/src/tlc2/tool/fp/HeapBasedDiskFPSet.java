@@ -112,7 +112,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 
 		// guard against negative maxTblCnt
 		// LL modified error message on 7 April 2012
-		Assert.check(maxTblCnt > capacity && capacity > tblCnt.get(),
+		Assert.check(maxTblCnt > capacity && capacity > tblCnt.sum(),
 				"negative maxTblCnt");
 
 		this.mask = capacity - 1;
@@ -189,7 +189,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		// First, look in in-memory buffer
 		if (this.memLookup(fp0)) {
 			readLock.unlock();
-			this.memHitCnt.getAndIncrement();
+			this.memHitCnt.increment();
 			return true;
 		}
 
@@ -198,7 +198,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		boolean diskHit = this.diskLookup(fp0);
 		// increment while still locked
 		if(diskHit) {
-			diskHitCnt.getAndIncrement();
+			diskHitCnt.increment();
 		}
 
 		// end read; add to memory buffer if necessary
@@ -258,7 +258,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		// First, look in in-memory buffer
 		if (this.memLookup(fp0)) {
 			readLock.unlock();
-			this.memHitCnt.getAndIncrement();
+			this.memHitCnt.increment();
 			return true;
 		}
 		
@@ -273,7 +273,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		// In event of disk hit, return
 		if (diskHit) {
 			readLock.unlock();
-			this.diskHitCnt.getAndIncrement();
+			this.diskHitCnt.increment();
 			return true;
 		}
 		
@@ -289,7 +289,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		// if disk lookup failed, add to memory buffer
 		if (this.memInsert(fp0)) {
 			w.unlock();
-			this.memHitCnt.getAndIncrement();
+			this.memHitCnt.increment();
 			return true;
 		}
 		
@@ -341,7 +341,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 			bucket[0] = fp;
 			this.tbl[index] = bucket;
 			this.bucketsCapacity += InitialBucketCapacity; 
-			this.tblLoad.getAndIncrement();
+			this.tblLoad.increment();
 		} else {
 			// search for entry in existing bucket
 			int bucketLen = bucket.length;
@@ -379,7 +379,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 				bucket[i] = fp;
 			}
 		}
-		this.tblCnt.getAndIncrement();
+		this.tblCnt.increment();
 		return false;
 	}
 

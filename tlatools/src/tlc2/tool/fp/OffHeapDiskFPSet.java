@@ -8,7 +8,8 @@ import java.rmi.RemoteException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAccumulator;
+import java.util.function.LongBinaryOperator;
 import java.util.logging.Level;
 
 import tlc2.output.EC;
@@ -25,7 +26,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	private static final int PROBE_LIMIT = Integer.getInteger(OffHeapDiskFPSet.class.getName() + ".probeLimit", 128);
 	static final long EMPTY = 0L;
 	
-	private final AtomicInteger reprobe;
+	private final LongAccumulator reprobe;
 
 	private final LongArray array;
 	
@@ -43,7 +44,11 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		
 		// Determine base address which varies depending on machine architecture.
 		this.array = new LongArray(positions);
-		this.reprobe = new AtomicInteger(0);
+		this.reprobe = new LongAccumulator(new LongBinaryOperator() {
+			public long applyAsLong(long left, long right) {
+				return Math.max(left, right);
+			}
+		}, 0);
 		
 		this.flusher = new OffHeapMSBFlusher();
 		
@@ -158,8 +163,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 * @see tlc2.tool.fp.DiskFPSet#memLookup(long)
 	 */
 	final boolean memLookup(final long fp0) {
-		int r = reprobe.get() + 1;
-		for (int i = 0; i < r; i++) {
+		int r = reprobe.intValue();
+		for (int i = 0; i <= r; i++) {
 			final long position = indexer.getIdx(fp0, i);
 			final long l = array.get(position);
 			if (fp0 == (l & FLUSHED_MASK)) {
@@ -168,7 +173,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			} else 	if (l == EMPTY) {
 				return false;
 			}
-			r = reprobe.get() + 1;
 		}
 
 		return false;
@@ -178,7 +182,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 * @see tlc2.tool.fp.DiskFPSet#memInsert(long)
 	 */
 	final boolean memInsert(final long fp0) throws IOException {
-		// Try to insert into primary, Duplicate of memInsert
 		for (int i = 0; i < PROBE_LIMIT; i++) {
 			final long position = indexer.getIdx(fp0, i);
 			final long expected = array.get(position);
@@ -186,15 +189,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				// Increment reprobe if needed. Other threads might have
 				// increased concurrently. Since reprobe is strictly
 				// monotonic increasing, we need no retry when r larger.
-				int r = reprobe.get();
-				while (i > r && !reprobe.compareAndSet(r, i)) {
-					r = reprobe.get();
-				}
+				reprobe.accumulate(i);
 				
 				// Try to CAS the new fingerprint. In case of failure, reprobe
-				// is too large which we ignore.
+				// is too large which we ignore. Will be eventually corrected
+				// by eviction.
 				if (array.trySet(position, expected, fp0)) {
-					this.tblCnt.getAndIncrement();
+					this.tblCnt.increment();
 					return false;
 				}
 				// Cannot reduce reprobe to its value before we increased it.
@@ -236,13 +237,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		if (index != null) {
 			// Lookup primary memory
 			if (memLookup(fp0)) {
-				this.memHitCnt.getAndIncrement();
+				this.memHitCnt.increment();
 				return true;
 			}
 			
 			// Lookup on disk
 			if (this.diskLookup(fp0)) {
-				this.diskHitCnt.getAndIncrement();
+				this.diskHitCnt.increment();
 				return true;
 			}
 		}
@@ -269,7 +270,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		
 		// Lookup on secondary/disk
 		if(this.diskLookup(fp0)) {
-			diskHitCnt.getAndIncrement();
+			diskHitCnt.increment();
 			return true;
 		}
 		
@@ -397,8 +398,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 */
 		@Override
 		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
-			final long buffLen = tblCnt.get();
-			final SortingIterator itr = new SortingIterator(array, buffLen, reprobe.get(), indexer);
+			final long buffLen = tblCnt.sum();
+			final SortingIterator itr = new SortingIterator(array, buffLen, reprobe.intValue(), indexer);
 
 			// Precompute the maximum value of the new file. DiskFPSet#writeFP
 			// updates the index on the fly.
@@ -454,7 +455,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 			// After flush, we might be able to reduce reprobe. It is possible
 			// to even set it to zero and make all lookups go to secondary.
-			reprobe.set(itr.getReprobe());
+			reprobe.reset();
+			reprobe.accumulate(itr.getReprobe());
 			
 			// Update the last element in index with the large one of the
 			// current largest element of itr and the previous largest element.

@@ -36,7 +36,7 @@ public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 		@Override
 		protected void prepareTable() {
 			// Verify tblCnt is still within positive Integer.MAX_VALUE bounds
-			int cnt = (int) tblCnt.get();
+			int cnt = (int) tblCnt.sum();
 			Assert.check(cnt > 0, EC.GENERAL);
 			
 			// Why not sort this.tbl in-place rather than doubling memory
