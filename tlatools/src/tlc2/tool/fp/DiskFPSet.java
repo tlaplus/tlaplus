@@ -95,7 +95,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * Number of used slots in tbl by a bucket
 	 * @see DiskFPSet#getTblLoad()
 	 */
-	protected long tblLoad;
+	protected AtomicLong tblLoad;
 	
 	/**
 	 * Number of allocated bucket slots across the complete index table. tblCnt will always <= bucketCnt;
@@ -186,6 +186,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		}
 		this.fileCnt = 0;
 		this.tblCnt = new AtomicLong(0);
+		this.tblLoad = new AtomicLong(0);
 		this.flusherChosen = new AtomicBoolean(false);
 		this.index = null;
 		
@@ -346,8 +347,9 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/**
 	 * Return "true" if "fp" is contained in the hash table; otherwise, insert
 	 * it and return "false". Precondition: msb(fp) = 0
+	 * @throws IOException 
 	 */
-	abstract boolean memInsert(long fp);
+	abstract boolean memInsert(long fp) throws IOException;
 
 	/**
 	 * Locks and unlocks tbl
@@ -846,7 +848,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * {@link DiskFPSet#getTblLoad()} <= {@link DiskFPSet#getTblCnt()}
 	 */
 	public long getTblLoad() {
-		return tblLoad;
+		return tblLoad.get();
 	}
 	
 	/**
@@ -1049,7 +1051,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 
 			tblCnt.set(0);
 			bucketsCapacity = 0;
-			tblLoad = 0;
+			tblLoad.set(0);
 		}
 
 		/**

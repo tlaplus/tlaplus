@@ -343,7 +343,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 			bucket[0] = fp;
 			this.tbl[index] = bucket;
 			this.bucketsCapacity += InitialBucketCapacity; 
-			this.tblLoad++;
+			this.tblLoad.getAndIncrement();
 		} else {
 			// search for entry in existing bucket
 			int bucketLen = bucket.length;

@@ -6,14 +6,22 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
 import java.util.NoSuchElementException;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
 import util.Assert;
 
+/**
+ * see OpenAddressing.tla
+ */
 @SuppressWarnings({ "serial" })
 public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implements FPSetStatistic {
+	
+	private static final int PROBE_LIMIT = Integer.getInteger(OffHeapDiskFPSet.class.getName() + ".probeLimit", 128);
+	static final long EMPTY = 0L;
 	
 	private final AtomicInteger reprobe;
 
@@ -23,6 +31,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 * The indexer maps a fingerprint to a in-memory bucket and the associated lock
 	 */
 	private final Indexer indexer;
+
+	private CyclicBarrier barrier;
 
 	protected OffHeapDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
 		super(fpSetConfig);
@@ -57,6 +67,43 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		super.init(numThreads, aMetadir, filename);
 		
 		array.zeroMemory(numThreads);
+		
+		// This barrier gets run after one thread signals the need to suspend
+		// put and contains operations to evict to secondary. Signaling is done
+		// via the flusherChoosen AtomicBoolean. All threads (numThreads) will
+		// then await on the barrier and the Runnable be executed when the
+		// last of numThreads arrives.
+		// Compared to an AtomicBoolean, the barrier operation use locks and
+		// are thus comparably expensive.
+		barrier = new CyclicBarrier(numThreads, new Runnable() {
+			public void run() {
+				// Atomically evict and reset flusherChosen to make sure no
+				// thread re-read flusherChosen=true after an eviction and
+				// wait again.
+				try {
+					flusher.flushTable(); // Evict()
+				} catch (Exception notExpectedToHappen) {
+					notExpectedToHappen.printStackTrace();
+				} 
+
+				// Release exclusive access.
+				flusherChosen.set(false);
+			}
+		});
+	}
+
+	private boolean checkEvictPending() {
+		if (flusherChosen.get()) {
+			try {
+				barrier.await();
+			} catch (InterruptedException notExpectedToHappen) {
+				notExpectedToHappen.printStackTrace();
+			} catch (BrokenBarrierException notExpectedToHappen) {
+				notExpectedToHappen.printStackTrace();
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/* (non-Javadoc)
@@ -93,28 +140,122 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memLookup(long)
 	 */
-	final boolean memLookup(long fp) {		
+	final boolean memLookup(final long fp0) {
+		int r = reprobe.get() + 1;
+		for (int i = 0; i < r; i++) {
+			final long position = indexer.getIdx(fp0, i);
+			final long l = array.get(position);
+			if (fp0 == (l & FLUSHED_MASK)) {
+				// zero the long msb (which is 1 if fp has been flushed to disk)
+				return true;
+			} else 	if (l == EMPTY) {
+				return false;
+			}
+			r = reprobe.get() + 1;
+		}
+
 		return false;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memInsert(long)
 	 */
-	final boolean memInsert(long fp) {
-		return false;
+	final boolean memInsert(final long fp0) throws IOException {
+		// Try to insert into primary, Duplicate of memInsert
+		for (int i = 0; i < PROBE_LIMIT; i++) {
+			final long position = indexer.getIdx(fp0, i);
+			final long expected = array.get(position);
+			if (expected == EMPTY || (expected < 0 && fp0 != (expected & FLUSHED_MASK))) {
+				// Increment reprobe if needed. Other threads might have
+				// increased concurrently. Since reprobe is strictly
+				// monotonic increasing, we need no retry when r larger.
+				int r = reprobe.get();
+				while (i > r && !reprobe.compareAndSet(r, i)) {
+					r = reprobe.get();
+				}
+				
+				// Try to CAS the new fingerprint. In case of failure, reprobe
+				// is too large which we ignore.
+				if (array.trySet(position, expected, fp0)) {
+					this.tblCnt.getAndIncrement();
+					return false;
+				}
+				// Cannot reduce reprobe to its value before we increased it.
+				// Another thread could have caused an increase to i too which
+				// would be lost.
+			}
+			
+			// Expected is the fingerprint to be inserted.
+			if ((expected & FLUSHED_MASK) == fp0) {
+				return true;
+			}
+		}
+
+		
+		// We failed to insert into primary. Consequently, lets try and make
+		// some room by signaling all threads to wait for eviction.
+		flusherChosen.compareAndSet(false, true);
+		// We've signaled for eviction to start or failed because some other
+		// thread beat us to it. Actual eviction and setting flusherChosen back
+		// to false is done by the Barrier's Runnable. We cannot set
+		// flusherChosen back to false after barrier.awaits returns because it
+		// leaves a window during which other threads read the old true value of
+		// flusherChosen a second time and immediately wait again.
+		
+		return put(fp0);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#put(long)
 	 */
 	public final boolean put(final long fp) throws IOException {
-		return false;
+		if (checkEvictPending()) { return put(fp); }
+
+		// zeros the msb
+		final long fp0 = fp & FLUSHED_MASK;
+
+		// Only check primary and disk iff there exists a disk file. index is
+		// created when we wait and thus cannot race.
+		if (index != null) {
+			// Lookup primary memory
+			if (memLookup(fp0)) {
+				this.memHitCnt.getAndIncrement();
+				return true;
+			}
+			
+			// Lookup on disk
+			if (this.diskLookup(fp0)) {
+				this.diskHitCnt.getAndIncrement();
+				return true;
+			}
+		}
+		
+		// Lastly, try to insert into memory.
+		return memInsert(fp0);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#contains(long)
 	 */
 	public final boolean contains(final long fp) throws IOException {
+		// maintains happen-before with regards to successful put
+		
+		if (checkEvictPending()) { return contains(fp);	}
+
+		// zeros the msb
+		final long fp0 = fp & FLUSHED_MASK;
+		
+		// Lookup in primary
+		if (memLookup(fp0)) {
+			return true;
+		}
+		
+		// Lookup on secondary/disk
+		if(this.diskLookup(fp0)) {
+			diskHitCnt.getAndIncrement();
+			return true;
+		}
+		
 		return false;
 	}
 
@@ -144,6 +285,22 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 */
 	public long getTblLoad() {
 		return getTblCnt();
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#getOverallCapacity()
+	 */
+	public long getOverallCapacity() {
+		return array.size();
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#getBucketCapacity()
+	 */
+	public long getBucketCapacity() {
+		// A misnomer, but bucketCapacity is obviously not applicable with open
+		// addressing.
+		return reprobe.longValue();
 	}
 
 	//**************************** Indexer ****************************//
@@ -217,17 +374,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		@Override
 		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
 			final long buffLen = tblCnt.get();
-			ByteBufferIterator itr = new ByteBufferIterator(array, buffLen);
+			final SortingIterator itr = new SortingIterator(array, buffLen, reprobe.get(), indexer);
 
-			// Precompute the maximum value of the new file
-			long maxVal = itr.getLast();
-			if (index != null) {
-				maxVal = Math.max(maxVal, index[index.length - 1]);
-			}
-
-			int indexLen = calculateIndexLen(buffLen);
+			// Precompute the maximum value of the new file. DiskFPSet#writeFP
+			// updates the index on the fly.
+			final int indexLen = calculateIndexLen(buffLen);
 			index = new long[indexLen];
-			index[indexLen - 1] = maxVal;
 			currIndex = 0;
 			counter = 0;
 
@@ -275,7 +427,15 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					}
 				}
 			}
+
+			// After flush, we might be able to reduce reprobe. It is possible
+			// to even set it to zero and make all lookups go to secondary.
+			reprobe.set(itr.getReprobe());
 			
+			// Update the last element in index with the large one of the
+			// current largest element of itr and the previous largest element.
+			index[indexLen - 1] = Math.max(fp, index[index.length - 1]);
+
 			// both sets used up completely
 			Assert.check(eof && eol, EC.GENERAL);
 
@@ -288,25 +448,86 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	}
 	
 	/**
-	 * A non-thread safe Iterator 
+	 * A non-thread safe Iterator whose next method returns the next largest
+	 * element.
 	 */
-	public class ByteBufferIterator {
+	public static class SortingIterator {
+		private final long elements;
 		private final LongArray array;
+		private final Indexer indexer;
+		private final int reprobe;
 
-		public ByteBufferIterator(LongArray helper, long expectedElements) {
-			this.array = helper;
+		private int newReprobe;
+		private long idx = 0;
+		private long elementsRead = 0L;
+		
+		public SortingIterator(final LongArray array, final long elements, final int reprobe, final Indexer indexer) {
+			this.array = array;
+			this.elements = elements;
+			this.reprobe = reprobe;
+			this.newReprobe = reprobe;
+			this.indexer = indexer;
 		}
 
-	    /**
-	     * Returns the next element in the iteration.
-	     *
-	     * @return the next element in the iteration.
-	     * @exception NoSuchElementException iteration has no more elements.
-	     */
+		/**
+		 * Returns the next element in the iteration that is not EMPTY nor
+		 * marked evicted.
+		 * <p>
+		 * THIS IS NOT SIDEEFFECT FREE. AFTERWARDS, THE ELEMENT WILL BE MARKED
+		 * EVICTED.
+		 *
+		 * @return the next element in the iteration that is not EMPTY nor
+		 *         marked evicted.
+		 * @exception NoSuchElementException
+		 *                iteration has no more elements.
+		 */
 		public long next() {
+			if (elementsRead >= elements) {
+				throw new NoSuchElementException();
+			}
+			
+			long elem = EMPTY;
+			do {
+				sortLookahead();
+				
+				long position = idx % array.size();
+				elem = array.get(position);
+				
+				final long baseIdx = indexer.getIdx(elem);
+				if (elem > EMPTY && isSorted(baseIdx, elem, idx, reprobe, array.size())) {
+					// mark elem in array as being evicted.
+					array.set(position, elem | MARK_FLUSHED);
+
+					newReprobe = (int) Math.min(newReprobe, idx - baseIdx);
+					
+					idx = idx + 1L;
+					elementsRead = elementsRead + 1L;
+					return elem;
+				}
+				
+				idx = idx + 1L;
+			} while (hasNext());
+			
+			// make compiler happy
 			throw new NoSuchElementException();
 		}
 
+		// This is a variant of selection sort O(n^2) which skips negative and
+		// empty positions.
+		private void sortLookahead() {
+			final long lo = array.get(idx % array.size());
+			int r = 1;
+			while (r <= reprobe) {
+				final long hi = array.get((idx + r) % array.size());
+				final long idxLo = indexer.getIdx(lo);
+				final long idxHi = indexer.getIdx(hi);
+				if (compare(idxLo, lo, idx, idxHi, hi, r, reprobe, array.size())) {
+					array.swap(idx % array.size(), (idx + r) % array.size());
+				}
+				r = r + 1;
+			}
+		}
+		
 	    /**
 	     * Returns <tt>true</tt> if the iteration has more elements. (In other
 	     * words, returns <tt>true</tt> if <tt>next</tt> would return an element
@@ -315,15 +536,68 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	     * @return <tt>true</tt> if the iterator has more elements.
 	     */
 		public boolean hasNext() {
-			return false;
+			return elementsRead < elements;
 		}
 		
+		public int getReprobe() {
+			// returns the maximum displacement of fingerprints.
+			return newReprobe;
+		}
+		
+		//******** static helpers ********//
+		
 		/**
-		 * @return The last element in the iteration.
-	     * @exception NoSuchElementException if iteration is empty.
+	     * A fp wrapped around if its alternate indices are beyond
+	     * K and its actual index is lower than its primary idx.	 
+	     */
+		private static boolean wrapped(final long idx, final long fp, final long pos, final int p, final long k) {
+			// /\ idx(fp,0) + P > K
+			// /\ idx(fp,0) > mod(pos, K)
+			return idx + p > k && idx > (pos % k);
+		}
+
+		/**
+		 * TRUE iff the given two fingerprints have to be swapped to satisfy the
+		 * expected order.
 		 */
-		public long getLast() {
-			throw new NoSuchElementException();
+		private static boolean compare(final long idxLo, final long fpLo, final long outer, final long idxHi, final long fpHi,
+				final long inner, final int p, final long k) {
+			if (fpLo <= EMPTY || fpHi <= EMPTY) {
+				return false;
+			}
+			final long posLo = outer % k;
+			final long posHi = (outer + inner) % k;
+			final boolean wrappedLo = wrapped(idxLo, fpLo, outer, p, k);
+			final boolean wrappedHi = wrapped(idxHi, fpHi, outer + inner, p, k);
+			if (fpLo < fpHi && posLo > posHi && !(wrappedLo ^ wrappedHi)) {
+				// /\ fp1 < fp2
+				// /\ mod(i1, K) > mod(i1+i2, K)
+				// /\ wrapped(fp1,i1, P) <=> wrapped(fp2,i1+i2, P)
+				return true;
+			} else if (fpLo > fpHi && posLo > posHi && idxLo == idxHi) {
+				// /\ fp1 > fp2
+				// /\ mod(i1, K) > mod(i1+i2, K)
+				// /\ idx(fp1,0) = idx(fp2, 0)
+				return true;
+			} else if (fpLo > fpHi && posLo < posHi && idxLo >= idxHi && !(wrappedLo ^ wrappedHi)) {
+				// /\ fp1 > fp2
+				// /\ mod(i1, K) < mod(i1+i2, K)
+				// /\ idx(fp1,0) >= idx(fp2, 0)
+				// /\ wrapped(fp1,i1, P) <=> wrapped(fp2,i1+i2, P)
+				return true;
+			} else if (fpLo > fpHi && posLo > posHi && idxLo > idxHi && (wrappedLo ^ wrappedHi)) {
+				// /\ fp1 > fp2
+				// /\ mod(i1, K) > mod(i1+i2, K)
+				// /\ idx(fp1,0) > idx(fp2, 0)
+				// /\ ~(wrapped(fp1,i1, P) <=> wrapped(fp2,i1+i2, P))
+				return true;
+			}
+			return false;
+		}
+
+		private static boolean isSorted(final long idx, final long elem, final long outer, final int p, final long k) {
+			final boolean wrapped = wrapped(idx, elem, outer, p, k);
+			return ((outer < k && !wrapped) || (outer >= k && wrapped));
 		}
 	}
 }
