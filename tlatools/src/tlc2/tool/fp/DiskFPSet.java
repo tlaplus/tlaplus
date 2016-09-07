@@ -61,6 +61,9 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 
 	private final static Logger LOGGER = Logger.getLogger(DiskFPSet.class.getName());
 
+	protected static final long MARK_FLUSHED = 0x8000000000000000L;
+	protected static final long FLUSHED_MASK = 0x7FFFFFFFFFFFFFFFL;
+	
 	// fields
 	/**
 	 * upper bound on "tblCnt"
@@ -905,7 +908,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		// statistics code to speed up recovery. Thus, recovery relys on
 		// exclusive access to the fingerprint set, which it has during
 		// recovery.
-		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
+		long fp0 = fp & FLUSHED_MASK;
 		boolean unique = !this.memInsert(fp0);
 		Assert.check(unique, EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, "");
 		if (needsDiskFlush()) {
