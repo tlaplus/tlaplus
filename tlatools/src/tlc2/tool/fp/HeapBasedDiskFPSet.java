@@ -1,12 +1,40 @@
 // Copyright (c) 2012 Microsoft Corporation. All rights reserved.
 package tlc2.tool.fp;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import tlc2.TLCGlobals;
+import tlc2.tool.fp.management.DiskFPSetMXWrapper;
+import tlc2.util.Striped;
 import util.Assert;
 
 @SuppressWarnings("serial")
 public abstract class HeapBasedDiskFPSet extends DiskFPSet {
+
+	private final static Logger LOGGER = Logger.getLogger(DiskFPSet.class.getName());
+
+	/**
+	 * Number of locks in the striped lock (#StripeLocks = 2^LogLockCnt).<br>
+	 * Theoretically best performance should be seen with on lock per bucket in
+	 * the primary hash table. An some point though (not yet measured), this
+	 * performance benefit is probably eaten up by the memory consumption of the
+	 * striped lock {@link DiskFPSet#rwLock} itself, which reduces the memory
+	 * available to the hash set.
+	 */
+	protected static final int LogLockCnt = Integer.getInteger(DiskFPSet.class.getName() + ".logLockCnt", (31 - Integer.numberOfLeadingZeros(TLCGlobals.getNumWorkers()) + 8));
+	/**
+	 * protects n memory buckets
+	 */
+	protected final Striped rwLock;
+	/**
+	 * Is (1 << LogLockCnt) and exposed here for subclasses
+	 */
+	protected final int lockCnt;
+	
 	protected final int lockMask;
 	/**
 	 * in-memory buffer of new entries
@@ -38,7 +66,19 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 
 	protected HeapBasedDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
 		super(fpSetConfig);
-		
+
+		// Ideally we use one lock per bucket because even with relatively high
+		// lock counts, we fall victim to the birthday paradox. However, locks
+		// ain't cheap, which is why we have to find the sweet spot. We
+		// determined the constant 8 empirically on Intel Xeon CPU E5-2670 v2 @
+		// 2.50GHz. This is based on the number of cores only. We ignore their
+		// speed. MultiThreadedMSBDiskFPSet is the most suitable performance
+		// test available for the job. It just inserts long values into the
+		// set. int is obviously going to be too small once 2^23 cores become
+		// commonplace.
+		this.lockCnt = 1 << LogLockCnt;
+		this.rwLock = Striped.readWriteLock(lockCnt);
+
 		// Reserve a portion of the memory for the auxiliary storage
 		long maxMemCnt = (long) (fpSetConfig.getMemoryInFingerprintCnt() / getAuxiliaryStorageRequirement());
 
@@ -103,6 +143,13 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		rwLock.releaseAllLocks();
 		return size;
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#getLockCnt()
+	 */
+	public int getLockCnt() {
+		return this.rwLock.size();
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#getTblCapacity()
@@ -131,6 +178,36 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		return fp & aMask;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.FPSet#contains(long)
+	 * 
+     * 0 and {@link Long#MIN_VALUE} always return false
+	 */
+	public final boolean contains(long fp) throws IOException {
+		fp = checkValid(fp);
+		// zeros the msb
+		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
+		final Lock readLock = this.rwLock.getAt(getLockIndex(fp0)).readLock();
+		readLock.lock();
+		// First, look in in-memory buffer
+		if (this.memLookup(fp0)) {
+			readLock.unlock();
+			this.memHitCnt.getAndIncrement();
+			return true;
+		}
+
+		// block if disk is being re-written
+		// next, look on disk
+		boolean diskHit = this.diskLookup(fp0);
+		// increment while still locked
+		if(diskHit) {
+			diskHitCnt.getAndIncrement();
+		}
+
+		// end read; add to memory buffer if necessary
+		readLock.unlock();
+		return diskHit;
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memLookup(long)
@@ -148,6 +225,106 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 			if (fp == (bucket[i] & 0x7FFFFFFFFFFFFFFFL))
 				return true;
 		}
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.FPSet#put(long)
+	 * 
+     * 0 and {@link Long#MIN_VALUE} always return false
+     * 
+     * Locking is as follows:
+     * 
+     * Acquire mem read lock
+     * Acquire disk read lock
+     * Release mem read lock
+     * 
+     * Acquire mem read/write lock
+     * Release disk read lock // interleaved 
+     *  insert into mem
+     * Acquire disk write lock (might cause potential writer to wait() which releases mem read lock (monitor))
+     * 	flushToDisk
+     * Release disk write lock
+     * Release mem read lock
+     * 
+     * asserts:
+     * - Exclusive access to disk and memory for a writer
+     * 
+	 */
+	public final boolean put(long fp) throws IOException {
+		fp = checkValid(fp);
+		// zeros the msb
+		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
+		
+		final Lock readLock = rwLock.getAt(getLockIndex(fp0)).readLock();
+		readLock.lock();
+		// First, look in in-memory buffer
+		if (this.memLookup(fp0)) {
+			readLock.unlock();
+			this.memHitCnt.getAndIncrement();
+			return true;
+		}
+		
+		// blocks => wait() if disk is being re-written 
+		// (means the current thread returns rwLock monitor)
+		// Why not return monitor first and then acquire read lock?
+		// => prevent deadlock by acquiring threads in same order? 
+		
+		// next, look on disk
+		boolean diskHit = this.diskLookup(fp0);
+		
+		// In event of disk hit, return
+		if (diskHit) {
+			readLock.unlock();
+			this.diskHitCnt.getAndIncrement();
+			return true;
+		}
+		
+		readLock.unlock();
+		
+		// Another writer could write the same fingerprint here if it gets
+		// interleaved. This is no problem though, because memInsert again
+		// checks existence for fp to be inserted
+		
+		final Lock w = rwLock.getAt(getLockIndex(fp0)).writeLock();
+		w.lock();
+		
+		// if disk lookup failed, add to memory buffer
+		if (this.memInsert(fp0)) {
+			w.unlock();
+			this.memHitCnt.getAndIncrement();
+			return true;
+		}
+		
+		// test if buffer is full && block until there are no more readers 
+		if (needsDiskFlush() && this.flusherChosen.compareAndSet(false, true)) {
+			
+			// statistics
+			growDiskMark++;
+			long timestamp = System.currentTimeMillis();
+			
+			// acquire _all_ write locks
+			rwLock.acquireAllLocks();
+			
+			// flush memory entries to disk
+			flusher.flushTable();
+			
+			// release _all_ write locks
+			rwLock.releaseAllLocks();
+			
+			// reset forceFlush to false
+			forceFlush = false;
+			
+			// finish writing
+			this.flusherChosen.set(false);
+
+			long l = System.currentTimeMillis() - timestamp;
+			flushTime += l;
+			
+			LOGGER.log(Level.FINE, "Flushed disk {0} {1}. time, in {2} sec", new Object[] {
+					((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l});
+		}
+		w.unlock();
 		return false;
 	}
 
@@ -206,5 +383,19 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		}
 		this.tblCnt.getAndIncrement();
 		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#acquireTblWriteLock()
+	 */
+	void acquireTblWriteLock() {
+		rwLock.acquireAllLocks();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#releaseTblWriteLock()
+	 */
+	void releaseTblWriteLock() {
+		rwLock.releaseAllLocks();
 	}
 }

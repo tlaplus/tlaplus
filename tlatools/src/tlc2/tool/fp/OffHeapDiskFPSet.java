@@ -93,14 +93,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		final double d = (this.tblCnt.doubleValue()) / (double) this.maxTblCnt;
 		return d >= limit;
 	}
-	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.DiskFPSet#getLockIndex(long)
-	 */
-	@Override
-	protected final int getLockIndex(long fp) {
-		return this.indexer.getLockIndex(fp);
-	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memLookup(long)
@@ -167,6 +159,34 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.FPSet#put(long)
+	 */
+	public final boolean put(final long fp) throws IOException {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.FPSet#contains(long)
+	 */
+	public final boolean contains(final long fp) throws IOException {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#acquireTblWriteLock()
+	 */
+	void acquireTblWriteLock() {
+		// no-op for now
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#releaseTblWriteLock()
+	 */
+	void releaseTblWriteLock() {
+		// no-op for now
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#getTblCapacity()
 	 */
 	public long getTblCapacity() {
@@ -182,11 +202,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 * @see MSBDiskFPSet#moveBy
 		 */
 		protected final int moveBy;
-		/**
-		 * Number of bits to right shift bits during index calculation of
-		 * striped lock.
-		 */
-		protected final int lockMoveBy;
 
 		public Indexer(final int bucketCapacity, final long positions, int prefixBits) {
 			this.bcktCapacity = bucketCapacity;
@@ -202,22 +217,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				n = n >>> 1; // == (n/2)
 			}
 			this.moveBy = moveBy;
-			
-			// ...same for lock index.
-			n = (0xFFFFFFFFFFFFFFFFL >>> prefixBits) - ((1 << LogLockCnt) - 1);
-			moveBy = 0;
-			while (n >= 1 << LogLockCnt) {
-				moveBy++;
-				n = n >>> 1; // == (n/2)
-			}
-			this.lockMoveBy = moveBy;
-		}
-		
-		/* (non-Javadoc)
-		 * @see tlc2.tool.fp.DiskFPSet#getLockIndex(long)
-		 */
-		protected int getLockIndex(long fp) {
-			return (int) ((fp & prefixMask) >> lockMoveBy);
 		}
 
 		/**
