@@ -76,7 +76,7 @@ public class LongArrayTest extends TestCase {
 		final LongArray array = new LongArray(1);
 		try {
 			array.get(1);
-		} catch (IndexOutOfBoundsException e) {
+		} catch (AssertionError e) {
 			return;
 		}
 		fail();
@@ -86,7 +86,7 @@ public class LongArrayTest extends TestCase {
 		final LongArray array = new LongArray(1);
 		try {
 			array.get(-1);
-		} catch (IndexOutOfBoundsException e) {
+		} catch (AssertionError e) {
 			return;
 		}
 		fail();

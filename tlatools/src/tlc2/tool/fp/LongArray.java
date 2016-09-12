@@ -36,7 +36,7 @@ public final class LongArray {
 	/**
 	 * Maximum number of elements that can be contained in this array.
 	 */
-	private final long positions;
+	private final long length;
 	
 	/**
 	 * CHOOSE logAddressSize \in 1..(Long.SIZE / 8): 2^logAddressSize = (Long.SIZE / 8)
@@ -44,7 +44,7 @@ public final class LongArray {
 	private static final int logAddressSize = 3;
 
 	LongArray(final long positions) {
-		this.positions = positions;
+		this.length = positions;
 		this.unsafe = getUnsafe();
 		
 		// LongArray is only implemented for 64bit architectures. A 32bit
@@ -90,7 +90,7 @@ public final class LongArray {
 	public final void zeroMemory(final int numThreads)
 			throws IOException {
 
-		final long segmentSize = positions / numThreads;
+		final long segmentSize = length / numThreads;
 
 		final ExecutorService es = Executors.newFixedThreadPool(numThreads);
 		try {
@@ -138,35 +138,79 @@ public final class LongArray {
 	}
 	
     private final void rangeCheck(final long position) {
-		// Might want to replace with assert eventually to avoid comparison on
-		// each set/get.
-		//assert position >= 0 && position < this.positions;
-    	
-        if (position < 0 || position >= positions) {
-        	throw new IndexOutOfBoundsException("Index: "+position+", Size: "+positions);
-        }
+		assert position >= 0 && position < this.length;
     }
 	
 	/**
-	 * CAS (compare and swap)
+	 * CAS (compare and swap) variant of {@link LongArray#set(long, long)}.
 	 * 
 	 * @param position
 	 * @param expected
 	 * @param value
 	 * @return true iff successful 
+     * @throws IndexOutOfBoundsException
 	 */
 	public final boolean trySet(final long position, final long expected, final long value) {
 		rangeCheck(position);
 		return this.unsafe.compareAndSwapLong(null, log2phy(position), expected, value);
 	}
 	
+    /**
+     * Inserts the specified element at the specified position in this
+     * array. Overwrites any previous occupant of the specified position.
+     *
+     * @param position position at which the specified element is to be inserted
+     * @param value element to be inserted
+     * @throws IndexOutOfBoundsException
+     */
 	public final void set(final long position, final long value) {
 		rangeCheck(position);
 		this.unsafe.putAddress(log2phy(position), value);
 	}
 
+    /**
+     * Returns the element at the specified position in this array.
+     *
+     * @param  position position of the element to return
+     * @return the element at the specified position in this array
+     * @throws IndexOutOfBoundsException
+     */
 	public final long get(final long position) {
 		rangeCheck(position);
 		return this.unsafe.getAddress(log2phy(position));
+	}
+	
+    /**
+     * Returns the number of elements in this array.
+     *
+     * @return the number of elements in this array
+     */
+	public final long size() {
+		return length;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+        long iMax = length - 1;
+        if (iMax == -1L) {
+        	return "[]";
+        }
+
+        final StringBuilder b = new StringBuilder();
+        b.append('[');
+        for (long i = 0; ; i++) {
+            final long lng = get(i);
+            if (lng == 0L) {
+            	b.append("e");
+            } else {
+            	b.append(lng);
+            }
+            if (i == iMax) {
+            	return b.append(']').toString();
+            }
+            b.append(", ");
+        }
 	}
 }
