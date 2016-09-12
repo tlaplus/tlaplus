@@ -78,7 +78,7 @@ public abstract class AbstractFPSetTest {
 		if (fpSet instanceof FPSetStatistic) {
 			FPSetStatistic fpSetStats = (FPSetStatistic) fpSet;
 			long maxTblCnt = fpSetStats.getMaxTblCnt();
-			System.out.println("Maximum FPSet bucket count is: "
+			System.out.println("Maximum FPSet table count is: "
 					+ df.format(maxTblCnt) + " (approx: "
 					+ df.format(maxTblCnt * FPSet.LongSize >> 20) + " GiB)");
 			System.out.println("FPSet lock count is: " + fpSetStats.getLockCnt());
