@@ -30,6 +30,7 @@ public class TLCRuntime {
 		}
 		return runtime;
 	}
+	
 
 	private long physicalSystemMemory = -1;
 	
