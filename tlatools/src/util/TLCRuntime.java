@@ -32,7 +32,7 @@ public class TLCRuntime {
 	}
 
 	private long physicalSystemMemory = -1;
-
+	
 	/**
 	 * @return the total amount of memory, measured in bytes.
 	 */

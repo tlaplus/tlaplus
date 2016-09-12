@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import javax.management.NotCompliantMBeanException;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.TLCTrace;
@@ -84,7 +85,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * striped lock {@link DiskFPSet#rwLock} itself, which reduces the memory
 	 * available to the hash set.
 	 */
-	protected static final int LogLockCnt = Integer.getInteger(DiskFPSet.class.getName() + ".logLockCnt", 10);
+	protected static final int LogLockCnt = Integer.getInteger(DiskFPSet.class.getName() + ".logLockCnt", (31 - Integer.numberOfLeadingZeros(TLCGlobals.getNumWorkers()) + 8));
 	/**
 	 * protects n memory buckets
 	 */
@@ -200,7 +201,16 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 */
 	protected DiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
 		super(fpSetConfig);
-		this.lockCnt = 1 << LogLockCnt; //TODO come up with a more dynamic value for stripes that takes tblCapacity into account
+		// Ideally we use one lock per bucket because even with relatively high
+		// lock counts, we fall victim to the birthday paradox. However, locks
+		// ain't cheap, which is why we have to find the sweet spot. We
+		// determined the constant 8 empirically on Intel Xeon CPU E5-2670 v2 @
+		// 2.50GHz. This is based on the number of cores only. We ignore their
+		// speed. MultiThreadedMSBDiskFPSet is the most suitable performance
+		// test available for the job. It just inserts long values into the
+		// set. int is obviously going to be too small once 2^23 cores become
+		// commonplace.
+		this.lockCnt = 1 << LogLockCnt;
 		this.rwLock = Striped.readWriteLock(lockCnt);
 		
 		this.maxTblCnt = fpSetConfig.getMemoryInFingerprintCnt();

@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
+
+import tlc2.TLCGlobals;
 import tlc2.tool.fp.generator.BatchedFingerPrintGenerator;
 import tlc2.tool.fp.generator.FingerPrintGenerator;
 import tlc2.tool.fp.generator.LongVecFingerPrintGenerator;
@@ -83,6 +85,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 	 * @throws InvocationTargetException
 	 */
 	private void doTest(Class<? extends FingerPrintGenerator> fpgClass) throws IOException, InterruptedException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		TLCGlobals.setNumWorkers(NUM_THREADS);
 		final FPSet fpSet = getFPSetInitialized(NUM_THREADS);
 		final CountDownLatch latch = new CountDownLatch(NUM_THREADS);
 
