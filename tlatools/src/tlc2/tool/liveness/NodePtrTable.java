@@ -4,6 +4,9 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
+
 /**
  * @see TableauNodePtrTable
  */
@@ -108,21 +111,45 @@ public class NodePtrTable {
 
 	/* Double the table when the table is full by the threshhold. */
 	private final void grow() {
-		this.length = 2 * this.length + 1;
-		this.thresh = (int) (this.length * 0.75);
-		this.count = 0;
-		long[] oldKeys = this.keys;
-		long[] oldElems = this.elems;
-		this.keys = new long[this.length];
-		this.elems = new long[this.length];
-		for (int i = 0; i < this.length; i++) {
-			this.elems[i] = -1;
-		}
-		for (int i = 0; i < oldElems.length; i++) {
-			long elem = oldElems[i];
-			if (elem != -1) {
-				this.put(oldKeys[i], elem);
+		// TODO This grows unbound up to an OOM exception or fails to increase
+		// the array when length reaches Integer.MAX_VALUE.
+		// In case of Integer.MAX_VALUE, all subsequent put(long,long)
+		// invocations will fail to put the new key causing TLC to live-lock.
+		// This can possibly be replaced with a variant of DiskFPSet.
+		try {
+			final int newLength = 2 * this.length + 1;
+			final long[] oldKeys = this.keys;
+			final long[] oldElems = this.elems;
+			this.keys = new long[newLength];
+			this.elems = new long[newLength];
+			for (int i = 0; i < newLength; i++) {
+				this.elems[i] = -1;
 			}
+			this.count = 0;
+			for (int i = 0; i < oldElems.length; i++) {
+				final long elem = oldElems[i];
+				if (elem != -1) {
+					int loc = ((int) oldKeys[i] & 0x7FFFFFFF) % newLength;
+					while (true) {
+						if (this.elems[loc] == -1) {
+							this.keys[loc] = oldKeys[i];
+							this.elems[loc] = elem;
+							this.count++;
+							break;
+						}
+						if (this.keys[loc] == oldKeys[i]) {
+							this.elems[loc] = elem;
+							break;
+						}
+						loc = (loc + 1) % newLength;
+					}
+				}
+			}
+			this.length = newLength;
+			this.thresh = (int) (newLength * 0.75);
+		} catch (Throwable t) {
+			System.gc();
+			MP.printError(EC.SYSTEM_OUT_OF_MEMORY, t);
 		}
 	}
 
