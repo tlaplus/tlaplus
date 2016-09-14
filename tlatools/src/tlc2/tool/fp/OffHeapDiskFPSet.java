@@ -14,6 +14,7 @@ import java.util.logging.Level;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.fp.LongArrays.LongComparator;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import util.Assert;
 
@@ -69,7 +70,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#init(int, java.lang.String, java.lang.String)
 	 */
-	public void init(int numThreads, String aMetadir, String filename)
+	public void init(final int numThreads, String aMetadir, String filename)
 			throws IOException {
 		super.init(numThreads, aMetadir, filename);
 		
@@ -83,6 +84,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// Compared to an AtomicBoolean, the barrier operation use locks and
 		// are thus comparably expensive.
 		barrier = new CyclicBarrier(numThreads, new Runnable() {
+			// Atomically evict and reset flusherChosen to make sure no
+			// thread re-read flusherChosen=true after an eviction and
+			// waits again.
 			public void run() {
 				// statistics
 				growDiskMark++;
@@ -90,25 +94,51 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				final long insertions = tblCnt.longValue();
 				final double lf = tblCnt.doubleValue() / (double) maxTblCnt;
 				final int r = reprobe.intValue();
+				final long size = array.size();
 
-				// Atomically evict and reset flusherChosen to make sure no
-				// thread re-read flusherChosen=true after an eviction and
-				// wait again.
+				LongArrays.sort(array, 0, size - 1L + r, new LongComparator() {
+					public int compare(long fpA, long posA, long fpB, long posB) {
+						
+						// Elements not in Nat \ {0} remain at their current
+						// position.
+						if (fpA <= EMPTY || fpB <= EMPTY) {
+							return 0;
+						}
+						
+						final boolean wrappedA = indexer.getIdx(fpA) > posA;
+						final boolean wrappedB = indexer.getIdx(fpB) > posB;
+						
+						if (wrappedA == wrappedB && posA > posB) {
+							return fpA < fpB ? -1 : 1;
+						} else if ((wrappedA ^ wrappedB)) {
+							if (posA < posB && fpA < fpB) {
+								return -1;
+							}
+							if (posA > posB && fpA > fpB) {
+								return -1;
+							}
+						}
+						return 0;
+					}
+				});
+				
+				// Write sorted table to disk in a single thread.
 				try {
 					flusher.flushTable(); // Evict()
 				} catch (Exception notExpectedToHappen) {
 					notExpectedToHappen.printStackTrace();
 				} 
 
+				// statistics and logging again.
 				long l = System.currentTimeMillis() - timestamp;
 				flushTime += l;
-				
 				LOGGER.log(Level.FINE,
 						"Flushed disk {0} {1}. time, in {2} sec after {3} insertions, load factor {4} and reprobe of {5}.",
 						new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l,
 								insertions, lf, r });
 
-				// Release exclusive access.
+				// Release exclusive access. It has to be done by the runnable
+				// before workers waiting on the barrier wake up again.
 				flusherChosen.set(false);
 			}
 		});
@@ -399,7 +429,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		@Override
 		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
 			final long buffLen = tblCnt.sum();
-			final SortingIterator itr = new SortingIterator(array, buffLen, reprobe.intValue(), indexer);
+			final Iterator itr = new Iterator(array, buffLen, indexer);
 
 			// Precompute the maximum value of the new file. DiskFPSet#writeFP
 			// updates the index on the fly.
@@ -453,11 +483,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				}
 			}
 
-			// After flush, we might be able to reduce reprobe. It is possible
-			// to even set it to zero and make all lookups go to secondary.
-			reprobe.reset();
-			reprobe.accumulate(itr.getReprobe());
-			
 			// Update the last element in index with the large one of the
 			// current largest element of itr and the previous largest element.
 			index[indexLen - 1] = Math.max(fp, index[index.length - 1]);
@@ -477,21 +502,17 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 * A non-thread safe Iterator whose next method returns the next largest
 	 * element.
 	 */
-	public static class SortingIterator {
+	public static class Iterator {
 		private final long elements;
 		private final LongArray array;
 		private final Indexer indexer;
-		private final int reprobe;
 
-		private int newReprobe;
-		private long idx = 0;
+		private long pos = 0;
 		private long elementsRead = 0L;
 		
-		public SortingIterator(final LongArray array, final long elements, final int reprobe, final Indexer indexer) {
+		public Iterator(final LongArray array, final long elements, final Indexer indexer) {
 			this.array = array;
 			this.elements = elements;
-			this.reprobe = reprobe;
-			this.newReprobe = reprobe;
 			this.indexer = indexer;
 		}
 
@@ -508,50 +529,24 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 *                iteration has no more elements.
 		 */
 		public long next() {
-			if (elementsRead >= elements) {
-				throw new NoSuchElementException();
-			}
-			
 			long elem = EMPTY;
 			do {
-				sortLookahead();
-				
-				long position = idx % array.size();
+				long position = pos % array.size();
 				elem = array.get(position);
-				
+				pos = pos + 1L;
+				if (elem <= EMPTY) {
+					continue;
+				}
 				final long baseIdx = indexer.getIdx(elem);
-				if (elem > EMPTY && isSorted(baseIdx, elem, idx, reprobe, array.size())) {
-					// mark elem in array as being evicted.
-					array.set(position, elem | MARK_FLUSHED);
-
-					newReprobe = (int) Math.min(newReprobe, idx - baseIdx);
-					
-					idx = idx + 1L;
-					elementsRead = elementsRead + 1L;
-					return elem;
+				if (baseIdx > pos) {
+					continue;
 				}
-				
-				idx = idx + 1L;
+				// mark elem in array as being evicted.
+				array.set(position, elem | MARK_FLUSHED);
+				elementsRead = elementsRead + 1L;
+				return elem;
 			} while (hasNext());
-			
-			// make compiler happy
 			throw new NoSuchElementException();
-		}
-
-		// This is a variant of selection sort O(n^2) which skips negative and
-		// empty positions.
-		private void sortLookahead() {
-			final long lo = array.get(idx % array.size());
-			int r = 1;
-			while (r <= reprobe) {
-				final long hi = array.get((idx + r) % array.size());
-				final long idxLo = indexer.getIdx(lo);
-				final long idxHi = indexer.getIdx(hi);
-				if (compare(idxLo, lo, idx, idxHi, hi, r, reprobe, array.size())) {
-					array.swap(idx % array.size(), (idx + r) % array.size());
-				}
-				r = r + 1;
-			}
 		}
 		
 	    /**
@@ -563,67 +558,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	     */
 		public boolean hasNext() {
 			return elementsRead < elements;
-		}
-		
-		public int getReprobe() {
-			// returns the maximum displacement of fingerprints.
-			return newReprobe;
-		}
-		
-		//******** static helpers ********//
-		
-		/**
-	     * A fp wrapped around if its alternate indices are beyond
-	     * K and its actual index is lower than its primary idx.	 
-	     */
-		private static boolean wrapped(final long idx, final long fp, final long pos, final int p, final long k) {
-			// /\ idx(fp,0) + P > K
-			// /\ idx(fp,0) > mod(pos, K)
-			return idx + p > k && idx > (pos % k);
-		}
-
-		/**
-		 * TRUE iff the given two fingerprints have to be swapped to satisfy the
-		 * expected order.
-		 */
-		private static boolean compare(final long idxLo, final long fpLo, final long outer, final long idxHi, final long fpHi,
-				final long inner, final int p, final long k) {
-			if (fpLo <= EMPTY || fpHi <= EMPTY) {
-				return false;
-			}
-			final long posLo = outer % k;
-			final long posHi = (outer + inner) % k;
-			final boolean wrappedLo = wrapped(idxLo, fpLo, outer, p, k);
-			final boolean wrappedHi = wrapped(idxHi, fpHi, outer + inner, p, k);
-			if (fpLo < fpHi && posLo > posHi && !(wrappedLo ^ wrappedHi)) {
-				// /\ fp1 < fp2
-				// /\ mod(i1, K) > mod(i1+i2, K)
-				// /\ wrapped(fp1,i1, P) <=> wrapped(fp2,i1+i2, P)
-				return true;
-			} else if (fpLo > fpHi && posLo > posHi && idxLo == idxHi) {
-				// /\ fp1 > fp2
-				// /\ mod(i1, K) > mod(i1+i2, K)
-				// /\ idx(fp1,0) = idx(fp2, 0)
-				return true;
-			} else if (fpLo > fpHi && posLo < posHi && idxLo >= idxHi && !(wrappedLo ^ wrappedHi)) {
-				// /\ fp1 > fp2
-				// /\ mod(i1, K) < mod(i1+i2, K)
-				// /\ idx(fp1,0) >= idx(fp2, 0)
-				// /\ wrapped(fp1,i1, P) <=> wrapped(fp2,i1+i2, P)
-				return true;
-			} else if (fpLo > fpHi && posLo > posHi && idxLo > idxHi && (wrappedLo ^ wrappedHi)) {
-				// /\ fp1 > fp2
-				// /\ mod(i1, K) > mod(i1+i2, K)
-				// /\ idx(fp1,0) > idx(fp2, 0)
-				// /\ ~(wrapped(fp1,i1, P) <=> wrapped(fp2,i1+i2, P))
-				return true;
-			}
-			return false;
-		}
-
-		private static boolean isSorted(final long idx, final long elem, final long outer, final int p, final long k) {
-			final boolean wrapped = wrapped(idx, elem, outer, p, k);
-			return ((outer < k && !wrapped) || (outer >= k && wrapped));
 		}
 	}
 }

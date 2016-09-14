@@ -25,189 +25,195 @@
  ******************************************************************************/
 package tlc2.tool.fp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static tlc2.tool.fp.DiskFPSet.MARK_FLUSHED;
 import static tlc2.tool.fp.OffHeapDiskFPSet.EMPTY;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.rmi.RemoteException;
+import java.util.Arrays;
+import java.util.Random;
 
-import org.junit.Assert;
 import org.junit.Test;
 
-import tlc2.tool.fp.OffHeapDiskFPSet.SortingIterator;
-
 public class OffHeapDiskFPSetTest {
-	@Test
-	public void testSortingIteratorEmpty() {
-		// Create a LongArray and insert known elements.
-		final int size = 5;
-		final LongArray array = new LongArray(size);
-		for (int i = 0; i < size; i++) {
-			array.set(i, 0L);
-		}
-		
-		final OffHeapDiskFPSet.Indexer indexer = new OffHeapDiskFPSet.Indexer(size, 1);
-		final SortingIterator itr = new OffHeapDiskFPSet.SortingIterator(array, 0L, 0, indexer);
+	
+	protected static final String tmpdir = System.getProperty("java.io.tmpdir") + File.separator + "OffHeapDiskFPSetTest"
+			+ System.currentTimeMillis();
+	protected static final String filename = "OffHeapDiskFPSetTest";
 
-		boolean seen = false;
-		try {
-			itr.next();
-		} catch (NoSuchElementException expected) {
-			seen = true;
-		}
-		Assert.assertTrue(seen);
-		Assert.assertFalse(itr.hasNext());
-		
-		for (int i = 0; i < size; i++) {
-			Assert.assertEquals(0L, array.get(i));
-		}
+//	@Test
+//	public void testInsertAndEvictRnd() throws Exception {
+//		Random rnd = new Random();
+//		for (int i = 0; i < 1000; i++) {
+//			doTest(System.currentTimeMillis(), rnd.nextInt(255) + 1);
+//		}
+//	}
+	
+	@Test
+	public void testInsertAndEvict1() throws Exception {
+		doTest(1473793977852L, 87);
 	}
-
+	
 	@Test
-	public void testSortingIteratorReprobe0() {
-		// Create a LongArray and insert known elements.
-		final int size = 101;
-		final LongArray array = new LongArray(size);
-		for (int i = 0; i < size; i++) {
-			array.set(i, i+1L); // Cannot insert 0L/EMPTY
-		}
-		
-		// Iterate over array and assert positive elements are returned in sorted order.
-		long i = 1L;
-		final OffHeapDiskFPSet.Indexer indexer = new OffHeapDiskFPSet.Indexer(size, 1);
-		final SortingIterator itr = new OffHeapDiskFPSet.SortingIterator(array, size, 0, indexer);
-		while (itr.hasNext()) {
-			Assert.assertEquals(i++, itr.next());
-		}
-		
-		// Saw all expected elements?
-		Assert.assertFalse(itr.hasNext());
-		Assert.assertEquals("Did not read all elements.", size, --i);
-		
-		// After next, all elements are marked evicted. 
-		for (i = 0; i < size; i++) {
-			Assert.assertEquals(i + 1L | MARK_FLUSHED, array.get(i));
-		}
+	public void testInsertAndEvict2() throws Exception {
+		doTest(1473793976137L, 87);
+	}
+	
+	@Test
+	public void testInsertAndEvict3() throws Exception {
+		doTest(1473839150698L, 46);
+	}
+	
+	@Test
+	public void testInsertAndEvict4() throws Exception {
+		doTest(1473839150698L, 46);
+	}
+	
+	@Test
+	public void testInsertAndEvict5() throws Exception {
+		doTest(1473839322351L, 23);
 	}
 
 	@Test
-	public void testSortingIteratorReprobe3a() {
-		final List<Long> list = new ArrayList<Long>(10);
-		list.add(1L);
-		list.add(EMPTY);
-		list.add(EMPTY);
-		list.add(5L);
-		list.add(EMPTY);
-		list.add(8L);
-		list.add(10L);
-		list.add(9L);
-		list.add(12L);
-		list.add(EMPTY);
-		doTest(list, 3, 14);
+	public void testInsertAndEvict6() throws Exception {
+		doTest(1473839380539L, 23);
+	}
+
+	@Test
+	public void testInsertAndEvict7() throws Exception {
+		doTest(1473839422899L, 11);
+	}
+
+	@Test
+	public void testInsertAndEvict8() throws Exception {
+		doTest(1473839543883L, 11);
 	}
 	
 	@Test
-	public void testSortingIteratorReprobe3b() {
-		final List<Long> list = new ArrayList<Long>(10);
-		list.add(EMPTY);
-		list.add(EMPTY);
-		list.add(EMPTY);
-		list.add(5L);
-		list.add(7L);
-		list.add(6L);
-		list.add(9L);
-		list.add(EMPTY);
-		list.add(12L);
-		list.add(13L);
-		doTest(list, 3, 14);
+	public void testInsertAndEvict9() throws Exception {
+		doTest(1473871461079L, 64);
+	}
+
+	@Test
+	public void testInsertAndEvict10() throws Exception {
+		doTest(1473871462765L, 64);
+	}
+
+	@Test
+	public void testInsertAndEvict11() throws Exception {
+		doTest(1473871522834L, 32);
 	}
 	
 	@Test
-	public void testSortingIteratorReprobe3c() {
-		final List<Long> list = new ArrayList<Long>(10);
-		list.add(1L);
-		list.add(2L);
-		list.add(-4L);
-		list.add(-6L);
-		list.add(EMPTY);
-		list.add(EMPTY);
-		list.add(9L);
-		list.add(EMPTY);
-		list.add(-12L);
-		list.add(EMPTY);
-		doTest(list, 3, 14);
+	public void testInsertAndEvict12() throws Exception {
+		doTest(1473871526136L, 32);
 	}
-	
+
 	@Test
-	public void testSortingIteratorReprobe3d() {
-		final List<Long> list = new ArrayList<Long>(10);
-		list.add(13L);
-		list.add(14L);
-		list.add(4L);
-		list.add(EMPTY);
-		list.add(7L);
-		list.add(EMPTY);
-		list.add(10L);
-		list.add(9L);
-		list.add(12L);
-		list.add(11L);
-		doTest(list, 3, 14);
+	public void testInsertAndEvict13() throws Exception {
+		doTest(1473873732723L, 47);
 	}
-	
+
 	@Test
-	public void testSortingIteratorReprobe3e() {
-		final List<Long> list = new ArrayList<Long>(10);
-		list.add(-1L);
-		list.add(-14L);
-		list.add(-4L);
-		list.add(-5L);
-		list.add(EMPTY);
-		list.add(7L);
-		list.add(EMPTY);
-		list.add(EMPTY);
-		list.add(-12L);
-		list.add(-13L);
-		doTest(list, 3, 14);
+	public void testInsertAndEvict14() throws Exception {
+		doTest(1473871294851L, 93);
 	}
-	
-	private static void doTest(final List<Long> list, final int reprobe, final long maxValue) {
-		final SortedSet<Long> sorted = new TreeSet<Long>();
-		sorted.addAll(list);
-		// Remove negative and zero values
-		for (long i = (-1 * maxValue); i < 1; i++) {
-			sorted.remove(i);
+
+	@Test
+	public void testInsertAndEvict15() throws Exception {
+		doTest(1473871365625L, 93);
+	}
+
+	@Test
+	public void testInsertAndEvict16() throws Exception {
+		doTest(1473871209569L, 157);
+	}
+
+	private void doTest(final long rgenseed, final long length) throws RemoteException, IOException, NoSuchFieldException, IllegalAccessException {
+		new File(tmpdir).mkdirs();
+		
+		final DummyFPSetConfiguration fpSetConfig = new DummyFPSetConfiguration();
+		fpSetConfig.setMemoryInFingerprintCnt(length);
+		
+		final DiskFPSet fpSet = new OffHeapDiskFPSet(fpSetConfig);
+		fpSet.init(1, tmpdir, filename);
+
+		// Insert n randomly choosen positive longs.
+		Random random = new Random(rgenseed);
+		for (int i = 0; i < length / 2; i++) {
+			final long fp = (((long) random.nextInt(Integer.MAX_VALUE - 1) + 1) << 32)
+					| (random.nextInt() & 0xffffffffL);
+			assertFalse(fpSet.put(fp));
 		}
-		final Iterator<Long> setIterator = sorted.iterator();
+
+		// Get the current content of LongArray for later comparison of special elements.
+		Field field = OffHeapDiskFPSet.class.getDeclaredField("array");
+		field.setAccessible(true);
+		final long[] expected = LongArrays.toArray((LongArray) field.get(fpSet));
 		
+		// Flush/Evict the first time and assure its successful.
+		assertTrue(fpSet.getGrowDiskMark() == 0);
+		fpSet.forceFlush();
+		fpSet.contains(1L); // contains triggers eviction
+		assertTrue(fpSet.getGrowDiskMark() == 1);
 		
-		// Create a LongArray and insert given elements.
-		final LongArray array = new LongArray(list.size());
-		long i = 0L;
-		for (Long l : list) {
-			array.set(i++, l);
+		// Special elements (EMPTY or marked evicted) do not change positions
+		// when sorted.
+		final LongArray actual = (LongArray) field.get(fpSet);
+		for (int i = 0; i < expected.length; i++) {
+			if (expected[i] == EMPTY) {
+				assertEquals(
+						String.format(
+								"Expected empty position with seed %sL and length %s.\n\nexpected: %s\n\nactual: %s",
+								new Object[] { rgenseed, length, Arrays.toString(expected), actual.toString() }),
+						EMPTY, actual.get(i));
+			} else if (expected[i] < EMPTY) {
+				assertEquals(
+						String.format(
+								"Expected negative position with seed %sL and length %s.\n\nexpected: %s\n\nactual: %s",
+								new Object[] { rgenseed, length, Arrays.toString(expected), actual.toString() }),
+						EMPTY, actual.get(i));
+			}
 		}
 		
-		// Iterate over array and assert positive elements are returned in sorted order.
-		i = 0L;
-		final OffHeapDiskFPSet.Indexer indexer = new OffHeapDiskFPSet.Indexer(list.size(), 1, maxValue);
-		final SortingIterator itr = new OffHeapDiskFPSet.SortingIterator(array, sorted.size(), reprobe, indexer);
-		while (itr.hasNext()) {
-			final long expected = setIterator.next();
-			Assert.assertEquals(expected, itr.next());
-			i++;
+		random = new Random(rgenseed);
+		for (int i = 0; i < length / 2; i++) {
+			final long fp = (((long) random.nextInt(Integer.MAX_VALUE - 1) + 1) << 32)
+					| (random.nextInt() & 0xffffffffL);
+			assertTrue(String.format("Failed to find fp %s/%s with seed %sL and length %s.\n\nexpected: %s\n\nactual: %s",
+					new Object[] { fp, (fp | MARK_FLUSHED), rgenseed, length, Arrays.toString(expected),
+							actual.toString() }),
+					fpSet.contains(fp));
 		}
 		
-		// Saw all expected elements
-		Assert.assertFalse(itr.hasNext());
-		Assert.assertEquals("Failed to read all expected elements.", sorted.size(), i);
-		
-		// After next, all elements are mark evicted or remain empty. 
-		for (i = 0; i < array.size(); i++) {
-			Assert.assertTrue(array.get(i) <= EMPTY);
+		assertTrue(
+				String.format("Invariant violated with seed %sL and length %s.\n\nexpected: %s\n\nactual: %s",
+						new Object[] { rgenseed, length, Arrays.toString(expected), actual.toString() }),
+				fpSet.checkInvariant());
+
+		// Clear the index to secondary/disk which hides secondary from
+		// DiskFPSet.
+		field = DiskFPSet.class.getDeclaredField("index");
+		field.setAccessible(true);
+		field.set(fpSet, null);
+
+		// Confirm that even without secondary, it's possible to lookup the
+		// fingerprints.
+		random = new Random(rgenseed);
+		for (int i = 0; i < length / 2; i++) {
+			final long fp = (((long) random.nextInt(Integer.MAX_VALUE - 1) + 1) << 32)
+					| (random.nextInt() & 0xffffffffL);
+			assertTrue(String.format("Failed to find fp %s/%s with seed %sL and length %s.\n\nexpected: %s\n\nactual: %s",
+					new Object[] { fp, (fp | MARK_FLUSHED), rgenseed, length, Arrays.toString(expected),
+							actual.toString() }),
+					fpSet.contains(fp));
 		}
+		
+		fpSet.close();
 	}
 }
