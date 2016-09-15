@@ -36,7 +36,20 @@
           class="org.lamport.tla.toolbox.editor.basic.TLADocumentSetupParticipant"
           extensions="tla"/>
  </extension>
-    
+   <extension 
+    point="org.eclipse.ui.editors.documentProviders"> 
+    <provider 
+        extensions="tla" 
+        class="org.lamport.tla.toolbox.editor.basic.TLAFileDocumentProvider" 
+        id="org.eclipse.ui.internal.editors.quickdiff.LastSaveReferenceProvider"> 
+    </provider> 
+   </extension>
+   <extension point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
+      <referenceprovider
+         class="org.lamport.tla.toolbox.editor.basic.TLALastSaveReferenceProvider"
+         id="org.lamport.tla.toolbox.editor.basic.TLALastSaveReferenceProvider">
+      </referenceprovider>
+   </extension>
    <extension
          point="org.eclipse.help.contexts">
       <contexts
@@ -664,14 +677,6 @@
            </menuContribution>
            <menuContribution
                  locationURI="popup:#TextEditorContext?after=org.lamport.tla.toolbox.editor.basic.unicodeseparator">
-              <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.convertToUnicode"
-                    style="push">
-              </command>
-              <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.convertToASCII"
-                    style="push">
-              </command>
               <command
                     commandId="org.lamport.tla.toolbox.editor.basic.copyAsASCII"
                     style="push">

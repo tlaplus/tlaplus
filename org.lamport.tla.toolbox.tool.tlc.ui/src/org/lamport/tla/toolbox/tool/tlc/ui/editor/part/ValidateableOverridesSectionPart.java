@@ -9,6 +9,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.lamport.tla.toolbox.editor.basic.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.ui.dialog.FilteredDefinitionSelectionDialog;
@@ -19,6 +20,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 import tla2sany.semantic.OpDefNode;
+import tla2unicode.Unicode;
 
 /**
  * Section part for the DefinitionOverride section of the Advanced Options page
@@ -173,7 +175,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
                     Assignment assignNoBang = new Assignment(noBangLabel, assign.getParams(), rightSide);
                     return assignNoBang.toString();
                 }
-                return super.getText(element);
+                return Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, super.getText(element));
             }
         });
 

@@ -1,14 +1,12 @@
 package org.lamport.tla.toolbox.editor.basic;
 
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.DocumentCommand;
+import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
-import org.eclipse.jface.text.ITextInputListener;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.editors.text.TextEditor;
-import org.lamport.tla.toolbox.util.UIHelper;
+import org.eclipse.jface.text.source.SourceViewer;
 
 import tla2unicode.Unicode;
 
@@ -22,100 +20,138 @@ public class TLAUnicodeReplacer {
 	// consider using IAutoEditStrategy
 	
 	public static volatile boolean UNICODE_MODE = true;
-	
+
+	public static String unicode(String text) {
+		return UNICODE_MODE ? Unicode.convertToUnicode(text) : text;
+	}
+
 //	RightMargin = Activator.getDefault().getPreferenceStore().getInt(
 //			EditorPreferencePage.EDITOR_RIGHT_MARGIN);
 	
 	private Object editor;
+	
 	private IDocument doc;
+	private DocumentCommand command;
+	
 	private final Unicode.OnlineReplacer replacer;
-	private final IDocumentListener listener = new IDocumentListener() {
-		public void documentChanged(DocumentEvent event) {
-			if (UNICODE_MODE)
-				handle(event);				
-		}
-		
-		public void documentAboutToBeChanged(DocumentEvent event) {
-		}
-	};
+	
+	private static SourceViewer sourceViewer(Object element) {
+		if (element instanceof ISourceViewer)
+			return (SourceViewer) element;
+		if (element instanceof TLAEditor)
+			return sourceViewer(((TLAEditor) element).getSourceViewer1());
+		return null;
+	}
 	
 	public TLAUnicodeReplacer() {	
 		this.replacer = new Unicode.OnlineReplacer() {
 			@Override
-			protected void replace(final int start, final int length, final String u) {
-				final IDocument doc0 = doc;
-				final Object ed = editor;
-				UIHelper.runUIAsync(new Runnable() {
-					public void run() {
-						 try {
-							 doc0.replace(start, length, u);
-							 
-							 // fix caret position in a special case
-							 if (ed instanceof ISourceViewer) {
-								 if (start == 0)
-									 ((ISourceViewer) ed).getTextWidget().setCaretOffset(length);
-							 }
-						  } catch (BadLocationException e) {
-								throw new AssertionError(e);
-						  }
-					}
-				});
+			protected void replace(int start, int length, String u) {
+				 try {
+					 if (Unicode.IMMEDIATE_REPLACE.contains(token.toString())) {
+						 length--; // the last character isn't displayed
+						 overwriteCommand(command, start, length, u, null);
+					 } else
+						 addCommand(command, start, length, u, null);
+					 
+					 // fix caret position in a special case
+					 if (editor instanceof ISourceViewer) {
+						 if (start == 0)
+							 ((ISourceViewer) editor).getTextWidget().setCaretOffset(length);
+					 }
+				  } catch (BadLocationException e) {
+						throw new AssertionError(e);
+				  }
 			}
 		};
 	}
 
-	public void init(ISourceViewer editor) {
+	public void init(ISourceViewer sourceViewer) {
+		this.editor = sourceViewer;
+		init0(sourceViewer(sourceViewer));
+	}
+	
+	public void init(TLAEditor editor) {
 		this.editor = editor;
-		editor.addTextInputListener(new ITextInputListener() {
-			public void inputDocumentChanged(IDocument oldInput, IDocument newInput) {
-				if (oldInput != null)
-					oldInput.removeDocumentListener(listener);
-				init(newInput);
+		init(sourceViewer(editor));
+	}
+	
+	public void init0(SourceViewer sv) {
+		final IAutoEditStrategy strategy = new IAutoEditStrategy() {
+			@Override
+			public void customizeDocumentCommand(IDocument document, DocumentCommand command) {
+				TLAUnicodeReplacer.this.customizeDocumentCommand(document, command);
 			}
-			
-			public void inputDocumentAboutToBeChanged(IDocument oldInput, IDocument newInput) {
-			}
-		});
-		init(editor.getDocument());
-	}
-	
-	public void init(TextEditor editor) {
-		final IEditorInput input = editor.getEditorInput();
-		init(editor.getDocumentProvider().getDocument(input));
-	}
-	
-	public void init(IDocument document) {
-		if (document != null)
-			document.addDocumentListener(listener);
-	}
-	
-	private void handle(DocumentEvent event) {
-		// As the user types, if we think we may be in an interesting token,
-		// we collect characters into `token'.
+		};
 		
-		if (doc != null)
-			return; // recursive
-		doc = event.getDocument();
+		sv.prependAutoEditStrategy(strategy, IDocument.DEFAULT_CONTENT_TYPE);
+		for (String contentType : TLAPartitionScanner.TLA_PARTITION_TYPES)
+			sv.prependAutoEditStrategy(strategy, contentType);
+		sv.prependAutoEditStrategy(strategy, TLAPartitionScanner.TLA_PCAL);
+	}
+	
+	private void customizeDocumentCommand(IDocument document, DocumentCommand command) {
+		this.doc = document;
+		this.command = command;
 		try {
-			// We support only the following cases:
-			// 1. The user types a character at the end of the current token.
-			// 2. The user types backspace.
-			// Any other case (like navigating and typing elsewhere) will reset the token.
-
-//			System.out.println("handle  event: " + event
-//					+ " start: " + startOffset + " next: " + nextOffset + " token: \"" + token + "\"");
-			if (event.getLength() == 0 
-				&& (replacer.getNextOffset() < 0 || event.getOffset() == replacer.getNextOffset())
-				&& event.getText().length() == 1)
-				replacer.addChar(event.getOffset(), event.getText().charAt(0));
-			else if (event.getLength() == 1 
-					&& event.getText().isEmpty()
-					&& event.getOffset() == replacer.getNextOffset() - 1)
-				replacer.backspace();
-			else
+			if ((command.length == 0 && command.text != null && command.text.length() == 1)
+					|| (command.length == 1 && (command.text == null || command.text.isEmpty())))
+				handleTyping(command.length, command.offset, command.text);
+			else {
 				replacer.reset();
-		} finally {
-			doc = null;
+				if (command.text != null && !command.text.isEmpty() // ignore deletion
+						&& (command.offset != 0 || command.length < doc.getLength())) { // ignore full text replacement
+					overwriteCommand(command, command.offset, command.length, Unicode.convertToUnicode(command.text), null);
+				}
+			}
+		} catch (BadLocationException e) {
+			throw new AssertionError(e);
+	    } finally {
+			this.doc = null;
+			this.command = null;
 		}
+	}
+	
+	private void handleTyping(int length, int offset, String text) {
+		// We support only the following cases:
+		// 1. The user types a character at the end of the current token.
+		// 2. The user types backspace.
+		// Any other case (like navigating and typing elsewhere) will reset the token.
+
+//		System.out.println("handle  event: " + event
+//				+ " start: " + startOffset + " next: " + nextOffset + " token: \"" + token + "\"");
+		if ((replacer.getNextOffset() < 0 || offset == replacer.getNextOffset()) && text.length() == 1)
+			replacer.addChar(offset, text.charAt(0));
+		else if (length == 1 
+				&& text.isEmpty()
+				&& offset == replacer.getNextOffset() - 1)
+			replacer.backspace();
+		else
+			replacer.reset();
+	}
+	
+	private static DocumentCommand addCommand(DocumentCommand command, int offset, int length, String text, IDocumentListener owner) throws BadLocationException {
+//		if (intersects(command, offset, length))
+//			overwriteCommand(command, offset, length, text, owner);
+//		else
+		command.addCommand(offset, length, text, owner);
+		command.caretOffset = offset + text.length() + command.text.length(); //  + length;
+		command.doit = false; // why? because!
+		return command;
+	}
+	
+	private static DocumentCommand overwriteCommand(DocumentCommand command, int offset, int length, String text, IDocumentListener owner) throws BadLocationException {
+		command.offset = offset;
+		command.length = length;
+		command.text = text;
+		command.owner = owner;
+		return command;
+	}
+	
+	private static boolean intersects(DocumentCommand command, int offset, int length) {
+		// diff middle points if not intersecting
+		if (command.offset + command.length <= offset || offset + length <= command.offset)
+			return (2 * command.offset + command.length) - (2 * offset + length) == 0;
+		return true;
 	}
 }

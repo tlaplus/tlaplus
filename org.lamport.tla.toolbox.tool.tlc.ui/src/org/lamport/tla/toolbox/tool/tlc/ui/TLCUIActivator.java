@@ -6,6 +6,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.lamport.tla.toolbox.AbstractTLCActivator;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.pref.LoadFont;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -139,7 +140,7 @@ public class TLCUIActivator extends AbstractTLCActivator
     {
         if (courierFont == null)
         {
-            courierFont = new Font(UIHelper.getShellProvider().getShell().getDisplay(), "Courier New", 11, SWT.NORMAL);
+            courierFont = new Font(UIHelper.getShellProvider().getShell().getDisplay(), LoadFont.TLAPLUS_FONT_NAME, 11, SWT.NORMAL);
         }
         return courierFont;
     }
@@ -151,7 +152,7 @@ public class TLCUIActivator extends AbstractTLCActivator
     {
         if (outputFont == null)
         {
-            outputFont = new Font(UIHelper.getShellProvider().getShell().getDisplay(), "Courier New", 8, SWT.NORMAL);
+            outputFont = new Font(UIHelper.getShellProvider().getShell().getDisplay(), LoadFont.TLAPLUS_FONT_NAME, 8, SWT.NORMAL);
         }
         return outputFont;
     }

@@ -49,6 +49,8 @@ package tla2unicode;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -91,6 +93,12 @@ public class TLAUnicode {
 		final CharReader input = new FileCharReader(inFile.normalize().toAbsolutePath().toString());
 		final OutputFileWriter output = new OutputFileWriter(outFile.normalize().toAbsolutePath().toString());
 		convert(toU, input, output);
+	}
+	
+	public static String convert(boolean toU, String input) {
+		final StringWriter out = new StringWriter();
+    	convert(toU, new StringReader(input), out);
+    	return out.toString();
 	}
 	
 	// Main entry point

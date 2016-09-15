@@ -20,7 +20,7 @@ public final class Unicode {
 	
 	// The following two constants are used in online Unicode replacement
 	private static final String ASCII_GLYPHS = "=<>[]()+-\\/#.|~!$&*:'^";
-	private static final Set<String> IMMEDIATE_REPLACE = new HashSet<String>(Arrays.asList(
+	public static final Set<String> IMMEDIATE_REPLACE = new HashSet<String>(Arrays.asList(
 			"\\/", "/\\", "[]", "<>", "<<", ">>", "|->", "->", "<-"
 		));
 
@@ -178,7 +178,7 @@ public final class Unicode {
 	 * 
 	 * @param a the ASCII string
 	 * @return the Unicode string or {@code null} if no alternate representation
-	 *         or if {@code a} is not the canonical represeantation.
+	 *         or if {@code a} is not the canonical representation.
 	 */
 	public static String a2uc(String a) {
 		String res = a2u.get(a);
@@ -250,6 +250,10 @@ public final class Unicode {
 				out.append(c);
 		}
 		return out.toString();
+	}
+	
+	public static String convert(boolean toU, String in) {
+		return toU ? convertToUnicode(in) : convertToASCII(in);
 	}
 	
 	public static String toSuperscript(int num) {

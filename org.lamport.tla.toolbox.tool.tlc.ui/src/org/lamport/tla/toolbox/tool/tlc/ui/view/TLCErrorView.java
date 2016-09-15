@@ -59,6 +59,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.editor.basic.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
@@ -88,6 +89,7 @@ import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.st.Location;
+import tla2unicode.Unicode;
 import tlc2.output.MP;
 
 /**
@@ -1253,7 +1255,7 @@ public class TLCErrorView extends ViewPart
 		 */
 		public void update(ViewerCell cell) {
 			// labels
-			cell.setText(getColumnText(cell.getElement(), cell.getColumnIndex()));
+			cell.setText(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, getColumnText(cell.getElement(), cell.getColumnIndex())));
 			
 			// images
 			cell.setImage(getColumnImage(cell.getElement(), cell.getColumnIndex()));

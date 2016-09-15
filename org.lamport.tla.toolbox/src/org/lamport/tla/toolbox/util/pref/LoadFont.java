@@ -20,7 +20,8 @@ public final class LoadFont {
 	private LoadFont() {}
 	
 	// DejaVu License: http://dejavu-fonts.org/wiki/License
-	public static final String TLAPLUS_FONT_NAME = "DejaVuSansMono";
+	public static final String TLAPLUS_FONT_NAME = "DejaVu Sans Mono";
+	public static final String TLAPLUS_FONT_FILE_NAME = "DejaVuSansMono";
 	public static final String BOLD = "-Bold";
 	public static final String ITALIC = "-Oblique";
 	public static final String BOLD_ITALIC = "-BoldOblique";
@@ -52,7 +53,7 @@ public final class LoadFont {
 	    // Check if any of the fonts already exist in the system
 	    final FontData[] fonts = display.getFontList(null, true);
 	    for (FontData f : fonts) {
-	    	if (f.getName().equals(TLAPLUS_FONT_NAME)) {
+	    	if (f.getName().equals(TLAPLUS_FONT_FILE_NAME)) {
 	    		if (f.getStyle() == SWT.NORMAL)
 	    			hasPlain = true;
 	    		if (f.getStyle() == SWT.BOLD)
@@ -66,13 +67,13 @@ public final class LoadFont {
 	    
 	    // load fonts
 	    if (!hasPlain) 
-	    	loadFont(display, TLAPLUS_FONT_NAME + "." + TYPE);
+	    	loadFont(display, TLAPLUS_FONT_FILE_NAME + "." + TYPE);
 	    if (BOLD != null && !hasBold) 
-	    	loadFont(display, TLAPLUS_FONT_NAME + BOLD + "." + TYPE);
+	    	loadFont(display, TLAPLUS_FONT_FILE_NAME + BOLD + "." + TYPE);
 	    if (ITALIC != null && !hasItalic) 
-	    	loadFont(display, TLAPLUS_FONT_NAME + ITALIC + "." + TYPE);
+	    	loadFont(display, TLAPLUS_FONT_FILE_NAME + ITALIC + "." + TYPE);
 	    if (BOLD_ITALIC != null && !hasBoldItalic) 
-	    	loadFont(display, TLAPLUS_FONT_NAME + BOLD_ITALIC + "." + TYPE);
+	    	loadFont(display, TLAPLUS_FONT_FILE_NAME + BOLD_ITALIC + "." + TYPE);
 	}
 	
 	private static void loadFont(Display display, String fileName) {
