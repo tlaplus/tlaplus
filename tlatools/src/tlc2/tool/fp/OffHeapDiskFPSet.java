@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.LongArrays.LongComparator;
+import tlc2.tool.fp.LongArrays.PivotSelector;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import util.Assert;
 
@@ -119,6 +120,29 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 							}
 						}
 						return 0;
+					}
+				}, new PivotSelector() {
+					public long getPos(LongArray a, long left, long right) {
+						// Naively select the middle element as position as the
+						// pivot element. Given that elements in array are
+						// maximally r positions from their final position, it
+						// is going to be a good choice.
+						long mid = ((left + right) >>> 1) % a.size();
+						// The position at mid might either be empty or a
+						// secondary marked element. Thus, select the closest
+						// element to mid as pivot such that
+						// (e \in Nat \ {0}).
+						for (int i = 0; i < (mid >>> 1); i++) {
+							if (a.get(mid + i) > 0) {
+								mid = mid + i;
+								break;
+							}
+							if (a.get(mid - i) > 0) {
+								mid = mid - i;
+								break;
+							}
+						}
+						return mid;
 					}
 				});
 				
