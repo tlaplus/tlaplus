@@ -5,9 +5,14 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.function.LongBinaryOperator;
 import java.util.logging.Level;
@@ -17,6 +22,7 @@ import tlc2.output.MP;
 import tlc2.tool.fp.LongArrays.LongComparator;
 import tlc2.tool.fp.LongArrays.PivotSelector;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
+import tlc2.util.Striped;
 import util.Assert;
 
 /**
@@ -96,55 +102,45 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				final double lf = tblCnt.doubleValue() / (double) maxTblCnt;
 				final int r = reprobe.intValue();
 				final long size = array.size();
-
-				LongArrays.sort(array, 0, size - 1L + r, new LongComparator() {
-					public int compare(long fpA, long posA, long fpB, long posB) {
-						
-						// Elements not in Nat \ {0} remain at their current
-						// position.
-						if (fpA <= EMPTY || fpB <= EMPTY) {
-							return 0;
-						}
-						
-						final boolean wrappedA = indexer.getIdx(fpA) > posA;
-						final boolean wrappedB = indexer.getIdx(fpB) > posB;
-						
-						if (wrappedA == wrappedB && posA > posB) {
-							return fpA < fpB ? -1 : 1;
-						} else if ((wrappedA ^ wrappedB)) {
-							if (posA < posB && fpA < fpB) {
-								return -1;
+				
+				// Only pay the price of creating threads when array is sufficiently large.
+				if (size > 8192) {
+					final long length = (long) Math.floor(size / numThreads);
+					final Striped striped = Striped.readWriteLock(numThreads);
+					
+					final Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(numThreads);
+					for (int i = 0; i < numThreads; i++) {
+						final int offset = i;
+						tasks.add(new Callable<Void>() {
+							@Override
+							public Void call() throws Exception {
+								final long start = offset * length;
+								final long end = offset == numThreads - 1 ? size - 1L : start + length - 1L;
+								
+								striped.getAt(offset).writeLock().lock();
+								LongArrays.sort(array, start, end, getLongComparator(), getPivotSelector());
+								striped.getAt(offset).writeLock().unlock();
+								
+								striped.getAt(offset + 1 % numThreads).writeLock().lock();
+								LongArrays.sort(array, end - r, end + r, getLongComparator(), getPivotSelector());
+								striped.getAt(offset + 1 % numThreads).writeLock().unlock();
+								
+								return null;
 							}
-							if (posA > posB && fpA > fpB) {
-								return -1;
-							}
-						}
-						return 0;
+						});
 					}
-				}, new PivotSelector() {
-					public long getPos(LongArray a, long left, long right) {
-						// Naively select the middle element as position as the
-						// pivot element. Given that elements in array are
-						// maximally r positions from their final position, it
-						// is going to be a good choice.
-						long mid = ((left + right) >>> 1) % a.size();
-						// The position at mid might either be empty or a
-						// secondary marked element. Thus, select the closest
-						// element to mid as pivot such that
-						// (e \in Nat \ {0}).
-						for (int i = 0; i < (mid >>> 1); i++) {
-							if (a.get(mid + i) > 0) {
-								mid = mid + i;
-								break;
-							}
-							if (a.get(mid - i) > 0) {
-								mid = mid - i;
-								break;
-							}
-						}
-						return mid;
+					final ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+					try {
+						executorService.invokeAll(tasks);
+					} catch (InterruptedException notExpectedToHappen) {
+						notExpectedToHappen.printStackTrace();
+					} finally {
+						executorService.shutdown();
 					}
-				});
+				} else {
+					// Sort with a single thread.
+					LongArrays.sort(array, 0, size - 1L + r, getLongComparator(), getPivotSelector());
+				}
 				
 				// Write sorted table to disk in a single thread.
 				try {
@@ -165,9 +161,56 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				// before workers waiting on the barrier wake up again.
 				flusherChosen.set(false);
 			}
+
+			private LongComparator getLongComparator() {
+				return new LongComparator() {
+					public int compare(long fpA, long posA, long fpB, long posB) {
+						
+						// Elements not in Nat \ {0} remain at their current
+						// position.
+						if (fpA <= EMPTY || fpB <= EMPTY) {
+							return 0;
+						}
+						
+						final boolean wrappedA = indexer.getIdx(fpA) > posA;
+						final boolean wrappedB = indexer.getIdx(fpB) > posB;
+						
+						if (wrappedA == wrappedB && posA > posB) {
+							return fpA < fpB ? -1 : 1;
+						} else if ((wrappedA ^ wrappedB)) {
+							if (posA < posB && wrappedA) {
+								return fpA < fpB ? -1 : 0;
+							} else if (posA > posB && wrappedB && fpA < fpB) {
+								return 0;
+							}
+						}
+						return 0;
+					}
+				};
+			}
+
+			private PivotSelector getPivotSelector() {
+				return new PivotSelector() {
+					public long getPos(LongArray a, long left, long right) {
+						long mid = ((left + right) >>> 1) % a.size();
+						// Select the closest element such that \in Nat \ {0} to mid as pivot.
+						for (int i = 0; i < (mid >>> 1); i++) {
+							if (a.get(mid + i) > 0) {
+								mid = mid + i;
+								break;
+							}
+							if (a.get(mid - i) > 0) {
+								mid = mid - i;
+								break;
+							}
+						}
+						return mid;
+					}
+				};
+			}
 		});
 	}
-
+	
 	private boolean checkEvictPending() {
 		if (flusherChosen.get()) {
 			try {
