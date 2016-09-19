@@ -127,7 +127,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	protected LongAdder memHitCnt = new LongAdder();
 	protected LongAdder diskHitCnt = new LongAdder();
 	private LongAdder diskLookupCnt = new LongAdder();
-	private LongAdder diskWriteCnt = new LongAdder();
+	protected LongAdder diskWriteCnt = new LongAdder();
 	private LongAdder diskSeekCnt = new LongAdder();
 	private LongAdder diskSeekCache = new LongAdder();
 	
@@ -1063,7 +1063,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		 * associated with "this.rwLock" must be held, as must the mutex
 		 * "this.rwLock" itself.
 		 */
-		private final void mergeNewEntries() throws IOException {
+		protected void mergeNewEntries() throws IOException {
 			// Implementation Note: Unfortunately, because the RandomAccessFile
 			// class (and hence, the BufferedRandomAccessFile class) does not
 			// provide a way to re-use an existing RandomAccessFile object on

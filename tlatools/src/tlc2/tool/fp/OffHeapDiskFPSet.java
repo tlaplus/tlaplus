@@ -2,17 +2,20 @@
 package tlc2.tool.fp;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.function.LongBinaryOperator;
 import java.util.logging.Level;
@@ -20,7 +23,9 @@ import java.util.logging.Level;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.LongArrays.LongComparator;
+import tlc2.tool.fp.OffHeapDiskFPSet2.Iterator;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
+import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.Striped;
 import util.Assert;
 
@@ -56,8 +61,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				return Math.max(left, right);
 			}
 		}, 0);
-		
-		this.flusher = new OffHeapMSBFlusher();
 		
 		// If Hamming weight is 1, the logical index address can be calculated
 		// significantly faster by bit-shifting. However, with large memory
@@ -100,48 +103,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				final long insertions = tblCnt.longValue();
 				final double lf = tblCnt.doubleValue() / (double) maxTblCnt;
 				final int r = reprobe.intValue();
-				final long size = array.size();
 				
 				// Only pay the price of creating threads when array is sufficiently large.
-				if (size > 8192) {
-					final long length = (long) Math.floor(size / numThreads);
-					final Striped striped = Striped.readWriteLock(numThreads);
-					
-					final Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(numThreads);
-					for (int i = 0; i < numThreads; i++) {
-						final int offset = i;
-						tasks.add(new Callable<Void>() {
-							@Override
-							public Void call() throws Exception {
-								final long start = offset * length;
-								final long end = offset == numThreads - 1 ? size - 1L : start + length - 1L;
-								
-								striped.getAt(offset).writeLock().lock();
-								LongArrays.sort(array, start, end, getLongComparator());
-								striped.getAt(offset).writeLock().unlock();
-								
-								striped.getAt(offset + 1 % numThreads).writeLock().lock();
-								LongArrays.sort(array, end - r, end + r, getLongComparator());
-								striped.getAt(offset + 1 % numThreads).writeLock().unlock();
-								
-								return null;
-							}
-						});
-					}
-					final ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
-					try {
-						executorService.invokeAll(tasks);
-					} catch (InterruptedException notExpectedToHappen) {
-						notExpectedToHappen.printStackTrace();
-					} finally {
-						executorService.shutdown();
-					}
+				if (array.size() > 8192) {
+					OffHeapDiskFPSet.this.flusher = new ConcurrentOffHeapMSBFlusher(array, r, numThreads);
 				} else {
-					// Sort with a single thread.
-					LongArrays.sort(array, 0, size - 1L + r, getLongComparator());
+					OffHeapDiskFPSet.this.flusher = new OffHeapMSBFlusher(array, r);
 				}
 				
-				// Write sorted table to disk in a single thread.
 				try {
 					flusher.flushTable(); // Evict()
 				} catch (Exception notExpectedToHappen) {
@@ -159,34 +128,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				// Release exclusive access. It has to be done by the runnable
 				// before workers waiting on the barrier wake up again.
 				flusherChosen.set(false);
-			}
-
-			private LongComparator getLongComparator() {
-				return new LongComparator() {
-					public int compare(long fpA, long posA, long fpB, long posB) {
-						
-						// Elements not in Nat \ {0} remain at their current
-						// position.
-						if (fpA <= EMPTY || fpB <= EMPTY) {
-							return 0;
-						}
-						
-						final boolean wrappedA = indexer.getIdx(fpA) > posA;
-						final boolean wrappedB = indexer.getIdx(fpB) > posB;
-						
-						if (wrappedA == wrappedB && posA > posB) {
-							return fpA < fpB ? -1 : 1;
-						} else if ((wrappedA ^ wrappedB)) {
-							if (posA < posB && fpA < fpB) {
-								return -1;
-							}
-							if (posA > posB && fpA > fpB) {
-								return -1;
-							}
-						}
-						return 0;
-					}
-				};
 			}
 		});
 	}
@@ -468,8 +409,231 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 	//**************************** Flusher ****************************//
 	
+	private LongComparator getLongComparator() {
+		return new LongComparator() {
+			public int compare(long fpA, long posA, long fpB, long posB) {
+				
+				// Elements not in Nat \ {0} remain at their current
+				// position.
+				if (fpA <= EMPTY || fpB <= EMPTY) {
+					return 0;
+				}
+				
+				final boolean wrappedA = indexer.getIdx(fpA) > posA;
+				final boolean wrappedB = indexer.getIdx(fpB) > posB;
+				
+				if (wrappedA == wrappedB && posA > posB) {
+					return fpA < fpB ? -1 : 1;
+				} else if ((wrappedA ^ wrappedB)) {
+					if (posA < posB && fpA < fpB) {
+						return -1;
+					}
+					if (posA > posB && fpA > fpB) {
+						return -1;
+					}
+				}
+				return 0;
+			}
+		};
+	}
+
+	// Returns the number of fingerprints stored in the current file
+	private long getOffset(final long fp) {
+		if (this.index == null) {
+			return 0L;
+		}
+		//TODO
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+	
+	public class ConcurrentOffHeapMSBFlusher extends OffHeapMSBFlusher {
+		
+		private final int numThreads;
+		private final ExecutorService executorService;
+		private final Striped striped;
+		/**
+		 * The length of a single partition.
+		 */
+		private final long length;
+		private List<Future<Result>> offsets; 
+
+		public ConcurrentOffHeapMSBFlusher(final LongArray array, final int r, final int numThreads) {
+			super(array, r);
+			this.numThreads = numThreads;
+			
+			this.length = (long) Math.floor(a.size() / numThreads);
+			this.striped = Striped.readWriteLock(numThreads);
+			this.executorService = Executors.newFixedThreadPool(numThreads);
+		}
+		
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.DiskFPSet.Flusher#prepareTable()
+		 */
+		protected void prepareTable() {
+			final Collection<Callable<Result>> tasks = new ArrayList<Callable<Result>>(numThreads);
+			for (int i = 0; i < numThreads; i++) {
+				final int id = i;
+				tasks.add(new Callable<Result>() {
+					@Override
+					public Result call() throws Exception {
+						final long start = id * length;
+						final long end = id == numThreads - 1 ? a.size() - 1L : start + length - 1L;
+						
+						// Sort partition p_n while holding its
+						// corresponding lock. Sort requires exclusive
+						// access.
+						striped.getAt(id).writeLock().lock();
+						LongArrays.sort(a, start, end, getLongComparator());
+						striped.getAt(id).writeLock().unlock();
+						
+						// Sort the range between partition p_n and
+						// p_n+1 bounded by reprobe. We need no hold
+						// lock for p_n because p_n is done (except for
+						// its non-overlapping lower end).
+						striped.getAt((id + 1) % numThreads).writeLock().lock();
+						LongArrays.sort(a, end - r, end + r, getLongComparator());
+						striped.getAt((id + 1) % numThreads).writeLock().unlock();
+						
+						// Count the occupied positions for this
+						// partition. Occupied positions are those which
+						// get evicted (written to disk).
+						// This could be done as part of (insertion) sort
+						// above at the price of higher complexity. Thus,
+						// it's done here until it becomes a bottleneck.
+						long occupied = 0L;
+						for (long pos = start; pos < end; pos++) {
+							if (a.get(pos) <= EMPTY || indexer.getIdx(a.get(pos)) > pos) {
+								continue;
+							}
+							occupied = occupied + 1;
+						}
+						
+						// Determine number of elements in the old/current file.
+						long occupiedFile = getOffset(a.get(start));
+						
+						return new Result(occupied, occupiedFile);
+					}
+				});
+			}
+			try {
+				offsets = executorService.invokeAll(tasks);
+			} catch (InterruptedException notExpectedToHappen) {
+				notExpectedToHappen.printStackTrace();
+			}
+			
+			//TODO Remove check everything is sorted.
+			long e = a.get(0);
+			for(long i = 1; i < a.size(); i++) {
+				if (a.get(i) <= EMPTY || indexer.getIdx(a.get(i)) > i) {
+					continue;
+				}
+				if (e >= a.get(i)) {
+					Assert.fail(EC.SYSTEM_INDEX_ERROR, String.format("%s >= %s", e, a.get(i)));
+				}
+				e = a.get(i);
+			}
+		}
+
+		@Override
+		protected void mergeNewEntries(final RandomAccessFile[] inRAFs, final RandomAccessFile outRAF, final Iterator ignored, final int idx, final long cnt) throws IOException {
+			// Make assert in caller method happy
+			currIndex = calculateIndexLen(tblCnt.sum()) - 1;
+			
+			final Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(numThreads);
+			// Id = 0
+			tasks.add(new Callable<Void>() {
+				public Void call() throws Exception {
+					final Iterator itr = new Iterator(a, offsets.get(0).get().getTable(), indexer);
+					ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], outRAF, itr, 0, 0L);
+					return null;
+				}
+			});
+			// Id > 0
+			for (int i = 1; i < numThreads; i++) {
+				final int id = i;
+				tasks.add(new Callable<Void>() {
+					public Void call() throws Exception {
+						final RandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
+						try {
+							// Sum up the combined number of elements in
+							// lower partitions.
+							long skipTotal = 0L;
+							for (int j = 0; j < id; j++) {
+								skipTotal = skipTotal + offsets.get(j).get().getTotal();
+							}
+
+							final Result result = offsets.get(id).get();
+							tmpRAF.setLength((skipTotal + result.getTotal()) * FPSet.LongSize);
+							tmpRAF.seek(skipTotal * FPSet.LongSize);
+
+							final long table = result.getTable();
+							final Iterator itr = new Iterator(a, table, id * length, indexer);
+
+							final RandomAccessFile inRAF = inRAFs[id];
+
+							final int idx = (int) Math.floor(skipTotal / NumEntriesPerPage);
+							final long cnt = NumEntriesPerPage - (skipTotal - (idx * NumEntriesPerPage));
+							ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAF, tmpRAF, itr, idx + 1, cnt);
+						} finally {
+							tmpRAF.close();
+						}
+						return null;
+					}
+				});
+			}
+			// Combine the callable results.
+			try {
+				executorService.invokeAll(tasks);
+			} catch (InterruptedException notExpectedToHappen) {
+				notExpectedToHappen.printStackTrace();
+			} finally {
+				executorService.shutdown();
+			}
+			
+			//TODO Remove check
+			for (int i = 1; i < index.length; i++) {
+				if(index[i-1] >= index[i]) {
+					Assert.fail(EC.SYSTEM_INDEX_ERROR, String.format("%s >= %s", index[i-1], index[i]));
+				}
+			}
+		}
+		
+		private class Result {
+			private final long occupiedTable;
+			private final long occupiedDisk;
+			
+			public Result(long occupiedTable, long occupiedDisk) {
+				this.occupiedTable = occupiedTable;
+				this.occupiedDisk = occupiedDisk;
+			}
+			public long getTable() {
+				return occupiedTable;
+			}
+			public long getTotal() {
+				return occupiedDisk + occupiedTable;
+			}
+		}
+	}
+	
 	public class OffHeapMSBFlusher extends Flusher {
 		
+		protected final int r;
+		protected final LongArray a;
+
+		public OffHeapMSBFlusher(LongArray array, int reprobe) {
+			a = array;
+			r = reprobe;
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.DiskFPSet.Flusher#prepareTable()
+		 */
+		protected void prepareTable() {
+			super.prepareTable();
+			// Sort with a single thread.
+			LongArrays.sort(a, 0, a.size() - 1L + r, getLongComparator());
+		}
+
 		/* (non-Javadoc)
 		 * @see tlc2.tool.fp.MSBDiskFPSet#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
@@ -478,19 +642,33 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			final long buffLen = tblCnt.sum();
 			final Iterator itr = new Iterator(array, buffLen, indexer);
 
-			// Precompute the maximum value of the new file. DiskFPSet#writeFP
-			// updates the index on the fly.
 			final int indexLen = calculateIndexLen(buffLen);
 			index = new long[indexLen];
-			currIndex = 0;
-			counter = 0;
+			mergeNewEntries(inRAFs, outRAF, itr, 0, 0L);
+
+			// currIndex is amount of disk writes
+			Assert.check(currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
+
+			// maintain object invariants
+			fileCnt += buffLen;
+		}
+
+		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF, Iterator itr, int currIndex,
+				long counter) throws IOException {
+			inRAFs[0].seek(0);
+			mergeNewEntries(inRAFs[0], outRAF, itr, currIndex, counter);
+		}
+
+		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF, final Iterator itr, final int idx, final long cnt) throws IOException {
+			int currIndex = idx;
+			long counter = cnt;
 
 			// initialize positions in "buff" and "inRAF"
 			long value = 0L; // initialize only to make compiler happy
 			boolean eof = false;
 			if (fileCnt > 0) {
 				try {
-					value = inRAFs[0].readLong();
+					value = inRAF.readLong();
 				} catch (EOFException e) {
 					eof = true;
 				}
@@ -503,9 +681,16 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			long fp = itr.next();
 			while (!eof || !eol) {
 				if ((value < fp || eol) && !eof) {
-					writeFP(outRAF, value);
+					outRAF.writeLong(value);
+					diskWriteCnt.increment();
+					// update in-memory index file
+					if (counter == 0) {
+						index[currIndex++] = value;
+						counter = NumEntriesPerPage;
+					}
+					counter--;
 					try {
-						value = inRAFs[0].readLong();
+						value = inRAF.readLong();
 					} catch (EOFException e) {
 						eof = true;
 					}
@@ -518,7 +703,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						//		String.valueOf(value));
 						MP.printWarning(EC.TLC_FP_VALUE_ALREADY_ON_DISK, String.valueOf(value));
 					}
-					writeFP(outRAF, fp);
+					outRAF.writeLong(fp);
+					diskWriteCnt.increment();
+					// update in-memory index file
+					if (counter == 0) {
+						index[currIndex++] = fp;
+						counter = NumEntriesPerPage;
+					}
+					counter--;
 					// we used one fp up, thus move to next one
 					try {
 						fp = itr.next();
@@ -529,19 +721,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					}
 				}
 			}
-
-			// Update the last element in index with the large one of the
-			// current largest element of itr and the previous largest element.
-			index[indexLen - 1] = Math.max(fp, index[index.length - 1]);
-
 			// both sets used up completely
 			Assert.check(eof && eol, EC.GENERAL);
-
-			// currIndex is amount of disk writes
-			Assert.check(currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
-
-			// maintain object invariants
-			fileCnt += buffLen;
+			
+			if (currIndex == index.length - 1) {
+				// Update the last element in index with the large one of the
+				// current largest element of itr and the previous largest element.
+				index[index.length - 1] = fp;
+			}
 		}
 	}
 	
@@ -558,9 +745,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		private long elementsRead = 0L;
 		
 		public Iterator(final LongArray array, final long elements, final Indexer indexer) {
+			this(array, elements, 0L, indexer);
+		}
+		
+		public Iterator(final LongArray array, final long elements, final long start, final Indexer indexer) {
 			this.array = array;
 			this.elements = elements;
 			this.indexer = indexer;
+			this.pos = start;
 		}
 
 		/**
