@@ -8,7 +8,6 @@ import static tlc2.tool.fp.OffHeapDiskFPSet.EMPTY;
 import org.junit.Test;
 
 import tlc2.tool.fp.LongArrays.LongComparator;
-import tlc2.tool.fp.LongArrays.PivotSelector;
 
 public class LongArraysTest {
 
@@ -329,22 +328,6 @@ public class LongArraysTest {
 				} else {
 					return 1;
 				}
-			}
-		}, new PivotSelector() {
-			public long getPos(LongArray a, long left, long right) {
-				long mid = ((left + right) >>> 1)  % a.size();
-				// Select the closest element such that \in Nat \ {0} to mid as pivot.
-				for (int i = 0; i < (mid >>> 1); i++) {
-					if (a.get(mid + i) > 0) {
-						mid = mid + i;
-						break;
-					}
-					if (a.get(mid - i) > 0) {
-						mid = mid - i;
-						break;
-					}
-				}
-				return mid;
 			}
 		});
 

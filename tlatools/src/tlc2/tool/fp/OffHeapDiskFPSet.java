@@ -20,7 +20,6 @@ import java.util.logging.Level;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.LongArrays.LongComparator;
-import tlc2.tool.fp.LongArrays.PivotSelector;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import tlc2.util.Striped;
 import util.Assert;
@@ -118,11 +117,11 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 								final long end = offset == numThreads - 1 ? size - 1L : start + length - 1L;
 								
 								striped.getAt(offset).writeLock().lock();
-								LongArrays.sort(array, start, end, getLongComparator(), getPivotSelector());
+								LongArrays.sort(array, start, end, getLongComparator());
 								striped.getAt(offset).writeLock().unlock();
 								
 								striped.getAt(offset + 1 % numThreads).writeLock().lock();
-								LongArrays.sort(array, end - r, end + r, getLongComparator(), getPivotSelector());
+								LongArrays.sort(array, end - r, end + r, getLongComparator());
 								striped.getAt(offset + 1 % numThreads).writeLock().unlock();
 								
 								return null;
@@ -139,7 +138,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					}
 				} else {
 					// Sort with a single thread.
-					LongArrays.sort(array, 0, size - 1L + r, getLongComparator(), getPivotSelector());
+					LongArrays.sort(array, 0, size - 1L + r, getLongComparator());
 				}
 				
 				// Write sorted table to disk in a single thread.
@@ -178,33 +177,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						if (wrappedA == wrappedB && posA > posB) {
 							return fpA < fpB ? -1 : 1;
 						} else if ((wrappedA ^ wrappedB)) {
-							if (posA < posB && wrappedA) {
-								return fpA < fpB ? -1 : 0;
-							} else if (posA > posB && wrappedB && fpA < fpB) {
-								return 0;
+							if (posA < posB && fpA < fpB) {
+								return -1;
+							}
+							if (posA > posB && fpA > fpB) {
+								return -1;
 							}
 						}
 						return 0;
-					}
-				};
-			}
-
-			private PivotSelector getPivotSelector() {
-				return new PivotSelector() {
-					public long getPos(LongArray a, long left, long right) {
-						long mid = ((left + right) >>> 1) % a.size();
-						// Select the closest element such that \in Nat \ {0} to mid as pivot.
-						for (int i = 0; i < (mid >>> 1); i++) {
-							if (a.get(mid + i) > 0) {
-								mid = mid + i;
-								break;
-							}
-							if (a.get(mid - i) > 0) {
-								mid = mid - i;
-								break;
-							}
-						}
-						return mid;
 					}
 				};
 			}

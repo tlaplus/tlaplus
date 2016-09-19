@@ -6,71 +6,26 @@ public class LongArrays {
 	/**
 	 * Sorts the specified range of the array.
 	 */
-	public static void sort(final LongArray a, final long left, final long right, final LongComparator cmp,
-			final PivotSelector ps) {
+	public static void sort(final LongArray a, final long left, final long right, final LongComparator cmp) {
 		final long size = a.size();
 
-		// Use insertion sort for small arrays.
-		if (size < 47) {
-			//+++++++ Insertions sort +++++++//
-			for (long i = left, j = i; i < right; j = ++i) {
-				final long lo = (i + 1) % size;
-				final long ai = a.get(lo);
-				while (cmp.compare(ai, lo, a.get(j % size), j % size) <= -1) {
-					a.set((j + 1) % size, a.get(j % size));
-					if (j-- == left) {
-						break;
-					}
-				}
-				a.set((j + 1) % size, ai);
-			}
-		} else {
-			// ++++++ Quicksort ++++++//
-			final long pivotPos = ps.getPos(a, left, right);
-			final long pivot = a.get(pivotPos);
-
-			long i = left;
-			long j = right;
-			while (i <= j) {
-				while (cmp.compare(a.get(i % size), i % size, pivot, pivotPos % size) <= 0 && i < right) {
-					i++;
-				}
-				while (cmp.compare(a.get(j % size), j % size, pivot, pivotPos % size) >= 0 && j > left) {
-					j--;
-				}
-
-				if (i < j) {
-					// Only swap when needed.
-					a.swap(i % size, j % size);
-					i++;
-					j--;
-				} else if (i == j) {
-					i++;
-					j--;
+		//+++++++ Insertions sort +++++++//
+		for (long i = left, j = i; i < right; j = ++i) {
+			final long lo = (i + 1) % size;
+			final long ai = a.get(lo);
+			while (cmp.compare(ai, lo, a.get(j % size), j % size) <= -1) {
+				a.set((j + 1) % size, a.get(j % size));
+				if (j-- == left) {
+					break;
 				}
 			}
-			// Recurse.
-			if (left < i) {
-				sort(a, left, j, cmp, ps);
-			}
-			if (i < right) {
-				sort(a, i, right, cmp, ps);
-			}
+			a.set((j + 1) % size, ai);
 		}
 	}
 	
 	public static class LongComparator {
 		public int compare(long lo, long loPos, long hi, long hiPos) {
 			return 0;
-		}
-	}
-	
-	public static class PivotSelector {
-		/**
-		 * @return The position of the selected pivot element in a.
-		 */
-		public long getPos(LongArray a, long left, long right) {
-			return ((left + right) >>> 1) % a.size(); // The midpoint
 		}
 	}
 
