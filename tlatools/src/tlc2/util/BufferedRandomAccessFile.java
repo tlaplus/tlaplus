@@ -282,9 +282,13 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
             if (this.curr == this.hi) return -1;
         }
         // Assert.check(this.curr < this.hi);
-        byte res = this.buff[(int)(this.curr - this.lo)];
-        this.curr++;
-        return ((int)res) & 0xFF; // convert byte -> int
+        try {
+        	byte res = this.buff[(int)(this.curr - this.lo)];
+        	this.curr++;
+        	return ((int)res) & 0xFF; // convert byte -> int
+        } catch (ArrayIndexOutOfBoundsException e) {
+        	throw new IOException("Read past end of file (increase with setLength)?", e);
+        }
     }
     
     /* overrides RandomAccessFile.read(byte[]) */
@@ -351,9 +355,13 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
             }
         }
         // Assert.check(this.curr < this.hi);
-        this.buff[(int)(this.curr - this.lo)] = (byte)b;
-        this.curr++;
-        this.dirty = true;
+        try {
+        	this.buff[(int)(this.curr - this.lo)] = (byte)b;
+        	this.curr++;
+        	this.dirty = true;
+        } catch (ArrayIndexOutOfBoundsException e) {
+        	throw new IOException("Wrote past end of file (increase with setLength)?", e);
+        }
     }
     
     /* overrides RandomAccessFile.write(byte[]) */
@@ -449,6 +457,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     System.err.println("len = " + braf.length() + ", pos = " + braf.getFilePointer());
     braf.writeLong(x); braf.writeLong(x); braf.writeLong(x);
     System.err.println("len = " + braf.length() + ", pos = " + braf.getFilePointer());
+    braf.close();
   }
   
 }
