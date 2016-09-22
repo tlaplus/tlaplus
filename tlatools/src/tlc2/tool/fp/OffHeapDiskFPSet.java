@@ -437,13 +437,83 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		};
 	}
 
-	// Returns the number of fingerprints stored in the current file
-	private long getOffset(final long fp) {
+	/**
+	 * Returns the number of fingerprints stored on disk in the range lo,hi.
+	 */
+	private long getOffset(final int id, final long lo, final long hi) throws IOException {
 		if (this.index == null) {
 			return 0L;
 		}
-		//TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+		
+		final long lo0 = lo & FLUSHED_MASK;
+		final long hi0 = hi & FLUSHED_MASK;
+		return getOffset(id, hi0) - getOffset(id, lo0);
+	}
+	
+	/**
+	 * The number of fingerprints stored on disk smaller than fp.
+	 */
+	private long getOffset(final int id, final long fp) throws IOException {
+		final int indexLength = this.index.length;
+		int loPage = 0, hiPage = indexLength - 1;
+		long loVal = this.index[loPage];
+		long hiVal = this.index[hiPage];
+
+		if (fp <= loVal) {
+			return 0L;
+		}
+		if (fp >= hiVal) {
+			return indexLength * NumEntriesPerPage;
+		}
+		// See DiskFPSet#diskLookup for comments.
+		
+		// Lookup the corresponding disk page in index.
+		final double dfp = (double) fp;
+		while (loPage < hiPage - 1) {
+			final double dhi = (double) hiPage;
+			final double dlo = (double) loPage;
+			final double dhiVal = (double) hiVal;
+			final double dloVal = (double) loVal;
+			int midPage = (loPage + 1) + (int) ((dhi - dlo - 1.0) * (dfp - dloVal) / (dhiVal - dloVal));
+			if (midPage == hiPage) {
+				midPage--;
+			}
+			final long v = this.index[midPage];
+			if (fp < v) {
+				hiPage = midPage;
+				hiVal = v;
+			} else if (fp > v) {
+				loPage = midPage;
+				loVal = v;
+			} else {
+				return midPage * NumEntriesPerPage;
+			}
+		}
+		// no page is in between loPage and hiPage at this point
+		Assert.check(hiPage == loPage + 1, EC.SYSTEM_INDEX_ERROR);
+
+		// Read the disk page and try to find the given fingerprint or the next
+		// smaller one. Calculate its offset in file.
+		long midEntry = -1L;
+		long loEntry = ((long) loPage) * NumEntriesPerPage;
+		long hiEntry = ((loPage == indexLength - 2) ? this.fileCnt - 1 : ((long) hiPage) * NumEntriesPerPage);
+		final BufferedRandomAccessFile raf = this.braf[id];
+		while (loEntry < hiEntry) {
+			midEntry = calculateMidEntry(loVal, hiVal, dfp, loEntry, hiEntry);
+			raf.seek(midEntry * LongSize);
+			final long v = raf.readLong();
+
+			if (fp < v) {
+				hiEntry = midEntry;
+				hiVal = v;
+			} else if (fp > v) {
+				loEntry = midEntry + 1;
+				loVal = v;
+			} else {
+				break;
+			}
+		}
+		return midEntry;
 	}
 	
 	public class ConcurrentOffHeapMSBFlusher extends OffHeapMSBFlusher {
@@ -509,7 +579,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						}
 						
 						// Determine number of elements in the old/current file.
-						long occupiedFile = getOffset(a.get(start));
+						long occupiedFile = getOffset(id, a.get(start), a.get(end));
 						
 						return new Result(occupied, occupiedFile);
 					}

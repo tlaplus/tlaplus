@@ -34,9 +34,13 @@ import static tlc2.tool.fp.OffHeapDiskFPSet.EMPTY;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.junit.Test;
 
@@ -146,9 +150,7 @@ public class OffHeapDiskFPSetTest {
 		// Insert n randomly choosen positive longs.
 		Random random = new Random(rgenseed);
 		for (int i = 0; i < length / 2; i++) {
-			final long fp = (((long) random.nextInt(Integer.MAX_VALUE - 1) + 1) << 32)
-					| (random.nextInt() & 0xffffffffL);
-			assertFalse(fpSet.put(fp));
+			assertFalse(fpSet.put(getFingerprint(random)));
 		}
 
 		// Get the current content of LongArray for later comparison of special elements.
@@ -183,8 +185,7 @@ public class OffHeapDiskFPSetTest {
 		
 		random = new Random(rgenseed);
 		for (int i = 0; i < length / 2; i++) {
-			final long fp = (((long) random.nextInt(Integer.MAX_VALUE - 1) + 1) << 32)
-					| (random.nextInt() & 0xffffffffL);
+			final long fp = getFingerprint(random);
 			assertTrue(String.format("Failed to find fp %s/%s with seed %sL and length %s.\n\nexpected: %s\n\nactual: %s",
 					new Object[] { fp, (fp | MARK_FLUSHED), rgenseed, length, Arrays.toString(expected),
 							actual.toString() }),
@@ -206,8 +207,7 @@ public class OffHeapDiskFPSetTest {
 		// fingerprints.
 		random = new Random(rgenseed);
 		for (int i = 0; i < length / 2; i++) {
-			final long fp = (((long) random.nextInt(Integer.MAX_VALUE - 1) + 1) << 32)
-					| (random.nextInt() & 0xffffffffL);
+			final long fp = getFingerprint(random);
 			assertTrue(String.format("Failed to find fp %s/%s with seed %sL and length %s.\n\nexpected: %s\n\nactual: %s",
 					new Object[] { fp, (fp | MARK_FLUSHED), rgenseed, length, Arrays.toString(expected),
 							actual.toString() }),
@@ -215,5 +215,67 @@ public class OffHeapDiskFPSetTest {
 		}
 		
 		fpSet.close();
+	}
+	
+	@Test
+	public void testOffset1Page() throws IOException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		final long length = DiskFPSet.NumEntriesPerPage;
+		doTestOffset(length, 1474536306841L);
+	}
+	
+	@Test
+	public void testOffset3Page() throws IOException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		long length = DiskFPSet.NumEntriesPerPage * 3L;
+		doTestOffset(length, 1474536306841L);
+	}
+	
+	@Test
+	public void testOffset5Page() throws IOException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		long length = DiskFPSet.NumEntriesPerPage * 5L;
+		doTestOffset(length, 1474536306841L);
+	}
+	
+	@Test
+	public void testOffset9Page() throws IOException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		long length = DiskFPSet.NumEntriesPerPage * 9L;
+		doTestOffset(length, 1474536306841L);
+	}
+
+	private void doTestOffset(long length, long rgenseed) throws RemoteException, IOException, NoSuchMethodException,
+			IllegalAccessException, InvocationTargetException {
+		new File(tmpdir).mkdirs();
+		
+		final DummyFPSetConfiguration fpSetConfig = new DummyFPSetConfiguration();
+		fpSetConfig.setMemoryInFingerprintCnt(length);
+		
+		final OffHeapDiskFPSet fpSet = new OffHeapDiskFPSet(fpSetConfig);
+		fpSet.init(1, tmpdir, filename);
+
+		final SortedSet<Long> longs = new TreeSet<Long>();
+		
+		// Insert n randomly choosen positive longs.
+		Random random = new Random(rgenseed);
+		for (int i = 0; i < length / 2; i++) {
+			long fingerprint = getFingerprint(random);
+			assertFalse(fpSet.put(fingerprint));
+			longs.add(fingerprint);
+		}
+		fpSet.forceFlush();
+		long fingerprint = getFingerprint(random);
+		assertFalse(fpSet.put(fingerprint));
+		
+		final Method field = OffHeapDiskFPSet.class.getDeclaredMethod("getOffset", new Class[] {int.class, long.class});
+		field.setAccessible(true);
+		
+		for (long i = 0L; i < longs.size(); i++) {
+			long fp = longs.first();
+			assertEquals(String.format("Length: %s with seed: %s", length, rgenseed), i , field.invoke(fpSet, 0, fp));
+			longs.remove(fp);
+		}
+	}
+
+	private static long getFingerprint(Random random) {
+		final long fp = (((long) random.nextInt(Integer.MAX_VALUE - 1) + 1) << 32) | (random.nextInt() & 0xffffffffL);
+		return fp;
 	}
 }
