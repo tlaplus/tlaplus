@@ -23,7 +23,6 @@ import java.util.logging.Level;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.LongArrays.LongComparator;
-import tlc2.tool.fp.OffHeapDiskFPSet2.Iterator;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.Striped;
@@ -591,24 +590,25 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				notExpectedToHappen.printStackTrace();
 			}
 			
-			//TODO Remove check everything is sorted.
+			assert checkArray(a, indexer);
+		}
+		
+		private boolean checkArray(final LongArray anArray, final Indexer anIndexer) {
 			long e = a.get(0);
 			for(long i = 1; i < a.size(); i++) {
 				if (a.get(i) <= EMPTY || indexer.getIdx(a.get(i)) > i) {
 					continue;
 				}
 				if (e >= a.get(i)) {
-					Assert.fail(EC.SYSTEM_INDEX_ERROR, String.format("%s >= %s", e, a.get(i)));
+					return false;
 				}
 				e = a.get(i);
 			}
+			return true;
 		}
 
 		@Override
 		protected void mergeNewEntries(final RandomAccessFile[] inRAFs, final RandomAccessFile outRAF, final Iterator ignored, final int idx, final long cnt) throws IOException {
-			// Make assert in caller method happy
-			currIndex = calculateIndexLen(tblCnt.sum()) - 1;
-			
 			final Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(numThreads);
 			// Id = 0
 			tasks.add(new Callable<Void>() {
@@ -660,12 +660,16 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				executorService.shutdown();
 			}
 			
-			//TODO Remove check
+			assert checkIndex(index);
+		}
+		
+		private boolean checkIndex(long[] idx) {
 			for (int i = 1; i < index.length; i++) {
 				if(index[i-1] >= index[i]) {
-					Assert.fail(EC.SYSTEM_INDEX_ERROR, String.format("%s >= %s", index[i-1], index[i]));
+					return false;
 				}
 			}
+			return true;
 		}
 		
 		private class Result {
@@ -715,9 +719,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			final int indexLen = calculateIndexLen(buffLen);
 			index = new long[indexLen];
 			mergeNewEntries(inRAFs, outRAF, itr, 0, 0L);
-
-			// currIndex is amount of disk writes
-			Assert.check(currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
 
 			// maintain object invariants
 			fileCnt += buffLen;
