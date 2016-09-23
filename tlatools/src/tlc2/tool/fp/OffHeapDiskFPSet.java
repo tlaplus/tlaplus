@@ -630,6 +630,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				tasks.add(new Callable<Void>() {
 					public Void call() throws Exception {
 						final RandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
+						tmpRAF.setLength(outRAF.length());
 						try {
 							// Sum up the combined number of elements in
 							// lower partitions.
@@ -640,7 +641,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 							// Set offsets into the out (tmp) file.
 							final Result result = offsets.get(id).get();
-							tmpRAF.setLength((skipTotal + result.getTotal()) * FPSet.LongSize);
 							tmpRAF.seek(skipTotal * FPSet.LongSize);
 
 							// Set offset and the number of elements the
