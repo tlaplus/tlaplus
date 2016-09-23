@@ -585,9 +585,22 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						// This could be done as part of (insertion) sort
 						// above at the price of higher complexity. Thus,
 						// it's done here until it becomes a bottleneck.
+						final long limit = id == numThreads - 1 ? end + r : end;
 						long occupied = 0L;
-						for (long pos = start; pos < end; pos++) {
-							if (a.get(pos) <= EMPTY || indexer.getIdx(a.get(pos)) > pos) {
+						for (long pos = start; pos < limit; pos++) {
+							final long fp = a.get(pos % a.size());
+							if (fp <= EMPTY) {
+								continue;
+							}
+							final long idx = indexer.getIdx(fp);
+							if (idx > pos) {
+								// Ignore the elements that wrapped around the
+								// end when scanning the first partition.
+								continue;
+							}
+							if (idx + r < pos) {
+								// Ignore the elements of the first partition
+								// when wrapping around for the last partition.
 								continue;
 							}
 							occupied = occupied + 1L;
