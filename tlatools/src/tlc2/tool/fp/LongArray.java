@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -57,6 +58,17 @@ public final class LongArray {
 		// (see FP64).
 		Assert.check(this.unsafe.addressSize() == (Long.SIZE / 8), EC.GENERAL);
 		baseAddress = this.unsafe.allocateMemory(positions << logAddressSize);
+	}
+	
+	LongArray(final Collection<Long> from) {
+		this(from.size());
+		
+		final Iterator<Long> itr = from.iterator();
+		long i = 0L;
+		while(itr.hasNext()) {
+			Long next = itr.next();
+			set(i++, next);
+		}
 	}
 
 	/**

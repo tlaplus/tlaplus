@@ -4,10 +4,15 @@ package tlc2.tool.fp;
 public class LongArrays {
 
 	/**
-	 * Sorts the specified range of the array.
+	 * Sorts the specified range [left,right] of the array. In other words,
+	 * sorts the elements from the array index <code>left</code> to index
+	 * <code>right</code>.
 	 */
 	public static void sort(final LongArray a, final long left, final long right, final LongComparator cmp) {
 		final long size = a.size();
+		if (size == 0) {
+			return;
+		}
 
 		//+++++++ Insertions sort +++++++//
 		for (long i = left, j = i; i < right; j = ++i) {
@@ -25,10 +30,19 @@ public class LongArrays {
 	
 	public static class LongComparator {
 		public int compare(long lo, long loPos, long hi, long hiPos) {
-			return 0;
+			// The default comparator ignores the positions.
+			return Long.compare(lo, hi);
 		}
 	}
+	
+	public static void sort(final LongArray a, final long left, final long right) {
+		sort(a, left, right, new LongComparator());
+	}
 
+	public static void sort(final LongArray a) {
+		sort(a, 0, a.size() - 1L, new LongComparator());
+	}
+	
 	/**
 	 * DOES NOT HANDLE LONG ARRAYS LARGER THAN INTEGER.MAX_VALUE
 	 */

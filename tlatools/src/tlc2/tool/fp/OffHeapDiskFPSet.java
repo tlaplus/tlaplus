@@ -562,7 +562,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					@Override
 					public Result call() throws Exception {
 						final long start = id * length;
-						final long end = id == numThreads - 1 ? a.size() - 1L : start + length - 1L;
+						final long end = id == numThreads - 1 ? a.size() - 1L : start + length;
 						
 						// Sort partition p_n while holding its
 						// corresponding lock. Sort requires exclusive
