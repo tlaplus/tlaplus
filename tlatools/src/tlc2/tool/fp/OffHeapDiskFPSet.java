@@ -442,9 +442,19 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	/**
 	 * Returns the number of fingerprints stored on disk in the range lo,hi.
 	 */
-	private long getOffset(final int id, final long lo, final long hi) throws IOException {
+	private long getOffset(final int id, final LongArray a, long loIdx, long hiIdx) throws IOException {
 		if (this.index == null) {
 			return 0L;
+		}
+
+		// Forward/Reverse to the first/last non-evicted/empty element.
+		long lo = a.get(loIdx);
+		while (lo <= EMPTY) {
+			lo = a.get(++loIdx);
+		}
+		long hi = a.get(hiIdx);
+		while (lo <= EMPTY) {
+			hi = a.get(--hiIdx);
 		}
 		
 		final long lo0 = lo & FLUSHED_MASK;
@@ -488,7 +498,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				loPage = midPage;
 				loVal = v;
 			} else {
-				return midPage * NumEntriesPerPage;
+				return (midPage * 1L) * (NumEntriesPerPage * 1L);
 			}
 		}
 		// no page is in between loPage and hiPage at this point
@@ -580,11 +590,11 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 							if (a.get(pos) <= EMPTY || indexer.getIdx(a.get(pos)) > pos) {
 								continue;
 							}
-							occupied = occupied + 1;
+							occupied = occupied + 1L;
 						}
 						
 						// Determine number of elements in the old/current file.
-						long occupiedFile = getOffset(id, a.get(start), a.get(end));
+						long occupiedFile = getOffset(id, a, start, end);
 						
 						return new Result(occupied, occupiedFile);
 					}
