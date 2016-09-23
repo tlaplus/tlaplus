@@ -788,11 +788,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					}
 					counter--;
 					// we used one fp up, thus move to next one
-					try {
+					if (itr.hasNext()) {
 						fp = itr.next();
-					} catch (NoSuchElementException e) {
-						// has read all elements?
-						Assert.check(!itr.hasNext(), EC.GENERAL);
+					} else {
 						eol = true;
 					}
 				}
