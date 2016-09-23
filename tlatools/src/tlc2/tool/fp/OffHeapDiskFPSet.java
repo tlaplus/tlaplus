@@ -856,18 +856,24 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		public long next() {
 			long elem = EMPTY;
 			do {
-				long position = pos % array.size();
+				final long position = pos % array.size();
 				elem = array.get(position);
-				pos = pos + 1L;
-				if (elem <= EMPTY) {
+				if (elem == EMPTY) {
+					pos = pos + 1L;
+					continue;
+				}
+				if (elem < EMPTY) {
+					pos = pos + 1L;
 					continue;
 				}
 				final long baseIdx = indexer.getIdx(elem);
 				if (baseIdx > pos) {
 					// This branch should only be active for thread with id 0.
 					assert canWrap == WRAP.ALLOWED;
+					pos = pos + 1L;
 					continue;
 				}
+				pos = pos + 1L;
 				// mark elem in array as being evicted.
 				array.set(position, elem | MARK_FLUSHED);
 				elementsRead = elementsRead + 1L;
