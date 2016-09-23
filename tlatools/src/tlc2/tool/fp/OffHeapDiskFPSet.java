@@ -395,7 +395,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 		 * @see tlc2.tool.fp.MSBDiskFPSet#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
 		@Override
-		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
+		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
 			final long buffLen = tblCnt.get();
 			ByteBufferIterator itr = new ByteBufferIterator(array, collisionBucket, buffLen);
 
@@ -416,7 +416,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 			boolean eof = false;
 			if (fileCnt > 0) {
 				try {
-					value = inRAF.readLong();
+					value = inRAFs[0].readLong();
 				} catch (EOFException e) {
 					eof = true;
 				}
@@ -431,7 +431,7 @@ public final class OffHeapDiskFPSet extends DiskFPSet implements FPSetStatistic 
 				if ((value < fp || eol) && !eof) {
 					writeFP(outRAF, value);
 					try {
-						value = inRAF.readLong();
+						value = inRAFs[0].readLong();
 					} catch (EOFException e) {
 						eof = true;
 					}

@@ -27,7 +27,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	/**
 	 * Size of a Java long in bytes
 	 */
-	protected static final int LongSize = 8;
+	protected static final long LongSize = 8;
 
 	/**
 	 * Counts the amount of states passed to the containsBlock method

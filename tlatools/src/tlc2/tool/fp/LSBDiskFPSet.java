@@ -76,7 +76,7 @@ public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 		 * @see tlc2.tool.fp.DiskFPSet.Flusher#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
 		@Override
-		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
+		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
 			final int buffLen = buff.length;
 
 			// Precompute the maximum value of the new file
@@ -97,7 +97,7 @@ public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 			boolean eof = false;
 			if (fileCnt > 0) {
 				try {
-					value = inRAF.readLong();
+					value = inRAFs[0].readLong();
 				} catch (EOFException e) {
 					eof = true;
 				}
@@ -110,7 +110,7 @@ public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 				if (value < buff[i]) {
 					writeFP(outRAF, value);
 					try {
-						value = inRAF.readLong();
+						value = inRAFs[0].readLong();
 					} catch (EOFException e) {
 						eof = true;
 					}
@@ -133,7 +133,7 @@ public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 				do {
 					writeFP(outRAF, value);
 					try {
-						value = inRAF.readLong();
+						value = inRAFs[0].readLong();
 					} catch (EOFException e) {
 						eof = true;
 					}

@@ -161,7 +161,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	static final int InitialBucketCapacity = (1 << LogMaxLoad);
 
 	/* Number of fingerprints per braf buffer. */
-	public static final int NumEntriesPerPage = 8192 / LongSize;
+	public static final int NumEntriesPerPage = 8192 / (int) LongSize;
 	
 	/**
 	 * This is (assumed to be) the auxiliary storage for a fingerprint that need
@@ -1258,12 +1258,11 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			// provide a way to re-use an existing RandomAccessFile object on
 			// a different file, this implementation must close all existing
 			// files and re-allocate new BufferedRandomAccessFile objects.
-
-			// close existing files (except brafPool[0])
 			for (int i = 0; i < braf.length; i++) {
-				braf[i].close();
+				// Seek readers to zero position.
+				braf[i].seek(0L);
 			}
-			for (int i = 1; i < brafPool.length; i++) {
+			for (int i = 0; i < brafPool.length; i++) {
 				brafPool[i].close();
 			}
 
@@ -1271,14 +1270,15 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			File tmpFile = new File(tmpFilename);
 			tmpFile.delete();
 			RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
-			RandomAccessFile raf = brafPool[0];
-			raf.seek(0);
 
 			// merge
-			mergeNewEntries(raf, tmpRAF);
-
+			mergeNewEntries(braf, tmpRAF);
+			
 			// clean up
-			raf.close();
+			for (int i = 0; i < braf.length; i++) {
+				// close existing files (except brafPool[0])
+				braf[i].close();
+			}
 			tmpRAF.close();
 			String realName = fpFilename;
 			File currFile = new File(realName);
@@ -1298,6 +1298,6 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			poolIndex = 0;
 		}
 		
-		protected abstract void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException;
+		protected abstract void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException;
 	}
 }

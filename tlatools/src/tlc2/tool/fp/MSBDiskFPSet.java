@@ -100,7 +100,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 		/* (non-Javadoc)
 		 * @see tlc2.tool.fp.DiskFPSet#mergeNewEntries(long[], int, java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
-		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF) throws IOException {
+		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
 			final long buffLen = tblCnt.get();
 			final TLCIterator itr = new TLCIterator(tbl);
 
@@ -125,7 +125,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 			boolean eof = false;
 			if (fileCnt > 0) {
 				try {
-					value = inRAF.readLong();
+					value = inRAFs[0].readLong();
 				} catch (EOFException e) {
 					eof = true;
 				}
@@ -140,7 +140,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 				if ((value < fp || eol) && !eof) {
 					writeFP(outRAF, value);
 					try {
-						value = inRAF.readLong();
+						value = inRAFs[0].readLong();
 					} catch (EOFException e) {
 						eof = true;
 					}
