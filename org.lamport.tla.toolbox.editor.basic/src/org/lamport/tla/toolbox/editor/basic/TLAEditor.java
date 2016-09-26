@@ -39,6 +39,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextListener;
@@ -54,6 +55,13 @@ import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.AnnotationModel;
+import org.eclipse.jface.text.source.AnnotationModelEvent;
+import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.jface.text.source.IAnnotationModelExtension;
+import org.eclipse.jface.text.source.IAnnotationModelExtension2;
+import org.eclipse.jface.text.source.IAnnotationModelListener;
+import org.eclipse.jface.text.source.IAnnotationModelListenerExtension;
 import org.eclipse.jface.text.source.IChangeRulerColumn;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -103,8 +111,11 @@ import org.lamport.tla.toolbox.util.UIHelper;
 
 import pcal.PCalLocation;
 import pcal.TLAtoPCalMapping;
+import tla2sany.st.Location;
+import tla2tex.Token;
 import tla2unicode.TLAUnicode;
 import tlc2.value.SetEnumValue;
+import util.UniqueString;
 
 /**
  * Basic editor for TLA+
@@ -138,6 +149,11 @@ public class TLAEditor extends TextEditor
     private ProjectionAnnotationModel annotationModel;
     // proof structure provider
     private TLAProofFoldingStructureProvider proofStructureProvider;
+    
+    // Used to map Unicode token locations to their ASCII location
+    private TLAUnicode.TokenPosition locationConverter;
+    private Document asciiDoc;
+    
 	// keeps hold of the IUndoableOperations caused by the programmatically
 	// executed doc.replace changes in doSave()
     private final List<IUndoableOperation> lastUndoOperations = new ArrayList<IUndoableOperation>(2);
@@ -205,10 +221,6 @@ public class TLAEditor extends TextEditor
     protected void doSetInput(IEditorInput input) throws CoreException {
     	super.doSetInput(input);
 //    	setUnicode0(unicode);
-    }
-    
-    public ISourceViewer getSourceViewer1() {
-    	return super.getSourceViewer();
     }
     
     /*
@@ -300,7 +312,7 @@ public class TLAEditor extends TextEditor
 			}
 		});
 		
-    	setUnicode0(unicode);
+    	this.locationConverter = setUnicode0(unicode);
     }
 
 	private IUndoContext getUndoContext() {
@@ -345,6 +357,7 @@ public class TLAEditor extends TextEditor
         this.annotationModel = viewer.getProjectionAnnotationModel();
 //        annotationModel.addAnnotationModel(IChangeRulerColumn.QUICK_DIFF_MODEL_ID, attachment);
         
+        annotationModel.addAnnotationModelListener(new AnnotationModelListener());
         // this must be instantiated after annotationModel so that it does
         // not call methods that use annotation model when the model is still null
         this.proofStructureProvider = new TLAProofFoldingStructureProvider(this);
@@ -635,16 +648,21 @@ public class TLAEditor extends TextEditor
     		return;
     	}
 
+//    	List<Position> ps1 = new ArrayList<>(positions.size());
+//    	for (Position p : positions)
+//    		ps1.add(convertPosition(false, p));
+//    	positions = ps1;
+    	
         Annotation[] annotations = new Annotation[positions.size()];
 
-        // this will hold the new annotations along
+         // this will hold the new annotations along
         // with their corresponding positions
         Map<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
 
         for (int i = 0; i < positions.size(); i++)
         {
             ProjectionAnnotation annotation = new ProjectionAnnotation();
-            newAnnotations.put(annotation, positions.get(i));
+            newAnnotations.put(annotation, convertPosition(false, positions.get(i)));
             annotations[i] = annotation;
         }
         // If this method is called too early, then annotationModel
@@ -663,8 +681,12 @@ public class TLAEditor extends TextEditor
      * @param deletions
      * @param additions
      */
-    public void modifyProjectionAnnotations(Annotation[] deletions, Map<ProjectionAnnotation, TLAProofPosition> additions)
+    public void modifyProjectionAnnotations(Annotation[] deletions, Map<ProjectionAnnotation, ? extends Position> additions)
     {
+//    	Map<ProjectionAnnotation, Position> as1 = new HashMap<>(additions.size());
+//    	for (Map.Entry<ProjectionAnnotation, TLAProofPosition> e : additions.entrySet())
+//    		as1.put(e.getKey(), convertPosition(false, e.getValue()));
+    	
         this.annotationModel.modifyAnnotations(deletions, additions, null);
     }
     
@@ -1028,30 +1050,153 @@ public class TLAEditor extends TextEditor
     	UIHelper.runUIAsync(new Runnable() {
 			@Override
 			public void run() {
-				setUnicode0(unicode);
+				boolean unicode = TLAEditor.this.unicode;
+        		TLAUnicode.TokenPosition locConverter = setUnicode0(unicode);
+        		if (unicode) {
+        			TLAEditor.this.locationConverter = locConverter;
+        		}
 			}
 		});
     }
     
+	private TLAUnicode.TokenPosition setUnicode0(boolean unicode) {
+		final IEditorInput editorInput = getEditorInput();
+		final IDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return null;
+		final IDocument doc = dp.getDocument(editorInput);
+		if (doc == null)
+			return null;
+		
+		final String orig = doc.get();
+		final StringWriter out = new StringWriter();
+    	final TLAUnicode.TokenPosition locConverter = TLAUnicode.convert(unicode, new StringReader(orig), out);
+    	doc.set(out.toString());
+    	
+    	this.asciiDoc = new Document(orig);
+    	
+    	captureUndo(1);
+    	setDirty(false);
+    	
+    	return unicode ? locConverter : null;
+	}
+	
     public boolean isUnicode() {
     	return unicode;
     }
     
-	private void setUnicode0(boolean unicode) {
-		final IEditorInput editorInput = getEditorInput();
+    public IDocument getAsciiDocument() {
+    	return isUnicode() ? asciiDoc : getDocumentProvider().getDocument(getEditorInput());
+    }
+    
+ // screen: is the given location in editor coordinates
+    public Location convertLocation(boolean screen, Location location) {
+    	if (location == null)
+    		return null;
+    	System.out.println("&&&from: " + location);
+    	if (isUnicode())
+    		location = new Location(location.source() != null ? UniqueString.uniqueStringOf(location.source()) : null, 
+        		location.beginLine(), convertColumn(screen, location.beginLine() - 1, location.beginColumn()), 
+        		location.endLine(), convertColumn(screen, location.endLine() - 1, location.endColumn()));
+    	System.out.println("&&&to: " + location);
+    	return location;
+    }
+    
+    public Position convertPosition(boolean screen, Position position) {
+    	if (position == null)
+    		return null;
+    	System.out.println("&&&from: " + position);
+    	boolean deleted = position.isDeleted;
+    	if (isUnicode()) {
+    		int offset = convertOffset(screen, position.getOffset());
+        	int end = convertOffset(screen, position.getOffset() + position.getLength());
+        	int length = end - offset;
+    		position = new Position(offset, length);
+    		if (deleted)
+    			position.delete();
+    	}
+    	System.out.println("&&&to: " + position);
+    	return position;
+    }
+    
+    private class AnnotationModelListener implements IAnnotationModelListener, IAnnotationModelListenerExtension {
+    	private boolean recursive;
+    	
+		@Override
+		public void modelChanged(AnnotationModelEvent event) {
+			if (recursive)
+				return;
+			recursive = true;
+			try {
+				final AnnotationModel am = (AnnotationModel)event.getAnnotationModel(); 
+				for (Annotation ann : event.getAddedAnnotations())
+					am.modifyAnnotationPosition(ann, convertPosition(false, am.getPosition(ann)));
+			} finally {
+				recursive = false;
+			}
+		}
+
+		@Override
+		public void modelChanged(IAnnotationModel model) {
+			throw new AssertionError("Shouldn't be called");	
+		}
+    }
+    
+ // screen: is the given offset in editor coordinates
+    public int convertOffset(boolean screen, int offset) {
+		if (!isUnicode())
+			return offset;
 		final IDocumentProvider dp = getDocumentProvider();
 		if (dp == null)
-			return;
-		final IDocument doc = dp.getDocument(editorInput);
+			return -1;
+		final IDocument doc = dp.getDocument(getEditorInput());
 		if (doc == null)
-			return;
+			return -1;
 		
-    	doc.set(TLAUnicode.convert(unicode, doc.get()));
-    	
-    	captureUndo(1);
-    	setDirty(false);
-	}
-	
+		try {
+			System.out.println("&&&from: " + offset);
+			final IDocument fromDoc = screen ? doc : asciiDoc;
+			final IDocument toDoc = !screen ? doc : asciiDoc;
+
+			final int line = fromDoc.getLineOfOffset(offset);
+			System.out.println("&&&fromLine: " + line);
+			System.out.println("&&&toLine: " + toDoc.getLineOfOffset(offset));
+			final int lineOffset = fromDoc.getLineOffset(line);
+			final int column = offset - lineOffset;
+			
+			final int lineLength = toDoc.getLineLength(line);
+			offset = toDoc.getLineOffset(line) + Math.min(locationConverter.convert(!screen, line, column), lineLength);
+			System.out.println("&&&to: " + offset);
+			return offset;
+		} catch (BadLocationException e) {
+			return -1;
+		}
+    }
+    
+    public IRegion convertRegion(boolean screen, IRegion region) {
+    	int start = convertOffset(screen, region.getOffset());
+    	int end = convertOffset(screen, region.getOffset() + region.getLength());
+    	return new Region(start, end - start);
+    }
+    
+    // screen: is the given location in editor coordinates
+    private int convertColumn(boolean screen, int line, int column) {
+		final IDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return -1;
+		final IDocument doc = dp.getDocument(getEditorInput());
+		if (doc == null)
+			return -1;
+		if (!isUnicode())
+			return column;
+		try {
+			int lineLength = doc.getLineLength(line);
+			return Math.min(locationConverter.convert(!screen, line, column), lineLength);
+		} catch (BadLocationException e) {
+			return -1;
+		}
+    }
+    
 	private void setDirty(boolean dirty) {
 		final IEditorInput editorInput = getEditorInput();
 		final IDocumentProvider dp = getDocumentProvider();

@@ -308,7 +308,7 @@ public final class Location
      */
     public final String source()
     {
-        return name.toString();
+        return name != null ? name.toString() : null;
     }
 
     /**

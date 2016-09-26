@@ -76,6 +76,8 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
@@ -93,6 +95,7 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
+import tla2tex.TLA;
 
 /**
  * A Helper for handling the RCP Objects like windows, editors and views
@@ -918,19 +921,6 @@ public class UIHelper {
 									return;
 								}
 							}
-							// we now need to convert the four coordinates of
-							// the location
-							// to an offset and length
-							final IRegion region = AdapterFactory.locationToRegion(document, location);
-							final int offset = region.getOffset();
-							int length = region.getLength();
-
-							// Hack in locationToRegion(...) which adds 1 to the
-							// length, which has already been accounted for by
-							// the jumpToPCal code, hence subtract.
-							if (jumpToPCal) {
-								length = length - 1;
-							}
 
 							// The following code sets editor to an existing
 							// IEditorPart
@@ -991,7 +981,32 @@ public class UIHelper {
 									if (editor instanceof MultiPageEditorPart) {
 										((MultiPageEditorPart) editor).setActiveEditor(textEditor);
 									}
+																		
 									// getActivePage().activate(textEditor);
+									
+									TLAEditor tlaEditor = null;
+									if (textEditor instanceof TLAEditor)
+										tlaEditor = (TLAEditor)textEditor;
+									else if (textEditor instanceof TLAEditorAndPDFViewer)
+										tlaEditor = ((TLAEditorAndPDFViewer)textEditor).getTLAEditor();
+
+									// we now need to convert the four coordinates of
+									// the location
+									// to an offset and length
+									IRegion region = AdapterFactory.locationToRegion(tlaEditor.getAsciiDocument(), location);
+									region = tlaEditor.convertRegion(false, region);
+									
+									final int offset = region.getOffset();
+									int length = region.getLength();
+
+									// Hack in locationToRegion(...) which adds 1 to the
+									// length, which has already been accounted for by
+									// the jumpToPCal code, hence subtract.
+									if (jumpToPCal) {
+										length = length - 1;
+									}
+									
+									
 									textEditor.selectAndReveal(offset, length);
 								}
 							}

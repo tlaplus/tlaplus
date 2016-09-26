@@ -77,10 +77,10 @@ public class OpenDeclarationAction extends Action implements IHyperlink
 //            spec.setOpenDeclSelection((ITextSelection) srcEditor.getSelectionProvider().getSelection());
 //        }
 
-        TLAEditorAndPDFViewer editor = (TLAEditorAndPDFViewer) UIHelper.openEditor(TLAEditorAndPDFViewer.ID,
-                new FileEditorInput((IFile) resource));
-        editor.getTLAEditor().selectAndReveal(location.getOffset(), location.getLength());
-
+        TLAEditor editor = ((TLAEditorAndPDFViewer) UIHelper.openEditor(TLAEditorAndPDFViewer.ID,
+                new FileEditorInput((IFile) resource))).getTLAEditor();
+        IRegion location1 = editor.convertRegion(false, location);
+        editor.selectAndReveal(location1.getOffset(), location1.getLength());
     }
 
     /* (non-Javadoc)

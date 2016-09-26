@@ -48,12 +48,6 @@ public class Token
   * typed, but it may also be something else.                          *
   *********************************************************************/
 
-  	public String outstring ; // used by unicode converter only
-  	/*********************************************************************
-  	* The string of the token in the output                              *
-    * typed, but it may also be something else.                          *
-    *********************************************************************/
-
     public int column ;
       /*********************************************************************
       * The column in which the first character of the token appears in    *

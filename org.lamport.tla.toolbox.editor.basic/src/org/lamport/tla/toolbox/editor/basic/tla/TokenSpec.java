@@ -152,8 +152,8 @@ public class TokenSpec
             int rightPos = tokenSpecs[i].rightPos;
             tokenSpecs[i].leftPos = leftPos + offsetOfLine;
             tokenSpecs[i].rightPos = rightPos + offsetOfLine;
-            Location location = EditorUtil.getLocationAt(document, tokenSpecs[i].leftPos, rightPos - leftPos);
-            symbol = EditorUtil.lookupOriginalSymbol(UniqueString.uniqueStringOf(tokenSpecs[i].token), moduleNode,
+            Location location = editor.convertLocation(true, EditorUtil.getLocationAt(document, tokenSpecs[i].leftPos, rightPos - leftPos));
+            symbol = EditorUtil.lookupOriginalSymbol(UniqueString.uniqueStringOf(Unicode.sym2a(tokenSpecs[i].token)), moduleNode,
                     location, null);
             if (symbol != null)
             {
@@ -171,6 +171,7 @@ public class TokenSpec
                 goodIndex = 0;
             }
         }
+
         TokenSpec result = new TokenSpec(tokenSpecs[goodIndex].token, tokenSpecs[goodIndex].leftPos,
                 tokenSpecs[goodIndex].rightPos);
         result.resolvedSymbol = symbol;

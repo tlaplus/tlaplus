@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
@@ -169,10 +170,11 @@ public class TLCUIHelper
                 Object data = range.data;
                 if (data instanceof Location)
                 {
-                    boolean jumpToSavedModule = jumpToSavedLocation((Location) data, model);
+                	Location loc = (Location) data;
+                    boolean jumpToSavedModule = jumpToSavedLocation(loc, model);
                     if (!jumpToSavedModule)
                     {
-                        UIHelper.jumpToLocation((Location) data, (trigger.stateMask & SWT.CTRL) != 0);
+                        UIHelper.jumpToLocation(loc, (trigger.stateMask & SWT.CTRL) != 0);
                     }
                 }
             }
@@ -237,19 +239,20 @@ public class TLCUIHelper
         {
             ModelEditor modelEditor = (ModelEditor) editor;
 
-            ITextEditor moduleEditor = modelEditor.getSavedModuleEditor(location.source());
+            TLAEditor moduleEditor = (TLAEditor)modelEditor.getSavedModuleEditor(location.source());
 
             if (moduleEditor != null)
             {
                 try
                 {
-                    IRegion jumpToRegion = AdapterFactory.locationToRegion(moduleEditor.getDocumentProvider()
-                            .getDocument(moduleEditor.getEditorInput()), location);
                     // bring the model editor into focus
                     UIHelper.getActivePage().activate(modelEditor);
                     // set the nested module editor as the active page in the model editor
                     modelEditor.setActiveEditor(moduleEditor);
                     // highlight the appropriate text
+                    
+                    IRegion jumpToRegion = AdapterFactory.locationToRegion(moduleEditor.getAsciiDocument(), location);
+                    jumpToRegion = moduleEditor.convertRegion(false, jumpToRegion);
                     moduleEditor.selectAndReveal(jumpToRegion.getOffset(), jumpToRegion.getLength());
                     return true;
                 } catch (BadLocationException e)

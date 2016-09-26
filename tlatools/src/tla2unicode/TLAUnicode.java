@@ -81,12 +81,18 @@ public class TLAUnicode {
 	
   	private static boolean debug = false ; // True if the -debug option is chosen.
 	
+	public static String convert(boolean toU, String input) {
+		final StringWriter out = new StringWriter();
+    	convert(toU, new StringReader(input), out);
+    	return out.toString();
+	}
+	
 	public static void convert(boolean toU, InputStream input, OutputStream output) {
 		convert(toU, new InputStreamCharReader(input), new OutputFileWriter(output, null));
 	}
 	
-	public static void convert(boolean toU, Reader input, Writer output) {
-		convert(toU, new InputStreamCharReader(input), new OutputFileWriter(output, null));
+	public static TokenPosition convert(boolean toU, Reader input, Writer output) {
+		return convert(toU, new InputStreamCharReader(input), new OutputFileWriter(output, null));
 	}
 	
 	public static void convert(boolean toU, Path inFile, Path outFile) {
@@ -95,14 +101,8 @@ public class TLAUnicode {
 		convert(toU, input, output);
 	}
 	
-	public static String convert(boolean toU, String input) {
-		final StringWriter out = new StringWriter();
-    	convert(toU, new StringReader(input), out);
-    	return out.toString();
-	}
-	
 	// Main entry point
-	public static void convert(boolean toU, CharReader input, OutputFileWriter output) {
+	public static TokenPosition convert(boolean toU, CharReader input, OutputFileWriter output) {
 		BuiltInSymbols.Initialize(); // Initialize class BuiltInSymbols
 
 		// Read and tokenize the spec.
@@ -122,8 +122,9 @@ public class TLAUnicode {
 		// Debug.print2DArray(spec, "align");
 		
 		convert(toU, spec, noCommentSpec, output); // Write output
+		return new TokenPosition(toU, spec);
 	}
-
+	
 	private static void convert(boolean toU, Token[][] spec, Token[][] noCommentSpec, OutputFileWriter writer) {
 		// This method performs the actual conversion
 		
@@ -353,6 +354,85 @@ public class TLAUnicode {
 		return lines.toArray(new Token[0][]);
 	}
 	
+	/*
+	 * This class converts column coordinates between an original and a converted spec
+	 */
+	public static class TokenPosition {
+		private final boolean toU;
+		private final Token[][] spec;
+		
+		TokenPosition(boolean toU, Token[][] spec) {
+			this.toU = toU;
+			this.spec = spec;
+		}
+		
+		// A coordinates to U coordinates
+		public int a2u(int line, int column) {
+			return convert0(toU, line, column);
+		}
+		
+		// U coordinates to A coordinates
+		public int u2a(int line, int column) {
+			return convert0(!toU, line, column);
+		}
+		
+		public int convert(boolean toU, int line, int column) {
+			return convert0(toU == this.toU, line, column);
+		}
+		
+		private int convert0(boolean orig, int line, int column) {
+			final boolean from = orig;
+			final boolean to = !orig;
+			
+			final int toki = findCandidate(from, line, column);
+			if (toki < 0)
+				return column;
+			final Token candidate = spec[line][toki];
+			
+			System.out.println("@@Candidate: " + candidate);
+			
+			final int col0 = col(from, candidate);
+			final int col1 = col(to, candidate);
+			final int width0 = width(from, candidate);
+			final int width1 = width(to, candidate);
+
+			if (column < col0) // first token
+				return Math.max(0, col0 - column);
+			
+			if (column > col0 + width0) { // we're to the right of a token
+				if (toki == spec[line].length - 1)
+					return col1 + width1 + (column - (col0 + width0));
+				
+				return Math.min(col1 + width1 + (column - (col0 + width0)), col(to, spec[line][toki + 1]) - 1);
+			}
+			
+			return Math.min(col1 + width1, col1 + (column - col0));
+		}
+		
+		private int findCandidate(boolean orig, int line, int column) {
+			int i;
+			for (i=0; i < spec[line].length; i++) {
+				if (col(orig, spec[line][i]) > column)
+					break;
+			}
+			return i == 0 ? (spec[line].length == 0 ? -1 : 0) : i - 1; 
+		}
+		
+		// orig - original column
+		private static int col(boolean orig, Token t) {
+			return !orig && t.outcolumn >= 0 ? t.outcolumn : t.column;
+		}
+		
+		private int width(boolean orig, Token t) {
+			if (!orig) {
+				String converted;
+				converted = toU ? Unicode.a2u(t.string) : Unicode.u2a(t.string);
+				if (converted != null)
+					return converted.length();
+			}
+			return t.getWidth();
+		}
+	}
 	// ----------- COMMAND LINE PARSING ---------------------------------------
 	
   	private static boolean toU; // True for ASCII -> Unicode, false for Unicode -> ASCII

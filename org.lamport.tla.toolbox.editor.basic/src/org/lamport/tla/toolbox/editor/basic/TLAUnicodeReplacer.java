@@ -39,7 +39,7 @@ public class TLAUnicodeReplacer {
 		if (element instanceof ISourceViewer)
 			return (SourceViewer) element;
 		if (element instanceof TLAEditor)
-			return sourceViewer(((TLAEditor) element).getSourceViewer1());
+			return sourceViewer(((TLAEditor) element).publicGetSourceViewer());
 		return null;
 	}
 	

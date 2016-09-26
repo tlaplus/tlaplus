@@ -298,9 +298,13 @@ public final class Unicode {
 		}
 		
 		public final void backspace() {
-			// System.out.println("backspace  start: " + startOffset + " next: " + nextOffset + " token: \"" + token + "\"");
-			token.delete(token.length() - 1, token.length());
-			nextOffset--;
+			if (token.length() == 0)
+				reset();
+			else {
+				// System.out.println("backspace  start: " + startOffset + " next: " + nextOffset + " token: \"" + token + "\"");
+				token.delete(token.length() - 1, token.length());
+				nextOffset--;
+			}
 		}
 		
 		public final void addChar(int offset, char c) {
