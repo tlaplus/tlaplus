@@ -757,10 +757,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			mergeNewEntries(inRAFs[0], outRAF, itr, currIndex, counter);
 		}
 
-		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF, final Iterator itr, final int idx, final long cnt) throws IOException {
-			int currIndex = idx;
-			long counter = cnt;
-
+		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF, final Iterator itr, int currIndex, long counter) throws IOException {
 			// initialize positions in "buff" and "inRAF"
 			long value = 0L; // initialize only to make compiler happy
 			boolean eof = false;
