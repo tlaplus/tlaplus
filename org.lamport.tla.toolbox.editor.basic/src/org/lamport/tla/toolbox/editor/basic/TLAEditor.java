@@ -204,6 +204,8 @@ public class TLAEditor extends TextEditor
             provider.addElementStateListener(new ElementStateAdapter() {
                 public void elementDirtyStateChanged(Object element, boolean isDirty)
                 {
+                	if (contextService == null)
+                		return;
                     if (isDirty)
                     {
                         contextService.deactivateContext(contextActivation);
@@ -508,7 +510,6 @@ public class TLAEditor extends TextEditor
         
 		final TextSelection selection = (TextSelection) getSelectionProvider().getSelection();
         setUnicode0(false);
-        setDirty(true);
         super.doSave(new ProgressMonitorDecorator(progressMonitor) {
         	public void done() {
         		setUnicode(unicode);
@@ -516,6 +517,7 @@ public class TLAEditor extends TextEditor
 					@Override
 					public void run() {
 						getSelectionProvider().setSelection(selection);
+						firePropertyChange(PROP_DIRTY);
 					}
 				});
         	}
@@ -662,7 +664,8 @@ public class TLAEditor extends TextEditor
         for (int i = 0; i < positions.size(); i++)
         {
             ProjectionAnnotation annotation = new ProjectionAnnotation();
-            newAnnotations.put(annotation, convertPosition(false, positions.get(i)));
+            newAnnotations.put(annotation, positions.get(i));
+//            newAnnotations.put(annotation, convertPosition(false, positions.get(i)));
             annotations[i] = annotation;
         }
         // If this method is called too early, then annotationModel
@@ -1045,6 +1048,10 @@ public class TLAEditor extends TextEditor
         }
     }
     
+    public TLAFileDocumentProvider getDocumentProvider() {
+    	return (TLAFileDocumentProvider) super.getDocumentProvider();
+    }
+    
     private void setUnicode(final boolean unicode) {
     	this.unicode = unicode;
     	UIHelper.runUIAsync(new Runnable() {
@@ -1060,25 +1067,26 @@ public class TLAEditor extends TextEditor
     }
     
 	private TLAUnicode.TokenPosition setUnicode0(boolean unicode) {
-		final IEditorInput editorInput = getEditorInput();
-		final IDocumentProvider dp = getDocumentProvider();
-		if (dp == null)
-			return null;
-		final IDocument doc = dp.getDocument(editorInput);
-		if (doc == null)
-			return null;
-		
-		final String orig = doc.get();
-		final StringWriter out = new StringWriter();
-    	final TLAUnicode.TokenPosition locConverter = TLAUnicode.convert(unicode, new StringReader(orig), out);
-    	doc.set(out.toString());
-    	
-    	this.asciiDoc = new Document(orig);
-    	
     	captureUndo(1);
-    	setDirty(false);
-    	
-    	return unicode ? locConverter : null;
+		return null;
+//		final IEditorInput editorInput = getEditorInput();
+//		final IDocumentProvider dp = getDocumentProvider();
+//		if (dp == null)
+//			return null;
+//		final IDocument doc = dp.getDocument(editorInput);
+//		if (doc == null)
+//			return null;
+//		
+//		final String orig = doc.get();
+//		final StringWriter out = new StringWriter();
+//    	final TLAUnicode.TokenPosition locConverter = TLAUnicode.convert(unicode, new StringReader(orig), out);
+//    	doc.set(out.toString());
+//    	
+//    	this.asciiDoc = new Document(orig);
+//    	
+//    	setDirty(false);
+//    	
+//    	return unicode ? locConverter : null;
 	}
 	
     public boolean isUnicode() {
@@ -1086,37 +1094,22 @@ public class TLAEditor extends TextEditor
     }
     
     public IDocument getAsciiDocument() {
-    	return isUnicode() ? asciiDoc : getDocumentProvider().getDocument(getEditorInput());
+    	return getDocumentProvider().getAsciiDocument(getEditorInput());
     }
     
  // screen: is the given location in editor coordinates
     public Location convertLocation(boolean screen, Location location) {
-    	if (location == null)
-    		return null;
-    	System.out.println("&&&from: " + location);
-    	if (isUnicode())
-    		location = new Location(location.source() != null ? UniqueString.uniqueStringOf(location.source()) : null, 
-        		location.beginLine(), convertColumn(screen, location.beginLine() - 1, location.beginColumn()), 
-        		location.endLine(), convertColumn(screen, location.endLine() - 1, location.endColumn()));
-    	System.out.println("&&&to: " + location);
-    	return location;
+		final TLAFileDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return null;
+		return dp.convertLocation(getEditorInput(), screen, location);
     }
     
     public Position convertPosition(boolean screen, Position position) {
-    	if (position == null)
-    		return null;
-    	System.out.println("&&&from: " + position);
-    	boolean deleted = position.isDeleted;
-    	if (isUnicode()) {
-    		int offset = convertOffset(screen, position.getOffset());
-        	int end = convertOffset(screen, position.getOffset() + position.getLength());
-        	int length = end - offset;
-    		position = new Position(offset, length);
-    		if (deleted)
-    			position.delete();
-    	}
-    	System.out.println("&&&to: " + position);
-    	return position;
+    	final TLAFileDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return null;
+		return dp.convertPosition(getEditorInput(), screen, position);
     }
     
     private class AnnotationModelListener implements IAnnotationModelListener, IAnnotationModelListenerExtension {
@@ -1124,16 +1117,16 @@ public class TLAEditor extends TextEditor
     	
 		@Override
 		public void modelChanged(AnnotationModelEvent event) {
-			if (recursive)
-				return;
-			recursive = true;
-			try {
-				final AnnotationModel am = (AnnotationModel)event.getAnnotationModel(); 
-				for (Annotation ann : event.getAddedAnnotations())
-					am.modifyAnnotationPosition(ann, convertPosition(false, am.getPosition(ann)));
-			} finally {
-				recursive = false;
-			}
+//			if (recursive)
+//				return;
+//			recursive = true;
+//			try {
+//				final AnnotationModel am = (AnnotationModel)event.getAnnotationModel(); 
+//				for (Annotation ann : event.getAddedAnnotations())
+//					am.modifyAnnotationPosition(ann, convertPosition(false, am.getPosition(ann)));
+//			} finally {
+//				recursive = false;
+//			}
 		}
 
 		@Override
@@ -1174,27 +1167,10 @@ public class TLAEditor extends TextEditor
     }
     
     public IRegion convertRegion(boolean screen, IRegion region) {
-    	int start = convertOffset(screen, region.getOffset());
-    	int end = convertOffset(screen, region.getOffset() + region.getLength());
-    	return new Region(start, end - start);
-    }
-    
-    // screen: is the given location in editor coordinates
-    private int convertColumn(boolean screen, int line, int column) {
-		final IDocumentProvider dp = getDocumentProvider();
+		final TLAFileDocumentProvider dp = getDocumentProvider();
 		if (dp == null)
-			return -1;
-		final IDocument doc = dp.getDocument(getEditorInput());
-		if (doc == null)
-			return -1;
-		if (!isUnicode())
-			return column;
-		try {
-			int lineLength = doc.getLineLength(line);
-			return Math.min(locationConverter.convert(!screen, line, column), lineLength);
-		} catch (BadLocationException e) {
-			return -1;
-		}
+			return null;
+		return dp.convertRegion(getEditorInput(), screen, region);
     }
     
 	private void setDirty(boolean dirty) {
