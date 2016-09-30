@@ -876,6 +876,10 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				// Update the last element in index with the larger one of the
 				// current largest element of itr and the largest element of value.
 				index[index.length - 1] = Math.max(fp, value);
+			} else if (counter == 0) {
+				// Write the last index entry if counter reached zero in the
+				// while loop above.
+				index[currIndex] = Math.max(fp, value);
 			}
 			
 			assert checkIndex(Arrays.copyOfRange(index, startIndex, currIndex)) : "Inconsistent disk index range.";
