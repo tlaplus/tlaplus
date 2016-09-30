@@ -694,7 +694,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					final Result result = offsets.get(0).get();
 					final Iterator itr = new Iterator(a, result.getTable(), indexer);
 					ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], outRAF, itr, 0, 0L, result.getDisk());
-					assert outRAF.getFilePointer() == result.getTotal() * FPSet.LongSize && itr.pos == length;
+					assert outRAF.getFilePointer() == result.getTotal()
+							* FPSet.LongSize : "First writer did not write expected amount of fingerprints to disk.";
 					return null;
 				}
 			});
@@ -738,9 +739,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 							final long diskReads = id == numThreads - 1 ? fileCnt - skipInFile : result.getDisk();
 							
 							ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAF, tmpRAF, itr, idx + 1, cnt, diskReads);
-							// TODO figure out how to calculate the position of
-							// itr for the last partition when it wrapped.
-							assert tmpRAF.getFilePointer() == (skipOutFile + result.getTotal()) * FPSet.LongSize && itr.pos == (id == numThreads - 1 ? itr.pos : (id + 1) * length);
+
+							assert tmpRAF.getFilePointer() == (skipOutFile + result.getTotal()) * FPSet.LongSize : id
+									+ " writer did not write expected amount of fingerprints to disk.";
 						} finally {
 							tmpRAF.close();
 						}
