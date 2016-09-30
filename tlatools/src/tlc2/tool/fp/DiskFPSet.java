@@ -1082,6 +1082,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			File tmpFile = new File(tmpFilename);
 			tmpFile.delete();
 			RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
+			tmpRAF.setLength((tblCnt.sum() + fileCnt) * FPSet.LongSize);
 
 			// merge
 			mergeNewEntries(braf, tmpRAF);
