@@ -576,7 +576,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		
 		private final int numThreads;
 		private final ExecutorService executorService;
-		private final Striped striped;
 		private final long insertions;
 		/**
 		 * The length of a single partition.
@@ -591,7 +590,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			this.insertions = insertions;
 
 			this.length = (long) Math.floor(a.size() / numThreads);
-			this.striped = Striped.readWriteLock(numThreads);
 			this.executorService = Executors.newFixedThreadPool(numThreads);
 		}
 		
@@ -611,20 +609,16 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						final long start = id * length;
 						final long end = isLast ? a.size() - 1L : start + length;
 						
-						// Sort partition p_n while holding its
-						// corresponding lock. Sort requires exclusive
-						// access.
-						striped.getAt(id).writeLock().lock();
+						// Sort partition p_n. We have exclusive access.
 						LongArrays.sort(a, start, end, getLongComparator());
-						striped.getAt(id).writeLock().unlock();
 						
+						// Wait for the other threads sorting p_n+1 to be done
+						// before we stitch together p_n and p_n+1.
+						phase.await();
+
 						// Sort the range between partition p_n and
-						// p_n+1 bounded by reprobe. We need no hold
-						// lock for p_n because p_n is done (except for
-						// its non-overlapping lower end).
-						striped.getAt((id + 1) % numThreads).writeLock().lock();
-						LongArrays.sort(a, end - r, end + r, getLongComparator());
-						striped.getAt((id + 1) % numThreads).writeLock().unlock();
+						// p_n+1 bounded by reprobe.
+						LongArrays.sort(a, end - r+1L, end + r+1L, getLongComparator());
 						
 						// Wait for table to be fully sorted before we calculate
 						// the offsets. Offsets can only be correctly calculated
