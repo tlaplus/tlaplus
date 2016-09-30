@@ -599,6 +599,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 * @see tlc2.tool.fp.DiskFPSet.Flusher#prepareTable()
 		 */
 		protected void prepareTable() {
+			final CyclicBarrier phase = new CyclicBarrier(this.numThreads);
 			final Collection<Callable<Result>> tasks = new ArrayList<Callable<Result>>(numThreads);
 			for (int i = 0; i < numThreads; i++) {
 				final int id = i;
@@ -625,6 +626,11 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						LongArrays.sort(a, end - r, end + r, getLongComparator());
 						striped.getAt((id + 1) % numThreads).writeLock().unlock();
 						
+						// Wait for table to be fully sorted before we calculate
+						// the offsets. Offsets can only be correctly calculated
+						// on a sorted table.
+						phase.await();
+						
 						// Count the occupied positions for this
 						// partition. Occupied positions are those which
 						// get evicted (written to disk).
@@ -635,6 +641,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						long occupied = getTableOffset(a, r, indexer, start, limit);
 						
 						if (index == null) {
+							// No index, no need to calculate a disk offset.
 							return new Result(occupied, 0L);
 						}
 						
