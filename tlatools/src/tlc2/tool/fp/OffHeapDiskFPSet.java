@@ -873,9 +873,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			Assert.check(eof && eol, EC.GENERAL);
 			
 			if (currIndex == index.length - 1) {
-				// Update the last element in index with the large one of the
-				// current largest element of itr and the previous largest element.
-				index[index.length - 1] = fp;
+				// Update the last element in index with the larger one of the
+				// current largest element of itr and the largest element of value.
+				index[index.length - 1] = Math.max(fp, value);
 			}
 			
 			assert checkIndex(Arrays.copyOfRange(index, startIndex, currIndex)) : "Inconsistent disk index range.";
