@@ -253,7 +253,7 @@ public class OffHeapDiskFPSetTest {
 
 		final SortedSet<Long> longs = new TreeSet<Long>();
 		
-		// Insert n randomly choosen positive longs.
+		// Insert n randomly chosen positive longs.
 		Random random = new Random(rgenseed);
 		for (int i = 0; i < length / 2; i++) {
 			long fingerprint = getFingerprint(random);
@@ -261,15 +261,16 @@ public class OffHeapDiskFPSetTest {
 			longs.add(fingerprint);
 		}
 		fpSet.forceFlush();
-		long fingerprint = getFingerprint(random);
-		assertFalse(fpSet.put(fingerprint));
+		assertFalse(fpSet.contains(1L)); // contains triggers flush
 		
-		final Method field = OffHeapDiskFPSet.class.getDeclaredMethod("getOffset", new Class[] {int.class, long.class});
+		final Method field = OffHeapDiskFPSet.class.getDeclaredMethod("getDiskOffset", new Class[] {int.class, long.class});
 		field.setAccessible(true);
 		
 		for (long i = 0L; i < longs.size(); i++) {
 			long fp = longs.first();
-			assertEquals(String.format("Length: %s with seed: %s", length, rgenseed), i , field.invoke(fpSet, 0, fp));
+			assertEquals(String.format("Length: %s with seed: %s", length, rgenseed), i, field.invoke(fpSet, 0, fp));
+			assertEquals(String.format("Length: %s with seed: %s", length, rgenseed), i + 1L,
+					field.invoke(fpSet, 0, fp + 1L));
 			longs.remove(fp);
 		}
 	}

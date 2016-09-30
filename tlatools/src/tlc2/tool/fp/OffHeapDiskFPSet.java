@@ -460,32 +460,50 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	}
 
 	/**
-	 * Returns the number of fingerprints stored on disk in the range lo,hi.
+	 * Returns the number of fingerprints stored in table/array in the range
+	 * [start,limit].
 	 */
-	private long getOffset(final int id, final LongArray a, long loIdx, long hiIdx) throws IOException {
-		if (this.index == null) {
-			return 0L;
+	private long getTableOffset(final LongArray a, final long reprobe, final Indexer indexer, final long start,
+			final long limit) {
+		long occupied = 0L;
+		for (long pos = start; pos < limit; pos++) {
+			final long fp = a.get(pos % a.size());
+			if (fp <= EMPTY) {
+				continue;
+			}
+			final long idx = indexer.getIdx(fp);
+			if (idx > pos) {
+				// Ignore the elements that wrapped around the
+				// end when scanning the first partition.
+				continue;
+			}
+			if (idx + reprobe < pos) {
+				// Ignore the elements of the first partition
+				// when wrapping around for the last partition.
+				continue;
+			}
+			occupied = occupied + 1L;
 		}
-
-		// Forward/Reverse to the first/last non-evicted/empty element.
-		long lo = a.get(loIdx);
-		while (lo <= EMPTY) {
-			lo = a.get(++loIdx);
+		return occupied;
+	}
+	
+	private long getNextLower(long idx) {
+		// Reverse to the next non-evicted/empty fp that belongs to this partition.
+		long fp = array.get(idx);
+		while (fp <= EMPTY || indexer.getIdx(fp) > idx) {
+			fp = array.get(--idx);
 		}
-		long hi = a.get(hiIdx);
-		while (lo <= EMPTY) {
-			hi = a.get(--hiIdx);
-		}
-		
-		final long lo0 = lo & FLUSHED_MASK;
-		final long hi0 = hi & FLUSHED_MASK;
-		return getOffset(id, hi0) - getOffset(id, lo0);
+		return fp;
 	}
 	
 	/**
 	 * The number of fingerprints stored on disk smaller than fp.
 	 */
-	private long getOffset(final int id, final long fp) throws IOException {
+	private long getDiskOffset(final int id, final long fp) throws IOException {
+		if (this.index == null) {
+			return 0L;
+		}
+		
 		final int indexLength = this.index.length;
 		int loPage = 0, hiPage = indexLength - 1;
 		long loVal = this.index[loPage];
@@ -495,7 +513,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			return 0L;
 		}
 		if (fp >= hiVal) {
-			return indexLength * NumEntriesPerPage;
+			return this.braf[id].length() / FPSet.LongSize;
 		}
 		// See DiskFPSet#diskLookup for comments.
 		
@@ -541,6 +559,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			} else if (fp > v) {
 				loEntry = midEntry + 1;
 				loVal = v;
+				midEntry = loEntry;
 			} else {
 				break;
 			}
@@ -581,8 +600,10 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				tasks.add(new Callable<Result>() {
 					@Override
 					public Result call() throws Exception {
+						final boolean isFirst = id == 0;
+						final boolean isLast = id == numThreads - 1;
 						final long start = id * length;
-						final long end = id == numThreads - 1 ? a.size() - 1L : start + length;
+						final long end = isLast ? a.size() - 1L : start + length;
 						
 						// Sort partition p_n while holding its
 						// corresponding lock. Sort requires exclusive
@@ -605,31 +626,24 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						// This could be done as part of (insertion) sort
 						// above at the price of higher complexity. Thus,
 						// it's done here until it becomes a bottleneck.
-						final long limit = id == numThreads - 1 ? end + r : end;
-						long occupied = 0L;
-						for (long pos = start; pos < limit; pos++) {
-							final long fp = a.get(pos % a.size());
-							if (fp <= EMPTY) {
-								continue;
-							}
-							final long idx = indexer.getIdx(fp);
-							if (idx > pos) {
-								// Ignore the elements that wrapped around the
-								// end when scanning the first partition.
-								continue;
-							}
-							if (idx + r < pos) {
-								// Ignore the elements of the first partition
-								// when wrapping around for the last partition.
-								continue;
-							}
-							occupied = occupied + 1L;
+						final long limit = isLast ? a.size() + r : end;
+						long occupied = getTableOffset(a, r, indexer, start, limit);
+						
+						if (index == null) {
+							return new Result(occupied, 0L);
 						}
 						
 						// Determine number of elements in the old/current file.
-						long occupiedFile = getOffset(id, a, start, end);
-						
-						return new Result(occupied, occupiedFile);
+						if (isFirst && isLast) {
+							return new Result(occupied, fileCnt);
+						} else if (isFirst) {
+							return new Result(occupied, getDiskOffset(id, getNextLower(end)));
+						} else if (isLast) {
+							return new Result(occupied, fileCnt - getDiskOffset(id, getNextLower(start)));
+						} else {
+							return new Result(occupied,
+									getDiskOffset(id, getNextLower(end)) - getDiskOffset(id, getNextLower(start)));
+						}
 					}
 				});
 			}
