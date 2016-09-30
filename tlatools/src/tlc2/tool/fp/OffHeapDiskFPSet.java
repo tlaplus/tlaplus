@@ -882,6 +882,20 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#calculateIndexLen(long)
+	 */
+	protected int calculateIndexLen(final long tblcnt) {
+		int indexLen = super.calculateIndexLen(tblcnt);
+		if ((tblcnt + fileCnt - 1L) % NumEntriesPerPage == 0L) {
+			// This is the special case where the largest fingerprint
+			// happened is going to end up on the last entry of the previous
+			// page. Thus, we won't need the last extra index cell.
+			indexLen--;
+		}
+		return indexLen;
+	}
+	
 	/**
 	 * A non-thread safe Iterator whose next method returns the next largest
 	 * element.

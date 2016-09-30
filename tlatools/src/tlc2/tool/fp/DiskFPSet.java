@@ -551,6 +551,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @return The new required length for the {@link DiskFPSet#index}
 	 */
 	protected int calculateIndexLen(final long buffLen) {
+		// +2L because we always need the lo and hi bounds for the index.
 		long indexLen = ((this.fileCnt + buffLen - 1L) / (long) NumEntriesPerPage) + 2L;
 
 		//TODO this can cause a NegativeArraySizeException if fileCnt becomes sufficiently large
