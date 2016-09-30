@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -49,6 +50,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	private final Indexer indexer;
 
 	private CyclicBarrier barrier;
+	
+	/**
+	 * completionException is set by the Runnable iff an exception occurs during
+	 * eviction while the worker threads wait at barrier. Worker threads have to
+	 * check completionException explicitly.
+	 */
+	private volatile RuntimeException completionException;
 
 	protected OffHeapDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
 		super(fpSetConfig);
@@ -114,8 +122,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				
 				try {
 					flusher.flushTable(); // Evict()
-				} catch (Exception notExpectedToHappen) {
-					notExpectedToHappen.printStackTrace();
+				} catch (RuntimeException e) {
+					completionException = e;
+					throw e;
+				} catch (IOException e) {
+					completionException = new RuntimeException(e);
+					throw completionException;
 				} 
 
 				// statistics and logging again.
@@ -137,10 +149,18 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		if (flusherChosen.get()) {
 			try {
 				barrier.await();
-			} catch (InterruptedException notExpectedToHappen) {
-				notExpectedToHappen.printStackTrace();
-			} catch (BrokenBarrierException notExpectedToHappen) {
-				notExpectedToHappen.printStackTrace();
+				if (completionException != null) {
+					throw completionException;
+				}
+			} catch (InterruptedException ie) {
+				throw new RuntimeException(ie);
+			} catch (BrokenBarrierException bbe) {
+				barrier.reset();
+				if (completionException != null) {
+					throw completionException;
+				} else { 
+					throw new RuntimeException(bbe);
+				}
 			}
 			return true;
 		}
@@ -615,11 +635,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			}
 			try {
 				offsets = executorService.invokeAll(tasks);
-			} catch (InterruptedException notExpectedToHappen) {
-				notExpectedToHappen.printStackTrace();
+			} catch (InterruptedException ie) {
+				throw new RuntimeException(ie);
 			}
 
-			assert checkSorted(a, indexer, r) : "Array not fully sorted.";
+			assert checkSorted(a, indexer, r) == -1L : String.format(
+					"Array %s not fully sorted at index %s and reprobe %s.", a.toString(),
+					checkSorted(array, indexer, r), r);
 		}
 
 		@Override
@@ -628,14 +650,24 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				public long applyAsLong(Future<Result> future) {
 					try {
 						return future.get().getTable();
-					} catch (InterruptedException notExpectedToHappen) {
-						notExpectedToHappen.printStackTrace();
-					} catch (ExecutionException notExpectedToHappen) {
-						notExpectedToHappen.printStackTrace();
+					} catch (InterruptedException ie) {
+						throw new RuntimeException(ie);
+					} catch (ExecutionException ee) {
+						throw new RuntimeException(ee);
 					}
-					return 0L;
 				}
 			}).sum() == insertions : "Missing inserted elements during eviction.";
+			assert offsets.stream().mapToLong(new ToLongFunction<Future<Result>>() {
+				public long applyAsLong(Future<Result> future) {
+					try {
+						return future.get().getDisk();
+					} catch (InterruptedException ie) {
+						throw new RuntimeException(ie);
+					} catch (ExecutionException ee) {
+						throw new RuntimeException(ee);
+					}
+				}
+			}).sum() == fileCnt : "Missing disk elements during eviction.";
 			final Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(numThreads);
 			// Id = 0
 			tasks.add(new Callable<Void>() {
@@ -690,13 +722,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			// Combine the callable results.
 			try {
 				executorService.invokeAll(tasks);
-			} catch (InterruptedException notExpectedToHappen) {
-				notExpectedToHappen.printStackTrace();
+			} catch (InterruptedException ie) {
+				throw new RuntimeException(ie);
 			} finally {
 				executorService.shutdown();
 			}
 
-			assert checkTable(a) && checkIndex(index);
+			assert checkTable(a) : "Missed element during eviction.";
+			assert checkIndex(index) : "Inconsistent disk index.";
 		}
 
 		private class Result {
@@ -706,6 +739,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			public Result(long occupiedTable, long occupiedDisk) {
 				this.occupiedTable = occupiedTable;
 				this.occupiedDisk = occupiedDisk;
+			}
+			public long getDisk() {
+				return occupiedDisk;
 			}
 			public long getTable() {
 				return occupiedTable;
@@ -758,6 +794,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		}
 
 		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF, final Iterator itr, int currIndex, long counter) throws IOException {
+			
+			final int startIndex = currIndex;
+			
 			// initialize positions in "buff" and "inRAF"
 			long value = 0L; // initialize only to make compiler happy
 			boolean eof = false;
@@ -776,6 +815,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			long fp = itr.next();
 			while (!eof || !eol) {
 				if ((value < fp || eol) && !eof) {
+					assert value > EMPTY : "Negative or zero fingerprint found: " + value;
 					outRAF.writeLong(value);
 					diskWriteCnt.increment();
 					// update in-memory index file
@@ -823,6 +863,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				// current largest element of itr and the previous largest element.
 				index[index.length - 1] = fp;
 			}
+			
+			assert checkIndex(Arrays.copyOfRange(index, startIndex, currIndex)) : "Inconsistent disk index range.";
 		}
 	}
 	
@@ -916,15 +958,18 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 	// ***************** assertion helpers *******************//
 
-	private static boolean checkSorted(final LongArray array, final Indexer indexer, final int reprobe) {
+	/**
+	 * @return -1L iff array is sorted, index/position of the element that violates otherwise.
+	 */
+	private static long checkSorted(final LongArray array, final Indexer indexer, final int reprobe) {
 		long e = 0L;
-		for (long pos = 1; pos < array.size() + reprobe; pos++) {
+		for (long pos = 0L; pos < array.size() + reprobe; pos++) {
 			final long tmp = array.get(pos % array.size());
 			if (tmp <= EMPTY) {
 				continue;
 			}
 			final long idx = indexer.getIdx(tmp);
-			if (idx > pos ) {
+			if (idx > pos) {
 				continue;
 			}
 			if (idx + reprobe < pos) {
@@ -937,16 +982,17 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				continue;
 			}
 			if (e >= tmp) {
-				return false;
+				return pos;
 			}
 			e = tmp;
 		}
-		return true;
+		return -1L;
 	}
 
 	private static boolean checkTable(LongArray array) {
 		for (long i = 0L; i < array.size(); i++) {
-			if (array.get(i) > EMPTY) {
+			long elem = array.get(i);
+			if (elem > EMPTY) {
 				return false;
 			}
 		}
