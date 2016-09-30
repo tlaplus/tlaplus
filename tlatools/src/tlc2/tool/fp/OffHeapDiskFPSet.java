@@ -83,6 +83,11 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			// non 2^n buckets cannot use a bit shifting indexer
 			this.indexer = new Indexer(positions, fpSetConfig.getFpBits());
 		}
+		
+		// Use the non-concurrent flusher as the default. Will be replaced by
+		// the CyclicBarrier-Runnable later. Just set to prevent NPEs when
+		// eviction/flush is called before init.
+		this.flusher = new OffHeapMSBFlusher(array, 0);
 	}
 	
 	/* (non-Javadoc)
@@ -688,7 +693,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				public Void call() throws Exception {
 					final Result result = offsets.get(0).get();
 					final Iterator itr = new Iterator(a, result.getTable(), indexer);
-					ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], outRAF, itr, 0, 0L);
+					ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], outRAF, itr, 0, 0L, result.getDisk());
 					assert outRAF.getFilePointer() == result.getTotal() * FPSet.LongSize && itr.pos == length;
 					return null;
 				}
@@ -703,29 +708,39 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						try {
 							// Sum up the combined number of elements in
 							// lower partitions.
-							long skipTotal = 0L;
+							long skipOutFile = 0L;
+							long skipInFile = 0L;
 							for (int j = 0; j < id; j++) {
-								skipTotal = skipTotal + offsets.get(j).get().getTotal();
+								skipInFile = skipInFile + offsets.get(j).get().getDisk();
+								skipOutFile = skipOutFile + offsets.get(j).get().getTotal();
 							}
 
 							// Set offsets into the out (tmp) file.
 							final Result result = offsets.get(id).get();
-							tmpRAF.seek(skipTotal * FPSet.LongSize);
+							tmpRAF.seek(skipOutFile * FPSet.LongSize);
 
 							// Set offset and the number of elements the
 							// iterator is supposed to return.
 							final long table = result.getTable();
 							final Iterator itr = new Iterator(a, table, id * length, indexer);
 							final RandomAccessFile inRAF = inRAFs[id];
+							assert (skipInFile + result.getDisk()) * FPSet.LongSize <= inRAF.length();
+							inRAF.seek(skipInFile * FPSet.LongSize);
 
-							// Calculate the where the index entries start and
-							// end.
-							final int idx = (int) Math.floor(skipTotal / NumEntriesPerPage);
-							final long cnt = NumEntriesPerPage - (skipTotal - (idx * NumEntriesPerPage));
-							ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAF, tmpRAF, itr, idx + 1, cnt);
+							// Calculate where the index entries start and end.
+							final int idx = (int) Math.floor(skipOutFile / NumEntriesPerPage);
+							final long cnt = NumEntriesPerPage - (skipOutFile - (idx * NumEntriesPerPage));
+
+							// Stop reading after diskReads elements (after
+							// which the next thread continues) except for the
+							// last thread which reads until EOF. Pass 0 when
+							// nothing can be read from disk.
+							final long diskReads = id == numThreads - 1 ? fileCnt - skipInFile : result.getDisk();
+							
+							ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAF, tmpRAF, itr, idx + 1, cnt, diskReads);
 							// TODO figure out how to calculate the position of
 							// itr for the last partition when it wrapped.
-							assert tmpRAF.getFilePointer() == (skipTotal + result.getTotal()) * FPSet.LongSize && itr.pos == (id == numThreads - 1 ? itr.pos : (id + 1) * length);
+							assert tmpRAF.getFilePointer() == (skipOutFile + result.getTotal()) * FPSet.LongSize && itr.pos == (id == numThreads - 1 ? itr.pos : (id + 1) * length);
 						} finally {
 							tmpRAF.close();
 						}
@@ -804,10 +819,11 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF, Iterator itr, int currIndex,
 				long counter) throws IOException {
 			inRAFs[0].seek(0);
-			mergeNewEntries(inRAFs[0], outRAF, itr, currIndex, counter);
+			mergeNewEntries(inRAFs[0], outRAF, itr, currIndex, counter, inRAFs[0].length() / FPSet.LongSize);
 		}
 
-		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF, final Iterator itr, int currIndex, long counter) throws IOException {
+		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF, final Iterator itr,
+				int currIndex, long counter, long diskReads) throws IOException {
 			
 			final int startIndex = currIndex;
 			
@@ -817,10 +833,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			if (fileCnt > 0) {
 				try {
 					value = inRAF.readLong();
+					diskReads--;
 				} catch (EOFException e) {
 					eof = true;
 				}
 			} else {
+				assert diskReads == 0L;
 				eof = true;
 			}
 
@@ -840,6 +858,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					counter--;
 					try {
 						value = inRAF.readLong();
+						if (diskReads-- == 0L) {
+							eof = true;
+						}
 					} catch (EOFException e) {
 						eof = true;
 					}
