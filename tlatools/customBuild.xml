@@ -403,6 +403,7 @@
 
 	<!-- Verifies TLC parts with NASA's pathfinder model checker -->
 	<target name="test-verify">
+		<mkdir dir="${test.class.dir}"/>
 		<!-- Compile our boilerplate code needed to verify TLC. E.g. the StateQueueVerify creates -->
 		<!-- examplary produces & consumers and a dummy implementation of StateQueue. -->
 		<javac includeantruntime="false" srcdir="${test.dir}-verify" destdir="${test.class.dir}" debug="true" verbose="false">
