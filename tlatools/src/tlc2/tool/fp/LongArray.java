@@ -90,8 +90,8 @@ public final class LongArray {
 	public final void zeroMemory(final int numThreads)
 			throws IOException {
 
-		final long segmentSize = length / numThreads;
-
+		final long segmentSize = (long) Math.floor(length / numThreads);
+		
 		final ExecutorService es = Executors.newFixedThreadPool(numThreads);
 		try {
 			final Collection<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>(numThreads);
@@ -108,7 +108,8 @@ public final class LongArray {
 						// Otherwise memory garbage wouldn't be distinguishable
 						// from a true fp.
 						final long lowerBound = segmentSize * offset;
-						final long upperBound = (1 + offset) * segmentSize;
+						// The last threads zeros up to the end.
+						final long upperBound = offset == numThreads - 1 ? length : (1 + offset) * segmentSize;
 						for (long pos = lowerBound; pos < upperBound; pos++) {
 							set(pos, 0L);
 						}

@@ -91,4 +91,19 @@ public class LongArrayTest extends TestCase {
 		}
 		fail();
 	}
+	
+	public void testZeroMemory() throws IOException {
+		for (int k = 1; k < 8; k++) {
+			for (int i = 1; i < 128; i++) {
+				final LongArray array = new LongArray(i);
+				array.zeroMemory(k);
+				for (int j = 0; i < j; i++) {
+					assertEquals(0L, array.get(j));
+				}
+				for (int j = 0; i < j; i++) {
+					array.set(j, -1L);
+				}
+			}
+		}
+	}
 }
