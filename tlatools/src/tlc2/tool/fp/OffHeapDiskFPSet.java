@@ -615,6 +615,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						
 						// Sort partition p_n. We have exclusive access.
 						LongArrays.sort(a, start, end, getLongComparator());
+						assert checkSorted(a, indexer, r, start, end) == -1L : String.format(
+								"Array %s not fully sorted at index %s and reprobe %s in range [%s,%s].", a.toString(),
+								checkSorted(array, indexer, r, start, end), r, start, end);
 						
 						// Wait for the other threads sorting p_n+1 to be done
 						// before we stitch together p_n and p_n+1.
@@ -1048,11 +1051,11 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	}
 
 	/**
-	 * @return -1L iff array is sorted, index/position of the element that violates otherwise.
+	 * @return -1L iff array is sorted, index/position of the element that violates otherwise in the range [start, end].
 	 */
-	private static long checkSorted(final LongArray array, final Indexer indexer, final int reprobe) {
+	private static long checkSorted(final LongArray array, final Indexer indexer, final int reprobe, long start, long end) {
 		long e = 0L;
-		for (long pos = 0L; pos < array.size() + reprobe; pos++) {
+		for (long pos = start; pos <= end; pos++) {
 			final long tmp = array.get(pos % array.size());
 			if (tmp <= EMPTY) {
 				continue;
@@ -1076,6 +1079,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			e = tmp;
 		}
 		return -1L;
+	}
+
+	/**
+	 * @return -1L iff array is sorted, index/position of the element that violates otherwise.
+	 */
+	private static long checkSorted(final LongArray array, final Indexer indexer, final int reprobe) {
+		return checkSorted(array, indexer, reprobe, 0, array.size() - 1L + reprobe);
 	}
 
 	private static boolean checkTable(LongArray array) {
