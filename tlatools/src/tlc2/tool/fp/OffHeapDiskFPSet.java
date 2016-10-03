@@ -28,7 +28,6 @@ import tlc2.output.MP;
 import tlc2.tool.fp.LongArrays.LongComparator;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import tlc2.util.BufferedRandomAccessFile;
-import tlc2.util.Striped;
 import util.Assert;
 
 /**
@@ -117,6 +116,11 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				final long insertions = tblCnt.longValue();
 				final double lf = tblCnt.doubleValue() / (double) maxTblCnt;
 				final int r = reprobe.intValue();
+				
+				// Check that the table adheres to our invariant. Otherwise, we
+				// can't hope to successfully evict it.
+				assert checkInput(array, indexer, r) : "Table violates invariants prior to eviction: "
+						+ array.toString();
 				
 				// Only pay the price of creating threads when array is sufficiently large.
 				if (array.size() > 8192) {
@@ -1012,6 +1016,36 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	}
 
 	// ***************** assertion helpers *******************//
+
+	private static boolean checkInput(final LongArray array, final Indexer indexer, final int reprobe) {
+		for (long pos = 0; pos <= array.size() + reprobe - 1L; pos++) {
+			long tmp = array.get(pos % array.size());
+			if (tmp == EMPTY) {
+				continue;
+			}
+			if (tmp < EMPTY) {
+				// Convert evicted fps back.
+				tmp = tmp & FLUSHED_MASK;
+			}
+			final long idx = indexer.getIdx(tmp);
+			// Accept wrapped elements.
+			if (pos < reprobe && idx > (array.size() - 1L - pos - reprobe)) {
+				continue;
+			}
+			// Accept non-wrapped elements when pos > array.size
+			if (pos > array.size() - 1L && idx + reprobe < pos) {
+				continue;
+			}
+			// Accept any other valid elements where pos is within the range
+			// given by [idx,idx + reprobe].
+			if (idx <= pos && pos <= idx + reprobe) {
+				continue;
+			}
+			System.err.println(String.format("%s with idx %s at pos %s.", tmp, idx, pos));
+			return false;
+		}
+		return true;
+	}
 
 	/**
 	 * @return -1L iff array is sorted, index/position of the element that violates otherwise.
