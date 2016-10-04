@@ -928,10 +928,10 @@ public class TLC
         if (!this.welcomePrinted) 
         {
             this.welcomePrinted = true;
-            if (TLCGlobals.revision == null) {
+            if (TLCGlobals.getRevision() == null) {
             	MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC);
             } else {
-            	MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC + " (rev: " + TLCGlobals.revision + ")");
+            	MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC + " (rev: " + TLCGlobals.getRevision() + ")");
             }
         }
     }

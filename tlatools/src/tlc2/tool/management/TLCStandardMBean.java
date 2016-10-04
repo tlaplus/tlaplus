@@ -33,10 +33,10 @@ public abstract class TLCStandardMBean extends StandardMBean {
 	}
 	
 	public String getRevision() {
-		if (TLCGlobals.revision == null) {
+		if (TLCGlobals.getRevision() == null) {
 			return "N/A";
 		}
-		return TLCGlobals.revision;
+		return TLCGlobals.getRevision();
 	}
 
 	/**

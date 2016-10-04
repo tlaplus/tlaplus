@@ -23,8 +23,6 @@ public class TLCGlobals
 
     // The current version of TLC
     public static String versionOfTLC = "Version 2.09 of 28 January 2016";
-
-    public static String revision = getRevision();
     
     // The bound for set enumeration, used for pretty printing
     public static int enumBound = 2000;
@@ -168,7 +166,7 @@ public class TLCGlobals
 		return true;
 	}
 	
-	private static String getRevision() {
+	public static String getRevision() {
 		try {
 			final Enumeration<URL> resources = TLCGlobals.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
 			while (resources.hasMoreElements()) {
