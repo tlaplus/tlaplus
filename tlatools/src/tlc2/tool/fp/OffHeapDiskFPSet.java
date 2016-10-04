@@ -614,8 +614,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						final long end = isLast ? a.size() - 1L : start + length;
 						
 						// Sort partition p_n. We have exclusive access.
-						LongArrays.sort(a, start, end, getLongComparator());
-						assert checkSorted(a, indexer, r, start, end) == -1L : String.format(
+						LongArrays.sort(a, isFirst ? 0L : start + 1L, end, getLongComparator());
+						assert checkSorted(a, indexer, r, isFirst ? 0L : start + 1L, end) == -1L : String.format(
 								"Array %s not fully sorted at index %s and reprobe %s in range [%s,%s].", a.toString(),
 								checkSorted(array, indexer, r, start, end), r, start, end);
 						
