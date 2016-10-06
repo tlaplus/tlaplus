@@ -111,7 +111,7 @@ public class GotoNextUseHandler extends AbstractHandler implements IHandler
                     
                     // Yes.  Dan provided the following method and LL incorporated it into the
                     // code on 24 Jun 2010.
-                    Position pos =EditorUtil.getMarkerPosition(marker);
+                    Position pos =EditorUtil.getMarkerPosition(marker, true);
                     int offset = pos.getOffset();
                     int length = pos.getLength();
                     

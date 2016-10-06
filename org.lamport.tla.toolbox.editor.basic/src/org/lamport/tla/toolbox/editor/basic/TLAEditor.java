@@ -664,8 +664,8 @@ public class TLAEditor extends TextEditor
         for (int i = 0; i < positions.size(); i++)
         {
             ProjectionAnnotation annotation = new ProjectionAnnotation();
-            newAnnotations.put(annotation, positions.get(i));
-//            newAnnotations.put(annotation, convertPosition(false, positions.get(i)));
+//            newAnnotations.put(annotation, positions.get(i));
+            newAnnotations.put(annotation, convertPosition(false, positions.get(i)));
             annotations[i] = annotation;
         }
         // If this method is called too early, then annotationModel
@@ -686,9 +686,10 @@ public class TLAEditor extends TextEditor
      */
     public void modifyProjectionAnnotations(Annotation[] deletions, Map<ProjectionAnnotation, ? extends Position> additions)
     {
-//    	Map<ProjectionAnnotation, Position> as1 = new HashMap<>(additions.size());
-//    	for (Map.Entry<ProjectionAnnotation, TLAProofPosition> e : additions.entrySet())
-//    		as1.put(e.getKey(), convertPosition(false, e.getValue()));
+    	Map<ProjectionAnnotation, Position> as1 = new HashMap<>(additions.size());
+    	for (Map.Entry<ProjectionAnnotation, ? extends Position> e : additions.entrySet())
+    		as1.put(e.getKey(), convertPosition(false, e.getValue()));
+    	additions = as1;
     	
         this.annotationModel.modifyAnnotations(deletions, additions, null);
     }
@@ -1117,16 +1118,16 @@ public class TLAEditor extends TextEditor
     	
 		@Override
 		public void modelChanged(AnnotationModelEvent event) {
-//			if (recursive)
-//				return;
-//			recursive = true;
-//			try {
+			if (recursive)
+				return;
+			recursive = true;
+			try {
 //				final AnnotationModel am = (AnnotationModel)event.getAnnotationModel(); 
 //				for (Annotation ann : event.getAddedAnnotations())
 //					am.modifyAnnotationPosition(ann, convertPosition(false, am.getPosition(ann)));
-//			} finally {
-//				recursive = false;
-//			}
+			} finally {
+				recursive = false;
+			}
 		}
 
 		@Override
@@ -1137,33 +1138,10 @@ public class TLAEditor extends TextEditor
     
  // screen: is the given offset in editor coordinates
     public int convertOffset(boolean screen, int offset) {
-		if (!isUnicode())
-			return offset;
-		final IDocumentProvider dp = getDocumentProvider();
+    	final TLAFileDocumentProvider dp = getDocumentProvider();
 		if (dp == null)
 			return -1;
-		final IDocument doc = dp.getDocument(getEditorInput());
-		if (doc == null)
-			return -1;
-		
-		try {
-			System.out.println("&&&from: " + offset);
-			final IDocument fromDoc = screen ? doc : asciiDoc;
-			final IDocument toDoc = !screen ? doc : asciiDoc;
-
-			final int line = fromDoc.getLineOfOffset(offset);
-			System.out.println("&&&fromLine: " + line);
-			System.out.println("&&&toLine: " + toDoc.getLineOfOffset(offset));
-			final int lineOffset = fromDoc.getLineOffset(line);
-			final int column = offset - lineOffset;
-			
-			final int lineLength = toDoc.getLineLength(line);
-			offset = toDoc.getLineOffset(line) + Math.min(locationConverter.convert(!screen, line, column), lineLength);
-			System.out.println("&&&to: " + offset);
-			return offset;
-		} catch (BadLocationException e) {
-			return -1;
-		}
+		return dp.convertOffset(getEditorInput(), screen, offset);
     }
     
     public IRegion convertRegion(boolean screen, IRegion region) {

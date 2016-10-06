@@ -98,7 +98,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
     {
         canPerformFoldingCommands = true;
         this.editor = editor;
-        this.document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+        this.document = editor.getAsciiDocument();
         foldPositions = new Vector<TLAProofPosition>();
 
         // add this as listener to document to listen for changes

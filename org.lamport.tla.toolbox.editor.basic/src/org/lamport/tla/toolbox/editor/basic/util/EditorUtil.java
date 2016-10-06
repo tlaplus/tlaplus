@@ -21,6 +21,7 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
+import org.lamport.tla.toolbox.editor.basic.TLAFileDocumentProvider;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
@@ -844,9 +845,10 @@ public class EditorUtil
      * of writing this method (June 2010), they are synchronized.
      * 
      * @param marker
+     * @param screen Whether we're looking for screen position (Unicode) or resource position
      * @return
      */
-    public static Position getMarkerPosition(IMarker marker)
+    public static Position getMarkerPosition(IMarker marker, boolean screen)
     {
         TLAEditor editor = findTLAEditor(marker.getResource());
         if (editor != null)
@@ -858,9 +860,9 @@ public class EditorUtil
              * not always true, then we need to figure out a way to get a hold of the
              * annotation model that manages positions of markers in the editor.
              */
-            if (annotationModel instanceof ResourceMarkerAnnotationModel)
+            if (annotationModel instanceof TLAFileDocumentProvider.TLAMarkerAnnotationModel) // ResourceMarkerAnnotationModel
             {
-                return ((ResourceMarkerAnnotationModel) annotationModel).getMarkerPosition(marker);
+                return ((TLAFileDocumentProvider.TLAMarkerAnnotationModel) annotationModel).getMarkerPosition(marker, screen);
             } else
             {
                 Activator.getDefault().logDebug("Cannot get the annotation model that manages marker positions for the marker on "
