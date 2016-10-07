@@ -86,7 +86,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// Use the non-concurrent flusher as the default. Will be replaced by
 		// the CyclicBarrier-Runnable later. Just set to prevent NPEs when
 		// eviction/flush is called before init.
-		this.flusher = new OffHeapMSBFlusher(array, 0);
+		this.flusher = new OffHeapMSBFlusher(array);
 	}
 	
 	/* (non-Javadoc)
@@ -126,7 +126,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				if (array.size() > 8192) {
 					OffHeapDiskFPSet.this.flusher = new ConcurrentOffHeapMSBFlusher(array, r, numThreads, insertions);
 				} else {
-					OffHeapDiskFPSet.this.flusher = new OffHeapMSBFlusher(array, r);
+					OffHeapDiskFPSet.this.flusher = new OffHeapMSBFlusher(array);
 				}
 				
 				try {
@@ -580,6 +580,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		
 		private final int numThreads;
 		private final ExecutorService executorService;
+		private final int r; 
 		private final long insertions;
 		/**
 		 * The length of a single partition.
@@ -589,7 +590,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 		public ConcurrentOffHeapMSBFlusher(final LongArray array, final int r, final int numThreads,
 				final long insertions) {
-			super(array, r);
+			super(array);
+			this.r = r;
 			this.numThreads = numThreads;
 			this.insertions = insertions;
 
@@ -792,12 +794,10 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	
 	public class OffHeapMSBFlusher extends Flusher {
 		
-		protected final int r;
 		protected final LongArray a;
 
-		public OffHeapMSBFlusher(LongArray array, int reprobe) {
+		public OffHeapMSBFlusher(LongArray array) {
 			a = array;
-			r = reprobe;
 		}
 
 		/* (non-Javadoc)
@@ -805,6 +805,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 */
 		protected void prepareTable() {
 			super.prepareTable();
+			final int r = OffHeapDiskFPSet.this.reprobe.intValue();
+			
 			// Sort with a single thread.
 			LongArrays.sort(a, 0, a.size() - 1L + r, getLongComparator());
 		}
