@@ -18,7 +18,7 @@ import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
 public class LongArraysTest {
 	@Test
 	public void testEmpty1() {
-		doTest(new ArrayList<Long>(0), 1L, 0);
+		doTest(new ArrayList<Long>(0), 1L, 0, new OffHeapDiskFPSet.Indexer(0, 1));
 	}
 	
 	@Test
@@ -29,7 +29,7 @@ public class LongArraysTest {
 		expected.add(0L);
 		expected.add(0L);
 
-		doTest(expected, 1L, 2);
+		doTest(expected, 1L, 2, new OffHeapDiskFPSet.Indexer(expected.size(), 1));
 	}
 	
 	@Test
@@ -120,7 +120,7 @@ public class LongArraysTest {
 		expected.add(1644442600000000000L);
 		expected.add(0L);
 
-		doTest(expected, 1L, 3);
+		doTest(expected, 1L, 3, new OffHeapDiskFPSet.Indexer(expected.size(), 1));
 	}
 	
 	@Test
@@ -608,15 +608,56 @@ public class LongArraysTest {
 		
 		doTest(expected);
 	}
+	
+	@Test
+	public void test7() {
+		final List<Long> expected = new ArrayList<Long>();
+		expected.add(1L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(4L);
+		expected.add(6L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(13L);
+		
+		doTest(expected, 1, 0, new OffHeapDiskFPSet.Indexer(expected.size(), 1, 13));
+	}
+	
+	@Test
+	public void test8() {
+		final List<Long> expected = new ArrayList<Long>();
+		expected.add(1L);
+		expected.add(11L);
+		expected.add(3L);
+		expected.add(4L);
+		expected.add(5L);
+		expected.add(6L);
+		expected.add(7L);
+		expected.add(8L);
+		expected.add(9L);
+		expected.add(10L);
+		expected.add(12L);
+		
+		final OffHeapDiskFPSet.Indexer indexer = new OffHeapDiskFPSet.Indexer(expected.size(), 1, 12);
+		final LongArray array = new LongArray(expected);
+		final LongComparator comparator = getComparator(indexer);
+		LongArrays.sort(array, 0, array.size() - 1L + 3, comparator);
+		verify(expected, 3, indexer, array);
 
+	}
+	
 	private void doTest(final List<Long> expected) {
+		final Indexer indexer = new OffHeapDiskFPSet.Indexer(expected.size(), 1);
 		for (int i = 1; i < (expected.size() / 2); i++) {
-			doTest(expected, i, 2);
+			doTest(expected, i, 2, indexer);
 		}
 	}
 	
-	private void doTest(final  List<Long>  expected, final long partitions, final int reprobe) {
-		final Indexer indexer = new OffHeapDiskFPSet.Indexer(expected.size(), 1);
+	private void doTest(final  List<Long>  expected, final long partitions, final int reprobe, final Indexer indexer) {
 		final LongArray array = new LongArray(expected);
 		final LongComparator comparator = getComparator(indexer);
 		final long length = expected.size() / partitions;
