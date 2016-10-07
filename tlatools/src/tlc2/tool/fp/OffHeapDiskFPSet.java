@@ -807,8 +807,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			super.prepareTable();
 			final int r = OffHeapDiskFPSet.this.reprobe.intValue();
 			
+			assert checkInput(array, indexer, r) : "Table violates invariants prior to eviction";
+			
 			// Sort with a single thread.
 			LongArrays.sort(a, 0, a.size() - 1L + r, getLongComparator());
+
+			assert checkSorted(a, indexer, r) == -1L : String.format(
+					"Array %s not fully sorted at index %s and reprobe %s.", a.toString(),
+					checkSorted(array, indexer, r), r);
 		}
 
 		/* (non-Javadoc)
@@ -868,7 +874,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					}
 					counter--;
 					try {
-						value = inRAF.readLong();
+						final long next = inRAF.readLong();
+						assert next > value : next + " > " + value + " from disk.";
+						value = next;
 						if (diskReads-- == 0L) {
 							eof = true;
 						}
@@ -895,7 +903,10 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					counter--;
 					// we used one fp up, thus move to next one
 					if (itr.hasNext()) {
-						fp = itr.next();
+						final long next = itr.next();
+						assert next > fp : next + " > " + fp + " from table at pos " + itr.pos + " "
+								+ a.toString(itr.pos - 10L, itr.pos + 10L);
+						fp = next;
 					} else {
 						eol = true;
 					}
@@ -1046,7 +1057,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			if (idx <= pos && pos <= idx + reprobe) {
 				continue;
 			}
-			System.err.println(String.format("%s with idx %s at pos %s.", tmp, idx, pos));
+			System.err.println(String.format("%s with idx %s at pos %s (reprobe: %s).", tmp, idx, pos, reprobe));
 			return false;
 		}
 		return true;
@@ -1076,6 +1087,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				continue;
 			}
 			if (e >= tmp) {
+				System.err.println(String.format("%s >= %s at pos %s.", e, tmp, pos));
 				return pos;
 			}
 			e = tmp;
@@ -1094,6 +1106,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		for (long i = 0L; i < array.size(); i++) {
 			long elem = array.get(i);
 			if (elem > EMPTY) {
+				System.out.println(String.format("%s elem at pos %s.", elem, i));
 				return false;
 			}
 		}
