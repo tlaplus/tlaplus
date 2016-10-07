@@ -122,11 +122,11 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				assert checkInput(array, indexer, r) : "Table violates invariants prior to eviction: "
 						+ array.toString();
 				
-				// Only pay the price of creating threads when array is sufficiently large.
-				if (array.size() > 8192) {
+				// Only pay the price of creating threads when array is
+				// sufficiently large and the array size is large enough to
+				// partition it for multiple threads.
+				if (array.size() >= 8192 && Math.floor(array.size() / numThreads) > 2 * PROBE_LIMIT) {
 					OffHeapDiskFPSet.this.flusher = new ConcurrentOffHeapMSBFlusher(array, r, numThreads, insertions);
-				} else {
-					OffHeapDiskFPSet.this.flusher = new OffHeapMSBFlusher(array);
 				}
 				
 				try {
