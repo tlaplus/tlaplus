@@ -230,6 +230,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 * @see tlc2.tool.fp.DiskFPSet#memInsert(long)
 	 */
 	final boolean memInsert(final long fp0) throws IOException {
+		// See OffHeapDiskFPSetJPFTest for a (verbatim) version that has
+		// additionally been verified with JPF.
 		for (int i = 0; i < PROBE_LIMIT; i++) {
 			final long position = indexer.getIdx(fp0, i);
 			final long expected = array.get(position);
@@ -245,6 +247,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				if (array.trySet(position, expected, fp0)) {
 					this.tblCnt.increment();
 					return false;
+				} else {
+					// Retry at current position because another thread wrote a
+					// value concurrently (possibly the same one this thread is
+					// trying to write).
+					i = i - 1;
+					continue;
 				}
 				// Cannot reduce reprobe to its value before we increased it.
 				// Another thread could have caused an increase to i too which
