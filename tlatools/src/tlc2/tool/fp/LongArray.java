@@ -213,19 +213,23 @@ public final class LongArray {
 	public final long size() {
 		return length;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-        long iMax = length - 1;
+		return toString(0L, length - 1L);
+	}
+
+	public String toString(long start, long end) {
+        long iMax = end;
         if (iMax == -1L) {
         	return "[]";
         }
 
         final StringBuilder b = new StringBuilder();
         b.append('[');
-        for (long i = 0; ; i++) {
+        for (long i = start; ; i++) {
             final long lng = get(i);
             if (lng == 0L) {
             	b.append("e");
