@@ -251,14 +251,10 @@ public final class MemFPSet2 extends FPSet {
     this.recover(this.filename);
   }
 
-  public final void prepareRecovery() throws IOException { /*SKIP*/ }
-
   public final void recoverFP(long fp) throws IOException {
     Assert.check(!this.put(fp), EC.TLC_FP_NOT_IN_SET);
   }
   
-  public final void completeRecovery() throws IOException { /*SKIP*/ }
-
   final private String chkptName(String fname, String ext) {
     return this.metadir + FileUtil.separator + fname + ".fp." + ext;
   }

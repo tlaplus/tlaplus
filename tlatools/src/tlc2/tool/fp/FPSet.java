@@ -115,10 +115,6 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 
     public abstract void recoverFP(long fp) throws IOException;
 
-    public abstract void prepareRecovery() throws IOException;
-
-    public abstract void completeRecovery() throws IOException;
-
     /* The set of checkpoint methods for remote checkpointing. */
     /* (non-Javadoc)
      * @see tlc2.tool.distributed.fp.FPSetRMI#beginChkpt(java.lang.String)

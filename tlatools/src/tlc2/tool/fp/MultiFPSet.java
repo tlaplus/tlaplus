@@ -197,10 +197,6 @@ public class MultiFPSet extends FPSet {
 	 * @see tlc2.tool.fp.FPSet#recover()
 	 */
 	public final void recover() throws IOException {
-		for (int i = 0; i < this.sets.length; i++) {
-			this.sets[i].prepareRecovery();
-		}
-
 		long recoverPtr = TLCTrace.getRecoverPtr();
 		BufferedRandomAccessFile braf = new BufferedRandomAccessFile(TLCTrace.getFilename(), "r");
 		while (braf.getFilePointer() < recoverPtr) {
@@ -209,19 +205,6 @@ public class MultiFPSet extends FPSet {
 			getFPSet(fp).recoverFP(fp);
 		}
 		braf.close();
-
-		for (int i = 0; i < this.sets.length; i++) {
-			this.sets[i].completeRecovery();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * 
-	 * NOOP!
-	 * 
-	 * @see tlc2.tool.fp.FPSet#prepareRecovery()
-	 */
-	public final void prepareRecovery() throws IOException { /* SKIP */
 	}
 
 	/* (non-Javadoc)
@@ -229,15 +212,6 @@ public class MultiFPSet extends FPSet {
 	 */
 	public final void recoverFP(long fp) throws IOException {
 		Assert.check(!this.put(fp), EC.TLC_FP_NOT_IN_SET);
-	}
-
-	/* (non-Javadoc)
-	 * 
-	 * NOOP!
-	 * 
-	 * @see tlc2.tool.fp.FPSet#completeRecovery()
-	 */
-	public final void completeRecovery() throws IOException { /* SKIP */
 	}
 
 	/* (non-Javadoc)

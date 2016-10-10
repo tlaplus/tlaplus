@@ -878,19 +878,6 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#prepareRecovery()
-	 */
-	public final void prepareRecovery() throws IOException {
-		// First close all "this.braf" and "this.brafPool" objects on currName:
-		for (int i = 0; i < this.braf.length; i++) {
-			this.braf[i].close();
-		}
-		for (int i = 0; i < this.brafPool.length; i++) {
-			this.brafPool[i].close();
-		}
-	}
-
-	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#recoverFP(long)
 	 */
 	public final void recoverFP(long fp) throws IOException {
@@ -925,30 +912,11 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			this.flusher.flushTable();
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#completeRecovery()
-	 */
-	public final void completeRecovery() throws IOException {
-		// Reopen a BufferedRAF for each thread
-		for (int i = 0; i < this.braf.length; i++) {
-			this.braf[i] = new BufferedRandomAccessFile(this.fpFilename,
-					"r");
-		}
-		for (int i = 0; i < this.brafPool.length; i++) {
-			this.brafPool[i] = new BufferedRandomAccessFile(
-					this.fpFilename, "r");
-		}
-		this.poolIndex = 0;
-	}
-
 	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#recover()
 	 */
 	public final void recover() throws IOException {
-		this.prepareRecovery();
-
 		long recoverPtr = TLCTrace.getRecoverPtr();
 		@SuppressWarnings("resource")
 		RandomAccessFile braf = new BufferedRandomAccessFile(
@@ -961,8 +929,6 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			long fp = braf.readLong();
 			this.recoverFP(fp);
 		}
-
-		this.completeRecovery();
 	}
 
 	private String getChkptName(String fname, String name) {
