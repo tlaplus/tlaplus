@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.editor.basic.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.SpecEvent;
 import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
@@ -33,6 +34,8 @@ import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import tla2unicode.Unicode;
 
 /**
  * A view that shows information about interesting
@@ -460,6 +463,7 @@ public class ObligationsView extends ViewPart
                 viewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
                 viewer.configure(new ObligationSourceViewerConfiguration());
                 viewer.getControl().setFont(JFaceResources.getTextFont());
+                
                 // add the control to the list of controls to be notified when the
                 // text editor font changes.
                 fontListener.addControl(viewer.getControl());
@@ -527,7 +531,7 @@ public class ObligationsView extends ViewPart
             if ((viewer.getDocument() == null || !viewer.getDocument().get().equals(oblString)) && !(oblString.length() == 0))
             {
                 // set the viewers document to the obligation.
-                viewer.setDocument(new Document(oblString.trim()));
+                viewer.setDocument(new Document(Unicode.convertToUnicode(oblString.trim())));
 
                 /*
                  * The following explanation for computing the height
