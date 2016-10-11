@@ -780,6 +780,18 @@ public class ModelChecker extends AbstractChecker
             this.theFPSet.recover();
             if (this.checkLiveness)
             {
+				// Liveness checking requires the initial states to be
+				// available as part of behaviors. Initial states are not part
+				// of the checkpoint, but we can easily recreate them.
+				// See bug #22 "Recovering from a checkpoint silently breaks
+				// liveness checking" at
+				// https://github.com/tlaplus/tlaplus/issues/22
+            	this.tool.getInitStates(new IStateFunctor() {
+					public Object addElement(TLCState state) {
+						liveCheck.addInitState(state, state.fingerPrint());
+						return true;
+					}
+				});
                 liveCheck.recover();
             }
             MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, new String[] { String.valueOf(this.theFPSet.size()),

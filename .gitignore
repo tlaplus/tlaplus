@@ -25,3 +25,4 @@ tlatools/states
 .DS_Store
 screenshots/
 ajcore.*.txt
+tlatools/test-model/CodePlexBug08/checkpoint/
