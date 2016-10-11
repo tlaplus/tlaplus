@@ -918,8 +918,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 */
 	public final void recover() throws IOException {
 		long recoverPtr = TLCTrace.getRecoverPtr();
-		@SuppressWarnings("resource")
-		RandomAccessFile braf = new BufferedRandomAccessFile(
+		final RandomAccessFile braf = new BufferedRandomAccessFile(
 				TLCTrace.getFilename(), "r");
 		while (braf.getFilePointer() < recoverPtr) {
 			// drop readLongNat
@@ -929,6 +928,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			long fp = braf.readLong();
 			this.recoverFP(fp);
 		}
+		braf.close();
 	}
 
 	private String getChkptName(String fname, String name) {
