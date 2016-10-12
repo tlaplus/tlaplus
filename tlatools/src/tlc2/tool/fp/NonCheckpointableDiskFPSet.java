@@ -49,16 +49,4 @@ public abstract class NonCheckpointableDiskFPSet extends DiskFPSet {
 	public void recover(String fname) throws IOException {
 		MP.printWarning(EC.GENERAL, "Checkpointing is not implemented for " + getClass().getCanonicalName());
 	}
-
-	public void prepareRecovery() throws IOException {
-		MP.printWarning(EC.GENERAL, "Checkpointing is not implemented for " + getClass().getCanonicalName());
-	}
-
-	public void completeRecovery() throws IOException {
-		MP.printWarning(EC.GENERAL, "Checkpointing is not implemented for " + getClass().getCanonicalName());
-	}
-
-	public void recover() throws IOException {
-		MP.printWarning(EC.GENERAL, "Checkpointing is not implemented for " + getClass().getCanonicalName());
-	}
 }
