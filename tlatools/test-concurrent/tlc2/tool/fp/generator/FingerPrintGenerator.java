@@ -16,6 +16,7 @@ public class FingerPrintGenerator implements Runnable {
 
 	protected final long totalInsertions;
 	protected final long perThreadInsertions;
+	protected final long seed;
 	protected final Random rnd;
 	protected final FPSet fpSet;
 	protected final CountDownLatch latch;
@@ -34,6 +35,7 @@ public class FingerPrintGenerator implements Runnable {
 		this.fpSet = fpSet;
 		this.latch = latch;
 		this.barrier = barrier;
+		this.seed = seed;
 		this.rnd = new Random(seed);
 		this.totalInsertions = totalInsertions;
 		this.perThreadInsertions = (long) Math.floor(totalInsertions / numThreads);
@@ -58,6 +60,17 @@ public class FingerPrintGenerator implements Runnable {
 
 				predecessor = rnd.nextLong();
 
+				// Periodically verify the FPSet's content. This causes a
+				// drastic slow down.
+//				if (fpSet.size() % 10000 == 0) {
+//					final Random verify = new Random(seed);
+//					long fp = verify.nextLong();
+//					while (fp != predecessor) {
+//						Assert.assertTrue(fpSet.contains(fp));
+//						fp = verify.nextLong();
+//					}
+//				}
+//				
 				boolean put = fpSet.put(predecessor);
 				if (put == false) {
 					puts++;
