@@ -9,6 +9,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
+
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -85,6 +87,16 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 	 * @throws InvocationTargetException
 	 */
 	private void doTest(Class<? extends FingerPrintGenerator> fpgClass) throws IOException, InterruptedException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		// Skip the test if the property
+		// -Dtlc2.tool.fp.MultiThreadedFPSetTest.excludes contains the simple
+		// name of the test. I.e.
+		// ...excludes=_BatchedFingerPrintGenerator_LongVecFingerPrintGenerator_PartitionedFingerPrintGenerator
+		// to skip all but FingerPrintGenerator test. Note that the name has to
+		// be prefixed with "_" to make it possible to skip
+		// "FingerPrintGenerator" itself.
+		Assume.assumeFalse(System.getProperty(MultiThreadedFPSetTest.class.getName() + ".excludes", "")
+				.contains("_" + fpgClass.getSimpleName()));
+		
 		TLCGlobals.setNumWorkers(NUM_THREADS);
 		final FPSet fpSet = getFPSetInitialized(NUM_THREADS);
 		final CountDownLatch latch = new CountDownLatch(NUM_THREADS);
