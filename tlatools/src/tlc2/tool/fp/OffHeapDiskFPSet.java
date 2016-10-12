@@ -769,7 +769,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			}
 			// Combine the callable results.
 			try {
-				executorService.invokeAll(tasks);
+				for (Callable<Void> callable : tasks) {
+					// Write the partitions sequentially to the file.
+					executorService.submit(callable).get();
+				}
+			} catch (ExecutionException e) {
+				throw new RuntimeException(e);
 			} catch (InterruptedException ie) {
 				throw new RuntimeException(ie);
 			} finally {
