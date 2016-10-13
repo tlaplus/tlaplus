@@ -229,16 +229,6 @@
 		</attribute>
 		<attribute>
 			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
-			<attributename>CollisionBucketCnt</attributename>
-			<contenttype>None</contenttype>
-		</attribute>
-		<attribute>
-			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
-			<attributename>CollisionRatio</attributename>
-			<contenttype>None</contenttype>
-		</attribute>
-		<attribute>
-			<objectname>tlc2.tool.fp:type=DiskFPSet0</objectname>
 			<attributename>LoadFactor</attributename>
 			<contenttype>None</contenttype>
 		</attribute>
