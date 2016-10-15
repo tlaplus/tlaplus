@@ -5,8 +5,6 @@
 
 package tlc2.pprint;
 
-import tla2unicode.Unicode;
-
 public class Format {
 
 /***************************************************************************/
@@ -44,8 +42,6 @@ public class Format {
 /* a bit longer than Pad for easy reading.                                 */
 /***************************************************************************/
 
-  public static boolean UNICODE = true; // Whether or not to use Unicode in output
-  
   private static final String setOpen  = "{ ";
   private static final String setClose = " }";
   private static final String setPad   = "  ";
@@ -154,10 +150,6 @@ public class Format {
 					 String pad,
 					 String sep) throws FormatException {
     try {
-      if (UNICODE) {
-    	  open = Unicode.sym2u(open);
-    	  close = Unicode.sym2u(close);
-      }
       return 
 	open +
 	formatValues(list.children(),
@@ -222,11 +214,6 @@ public class Format {
 				       String div,
 				       String divpad) throws FormatException {
     try {
-      if (UNICODE) {
-      	  open = Unicode.sym2u(open);
-      	  close = Unicode.sym2u(close);
-      	  div = Unicode.sym2u(div);
-      }
       return 
 	open +
 	formatPairs(list.children(),
