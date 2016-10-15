@@ -324,6 +324,10 @@ public final class Unicode {
 					replace();
 					addChar(offset, c);
 				}
+			} else if (token.length() > 0 && token.charAt(token.length()-1) == '[' && c != ']') {
+				// special case, previous char is '[' but new one isn't ']'
+				replace();
+				addChar(offset, c);
 			} else if (Unicode.ASCII_GLYPHS.indexOf(c) >= 0
 						|| (c == 'X' && token.length() == 1 && token.charAt(0) == '(')) { // Special case: (X)
 				appendToToken(offset, c);
@@ -467,12 +471,12 @@ public final class Unicode {
 		return str.length() == str.codePointCount(0, str.length());
 	}
 	
-//	public static void main(String[] args) {
-//		for (String a : new String[] {"<<-3>>", "<-3", "===", "==1"}) {
-//			System.out.println(a);
-//			System.out.println(convertToUnicode(a));
-//			System.out.println(convertToASCII(convertToUnicode(a)));
-//			System.out.println("-----");
-//		}
-//	}
+	public static void main(String[] args) {
+		for (String a : new String[] {"<<-3>>", "<-3", "===", "==1", "[<<3>>]"}) {
+			System.out.println(a);
+			System.out.println(convertToUnicode(a));
+			System.out.println(convertToASCII(convertToUnicode(a)));
+			System.out.println("-----");
+		}
+	}
 }
