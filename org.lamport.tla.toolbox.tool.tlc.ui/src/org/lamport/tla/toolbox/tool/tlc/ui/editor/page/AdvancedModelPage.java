@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
@@ -25,6 +26,7 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.lamport.tla.toolbox.editor.basic.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
@@ -44,6 +46,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.OpDefNode;
+import tla2unicode.Unicode;
 import tlc2.TLCGlobals;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MultiFPSet;
@@ -117,27 +120,29 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     {
         // definition overrides
         List<String> definitions = getModel().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector<String>());
+        for (ListIterator<String> it = definitions.listIterator(); it.hasNext();)
+        	it.set(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, it.next()));
         FormHelper.setSerializedInput(definitionsTable, definitions);
 
         // new definitions
         String newDefinitions = getModel().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING);
-        newDefinitionsSource.setDocument(new Document(newDefinitions));
+        newDefinitionsSource.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, newDefinitions)));
 
         // advanced model values
         String modelValues = getModel().getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING);
-        modelValuesSource.setDocument(new Document(modelValues));
+        modelValuesSource.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, modelValues)));
 
         // constraint
         String constraint = getModel().getAttribute(MODEL_PARAMETER_CONSTRAINT, EMPTY_STRING);
-        constraintSource.setDocument(new Document(constraint));
+        constraintSource.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, constraint)));
 
         // view
         String view = getModel().getAttribute(LAUNCH_VIEW, EMPTY_STRING);
-        viewSource.setDocument(new Document(view));
+        viewSource.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, view)));
 
         // action constraint
         String actionConstraint = getModel().getAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, EMPTY_STRING);
-        actionConstraintSource.setDocument(new Document(actionConstraint));
+        actionConstraintSource.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, actionConstraint)));
 
         // run mode mode
         boolean isMCMode = getModel().getAttribute(LAUNCH_MC_MODE, LAUNCH_MC_MODE_DEFAULT);

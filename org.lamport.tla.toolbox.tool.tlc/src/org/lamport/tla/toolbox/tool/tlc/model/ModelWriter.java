@@ -49,6 +49,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.OpDefNode;
+import tla2unicode.Unicode;
 
 /**
  * Encapsulates two buffers and provides semantic methods to add content to the _MC file and the CFG file of the model 
@@ -1104,6 +1105,7 @@ public class ModelWriter
              *  such messages with something more sensible in the future in the 
              *  appendError() method in TLCErrorView.
              */
+        	expression = Unicode.convertToASCII(expression);
             String id = ModelWriter.getValidIdentifier(CONSTANTEXPR_SCHEME);
             tlaBuffer.append(COMMENT).append("Constant expression definition ").append(ATTRIBUTE).append(attributeName)
                     .append(CR);

@@ -208,7 +208,7 @@ public class TLCErrorView extends ViewPart
             IDocument document = errorViewer.getDocument();
             try
             {
-                document.replace(0, document.getLength(), buffer.toString());
+                document.replace(0, document.getLength(), Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, buffer.toString()));
                 TLCUIHelper.setTLCLocationHyperlinks(errorViewer.getTextWidget());
             } catch (BadLocationException e)
             {
@@ -517,10 +517,10 @@ public class TLCErrorView extends ViewPart
                     if (selection instanceof TLCState)
                     {
                         TLCState state = (TLCState) selection;
-                        valueViewer.setDocument(new Document(state.getDescriptionWithTraceExpressions()));
+                        valueViewer.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, state.getDescriptionWithTraceExpressions())));
                     } else
                     {
-                        valueViewer.setDocument(new Document(selection.toString()));
+                        valueViewer.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, selection.toString())));
                     }
                 } else
                 {
