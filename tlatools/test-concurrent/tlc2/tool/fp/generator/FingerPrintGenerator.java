@@ -12,7 +12,8 @@ import tlc2.tool.fp.MultiThreadedFPSetTest;
 
 public class FingerPrintGenerator implements Runnable {
 
-	protected final long insertions;
+	protected final long totalInsertions;
+	protected final long perThreadInsertions;
 	protected final Random rnd;
 	protected final FPSet fpSet;
 	protected final CountDownLatch latch;
@@ -22,14 +23,15 @@ public class FingerPrintGenerator implements Runnable {
 	protected long puts = 0L;
 	protected long collisions = 0L;
 
-	public FingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch, long seed, long insertions) {
+	public FingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch, long seed, long totalInsertions) {
 		this.test = test;
 		this.id = id;
 		this.numThreads = numThreads;
 		this.fpSet = fpSet;
 		this.latch = latch;
 		this.rnd = new Random(seed);
-		this.insertions = insertions;
+		this.totalInsertions = totalInsertions;
+		this.perThreadInsertions = (long) Math.floor(totalInsertions / numThreads);
 	}
 
 	/* (non-Javadoc)
@@ -37,7 +39,10 @@ public class FingerPrintGenerator implements Runnable {
 	 */
 	public void run() {
 		long predecessor = 0L;
-		while (fpSet.size() < insertions) {
+		// Reduce number of FPSet#size invocation by counting puts/collisions.
+		// FPSet#size can cause an FPSet to synchronize all its writers slowing
+		// down execution.
+		while (puts + collisions < perThreadInsertions || fpSet.size() < totalInsertions) {
 			try {
 				// make sure set still contains predecessor
 				if (predecessor != 0L) {

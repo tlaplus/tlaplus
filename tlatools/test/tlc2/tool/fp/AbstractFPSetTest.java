@@ -91,11 +91,11 @@ public abstract class AbstractFPSetTest {
 
 	// insertion speed
 	public void printInsertionSpeed(final FPSet fpSet) {
-		final long currentSize = fpSet.size();
 		final long currentTimestamp = System.currentTimeMillis();
 		// print every minute
 		final double factor = (currentTimestamp - previousTimestamp) / 60000d;
 		if (factor >= 1d) {
+			final long currentSize = fpSet.size();
 			long insertions = (long) ((currentSize - previousSize) * factor);
 			if (fpSet instanceof FPSetStatistic) {
 				FPSetStatistic fpSetStatistics = (FPSetStatistic) fpSet;

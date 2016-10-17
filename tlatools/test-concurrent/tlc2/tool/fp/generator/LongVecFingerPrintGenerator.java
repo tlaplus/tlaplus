@@ -26,7 +26,10 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 	public void run() {
 		TestLongVec predecessors = new TestLongVec(batch);
 		boolean initialized = false;
-		while (fpSet.size() < insertions) {
+		// Reduce number of FPSet#size invocation by counting puts/collisions.
+		// FPSet#size can cause an FPSet to synchronize all its writers slowing
+		// down execution.
+		while (puts + collisions < perThreadInsertions || fpSet.size() < totalInsertions) {
 			try {
 				// Make sure set still contains predecessors
 				if (initialized) {
