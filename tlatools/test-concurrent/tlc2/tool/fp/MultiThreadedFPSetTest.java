@@ -106,6 +106,9 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		final Constructor<?> constructor = fpgClass
 				.getConstructor(new Class[] { MultiThreadedFPSetTest.class, int.class, int.class, FPSet.class, CountDownLatch.class, long.class, long.class });
 		
+		// Take timestamp after instantiating FPSet to not measure zero'ing/initializing FPSet.  
+		previousTimestamp = startTimestamp = System.currentTimeMillis();
+
 		// Start a periodic task to report progress. Do not do it as part of the
 		// FPGs below. It can drastically slow down an FPG selected to be the
 		// reporter.
@@ -135,6 +138,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		endTimeStamp = new Date();
 		
 		long overallPuts = 0L;
+		long overallCollisions = 0L;
 		
 		// print stats
 		for (int i = 0; i < fpgs.length; i++) {
@@ -143,7 +147,11 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 			System.out.println("Producer: " + fpg.getId() + " puts: " + puts);
 			System.out.println("puts/collisions: " + (double) (puts / fpg.getCollisions()));
 			overallPuts += puts;
+			overallCollisions += fpg.getCollisions();
 		}
+		System.out.println(String.format("Total puts: %s, total collisions: %s, total load factor: %s", overallPuts,
+				overallCollisions, df.format(((FPSetStatistic) fpSet).getLoadFactor())));
+		printInsertionSpeed(fpSet, startTimestamp, endTimeStamp.getTime());
 		
 		// Do not compare fpSet.size() to insertions as several FPGs might race
 		// with the FPG that inserts the INSERTIONS element. Hence we count the

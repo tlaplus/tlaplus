@@ -21,6 +21,7 @@ public abstract class AbstractFPSetTest {
 
 	protected long previousTimestamp;
 	protected long previousSize;
+	protected long startTimestamp;
 	protected Date endTimeStamp;
 
 	private File dir;
@@ -35,7 +36,7 @@ public abstract class AbstractFPSetTest {
 		dir = new File(tmpdir);
 		dir.mkdirs();
 		
-		previousTimestamp = System.currentTimeMillis();
+		previousTimestamp = startTimestamp = System.currentTimeMillis();
 		previousSize = 0L;
 		
 		System.out.println("Test started at " + new Date());
@@ -88,12 +89,12 @@ public abstract class AbstractFPSetTest {
 		System.out.println("Testing " + fpSet.getClass().getCanonicalName());
 		return fpSet;
 	}
-
+	
 	// insertion speed
 	public void printInsertionSpeed(final FPSet fpSet) {
-		final long currentTimestamp = System.currentTimeMillis();
 		// print every minute
-		final double factor = (currentTimestamp - previousTimestamp) / 60000d;
+		long now = System.currentTimeMillis();
+		final double factor = (now - previousTimestamp) / 60000d;
 		if (factor >= 1d) {
 			final long currentSize = fpSet.size();
 			long insertions = (long) ((currentSize - previousSize) * factor);
@@ -103,8 +104,21 @@ public abstract class AbstractFPSetTest {
 			} else {
 				System.out.println(System.currentTimeMillis() + " s (epoch); " + df.format(insertions) + " insertions/min");
 			}
-			previousTimestamp = currentTimestamp;
+			previousTimestamp = now;
 			previousSize = currentSize;
+		}
+	}
+	
+	public void printInsertionSpeed(final FPSet fpSet, long start, long end) {
+		final long size = fpSet.size();
+		// Normalize insertions to minutes.
+		final long duration = (end - start) / 1000L; //seconds
+		final long insertions = (long) ((size / duration) * 60);
+		if (fpSet instanceof FPSetStatistic) {
+			FPSetStatistic fpSetStatistics = (FPSetStatistic) fpSet;
+			System.out.println(System.currentTimeMillis() + " s; " + df.format(insertions) + " insertions/min; " + pf.format(fpSetStatistics.getLoadFactor()) + " load factor");
+		} else {
+			System.out.println(System.currentTimeMillis() + " s (epoch); " + df.format(insertions) + " insertions/min");
 		}
 	}
 }
