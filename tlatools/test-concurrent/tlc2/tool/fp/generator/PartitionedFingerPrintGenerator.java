@@ -28,6 +28,7 @@ package tlc2.tool.fp.generator;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 import org.junit.Assert;
 
@@ -42,8 +43,8 @@ public class PartitionedFingerPrintGenerator extends FingerPrintGenerator {
 	private final long increment;
 
 	public PartitionedFingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch,
-			long seed, long insertions) {
-		super(test, id, numThreads, fpSet, latch, seed, insertions);
+			long seed, long insertions, final CyclicBarrier barrier) {
+		super(test, id, numThreads, fpSet, latch, seed, insertions, barrier);
 		
 		final long numOfTotalBuckets = fpSet.getConfiguration().getMemoryInFingerprintCnt();
 		numOfPerThreadBuckets = numOfTotalBuckets / (1L * numThreads);
@@ -57,6 +58,8 @@ public class PartitionedFingerPrintGenerator extends FingerPrintGenerator {
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
+		waitForAllThreadsStarted();
+		
 		long insertions = 0L;
 		
 		while (insertions++ < (numOfPerThreadBuckets/2L)) {

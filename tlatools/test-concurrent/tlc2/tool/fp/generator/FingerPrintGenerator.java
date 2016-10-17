@@ -3,7 +3,9 @@ package tlc2.tool.fp.generator;
 
 import java.io.IOException;
 import java.util.Random;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 import org.junit.Assert;
 
@@ -17,18 +19,21 @@ public class FingerPrintGenerator implements Runnable {
 	protected final Random rnd;
 	protected final FPSet fpSet;
 	protected final CountDownLatch latch;
+	protected final CyclicBarrier barrier;
 	protected final int id;
 	protected final int numThreads;
 	protected final MultiThreadedFPSetTest test;
 	protected long puts = 0L;
 	protected long collisions = 0L;
 
-	public FingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch, long seed, long totalInsertions) {
+	public FingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch,
+			long seed, long totalInsertions, final CyclicBarrier barrier) {
 		this.test = test;
 		this.id = id;
 		this.numThreads = numThreads;
 		this.fpSet = fpSet;
 		this.latch = latch;
+		this.barrier = barrier;
 		this.rnd = new Random(seed);
 		this.totalInsertions = totalInsertions;
 		this.perThreadInsertions = (long) Math.floor(totalInsertions / numThreads);
@@ -38,6 +43,8 @@ public class FingerPrintGenerator implements Runnable {
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
+		waitForAllThreadsStarted();
+		
 		long predecessor = 0L;
 		// Reduce number of FPSet#size invocation by counting puts/collisions.
 		// FPSet#size can cause an FPSet to synchronize all its writers slowing
@@ -81,5 +88,15 @@ public class FingerPrintGenerator implements Runnable {
 	 */
 	public long getCollisions() {
 		return collisions == 0 ? 1 : collisions;
+	}
+
+	protected void waitForAllThreadsStarted() {
+		try {
+			barrier.await();
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		} catch (BrokenBarrierException e1) {
+			e1.printStackTrace();
+		}
 	}
 }

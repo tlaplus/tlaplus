@@ -4,6 +4,7 @@ package tlc2.tool.fp.generator;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 import org.junit.Assert;
 
@@ -16,14 +17,16 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 
 	private static final int batch = 1024;
 	
-	public LongVecFingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch, long seed, long insertions) {
-		super(test, id, numThreads, fpSet, latch, seed, insertions);
+	public LongVecFingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch, long seed, long insertions, final CyclicBarrier barrier) {
+		super(test, id, numThreads, fpSet, latch, seed, insertions, barrier);
 	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
+		waitForAllThreadsStarted();
+		
 		TestLongVec predecessors = new TestLongVec(batch);
 		boolean initialized = false;
 		// Reduce number of FPSet#size invocation by counting puts/collisions.

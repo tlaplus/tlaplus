@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 import org.junit.Assume;
 import org.junit.Before;
@@ -103,28 +104,34 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		final FPSet fpSet = getFPSetInitialized(NUM_THREADS);
 		final CountDownLatch latch = new CountDownLatch(NUM_THREADS);
 
-		final Constructor<?> constructor = fpgClass
-				.getConstructor(new Class[] { MultiThreadedFPSetTest.class, int.class, int.class, FPSet.class, CountDownLatch.class, long.class, long.class });
+		final Constructor<?> constructor = fpgClass.getConstructor(new Class[] { MultiThreadedFPSetTest.class,
+				int.class, int.class, FPSet.class, CountDownLatch.class, long.class, long.class, CyclicBarrier.class });
 		
 		// Take timestamp after instantiating FPSet to not measure zero'ing/initializing FPSet.  
 		previousTimestamp = startTimestamp = System.currentTimeMillis();
 
-		// Start a periodic task to report progress. Do not do it as part of the
-		// FPGs below. It can drastically slow down an FPG selected to be the
-		// reporter.
-		final TimerTask reporter = new TimerTask() {
-			public void run() {
-				printInsertionSpeed(fpSet);
-			}
-		};
 		final Timer timer = new Timer();
-		timer.scheduleAtFixedRate(reporter, 1L, 60 * 1000);
+		final CyclicBarrier barrier = new CyclicBarrier(NUM_THREADS, new Runnable() {
+			public void run() {
+				// Start a periodic task to report progress. Do not do it as part of the
+				// FPGs below. It can drastically slow down an FPG selected to be the
+				// reporter.
+				final TimerTask reporter = new TimerTask() {
+					public void run() {
+						printInsertionSpeed(fpSet);
+					}
+				};
+				// Take timestamp after instantiating FPSet to not measure zero'ing/initializing FPSet.  
+				previousTimestamp = startTimestamp = System.currentTimeMillis();
+				timer.scheduleAtFixedRate(reporter, 1L, 60 * 1000);
+			}
+		});
 		
 		long seed = RNG_SEED;
 		final FingerPrintGenerator[] fpgs = new FingerPrintGenerator[NUM_THREADS];
 		for (int i = 0; i < fpgs.length; i++) {
 			fpgs[i] = (FingerPrintGenerator) constructor.newInstance(
-					this, i, fpgs.length, fpSet, latch, seed++, INSERTIONS);
+					this, i, fpgs.length, fpSet, latch, seed++, INSERTIONS, barrier);
 			Thread thread = new Thread(fpgs[i], "Producer#" + i);
 			thread.start();
 		}

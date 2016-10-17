@@ -4,6 +4,7 @@ package tlc2.tool.fp.generator;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 import org.junit.Assert;
 
@@ -14,14 +15,16 @@ public class BatchedFingerPrintGenerator extends FingerPrintGenerator {
 
 	private static final int batch = 1024;
 	
-	public BatchedFingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch, long seed, long insertions) {
-		super(test, id, numThreads, fpSet, latch, seed, insertions);
+	public BatchedFingerPrintGenerator(MultiThreadedFPSetTest test, int id, int numThreads, FPSet fpSet, CountDownLatch latch, long seed, long insertions, final CyclicBarrier barrier) {
+		super(test, id, numThreads, fpSet, latch, seed, insertions, barrier);
 	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
+		waitForAllThreadsStarted();
+		
 		long predecessors[] = new long[batch];
 		boolean initialized = false;
 		// Reduce number of FPSet#size invocation by counting puts/collisions.
