@@ -65,12 +65,6 @@ public class PartitionedFingerPrintGenerator extends FingerPrintGenerator {
 					Assert.fail("Linear fill-up should not cause a collision");
 				}
 				fp += increment;
-
-				// First producer prints stats
-				if (id == 0) {
-					test.printInsertionSpeed(fpSet);
-				}
-
 			} catch (IOException e) {
 				e.printStackTrace();
 				Assert.fail("Unexpected");

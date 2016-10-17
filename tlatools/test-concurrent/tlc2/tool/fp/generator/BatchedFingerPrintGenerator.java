@@ -51,12 +51,6 @@ public class BatchedFingerPrintGenerator extends FingerPrintGenerator {
 						collisions++;
 					}
 				}
-
-				// First producer prints stats
-				if (id == 0) {
-					test.printInsertionSpeed(fpSet);
-				}
-
 			} catch (IOException e) {
 				e.printStackTrace();
 				Assert.fail("Unexpected");

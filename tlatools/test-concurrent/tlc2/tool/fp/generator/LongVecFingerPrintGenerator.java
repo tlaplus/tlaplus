@@ -45,12 +45,6 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 				final BitVector bitVector = fpSet.putBlock(predecessors);
 				puts += bitVector.trueCnt();
 				collisions += (batch - bitVector.trueCnt());
-
-				// First producer prints stats
-				if (id == 0) {
-					test.printInsertionSpeed(fpSet);
-				}
-
 			} catch (IOException e) {
 				e.printStackTrace();
 				Assert.fail("Unexpected");

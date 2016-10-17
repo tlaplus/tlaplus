@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Assume;
@@ -104,6 +106,17 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		final Constructor<?> constructor = fpgClass
 				.getConstructor(new Class[] { MultiThreadedFPSetTest.class, int.class, int.class, FPSet.class, CountDownLatch.class, long.class, long.class });
 		
+		// Start a periodic task to report progress. Do not do it as part of the
+		// FPGs below. It can drastically slow down an FPG selected to be the
+		// reporter.
+		final TimerTask reporter = new TimerTask() {
+			public void run() {
+				printInsertionSpeed(fpSet);
+			}
+		};
+		final Timer timer = new Timer();
+		timer.scheduleAtFixedRate(reporter, 1L, 60 * 1000);
+		
 		long seed = RNG_SEED;
 		final FingerPrintGenerator[] fpgs = new FingerPrintGenerator[NUM_THREADS];
 		for (int i = 0; i < fpgs.length; i++) {
@@ -115,6 +128,9 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 
 		// wait for runnables/fpg to tear down the latch
 		latch.await();
+		
+		// Cancel reporting task.
+		timer.cancel();
 
 		endTimeStamp = new Date();
 		
