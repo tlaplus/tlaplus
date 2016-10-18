@@ -50,7 +50,7 @@ public class PartitionedFingerPrintGenerator extends FingerPrintGenerator {
 		numOfPerThreadBuckets = numOfTotalBuckets / (1L * numThreads);
 
 		final long perThreadStartBucket = numOfPerThreadBuckets * (1L * id);
-		increment = (Long.MAX_VALUE / numOfTotalBuckets) * 2L;
+		increment = (long) Math.ceil((Long.MAX_VALUE - 1L) / (numOfTotalBuckets * 1d));
 		fp = increment * perThreadStartBucket;
 	}
 	
@@ -62,12 +62,13 @@ public class PartitionedFingerPrintGenerator extends FingerPrintGenerator {
 		
 		long insertions = 0L;
 		
-		while (insertions++ < (numOfPerThreadBuckets/2L)) {
+		while (insertions++ < numOfPerThreadBuckets) {
 			try {
 				if (fp!= 0L && fpSet.put(fp) != false) {
 					Assert.fail("Linear fill-up should not cause a collision");
 				}
 				fp += increment;
+				puts++;
 			} catch (IOException e) {
 				e.printStackTrace();
 				Assert.fail("Unexpected");
