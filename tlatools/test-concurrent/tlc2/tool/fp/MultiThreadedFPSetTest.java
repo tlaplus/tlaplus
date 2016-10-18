@@ -138,11 +138,10 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 
 		// wait for runnables/fpg to tear down the latch
 		latch.await();
+		endTimeStamp = new Date();
 		
 		// Cancel reporting task.
 		timer.cancel();
-
-		endTimeStamp = new Date();
 		
 		long overallPuts = 0L;
 		long overallCollisions = 0L;
@@ -157,8 +156,8 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 			overallPuts += puts;
 			overallCollisions += collisions;
 		}
-		System.out.println(String.format("Total puts: %s, total collisions: %s, total load factor: %s", overallPuts,
-				overallCollisions, df.format(((FPSetStatistic) fpSet).getLoadFactor())));
+		System.out.println(String.format("Total puts: %s, total collisions: %s, total load factor: %s, duration: %s ms.", overallPuts,
+				overallCollisions, df.format(((FPSetStatistic) fpSet).getLoadFactor()), endTimeStamp.getTime() - startTimestamp));
 		printInsertionSpeed(fpSet, startTimestamp, endTimeStamp.getTime());
 		
 		// Do not compare fpSet.size() to insertions as several FPGs might race
