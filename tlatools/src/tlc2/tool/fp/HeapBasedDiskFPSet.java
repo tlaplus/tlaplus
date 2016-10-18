@@ -112,7 +112,7 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 
 		// guard against negative maxTblCnt
 		// LL modified error message on 7 April 2012
-		Assert.check(maxTblCnt > capacity && capacity > tblCnt.sum(),
+		Assert.check(maxTblCnt > capacity && capacity > getTblCnt(),
 				"negative maxTblCnt");
 
 		this.mask = capacity - 1;

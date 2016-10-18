@@ -270,7 +270,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 * @see tlc2.tool.fp.FPSet#size()
 	 */
 	public long size() {
-		return this.tblCnt.sum() + this.fileCnt;
+		return this.getTblCnt() + this.fileCnt;
 	}
 
 	public abstract long sizeof();
@@ -319,7 +319,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		// A) the FP distribution causes the index tbl to be unevenly populated.
 		// B) the FP distribution reassembles linear fill-up/down which 
 		// causes tblCnt * buckets with initial load factor to be allocated.
-		return (this.tblCnt.sum() >= this.maxTblCnt) || forceFlush ;
+		return (this.getTblCnt() >= this.maxTblCnt) || forceFlush ;
 	}
 
 	/**
@@ -969,7 +969,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	 *         load factor, <code>-1d</code> is returned.
 	 */
 	public double getLoadFactor() {
-		return this.tblCnt.doubleValue() / (double) this.maxTblCnt;
+		return ((double) this.getTblCnt()) / (double) this.maxTblCnt;
 	}
 
 	// /**
@@ -1031,7 +1031,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		 * for writing by the caller, and that the mutex "this.rwLock" is also held.
 		 */
 		void flushTable() throws IOException {
-			if (tblCnt.sum() == 0)
+			if (getTblCnt() == 0)
 				return;
 			
 			prepareTable();
@@ -1082,7 +1082,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			File tmpFile = new File(tmpFilename);
 			tmpFile.delete();
 			RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
-			tmpRAF.setLength((tblCnt.sum() + fileCnt) * FPSet.LongSize);
+			tmpRAF.setLength((getTblCnt() + fileCnt) * FPSet.LongSize);
 
 			// merge
 			mergeNewEntries(braf, tmpRAF);

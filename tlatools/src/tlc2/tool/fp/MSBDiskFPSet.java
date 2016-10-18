@@ -101,7 +101,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 		 * @see tlc2.tool.fp.DiskFPSet#mergeNewEntries(long[], int, java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
 		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
-			final long buffLen = tblCnt.sum();
+			final long buffLen = getTblCnt();
 			final TLCIterator itr = new TLCIterator(tbl);
 
 			// Precompute the maximum value of the new file.
