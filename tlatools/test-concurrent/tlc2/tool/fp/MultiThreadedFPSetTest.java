@@ -151,10 +151,11 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		for (int i = 0; i < fpgs.length; i++) {
 			final FingerPrintGenerator fpg = fpgs[i];
 			long puts = fpg.getPuts();
-			System.out.println("Producer: " + fpg.getId() + " puts: " + puts);
-			System.out.println("puts/collisions: " + (double) (puts / fpg.getCollisions()));
+			long collisions = fpg.getCollisions();
+			System.out.println(String.format("Producer: %s, puts: %s, puts/collisions: %s", fpg.getId(), puts,
+					(collisions == 0 ? "none" : (double) (puts / collisions))));
 			overallPuts += puts;
-			overallCollisions += fpg.getCollisions();
+			overallCollisions += collisions;
 		}
 		System.out.println(String.format("Total puts: %s, total collisions: %s, total load factor: %s", overallPuts,
 				overallCollisions, df.format(((FPSetStatistic) fpSet).getLoadFactor())));

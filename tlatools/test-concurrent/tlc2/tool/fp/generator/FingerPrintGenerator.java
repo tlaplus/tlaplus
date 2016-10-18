@@ -87,7 +87,7 @@ public class FingerPrintGenerator implements Runnable {
 	 * @return the collisions
 	 */
 	public long getCollisions() {
-		return collisions == 0 ? 1 : collisions;
+		return collisions;
 	}
 
 	protected void waitForAllThreadsStarted() {
