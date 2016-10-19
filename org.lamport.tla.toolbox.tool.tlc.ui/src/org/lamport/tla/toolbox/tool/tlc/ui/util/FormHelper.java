@@ -33,6 +33,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.TLASourceViewer;
 
 import tla2unicode.Unicode;
 
@@ -193,7 +194,7 @@ public class FormHelper
      */
     public static SourceViewer createOutputViewer(Composite parent, int flags)
     {
-    	SourceViewer sourceViewer = new SourceViewer(parent, null, null, false, flags);
+    	SourceViewer sourceViewer = new TLASourceViewer(parent, null, null, false, flags);
 //    	{
 //			@Override
 //			public void setDocument(IDocument document, IAnnotationModel annotationModel, int modelRangeOffset, int modelRangeLength) {
@@ -219,7 +220,7 @@ public class FormHelper
      */
     public static SourceViewer createSourceViewer(Composite parent, int flags)
     {
-        SourceViewer sourceViewer = new SourceViewer(parent, null, null, false, flags);
+        SourceViewer sourceViewer = new TLASourceViewer(parent, null, null, false, flags);
 //        {
 //			@Override
 //			public void setDocument(IDocument document, IAnnotationModel annotationModel, int modelRangeOffset, int modelRangeLength) {

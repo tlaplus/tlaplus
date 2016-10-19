@@ -517,10 +517,10 @@ public class TLCErrorView extends ViewPart
                     if (selection instanceof TLCState)
                     {
                         TLCState state = (TLCState) selection;
-                        valueViewer.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, state.getDescriptionWithTraceExpressions())));
+                        valueViewer.setDocument(new Document(state.getDescriptionWithTraceExpressions()));
                     } else
                     {
-                        valueViewer.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, selection.toString())));
+                        valueViewer.setDocument(new Document(selection.toString()));
                     }
                 } else
                 {

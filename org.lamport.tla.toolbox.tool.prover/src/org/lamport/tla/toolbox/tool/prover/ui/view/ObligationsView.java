@@ -33,6 +33,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
+import org.lamport.tla.toolbox.util.TLASourceViewer;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2unicode.Unicode;
@@ -459,7 +460,7 @@ public class ObligationsView extends ViewPart
                  * obligations difficult to read, so a horizontal scroll
                  * bar is necessary.
                  */
-                SourceViewer viewer = new SourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL);
+                SourceViewer viewer = new TLASourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL);
                 viewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
                 viewer.configure(new ObligationSourceViewerConfiguration());
                 viewer.getControl().setFont(JFaceResources.getTextFont());
@@ -531,7 +532,7 @@ public class ObligationsView extends ViewPart
             if ((viewer.getDocument() == null || !viewer.getDocument().get().equals(oblString)) && !(oblString.length() == 0))
             {
                 // set the viewers document to the obligation.
-                viewer.setDocument(new Document(Unicode.convertToUnicode(oblString.trim())));
+                viewer.setDocument(new Document(oblString.trim()));
 
                 /*
                  * The following explanation for computing the height

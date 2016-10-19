@@ -44,6 +44,14 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 		init();
 	}
 	
+	
+	
+	@Override
+	public void disconnect(Object element) {
+		// TODO Auto-generated method stub
+		super.disconnect(element);
+	}
+
 	private void init() {
 		addElementStateListener(new ElementStateAdapter() {
 			
@@ -345,6 +353,10 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 		}
     }
 	
+    public void setUnicode0(Object element, boolean unicode) {
+    	setUnicode0(getFileInfo(element), unicode);
+    }
+    
 	private void setUnicode0(FileInfo info, boolean unicode) {
 		if (info == null)
 			return;

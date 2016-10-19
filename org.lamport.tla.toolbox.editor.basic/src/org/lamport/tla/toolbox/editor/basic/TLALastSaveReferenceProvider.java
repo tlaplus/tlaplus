@@ -15,7 +15,7 @@ public class TLALastSaveReferenceProvider extends LastSaveReferenceProvider {
 	@Override
 	public IDocument getReference(IProgressMonitor monitor) {
 		final IDocument doc = super.getReference(monitor);
-		if (fEditor.isUnicode()) {
+		if (TLAUnicodeReplacer.isUnicode()) {
 			if (doc instanceof AbstractDocument) {
 				final long mod = ((AbstractDocument)doc).getModificationStamp();
 				if (mod != fModificationStamp) {

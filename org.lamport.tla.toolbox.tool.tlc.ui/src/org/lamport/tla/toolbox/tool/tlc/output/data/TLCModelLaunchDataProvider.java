@@ -866,7 +866,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 		UIHelper.runUIAsync(new Runnable() {
 			public void run() {
 				try {
-					final String msg = TLAUnicodeReplacer.UNICODE_MODE ? Unicode.convertToUnicode(message) : message;
+					final String msg = TLAUnicodeReplacer.isUnicode() ? Unicode.convertToUnicode(message) : message;
 					DocumentRewriteSession rewriteSession;
 					if (append && !isDefaultLabel(document)) {
 						rewriteSession = document.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
@@ -883,6 +883,21 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 			}
 		});
 	}
+	
+	public synchronized void convertUnicode() {
+		UIHelper.runUIAsync(new Runnable() {
+			public void run() {
+				convertDocumentText(progressOutput);
+				convertDocumentText(userOutput);
+				if (constantExprEvalOutput != null)
+					constantExprEvalOutput = Unicode.convert(TLAUnicodeReplacer.isUnicode(), constantExprEvalOutput);
+			}});
+	}
+	
+	private static void convertDocumentText(final Document document) {
+		document.set(Unicode.convert(TLAUnicodeReplacer.isUnicode(), document.get()));
+	}
+	
 	
 	/**
 	 * @param document

@@ -251,7 +251,13 @@
             id="org.lamport.tla.toolbox.editor.basic.formatAndBoxComment"
             name="Format and Box Comment">
       </command>
-            <command
+      <command
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ToggleUnicodeHandler"
+            description="Converts selection to Unicode."
+            id="org.lamport.tla.toolbox.editor.basic.toggleUnicode"
+            name="Toggle Unicode">
+      </command>            
+      <command
             categoryId="org.eclipse.ui.category.textEditor"
             defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.UnicodeConversionHandler"
             description="Converts selection to Unicode."
@@ -682,7 +688,7 @@
                     style="push">
               </command>
               <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.pasteAsUnicode"
+                    commandId="org.lamport.tla.toolbox.editor.basic.toggleUnicode"
                     style="push">
               </command>
            </menuContribution>

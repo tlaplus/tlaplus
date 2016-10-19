@@ -239,7 +239,7 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             for (int i = 0; i < symbols.length; i++)
             {
             	String name = symbols[i].getName().toString();
-            	name = TLAUnicodeReplacer.UNICODE_MODE ? Unicode.sym2u(name) : Unicode.sym2a(name);
+            	name = TLAUnicodeReplacer.isUnicode() ? Unicode.sym2u(name) : Unicode.sym2a(name);
                 list.add(name);
                 list.setData(name, symbols[i]);
             }

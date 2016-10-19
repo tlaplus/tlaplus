@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.editor.basic;
 
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
@@ -7,6 +8,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.lamport.tla.toolbox.Activator;
 
 import tla2unicode.Unicode;
 
@@ -17,6 +19,8 @@ import tla2unicode.Unicode;
  * @author pron
  */
 public class TLAUnicodeReplacer {
+	public static final String EVENTID_TOGGLE_UNICODE = "TLA/Unicode/toggle";
+	
 	// consider using IAutoEditStrategy
 	
 	public static volatile boolean UNICODE_MODE = true;
@@ -34,6 +38,24 @@ public class TLAUnicodeReplacer {
 	private DocumentCommand command;
 	
 	private final Unicode.OnlineReplacer replacer;
+	
+	public static boolean isUnicode() {
+		return UNICODE_MODE;
+	}
+	
+	public static void setUnicode(boolean value) {
+		if (value == UNICODE_MODE)
+			return;
+		
+		UNICODE_MODE = value;
+		
+		IEventBroker eventBroker = Activator.getDefault().getWorkbench().getService(IEventBroker.class);
+		eventBroker.post(EVENTID_TOGGLE_UNICODE, value);
+	}
+	
+	public static void toggleUnicode() {
+		setUnicode(!isUnicode());
+	}
 	
 	private static SourceViewer sourceViewer(Object element) {
 		if (element instanceof ISourceViewer)

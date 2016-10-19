@@ -121,28 +121,28 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // definition overrides
         List<String> definitions = getModel().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector<String>());
         for (ListIterator<String> it = definitions.listIterator(); it.hasNext();)
-        	it.set(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, it.next()));
+        	it.set(Unicode.convert(TLAUnicodeReplacer.isUnicode(), it.next()));
         FormHelper.setSerializedInput(definitionsTable, definitions);
 
         // new definitions
         String newDefinitions = getModel().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING);
-        newDefinitionsSource.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, newDefinitions)));
+        newDefinitionsSource.setDocument(new Document(newDefinitions));
 
         // advanced model values
         String modelValues = getModel().getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING);
-        modelValuesSource.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, modelValues)));
+        modelValuesSource.setDocument(new Document(modelValues));
 
         // constraint
         String constraint = getModel().getAttribute(MODEL_PARAMETER_CONSTRAINT, EMPTY_STRING);
-        constraintSource.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, constraint)));
+        constraintSource.setDocument(new Document(constraint));
 
         // view
         String view = getModel().getAttribute(LAUNCH_VIEW, EMPTY_STRING);
-        viewSource.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, view)));
+        viewSource.setDocument(new Document(view));
 
         // action constraint
         String actionConstraint = getModel().getAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, EMPTY_STRING);
-        actionConstraintSource.setDocument(new Document(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, actionConstraint)));
+        actionConstraintSource.setDocument(new Document(actionConstraint));
 
         // run mode mode
         boolean isMCMode = getModel().getAttribute(LAUNCH_MC_MODE, LAUNCH_MC_MODE_DEFAULT);

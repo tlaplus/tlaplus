@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.model;
 
+
+
 /**
  * An Assignment consists of a label, a list of parameters and the right side.
  * e.G. <code>F(_, _, _,) <- foo</code>. <code>F</code> is the label, <code>foo</code> is the 
