@@ -89,7 +89,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 	 * @throws IllegalArgumentException
 	 * @throws InvocationTargetException
 	 */
-	private void doTest(Class<? extends FingerPrintGenerator> fpgClass) throws IOException, InterruptedException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	protected FPSet doTest(Class<? extends FingerPrintGenerator> fpgClass) throws IOException, InterruptedException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		// Skip the test if the property
 		// -Dtlc2.tool.fp.MultiThreadedFPSetTest.excludes contains the simple
 		// name of the test. I.e.
@@ -173,5 +173,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		// Check a DiskFPSet's invariant that after flush all fingerprints in
 		// the file are a) monotonically increasing and b) there are no duplicates.
 		assertTrue(fpSet.checkInvariant());
+		
+		return fpSet;
 	}
 }

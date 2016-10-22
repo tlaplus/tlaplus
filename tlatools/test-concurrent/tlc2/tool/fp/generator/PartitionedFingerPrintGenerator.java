@@ -64,11 +64,13 @@ public class PartitionedFingerPrintGenerator extends FingerPrintGenerator {
 		
 		while (insertions++ < numOfPerThreadBuckets) {
 			try {
-				if (fp!= 0L && fpSet.put(fp) != false) {
-					Assert.fail("Linear fill-up should not cause a collision");
+				if (fp != 0L) {
+					if (fpSet.put(fp) != false) {
+						Assert.fail("Linear fill-up should not cause a collision");
+					}
+					puts++;
 				}
 				fp += increment;
-				puts++;
 			} catch (IOException e) {
 				e.printStackTrace();
 				Assert.fail("Unexpected");
