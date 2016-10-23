@@ -390,7 +390,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 		private static final long minFingerprint = 1L; //Minimum possible fingerprint (0L marks an empty position)
 
-		private final float tblScalingFactor;
+		private final double tblScalingFactor;
 		private final long maxFingerprint;
 		protected final long positions;
 		

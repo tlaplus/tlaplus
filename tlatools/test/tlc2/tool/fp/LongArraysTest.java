@@ -614,8 +614,8 @@ public class LongArraysTest {
 		final List<Long> expected = new ArrayList<Long>();
 		expected.add(1L);
 		expected.add(0L);
-		expected.add(0L);
 		expected.add(4L);
+		expected.add(0L);
 		expected.add(6L);
 		expected.add(0L);
 		expected.add(0L);
