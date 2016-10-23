@@ -8,6 +8,6 @@ Eclipse Oomph is a tool to simplify and automate the setup of Eclipse developmen
   1. Choose "Neon" as the product version at the bottom
 5. On the next screen, expand "Github Project" in the tree and select the check-box left to "TLA+"
   1. Verify that "TLA+" shows up under "Project" at the bottom table and that the "Master" stream is selected
-6. On the next page, select whether to use anonymous access to github or not from the "TLA+ Github Repository" dropdown list
+6. On the next page, select whether to use anonymous access (read-only) to github or not from the "TLA+ Github Repository" dropdown list
 7. Hit Finish and have a coffee or tea (though you might have to accept a license dialog...)
 
