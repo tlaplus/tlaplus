@@ -93,6 +93,13 @@ The input
 
 produces the correct output.
 
+
+4. It looks like something goes wrong with the formatting of tokens 
+   that occur at the beginning of a line of a multiline comment.  For
+   example, something like Brxwee that would normally be italicized 
+   if it occured in the middle of text is not italicized if it's
+   at the beginning of the comment line (in the .tla file).
+   
 ----------
   
 
