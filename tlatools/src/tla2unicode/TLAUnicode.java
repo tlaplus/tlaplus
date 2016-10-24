@@ -389,7 +389,7 @@ public class TLAUnicode {
 				return column;
 			final Token candidate = spec[line][toki];
 			
-			System.out.println("@@Candidate: " + candidate);
+//			System.out.println("@@Candidate: " + candidate);
 			
 			final int col0 = col(from, candidate);
 			final int col1 = col(to, candidate);
