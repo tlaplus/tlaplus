@@ -238,12 +238,12 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     public Location convertLocation(FileInfo info, boolean screen, Location location) {
     	if (location == null)
     		return null;
-    	System.out.println("&&&from: " + location);
+//    	System.out.println("&&&from: " + location);
     	if (isUnicode())
     		location = new Location(location.source() != null ? UniqueString.uniqueStringOf(location.source()) : null, 
         		location.beginLine(), convertColumn(info, screen, location.beginLine() - 1, location.beginColumn()), 
         		location.endLine(), convertColumn(info, screen, location.endLine() - 1, location.endColumn()));
-    	System.out.println("&&&to: " + location);
+//    	System.out.println("&&&to: " + location);
     	return location;
     }
     
@@ -259,7 +259,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     }
     
     private Position convertPosition(FileInfo info, boolean screen, IMarker marker, Position position) {
-    	System.out.println("CP " + marker.getId() + " from " + position);
+//    	System.out.println("CP " + marker.getId() + " from " + position);
 		if (MarkerUtilities.getCharStart(marker) == -1 && MarkerUtilities.getCharEnd(marker) == -1) {
 			try {
 				// marker line number is 1-based
@@ -273,26 +273,26 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 			}
 		} else
 			position = convertPosition(info, screen, position);
-    	System.out.println("CP " + marker.getId() + " to " + position);
+//    	System.out.println("CP " + marker.getId() + " to " + position);
     	return position;
     }
     
     private Position convertPosition(FileInfo info, boolean screen, Position position) {
     	if (position == null)
     		return null;
-    	System.out.println("&&&from: " + position);
+//    	System.out.println("&&&from: " + position);
     	boolean deleted = position.isDeleted;
     	if (isUnicode()) {
     		int offset = convertOffset(info, screen, position.getOffset());
         	int end = convertOffset(info, screen, position.getOffset() + position.getLength());
         	int length = end - offset;
-        	if (length < 0)
-        		System.out.println("XXXX: " + length + " " + position + " " + offset + " " + end);
+//        	if (length < 0)
+//        		System.out.println("XXXX: " + length + " " + position + " " + offset + " " + end);
     		position = new Position(offset, length);
     		if (deleted)
     			position.delete();
     	}
-    	System.out.println("&&&to: " + position);
+//    	System.out.println("&&&to: " + position);
     	return position;
     }
     
@@ -311,19 +311,19 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 		final IDocument asciiDoc = info.asciiDoc;
 		
 		try {
-			System.out.println("&&&from: " + offset);
+//			System.out.println("&&&from: " + offset);
 			final IDocument fromDoc = screen ? doc : asciiDoc;
 			final IDocument toDoc = !screen ? doc : asciiDoc;
 
 			final int line = fromDoc.getLineOfOffset(offset);
-			System.out.println("&&&fromLine: " + line);
+//			System.out.println("&&&fromLine: " + line);
 			// System.out.println("&&&toLine: " + toDoc.getLineOfOffset(offset));
 			final int lineOffset = fromDoc.getLineOffset(line);
 			final int column = offset - lineOffset;
 			
 			final int lineLength = toDoc.getLineLength(line);
 			offset = toDoc.getLineOffset(line) + Math.min(locationConverter.convert(!screen, line, column), lineLength);
-			System.out.println("&&&to: " + offset);
+//			System.out.println("&&&to: " + offset);
 			return offset;
 		} catch (BadLocationException e) {
 			e.printStackTrace();
