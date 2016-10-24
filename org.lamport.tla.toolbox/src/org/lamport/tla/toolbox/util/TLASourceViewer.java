@@ -71,7 +71,7 @@ public class TLASourceViewer extends SourceViewer {
 	@Override
 	protected void updateTextListeners(WidgetCommand cmd) {
 		if (converting) // prevent the model from being marked dirty due to unicode toggle
-			return;
+			return; // if does not work, temporarily remove instances of DirtyMarkingListener from fTextListeners
 		super.updateTextListeners(cmd);
 	}
 
