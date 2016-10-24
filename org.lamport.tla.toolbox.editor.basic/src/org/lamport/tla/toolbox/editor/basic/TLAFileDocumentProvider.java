@@ -61,7 +61,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 			
 			@Override
 			public void elementContentReplaced(Object element) {
-				setUnicode0(getFileInfo(element), TLAUnicodeReplacer.UNICODE_MODE);
+				setUnicode0(getFileInfo(element), TLAUnicodeReplacer.isUnicode());
 			}
 		});
 	}
@@ -111,7 +111,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	}
 	
 	public boolean isUnicode() {
-    	return TLAUnicodeReplacer.UNICODE_MODE;
+    	return TLAUnicodeReplacer.isUnicode();
     }
 	
 	public IDocument getAsciiDocument(Object element) {
@@ -191,18 +191,18 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	@Override
 	public void connect(Object element) throws CoreException {
 		super.connect(element);
-		setUnicode0(getFileInfo(element), TLAUnicodeReplacer.UNICODE_MODE);
+		setUnicode0(getFileInfo(element), TLAUnicodeReplacer.isUnicode());
 	}
 	
 	@Override
 	public void synchronize(Object element) throws CoreException {
 		super.synchronize(element);
-		setUnicode0(getFileInfo(element), TLAUnicodeReplacer.UNICODE_MODE);
+		setUnicode0(getFileInfo(element), TLAUnicodeReplacer.isUnicode());
 	}
 	
 	@Override
 	protected void commitFileBuffer(IProgressMonitor monitor, TextFileDocumentProvider.FileInfo info, boolean overwrite) throws CoreException {
-		final boolean unicode = TLAUnicodeReplacer.UNICODE_MODE;
+		final boolean unicode = TLAUnicodeReplacer.isUnicode();
 		try {
 			if (unicode) {
 				setUnicode0((FileInfo) info, false);
@@ -217,7 +217,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	
 	@Override
 	protected void createFileFromDocument(IProgressMonitor monitor, IFile file, IDocument document) throws CoreException {
-		final boolean unicode = TLAUnicodeReplacer.UNICODE_MODE;
+		final boolean unicode = TLAUnicodeReplacer.isUnicode();
 		try {
 			if (unicode)
 				setUnicode0(document, false);

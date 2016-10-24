@@ -20,6 +20,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.AssignmentContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
+import org.lamport.tla.toolbox.util.TLATableViewer;
 
 import tla2unicode.Unicode;
 
@@ -101,7 +102,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
     protected TableViewer createTableViewer(Table table)
     {
         // create
-        TableViewer tableViewer = new TableViewer(table);
+        TableViewer tableViewer = new TLATableViewer(table);
         // represent formulas in the view
         tableViewer.setContentProvider(new AssignmentContentProvider());
         // on changed selection change button enablement
@@ -113,11 +114,11 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
                 doEdit();
             }
         });
-        tableViewer.setLabelProvider(new LabelProvider() {
-            public String getText(Object element) {
-                return Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, super.getText(element));
-            }
-        });
+//        tableViewer.setLabelProvider(new LabelProvider() {
+//            public String getText(Object element) {
+//                return Unicode.convert(TLAUnicodeReplacer.isUnicode(), super.getText(element));
+//            }
+//        });
 
         return tableViewer;
     }

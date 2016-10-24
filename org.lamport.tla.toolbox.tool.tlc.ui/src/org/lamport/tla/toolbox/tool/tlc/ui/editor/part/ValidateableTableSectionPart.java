@@ -204,11 +204,11 @@ public class ValidateableTableSectionPart extends SectionPart implements IValida
             }
         });
         
-        tableViewer.setLabelProvider(new LabelProvider() {
-            public String getText(Object element) {
-                return Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, super.getText(element));
-            }
-        });
+//        tableViewer.setLabelProvider(new LabelProvider() {
+//            public String getText(Object element) {
+//                return Unicode.convert(TLAUnicodeReplacer.isUnicode(), super.getText(element));
+//            }
+//        });
 
         return tableViewer;
     }

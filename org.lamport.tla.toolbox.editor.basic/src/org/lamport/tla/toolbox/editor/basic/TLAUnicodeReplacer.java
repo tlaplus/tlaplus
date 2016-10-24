@@ -23,7 +23,7 @@ public class TLAUnicodeReplacer {
 	
 	// consider using IAutoEditStrategy
 	
-	public static volatile boolean UNICODE_MODE = true;
+	private static volatile boolean UNICODE_MODE = true;
 
 	public static String unicode(String text) {
 		return UNICODE_MODE ? Unicode.convertToUnicode(text) : text;
@@ -113,6 +113,10 @@ public class TLAUnicodeReplacer {
 	}
 	
 	private void customizeDocumentCommand(IDocument document, DocumentCommand command) {
+		if (!isUnicode()) {
+			replacer.reset();
+			return;
+		}
 		this.doc = document;
 		this.command = command;
 		try {

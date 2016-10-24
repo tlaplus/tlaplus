@@ -159,6 +159,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         tableViewer.setLabelProvider(new LabelProvider() {
             public String getText(Object element)
             {
+            	final String text;
                 if (element instanceof Assignment)
                 {
                     Assignment assign = (Assignment) element;
@@ -173,9 +174,10 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
                         rightSide = assign.getRight();
                     }
                     Assignment assignNoBang = new Assignment(noBangLabel, assign.getParams(), rightSide);
-                    return assignNoBang.toString();
-                }
-                return Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, super.getText(element));
+                    text = assignNoBang.toString();
+                } else
+                	text = super.getText(element);
+                return Unicode.convert(TLAUnicodeReplacer.isUnicode(), text);
             }
         });
 
