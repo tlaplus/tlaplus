@@ -472,7 +472,7 @@ public final class Unicode {
 	}
 	
 	public static void main(String[] args) {
-		for (String a : new String[] {"<<-3>>", "<-3", "===", "==1", "[<<3>>]"}) {
+		for (String a : new String[] {"<<-3>>", "<-3", "x'", "===", "==1", "[<<3>>]"}) {
 			System.out.println(a);
 			System.out.println(convertToUnicode(a));
 			System.out.println(convertToASCII(convertToUnicode(a)));

@@ -161,7 +161,7 @@ public class TLAUnicodeReplacer {
 //			overwriteCommand(command, offset, length, text, owner);
 //		else
 		command.addCommand(offset, length, text, owner);
-		command.caretOffset = offset + text.length() + command.text.length(); //  + length;
+		command.caretOffset = offset + text.length() + command.text.length() + (length == 1 ? -1 : 0);
 		command.doit = false; // why? because!
 		return command;
 	}
