@@ -15,6 +15,7 @@ import tla2unicode.Unicode;
 
 public class TLASourceViewer extends SourceViewer {
 	private EventHandler eventHandler;
+	private boolean converting;
 	
 	public TLASourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
 		super(parent, ruler, styles);
@@ -67,9 +68,21 @@ public class TLASourceViewer extends SourceViewer {
 		convert(unicode, getDocument());
 	}
 	
+	@Override
+	protected void updateTextListeners(WidgetCommand cmd) {
+		if (converting) // prevent the model from being marked dirty due to unicode toggle
+			return;
+		super.updateTextListeners(cmd);
+	}
+
 	private void convert(boolean unicode, IDocument doc) {
 		if (doc == null)
 			return;
-		doc.set(Unicode.convert(unicode, doc.get()));
+		converting = true;
+		try {
+			doc.set(Unicode.convert(unicode, doc.get()));
+		} finally {
+			converting = false;
+		}
 	}
 }
