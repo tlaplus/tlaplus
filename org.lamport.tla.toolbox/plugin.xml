@@ -317,6 +317,7 @@
             id="toolbox.command.module.translate.active"
             name="Translate module">
       </command>
+      <!--
       <command
             categoryId="toolbox.command.category.module"
             description="Convert module in the active editor to Unicode"
@@ -335,6 +336,7 @@
             id="toolbox.command.module.exportascii.active"
             name="Module To ASCII">
       </command>
+      -->
       <!-- Module preferences are disabled -->
       <!-- command
             categoryId="toolbox.command.category.module"
@@ -571,11 +573,11 @@
                </with>
             </visibleWhen>
          </command>
+         <!--
          <command
                commandId="toolbox.command.module.a2u.active"
                id="toolbox.command.module.a2u"
                label="Module To Unicode">
-               <!-- icon="icons/full/obj16/complete_task.gif" -->
             <visibleWhen
                   checkEnabled="true">
                <with
@@ -587,12 +589,11 @@
                   </not>
                </with>
             </visibleWhen>
-         </command>
+         </command
          <command
                commandId="toolbox.command.module.u2a.active"
                id="toolbox.command.module.u2a"
                label="View module as ASCII">
-               <!-- icon="icons/full/obj16/complete_task.gif" -->
             <visibleWhen
                   checkEnabled="true">
                <with
@@ -609,7 +610,6 @@
                commandId="toolbox.command.module.exportascii.active"
                id="toolbox.command.module.exportascii"
                label="Export As ASCII...">
-               <!-- icon="icons/full/obj16/complete_task.gif" -->
             <visibleWhen
                   checkEnabled="true">
                <with
@@ -622,6 +622,7 @@
                </with>
             </visibleWhen>
          </command>
+         -->
          
          <!-- disable module properties -->
          <!-- command
