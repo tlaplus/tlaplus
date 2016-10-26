@@ -68,6 +68,12 @@ public class PartitionedFingerPrintGenerator extends FingerPrintGenerator {
 					if (fpSet.put(fp) != false) {
 						Assert.fail("Linear fill-up should not cause a collision");
 					}
+					// In case PartitionedFingerPrintGenerator and
+					// FingerPrintGenerator are used in performance tests, burn
+					// the same amount of cycles to obtain the next random like
+					// FPG does. puts is meaningless in the scope of PFPG
+					// anyway. It inserts up to a load factor of 1.
+					//puts += rnd.nextLong();
 					puts++;
 				}
 				fp += increment;
