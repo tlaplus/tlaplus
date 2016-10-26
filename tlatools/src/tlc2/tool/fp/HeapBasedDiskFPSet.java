@@ -53,7 +53,17 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 		// guard against underflow
 		// LL modified error message on 7 April 2012
 		Assert.check(logMaxMemCnt - LogMaxLoad >= 0, "Underflow when computing HeapBasedDiskFPSet");
-		this.capacity = 1 << (logMaxMemCnt - LogMaxLoad);
+		
+		// Guard against a capacity overflow with large amounts (e.g. ~1TB) of
+		// dedicated memory. If cap overflows, the VMs maximum allowed array
+		// size is used.
+		final int cap = 1 << (logMaxMemCnt - LogMaxLoad);
+		if (cap < 0) {
+			// You wonder why 8 and not 42? Ask the VM gods!
+			this.capacity = Integer.MAX_VALUE - 8;
+		} else {
+			this.capacity = cap;
+		}
 		
 		// maxTblCnt mathematically has to be an upper limit for the in-memory storage 
 		// so that a disk flush occurs before an _evenly_ distributed fp distribution fills up 
