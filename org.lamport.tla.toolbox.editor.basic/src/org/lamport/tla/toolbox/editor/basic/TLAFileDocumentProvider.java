@@ -33,6 +33,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	
 	// Used to map Unicode token locations to their ASCII location
     
+    private boolean unicode;
     
 	public TLAFileDocumentProvider()  {
 		super();
@@ -43,8 +44,6 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 		super(parentProvider);
 		init();
 	}
-	
-	
 	
 	@Override
 	public void disconnect(Object element) {
@@ -85,7 +84,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	
 	static protected class FileInfo extends TextFileDocumentProvider.FileInfo {
 		private TLAUnicode.TokenPosition locationConverter;
-	    private Document asciiDoc;
+	    private Document altDoc;
 	    
 		FileInfo(TextFileDocumentProvider.FileInfo other) {
 			this.fElement = other.fElement;
@@ -111,14 +110,14 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	}
 	
 	public boolean isUnicode() {
-    	return TLAUnicodeReplacer.isUnicode();
+    	return TLAUnicodeReplacer.isUnicode(); // unicode; // 
     }
 	
 	public IDocument getAsciiDocument(Object element) {
 		FileInfo info = getFileInfo(element);
 		if (info == null)
 			return null;
-		return isUnicode() ? info.asciiDoc : getDocument(info);
+		return isUnicode() ? info.altDoc : getDocument(info);
 	}
     
 //    private class AnnotationModelListener implements IAnnotationModelListener, IAnnotationModelListenerExtension {
@@ -202,7 +201,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	
 	@Override
 	protected void commitFileBuffer(IProgressMonitor monitor, TextFileDocumentProvider.FileInfo info, boolean overwrite) throws CoreException {
-		final boolean unicode = TLAUnicodeReplacer.isUnicode();
+		final boolean unicode = isUnicode();
 		try {
 			if (unicode) {
 				setUnicode0((FileInfo) info, false);
@@ -217,7 +216,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	
 	@Override
 	protected void createFileFromDocument(IProgressMonitor monitor, IFile file, IDocument document) throws CoreException {
-		final boolean unicode = TLAUnicodeReplacer.isUnicode();
+		final boolean unicode = isUnicode();
 		try {
 			if (unicode)
 				setUnicode0(document, false);
@@ -265,7 +264,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 				// marker line number is 1-based
 				int line = MarkerUtilities.getLineNumber(marker) - 1;
 				final IDocument doc = getDocument(info);
-				final IDocument asciiDoc = info.asciiDoc;
+				final IDocument asciiDoc = info.altDoc;
 				final IDocument toDoc = !screen ? doc : asciiDoc;
 				position = new Position(toDoc.getLineOffset(line), 0);
 			} catch (BadLocationException e) {
@@ -301,19 +300,24 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     	return convertOffset(getFileInfo(element), screen, offset);
     }
     
+    public int convertOffset1(Object element, boolean toUnicode, int offset) {
+    	final boolean screen = isUnicode() != toUnicode;
+    	return convertOffset(getFileInfo(element), screen, offset);
+    }
+    
     private int convertOffset(FileInfo info, boolean screen, int offset) {
-		if (!isUnicode())
-			return offset;
 		if (info == null)
 			return -1;
 		final IDocument doc = getDocument(info);
 		final TLAUnicode.TokenPosition locationConverter = info.locationConverter;
-		final IDocument asciiDoc = info.asciiDoc;
+		final IDocument altDoc = info.altDoc;
+		if (locationConverter == null || altDoc == null)
+			return offset;
 		
 		try {
 //			System.out.println("&&&from: " + offset);
-			final IDocument fromDoc = screen ? doc : asciiDoc;
-			final IDocument toDoc = !screen ? doc : asciiDoc;
+			final IDocument fromDoc = screen ? doc : altDoc;
+			final IDocument toDoc = !screen ? doc : altDoc;
 
 			final int line = fromDoc.getLineOfOffset(offset);
 //			System.out.println("&&&fromLine: " + line);
@@ -339,12 +343,12 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     
     // screen: is the given location in editor coordinates
     private int convertColumn(FileInfo info, boolean screen, int line, int column) {
-		if (!isUnicode())
-			return column;
 		if (info == null)
 			return -1;
 		final IDocument doc = getDocument(info);
 		final TLAUnicode.TokenPosition locationConverter = info.locationConverter;
+		if (locationConverter == null)
+			return column;
 		try {
 			int lineLength = doc.getLineLength(line);
 			return Math.min(locationConverter.convert(!screen, line, column), lineLength);
@@ -355,6 +359,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	
     public void setUnicode0(Object element, boolean unicode) {
     	setUnicode0(getFileInfo(element), unicode);
+    	this.unicode = unicode;
     }
     
 	private void setUnicode0(FileInfo info, boolean unicode) {
@@ -367,8 +372,8 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 		final String orig = doc.get();
     	final TLAUnicode.TokenPosition locConverter = setUnicode0(doc, unicode);
     	
-    	info.locationConverter = unicode ? locConverter : null;
-    	info.asciiDoc = new Document(orig);
+    	info.locationConverter = locConverter;
+    	info.altDoc = new Document(orig);
     	setDirty(info, false);
     	
 //    	captureUndo(1);    	

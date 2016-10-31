@@ -90,6 +90,7 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
 import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
+import org.lamport.tla.toolbox.editor.basic.util.DocumentUndoUtil;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.editor.basic.util.ProgressMonitorDecorator;
@@ -106,6 +107,7 @@ import pcal.PCalLocation;
 import pcal.TLAtoPCalMapping;
 import tla2sany.st.Location;
 import tla2unicode.TLAUnicode;
+import tla2unicode.Unicode;
 
 /**
  * Basic editor for TLA+
@@ -326,6 +328,7 @@ public class TLAEditor extends TextEditor
 		final TextSelection selection = (TextSelection) getSelectionProvider().getSelection();
 		dp.setUnicode0(getEditorInput(), value);
     	setUnicode(value);
+    	convertUndo(TLAUnicodeReplacer.isUnicode());
     	getSelectionProvider().setSelection(selection);
 		firePropertyChange(PROP_DIRTY);
     }
@@ -647,6 +650,55 @@ public class TLAEditor extends TextEditor
 		final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(undoContext);
 		for (int i = Math.max(undoHistory.length - n, 0); i < undoHistory.length; i++)
 			lastUndoOperations.add(undoHistory[i]);
+	}
+	
+	private void discardUndo(int n) {
+		final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
+		final IUndoContext undoContext = getUndoContext();
+		if (undoContext == null)
+			return;
+		final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(undoContext);
+		for (int i = Math.max(undoHistory.length - n, 0); i < undoHistory.length; i++)
+			operationHistory.replaceOperation(undoHistory[i], new IUndoableOperation[0]);
+	}
+	
+	private void convertUndo(boolean toUnicode) {
+    	final TLAFileDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return;
+		final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
+		final IUndoContext undoContext = getUndoContext();
+		if (undoContext == null)
+			return;
+		final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(undoContext);
+		
+		for (int i = 0; i < undoHistory.length; i++)
+			convertUndo(toUnicode, undoHistory[i], dp);
+			// operationHistory.replaceOperation(undoHistory[i], new IUndoableOperation[0]);
+	}
+	
+	private IUndoableOperation convertUndo(boolean toUnicode, IUndoableOperation op, TLAFileDocumentProvider dp) {
+		if (DocumentUndoUtil.isCompound(op)) {
+			for (IUndoableOperation op1 : DocumentUndoUtil.getChanges(op))
+				convertUndo(toUnicode, op1, dp);
+		} else {
+			try {
+				final int start = DocumentUndoUtil.getStart(op); 
+				final int end = DocumentUndoUtil.getEnd(op); 
+				final String text = DocumentUndoUtil.getText(op); 
+				final String preservedText = DocumentUndoUtil.getPreservedText(op); 
+				
+				// System.out.println("WWWWW start: " + start + " end: " + end + " text: " + text + " preserved: " + preservedText);
+				DocumentUndoUtil.setStart(op, dp.convertOffset1(getEditorInput(), toUnicode, start));
+				DocumentUndoUtil.setEnd(op, dp.convertOffset1(getEditorInput(), toUnicode, end));
+				
+				DocumentUndoUtil.setText(op, Unicode.convert(toUnicode, text));
+				DocumentUndoUtil.setPreservedText(op, Unicode.convert(toUnicode, preservedText));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return op;
 	}
 	
     /**
@@ -1098,7 +1150,7 @@ public class TLAEditor extends TextEditor
     }
     
 	private TLAUnicode.TokenPosition setUnicode0(boolean unicode) {
-    	captureUndo(1);
+    	discardUndo(1);
 		return null;
 	}
     

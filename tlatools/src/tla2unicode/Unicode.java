@@ -213,6 +213,8 @@ public final class Unicode {
 	 * @return a string with ASCII symbols replaced
 	 */
 	public static String convertToUnicode(String in) {
+		if (in == null)
+			return null;
 		final StringBuilder out = new StringBuilder();
 		final OnlineFilter r = new OnlineFilter() {
 			@Override
@@ -240,6 +242,8 @@ public final class Unicode {
 	 * @return a string with Unicode symbols replaced
 	 */
 	public static String convertToASCII(String in) {
+		if (in == null)
+			return null;
 		final StringBuilder out = new StringBuilder();
 		for (int i = 0; i < in.length(); i++) {
 			char c = in.charAt(i);
