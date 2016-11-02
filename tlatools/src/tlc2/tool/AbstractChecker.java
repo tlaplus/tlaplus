@@ -14,7 +14,6 @@ import tlc2.tool.liveness.Liveness;
 import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.DotStateWriter;
 import tlc2.util.IStateWriter;
-import tlc2.util.IdThread;
 import tlc2.util.NoopStateWriter;
 import tlc2.util.ObjLongTable;
 import tlc2.util.StateWriter;
@@ -59,7 +58,7 @@ public abstract class AbstractChecker implements Cancelable
     public Action[] actions;
     protected final IStateWriter allStateWriter;
     protected boolean cancellationFlag;
-    private IdThread[] workers;
+    protected IWorker[] workers;
 	protected final ILiveCheck liveCheck;
 
 	protected final ThreadLocal<Integer> threadLocal = new ThreadLocal<Integer>() {
@@ -336,7 +335,7 @@ public abstract class AbstractChecker implements Cancelable
      * @param checkIndex the check level (depth or level)
      * @return the array of initialized worker threads
      */
-    protected abstract IdThread[] startWorkers(AbstractChecker checker, int checkIndex);
+    protected abstract IWorker[] startWorkers(AbstractChecker checker, int checkIndex);
 
     /**
      * Hook to run some work before entering the worker loop

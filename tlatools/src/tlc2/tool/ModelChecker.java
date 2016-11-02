@@ -19,7 +19,6 @@ import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IStateWriter;
-import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
@@ -48,7 +47,6 @@ public class ModelChecker extends AbstractChecker
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
     public IStateQueue theStateQueue; // the state queue
     public TLCTrace trace; // the trace file
-    protected Worker[] workers; // the workers
     // used to calculate the spm metric
     public long distinctStatesPerMinute, statesPerMinute = 0L;
     protected long oldNumOfGenStates, oldFPSetSize = 0L;
@@ -1062,7 +1060,7 @@ public class ModelChecker extends AbstractChecker
     /**
      * Spawn the worker threads
      */
-    protected IdThread[] startWorkers(AbstractChecker checker, int checkIndex)
+    protected IWorker[] startWorkers(AbstractChecker checker, int checkIndex)
     {
         for (int i = 0; i < this.workers.length; i++)
         {
@@ -1137,8 +1135,8 @@ public class ModelChecker extends AbstractChecker
 
     public long getStatesGenerated() {
     	long sum = numberOfInitialStates;
-    	for (final Worker worker : workers) {
-			sum += worker.getStatesGenerated();
+    	for (final IWorker worker : workers) {
+			sum += ((Worker) worker).getStatesGenerated();
 		}
     	return sum;
     }
