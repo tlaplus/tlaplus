@@ -41,13 +41,13 @@
     <provider 
         extensions="tla" 
         class="org.lamport.tla.toolbox.editor.basic.TLAFileDocumentProvider" 
-        id="org.eclipse.ui.internal.editors.quickdiff.LastSaveReferenceProvider"> 
+        id="org.lamport.tla.toolbox.editor.basic.TLAFileDocumentProvider"> 
     </provider> 
    </extension>
    <extension point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
       <referenceprovider
          class="org.lamport.tla.toolbox.editor.basic.TLALastSaveReferenceProvider"
-         id="org.lamport.tla.toolbox.editor.basic.TLALastSaveReferenceProvider">
+         id= "org.eclipse.ui.internal.editors.quickdiff.LastSaveReferenceProvider"> <!-- must override the default provider's id -->
       </referenceprovider>
    </extension>
    <extension
