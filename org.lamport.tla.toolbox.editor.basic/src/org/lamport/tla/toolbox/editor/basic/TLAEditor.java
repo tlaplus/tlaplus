@@ -224,7 +224,6 @@ public class TLAEditor extends TextEditor
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
     	super.doSetInput(input);
-//    	setUnicode0(unicode);
     }
     
     /*
@@ -524,20 +523,20 @@ public class TLAEditor extends TextEditor
         	service.post(SAVE_EVENT, spec);
         }
         
-        
 		final TextSelection selection = (TextSelection) getSelectionProvider().getSelection();
-        setUnicode0(false);
         super.doSave(new ProgressMonitorDecorator(progressMonitor) {
         	public void done() {
         		UIHelper.runUIAsync(new Runnable() {
 					@Override
 					public void run() {
-						setUnicode0(TLAUnicodeReplacer.isUnicode());
+						if (TLAUnicodeReplacer.isUnicode())
+							discardUndo(2);
 						// XXXX set viewport offset 
 						getSelectionProvider().setSelection(selection);
 						firePropertyChange(PROP_DIRTY);
 					}
 				});
+        		super.done();
         	}
         });
     }
@@ -658,8 +657,11 @@ public class TLAEditor extends TextEditor
 		if (undoContext == null)
 			return;
 		final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(undoContext);
-		for (int i = Math.max(undoHistory.length - n, 0); i < undoHistory.length; i++)
+//		System.err.println("UUUUU: n = " + n + " undoHistory.length = " + undoHistory.length);
+		for (int i = Math.max(undoHistory.length - n, 0); i < undoHistory.length; i++) {
+//			System.err.println("UUUUU: " + i + " " + undoHistory[i]);
 			operationHistory.replaceOperation(undoHistory[i], new IUndoableOperation[0]);
+		}
 	}
 	
 	private void convertUndo(boolean toUnicode) {
@@ -1149,9 +1151,8 @@ public class TLAEditor extends TextEditor
 		});
     }
     
-	private TLAUnicode.TokenPosition setUnicode0(boolean unicode) {
+	private void setUnicode0(boolean unicode) {
     	discardUndo(1);
-		return null;
 	}
     
     public IDocument getAsciiDocument() {
