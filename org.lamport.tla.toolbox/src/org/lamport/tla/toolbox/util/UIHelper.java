@@ -995,7 +995,7 @@ public class UIHelper {
 									// the location
 									// to an offset and length
 									IRegion region = AdapterFactory.locationToRegion(tlaEditor.getAsciiDocument(), location);
-									region = tlaEditor.convertRegion(false, region);
+									region = tlaEditor.convertRegionIfUnicode(false, region);
 									
 									final int offset = region.getOffset();
 									int length = region.getLength();

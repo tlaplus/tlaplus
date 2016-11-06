@@ -1164,14 +1164,14 @@ public class TLAEditor extends TextEditor
 		final TLAFileDocumentProvider dp = getDocumentProvider();
 		if (dp == null)
 			return null;
-		return dp.convertLocation(getEditorInput(), screen, location);
+		return dp.convertLocationIfUnicode(getEditorInput(), screen, location);
     }
     
     public Position convertPosition(boolean screen, Position position) {
     	final TLAFileDocumentProvider dp = getDocumentProvider();
 		if (dp == null)
 			return null;
-		return dp.convertPosition(getEditorInput(), screen, position);
+		return dp.convertPositionIfUnicode(getEditorInput(), screen, position);
     }
     
     private class AnnotationModelListener implements IAnnotationModelListener, IAnnotationModelListenerExtension {
@@ -1198,18 +1198,18 @@ public class TLAEditor extends TextEditor
     }
     
  // screen: is the given offset in editor coordinates
-    public int convertOffset(boolean screen, int offset) {
+    public int convertOffsetIfUnicode(boolean screen, int offset) {
     	final TLAFileDocumentProvider dp = getDocumentProvider();
 		if (dp == null)
 			return -1;
-		return dp.convertOffset(getEditorInput(), screen, offset);
+		return dp.convertOffsetIfUnicode(getEditorInput(), screen, offset);
     }
     
-    public IRegion convertRegion(boolean screen, IRegion region) {
+    public IRegion convertRegionIfUnicode(boolean screen, IRegion region) {
 		final TLAFileDocumentProvider dp = getDocumentProvider();
 		if (dp == null)
 			return null;
-		return dp.convertRegion(getEditorInput(), screen, region);
+		return dp.convertRegionIfUnicode(getEditorInput(), screen, region);
     }
     
 	private void setDirty(boolean dirty) {

@@ -131,7 +131,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 //			try {
 //				final AnnotationModel am = (AnnotationModel)event.getAnnotationModel(); 
 //				for (Annotation ann : event.getAddedAnnotations())
-//					am.modifyAnnotationPosition(ann, convertPosition(false, am.getPosition(ann)));
+//					am.modifyAnnotationPosition(ann, convertPositionIfUnicode(false, am.getPosition(ann)));
 //			} finally {
 //				recursive = false;
 //			}
@@ -152,18 +152,18 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 
 		@Override
 		protected void addAnnotation(Annotation annotation, Position position, boolean fireModelChanged) throws BadLocationException {
-			position = convertPosition(info, false, annotation, position);
+			position = convertPositionIfUnicode(info, false, annotation, position);
 			super.addAnnotation(annotation, position, fireModelChanged);
 		}
 		@Override
 		public boolean updateMarker(IMarker marker, IDocument document, Position position) throws CoreException {
-			position = convertPosition(info, false, position);
+			position = convertPositionIfUnicode(info, false, position);
 			return super.updateMarker(marker, document, position);
 		}
 
 		@Override
 		public boolean updateMarker(IDocument document, IMarker marker, Position position) throws CoreException {
-			position = convertPosition(info, false, marker, position);
+			position = convertPositionIfUnicode(info, false, marker, position);
 			return super.updateMarker(document, marker, position);
 		}
 		
@@ -230,24 +230,41 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	////////
     
 	 // screen: is the given location in editor coordinates
-    public Location convertLocation(Object element, boolean screen, Location location) {
-    	return convertLocation(getFileInfo(element), screen, location);
+    public Location convertLocationIfUnicode(Object element, boolean screen, Location location) {
+    	return convertLocationIfUnicode(getFileInfo(element), screen, location);
+    }
+    
+    public Location convertLocationIfUnicode(FileInfo info, boolean screen, Location location) {
+    	if (!isUnicode())
+    		return location;
+    	return convertLocation(info, screen, location);
     }
     
     public Location convertLocation(FileInfo info, boolean screen, Location location) {
     	if (location == null)
     		return null;
 //    	System.out.println("&&&from: " + location);
-    	if (isUnicode())
-    		location = new Location(location.source() != null ? UniqueString.uniqueStringOf(location.source()) : null, 
-        		location.beginLine(), convertColumn(info, screen, location.beginLine() - 1, location.beginColumn()), 
-        		location.endLine(), convertColumn(info, screen, location.endLine() - 1, location.endColumn()));
+		location = new Location(location.source() != null ? UniqueString.uniqueStringOf(location.source()) : null, 
+    		location.beginLine(), convertColumn(info, screen, location.beginLine() - 1, location.beginColumn()), 
+    		location.endLine(), convertColumn(info, screen, location.endLine() - 1, location.endColumn()));
 //    	System.out.println("&&&to: " + location);
     	return location;
     }
     
+    public Position convertPositionIfUnicode(Object element, boolean screen, Position position) {
+    	if (!isUnicode())
+    		return position;
+    	return convertPosition(element, screen, position);
+    }
+    
     public Position convertPosition(Object element, boolean screen, Position position) {
     	return convertPosition(getFileInfo(element), screen, position);
+    }
+    
+    private Position convertPositionIfUnicode(FileInfo info, boolean screen, Annotation annotation, Position position) {
+    	if (!isUnicode())
+    		return position;
+    	return convertPosition(info, screen, annotation, position);
     }
     
     private Position convertPosition(FileInfo info, boolean screen, Annotation annotation, Position position) {
@@ -255,6 +272,12 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     		return convertPosition(info, screen, ((MarkerAnnotation) annotation).getMarker(), position);
     	else
     		return convertPosition(info, screen, position);
+    }
+    
+    private Position convertPositionIfUnicode(FileInfo info, boolean screen, IMarker marker, Position position) {
+    	if (!isUnicode())
+    		return position;
+    	return convertPosition(info, screen, marker, position);
     }
     
     private Position convertPosition(FileInfo info, boolean screen, IMarker marker, Position position) {
@@ -296,7 +319,9 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     }
     
  // screen: is the given offset in editor coordinates
-    public int convertOffset(Object element, boolean screen, int offset) {
+    public int convertOffsetIfUnicode(Object element, boolean screen, int offset) {
+    	if (!isUnicode())
+    		return offset;
     	return convertOffset(getFileInfo(element), screen, offset);
     }
     
@@ -335,10 +360,20 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 		}
     }
     
-    public IRegion convertRegion(Object element, boolean screen, IRegion region) {
-    	int start = convertOffset(element, screen, region.getOffset());
-    	int end = convertOffset(element, screen, region.getOffset() + region.getLength());
+    public IRegion convertRegionIfUnicode(Object element, boolean screen, IRegion region) {
+    	if (!isUnicode())
+    		return region;
+    	final FileInfo info = getFileInfo(element);
+    	int start = convertOffset(info, screen, region.getOffset());
+    	int end = convertOffset(info, screen, region.getOffset() + region.getLength());
     	return new Region(start, end - start);
+    }
+    
+    // screen: is the given location in editor coordinates
+    private int convertColumnIfUnicode(FileInfo info, boolean screen, int line, int column) {
+    	if (!isUnicode())
+    		return column;
+    	return convertColumn(info, screen, line, column);
     }
     
     // screen: is the given location in editor coordinates

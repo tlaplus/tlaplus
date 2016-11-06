@@ -1716,7 +1716,7 @@ public class ProverHelper
         }
 
         ProverJob proverJob = new ProverJob(((FileEditorInput) editor.getEditorInput()).getFile(),
-                editor.convertOffset(true, ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset()), 
+                editor.convertOffsetIfUnicode(true, ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset()), 
                 checkStatus, options, true);
 
         proverJob.setUser(true);

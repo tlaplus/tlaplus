@@ -79,7 +79,7 @@ public class OpenDeclarationAction extends Action implements IHyperlink
 
         TLAEditor editor = ((TLAEditorAndPDFViewer) UIHelper.openEditor(TLAEditorAndPDFViewer.ID,
                 new FileEditorInput((IFile) resource))).getTLAEditor();
-        IRegion location1 = editor.convertRegion(false, location);
+        IRegion location1 = editor.convertRegionIfUnicode(false, location);
         editor.selectAndReveal(location1.getOffset(), location1.getLength());
     }
 

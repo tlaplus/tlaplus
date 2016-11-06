@@ -252,7 +252,7 @@ public class TLCUIHelper
                     // highlight the appropriate text
                     
                     IRegion jumpToRegion = AdapterFactory.locationToRegion(moduleEditor.getAsciiDocument(), location);
-                    jumpToRegion = moduleEditor.convertRegion(false, jumpToRegion);
+                    jumpToRegion = moduleEditor.convertRegionIfUnicode(false, jumpToRegion);
                     moduleEditor.selectAndReveal(jumpToRegion.getOffset(), jumpToRegion.getLength());
                     return true;
                 } catch (BadLocationException e)
