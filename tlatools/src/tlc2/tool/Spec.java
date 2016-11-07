@@ -60,6 +60,7 @@ import tlc2.value.StringValue;
 import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import util.Assert;
+import util.FileUtil;
 import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
@@ -156,7 +157,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         {
             // construct new specification object, if the
             // passed one was null
-            spec = new SpecObj(this.rootFile, resolver);
+            spec = new SpecObj(this.specDir, this.rootFile, resolver);
 
             // We first call the SANY front-end to parse and semantic-analyze
             // the complete TLA+ spec starting with the main module rootFile.
@@ -172,7 +173,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 // checked errors (init, parse, semantic).
                 // Only if something unexpected happens the
                 // exception is thrown
-                SANY.frontEndMain(spec, this.rootFile, ToolIO.out);
+                SANY.frontEndMain(spec, ToolIO.out);
             } catch (FrontEndException e)
             {
                 Assert.fail(EC.TLC_PARSING_FAILED2, e);
