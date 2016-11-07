@@ -324,11 +324,14 @@ public class TLAEditor extends TextEditor
 		if (dp == null)
 			return;
 		
-		final TextSelection selection = (TextSelection) getSelectionProvider().getSelection();
+		TextSelection selection = (TextSelection) getSelectionProvider().getSelection();
+		final int visible = getSourceViewer().getTopIndex();
+		closeUndo();
 		dp.setUnicode0(getEditorInput(), value);
-    	setUnicode(value);
+		discardUndo(1);
     	convertUndo(TLAUnicodeReplacer.isUnicode());
-    	getSelectionProvider().setSelection(selection);
+    	getSourceViewer().setTopIndex(visible);
+    	getSelectionProvider().setSelection(dp.converSelection1(getEditorInput(), value, selection));
 		firePropertyChange(PROP_DIRTY);
     }
     
@@ -523,7 +526,9 @@ public class TLAEditor extends TextEditor
         	service.post(SAVE_EVENT, spec);
         }
         
+        closeUndo();
 		final TextSelection selection = (TextSelection) getSelectionProvider().getSelection();
+		final int visible = getSourceViewer().getTopIndex();
         super.doSave(new ProgressMonitorDecorator(progressMonitor) {
         	public void done() {
         		UIHelper.runUIAsync(new Runnable() {
@@ -531,7 +536,7 @@ public class TLAEditor extends TextEditor
 					public void run() {
 						if (TLAUnicodeReplacer.isUnicode())
 							discardUndo(2);
-						// XXXX set viewport offset 
+						getSourceViewer().setTopIndex(visible);
 						getSelectionProvider().setSelection(selection);
 						firePropertyChange(PROP_DIRTY);
 					}
@@ -542,6 +547,7 @@ public class TLAEditor extends TextEditor
     }
     
     public void doRevertToSaved() {
+    	Thread.dumpStack();
     	super.doRevertToSaved();
     	setUnicode(TLAUnicodeReplacer.isUnicode());
     }
@@ -651,13 +657,23 @@ public class TLAEditor extends TextEditor
 			lastUndoOperations.add(undoHistory[i]);
 	}
 	
+	private void closeUndo() {
+		final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
+		operationHistory.closeOperation(true, true, IOperationHistory.EXECUTE);
+	}
+	
 	private void discardUndo(int n) {
+		closeUndo();
 		final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
 		final IUndoContext undoContext = getUndoContext();
 		if (undoContext == null)
 			return;
 		final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(undoContext);
 //		System.err.println("UUUUU: n = " + n + " undoHistory.length = " + undoHistory.length);
+//		Thread.dumpStack();
+//		for (int i = Math.max(undoHistory.length - 1, 0); i >= 0; i--)
+//			System.err.println("WWWWW: " + i + " " + undoHistory[i]);
+//		System.err.println("((((((((((((((((((((((((");
 		for (int i = Math.max(undoHistory.length - n, 0); i < undoHistory.length; i++) {
 //			System.err.println("UUUUU: " + i + " " + undoHistory[i]);
 			operationHistory.replaceOperation(undoHistory[i], new IUndoableOperation[0]);
@@ -1152,7 +1168,8 @@ public class TLAEditor extends TextEditor
     }
     
 	private void setUnicode0(boolean unicode) {
-    	discardUndo(1);
+		if (TLAUnicodeReplacer.isUnicode())
+			discardUndo(1);
 	}
     
     public IDocument getAsciiDocument() {

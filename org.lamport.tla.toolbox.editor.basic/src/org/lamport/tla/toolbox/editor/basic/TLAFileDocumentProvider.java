@@ -14,6 +14,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
@@ -228,6 +229,14 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	}
     
 	////////
+	
+    private boolean screen2toUnicode(boolean screen) {
+    	return isUnicode() != screen;
+    }
+    
+    private boolean toUnicode2screen(boolean toUnicode) {
+    	return isUnicode() != toUnicode;
+    }
     
 	 // screen: is the given location in editor coordinates
     public Location convertLocationIfUnicode(Object element, boolean screen, Location location) {
@@ -318,6 +327,36 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     	return position;
     }
     
+    public TextSelection converSelection1(Object element, boolean toUnicode, TextSelection selection) {
+    	return convertSelection(getFileInfo(element), toUnicode2screen(toUnicode), selection);
+    }
+    
+    public TextSelection convertSelectionIfUnicode(Object element, boolean screen, TextSelection selection) {
+    	return convertSelectionIfUnicode(getFileInfo(element), screen, selection);
+    }
+    
+    private TextSelection convertSelectionIfUnicode(FileInfo info, boolean screen, TextSelection selection) {
+    	if (!isUnicode())
+    		return selection;
+    	return convertSelection(info, screen, selection);
+    }
+    
+    private TextSelection convertSelection(FileInfo info, boolean screen, TextSelection selection) {
+    	if (selection == null)
+    		return null;
+//    	System.out.println("&&&from: " + position);
+
+		int offset = convertOffset(info, screen, selection.getOffset());
+    	int end = convertOffset(info, screen, selection.getOffset() + selection.getLength());
+    	int length = end - offset;
+//        	if (length < 0)
+//        		System.out.println("XXXX: " + length + " " + position + " " + offset + " " + end);
+    	selection = new TextSelection(offset, length);
+        	
+//    	System.out.println("&&&to: " + position);
+    	return selection;
+    }
+    
  // screen: is the given offset in editor coordinates
     public int convertOffsetIfUnicode(Object element, boolean screen, int offset) {
     	if (!isUnicode())
@@ -325,9 +364,9 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     	return convertOffset(getFileInfo(element), screen, offset);
     }
     
+    
     public int convertOffset1(Object element, boolean toUnicode, int offset) {
-    	final boolean screen = isUnicode() != toUnicode;
-    	return convertOffset(getFileInfo(element), screen, offset);
+    	return convertOffset(getFileInfo(element), toUnicode2screen(toUnicode), offset);
     }
     
     private int convertOffset(FileInfo info, boolean screen, int offset) {
