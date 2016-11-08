@@ -191,8 +191,11 @@ public class TLAUnicode {
 //							space = 1;
 					}
 				}
+				
 				if (space < 0) // If we don't need to or can't align, keep original spacing.
 					space = origSpace;
+				else if (space == 0 && origSpace > 0) // keep a minimum of one space
+					space = 1;
 				
 				Debug.Assert(space >= 0, tok + (item > 0 ? " :: " + spec[line][item - 1] : ""));
 				
@@ -237,7 +240,7 @@ public class TLAUnicode {
 					final CommentToken ctok = (CommentToken) tok; // the current comment token
 					if (onlyComments && leftComments != null)
 						leftComments.add(ctok);
-					appendCommentToken(out, ctok);
+					appendCommentToken(toU, out, ctok);
 					break;
 
 				default:
@@ -249,7 +252,7 @@ public class TLAUnicode {
 			if (keepLeftComments) { // we have comments to move to the end of the line
 				for (CommentToken ctok : leftComments) {
 					out.append(" (*");
-					appendAndConvertCommentString(out, ctok.string, toU);
+					appendAndConvertCommentString(toU, out, ctok.string);
 					out.append("*)");
 				}
 				final Token last = spec[line][spec[line].length-1]; 
@@ -258,7 +261,7 @@ public class TLAUnicode {
 					// append skipped last comment token
 					if (ctok.rsubtype == CommentToken.BEGIN_OVERRUN || ctok.rsubtype == CommentToken.LINE) {
 						out.append(" ");
-						appendCommentToken(out, ctok);
+						appendCommentToken(toU, out, ctok);
 					}
 				}
 			}
@@ -268,65 +271,89 @@ public class TLAUnicode {
 		writer.close();
 	}
     
-	private static void appendCommentToken(StringBuilder out, CommentToken ctok) {
+	private static void appendCommentToken(boolean toU, StringBuilder out, CommentToken ctok) {
 		final String commentString = ctok.string;
 		switch (ctok.rsubtype) {
 		case CommentToken.NORMAL:
 			out.append("(*");
-			appendAndConvertCommentString(out, commentString, toU);
+			StringBuilder line = new StringBuilder(); 
+			appendAndConvertCommentString(toU, line, commentString);
+			if (ctok.subtype == CommentToken.MULTI)
+				adjustWidthTo(line, commentString.length());
+			out.append(line);
 			out.append("*)");
 			break;
 		case CommentToken.LINE:
 			out.append("\\*");
-			appendAndConvertCommentString(out, commentString, toU);
+			appendAndConvertCommentString(toU, out, commentString);
 			break;
 		case CommentToken.BEGIN_OVERRUN:
 			if (ctok.getWidth() > 0)
 				out.append("(*");
-				appendAndConvertCommentString(out, commentString, toU);
+				appendAndConvertCommentString(toU, out, commentString);
 			break;
 		case CommentToken.END_OVERRUN:
-			appendAndConvertCommentString(out, commentString, toU);
+			appendAndConvertCommentString(toU, out, commentString);
 			out.append("*)");
 			break;
 		case CommentToken.OVERRUN:
-			appendAndConvertCommentString(out, commentString, toU);
+			appendAndConvertCommentString(toU, out, commentString);
 			break;
 		default:
 			Debug.ReportBug("Bad CommentToken subtype found.");
 		}
 	}
 	
-	private static void appendAndConvertCommentString(StringBuilder out, String commentString, boolean toU) {
-		if (toU)
-			out.append(commentString);
-		else {
-			// We only support BMP chars, i.e. fit in a `char`, so we can work with chars rather than codepoints
-			// Debug.Assert(isBMP(commentString), "Comment " + commentString + " contains non-BMP Unicode characters");
-			char prev = 0; // the previous character
-			for (int i = 0; i < commentString.length(); i++) { 
-				final char c = commentString.charAt(i);
-				if (Unicode.cu2a(c) != null /*!isASCII(c)*/) {
-					String s = Unicode.cu2a(c);
-					if (!Character.isWhitespace(prev))
-						out.append(' '); // add whitespace before a unicode char
-					out.append(s);
-				} else if (!isASCII(c)) {
-					Debug.Assert(false, "An unrecognized Unicode character " + c
-							+ " was found in comment " + commentString);
-				} else {
-					if (Unicode.cu2a(prev) != null)
-						out.append(' '); // add whitespace following a unicode char (or else /\x)
-					out.append(c);
-				}
-				prev = c;
-			}
-		}
+	private static void appendAndConvertCommentString(boolean toU, StringBuilder out, String commentString) {
+		out.append(Unicode.convert(toU, commentString));
+//		if (toU)
+//			out.append(commentString);
+//		else {
+//			// We only support BMP chars, i.e. fit in a `char`, so we can work with chars rather than codepoints
+//			// Debug.Assert(isBMP(commentString), "Comment " + commentString + " contains non-BMP Unicode characters");
+//			char prev = 0; // the previous character
+//			for (int i = 0; i < commentString.length(); i++) { 
+//				final char c = commentString.charAt(i);
+//				if (Unicode.cu2a(c) != null /*!isASCII(c)*/) {
+//					String s = Unicode.cu2a(c);
+//					if (!Character.isWhitespace(prev))
+//						out.append(' '); // add whitespace before a unicode char
+//					out.append(s);
+//				} else if (!isASCII(c)) {
+//					Debug.Assert(false, "An unrecognized Unicode character " + c
+//							+ " was found in comment " + commentString);
+//				} else {
+//					if (Unicode.cu2a(prev) != null)
+//						out.append(' '); // add whitespace following a unicode char (or else /\x)
+//					out.append(c);
+//				}
+//				prev = c;
+//			}
+//		}
+	}
+	
+	private static void adjustWidthTo(StringBuilder sb, int n) {
+		if (n > sb.length())
+			appendSpaces(sb, n - sb.length());
+		else if (n < sb.length())
+			trimWhitespaceToWidth(sb, n);
 	}
 	
 	private static void appendSpaces(StringBuilder sb, int n) {
 		for (int i = 0; i < n; i++)
 			sb.append(' ');
+	}
+	
+	private static void trimWhitespaceToWidth(StringBuilder sb, int n) {
+		int i;
+		for (i = sb.length() - 1; i > n; i--) {
+			if (sb.charAt(i) != ' ') {
+				i++;
+				break;
+			}
+		}
+		if (i < sb.length())
+			sb.delete(i, sb.length());
 	}
 	
 	private static boolean isInPcal(int line, int item) {
