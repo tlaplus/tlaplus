@@ -467,7 +467,8 @@ public class TLAUnicode {
   	private static String outputFile = null ; // The name of the output file
   
 	public static void main(String[] args) {
-		// ToolIO.out.println(version);
+		// test();
+		
 		getArguments(args); // Get the command-line arguments.
 
 		final CharReader input = inputFile != null ? 
@@ -550,7 +551,37 @@ public class TLAUnicode {
 		throw new TLA2TexException(
 				APP + " command-line error: " + msg + "." + "Use -help option for more information.");
 	}
+	
+	private static void test() {
+		String x = "0123456789    ";
+		String y;
+		
+		y = x;
+		System.out.println("1: \"" + y + "\", " + y.length());
+		
+		y = adjustWidth(x, x.length());
+		System.out.println("2: \"" + y + "\", " + y.length());
+
+		y = adjustWidth(x, 10);
+		System.out.println("3: \"" + y + "\", " + y.length());
+
+		y = adjustWidth(x, 7);
+		System.out.println("4: \"" + y + "\", " + y.length());
+
+		y = adjustWidth(x, 20);
+		System.out.println("5: \"" + y + "\", " + y.length());
+		
+		System.exit(0);
+	}
+	
+	private static String adjustWidth(String x, int n) {
+		StringBuilder sb = new StringBuilder(x);
+		adjustWidthTo(sb, n);
+		return sb.toString();
+	}
+
 }
+
 
 /*
 Interesting test cases:
