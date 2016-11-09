@@ -1,0 +1,13 @@
+sudo: false  
+ language: java    
+ cache:  
+  directories:  
+   - $HOME/.m2  
+ env:  
+  global:  
+   - DISPLAY=:99.0  
+ before_install:  
+  - sh -e /etc/init.d/xvfb start - sleep 10  
+ script:    
+  - mvn clean verify    
+
