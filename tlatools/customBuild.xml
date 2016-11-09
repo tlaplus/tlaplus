@@ -32,6 +32,10 @@
 		<istrue value="${maven.test.skip}"/>
 	</condition>
 
+	<condition property="test.halt">
+		<istrue value="${maven.test.halt}"/>
+	</condition>
+
 	<!-- https://github.com/alx3apps/jgit-buildnumber -->
 	<target name="git-revision">
 	    <taskdef name="jgit-buildnumber" classname="ru.concerteza.util.buildnumber.JGitBuildNumberAntTask">
@@ -246,7 +250,7 @@
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
 		<jacoco:coverage destfile="target/code-coverage.exec">
-			<junit printsummary="yes" haltonfailure="no" haltonerror="no"  forkmode="perTest" fork="yes">
+			<junit printsummary="yes" haltonfailure="${test.halt}" haltonerror="${test.halt}"  forkmode="perTest" fork="yes">
 				<!-- enable all assertions -->
 				<jvmarg value="-ea"/>
 				<!-- Uncomment to run TLC with alternative fingerprintset impl. See sysproperty below too.
@@ -304,7 +308,7 @@
 	<target name="test-dist" unless="test.skip">
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJar" />
-		<junit printsummary="yes" haltonfailure="no" haltonerror="no" forkmode="perTest" fork="yes">
+		<junit printsummary="yes" haltonfailure="${test.halt}" haltonerror="${test.halt}" forkmode="perTest" fork="yes">
 			<!-- enable all assertions -->
 			<jvmarg value="-ea"/>
 			<classpath refid="project.classpath" />
