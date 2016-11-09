@@ -1,5 +1,6 @@
  sudo: false  
- language: java    
+ language: java   
+ install: true 
  cache:  
   directories:  
    - $HOME/.m2  
@@ -7,7 +8,7 @@
   global:  
    - DISPLAY=:99.0  
  before_install:  
-  - sh -e /etc/init.d/xvfb start - sleep 10  
+  - sh -e /etc/init.d/xvfb start
  script:    
-  - mvn clean verify    
+  - mvn -B -V verify    
 
