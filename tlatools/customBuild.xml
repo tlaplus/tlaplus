@@ -279,6 +279,7 @@
 				<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 				-->
 				<sysproperty key="util.FileUtil.milliseconds" value="true"/>
+				<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
 				<batchtest fork="yes" todir="${test.reports}">
 					<fileset dir="${test.dir}">
 						<include name="**/*Test*.java" />
