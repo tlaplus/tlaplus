@@ -13,7 +13,7 @@
  before_install:
   - sh -e /etc/init.d/xvfb start
  script:
-  - mvn -B -V verify
+  - mvn -B -V --settings .travis-settings.xml verify
  after_failure:
   - grep -r --include=TEST-*.xml -h -A9999 -B9999 -E '<error|<failure' ./
 
