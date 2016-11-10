@@ -1,19 +1,38 @@
- sudo: false
+ sudo: required
  dist: trusty
  language: java
  jdk: oraclejdk8
  install: true
- cache:
-  directories:
-   - $HOME/.m2
+
  env:
   global:
    - DISPLAY=:99.0
    - MAVEN_OPTS="-Xmx4g"
+
  before_install:
-  - sh -e /etc/init.d/xvfb start
+  # Check and free memory.
+  - sudo service --status-all
+  - sudo free -m -t
+  - sudo /etc/init.d/memcached stop
+  - sudo /etc/init.d/postgresql stop
+  - sudo free -m -t
+  # Turn OOM killer off to stop it from killing JUnit tests.
+  - sudo sysctl vm.overcommit_memory=2
+
+## Disable instable UI tests for now. It means we won't need maven and can run shortly running ant directly.
+#  # Install Window Manager.
+#  - sudo apt-get install --no-install-recommends metacity libwebkit-dev
+#  # Start X & Window Manager.
+#  - sh -e /etc/init.d/xvfb start
+#  - sleep 5 # Give xvfb some time to start.
+#  - metacity --sm-disable --replace &
+# script:
+#  - mvn -B -V --settings .travis-settings.xml -Dmaven.test.halt=true verify
+
  script:
-  - mvn -B -V --settings .travis-settings.xml verify
+  - ant -f tlatools/customBuild.xml -Dmaven.test.halt=true compile compile-test dist test-dist
+
  after_failure:
+  - dmesg
   - grep -r --include=TEST-*.xml -h -A9999 -B9999 -E '<error|<failure' ./
 
