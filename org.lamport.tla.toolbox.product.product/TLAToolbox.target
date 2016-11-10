@@ -4,7 +4,7 @@
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.4.e45x-20150206-1600"/>
 <unit id="org.aspectj.feature.group" version="1.8.5.20150128171000"/>
-<repository location="http://download.eclipse.org/tools/ajdt/mars/update/"/>
+<repository location="http://download.eclipse.org/tools/ajdt/mars/update/" id="eclipse-ajdt"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.log4j" version="1.2.15.v201012070815"/>
@@ -16,14 +16,14 @@
 <unit id="javax.activation" version="1.1.0.v201211130549"/>
 <unit id="javax.mail" version="1.4.0.v201005080615"/>
 <unit id="org.easymock" version="2.4.0.v20090202-0900"/>
-<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository/"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository/" id="eclipse-orbit"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.ide.feature.group" version="2.2.1.201402241301"/>
 <unit id="org.eclipse.swtbot.eclipse.test.junit.feature.group" version="2.2.1.201402241301"/>
 <unit id="org.eclipse.swtbot.feature.group" version="2.2.1.201402241301"/>
 <unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.2.1.201402241301"/>
-<repository location="http://download.eclipse.org/technology/swtbot/releases/2.2.1/"/>
+<repository location="http://download.eclipse.org/technology/swtbot/releases/2.2.1/" id="eclipse-swtbot"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.jclouds.feature.feature.group" version="0.0.0"/>
@@ -45,7 +45,7 @@
 <unit id="org.eclipse.equinox.sdk.feature.group" version="3.11.2.v20160202-2102"/>
 <unit id="org.eclipse.core.runtime.feature.feature.group" version="1.1.102.v20160128-1558"/>
 <unit id="org.eclipse.sdk.ide" version="4.5.2.M20160212-1500"/>
-<repository location="http://download.eclipse.org/eclipse/updates/4.5/"/>
+<repository location="http://download.eclipse.org/eclipse/updates/4.5/" id="eclipse"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="1.1.0.201604081945"/>
