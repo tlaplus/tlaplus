@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.editor.basic;
+package org.lamport.tla.toolbox.util;
 
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.text.BadLocationException;
@@ -8,6 +8,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.ui.editors.text.TextEditor;
 import org.lamport.tla.toolbox.Activator;
 
 import tla2unicode.Unicode;
@@ -32,7 +33,7 @@ public class TLAUnicodeReplacer {
 //	RightMargin = Activator.getDefault().getPreferenceStore().getInt(
 //			EditorPreferencePage.EDITOR_RIGHT_MARGIN);
 	
-	private Object editor;
+	private ISourceViewer editor;
 	
 	private IDocument doc;
 	private DocumentCommand command;
@@ -60,8 +61,8 @@ public class TLAUnicodeReplacer {
 	private static SourceViewer sourceViewer(Object element) {
 		if (element instanceof ISourceViewer)
 			return (SourceViewer) element;
-		if (element instanceof TLAEditor)
-			return sourceViewer(((TLAEditor) element).publicGetSourceViewer());
+//		if (element instanceof TLAEditor)
+//			return sourceViewer(((TLAEditor) element).publicGetSourceViewer());
 		return null;
 	}
 	
@@ -77,9 +78,9 @@ public class TLAUnicodeReplacer {
 						 addCommand(command, start, length, u, null);
 					 
 					 // fix caret position in a special case
-					 if (editor instanceof ISourceViewer) {
+					 if (editor != null) {
 						 if (start == 0)
-							 ((ISourceViewer) editor).getTextWidget().setCaretOffset(length);
+							editor.getTextWidget().setCaretOffset(length);
 					 }
 				  } catch (BadLocationException e) {
 						throw new AssertionError(e);
@@ -93,10 +94,10 @@ public class TLAUnicodeReplacer {
 		init0(sourceViewer(sourceViewer));
 	}
 	
-	public void init(TLAEditor editor) {
-		this.editor = editor;
-		init(sourceViewer(editor));
-	}
+//	public void init(TextEditor editor) {
+//		this.editor = null;
+//		init(sourceViewer(editor));
+//	}
 	
 	public void init0(SourceViewer sv) {
 		final IAutoEditStrategy strategy = new IAutoEditStrategy() {
@@ -107,9 +108,9 @@ public class TLAUnicodeReplacer {
 		};
 		
 		sv.prependAutoEditStrategy(strategy, IDocument.DEFAULT_CONTENT_TYPE);
-		for (String contentType : TLAPartitionScanner.TLA_PARTITION_TYPES)
+		for (String contentType : TLA_PARTITION_TYPES)
 			sv.prependAutoEditStrategy(strategy, contentType);
-		sv.prependAutoEditStrategy(strategy, TLAPartitionScanner.TLA_PCAL);
+//		sv.prependAutoEditStrategy(strategy, TLAPartitionScanner.TLA_PCAL);
 	}
 	
 	private void customizeDocumentCommand(IDocument document, DocumentCommand command) {
@@ -180,4 +181,19 @@ public class TLAUnicodeReplacer {
 			return (2 * command.offset + command.length) - (2 * offset + length) == 0;
 		return true;
 	}
+	
+	//////////////////
+	// Copied from TLAPartitionScanner to avoid a circular plugin dependency
+	
+    public final static String TLA_MULTI_LINE_COMMENT = "__tla_multiline_comment"; //$NON-NLS-1$
+    public final static String TLA_SINGLE_LINE_COMMENT = "__tla_singleline_comment"; //$NON-NLS-1$
+    public final static String TLA_PCAL = "__tla_pcal"; //$NON-NLS-1$
+    public final static String TLA_STRING = "__tla_string"; //$NON-NLS-1$
+    public final static String TLA_START_PCAL_COMMENT = "__tla_start_pcal_comment"; //$NON-NLS-1$
+    public final static String TLA_END_PCAL_COMMENT = "__tla_end_pcal_comment"; //$NON-NLS-1$
+
+    public static final String[] TLA_PARTITION_TYPES = new String[] { 
+    		TLA_MULTI_LINE_COMMENT, TLA_SINGLE_LINE_COMMENT,
+            TLA_STRING,
+            TLA_PCAL, TLA_START_PCAL_COMMENT, TLA_END_PCAL_COMMENT}; 
 }

@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.editor.basic;
+package org.lamport.tla.toolbox.util;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -23,7 +23,6 @@ import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
-import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 
 import tla2sany.st.Location;
 import tla2unicode.TLAUnicode;
@@ -53,15 +52,26 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	}
 
 	private void init() {
-		addElementStateListener(new ElementStateAdapter() {
+		addElementStateListener(new IElementStateListener() {
+			@Override
+			public void elementContentReplaced(Object element) {
+				setUnicode0(getFileInfo(element), TLAUnicodeReplacer.isUnicode());
+			}
 			
 			@Override
 			public void elementDirtyStateChanged(Object element, boolean isDirty) {
 			}
 			
 			@Override
-			public void elementContentReplaced(Object element) {
-				setUnicode0(getFileInfo(element), TLAUnicodeReplacer.isUnicode());
+			public void elementMoved(Object originalElement, Object movedElement) {				
+			}
+			
+			@Override
+			public void elementDeleted(Object element) {
+			}
+			
+			@Override
+			public void elementContentAboutToBeReplaced(Object element) {
 			}
 		});
 	}

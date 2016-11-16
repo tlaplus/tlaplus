@@ -40,8 +40,8 @@
     point="org.eclipse.ui.editors.documentProviders"> 
     <provider 
         extensions="tla" 
-        class="org.lamport.tla.toolbox.editor.basic.TLAFileDocumentProvider" 
-        id="org.lamport.tla.toolbox.editor.basic.TLAFileDocumentProvider"> 
+        class="org.lamport.tla.toolbox.util.TLAFileDocumentProvider" 
+        id="org.lamport.tla.toolbox.util.TLAFileDocumentProvider"> 
     </provider> 
    </extension>
    <extension point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">

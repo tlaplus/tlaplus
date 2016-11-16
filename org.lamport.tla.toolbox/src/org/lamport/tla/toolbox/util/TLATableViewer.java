@@ -1,15 +1,12 @@
 package org.lamport.tla.toolbox.util;
 
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
-import org.lamport.tla.toolbox.editor.basic.TLAUnicodeReplacer;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 

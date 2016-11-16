@@ -6,6 +6,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.internal.editors.quickdiff.LastSaveReferenceProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 
 import tla2unicode.TLAUnicode;
 

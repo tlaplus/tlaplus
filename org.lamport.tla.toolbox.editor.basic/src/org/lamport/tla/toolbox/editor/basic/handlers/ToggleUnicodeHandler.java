@@ -5,7 +5,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.editor.basic.TLAUnicodeReplacer;
+import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 
 /**
  * This is the handler method for the following commands:

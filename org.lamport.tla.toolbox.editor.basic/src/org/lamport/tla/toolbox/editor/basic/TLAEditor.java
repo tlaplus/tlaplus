@@ -98,6 +98,8 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
+import org.lamport.tla.toolbox.util.TLAFileDocumentProvider;
+import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.util.TLAtoPCalMarker;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.service.event.Event;
@@ -663,12 +665,17 @@ public class TLAEditor extends TextEditor
 	}
 	
 	private void discardUndo(int n) {
+		captureUndo(n);
+		if (true)
+			return;
+		
 		closeUndo();
 		final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
 		final IUndoContext undoContext = getUndoContext();
 		if (undoContext == null)
 			return;
 		final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(undoContext);
+//		System.err.println("---------------------------------------------");
 //		System.err.println("UUUUU: n = " + n + " undoHistory.length = " + undoHistory.length);
 //		Thread.dumpStack();
 //		for (int i = Math.max(undoHistory.length - 1, 0); i >= 0; i--)
@@ -678,6 +685,7 @@ public class TLAEditor extends TextEditor
 //			System.err.println("UUUUU: " + i + " " + undoHistory[i]);
 			operationHistory.replaceOperation(undoHistory[i], new IUndoableOperation[0]);
 		}
+//		System.err.println("==============================================");
 	}
 	
 	private void convertUndo(boolean toUnicode) {

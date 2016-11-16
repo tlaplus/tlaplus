@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.editor.basic.TLAUnicodeReplacer;
+import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;

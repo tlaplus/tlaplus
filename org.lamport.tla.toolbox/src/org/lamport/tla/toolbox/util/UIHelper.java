@@ -75,10 +75,9 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
@@ -985,17 +984,19 @@ public class UIHelper {
 																		
 									// getActivePage().activate(textEditor);
 									
-									TLAEditor tlaEditor = null;
-									if (textEditor instanceof TLAEditor)
-										tlaEditor = (TLAEditor)textEditor;
-									else if (textEditor instanceof TLAEditorAndPDFViewer)
-										tlaEditor = ((TLAEditorAndPDFViewer)textEditor).getTLAEditor();
+									IDocumentProvider dp = textEditor.getDocumentProvider();
+									final IEditorInput element = textEditor.getEditorInput();
+									TLAFileDocumentProvider tdp = null;
+									if (dp instanceof TLAFileDocumentProvider)
+										tdp = (TLAFileDocumentProvider)dp;
+//									else if (textEditor instanceof TLAEditorAndPDFViewer)
+//										tlaEditor = ((TLAEditorAndPDFViewer)textEditor).getTLAEditor();
 
 									// we now need to convert the four coordinates of
 									// the location
 									// to an offset and length
-									IRegion region = AdapterFactory.locationToRegion(tlaEditor.getAsciiDocument(), location);
-									region = tlaEditor.convertRegionIfUnicode(false, region);
+									IRegion region = AdapterFactory.locationToRegion(tdp.getAsciiDocument(element), location);
+									region = tdp.convertRegionIfUnicode(element, false, region);
 									
 									final int offset = region.getOffset();
 									int length = region.getLength();
