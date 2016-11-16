@@ -16,6 +16,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.zip.GZIPInputStream;
@@ -195,6 +197,15 @@ public class FileUtil
         fos.close();
     }
 
+	/**
+	 * Atomically replaced the file targetName with the file sourceName.
+	 * @param sourceName
+	 * @param targetName
+	 * @throws IOException
+	 */
+	public static void replaceFile(String sourceName, String targetName) throws IOException {
+		Files.move(new File(sourceName).toPath(), new File(targetName).toPath(), StandardCopyOption.REPLACE_EXISTING);
+	}
 
     /**
      * The MetaDir is fromChkpt if it is not null. Otherwise, create a

@@ -1246,20 +1246,20 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 				braf[i].close();
 			}
 			tmpRAF.close();
-			String realName = fpFilename;
-			File currFile = new File(realName);
-			currFile.delete();
-			boolean status = tmpFile.renameTo(currFile);
-			Assert.check(status, EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
+			try {
+				FileUtil.replaceFile(tmpFilename, fpFilename);
+			} catch (IOException e) {
+				Assert.fail(EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
+			}
 
 			// reopen a BufferedRAF for each thread
 			for (int i = 0; i < braf.length; i++) {
 				// Better way would be to provide method BRAF.open
-				braf[i] = new BufferedRandomAccessFile(realName, "r");
+				braf[i] = new BufferedRandomAccessFile(fpFilename, "r");
 			}
 			for (int i = 0; i < brafPool.length; i++) {
 				// Better way would be to provide method BRAF.open
-				brafPool[i] = new BufferedRandomAccessFile(realName, "r");
+				brafPool[i] = new BufferedRandomAccessFile(fpFilename, "r");
 			}
 			poolIndex = 0;
 		}
