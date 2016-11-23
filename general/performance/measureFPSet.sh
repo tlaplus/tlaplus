@@ -68,6 +68,10 @@ for i in {1..3}; do
            -Djava.io.tmpdir=/mnt/markus/tmp/ \
            -cp $TLATOOLS_HOME/class:$TLATOOLS_HOME/lib/* \
            org.junit.runner.JUnitCore tlc2.tool.fp.MultiThreadedOffHeapDiskFPSetTest 2>&1 | tee $TLC_OUTPUT_FILE;
+
+          echo "page_defrag = $(cat /sys/kernel/mm/transparent_hugepage/defrag)" >> $TLC_OUTPUT_FILE
+          echo "scaling_governor = $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)" >> $TLC_OUTPUT_FILE
+          sysctl kernel.numa_balancing >> $TLC_OUTPUT_FILE
         done
 done
 
