@@ -52,7 +52,7 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
         addField(new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME, "TLC run auto-lock time (in minutes)",
                 getFieldEditorParent()));
 		IntegerFieldEditor integerFieldEditor = new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS,
-				"Maximum tail length of Trace explorer states", getFieldEditorParent());
+				"Default number of states shown in error traces", getFieldEditorParent());
 		integerFieldEditor.setValidRange(1, Integer.MAX_VALUE);
 		addField(integerFieldEditor);
     }
