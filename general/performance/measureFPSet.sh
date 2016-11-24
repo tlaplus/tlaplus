@@ -42,7 +42,7 @@ for i in {1..3}; do
            -javaagent:$TLATOOLS_HOME/jfr/jmx2jfr.jar=$TLATOOLS_HOME/jfr/jmxprobes.xml \
            -Xmx$HEAP_MEM -Xms$HEAP_MEM \
            -Dtlc2.tool.fp.MultiThreadedFPSetTest.numThreads=$w \
-           -Dtlc2.tool.fp.MultiThreadedFPSetTest.excludes=_BatchedFingerPrintGenerator_LongVecFingerPrintGenerator_FingerPrintGenerator \
+           -Dtlc2.tool.fp.MultiThreadedFPSetTest.excludes=_BatchedFingerPrintGenerator_LongVecFingerPrintGenerator_PartitionedFingerPrintGenerator \
            -Dtlc2.tool.fp.MultiThreadedFPSetTest.insertions=8589934592 \
            -Djava.io.tmpdir=/mnt/markus/tmp/ \
            -cp $TLATOOLS_HOME/class:$TLATOOLS_HOME/lib/* \
@@ -63,7 +63,7 @@ for i in {1..3}; do
            -javaagent:$TLATOOLS_HOME/jfr/jmx2jfr.jar=$TLATOOLS_HOME/jfr/jmxprobes.xml \
            -XX:MaxDirectMemorySize=$DIRECT_MEM \
            -Dtlc2.tool.fp.MultiThreadedFPSetTest.numThreads=$w \
-           -Dtlc2.tool.fp.MultiThreadedFPSetTest.excludes=_BatchedFingerPrintGenerator_LongVecFingerPrintGenerator_FingerPrintGenerator \
+           -Dtlc2.tool.fp.MultiThreadedFPSetTest.excludes=_BatchedFingerPrintGenerator_LongVecFingerPrintGenerator_PartitionedFingerPrintGenerator \
            -Dtlc2.tool.fp.MultiThreadedFPSetTest.insertions=34359738368 \
            -Djava.io.tmpdir=/mnt/markus/tmp/ \
            -cp $TLATOOLS_HOME/class:$TLATOOLS_HOME/lib/* \

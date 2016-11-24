@@ -99,6 +99,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		// "FingerPrintGenerator" itself.
 		Assume.assumeFalse(System.getProperty(MultiThreadedFPSetTest.class.getName() + ".excludes", "")
 				.contains("_" + fpgClass.getSimpleName()));
+		System.out.println("Running test: " + fpgClass.getSimpleName());
 		
 		TLCGlobals.setNumWorkers(NUM_THREADS);
 		final FPSet fpSet = getFPSetInitialized(NUM_THREADS);
