@@ -259,16 +259,23 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	public boolean isRunning() {
+		final boolean marker = isMarkerSet(TLC_MODEL_IN_USE_MARKER, MODEL_IS_RUNNING);
 		final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 		final ILaunch[] launches = launchManager.getLaunches();
 		for (int i = 0; i < launches.length; i++) {
 			final ILaunch launch = launches[i];
 			if (launch.getLaunchConfiguration() != null
 					&& launch.getLaunchConfiguration().contentsEqual(this.launchConfig)) {
-				if (!launch.isTerminated()) { 
+				if (!launch.isTerminated()) {
+					if (marker != true) {
+						TLCActivator.logInfo("Model state out-of-sync. Close and reopen spec to sync.");
+					}
 					return true;
 				}
 			}
+		}
+		if (marker != false) {
+			TLCActivator.logInfo("Model state out-of-sync. Close and reopen spec to sync.");
 		}
 		return false;
 	}
