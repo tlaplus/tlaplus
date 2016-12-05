@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.ui.wizard;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -259,6 +260,26 @@ public class NewSpecWizardPage extends WizardPage
                 return;
             } else
             {
+				// NTFS (although case-sensitive) does not allow a path
+				// c:/foo/bar/Spec.tla when there exists a similar path
+				// c:/foo/Bar/Spec.tla. Because the Toolbox keeps
+				// converting a Spec's path from String > IPath (Eclipse) > File
+				// > String... lets force the user to use the pre-existing path
+				// to be consistent.
+				final File f = new File(rootfilePath);
+				if (f.getParentFile() != null && f.getParentFile().exists()) {
+					try {
+						final String canonicalPath = f.getCanonicalPath();
+						if (!rootfilePath.equals(canonicalPath)) {
+							reportError(String.format("%s collides with %s. Please use the latter path.", rootfilePath,
+									canonicalPath));
+							return;
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}            	
+            	
                 Spec existingSpec = Activator.getSpecManager().getSpecByRootModule(rootfilePath);
                 if (existingSpec != null)
                 {
