@@ -86,9 +86,11 @@ public class OpenFileManager implements Listener {
 			final Spec spec = specManager.getSpecByRootModule(absoluteFile.getAbsolutePath());
 			
 			if (spec != null) {
-				// Open the spec.
-				parameters.put(OpenSpecHandler.PARAM_SPEC, spec.getName());
-				UIHelper.runCommand(OpenSpecHandler.COMMAND_ID, parameters);
+				if (!spec.isCurrentSpec()) {
+					// Open the spec unless it is already open.
+					parameters.put(OpenSpecHandler.PARAM_SPEC, spec.getName());
+					UIHelper.runCommand(OpenSpecHandler.COMMAND_ID, parameters);
+				}
 			} else {
 				// Prompt the user to add a new spec.
 				parameters.put(NewSpecHandler.PARAM_PATH, absoluteFile.getAbsolutePath());
