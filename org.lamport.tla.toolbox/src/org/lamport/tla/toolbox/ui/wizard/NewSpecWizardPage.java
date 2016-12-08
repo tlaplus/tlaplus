@@ -147,9 +147,6 @@ public class NewSpecWizardPage extends WizardPage
         	setPageComplete(false);
         }
 
-        // disable the next/finish button
-        setPageComplete(false);
-
         UIHelper.setHelp(container, "NewSpecWizard");
 
         // the created parent is the control we see
