@@ -24,6 +24,11 @@ Please send us reports of problems or suggestions; see https://groups.google.com
    </configIni>
 
    <launcherArgs>
+      <programArgs>--launcher.defaultAction
+openFile
+-name
+&quot;TLA+ Toolbox&quot;
+      </programArgs>
       <programArgsLin>--launcher.GTK_version 2
       </programArgsLin>
       <vmArgs>-Xmx1000m

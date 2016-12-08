@@ -40,6 +40,7 @@ public class NewSpecHandler extends AbstractHandler implements IHandler
 {
 
     public static final String COMMAND_ID = "toolbox.command.spec.new";
+	public static final String PARAM_PATH = "toolbox.command.spec.new.param";
 
     /**
      * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
@@ -49,7 +50,7 @@ public class NewSpecHandler extends AbstractHandler implements IHandler
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 
         // Create the wizard
-        NewSpecWizard wizard = new NewSpecWizard();
+        NewSpecWizard wizard = new NewSpecWizard(event.getParameter(PARAM_PATH));
         // we pass null for structured selection, cause we just not using it
         wizard.init(window.getWorkbench(), null);
         Shell parentShell = window.getShell();

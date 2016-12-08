@@ -40,6 +40,10 @@
                name="appName"
                value="TLA+ Toolbox">
          </property>
+         <property
+               name="lifeCycleURI"
+               value="bundleclass://org.lamport.tla.toolbox/org.lamport.tla.toolbox.OpenFileManager">
+         </property>
       </product>
    </extension>
    

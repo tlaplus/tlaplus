@@ -221,6 +221,11 @@
             description="Create a new specification"
             id="toolbox.command.spec.new"
             name="New Specification">
+         <commandParameter
+               id="toolbox.command.spec.new.param"
+               name="specPath"
+               optional="true">
+         </commandParameter>
       </command>
       <command
             categoryId="toolbox.command.category.spec"

@@ -20,6 +20,11 @@ public class NewSpecWizard extends Wizard implements INewWizard
     private String specName;
 	private String rootFilename;
 	private boolean importExisting;
+	private final String absolutePath;
+
+	public NewSpecWizard(String absolutePath) {
+		this.absolutePath = absolutePath;
+	}
 
 	/*
      * (non-Javadoc)
@@ -52,7 +57,7 @@ public class NewSpecWizard extends Wizard implements INewWizard
      */
     public void addPages()
     {
-        page = new NewSpecWizardPage();
+        page = new NewSpecWizardPage(this.absolutePath);
         addPage(page);
     }
 

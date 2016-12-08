@@ -65,8 +65,12 @@ Export-Package: org.lamport.tla.toolbox,
  org.lamport.tla.toolbox.util.pref
 Eclipse-BundleShape: dir
 Import-Package: org.eclipse.e4.core.contexts,
+ org.eclipse.e4.core.services.events,
  org.eclipse.e4.ui.model.application,
  org.eclipse.e4.ui.model.application.ui,
  org.eclipse.e4.ui.model.application.ui.basic,
- org.eclipse.e4.ui.workbench.modeling
+ org.eclipse.e4.ui.workbench,
+ org.eclipse.e4.ui.workbench.lifecycle,
+ org.eclipse.e4.ui.workbench.modeling,
+ org.osgi.service.event;version="1.3.0"
 

@@ -47,13 +47,17 @@ public class NewSpecWizardPage extends WizardPage
      * directory
      */
     private String lastBrowsedDirectory;
+    
+	private final String absolutePath;
 
     /**
+     * @param absolutePath 
      * @param pageName
      */
-    public NewSpecWizardPage()
+    public NewSpecWizardPage(String absolutePath)
     {
         super("newSpecWizardPage");
+		this.absolutePath = absolutePath;
         setTitle("New TLA+ Specification");
         setDescription("Creates a new TLA+ specification\nEnter a complete file name like c:\\jones\\specs\\foo.tla or click on Browse.");
     }
@@ -135,6 +139,13 @@ public class NewSpecWizardPage extends WizardPage
                 dialogChanged();
             }
         });
+        
+        if (absolutePath != null) {
+        	fileText.setText(absolutePath);
+        } else {
+        	// disable the next/finish button
+        	setPageComplete(false);
+        }
 
         // disable the next/finish button
         setPageComplete(false);
