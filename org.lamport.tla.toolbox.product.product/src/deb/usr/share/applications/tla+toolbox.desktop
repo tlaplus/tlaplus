@@ -1,8 +1,9 @@
 [Desktop Entry]
 Name=TLA+Toolbox
 Comment=The TLA+ Toolbox is an integrated development environment for the TLA+ tools.
-Exec=/opt/TLA+Toolbox/toolbox
+Exec=/opt/TLA+Toolbox/toolbox %f
 Icon=tla+toolbox
 Categories=Development;
 Terminal=false
 Type=Application
+MimeType=text/x-tla;application/x-tla;

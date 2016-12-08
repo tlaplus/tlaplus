@@ -122,6 +122,16 @@
 								</mapper>
 						    </data>
 						    <data>
+						        <src>src/deb/usr/share/mime/packages/tla+toolbox.xml</src>
+						        <type>file</type>
+								<mapper>
+									<type>perm</type>
+									<prefix>/usr/share/mime/packages/</prefix>
+									<user>root</user>
+									<group>root</group>
+								</mapper>
+						    </data>
+						    <data>
 						        <src>src/deb/usr/share/icons/hicolor/32x32/apps/tla+toolbox.png</src>
 						        <type>file</type>
 								<mapper>

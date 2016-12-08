@@ -3,6 +3,9 @@
 ## Fix permissions of executable
 chmod 755 /opt/TLA+Toolbox/toolbox
 
+## Update mime database for x-tla type.
+/usr/bin/update-mime-database /usr/share/mime
+
 #- Apt repo
 #-- Jenkins Plugin
 #-- https://github.com/theoweiss/apt-repo

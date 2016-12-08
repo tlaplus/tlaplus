@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+ <mime-type type="application/x-tla">
+  <comment>TLA+ specification</comment>
+  <sub-class-of type="text/plain"/>
+  <glob pattern="*.tla"/>
+  <alias type="text/x-tla"/>
+ </mime-type>
+</mime-info>
