@@ -4,7 +4,7 @@ Section: misc
 Distribution: development
 Priority: optional
 Depends: default-jre (>= 1.7)
-Recommends: texlive-latex-recommended
+Recommends: texlive-latex-recommended, libwebkitgtk-1.0-0
 Architecture: amd64
 Description: The TLA Toolbox is an IDE (integrated development environment) for the TLA+ tools.
 Maintainer: tlaplus@googlegroups.com
