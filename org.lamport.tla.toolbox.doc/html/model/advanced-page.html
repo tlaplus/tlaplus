@@ -197,6 +197,8 @@ that only a finite set of states is explored, even if
 the complete set of reachable states is infinite.)&nbsp;
 With depth-first search, TLC will usually not produce
 a shortest-length error trace.&nbsp;
+Moreover, TLC does not do any liveness checking 
+when using depth-first search.
 </p>
 <p>
 <b>Warning:</b> Depth-first search is an experimental TLC
