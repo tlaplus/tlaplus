@@ -2,3 +2,6 @@
 
 For more information, visit https://research.microsoft.com/en-us/um/people/lamport/tla/tla.html
 
+Contributing
+------------
+Please read our [contribution guide](https://raw.githubusercontent.com/tlaplus/tlaplus/master/CONTRIBUTING.md) before you start working on your contribution.
