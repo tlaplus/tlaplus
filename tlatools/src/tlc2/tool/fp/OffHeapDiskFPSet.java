@@ -65,7 +65,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// Determine base address which varies depending on machine architecture.
 		this.array = new LongArray(positions);
 		this.reprobe = new LongAccumulator(new LongBinaryOperator() {
-			public long applyAsLong(long left, long right) {
+			public long applyAsLong(final long left, final long right) {
 				return Math.max(left, right);
 			}
 		}, 0);
@@ -117,6 +117,11 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				final double lf = tblCnt.doubleValue() / (double) maxTblCnt;
 				final int r = reprobe.intValue();
 				
+				LOGGER.log(Level.FINE,
+						"Started eviction of disk {0} the {1}. time at {2} after {3} insertions, load factor {4} and reprobe of {5}.",
+						new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(),
+								timestamp, insertions, lf, r });
+				
 				// Check that the table adheres to our invariant. Otherwise, we
 				// can't hope to successfully evict it.
 				assert checkInput(array, indexer, r) : "Table violates invariants prior to eviction: "
@@ -140,12 +145,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				} 
 
 				// statistics and logging again.
-				long l = System.currentTimeMillis() - timestamp;
+				final long l = System.currentTimeMillis() - timestamp;
 				flushTime += l;
 				LOGGER.log(Level.FINE,
-						"Flushed disk {0} {1}. time, in {2} sec after {3} insertions, load factor {4} and reprobe of {5}.",
+						"Finished eviction of disk {0} the {1}. time at {2}, in {3} sec after {4} insertions, load factor {5} and reprobe of {6}.",
 						new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l,
-								insertions, lf, r });
+								System.currentTimeMillis(), insertions, lf, r });
 
 				// Release exclusive access. It has to be done by the runnable
 				// before workers waiting on the barrier wake up again.
@@ -463,7 +468,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				
 				if (wrappedA == wrappedB && posA > posB) {
 					return fpA < fpB ? -1 : 1;
-				} else if ((wrappedA ^ wrappedB)) {
+				} else if (wrappedA ^ wrappedB) {
 					if (posA < posB && fpA < fpB) {
 						return -1;
 					}
@@ -611,6 +616,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 * @see tlc2.tool.fp.DiskFPSet.Flusher#prepareTable()
 		 */
 		protected void prepareTable() {
+			final long now = System.currentTimeMillis();
 			final CyclicBarrier phase = new CyclicBarrier(this.numThreads);
 			final Collection<Callable<Result>> tasks = new ArrayList<Callable<Result>>(numThreads);
 			for (int i = 0; i < numThreads; i++) {
@@ -649,7 +655,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						// above at the price of higher complexity. Thus,
 						// it's done here until it becomes a bottleneck.
 						final long limit = isLast ? a.size() + r : end;
-						long occupied = getTableOffset(a, r, indexer, start, limit);
+						final long occupied = getTableOffset(a, r, indexer, start, limit);
 						
 						if (index == null) {
 							// No index, no need to calculate a disk offset.
@@ -679,10 +685,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			assert checkSorted(a, indexer, r) == -1L : String.format(
 					"Array %s not fully sorted at index %s and reprobe %s.", a.toString(),
 					checkSorted(array, indexer, r), r);
+			
+			LOGGER.log(Level.FINE, "Sorted in-memory table with {0} workers and reprobe {1} in {2} ms.",
+					new Object[] { numThreads, r, (System.currentTimeMillis() - now) });
 		}
 
 		@Override
 		protected void mergeNewEntries(final RandomAccessFile[] inRAFs, final RandomAccessFile outRAF, final Iterator ignored, final int idx, final long cnt) throws IOException {
+			final long now = System.currentTimeMillis();
 			assert offsets.stream().mapToLong(new ToLongFunction<Future<Result>>() {
 				public long applyAsLong(Future<Result> future) {
 					try {
@@ -790,6 +800,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 			assert checkTable(a) : "Missed element during eviction.";
 			assert checkIndex(index) : "Inconsistent disk index.";
+			
+			LOGGER.log(Level.FINE, "Wrote table to disk with {0} workers in {1} ms.",
+					new Object[] { numThreads, (System.currentTimeMillis() - now) });
 		}
 
 		private class Result {
