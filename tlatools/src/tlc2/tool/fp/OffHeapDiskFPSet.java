@@ -711,8 +711,17 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				public Void call() throws Exception {
 					final Result result = offsets.get(0).get();
 					final Iterator itr = new Iterator(a, result.getTable(), indexer);
-					ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], outRAF, itr, 0, 0L, result.getDisk());
-					assert outRAF.getFilePointer() == result.getTotal()
+					// Create a new RAF instance. The outRAF instance is
+					// otherwise shared by multiple writers leading to race
+					// conditions and inconsistent fingerprint set files.
+					final RandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
+					tmpRAF.setLength(outRAF.length());
+					try {
+						ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], tmpRAF, itr, 0, 0L, result.getDisk());
+					} finally {
+						tmpRAF.close();
+					}
+					assert tmpRAF.getFilePointer() == result.getTotal()
 							* FPSet.LongSize : "First writer did not write expected amount of fingerprints to disk.";
 					return null;
 				}
@@ -722,6 +731,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				final int id = i;
 				tasks.add(new Callable<Void>() {
 					public Void call() throws Exception {
+						// Create a new RAF instance. The outRAF instance is
+						// otherwise shared by multiple writers leading to race
+						// conditions and inconsistent fingerprint set files.
 						final RandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
 						tmpRAF.setLength(outRAF.length());
 						try {
@@ -769,12 +781,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			}
 			// Combine the callable results.
 			try {
-				for (Callable<Void> callable : tasks) {
-					// Write the partitions sequentially to the file.
-					executorService.submit(callable).get();
-				}
-			} catch (ExecutionException e) {
-				throw new RuntimeException(e);
+				executorService.invokeAll(tasks);
 			} catch (InterruptedException ie) {
 				throw new RuntimeException(ie);
 			} finally {
