@@ -770,7 +770,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 							// Calculate where the index entries start and end.
 							final int idx = (int) Math.floor(skipOutFile / NumEntriesPerPage);
-							final long cnt = NumEntriesPerPage - (skipOutFile - (idx * NumEntriesPerPage));
+							assert idx > 0 : "Over/Underflow in index calculation. int based index array too small"
+									+ " for FPSet. Increase NumEntriesPerPage or re-implement index array!";
+							final long cnt = NumEntriesPerPage - (skipOutFile - (idx * (NumEntriesPerPage * 1L)));
 
 							// Stop reading after diskReads elements (after
 							// which the next thread continues) except for the
