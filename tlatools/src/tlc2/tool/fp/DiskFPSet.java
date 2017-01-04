@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
+import java.text.DecimalFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.logging.Logger;
@@ -1134,5 +1135,61 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		}
 		braf.seek(ptr);
 		return true;
+	}
+	
+	/*
+	 * Helper to read a fingerprint file (.fp) front to end and check for inconsistencies.   
+	 */
+	
+	@SuppressWarnings("resource")
+	public static void main(String[] args) throws IOException {
+		if (args.length == 1 && !args[0].equals("")) {
+
+			final BufferedRandomAccessFile braf = new BufferedRandomAccessFile(new File(args[0]), "r");
+
+			final long elements = braf.length() / FPSet.LongSize;
+			final DecimalFormat df = new DecimalFormat("###,###.###");
+			System.out.println(String.format("About to scan %s elements.", df.format(elements)));
+
+			long elem = 0L;
+			for (long i = 0; i < elements; i++) {
+				final long l = braf.readLong();
+				if (l < elem) {
+					System.err.println(
+							String.format("Inconsistent elements %s at pos %s < %s at pos %s.", elem, i - 1L, l, i));
+				}
+				elem = l;
+				if (i > 0 && i % 100000000L == 0L) {
+					System.out.println(String.format("Scanned %s elements.", df.format(i)));
+				}
+			}
+		} else if (args.length == 2 && !args[0].equals("") && !args[1].equals("")) {
+			final BufferedRandomAccessFile superset = new BufferedRandomAccessFile(new File(args[0]), "r");
+			final BufferedRandomAccessFile subset = new BufferedRandomAccessFile(new File(args[1]), "r");
+
+			final long elements = subset.length() / FPSet.LongSize;
+			final long fileLen = superset.length();
+
+			OUTER: for (long i = 0; i < elements; i++) {
+				final long l = subset.readLong();
+				while (superset.getFilePointer() < fileLen) {
+					final long m = superset.readLong();
+					if (l == m) {
+						continue OUTER;
+					} else if (m > l) {
+						System.err
+								.println(String.format("Inconsistent element in superset %s not in superset at pos %s.",
+										m, superset.getFilePointer()));
+					}
+				}
+				System.err.println(
+						String.format("Element in subset %s not in superset at pos %s.", l, subset.getFilePointer()));
+			}
+
+			System.out.println("Finished scanning files.");
+		} else {
+			System.err.println("Usage: DiskFPSet file.fp OR superset.fp subset.fp");
+			System.exit(1);
+		}
 	}
 }
