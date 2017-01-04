@@ -22,6 +22,7 @@ import tlc2.tool.fp.generator.BatchedFingerPrintGenerator;
 import tlc2.tool.fp.generator.FingerPrintGenerator;
 import tlc2.tool.fp.generator.LongVecFingerPrintGenerator;
 import tlc2.tool.fp.generator.PartitionedFingerPrintGenerator;
+import tlc2.util.IdThread;
 
 public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 
@@ -133,7 +134,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		for (int i = 0; i < fpgs.length; i++) {
 			fpgs[i] = (FingerPrintGenerator) constructor.newInstance(
 					this, i, fpgs.length, fpSet, latch, seed++, INSERTIONS, barrier);
-			Thread thread = new Thread(fpgs[i], "Producer#" + i);
+			Thread thread = new IdThread(fpgs[i], "Producer#" + i, i);
 			thread.start();
 		}
 

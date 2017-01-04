@@ -16,7 +16,12 @@ public class IdThread extends Thread {
         this.id = id;
     }
    
-    /** Return this thread's ID. */
+    public IdThread(Runnable runnable, String name, int id) {
+    	super(runnable, name);
+    	this.id = id;
+	}
+
+	/** Return this thread's ID. */
     // This method was originally called getId, but a later
     // version of Java introduced a getId method into the Thread
     // class which returned a long, and it doesn't allow it to be
