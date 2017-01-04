@@ -36,7 +36,7 @@ import util.Assert;
 @SuppressWarnings({ "serial" })
 public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implements FPSetStatistic {
 	
-	private static final int PROBE_LIMIT = Integer.getInteger(OffHeapDiskFPSet.class.getName() + ".probeLimit", 128);
+	private static final int PROBE_LIMIT = Integer.getInteger(OffHeapDiskFPSet.class.getName() + ".probeLimit", 1024);
 	static final long EMPTY = 0L;
 	
 	private final LongAccumulator reprobe;
