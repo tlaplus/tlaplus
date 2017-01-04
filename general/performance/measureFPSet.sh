@@ -41,6 +41,7 @@ for i in {1..3}; do
            -XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/tmp,dumponexit=true,dumponexitpath=$MSB_JFR_OUTPUT_FILE,maxage=12h,settings=$TLATOOLS_HOME/jfr/tlc.jfc \
            -javaagent:$TLATOOLS_HOME/jfr/jmx2jfr.jar=$TLATOOLS_HOME/jfr/jmxprobes.xml \
            -Xmx$HEAP_MEM -Xms$HEAP_MEM \
+           -Djava.util.logging.config.file=$TLATOOLS_HOME/logging.properties \
            -Dtlc2.tool.fp.MultiThreadedFPSetTest.numThreads=$w \
            -Dtlc2.tool.fp.MultiThreadedFPSetTest.excludes=_BatchedFingerPrintGenerator_LongVecFingerPrintGenerator_PartitionedFingerPrintGenerator \
            -Dtlc2.tool.fp.MultiThreadedFPSetTest.insertions=8589934592 \
@@ -62,6 +63,7 @@ for i in {1..3}; do
            -XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/tmp,dumponexit=true,dumponexitpath=$JFR_OUTPUT_FILE,maxage=12h,settings=$TLATOOLS_HOME/jfr/tlc.jfc \
            -javaagent:$TLATOOLS_HOME/jfr/jmx2jfr.jar=$TLATOOLS_HOME/jfr/jmxprobes.xml \
            -XX:MaxDirectMemorySize=$DIRECT_MEM \
+           -Djava.util.logging.config.file=$TLATOOLS_HOME/logging.properties \
            -Dtlc2.tool.fp.MultiThreadedFPSetTest.numThreads=$w \
            -Dtlc2.tool.fp.MultiThreadedFPSetTest.excludes=_BatchedFingerPrintGenerator_LongVecFingerPrintGenerator_PartitionedFingerPrintGenerator \
            -Dtlc2.tool.fp.MultiThreadedFPSetTest.insertions=34359738368 \
