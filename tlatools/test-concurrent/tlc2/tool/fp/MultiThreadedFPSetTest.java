@@ -110,7 +110,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 				int.class, int.class, FPSet.class, CountDownLatch.class, long.class, long.class, CyclicBarrier.class });
 		
 		// Take timestamp after instantiating FPSet to not measure zero'ing/initializing FPSet.  
-		previousTimestamp = startTimestamp = System.currentTimeMillis();
+		startTimestamp = System.currentTimeMillis();
 
 		final Timer timer = new Timer();
 		final CyclicBarrier barrier = new CyclicBarrier(NUM_THREADS, new Runnable() {
@@ -120,11 +120,19 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 				// reporter.
 				final TimerTask reporter = new TimerTask() {
 					public void run() {
-						printInsertionSpeed(fpSet);
+						final long currentSize = fpSet.size();
+						final long insertions = currentSize - previousSize;
+						if (fpSet instanceof FPSetStatistic) {
+							FPSetStatistic fpSetStatistics = (FPSetStatistic) fpSet;
+							System.out.println(System.currentTimeMillis() + " s (epoch); " + df.format(insertions) + " insertions/min; " + pf.format(fpSetStatistics.getLoadFactor()) + " load factor");
+						} else {
+							System.out.println(System.currentTimeMillis() + " s (epoch); " + df.format(insertions) + " insertions/min");
+						}
+						previousSize = currentSize;
 					}
 				};
 				// Take timestamp after instantiating FPSet to not measure zero'ing/initializing FPSet.  
-				previousTimestamp = startTimestamp = System.currentTimeMillis();
+				startTimestamp = System.currentTimeMillis();
 				timer.scheduleAtFixedRate(reporter, 1L, 60 * 1000);
 			}
 		});

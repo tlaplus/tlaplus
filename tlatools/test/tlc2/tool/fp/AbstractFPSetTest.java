@@ -100,7 +100,7 @@ public abstract class AbstractFPSetTest {
 			long insertions = (long) ((currentSize - previousSize) * factor);
 			if (fpSet instanceof FPSetStatistic) {
 				FPSetStatistic fpSetStatistics = (FPSetStatistic) fpSet;
-				System.out.println(System.currentTimeMillis() + " s; " + df.format(insertions) + " insertions/min; " + pf.format(fpSetStatistics.getLoadFactor()) + " load factor");
+				System.out.println(System.currentTimeMillis() + " s (epoch); " + df.format(insertions) + " insertions/min; " + pf.format(fpSetStatistics.getLoadFactor()) + " load factor");
 			} else {
 				System.out.println(System.currentTimeMillis() + " s (epoch); " + df.format(insertions) + " insertions/min");
 			}
