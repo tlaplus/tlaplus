@@ -175,7 +175,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     }
     
     /* Flush any dirty bytes in the buffer to disk. */
-    private void flushBuffer() throws IOException {
+    private boolean flushBuffer() throws IOException {
         if (this.dirty) {
             // Assert.check(this.curr > this.lo);
             if (this.diskPos != this.lo) super.seek(this.lo);
@@ -183,7 +183,9 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
             super.write(this.buff, 0, len); 
             this.diskPos = this.curr;
             this.dirty = false;
+            return true;
         }
+        return false;
     }
     
     /* Read at most "this.buff.length" bytes into "this.buff",
@@ -248,7 +250,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
 			// seeking inside current buffer -- no read required
 			if (pos < this.curr) {
 				// if seeking backwards, we must flush to maintain V4
-				this.flushBuffer();
+				pageReadNeeded = this.flushBuffer();
 			} else {
 				pageReadNeeded = false;
 			}
