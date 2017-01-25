@@ -18,8 +18,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.LongAccumulator;
-import java.util.function.LongBinaryOperator;
 import java.util.function.ToLongFunction;
 import java.util.logging.Level;
 
@@ -39,8 +37,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	private static final int PROBE_LIMIT = Integer.getInteger(OffHeapDiskFPSet.class.getName() + ".probeLimit", 1024);
 	static final long EMPTY = 0L;
 	
-	private final LongAccumulator reprobe;
-
 	private final LongArray array;
 	
 	/**
@@ -64,11 +60,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		
 		// Determine base address which varies depending on machine architecture.
 		this.array = new LongArray(positions);
-		this.reprobe = new LongAccumulator(new LongBinaryOperator() {
-			public long applyAsLong(final long left, final long right) {
-				return Math.max(left, right);
-			}
-		}, 0);
 		
 		// If Hamming weight is 1, the logical index address can be calculated
 		// significantly faster by bit-shifting. However, with large memory
@@ -115,7 +106,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				final long timestamp = System.currentTimeMillis();
 				final long insertions = tblCnt.longValue();
 				final double lf = tblCnt.doubleValue() / (double) maxTblCnt;
-				final int r = reprobe.intValue();
+				final int r = PROBE_LIMIT;
 				
 				LOGGER.log(Level.FINE,
 						"Started eviction of disk {0} the {1}. time at {2} after {3} insertions, load factor {4} and reprobe of {5}.",
@@ -216,8 +207,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 * @see tlc2.tool.fp.DiskFPSet#memLookup(long)
 	 */
 	final boolean memLookup(final long fp0) {
-		int r = reprobe.intValue();
-		for (int i = 0; i <= r; i++) {
+		for (int i = 0; i <= PROBE_LIMIT; i++) {
 			final long position = indexer.getIdx(fp0, i);
 			final long l = array.get(position);
 			if (fp0 == (l & FLUSHED_MASK)) {
@@ -241,14 +231,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			final long position = indexer.getIdx(fp0, i);
 			final long expected = array.get(position);
 			if (expected == EMPTY || (expected < 0 && fp0 != (expected & FLUSHED_MASK))) {
-				// Increment reprobe if needed. Other threads might have
-				// increased concurrently. Since reprobe is strictly
-				// monotonic increasing, we need no retry when r larger.
-				reprobe.accumulate(i);
-				
-				// Try to CAS the new fingerprint. In case of failure, reprobe
-				// is too large which we ignore. Will be eventually corrected
-				// by eviction.
+				// Try to CAS the new fingerprint.
 				if (array.trySet(position, expected, fp0)) {
 					this.tblCnt.increment();
 					return false;
@@ -259,9 +242,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					i = i - 1;
 					continue;
 				}
-				// Cannot reduce reprobe to its value before we increased it.
-				// Another thread could have caused an increase to i too which
-				// would be lost.
 			}
 			
 			// Expected is the fingerprint to be inserted.
@@ -386,7 +366,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	public long getBucketCapacity() {
 		// A misnomer, but bucketCapacity is obviously not applicable with open
 		// addressing.
-		return reprobe.longValue();
+		return PROBE_LIMIT;
 	}
 
 	//**************************** Indexer ****************************//
@@ -840,7 +820,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 */
 		protected void prepareTable() {
 			super.prepareTable();
-			final int r = OffHeapDiskFPSet.this.reprobe.intValue();
+			final int r = PROBE_LIMIT;
 			
 			assert checkInput(array, indexer, r) : "Table violates invariants prior to eviction";
 			
@@ -1101,7 +1081,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	/**
 	 * @return -1L iff array is sorted, index/position of the element that violates otherwise in the range [start, end].
 	 */
-	private static long checkSorted(final LongArray array, final Indexer indexer, final int reprobe, long start, long end) {
+	private static long checkSorted(final LongArray array, final Indexer indexer, int reprobe, long start, long end) {
+		if (reprobe >= array.size()) {
+			// When the array is smaller than the number of positions/slots, the
+			// loop below will run past its bounds. If this happens, it compares
+			// elements the element at the start with the element at the end.
+			reprobe = (int) (array.size() - 1);
+		}
 		long e = 0L;
 		for (long pos = start; pos <= end; pos++) {
 			final long tmp = array.get(pos % array.size());

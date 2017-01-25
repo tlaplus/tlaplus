@@ -30,8 +30,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.LongAccumulator;
-import java.util.function.LongBinaryOperator;
 
 import org.junit.Test;
 
@@ -69,7 +67,6 @@ public class OffHeapDiskFPSetJPFTest extends TestJPF {
 		
 		private final OffHeapDiskFPSet.Indexer indexer;
 		private final DummyLongArray array;
-		private final LongAccumulator reprobe;
 		// AtomicInteger should be LongAdder but JPF fails with what seems to be an
 		// internal bug.
 		private final AtomicInteger tblCnt;
@@ -78,11 +75,6 @@ public class OffHeapDiskFPSetJPFTest extends TestJPF {
 			this.tblCnt = new AtomicInteger(0);
 			this.array = new DummyLongArray(positions);
 			this.indexer = new OffHeapDiskFPSet.Indexer(positions, 1, max);
-			this.reprobe = new LongAccumulator(new LongBinaryOperator() {
-				public long applyAsLong(long left, long right) {
-					return Math.max(left, right);
-				}
-			}, 0);
 		}
 
 		// This is what we want to verify.
@@ -91,8 +83,6 @@ public class OffHeapDiskFPSetJPFTest extends TestJPF {
 				final int position = (int) indexer.getIdx(fp, i);
 				final long expected = array.get(position);
 				if (expected == EMPTY) {
-					reprobe.accumulate(i);
-					
 					if (array.trySet(position, expected, fp)) {
 						tblCnt.incrementAndGet();
 						return false;
