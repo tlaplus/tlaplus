@@ -4,4 +4,4 @@ For more information, visit https://research.microsoft.com/en-us/um/people/lampo
 
 Contributing
 ------------
-Please read our [contribution guide](https://raw.githubusercontent.com/tlaplus/tlaplus/master/CONTRIBUTING.md) before you start working on your contribution.
+Please read our [contribution guide](https://raw.githubusercontent.com/tlaplus/tlaplus/master/CONTRIBUTING.md) before you start working on your contribution. We also have a [feature wishlist](https://github.com/tlaplus/tlaplus/blob/master/general/docs/contributions.md).
