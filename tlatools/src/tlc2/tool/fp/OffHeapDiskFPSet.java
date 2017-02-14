@@ -202,32 +202,45 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		final double d = (this.tblCnt.doubleValue()) / (double) this.maxTblCnt;
 		return d >= limit;
 	}
-
+    
+	private static final int FOUND = -1;
+    
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memLookup(long)
 	 */
 	final boolean memLookup(final long fp0) {
+		return memLookup0(fp0) == FOUND;
+	}
+
+	final int memLookup0(final long fp0) {
+		int free = PROBE_LIMIT;
 		for (int i = 0; i <= PROBE_LIMIT; i++) {
 			final long position = indexer.getIdx(fp0, i);
 			final long l = array.get(position);
 			if (fp0 == (l & FLUSHED_MASK)) {
 				// zero the long msb (which is 1 if fp has been flushed to disk)
-				return true;
+				return FOUND;
 			} else if (l == EMPTY) {
-				return false;
+				return Math.min(i, free);
+			} else if (l < EMPTY && free == PROBE_LIMIT) {
+				free = i;
 			}
 		}
 
-		return false;
+		return free;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.DiskFPSet#memInsert(long)
 	 */
 	final boolean memInsert(final long fp0) throws IOException {
+		return memInsert0(fp0, 0);
+	}
+
+	final boolean memInsert0(final long fp0, final int start) throws IOException {
 		// See OffHeapDiskFPSetJPFTest for a (verbatim) version that has
 		// additionally been verified with JPF.
-		for (int i = 0; i < PROBE_LIMIT; i++) {
+		for (int i = start; i < PROBE_LIMIT; i++) {
 			final long position = indexer.getIdx(fp0, i);
 			final long expected = array.get(position);
 			if (expected == EMPTY || (expected < 0 && fp0 != (expected & FLUSHED_MASK))) {
@@ -275,9 +288,10 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 		// Only check primary and disk iff there exists a disk file. index is
 		// created when we wait and thus cannot race.
+		int start = 0;
 		if (index != null) {
 			// Lookup primary memory
-			if (memLookup(fp0)) {
+			if ((start = memLookup0(fp0)) == FOUND) {
 				this.memHitCnt.increment();
 				return true;
 			}
@@ -290,7 +304,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		}
 		
 		// Lastly, try to insert into memory.
-		return memInsert(fp0);
+		return memInsert0(fp0, start);
 	}
 
 	/* (non-Javadoc)
