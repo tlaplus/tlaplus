@@ -595,6 +595,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(
 				120 * y, 1 - y, 1f)));
 
+		// IP/network address correct?
+		final int networkAddressIndex = this.networkInterfaceCombo.getSelectionIndex();
+		if (networkAddressIndex < 0) {
+			// Bogus input
+			modelEditor.addErrorMessage("strangeAddress1",
+					String.format(
+							"Found the manually inserted master's network address %s. "
+							+ "This is usually unnecessary and hints at a misconfiguration. "
+							+ "Make sure your computer running the TLC master is reachable at address %s.",
+							this.networkInterfaceCombo.getText(), this.networkInterfaceCombo.getText()),
+					this.getId(), IMessageProvider.WARNING, networkInterfaceCombo);
+			expandSection(SEC_HOW_TO_RUN);
+		}
+		
         // fill the checkpoints
         updateCheckpoints();
 
@@ -841,7 +855,16 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getModel().setAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, distributedNodesCountSpinner.getSelection());
         
         // network interface
-        final String iface = this.networkInterfaceCombo.getItem(this.networkInterfaceCombo.getSelectionIndex());
+        String iface = "";
+        final int index = this.networkInterfaceCombo.getSelectionIndex();
+        if (index == -1) {
+			// Normally, the user selects an address from the provided list.
+			// This branch handles the case where the user manually entered an
+			// address. We don't verify it though.
+        	iface = this.networkInterfaceCombo.getText();
+        } else {
+        	iface = this.networkInterfaceCombo.getItem(index);
+        }
         getModel().setAttribute(LAUNCH_DISTRIBUTED_INTERFACE, iface);
 
         // invariants
