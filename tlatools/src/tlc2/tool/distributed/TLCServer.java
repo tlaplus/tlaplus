@@ -689,7 +689,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
         }
     }
 
-	public static void main(String argv[]) {
+	public static void main(String[] argv) {
 		// Print version before MailSender has been created. Oh well, it misses
 		// the version output.
 		MP.printMessage(EC.TLC_VERSION, "TLC Server " + TLCGlobals.versionOfTLC);
