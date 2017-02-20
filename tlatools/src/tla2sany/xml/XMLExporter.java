@@ -45,8 +45,6 @@ import tla2sany.semantic.OpDefNode;
 
 // XML packages
 import java.io.File;
-import java.io.OutputStreamWriter;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -60,7 +58,6 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 import org.xml.sax.SAXException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.net.MalformedURLException;
 
 import org.w3c.dom.Attr;
@@ -203,7 +200,7 @@ public class XMLExporter {
             // but fail for other errors
           }*/
       }
-      StreamResult result = new StreamResult(new OutputStreamWriter(out, Charset.forName("UTF-8")));
+      StreamResult result = new StreamResult(out);
 
       transformer.transform(source, result);
     } catch (ParserConfigurationException pce) {

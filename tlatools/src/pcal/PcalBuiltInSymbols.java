@@ -37,8 +37,6 @@ import java.util.Hashtable;
 
 import tla2tex.Misc;
 import tla2tex.Symbol;
-import tla2unicode.Unicode;
-import util.UniqueString;
 
 public final class PcalBuiltInSymbols
   { 
@@ -113,11 +111,7 @@ public final class PcalBuiltInSymbols
       /*********************************************************************
       * Adds an entry to the builtInHashTable.                             *
       *********************************************************************/
-      { builtInHashTable.put(tla, new Symbol(tla, tex, stype, atype) ) ; 
-        String unicode = Unicode.a2u(tla);
-        if (unicode != null)
-        	builtInHashTable.put(unicode, new Symbol(tla, tex, stype, atype) ) ; 
-      } ;
+      { builtInHashTable.put(tla, new Symbol(tla, tex, stype, atype) ) ; } ;
 
 
     private static void buildHashTable() 

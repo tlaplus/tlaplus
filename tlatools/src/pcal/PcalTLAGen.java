@@ -6,8 +6,6 @@ import pcal.AST.VarDecl;
 import pcal.exception.PcalTLAGenException;
 import pcal.exception.TLAExprException;
 import tla2tex.Debug;
-import tla2tex.Symbol;
-import tla2unicode.Unicode;
 
 /****************************************************************************
  * Given an exploded and disambiguated AST, generate the equivalent TLA+.
@@ -3741,28 +3739,13 @@ public class PcalTLAGen
                     case '(':
                     case '[':
                     case '{':
-                    case '\u27E8': // ⟨
                         leftParen = true;
                         break;
                     case ')':
                     case ']':
                     case '}':
-                    case '\u27E9': // ⟩
                         rightParen = true;
                         break;
-                    }
-                    ;
-                    if (Unicode.cu2a(nextChar) != null) // possibly a Unicode operator
-                    {
-                    	Symbol sym = PcalBuiltInSymbols.GetBuiltInSymbol("" + nextChar);
-                    	if (sym != null && 
-                    			(sym.symbolType == Symbol.PREFIX
-                    			|| sym.symbolType == Symbol.INFIX 
-                    			|| sym.symbolType == Symbol.POSTFIX)) 
-                    	{
-                    		mayNeedParen = true;
-                    	}
-                    	;
                     }
                     ;
                     if (mayNeedParen && (parenDepth == 0))

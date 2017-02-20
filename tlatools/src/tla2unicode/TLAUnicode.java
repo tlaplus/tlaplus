@@ -129,7 +129,7 @@ public class TLAUnicode {
 		// This method performs the actual conversion
 		
 		List<CommentToken> leftComments = null;
-		boolean inBeginModule = false;
+		// boolean inBeginModule = false;
 		for (int line = 0; line < spec.length; line++) {
 			final StringBuilder out = new StringBuilder();
 			leftComments = new ArrayList<>(); // left comments that we may need to move to the end of the line 
@@ -223,10 +223,10 @@ public class TLAUnicode {
 					break;
 				}
 				
-				case Token.DASHES:
-				case Token.END_MODULE:
-					inBeginModule = convertDashes(toU, out, spec, line, item, inBeginModule);
-					break;
+//				case Token.DASHES:
+//				case Token.END_MODULE:
+//					inBeginModule = convertDashes(toU, out, spec, line, item, inBeginModule);
+//					break;
 					
 				case Token.STRING:
 					out.append("\"" + tok.string + "\"");
@@ -242,6 +242,8 @@ public class TLAUnicode {
 				case Token.NUMBER:
 				case Token.IDENT:
 				case Token.PCAL_LABEL:
+				case Token.DASHES:
+				case Token.END_MODULE:
 				case Token.PROLOG:
 				case Token.EPILOG:
 				case Token.PF_STEP:

@@ -9,7 +9,6 @@ package tla2sany.parser;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-//import tla2unicode.Unicode;
 import util.UniqueString;
 
 public class Operators {
@@ -43,10 +42,6 @@ public class Operators {
     
   static public void addOperator( UniqueString name, Operator op ) {
     DefinitionTable.put(name, op);
-    
-//    String unicode = Unicode.a2u(name.toString());
-//    if (unicode != null)
-//    	addSynonym(UniqueString.uniqueStringOf(unicode), name);
   }
 
   static public Operator getOperator( UniqueString name ) {
@@ -73,10 +68,6 @@ public class Operators {
     Operator n = (Operator) DefinitionTable.get( match );
     if (n != null) {
       DefinitionTable.put(template, n);
-      
-//      String unicode = Unicode.a2u(template.toString());
-//      if (unicode != null)
-//    	  DefinitionTable.put(UniqueString.uniqueStringOf(unicode), n);
     } /* else {
        error
     } */
