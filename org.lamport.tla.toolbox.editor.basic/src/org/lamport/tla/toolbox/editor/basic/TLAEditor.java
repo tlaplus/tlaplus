@@ -537,7 +537,7 @@ public class TLAEditor extends TextEditor
 					@Override
 					public void run() {
 						if (TLAUnicodeReplacer.isUnicode())
-							discardUndo(2);
+							captureUndo(2);
 						getSourceViewer().setTopIndex(visible);
 						getSelectionProvider().setSelection(selection);
 						firePropertyChange(PROP_DIRTY);
@@ -665,10 +665,6 @@ public class TLAEditor extends TextEditor
 	}
 	
 	private void discardUndo(int n) {
-		captureUndo(n);
-		if (true)
-			return;
-		
 		closeUndo();
 		final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
 		final IUndoContext undoContext = getUndoContext();
