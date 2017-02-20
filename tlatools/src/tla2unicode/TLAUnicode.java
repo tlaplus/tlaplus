@@ -129,7 +129,7 @@ public class TLAUnicode {
 		// This method performs the actual conversion
 		
 		List<CommentToken> leftComments = null;
-		
+		boolean inBeginModule = false;
 		for (int line = 0; line < spec.length; line++) {
 			final StringBuilder out = new StringBuilder();
 			leftComments = new ArrayList<>(); // left comments that we may need to move to the end of the line 
@@ -222,16 +222,12 @@ public class TLAUnicode {
 					out.append(alt != null ? alt : tok.string);
 					break;
 				}
-				case Token.NUMBER:
-				case Token.IDENT:
-				case Token.PCAL_LABEL:
+				
 				case Token.DASHES:
 				case Token.END_MODULE:
-				case Token.PROLOG:
-				case Token.EPILOG:
-				case Token.PF_STEP:
-					out.append(tok.string);
+					inBeginModule = convertDashes(toU, out, spec, line, item, inBeginModule);
 					break;
+					
 				case Token.STRING:
 					out.append("\"" + tok.string + "\"");
 					break;
@@ -241,6 +237,15 @@ public class TLAUnicode {
 					if (onlyComments && leftComments != null)
 						leftComments.add(ctok);
 					appendCommentToken(toU, out, ctok);
+					break;
+
+				case Token.NUMBER:
+				case Token.IDENT:
+				case Token.PCAL_LABEL:
+				case Token.PROLOG:
+				case Token.EPILOG:
+				case Token.PF_STEP:
+					out.append(tok.string);
 					break;
 
 				default:
@@ -330,6 +335,35 @@ public class TLAUnicode {
 //				prev = c;
 //			}
 //		}
+	}
+	
+	private static boolean convertDashes(boolean toU, StringBuilder sb, Token[][] spec, int line, int item, boolean inBeginModule) {
+		final Token tok = spec[line][item];
+		if (tok.type == Token.END_MODULE) {
+			sb.append(UnicodeConstants.UP_AND_RIGHT);
+			appendMany(sb, UnicodeConstants.HORIZONTAL, tok.string.length() - 2);
+			sb.append(UnicodeConstants.UP_AND_LEFT);
+			return false;
+		} else if (tok.type == Token.DASHES) {
+			if (inBeginModule) {
+				appendMany(sb, UnicodeConstants.HORIZONTAL, tok.string.length() - 1);
+				sb.append(UnicodeConstants.DOWN_AND_LEFT);
+				return false;
+			} else if ((item + 1 < spec[line].length) && (spec[line][item+1].string.equals("MODULE"))) {
+				sb.append(UnicodeConstants.DOWN_AND_RIGHT);
+				appendMany(sb, UnicodeConstants.HORIZONTAL, tok.string.length() - 1);
+				return true;
+			} else {
+				appendMany(sb, UnicodeConstants.HORIZONTAL, tok.string.length());
+				return false;
+			}
+		} else
+			throw new AssertionError("Unexpected token type: " + tok);
+	}
+	
+	private static void appendMany(StringBuilder sb, char c, int num) {
+		for (int i = 0; i< num; i++)
+			sb.append(c);
 	}
 	
 	private static void adjustWidthTo(StringBuilder sb, int n) {
