@@ -601,9 +601,9 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#checkFPs()
 	 */
-	public final double checkFPs() throws IOException {
+	public double checkFPs() throws IOException {
 		// It seems pointless to acquire the locks when checkFPs is only
-		// executed after model checking has finished. Sill lock the disk
+		// executed after model checking has finished. Lock the disk
 		// fingerprint sets though. Acquiring the locks is cheap.
 		acquireTblWriteLock();
 		flusher.flushTable();

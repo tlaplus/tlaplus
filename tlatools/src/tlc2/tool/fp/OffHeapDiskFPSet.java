@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.BrokenBarrierException;
@@ -21,6 +22,7 @@ import java.util.concurrent.Future;
 import java.util.function.ToLongFunction;
 import java.util.logging.Level;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.LongArrays.LongComparator;
@@ -106,24 +108,21 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				final long timestamp = System.currentTimeMillis();
 				final long insertions = tblCnt.longValue();
 				final double lf = tblCnt.doubleValue() / (double) maxTblCnt;
-				final int r = PROBE_LIMIT;
 				
 				LOGGER.log(Level.FINE,
 						"Started eviction of disk {0} the {1}. time at {2} after {3} insertions, load factor {4} and reprobe of {5}.",
 						new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(),
-								timestamp, insertions, lf, r });
+								timestamp, insertions, lf, PROBE_LIMIT });
 				
 				// Check that the table adheres to our invariant. Otherwise, we
 				// can't hope to successfully evict it.
-				assert checkInput(array, indexer, r) : "Table violates invariants prior to eviction: "
+				assert checkInput(array, indexer, PROBE_LIMIT) : "Table violates invariants prior to eviction: "
 						+ array.toString();
 				
 				// Only pay the price of creating threads when array is
 				// sufficiently large and the array size is large enough to
 				// partition it for multiple threads.
-				if (array.size() >= 8192 && Math.floor(array.size() / numThreads) > 2 * PROBE_LIMIT) {
-					OffHeapDiskFPSet.this.flusher = new ConcurrentOffHeapMSBFlusher(array, r, numThreads, insertions);
-				}
+				OffHeapDiskFPSet.this.flusher = getFlusher(numThreads, insertions);
 				
 				try {
 					flusher.flushTable(); // Evict()
@@ -141,7 +140,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				LOGGER.log(Level.FINE,
 						"Finished eviction of disk {0} the {1}. time at {2}, in {3} sec after {4} insertions, load factor {5} and reprobe of {6}.",
 						new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l,
-								System.currentTimeMillis(), insertions, lf, r });
+								System.currentTimeMillis(), insertions, lf, PROBE_LIMIT });
 
 				// Release exclusive access. It has to be done by the runnable
 				// before workers waiting on the barrier wake up again.
@@ -149,7 +148,15 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			}
 		});
 	}
-	
+
+	private Flusher getFlusher(final int numThreads, final long insertions) {
+		if (array.size() >= 8192 && Math.floor(array.size() / numThreads) > 2 * PROBE_LIMIT) {
+			return new ConcurrentOffHeapMSBFlusher(array, PROBE_LIMIT, numThreads, insertions);
+		} else {
+			return this.flusher;
+		}
+	}
+
 	private boolean checkEvictPending() {
 		if (flusherChosen.get()) {
 			try {
@@ -381,6 +388,105 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// A misnomer, but bucketCapacity is obviously not applicable with open
 		// addressing.
 		return PROBE_LIMIT;
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.DiskFPSet#checkFPs()
+	 */
+	public double checkFPs() throws IOException {
+		if (getTblCnt() <= 0) {
+			return Double.MAX_VALUE;
+		}
+		// The superclass implementation provides insufficient performance and
+		// scalability. These problems get more pronounced with a large array.
+		// In order to provide a faster solution to the closest pair problem in
+		// one-dimensional space, we cheat and determine the minimum distance
+		// between fingerprints only on a subset of fingerprints. The subset are
+		// those fingerprints which happen to be in main memory and have not yet
+		// been evicted to disk. We believe this to be a sufficient approximation.
+		// The algorithm to find the closest pair in one-dimensional space is:
+		// 1) Sort all fingerprints.
+		// 2) Perform a linear scan/search
+		// => O(n log n)
+		// Scalability is achieved by partitioning the array for 1) and 2),
+		// which is possible due to the bounded disorder in array.
+		
+		// 1) Sort all fingerprints, either with a sequential or concurrent
+		// flusher depending on the size of the array.
+		final int numThreads = TLCGlobals.getNumWorkers();
+		this.flusher = getFlusher(numThreads, getTblCnt());
+		this.flusher.prepareTable();
+		
+		// 2) A task finds the pair with the minimum distance in an ordered
+		// subrange of array. Each task is assigned an id. This id determines
+		// which subrange of array (partition) it searches.
+		final Collection<Callable<Long>> tasks = new ArrayList<Callable<Long>>(numThreads);
+		final long length = (long) Math.floor(array.size() / numThreads);
+		for (int i = 0; i < numThreads; i++) {
+			final int id = i;
+			tasks.add(new Callable<Long>() {
+				@Override
+				public Long call() throws Exception {
+					final boolean isLast = id == numThreads - 1;
+					final long start = id * length;
+					// Partitions overlap in case the two fingerprints with
+					// minimum distance are in two adjacent partitions.
+					final long end = (isLast ? array.size() - 1L : start + length) + 1L;
+					
+					long distance = Long.MAX_VALUE;
+					
+					// Reuse Iterator implementation which already handles the
+					// various cases related to the cyclic table layout. Pass it
+					// getTblCnt to make sure next does not keep going forever
+					// if the array is empty. Instead, check the itr's position.
+					final Iterator itr = new Iterator(array, getTblCnt(), start, indexer,
+							isLast && id != 0 ? Iterator.WRAP.FORBIDDEN : Iterator.WRAP.ALLOWED);
+					try {
+						// If the partition is empty, next throws a NSEE.
+						long x = itr.next();
+						while (itr.getPos() < end) {
+							long y = itr.next();
+							long d = y - x;
+							// d < 0 indicates that the array is not sorted.
+							// d == 0 indicates two identical elements in the
+							// fingerprint set. Iff this is the last partition,
+							// itr.next might have returned the first element of the
+							// first partition.
+							assert d > 0 ^ (d < 0 && itr.getPos() > end && isLast);
+							distance = Math.min(distance, d);
+							x = y;
+						}
+						return distance;
+					} catch (NoSuchElementException e) {
+						return distance;
+					}
+				}
+			});
+		}
+		
+		// Start as many tasks as we have workers. Afterwards, collect the
+		// minimum distance out of the set of results provided by the workers.
+		final ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+		try {
+			final long distance = executorService.invokeAll(tasks).stream().min(new Comparator<Future<Long>>() {
+				public int compare(Future<Long> o1, Future<Long> o2) {
+					try {
+						return Long.compare(o1.get(), o2.get());
+					} catch (InterruptedException e) {
+						throw new RuntimeException(e);
+					} catch (ExecutionException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}).get().get();
+			return (1.0 / distance);
+		} catch (InterruptedException ie) {
+			throw new RuntimeException(ie);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e);
+		} finally {
+			executorService.shutdown();
+		}
 	}
 
 	//**************************** Indexer ****************************//
@@ -890,7 +996,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 			// merge while both lists still have elements remaining
 			boolean eol = false;
-			long fp = itr.next();
+			long fp = itr.markNext();
 			while (!eof || !eol) {
 				if ((value < fp || eol) && !eof) {
 					assert value > EMPTY : "Negative or zero fingerprint found: " + value;
@@ -932,7 +1038,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					counter--;
 					// we used one fp up, thus move to next one
 					if (itr.hasNext()) {
-						final long next = itr.next();
+						final long next = itr.markNext();
 						assert next > fp : next + " > " + fp + " from table at pos " + itr.pos + " "
 								+ a.toString(itr.pos - 10L, itr.pos + 10L);
 						fp = next;
@@ -1007,9 +1113,26 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			this.canWrap = canWrap;
 		}
 
+		public long getPos() {
+			return pos;
+		}
+
 		/**
 		 * Returns the next element in the iteration that is not EMPTY nor
 		 * marked evicted.
+		 *
+		 * @return the next element in the iteration that is not EMPTY nor
+		 *         marked evicted.
+		 * @exception NoSuchElementException
+		 *                iteration has no more elements.
+		 */
+		public long next() {
+			return next0(false);
+		}
+		
+		/**
+		 * Returns the next element in the iteration that is not EMPTY nor
+		 * marked evicted and marks it to be evicted.
 		 * <p>
 		 * THIS IS NOT SIDEEFFECT FREE. AFTERWARDS, THE ELEMENT WILL BE MARKED
 		 * EVICTED.
@@ -1019,8 +1142,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 * @exception NoSuchElementException
 		 *                iteration has no more elements.
 		 */
-		public long next() {
-			long elem = EMPTY;
+		public long markNext() {
+			return next0(true);
+		}
+
+		private long next0(final boolean mark) {
+			long elem;
 			do {
 				final long position = pos % array.size();
 				elem = array.get(position);
@@ -1041,7 +1168,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				}
 				pos = pos + 1L;
 				// mark elem in array as being evicted.
-				array.set(position, elem | MARK_FLUSHED);
+				if (mark) {array.set(position, elem | MARK_FLUSHED);}
 				elementsRead = elementsRead + 1L;
 				return elem;
 			} while (hasNext());
