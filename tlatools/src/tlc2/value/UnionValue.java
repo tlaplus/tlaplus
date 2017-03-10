@@ -7,7 +7,7 @@ package tlc2.value;
 
 import util.Assert;
 
-public class UnionValue extends Value implements Enumerable {
+public class UnionValue extends EnumerableValue implements Enumerable {
   public Value set;
   protected SetEnumValue realSet;
   

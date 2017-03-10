@@ -8,7 +8,7 @@ package tlc2.value;
 import tlc2.util.FP64;
 import util.Assert;
 
-public class IntervalValue extends Value
+public class IntervalValue extends EnumerableValue
 implements Enumerable, Reducible {
   public int low, high;   // the integer interval [low, high]
 
@@ -55,6 +55,16 @@ implements Enumerable, Reducible {
     }
     return false;
   }
+
+	public Value isSubsetEq(Value other) {
+		if (other instanceof IntervalValue) {
+			final IntervalValue iv = (IntervalValue) other;
+			if (iv.low <= low && iv.high >= high) {
+				return ValTrue;
+			}
+		}
+		return super.isSubsetEq(other);
+	}
 
   public final boolean isFinite() { return true; }
 

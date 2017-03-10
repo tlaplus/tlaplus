@@ -8,7 +8,7 @@ package tlc2.value;
 import tlc2.TLCGlobals;
 import util.Assert;
 
-public class SetOfFcnsValue extends Value implements Enumerable {
+public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
   public Value domain;        /* Function domain  */
   public Value range;         /* Function range   */
   protected SetEnumValue fcnSet;

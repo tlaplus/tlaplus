@@ -1913,12 +1913,7 @@ public class Tool
           Assert.fail("Attempted to evaluate an expression of form S \\subseteq T," +
                       " but S was not enumerable.\n" + expr);
         }
-        ValueEnumeration Enum = ((Enumerable)arg1).elements();
-        Value elem;
-        while ((elem = Enum.nextElement()) != null) {
-          if (!arg2.member(elem)) return ValFalse;
-        }
-        return ValTrue;
+        return ((Enumerable) arg1).isSubsetEq(arg2);
       }
     case OPCODE_in:
       {

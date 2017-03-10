@@ -10,7 +10,7 @@ import java.util.BitSet;
 import tlc2.output.EC;
 import util.Assert;
 
-public class SubsetValue extends Value implements Enumerable {
+public class SubsetValue extends EnumerableValue implements Enumerable {
   public Value set;           // SUBSET set
   protected SetEnumValue pset;
 
@@ -52,6 +52,16 @@ public class SubsetValue extends Value implements Enumerable {
     }
     return true;    
   }
+
+	public Value isSubsetEq(Value other) {
+		// Reduce (SUBSET A \subseteq SUBSET B) to (A \subseteq B) to avoid
+		// exponential blowup inherent in generating the power set.
+		if (other instanceof SubsetValue && this.set instanceof EnumerableValue) {
+			final SubsetValue sv = (SubsetValue) other;
+			return ((EnumerableValue) this.set).isSubsetEq(sv.set);
+		}
+		return super.isSubsetEq(other);
+	}
 
   public final boolean isFinite() { return this.set.isFinite(); }
   

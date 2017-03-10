@@ -10,7 +10,7 @@ import tlc2.output.EC;
 import util.Assert;
 import util.UniqueString;
 
-public class SetOfRcdsValue extends Value implements Enumerable {
+public class SetOfRcdsValue extends EnumerableValue implements Enumerable {
   public UniqueString[] names;      // The names of the fields.
   public Value[] values;            // The values of the fields.
   protected SetEnumValue rcdSet;

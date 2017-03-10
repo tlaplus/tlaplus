@@ -10,6 +10,7 @@ public interface Enumerable {
   public int size();
   public boolean member(Value elem);
   public ValueEnumeration elements();
+  public Value isSubsetEq(Value other);
 
 }
 

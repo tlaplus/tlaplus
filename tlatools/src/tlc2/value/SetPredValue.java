@@ -17,7 +17,7 @@ import tlc2.tool.Tool;
 import tlc2.util.Context;
 import util.Assert;
 
-public class SetPredValue extends Value implements Enumerable {
+public class SetPredValue extends EnumerableValue implements Enumerable {
   public Object vars;           // FormalParamNode or FormalParamNode[]
     /***********************************************************************
     * Was OpDeclNode or OpDeclNode[].                                      *

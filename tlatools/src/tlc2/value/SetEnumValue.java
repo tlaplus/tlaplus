@@ -8,7 +8,7 @@ package tlc2.value;
 import tlc2.util.FP64;
 import util.Assert;
 
-public class SetEnumValue extends Value
+public class SetEnumValue extends EnumerableValue
 implements Enumerable, Reducible {
   public ValueVec elems;         // the elements of the set
   private boolean isNorm;        // normalized?

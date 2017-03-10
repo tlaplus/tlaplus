@@ -8,7 +8,7 @@ package tlc2.value;
 import tlc2.TLCGlobals;
 import util.Assert;
 
-public class SetOfTuplesValue extends Value implements Enumerable {
+public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   public Value[] sets;
   protected SetEnumValue tupleSet;
   

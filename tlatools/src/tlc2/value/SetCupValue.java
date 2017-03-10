@@ -7,7 +7,7 @@ package tlc2.value;
 
 import util.Assert;
 
-public class SetCupValue extends Value implements Enumerable {
+public class SetCupValue extends EnumerableValue implements Enumerable {
   public Value set1;
   public Value set2;
   protected SetEnumValue cupSet;  

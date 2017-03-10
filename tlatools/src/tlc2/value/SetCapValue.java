@@ -7,7 +7,7 @@ package tlc2.value;
 
 import util.Assert;
 
-public class SetCapValue extends Value implements Enumerable {
+public class SetCapValue extends EnumerableValue implements Enumerable {
   public Value set1;
   public Value set2;
   protected SetEnumValue capSet;
