@@ -5,9 +5,9 @@
 \*    with (i \in 1..N) {
 \*        x[i] := (x[i] + 1) % K ;
 \*        \* SUBSET 1..L causes TLC to generate the power set of the set 1..L.
-\*        \* For each set in the power set, TLC evaluates if the set's elements
-\*        \* are members of the other power set... KaBOOM!
-\*        await SUBSET 1..L \subseteq SUBSET 1..L
+\*        \* For each set in the power set, TLC evaluates if the set's 
+\*        \* cardinality is L... KaBOOM!
+\*        await \E s \in SUBSET (1..L): Cardinality(s) = L
 \*        }
 \*   }
 \*  Thus,  - N is the number of states computed for each evaluation of the
@@ -27,6 +27,6 @@ Init == /\ x = [i \in 1..N |-> 0]
 
 Next == /\ UNCHANGED y
         /\ \E i \in 1..N : /\ x' = [x EXCEPT ![i] = (@ + 1) % K]
-                  /\ SUBSET (1..L) \subseteq SUBSET (1..L)
+        /\ \E s \in SUBSET (1..L): Cardinality(s) = L
 
 =============================================================================
