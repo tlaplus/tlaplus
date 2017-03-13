@@ -4,6 +4,9 @@
 \*  while (TRUE) {
 \*    with (i \in 1..N) {
 \*        x[i] := (x[i] + 1) % K ;
+\*        \* SUBSET 1..L causes TLC to generate the power set of the set 1..L.
+\*        \* For each set in the power set, TLC evaluates if the set's elements
+\*        \* are members of the other power set... KaBOOM!
 \*        await SUBSET 1..L \subseteq SUBSET 1..L
 \*        }
 \*   }
@@ -11,7 +14,7 @@
 \*           next-state action
 \*         - K^N is the total number of distinct states
 \*         - The time to compute a single state is asymptotically
-\*           proportional to 2^L
+\*           proportional to 2^L.
 \*         - C defines the number of initial states. Let C=n
 \*           then the state graph has n isomorphic disjunct subgraphs.
 EXTENDS Integers, FiniteSets
