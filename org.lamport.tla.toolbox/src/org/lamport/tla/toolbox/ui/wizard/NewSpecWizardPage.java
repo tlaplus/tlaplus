@@ -279,9 +279,7 @@ public class NewSpecWizardPage extends WizardPage
 					try {
 						final String canonicalPath = f.getCanonicalPath();
 						if (!rootfilePath.equals(canonicalPath)) {
-							reportError(String.format("%s collides with %s. Please use the latter path.", rootfilePath,
-									canonicalPath));
-							return;
+							rootfilePath = canonicalPath;
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -374,6 +372,9 @@ public class NewSpecWizardPage extends WizardPage
         {
             // allow this
             reportWarning("Root file name does not exist. A new file will be created.");
+        } else if (rootfilePath != null && !rootfilePath.equals(getRootFilename())) {
+			reportWarning(String.format("Changed your path to its canonical form %s.", getRootFilename(),
+					rootfilePath));
         }
 
         // we should not enable the next/finish if both fields are virgin
