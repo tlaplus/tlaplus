@@ -96,14 +96,14 @@ public class TLCSpec extends Spec {
 		return getModels().get(Model.sanitizeName(modelName));
 	}
 
-	public void rename(final String aNewSpecName) {
+	public void rename(final Spec aNewSpec) {
 		// The specs name is changed in Spec. What is left, is to fix up the
 		// model names. A model name is prefix with the spec's name.
 		// Note that the triggering event is sent prior to the actual spec
 		// rename. The result returned by Spec#getName() is still the old one.
 		final Collection<Model> models = getModels().values();
 		for (Model model : models) {
-			model.specRename(aNewSpecName);
+			model.specRename(aNewSpec);
 		}
 	}
 

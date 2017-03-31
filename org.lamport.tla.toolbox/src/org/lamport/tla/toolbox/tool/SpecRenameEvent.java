@@ -5,18 +5,15 @@ import org.lamport.tla.toolbox.spec.Spec;
 
 public class SpecRenameEvent extends SpecEvent {
 
-	private final String newName;
+	private final Spec newSpec;
 
-	public SpecRenameEvent(final Spec spec, final String aNewName) {
+	public SpecRenameEvent(final Spec spec, final Spec newSpec) {
 		super(spec, SpecEvent.TYPE_RENAME);
-		Assert.isNotNull(aNewName);
-		this.newName = aNewName;
+		Assert.isNotNull(newSpec);
+		this.newSpec = newSpec;
 	}
 
-	/**
-	 * @return the newName
-	 */
-	public String getNewName() {
-		return newName;
+	public Spec getNewSpec() {
+		return newSpec;
 	}
 }

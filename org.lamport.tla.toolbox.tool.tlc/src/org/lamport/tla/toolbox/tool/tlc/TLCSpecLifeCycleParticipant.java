@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc;
 
 import org.eclipse.core.runtime.jobs.Job;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.SpecEvent;
 import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
 import org.lamport.tla.toolbox.tool.SpecRenameEvent;
@@ -27,9 +28,8 @@ public class TLCSpecLifeCycleParticipant extends SpecLifecycleParticipant {
 
 			// if a spec gets renamed, it corresponding models have to be
 			// renamed to prevent models from becoming unusable
-			final String aNewSpecName = ((SpecRenameEvent) event).getNewName();
 			final TLCSpec tlcSpec = event.getSpec().getAdapter(TLCSpec.class);
-			tlcSpec.rename(aNewSpecName);
+			tlcSpec.rename(((SpecRenameEvent) event).getNewSpec());
 
 			break;
 		default:

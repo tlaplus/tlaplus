@@ -191,26 +191,28 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	public void rename(String newModelName) {
-		renameLaunch(getSpec().getName(), sanitizeName(newModelName));
+		renameLaunch(getSpec(), sanitizeName(newModelName));
 	}
 	
 	/**
 	 * The {@link Model}'s parent {@link TLCSpec} has been renamed. Update the {@link Model} too.
 	 * @param newSpecName
 	 */
-	void specRename(String newSpecName) {
-		renameLaunch(newSpecName, getName());
+	void specRename(final Spec newSpec) {
+		renameLaunch(newSpec, getName());
 		// The spec's name has changed. Force a re-lookup of the instance with
 		// the updated name.
 		this.spec = null;
 	}
 
-	private void renameLaunch(String newSpecName, String newModelName) {
+	private void renameLaunch(final Spec newSpec, String newModelName) {
 		try {
 			// create the model with the new name
 			final ILaunchConfigurationWorkingCopy copy = this.launchConfig
-					.copy(newSpecName + SPEC_MODEL_DELIM + newModelName);
+					.copy(newSpec.getName() + SPEC_MODEL_DELIM + newModelName);
+			copy.setAttribute(SPEC_NAME, newSpec.getName());
 			copy.setAttribute(ModelHelper.MODEL_NAME, newModelName);
+			copy.setContainer(newSpec.getProject());
 			final ILaunchConfiguration renamed = copy.doSave();
 
 			// delete the old model

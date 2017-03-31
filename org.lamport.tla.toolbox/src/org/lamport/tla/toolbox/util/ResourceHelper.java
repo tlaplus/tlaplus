@@ -945,10 +945,12 @@ public class ResourceHelper
     }
 
     /**
-     * Renames and moves the project
-     * @param project
-     * @param aNewName
-     */
+	 * Renames and moves the project, but does not delete the old project. It's
+	 * the callee's reponsibility.
+	 * 
+	 * @param project
+	 * @param aNewName
+	 */
     public static IProject projectRename(final IProject project, final String aNewName, final IProgressMonitor aMonitor)
     {
         try
@@ -964,7 +966,6 @@ public class ResourceHelper
         	project.refreshLocal(IResource.DEPTH_INFINITE, aMonitor);
             
         	project.copy(description, IResource.NONE | IResource.SHALLOW, aMonitor);
-            project.delete(IResource.NONE, aMonitor);
             
             return ResourcesPlugin.getWorkspace().getRoot().getProject(aNewName);
         } catch (CoreException e)
