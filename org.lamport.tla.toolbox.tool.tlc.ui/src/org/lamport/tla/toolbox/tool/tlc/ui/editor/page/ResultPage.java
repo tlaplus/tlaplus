@@ -178,7 +178,16 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    ResultPage.this.expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
 	                    break;
 	                case START_TIME:
-	                    ResultPage.this.startTimestampText.setText(new Date(dataProvider.getStartTimestamp()).toString());
+	                    final long startTimestamp = dataProvider.getStartTimestamp();
+	                    if (startTimestamp < 0) {
+							// Leave the starttime text empty on a negative
+							// timestamp. A negative one indicates that the
+							// model has never been checked. See Long.MIN_VALUE in
+	                    	// org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider.initialize()
+	                    	ResultPage.this.startTimestampText.setText("");
+	                    	break;
+	                    }
+						ResultPage.this.startTimestampText.setText(new Date(startTimestamp).toString());
 	                    ResultPage.this.startTime = dataProvider.getStartTime();
 	                    break;
 	                case END_TIME:
