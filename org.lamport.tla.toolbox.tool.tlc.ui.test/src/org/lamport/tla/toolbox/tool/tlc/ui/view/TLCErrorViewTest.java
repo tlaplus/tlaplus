@@ -92,7 +92,7 @@ public class TLCErrorViewTest  {
 		for (int i = 1; i <= 10000; i++) {
 			final TLCState state = TLCState.parseState(
 					i + ": <Action line 1, col 1 to line 1, col 2 of module testLargeNumberOfStates>\nx = " + i, name);
-			error.addState(state);
+			error.addState(state, true);
 		}
 
 		// show all states

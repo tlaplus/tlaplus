@@ -553,12 +553,12 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 } else if (finalStateOriginalTrace.isBackToState())
                 {
 					error.addState(TLCState.BACK_TO_STATE(finalStateOriginalTrace.getStateNumber(),
-							getModel().getName()));
+							getModel().getName()), stateSortDirection);
                 } else
                 {
                     // stuttering trace
 					error.addState(TLCState.STUTTERING_STATE(finalStateOriginalTrace.getStateNumber(),
-							getModel().getName()));
+							getModel().getName()), stateSortDirection);
                 }
 
             } else

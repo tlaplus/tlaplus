@@ -131,7 +131,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     /**
      * Sort order in which states are sorted in the variable viewer
      */
-	private boolean stateSortDirection;
+    protected boolean stateSortDirection;
 
     // the model, which is represented by the current launch data provider
     private final Model model;

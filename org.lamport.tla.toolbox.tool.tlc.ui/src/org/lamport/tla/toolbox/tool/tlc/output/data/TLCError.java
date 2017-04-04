@@ -46,10 +46,6 @@ public class TLCError
     private int errorCode;
 	private int numberOfStatesToShow = Integer.MAX_VALUE; // no restriction by default
 
-    public void addState(TLCState state) {
-    	addState(state, true);
-    }
-
     /**
      * Add a state to a trace
      * @param state state to add
