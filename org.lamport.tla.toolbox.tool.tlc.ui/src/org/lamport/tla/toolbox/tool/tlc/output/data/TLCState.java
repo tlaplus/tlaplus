@@ -227,6 +227,10 @@ public class TLCState implements IModuleLocatable
     	return number == 1;
     }
 
+	public boolean isExpandable() {
+    	return !isBackToState() && !isStuttering();
+	}
+
     public int getStateNumber()
     {
         return number;

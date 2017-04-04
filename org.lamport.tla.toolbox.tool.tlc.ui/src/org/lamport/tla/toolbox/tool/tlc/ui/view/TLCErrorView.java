@@ -887,11 +887,20 @@ public class TLCErrorView extends ViewPart
            			predecessor.diff(child);
            		}
 				viewer.replace(parent, viewerIndex, child);
-				if (child.getVariablesAsList().size() > 0) {
-					viewer.setHasChildren(child, true);
-				}
+				// Always setHashChildren even if child has no children: This is
+				// a virtual table here meaning that it reduces the number of
+				// table items at the OS level by recycling them (the OS only
+				// creates a many items that fit into the visible area). If an
+				// item showing a regular state, is later recycled by a "back to
+				// state" or "stuttering" indicator (neither has children),
+				// the OS still incorrectly assumes the item has children. This
+				// crashes hard on Linux and results in erratic behavior on
+				// Windows and Mac.
+				viewer.setHasChildren(child, child.getVariablesAsList().size() > 0);
 				// Lazily expand the children
-				viewer.expandToLevel(child, 1);
+				if (child.isExpandable()){
+					viewer.expandToLevel(child, 1);
+				}
 			} else if (parent instanceof TLCState) {
 				final TLCState state = (TLCState) parent;
                 if ((state.isStuttering() || state.isBackToState())) {
@@ -901,9 +910,7 @@ public class TLCErrorView extends ViewPart
                 	if (variablesAsList.size() > viewerIndex) {
                 		final TLCVariable child = variablesAsList.get(viewerIndex);
                 		viewer.replace(parent, viewerIndex, child);
-                		if (child.getChildCount() > 0) {
-                			viewer.setHasChildren(child, true);
-                		}
+        				viewer.setHasChildren(child, child.getChildCount() > 0);
                 	}
                 }
 			} else if (parent instanceof TLCVariable
@@ -911,31 +918,23 @@ public class TLCErrorView extends ViewPart
 				final TLCMultiVariableValue multiValue = (TLCMultiVariableValue) ((TLCVariable) parent).getValue();
 				final TLCVariableValue child = multiValue.asList().get(viewerIndex);
 				viewer.replace(parent, viewerIndex, child);
-				if (child.getChildCount() > 0) {
-					viewer.setHasChildren(child, true);
-				}
+				viewer.setHasChildren(child, child.getChildCount() > 0);
 			} else if (parent instanceof TLCVariable) {
 				final TLCVariable variable = (TLCVariable) parent;
 				final TLCVariableValue child = variable.getValue();
 				viewer.replace(parent, viewerIndex, child);
-				if (child.getChildCount() > 0) {
-					viewer.setChildCount(child, child.getChildCount());
-				}
+				viewer.setChildCount(child, child.getChildCount());
 			} else if (parent instanceof TLCMultiVariableValue) {
 				final TLCMultiVariableValue multiValue = (TLCMultiVariableValue) parent;
 				final TLCVariableValue child = multiValue.asList().get(viewerIndex);
 				viewer.replace(parent, viewerIndex, child);
-				if (child.getChildCount() > 0) {
-					viewer.setHasChildren(child, true);
-				}
+				viewer.setHasChildren(child, child.getChildCount() > 0);
 			} else if (parent instanceof TLCVariableValue
 					&& ((TLCVariableValue) parent).getValue() instanceof TLCMultiVariableValue) {
 				final TLCMultiVariableValue multiValue = (TLCMultiVariableValue) ((TLCVariableValue) parent).getValue();
 				final TLCVariableValue child = multiValue.asList().get(viewerIndex);
 				viewer.replace(parent, viewerIndex, child);
-				if (child.getChildCount() > 0) {
-					viewer.setHasChildren(child, true);
-				}
+				viewer.setHasChildren(child, child.getChildCount() > 0);
 			} else {
 				throw new IllegalArgumentException();
 			}
