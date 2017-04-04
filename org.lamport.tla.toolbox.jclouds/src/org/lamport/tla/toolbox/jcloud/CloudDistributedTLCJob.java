@@ -186,6 +186,14 @@ public class CloudDistributedTLCJob extends Job {
 					// re-generates the aliases file for us.
 					exec(	"echo root: " + email + " >> /etc/aliases"
 							+ " && "
+							// OS tuning parameters for (distributed) TLC:
+							// - Disable hugepage defragmentation (especially important on highmem instances)
+							+ "echo never > /sys/kernel/mm/transparent_hugepage/defrag"
+							+ " && "
+							// - Turn off NUMA balancing
+							+ "echo 0 > /proc/sys/kernel/numa_balancing"
+							+ " && "
+                            // Don't want dpkg to require user interaction.
 							+ "export DEBIAN_FRONTEND=noninteractive"
 							+ " && "
 							// Update Ubuntu's package index. The public/remote
@@ -226,7 +234,18 @@ public class CloudDistributedTLCJob extends Job {
 							// worker tla2tools.jar (strip spec) and
 							// unattended-upgrades makes sure the instance
 							// is up-to-date security-wise. 
-							+ "apt-get install --no-install-recommends screen zip unattended-upgrades -y"
+							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades -y"
+							+ " && "
+							// Create a raid0 out of the two instance store
+							// disks and optimize its fs towards performance
+							// by sacrificing data durability.
+							+ "umount /mnt && "
+							+ "/usr/bin/yes|/sbin/mdadm --create --force --auto=yes /dev/md0 --level=0 --raid-devices=2 --assume-clean --name=tlaplus /dev/xvdb /dev/xvdc && "
+							+ "/sbin/mdadm --detail --scan >> /etc/mdadm/mdadm.conf && "
+							+ "sed -i '\\?^/dev/xvdb?d' /etc/fstab && "
+							+ "echo \"/dev/md127 /mnt ext4 defaults 0 0\" >> /etc/fstab && "
+							+ "/sbin/mkfs.ext4 -O ^has_journal /dev/md0 && "
+							+ "mount /dev/md0 /mnt"
 							// Install Oracle Java8. It supports Java Mission
 							// Control, an honest profiler. But first,
 							// automatically accept the Oracle license because
