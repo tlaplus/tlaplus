@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jclouds.aws.ec2.reference.AWSEC2Constants;
+import org.jclouds.location.reference.LocationConstants;
 
 public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 
@@ -55,7 +56,11 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		// or http://cloud-images.ubuntu.com/locator/ec2/
 		// See http://aws.amazon.com/amazon-linux-ami/instance-type-matrix/
 		// for paravirtual vs. hvm
-		return "us-east-1/ami-59ce434e";
+		return getRegion() + "/ami-59ce434e";
+	}
+
+	private String getRegion() {
+		return "us-east-1";
 	}
 
 	@Override
@@ -98,7 +103,11 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 	 */
 	@Override
 	public void mungeProperties(Properties properties) {
-		properties.setProperty(AWSEC2Constants.PROPERTY_EC2_AMI_QUERY,
-				getOwnerId());
+		properties.setProperty(AWSEC2Constants.PROPERTY_EC2_AMI_QUERY, getOwnerId());
+		// Confine jclouds to a single region. Since the Toolbox only supports a
+		// single region, there is no point in querying others. This has been
+		// added because I was seeing intermittent timeouts with other regions
+		// (i.e. South America).
+		properties.setProperty(LocationConstants.PROPERTY_REGIONS, getRegion());
 	}
 }
