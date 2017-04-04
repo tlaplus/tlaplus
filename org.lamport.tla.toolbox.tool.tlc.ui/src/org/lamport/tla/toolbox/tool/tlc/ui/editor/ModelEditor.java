@@ -103,9 +103,11 @@ public class ModelEditor extends FormEditor
 
         public void run()
         {
-            // re-validate the pages, iff the model is not running
-            // and is not locked
-            if (!model.isRunning() && !model.isLocked())
+            // Re-validate the pages, iff the model is not running
+			// and is not locked. Also check if the model is nulled by now which
+			// happens if the ModelEditor disposed before a scheduled run gets
+			// executed.
+            if (model != null && !model.isRunning() && !model.isLocked())
             {
                 /*
                  * Note that all pages are not necessarily
