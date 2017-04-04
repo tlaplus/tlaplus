@@ -86,9 +86,9 @@ public abstract class CloudTLCInstanceParameters {
 	public String getTLCParameters() {
 		if (numberOfWorkers == 1) {
 			if (tlcParams.length() > 0) {
-				return "-workers 12 " + tlcParams;
+				return "-workers 32 " + tlcParams;
 			}
-			return "-workers 12";
+			return "-workers 32";
 		} else {
 			return "-coverage 0 -checkpoint 0";
 		}

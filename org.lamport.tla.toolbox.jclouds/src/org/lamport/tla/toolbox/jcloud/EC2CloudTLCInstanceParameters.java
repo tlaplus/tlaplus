@@ -65,8 +65,7 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 
 	@Override
 	public String getHardwareId() {
-		// m2 only support paravirtual
-		return "m2.4xlarge";
+		return "c3.8xlarge";
 	}
 
 	@Override
