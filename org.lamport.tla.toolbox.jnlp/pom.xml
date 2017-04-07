@@ -173,38 +173,32 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jarsigner-plugin</artifactId>
         <version>1.4</version>
-        <configuration>
-        	<archive>${project.build.directory}/../files/tla2tools.jar</archive>
-	        <keystore>${keystore.path}</keystore>
-	        <alias>${keystore.alias}</alias>
-	        <storepass>${keystore.store.password}</storepass>
-	        <keypass>${keystore.key.password}</keypass>
-           	<verbose>false</verbose>
-           	<arguments>
- 			  <!-- Embed a current timestamp in the signed content (file). With this timestamp, 
-				the signature of the content remains valid *after* the signing certificate 
-				expired. -->
-              <argument>-tsa</argument>
-              <argument>http://timestamp.comodoca.com</argument>
-            </arguments>
-        </configuration>
         <executions>
           <execution>
-	    <phase>compile</phase>
-            <id>sign</id>
+	        <configuration>
+	        	<archive>${project.build.directory}/../files/tla2tools.jar</archive>
+		        <keystore>${keystore.path}</keystore>
+		        <alias>${keystore.alias}</alias>
+		        <storepass>${keystore.store.password}</storepass>
+		        <keypass>${keystore.key.password}</keypass>
+	           	<verbose>false</verbose>
+	           	<arguments>
+	 			  <!-- Embed a current timestamp in the signed content (file). With this timestamp, 
+					the signature of the content remains valid *after* the signing certificate 
+					expired. -->
+	              <argument>${tsa.flag}</argument>
+	              <argument>${tsa.server}</argument>
+	            </arguments>
+	        </configuration>
+     	    <phase>compile</phase>
+            <id>sign-jnlp</id>
             <goals>
               <goal>sign</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>verify</id>
-            <goals>
               <goal>verify</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
-	      
         <plugin>	
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-clean-plugin</artifactId>
