@@ -14,15 +14,6 @@
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 
-  <!-- These properties define a dummy certificate store that is used unless the developer passes overwrites to maven -->
-  <!-- see http://stackoverflow.com/a/3620575 for how such an overwrite would look like. -->  
-  <properties>
-  	<keystore.path>keystore</keystore.path>
-	<keystore.alias>msr</keystore.alias>
-    <keystore.store.password>secret</keystore.store.password>
-    <keystore.key.password>secret</keystore.key.password>
-  </properties>
-
 	<!-- Create a manual dependency towards the tlatools project. It creates 
 		the tla2tools.jar that is signed here. Without the dependency, a concurrent 
 		build will fail to sign when tlatools is built after this pom. -->

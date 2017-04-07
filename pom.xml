@@ -91,6 +91,24 @@
 		<!-- no default here -->
 		<tycho.test.vm.argline>-Xmx500m -Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n</tycho.test.vm.argline>
 		<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
+
+        <!-- These properties define a dummy certificate store that is used unless the developer passes overwrites to maven -->
+        <!-- see http://stackoverflow.com/a/3620575 for how such an overwrite would look like. -->  
+  	    <keystore.path>${project.basedir}/../keystore</keystore.path>
+	    <keystore.alias>msr</keystore.alias>
+        <keystore.store.password>secret</keystore.store.password>
+        <keystore.key.password>secret</keystore.key.password>
+        <!-- 
+          Set to the values below if the signature should include a timestamp. You want this for a release build 
+          because a timestamp makes sure the signature remains valid after the certificate expired.
+          If you activate RFC3161, make sure the machine running the build has sufficient entropy available. Otherwise
+          expect to see intermittent hangs when the build attempts to sign a jar. On Linux the haveged and rng-tools
+          can help to collect entropy. 
+          <tsa.flag>-tsa</tsa.flag>
+          <tsa.server>http://timestamp.comodoca.com</tsa.server>
+		 -->
+        <tsa.flag></tsa.flag>
+        <tsa.server></tsa.server>
 	</properties>
 
 	<build>
@@ -121,6 +139,33 @@
 				    	<addMavenDescriptor>false</addMavenDescriptor>
 				    </archive>
 			    </configuration>
+			</plugin>
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-jarsigner-plugin</artifactId>
+			    <version>1.4</version>
+			        <configuration>
+				        <keystore>${keystore.path}</keystore>
+				        <alias>${keystore.alias}</alias>
+				        <storepass>${keystore.store.password}</storepass>
+				        <keypass>${keystore.key.password}</keypass>
+			           	<verbose>false</verbose>
+			           	<arguments>
+			 			  <!-- Embed a current timestamp in the signed content (file). With this timestamp, 
+							the signature of the content remains valid *after* the signing certificate 
+							expired. -->
+			              <argument>${tsa.flag}</argument>
+			              <argument>${tsa.server}</argument>
+			            </arguments>
+			        </configuration>
+			        <executions>
+			            <execution>
+			                <id>sign</id>
+			                <goals>
+			                    <goal>sign</goal>
+			                </goals>
+			            </execution>
+			         </executions>
 			</plugin>
     			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
