@@ -163,6 +163,7 @@
 			                <id>sign</id>
 			                <goals>
 			                    <goal>sign</goal>
+			                    <goal>verify</goal>
 			                </goals>
 			            </execution>
 			         </executions>
