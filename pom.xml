@@ -14,8 +14,8 @@
 	</organization>
 
 	<issueManagement>
-		<system>CodePlex</system>
-		<url>http://tlaplus.codeplex.com/workitem/list/basic</url>
+		<system>GitHub</system>
+		<url>https://github.com/tlaplus/tlaplus/issues</url>
 	</issueManagement>
 
 	<scm>
