@@ -13,6 +13,13 @@
   # Check and free memory.
   - sudo service --status-all
   - sudo free -m -t
+  - sudo /etc/init.d/atd stop
+  - sudo /etc/init.d/cron stop
+  - sudo /etc/init.d/friendly-recovery stop
+  - sudo /etc/init.d/ssh stop
+  - sudo /etc/init.d/sshguard stop
+  - sudo /etc/init.d/haveged stop
+  - sudo /etc/init.d/docker stop
   - sudo /etc/init.d/memcached stop
   - sudo /etc/init.d/postgresql stop
   - sudo free -m -t
