@@ -300,12 +300,12 @@ public class Sequences extends UserObj implements ValueConstants
         if (beg < 1 || beg > len)
         {
 
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_NOT_IN_DOMAIN, new String[] { "second", "SubSeq",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_NOT_IN_DOMAIN, new String[] { "second", "SubSeq", "first",
                     Value.ppr(s.toString()), Value.ppr(m.toString()) });
         }
         if (end < 1 || end > len)
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_NOT_IN_DOMAIN, new String[] { "third", "SubSeq",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_NOT_IN_DOMAIN, new String[] { "third", "SubSeq", "first",
                     Value.ppr(s.toString()), Value.ppr(n.toString()) });
         }
         
