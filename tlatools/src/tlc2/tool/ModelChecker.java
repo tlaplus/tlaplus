@@ -1179,7 +1179,7 @@ public class ModelChecker extends AbstractChecker
 			try {
 				// Check if the state is a legal state
 				if (!tool.isGoodState(curState)) {
-					MP.printError(EC.TLC_INITIAL_STATE, curState.toString());
+					MP.printError(EC.TLC_INITIAL_STATE, new String[]{ "current state is not a legal state", curState.toString() });
 					return returnValue;
 				}
 				boolean inModel = tool.isInModel(curState);
