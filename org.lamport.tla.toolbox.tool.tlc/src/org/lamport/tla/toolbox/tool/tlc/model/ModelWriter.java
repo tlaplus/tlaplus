@@ -29,6 +29,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,7 +58,7 @@ public class ModelWriter
     /**
      * Counter to be able to generate unique identifiers
      */
-    private static long globalCounter = 1;
+    private static final AtomicLong COUNTER = new AtomicLong(1L);
 
     public static final String SPEC_SCHEME = "spec";
     public static final String INIT_SCHEME = "init";
@@ -1634,15 +1635,7 @@ public class ModelWriter
      * @param schema a naming schema, one of the {@link ModelWriter} SCHEMA constants
      * @return a valid identifier
      */
-    public static synchronized String getValidIdentifier(String schema)
-    {
-        try
-        {
-            Thread.sleep(10);
-        } catch (InterruptedException e)
-        {
-        }
-        return schema + "_" + System.currentTimeMillis() + 1000 * (++globalCounter);
-    }
-
+	public static String getValidIdentifier(String schema) {
+		return String.format("%s_%s%s", schema, System.currentTimeMillis(), 1000 * COUNTER.incrementAndGet());
+	}
 }
