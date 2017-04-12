@@ -346,7 +346,7 @@ public class MP
             b.append("Evaluating assumption %1% failed.\n%2%");
             break;
         case EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_INITIAL:
-            b.append("State is not completely specified by the " + "initial predicate:\n%2%");
+            b.append("State is not completely specified by the initial predicate:\n%1%");
             break;
         case EC.TLC_INVARIANT_VIOLATED_INITIAL:
             b.append("Invariant %1% is violated by the initial state:\n%2%");
