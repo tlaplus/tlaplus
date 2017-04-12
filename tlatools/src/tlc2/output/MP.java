@@ -812,7 +812,7 @@ public class MP
         	if (parameters.length == 4) {
 				b.append("Progress(%1%) at " + SDF.format(new Date()) + ": %2% states generated, "
 						+ "%3% distinct states found, " + "%4% states left on queue.");
-        	} else {
+        	} else if (parameters.length == 6) {
         		b.append("Progress(%1%) at " + SDF.format(new Date()) + ": %2% states generated ("
         				+ df.format(Long.valueOf(parameters[4])) + " s/min), %3% distinct states found ("
         				+ df.format(Long.valueOf(parameters[5])) + " ds/min), %4% states left on queue.");
