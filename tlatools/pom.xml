@@ -15,6 +15,30 @@
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 
+  <properties>
+    <!-- tlatools is a non-standard maven project. Its heart is customBuild.xml written for ant          -->
+    <!-- which gets invoked from maven. Unfortunately, it means that the tasks which are executed        -->
+    <!-- by ant are not visible to maven. In this case it results in sonar not finding necessary         -->
+    <!-- data to include coverage information. The properties below make sure that sonar finds the data. -->
+	<sonar.sources>src,src-gen,src-aj</sonar.sources>
+	<sonar.tests>test,test-verify,test-long,test-concurrent</sonar.tests>
+
+	<sonar.java.binaries>class</sonar.java.binaries>
+	<sonar.java.libraries>lib/*.jar</sonar.java.libraries>
+	
+	<sonar.java.test.binaries>class,test-class</sonar.java.test.binaries>
+	<sonar.java.test.libraries>lib/*.jar</sonar.java.test.libraries>
+	 
+	<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+	<sonar.surefire.reportsPath>target/surefire-reports</sonar.surefire.reportsPath>
+	<sonar.junit.reportsPath>target/surefire-reports</sonar.junit.reportsPath>
+	<sonar.jacoco.reportPaths>target/code-coverage.exec</sonar.jacoco.reportPaths>
+
+    <!-- I have no idea why those two are special and have to be excluded. -->
+    <sonar.exclusions>src-gen/tla2sany/parser/TLAplusParser.java,src/tlc2/value/FcnParams.java</sonar.exclusions>
+  </properties>
+
+
     <build>
     <plugins>
 		<!-- Delete the ../states/ folder created by the Ant JUnit tests as part 
