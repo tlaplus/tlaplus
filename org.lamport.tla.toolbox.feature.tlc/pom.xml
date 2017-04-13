@@ -13,4 +13,8 @@
   <artifactId>org.lamport.tla.toolbox.feature.tlc</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-feature</packaging>
+  <properties>
+      <!-- Do not include non-code project in Sonar reporting. -->
+      <sonar.skip>true</sonar.skip>
+  </properties>
 </project>
