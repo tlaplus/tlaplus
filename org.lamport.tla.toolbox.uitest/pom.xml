@@ -36,6 +36,22 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.7.9</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<!-- Where to put jacoco coverage report -->
+							<destFile>target/jacoco.exec</destFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- Compile java sources and exclude aspects -->
 	      <plugin>
 	        <groupId>org.eclipse.tycho</groupId>
@@ -75,7 +91,7 @@
 					<showEclipseLog>true</showEclipseLog>
 					<useUIHarness>true</useUIHarness>
 					<useUIThread>${tycho.test.vm.useUiThread}</useUIThread>
-					<argLine>${tycho.test.vm.argline}</argLine>
+					<argLine>${tycho.test.vm.argline} ${tycho.testArgLine}</argLine>
 					<!-- use our product and application to launch the tests -->
 					<product>org.lamport.tla.toolbox.product.standalone.product</product>
 					<application>org.lamport.tla.toolbox.application</application>

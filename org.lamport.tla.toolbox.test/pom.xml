@@ -20,7 +20,23 @@
 
 	<build>
 		<plugins>
-			<!-- Pro tip for Linux developers: Use a different display for UI tests -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.7.9</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<!-- Where to put jacoco coverage report -->
+							<destFile>target/jacoco.exec</destFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+      		<!-- Pro tip for Linux developers: Use a different display for UI tests -->
 			<!-- Known eclipse defect -->
 			<plugin>
 			    <artifactId>maven-antrun-plugin</artifactId>
@@ -69,7 +85,7 @@
 					<showEclipseLog>true</showEclipseLog>
 					<useUIHarness>true</useUIHarness>
 					<useUIThread>${tycho.test.vm.useUiThread}</useUIThread>
-					<argLine>${tycho.test.vm.argline}</argLine>
+					<argLine>${tycho.test.vm.argline} ${tycho.testArgLine}</argLine>
 					<dependencies>
 						<dependency>
 							<type>p2-installable-unit</type>
