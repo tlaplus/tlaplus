@@ -110,6 +110,10 @@
 		 -->
         <tsa.flag></tsa.flag>
         <tsa.server></tsa.server>
+
+		<!-- Report into the tlaplus organization at SonarQube. -->
+		<!-- Organizations support reporting different branches. -->
+		<sonar.organization>tlaplus</sonar.organization>
 	</properties>
 
 	<build>
