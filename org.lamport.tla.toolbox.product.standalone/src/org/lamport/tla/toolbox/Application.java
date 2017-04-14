@@ -3,6 +3,9 @@ package org.lamport.tla.toolbox;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
@@ -13,6 +16,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 
 /**
  * This class controls all aspects of the application's execution
@@ -71,6 +75,18 @@ public class Application implements IApplication {
 			// not raise a second window with a detailed technical error.
 			System.exit(0);
 		}
+
+		// CWD is Eclipse infrastructure which stores the location of the
+		// current workspace in a (text) file in the configuration area (Toolbox
+		// installation directory). With version 1.5.4 of the Toolbox, we will
+		// use this information to migrate all workspaces to @user.home/.tlaplus.
+		final ChooseWorkspaceData launchData = new ChooseWorkspaceData(instanceLocation.getDefault());
+		final Set s = new HashSet(Arrays.asList(launchData.getRecentWorkspaces()));
+		// Remove null if recent workspaces above was empty (e.g. upon first toolbox startup).
+		s.add(instanceLocation.getURL().toExternalForm());
+		s.remove(null); 
+		launchData.setRecentWorkspaces((String[]) s.toArray(new String[s.size()]));
+		launchData.writePersistedData();
 
 		Display display = PlatformUI.createDisplay();
 		try {
