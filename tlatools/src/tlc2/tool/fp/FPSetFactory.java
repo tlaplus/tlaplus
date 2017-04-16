@@ -22,7 +22,7 @@ public abstract class FPSetFactory {
 		return !OffHeapDiskFPSet.class.isAssignableFrom(clazz);
 	}
 
-	static boolean allocatesOnHeap(final String clazz) {
+	public static boolean allocatesOnHeap(final String clazz) {
 		try {
 			final ClassLoader classLoader = FPSet.class.getClassLoader();
 			@SuppressWarnings("unchecked")
