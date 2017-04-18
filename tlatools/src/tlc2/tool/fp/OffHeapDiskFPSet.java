@@ -127,7 +127,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 				// Release exclusive access. It has to be done by the runnable
 				// before workers waiting on the barrier wake up again.
-				flusherChosen.set(false);
+				Assert.check(flusherChosen.compareAndSet(true, false), EC.GENERAL);
 			}
 		});
 	}
