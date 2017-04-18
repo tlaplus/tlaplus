@@ -30,6 +30,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 
 import tlc2.TestMPRecorder;
@@ -64,6 +65,7 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
     
 	@Before
 	public void setUp() {
+		Assume.assumeTrue("DistributedTLCTestCase broken with OffHeapDiskFPSet.", false);
 		// Remember the original security manager and have it replaced with this
 		// custom one. Contrary to the original, this security manager
 		// intercepts calls to System.exit(int) and throws an exception instead

@@ -92,18 +92,6 @@ public class FPSetFactoryTest {
 
 		doTestNested(LSBDiskFPSet.class, fpSetConfiguration, (MultiFPSet) fpSet);
 	}
-
-	@Test
-	public void testGetFPSetOffHeapWithMem() throws RemoteException {
-		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
-		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
-		fpSetConfiguration.setMemory(MEMORY);
-		fpSetConfiguration.setRatio(1.0d);
-		FPSet fpSet = doTestGetFPSet(OffHeapDiskFPSet.class, fpSetConfiguration);
-		assertEquals(MEMORY, fpSet.getConfiguration().getMemoryInBytes());
-
-		doTestNested(OffHeapDiskFPSet.class, fpSetConfiguration, (MultiFPSet) fpSet);
-	}
 	
 	/* Test single FPSet with explicit memory and ratio */
 	
@@ -131,21 +119,6 @@ public class FPSetFactoryTest {
 
 
 		doTestNested(LSBDiskFPSet.class, fpSetConfiguration, (MultiFPSet) fpSet);
-	}
-
-	@Test
-	public void testGetFPSetOffHeapWithMemAndRatio() throws RemoteException {
-		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
-		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
-		fpSetConfiguration.setMemory(MEMORY);
-		fpSetConfiguration.setRatio(.5d);
-		FPSet fpSet = doTestGetFPSet(OffHeapDiskFPSet.class, fpSetConfiguration);
-		
-		// Offheap allocates all 100% of memory as it's the only consumer of
-		// non-heap memory
-		assertEquals(MEMORY, fpSet.getConfiguration().getMemoryInBytes());
-
-		doTestNested(OffHeapDiskFPSet.class, fpSetConfiguration, (MultiFPSet) fpSet);
 	}
 	
 	/* Test MultiFPSet with default memory */
