@@ -11,7 +11,7 @@
   </parent>
   <groupId>tlatoolbox</groupId>
   <artifactId>org.lamport.tla.toolbox.doc</artifactId>
-  <version>1.5.3-SNAPSHOT</version>
+  <version>1.5.4-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
   <properties>
       <!-- Do not include non-code project in Sonar reporting. -->
