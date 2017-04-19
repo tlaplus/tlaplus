@@ -1,8 +1,9 @@
 package org.lamport.tla.toolbox.tool.tlc.output.source;
 
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -55,15 +56,15 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
  */
 public class TLCOutputSourceRegistry
 {
-    private static final boolean DO_DEBUG = true;
+    private static final boolean DO_DEBUG = Boolean.getBoolean(TLCOutputSourceRegistry.class.getName() + ".debug");
     // instance for output sources from model checking
     private static TLCOutputSourceRegistry modelCheckInstance;
     // instance for output sources from trace exploration
     private static TLCOutputSourceRegistry traceExploreInstance;
     // container for sources, hashed by the source name
-    private Hashtable<Model, ITLCOutputSource> sources;
+    private Map<Model, ITLCOutputSource> sources;
     // container for data providers, hashed by the process name
-    private Hashtable<Model, TLCModelLaunchDataProvider> providers;
+    private Map<Model, TLCModelLaunchDataProvider> providers;
     // flag indicating if this is a trace explorer instance
     // true indicates that this is a trace explorer instance
     private boolean isTraceExploreInstance;
@@ -119,9 +120,8 @@ public class TLCOutputSourceRegistry
      */
     private synchronized void removeTLCStatusSource(Model model)
     {
-    	String name = model.getLaunchConfiguration().getFile().getName();
-        this.sources.remove(name);
-        this.providers.remove(name);
+        this.sources.remove(model);
+        this.providers.remove(model);
         printStats();
     }
     
@@ -258,8 +258,8 @@ public class TLCOutputSourceRegistry
      */
     private TLCOutputSourceRegistry()
     {
-        this.sources = new Hashtable<Model, ITLCOutputSource>();
-        this.providers = new Hashtable<Model, TLCModelLaunchDataProvider>();
+        this.sources = new HashMap<Model, ITLCOutputSource>();
+        this.providers = new HashMap<Model, TLCModelLaunchDataProvider>();
     }
 
     /**
@@ -303,15 +303,12 @@ public class TLCOutputSourceRegistry
             }
             TLCUIActivator.getDefault().logDebug("TLCOutputSourceRegistry for " + type + " maintains " + sources.size()
                     + " sources.");
-            Enumeration<Model> keys = sources.keys();
-            while (keys.hasMoreElements())
-            {
-                Model model = keys.nextElement();
-                ITLCOutputSource source = sources.get(model);
-                TLCUIActivator.getDefault().logDebug("The source " + model.getName() + " has " + source.getSourcePrio() + " prio and "
-                        + source.getListeners().length + " listeners");
-
-            }
+            Set<Model> keySet = sources.keySet();
+            for (Model model : keySet) {
+            	ITLCOutputSource source = sources.get(model);
+            	TLCUIActivator.getDefault().logDebug("The source " + model.getName() + " has " + source.getSourcePrio() + " prio and "
+            			+ source.getListeners().length + " listeners");
+			}
         }
     }
 }
