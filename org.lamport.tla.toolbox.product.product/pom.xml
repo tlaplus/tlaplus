@@ -19,7 +19,7 @@
     <!-- Align product.version with the version in 
          org.lamport.tla.toolbox.product.product.product
          product.version. -->
-    <product.version>1.5.3</product.version>
+    <product.version>1.5.4</product.version>
     <product.build>${maven.build.timestamp}</product.build>
     <!-- Do not include non-code project in Sonar reporting. -->
     <sonar.skip>true</sonar.skip>
