@@ -55,7 +55,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		final IPreferenceNode[] rootSubNodes = preferenceManager.getRootSubNodes();
 
 		// @see Bug #191 in general/bugzilla/index.html
-		final List filters = new ArrayList();
+		final List<String> filters = new ArrayList<String>();
 		filters.add("org.eclipse.compare");
 		// The following three preferences are shown because the Toolbox uses
 		// the local history feature provided by o.e.team.ui
@@ -71,9 +71,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		filters.add("com.abstratt.graphviz.ui");
 		
 		// Clean the preferences
-		final List elements = preferenceManager.getElements(PreferenceManager.POST_ORDER);
-		for (Iterator iterator = elements.iterator(); iterator.hasNext();) {
-			final Object elem = (Object) iterator.next();
+		final List<IPreferenceNode> elements = preferenceManager.getElements(PreferenceManager.POST_ORDER);
+		for (Iterator<IPreferenceNode> iterator = elements.iterator(); iterator.hasNext();) {
+			final IPreferenceNode elem = iterator.next();
 			if (elem instanceof IPluginContribution) {
 				final IPluginContribution aPluginContribution = (IPluginContribution) elem;
 				if (filters.contains(aPluginContribution.getPluginId())) {
