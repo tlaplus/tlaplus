@@ -628,39 +628,40 @@ public class ThmOrAssumpDefNode extends SymbolNode
    }
 
   /**
-   * most of the information in this class is a duplication of the information
-   * in the TheoremNode.
    *
-   * We care to export only the name of the theorem (CHECK what happens when instantiated).
    */
   protected String getNodeRef() {
     if (theorem) {
       assert(thmOrAssump instanceof TheoremNode);
-      return "TheoremNodeRef";
+      return "TheoremDefRef";
     }
     else {
       assert(thmOrAssump instanceof  AssumeNode);
-      return "AssumeNodeRef";
+      return "AssumeDefRef";
     }
   }
 
-  /* appending the name is handled in Theorem.export to prevent cyclic dependencies, this is only left for documentation
-  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
-    Element e = getSymbolElement(doc, context);
-    Node n = e.appendChild(appendText(doc, "uniquename",name.toString()));
-    e.appendChild(n);
-    return e;
-  }*/
-
   protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
-    // since this element doesnt seem to contain any additional information
-    // over theorems or assumptions, we just refer to them
-      //actually it does: the name is not known in a theorem
-      /*TODO: for now we just return an invalid element if thmOrAssump is null. if there are some valid calls with null after
-              bug-fixing, change the Dummy solution */
-    if (thmOrAssump != null) return thmOrAssump.getLevelElement(doc,context);
-    if (body != null) return body.getLevelElement(doc, context);
+    assert(this.body != null); //A theorem or assumption definition without a body does not make sense.
+    Element e = null;
+    if (theorem) {
+      e = doc.createElement("TheoremDefNode");
+    }
+    else {
+      e = doc.createElement("AssumeDef");
+    }
 
-    return doc.createElement("DummyThmOrAssumpDefNode"); //if the body element is null, export something invalid
+    e.appendChild(appendText(doc, "uniquename", getName().toString() ));
+    e.appendChild(body.export(doc, context));
+    return e;
+  }
+
+  /* overrides LevelNode.export and exports a UID reference instad of the full version*/
+  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+    // first add symbol to context
+    context.put(this, doc);
+    Element e = doc.createElement(getNodeRef());
+    e.appendChild(appendText(doc,"UID",Integer.toString(myUID)));
+    return e;
   }
 }

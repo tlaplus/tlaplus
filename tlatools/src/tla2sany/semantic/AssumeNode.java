@@ -12,6 +12,7 @@ import tla2sany.xml.XMLExportable;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * This class represents an assumption about the constants in a module.
@@ -182,17 +183,70 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
     if (assumeExpr != null) {assumeExpr.walkGraph(semNodesTable);} ;
   }
 
-  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
-    if (getDef() == null)
-      // we export the definition of the assumption
-      return super.export(doc,context);
-    else
-      // we export its name only, named assumptions will be exported through the ThmOrAss..
-      return getDef().export(doc,context);
+  /* MR: This is the same as SymbolNode.exportDefinition. Exports the actual theorem content, not only a reference.
+   */
+  public Element exportDefinition(Document doc, tla2sany.xml.SymbolContext context) {
+    if (!context.isTop_level_entry())
+      throw new IllegalArgumentException("Exporting theorem ref "+getNodeRef()+" twice!");
+    context.resetTop_level_entry();
+    try {
+      Element e = getLevelElement(doc, context);
+      // level
+      try {
+        Element l = appendText(doc,"level",Integer.toString(getLevel()));
+        e.insertBefore(l,e.getFirstChild());
+      } catch (RuntimeException ee) {
+        // not sure it is legal for a LevelNode not to have level, debug it!
+      }
+      //location
+      try {
+        Element loc = getLocationElement(doc);
+        e.insertBefore(loc,e.getFirstChild());
+      } catch (RuntimeException ee) {
+        // do nothing if no location
+      }
+      return e;
+    } catch (RuntimeException ee) {
+      System.err.println("failed for node.toString(): " + toString() + "\n with error ");
+      ee.printStackTrace();
+      throw ee;
+    }
   }
+
+  protected String getNodeRef() {
+    return "AssumeNodeRef";
+  }
+
+//  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+//    if (getDef() == null)
+//      // we export the definition of the assumption
+//      return super.export(doc,context);
+//    else
+//      // we export its name only, named assumptions will be exported through the ThmOrAss..
+//      return getDef().export(doc,context);
+//  }
+
   protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("AssumeNode");
-    e.appendChild(getAssume().export(doc,context));
+    if (def != null) {
+      //if there is a definition, export it too
+      Node d = doc.createElement("definition");
+      d.appendChild(def.export(doc, context));
+      e.appendChild(d);
+      assert( def.getBody() == this.assumeExpr ); //make sure theorem and definition body agree before export
+    }
+    Node n = doc.createElement("body");
+    n.appendChild(getAssume().export(doc,context));
+    e.appendChild(n);
+    return e;
+  }
+
+  /* overrides LevelNode.export and exports a UID reference instad of the full version*/
+  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+    // first add symbol to context
+    context.put(this, doc);
+    Element e = doc.createElement(getNodeRef());
+    e.appendChild(appendText(doc,"UID",Integer.toString(myUID)));
     return e;
   }
 }

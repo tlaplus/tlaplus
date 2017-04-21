@@ -138,7 +138,8 @@ public class OpArgNode extends ExprOrOpArgNode {
   protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
     Element e = doc.createElement("OpArgNode");
     Element n = doc.createElement("argument");
-    Element ope = op.getSymbolElement(doc, context);
+    //Element ope = op.getSymbolElement(doc, context);
+    Element ope = op.export(doc, context);
     n.appendChild(ope);
     e.appendChild(n);
 

@@ -127,6 +127,9 @@ public abstract class SymbolNode extends LevelNode {
    * we need to add location and level information here.
    */
   public Element exportDefinition(Document doc, tla2sany.xml.SymbolContext context) {
+    if (!context.isTop_level_entry())
+      throw new IllegalArgumentException("Exporting definition "+getName()+" ref "+getNodeRef()+" twice!");
+    context.resetTop_level_entry();
     try {
       Element e = getSymbolElement(doc, context);
       // level
