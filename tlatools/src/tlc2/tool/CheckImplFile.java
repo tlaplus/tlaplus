@@ -280,7 +280,7 @@ public class CheckImplFile extends CheckImpl
                 return;
             }
             if (mainFile != null) {
-                printErrorMsg(MP.getError(EC.CHECK_PARAM_UNRECOGNIZED, new String[]{mainFile, args[index] }));
+                printErrorMsg(MP.getError(EC.CHECK_PARAM_UNRECOGNIZED, new String[]{args[index], mainFile }));
                 return;
             }
             mainFile = args[index++];

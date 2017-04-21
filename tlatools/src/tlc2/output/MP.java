@@ -495,7 +495,12 @@ public class MP
             break;
 
         case EC.CHECK_PARAM_UNRECOGNIZED:
-            b.append("Unrecognized option: %1%");
+            if (parameters.length == 1) {
+                b.append("Unrecognized option: %1%");
+            }
+            else if (parameters.length == 2) {
+                b.append("Unrecognized option in file %2%: %1%");
+            }
             break;
         case EC.CHECK_PARAM_TOO_MANY_INPUT_FILES:
             b.append("More than one input files: %1% and %2%");
