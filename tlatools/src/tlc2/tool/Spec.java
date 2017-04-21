@@ -1559,7 +1559,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         OpDefNode def = (OpDefNode) type;
         if (def.getArity() != 0)
         {
-            Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "type cinstraint", name });
+            Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "type constraint", name });
 
         }
         return def.getBody();
