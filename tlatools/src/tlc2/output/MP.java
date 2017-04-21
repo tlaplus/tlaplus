@@ -247,7 +247,7 @@ public class MP
             break;
 		case EC.SYSTEM_ERROR_CLEANING_POOL:
 			if (messageClass == ERROR) {
-				b.append("Exception %2% cleaning up an obsolete disk files.\n%1%");
+				b.append("Exception cleaning up an obsolete disk file.\n%1%");
 			} else if (messageClass == WARNING) {
 				b.append("Failed to clean up an obsolete disk file. Please manually delete %1% if free disk space is low.");
 			}
