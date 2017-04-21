@@ -884,7 +884,12 @@ public class MP
             b.append("The configuration file cannot specify both INIT/NEXT and SPECIFICATION fields.");
             break;
         case EC.TLC_CONFIG_ID_REQUIRES_NO_ARG:
-            b.append("TLC requires %1% not to take any argument.");
+            if (parameters.length == 1) {
+                b.append("TLC requires %1% not to take any argument.");
+            }
+            else if (parameters.length == 2) {
+                b.append("TLC requires %1% not to take any argument, but one was given: %2%");
+            }
             break;
         case EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED:
             b.append("The %1% %2% specified in the configuration file" + "\nis not defined in the specification.");
