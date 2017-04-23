@@ -49,6 +49,10 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 		return records.get(code);
 	}
 
+	public int getRecordAsInt(int code) {
+		return Integer.parseInt(((String[]) records.get(code).get(0))[0]);
+	}
+	
 	// This is a best effort implementation that only checks the first
 	// elements of the nested records and contained arrays
 	public boolean recordedWithStringValue(int code, String str) {
