@@ -82,6 +82,7 @@ openFile
 
    <repositories>
       <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
+      <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
    </repositories>
 
    <preferencesInfo>

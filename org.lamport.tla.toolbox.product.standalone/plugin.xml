@@ -92,11 +92,21 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            class="org.eclipse.equinox.internal.p2.ui.sdk.scheduler.AutomaticUpdatesPreferencePage"
+            class="org.lamport.tla.toolbox.preferences.AutomaticUpdatesPreferencePage"
             id="org.eclipse.equinox.internal.p2.ui.sdk.scheduler.AutomaticUpdatesPreferencePage"
             name="Automatic Update">
             <keywordReference id="org.eclipse.equinox.p2.ui.sdk.updates.general"/>
       </page>
+      <!-- Activate preference page below if Toolbox preferences should include 
+           generic p2 repository editor (see Window > Preferences > 
+           Install/Update > Available Sofware Sites in Eclipse.
+      <page
+            class="org.eclipse.equinox.p2.ui.RepositoryManipulationPage"
+            id="org.eclipse.equinox.internal.p2.ui.sdk.SitesPreferencePage"
+            name="Available Software Sites">
+            <keywordReference id="org.eclipse.equinox.p2.ui.sdk.updates.general"/>
+      </page>
+	  -->     
    </extension>
    
    <!-- Navogator -->
