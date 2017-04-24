@@ -412,9 +412,19 @@ public class MP
             if (TLCGlobals.tool) {
                 // format same as state printing for easier
                 // parsing by toolbox
-                b.append("%1%: Back to state: %2%\n");
+                if (parameters.length == 1) {
+                    b.append("%1%: Back to state\n");
+                }
+                else if (parameters.length == 2) {
+                    b.append("%1%: Back to state: %2%\n");
+                }
             } else {
-                b.append("Back to state %1%: %2%\n");
+                if (parameters.length == 1) {
+                    b.append("Back to state %1%\n");
+                }
+                else if (parameters.length == 2) {
+                    b.append("Back to state %1%: %2%\n");
+                }
             }
             break;
 
