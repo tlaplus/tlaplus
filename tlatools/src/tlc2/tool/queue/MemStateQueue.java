@@ -31,7 +31,7 @@ public final class MemStateQueue extends StateQueue {
     
   final void enqueueInner(TLCState state) {
 	if (this.len > Integer.MAX_VALUE) {
-        Assert.fail(EC.SYSTEM_ERROR_WRITING_STATES, "Amount of states exceeds internal storage");
+        Assert.fail(EC.SYSTEM_ERROR_WRITING_STATES, new String[]{"queue", "Amount of states exceeds internal storage"});
 	}
     if (this.len == this.states.length) {
       // grow the array
