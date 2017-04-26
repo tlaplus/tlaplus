@@ -907,7 +907,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		// recovery.
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
 		boolean unique = !this.memInsert(fp0);
-		Assert.check(unique, EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT);
+		Assert.check(unique, EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, "");
 		if (needsDiskFlush()) {
 			this.flusher.flushTable();
 		}
