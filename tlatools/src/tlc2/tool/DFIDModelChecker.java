@@ -164,7 +164,7 @@ public class DFIDModelChecker extends AbstractChecker
                 }
 
                 // Start working on this level:
-                MP.printMessage(EC.TLC_PROGRESS_STATS_DFID, new String[] { String.valueOf(level),
+                MP.printMessage(EC.TLC_PROGRESS_START_STATS_DFID, new String[] { String.valueOf(level),
                         String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()) });
 
                 FPIntSet.incLevel();
