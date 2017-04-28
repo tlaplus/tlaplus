@@ -122,7 +122,7 @@ public class Integers extends UserObj implements ValueConstants
         if (!(y instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", ">=", "integer",
-                    Value.ppr(x.toString()) });
+                    Value.ppr(y.toString()) });
         }
 
         return (((IntValue) x).val >= ((IntValue) y).val) ? ValTrue : ValFalse;
