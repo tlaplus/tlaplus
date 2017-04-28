@@ -49,7 +49,6 @@ import org.eclipse.ui.*;
  * @since 3.4
  * 
  */
-@SuppressWarnings("restriction")
 public class AutomaticUpdatesPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 
 	private Button enabledCheck;
