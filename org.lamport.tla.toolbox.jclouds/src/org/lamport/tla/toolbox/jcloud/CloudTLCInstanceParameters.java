@@ -119,4 +119,8 @@ public abstract class CloudTLCInstanceParameters {
 	public void mungeBuilder(ContextBuilder builder) {
 		// Nothing to be done here
 	}
+
+	public String getOSFilesystemTuning() {
+		return "/bin/true"; // no-op, because concat with && ... && in CDTJ.
+	}
 }
