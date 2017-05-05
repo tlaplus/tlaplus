@@ -43,10 +43,10 @@ public class TLCState implements IModuleLocatable
 {
     private static final String COLON = ":";
     private static final String CR = "\n";
-    private static final String STUTTERING = "Stuttering";
+    private static final String STUTTERING = " Stuttering"; // See tlc2.output.MP
     private static final String AND = "/\\";
     private static final String EQ = " = ";
-    private static final String BACK_TO_STATE = "Back";
+    private static final String BACK_TO_STATE = " Back to state"; // See tlc2.output.MP
 
     /**
      * A factory for stuttering states
@@ -91,14 +91,14 @@ public class TLCState implements IModuleLocatable
 
         int number = Integer.parseInt(input.substring(0, index));
         String label = input.substring(index + 1, index2);
-        if (label.indexOf(STUTTERING) != -1)
+        if (label.indexOf(STUTTERING) == 0)
         {
             return STUTTERING_STATE(number, modelName);
-        } else if (label.indexOf(BACK_TO_STATE) != -1)
+        } else if (label.indexOf(BACK_TO_STATE) == 0)
         {
             final TLCState state = BACK_TO_STATE(number, modelName);
             // See in MP.java case for EC.TLC_BACK_TO_STATE
-            state.setLocation(Location.parseLocation(label.substring(" Back to State: ".length(), label.length()))); 
+            state.setLocation(Location.parseLocation(label.substring((BACK_TO_STATE + ": ").length(), label.length()))); 
 			return state;
         } else
         {
