@@ -650,6 +650,45 @@ public class LongArraysTest {
 
 	}
 	
+	@Test
+	public void test9a() {
+		final List<Long> expected = new ArrayList<Long>();
+		expected.add(12L);
+		expected.add(1L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(11L);
+		
+		doTest(expected, 1, 2, new OffHeapDiskFPSet.Indexer(expected.size(), 1, 13));
+	}
+	
+	@Test
+	public void test9b() {
+		final List<Long> expected = new ArrayList<Long>();
+		expected.add(11L);
+		expected.add(1L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(12L);
+		
+		doTest(expected, 1, 2, new OffHeapDiskFPSet.Indexer(expected.size(), 1, 13));
+	}
+	
+	@Test
+	public void test9c() {
+		final List<Long> expected = new ArrayList<Long>();
+		expected.add(1L);
+		expected.add(12L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(0L);
+		expected.add(11L);
+		
+		doTest(expected, 1, 3, new OffHeapDiskFPSet.Indexer(expected.size(), 1, 13));
+	}
+	
 	private void doTest(final List<Long> expected) {
 		final Indexer indexer = new OffHeapDiskFPSet.Indexer(expected.size(), 1);
 		for (int i = 1; i < (expected.size() / 2); i++) {
@@ -699,6 +738,9 @@ public class LongArraysTest {
 					return fpA < fpB ? -1 : 1;
 				} else if ((wrappedA ^ wrappedB)) {
 					if (posA < posB && fpA < fpB) {
+						// Swap fpB, which is at the end of array a, with fpA.
+						// fpA is less than fpB. fpB was inserted into array a
+						// before fpA.
 						return -1;
 					}
 					if (posA > posB && fpA > fpB) {
