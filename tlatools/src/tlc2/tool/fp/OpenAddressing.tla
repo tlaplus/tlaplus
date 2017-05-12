@@ -6,7 +6,7 @@ EXTENDS Sequences, FiniteSets, Integers, TLC
 (* K: The overall number of fingerprints that fit into the table.          *)
 (* fps: The set of fingerprints to be inserted into the hash table.        *)
 (* empty: An empty (model) value. Used to mark an unoccupied table element.*)
-(* N: The number of processes/threads which insert fingerprints. L: The    *)
+(* Procs: The set of processes/threads which insert fingerprints. L: The   *)
 (* probing limit.                                                          *) 
 (***************************************************************************)
 CONSTANT K, fps, empty, Procs, L
@@ -98,7 +98,23 @@ idx(fp, p) == rescale(K, max(fps), min(fps), fp, p)
 (***************************************************************************)
 isMatch(fp, index, table) == \/ table[index] = fp
                              \/ table[index] = (-1*fp)
-                         
+       
+(***************************************************************************)
+(* t is sorted iff its empty-filtered sub-sequence is sorted. An empty     *)
+(* sequence is defined to be sorted.                                       *)
+(***************************************************************************)
+isSorted(seq) == LET sub == SelectSeq(seq, LAMBDA e: e # empty)
+                 IN IF sub = <<>> THEN TRUE
+                    ELSE \A i \in 1..(Len(sub) - 1):
+                         sub[mod(i, Len(sub))] < sub[mod(i+1, Len(sub))]
+
+(***************************************************************************)
+(* TRUE iff fingerprint fp is either found within table according to       *)
+(* isMatch or in seq.                                                      *)
+(***************************************************************************)
+contains(f,t,seq,Q) == \/ \E i \in 0..Q: isMatch(f,idx(f,i),t)
+                       \/ \E i \in 1..Len(seq): seq[i] = f 
+                       
 ----------------------------------------------------------------------------
 
 (***************************************************************************)
@@ -143,11 +159,11 @@ compare(fp1,i1,fp2,i2, P) == \/ /\ fp1 < fp2
 (* alterante index is to be tried.                                         *)          
 (***************************************************************************)
 { variable table = [i \in 1..K |-> empty], 
-           secondary = <<>>, newsecondary = <<>>,
-           outer = 1, inner = 1,
+           secondary = <<>>,
+           newsecondary = <<>>,
            P = 0,
            evict = FALSE,
-           active = 0,
+           numEv = 0, \* A modification counter of table (modCnt)
            history = {};
            
   (* Atomically compare and swap. *)      
@@ -169,18 +185,76 @@ compare(fp1,i1,fp2,i2, P) == \/ /\ fp1 < fp2
     } else { 
          result := FALSE
     }
+  }    
+        
+  (* Compare and swap element at positions iff current element at
+     table[pos] = expected and evict is FALSE. In a Java
+     implementation, evict can be an extension (byte) table
+     not used for fingerprints. *)
+  macro CASNev(result, expectedEv, pos, expected, new) {
+     if (numEv = expectedEv /\ evict = FALSE /\ table[pos] = expected) {
+         table[pos] := new;
+         result := TRUE
+    } else { 
+         result := FALSE
+    }
   }         
-           
+  
+  (* Eviction procedure. *)
+  procedure Evict()
+     variables outer = 1, inner = 1; {
+                (* For every element with index i in ascending order of table, sort the *)
+                (* elements in the range i..i+P. The range can be seen as a lookahead. *)
+     strEv:     while (outer+inner <= K+(2*(P+1))) {
+                  expected1 := table[mod(outer, K)];
+     read:        expected2 := table[mod(outer+inner, K)];
+                  if (expected1 # empty /\ expected2 # empty /\
+                      expected1 > 0 /\ expected2 > 0 /\
+                      compare(expected1,outer,expected2,inner, P)) {
+                      \* We don't swap fingerprints that can be changed by other threads. Evict swaps fingerprints
+                      \* which are in primary storage. Other threads write to empty positions or fingerprints marked
+                      \* as being on secondary storage. Still, swap has to be atomically to not violate Inv. 
+     dcas:            CASN(result, mod(outer, K), mod(outer+inner, K), expected1, expected2, expected2, expected1);
+                      assert result;
+                  };
+     incVr:       if (inner + 1 > P) {
+                     (* Write table[mod(cpy,table)] to secondary. *)
+     swpEv:          expected1 := table[mod(outer, K)];
+                     if (expected1 # empty /\
+                         expected1 > largestElem(newsecondary) /\
+                         ((outer <= K /\ ~wrapped(expected1,outer,P)) \/ 
+                          (outer > K /\ wrapped(expected1,outer,P)))) {
+                        (* Copy all smaller fps than expected1 from secondary to newsecondary. *)
+                        newsecondary := Append(newsecondary \o subSetSmaller(secondary, newsecondary, expected1), expected1);
+                        (* Mark table[mod(cpy,table)] as being written to secondary. *)
+                        table[mod(outer, K)] := expected1 * (-1);
+                     };
+                     (* Update outer and inner. *)
+                     inner := 1;
+                     outer := outer + 1;
+                  } else {
+                     (* Update inner. *)
+                     inner := inner + 1
+                  }
+                };
+                (* Append remainder of secondary to newsecondary and assign newsecondary to secondary. *)
+                secondary := newsecondary \o subSetLarger(secondary, newsecondary);
+                newsecondary := <<>>;
+     rtrn:      return;
+  }
+       
+  (* A weak fair process. *)        
   fair process (p \in Procs)
     variables fp = 0,
               index = 0, 
               freePos = -1,
               result = FALSE,
+              expectedEv = 0,
               expected1 = -1;
               expected2 = -1;
     {
-     lbl00:  while (TRUE) {
-              \* No deadlock when all fingerprints have been inserted.
+    pick:  while (TRUE) {
+              \* No deadlock once all fingerprints have been inserted.
               if ((fps \ history) = {}) {
                 goto Done;
               } else {
@@ -188,159 +262,101 @@ compare(fp1,i1,fp2,i2, P) == \/ /\ fp1 < fp2
                 with (f \in (fps \ history)) { fp := f; };
               };
      
-              \* contains(fp), first reset all local variables.
-     cntns:   index := 0;
+
+     put:     index := 0;
               freePos := -1;
               result := FALSE;
+              expectedEv := numEv;
               expected1 := -1;
               expected2 := -1;
-              \* Atomically increment number of active threads.
-              active := active + 1;
-              \* Check if eviction is "scheduled".
-     wait1:   if (evict = TRUE) {
-                \* Become inactive and wait for eviction to finish.
-     wait2:     active := active - 1;
-     wait3:     await ~evict;
-     wait4:     goto cntns;
+              
+              (* Primary lookup. *)
+     cntns:   while (index < P) {
+                if (isMatch(fp, idx(fp, index), table)) {
+                  goto pick
+                } else {
+                  index := index + 1
+                }
               };
-     loop1:   while (index < P) {
-               if (isMatch(fp, idx(fp, index), table)) {
-                active := active - 1;
-                goto lbl00
-               } else {
-                index:=index+1
-               }
-              };
-              \* Reset index to 0 after cntns for insrt to start trying from position 0.
+              \* Reset index to 0 after cntns for insrt to start
+              \* trying from position 0. Other threads might have
+              \* inserted fp in between cntns and insrt.
               index := 0;
               
-              \* secondary lookup
+              
+              (* Secondary lookup. *)
      onSnc:   if (containsElem(secondary,fp)) {
-                active := active - 1;
-                goto lbl00
+                 goto pick
               };
               
               
               (* Put inserts the given fp into the hash table by sequentially trying *)
               (* the primary to the P's alternate position.                          *)
      insrt:   while (index < L) {
-               \* Empty position, insert right away
-     iempt:    if (table[idx(fp,index)] = empty) {
-                 \* Increment P before setting fp. Otherwise, there is a small window during which the fp cannot be found.
-     incP1:      if (index > P) {P := index};
-     set01:      CAS(result, idx(fp,index), empty, fp);
-                 if (result) {
-                   history := history \cup {fp};
-                   active := active - 1;
-                   goto lbl00
-                 } else {
-                   \* Check if CAS failed because another thread inserted the same fp
-                   if (index > 0) {
-                     index := index - 1;
-                   };
-                   goto insrt
-                 }
-               };
-               
-               \* Has fp been inserted by another process? Check isMatch AFTER
-               \* empty because of two reasons:
-               \* a) Thread A finds table[pos] to be empty but fails to CAS fp_x. 
-               \*    Thread B concurrently also finds table[pos] to be empty and
-               \*    succeeds to CAS fp_x.
-               \* b) Iff table[pos] is empty, higher positions cannot be a match.
-     isMth1:   if (isMatch(fp,idx(fp,index),table)) {
-                 active := active - 1;
-                 goto lbl00
-               };
-               
-               \* A secondary copied position, remember it as candidate.
-     mSncd:    if (table[idx(fp,index)] < 0)  {
-                 freePos := idx(fp,index);
                  expected1 := table[idx(fp,index)];
-                 index := index+1
-               } else {
-                 index := index+1
-               };
-               
-               \* CAS at freePos
-     freePo:   if (freePos > -1) {
-                 \* Increment P before setting fp. Otherwise, there is a small window during which the fp cannot be found.
-     incP2:      if (index > P) {P := index};
-     set02:      CAS(result, freePos, expected1, fp);
-                 if (result) {
-                   history := history \cup {fp};
-                   active := active - 1;
-                   goto lbl00
-                 } else {
-                  \* Has been occupied in the meantime, try to find another position
-                  active := active - 1;
-                  goto cntns
-                 }
-                } 
-               };
-               
-               \* Checking and flipping evict is essentially CAS too
-     canEv:    if (evict = FALSE) {
-                \* Become the thread that evicts to secondary
-                 evict := ~evict;
-     waitEv:     await active = 1; \* 1 is self
-                 (* For every element with index i in ascending order of table, sort the *)
-                 (* elements in the range i..i+P. The range can be seen as a lookahead. *)
-     strEv:      while (outer+inner <= K+(2*(P+1))) {
-     read1:       expected1 := table[mod(outer, K)];
-     read2:       expected2 := table[mod(outer+inner, K)];
-     cmpEv:       if (expected1 # empty /\ expected2 # empty /\
-                      expected1 > 0 /\ expected2 > 0 /\
-                      compare(expected1,outer,expected2,inner, P)) {
-                      \* We don't swap fingerprints that can be changed by other threads. Evict swaps fingerprints
-                      \* which are in primary storage. Other threads write to empty positions or fingerprints marked
-                      \* as being on secondary storage. Still, swap has to be atomically to not violate Inv. 
-     dcas1:           CASN(result, mod(outer, K), mod(outer+inner, K), expected1, expected2, expected2, expected1);
-                      assert result;
-                  };
-     incVr:       if (inner + 1 > P) {
-                   (* Write table[mod(cpy,table)] to secondary. *)
-     swpEv:        expected1 := table[mod(outer, K)];
-                   if (expected1 # empty /\
-                       expected1 > largestElem(newsecondary) /\
-                      ((outer <= K /\ ~wrapped(expected1,outer,P)) \/ 
-                       (outer > K /\ wrapped(expected1,outer,P)))) {
-                     (* Copy all smaller fps than expected1 from secondary to newsecondary. *)
-                     newsecondary := Append(newsecondary \o subSetSmaller(secondary, newsecondary, expected1), expected1);
-                     (* Mark table[mod(cpy,table)] as being written to secondary. *)
-                     table[mod(outer, K)] := expected1 * (-1);
-                   };
-                   (* Update outer and inner. *)
-                   inner := 1;
-                   outer := outer + 1;
-                  } else {
-                    (* Update inner. *)
-                    inner := inner + 1
-                  }
+                 if (expected1 = empty \/ (expected1 < 0 /\ expected1 # (-1) * fp))  {
+     incP:           if (index > P) {P := index};
+     cas:            CASNev(result, expectedEv, idx(fp,index), expected1, fp);
+                     if (result) {
+                        history := history \cup {fp};
+                        goto pick
+                     } else {
+                        if (numEv > expectedEv \/ evict) {
+                           \* Wait for eviction to end or 
+                           \* start from scratch because
+                           \* an finished eviction invalidated
+                           \* our earlier checkes (contains
+                           \* and on-secondray).
+                           await ~evict;
+                           goto put
+                        } else {
+                           \* Has been occupied in the meantime,
+                           \* try to find another position.
+                           goto insrt
+                        }
+                      }
                  };
-                 (* Append remainder of secondary to newsecondary and assign newsecondary to secondary. *)
-                 secondary := newsecondary \o subSetLarger(secondary, newsecondary);
-                 newsecondary := <<>>;
-                 outer := 1;
-                 inner := 1;
+                
+                 \* Has fp been inserted by another process? Check isMatch AFTER
+                 \* empty and on-secondary because of two reasons:
+                 \* a) Thread A finds table[pos] to be empty but fails to CAS fp_x. 
+                 \*    Thread B concurrently also finds table[pos] to be empty and
+                 \*    succeeds to CAS fp_x.
+                 \* b) Iff table[pos] is empty or -1, higher positions cannot be a
+                 \*    match.
+     isMth:      if (isMatch(fp,idx(fp,index),table)) {
+                    goto pick
+                 } else {
+                    index := index + 1;
+                 };
+              }; \* end of while/insrt
+
+
+              (* Try to become the thread that evicts to secondary. *)
+              (* Checking and flipping evict is essentially CAS too.*)
+     tryEv:   if (evict = FALSE) {
+                 evict := ~evict;
+                 call Evict();
      endEv:      evict := ~evict;
-                 active := active - 1;
-                 goto cntns;                   
-                } else {
-                 active := active - 1;
-                 goto cntns
-                }
-              }
-             }
+                 numEv := numEv + 1;
+                 goto put;                   
+               } else {
+                 await ~evict;
+                 goto put
+               }
+             } 
+           }
     }
 }
 ***     this ends the comment containg the pluscal code      **********)
 \* BEGIN TRANSLATION
-VARIABLES table, secondary, newsecondary, outer, inner, P, evict, active, 
-          history, pc, fp, index, freePos, result, expected1, expected2
+VARIABLES table, secondary, newsecondary, P, evict, numEv, history, pc, stack, 
+          outer, inner, fp, index, freePos, result, expectedEv, expected1, 
+          expected2
 
-vars == << table, secondary, newsecondary, outer, inner, P, evict, active, 
-           history, pc, fp, index, freePos, result, expected1, expected2 >>
+vars == << table, secondary, newsecondary, P, evict, numEv, history, pc, 
+           stack, outer, inner, fp, index, freePos, result, expectedEv, 
+           expected1, expected2 >>
 
 ProcSet == (Procs)
 
@@ -348,318 +364,232 @@ Init == (* Global variables *)
         /\ table = [i \in 1..K |-> empty]
         /\ secondary = <<>>
         /\ newsecondary = <<>>
-        /\ outer = 1
-        /\ inner = 1
         /\ P = 0
         /\ evict = FALSE
-        /\ active = 0
+        /\ numEv = 0
         /\ history = {}
+        (* Procedure Evict *)
+        /\ outer = [ self \in ProcSet |-> 1]
+        /\ inner = [ self \in ProcSet |-> 1]
         (* Process p *)
         /\ fp = [self \in Procs |-> 0]
         /\ index = [self \in Procs |-> 0]
         /\ freePos = [self \in Procs |-> -1]
         /\ result = [self \in Procs |-> FALSE]
+        /\ expectedEv = [self \in Procs |-> 0]
         /\ expected1 = [self \in Procs |-> -1]
         /\ expected2 = [self \in Procs |-> -1]
-        /\ pc = [self \in ProcSet |-> "lbl00"]
+        /\ stack = [self \in ProcSet |-> << >>]
+        /\ pc = [self \in ProcSet |-> "pick"]
 
-lbl00(self) == /\ pc[self] = "lbl00"
-               /\ IF (fps \ history) = {}
-                     THEN /\ pc' = [pc EXCEPT ![self] = "Done"]
-                          /\ fp' = fp
-                     ELSE /\ \E f \in (fps \ history):
-                               fp' = [fp EXCEPT ![self] = f]
-                          /\ pc' = [pc EXCEPT ![self] = "cntns"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, active, history, index, freePos, result, 
-                               expected1, expected2 >>
+strEv(self) == /\ pc[self] = "strEv"
+               /\ IF outer[self]+inner[self] <= K+(2*(P+1))
+                     THEN /\ expected1' = [expected1 EXCEPT ![self] = table[mod(outer[self], K)]]
+                          /\ pc' = [pc EXCEPT ![self] = "read"]
+                          /\ UNCHANGED << secondary, newsecondary >>
+                     ELSE /\ secondary' = newsecondary \o subSetLarger(secondary, newsecondary)
+                          /\ newsecondary' = <<>>
+                          /\ pc' = [pc EXCEPT ![self] = "rtrn"]
+                          /\ UNCHANGED expected1
+               /\ UNCHANGED << table, P, evict, numEv, history, stack, outer, 
+                               inner, fp, index, freePos, result, expectedEv, 
+                               expected2 >>
+
+read(self) == /\ pc[self] = "read"
+              /\ expected2' = [expected2 EXCEPT ![self] = table[mod(outer[self]+inner[self], K)]]
+              /\ IF expected1[self] # empty /\ expected2'[self] # empty /\
+                    expected1[self] > 0 /\ expected2'[self] > 0 /\
+                    compare(expected1[self],outer[self],expected2'[self],inner[self], P)
+                    THEN /\ pc' = [pc EXCEPT ![self] = "dcas"]
+                    ELSE /\ pc' = [pc EXCEPT ![self] = "incVr"]
+              /\ UNCHANGED << table, secondary, newsecondary, P, evict, numEv, 
+                              history, stack, outer, inner, fp, index, freePos, 
+                              result, expectedEv, expected1 >>
+
+dcas(self) == /\ pc[self] = "dcas"
+              /\ IF table[(mod(outer[self], K))] = expected1[self] /\ table[(mod(outer[self]+inner[self], K))] = expected2[self]
+                    THEN /\ table' = [table EXCEPT ![(mod(outer[self], K))] = expected2[self],
+                                                   ![(mod(outer[self]+inner[self], K))] = expected1[self]]
+                         /\ result' = [result EXCEPT ![self] = TRUE]
+                    ELSE /\ result' = [result EXCEPT ![self] = FALSE]
+                         /\ table' = table
+              /\ Assert(result'[self], 
+                        "Failure of assertion at line 218, column 23.")
+              /\ pc' = [pc EXCEPT ![self] = "incVr"]
+              /\ UNCHANGED << secondary, newsecondary, P, evict, numEv, 
+                              history, stack, outer, inner, fp, index, freePos, 
+                              expectedEv, expected1, expected2 >>
+
+incVr(self) == /\ pc[self] = "incVr"
+               /\ IF inner[self] + 1 > P
+                     THEN /\ pc' = [pc EXCEPT ![self] = "swpEv"]
+                          /\ inner' = inner
+                     ELSE /\ inner' = [inner EXCEPT ![self] = inner[self] + 1]
+                          /\ pc' = [pc EXCEPT ![self] = "strEv"]
+               /\ UNCHANGED << table, secondary, newsecondary, P, evict, numEv, 
+                               history, stack, outer, fp, index, freePos, 
+                               result, expectedEv, expected1, expected2 >>
+
+swpEv(self) == /\ pc[self] = "swpEv"
+               /\ expected1' = [expected1 EXCEPT ![self] = table[mod(outer[self], K)]]
+               /\ IF expected1'[self] # empty /\
+                     expected1'[self] > largestElem(newsecondary) /\
+                     ((outer[self] <= K /\ ~wrapped(expected1'[self],outer[self],P)) \/
+                      (outer[self] > K /\ wrapped(expected1'[self],outer[self],P)))
+                     THEN /\ newsecondary' = Append(newsecondary \o subSetSmaller(secondary, newsecondary, expected1'[self]), expected1'[self])
+                          /\ table' = [table EXCEPT ![mod(outer[self], K)] = expected1'[self] * (-1)]
+                     ELSE /\ TRUE
+                          /\ UNCHANGED << table, newsecondary >>
+               /\ inner' = [inner EXCEPT ![self] = 1]
+               /\ outer' = [outer EXCEPT ![self] = outer[self] + 1]
+               /\ pc' = [pc EXCEPT ![self] = "strEv"]
+               /\ UNCHANGED << secondary, P, evict, numEv, history, stack, fp, 
+                               index, freePos, result, expectedEv, expected2 >>
+
+rtrn(self) == /\ pc[self] = "rtrn"
+              /\ pc' = [pc EXCEPT ![self] = Head(stack[self]).pc]
+              /\ outer' = [outer EXCEPT ![self] = Head(stack[self]).outer]
+              /\ inner' = [inner EXCEPT ![self] = Head(stack[self]).inner]
+              /\ stack' = [stack EXCEPT ![self] = Tail(stack[self])]
+              /\ UNCHANGED << table, secondary, newsecondary, P, evict, numEv, 
+                              history, fp, index, freePos, result, expectedEv, 
+                              expected1, expected2 >>
+
+Evict(self) == strEv(self) \/ read(self) \/ dcas(self) \/ incVr(self)
+                  \/ swpEv(self) \/ rtrn(self)
+
+pick(self) == /\ pc[self] = "pick"
+              /\ IF (fps \ history) = {}
+                    THEN /\ pc' = [pc EXCEPT ![self] = "Done"]
+                         /\ fp' = fp
+                    ELSE /\ \E f \in (fps \ history):
+                              fp' = [fp EXCEPT ![self] = f]
+                         /\ pc' = [pc EXCEPT ![self] = "put"]
+              /\ UNCHANGED << table, secondary, newsecondary, P, evict, numEv, 
+                              history, stack, outer, inner, index, freePos, 
+                              result, expectedEv, expected1, expected2 >>
+
+put(self) == /\ pc[self] = "put"
+             /\ index' = [index EXCEPT ![self] = 0]
+             /\ freePos' = [freePos EXCEPT ![self] = -1]
+             /\ result' = [result EXCEPT ![self] = FALSE]
+             /\ expectedEv' = [expectedEv EXCEPT ![self] = numEv]
+             /\ expected1' = [expected1 EXCEPT ![self] = -1]
+             /\ expected2' = [expected2 EXCEPT ![self] = -1]
+             /\ pc' = [pc EXCEPT ![self] = "cntns"]
+             /\ UNCHANGED << table, secondary, newsecondary, P, evict, numEv, 
+                             history, stack, outer, inner, fp >>
 
 cntns(self) == /\ pc[self] = "cntns"
-               /\ index' = [index EXCEPT ![self] = 0]
-               /\ freePos' = [freePos EXCEPT ![self] = -1]
-               /\ result' = [result EXCEPT ![self] = FALSE]
-               /\ expected1' = [expected1 EXCEPT ![self] = -1]
-               /\ expected2' = [expected2 EXCEPT ![self] = -1]
-               /\ active' = active + 1
-               /\ pc' = [pc EXCEPT ![self] = "wait1"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, history, fp >>
-
-wait1(self) == /\ pc[self] = "wait1"
-               /\ IF evict = TRUE
-                     THEN /\ pc' = [pc EXCEPT ![self] = "wait2"]
-                     ELSE /\ pc' = [pc EXCEPT ![self] = "loop1"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, active, history, fp, index, freePos, 
-                               result, expected1, expected2 >>
-
-wait2(self) == /\ pc[self] = "wait2"
-               /\ active' = active - 1
-               /\ pc' = [pc EXCEPT ![self] = "wait3"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, history, fp, index, freePos, result, 
-                               expected1, expected2 >>
-
-wait3(self) == /\ pc[self] = "wait3"
-               /\ ~evict
-               /\ pc' = [pc EXCEPT ![self] = "wait4"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, active, history, fp, index, freePos, 
-                               result, expected1, expected2 >>
-
-wait4(self) == /\ pc[self] = "wait4"
-               /\ active' = active + 1
-               /\ pc' = [pc EXCEPT ![self] = "loop1"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, history, fp, index, freePos, result, 
-                               expected1, expected2 >>
-
-loop1(self) == /\ pc[self] = "loop1"
                /\ IF index[self] < P
                      THEN /\ IF isMatch(fp[self], idx(fp[self], index[self]), table)
-                                THEN /\ active' = active - 1
-                                     /\ pc' = [pc EXCEPT ![self] = "lbl00"]
+                                THEN /\ pc' = [pc EXCEPT ![self] = "pick"]
                                      /\ index' = index
-                                ELSE /\ index' = [index EXCEPT ![self] = index[self]+1]
-                                     /\ pc' = [pc EXCEPT ![self] = "loop1"]
-                                     /\ UNCHANGED active
+                                ELSE /\ index' = [index EXCEPT ![self] = index[self] + 1]
+                                     /\ pc' = [pc EXCEPT ![self] = "cntns"]
                      ELSE /\ index' = [index EXCEPT ![self] = 0]
                           /\ pc' = [pc EXCEPT ![self] = "onSnc"]
-                          /\ UNCHANGED active
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, history, fp, freePos, result, expected1, 
-                               expected2 >>
+               /\ UNCHANGED << table, secondary, newsecondary, P, evict, numEv, 
+                               history, stack, outer, inner, fp, freePos, 
+                               result, expectedEv, expected1, expected2 >>
 
 onSnc(self) == /\ pc[self] = "onSnc"
                /\ IF containsElem(secondary,fp[self])
-                     THEN /\ active' = active - 1
-                          /\ pc' = [pc EXCEPT ![self] = "lbl00"]
+                     THEN /\ pc' = [pc EXCEPT ![self] = "pick"]
                      ELSE /\ pc' = [pc EXCEPT ![self] = "insrt"]
-                          /\ UNCHANGED active
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, history, fp, index, freePos, result, 
-                               expected1, expected2 >>
+               /\ UNCHANGED << table, secondary, newsecondary, P, evict, numEv, 
+                               history, stack, outer, inner, fp, index, 
+                               freePos, result, expectedEv, expected1, 
+                               expected2 >>
 
 insrt(self) == /\ pc[self] = "insrt"
                /\ IF index[self] < L
-                     THEN /\ pc' = [pc EXCEPT ![self] = "iempt"]
-                     ELSE /\ pc' = [pc EXCEPT ![self] = "canEv"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, active, history, fp, index, freePos, 
-                               result, expected1, expected2 >>
+                     THEN /\ expected1' = [expected1 EXCEPT ![self] = table[idx(fp[self],index[self])]]
+                          /\ IF expected1'[self] = empty \/ (expected1'[self] < 0 /\ expected1'[self] # (-1) * fp[self])
+                                THEN /\ pc' = [pc EXCEPT ![self] = "incP"]
+                                ELSE /\ pc' = [pc EXCEPT ![self] = "isMth"]
+                     ELSE /\ pc' = [pc EXCEPT ![self] = "tryEv"]
+                          /\ UNCHANGED expected1
+               /\ UNCHANGED << table, secondary, newsecondary, P, evict, numEv, 
+                               history, stack, outer, inner, fp, index, 
+                               freePos, result, expectedEv, expected2 >>
 
-iempt(self) == /\ pc[self] = "iempt"
-               /\ IF table[idx(fp[self],index[self])] = empty
-                     THEN /\ pc' = [pc EXCEPT ![self] = "incP1"]
-                     ELSE /\ pc' = [pc EXCEPT ![self] = "isMth1"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, active, history, fp, index, freePos, 
-                               result, expected1, expected2 >>
-
-incP1(self) == /\ pc[self] = "incP1"
-               /\ IF index[self] > P
-                     THEN /\ P' = index[self]
-                     ELSE /\ TRUE
-                          /\ P' = P
-               /\ pc' = [pc EXCEPT ![self] = "set01"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, 
-                               evict, active, history, fp, index, freePos, 
-                               result, expected1, expected2 >>
-
-set01(self) == /\ pc[self] = "set01"
-               /\ IF table[(idx(fp[self],index[self]))] = empty
-                     THEN /\ table' = [table EXCEPT ![(idx(fp[self],index[self]))] = fp[self]]
-                          /\ result' = [result EXCEPT ![self] = TRUE]
-                     ELSE /\ result' = [result EXCEPT ![self] = FALSE]
-                          /\ table' = table
-               /\ IF result'[self]
-                     THEN /\ history' = (history \cup {fp[self]})
-                          /\ active' = active - 1
-                          /\ pc' = [pc EXCEPT ![self] = "lbl00"]
+isMth(self) == /\ pc[self] = "isMth"
+               /\ IF isMatch(fp[self],idx(fp[self],index[self]),table)
+                     THEN /\ pc' = [pc EXCEPT ![self] = "pick"]
                           /\ index' = index
-                     ELSE /\ IF index[self] > 0
-                                THEN /\ index' = [index EXCEPT ![self] = index[self] - 1]
-                                ELSE /\ TRUE
-                                     /\ index' = index
+                     ELSE /\ index' = [index EXCEPT ![self] = index[self] + 1]
                           /\ pc' = [pc EXCEPT ![self] = "insrt"]
-                          /\ UNCHANGED << active, history >>
-               /\ UNCHANGED << secondary, newsecondary, outer, inner, P, evict, 
-                               fp, freePos, expected1, expected2 >>
+               /\ UNCHANGED << table, secondary, newsecondary, P, evict, numEv, 
+                               history, stack, outer, inner, fp, freePos, 
+                               result, expectedEv, expected1, expected2 >>
 
-isMth1(self) == /\ pc[self] = "isMth1"
-                /\ IF isMatch(fp[self],idx(fp[self],index[self]),table)
-                      THEN /\ active' = active - 1
-                           /\ pc' = [pc EXCEPT ![self] = "lbl00"]
-                      ELSE /\ pc' = [pc EXCEPT ![self] = "mSncd"]
-                           /\ UNCHANGED active
-                /\ UNCHANGED << table, secondary, newsecondary, outer, inner, 
-                                P, evict, history, fp, index, freePos, result, 
-                                expected1, expected2 >>
+incP(self) == /\ pc[self] = "incP"
+              /\ IF index[self] > P
+                    THEN /\ P' = index[self]
+                    ELSE /\ TRUE
+                         /\ P' = P
+              /\ pc' = [pc EXCEPT ![self] = "cas"]
+              /\ UNCHANGED << table, secondary, newsecondary, evict, numEv, 
+                              history, stack, outer, inner, fp, index, freePos, 
+                              result, expectedEv, expected1, expected2 >>
 
-mSncd(self) == /\ pc[self] = "mSncd"
-               /\ IF table[idx(fp[self],index[self])] < 0
-                     THEN /\ freePos' = [freePos EXCEPT ![self] = idx(fp[self],index[self])]
-                          /\ expected1' = [expected1 EXCEPT ![self] = table[idx(fp[self],index[self])]]
-                          /\ index' = [index EXCEPT ![self] = index[self]+1]
-                     ELSE /\ index' = [index EXCEPT ![self] = index[self]+1]
-                          /\ UNCHANGED << freePos, expected1 >>
-               /\ pc' = [pc EXCEPT ![self] = "freePo"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, active, history, fp, result, expected2 >>
+cas(self) == /\ pc[self] = "cas"
+             /\ IF numEv = expectedEv[self] /\ evict = FALSE /\ table[(idx(fp[self],index[self]))] = expected1[self]
+                   THEN /\ table' = [table EXCEPT ![(idx(fp[self],index[self]))] = fp[self]]
+                        /\ result' = [result EXCEPT ![self] = TRUE]
+                   ELSE /\ result' = [result EXCEPT ![self] = FALSE]
+                        /\ table' = table
+             /\ IF result'[self]
+                   THEN /\ history' = (history \cup {fp[self]})
+                        /\ pc' = [pc EXCEPT ![self] = "pick"]
+                   ELSE /\ IF numEv > expectedEv[self] \/ evict
+                              THEN /\ ~evict
+                                   /\ pc' = [pc EXCEPT ![self] = "put"]
+                              ELSE /\ pc' = [pc EXCEPT ![self] = "insrt"]
+                        /\ UNCHANGED history
+             /\ UNCHANGED << secondary, newsecondary, P, evict, numEv, stack, 
+                             outer, inner, fp, index, freePos, expectedEv, 
+                             expected1, expected2 >>
 
-freePo(self) == /\ pc[self] = "freePo"
-                /\ IF freePos[self] > -1
-                      THEN /\ pc' = [pc EXCEPT ![self] = "incP2"]
-                      ELSE /\ pc' = [pc EXCEPT ![self] = "insrt"]
-                /\ UNCHANGED << table, secondary, newsecondary, outer, inner, 
-                                P, evict, active, history, fp, index, freePos, 
-                                result, expected1, expected2 >>
-
-incP2(self) == /\ pc[self] = "incP2"
-               /\ IF index[self] > P
-                     THEN /\ P' = index[self]
-                     ELSE /\ TRUE
-                          /\ P' = P
-               /\ pc' = [pc EXCEPT ![self] = "set02"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, 
-                               evict, active, history, fp, index, freePos, 
-                               result, expected1, expected2 >>
-
-set02(self) == /\ pc[self] = "set02"
-               /\ IF table[freePos[self]] = expected1[self]
-                     THEN /\ table' = [table EXCEPT ![freePos[self]] = fp[self]]
-                          /\ result' = [result EXCEPT ![self] = TRUE]
-                     ELSE /\ result' = [result EXCEPT ![self] = FALSE]
-                          /\ table' = table
-               /\ IF result'[self]
-                     THEN /\ history' = (history \cup {fp[self]})
-                          /\ active' = active - 1
-                          /\ pc' = [pc EXCEPT ![self] = "lbl00"]
-                     ELSE /\ active' = active - 1
-                          /\ pc' = [pc EXCEPT ![self] = "cntns"]
-                          /\ UNCHANGED history
-               /\ UNCHANGED << secondary, newsecondary, outer, inner, P, evict, 
-                               fp, index, freePos, expected1, expected2 >>
-
-canEv(self) == /\ pc[self] = "canEv"
+tryEv(self) == /\ pc[self] = "tryEv"
                /\ IF evict = FALSE
                      THEN /\ evict' = ~evict
-                          /\ pc' = [pc EXCEPT ![self] = "waitEv"]
-                          /\ UNCHANGED active
-                     ELSE /\ active' = active - 1
-                          /\ pc' = [pc EXCEPT ![self] = "cntns"]
-                          /\ evict' = evict
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               history, fp, index, freePos, result, expected1, 
-                               expected2 >>
-
-waitEv(self) == /\ pc[self] = "waitEv"
-                /\ active = 1
-                /\ pc' = [pc EXCEPT ![self] = "strEv"]
-                /\ UNCHANGED << table, secondary, newsecondary, outer, inner, 
-                                P, evict, active, history, fp, index, freePos, 
-                                result, expected1, expected2 >>
-
-strEv(self) == /\ pc[self] = "strEv"
-               /\ IF outer+inner <= K+(2*(P+1))
-                     THEN /\ pc' = [pc EXCEPT ![self] = "read1"]
-                          /\ UNCHANGED << secondary, newsecondary, outer, 
-                                          inner >>
-                     ELSE /\ secondary' = newsecondary \o subSetLarger(secondary, newsecondary)
-                          /\ newsecondary' = <<>>
-                          /\ outer' = 1
-                          /\ inner' = 1
-                          /\ pc' = [pc EXCEPT ![self] = "endEv"]
-               /\ UNCHANGED << table, P, evict, active, history, fp, index, 
-                               freePos, result, expected1, expected2 >>
-
-read1(self) == /\ pc[self] = "read1"
-               /\ expected1' = [expected1 EXCEPT ![self] = table[mod(outer, K)]]
-               /\ pc' = [pc EXCEPT ![self] = "read2"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, active, history, fp, index, freePos, 
-                               result, expected2 >>
-
-read2(self) == /\ pc[self] = "read2"
-               /\ expected2' = [expected2 EXCEPT ![self] = table[mod(outer+inner, K)]]
-               /\ pc' = [pc EXCEPT ![self] = "cmpEv"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, active, history, fp, index, freePos, 
-                               result, expected1 >>
-
-cmpEv(self) == /\ pc[self] = "cmpEv"
-               /\ IF expected1[self] # empty /\ expected2[self] # empty /\
-                     expected1[self] > 0 /\ expected2[self] > 0 /\
-                     compare(expected1[self],outer,expected2[self],inner, P)
-                     THEN /\ pc' = [pc EXCEPT ![self] = "dcas1"]
-                     ELSE /\ pc' = [pc EXCEPT ![self] = "incVr"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               evict, active, history, fp, index, freePos, 
-                               result, expected1, expected2 >>
-
-dcas1(self) == /\ pc[self] = "dcas1"
-               /\ IF table[(mod(outer, K))] = expected1[self] /\ table[(mod(outer+inner, K))] = expected2[self]
-                     THEN /\ table' = [table EXCEPT ![(mod(outer, K))] = expected2[self],
-                                                    ![(mod(outer+inner, K))] = expected1[self]]
-                          /\ result' = [result EXCEPT ![self] = TRUE]
-                     ELSE /\ result' = [result EXCEPT ![self] = FALSE]
-                          /\ table' = table
-               /\ Assert(result'[self], 
-                         "Failure of assertion at line 305, column 23.")
-               /\ pc' = [pc EXCEPT ![self] = "incVr"]
-               /\ UNCHANGED << secondary, newsecondary, outer, inner, P, evict, 
-                               active, history, fp, index, freePos, expected1, 
-                               expected2 >>
-
-incVr(self) == /\ pc[self] = "incVr"
-               /\ IF inner + 1 > P
-                     THEN /\ pc' = [pc EXCEPT ![self] = "swpEv"]
-                          /\ inner' = inner
-                     ELSE /\ inner' = inner + 1
+                          /\ stack' = [stack EXCEPT ![self] = << [ procedure |->  "Evict",
+                                                                   pc        |->  "endEv",
+                                                                   outer     |->  outer[self],
+                                                                   inner     |->  inner[self] ] >>
+                                                               \o stack[self]]
+                          /\ outer' = [outer EXCEPT ![self] = 1]
+                          /\ inner' = [inner EXCEPT ![self] = 1]
                           /\ pc' = [pc EXCEPT ![self] = "strEv"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, P, evict, 
-                               active, history, fp, index, freePos, result, 
+                     ELSE /\ ~evict
+                          /\ pc' = [pc EXCEPT ![self] = "put"]
+                          /\ UNCHANGED << evict, stack, outer, inner >>
+               /\ UNCHANGED << table, secondary, newsecondary, P, numEv, 
+                               history, fp, index, freePos, result, expectedEv, 
                                expected1, expected2 >>
-
-swpEv(self) == /\ pc[self] = "swpEv"
-               /\ expected1' = [expected1 EXCEPT ![self] = table[mod(outer, K)]]
-               /\ IF  expected1'[self] # empty /\
-                      expected1'[self] > largestElem(newsecondary) /\
-                     ((outer <= K /\ ~wrapped(expected1'[self],outer,P)) \/
-                      (outer > K /\ wrapped(expected1'[self],outer,P)))
-                     THEN /\ newsecondary' = Append(newsecondary \o subSetSmaller(secondary, newsecondary, expected1'[self]), expected1'[self])
-                          /\ table' = [table EXCEPT ![mod(outer, K)] = expected1'[self] * (-1)]
-                     ELSE /\ TRUE
-                          /\ UNCHANGED << table, newsecondary >>
-               /\ inner' = 1
-               /\ outer' = outer + 1
-               /\ pc' = [pc EXCEPT ![self] = "strEv"]
-               /\ UNCHANGED << secondary, P, evict, active, history, fp, index, 
-                               freePos, result, expected2 >>
 
 endEv(self) == /\ pc[self] = "endEv"
                /\ evict' = ~evict
-               /\ active' = active - 1
-               /\ pc' = [pc EXCEPT ![self] = "cntns"]
-               /\ UNCHANGED << table, secondary, newsecondary, outer, inner, P, 
-                               history, fp, index, freePos, result, expected1, 
-                               expected2 >>
+               /\ numEv' = numEv + 1
+               /\ pc' = [pc EXCEPT ![self] = "put"]
+               /\ UNCHANGED << table, secondary, newsecondary, P, history, 
+                               stack, outer, inner, fp, index, freePos, result, 
+                               expectedEv, expected1, expected2 >>
 
-p(self) == lbl00(self) \/ cntns(self) \/ wait1(self) \/ wait2(self)
-              \/ wait3(self) \/ wait4(self) \/ loop1(self) \/ onSnc(self)
-              \/ insrt(self) \/ iempt(self) \/ incP1(self) \/ set01(self)
-              \/ isMth1(self) \/ mSncd(self) \/ freePo(self) \/ incP2(self)
-              \/ set02(self) \/ canEv(self) \/ waitEv(self) \/ strEv(self)
-              \/ read1(self) \/ read2(self) \/ cmpEv(self) \/ dcas1(self)
-              \/ incVr(self) \/ swpEv(self) \/ endEv(self)
+p(self) == pick(self) \/ put(self) \/ cntns(self) \/ onSnc(self)
+              \/ insrt(self) \/ isMth(self) \/ incP(self) \/ cas(self)
+              \/ tryEv(self) \/ endEv(self)
 
-Next == (\E self \in Procs: p(self))
+Next == (\E self \in ProcSet: Evict(self))
+           \/ (\E self \in Procs: p(self))
            \/ (* Disjunct to prevent deadlock on termination *)
               ((\A self \in ProcSet: pc[self] = "Done") /\ UNCHANGED vars)
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)
-        /\ \A self \in Procs : WF_vars(p(self))
+        /\ \A self \in Procs : WF_vars(p(self)) /\ WF_vars(Evict(self))
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
@@ -668,17 +598,8 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 (***************************************************************************)
 (* A type correctness invariant for outer, inner and P.                    *)
 (***************************************************************************)
-TypeOK == /\ outer \in (Nat \ {0})
-          /\ inner \in (Nat \ {0})
-          /\ P \in Nat
+TypeOK == /\ P \in Nat
           /\ P <= L
-
-(***************************************************************************)
-(* TRUE iff fingerprint fp is either found within table according to       *)
-(* isMatch or in seq.                                                      *)
-(***************************************************************************)
-contains(f,t,seq,Q) == \/ \E i \in 0..Q: isMatch(f,idx(f,i),t)
-                       \/ \E i \in 1..Len(seq): seq[i] = f 
                         
 (***************************************************************************)
 (* All fingerprint in history are (always) hash table members,             *)
@@ -688,13 +609,13 @@ Inv == /\ \A seen \in history: contains(seen,table,secondary,P+1)
        /\ \A unseen \in (fps \ history): ~contains(unseen,table,secondary,P+1)
        
 (***************************************************************************)
-(* t is sorted iff its empty-filtered sub-sequence is sorted. An empty     *)
-(* sequence is defined to be sorted.                                       *)
+(* FALSE iff table contains duplicate elements (excluding empty).          *)
 (***************************************************************************)
-isSorted(seq) == LET sub == SelectSeq(secondary, LAMBDA e: e # empty)
-                 IN IF sub = <<>> THEN TRUE
-                    ELSE \A i \in 1..(Len(sub) - 1):
-                         sub[mod(i, Len(sub))] < sub[mod(i+1, Len(sub))]
+Duplicates == LET sub == SelectSeq(table, LAMBDA e: e # empty)
+              IN IF Len(sub) < 2 THEN TRUE
+                 ELSE \A i \in 1..(Len(sub) - 1):
+                                 /\ sub[i] # sub[i+1]
+                                 /\ sub[i] # (-1) * sub[i+1]
                         
 (***************************************************************************)
 (* Secondary storage is always sorted in ascending order.                  *)
@@ -730,10 +651,20 @@ Consistent == \A seen \in history:
 \*      /\ (containedInTable((-1)*seen) ~> containedInSecondary(seen))
 
 (***************************************************************************)
-(* TRUE iff the maximum displacement of all elements equals P. In other    *)
-(* words, P is minimal.                                                    *)
+(* TRUE iff the maximum displacement of all elements # empty equal P. In   *)
+(* other words, P is always minimal.                                       *)
 (***************************************************************************)
-Minimal == FALSE
+Minimal == \A i \in 1..Len(table): IF table[i] = empty 
+                                     THEN TRUE
+                                     ELSE LET f == IF table[i] < 0 
+                                                   THEN -1 * table[i]
+                                                   ELSE table[i]
+                                          IN (i - idx(f, 0)) <= P
+
+(***************************************************************************)
+(* P has to reach the limit L in some behaviors.                           *)
+(***************************************************************************)
+Maxed == <>(P = L)
 
 (***************************************************************************)
 (* Eventually, an eviction ends.                                           *)
@@ -741,9 +672,8 @@ Minimal == FALSE
 EvictEnds == evict = TRUE ~> evict = FALSE
 
 (***************************************************************************)
-(* Under all behaviors, secondary is the sorted sequence of history.       *)
+(* Under all behaviors, the algorithm makes progress.                      *)
 (***************************************************************************)
-Prop == /\ <>[](history = fps)
-        /\ <>[](newsecondary = <<>>)
+Prop == <>[](history = fps)
 =============================================================================
 \end{tla}
