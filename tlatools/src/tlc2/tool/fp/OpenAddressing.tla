@@ -98,7 +98,17 @@ idx(fp, p) == rescale(K, max(fps), min(fps), fp, p)
 (***************************************************************************)
 isMatch(fp, index, table) == \/ table[index] = fp
                              \/ table[index] = (-1*fp)
-       
+
+(***************************************************************************)
+(* TRUE iff the table at position index is empty.                          *)
+(***************************************************************************)
+isEmpty(index, table) == table[index] = empty
+
+(***************************************************************************)
+(* TRUE iff the table at position index is marked evicted.                 *)
+(***************************************************************************)
+isMarked(index, table) == table[index] < 0
+
 (***************************************************************************)
 (* t is sorted iff its empty-filtered sub-sequence is sorted. An empty     *)
 (* sequence is defined to be sorted.                                       *)
@@ -119,10 +129,10 @@ contains(f,t,seq,Q) == \/ \E i \in 0..Q: isMatch(f,idx(f,i),t)
 
 (***************************************************************************)
 (* A fp wrapped around if its alternate indices are beyond K and its       *)
-(* actual index is lower than its primary idx.                             *)
+(* actual index is lower than its primary idx. Another mental picture for  *)
+(* table is a circular list and wrapped means that a fingerprint crossed   *)
+(* the logically first position of table.                                  *) 
 (***************************************************************************)
-\* wraps might be better called circular because we essentially treat the 
-\* array as a circular list.
 wrapped(fp, pos, P) == /\ idx(fp,0) + P > K
                        /\ idx(fp,0) > mod(pos, K)
 
@@ -163,7 +173,7 @@ compare(fp1,i1,fp2,i2, P) == \/ /\ fp1 < fp2
            newsecondary = <<>>,
            P = 0,         \* AtomicInteger in Java
            evict = FALSE, \* AtomicBoolean in Java
-           waitCnt = 0,   \* AtomicInteger in Java
+           waitCnt = 0,   \* CyclicBarrier in Java
            history = {};
     
    (************************************************************************)
@@ -194,7 +204,7 @@ compare(fp1,i1,fp2,i2, P) == \/ /\ fp1 < fp2
      }
   }
 
-  (* Eviction procedure. *)
+  (* Eviction procedure. Runs in O(n), more precisely O(n * P) where P << n. *)
   procedure Evict()
      variables outer = 1, inner = 1, lo = 0, hi = 0; {
                 (* For every element with index i in ascending order of table, sort the *)
@@ -202,7 +212,7 @@ compare(fp1,i1,fp2,i2, P) == \/ /\ fp1 < fp2
      strEv:     while (outer+inner <= K+(2*(P+1))) {
                   lo := table[mod(outer, K)];
      read:        hi := table[mod(outer+inner, K)];
-                  if (lo # empty /\ hi # empty /\
+                  if (lo # empty /\ hi # empty /\ \* The model value empty # 0 which is why we check both
                       lo > 0 /\ hi > 0 /\
                       compare(lo,outer,hi,inner, P)) {
                       \* This is modelled as an atomic step in PlusCal
@@ -266,23 +276,31 @@ compare(fp1,i1,fp2,i2, P) == \/ /\ fp1 < fp2
                  goto put
               };
               
-              (* Primary lookup. *)
-     cntns:   while (index < P) {
-                if (isMatch(fp, idx(fp, index), table)) {
-                  goto pick
-                } else {
-                  index := index + 1
-                }
-              };
-              \* Reset index to 0 after cntns for insrt to start
-              \* trying from position 0. Other threads might have
-              \* inserted fp in between cntns and insrt.
-              index := 0;
+     chkSnc:  if (secondary # <<>>) {
+                 (* Primary lookup. *)
+     cntns:       while (index < P) {
+                    if (isMatch(fp, idx(fp, index), table)) {
+                       goto pick
+                    } else {
+                        if (isEmpty(idx(fp, index), table) 
+                         \/ isMarked(idx(fp, index), table)) {
+                            goto onSnc;
+                        } else {
+                            index := index + 1
+                        }
+                    }
+                  };
               
               
-              (* Secondary lookup. *)
-     onSnc:   if (containsElem(secondary,fp)) {
-                 goto pick
+                  (* Secondary lookup. *)
+     onSnc:       if (containsElem(secondary,fp)) {
+                     goto pick
+                  } else {
+                     \* Reset index to 0 after cntns for insrt to start
+                     \* trying from position 0. Other threads might have
+                     \* inserted fp in between cntns and insrt.
+                     index := 0;
+                  };
               };
               
               (* Put inserts the given fp into the hash table by sequentially trying *)
@@ -633,7 +651,10 @@ containedInSecondary(f) == containsElem(secondary,f)
 (***************************************************************************)
 containedInNewSecondary(f) == containsElem(newsecondary,f)
 
-(* TRUE iff: A positive fp is exclusively either in table or secondary. *)
+(***************************************************************************)
+(* TRUE iff fingerprints correctly transition from table to newsecondary   *)
+(* to secondary.                                                           *)
+(***************************************************************************)
 Consistent == \A seen \in history:
         /\ (containedInTable(seen) => ~containedInSecondary(seen))
         /\ (containedInTable(seen) => ~containedInNewSecondary(seen))
@@ -641,7 +662,7 @@ Consistent == \A seen \in history:
                                         containedInNewSecondary(seen))
         /\ (containedInTable(seen * (-1)) => (containedInSecondary(seen)) \/ 
                                               containedInNewSecondary(seen))
-\* not supported by TLC
+\* Universal quantification and leads-to not supported by TLC
 \*      /\ (containedInTable((-1)*seen) ~> containedInSecondary(seen))
 
 (***************************************************************************)
