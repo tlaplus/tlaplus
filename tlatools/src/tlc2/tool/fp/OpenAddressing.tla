@@ -1,4 +1,4 @@
-\begin{tla}
+\begin{ppcal}
 -------------------------- MODULE OpenAddressing --------------------------
 EXTENDS Sequences, FiniteSets, Integers, TLC
 
@@ -168,7 +168,7 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
 { variable table = [i \in 1..K |-> empty], 
            secondary = <<>>,
            newsecondary = <<>>,
-           P = 0,         \* AtomicInteger in Java
+           P = 0,         \* LongAccumulator in Java
            evict = FALSE, \* AtomicBoolean in Java
            waitCnt = 0,   \* CyclicBarrier in Java
            history = {};
@@ -191,24 +191,23 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
    (* SC_Implementation_Details_by_Processor_family                        *)       
    (************************************************************************)
 
-   (* Atomically compare and swap. *)      
-   macro CAS(result, pos, expected, new) {
+  (* Atomically compare and swap. *)      
+  macro CAS(result, pos, expected, new) {
      if (table[pos] = expected) {
          table[pos] := new;
-          result := TRUE
+         result := TRUE
      } else { 
-          result := FALSE
+         result := FALSE
      }
   }
 
   procedure Evict()
      variables ei = 1, ej = 1, lo = 0; {
-     strEv:     while (ei <= K+P) {
-                  \* final long ai = a.get((i + 1) % size);
+                (* Insertion sort. *)
+     strIns:    while (ei <= K+P) {
                   lo := table[mod(ei + 1, K)];
-                  \* while (cmp.compare(ai, (i + 1) % size, a.get(j % size), j % size) <= -1) {
-     fdsaf:       while (compare(lo, mod(ei + 1, K), table[mod(ej, K)], mod(ej, K)) <= -1) {
-                    \* a.set((j + 1) % size, a.get(j % size));
+     nestedIns:   while (compare(lo, mod(ei + 1, K), 
+                            table[mod(ej, K)], mod(ej, K)) <= -1) {
                     table[mod(ej + 1, K)] := table[mod(ej, K)];
                     if (ej = 0) {
                        ej := ej - 1;
@@ -217,36 +216,44 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
                        ej := ej - 1;
                     };
                   };
-                  \* a.set((j + 1) % size, ai);
      set:         table[mod(ej + 1, K)] := lo;
-                  \* j = i + 1;
                   ej := ei + 1;
-                  \* i = i + 1;
                   ei := ei + 1;
                 };
                 ei := 1;
                 
+                (* Write to external storage. *)
      flush:     while (ei <= K+P) {
                      lo := table[mod(ei, K)];
                      if (lo # empty /\
                          lo > largestElem(newsecondary) /\
                          ((ei <= K /\ ~wrapped(lo,ei)) \/ 
                           (ei > K /\ wrapped(lo,ei)))) {
-                        (* Copy all smaller fps than lo from secondary to newsecondary. *)
-                        newsecondary := Append(newsecondary \o subSetSmaller(secondary, newsecondary, lo), lo);
-                        (* Mark table[mod(cpy,table)] as being written to secondary. *)
+                        (* Copy all smaller fps than lo from   *)
+                        (* secondary to newsecondary.          *)
+                        newsecondary := Append(newsecondary \o 
+                               subSetSmaller(secondary, newsecondary, lo), lo);
+                        (* Mark table[mod(cpy,table)] as being *)
+                        (* written to secondary.               *)
                         table[mod(ei, K)] := lo * (-1);
                      };
                      ei := ei + 1;
                 };
-                (* Append remainder of secondary to newsecondary and assign newsecondary to secondary. *)
-                secondary := newsecondary \o subSetLarger(secondary, newsecondary);
+                (* Append remainder of secondary to newsecondary and *) 
+                (* assign newsecondary to secondary. *)
+                secondary := newsecondary \o 
+                             subSetLarger(secondary, newsecondary);
                 newsecondary := <<>>;
-                \* Setting P to 0 means a larger portion of cntns queries
-                \* go to secondary, however it doesn't violate any
-                \* invariants. An implementation is likely to set P to the
-                \* mean/median/some other fancy statistics.
-                P := 0;
+                (* Setting P to 0 means a larger portion of cntns queries   *)
+                (* go to secondary. Leaving P unchanged results in a longer *) 
+                (* lookup chain. However neither violates any invariants.   *)
+                (* An implementation is likely to set P to the              *)
+                (* mean/median/some other fancy statistics or treats P as   *)
+                (* as an optimization to speedup insertions prior to the    *)
+                (* first eviction.                                          *)
+                with (p \in 0..P) {
+                   P := p;
+                };
      rtrn:      return;
   }
   
@@ -286,8 +293,8 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
      ronSnc:      if (containsElem(secondary,rfp)) {
                       goto rpick
                   } else {
-                      \* Since we picked a fp from history, it always 
-                      \* either has to be in table or secondary.
+                      (* Since we picked a fp from history, it always *) 
+                      (* either has to be in table or secondary.      *)
                       assert(FALSE);
                   };
              }
@@ -295,25 +302,20 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
        
   (* A weak fair process. *)        
   fair process (p \in Writer)
-    variables fp = 0,
-              index = 0, 
-              result = FALSE,
-              expected = -1;
-    {
+    variables fp = 0, index = 0, result = FALSE, expected = -1; {
     pick:  while (TRUE) {
-              \* No deadlock once all fingerprints have been inserted.
+              (* No deadlock once all fingerprints have been inserted. *)
               if ((fps \ history) = {}) {
                 goto Done;
               } else {
-                \* Select a fp to be inserted
+                (* Select some fp to be inserted *)
                 with (f \in (fps \ history)) { fp := f; };
               };
-     
 
      put:     index := 0;
               result := FALSE;
               expected := -1;
-              \* Wait for eviction thread to do its work.
+              (* Wait for eviction thread to do its work. *)
               if (evict) {
                  waitCnt := waitCnt + 1;
      waitEv:     await evict = FALSE;
@@ -341,37 +343,38 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
      onSnc:       if (containsElem(secondary,fp)) {
                      goto pick
                   } else {
-                     \* Reset index to 0 after cntns for insrt to start
-                     \* trying from position 0. Other threads might have
-                     \* inserted fp in between cntns and insrt.
+                     (* Reset index to 0 after cntns for insrt to start  *)
+                     (* trying from position 0. Other threads might have *)
+                     (* inserted fp in between cntns and insrt.          *)
                      index := 0;
                   };
               };
               
-              (* Put inserts the given fp into the hash table by sequentially trying *)
-              (* the primary to the P's alternate position.                          *)
+              (* Put inserts the given fp into the hash table by sequentially *)
+              (* trying the primary to the P's alternate position.            *)
      insrt:   while (index < L) {
                  expected := table[idx(fp,index)];
-                 if (expected = empty \/ (expected < 0 /\ expected # (-1) * fp))  {
+                 if (expected = empty \/ 
+                     (expected < 0 /\ expected # (-1) * fp))  {
      incP:           if (index > P) {P := index};
      cas:            CAS(result, idx(fp,index), expected, fp);
                      if (result) {
                         history := history \cup {fp};
                         goto pick
                      } else {
-                        \* Has been occupied in the meantime,
-                        \* try to find another position.
+                        (* Has been occupied in the meantime, *)
+                        (* try to find another position.      *)
                         goto insrt
                       }
                  };
                 
-                 \* Has fp been inserted by another process? Check isMatch AFTER
-                 \* empty and on-secondary because of two reasons:
-                 \* a) Thread A finds table[pos] to be empty but fails to CAS fp_x. 
-                 \*    Thread B concurrently also finds table[pos] to be empty and
-                 \*    succeeds to CAS fp_x.
-                 \* b) Iff table[pos] is empty or -1, higher positions cannot be a
-                 \*    match.
+                 (* Has fp been inserted by another process? Check isMatch *)
+                 (* AFTER empty and on-secondary because of two reasons:   *)
+                 (* a) Thread A finds table[pos] to be empty but fails     *)
+                 (*    to CAS fpX. Thread B concurrently also finds        *)
+                 (*    table[pos] to be empty and succeeds to CAS fpX.     *)
+                 (* b) Iff table[pos] is empty or -1, higher positions     *)
+                 (*    cannot be a match.                                  *)
      isMth:      if (isMatch(fp,idx(fp,index),table)) {
                     goto pick
                  } else {
@@ -380,23 +383,25 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
               }; \* end of while/insrt
 
 
-              (* Try to become the thread that evicts to secondary. *)
+              (* We failed to insert fp into a full table, thus try *)
+              (* to become the thread that evicts to secondary.     *)
      tryEv:   if (evict = FALSE) {
                  evict := TRUE;
-                 \* Wait for all other insertion threads and the one 
-                 \* reader to park.
+                 (* Wait for all other insertion threads and  *) 
+                 (* the one reader to park.                   *)
      waitIns:    await waitCnt = Cardinality(Writer) - 1 + Cardinality(Reader);
                  call Evict();
      endEv:      evict := FALSE;
                  goto put;                   
-               } else {
+              } else {
                  goto put
-               }
-             } 
-           }
+              }
+            } 
+         } \* end while/pick
     }
 }
 ***     this ends the comment containg the pluscal code      **********)
+----------------------------------------------------------------------------
 \* BEGIN TRANSLATION
 VARIABLES table, secondary, newsecondary, P, evict, waitCnt, history, pc, 
           stack, ei, ej, lo, rfp, rindex, checked, fp, index, result, 
@@ -758,8 +763,10 @@ TypeOK == /\ P \in Nat
 (* All fingerprint in history are (always) hash table members,             *)
 (* all fps \ history never are.                                            *)
 (***************************************************************************)
-Inv == evict = FALSE => /\ \A seen \in history: contains(seen,table,secondary,P+1)
-                        /\ \A unseen \in (fps \ history): ~contains(unseen,table,secondary,P+1)
+Inv == evict = FALSE => /\ \A seen \in history: 
+                                       contains(seen,table,secondary,P+1)
+                        /\ \A unseen \in (fps \ history):
+                                      ~contains(unseen,table,secondary,P+1)
        
 (***************************************************************************)
 (* FALSE iff table contains duplicate elements (excluding empty).          *)
@@ -807,8 +814,8 @@ Consistent == evict = FALSE => \A seen \in history:
 \*      /\ (containedInTable((-1)*seen) ~> containedInSecondary(seen))
 
 (***************************************************************************)
-(* TRUE iff the maximum displacement of all elements # empty equal P. In   *)
-(* other words, P is always minimal.                                       *)
+(* TRUE iff the maximum displacement of all elements (without empty) is    *)
+(* equal to P. In other words, P is always minimal.                        *)
 (***************************************************************************)
 Minimal == \A i \in 1..Len(table): IF table[i] = empty 
                                      THEN TRUE
@@ -827,4 +834,4 @@ Maxed == <>(P = L)
 (***************************************************************************)
 Prop == <>[](history = fps)
 =============================================================================
-\end{tla}
+\end{ppcal}
