@@ -60,6 +60,11 @@ min(S) == CHOOSE s \in S: \A a \in S: s <= a
 max(S) == CHOOSE s \in S: \A a \in S: s >= a 
                      
 (***************************************************************************)
+(* The smaller of the two values.                                          *)
+(***************************************************************************)
+minimum(a, b) == IF a < b THEN a ELSE b
+                     
+(***************************************************************************)
 (* The given index i modulo the sequences' length.                         *)
 (***************************************************************************)
 mod(i,len) == IF i % len = 0 THEN len ELSE (i % len)
@@ -314,7 +319,14 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
 
      put:     index := 0;
               result := FALSE;
-              expected := -1;
+              (* Set expected to infinity. expected is reused when  *)
+              (* the algorithm runs a primary lookup and finds a    *)
+              (* position which is either EMPTY or isMarked(...).   *)
+              (* expected stores the (open) position for later use  *)
+              (* where the fp is inserted. Maximally, a position    *)
+              (* can be K + L, thus expected is set to K + L + 1;   *)
+              (* as an approximation of infinity.                   *)
+              expected := K + L + 1;
               (* Wait for eviction thread to do its work. *)
               if (evict) {
                  waitCnt := waitCnt + 1;
@@ -323,17 +335,33 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
                  goto put
               };
               
+              (* Check secondary unless empty. First though, we do   *)
+              (* a primary lookup in case the fp in question has not *)
+              (* been evicted to secondary yet.                      *)
      chkSnc:  if (secondary # <<>>) {
                  (* Primary lookup. *)
      cntns:       while (index < P) {
                     if (isMatch(fp, idx(fp, index), table)) {
                        goto pick
                     } else {
-                        if (isEmpty(idx(fp, index), table) 
-                         \/ isMarked(idx(fp, index), table)) {
+                        if (isEmpty(idx(fp, index), table)) {
+                            (* Found an EMPTY position which proves *) 
+                            (* that fp cannot be found at higher    *)
+                            (* positions. Thus, no need to continue.*)
+                            expected := minimum(expected, index);
                             goto onSnc;
                         } else {
-                            index := index + 1
+                            if (isMarked(idx(fp, index), table)) {
+                                (* None of the lower positions has    *)
+                                (* fp, thus keep the lowest position  *)
+                                (* for the second loop as the start   *)
+                                (* index. No point in checking known  *)
+                                (* lower positions in the loop again. *)                                
+                                expected := minimum(expected, index);
+                                index := index + 1;
+                            } else {
+                                index := index + 1
+                            }
                         }
                     }
                   };
@@ -343,10 +371,11 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
      onSnc:       if (containsElem(secondary,fp)) {
                      goto pick
                   } else {
-                     (* Reset index to 0 after cntns for insrt to start  *)
-                     (* trying from position 0. Other threads might have *)
-                     (* inserted fp in between cntns and insrt.          *)
-                     index := 0;
+                     (* Have next loop start at expected determined *)
+                     (* by previous loop.                           *)
+                     index := expected;
+                     (* Re-init expected to be used for its alternate purpose. *)
+                     expected := -1;
                   };
               };
               
