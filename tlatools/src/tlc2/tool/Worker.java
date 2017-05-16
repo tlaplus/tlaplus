@@ -22,6 +22,7 @@ public class Worker extends IdThread implements IWorker {
 	private IStateQueue squeue;
 	private ObjLongTable astCounts;
 	private long statesGenerated;
+	private volatile long uid;
 
 	// SZ Feb 20, 2009: changed due to super type introduction
 	public Worker(int id, AbstractChecker tlc) {
@@ -78,5 +79,13 @@ public class Worker extends IdThread implements IWorker {
 	
 	long getStatesGenerated() {
 		return this.statesGenerated;
+	}
+
+	public void setState(TLCState succState) {
+		uid = succState.uid;
+	}
+	
+	public long getLastTracePtr() {
+		return uid;
 	}
 }

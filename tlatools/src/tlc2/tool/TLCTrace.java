@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -158,6 +159,14 @@ public class TLCTrace {
 		// we can argue that the approximation is good enough and document, that its 
 		// value can be anything from 1 to the longest behavior found so far.
 		return getLevel(this.lastPtr);
+	}
+
+	public final int getLevel(final Set<Long> lastPtrs) throws IOException {
+		int max = 0;
+		for (long lastPtr : lastPtrs) {
+			max = Math.max(max, getLevel(lastPtr));
+		}
+		return max;
 	}
 
 	/**
