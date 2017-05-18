@@ -7,6 +7,22 @@ package tlc2.util;
 
 import tla2sany.semantic.SymbolNode;
 
+// Context is used two times:
+// 1) To determine the level boundedness of the expression appearing in the spec
+//    (see Tool#getLevelBounds*). This is done once as part of parsing.
+// 2) To store the variable/name binding at each scope during state exploration.
+//    The hierarchy of levels/scopes is represented as a chain of context instances 
+//    (link-list or associative list). The Empty context is the outer most scope 
+//    (first level).
+// 1) is not relevant performance-wise, but 2) has - provided non-trivial level -
+// a significant performance impact because of excessive lookups. What makes
+// optimizations difficult, is the fact that the context chain is recreated each
+// time a state is generated, as part of the next state relation. An optimization
+// thus has to ensure that it doesn't trade fast - ideally constant - lookups for
+// an equally expensive creation complexity.
+//
+// The contrived spec at the bottom exhibits this problem. Increasing the level,
+// the number of lookups go through the roof.
 public final class Context {
 	/**
 	 * A link list of name and value pairs. When adding <name, value> to the
@@ -17,8 +33,12 @@ public final class Context {
 	private final Object value;
 	private final Context next;
 
+	public int CNT = 1;
+
+
 	public final static Context Empty = new Context(null, null, null);
-	public final static Context BaseBranch = new Context(null, null, Empty);
+	
+	private final static Context BaseBranch = new Context(null, null, Empty);
 	
 	private Context(SymbolNode name, Object value, final Context next) {
 		this.name = name;
@@ -26,6 +46,9 @@ public final class Context {
 		this.next = next;
 	}
 
+	// This method is only called within the context of the ENABLED (temporal)
+	// operator. A branching context is specially handled during lookup below
+	// if cutoff is true.
 	public static Context branch(Context base) {
 		if (base == Empty) {
 			// Avoid new instance if the next context in the chain is the Empty
@@ -120,3 +143,43 @@ public final class Context {
 		return sb.toString();
 	}
 }
+/*
+----------------------------- MODULE Scoping -----------------------------
+EXTENDS Naturals
+CONSTANT Limit
+VARIABLE var
+
+A(a) == TRUE
+B(b) == A(b)
+C(c) == B(c)
+D(d) == C(d)
+E(e) == D(e)
+F(f) == E(f)
+G(g) == F(g)
+H(h) == G(h)
+I(i) == H(i)
+J(j) == I(j)
+K(k) == J(k)
+L(l) == K(l)
+M(m) == L(m)
+N(n) == M(n) 
+O(o) == N(o)
+P(p) == O(p)
+Q(q) == P(q)
+R(r) == Q(r) 
+S(s) == R(s)
+T(t) == S(t)
+U(u) == T(u)
+V(v) == U(v)
+W(w) == V(w)
+X(x) == W(x)
+Y(y) == X(y)
+Z(z) == U(z)
+
+Next == /\ var' = var + 1
+        /\ var < 1
+        /\ Z(1)
+
+Spec == var=0 /\ [][Next]_<<var>>
+=============================================================================
+*/
