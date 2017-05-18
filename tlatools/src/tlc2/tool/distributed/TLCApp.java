@@ -354,12 +354,18 @@ public class TLCApp extends DistApp {
 				index++;
 				if (index < args.length) {
 					try {
-						TLCGlobals.coverageInterval = Integer
-								.parseInt(args[index]) * 1000;
-						if (TLCGlobals.coverageInterval < 0) {
-							printErrorMsg("Error: expect a nonnegative integer for -coverage option.");
-							return null;
-						}
+						// Coverage reporting is broken is distributed TLC. Thus
+						// warn the user and continue ignoring the parameter.
+						// Consume its value though.
+						ToolIO.out.println(
+								"Warning: coverage reporting not supported in distributed TLC, ignoring -coverage "
+										+ args[index] + " parameter.");
+//						TLCGlobals.coverageInterval = Integer
+//						.parseInt(args[index]) * 1000;
+//						if (TLCGlobals.coverageInterval < 0) {
+//							printErrorMsg("Error: expect a nonnegative integer for -coverage option.");
+//							return null;
+//						}
 						index++;
 					} catch (Exception e) {
 						printErrorMsg("Error: An integer for coverage report interval required."
