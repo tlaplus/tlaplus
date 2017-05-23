@@ -280,6 +280,7 @@ public class NewSpecWizardPage extends WizardPage
 						final String canonicalPath = f.getCanonicalPath();
 						if (!rootfilePath.equals(canonicalPath)) {
 							rootfilePath = canonicalPath;
+							this.fileText.setText(rootfilePath);
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
