@@ -50,7 +50,8 @@ public class DiameterTest extends ModelCheckerTestCase {
 		// The diameter is known to be 8 as reported by TLC running with a
 		// single worker. With multiple workers, it's possible to get a higher
 		// or a lower number.
-		assertTrue(recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH) >= 8);
+		final int level = recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH);
+		assertTrue(String.format("Level below threshold: %s", level), level >= 8);
 	}
 
 	/* (non-Javadoc)

@@ -6,8 +6,6 @@
 package tlc2.tool;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
@@ -435,9 +433,8 @@ public class ModelChecker extends AbstractChecker
                             // exploring this new state. Conversely, the state has to
                             // be in the trace in case either invariant or implied action
                             // checks want to print the trace. 
-							long loc = this.trace.writeState(curState, fp);
+							long loc = this.trace.writeState(curState, fp, worker);
 							succState.uid = loc;
-							worker.setState(succState);
 						}
 						// For liveness checking:
                         if (this.checkLiveness)
@@ -835,15 +832,7 @@ public class ModelChecker extends AbstractChecker
                 String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size()) });
         if (success)
         {
-        	// Collect lastPtrs of all threads. 
-        	final Set<Long> ptrs = new HashSet<Long>(this.workers.length);
-        	for (IWorker worker: this.workers) {
-        		ptrs.add(((Worker) worker).getLastTracePtr());
-			}
-			// Remove lastPtr which indicates nothing has been written by the
-			// corresponding worker.
-        	ptrs.remove(0L);
-        	MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevel(ptrs)));
+			MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevelForFinalReporting()));
         }
     }
     

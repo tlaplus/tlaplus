@@ -12,8 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.StatePrinter;
@@ -26,6 +26,11 @@ public class TLCTrace {
 	private static String filename;
 	private BufferedRandomAccessFile raf;
 	private long lastPtr;
+	// TODO This arrays causes coherence. This problem is easily removed by
+	// storing each ptr in lastPtrs in the corresponding worker. That's a little
+	// bit ugly though in terms of separation of concerns. The current solution
+	// confines all related aspects to TLCTrace. 
+	private final long[] lastPtrs = new long[TLCGlobals.getNumWorkers()];
 	private TraceApp tool;
 
   public TLCTrace(String metadir, String specFile, TraceApp tool)
@@ -57,6 +62,13 @@ public class TLCTrace {
 		return writeState(predecessor.uid, aFingerprint);
 	}
 
+  public final synchronized long writeState(final TLCState predecessor, final long aFingerprint, final IWorker worker)
+  throws IOException {
+		final long lastPtr = writeState(predecessor.uid, aFingerprint);
+		this.lastPtrs[worker.myGetId()] = lastPtr;
+		return lastPtr;
+	}
+  
 	/**
    * @param predecessorLoc The location of the state predecessor
    * @param fp A finger print
@@ -88,6 +100,33 @@ public class TLCTrace {
 	}
 
 	/**
+	 * The level is the length of the longest path in the execution trees
+	 * (forest) (his forest is stored in the trace file).
+	 * <p>
+	 * With multiple workers, the level is an approximation. With multiple
+	 * workers, the forest has an unknown number of leafs and we do not know the
+	 * position of leafs in the trace file.
+	 * <p>
+	 * We know however the vertices, that the set of workers last added to the
+	 * forest. Thus, we calculate the lengths of each path or path fragment
+	 * from those vertices. The maximum length is then our approximation of the
+	 * longest path. It's not elegant but good enough for now.
+	 * 
+	 * @see TLCTrace#getLevel()
+	 */
+	public final synchronized int getLevelForFinalReporting() throws IOException {
+		// TODO We generally assume the length and the number of workers to be
+		// relatively small to not warrant parallelization. The current
+		// getLevel(lastPtr) cannot be called concurrently, because it uses a
+		// single BufferedRandomAccessFile.
+		int max = 0;
+		for (long lastPtr : lastPtrs) {
+			max = Math.max(max, lastPtr > 0 ? getLevel(lastPtr) : 0);
+		}
+		return max;
+	}
+
+	/**
 	 * Returns the level (monotonically increasing)!
 	 * 
 	 * LL: The user has no real need of an accurate tree height. Breadth-first
@@ -107,7 +146,7 @@ public class TLCTrace {
 	 * 
 	 * @see TLCTrace#getLevel()
 	 */
-	public final int getLevelForReporting() throws IOException {
+	public final synchronized int getLevelForReporting() throws IOException {
 		final int calculatedLevel = getLevel(this.lastPtr);
 		if (calculatedLevel > previousLevel) {
 			previousLevel = calculatedLevel;
@@ -159,14 +198,6 @@ public class TLCTrace {
 		// we can argue that the approximation is good enough and document, that its 
 		// value can be anything from 1 to the longest behavior found so far.
 		return getLevel(this.lastPtr);
-	}
-
-	public final int getLevel(final Set<Long> lastPtrs) throws IOException {
-		int max = 0;
-		for (long lastPtr : lastPtrs) {
-			max = Math.max(max, getLevel(lastPtr));
-		}
-		return max;
 	}
 
 	/**

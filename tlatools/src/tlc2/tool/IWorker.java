@@ -1,5 +1,6 @@
 package tlc2.tool;
 
+import tlc2.TLCGlobals;
 import tlc2.util.ObjLongTable;
 import tlc2.value.Value;
 
@@ -9,6 +10,11 @@ import tlc2.value.Value;
  */
 public interface IWorker
 {
+	/**
+	 * @return A worker's id in the range 0 to {@link TLCGlobals#getNumWorkers()} - 1
+	 */
+	public int myGetId();
+	
     /** 
      * extracted from Worker and DFID worker
      * used in the {@link AbstractChecker#reportCoverage(IWorker[])} 
