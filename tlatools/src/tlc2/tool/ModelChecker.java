@@ -85,10 +85,10 @@ public class ModelChecker extends AbstractChecker
 		this.theFPSet = FPSetFactory.getFPSet(fpSetConfig);
 
         // initialize the set
-        this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, specFile);
+        this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, this.specObj.getName());
 
         // Finally, initialize the trace file:
-        this.trace = new TLCTrace(this.metadir, specFile, this.tool);
+        this.trace = new TLCTrace(this.metadir, this.specObj.getName(), this.tool);
 
         // Initialize all the workers:
         this.workers = new Worker[TLCGlobals.getNumWorkers()];

@@ -116,7 +116,6 @@ public class SANY {
    */
   public static final void frontEndMain(
                              SpecObj spec, 
-                             String fileName, 
                              PrintStream syserr) throws FrontEndException {
     try {
       // **** Initialize the global environment
@@ -436,7 +435,7 @@ public class SANY {
       if (FileUtil.createNamedInputStream(args[i], spec.getResolver()) != null) 
       {
           try {
-              frontEndMain(spec, args[i], ToolIO.out);
+              frontEndMain(spec, ToolIO.out);
             }
             catch (FrontEndException fe) {
               // For debugging

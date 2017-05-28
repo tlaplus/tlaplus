@@ -25,6 +25,7 @@ import util.ToolIO;
 public class SpecObj
 {
 
+    String specDir;
     String primaryFileName;
     // The raw file name for the root (top) module, unprocessed by adding
     // ".tla" or by prepending the full file system path to it)
@@ -129,6 +130,18 @@ public class SpecObj
     }
 
     /**
+     * Constructs a SpecObj for the given spec dir, using a specified filename and resolver
+     * @param specDir dir path of the specification
+     * @param pfn primary filename of the specification
+     * @param ntfis string to named input stream resolver, if <code>null</code>, 
+     * the default from {@link ToolIO#getDefaultResolver()} is used
+     */
+    public SpecObj(String specDir, String pfn, FilenameToStream ntfis) {
+        this(pfn, ntfis);
+        this.specDir = specDir;
+    }
+
+    /**
      * Any integer other than 0 returned from this method indicates a
      * fatal error while processing the TLA+ spec.  No further use
      * should be made of this object except by the maintainer.
@@ -158,7 +171,10 @@ public class SpecObj
      */
     public final String getFileName()
     {
-        return primaryFileName;
+        if (specDir == null || specDir == "")
+            return primaryFileName;
+        else
+            return specDir + FileUtil.separatorChar + primaryFileName;
     }
 
     /**
