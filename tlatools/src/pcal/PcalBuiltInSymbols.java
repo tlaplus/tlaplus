@@ -166,9 +166,9 @@ public final class PcalBuiltInSymbols
         add("]",   "]",           Symbol.RIGHT_PAREN, 0);
         add(">>",  "{\\rangle}",  Symbol.RIGHT_PAREN, 0);
 
-        add("\\A",         "\\A\\,",          Symbol.PREFIX, 0);
+        add("\\A",         "\\forall\\,",     Symbol.PREFIX, 0);
         add("\\forall",    "\\forall\\,",     Symbol.PREFIX, 0);
-        add("\\E",         "\\E\\,",          Symbol.PREFIX, 0);
+        add("\\E",         "\\exists\\,",     Symbol.PREFIX, 0);
         add("\\exists",    "\\exists\\,",     Symbol.PREFIX, 0);
         add("\\AA",        "{\\AA}",         Symbol.PREFIX, 0);
         add("\\EE",        "{\\EE}",         Symbol.PREFIX, 0);
