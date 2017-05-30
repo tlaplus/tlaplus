@@ -363,7 +363,12 @@ public class MP
             break;
 
         case EC.TLC_INVARIANT_EVALUATION_FAILED:
-            b.append("Evaluating invariant %1% failed.");
+            if (parameters.length == 1) {
+                b.append("Evaluating invariant %1% failed.");
+            }
+            else if (parameters.length == 2) {
+                b.append("Evaluating invariant %1% failed.\n%2%");
+            }
             break;
 
         case EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR:
