@@ -10,15 +10,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.BrokenBarrierException;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.Phaser;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.ToLongFunction;
 import java.util.logging.Level;
 
@@ -36,6 +39,77 @@ import util.Assert;
 @SuppressWarnings({ "serial" })
 public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implements FPSetStatistic {
 	
+	private static class OffHeapSynchronizer {
+		
+		private final Set<OffHeapDiskFPSet> sets = new HashSet<OffHeapDiskFPSet>();
+		
+		private final AtomicBoolean flusherChosen = new AtomicBoolean();
+		
+		// This barrier gets run after one thread signals the need to suspend
+		// put and contains operations to evict to secondary. Signaling is done
+		// via the flusherChoosen AtomicBoolean. All threads (numThreads) will
+		// then await on the barrier and the Runnable be executed when the
+		// last of numThreads arrives.
+		// Compared to an AtomicBoolean, the barrier operation use locks and
+		// are thus comparably expensive.
+		private final Phaser phaser = new Phaser(1) {
+
+			@Override
+			protected boolean onAdvance(int phase, int registeredParties) {
+				// Atomically evict and reset flusherChosen to make sure no
+				// thread re-read flusherChosen=true after an eviction and
+				// waits again.
+				for (OffHeapDiskFPSet set : sets) {
+					set.evict();
+				}
+
+				// Release exclusive access. It has to be done by the runnable
+				// before workers waiting on the barrier wake up again.
+				Assert.check(flusherChosen.compareAndSet(true, false), EC.GENERAL);
+				
+				return super.onAdvance(phase, registeredParties);
+			}
+		};
+		
+		private OffHeapSynchronizer() {
+			// Don't want any copies.
+		}
+		
+		public final void add(final OffHeapDiskFPSet aSet) {
+			this.sets.add(aSet);
+		}
+		
+		public final void incWorkers(final int numWorkers) {
+			final int parties = phaser.getRegisteredParties();
+			if (parties < numWorkers) {
+				phaser.bulkRegister(numWorkers - parties);
+			}
+		}
+		
+		public final boolean evictPending() {
+			return flusherChosen.get();
+		}
+		
+		public final void evict() {
+			flusherChosen.compareAndSet(false, true);
+		}
+		
+		public final void awaitEviction() {
+			phaser.arriveAndAwaitAdvance();
+		}
+		
+		public AtomicBoolean getFlusherChosen() {
+			return flusherChosen;
+		}
+	}
+
+	// We require a singleton here, because if TLC is run with multiple instances
+	// of FPSets - the default - workers will call evict and awaitEvict on 
+	// all FPSet instances. Thus, an individual synchronization internal to each
+	// FPSet would never see the complete set of waiting workers. TLC would thus
+	// deadlock. This is why SYNC is a singleton and shared by all FPSet instances.
+	private static final OffHeapSynchronizer SYNC = new OffHeapSynchronizer();
+	
 	private static final int PROBE_LIMIT = Integer.getInteger(OffHeapDiskFPSet.class.getName() + ".probeLimit", 1024);
 	static final long EMPTY = 0L;
 	
@@ -46,14 +120,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 */
 	private final transient Indexer indexer;
 
-	private transient CyclicBarrier barrier;
-	
-	/**
-	 * completionException is set by the Runnable iff an exception occurs during
-	 * eviction while the worker threads wait at barrier. Worker threads have to
-	 * check completionException explicitly.
-	 */
-	private volatile RuntimeException completionException;
+	private int numThreads;
 
 	protected OffHeapDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
 		super(fpSetConfig);
@@ -80,6 +147,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// the CyclicBarrier-Runnable later. Just set to prevent NPEs when
 		// eviction/flush is called before init.
 		this.flusher = new OffHeapMSBFlusher(array);
+		
+		this.flusherChosen = SYNC.getFlusherChosen();
+		SYNC.add(this);
 	}
 	
 	/* (non-Javadoc)
@@ -89,65 +159,55 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	public void init(final int numThreads, String aMetadir, String filename)
 			throws IOException {
 		super.init(numThreads, aMetadir, filename);
+		this.numThreads = numThreads;
 		
 		array.zeroMemory(numThreads);
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.fp.FPSet#incWorkers(int)
+	 */
+	public void incWorkers(int numWorkers) {
+		assert numWorkers == this.numThreads;
+		SYNC.incWorkers(numWorkers);
+	}
+
+	public void evict() {
+		// statistics
+		growDiskMark++;
+		final long timestamp = System.currentTimeMillis();
+		final long insertions = tblCnt.longValue();
+		final double lf = tblCnt.doubleValue() / (double) maxTblCnt;
 		
-		// This barrier gets run after one thread signals the need to suspend
-		// put and contains operations to evict to secondary. Signaling is done
-		// via the flusherChoosen AtomicBoolean. All threads (numThreads) will
-		// then await on the barrier and the Runnable be executed when the
-		// last of numThreads arrives.
-		// Compared to an AtomicBoolean, the barrier operation use locks and
-		// are thus comparably expensive.
-		barrier = new CyclicBarrier(numThreads, new Runnable() {
-			// Atomically evict and reset flusherChosen to make sure no
-			// thread re-read flusherChosen=true after an eviction and
-			// waits again.
-			public void run() {
-				// statistics
-				growDiskMark++;
-				final long timestamp = System.currentTimeMillis();
-				final long insertions = tblCnt.longValue();
-				final double lf = tblCnt.doubleValue() / (double) maxTblCnt;
-				
-				LOGGER.log(Level.FINE,
-						"Started eviction of disk {0} the {1}. time at {2} after {3} insertions, load factor {4} and reprobe of {5}.",
-						new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(),
-								timestamp, insertions, lf, PROBE_LIMIT });
-				
-				// Check that the table adheres to our invariant. Otherwise, we
-				// can't hope to successfully evict it.
-				assert checkInput(array, indexer, PROBE_LIMIT) : "Table violates invariants prior to eviction: "
-						+ array.toString();
-				
-				// Only pay the price of creating threads when array is
-				// sufficiently large and the array size is large enough to
-				// partition it for multiple threads.
-				OffHeapDiskFPSet.this.flusher = getFlusher(numThreads, insertions);
-				
-				try {
-					flusher.flushTable(); // Evict()
-				} catch (RuntimeException e) {
-					completionException = e;
-					throw e;
-				} catch (IOException e) {
-					completionException = new OffHeapRuntimeException(e);
-					throw completionException;
-				} 
+		LOGGER.log(Level.FINE,
+				"Started eviction of disk {0} the {1}. time at {2} after {3} insertions, load factor {4} and reprobe of {5}.",
+				new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(),
+						timestamp, insertions, lf, PROBE_LIMIT });
+		
+		// Check that the table adheres to our invariant. Otherwise, we
+		// can't hope to successfully evict it.
+		assert checkInput(array, indexer, PROBE_LIMIT) : "Table violates invariants prior to eviction: "
+				+ array.toString();
+		
+		// Only pay the price of creating threads when array is
+		// sufficiently large and the array size is large enough to
+		// partition it for multiple threads.
+		flusher = getFlusher(numThreads, insertions);
+		
+		try {
+			flusher.flushTable(); // Evict()
+		} catch (IOException e) {
+			// wrap in unchecked.
+			throw new OffHeapRuntimeException(e);
+		}
 
-				// statistics and logging again.
-				final long l = System.currentTimeMillis() - timestamp;
-				flushTime += l;
-				LOGGER.log(Level.FINE,
-						"Finished eviction of disk {0} the {1}. time at {2}, in {3} sec after {4} insertions, load factor {5} and reprobe of {6}.",
-						new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l,
-								System.currentTimeMillis(), insertions, lf, PROBE_LIMIT });
-
-				// Release exclusive access. It has to be done by the runnable
-				// before workers waiting on the barrier wake up again.
-				Assert.check(flusherChosen.compareAndSet(true, false), EC.GENERAL);
-			}
-		});
+		// statistics and logging again.
+		final long l = System.currentTimeMillis() - timestamp;
+		flushTime += l;
+		LOGGER.log(Level.FINE,
+				"Finished eviction of disk {0} the {1}. time at {2}, in {3} sec after {4} insertions, load factor {5} and reprobe of {6}.",
+				new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l,
+						System.currentTimeMillis(), insertions, lf, PROBE_LIMIT });
 	}
 
 	private Flusher getFlusher(final int numThreads, final long insertions) {
@@ -159,23 +219,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	}
 
 	private boolean checkEvictPending() {
-		if (flusherChosen.get()) {
-			try {
-				barrier.await();
-				if (completionException != null) {
-					throw completionException;
-				}
-			} catch (InterruptedException ie) {
-				Thread.currentThread().interrupt();
-				throw new OffHeapRuntimeException(ie);
-			} catch (BrokenBarrierException bbe) {
-				barrier.reset();
-				if (completionException != null) {
-					throw completionException;
-				} else { 
-					throw new OffHeapRuntimeException(bbe);
-				}
-			}
+		if (SYNC.evictPending()) {
+			SYNC.awaitEviction();
 			return true;
 		}
 		return false;
@@ -350,7 +395,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 * @see tlc2.tool.fp.DiskFPSet#forceFlush()
 	 */
 	public void forceFlush() {
-		flusherChosen.compareAndSet(false, true);
+		SYNC.evict();
 	}
 
 	/* (non-Javadoc)

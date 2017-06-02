@@ -77,6 +77,14 @@ public class MultiFPSet extends FPSet {
 		}
 	}
 
+	
+	@Override
+	public void incWorkers(int num) {
+		for (int i = 0; i < this.sets.length; i++) {
+			this.sets[i].incWorkers(num);
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#size()
 	 */

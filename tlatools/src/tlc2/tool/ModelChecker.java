@@ -1062,6 +1062,11 @@ public class ModelChecker extends AbstractChecker
      */
     protected IWorker[] startWorkers(AbstractChecker checker, int checkIndex)
     {
+		// Generation of initial states is done at this point. Thus set the
+		// number of workers on the fpset, for it to adapt any synchronization
+    	// if necessary (e.g. OffHeapDiskFPSet).
+        this.theFPSet.incWorkers(this.workers.length);
+
         for (int i = 0; i < this.workers.length; i++)
         {
             this.workers[i].start();

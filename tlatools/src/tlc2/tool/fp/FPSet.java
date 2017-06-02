@@ -48,6 +48,10 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
      * after the constructor but before any of the other methods below.
      */
     public abstract void init(int numThreads, String metadir, String filename) throws IOException;
+    
+    public void incWorkers(int num) {
+    	// subclasses may override
+    }
 
     /* Returns the number of fingerprints in this set. */
     /* (non-Javadoc)
