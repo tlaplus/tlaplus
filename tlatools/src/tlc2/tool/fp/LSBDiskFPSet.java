@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 
 import tlc2.output.EC;
+import tlc2.util.BufferedRandomAccessFile;
 import util.Assert;
 
 @SuppressWarnings("serial")
@@ -76,7 +77,7 @@ public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 		 * @see tlc2.tool.fp.DiskFPSet.Flusher#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
 		@Override
-		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
+		protected void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
 			final int buffLen = buff.length;
 
 			// Precompute the maximum value of the new file

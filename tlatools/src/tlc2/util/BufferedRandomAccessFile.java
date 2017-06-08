@@ -37,6 +37,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     private long maxHi;     // this.lo + this.buff.length
     private boolean hitEOF; // buffer contains last file block?
     private long diskPos;   // disk position
+	private long mark;
     
     private static Object mu = new Object(); // protects the following fields
     private static byte[][] availBuffs = new byte[100][];
@@ -443,6 +444,21 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     public void reset() throws IOException {
     	setLength(0);
     	this.init();
+    }
+    
+    public long getMark() {
+    	return this.mark;
+    }
+    
+    public long mark() {
+    	final long oldMark = this.mark; 
+    	this.mark = getFilePointer();
+    	return oldMark;
+    }
+    
+    public void seekAndMark(long pos) throws IOException {
+    	this.mark = pos;
+    	this.seek(pos);
     }
 
   public static void main(String[] args) throws IOException {

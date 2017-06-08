@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 import tlc2.output.EC;
+import tlc2.util.BufferedRandomAccessFile;
 import util.Assert;
 
 @SuppressWarnings("serial")
@@ -100,7 +101,7 @@ public class MSBDiskFPSet extends HeapBasedDiskFPSet {
 		/* (non-Javadoc)
 		 * @see tlc2.tool.fp.DiskFPSet#mergeNewEntries(long[], int, java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
-		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
+		protected void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
 			final long buffLen = getTblCnt();
 			final TLCIterator itr = new TLCIterator(tbl);
 

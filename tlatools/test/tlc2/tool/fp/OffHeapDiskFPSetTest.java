@@ -268,7 +268,6 @@ public class OffHeapDiskFPSetTest {
 		
 		for (long i = 0L; i < longs.size(); i++) {
 			long fp = longs.first();
-			assertEquals(String.format("Length: %s with seed: %s", length, rgenseed), i, field.invoke(fpSet, 0, fp));
 			assertEquals(String.format("Length: %s with seed: %s", length, rgenseed), i + 1L,
 					field.invoke(fpSet, 0, fp + 1L));
 			longs.remove(fp);

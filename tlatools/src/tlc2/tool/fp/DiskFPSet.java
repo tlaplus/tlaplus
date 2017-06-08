@@ -1111,20 +1111,27 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			}
 			
 			// Verify disk file is sorted.
-			assert checkFile(braf[0]);
+			assert checkFile(braf[0], index, fileCnt);
 			
 			poolIndex = 0;
 		}
 		
-		protected abstract void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException;
+		protected abstract void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException;
 		
 	}
 	
-	private static boolean checkFile(BufferedRandomAccessFile braf) throws IOException {
+	private static boolean checkFile(BufferedRandomAccessFile braf, long[] index, long elements) throws IOException {
 		final long fileLen = braf.length();
+		if (fileLen / LongSize != elements) {
+			return false;
+		}
 		final long ptr = braf.getFilePointer();
 		long predecessor = Long.MIN_VALUE;
 		if (fileLen > 0) {
+			predecessor = braf.readLong();
+			if (predecessor != index[0]) {
+				return false;
+			}
 			while (braf.getFilePointer() < fileLen) {
 				long l = braf.readLong();
 				if (predecessor >= l) {
@@ -1134,7 +1141,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			}
 		}
 		braf.seek(ptr);
-		return true;
+		return predecessor == index[index.length - 1];
 	}
 	
 	/*

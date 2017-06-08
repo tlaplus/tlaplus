@@ -720,7 +720,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		}
 		// no page is in between loPage and hiPage at this point
 		Assert.check(hiPage == loPage + 1, EC.SYSTEM_INDEX_ERROR);
-
+		assert this.index[loPage] < fp && fp < this.index[hiPage];
+		
 		// Read the disk page and try to find the given fingerprint or the next
 		// smaller one. Calculate its offset in file.
 		long midEntry = -1L;
@@ -743,9 +744,21 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				break;
 			}
 		}
+		
+		assert isHigher(midEntry, fp, raf);
 		return midEntry;
 	}
-	
+
+	public boolean isHigher(long midEntry, long fp, BufferedRandomAccessFile raf) throws IOException {
+		raf.seek((midEntry - 1L) * LongSize);
+		final long low = raf.readLong();
+		final long high = raf.readLong();
+		if (low < fp && fp < high) {
+			return true;
+		}
+		return false;
+	}
+
 	public class ConcurrentOffHeapMSBFlusher extends OffHeapMSBFlusher {
 		
 		private final int numThreads;
@@ -814,6 +827,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						// it's done here until it becomes a bottleneck.
 						final long limit = isLast ? a.size() + r : end;
 						final long occupied = getTableOffset(a, r, indexer, start, limit);
+						assert occupied <= limit - start;
 						
 						if (index == null) {
 							// No index, no need to calculate a disk offset.
@@ -850,7 +864,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		}
 
 		@Override
-		protected void mergeNewEntries(final RandomAccessFile[] inRAFs, final RandomAccessFile outRAF, final Iterator ignored, final int idx, final long cnt) throws IOException {
+		protected void mergeNewEntries(final BufferedRandomAccessFile[] inRAFs, final RandomAccessFile outRAF, final Iterator ignored, final int idx, final long cnt) throws IOException {
 			final long now = System.currentTimeMillis();
 			assert offsets.stream().mapToLong(new ToLongFunction<Future<Result>>() {
 				public long applyAsLong(Future<Result> future) {
@@ -876,16 +890,16 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					}
 				}
 			}).sum() == fileCnt : "Missing disk elements during eviction.";
-			final Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(numThreads);
+			final Collection<Callable<Pair>> tasks = new ArrayList<Callable<Pair>>(numThreads);
 			// Id = 0
-			tasks.add(new Callable<Void>() {
-				public Void call() throws Exception {
+			tasks.add(new Callable<Pair>() {
+				public Pair call() throws Exception {
 					final Result result = offsets.get(0).get();
 					final Iterator itr = new Iterator(a, result.getTable(), indexer);
 					// Create a new RAF instance. The outRAF instance is
 					// otherwise shared by multiple writers leading to race
 					// conditions and inconsistent fingerprint set files.
-					final RandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
+					final BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
 					try {
 						tmpRAF.setLength(outRAF.length());
 						ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], tmpRAF, itr, 0, 0L, result.getDisk());
@@ -894,18 +908,18 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					}
 					assert tmpRAF.getFilePointer() == result.getTotal()
 							* FPSet.LongSize : "First writer did not write expected amount of fingerprints to disk.";
-					return null;
+					return new Pair(0, tmpRAF);
 				}
 			});
 			// Id > 0
 			for (int i = 1; i < numThreads; i++) {
 				final int id = i;
-				tasks.add(new Callable<Void>() {
-					public Void call() throws Exception {
+				tasks.add(new Callable<Pair>() {
+					public Pair call() throws Exception {
 						// Create a new RAF instance. The outRAF instance is
 						// otherwise shared by multiple writers leading to race
 						// conditions and inconsistent fingerprint set files.
-						final RandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
+						final BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
 						try {
 							tmpRAF.setLength(outRAF.length());
 							// Sum up the combined number of elements in
@@ -919,15 +933,15 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 							// Set offsets into the out (tmp) file.
 							final Result result = offsets.get(id).get();
-							tmpRAF.seek(skipOutFile * FPSet.LongSize);
+							tmpRAF.seekAndMark(skipOutFile * FPSet.LongSize);
 
 							// Set offset and the number of elements the
 							// iterator is supposed to return.
 							final long table = result.getTable();
 							final Iterator itr = new Iterator(a, table, id * length, indexer);
-							final RandomAccessFile inRAF = inRAFs[id];
+							final BufferedRandomAccessFile inRAF = inRAFs[id];
 							assert (skipInFile + result.getDisk()) * FPSet.LongSize <= inRAF.length();
-							inRAF.seek(skipInFile * FPSet.LongSize);
+							inRAF.seekAndMark(skipInFile * FPSet.LongSize);
 
 							// Calculate where the index entries start and end.
 							final int idx = (int) Math.floor(skipOutFile / (double) NumEntriesPerPage);
@@ -948,22 +962,25 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						} finally {
 							tmpRAF.close();
 						}
-						return null;
+						return new Pair(id, tmpRAF);
 					}
 				});
 			}
 			// Combine the callable results.
 			try {
-				executorService.invokeAll(tasks);
+				final List<Future<Pair>> invoked = executorService.invokeAll(tasks);
+				assert checkOutRAFs(invoked);
 			} catch (InterruptedException ie) {
 				Thread.currentThread().interrupt();
 				throw new OffHeapRuntimeException(ie);
+			} catch (ExecutionException ee) {
+				throw new OffHeapRuntimeException(ee);
 			} finally {
 				executorService.shutdown();
 			}
 
+			assert checkInRAFs(inRAFs);
 			assert checkTable(a) : "Missed element during eviction.";
-			assert checkIndex(index) : "Inconsistent disk index.";
 			
 			LOGGER.log(Level.FINE, "Wrote table to disk with {0} workers in {1} ms.",
 					new Object[] { numThreads, (System.currentTimeMillis() - now) });
@@ -1019,7 +1036,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 * @see tlc2.tool.fp.MSBDiskFPSet#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
 		@Override
-		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
+		protected void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
 			final long buffLen = tblCnt.sum();
 			final Iterator itr = new Iterator(array, buffLen, indexer);
 
@@ -1027,17 +1044,20 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			index = new long[indexLen];
 			mergeNewEntries(inRAFs, outRAF, itr, 0, 0L);
 
+			assert checkIndex(index) : "Broken disk index.";
+			assert checkIndex(index, outRAF, outRAF.length() / LongSize) : "Misaligned disk index.";
+			
 			// maintain object invariants
 			fileCnt += buffLen;
 		}
 
-		protected void mergeNewEntries(RandomAccessFile[] inRAFs, RandomAccessFile outRAF, Iterator itr, int currIndex,
+		protected void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, RandomAccessFile outRAF, Iterator itr, int currIndex,
 				long counter) throws IOException {
 			inRAFs[0].seek(0);
 			mergeNewEntries(inRAFs[0], outRAF, itr, currIndex, counter, inRAFs[0].length() / FPSet.LongSize);
 		}
 
-		protected void mergeNewEntries(RandomAccessFile inRAF, RandomAccessFile outRAF, final Iterator itr,
+		protected void mergeNewEntries(BufferedRandomAccessFile inRAF, RandomAccessFile outRAF, final Iterator itr,
 				int currIndex, long counter, long diskReads) throws IOException {
 			
 			final int startIndex = currIndex;
@@ -1067,6 +1087,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					diskWriteCnt.increment();
 					// update in-memory index file
 					if (counter == 0) {
+						assert (outRAF.getFilePointer() - LongSize) % (NumEntriesPerPage << 3) == 0L;
 						index[currIndex++] = value;
 						counter = NumEntriesPerPage;
 					}
@@ -1091,6 +1112,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					diskWriteCnt.increment();
 					// update in-memory index file
 					if (counter == 0) {
+						assert (outRAF.getFilePointer() - LongSize) % (NumEntriesPerPage << 3) == 0L;
 						index[currIndex++] = fp;
 						counter = NumEntriesPerPage;
 					}
@@ -1331,6 +1353,37 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		return checkSorted(array, indexer, reprobe, 0, array.size() - 1L + reprobe);
 	}
 
+	private class Pair {
+		public final BufferedRandomAccessFile braf;
+		public final int id;
+
+		Pair(int id, BufferedRandomAccessFile braf) {
+			this.id = id;
+			this.braf = braf;
+		}
+	}
+
+	private static boolean checkOutRAFs(final List<Future<Pair>> futures) throws InterruptedException, ExecutionException, IOException {
+		// First sort unsorted list of features by their id.
+		final BufferedRandomAccessFile[] outRAFs = new BufferedRandomAccessFile[futures.size()];
+		for (Future<Pair> future : futures) {
+			final Pair pair = future.get();
+			outRAFs[pair.id] = pair.braf;
+		}
+		return checkInRAFs(outRAFs);
+	}
+	
+	private static boolean checkInRAFs(final BufferedRandomAccessFile[] inRafs) throws IOException {
+		for (int i = 0; i < inRafs.length - 1; i++) {
+			final long end = inRafs[i].getFilePointer();
+			final long start = inRafs[i + 1].getMark();
+			if (end != start) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	private static boolean checkTable(LongArray array) {
 		for (long i = 0L; i < array.size(); i++) {
 			long elem = array.get(i);
@@ -1345,6 +1398,19 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	private static boolean checkIndex(final long[] idx) {
 		for (int i = 1; i < idx.length; i++) {
 			if (idx[i - 1] >= idx[i]) {
+				return false;
+			}
+		}
+	    return true;
+    } 
+	
+	private static boolean checkIndex(final long[] idx, final RandomAccessFile raf, final long length) throws IOException {
+		for (long i = 0L; i < idx.length; i++) {
+			final long pos = Math.min(i * NumEntriesPerPage, length);
+			raf.seek(pos * LongSize);
+			final long value = raf.readLong();
+			final long index = idx[(int) i];
+			if (value != index) {
 				return false;
 			}
 		}
