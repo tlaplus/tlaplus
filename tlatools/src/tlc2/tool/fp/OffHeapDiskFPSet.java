@@ -864,7 +864,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		}
 
 		@Override
-		protected void mergeNewEntries(final BufferedRandomAccessFile[] inRAFs, final RandomAccessFile outRAF, final Iterator ignored, final int idx, final long cnt) throws IOException {
+		protected void mergeNewEntries(final BufferedRandomAccessFile[] inRAFs, final RandomAccessFile outRAF, final Iterator ignored) throws IOException {
 			final long now = System.currentTimeMillis();
 			assert offsets.stream().mapToLong(new ToLongFunction<Future<Result>>() {
 				public long applyAsLong(Future<Result> future) {
@@ -902,7 +902,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					final BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
 					try {
 						tmpRAF.setLength(outRAF.length());
-						ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], tmpRAF, itr, 0, 0L, result.getDisk());
+						ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], tmpRAF, itr, result.getDisk());
 					} finally {
 						tmpRAF.close();
 					}
@@ -943,19 +943,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 							assert (skipInFile + result.getDisk()) * FPSet.LongSize <= inRAF.length();
 							inRAF.seekAndMark(skipInFile * FPSet.LongSize);
 
-							// Calculate where the index entries start and end.
-							final int idx = (int) Math.floor(skipOutFile / (double) NumEntriesPerPage);
-							assert idx > 0 : "Over/Underflow in index calculation. int based index array too small"
-									+ " for FPSet. Increase NumEntriesPerPage or re-implement index array!";
-							final long cnt = NumEntriesPerPage - (skipOutFile - (idx * (NumEntriesPerPage * 1L)));
-
 							// Stop reading after diskReads elements (after
 							// which the next thread continues) except for the
 							// last thread which reads until EOF. Pass 0 when
 							// nothing can be read from disk.
 							final long diskReads = id == numThreads - 1 ? fileCnt - skipInFile : result.getDisk();
 							
-							ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAF, tmpRAF, itr, idx + 1, cnt, diskReads);
+							ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAF, tmpRAF, itr, diskReads);
 
 							assert tmpRAF.getFilePointer() == (skipOutFile + result.getTotal()) * FPSet.LongSize : id
 									+ " writer did not write expected amount of fingerprints to disk.";
@@ -1042,25 +1036,25 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 			final int indexLen = calculateIndexLen(buffLen);
 			index = new long[indexLen];
-			mergeNewEntries(inRAFs, outRAF, itr, 0, 0L);
+			mergeNewEntries(inRAFs, outRAF, itr);
 
+			final long length = (outRAF.length() / LongSize) - 1L;
+			writeIndex(index, outRAF, length);
 			assert checkIndex(index) : "Broken disk index.";
-			assert checkIndex(index, outRAF, outRAF.length() / LongSize) : "Misaligned disk index.";
+			assert checkIndex(index, outRAF, length) : "Misaligned disk index.";
 			
 			// maintain object invariants
 			fileCnt += buffLen;
 		}
 
-		protected void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, RandomAccessFile outRAF, Iterator itr, int currIndex,
-				long counter) throws IOException {
+		protected void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, RandomAccessFile outRAF, Iterator itr)
+				throws IOException {
 			inRAFs[0].seek(0);
-			mergeNewEntries(inRAFs[0], outRAF, itr, currIndex, counter, inRAFs[0].length() / FPSet.LongSize);
+			mergeNewEntries(inRAFs[0], outRAF, itr, inRAFs[0].length() / FPSet.LongSize);
 		}
 
 		protected void mergeNewEntries(BufferedRandomAccessFile inRAF, RandomAccessFile outRAF, final Iterator itr,
-				int currIndex, long counter, long diskReads) throws IOException {
-			
-			final int startIndex = currIndex;
+				long diskReads) throws IOException {
 			
 			// initialize positions in "buff" and "inRAF"
 			long value = 0L; // initialize only to make compiler happy
@@ -1085,13 +1079,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					assert value > EMPTY : "Negative or zero fingerprint found: " + value;
 					outRAF.writeLong(value);
 					diskWriteCnt.increment();
-					// update in-memory index file
-					if (counter == 0) {
-						assert (outRAF.getFilePointer() - LongSize) % (NumEntriesPerPage << 3) == 0L;
-						index[currIndex++] = value;
-						counter = NumEntriesPerPage;
-					}
-					counter--;
 					try {
 						final long next = inRAF.readLong();
 						assert next > value : next + " > " + value + " from disk.";
@@ -1110,13 +1097,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					assert fp > EMPTY : "Wrote an invalid fingerprint to disk.";
 					outRAF.writeLong(fp);
 					diskWriteCnt.increment();
-					// update in-memory index file
-					if (counter == 0) {
-						assert (outRAF.getFilePointer() - LongSize) % (NumEntriesPerPage << 3) == 0L;
-						index[currIndex++] = fp;
-						counter = NumEntriesPerPage;
-					}
-					counter--;
 					// we used one fp up, thus move to next one
 					if (itr.hasNext()) {
 						final long next = itr.markNext();
@@ -1130,18 +1110,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			}
 			// both sets used up completely
 			Assert.check(eof && eol, EC.GENERAL);
-			
-			if (currIndex == index.length - 1) {
-				// Update the last element in index with the larger one of the
-				// current largest element of itr and the largest element of value.
-				index[index.length - 1] = Math.max(fp, value);
-			} else if (counter == 0) {
-				// Write the last index entry if counter reached zero in the
-				// while loop above.
-				index[currIndex] = Math.max(fp, value);
-			}
-			
-			assert checkIndex(Arrays.copyOfRange(index, startIndex, currIndex)) : "Inconsistent disk index range.";
 		}
 	}
 	
@@ -1158,6 +1126,15 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			indexLen--;
 		}
 		return indexLen;
+	}
+
+	protected void writeIndex(long[] index, final RandomAccessFile raf, long length) throws IOException {
+		for (int i = 0; i < index.length; i++) {
+			long pos = Math.min(i * NumEntriesPerPage, length);
+			raf.seek(pos * LongSize);
+			final long value = raf.readLong();
+			index[i] = value;
+		}
 	}
 	
 	/**
