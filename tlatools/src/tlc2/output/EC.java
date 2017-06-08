@@ -66,6 +66,7 @@ public interface EC
     public static final int TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT = 2109;
     public static final int TLC_INVARIANT_VIOLATED_BEHAVIOR = 2110;
     public static final int TLC_INVARIANT_EVALUATION_FAILED = 2111;
+    public static final int TLC_INVARIANT_VIOLATED_LEVEL = 2146;
     public static final int TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR = 2112;
     public static final int TLC_ACTION_PROPERTY_EVALUATION_FAILED = 2113;
     public static final int TLC_DEADLOCK_REACHED = 2114;

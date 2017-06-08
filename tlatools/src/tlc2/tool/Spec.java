@@ -952,6 +952,10 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 {
                     Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "invariant", name });
                 }
+                if (def.getLevel() >= 2)
+                {
+                    Assert.fail(EC.TLC_INVARIANT_VIOLATED_LEVEL, new String[] { def.getName().toString() });
+                }
                 this.invNameVec.addElement(name);
                 this.invVec.addElement(new Action(def.getBody(), Context.Empty));
             } else if (inv == null)

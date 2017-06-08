@@ -361,6 +361,9 @@ public class MP
         case EC.TLC_INVARIANT_VIOLATED_BEHAVIOR:
             b.append("Invariant %1% is violated.");
             break;
+        case EC.TLC_INVARIANT_VIOLATED_LEVEL:
+            b.append("The invariant %1% is not a state predicate (one with no primes or temporal operators).");
+            break;
 
         case EC.TLC_INVARIANT_EVALUATION_FAILED:
             if (parameters.length == 1) {
