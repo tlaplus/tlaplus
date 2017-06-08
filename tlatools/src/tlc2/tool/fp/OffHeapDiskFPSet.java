@@ -1,13 +1,11 @@
 // Copyright (c) 2012 Markus Alexander Kuppe. All rights reserved.
 package tlc2.tool.fp;
 
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -1053,63 +1051,61 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			mergeNewEntries(inRAFs[0], outRAF, itr, inRAFs[0].length() / FPSet.LongSize);
 		}
 
+		/*
+		 * See PlusCal spec OpenAddressing.ConcurrentFlusher.tla which has been checked for Nat == 0..6.
+		 */
 		protected void mergeNewEntries(BufferedRandomAccessFile inRAF, RandomAccessFile outRAF, final Iterator itr,
 				long diskReads) throws IOException {
 			
-			// initialize positions in "buff" and "inRAF"
-			long value = 0L; // initialize only to make compiler happy
-			boolean eof = false;
-			if (fileCnt > 0) {
-				try {
-					value = inRAF.readLong();
-					diskReads--;
-				} catch (EOFException e) {
-					eof = true;
-				}
+			// Disk might be empty.
+			long value = 0L;
+			if (diskReads > 0) {
+				value = inRAF.readLong();
 			} else {
-				assert diskReads == 0L;
-				eof = true;
+				assert fileCnt == 0L;
 			}
-
-			// merge while both lists still have elements remaining
-			boolean eol = false;
+			
+			long tableReads = itr.elements;
 			long fp = itr.markNext();
-			while (!eof || !eol) {
-				if ((value < fp || eol) && !eof) {
-					assert value > EMPTY : "Negative or zero fingerprint found: " + value;
-					outRAF.writeLong(value);
-					diskWriteCnt.increment();
-					try {
-						final long next = inRAF.readLong();
-						assert next > value : next + " > " + value + " from disk.";
-						value = next;
-						if (diskReads-- == 0L) {
-							eof = true;
-						}
-					} catch (EOFException e) {
-						eof = true;
-					}
-				} else {
-					// prevent converting every long to String when assertion holds (this is expensive)
-					if (value == fp) {
-						MP.printWarning(EC.TLC_FP_VALUE_ALREADY_ON_DISK, String.valueOf(value));
-					}
-					assert fp > EMPTY : "Wrote an invalid fingerprint to disk.";
+			
+			do {
+				if (value == fp) {
+					MP.printWarning(EC.TLC_FP_VALUE_ALREADY_ON_DISK, String.valueOf(value));
+				}
+				assert fp > EMPTY : "Wrote an invalid fingerprint to disk.";
+				
+				// From memory/table
+		        if (tableReads > 0 && (fp < value || diskReads == 0)) {
 					outRAF.writeLong(fp);
+					tableReads--;
 					diskWriteCnt.increment();
-					// we used one fp up, thus move to next one
-					if (itr.hasNext()) {
-						final long next = itr.markNext();
-						assert next > fp : next + " > " + fp + " from table at pos " + itr.pos + " "
+					// Read next value if any.
+		            if (tableReads > 0) {
+						final long nextFP = itr.markNext();
+						assert nextFP > fp : nextFP + " > " + fp + " from table at pos " + itr.pos + " "
 								+ a.toString(itr.pos - 10L, itr.pos + 10L);
-						fp = next;
-					} else {
-						eol = true;
+						fp = nextFP;
+		            }
+		         }
+		         
+		         // From file/disk
+				if (diskReads > 0 && (value < fp || tableReads == 0)) {
+					outRAF.writeLong(value);
+					diskReads--;
+					diskWriteCnt.increment();
+					// Read next value if any.
+					if (diskReads > 0) {
+						final long nextValue = inRAF.readLong();
+						assert value < nextValue;
+						value = nextValue;
 					}
 				}
-			}
+
+			} while (diskReads > 0 || tableReads > 0);
+			
 			// both sets used up completely
-			Assert.check(eof && eol, EC.GENERAL);
+			Assert.check(diskReads == 0L && tableReads == 0L, EC.GENERAL);
+			assert !itr.hasNext();
 		}
 	}
 	
