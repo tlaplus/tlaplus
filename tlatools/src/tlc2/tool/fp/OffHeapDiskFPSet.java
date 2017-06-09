@@ -884,6 +884,16 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					return result.getDisk();
 				}
 			}).sum() == fileCnt : "Missing disk elements during eviction.";
+
+			// Calculate offsets for in and the out file, i.e. sum up the
+			// combined number of elements in lower partitions.
+			for (int id = 1; id < numThreads; id++) {
+				final Result prev = offsets.get(id - 1);
+				final Result result = offsets.get(id);
+				result.setInOffset(prev.getInOffset() + prev.getDisk());
+				result.setOutOffSet(prev.getOutOffset() + prev.getTotal());
+			}
+
 			final long outLength = outRAF.length();
 			final Collection<Callable<Pair>> tasks = new ArrayList<Callable<Pair>>(numThreads);
 			// Id = 0
@@ -917,36 +927,28 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						final BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
 						try {
 							tmpRAF.setLength(outLength);
-							// Sum up the combined number of elements in
-							// lower partitions.
-							long skipOutFile = 0L;
-							long skipInFile = 0L;
-							for (int j = 0; j < id; j++) {
-								skipInFile = skipInFile + offsets.get(j).getDisk();
-								skipOutFile = skipOutFile + offsets.get(j).getTotal();
-							}
 
 							// Set offsets into the out (tmp) file.
 							final Result result = offsets.get(id);
-							tmpRAF.seekAndMark(skipOutFile * FPSet.LongSize);
+							tmpRAF.seekAndMark(result.getOutOffset() * FPSet.LongSize);
 
 							// Set offset and the number of elements the
 							// iterator is supposed to return.
 							final long table = result.getTable();
 							final Iterator itr = new Iterator(a, table, id * length, indexer);
 							final BufferedRandomAccessFile inRAF = inRAFs[id];
-							assert (skipInFile + result.getDisk()) * FPSet.LongSize <= inRAF.length();
-							inRAF.seekAndMark(skipInFile * FPSet.LongSize);
+							assert (result.getInOffset() + result.getDisk()) * FPSet.LongSize <= inRAF.length();
+							inRAF.seekAndMark(result.getInOffset() * FPSet.LongSize);
 
 							// Stop reading after diskReads elements (after
 							// which the next thread continues) except for the
 							// last thread which reads until EOF. Pass 0 when
 							// nothing can be read from disk.
-							final long diskReads = id == numThreads - 1 ? fileCnt - skipInFile : result.getDisk();
+							final long diskReads = id == numThreads - 1 ? fileCnt - result.getInOffset() : result.getDisk();
 							
 							ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAF, tmpRAF, itr, diskReads);
 
-							assert tmpRAF.getFilePointer() == (skipOutFile + result.getTotal()) * FPSet.LongSize : id
+							assert tmpRAF.getFilePointer() == (result.getOutOffset() + result.getTotal()) * FPSet.LongSize : id
 									+ " writer did not write expected amount of fingerprints to disk.";
 						} finally {
 							tmpRAF.close();
@@ -978,6 +980,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		private class Result {
 			private final long occupiedTable;
 			private final long occupiedDisk;
+			private long outOffset;
+			private long inOffset;
 			
 			public Result(long occupiedTable, long occupiedDisk) {
 				this.occupiedTable = occupiedTable;
@@ -991,6 +995,18 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			}
 			public long getTotal() {
 				return occupiedDisk + occupiedTable;
+			}
+			public void setOutOffSet(long offset) {
+				this.outOffset = offset;
+			}
+			public void setInOffset(long offset) {
+				this.inOffset = offset;
+			}
+			public long getInOffset() {
+				return this.inOffset;
+			}
+			public long getOutOffset() {
+				return this.outOffset;
 			}
 		}
 	}
