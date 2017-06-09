@@ -39,7 +39,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     private long diskPos;   // disk position
 	private long mark;
     
-    private static Object mu = new Object(); // protects the following fields
+    private static final Object mu = new Object(); // protects the following fields
     private static byte[][] availBuffs = new byte[100][];
     private static int numAvailBuffs = 0;
 
