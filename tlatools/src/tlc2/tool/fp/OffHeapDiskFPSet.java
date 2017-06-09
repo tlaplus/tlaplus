@@ -888,6 +888,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					}
 				}
 			}).sum() == fileCnt : "Missing disk elements during eviction.";
+			final long outLength = outRAF.length();
 			final Collection<Callable<Pair>> tasks = new ArrayList<Callable<Pair>>(numThreads);
 			// Id = 0
 			tasks.add(new Callable<Pair>() {
@@ -899,7 +900,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					// conditions and inconsistent fingerprint set files.
 					final BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
 					try {
-						tmpRAF.setLength(outRAF.length());
+						tmpRAF.setLength(outLength);
 						ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], tmpRAF, itr, result.getDisk());
 					} finally {
 						tmpRAF.close();
@@ -919,7 +920,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 						// conditions and inconsistent fingerprint set files.
 						final BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
 						try {
-							tmpRAF.setLength(outRAF.length());
+							tmpRAF.setLength(outLength);
 							// Sum up the combined number of elements in
 							// lower partitions.
 							long skipOutFile = 0L;
