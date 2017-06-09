@@ -896,28 +896,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 			final long outLength = outRAF.length();
 			final Collection<Callable<Pair>> tasks = new ArrayList<Callable<Pair>>(numThreads);
-			// Id = 0
-			tasks.add(new Callable<Pair>() {
-				public Pair call() throws Exception {
-					final Result result = offsets.get(0);
-					final Iterator itr = new Iterator(a, result.getTable(), indexer);
-					// Create a new RAF instance. The outRAF instance is
-					// otherwise shared by multiple writers leading to race
-					// conditions and inconsistent fingerprint set files.
-					final BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
-					try {
-						tmpRAF.setLength(outLength);
-						ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAFs[0], tmpRAF, itr, result.getDisk());
-					} finally {
-						tmpRAF.close();
-					}
-					assert tmpRAF.getFilePointer() == result.getTotal()
-							* FPSet.LongSize : "First writer did not write expected amount of fingerprints to disk.";
-					return new Pair(0, tmpRAF);
-				}
-			});
-			// Id > 0
-			for (int i = 1; i < numThreads; i++) {
+			for (int i = 0; i < numThreads; i++) {
 				final int id = i;
 				tasks.add(new Callable<Pair>() {
 					public Pair call() throws Exception {
@@ -934,8 +913,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 							// Set offset and the number of elements the
 							// iterator is supposed to return.
-							final long table = result.getTable();
-							final Iterator itr = new Iterator(a, table, id * length, indexer);
+							final Iterator itr = new Iterator(a, result.getTable(), id * length, indexer,
+									id == 0 ? Iterator.WRAP.ALLOWED : Iterator.WRAP.FORBIDDEN);
+							
 							final BufferedRandomAccessFile inRAF = inRAFs[id];
 							assert (result.getInOffset() + result.getDisk()) * FPSet.LongSize <= inRAF.length();
 							inRAF.seekAndMark(result.getInOffset() * FPSet.LongSize);
