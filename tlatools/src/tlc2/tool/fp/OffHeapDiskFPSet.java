@@ -767,7 +767,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 * The length of a single partition.
 		 */
 		private final long length;
-		private List<Future<Result>> offsets; 
+		private List<Result> offsets; 
 
 		public ConcurrentOffHeapMSBFlusher(final LongArray array, final int r, final int numThreads,
 				final long insertions) {
@@ -847,10 +847,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				});
 			}
 			try {
-				offsets = executorService.invokeAll(tasks);
+				offsets = futuresToResults(executorService.invokeAll(tasks));
 			} catch (InterruptedException ie) {
 				Thread.currentThread().interrupt();
 				throw new OffHeapRuntimeException(ie);
+			} catch (ExecutionException notExpectedToHappen) {
+				throw new OffHeapRuntimeException(notExpectedToHappen);
 			}
 
 			assert checkSorted(a, indexer, r) == -1L : String.format(
@@ -860,32 +862,26 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			LOGGER.log(Level.FINE, "Sorted in-memory table with {0} workers and reprobe {1} in {2} ms.",
 					new Object[] { numThreads, r, System.currentTimeMillis() - now });
 		}
+		
+		private List<Result> futuresToResults(List<Future<Result>> futures) throws InterruptedException, ExecutionException {
+			final List<Result> res = new ArrayList<Result>(futures.size());
+			for (Future<Result> future : futures) {
+				res.add(future.get());
+			}
+			return res;
+		}
 
 		@Override
 		protected void mergeNewEntries(final BufferedRandomAccessFile[] inRAFs, final RandomAccessFile outRAF, final Iterator ignored) throws IOException {
 			final long now = System.currentTimeMillis();
-			assert offsets.stream().mapToLong(new ToLongFunction<Future<Result>>() {
-				public long applyAsLong(Future<Result> future) {
-					try {
-						return future.get().getTable();
-					} catch (InterruptedException ie) {
-						Thread.currentThread().interrupt();
-						throw new OffHeapRuntimeException(ie);
-					} catch (ExecutionException ee) {
-						throw new OffHeapRuntimeException(ee);
-					}
+			assert offsets.stream().mapToLong(new ToLongFunction<Result>() {
+				public long applyAsLong(Result result) {
+					return result.getTable();
 				}
 			}).sum() == insertions : "Missing inserted elements during eviction.";
-			assert offsets.stream().mapToLong(new ToLongFunction<Future<Result>>() {
-				public long applyAsLong(Future<Result> future) {
-					try {
-						return future.get().getDisk();
-					} catch (InterruptedException ie) {
-						Thread.currentThread().interrupt();
-						throw new OffHeapRuntimeException(ie);
-					} catch (ExecutionException ee) {
-						throw new OffHeapRuntimeException(ee);
-					}
+			assert offsets.stream().mapToLong(new ToLongFunction<Result>() {
+				public long applyAsLong(Result result) {
+					return result.getDisk();
 				}
 			}).sum() == fileCnt : "Missing disk elements during eviction.";
 			final long outLength = outRAF.length();
@@ -893,7 +889,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			// Id = 0
 			tasks.add(new Callable<Pair>() {
 				public Pair call() throws Exception {
-					final Result result = offsets.get(0).get();
+					final Result result = offsets.get(0);
 					final Iterator itr = new Iterator(a, result.getTable(), indexer);
 					// Create a new RAF instance. The outRAF instance is
 					// otherwise shared by multiple writers leading to race
@@ -926,12 +922,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 							long skipOutFile = 0L;
 							long skipInFile = 0L;
 							for (int j = 0; j < id; j++) {
-								skipInFile = skipInFile + offsets.get(j).get().getDisk();
-								skipOutFile = skipOutFile + offsets.get(j).get().getTotal();
+								skipInFile = skipInFile + offsets.get(j).getDisk();
+								skipOutFile = skipOutFile + offsets.get(j).getTotal();
 							}
 
 							// Set offsets into the out (tmp) file.
-							final Result result = offsets.get(id).get();
+							final Result result = offsets.get(id);
 							tmpRAF.seekAndMark(skipOutFile * FPSet.LongSize);
 
 							// Set offset and the number of elements the
