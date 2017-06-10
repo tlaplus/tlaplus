@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.ToLongFunction;
 import java.util.logging.Level;
@@ -895,62 +896,66 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			}
 
 			final long outLength = outRAF.length();
-			final Collection<Callable<Pair>> tasks = new ArrayList<Callable<Pair>>(numThreads);
+			final Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(numThreads);
+			final BufferedRandomAccessFile[] tmpRAFs = new BufferedRandomAccessFile[numThreads];
 			for (int i = 0; i < numThreads; i++) {
 				final int id = i;
-				tasks.add(new Callable<Pair>() {
-					public Pair call() throws Exception {
-						// Create a new RAF instance. The outRAF instance is
-						// otherwise shared by multiple writers leading to race
-						// conditions and inconsistent fingerprint set files.
-						final BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
-						try {
-							tmpRAF.setLength(outLength);
+				
+				// Create a new RAF instance. The outRAF instance is
+				// otherwise shared by multiple writers leading to race
+				// conditions and inconsistent fingerprint set files.
+				tmpRAFs[id] = new BufferedRandomAccessFile(new File(tmpFilename), "rw");
+				tmpRAFs[id].setLength(outLength);
 
-							// Set offsets into the out (tmp) file.
-							final Result result = offsets.get(id);
-							tmpRAF.seekAndMark(result.getOutOffset() * FPSet.LongSize);
+				// Set offsets into the out (tmp) file.
+				final Result result = offsets.get(id);
+				tmpRAFs[id].seekAndMark(result.getOutOffset() * FPSet.LongSize);
 
-							// Set offset and the number of elements the
-							// iterator is supposed to return.
-							final Iterator itr = new Iterator(a, result.getTable(), id * length, indexer,
-									id == 0 ? Iterator.WRAP.ALLOWED : Iterator.WRAP.FORBIDDEN);
-							
-							final BufferedRandomAccessFile inRAF = inRAFs[id];
-							assert (result.getInOffset() + result.getDisk()) * FPSet.LongSize <= inRAF.length();
-							inRAF.seekAndMark(result.getInOffset() * FPSet.LongSize);
+				// Set offset and the number of elements the
+				// iterator is supposed to return.
+				final Iterator itr = new Iterator(a, result.getTable(), id * length, indexer,
+						id == 0 ? Iterator.WRAP.ALLOWED : Iterator.WRAP.FORBIDDEN);
+				
+				final BufferedRandomAccessFile inRAF = inRAFs[id];
+				assert (result.getInOffset() + result.getDisk()) * FPSet.LongSize <= inRAF.length();
+				inRAF.seekAndMark(result.getInOffset() * FPSet.LongSize);
 
-							// Stop reading after diskReads elements (after
-							// which the next thread continues) except for the
-							// last thread which reads until EOF. Pass 0 when
-							// nothing can be read from disk.
-							final long diskReads = id == numThreads - 1 ? fileCnt - result.getInOffset() : result.getDisk();
-							
-							ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAF, tmpRAF, itr, diskReads);
-
-							assert tmpRAF.getFilePointer() == (result.getOutOffset() + result.getTotal()) * FPSet.LongSize : id
-									+ " writer did not write expected amount of fingerprints to disk.";
-						} finally {
-							tmpRAF.close();
-						}
-						return new Pair(id, tmpRAF);
+				// Stop reading after diskReads elements (after
+				// which the next thread continues) except for the
+				// last thread which reads until EOF. Pass 0 when
+				// nothing can be read from disk.
+				final long diskReads = id == numThreads - 1 ? fileCnt - result.getInOffset() : result.getDisk();
+				
+				tasks.add(new Callable<Void>() {
+					public Void call() throws Exception {
+						ConcurrentOffHeapMSBFlusher.super.mergeNewEntries(inRAF, tmpRAFs[id], itr, diskReads);
+						assert tmpRAFs[id].getFilePointer() == (result.getOutOffset() + result.getTotal()) * FPSet.LongSize : id
+								+ " writer did not write expected amount of fingerprints to disk.";
+						return null;
 					}
 				});
 			}
 			// Combine the callable results.
 			try {
-				final List<Future<Pair>> invoked = executorService.invokeAll(tasks);
-				assert checkOutRAFs(invoked);
+				executorService.invokeAll(tasks);
+				executorService.shutdown();
+				executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+				assert checkRAFs(tmpRAFs);
 			} catch (InterruptedException ie) {
 				Thread.currentThread().interrupt();
 				throw new OffHeapRuntimeException(ie);
-			} catch (ExecutionException ee) {
-				throw new OffHeapRuntimeException(ee);
 			} finally {
 				executorService.shutdown();
 			}
+			
+			// Finally close the out rafs after all tasks have finished. On
+			// Linux, closing an instance of the tmpRAFs appears to be racy when
+			// other tasks still execute.
+			for (int i = 0; i < tmpRAFs.length; i++) {
+				tmpRAFs[i].close();
+			}
 
-			assert checkInRAFs(inRAFs);
+			assert checkRAFs(inRAFs);
 			assert checkTable(a) : "Missed element during eviction.";
 			
 			LOGGER.log(Level.FINE, "Wrote table to disk with {0} workers in {1} ms.",
@@ -1319,30 +1324,10 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		return checkSorted(array, indexer, reprobe, 0, array.size() - 1L + reprobe);
 	}
 
-	private class Pair {
-		public final BufferedRandomAccessFile braf;
-		public final int id;
-
-		Pair(int id, BufferedRandomAccessFile braf) {
-			this.id = id;
-			this.braf = braf;
-		}
-	}
-
-	private static boolean checkOutRAFs(final List<Future<Pair>> futures) throws InterruptedException, ExecutionException, IOException {
-		// First sort unsorted list of features by their id.
-		final BufferedRandomAccessFile[] outRAFs = new BufferedRandomAccessFile[futures.size()];
-		for (Future<Pair> future : futures) {
-			final Pair pair = future.get();
-			outRAFs[pair.id] = pair.braf;
-		}
-		return checkInRAFs(outRAFs);
-	}
-	
-	private static boolean checkInRAFs(final BufferedRandomAccessFile[] inRafs) throws IOException {
-		for (int i = 0; i < inRafs.length - 1; i++) {
-			final long end = inRafs[i].getFilePointer();
-			final long start = inRafs[i + 1].getMark();
+	private static boolean checkRAFs(final BufferedRandomAccessFile[] rafs) throws IOException {
+		for (int i = 0; i < rafs.length - 1; i++) {
+			final long end = rafs[i].getFilePointer();
+			final long start = rafs[i + 1].getMark();
 			if (end != start) {
 				return false;
 			}
