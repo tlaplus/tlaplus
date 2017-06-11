@@ -130,8 +130,8 @@
 	        	<artifactId>tycho-compiler-plugin</artifactId>
 	        	<version>${tycho-version}</version>
 			    <configuration>
-			    	<source>1.8</source>
-			    	<target>1.8</target>
+			    	<source>1.7</source>
+			    	<target>1.7</target>
 					<encoding>UTF-8</encoding>
 			    </configuration>
 			</plugin>
@@ -197,7 +197,7 @@
 					     package that is indirectly referenced by the toolbox (indirectly via
 					     org.apache.mina.core).
 					     see http://dev.eclipse.org/mhonarc/lists/cbi-dev/msg00166.html --> 
-		 			<executionEnvironment>JavaSE-1.8</executionEnvironment>
+		 			<executionEnvironment>JavaSE-1.7</executionEnvironment>
 
 					<!-- configure the p2 target environments for multi-platform build -->
 					<environments>
