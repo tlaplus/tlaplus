@@ -28,11 +28,12 @@ package tlc2.tool.fp;
 import java.io.IOException;
 
 import junit.framework.TestCase;
+import util.TLCRuntime;
 
 public class LongArrayTest extends TestCase {
 
 	public void testGetAndSet() throws IOException {
-		if (!System.getProperty("sun.arch.data.model").equals("64")) {
+		if (TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86) {
 			// LongArray only works on 64bit architectures. See comment in
 			// LongArray ctor.
 			return;
@@ -93,7 +94,7 @@ public class LongArrayTest extends TestCase {
 	}
 	
 	public void testGetAndTrySet() throws IOException {
-		if (!System.getProperty("sun.arch.data.model").equals("64")) {
+		if (TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86) {
 			// LongArray only works on 64bit architectures. See comment in
 			// LongArray ctor.
 			return;

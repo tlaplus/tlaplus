@@ -149,4 +149,25 @@ public class TLCRuntime {
 		}
 		return (long) fpMemSize;
 	}
+
+	public enum ARCH {
+		x86,
+		x86_64;
+	}
+	
+	public ARCH getArchitecture() {
+		if (System.getProperty("sun.arch.data.model") != null
+				&& System.getProperty("sun.arch.data.model").equals("64")) {
+			return ARCH.x86_64;
+		}
+		if (System.getProperty("com.ibm.vm.bitmode") != null 
+				&& System.getProperty("com.ibm.vm.bitmode").equals("64")) {
+			return ARCH.x86_64;
+		}
+		if (System.getProperty("java.vm.version") != null 
+				&& System.getProperty("java.vm.version").contains("_64")) {
+			return ARCH.x86_64;
+		}
+		return ARCH.x86;
+	}
 }
