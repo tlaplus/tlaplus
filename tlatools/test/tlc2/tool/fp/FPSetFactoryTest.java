@@ -7,9 +7,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
+
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 
 import tlc2.tool.distributed.fp.FPSetRMI;
+import util.TLCRuntime;
 
 @SuppressWarnings("deprecation")
 public class FPSetFactoryTest {
@@ -61,6 +65,7 @@ public class FPSetFactoryTest {
 
 	@Test
 	public void testGetFPSetOffHeap() throws RemoteException {
+		Assume.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
 		doTestGetFPSet(OffHeapDiskFPSet.class, fpSetConfiguration);
@@ -146,6 +151,7 @@ public class FPSetFactoryTest {
 	
 	@Test
 	public void testGetFPSetOffHeapMultiFPSet() throws RemoteException {
+		Assume.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
 		fpSetConfiguration.setFpBits(1);
@@ -183,6 +189,7 @@ public class FPSetFactoryTest {
 	
 	@Test
 	public void testGetFPSetOffHeapMultiFPSetWithMem() throws RemoteException {
+		Assume.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
 		fpSetConfiguration.setMemory(MEMORY);

@@ -2,11 +2,19 @@ package tlc2.tool.fp;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 
 import tlc2.tool.fp.OffHeapDiskFPSet.Iterator;
+import util.TLCRuntime;
 
 public class OffHeapIteratorTest {
+	
+	@Before
+	public void setup() {
+		Assume.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
+	}
 
 	@Test
 	public void testNext() {

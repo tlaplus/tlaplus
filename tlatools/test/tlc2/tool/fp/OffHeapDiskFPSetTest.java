@@ -42,11 +42,20 @@ import java.util.Random;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
+
+import util.TLCRuntime;
 
 public class OffHeapDiskFPSetTest {
 	
 	protected static final String filename = "OffHeapDiskFPSetTest";
+	
+	@Before
+	public void setup() {
+		Assume.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
+	}
 
 //	@Test
 //	public void testInsertAndEvictRnd() throws Exception {

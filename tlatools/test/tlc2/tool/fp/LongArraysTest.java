@@ -10,12 +10,21 @@ import static tlc2.tool.fp.OffHeapDiskFPSet.EMPTY;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 
 import tlc2.tool.fp.LongArrays.LongComparator;
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
+import util.TLCRuntime;
 
 public class LongArraysTest {
+	
+	@Before
+	public void setup() {
+		Assume.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
+	}
+	
 	@Test
 	public void testEmpty1() {
 		doTest(new ArrayList<Long>(0), 1L, 0, new OffHeapDiskFPSet.Indexer(0, 1));
