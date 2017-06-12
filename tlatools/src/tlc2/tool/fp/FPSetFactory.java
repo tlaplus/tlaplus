@@ -110,7 +110,7 @@ public abstract class FPSetFactory {
 									+ "Off-heap memory allocated via -XX:MaxDirectMemorySize flag cannot be used by default "
 									+ "fingerprint set and is therefore wasted.",
 							implClassname, architecture);
-					MP.printWarning(EC.GENERAL, msg);
+					MP.printWarning(EC.TLC_FEATURE_UNSUPPORTED, msg);
 				}
 			}
 			return new MSBDiskFPSet(fpSetConfig);
