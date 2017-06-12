@@ -46,8 +46,6 @@ import org.junit.Test;
 
 public class OffHeapDiskFPSetTest {
 	
-	protected static final String tmpdir = System.getProperty("java.io.tmpdir") + File.separator + "OffHeapDiskFPSetTest"
-			+ System.currentTimeMillis();
 	protected static final String filename = "OffHeapDiskFPSetTest";
 
 //	@Test
@@ -139,13 +137,11 @@ public class OffHeapDiskFPSetTest {
 	}
 
 	private void doTest(final long rgenseed, final long length) throws RemoteException, IOException, NoSuchFieldException, IllegalAccessException {
-		new File(tmpdir).mkdirs();
-		
 		final DummyFPSetConfiguration fpSetConfig = new DummyFPSetConfiguration();
 		fpSetConfig.setMemoryInFingerprintCnt(length);
 		
 		final DiskFPSet fpSet = new OffHeapDiskFPSet(fpSetConfig);
-		fpSet.init(1, tmpdir, filename);
+		fpSet.init(1, createTmpFile(), filename);
 
 		// Insert n randomly choosen positive longs.
 		Random random = new Random(rgenseed);
@@ -243,13 +239,12 @@ public class OffHeapDiskFPSetTest {
 
 	private void doTestOffset(long length, long rgenseed) throws RemoteException, IOException, NoSuchMethodException,
 			IllegalAccessException, InvocationTargetException {
-		new File(tmpdir).mkdirs();
 		
 		final DummyFPSetConfiguration fpSetConfig = new DummyFPSetConfiguration();
 		fpSetConfig.setMemoryInFingerprintCnt(length);
 		
 		final OffHeapDiskFPSet fpSet = new OffHeapDiskFPSet(fpSetConfig);
-		fpSet.init(1, tmpdir, filename);
+		fpSet.init(1, createTmpFile(), filename);
 
 		final SortedSet<Long> longs = new TreeSet<Long>();
 		
@@ -272,6 +267,13 @@ public class OffHeapDiskFPSetTest {
 					field.invoke(fpSet, 0, fp + 1L));
 			longs.remove(fp);
 		}
+	}
+	
+	private static String createTmpFile() {
+		final String tmpdir = System.getProperty("java.io.tmpdir") + File.separator + "OffHeapDiskFPSetTest"
+				+ System.currentTimeMillis();
+		new File(tmpdir).mkdirs();
+		return tmpdir;
 	}
 
 	private static long getFingerprint(Random random) {
