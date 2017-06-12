@@ -25,21 +25,25 @@
  ******************************************************************************/
 package tlc2.tool.fp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Test;
 
-import junit.framework.TestCase;
 import util.TLCRuntime;
 
-public class LongArrayTest extends TestCase {
+public class LongArrayTest {
 	
 	@Before
 	public void setup() {
 		Assume.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
 	}
 
+	@Test
 	public void testGetAndSet() throws IOException {
 		final int elements = 100;
 
@@ -75,6 +79,7 @@ public class LongArrayTest extends TestCase {
 		}
 	}
 	
+	@Test
 	public void testOutOfRangePositive() throws IOException {
 		final LongArray array = new LongArray(1);
 		try {
@@ -85,6 +90,7 @@ public class LongArrayTest extends TestCase {
 		fail();
 	}
 	
+	@Test
 	public void testOutOfRangeNegative() throws IOException {
 		final LongArray array = new LongArray(1);
 		try {
@@ -95,6 +101,7 @@ public class LongArrayTest extends TestCase {
 		fail();
 	}
 	
+	@Test
 	public void testGetAndTrySet() throws IOException {
 		final int elements = 100;
 
@@ -132,6 +139,7 @@ public class LongArrayTest extends TestCase {
 		}
 	}
 	
+	@Test
 	public void testZeroMemory() throws IOException {
 		for (int k = 1; k < 8; k++) {
 			for (int i = 1; i < 128; i++) {
