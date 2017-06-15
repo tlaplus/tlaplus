@@ -220,7 +220,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// 2^((Year-1993)/ 2)+2)
 		// (1993 as base results from a statistic of windows OS memory requirements)
 		final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-		double estimateSoftwareBloatInMBytes = Math.pow(2, ((currentYear - 1993) / 2) + 2);
+		double estimateSoftwareBloatInMBytes = Math.pow(2, ((currentYear - 1993) / 3) + 3.5);
 		
 		// 2.) Optimal range 
 		x[s] = lowerLimit * 2d;
