@@ -36,7 +36,7 @@ Next == /\ x'= x \cup {"a"}
         /\ y'= y \cup {"b"}
 Spec == Init /\ [][Next]_x
 
-EnabledTest(Foo(_)) == Foo(x'=x)
+EnabledTest(Foo(_)) == Foo(x=x)
 UnchangedTest(Foo(_)) == Foo(x)
 PrimeTest(Foo(_)) == Foo(x) = x
 
