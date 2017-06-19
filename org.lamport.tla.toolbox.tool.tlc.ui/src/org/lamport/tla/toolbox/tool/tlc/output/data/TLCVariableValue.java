@@ -597,6 +597,7 @@ public abstract class TLCVariableValue
 					TLCVariableValue first = (TLCVariableValue) firstElts[i].getValue();
 					TLCVariableValue second = (TLCVariableValue) secondElts[j].getValue();
 					if (!first.toSimpleString().equals(second.toSimpleString())) {
+						secondElts[i].setChanged();
 						second.setChanged();
 						if (first.getClass().equals(second.getClass())) {
 							// Only diff objects of identical types
@@ -622,6 +623,7 @@ public abstract class TLCVariableValue
 			}
 			if (notfound) {
 				secondElts[i].setAdded();
+				((TLCVariableValue) secondElts[i].getValue()).setAdded();
 			}
 		}
 	}

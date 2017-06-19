@@ -164,5 +164,23 @@ public class TLCSequenceVariableValue extends TLCVariableValue implements TLCMul
 			setFcnElementArrayDiffInfo(firstElts, secondElts);
 			return;
 		}
+		
+        /*
+         * There are four cases: isPrefix and firstShorter : we mark end of
+         * longer (= second) as added. isPrefix and !firstShorter : we mark
+         * end of longer (= first) as deleted. isSuffix and firstShorter :
+         * we mark beginning of longer (=second) as added. isSuffix and
+         * !firstShorter : we mark beginning of longer (=first) as deleted.
+         */
+		final int firstEltToMark = (isPrefix) ? shorter.length : 0;
+
+		for (int i = 0; i < longer.length - shorter.length; i++) {
+			final TLCVariableValue value = (TLCVariableValue) longer[i + firstEltToMark].value;
+			if (firstShorter) {
+				value.setAdded();
+			} else {
+				value.setDeleted();
+			}
+		}
 	}
 }

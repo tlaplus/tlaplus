@@ -1169,13 +1169,16 @@ public class TLCErrorView extends ViewPart
 						return TLCUIActivator.getDefault().getChangedColor();
 					}
 				} else if (value.isAdded()) {
+					// Added takes precedence over deleted. E.g. a value can be
+					// added to a set in this state and be removed in the next
+					// state.
 					return TLCUIActivator.getDefault().getAddedColor();
 				} else if (value.isDeleted()) {
 					return TLCUIActivator.getDefault().getDeletedColor();
 				}
 			} else if (coloring && element instanceof TLCState) {
 				// Assign a color to each location to make actions in the error
-				// viewer easier distinguishable.
+				// viewer more easily distinguishable.
 				final TLCState state = (TLCState) element;
 				Location moduleLocation = state.getModuleLocation();
 				if (moduleLocation == null) {
@@ -1328,5 +1331,9 @@ public class TLCErrorView extends ViewPart
 
 	public void setOriginalTraceShown(boolean b) {
 		this.model.setOriginalTraceShown(b);
+	}
+	
+	TreeViewer getViewer() {
+		return variableViewer;
 	}
 }
