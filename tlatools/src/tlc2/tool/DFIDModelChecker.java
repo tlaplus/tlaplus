@@ -705,13 +705,9 @@ public class DFIDModelChecker extends AbstractChecker
                 String.valueOf(this.theFPSet.size()) });
     }
 
-    public final void reportSuccess() throws IOException
+    private final void reportSuccess() throws IOException
     {
-        long d = this.theFPSet.size();
-        double prob1 = (d * (this.numOfGenStates.get() - d)) / Math.pow(2, 64);
-        double prob2 = this.theFPSet.checkFPs();
-
-        MP.printMessage(EC.TLC_SUCCESS, new String[] { String.valueOf(prob1), String.valueOf(prob2) });
+        reportSuccess(this.theFPSet.size(), this.theFPSet.checkFPs(), numOfGenStates.get());
     }
 
     /**
