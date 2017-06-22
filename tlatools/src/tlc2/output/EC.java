@@ -176,6 +176,7 @@ public interface EC
     public static final int CFG_EXPECT_ID = 5005;
     public static final int CFG_EXPECTED_SYMBOL = 5006;
     public static final int TLC_MODE_MC = 2187;
+    public static final int TLC_MODE_MC_DFS = 2271;
     public static final int TLC_MODE_SIMU = 2188;
     public static final int TLC_COMPUTING_INIT = 2189;
     public static final int TLC_INIT_GENERATED1 = 2190;

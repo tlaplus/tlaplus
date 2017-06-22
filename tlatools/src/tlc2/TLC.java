@@ -781,16 +781,18 @@ public class TLC
             } else
             {
                 // model checking
-				MP.printMessage(EC.TLC_MODE_MC, new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
-						TLCGlobals.getNumWorkers() == 1 ? "" : "s" });
                 
                 AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
                 {
+                	MP.printMessage(EC.TLC_MODE_MC, new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
+                			TLCGlobals.getNumWorkers() == 1 ? "" : "s" });
                     mc = new ModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
                     modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
                 } else
                 {
+                	MP.printMessage(EC.TLC_MODE_MC_DFS, new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
+                			TLCGlobals.getNumWorkers() == 1 ? "" : "s" });
                     mc = new DFIDModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, true, resolver, specObj);
                 }
                 TLCGlobals.mainChecker = mc;
