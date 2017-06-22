@@ -885,14 +885,6 @@ public class ModelChecker extends AbstractChecker
     }
 
     /**
-     * Work to be done prior entering to the worker loop
-     */
-    protected void runTLCPreLoop()
-    {
-        // nothing to do in this implementation
-    }
-
-    /**
      * Process calculation.  
      * 
      * Comments added 9 April 2012 by LL.  The above was Simon's extensive commenting.  I presume

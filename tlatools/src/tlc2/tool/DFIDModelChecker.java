@@ -169,6 +169,9 @@ public class DFIDModelChecker extends AbstractChecker
 
                 FPIntSet.incLevel();
                 success = this.runTLC(level);
+				// Recent done flag before after the workers have checked the
+				// current level in preparation for the next level.
+                this.done = false;
                 if (!success)
                     return;
 

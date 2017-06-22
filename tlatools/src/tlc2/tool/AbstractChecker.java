@@ -428,9 +428,6 @@ public abstract class AbstractChecker implements Cancelable
         // every `count' times that the progress is printed.
         int count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
 
-        // work to be done prior loop entry
-        runTLCPreLoop();
-
         // I added the `if (!this.done)' to the following statement.
         // I have no idea what this wait is for, but apparently
         // because of changes made by Simon, it caused TLC to wait for
@@ -526,13 +523,6 @@ public abstract class AbstractChecker implements Cancelable
      * @return the array of initialized worker threads
      */
     protected abstract IWorker[] startWorkers(AbstractChecker checker, int checkIndex);
-
-    /**
-     * Hook to run some work before entering the worker loop
-     */
-    protected void runTLCPreLoop()
-    {
-    }
 
     /**
      * Usually
