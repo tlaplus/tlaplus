@@ -51,7 +51,7 @@ public class DepthFirstTerminate extends ModelCheckerTestCase {
 	 */
 	@Override
 	protected int getNumberOfThreads() {
-		// With >1, TLC's depth first search never terminates.
-		return 1;
+		// Run this test with as many threads possible to hopefully spot concurrency issues.
+		return Runtime.getRuntime().availableProcessors();
 	}
 }

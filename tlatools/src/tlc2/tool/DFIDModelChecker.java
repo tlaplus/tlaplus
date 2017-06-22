@@ -724,14 +724,6 @@ public class DFIDModelChecker extends AbstractChecker
     }
 
     /**
-     * Run prior the worker loop
-     */
-    protected void runTLCPreLoop()
-    {
-        this.done = false;
-    }
-
-    /**
      * Process calculation 
      * @param count
      * @param depth
