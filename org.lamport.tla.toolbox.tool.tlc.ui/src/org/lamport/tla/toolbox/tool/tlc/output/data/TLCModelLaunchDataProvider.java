@@ -105,6 +105,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     protected long startTimestamp;
     // end time
     protected long finishTimestamp;
+    // tlc mode (BFS|DFS|Simu)
+    protected String tlcMode;
     // last checkpoint time
     protected long lastCheckpointTimeStamp;
     // coverage at
@@ -188,6 +190,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         startTime = 0;
         startTimestamp = Long.MIN_VALUE;
         finishTimestamp = Long.MIN_VALUE;
+        tlcMode = "";
         lastCheckpointTimeStamp = Long.MIN_VALUE;
         coverageTimestamp = "";
         setCurrentStatus(NOT_RUNNING);
@@ -334,8 +337,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 // Progress information
                 case EC.TLC_VERSION:
                 case EC.TLC_SANY_START:
-                case EC.TLC_MODE_MC:
-                case EC.TLC_MODE_SIMU:
                 case EC.TLC_SANY_END:
                     // case EC.TLC_SUCCESS:
                 case EC.TLC_PROGRESS_START_STATS_DFID:
@@ -346,6 +347,21 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_SEARCH_DEPTH:
                 case EC.TLC_LIVE_IMPLIED:
                 case EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED:
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_MODE_MC:
+                    this.tlcMode = "Breadth-first search";
+                    informPresenter(ITLCModelLaunchDataPresenter.TLC_MODE);
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_MODE_MC_DFS:
+                    this.tlcMode = "Depth-first search";
+                    informPresenter(ITLCModelLaunchDataPresenter.TLC_MODE);
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_MODE_SIMU:
+                    this.tlcMode = "Simulation";
+                    informPresenter(ITLCModelLaunchDataPresenter.TLC_MODE);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_SUCCESS:
@@ -901,6 +917,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public long getFinishTimestamp()
     {
         return finishTimestamp;
+    }
+    
+    public String getTLCMode() {
+    	return tlcMode;
     }
 
     public String getCoverageTimestamp()

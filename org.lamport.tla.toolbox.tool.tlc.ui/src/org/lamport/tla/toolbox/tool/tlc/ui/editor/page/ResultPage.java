@@ -109,6 +109,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     // method.
     private long startTime = 0;
     private Text finishTimestampText;
+    private Text tlcModeText;
     private Text lastCheckpointTimeText;
     private Text coverageTimestampText;
     private Text currentStatusText;
@@ -205,6 +206,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    ResultPage.this.finishTimestampText.setToolTipText(sdf.format(new Date(elapsedTime)));
 	                    ResultPage.this.startTimestampText.setToolTipText(sdf.format(new Date(elapsedTime)));
 	                    break;
+	                case TLC_MODE:
+	                	ResultPage.this.tlcModeText.setText(dataProvider.getTLCMode());
 	                case LAST_CHECKPOINT_TIME:
 	                    long lastCheckpointTimeStamp = dataProvider.getLastCheckpointTimeStamp();
 	                    if(lastCheckpointTimeStamp > 0) {
@@ -357,6 +360,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     		this.startTimestampText.setText("");
     		this.startTime = 0;
     		this.finishTimestampText.setText("");
+    		this.tlcModeText.setText("");
     		this.lastCheckpointTimeText.setText("");
     		this.currentStatusText.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
     		this.errorStatusHyperLink.setText(TLCModelLaunchDataProvider.NO_ERRORS);
@@ -461,7 +465,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // elapsed time
         this.finishTimestampText = FormHelper.createTextLeft("End time:", statusComposite, toolkit);
         this.finishTimestampText.setEditable(false);
-        // last checkpoint time
+        // elapsed time
+        this.tlcModeText = FormHelper.createTextLeft("TLC mode:", statusComposite, toolkit);
+        this.tlcModeText.setEditable(false);
+       // last checkpoint time
         this.lastCheckpointTimeText = FormHelper.createTextLeft("Last checkpoint time:", statusComposite, toolkit);
         this.lastCheckpointTimeText.setEditable(false);
         // current status
