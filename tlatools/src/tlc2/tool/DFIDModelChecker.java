@@ -721,6 +721,12 @@ public class DFIDModelChecker extends AbstractChecker
         for (int i = 0; i < this.workers.length; i++)
         {
             this.workers[i] = new DFIDWorker(i, checkIndex, checker);
+        }
+		// Start all workers once instantiated to avoid a race with setStop,
+		// when setStop is being called concurrently with startWorkers. This
+		// happens, if a DFIDWorker terminates immediately.
+        for (int i = 0; i < this.workers.length; i++)
+        {
             this.workers[i].start();
         }
         return this.workers;
