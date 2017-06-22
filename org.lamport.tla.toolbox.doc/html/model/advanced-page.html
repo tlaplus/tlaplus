@@ -196,7 +196,11 @@ the depth of its search.&nbsp;  (Limiting the depth ensures
 that only a finite set of states is explored, even if
 the complete set of reachable states is infinite.)&nbsp;
 With depth-first search, TLC will usually not produce
-a shortest-length error trace.&nbsp;
+a shortest-length error trace.&nbsp;  When running in depth-first
+mode, TLC does not compute the entire state graph and does not use a state
+queue, so it does not produce any
+ <i>Diameter</i> or <i>Queue size</i> 
+ statistics.
 </p>
 <p>
 <b>Warning:</b> Depth-first search is an experimental TLC
@@ -226,7 +230,8 @@ If you want to know what specifying the <em>Seed</em> and <em>Aril</em> does,
 look them up in
 <em><a href=
 "http://research.microsoft.com/en-us/um/people/lamport/tla/book.html" target="_blank">
-Specifying Systems</a></em>. 
+Specifying Systems</a></em>.&nbsp;  When run in simulation mode, the only
+statistics TLC reports are for <i>States Found</i>.
 </p>
 
 <h3>Fingerprint seed index</h3>
