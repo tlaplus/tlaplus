@@ -25,8 +25,11 @@
   - sudo free -m -t
   # Turn OOM killer off to stop it from killing JUnit tests.
   - sudo sysctl vm.overcommit_memory=2
+  # Install ant-optinal deb which contains the junit ant task.
+  - sudo apt-get -qq update
+  - sudo apt-get install -y ant-optional
 
-## Disable instable UI tests for now. It means we won't need maven and can run shortly running ant directly.
+## Disable instable UI tests for now. It means we won't need maven and can run ant directly.
 #  # Install Window Manager.
 #  - sudo apt-get install --no-install-recommends metacity libwebkit-dev
 #  # Start X & Window Manager.
