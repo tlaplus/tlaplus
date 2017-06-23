@@ -4,7 +4,6 @@ package org.lamport.tla.toolbox;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -69,8 +68,6 @@ public class Application implements IApplication {
 		// With a canonical location the cwd no longer matters from which the
 		// Toolbox launcher is executed.
 		if (!new File(instanceLocation.getURL().getFile() + File.separator + ".metadata" + File.separator).exists()) {
-			new File(instanceLocation.getURL().getFile()).mkdir();
-			
 			final String previousInstanceLoc = getPreviousInstanceLocation(instanceLocation);
 			if (previousInstanceLoc != null) {
 				final String instanceLoc = instanceLocation.getURL().toExternalForm();
@@ -101,9 +98,7 @@ public class Application implements IApplication {
 							public void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 								monitor.beginTask("Migrating Toolbox metadata to new location.", IProgressMonitor.UNKNOWN);
 								
-								copyRecurively(
-										Paths.get(URI.create(previousInstanceLoc + "/.metadata/")),
-										Paths.get(URI.create(instanceLoc)), monitor);
+								copyRecurively(toPath(previousInstanceLoc, ".metadata"), toPath(instanceLoc), monitor);
 								monitor.done();
 							}
 						});
@@ -154,6 +149,20 @@ public class Application implements IApplication {
 		}
 	}
 
+	private static Path toPath(final String prefix) {
+		return toPath(prefix, "");
+	}
+
+	// Converts our special path string coming from the BasicLocation to a valid
+	// path for java.nio.file.Path.
+	private static Path toPath(final String prefix, final String suffix) {
+		if (prefix.replaceFirst("file:", "").contains(":")) {
+			// Windows path, e.g. file:/C:/...
+			return Paths.get(prefix.replaceFirst("file:/", ""), suffix);
+		}
+		return Paths.get(prefix.replaceFirst("file:", ""), suffix);
+	}
+
 	private static void clearPreviousInstanceLocation(final Location instanceLocation) {
 		final ChooseWorkspaceData launchData = new ChooseWorkspaceData(instanceLocation.getDefault());
 		launchData.setRecentWorkspaces(new String[0]);
@@ -182,6 +191,7 @@ public class Application implements IApplication {
 	private static void copyRecurively(final Path src, final Path dst, final IProgressMonitor monitor)
 			throws InvocationTargetException {
 		try {
+			dst.toFile().mkdir();
 			final Path target = dst.resolve(src.getFileName());
 			Files.walkFileTree(src, new FileVisitor<Path>() {
 				public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs)
