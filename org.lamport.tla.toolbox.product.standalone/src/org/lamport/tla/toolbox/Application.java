@@ -84,25 +84,25 @@ public class Application implements IApplication {
 					clearPreviousInstanceLocation(instanceLocation);
 					
 					// Open dialog and ask user to either import (migrate) the old workspace or create a fresh workspace.
-					final MessageDialog md = new MessageDialog(PlatformUI.createDisplay().getActiveShell(), "Manually move Toolbox files.",
+					final MessageDialog md = new MessageDialog(PlatformUI.createDisplay().getActiveShell(), "Migrate Toolbox files.",
 							null, 
 									"Previously, your Toolbox used a different location to store its list of specifications and preferences. "
 									+ "Starting with Toolbox release 1.5.4, the Toolbox keeps this data in a canonical location.\n\n"
-									+ "If you do not let the Toolbox import this data, "
+									+ "If you do not let the Toolbox migrate this data, "
 									+ "it will come up with default preferences and an empty spec explorer. "
-									+ "You will have to manually configure the preferences and add your existing specifications.\n\n"
-									+ "Click \"Import\" if you want the Toolbox to import the data now and continue Toolbox start-up.\n\n"
-									+ "Click \"Start Fresh\" to continue Toolbox start-up and to manually add your specifications.",
-							MessageDialog.QUESTION, new String[] {"Copy", "Start Fresh"}, 0);
+									+ "You will have to manually configure the preferences and import your existing specifications.\n\n"
+									+ "Click \"Migrate\" if you want the Toolbox to migrate the data now and continue Toolbox start-up.\n\n"
+									+ "Click \"Start Fresh\" to continue Toolbox start-up and to manually import your specifications.",
+							MessageDialog.QUESTION, new String[] {"Migrate", "Start Fresh"}, 0);
 					
 					if (md.open() == 0) {
 						final ProgressMonitorDialog pmd = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 						pmd.run(true, false, new IRunnableWithProgress() {
 							public void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-								monitor.beginTask("Copying Toolbox metadata to new location.", IProgressMonitor.UNKNOWN);
+								monitor.beginTask("Migrating Toolbox metadata to new location.", IProgressMonitor.UNKNOWN);
 								
 								copyRecurively(
-										Paths.get(URI.create(previousInstanceLoc + File.separator + ".metadata/")),
+										Paths.get(URI.create(previousInstanceLoc + "/.metadata/")),
 										Paths.get(URI.create(instanceLoc)), monitor);
 								monitor.done();
 							}
