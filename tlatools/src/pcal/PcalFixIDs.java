@@ -73,6 +73,8 @@ public class PcalFixIDs {
             FixReturn((AST.Return) ast, context);
         else if (ast.getClass().equals(AST.CallReturnObj.getClass()))
             FixCallReturn((AST.CallReturn) ast, context);
+        else if (ast.getClass().equals(AST.CallGotoObj.getClass()))
+            FixCallGoto((AST.CallGoto) ast, context);
         else if (ast.getClass().equals(AST.GotoObj.getClass()))
             FixGoto((AST.Goto) ast, context);
 
@@ -390,6 +392,13 @@ public class PcalFixIDs {
 
     private static void FixCallReturn(AST.CallReturn ast, String context) throws PcalFixIDException {
         ast.from = st.UseThis(PcalSymTab.PROCEDURE, ast.from, context);
+        ast.to = st.UseThis(PcalSymTab.PROCEDURE, ast.to, context);
+        for (int i = 0; i < ast.args.size(); i++)
+            FixExpr((TLAExpr) ast.args.elementAt(i), context);
+    }
+
+    private static void FixCallGoto(AST.CallGoto ast, String context) throws PcalFixIDException {
+        ast.after = st.UseThis(PcalSymTab.PROCEDURE, ast.after, context);
         ast.to = st.UseThis(PcalSymTab.PROCEDURE, ast.to, context);
         for (int i = 0; i < ast.args.size(); i++)
             FixExpr((TLAExpr) ast.args.elementAt(i), context);

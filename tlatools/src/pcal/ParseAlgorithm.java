@@ -49,9 +49,10 @@
 *    holds the label (the absence of a label represented by                *
 *    a lbl field equal to the empty string "").  The only difference       *
 *    from the simple grammar is that a <Call> followed by an unlabeled     *
-*    <Return> is converted into a single AST.CallReturn object.  This      *
-*    pass does not produce any AST.If or AST.Either objects, and any       *
-*    AST.While object it produces has an empty labDo field.                *
+*    <Return> or <Goto> is converted into a single AST.CallReturn or       *
+*    AST.CallGoto object, respectively.  This pass does not produce any    *
+*    AST.If or AST.Either objects, and any AST.While object it produces    *
+*    has an empty labDo field.                                             *
 *                                                                          *
 *  - It calls the procedure AddLabelsToStmtSeq to check for missing        *
 *    labels and either add them or report an error if it finds one,        *
@@ -1077,7 +1078,7 @@ public class ParseAlgorithm
        if (nextTok.equals("print"))  { return GetPrintS() ; } ;
        if (nextTok.equals("assert")) { return GetAssert() ; } ;
        if (nextTok.equals("skip"))   { return GetSkip() ; }   ;
-       if (nextTok.equals("call"))   { return GetCallOrCallReturn() ; }   ;
+       if (nextTok.equals("call"))   { return GetCallOrCallReturnOrCallGoto() ; }   ;
        if (nextTok.equals("return")) { return GetReturn() ; }   ;
        if (nextTok.equals("goto"))   { return GetGoto() ; }   ;
        if (nextTok.equals("while"))  { return GetWhile() ; } ;
@@ -1585,7 +1586,7 @@ public class ParseAlgorithm
        return result ;
      }
 
-   public static AST GetCallOrCallReturn() throws ParseAlgorithmException 
+   public static AST GetCallOrCallReturnOrCallGoto() throws ParseAlgorithmException 
      /**********************************************************************
      * Note: should not complain if it finds a return that is not inside   *
      * a procedure because it could be in a macro that is called only      *
@@ -1603,6 +1604,23 @@ public class ParseAlgorithm
            result.from = currentProcedure ;
            result.args = theCall.args ;
            result.setOrigin(new Region(theCall.getOrigin().getBegin(), end)) ;
+           return result ;
+         }
+       else if (PeekAtAlgToken(1).equals("goto"))
+         { MustGobbleThis("goto") ;
+           AST.CallGoto result = new AST.CallGoto();
+           result.col   = theCall.col ;
+           result.line  = theCall.line ;
+           result.to    = theCall.to ;
+           result.after = GetAlgToken() ;
+           result.args  = theCall.args ;
+           PCalLocation end = new PCalLocation(lastTokLine-1, lastTokCol-1+result.to.length());
+           result.setOrigin(new Region(theCall.getOrigin().getBegin(), end)) ;
+           gotoUsed = true ;
+           if (result.to.equals("Done") || result.to.equals("\"Done\"")) {
+               gotoDoneUsed = true;
+           }
+           GobbleThis(";") ;
            return result ;
          }
        else 
@@ -2020,15 +2038,16 @@ public class ParseAlgorithm
                * set assignedVbls to the set of variables being assigned   *
                * by this statement.  Should set nextStepNeedsLabel to      *
                * true and set assignedVbls to a non-empty set iff this is  *
-               * a call, return, or callReturn.                            *
+               * a call, return, callReturn, or callGoto.                  *
                ************************************************************/
                nextStepNeedsLabel = false ;
                Vector assignedVbls = new Vector() ;
 
                /************************************************************
-               * Set isCallOrReturn true iff this is a call, return, or    *
-               * callReturn.  Will set setsPrcdVbls true iff this is a     *
-               * return or callReturn or a call of currentProcedure.       *
+               * Set isCallOrReturn true iff this is a call, return,       *
+               * callReturn, or callGoto.  Will set setsPrcdVbls true iff  *
+               * this is a return or callReturn or a call of               *
+               * currentProcedure.                                         *
                ************************************************************/
                boolean isCallOrReturn = false ;
                boolean setsPrcdVbls   = false ;
@@ -2037,6 +2056,12 @@ public class ParseAlgorithm
                      /******************************************************
                      * Sets obj to an alias of stmt of the right type.     *
                      ******************************************************/
+                   isCallOrReturn = true ;
+                   if (obj.to.equals(currentProcedure))
+                     { setsPrcdVbls = true ; } ;
+                 }
+               else if (stmt.getClass().equals(AST.CallGotoObj.getClass()))
+                 { AST.CallGoto obj = (AST.CallGoto) stmt ;
                    isCallOrReturn = true ;
                    if (obj.to.equals(currentProcedure))
                      { setsPrcdVbls = true ; } ;
@@ -2493,8 +2518,10 @@ public class ParseAlgorithm
                    } ;
                  result = 1 ;
                }
-             else if (node.getClass().equals(
-                           AST.GotoObj.getClass())  
+             else if (   node.getClass().equals(
+                           AST.GotoObj.getClass())
+                      || node.getClass().equals(
+                           AST.CallGotoObj.getClass())
                      )
                { result = 1 ;
                }
@@ -3157,6 +3184,25 @@ public class ParseAlgorithm
             result.to   = tstmt.to ;
             result.from = tstmt.from ;
             result.args = 
+               TLAExpr.SeqSubstituteForAll(tstmt.args, args, params) ;
+            return result;
+          } ;
+
+        if (stmt.getClass().equals( AST.CallGotoObj.getClass()))
+          { AST.CallGoto tstmt = (AST.CallGoto) stmt ;
+            AST.CallGoto result = new AST.CallGoto() ;
+            result.col  = tstmt.col ;
+            result.line = tstmt.line ;
+            result.macroCol  = tstmt.macroCol ;
+            result.macroLine = tstmt.macroLine ;
+            result.setOrigin(tstmt.getOrigin()) ;
+            if (macroLine > 0)
+              { result.macroLine = macroLine ;
+                result.macroCol  = macroCol ;
+              } ; 
+            result.to    = tstmt.to ;
+            result.after = tstmt.after ;
+            result.args  = 
                TLAExpr.SeqSubstituteForAll(tstmt.args, args, params) ;
             return result;
           } ;

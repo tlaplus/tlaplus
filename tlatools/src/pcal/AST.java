@@ -17,7 +17,7 @@
 * However, there are the following classes that do not represent explicit  *
 * non-terminals of the +CAL grammar.                                       *
 *                                                                          *
-*     Uniprocess   MultiProcess   SingleAssign   CallReturn                *
+* Uniprocess   MultiProcess   SingleAssign   CallReturn   CallGoto         *
 *                                                                          *
 * Every AST has col and line fields that contain the position of the       *
 * first character of the corresponding portion of the algorithm text (as   *
@@ -100,6 +100,7 @@ public class AST
     public static AST.Call         CallObj         ;
     public static AST.Return       ReturnObj       ;
     public static AST.CallReturn   CallReturnObj   ;
+    public static AST.CallGoto     CallGotoObj     ;
     public static AST.Goto         GotoObj         ;
     public static AST.Macro        MacroObj        ;
     public static AST.MacroCall    MacroCallObj    ;
@@ -214,6 +215,7 @@ public class AST
         CallObj         = new AST.Call() ;
         ReturnObj       = new AST.Return() ;
         CallReturnObj   = new AST.CallReturn() ;
+        CallGotoObj     = new AST.CallGoto() ;
         GotoObj         = new AST.Goto() ;
         MacroObj        = new AST.Macro() ;
         MacroCallObj    = new AST.MacroCall() ;
@@ -837,6 +839,24 @@ public class AST
              Indent(lineCol()) + 
                "[type     |-> \"callReturn\"," + NewLine() +
                " from     |-> \"" + from + "\"," + NewLine() +
+               " to       |-> \"" + to + "\"," + NewLine() +
+               Indent("args     |-> ") + VectorToSeqString(args) 
+                                             + "]" + NewLine() +
+               EndIndent() +
+             EndIndent() ;
+          }
+      }
+
+    public static class CallGoto extends AST
+      { public String    after = "" ;
+        public String    to       = "" ;
+        public Vector    args     = null ; // of TLAExpr
+        public CallGoto() { };
+        public String toString()
+          { return 
+             Indent(lineCol()) + 
+               "[type     |-> \"callGoto\"," + NewLine() +
+               " after    |-> \"" + after + "\"," + NewLine() +
                " to       |-> \"" + to + "\"," + NewLine() +
                Indent("args     |-> ") + VectorToSeqString(args) 
                                              + "]" + NewLine() +

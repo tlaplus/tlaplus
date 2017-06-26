@@ -484,6 +484,8 @@ public class PcalSymTab {
             ExtractReturn((AST.Return) ast, context, cType);
         else if (ast.getClass().equals(AST.CallReturnObj.getClass()))
             ExtractCallReturn((AST.CallReturn) ast, context, cType);
+        else if (ast.getClass().equals(AST.CallGotoObj.getClass()))
+            ExtractCallGoto((AST.CallGoto) ast, context, cType);
         else if (ast.getClass().equals(AST.GotoObj.getClass()))
             ExtractGoto((AST.Goto) ast, context, cType);
 
@@ -667,6 +669,11 @@ public class PcalSymTab {
     private void ExtractCallReturn(AST.CallReturn ast,
                                    String context,
                                    String cType) {
+    }
+
+    private void ExtractCallGoto(AST.CallGoto ast,
+                                 String context,
+                                 String cType) {
     }
 
     private void ExtractGoto(AST.Goto ast, String context, String cType) {
