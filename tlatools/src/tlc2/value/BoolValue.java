@@ -5,6 +5,7 @@
 
 package tlc2.value;
 
+import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
 
@@ -89,9 +90,14 @@ public class BoolValue extends Value {
 
   /* The fingerprint method */
   public final long fingerPrint(long fp) {
-    fp = FP64.Extend(fp, BOOLVALUE) ;
-    fp = FP64.Extend(fp, (this.val) ? 't' : 'f') ;
-    return fp ;
+    try{
+      fp = FP64.Extend(fp, BOOLVALUE) ;
+      fp = FP64.Extend(fp, (this.val) ? 't' : 'f') ;
+      return fp;
+    }
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) { return this; }

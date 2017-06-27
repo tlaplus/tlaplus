@@ -7,6 +7,7 @@ package tlc2.value;
 
 import java.util.Arrays;
 
+import tlc2.tool.FingerprintException;
 import tlc2.tool.EvalControl;
 import tlc2.util.FP64;
 import util.Assert;
@@ -481,24 +482,29 @@ public class FcnRcdValue extends Value implements Applicable {
 
   /* The fingerprint method.  */
   public final long fingerPrint(long fp) {
-    this.normalize();
-    int flen = this.values.length;
-    fp = FP64.Extend(fp, FCNRCDVALUE);
-    fp = FP64.Extend(fp, flen);
-    if (this.intv == null) {
-      for (int i = 0; i < flen; i++) {
-	fp = this.domain[i].fingerPrint(fp);
-	fp = this.values[i].fingerPrint(fp);
+    try{
+      this.normalize();
+      int flen = this.values.length;
+      fp = FP64.Extend(fp, FCNRCDVALUE);
+      fp = FP64.Extend(fp, flen);
+      if (this.intv == null) {
+        for (int i = 0; i < flen; i++) {
+          fp = this.domain[i].fingerPrint(fp);
+          fp = this.values[i].fingerPrint(fp);
+        }
       }
-    }
-    else {
-      for (int i = 0; i < flen; i++) {
-	fp = FP64.Extend(fp, INTVALUE);
-	fp = FP64.Extend(fp, i + this.intv.low);
-	fp = this.values[i].fingerPrint(fp);
+      else {
+        for (int i = 0; i < flen; i++) {
+          fp = FP64.Extend(fp, INTVALUE);
+          fp = FP64.Extend(fp, i + this.intv.low);
+          fp = this.values[i].fingerPrint(fp);
+        }
       }
+      return fp;
     }
-    return fp;
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) {

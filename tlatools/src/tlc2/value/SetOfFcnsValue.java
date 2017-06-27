@@ -5,6 +5,7 @@
 
 package tlc2.value;
 
+import tlc2.tool.FingerprintException;
 import tlc2.TLCGlobals;
 import util.Assert;
 
@@ -131,8 +132,13 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
 
   /* The fingerprint  */
   public final long fingerPrint(long fp) {
-    this.convertAndCache();
-    return this.fcnSet.fingerPrint(fp);
+    try{
+      this.convertAndCache();
+      return this.fcnSet.fingerPrint(fp);
+    }
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) {

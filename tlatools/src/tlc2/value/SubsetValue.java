@@ -7,6 +7,7 @@ package tlc2.value;
 
 import java.util.BitSet;
 
+import tlc2.tool.FingerprintException;
 import tlc2.output.EC;
 import util.Assert;
 
@@ -111,8 +112,13 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
   /* The fingerprint  */
   public final long fingerPrint(long fp) {
-    this.convertAndCache();
-    return this.pset.fingerPrint(fp);
+    try{
+      this.convertAndCache();
+      return this.pset.fingerPrint(fp);
+    }
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) {

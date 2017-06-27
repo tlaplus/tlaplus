@@ -7,6 +7,7 @@ package tlc2.value;
 
 import java.util.Arrays;
 
+import tlc2.tool.FingerprintException;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.util.FP64;
@@ -288,18 +289,23 @@ public class RecordValue extends Value implements Applicable {
   
   /* The fingerprint methods.  */
   public final long fingerPrint(long fp) {
-    this.normalize();
-    int rlen = this.names.length;
-    fp = FP64.Extend(fp, FCNRCDVALUE);
-    fp = FP64.Extend(fp, rlen);
-    for (int i = 0; i < rlen; i++) {
-      String str = this.names[i].toString();
-      fp = FP64.Extend(fp, STRINGVALUE);
-      fp = FP64.Extend(fp, str.length());
-      fp = FP64.Extend(fp, str);
-      fp = this.values[i].fingerPrint(fp);
+    try{
+      this.normalize();
+      int rlen = this.names.length;
+      fp = FP64.Extend(fp, FCNRCDVALUE);
+      fp = FP64.Extend(fp, rlen);
+      for (int i = 0; i < rlen; i++) {
+        String str = this.names[i].toString();
+        fp = FP64.Extend(fp, STRINGVALUE);
+        fp = FP64.Extend(fp, str.length());
+        fp = FP64.Extend(fp, str);
+        fp = this.values[i].fingerPrint(fp);
+      }
+      return fp;
     }
-    return fp;
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) {

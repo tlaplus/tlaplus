@@ -5,6 +5,7 @@
 
 package tlc2.value;
 
+import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
 
@@ -305,15 +306,20 @@ implements Enumerable, Reducible {
 
   /* The fingerprint methods */
   public final long fingerPrint(long fp) {
-    this.normalize();
-    int sz = this.elems.size();    
-    fp = FP64.Extend(fp, SETENUMVALUE);
-    fp = FP64.Extend(fp, sz);
-    for (int i = 0; i < sz; i++) {
-      Value elem = this.elems.elementAt(i);
-      fp = elem.fingerPrint(fp);
+    try{
+      this.normalize();
+      int sz = this.elems.size();
+      fp = FP64.Extend(fp, SETENUMVALUE);
+      fp = FP64.Extend(fp, sz);
+      for (int i = 0; i < sz; i++) {
+        Value elem = this.elems.elementAt(i);
+        fp = elem.fingerPrint(fp);
+      }
+      return fp;
     }
-    return fp;
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) {

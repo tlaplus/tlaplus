@@ -40,6 +40,20 @@ public abstract class Value implements ValueConstants, Serializable {
   public abstract Value takeExcept(ValueExcept[] exs);
 
   /**
+   * These methods allow storage and retrieval of the SemanticNode used to create the Value,
+   * which is helpful for FingerprintException.
+   */
+  private transient SemanticNode sourceSemanticNode = null;
+
+  public void setSourceSemanticNode(SemanticNode semanticNode){
+    sourceSemanticNode = semanticNode;
+  }
+
+  public SemanticNode getSourceSemanticNode(){
+    return sourceSemanticNode;
+  }
+
+  /**
    * This method normalizes (destructively) the representation of
    * the value. It is essential for equality comparison.
    */

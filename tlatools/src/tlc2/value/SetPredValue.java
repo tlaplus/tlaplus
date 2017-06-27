@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.SemanticNode;
+import tlc2.tool.FingerprintException;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
@@ -168,9 +169,14 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   /* The fingerprint method */
   public final long fingerPrint(long fp) {
-    this.inVal = SetEnumValue.convert(this);
-    this.tool = null;
-    return this.inVal.fingerPrint(fp);
+    try{
+      this.inVal = SetEnumValue.convert(this);
+      this.tool = null;
+      return this.inVal.fingerPrint(fp);
+    }
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) {

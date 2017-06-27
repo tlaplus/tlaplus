@@ -98,6 +98,7 @@ public interface EC
     public static final int SYSTEM_METADIR_CREATION_ERROR = 2163;
     public static final int SYSTEM_UNABLE_TO_OPEN_FILE = 2167;
     public static final int TLC_BUG = 2128; // TODO Bad description
+    public static final int TLC_FINGERPRINT_EXCEPTION = 2147;
 
     public static final int SYSTEM_DISKGRAPH_ACCESS = 2129; // TODO refactor  
 

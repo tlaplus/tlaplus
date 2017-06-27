@@ -5,6 +5,7 @@
 
 package tlc2.value;
 
+import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
 import util.UniqueString;
@@ -99,10 +100,15 @@ public class StringValue extends Value {
   
   /* The fingerprint method */
   public final long fingerPrint(long fp) {
-    fp = FP64.Extend(fp, STRINGVALUE) ;
-    fp = FP64.Extend(fp, this.val.length()) ;
-    fp = FP64.Extend(fp, this.val.toString());
-    return fp;
+    try{
+      fp = FP64.Extend(fp, STRINGVALUE) ;
+      fp = FP64.Extend(fp, this.val.length()) ;
+      fp = FP64.Extend(fp, this.val.toString());
+      return fp;
+    }
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) { return this; }

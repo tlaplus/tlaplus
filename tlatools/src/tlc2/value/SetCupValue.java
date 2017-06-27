@@ -5,6 +5,7 @@
 
 package tlc2.value;
 
+import tlc2.tool.FingerprintException;
 import util.Assert;
 
 public class SetCupValue extends EnumerableValue implements Enumerable {
@@ -82,8 +83,13 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
 
   /* The fingerprint methods */
   public final long fingerPrint(long fp) {
-    this.convertAndCache();
-    return this.cupSet.fingerPrint(fp);
+    try{
+      this.convertAndCache();
+      return this.cupSet.fingerPrint(fp);
+    }
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) {

@@ -38,6 +38,7 @@ package tlc2.value;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
 import util.UniqueString;
@@ -211,7 +212,12 @@ public class ModelValue extends Value {
 
   /* The fingerprint methods */
   public final long fingerPrint(long fp) {
-    return this.val.fingerPrint(FP64.Extend(fp, MODELVALUE));
+    try{
+      return this.val.fingerPrint(FP64.Extend(fp, MODELVALUE));
+    }
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) {

@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
+import tlc2.tool.FingerprintException;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
@@ -496,8 +497,13 @@ public class FcnLambdaValue extends Value implements Applicable {
   
   /* The fingerprint methods.  */
   public final long fingerPrint(long fp) {
-    FcnRcdValue fcn = FcnRcdValue.convert(this);
-    return fcn.fingerPrint(fp);
+    try{
+      FcnRcdValue fcn = FcnRcdValue.convert(this);
+      return fcn.fingerPrint(fp);
+    }
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) {

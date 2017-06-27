@@ -12,6 +12,7 @@ import tla2sany.semantic.ExprNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.FingerprintException;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
@@ -629,7 +630,7 @@ public class ModelChecker extends AbstractChecker
         {
 			// Assert.printStack(e);
 			boolean keep = ((e instanceof StackOverflowError) || (e instanceof OutOfMemoryError)
-					|| (e instanceof AssertionError));
+					|| (e instanceof AssertionError) || (e instanceof FingerprintException));
             synchronized (this)
             {
                 if (this.setErrState(curState, succState, !keep))
@@ -643,6 +644,9 @@ public class ModelChecker extends AbstractChecker
                     } else if (e instanceof AssertionError)
                     {
 						MP.printError(EC.TLC_BUG, e);
+                    } else if (e instanceof FingerprintException){
+                        FingerprintException fpe = (FingerprintException) e;
+                        MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fpe.getRootCause().getMessage(), fpe.getTrace(0)});
                     } else if (e.getMessage() != null)
                     {
                         MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
@@ -1035,6 +1039,10 @@ public class ModelChecker extends AbstractChecker
 					returnValue = false;
 					return returnValue;
 				}
+                else if (e instanceof FingerprintException){
+                    FingerprintException fpe = (FingerprintException) e;
+                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fpe.getRootCause().getMessage(), fpe.getTrace(0)});
+                }
 				this.errState = curState;
 				this.e = e;
 			}

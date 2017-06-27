@@ -413,6 +413,14 @@ public class MP
             b.append("This is probably a TLC bug(%1%).");
             break;
 
+        case EC.TLC_FINGERPRINT_EXCEPTION:
+            b.append("TLC was unable to fingerprint."
+                + "\n\nReason:"
+                + "\n%1%"
+                + "\n\nFingerprint Stack Trace:"
+                + "\n%2%");
+            break;
+
         case EC.TLC_NO_STATES_SATISFYING_INIT:
             b.append("There is no state satisfying the initial state predicate.");
             break;

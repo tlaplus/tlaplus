@@ -5,6 +5,7 @@
 
 package tlc2.value;
 
+import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
 
@@ -116,7 +117,12 @@ public class IntValue extends Value {
 
   /* The fingerprint methods */
   public final long fingerPrint(long fp) {
-    return FP64.Extend(FP64.Extend(fp, INTVALUE), this.val);
+    try{
+      return FP64.Extend(FP64.Extend(fp, INTVALUE), this.val);
+    }
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) { return this; }

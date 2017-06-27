@@ -6,6 +6,7 @@
 package tlc2.value;
 
 import tla2sany.semantic.SymbolNode;
+import tlc2.tool.FingerprintException;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.EvalControl;
@@ -240,15 +241,20 @@ public class TupleValue extends Value implements Applicable {
   
   /* The fingerprint method: tuples are functions. */
   public final long fingerPrint(long fp) {
-    int len = this.elems.length;
-    fp = FP64.Extend(fp, FCNRCDVALUE);
-    fp = FP64.Extend(fp, len);
-    for (int i = 0; i < len; i++) {
-      fp = FP64.Extend(fp, INTVALUE);
-      fp = FP64.Extend(fp, i+1);
-      fp = this.elems[i].fingerPrint(fp);
+    try{
+      int len = this.elems.length;
+      fp = FP64.Extend(fp, FCNRCDVALUE);
+      fp = FP64.Extend(fp, len);
+      for (int i = 0; i < len; i++) {
+        fp = FP64.Extend(fp, INTVALUE);
+        fp = FP64.Extend(fp, i+1);
+        fp = this.elems[i].fingerPrint(fp);
+      }
+      return fp;
     }
-    return fp;
+    catch(RuntimeException | OutOfMemoryError e){
+      throw FingerprintException.getNewHead(this, e);
+    }
   }
 
   public final Value permute(MVPerm perm) {
