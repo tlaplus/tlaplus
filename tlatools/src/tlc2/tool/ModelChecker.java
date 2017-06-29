@@ -245,6 +245,9 @@ public class ModelChecker extends AbstractChecker
                 try
                 {
                     this.doNext(this.predErrState, new ObjLongTable(10), new Worker(4223, this));
+                } catch (FingerprintException e)
+                {
+                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getRootCause().getMessage(), e.getTrace(0)});
                 } catch (Throwable e)
                 {
                     // Assert.printStack(e);
@@ -630,7 +633,7 @@ public class ModelChecker extends AbstractChecker
         {
 			// Assert.printStack(e);
 			boolean keep = ((e instanceof StackOverflowError) || (e instanceof OutOfMemoryError)
-					|| (e instanceof AssertionError) || (e instanceof FingerprintException));
+                    || (e instanceof AssertionError));
             synchronized (this)
             {
                 if (this.setErrState(curState, succState, !keep))
@@ -644,9 +647,6 @@ public class ModelChecker extends AbstractChecker
                     } else if (e instanceof AssertionError)
                     {
 						MP.printError(EC.TLC_BUG, e);
-                    } else if (e instanceof FingerprintException){
-                        FingerprintException fpe = (FingerprintException) e;
-                        MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fpe.getRootCause().getMessage(), fpe.getTrace(0)});
                     } else if (e.getMessage() != null)
                     {
                         MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
@@ -1042,6 +1042,8 @@ public class ModelChecker extends AbstractChecker
                 else if (e instanceof FingerprintException){
                     FingerprintException fpe = (FingerprintException) e;
                     MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fpe.getRootCause().getMessage(), fpe.getTrace(0)});
+                    returnValue = false;
+                    return returnValue;
                 }
 				this.errState = curState;
 				this.e = e;
