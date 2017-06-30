@@ -46,30 +46,33 @@ public class FingerprintException extends RuntimeException {
     return nextFPE.getCause();
   }
 
-   public int getTraceLength(){
-    int count = 1;
-    FingerprintException nextFPE = this;
-    while(nextFPE.next != null){
-      nextFPE = nextFPE.next;
-      count++;
-    }
-    return count;
+  public String getTrace(){
+    return getTraceImpl(0, null);
   }
 
-  public String getTrace(final int traceIndexLabel){
+  private String getTraceImpl(final Integer traceIndexLabel, final Integer lastSemanticNodeUid){
     SemanticNode semanticNode = value.getSourceSemanticNode();
     if(semanticNode == null){
       if(next == null)
         return "";
       else
-        return next.getTrace(traceIndexLabel);
+        return next.getTraceImpl(traceIndexLabel, lastSemanticNodeUid);
     }
     else{
-      String description = traceIndexLabel + ") " + value.getSourceSemanticNode().toString() + "\n";
-      if(next == null)
-        return description;
-      else
-        return next.getTrace(traceIndexLabel+1) + description;
+      Integer semanticNodeUid = semanticNode.getUid();
+      if(semanticNodeUid.equals(lastSemanticNodeUid)){ // same SemanticNode compared to current top of stack
+        if(next == null)
+          return "";
+        else
+          return next.getTraceImpl(traceIndexLabel, lastSemanticNodeUid);
+      }
+      else{ // different SemanticNode compared to current top of stack
+        String description = traceIndexLabel + ") " + semanticNode.toString() + "\n";
+        if(next == null)
+          return description;
+        else
+          return next.getTraceImpl(traceIndexLabel+1, semanticNodeUid) + description;
+      }
     }
   }
 

@@ -5,6 +5,8 @@
 
 package tlc2.value;
 
+import tlc2.tool.ModelChecker;
+import tlc2.tool.FingerprintException;
 import util.Assert;
 
 public class UndefValue extends Value {
@@ -14,45 +16,87 @@ public class UndefValue extends Value {
   public byte getKind() { return UNDEFVALUE; }
 
   public final int compareTo(Object obj) {
-    return (obj instanceof UndefValue) ? 0 : 1;
+    try {
+      return (obj instanceof UndefValue) ? 0 : 1;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
-  
+
   public final boolean equals(Object obj) {
-    return (obj instanceof UndefValue);
+    try {
+      return (obj instanceof UndefValue);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean member(Value elem) {
-    Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-		"\nis an element " + ppr(this.toString()));
-    return false;    // make compiler happy
+    try {
+      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
+      "\nis an element " + ppr(this.toString()));
+      return false;    // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isFinite() {
-    Assert.fail("Attempted to check if the value " + ppr(this.toString()) +
-		" is a finite set.");
-    return false;    // make compiler happy
+    try {
+      Assert.fail("Attempted to check if the value " + ppr(this.toString()) +
+      " is a finite set.");
+      return false;    // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value takeExcept(ValueExcept ex) {
-    if (ex.idx < ex.path.length) {
-      Assert.fail("Attempted to apply EXCEPT construct to the value " +
-		  ppr(this.toString()) + ".");
+    try {
+      if (ex.idx < ex.path.length) {
+        Assert.fail("Attempted to apply EXCEPT construct to the value " +
+        ppr(this.toString()) + ".");
+      }
+      return ex.value;
     }
-    return ex.value;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
-  
+
   public final Value takeExcept(ValueExcept[] exs) {
-    if (exs.length != 0) {
-      Assert.fail("Attempted to apply EXCEPT construct to the value " +
-		  ppr(this.toString()) + ".");
+    try {
+      if (exs.length != 0) {
+        Assert.fail("Attempted to apply EXCEPT construct to the value " +
+        ppr(this.toString()) + ".");
+      }
+      return this;
     }
-    return this;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final int size() {
-    Assert.fail("Attempted to compute the number of elements in the value " +
-		ppr(this.toString()) + ".");
-    return 0;     // make compiler happy
+    try {
+      Assert.fail("Attempted to compute the number of elements in the value " +
+      ppr(this.toString()) + ".");
+      return 0;     // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isNormalized() { return true; }
@@ -67,7 +111,13 @@ public class UndefValue extends Value {
 
   /* The string representation. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
-    return sb.append("UNDEF");
+    try {
+      return sb.append("UNDEF");
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
 }

@@ -38,13 +38,14 @@ package tlc2.value;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
 import util.UniqueString;
 
 public class ModelValue extends Value {
-    
+
     /**
      * A method to reset the model values
      * All callers should make sure that the model value class has been initialized
@@ -59,11 +60,11 @@ public class ModelValue extends Value {
     /**
      * Workround to the static usage
      */
-    static 
+    static
     {
         init();
     }
-    
+
   private static int count;
   private static Hashtable mvTable;
   // SZ Mar 9, 2009: public accessed field, this will cause troubles
@@ -72,7 +73,7 @@ public class ModelValue extends Value {
   public UniqueString val;
   public int index;
   public char type;  // type = 0 means untyped.
-  
+
   /* Constructor */
   private ModelValue(String val) {
     // SZ 11.04.2009: changed access method
@@ -80,7 +81,7 @@ public class ModelValue extends Value {
     this.index = count++;
     if (   (val.length() > 2)
         && (val.charAt(1) == '_')) {
-      this.type = val.charAt(0) ;  
+      this.type = val.charAt(0) ;
       }
      else { this.type = 0 ; } ;
   }
@@ -96,7 +97,7 @@ public class ModelValue extends Value {
 
   /* Collect all the model values defined thus far. */
   public static void setValues() {
-    mvs = new ModelValue[mvTable.size()];    
+    mvs = new ModelValue[mvTable.size()];
     Enumeration Enum = mvTable.elements();
     while (Enum.hasMoreElements()) {
       ModelValue mv = (ModelValue)Enum.nextElement();
@@ -107,34 +108,46 @@ public class ModelValue extends Value {
   public final byte getKind() { return MODELVALUE; }
 
   public final int compareTo(Object obj) {
-    if (obj instanceof ModelValue) {
-      return this.val.compareTo(((ModelValue)obj).val);
+    try {
+      if (obj instanceof ModelValue) {
+        return this.val.compareTo(((ModelValue)obj).val);
+      }
+      return -1;
     }
-    return -1;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean equals(Object obj) {
-    if (this.type == 0) {
-      return (obj instanceof ModelValue &&
-	      this.val.equals(((ModelValue)obj).val));
-     };
-    if (obj instanceof ModelValue) {
-      ModelValue mobj = (ModelValue) obj ;
-      if (   (mobj.type == this.type) 
-          || (mobj.type == 0) ) { 
-        return mobj.val == this.val ;
-        } 
-       else {
-        Assert.fail("Attempted to check equality "
-                    + "of the differently-typed model values "
-                      + ppr(this.toString()) + " and " 
-                      + ppr(mobj.toString()));
-        } ;
-     } ;
-    Assert.fail("Attempted to check equality of typed model value "
-                 + ppr(this.toString()) + " and non-model value\n"
-                 + ppr(obj.toString())) ;
-    return false;   // make compiler happy
+    try {
+      if (this.type == 0) {
+        return (obj instanceof ModelValue &&
+          this.val.equals(((ModelValue)obj).val));
+       };
+      if (obj instanceof ModelValue) {
+        ModelValue mobj = (ModelValue) obj ;
+        if (   (mobj.type == this.type)
+            || (mobj.type == 0) ) {
+          return mobj.val == this.val ;
+          }
+         else {
+          Assert.fail("Attempted to check equality "
+                      + "of the differently-typed model values "
+                        + ppr(this.toString()) + " and "
+                        + ppr(mobj.toString()));
+          } ;
+       } ;
+      Assert.fail("Attempted to check equality of typed model value "
+                   + ppr(this.toString()) + " and non-model value\n"
+                   + ppr(obj.toString())) ;
+      return false;   // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /*************************************************************************
@@ -143,58 +156,100 @@ public class ModelValue extends Value {
   * this model value is untyped and raise an exception if it is typed.     *
   *************************************************************************/
   public final boolean modelValueEquals(Object obj){
-    if (this.type != 0) {
-    Assert.fail("Attempted to check equality of the typed model value "
-                 + ppr(this.toString()) + " and the non-model value\n"
-                 + ppr(obj.toString())) ;
+    try {
+      if (this.type != 0) {
+      Assert.fail("Attempted to check equality of the typed model value "
+                   + ppr(this.toString()) + " and the non-model value\n"
+                   + ppr(obj.toString())) ;
 
-     } ;
-    return false ;    
+       } ;
+      return false ;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean modelValueMember(Object obj){
-    if (this.type != 0) {
-    Assert.fail("Attempted to check if the typed model value "
-                 + ppr(this.toString()) 
-                 + " is an element of\n"
-                 + ppr(obj.toString())) ;
+    try {
+      if (this.type != 0) {
+      Assert.fail("Attempted to check if the typed model value "
+                   + ppr(this.toString())
+                   + " is an element of\n"
+                   + ppr(obj.toString())) ;
 
-     } ;
-    return false ;    
+       } ;
+      return false ;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean member(Value elem) {
-    Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-		"\nis an element of the model value " + ppr(this.toString()));
-    return false;   // make compiler happy
+    try {
+      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
+      "\nis an element of the model value " + ppr(this.toString()));
+      return false;   // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isFinite() {
-    Assert.fail("Attempted to check if the model value " + ppr(this.toString()) +
-		" is a finite set.");
-    return false;   // make compiler happy
+    try {
+      Assert.fail("Attempted to check if the model value " + ppr(this.toString()) +
+      " is a finite set.");
+      return false;   // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
-  
+
   public final Value takeExcept(ValueExcept ex) {
-    if (ex.idx < ex.path.length) {
-      Assert.fail("Attempted to apply EXCEPT construct to the model value " +
-		  ppr(this.toString()) + ".");
+    try {
+      if (ex.idx < ex.path.length) {
+        Assert.fail("Attempted to apply EXCEPT construct to the model value " +
+        ppr(this.toString()) + ".");
+      }
+      return ex.value;
     }
-    return ex.value;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
-  
+
   public final Value takeExcept(ValueExcept[] exs) {
-    if (exs.length != 0) {
-      Assert.fail("Attempted to apply EXCEPT construct to the model value " +
-		  ppr(this.toString()) + ".");
+    try {
+      if (exs.length != 0) {
+        Assert.fail("Attempted to apply EXCEPT construct to the model value " +
+        ppr(this.toString()) + ".");
+      }
+      return this;
     }
-    return this;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final int size() {
-    Assert.fail("Attempted to compute the number of elements in the model value " +
-		ppr(this.toString()) + ".");
-    return 0;   // make compiler happy
+    try {
+      Assert.fail("Attempted to compute the number of elements in the model value " +
+      ppr(this.toString()) + ".");
+      return 0;   // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isNormalized() { return true; }
@@ -206,29 +261,48 @@ public class ModelValue extends Value {
   public final Value deepCopy() { return this; }
 
   public final boolean assignable(Value val) {
-    return ((val instanceof ModelValue) &&
-	    this.val.equals(((ModelValue)val).val));
+    try {
+      return ((val instanceof ModelValue) &&
+        this.val.equals(((ModelValue)val).val));
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /* The fingerprint methods */
   public final long fingerPrint(long fp) {
-    try{
+    try {
       return this.val.fingerPrint(FP64.Extend(fp, MODELVALUE));
     }
-    catch(RuntimeException | OutOfMemoryError e){
-      throw FingerprintException.getNewHead(this, e);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
   }
 
   public final Value permute(MVPerm perm) {
-    Value res = perm.get(this);
-    if (res == null) return this;
-    return res;
+    try {
+      Value res = perm.get(this);
+      if (res == null) return this;
+      return res;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /* The string representation. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
-    return sb.append(this.val);
+    try {
+      return sb.append(this.val);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
 

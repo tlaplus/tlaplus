@@ -5,6 +5,7 @@
 
 package tlc2.value;
 
+import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import util.Assert;
 
@@ -12,7 +13,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   public Value set1;
   public Value set2;
   protected SetEnumValue capSet;
-  
+
   /* Constructor */
   public SetCapValue(Value set1, Value set2) {
     this.set1 = set1;
@@ -23,84 +24,159 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   public final byte getKind() { return SETCAPVALUE; }
 
   public final int compareTo(Object obj) {
-    this.convertAndCache();
-    return this.capSet.compareTo(obj);
+    try {
+      this.convertAndCache();
+      return this.capSet.compareTo(obj);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
-  
+
   public final boolean equals(Object obj) {
-    this.convertAndCache();
-    return this.capSet.equals(obj);
+    try {
+      this.convertAndCache();
+      return this.capSet.equals(obj);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean member(Value elem) {
-    return (this.set1.member(elem) && this.set2.member(elem));
+    try {
+      return (this.set1.member(elem) && this.set2.member(elem));
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isFinite() {
-    if (!this.set1.isFinite() && !this.set2.isFinite()) {
-      Assert.fail("Attempted to check if the set " + ppr(this.toString()) + "is finite.");
+    try {
+      if (!this.set1.isFinite() && !this.set2.isFinite()) {
+        Assert.fail("Attempted to check if the set " + ppr(this.toString()) + "is finite.");
+      }
+      return true;
     }
-    return true;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value takeExcept(ValueExcept ex) {
-    if (ex.idx < ex.path.length) {
-      Assert.fail("Attempted to apply EXCEPT to the set " + ppr(this.toString()) + ".");
+    try {
+      if (ex.idx < ex.path.length) {
+        Assert.fail("Attempted to apply EXCEPT to the set " + ppr(this.toString()) + ".");
+      }
+      return ex.value;
     }
-    return ex.value;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value takeExcept(ValueExcept[] exs) {
-    if (exs.length != 0) {
-      Assert.fail("Attempted to apply EXCEPT to the set " + ppr(this.toString()) + ".");
+    try {
+      if (exs.length != 0) {
+        Assert.fail("Attempted to apply EXCEPT to the set " + ppr(this.toString()) + ".");
+      }
+      return this;
     }
-    return this;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final int size() {
-    this.convertAndCache();
-    return this.capSet.size();
+    try {
+      this.convertAndCache();
+      return this.capSet.size();
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isNormalized() {
-    if (this.capSet == null || this.capSet == DummyEnum) {
-      return (this.set1.isNormalized() && this.set2.isNormalized());
+    try {
+      if (this.capSet == null || this.capSet == DummyEnum) {
+        return (this.set1.isNormalized() && this.set2.isNormalized());
+      }
+      return this.capSet.isNormalized();
     }
-    return this.capSet.isNormalized();
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
-  
+
   public final void normalize() {
-    if (this.capSet == null || this.capSet == DummyEnum) {
-      this.set1.normalize();
-      this.set2.normalize();
+    try {
+      if (this.capSet == null || this.capSet == DummyEnum) {
+        this.set1.normalize();
+        this.set2.normalize();
+      }
+      else {
+        this.capSet.normalize();
+      }
     }
-    else {
-      this.capSet.normalize();
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
   }
 
   public final boolean isDefined() {
-    return this.set1.isDefined() && this.set2.isDefined();
+    try {
+      return this.set1.isDefined() && this.set2.isDefined();
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value deepCopy() { return this; }
 
-  public final boolean assignable(Value val) { return this.equals(val); }
+  public final boolean assignable(Value val) {
+    try {
+      return this.equals(val);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
 
   /* The fingerprint methods */
   public final long fingerPrint(long fp) {
-    try{
+    try {
       this.convertAndCache();
       return this.capSet.fingerPrint(fp);
     }
-    catch(RuntimeException | OutOfMemoryError e){
-      throw FingerprintException.getNewHead(this, e);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
   }
-  
+
   public final Value permute(MVPerm perm) {
-    this.convertAndCache();
-    return this.capSet.permute(perm);
+    try {
+      this.convertAndCache();
+      return this.capSet.permute(perm);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   private final void convertAndCache() {
@@ -110,38 +186,50 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
     else if (this.capSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
-	if (this.capSet == DummyEnum) {
-	  val = SetEnumValue.convert(this);
-	  val.deepNormalize();
-	}
+        if (this.capSet == DummyEnum) {
+          val = SetEnumValue.convert(this);
+          val.deepNormalize();
+        }
       }
       synchronized(this) {
-	if (this.capSet == DummyEnum) { this.capSet = val; }
+        if (this.capSet == DummyEnum) { this.capSet = val; }
       }
     }
   }
-  
+
   /* String representation of this value.  */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
-      if (expand) {
-	Value val = SetEnumValue.convert(this);
-	return val.toString(sb, offset);
+      try {
+        if (expand) {
+          Value val = SetEnumValue.convert(this);
+          return val.toString(sb, offset);
+        }
       }
-    }
-    catch (Throwable e) { /*SKIP*/ }
+      catch (Throwable e) { /*SKIP*/ }
 
-    sb = this.set1.toString(sb, offset);
-    sb = sb.append(" \\cap ");
-    sb = this.set2.toString(sb, offset);
-    return sb;
+      sb = this.set1.toString(sb, offset);
+      sb = sb.append(" \\cap ");
+      sb = this.set2.toString(sb, offset);
+      return sb;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final ValueEnumeration elements() {
-    if (this.capSet == null || this.capSet == DummyEnum) {
-      return new Enumerator();
+    try {
+      if (this.capSet == null || this.capSet == DummyEnum) {
+        return new Enumerator();
+      }
+      return this.capSet.elements();
     }
-    return this.capSet.elements();
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   final class Enumerator implements ValueEnumeration {
@@ -150,30 +238,30 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 
     public Enumerator() {
       if (set1 instanceof Enumerable) {
-	this.enum1 = ((Enumerable)set1).elements();
-	this.set = set2;
+        this.enum1 = ((Enumerable)set1).elements();
+        this.set = set2;
       }
       else if (set2 instanceof Enumerable) {
-	this.enum1 = ((Enumerable)set2).elements();
-	this.set = set1;
+        this.enum1 = ((Enumerable)set2).elements();
+        this.set = set1;
       }
       else {
-	Assert.fail("Attempted to enumerate S \\cap T when neither S:\n" +
-		    ppr(set1.toString()) + "\nnor T:\n" + ppr(set2.toString()) +
-		    "\nis enumerable");
+        Assert.fail("Attempted to enumerate S \\cap T when neither S:\n" +
+              ppr(set1.toString()) + "\nnor T:\n" + ppr(set2.toString()) +
+              "\nis enumerable");
       }
     }
 
     public final void reset() { this.enum1.reset(); }
-      
+
     public final Value nextElement() {
       Value elem = this.enum1.nextElement();
       while (elem != null) {
-	if (this.set.member(elem)) return elem;
-	elem = this.enum1.nextElement();
+        if (this.set.member(elem)) return elem;
+        elem = this.enum1.nextElement();
       }
       return null;
     }
   }
-  
+
 }

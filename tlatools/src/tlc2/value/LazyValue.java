@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import tlc2.tool.ModelChecker;
+import tlc2.tool.FingerprintException;
 import tla2sany.semantic.SemanticNode;
 import tlc2.util.Context;
 import util.Assert;
@@ -37,56 +39,97 @@ public class LazyValue extends Value {
   public final byte getKind() { return LAZYVALUE; }
 
   public final int compareTo(Object obj) {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to compare lazy values.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to compare lazy values.");
+      }
+      return this.val.compareTo(obj);
     }
-    return this.val.compareTo(obj);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
-  
+
   public final boolean equals(Object obj) {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to check equality of lazy values.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to check equality of lazy values.");
+      }
+      return this.val.equals(obj);
     }
-    return this.val.equals(obj);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean member(Value elem) {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to check set membership of lazy values.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to check set membership of lazy values.");
+      }
+      return this.val.member(elem);
     }
-    return this.val.member(elem);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isFinite() {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to check if a lazy value is a finite set.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to check if a lazy value is a finite set.");
+      }
+      return this.val.isFinite();
     }
-    return this.val.isFinite();
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
-  
+
   public final Value takeExcept(ValueExcept ex) {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.");
+      }
+      return this.val.takeExcept(ex);
     }
-    return this.val.takeExcept(ex);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value takeExcept(ValueExcept[] exs) {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.");
+      }
+      return this.val.takeExcept(exs);
     }
-    return this.val.takeExcept(exs);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final int size() {
-    if (this.val == null || this.val == ValUndef) {
-       Assert.fail("Error(TLC): Attempted to compute size of lazy value.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+         Assert.fail("Error(TLC): Attempted to compute size of lazy value.");
+      }
+      return this.val.size();
     }
-    return this.val.size();
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
-  private void readObject(ObjectInputStream ois)
-  throws IOException, ClassNotFoundException {
+  private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
     this.val = (Value)ois.readObject();
   }
 
@@ -96,57 +139,99 @@ public class LazyValue extends Value {
     }
     oos.writeObject(this.val);
   }
-  
+
   /* Nothing to normalize. */
   public final boolean isNormalized() {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to normalize lazy value.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to normalize lazy value.");
+      }
+      return this.val.isNormalized();
     }
-    return this.val.isNormalized();
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
-  
+
   public final void normalize() {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to normalize lazy value.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to normalize lazy value.");
+      }
+      this.val.normalize();
     }
-    this.val.normalize();
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isDefined() { return true; }
 
   public final Value deepCopy() {
-    if (this.val == null || this.val == ValUndef) return this;
-    return this.val.deepCopy();
+    try {
+      if (this.val == null || this.val == ValUndef) return this;
+      return this.val.deepCopy();
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean assignable(Value val) {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to call assignable on lazy value.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to call assignable on lazy value.");
+      }
+      return this.val.assignable(val);
     }
-    return this.val.assignable(val);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /* The fingerprint method */
   public final long fingerPrint(long fp) {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to fingerprint a lazy value.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to fingerprint a lazy value.");
+      }
+      return this.val.fingerPrint(fp);
     }
-    return this.val.fingerPrint(fp);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value permute(MVPerm perm) {
-    if (this.val == null || this.val == ValUndef) {
-      Assert.fail("Error(TLC): Attempted to apply permutation to lazy value.");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        Assert.fail("Error(TLC): Attempted to apply permutation to lazy value.");
+      }
+      return this.val.permute(perm);
     }
-    return this.val.permute(perm);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /* The string representation of the value. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
-    if (this.val == null || this.val == ValUndef) {
-      return sb.append("<LAZY " + this.expr + ">");
+    try {
+      if (this.val == null || this.val == ValUndef) {
+        return sb.append("<LAZY " + this.expr + ">");
+      }
+      return this.val.toString(sb, offset);
     }
-    return this.val.toString(sb, offset);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
 }

@@ -5,6 +5,7 @@
 
 package tlc2.value;
 
+import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.TLCGlobals;
 import util.Assert;
@@ -12,7 +13,7 @@ import util.Assert;
 public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   public Value[] sets;
   protected SetEnumValue tupleSet;
-  
+
   /* Constructor */
   public SetOfTuplesValue(Value[] sets) {
     this.sets = sets;
@@ -35,149 +36,222 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   public final byte getKind() { return SETOFTUPLESVALUE; }
 
   public final int compareTo(Object obj) {
-    this.convertAndCache();
-    return this.tupleSet.compareTo(obj);    
-  }
-  
-  public final boolean equals(Object obj) {
-    if (obj instanceof SetOfTuplesValue) {
-      SetOfTuplesValue tvs = (SetOfTuplesValue)obj;
-
-      boolean isEmpty1 = this.isEmpty();
-      if (isEmpty1) return tvs.isEmpty();
-      if (tvs.isEmpty()) return isEmpty1;
-
-      if (this.sets.length != tvs.sets.length) {
-	return false;
-      }
-      for (int i = 0; i < this.sets.length; i++) {
-	if (!this.sets[i].equals(tvs.sets[i])) {
-	  return false;
-	}
-      }
-      return true;
+    try {
+      this.convertAndCache();
+      return this.tupleSet.compareTo(obj);
     }
-    this.convertAndCache();
-    return this.tupleSet.equals(obj);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
+  public final boolean equals(Object obj) {
+    try {
+      if (obj instanceof SetOfTuplesValue) {
+        SetOfTuplesValue tvs = (SetOfTuplesValue)obj;
+
+        boolean isEmpty1 = this.isEmpty();
+        if (isEmpty1) return tvs.isEmpty();
+        if (tvs.isEmpty()) return isEmpty1;
+
+        if (this.sets.length != tvs.sets.length) {
+          return false;
+        }
+        for (int i = 0; i < this.sets.length; i++) {
+          if (!this.sets[i].equals(tvs.sets[i])) {
+            return false;
+          }
+        }
+        return true;
+      }
+      this.convertAndCache();
+      return this.tupleSet.equals(obj);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean member(Value elem) {
-    TupleValue tv = TupleValue.convert(elem);
-    if (tv == null) {
-      FcnRcdValue fcn = FcnRcdValue.convert(elem);
-      if (fcn == null) {
-	if (elem instanceof ModelValue)    
-          return ((ModelValue) elem).modelValueMember(this) ;
-	Assert.fail("Attempted to check if non-tuple\n" + ppr(elem.toString()) +
-		    "\nis in the set of tuples:\n" + ppr(this.toString()));
+    try {
+      TupleValue tv = TupleValue.convert(elem);
+      if (tv == null) {
+        FcnRcdValue fcn = FcnRcdValue.convert(elem);
+        if (fcn == null) {
+          if (elem instanceof ModelValue)
+            return ((ModelValue) elem).modelValueMember(this) ;
+          Assert.fail("Attempted to check if non-tuple\n" + ppr(elem.toString()) +
+                "\nis in the set of tuples:\n" + ppr(this.toString()));
+        }
+        if (fcn.intv != null) return false;
+        for (int i = 0; i < fcn.domain.length; i++) {
+          if (!(fcn.domain[i] instanceof IntValue)) {
+            Assert.fail("Attempted to check if non-tuple\n" + ppr(elem.toString()) +
+                  "\nis in the set of tuples:\n" + ppr(this.toString()));
+          }
+        }
+        return false;
       }
-      if (fcn.intv != null) return false;
-      for (int i = 0; i < fcn.domain.length; i++) {
-	if (!(fcn.domain[i] instanceof IntValue)) {
-	  Assert.fail("Attempted to check if non-tuple\n" + ppr(elem.toString()) +
-		      "\nis in the set of tuples:\n" + ppr(this.toString()));
-	}
+      if (tv.elems.length == this.sets.length) {
+        for (int i = 0; i < this.sets.length; i++) {
+          if (!this.sets[i].member(tv.elems[i]))
+            return false;
+        }
+        return true;
       }
       return false;
     }
-    if (tv.elems.length == this.sets.length) {
-      for (int i = 0; i < this.sets.length; i++) {
-	if (!this.sets[i].member(tv.elems[i]))
-	  return false;
-      }
-      return true;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
-    return false;
   }
 
   public final boolean isFinite() {
-    for (int i = 0; i < this.sets.length; i++) {
-      if (!this.sets[i].isFinite()) {
-	return false;
-      }
-    }
-    return true;
-  }
-  
-  public final Value takeExcept(ValueExcept ex) {
-    if (ex.idx < ex.path.length) {
-      Assert.fail("Attempted to apply EXCEPT construct to the set of tuples:\n" +
-		  ppr(this.toString()));
-    }
-    return ex.value;
-  }
-
-  public final Value takeExcept(ValueExcept[] exs) {
-    if (exs.length != 0) {
-      Assert.fail("Attempted to apply EXCEPT construct to the set of tuples:\n" +
-		  ppr(this.toString()));
-    }
-    return this;
-  }
-
-  public final int size() {
-    long sz = 1;
-    for (int i = 0; i < this.sets.length; i++) {
-      sz *= this.sets[i].size();
-      if (sz < -2147483648 || sz > 2147483647) {
-	Assert.fail("Overflow when computing the number of elements in " +
-		    ppr(this.toString()));
-      }
-    }
-    return (int)sz;
-  }
-
-  public final boolean isNormalized() {
-    if (this.tupleSet == null || this.tupleSet == DummyEnum) {
+    try {
       for (int i = 0; i < this.sets.length; i++) {
-	if (!this.sets[i].isNormalized()) {
-	  return false;
-	}
+        if (!this.sets[i].isFinite()) {
+          return false;
+        }
       }
       return true;
     }
-    return this.tupleSet.isNormalized();
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
+  public final Value takeExcept(ValueExcept ex) {
+    try {
+      if (ex.idx < ex.path.length) {
+        Assert.fail("Attempted to apply EXCEPT construct to the set of tuples:\n" +
+        ppr(this.toString()));
+      }
+      return ex.value;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
+  public final Value takeExcept(ValueExcept[] exs) {
+    try {
+      if (exs.length != 0) {
+        Assert.fail("Attempted to apply EXCEPT construct to the set of tuples:\n" +
+        ppr(this.toString()));
+      }
+      return this;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
+  public final int size() {
+    try {
+      long sz = 1;
+      for (int i = 0; i < this.sets.length; i++) {
+        sz *= this.sets[i].size();
+        if (sz < -2147483648 || sz > 2147483647) {
+          Assert.fail("Overflow when computing the number of elements in " +
+                ppr(this.toString()));
+        }
+      }
+      return (int)sz;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
+  public final boolean isNormalized() {
+    try {
+      if (this.tupleSet == null || this.tupleSet == DummyEnum) {
+        for (int i = 0; i < this.sets.length; i++) {
+          if (!this.sets[i].isNormalized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+      return this.tupleSet.isNormalized();
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final void normalize() {
-    if (this.tupleSet == null || this.tupleSet == DummyEnum) {
-      for (int i = 0; i < this.sets.length; i++) {
-	this.sets[i].normalize();
+    try {
+      if (this.tupleSet == null || this.tupleSet == DummyEnum) {
+        for (int i = 0; i < this.sets.length; i++) {
+          this.sets[i].normalize();
+        }
+      }
+      else {
+        this.tupleSet.normalize();
       }
     }
-    else {
-      this.tupleSet.normalize();
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
   }
 
   public final boolean isDefined() {
-    boolean defined = true;
-    for (int i = 0; i < this.sets.length; i++) {
-      defined = defined && this.sets[i].isDefined();
+    try {
+      boolean defined = true;
+      for (int i = 0; i < this.sets.length; i++) {
+        defined = defined && this.sets[i].isDefined();
+      }
+      return defined;
     }
-    return defined;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value deepCopy() { return this; }
 
   public final boolean assignable(Value val) {
-    return this.equals(val);
+    try {
+      return this.equals(val);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /* The fingerprint  */
   public final long fingerPrint(long fp) {
-    try{
+    try {
       this.convertAndCache();
       return this.tupleSet.fingerPrint(fp);
     }
-    catch(RuntimeException | OutOfMemoryError e){
-      throw FingerprintException.getNewHead(this, e);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
   }
-  
+
   public final Value permute(MVPerm perm) {
-    this.convertAndCache();
-    return this.tupleSet.permute(perm);
+    try {
+      this.convertAndCache();
+      return this.tupleSet.permute(perm);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   private final void convertAndCache() {
@@ -187,113 +261,125 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     else if (this.tupleSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
-	if (this.tupleSet == DummyEnum) {
-	  val = SetEnumValue.convert(this);
-	  val.deepNormalize();
-	}
+        if (this.tupleSet == DummyEnum) {
+          val = SetEnumValue.convert(this);
+          val.deepNormalize();
+        }
       }
       synchronized(this) {
-	if (this.tupleSet == DummyEnum) { this.tupleSet = val; }
+        if (this.tupleSet == DummyEnum) { this.tupleSet = val; }
       }
     }
   }
-      
+
   /* The string representation of the value. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
-    boolean unlazy = expand;
     try {
-      if (unlazy) {
-	long sz = 1;    
-	for (int i = 0; i < this.sets.length; i++) {
-	  sz *= this.sets[i].size();
-	  if (sz < -2147483648 || sz > 2147483647) {
-	    unlazy = false;
-	    break;
-	  }
-	}
-	unlazy = sz < TLCGlobals.enumBound;
+      boolean unlazy = expand;
+      try {
+        if (unlazy) {
+          long sz = 1;
+          for (int i = 0; i < this.sets.length; i++) {
+            sz *= this.sets[i].size();
+            if (sz < -2147483648 || sz > 2147483647) {
+              unlazy = false;
+              break;
+            }
+          }
+          unlazy = sz < TLCGlobals.enumBound;
+        }
       }
-    }
-    catch (Throwable e) { unlazy = false; }
+      catch (Throwable e) { unlazy = false; }
 
-    if (unlazy) {
-      Value val = SetEnumValue.convert(this);
-      return val.toString(sb, offset);
+      if (unlazy) {
+        Value val = SetEnumValue.convert(this);
+        return val.toString(sb, offset);
+      }
+      else {
+        if (this.sets.length > 0) {
+          sb.append("(");
+          this.sets[0].toString(sb, offset);
+        }
+        for (int i = 1; i < this.sets.length; i++) {
+          sb.append(" X ");
+          this.sets[i].toString(sb, offset);
+        }
+        if (this.sets.length > 0) {
+          sb.append(")");
+        }
+        return sb;
+      }
     }
-    else {
-      if (this.sets.length > 0) {
-	sb.append("(");
-	this.sets[0].toString(sb, offset);
-      }
-      for (int i = 1; i < this.sets.length; i++) {
-	sb.append(" X ");
-	this.sets[i].toString(sb, offset);
-      }
-      if (this.sets.length > 0) {
-	sb.append(")");
-      }
-      return sb;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
   }
-  
+
   public final ValueEnumeration elements() {
-    if (this.tupleSet == null || this.tupleSet == DummyEnum) {
-      return new Enumerator();
+    try {
+      if (this.tupleSet == null || this.tupleSet == DummyEnum) {
+        return new Enumerator();
+      }
+      return this.tupleSet.elements();
     }
-    return this.tupleSet.elements();
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   final class Enumerator implements ValueEnumeration {
     private ValueEnumeration[] enums;
     private Value[] currentElems;
     private boolean isDone;
-    
+
     public Enumerator() {
       this.enums = new ValueEnumeration[sets.length];
       this.currentElems = new Value[sets.length];
       this.isDone = false;
       for (int i = 0; i < sets.length; i++) {
-	if (sets[i] instanceof Enumerable) {
-	  this.enums[i] = ((Enumerable)sets[i]).elements();
-	  this.currentElems[i] = this.enums[i].nextElement();
-	  if (this.currentElems[i] == null) {
-	    this.enums = null;
-	    this.isDone = true;
-	    break;
-	  }
-	}
-	else {
-	  Assert.fail("Attempted to enumerate a set of the form s1 \\X s2 ... \\X sn," +
-		      "\nbut can't enumerate s" + i + ":\n" + ppr(sets[i].toString()));
-	}
+        if (sets[i] instanceof Enumerable) {
+          this.enums[i] = ((Enumerable)sets[i]).elements();
+          this.currentElems[i] = this.enums[i].nextElement();
+          if (this.currentElems[i] == null) {
+            this.enums = null;
+            this.isDone = true;
+            break;
+          }
+        }
+        else {
+          Assert.fail("Attempted to enumerate a set of the form s1 \\X s2 ... \\X sn," +
+                "\nbut can't enumerate s" + i + ":\n" + ppr(sets[i].toString()));
+        }
       }
     }
 
     public final void reset() {
       if (this.enums != null) {
-	for (int i = 0; i < this.enums.length; i++) {
-	  this.enums[i].reset();
-	  this.currentElems[i] = this.enums[i].nextElement();
-	}
-	this.isDone = false;
+        for (int i = 0; i < this.enums.length; i++) {
+          this.enums[i].reset();
+          this.currentElems[i] = this.enums[i].nextElement();
+        }
+        this.isDone = false;
       }
     }
-    
+
     public final Value nextElement() {
       if (this.isDone) return null;
       Value[] elems = new Value[this.currentElems.length];
       for (int i = 0; i < elems.length; i++) {
-	elems[i] = this.currentElems[i];
+        elems[i] = this.currentElems[i];
       }
       for (int i = elems.length-1; i >= 0; i--) {
-	this.currentElems[i] = this.enums[i].nextElement();
-	if (this.currentElems[i] != null) break;
-	if (i == 0) {
-	  this.isDone = true;
-	  break;
-	}
-	this.enums[i].reset();
-	this.currentElems[i] = this.enums[i].nextElement();
+        this.currentElems[i] = this.enums[i].nextElement();
+        if (this.currentElems[i] != null) break;
+        if (i == 0) {
+          this.isDone = true;
+          break;
+        }
+        this.enums[i].reset();
+        this.currentElems[i] = this.enums[i].nextElement();
       }
       return new TupleValue(elems);
     }

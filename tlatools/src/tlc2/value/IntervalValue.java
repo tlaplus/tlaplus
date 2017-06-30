@@ -5,6 +5,7 @@
 
 package tlc2.value;
 
+import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
@@ -22,115 +23,175 @@ implements Enumerable, Reducible {
   public final byte getKind() { return INTERVALVALUE; }
 
   public final int compareTo(Object obj) {
-    if (obj instanceof IntervalValue) {
-      IntervalValue intv = (IntervalValue)obj;
-      int cmp = this.size() - intv.size();
-      if (cmp != 0) return cmp;
-      if (this.size() == 0) return 0;
-      return this.low - intv.low;
+    try {
+      if (obj instanceof IntervalValue) {
+        IntervalValue intv = (IntervalValue)obj;
+        int cmp = this.size() - intv.size();
+        if (cmp != 0) return cmp;
+        if (this.size() == 0) return 0;
+        return this.low - intv.low;
+      }
+      // Well, we have to convert them to sets and compare.
+      return SetEnumValue.convert(this).compareTo(obj);
     }
-    // Well, we have to convert them to sets and compare.
-    return SetEnumValue.convert(this).compareTo(obj);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean equals(Object obj) {
-    if (obj instanceof IntervalValue) {
-      IntervalValue intv = (IntervalValue)obj;
-      if (this.size() == 0) return intv.size() == 0;
-      return (this.low == intv.low) && (this.high == intv.high);
+    try {
+      if (obj instanceof IntervalValue) {
+        IntervalValue intv = (IntervalValue)obj;
+        if (this.size() == 0) return intv.size() == 0;
+        return (this.low == intv.low) && (this.high == intv.high);
+      }
+      // Well, we have to convert them to sets and compare.
+      return SetEnumValue.convert(this).equals(obj);
     }
-    // Well, we have to convert them to sets and compare.
-    return SetEnumValue.convert(this).equals(obj);
-  }
-  
-  public final boolean member(Value elem) {
-    if (elem instanceof IntValue) {
-      int x = ((IntValue)elem).val;
-      return (x >= low) && (x <= high);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
-    if (   (this.low <= this.high) 
-         && (   !(elem instanceof ModelValue)
-             || (((ModelValue) elem).type != 0)) ) {
-      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-		  "\nis in the integer interval " + ppr(this.toString()));
-    }
-    return false;
   }
 
-	public Value isSubsetEq(Value other) {
-		if (other instanceof IntervalValue) {
-			final IntervalValue iv = (IntervalValue) other;
-			if (iv.low <= low && iv.high >= high) {
-				return ValTrue;
-			}
-		}
-		return super.isSubsetEq(other);
-	}
+  public final boolean member(Value elem) {
+    try {
+      if (elem instanceof IntValue) {
+        int x = ((IntValue)elem).val;
+        return (x >= low) && (x <= high);
+      }
+      if (   (this.low <= this.high)
+           && (   !(elem instanceof ModelValue)
+               || (((ModelValue) elem).type != 0)) ) {
+        Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
+        "\nis in the integer interval " + ppr(this.toString()));
+      }
+      return false;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
+  public Value isSubsetEq(Value other) {
+    try {
+      if (other instanceof IntervalValue) {
+        final IntervalValue iv = (IntervalValue) other;
+        if (iv.low <= low && iv.high >= high) {
+          return ValTrue;
+        }
+      }
+      return super.isSubsetEq(other);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
 
   public final boolean isFinite() { return true; }
 
   public final int size() {
-    if (this.high < this.low) return 0;
-    return this.high - this.low + 1;
+    try {
+      if (this.high < this.low) return 0;
+      return this.high - this.low + 1;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /* Return this - val.  */
   public final Value diff(Value val) {
-    ValueVec diffElems = new ValueVec();
-    for (int i = this.low; i <= this.high; i++) {
-      Value elem = IntValue.gen(i);      
-      if (!val.member(elem)) diffElems.addElement(elem);
+    try {
+      ValueVec diffElems = new ValueVec();
+      for (int i = this.low; i <= this.high; i++) {
+        Value elem = IntValue.gen(i);
+        if (!val.member(elem)) diffElems.addElement(elem);
+      }
+      return new SetEnumValue(diffElems, true);
     }
-    return new SetEnumValue(diffElems, true);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /* Return this \cap val. */
   public final Value cap(Value val) {
-    ValueVec capElems = new ValueVec();
-    for (int i = this.low; i <= this.high; i++) {
-      Value elem = IntValue.gen(i);
-      if (val.member(elem)) capElems.addElement(elem);
+    try {
+      ValueVec capElems = new ValueVec();
+      for (int i = this.low; i <= this.high; i++) {
+        Value elem = IntValue.gen(i);
+        if (val.member(elem)) capElems.addElement(elem);
+      }
+      return new SetEnumValue(capElems, true);
     }
-    return new SetEnumValue(capElems, true);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /* Return this \cup val.  */
   public final Value cup(Value set) {
-    if (this.size() == 0) return set;
+    try {
+      if (this.size() == 0) return set;
 
-    if (set instanceof Reducible) {
-      ValueVec cupElems = new ValueVec();
-      for (int i = this.low; i <= this.high; i++) {
-	cupElems.addElement(IntValue.gen(i));
+      if (set instanceof Reducible) {
+        ValueVec cupElems = new ValueVec();
+        for (int i = this.low; i <= this.high; i++) {
+          cupElems.addElement(IntValue.gen(i));
+        }
+        ValueEnumeration Enum = ((Enumerable)set).elements();
+        Value elem;
+        while ((elem = Enum.nextElement()) != null) {
+          if (!this.member(elem)) cupElems.addElement(elem);
+        }
+        return new SetEnumValue(cupElems, false);
       }
-      ValueEnumeration Enum = ((Enumerable)set).elements();
-      Value elem;
-      while ((elem = Enum.nextElement()) != null) {
-	if (!this.member(elem)) cupElems.addElement(elem);
-      }
-      return new SetEnumValue(cupElems, false);
+      return new SetCupValue(this, set);
     }
-    return new SetCupValue(this, set);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value takeExcept(ValueExcept ex) {
-    if (ex.idx < ex.path.length) {
-      Assert.fail("Attempted to apply EXCEPT construct to the interval value " +
-		  ppr(this.toString()) + ".");
+    try {
+      if (ex.idx < ex.path.length) {
+        Assert.fail("Attempted to apply EXCEPT construct to the interval value " +
+        ppr(this.toString()) + ".");
+      }
+      return ex.value;
     }
-    return ex.value;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value takeExcept(ValueExcept[] exs) {
-    if (exs.length != 0) {
-      Assert.fail("Attempted to apply EXCEPT construct to the interval value " +
-		  ppr(this.toString()) + ".");
+    try {
+      if (exs.length != 0) {
+        Assert.fail("Attempted to apply EXCEPT construct to the interval value " +
+        ppr(this.toString()) + ".");
+      }
+      return this;
     }
-    return this;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isNormalized() { return true; }
-  
+
   public final void normalize() { /*nop*/ }
 
   public final boolean isDefined() { return true; }
@@ -138,14 +199,20 @@ implements Enumerable, Reducible {
   public final Value deepCopy() { return this; }
 
   public final boolean assignable(Value val) {
-    return ((val instanceof IntervalValue) &&
-	    this.high == ((IntervalValue)val).high &&
-	    this.low == ((IntervalValue)val).low);
+    try {
+      return ((val instanceof IntervalValue) &&
+        this.high == ((IntervalValue)val).high &&
+        this.low == ((IntervalValue)val).low);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /* The fingerprint method */
   public final long fingerPrint(long fp) {
-    try{
+    try {
       fp = FP64.Extend(fp, SETENUMVALUE);
       fp = FP64.Extend(fp, this.size()) ;
       for (int i = this.low; i <= this.high; i++) {
@@ -154,27 +221,40 @@ implements Enumerable, Reducible {
       }
       return fp;
     }
-    catch(RuntimeException | OutOfMemoryError e){
-      throw FingerprintException.getNewHead(this, e);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
   }
 
   public final Value permute(MVPerm perm) {
     return this;
   }
-  
+
   /* The string representation */
   public final StringBuffer toString(StringBuffer sb, int offset) {
-    if (this.low <= this.high) {
-      return sb.append(this.low).append("..").append(this.high);
+    try {
+      if (this.low <= this.high) {
+        return sb.append(this.low).append("..").append(this.high);
+      }
+      return sb.append("{").append("}");
     }
-    return sb.append("{").append("}");
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final ValueEnumeration elements() {
-    return new Enumerator();
+    try {
+      return new Enumerator();
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
-  
+
   final class Enumerator implements ValueEnumeration {
     int index = low;
 
@@ -182,11 +262,11 @@ implements Enumerable, Reducible {
 
     public final Value nextElement() {
       if (this.index <= high) {
-	return IntValue.gen(this.index++);
+        return IntValue.gen(this.index++);
       }
       return null;
     }
-    
+
   }
-  
+
 }

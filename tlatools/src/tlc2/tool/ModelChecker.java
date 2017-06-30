@@ -63,6 +63,10 @@ public class ModelChecker extends AbstractChecker
 	 * Flag set via JMX if liveness checking should be triggered.
 	 */
 	private boolean forceLiveCheck = false;
+    /**
+     * Flag to indicate if fingerprinting is running in error recreation phase of normal model checking (not df, liveness, distributed, etc.)
+     */
+    public static boolean isFingerprintStackOn = false;
 
     /* Constructors  */
     /**
@@ -247,7 +251,7 @@ public class ModelChecker extends AbstractChecker
                     this.doNext(this.predErrState, new ObjLongTable(10), new Worker(4223, this));
                 } catch (FingerprintException e)
                 {
-                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getRootCause().getMessage(), e.getTrace(0)});
+                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getRootCause().getMessage(), e.getTrace()});
                 } catch (Throwable e)
                 {
                     // Assert.printStack(e);
@@ -423,7 +427,9 @@ public class ModelChecker extends AbstractChecker
 					boolean seen = false;
                     if (inModel)
                     {
+                        ModelChecker.isFingerprintStackOn = true;
 						long fp = succState.fingerPrint();
+                        ModelChecker.isFingerprintStackOn = false;
 						seen = this.theFPSet.put(fp);
                         // Write out succState when needed:
                         this.allStateWriter.writeState(curState, succState, !seen);
@@ -996,7 +1002,9 @@ public class ModelChecker extends AbstractChecker
 				boolean inModel = tool.isInModel(curState);
 				boolean seen = false;
 				if (inModel) {
+                    ModelChecker.isFingerprintStackOn = true;
 					long fp = curState.fingerPrint();
+                    ModelChecker.isFingerprintStackOn = false;
 					seen = theFPSet.put(fp);
 					if (!seen) {
 						allStateWriter.writeState(curState);
@@ -1041,7 +1049,7 @@ public class ModelChecker extends AbstractChecker
 				}
                 else if (e instanceof FingerprintException){
                     FingerprintException fpe = (FingerprintException) e;
-                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fpe.getRootCause().getMessage(), fpe.getTrace(0)});
+                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fpe.getRootCause().getMessage(), fpe.getTrace()});
                     returnValue = false;
                     return returnValue;
                 }

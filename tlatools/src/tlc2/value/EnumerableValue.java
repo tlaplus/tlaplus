@@ -25,16 +25,26 @@
  ******************************************************************************/
 package tlc2.value;
 
+import tlc2.tool.ModelChecker;
+import tlc2.tool.FingerprintException;
+
 public abstract class EnumerableValue extends Value implements Enumerable, ValueConstants {
 
-	public Value isSubsetEq(Value other) {
-		final ValueEnumeration Enum = this.elements();
-		Value elem;
-		while ((elem = Enum.nextElement()) != null) {
-			if (!other.member(elem)) {
-				return ValFalse;
-			}
-		}
-		return ValTrue;
-	}
+  public Value isSubsetEq(Value other) {
+    try {
+      final ValueEnumeration Enum = this.elements();
+      Value elem;
+      while ((elem = Enum.nextElement()) != null) {
+        if (!other.member(elem)) {
+          return ValFalse;
+        }
+      }
+      return ValTrue;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
 }

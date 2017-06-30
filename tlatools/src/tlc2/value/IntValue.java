@@ -5,6 +5,7 @@
 
 package tlc2.value;
 
+import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
@@ -13,7 +14,7 @@ public class IntValue extends Value {
   private static final IntValue[] cache;
 
   public int val;
-  
+
   private IntValue(int i) { this.val = i; }
 
   static {
@@ -35,8 +36,14 @@ public class IntValue extends Value {
   }
 
   // the number of bits needed to encode the value of this int
-  public final int nbits() { 
-    return nbits(this.val);
+  public final int nbits() {
+    try {
+      return nbits(this.val);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public static IntValue gen(int i) {
@@ -47,63 +54,105 @@ public class IntValue extends Value {
   }
 
   public final int compareTo(Object obj) {
-    if (obj instanceof IntValue) {
-      return this.val - ((IntValue)obj).val;
+    try {
+      if (obj instanceof IntValue) {
+        return this.val - ((IntValue)obj).val;
+      }
+      if (!(obj instanceof ModelValue)) {
+        Assert.fail("Attempted to compare integer " + ppr(this.toString()) +
+        " with non-integer:\n" + ppr(obj.toString()));
+      }
+      return 1;
     }
-    if (!(obj instanceof ModelValue)) {
-      Assert.fail("Attempted to compare integer " + ppr(this.toString()) +
-		  " with non-integer:\n" + ppr(obj.toString()));
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
-    return 1;
   }
-  
+
   public final boolean equals(Object obj) {
-    if (obj instanceof IntValue) {
-      return this.val == ((IntValue)obj).val;
+    try {
+      if (obj instanceof IntValue) {
+        return this.val == ((IntValue)obj).val;
+      }
+      if (!(obj instanceof ModelValue)) {
+        Assert.fail("Attempted to check equality of integer " + ppr(this.toString()) +
+        " with non-integer:\n" + ppr(obj.toString()));
+      }
+      return ((ModelValue) obj).modelValueEquals(this);
     }
-    if (!(obj instanceof ModelValue)) {
-      Assert.fail("Attempted to check equality of integer " + ppr(this.toString()) +
-		  " with non-integer:\n" + ppr(obj.toString()));
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
-    return ((ModelValue) obj).modelValueEquals(this) ;
   }
 
   public final boolean member(Value elem) {
-    Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-		"\nis an element of the integer " + ppr(this.toString()));
-    return false;  // make compiler happy
+    try {
+      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
+      "\nis an element of the integer " + ppr(this.toString()));
+      return false;  // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isFinite() {
-    Assert.fail("Attempted to check if the integer " + ppr(this.toString()) +
-		" is a finite set.");
-    return false;   // make compiler happy
+    try {
+      Assert.fail("Attempted to check if the integer " + ppr(this.toString()) +
+      " is a finite set.");
+      return false;   // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value takeExcept(ValueExcept ex) {
-    if (ex.idx < ex.path.length) {
-      Assert.fail("Attempted to appy EXCEPT construct to the integer " +
-		  ppr(this.toString()) + ".");
+    try {
+      if (ex.idx < ex.path.length) {
+        Assert.fail("Attempted to appy EXCEPT construct to the integer " +
+        ppr(this.toString()) + ".");
+      }
+      return ex.value;
     }
-    return ex.value;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final Value takeExcept(ValueExcept[] exs) {
-    if (exs.length != 0) {
-      Assert.fail("Attempted to apply EXCEPT construct to the integer " +
-		  ppr(this.toString()) + ".");
+    try {
+      if (exs.length != 0) {
+        Assert.fail("Attempted to apply EXCEPT construct to the integer " +
+        ppr(this.toString()) + ".");
+      }
+      return this;
     }
-    return this;
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final int size() {
-    Assert.fail("Attempted to compute the number of elements in the integer " +
-		ppr(this.toString()) + ".");
-    return 0;   // make compiler happy
+    try {
+      Assert.fail("Attempted to compute the number of elements in the integer " +
+      ppr(this.toString()) + ".");
+      return 0;   // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   public final boolean isNormalized() { return true; }
-  
+
   public final void normalize() { /*nop*/ }
 
   public final boolean isDefined() { return true; }
@@ -111,17 +160,24 @@ public class IntValue extends Value {
   public final Value deepCopy() { return this; }
 
   public final boolean assignable(Value val) {
-    return ((val instanceof IntValue) &&
-	    this.val == ((IntValue)val).val);
+    try {
+      return ((val instanceof IntValue) &&
+        this.val == ((IntValue)val).val);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   /* The fingerprint methods */
   public final long fingerPrint(long fp) {
-    try{
+    try {
       return FP64.Extend(FP64.Extend(fp, INTVALUE), this.val);
     }
-    catch(RuntimeException | OutOfMemoryError e){
-      throw FingerprintException.getNewHead(this, e);
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
     }
   }
 
@@ -129,7 +185,13 @@ public class IntValue extends Value {
 
   /* The string representation. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
-    return sb.append(this.val);
+    try {
+      return sb.append(this.val);
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
 }
