@@ -57,9 +57,17 @@ that is not a natural number.&nbsp;  TLC cannot evaluate this definition because
 it cannot evaluate the unbounded&nbsp; <code>CHOOSE</code>&nbsp; expression.&nbsp;
 To allow TLC to handle the spec, you need to substitute a model value
 for&nbsp; <code>NotANat</code>&nbsp;.&nbsp;  The best model value to substitute for it
-is one named&nbsp; <code>NotANat</code>&nbsp;.&nbsp;  You can do this with the
+is one named&nbsp; <code>NotANat</code>&nbsp;.&nbsp;  This is done in the
 <a href="advanced-page.html#override">Definition Override</a> section of
-the <a href="advanced-page.html">Advanced Options Page</a>.
+the <a href="advanced-page.html">Advanced Options Page</a>.&nbsp;  The Toolbox will
+create the appropriate entry in that section when it creates a model
+if it finds a definition having the precise
+syntax above or the syntax
+<pre>
+   NotANat == CHOOSE n : ~(n \in Nat)
+</pre>
+where <code>Nat</code> can be any expression, and <code>NotANat</code> and <code>n</code>
+can be any identifiers.
 </P>
 
 
