@@ -18,10 +18,10 @@ public class FingerprintException extends RuntimeException {
 
   public static FingerprintException getNewHead(Value v, Throwable t){
     FingerprintException fpe = null;
-    if(!(t instanceof FingerprintException))
-      fpe = FingerprintException.createNewHead(v, t);
-    else
+    if(t instanceof FingerprintException)
       fpe = ((FingerprintException) t).prependNewHead(v);
+    else
+      fpe = FingerprintException.createNewHead(v, t);
     return fpe;
   }
 
@@ -50,7 +50,7 @@ public class FingerprintException extends RuntimeException {
     return getTraceImpl(0, null);
   }
 
-  private String getTraceImpl(final Integer traceIndexLabel, final Integer lastSemanticNodeUid){
+  private String getTraceImpl(final int traceIndexLabel, final Integer lastSemanticNodeUid){
     SemanticNode semanticNode = value.getSourceSemanticNode();
     if(semanticNode == null){
       if(next == null)
