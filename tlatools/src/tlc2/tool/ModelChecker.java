@@ -246,16 +246,19 @@ public class ModelChecker extends AbstractChecker
             {
                 // Replay the error with the error stack recorded:
                 this.tool.setCallStack();
+                ModelChecker.isFingerprintStackOn = true;
                 try
                 {
                     this.doNext(this.predErrState, new ObjLongTable(10), new Worker(4223, this));
                 } catch (FingerprintException e)
                 {
-                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getRootCause().getMessage(), e.getTrace()});
+                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});
                 } catch (Throwable e)
                 {
                     // Assert.printStack(e);
                     MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
+                } finally {
+                    ModelChecker.isFingerprintStackOn = false;
                 }
             }
         } catch (Exception e)
@@ -427,9 +430,7 @@ public class ModelChecker extends AbstractChecker
 					boolean seen = false;
                     if (inModel)
                     {
-                        ModelChecker.isFingerprintStackOn = true;
 						long fp = succState.fingerPrint();
-                        ModelChecker.isFingerprintStackOn = false;
 						seen = this.theFPSet.put(fp);
                         // Write out succState when needed:
                         this.allStateWriter.writeState(curState, succState, !seen);
@@ -1049,7 +1050,7 @@ public class ModelChecker extends AbstractChecker
 				}
                 else if (e instanceof FingerprintException){
                     FingerprintException fpe = (FingerprintException) e;
-                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fpe.getRootCause().getMessage(), fpe.getTrace()});
+                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fpe.getTrace(), fpe.getRootCause().getMessage()});
                     returnValue = false;
                     return returnValue;
                 }

@@ -415,10 +415,12 @@ public class MP
 
         case EC.TLC_FINGERPRINT_EXCEPTION:
             b.append("TLC was unable to fingerprint."
-                + "\n\nReason:"
+                + "\n"
+                + "\nFingerprint Stack Trace:"
                 + "\n%1%"
-                + "\n\nFingerprint Stack Trace:"
-                + "\n%2%");
+                + "\nReason:"
+                + "\n%2%"); // reason must come last, with nothing following, because Tool cannot parse the embedded error otherwise
+
             break;
 
         case EC.TLC_NO_STATES_SATISFYING_INIT:
