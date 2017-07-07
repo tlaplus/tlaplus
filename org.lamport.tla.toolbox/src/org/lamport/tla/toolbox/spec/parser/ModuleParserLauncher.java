@@ -518,6 +518,19 @@ public class ModuleParserLauncher
                     result.addMarker(new TLAMarkerInformationHolder(module, module.getName(), IMarker.SEVERITY_ERROR,
                             coordinates, message));
                 } // if
+                else if (message.indexOf("Lexical {error: EOF reached, possibly open comment starting around line ") != -1)
+                {
+					// Handles tla2sany.parser.TLAplusParser.parse() EOF due to
+					// dangling multi-line comment. Without it, the model fails
+					// to launch and gets stuck in model-checking mode from
+					// which only a Toolbox restart can recover.
+					final int beginLine = Integer.parseInt(message.substring(
+							"Lexical {error: EOF reached, possibly open comment starting around line ".length()));
+	                   // coordinates of the error
+                    coordinates = new int[] { beginLine, 0, beginLine, 0 };
+					result.addMarker(new TLAMarkerInformationHolder(module, module.getName(), IMarker.SEVERITY_ERROR,
+							coordinates, message));
+                }
                 else
                 {
 
