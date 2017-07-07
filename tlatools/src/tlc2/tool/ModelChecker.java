@@ -163,15 +163,19 @@ public class ModelChecker extends AbstractChecker
 
                 // Replay the error with the error stack recorded:
                 this.tool.setCallStack();
+                ModelChecker.isFingerprintStackOn = true;
                 try
                 {
                     numberOfInitialStates = 0;
                     // SZ Feb 23, 2009: ignore cancel on error reporting
                     this.doInit(true);
-                } catch (Throwable e1)
-                {
+                } catch (FingerprintException fe){
+                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fe.getTrace(), fe.getRootCause().getMessage()});
+                } catch (Throwable e1) {
                     // Assert.printStack(e);
                     MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
+                } finally {
+                    ModelChecker.isFingerprintStackOn = false;
                 }
                 this.printSummary(false, startTime);
                 this.cleanup(false);
@@ -1003,9 +1007,7 @@ public class ModelChecker extends AbstractChecker
 				boolean inModel = tool.isInModel(curState);
 				boolean seen = false;
 				if (inModel) {
-                    ModelChecker.isFingerprintStackOn = true;
 					long fp = curState.fingerPrint();
-                    ModelChecker.isFingerprintStackOn = false;
 					seen = theFPSet.put(fp);
 					if (!seen) {
 						allStateWriter.writeState(curState);
@@ -1048,12 +1050,6 @@ public class ModelChecker extends AbstractChecker
 					returnValue = false;
 					return returnValue;
 				}
-                else if (e instanceof FingerprintException){
-                    FingerprintException fpe = (FingerprintException) e;
-                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fpe.getTrace(), fpe.getRootCause().getMessage()});
-                    returnValue = false;
-                    return returnValue;
-                }
 				this.errState = curState;
 				this.e = e;
 			}
