@@ -1,6 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Last modified on Mon 30 Apr 2007 at 15:30:08 PST by lamport
+// Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
+//      modified on Mon 30 Apr 2007 at 15:30:08 PST by lamport
 //      modified on Thu Feb  8 21:23:55 PST 2001 by yuanyu
 
 package tlc2.value;

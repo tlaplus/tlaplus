@@ -22,6 +22,7 @@
  *
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
+ *   Ian Morris Nieves - added support for fingerprint stack trace
  ******************************************************************************/
 package tlc2.value;
 
