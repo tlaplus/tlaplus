@@ -74,7 +74,7 @@
     <repository
         url="http://download.eclipse.org/technology/swtbot/releases/latest/"/>
     <repository
-        url="http://download.eclipse.org/tools/ajdt/45/dev/update/"/>
+        url="http://download.eclipse.org/tools/ajdt/47/dev/update/"/>
     <repository
         url="http://download.eclipse.org/technology/m2e/releases/"/>
     <repository
