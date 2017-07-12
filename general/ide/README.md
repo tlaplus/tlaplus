@@ -7,7 +7,7 @@ Eclipse Oomph is a tool to simplify and automate the setup of Eclipse developmen
 2. Start the downloaded Oomph installer
 3. Switch to "Advanced Mode" by clicking the button in the right upper corner depicted with three horizontal lines
 4. Select "Eclipse Platform" on the Product list (expand "Eclipse.org" node)
-  1. Choose "Neon" as the product version at the bottom ![Chose Platform](https://raw.githubusercontent.com/lemmy/tlaplus/master/general/ide/images/00_PlatformSelection.png)
+  1. Choose "Oxygen" as the product version at the bottom ![Chose Platform](https://raw.githubusercontent.com/lemmy/tlaplus/master/general/ide/images/00_PlatformSelection.png)
 5. On the next screen, expand "Github Project" in the tree and select the check-box left to "TLA+" 
   1. Verify that "TLA+" shows up under "Project" at the bottom table and that the "Master" stream is selected ![Chose Project](https://raw.githubusercontent.com/lemmy/tlaplus/master/general/ide/images/01_ProjectSelection.png)
 6. On the next page, select whether to use anonymous Github access (read-only) from the "TLA+ Github Repository" dropdown list ![Chose anonymous access](https://raw.githubusercontent.com/lemmy/tlaplus/master/general/ide/images/02_Variables.png)
