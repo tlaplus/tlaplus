@@ -285,6 +285,17 @@ public class TLCProcessJob extends TLCJob
 	protected List<String> getAdditionalVMArgs() throws CoreException {
 		final List<String> result = new ArrayList<String>(0);
 
+		/*
+		 * Allow access to the java.activation module on Java9 
+		 * https://bugs.eclipse.org/493761
+		 * http://download.java.net/java/jdk9/docs/api/java.activation-summary.html
+		 * 
+		 * This is needed by MailSender.java.
+		 */
+		result.add("--add-modules=java.activation");
+		// Have < Java9 ignore --add-modules=java.activation flag
+		result.add("-XX:+IgnoreUnrecognizedVMOptions");
+		
 		// Library Path
 		final Spec spec = Activator.getSpecManager().getSpecByName(specName);
 		final String tlaLibraryPathAsVMArg = spec.getTLALibraryPathAsVMArg();

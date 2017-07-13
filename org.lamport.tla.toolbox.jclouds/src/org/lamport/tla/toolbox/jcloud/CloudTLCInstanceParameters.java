@@ -74,11 +74,13 @@ public abstract class CloudTLCInstanceParameters {
 		if (numberOfWorkers == 1) {
 			return getJavaWorkerVMArgs();
 		}
-		return "-Xmx56G -Xms56G";
+		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
+		return "--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions -Xmx56G -Xms56G";
 	}
 	
 	public String getJavaWorkerVMArgs() {
-		return "-Xmx24G -Xms24G -XX:MaxDirectMemorySize=32g";
+		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
+		return "--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions -Xmx24G -Xms24G -XX:MaxDirectMemorySize=32g";
 	}
 
 	// tlc parameters

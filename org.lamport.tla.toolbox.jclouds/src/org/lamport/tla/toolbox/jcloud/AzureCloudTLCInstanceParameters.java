@@ -47,7 +47,8 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 		if (numberOfWorkers == 1) {
 			return getJavaWorkerVMArgs();
 		}
-		return "-Xmx96G -Xms96G";
+		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
+		return "--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions -Xmx96G -Xms96G";
 	}
 	
 	/* (non-Javadoc)
@@ -55,7 +56,8 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	 */
 	@Override
 	public String getJavaWorkerVMArgs() {
-		return "-Xmx32G -Xms32G -XX:MaxDirectMemorySize=64g";
+		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
+		return "--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions -Xmx32G -Xms32G -XX:MaxDirectMemorySize=64g";
 	}
 	
 	/* (non-Javadoc)
