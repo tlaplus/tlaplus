@@ -3,10 +3,16 @@
 package util;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
-import java.lang.reflect.Method;
 import java.util.List;
+
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 
 import tlc2.tool.fp.FPSet;
 
@@ -38,26 +44,15 @@ public class TLCRuntime {
 	 * @return the total amount of memory, measured in bytes.
 	 */
 	private long getPhysicalSystemMemory() {
-
-		// try to read the total physical memory via a MXBean. Unfortunately,
-		// these methods are not meant as public API, which requires us to pull
-		// a visibility reflection hack.
-		// This hack is expected to work on Linux, Windows (up to 7) and Max OSX
-		final OperatingSystemMXBean operatingSystemMXBean = ManagementFactory
-				.getOperatingSystemMXBean();
-		for (Method method : operatingSystemMXBean.getClass()
-				.getDeclaredMethods()) {
-			if (method.getName().equals("getTotalPhysicalMemorySize")) {
-				method.setAccessible(true);
-				try {
-					return (Long) method.invoke(operatingSystemMXBean);
-				} catch (Exception e) {
-					break;
-				}
-			}
+		final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+		try {
+			return (Long) mBeanServer.getAttribute(new ObjectName("java.lang", "type", "OperatingSystem"),
+					"TotalPhysicalMemorySize");
+		} catch (InstanceNotFoundException | AttributeNotFoundException | MalformedObjectNameException
+				| ReflectionException | MBeanException | ClassCastException e) {
+			// as a safeguard default to the total memory available to this JVM
+			return Runtime.getRuntime().totalMemory();
 		}
-		// as a safeguard default to the total memory available to this JVM
-		return Runtime.getRuntime().totalMemory();
 	}
 
 	/**
