@@ -147,7 +147,7 @@ public class StringValue extends Value {
   }
 
   public final int length() {
-  try {
+    try {
       return this.val.length();
     }
     catch (RuntimeException | OutOfMemoryError e) {
