@@ -310,7 +310,6 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   public final boolean assign(Value[] args, Value val) {
-
     try {
 
       if (this.intv != null) {
