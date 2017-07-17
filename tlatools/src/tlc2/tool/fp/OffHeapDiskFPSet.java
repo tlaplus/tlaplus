@@ -496,8 +496,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					try {
 						// If the partition is empty, next throws a NSEE.
 						long x = itr.next();
-						while (itr.getPos() < end) {
-							long y = itr.next();
+						long y = 0;
+						while ((y = itr.next(end)) != EMPTY) {
 							long d = y - x;
 							// d < 0 indicates that the array is not sorted.
 							// d == 0 indicates two identical elements in the
@@ -1180,7 +1180,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 *                iteration has no more elements.
 		 */
 		public long next() {
-			return next0(false);
+			return next0(false, Long.MAX_VALUE);
+		}
+		
+		long next(long maxPos) {
+			if (pos >= maxPos) {
+				return EMPTY;
+			}
+			return next0(false, maxPos);
 		}
 		
 		/**
@@ -1196,10 +1203,10 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 *                iteration has no more elements.
 		 */
 		public long markNext() {
-			return next0(true);
+			return next0(true, Long.MAX_VALUE);
 		}
 
-		private long next0(final boolean mark) {
+		private long next0(final boolean mark, final long maxPos) {
 			long elem;
 			do {
 				final long position = pos % array.size();
@@ -1224,7 +1231,10 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				if (mark) {array.set(position, elem | MARK_FLUSHED);}
 				elementsRead = elementsRead + 1L;
 				return elem;
-			} while (hasNext());
+			} while (hasNext() && pos < maxPos);
+			if (pos >= maxPos) {
+				return EMPTY;
+			}
 			throw new NoSuchElementException();
 		}
 		
