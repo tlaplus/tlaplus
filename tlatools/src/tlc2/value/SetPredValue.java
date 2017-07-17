@@ -66,7 +66,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return this.inVal.compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -78,7 +78,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return this.inVal.equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -124,7 +124,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return false;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -139,7 +139,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return true;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -152,7 +152,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return ex.value;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -165,7 +165,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -177,7 +177,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return this.inVal.size();
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -201,7 +201,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return this.inVal.isNormalized();
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -211,7 +211,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       this.inVal.normalize();
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -225,7 +225,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return this.equals(val);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -238,7 +238,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return this.inVal.fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -250,7 +250,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return this.inVal.permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -282,7 +282,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return sb;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -295,7 +295,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return new Enumerator();
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }

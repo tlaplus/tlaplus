@@ -36,7 +36,7 @@ implements Enumerable, Reducible {
       return SetEnumValue.convert(this).compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -52,7 +52,7 @@ implements Enumerable, Reducible {
       return SetEnumValue.convert(this).equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -72,7 +72,7 @@ implements Enumerable, Reducible {
       return false;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -88,7 +88,7 @@ implements Enumerable, Reducible {
       return super.isSubsetEq(other);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -101,7 +101,7 @@ implements Enumerable, Reducible {
       return this.high - this.low + 1;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -117,7 +117,7 @@ implements Enumerable, Reducible {
       return new SetEnumValue(diffElems, true);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -133,7 +133,7 @@ implements Enumerable, Reducible {
       return new SetEnumValue(capElems, true);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -158,7 +158,7 @@ implements Enumerable, Reducible {
       return new SetCupValue(this, set);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -172,7 +172,7 @@ implements Enumerable, Reducible {
       return ex.value;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -186,7 +186,7 @@ implements Enumerable, Reducible {
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -206,7 +206,7 @@ implements Enumerable, Reducible {
         this.low == ((IntervalValue)val).low);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -223,7 +223,7 @@ implements Enumerable, Reducible {
       return fp;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -241,7 +241,7 @@ implements Enumerable, Reducible {
       return sb.append("{").append("}");
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -251,7 +251,7 @@ implements Enumerable, Reducible {
       return new Enumerator();
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }

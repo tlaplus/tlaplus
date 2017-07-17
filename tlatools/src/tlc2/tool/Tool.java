@@ -1287,9 +1287,7 @@ public class Tool
         SymbolNode opNode = expr1.getOp();
         Object val = this.lookup(opNode, c, false);
         if (val instanceof OpDefNode) {
-          Value v = new OpLambdaValue((OpDefNode)val, this, c, s0, s1);
-          v.setSourceSemanticNode(expr);
-          return v;
+          return setSource(expr, new OpLambdaValue((OpDefNode)val, this, c, s0, s1));
         }
         return (Value)val;
       }
@@ -1515,9 +1513,7 @@ public class Tool
         for (int i = 0; i < alen; i++) {
           sets[i] = this.eval(args[i], c, s0, s1, control);
         }
-        Value v = new SetOfTuplesValue(sets);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new SetOfTuplesValue(sets));
       }
     case OPCODE_cl:     // ConjList
       {
@@ -1622,8 +1618,7 @@ public class Tool
         FcnParams params = new FcnParams(formals, isTuples, dvals);
 
         SemanticNode fbody = args[0];
-        FcnLambdaValue fval = new FcnLambdaValue(params, fbody, this, c, s0, s1, control);
-        fval.setSourceSemanticNode(expr);
+        FcnLambdaValue fval = (FcnLambdaValue) setSource(expr, new FcnLambdaValue(params, fbody, this, c, s0, s1, control));
         if (opcode == OPCODE_rfs) {
           SymbolNode fname = expr.getUnbdedQuantSymbols()[0];
           fval.makeRecursive(fname);
@@ -1657,9 +1652,7 @@ public class Tool
           names[i] = ((StringValue)Value.getValue(pair[0])).getVal();
           vals[i] = this.eval(pair[1], c, s0, s1, control);
         }
-        Value v = new RecordValue(names, vals, false);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new RecordValue(names, vals, false));
       }
     case OPCODE_rs:     // RcdSelect
       {
@@ -1689,9 +1682,7 @@ public class Tool
         for (int i = 0; i < alen; i++) {
           vals.addElement(this.eval(args[i], c, s0, s1, control));
         }
-        Value v = new SetEnumValue(vals, false);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new SetEnumValue(vals, false));
       }
     case OPCODE_soa:    // SetOfAll: {e(x) : x \in S} 
       {
@@ -1704,9 +1695,7 @@ public class Tool
           vals.addElement(val);
           // vals.addElement1(val);
         }
-        Value v = new SetEnumValue(vals, false);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new SetEnumValue(vals, false));
       }
     case OPCODE_sor:    // SetOfRcds
       {
@@ -1719,17 +1708,13 @@ public class Tool
           names[i] = ((StringValue)Value.getValue(pair[0])).getVal();
           vals[i] = this.eval(pair[1], c, s0, s1, control);
         }
-        Value v = new SetOfRcdsValue(names, vals, false);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new SetOfRcdsValue(names, vals, false));
       }
     case OPCODE_sof:    // SetOfFcns
       {
         Value lhs = this.eval(args[0], c, s0, s1, control);
         Value rhs = this.eval(args[1], c, s0, s1, control);
-        Value v = new SetOfFcnsValue(lhs, rhs);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new SetOfFcnsValue(lhs, rhs));
       }
     case OPCODE_sso:    // SubsetOf
       {
@@ -1773,19 +1758,13 @@ public class Tool
               }
             }
           }
-          Value v = new SetEnumValue(vals, inVal.isNormalized());
-          v.setSourceSemanticNode(expr);
-          return v;
+          return setSource(expr, new SetEnumValue(vals, inVal.isNormalized()));
         }
         else if (isTuple) {
-          Value v = new SetPredValue(bvars, inVal, pred, this, c, s0, s1, control);
-          v.setSourceSemanticNode(expr);
-          return v;
+          return setSource(expr, new SetPredValue(bvars, inVal, pred, this, c, s0, s1, control));
         }
         else {
-          Value v = new SetPredValue(bvars[0], inVal, pred, this, c, s0, s1, control);
-          v.setSourceSemanticNode(expr);
-          return v;
+          return setSource(expr, new SetPredValue(bvars[0], inVal, pred, this, c, s0, s1, control));
         }
       }
     case OPCODE_tup:    // Tuple
@@ -1795,9 +1774,7 @@ public class Tool
         for (int i = 0; i < alen; i++) {
           vals[i] = this.eval(args[i], c, s0, s1, control);
         }
-        Value v = new TupleValue(vals);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new TupleValue(vals));
       }
     case OPCODE_uc:     // UnboundedChoose
       {
@@ -1832,16 +1809,12 @@ public class Tool
     case OPCODE_subset:
       {
         Value arg = this.eval(args[0], c, s0, s1, control);
-        Value v = new SubsetValue(arg);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new SubsetValue(arg));
       }
     case OPCODE_union:
       {
         Value arg = this.eval(args[0], c, s0, s1, control);
-        Value v = UnionValue.union(arg);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, UnionValue.union(arg));
       }
     case OPCODE_domain:
       {
@@ -1850,9 +1823,7 @@ public class Tool
           Assert.fail("Attempted to apply the operator DOMAIN to a non-function\n(" +
                       arg.getKindString() + ")\n" + expr);
         }
-        Value v = ((Applicable)arg).getDomain();
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, ((Applicable)arg).getDomain());
       }
     case OPCODE_enabled:
       {
@@ -1961,31 +1932,21 @@ public class Tool
         Value arg1 = this.eval(args[0], c, s0, s1, control);
         Value arg2 = this.eval(args[1], c, s0, s1, control);
         if (arg1 instanceof Reducible) {
-          Value v = ((Reducible)arg1).diff(arg2);
-          v.setSourceSemanticNode(expr);
-          return v;
+          return setSource(expr, ((Reducible)arg1).diff(arg2));
         }
-        Value v = new SetDiffValue(arg1, arg2);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new SetDiffValue(arg1, arg2));
       }
     case OPCODE_cap:
       {
         Value arg1 = this.eval(args[0], c, s0, s1, control);
         Value arg2 = this.eval(args[1], c, s0, s1, control);
         if (arg1 instanceof Reducible) {
-          Value v = ((Reducible)arg1).cap(arg2);
-          v.setSourceSemanticNode(expr);
-          return v;
+          return setSource(expr, ((Reducible)arg1).cap(arg2));
         }
         else if (arg2 instanceof Reducible) {
-          Value v = ((Reducible)arg2).cap(arg1);
-          v.setSourceSemanticNode(expr);
-          return v;
+          return setSource(expr, ((Reducible)arg2).cap(arg1));
         }
-        Value v = new SetCapValue(arg1, arg2);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new SetCapValue(arg1, arg2));
       }
 
     case OPCODE_nop:
@@ -2000,18 +1961,12 @@ public class Tool
         Value arg1 = this.eval(args[0], c, s0, s1, control);
         Value arg2 = this.eval(args[1], c, s0, s1, control);
         if (arg1 instanceof Reducible) {
-          Value v = ((Reducible)arg1).cup(arg2);
-          v.setSourceSemanticNode(expr);
-          return v;
+          return setSource(expr, ((Reducible)arg1).cup(arg2));
         }
         else if (arg2 instanceof Reducible) {
-          Value v = ((Reducible)arg2).cup(arg1);
-          v.setSourceSemanticNode(expr);
-          return v;
+          return setSource(expr, ((Reducible)arg2).cup(arg1));
         }
-        Value v = new SetCupValue(arg1, arg2);
-        v.setSourceSemanticNode(expr);
-        return v;
+        return setSource(expr, new SetCupValue(arg1, arg2));
       }
     case OPCODE_prime:
       {
@@ -2125,6 +2080,13 @@ public class Tool
         return null;
       }
     }
+  }
+  
+  private final Value setSource(final SemanticNode expr, final Value value) {
+	  if (this.callStack != null) {
+		  value.setSource(expr);
+	  }
+	  return value;
   }
 
   /**

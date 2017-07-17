@@ -34,7 +34,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return this.pset.compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -48,7 +48,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return this.pset.equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -69,7 +69,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return true;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -85,7 +85,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return super.isSubsetEq(other);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -95,7 +95,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return this.set.isFinite();
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -108,7 +108,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return ex.value;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -121,7 +121,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -136,7 +136,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return (1 << sz);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -148,7 +148,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
         this.pset.isNormalized());
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -163,7 +163,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       }
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -173,7 +173,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return this.set.isDefined();
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -185,7 +185,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return this.equals(val);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -197,7 +197,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return this.pset.fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -208,7 +208,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return this.pset.permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -253,7 +253,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       }
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -266,7 +266,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       return this.pset.elements();
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }

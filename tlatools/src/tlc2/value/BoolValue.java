@@ -33,7 +33,7 @@ public class BoolValue extends Value {
       return 1;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -50,7 +50,7 @@ public class BoolValue extends Value {
       return ((ModelValue) obj).modelValueEquals(this) ;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -62,7 +62,7 @@ public class BoolValue extends Value {
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -74,7 +74,7 @@ public class BoolValue extends Value {
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -88,7 +88,7 @@ public class BoolValue extends Value {
       return ex.value;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -102,7 +102,7 @@ public class BoolValue extends Value {
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -114,7 +114,7 @@ public class BoolValue extends Value {
       return 0;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -133,7 +133,7 @@ public class BoolValue extends Value {
         this.val == ((BoolValue)val).val);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -146,7 +146,7 @@ public class BoolValue extends Value {
       return fp;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -159,7 +159,7 @@ public class BoolValue extends Value {
       return sb.append((this.val) ? "TRUE" : "FALSE");
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }

@@ -53,7 +53,7 @@ public class TupleValue extends Value implements Applicable {
       return cmp;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -75,7 +75,7 @@ public class TupleValue extends Value implements Applicable {
       return true;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -86,7 +86,7 @@ public class TupleValue extends Value implements Applicable {
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -106,7 +106,7 @@ public class TupleValue extends Value implements Applicable {
       return this.elems[idx-1];
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -119,7 +119,7 @@ public class TupleValue extends Value implements Applicable {
       return this.apply(args[0], EvalControl.Clear);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -137,7 +137,7 @@ public class TupleValue extends Value implements Applicable {
       return null;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -164,7 +164,7 @@ public class TupleValue extends Value implements Applicable {
       return ex.value;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -178,7 +178,7 @@ public class TupleValue extends Value implements Applicable {
       return val;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -188,7 +188,7 @@ public class TupleValue extends Value implements Applicable {
       return new IntervalValue(1, this.size());
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -278,7 +278,7 @@ public class TupleValue extends Value implements Applicable {
       return defined;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -292,7 +292,7 @@ public class TupleValue extends Value implements Applicable {
       return new TupleValue(vals);
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -308,7 +308,7 @@ public class TupleValue extends Value implements Applicable {
       return canAssign;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -327,7 +327,7 @@ public class TupleValue extends Value implements Applicable {
       return fp;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -346,7 +346,7 @@ public class TupleValue extends Value implements Applicable {
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -367,7 +367,7 @@ public class TupleValue extends Value implements Applicable {
       return sb;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }

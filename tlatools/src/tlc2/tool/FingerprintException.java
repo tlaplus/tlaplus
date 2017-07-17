@@ -75,7 +75,7 @@ public class FingerprintException extends RuntimeException {
   }
 
   private String getTraceImpl(final int traceIndexLabel, final Integer lastSemanticNodeUid){
-    SemanticNode semanticNode = value.getSourceSemanticNode();
+    SemanticNode semanticNode = value.getSource();
     if(semanticNode == null){
       if(next == null)
         return "";

@@ -33,7 +33,7 @@ public abstract class Value implements ValueConstants, Serializable {
       return ValueImage[this.getKind()];
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -54,14 +54,18 @@ public abstract class Value implements ValueConstants, Serializable {
    * These methods allow storage and retrieval of the SemanticNode used to create the Value,
    * which is helpful for FingerprintException.
    */
-  private transient SemanticNode sourceSemanticNode = null;
+  private transient SemanticNode source = null;
 
-  public void setSourceSemanticNode(SemanticNode semanticNode) {
-    sourceSemanticNode = semanticNode;
+  public void setSource(final SemanticNode semanticNode) {
+    source = semanticNode;
   }
 
-  public SemanticNode getSourceSemanticNode() {
-    return sourceSemanticNode;
+  public SemanticNode getSource() {
+    return source;
+  }
+  
+  public boolean hasSource() {
+	  return source != null;
   }
 
   /**
@@ -137,7 +141,7 @@ public abstract class Value implements ValueConstants, Serializable {
 
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -318,7 +322,7 @@ public abstract class Value implements ValueConstants, Serializable {
 
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -331,7 +335,7 @@ public abstract class Value implements ValueConstants, Serializable {
       return 0;      // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -347,7 +351,7 @@ public abstract class Value implements ValueConstants, Serializable {
       return null;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -376,7 +380,7 @@ public abstract class Value implements ValueConstants, Serializable {
       return high ^ low;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -402,7 +406,7 @@ public abstract class Value implements ValueConstants, Serializable {
       return result;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -425,7 +429,7 @@ public abstract class Value implements ValueConstants, Serializable {
       return this.toString(sb, 0).toString();
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
@@ -438,7 +442,7 @@ public abstract class Value implements ValueConstants, Serializable {
       return sb.toString();
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      if (ModelChecker.isFingerprintStackOn) { throw FingerprintException.getNewHead(this, e); }
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }

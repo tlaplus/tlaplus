@@ -64,10 +64,6 @@ public class ModelChecker extends AbstractChecker
 	 * Flag set via JMX if liveness checking should be triggered.
 	 */
 	private boolean forceLiveCheck = false;
-    /**
-     * Flag to indicate if fingerprinting is running in error recreation phase of normal model checking (not df, liveness, distributed, etc.)
-     */
-    public static boolean isFingerprintStackOn = false;
 
     /* Constructors  */
     /**
@@ -164,7 +160,6 @@ public class ModelChecker extends AbstractChecker
 
                 // Replay the error with the error stack recorded:
                 this.tool.setCallStack();
-                ModelChecker.isFingerprintStackOn = true;
                 try
                 {
                     numberOfInitialStates = 0;
@@ -175,8 +170,6 @@ public class ModelChecker extends AbstractChecker
                 } catch (Throwable e1) {
                     // Assert.printStack(e);
                     MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
-                } finally {
-                    ModelChecker.isFingerprintStackOn = false;
                 }
                 this.printSummary(false, startTime);
                 this.cleanup(false);
@@ -251,7 +244,6 @@ public class ModelChecker extends AbstractChecker
             {
                 // Replay the error with the error stack recorded:
                 this.tool.setCallStack();
-                ModelChecker.isFingerprintStackOn = true;
                 try
                 {
                     this.doNext(this.predErrState, new ObjLongTable(10), new Worker(4223, this));
@@ -262,8 +254,6 @@ public class ModelChecker extends AbstractChecker
                 {
                     // Assert.printStack(e);
                     MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
-                } finally {
-                    ModelChecker.isFingerprintStackOn = false;
                 }
             }
         } catch (Exception e)
