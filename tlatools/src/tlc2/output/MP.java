@@ -652,6 +652,11 @@ public class MP
         case EC.TLC_FEATURE_UNSUPPORTED:
             b.append("%1%");
             break;
+        case EC.TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY:
+            b.append("Declaring symmetry during liveness checking is dangerous. "
+            		+ "It might cause TLC to miss violations of the stated liveness properties. "
+            		+ "Please check liveness without symmetry defined.");
+            break;
 
         /* Liveness errors */
         case EC.TLC_LIVE_BEGRAPH_FAILED_TO_CONSTRUCT:
@@ -1371,6 +1376,13 @@ public class MP
         ToolIO.out.println(getMessage(TLCBUG, errorCode, parameters));
         DebugPrinter.print("leaving printTLCBug(int, String[])"); //$NON-NLS-1$
     }
+
+    /**
+     * @see MP#printWarning(int)
+     */
+	public static void printWarning(final int errorCode) {
+		printWarning(errorCode, new String[0]);
+	}
 
     /**
      * @see MP#printWarning(int, String[])

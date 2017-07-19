@@ -41,6 +41,7 @@ public interface EC
 	 * TLCGet/TLCSet operator cannot be used in distributed TLC.
 	 */
 	public static final int TLC_FEATURE_UNSUPPORTED = 2156;
+	public static final int TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY = 2279;
 
     public static final int GENERAL = 1000;
     public static final int SYSTEM_OUT_OF_MEMORY = 1001;

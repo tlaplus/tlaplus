@@ -131,6 +131,10 @@ public abstract class AbstractChecker implements Cancelable
         this.actions = this.tool.getActions(); // the sub-actions
 
         if (this.checkLiveness) {
+        	if (tool.hasSymmetry()) {
+        		// raise warning...
+				MP.printWarning(EC.TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY);
+        	}
             // Initialization for liveness checking:
             report("initializing liveness checking");
 			IBucketStatistics stats = new DummyBucketStatistics();

@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
@@ -433,6 +434,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
                     if (constant.isSymmetricalSet())
                     {
+            			if (((CheckboxTableViewer) propertiesTable).getCheckedElements().length > 0) {
+							modelEditor.addErrorMessage(constant.getLabel(), constant.getLabel()
+									+ " declared to be symmetric. Liveness checking under symmetry might fail to find a violation.",
+									this.getId(), IMessageProvider.WARNING,
+									UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+            				expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
+            				expandSection(dm.getSectionForAttribute(MODEL_CORRECTNESS_PROPERTIES));
+            			}
+
                         boolean hasTwoTypes = false; // set true if this symmetry set has two differently-typed model
                         // values.
                         String typeString = null; // set to the type of the first typed model value in this symmetry

@@ -301,7 +301,13 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_BEHAVIOR_UP_TO_THIS_POINT:
                 case EC.TLC_COUNTER_EXAMPLE:
                     break;
-
+                    
+                // send to progress output
+                case EC.TLC_FEATURE_UNSUPPORTED:
+                case EC.TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY:
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                    
                 // usual errors
                 default:
                     if (this.lastDetectedError != null)
