@@ -196,6 +196,13 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
             }
         }
         
+        // Defer liveness checking
+        final boolean deferLiveness = launch.getLaunchConfiguration().getAttribute(LAUNCH_DEFER_LIVENESS, false);
+        if (deferLiveness) {
+        	arguments.add("-lncheck");
+        	arguments.add("final");
+        }
+        
         // fpBits
         int fpBits = launch.getLaunchConfiguration().getAttribute(LAUNCH_FPBITS, -1);
         if(fpBits >= 0) {

@@ -47,6 +47,12 @@ public class TLCGlobals
 	 * (see ILiveCheck#addNextState) and thus part of safety checking..
 	 */
 	public static double livenessRatio = 0.2d;
+	
+	public static String lnCheck = "default";
+	
+	public static boolean doLiveness() {
+		return !lnCheck.equals("final");
+	}
 
     public synchronized static void setNumWorkers(int n)
     {

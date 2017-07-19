@@ -151,7 +151,7 @@ public class LiveCheck implements ILiveCheck {
 		if (forceCheck) {
 			return check0(false);
 		}
-		if (Boolean.getBoolean(Liveness.class.getName() + ".finalCheckOnly")) {
+		if (!TLCGlobals.doLiveness()) {
 			// The user requested to only check liveness once, on the complete
 			// state graph.
 			return true;

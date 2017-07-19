@@ -93,6 +93,10 @@ public interface IConfigurationDefaults
      * Default fp seed is 1 meaning the first elem in the list 
      */
     public static final int LAUNCH_FP_INDEX_DEFAULT = 1;
+    /** 
+     * Default fp seed is 1 meaning the first elem in the list 
+     */
+    public static final boolean LAUNCH_DEFER_LIVENESS_DEFAULT = false;
 
     /**
      * Do not recover from checkpoints by defualt

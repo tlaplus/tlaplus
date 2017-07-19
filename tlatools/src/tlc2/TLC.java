@@ -171,6 +171,9 @@ public class TLC
      *    Defaults to no coverage if not specified
      *  o -continue: continue running even when invariant is violated
      *    Defaults to stop at the first violation if not specified
+     *  o -lncheck: Check liveness properties at different times
+     *    of model checking.
+     *    Defaults to false increasing the overall model checking time.
      *  o -nowarning: disable all the warnings
      *    Defaults to report warnings if not specified
      *  o -fp num: use the num'th irreducible polynomial from the list
@@ -295,7 +298,19 @@ public class TLC
             {
                 printUsage();
                 return false;
-            } else if (args[index].equals("-config"))
+            } else if (args[index].equals("-lncheck"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    TLCGlobals.lnCheck = args[index].toLowerCase();
+                    index++;
+                } else
+                {
+                    printErrorMsg("Error: expect a strategy such as final for -lncheck option.");
+                    return false;
+                }
+           } else if (args[index].equals("-config"))
             {
                 index++;
                 if (index < args.length)

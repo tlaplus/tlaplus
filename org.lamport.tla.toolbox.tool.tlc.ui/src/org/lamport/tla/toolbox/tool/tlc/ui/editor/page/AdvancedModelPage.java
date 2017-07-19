@@ -66,6 +66,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Button dfidOption;
     private Button mcOption;
     private Button simulationOption;
+    private Button deferLiveness;
     private Text dfidDepthText;
     private Text simuDepthText;
     private Text simuSeedText;
@@ -174,6 +175,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             simuSeedText.setText("");
         }
         
+        // Defer Liveness
+        deferLiveness.setSelection(getModel().getAttribute(LAUNCH_DEFER_LIVENESS, LAUNCH_DEFER_LIVENESS_DEFAULT));
+        
         // fp index
         final int fpIndex = getModel().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
        	fpIndexSpinner.setSelection(fpIndex);
@@ -234,6 +238,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // simulation seed
         getModel().setAttribute(LAUNCH_SIMU_ARIL, simuAril);
 
+        // Defer Liveness
+        getModel().setAttribute(LAUNCH_DEFER_LIVENESS, deferLiveness.getSelection());
+        
         // FP Seed index
         getModel().setAttribute(LAUNCH_FP_INDEX, fpIndexSpinner.getSelection());
 
@@ -768,6 +775,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         maxSetSize.addModifyListener(launchListener);
         dfidDepthText.addModifyListener(launchListener);
         simulationOption.addSelectionListener(launchListener);
+        deferLiveness.addSelectionListener(launchListener);
         dfidOption.addSelectionListener(launchListener);
         mcOption.addSelectionListener(launchListener);
         viewSource.addTextListener(launchListener);
@@ -909,7 +917,25 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         toolkit.createSeparator(area, SWT.HORIZONTAL);
         // add empty composite to make the two column grid layout happy
         toolkit.createComposite(area);
-        
+
+        // label deferred liveness checking
+		final String deferLivenessHelp = "Defer verification of temporal properties (liveness) to the end of model checking"
+				+ " to reduce overall model checking time. Liveness violations will not be found late compared to invariant "
+				+ "violations. In other words check liveness only once on the complete state space.";
+        Label deferLivenessLabel = toolkit.createLabel(area, "Verify temporal properties upon termination only:");
+        gd = new GridData();
+        gd.horizontalIndent = 0;
+        deferLivenessLabel.setLayoutData(gd);
+		deferLivenessLabel.setToolTipText(deferLivenessHelp);
+
+        deferLiveness = toolkit.createButton(area, "", SWT.CHECK);
+        gd = new GridData();
+        gd.widthHint = 200;
+        gd.verticalIndent = 20;
+        gd.horizontalIndent = 0;
+        deferLiveness.addFocusListener(focusListener);
+        deferLiveness.setToolTipText(deferLivenessHelp);
+       
         // label fp
         Label fpLabel = toolkit.createLabel(area, "Fingerprint seed index:");
         gd = new GridData();
