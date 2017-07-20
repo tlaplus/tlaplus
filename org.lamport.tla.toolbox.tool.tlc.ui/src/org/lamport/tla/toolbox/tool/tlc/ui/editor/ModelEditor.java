@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import java.text.SimpleDateFormat;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -72,6 +74,7 @@ import tla2sany.semantic.ModuleNode;
  */
 public class ModelEditor extends FormEditor
 {
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
 
 	/**
      * Editor ID
@@ -277,7 +280,12 @@ public class ModelEditor extends FormEditor
         ResourcesPlugin.getWorkspace().addResourceChangeListener(modelFileChangeListener, IResourceChangeEvent.POST_CHANGE);
  
         // setContentDescription(path.toString());
-        this.setPartName(model.getName());
+        if (model.isSnapshot()) {
+        	final String date = sdf.format(model.getSnapshotTimeStamp());
+            this.setPartName(model.getSnapshotFor().getName() + " (" + date + ")");
+        } else {
+        	this.setPartName(model.getName());
+        }
         this.setTitleToolTip(model.getFile().getLocation().toOSString());
 
         // add a listener that will update the tlc error view when a model editor

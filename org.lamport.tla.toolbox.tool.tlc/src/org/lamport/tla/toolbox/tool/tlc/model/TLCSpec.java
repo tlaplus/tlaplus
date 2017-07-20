@@ -61,9 +61,14 @@ public class TLCSpec extends Spec {
 	}
 
 	/**
-     * @return All {@link Model}s associated with the given {@link Spec}
+	 * @return All {@link Model}s associated with the given {@link Spec} excluding
+	 *         snapshots of models.
 	 */
 	public Map<String, Model> getModels() {
+    	return getModels(".*" + Model.SNAPSHOT_REGEXP, false);
+	}
+	
+	public Map<String, Model> getModels(final String regexp, final boolean include) {
 		final ILaunchConfiguration[] launchConfigurations = getAllLaunchConfigurations();
     	
 		final Map<String, Model> res = new HashMap<String, Model>();
@@ -73,6 +78,9 @@ public class TLCSpec extends Spec {
 			final ILaunchConfiguration aConfiguration = launchConfigurations[i];
 			if (location.isPrefixOf(aConfiguration.getFile().getLocation())) {
 				final Model model = aConfiguration.getAdapter(Model.class);
+				if (model.getName().matches(regexp) != include) {
+					continue;
+				}
 				res.put(model.getName(), model);
 			}
 		}
@@ -93,7 +101,9 @@ public class TLCSpec extends Spec {
     }
 
 	public Model getModel(final String modelName) {
-		return getModels().get(Model.sanitizeName(modelName));
+		final String sanitizedName = Model.sanitizeName(modelName);
+		final Map<String, Model> models = getModels(sanitizedName, true);
+		return models.get(sanitizedName);
 	}
 
 	public void rename(final Spec aNewSpec) {

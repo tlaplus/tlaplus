@@ -8,7 +8,12 @@ import org.osgi.framework.BundleContext;
  * The activator class controls the plug-in life cycle
  */
 public class TLCActivator extends AbstractUIPlugin {
-
+	
+	/**
+	 * Take a model snapshot when model checking finishes to create a history of model runs. 
+	 */
+	public static final String I_TLC_SNAPSHOT_PREFERENCE = "takeModelSnapshot";
+	
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.tlc";
 

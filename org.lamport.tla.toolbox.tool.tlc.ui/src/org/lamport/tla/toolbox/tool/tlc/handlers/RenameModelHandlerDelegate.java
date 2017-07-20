@@ -54,6 +54,12 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
 								+ ", because it is being model checked or is locked.");
 				return null;
 			}
+			if (model.isSnapshot()) {
+				MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Could not rename model",
+						"Could not rename the model " + model.getName()
+								+ ", because it is a snapshot.");
+				return null;
+			}
 
             // b) open dialog prompting for new model name
             final IInputValidator modelNameInputValidator = new ModelNameValidator(model.getSpec());

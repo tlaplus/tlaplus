@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.view;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -97,7 +98,8 @@ import tlc2.output.MP;
  */
 public class TLCErrorView extends ViewPart
 {
-	
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
+
 	private static final String INNER_WEIGHTS_KEY = "INNER_WEIGHTS_KEY";
 	private static final String OUTER_WEIGHTS_KEY = "OUTER_WEIGHTS_KEY";
 
@@ -162,7 +164,7 @@ public class TLCErrorView extends ViewPart
      * @param problems
      *            a list of {@link TLCError} objects representing the errors.
      */
-    protected void fill(String modelName, List<TLCError> problems, final List<String> serializedInput)
+    protected void fill(Model model, List<TLCError> problems, final List<String> serializedInput)
     {
         /*
 		 * Fill the trace explorer expression table with expressions saved in
@@ -225,7 +227,12 @@ public class TLCErrorView extends ViewPart
                 this.setTraceInput(trace);
                 traceExplorerComposite.changeExploreEnablement(true);
             }
-            this.form.setText(modelName);
+            if (model.isSnapshot()) {
+            	final String date = sdf.format(model.getSnapshotTimeStamp());
+            	this.form.setText(model.getSnapshotFor().getName() + " (" + date + ")");
+            } else {
+            	this.form.setText(model.getName());
+            }
 
         } else
         {
@@ -706,7 +713,7 @@ public class TLCErrorView extends ViewPart
 
             final List<String> serializedInput = model.getTraceExplorerExpressions();
             // fill the name and the errors
-			errorView.fill(provider.getModel().getName(), provider.getErrors(),
+			errorView.fill(provider.getModel(), provider.getErrors(),
 					serializedInput);
 
 			if (provider.getErrors().size() == 0) {

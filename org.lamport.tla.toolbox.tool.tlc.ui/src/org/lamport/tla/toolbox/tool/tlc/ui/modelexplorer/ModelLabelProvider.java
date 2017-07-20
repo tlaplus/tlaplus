@@ -25,6 +25,8 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 
+import java.text.SimpleDateFormat;
+
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.navigator.IDescriptionProvider;
@@ -36,14 +38,28 @@ import org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelContentProvider.Gr
  * Provides labels for the TLC models
  */
 public class ModelLabelProvider extends LabelProvider implements IDescriptionProvider {
-	private Image image = TLCUIActivator.getImageDescriptor("/icons/full/choice_sc_obj.gif").createImage();
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
 
+	private Image modelImage = TLCUIActivator.getImageDescriptor("/icons/full/choice_sc_obj.gif").createImage();
+	private Image modelNoError = TLCUIActivator.getImageDescriptor("/icons/full/model_no_error.gif").createImage();
+	private Image modelWithError = TLCUIActivator.getImageDescriptor("/icons/full/model_with_error.gif").createImage();
+	
 	/**
 	 * Retrieves model's image
 	 */
 	public Image getImage(final Object element) {
-		if (element instanceof Model || element instanceof Group) {
-			return image;
+		if (element instanceof Group) {
+			return modelImage;
+		} else if (element instanceof Model) {
+			final Model model = (Model) element;
+			if (model.isSnapshot()) {
+				if (model.hasError()) {
+					return modelWithError;
+				}
+				return modelNoError;
+			} else {
+				return modelImage;
+			}
 		}
 		return super.getImage(element);
 	}
@@ -54,6 +70,9 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 	public String getText(final Object element) {
 		if (element instanceof Model) {
 			final Model model = (Model) element;
+			if (model.isSnapshot()) {
+				return sdf.format(model.getSnapshotTimeStamp());
+			}
 			final String modelName = model.getName();
 			if (model.isStale()) {
 				return modelName + " [ crashed ]";
@@ -87,10 +106,18 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 	 * Dispose the image
 	 */
 	public void dispose() {
-		if (image != null) {
-			image.dispose();
+		if (modelImage != null) {
+			modelImage.dispose();
 		}
-		image = null;
+		modelImage = null;
+		if (modelNoError != null) {
+			modelNoError.dispose();
+		}
+		modelNoError = null;
+		if (modelWithError != null) {
+			modelWithError.dispose();
+		}
+		modelWithError = null;
 		super.dispose();
 	}
 }

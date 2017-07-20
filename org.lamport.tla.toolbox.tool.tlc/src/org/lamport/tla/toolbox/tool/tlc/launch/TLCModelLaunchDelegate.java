@@ -989,14 +989,15 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
              * for refreshing the model folder, and schedule that wrapping job
              * to be run later.
              */
-            IProject project = ResourceHelper.getProject(specName);
-            IFolder modelFolder = project.getFolder(modelName);
+            final IProject project = ResourceHelper.getProject(specName);
+            final IFolder modelFolder = project.getFolder(modelName);
             WorkspaceJob refreshJob = new WorkspaceJob("") {
 
                 public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException
                 {
                 	model.getCheckpoints(true);
-                    return Status.OK_STATUS;
+
+                	return Status.OK_STATUS;
                 }
             };
             refreshJob.setRule(ResourcesPlugin.getWorkspace().getRuleFactory().refreshRule(modelFolder));
@@ -1026,7 +1027,29 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 				}
             }
             model.setRunning(false);
-       }
+ 
+            /* 
+             * Lastly, take a snapshot of the finished spec. This provides a history of model checker runs.
+             * Technically, snapshots are just regular models. However, their name has a specially crafted
+             * suffix to identify it as a snapshot. The model for which it is a snapshot is identified by the
+             * prefix of the snapshot's model name.
+             */
+			final boolean takeSnapshot = TLCActivator.getDefault().getPreferenceStore()
+					.getBoolean(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE);
+			if (!takeSnapshot) {
+				return;
+			}
+			refreshJob = new WorkspaceJob("Taking snapshot of " + modelName + "...") {
+				public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
+					monitor.beginTask("Taking snapshot of " + model.getName() + "...", 1);
+					model.snapshot();
+					monitor.done();
+					return Status.OK_STATUS;
+				}
+			};
+			refreshJob.setRule(model.getSpec().getProject());
+			refreshJob.schedule();
+        }
     }
 
     /**

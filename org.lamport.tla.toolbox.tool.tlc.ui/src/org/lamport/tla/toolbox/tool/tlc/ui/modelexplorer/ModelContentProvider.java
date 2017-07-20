@@ -53,18 +53,25 @@ public class ModelContentProvider implements ITreeContentProvider {
 			final Spec currentSpec = (Spec) parentElement;
 			// only get models of the current spec
 			if (ToolboxHandle.getCurrentSpec() == parentElement) {
-				final Collection<Model> models = currentSpec.getAdapter(TLCSpec.class).getModels().values();
+				final Collection<Model> models = currentSpec.getAdapter(TLCSpec.class).getModels(".*_SnapShot_[0-9]*$", false).values();
 				return new Group[] {new Group((Spec) parentElement, models.toArray(new Model[models.size()]))};
 			}
 		} else if (parentElement instanceof Group) {
 			return ((Group) parentElement).getModels();
+		} else if (parentElement instanceof Model) {
+			final Collection<Model> snapshots = ((Model) parentElement).getSnapshots();
+			return snapshots.toArray(new Model[snapshots.size()]);
 		}
 		return EMPTY_ARRAY;
 	}
 
 	public Object getParent(final Object element) {
 		if (element instanceof Model) {
-			return ((Model) element).getSpec();
+			final Model model = (Model) element;
+			if (model.isSnapshot()) {
+				return model.getSnapshotFor();
+			}
+			return model.getSpec();
 		}
 		return null;
 	}
@@ -72,6 +79,8 @@ public class ModelContentProvider implements ITreeContentProvider {
 	public boolean hasChildren(final Object element) {
 		if (element instanceof Group) {
 			return ((Group) element).getModels().length > 0;
+		} else if (element instanceof Model) {
+			return ((Model) element).hasSnapshots();
 		}
 		/*
 		 * Models are shown for the current spec only

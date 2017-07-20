@@ -26,8 +26,10 @@
 
 package org.lamport.tla.toolbox.tool.tlc.model;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,9 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.NotFileFilter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -46,8 +51,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.debug.core.DebugPlugin;
@@ -77,8 +84,7 @@ import tlc2.output.MP;
  * This class represents a Toolbox Model that can be executed by TLC.
  */
 public class Model implements IModelConfigurationConstants, IAdaptable {
-
-    /**
+	/**
      * Marker indicating an error in the model
      */
 	private static final String TLC_MODEL_ERROR_MARKER = "org.lamport.tla.toolbox.tlc.modelErrorMarker";
@@ -191,7 +197,13 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	public void rename(String newModelName) {
+		final Collection<Model> snapshots = getSnapshots();
+		
 		renameLaunch(getSpec(), sanitizeName(newModelName));
+		
+		for (Model snapshot : snapshots) {
+			snapshot.rename(newModelName + snapshot.getSnapshotSuffix());
+		}
 	}
 	
 	/**
@@ -199,10 +211,16 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	 * @param newSpecName
 	 */
 	void specRename(final Spec newSpec) {
+		final Collection<Model> snapshots = getSnapshots();
+
 		renameLaunch(newSpec, getName());
 		// The spec's name has changed. Force a re-lookup of the instance with
 		// the updated name.
 		this.spec = null;
+		
+		for (Model snapshot : snapshots) {
+			snapshot.specRename(newSpec);;
+		}
 	}
 
 	private void renameLaunch(final Spec newSpec, String newModelName) {
@@ -334,6 +352,79 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		}
 	}
 
+	/*
+	 * Snapshot related methods.
+	 */
+
+    private static final String SNAP_SHOT = "_SnapShot_";
+	static final String SNAPSHOT_REGEXP = SNAP_SHOT + "[0-9]*$";
+	
+	private String getSnapshotSuffix() {
+		if (isSnapshot()) {
+			final int idx = getName().lastIndexOf(SNAP_SHOT);
+			return getName().substring(idx, getName().length());
+		}
+		return "";
+	}
+	
+	public long getSnapshotTimeStamp() {
+		final int idx = getName().lastIndexOf(SNAP_SHOT) + 10;
+		return Long.valueOf(getName().substring(idx, getName().length()));
+	}
+	
+	public Collection<Model> getSnapshots() {
+		return getSpec().getModels(getName() + SNAPSHOT_REGEXP, true).values();
+	}
+
+	public boolean isSnapshot() {
+		return getName().matches(".*" + SNAPSHOT_REGEXP);
+	}
+
+	public boolean hasSnapshots() {
+		return !getSpec().getModels(getName() + SNAPSHOT_REGEXP, true).isEmpty();
+	}
+
+	public Model getSnapshotFor() {
+		return getSpec().getModel(getName().replaceFirst(SNAPSHOT_REGEXP, ""));
+	}
+
+	public Model snapshot() throws CoreException {
+		// Create a copy of the underlying launch configuration.
+		final Model snapshot = copy(getName() + SNAP_SHOT + System.currentTimeMillis());
+
+		// Snapshot the model's markers as well (e.g. the information about errors, see hasErrors()).
+    	final IMarker[] markers = getMarkers();
+    	for (IMarker iMarker : markers) {
+    		snapshot.setMarker(iMarker.getAttributes(), iMarker.getType());
+		}
+		
+    	// Set the snapshot to be locked? Do we want the user to run it again?
+//    	snapshot.setLocked(true);
+
+		/*
+		 * Snapshot (copy) the model folder which include the TLC output as well as the version
+		 * of the spec and module overwrites with which TLC ran.
+		 */
+		final IPath snapshotPath = getSpec().getProject().getFolder(snapshot.getName()).getLocation();
+		final IPath modelFolder = getSpec().getProject().getFolder(this.getName()).getLocation();
+		// Use non-Eclipse API instead of modelFolder.copy(snapshotFolder, false,
+		// monitor which supports a non-recursive copy. A recursive copy includes the
+		// states/ directory leftover from TLC which waste quite some space and might
+		// take some time to copy.
+		try {
+			FileUtils.copyDirectory(modelFolder.toFile(), snapshotPath.toFile(),
+					new NotFileFilter(DirectoryFileFilter.DIRECTORY));
+		} catch (IOException e) {
+			throw new CoreException(new Status(Status.ERROR, TLCActivator.PLUGIN_ID, e.getMessage(), e));
+		}
+        
+		return snapshot;
+	}
+
+	/*
+	 * End of snapshot related methods.
+	 */
+	
     /**
      * Returns whether the original trace or the trace with trace explorer expressions from the
      * most recent run of the trace explorer for the model should be shown in the TLC error view.
@@ -362,6 +453,10 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
      */
 	public void setOriginalTraceShown(boolean isOriginalTraceShown) {
 		setMarker(TRACE_EXPLORER_MARKER, IS_ORIGINAL_TRACE_SHOWN, isOriginalTraceShown);
+	}
+
+	public boolean hasError() {
+		return getMarkers().length > 0;
 	}
 
 	private boolean isMarkerSet(String markerType, final String attributeName) {
@@ -572,7 +667,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
     /**
-     * Retrives the TLA file used by the trace explorer
+     * Retrieves the TLA file used by the trace explorer
      * @return a file handle or <code>null</code>
      */
 	public IFile getTraceExplorerTLAFile() {

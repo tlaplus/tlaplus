@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.preference;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
@@ -26,6 +27,7 @@ public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
         store.setDefault(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS, 10000);
         store.setDefault(ITLCPreferenceConstants.I_TLC_POPUP_ERRORS, true);
         store.setDefault(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY, true);
+        store.setDefault(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE, true);
         store.setDefault(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT, MAX_HEAP_SIZE_DEFAULT);
         store.setDefault(ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT, TLCGlobals.setBound);
         store.setDefault(ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT, 1);

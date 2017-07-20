@@ -2,11 +2,15 @@ package org.lamport.tla.toolbox.tool.tlc.ui.preference;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -24,7 +28,17 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
     public TLCPreferencePage()
     {
         super(GRID);
-        setPreferenceStore(TLCUIActivator.getDefault().getPreferenceStore());
+        // Copy preference value to non-ui plugin.
+        TLCUIActivator.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent event) {
+				final IPreferenceStore store = TLCActivator.getDefault().getPreferenceStore();
+				if (TLCActivator.I_TLC_SNAPSHOT_PREFERENCE.equals(event.getProperty())) {
+					store.setValue(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE, (boolean) event.getNewValue());
+				}
+			}
+		});
+		setPreferenceStore(TLCUIActivator.getDefault().getPreferenceStore());
         setDescription("TLC Model Checker preferences");
     }
 
@@ -45,6 +59,8 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
 
         addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY,
                 "&Re-validate model on save", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE,
+                "Take &snapshot of model after completion model checking", getFieldEditorParent()));
         // addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES,
         // "&Automatically delete unused data from previous model run", getFieldEditorParent()));
         addField(new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT,
