@@ -34,6 +34,7 @@ public class TLCActivator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		plugin.getPreferenceStore().setDefault(I_TLC_SNAPSHOT_PREFERENCE, true);
 	}
 
 	/*

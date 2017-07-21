@@ -60,7 +60,7 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
         addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY,
                 "&Re-validate model on save", getFieldEditorParent()));
 		addField(new BooleanFieldEditor(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE,
-                "Take &snapshot of model after completion model checking", getFieldEditorParent()));
+                "Take &snapshot of model after completion of model checking", getFieldEditorParent()));
         // addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES,
         // "&Automatically delete unused data from previous model run", getFieldEditorParent()));
         addField(new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT,
