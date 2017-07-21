@@ -1036,7 +1036,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
              */
 			final boolean takeSnapshot = TLCActivator.getDefault().getPreferenceStore()
 					.getBoolean(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE);
-			if (!takeSnapshot) {
+			if (!takeSnapshot || model.isSnapshot()) {
 				return;
 			}
 			refreshJob = new WorkspaceJob("Taking snapshot of " + modelName + "...") {

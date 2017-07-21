@@ -580,6 +580,15 @@ public class ModelEditor extends FormEditor
 	 * @throws CoreException
 	 */
 	public void launchModel(final String mode, final boolean userPased, final IProgressMonitor monitor) {
+		if (model.isSnapshot()) {
+			final boolean launchSnapshot = MessageDialog.openConfirm(getSite().getShell(), "Model is a snapshot",
+					"The model which is about to launch is a snapshot of another model. "
+					+ "Beware that no snapshots of snapshots are taken. "
+					+ "Click the \"OK\" button to launch the snapshot anyway.");
+			if (!launchSnapshot) {
+				return;
+			}
+		}
 		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		try {
 			workspace.run(new IWorkspaceRunnable() {
