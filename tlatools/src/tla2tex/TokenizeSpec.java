@@ -469,9 +469,6 @@ package tla2tex;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import pcal.MappingObject.EndTLAToken;
-import pcal.PCalLocation;
-
 /**
  * @author lamport
  *

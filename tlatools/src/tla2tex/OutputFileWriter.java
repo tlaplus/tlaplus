@@ -10,12 +10,9 @@
 package tla2tex;
 
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
 
 import util.FileUtil;
 

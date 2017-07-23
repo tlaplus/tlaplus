@@ -192,11 +192,12 @@ public final class BuiltInSymbols
       { builtInHashTable.put(tla, new Symbol(tla, tex, stype, atype) ) ; 
         pcalBuiltInHashTable.put(tla, new Symbol(tla, tex, stype, atype) ) ;   } ;
 
+
     private static void pcaladd(String tla, String tex, int stype, int atype)
-    /*********************************************************************
-    * Adds a PlusCal entry to the pcalBuiltInHashTable.                  *
-    *********************************************************************/
-    { pcalBuiltInHashTable.put(tla, new Symbol(tla, tex, stype, atype, true) ) ; } ;
+      /*********************************************************************
+      * Adds a PlusCal entry to the pcalBuiltInHashTable.                  *
+      *********************************************************************/
+      { pcalBuiltInHashTable.put(tla, new Symbol(tla, tex, stype, atype, true) ) ; } ;
 
     /*
      * The following special 1-character strings are for defining dummy
