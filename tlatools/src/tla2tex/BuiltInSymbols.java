@@ -178,7 +178,6 @@ public final class BuiltInSymbols
             canPrecedeLabelTable.put(canPrecedeLabel[i], nullString);
         }
     }
-    
     private static void add(String tla, String tex, int stype, int atype)
     { add0(tla, tex, stype, atype);
       if (Unicode.a2uc(tla) != null)
