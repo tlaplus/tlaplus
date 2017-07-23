@@ -620,11 +620,52 @@ public class OpDefNode extends OpDefOrDeclNode
 
   /**
    * This method tests whether an operand is a legal instance of an
-   * operator being passed as argument to another operator
+   * operator being passed as argument to another operator.
+   * 
+   * Bug discovered in July 2017: This method was testing if the
+   * arg is an operator argument that may be used as parameter 
+   * number i of the operator described by this OpDefNode.  For example,
+   * if
+   * 
+   *     D(Op(_)) == Op(42)
+   *     
+   * then the argument of D must be an operator that takes a single
+   * expression as an argument.  However, this method returned true
+   * if the argument is an operator like D, that takes a single
+   * OPERATOR as an argument.  LL rewrote the code on 22 July 2017 
+   * to catch this case.
+   * 
+   * @see IllegalOperatorTest
    */
   private boolean matchingOpArgOperand (ExprOrOpArgNode arg, int i) {
-    return ((arg instanceof OpArgNode) &&
-            params[i].getArity() == ((OpArgNode)arg).getArity());
+	  // Set result to true iff arg is an operator argument of the
+	  // correct arity.
+	  boolean result = (arg instanceof OpArgNode) &&
+			           (params[i].getArity() == ((OpArgNode)arg).getArity()) ;
+	  
+	  // We now must check that arg does not expect an operator as any
+	  // of its arguments.  The comments in OpArgNode.java state that 
+	  // OpArgNode.op is an OpDefNode, OpDeclNode, or FormalParamNode.  Of
+	  // those, only an OpDefNode represents an operator that can have 
+	  // an argument that is an operator.  Note that an argument j of an
+	  // OpDefNode is an operator iff its arity is  0.
+	  if (result) {
+		  OpArgNode argOpArg = (OpArgNode) arg ;
+		  if (argOpArg.getOp() instanceof OpDefNode) {
+			  OpDefNode opdefArg = (OpDefNode) argOpArg.getOp() ;
+			  for (int j = 0; j < opdefArg.getArity() ; j++) {
+				  if (opdefArg.getParams()[j].getArity() > 0) {
+					  result = false ;
+				  }
+			  }
+		  }
+	  }
+		  
+      return result ;
+	  	           
+   // Code before 22 July 2017 change.
+   //    return ((arg instanceof OpArgNode) &&
+   //              params[i].getArity() == ((OpArgNode)arg).getArity());
   }
 
   /* This method shortens the match() method right after it */

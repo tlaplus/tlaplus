@@ -45,7 +45,7 @@ public abstract class CommonTestCase {
 
 	protected static final String BASE_DIR = System.getProperty("basedir", "");
 	protected static final String TEST_MODEL = "test-model" + File.separator;
-	protected static final String BASE_PATH = BASE_DIR + TEST_MODEL;
+	public static final String BASE_PATH = BASE_DIR + TEST_MODEL;
 
 	protected final TestMPRecorder recorder;
 
