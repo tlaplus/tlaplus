@@ -11,7 +11,6 @@ import tlc2.output.MP;
  * A toolkit for checking conditions and throwing unchecked exceptions if they are not met.
  * 
  * @author Yuan Yu, Simon Zambrovski 
- * @version $Id$
  */
 public class Assert
 {
@@ -22,7 +21,7 @@ public class Assert
      */
     public static void fail(String reason) throws RuntimeException
     {
-        throw new RuntimeException(reason);
+        throw new TLCRuntimeException(reason);
     }
 
     /**
@@ -32,7 +31,7 @@ public class Assert
      */
     public static void fail(int errorCode, String[] parameters)
     {
-        throw new RuntimeException(MP.getMessage(errorCode, parameters));
+        throw new TLCRuntimeException(errorCode, MP.getMessage(errorCode, parameters));
     }
     
     /**
@@ -42,7 +41,7 @@ public class Assert
      */
     public static void fail(int errorCode, String parameter)
     {
-        throw new RuntimeException(MP.getMessage(errorCode, parameter));
+        throw new TLCRuntimeException(errorCode, MP.getMessage(errorCode, parameter));
     }
 
     /**
@@ -52,7 +51,7 @@ public class Assert
      */
     public static void fail(int errorCode, Throwable cause)
     {
-        throw new RuntimeException(MP.getMessage(errorCode, cause.getMessage()), cause);
+        throw new TLCRuntimeException(errorCode, MP.getMessage(errorCode, cause.getMessage()), cause);
     }
 
     /**
@@ -61,7 +60,7 @@ public class Assert
      */
     public static void fail(int errorCode)
     {
-        throw new RuntimeException(MP.getMessage(errorCode));
+        throw new TLCRuntimeException(errorCode, MP.getMessage(errorCode));
     }
 
     /**
@@ -75,7 +74,7 @@ public class Assert
     {
         if (!condition) 
         {
-            throw new RuntimeException(MP.getMessage(errorCode, parameters));
+            throw new TLCRuntimeException(errorCode, MP.getMessage(errorCode, parameters));
         }
     }
 
@@ -90,7 +89,7 @@ public class Assert
     {
         if (!condition) 
         {
-            throw new RuntimeException(MP.getMessage(errorCode, parameter));
+            throw new TLCRuntimeException(errorCode, MP.getMessage(errorCode, parameter));
         }
     }
 
@@ -104,7 +103,7 @@ public class Assert
     {
         if (!condition) 
         {
-            throw new RuntimeException(MP.getMessage(errorCode));
+            throw new TLCRuntimeException(MP.getMessage(errorCode));
         }
     }
 
@@ -126,8 +125,27 @@ public class Assert
     {
         if (!condition) 
         {
-            throw new RuntimeException(errorMsg);
+            throw new TLCRuntimeException(errorMsg);
         }
     }
 
+    public static class TLCRuntimeException extends RuntimeException {
+
+		public final int errorCode;
+
+		public TLCRuntimeException(String errorMsg) {
+			super(errorMsg);
+			this.errorCode = -1; // Unknown error code.
+		}
+		
+		public TLCRuntimeException(int errorCode, String message) {
+			super(message);
+			this.errorCode = errorCode;
+		}
+
+		public TLCRuntimeException(int errorCode, String message, Throwable cause) {
+			super(message, cause);
+			this.errorCode = errorCode;
+		}
+    }
 }

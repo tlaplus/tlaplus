@@ -36,6 +36,6 @@ public class ETest7 extends SuiteETestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recordedWithSubStringValue(EC.GENERAL,
-				"In evaluation, the identifier x is either undefined or not an operator.\nline 11, col 8 to line 11, col 8 of module etest7"));
+				"The configuration file substitutes constant C with non-constant Foo."));
 	}
 }

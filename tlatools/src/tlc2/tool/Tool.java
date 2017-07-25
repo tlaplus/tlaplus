@@ -1376,9 +1376,9 @@ public class Tool
         return this.eval(opDef.getBody(), c1, s0, s1, control);
         }
       else {
-        Assert.fail("In evaluation, the identifier " + opNode.getName() + " is either" +
-                    " undefined or not an operator.\n" + expr);
-      }
+		Assert.fail(EC.TLC_CONFIG_UNDEFINED_OR_NO_OPERATOR,
+			new String[] { opNode.getName().toString(), expr.toString() });
+		}
       if (this.callStack != null) this.callStack.pop();
       if (opcode == 0) return res;
     }
@@ -2967,9 +2967,14 @@ public class Tool
                            new String[] {consts[i].getName().toString(), opDef.getName().toString()});
                             
               if (opDef.getArity() == 0) {
-                Value defVal = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty);
-                defVal.deepNormalize();
-                consts[i].setToolObject(TLCGlobals.ToolId, defVal);
+					try {
+						Value defVal = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty);
+						defVal.deepNormalize();
+						consts[i].setToolObject(TLCGlobals.ToolId, defVal);
+					} catch (Assert.TLCRuntimeException e) {
+						Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
+								new String[] { consts[i].getName().toString(), opDef.getName().toString() });
+					}
               }
           }
       }

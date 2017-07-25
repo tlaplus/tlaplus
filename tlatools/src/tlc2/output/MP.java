@@ -12,6 +12,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.liveness.LiveWorker;
 import tlc2.util.statistics.IBucketStatistics;
+import util.Assert;
 import util.DebugPrinter;
 import util.Set;
 import util.ToolIO;
@@ -915,6 +916,12 @@ public class MP
         case EC.TLC_CONFIG_WRONG_SUBSTITUTION:
             b.append("The configuration file substitutes for %1% with the undefined identifier %2%.");
             break;
+        case EC.TLC_CONFIG_UNDEFINED_OR_NO_OPERATOR:
+            b.append("In evaluation, the identifier %1% is either undefined or not an operator.\n%2%");
+            break;
+        case EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT:
+            b.append("The configuration file substitutes constant %1% with non-constant %2%.");
+            break;
         case EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS:
             b.append("The configuration file substitutes for %1% with %2% of different number of arguments.");
             break;
@@ -1273,7 +1280,14 @@ public class MP
         } else {
             msg = msg + "\nThe error occurred when TLC was " + cause + ".";
         }
-        msg = msg + "\nThe exception was a " + throwable.getClass().getName() + "\n";
+        if (throwable instanceof Assert.TLCRuntimeException) {
+			// MK 07/25/2017: Disguise TLCRuntimeException with its parent class
+			// RuntimeException to not change the externally visible TLC output 
+        	// when an exception gets reports.
+        	msg = msg + "\nThe exception was a " +  RuntimeException.class.getName() + "\n";
+        } else {
+        	msg = msg + "\nThe exception was a " +  throwable.getClass().getName() + "\n";
+        }
         if (throwable.getMessage() != null) {
             msg = msg + ": " + throwable.getMessage();
             
