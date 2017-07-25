@@ -952,9 +952,19 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 {
                     Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "invariant", name });
                 }
+				// MK 07/25/2017: Check if the invariant is a valid state predicate and produce
+				// a meaningful warning otherwise. With this enhancement, a rare bug in TLC's
+				// level-checking surfaced for which we don't have a fix right now. Fortunately,
+				// the bug is rather unlikely which is why TLC simply produces a warning for now
+				// if it "thinks" a user might be affected by the bug.
+                // see LevelNode.java line 590ff, Test52, TestInvalidInvariant, and related files
+                // for more context.
                 if (def.getLevel() >= 2)
                 {
-                    Assert.fail(EC.TLC_INVARIANT_VIOLATED_LEVEL, new String[] { def.getName().toString() });
+               		if (!def.getBody().levelParams.isEmpty()) {
+                        Assert.fail(EC.TLC_INVARIANT_VIOLATED_LEVEL, new String[] { def.getName().toString(), "includeWarning" });
+               		}
+                	Assert.fail(EC.TLC_INVARIANT_VIOLATED_LEVEL, def.getName().toString());
                 }
                 this.invNameVec.addElement(name);
                 this.invVec.addElement(new Action(def.getBody(), Context.Empty));

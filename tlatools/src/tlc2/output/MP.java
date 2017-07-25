@@ -363,7 +363,12 @@ public class MP
             b.append("Invariant %1% is violated.");
             break;
         case EC.TLC_INVARIANT_VIOLATED_LEVEL:
-            b.append("The invariant %1% is not a state predicate (one with no primes or temporal operators).");
+        	b.append("The invariant %1% is not a state predicate (one with no primes or temporal operators).");
+        	if (parameters.length > 1) {
+        		b.append("\nNote that a bug can cause TLC to incorrectly report this error.\n"
+        				+ "If you believe your TLA+ or PlusCal specification to be correct,\n"
+        				+ "please check if this bug described in LevelNode.java starting at line 590ff affects you.");
+        	}
             break;
 
         case EC.TLC_INVARIANT_EVALUATION_FAILED:
@@ -1124,6 +1129,7 @@ public class MP
      */
     public static String getError(int errorCode, String[] parameters)
     {
+    	recorder.record(errorCode, parameters);
         return getMessage(ERROR, errorCode, parameters);
     }
 
@@ -1154,6 +1160,7 @@ public class MP
      */
     public static String getMessage(int errorCode, String[] parameters)
     {
+    	recorder.record(errorCode, parameters);
         return getMessage(NONE, errorCode, parameters);
     }
 
