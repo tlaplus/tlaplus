@@ -233,8 +233,8 @@ public interface EC
     public static final int TLC_CONFIG_RHS_ID_APPEARED_AFTER_LHS_ID = 2223;
     public static final int TLC_CONFIG_WRONG_SUBSTITUTION = 2224;
     public static final int TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS = 2225;
-    public static final int TLC_CONFIG_UNDEFINED_OR_NO_OPERATOR = 22251;
-    public static final int TLC_CONFIG_SUBSTITUTION_NON_CONSTANT = 22252;
+    public static final int TLC_CONFIG_UNDEFINED_OR_NO_OPERATOR = 2280;
+    public static final int TLC_CONFIG_SUBSTITUTION_NON_CONSTANT = 2281;
     public static final int TLC_CONFIG_ID_DOES_NOT_APPEAR_IN_SPEC = 2226;
     public static final int TLC_CONFIG_NOT_BOTH_SPEC_AND_INIT = 2227;
     public static final int TLC_CONFIG_ID_REQUIRES_NO_ARG = 2228;

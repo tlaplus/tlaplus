@@ -52,6 +52,7 @@ import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
@@ -701,12 +702,16 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 											.getAttribute(attributeName, new ArrayList<String>(0));
                                     int attributeNumber = (attributeIndex != null) ? attributeIndex.intValue() : 0;
 
-                                    if (IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS.equals(attributeName)
-                                            || IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS
-                                                    .equals(attributeName))
+                                    if (IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS.equals(attributeName))
                                     {
-                                        // List valueList = ModelHelper.deserializeAssignmentList(attributeValue);
-                                        idReplacement = "'LL claims this should not happen. See Bug in TLCModelLaunchDataProvider.'";
+                                    	// MK 07/25/2017: Correctly show error when constant is assigned a non-constant.
+                                        final List<Assignment> valueList = ModelHelper.deserializeAssignmentList(attributeValue);
+                                        if (valueList.size() >= (attributeNumber + 1)) {
+	                                        final Assignment assignment = valueList.get(attributeNumber);
+	                                        idReplacement = assignment.getRight();
+                                        } else {
+                                        	idReplacement = "'LL claims this should not happen. See Bug in TLCModelLaunchDataProvider.'";
+                                        }
                                     } else
                                     {
                                         // invariants and properties
