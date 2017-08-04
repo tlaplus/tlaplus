@@ -344,17 +344,20 @@ public class Tool
 
   private final void getInitStates(SemanticNode init, ActionItemList acts,
                                    Context c, TLCState ps, IStateFunctor states) {
+    if (this.callStack != null) this.callStack.push(init);
     switch (init.getKind()) {
     case OpApplKind:
       {
         OpApplNode init1 = (OpApplNode)init;
         this.getInitStatesAppl(init1, acts, c, ps, states);
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case LetInKind:
       {
         LetInNode init1 = (LetInNode)init;
         this.getInitStates(init1.getBody(), acts, c, ps, states);
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case SubstInKind:
@@ -367,6 +370,7 @@ public class Tool
           c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
         }
         this.getInitStates(init1.getBody(), acts, c1, ps, states);
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
 
@@ -381,6 +385,7 @@ public class Tool
             c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
           }
           this.getInitStates(init1.getBody(), acts, c1, ps, states);
+          if (this.callStack != null) this.callStack.pop();
           return;
         }
 
@@ -392,6 +397,7 @@ public class Tool
       {
         LabelNode init1 = (LabelNode)init;
         this.getInitStates(init1.getBody(), acts, c, ps, states);
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     default:
@@ -414,6 +420,7 @@ public class Tool
 
   private final void getInitStatesAppl(OpApplNode init, ActionItemList acts,
                                        Context c, TLCState ps, IStateFunctor states) {
+    if (this.callStack != null) this.callStack.push(init);
     ExprOrOpArgNode[] args = init.getArgs();
     int alen = args.length;
     SymbolNode opNode = init.getOperator();
@@ -432,6 +439,7 @@ public class Tool
           // Context c1 = this.getOpContext(opDef, args, c, false);
           Context c1 = this.getOpContext(opDef, args, c, true);
           this.getInitStates(opDef.getBody(), acts, c1, ps, states);
+          if (this.callStack != null) this.callStack.pop();
           return;
         }
       }
@@ -441,17 +449,19 @@ public class Tool
       * imported with parameterized instantiation.                         *
       *********************************************************************/
       if (val instanceof ThmOrAssumpDefNode) {
-          ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
-          opcode = BuiltInOPs.getOpCode(opDef.getName());
-          Context c1 = this.getOpContext(opDef, args, c, true);
-          this.getInitStates(opDef.getBody(), acts, c1, ps, states);
-          return;
-        }
+        ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
+        opcode = BuiltInOPs.getOpCode(opDef.getName());
+        Context c1 = this.getOpContext(opDef, args, c, true);
+        this.getInitStates(opDef.getBody(), acts, c1, ps, states);
+        if (this.callStack != null) this.callStack.pop();
+        return;
+      }
 
       if (val instanceof LazyValue) {
         LazyValue lv = (LazyValue)val;
         if (lv.val == null || lv.val == ValUndef) {
           this.getInitStates(lv.expr, acts, lv.con, ps, states);
+          if (this.callStack != null) this.callStack.pop();
           return;
         }
         val = lv.val;
@@ -476,20 +486,21 @@ public class Tool
         }
       }
 
-            if (opcode == 0)
-            {
-                if (!(bval instanceof BoolValue))
-                {
-                    Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "initial states", "boolean",
-                            bval.toString(), init.toString() });
-                }
-                if (((BoolValue) bval).val)
-                {
-                    this.getInitStates(acts, ps, states);
-                }
-                return;
-            }
+      if (opcode == 0)
+      {
+        if (!(bval instanceof BoolValue))
+        {
+          Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "initial states", "boolean",
+                    bval.toString(), init.toString() });
         }
+        if (((BoolValue) bval).val)
+        {
+          this.getInitStates(acts, ps, states);
+        }
+        if (this.callStack != null) this.callStack.pop();
+        return;
+      }
+    }
 
     switch (opcode) {
     case OPCODE_dl:     // DisjList
@@ -498,6 +509,7 @@ public class Tool
         for (int i = 0; i < alen; i++) {
           this.getInitStates(args[i], acts, c, ps, states);
         }
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case OPCODE_cl:     // ConjList
@@ -507,6 +519,7 @@ public class Tool
           acts = acts.cons(args[i], c, i);
         }
         this.getInitStates(args[0], acts, c, ps, states);
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case OPCODE_be:     // BoundedExists
@@ -517,6 +530,7 @@ public class Tool
         while ((c1 = Enum.nextElement()) != null) {
           this.getInitStates(body, acts, c1, ps, states);
         }
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case OPCODE_bf:     // BoundedForall
@@ -535,6 +549,7 @@ public class Tool
           }
           this.getInitStates(body, acts1, c1, ps, states);
         }
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case OPCODE_ite:    // IfThenElse
@@ -547,6 +562,7 @@ public class Tool
         }
         int idx = (((BoolValue)guard).val) ? 1 : 2;
         this.getInitStates(args[idx], acts, c, ps, states);
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case OPCODE_case:   // Case
@@ -567,6 +583,7 @@ public class Tool
             }
             if (((BoolValue)bval).val) {
               this.getInitStates(pairArgs[1], acts, c, ps, states);
+              if (this.callStack != null) this.callStack.pop();
               return;
             }
           }
@@ -576,6 +593,7 @@ public class Tool
                       " conditions true.\n" + init);
         }
         this.getInitStates(other, acts, c, ps, states);
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case OPCODE_fa:     // FcnApply
@@ -586,6 +604,7 @@ public class Tool
           if (fcn.fcnRcd == null) {
             Context c1 = this.getFcnContext(fcn, args, c, ps, TLCState.Empty, EvalControl.Clear);
             this.getInitStates(fcn.body, acts, c1, ps, states);
+            if (this.callStack != null) this.callStack.pop();
             return;
           }
           fval = fcn.fcnRcd;
@@ -605,6 +624,7 @@ public class Tool
         if (((BoolValue)bval).val) {
           this.getInitStates(acts, ps, states);
         }
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case OPCODE_eq:
@@ -612,7 +632,10 @@ public class Tool
         SymbolNode var = this.getVar(args[0], c, false);
         if (var == null || var.getName().getVarLoc() < 0) {
           Value bval = this.eval(init, c, ps);
-          if (!((BoolValue)bval).val) return;
+          if (!((BoolValue)bval).val) {
+            if (this.callStack != null) this.callStack.pop();
+            return;
+          }
         }
         else {
           UniqueString varName = var.getName();   
@@ -622,13 +645,18 @@ public class Tool
             ps = ps.bind(varName, rval, init);
             this.getInitStates(acts, ps, states);
             ps.unbind(varName);
+            if (this.callStack != null) this.callStack.pop();
             return;
           }
           else {
-            if (!lval.equals(rval)) return;
+            if (!lval.equals(rval)) {
+              if (this.callStack != null) this.callStack.pop();
+              return;
+            }
           }
         }
         this.getInitStates(acts, ps, states);
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case OPCODE_in:
@@ -636,7 +664,10 @@ public class Tool
         SymbolNode var = this.getVar(args[0], c, false);
         if (var == null || var.getName().getVarLoc() < 0) {
           Value bval = this.eval(init, c, ps);
-          if (!((BoolValue)bval).val) return;
+          if (!((BoolValue)bval).val) {
+            if (this.callStack != null) this.callStack.pop();
+            return;
+          }
         }
         else {
           UniqueString varName = var.getName();
@@ -654,13 +685,18 @@ public class Tool
               this.getInitStates(acts, ps, states);
               ps.unbind(varName);
             }
+            if (this.callStack != null) this.callStack.pop();
             return;
           }
           else {
-            if (!rval.member(lval)) return;
+            if (!rval.member(lval)) {
+              if (this.callStack != null) this.callStack.pop();
+              return;
+            }
           }
         }
         this.getInitStates(acts, ps, states);
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     case OPCODE_implies:
@@ -676,12 +712,14 @@ public class Tool
         else {
           this.getInitStates(acts, ps, states);
         }
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     // The following case added by LL on 13 Nov 2009 to handle subexpression names.
     case OPCODE_nop:
     {
        this.getInitStates(args[0], acts, c, ps, states); 
+       if (this.callStack != null) this.callStack.pop();
        return;
     }
     default:
@@ -696,6 +734,7 @@ public class Tool
         if (((BoolValue)bval).val) {
           this.getInitStates(acts, ps, states);
         }
+        if (this.callStack != null) this.callStack.pop();
         return;
       }
     }
@@ -715,16 +754,21 @@ public class Tool
 
   private final TLCState getNextStates(SemanticNode pred, ActionItemList acts, Context c,
                                        TLCState s0, TLCState s1, StateVec nss) {
+    if (this.callStack != null) this.callStack.push(pred);
     switch (pred.getKind()) {
     case OpApplKind:
       {
         OpApplNode pred1 = (OpApplNode)pred;
-        return this.getNextStatesAppl(pred1, acts, c, s0, s1, nss);
+        TLCState s = this.getNextStatesAppl(pred1, acts, c, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     case LetInKind:
       {
         LetInNode pred1 = (LetInNode)pred;
-        return this.getNextStates(pred1.getBody(), acts, c, s0, s1, nss);
+        TLCState s = this.getNextStates(pred1.getBody(), acts, c, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     case SubstInKind:
       {
@@ -736,7 +780,9 @@ public class Tool
           Subst sub = subs[i];
           c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
         }
-        return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss);
+        TLCState s = this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
 
       // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
@@ -750,7 +796,9 @@ public class Tool
             Subst sub = subs[i];
             c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
           }
-          return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss);
+          TLCState s = this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
 
 
@@ -760,7 +808,9 @@ public class Tool
     case LabelKind:
       {
         LabelNode pred1 = (LabelNode)pred;
-        return this.getNextStates(pred1.getBody(), acts, c, s0, s1, nss);
+        TLCState s = this.getNextStates(pred1.getBody(), acts, c, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     default:
       {
@@ -784,9 +834,7 @@ public class Tool
       Context c = acts.carContext();
       ActionItemList acts1 = acts.cdr();
       if (kind > 0) {
-        if (this.callStack != null) this.callStack.push(pred);
         resState = this.getNextStates(pred, acts1, c, s0, s1, nss);
-        if (this.callStack != null) this.callStack.pop();       
       }
       else if (kind == -1) {
         resState = this.getNextStates(pred, acts1, c, s0, s1, nss);
@@ -802,12 +850,12 @@ public class Tool
         }
       }
     }
-
     return resState;
   }
   
   private final TLCState getNextStatesAppl(OpApplNode pred, ActionItemList acts, Context c,
                                            TLCState s0, TLCState s1, StateVec nss) {
+    if (this.callStack != null) this.callStack.push(pred);
     ExprOrOpArgNode[] args = pred.getArgs();
     int alen = args.length;
     SymbolNode opNode = pred.getOperator();
@@ -825,7 +873,9 @@ public class Tool
         if (opcode == 0) {
           // Context c1 = this.getOpContext(opDef, args, c, false);
           Context c1 = this.getOpContext(opDef, args, c, true);   
-          return this.getNextStates(opDef.getBody(), acts, c1, s0, s1, nss);
+          TLCState s = this.getNextStates(opDef.getBody(), acts, c1, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
       }
       
@@ -837,13 +887,17 @@ public class Tool
       if (val instanceof ThmOrAssumpDefNode) {
           ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
           Context c1 = this.getOpContext(opDef, args, c, true);
-          return this.getNextStates(opDef.getBody(), acts, c1, s0, s1, nss);
+          TLCState s = this.getNextStates(opDef.getBody(), acts, c1, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
 
       if (val instanceof LazyValue) {
         LazyValue lv = (LazyValue)val;
         if (lv.val == null || lv.val == ValUndef) {
-          return this.getNextStates(lv.expr, acts, lv.con, s0, s1, nss);
+          TLCState s = this.getNextStates(lv.expr, acts, lv.con, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
         val = lv.val;
       }
@@ -876,8 +930,11 @@ public class Tool
                 }
                 if (((BoolValue) bval).val)
                 {
-                    return this.getNextStates(acts, s0, s1, nss);
+                    TLCState s = this.getNextStates(acts, s0, s1, nss);
+                    if (this.callStack != null) this.callStack.pop();
+                    return s;
                 }
+                if (this.callStack != null) this.callStack.pop();
                 return s1;
             }
         }
@@ -891,7 +948,6 @@ public class Tool
         for (int i = alen - 1; i > 0; i--) {
           acts1 = acts1.cons(args[i], c, i);
         }
-        if (this.callStack != null) this.callStack.push(args[0]);
         resState = this.getNextStates(args[0], acts1, c, s0, s1, nss);
         if (this.callStack != null) this.callStack.pop();
         return resState;
@@ -900,10 +956,9 @@ public class Tool
     case OPCODE_lor:      
       {
         for (int i = 0; i < alen; i++) {
-          if (this.callStack != null) this.callStack.push(args[i]);       
           resState = this.getNextStates(args[i], acts, c, s0, resState, nss);
-          if (this.callStack != null) this.callStack.pop();       
         }
+        if (this.callStack != null) this.callStack.pop();
         return resState;
       }
     case OPCODE_be:     // BoundedExists
@@ -914,6 +969,7 @@ public class Tool
         while ((c1 = Enum.nextElement()) != null) {
           resState = this.getNextStates(body, acts, c1, s0, resState, nss);
         }
+        if (this.callStack != null) this.callStack.pop();
         return resState;
       }
     case OPCODE_bf:     // BoundedForall
@@ -932,6 +988,7 @@ public class Tool
           }
           resState = this.getNextStates(body, acts1, c1, s0, s1, nss);
         }
+        if (this.callStack != null) this.callStack.pop();
         return resState;
       }
     case OPCODE_fa:     // FcnApply
@@ -941,7 +998,9 @@ public class Tool
           FcnLambdaValue fcn = (FcnLambdaValue)fval;
           if (fcn.fcnRcd == null) {
             Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Clear);
-            return this.getNextStates(fcn.body, acts, c1, s0, s1, nss);
+            TLCState s = this.getNextStates(fcn.body, acts, c1, s0, s1, nss);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
           }
           fval = fcn.fcnRcd;
         }
@@ -957,14 +1016,19 @@ public class Tool
                     pred.toString() });
         }
         if (((BoolValue)bval).val) {
-          return this.getNextStates(acts, s0, s1, nss);
+          TLCState s = this.getNextStates(acts, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
+        if (this.callStack != null) this.callStack.pop();
         return resState;
       }
     case OPCODE_aa:     // AngleAct <A>_e
       {
         ActionItemList acts1 = acts.cons(args[1], c, -3);
-        return this.getNextStates(args[0], acts1, c, s0, s1, nss);
+        TLCState s = this.getNextStates(args[0], acts1, c, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     case OPCODE_sa:     // [A]_e
       {
@@ -975,7 +1039,9 @@ public class Tool
           //    this.getNextStates(args[0], acts, c, s0, s1, nss);
           //    return this.processUnchanged(args[1], acts, c, s0, s1, nss);
         resState = this.getNextStates(args[0], acts, c, s0, resState, nss);
-        return this.processUnchanged(args[1], acts, c, s0, resState, nss);
+        TLCState s = this.processUnchanged(args[1], acts, c, s0, resState, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     case OPCODE_ite:    // IfThenElse
       {
@@ -986,10 +1052,14 @@ public class Tool
                       " an IF." + pred);
         }
         if (((BoolValue)guard).val) {
-          return this.getNextStates(args[1], acts, c, s0, s1, nss);
+          TLCState s = this.getNextStates(args[1], acts, c, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
         else {
-          return this.getNextStates(args[2], acts, c, s0, s1, nss);
+          TLCState s = this.getNextStates(args[2], acts, c, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
       }
     case OPCODE_case:   // Case
@@ -1009,7 +1079,9 @@ public class Tool
                           " of a CASE.\n" + pairArgs[1]);
             }
             if (((BoolValue)bval).val) {
-              return this.getNextStates(pairArgs[1], acts, c, s0, s1, nss);
+              TLCState s = this.getNextStates(pairArgs[1], acts, c, s0, s1, nss);
+              if (this.callStack != null) this.callStack.pop();
+              return s;
             }
           }
         }
@@ -1017,7 +1089,9 @@ public class Tool
           Assert.fail("In computing next states, TLC encountered a CASE with no" +
                       " conditions true.\n" + pred);
         }
-        return this.getNextStates(other, acts, c, s0, s1, nss);
+        TLCState s = this.getNextStates(other, acts, c, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     case OPCODE_eq:
       {
@@ -1026,7 +1100,9 @@ public class Tool
         if (var == null) {
           Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear);
           if (!((BoolValue)bval).val) {
-            return resState;
+            TLCState s = resState;
+            if (this.callStack != null) this.callStack.pop();
+            return s;
           }
         }
         else {
@@ -1037,13 +1113,17 @@ public class Tool
             resState.bind(varName, rval, pred);
             resState = this.getNextStates(acts, s0, resState, nss);
             resState.unbind(varName);
+            if (this.callStack != null) this.callStack.pop();
             return resState;
           }
           else if (!lval.equals(rval)) {
+            if (this.callStack != null) this.callStack.pop();
             return resState;
           }
         }
-        return this.getNextStates(acts, s0, s1, nss);
+        TLCState s = this.getNextStates(acts, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     case OPCODE_in:
       {
@@ -1052,6 +1132,7 @@ public class Tool
         if (var == null) {
           Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear);
           if (!((BoolValue)bval).val) {
+            if (this.callStack != null) this.callStack.pop();
             return resState;
           }
         }
@@ -1071,13 +1152,17 @@ public class Tool
               resState = this.getNextStates(acts, s0, resState, nss);
               resState.unbind(varName);
             }
+            if (this.callStack != null) this.callStack.pop();
             return resState;
           }
           else if (!rval.member(lval)) {
+            if (this.callStack != null) this.callStack.pop();
             return resState;
           }
         }
-        return this.getNextStates(acts, s0, s1, nss);
+        TLCState s = this.getNextStates(acts, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     case OPCODE_implies:
       {
@@ -1087,15 +1172,21 @@ public class Tool
                         " P => Q, P was\n" + bval.getKindString() + ".\n" + pred);
         }
         if (((BoolValue)bval).val) {
-          return this.getNextStates(args[1], acts, c, s0, s1, nss);
+          TLCState s = this.getNextStates(args[1], acts, c, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
         else {
-          return this.getNextStates(acts, s0, s1, nss);
+          TLCState s = this.getNextStates(acts, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
       }
     case OPCODE_unchanged:
       {
-        return this.processUnchanged(args[0], acts, c, s0, s1, nss);
+        TLCState s = this.processUnchanged(args[0], acts, c, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     case OPCODE_cdot:
       {
@@ -1115,7 +1206,9 @@ public class Tool
     // The following case added by LL on 13 Nov 2009 to handle subexpression names.
     case OPCODE_nop:
     {
-        return this.getNextStates(args[0], acts, c, s0, s1, nss); 
+        TLCState s = this.getNextStates(args[0], acts, c, s0, s1, nss); 
+        if (this.callStack != null) this.callStack.pop();
+        return s;
     }
     default:
       {
@@ -1128,6 +1221,7 @@ public class Tool
         if (((BoolValue)bval).val) {
           resState = this.getNextStates(acts, s0, s1, nss);
         }
+        if (this.callStack != null) this.callStack.pop();
         return resState;
       }
     }
@@ -1135,6 +1229,7 @@ public class Tool
 
   private final TLCState processUnchanged(SemanticNode expr, ActionItemList acts, Context c,
                                           TLCState s0, TLCState s1, StateVec nss) {
+    if (this.callStack != null) this.callStack.push(expr);
     SymbolNode var = this.getVar(expr, c, false);
     TLCState resState = s1;
     if (var != null) {
@@ -1151,8 +1246,9 @@ public class Tool
         resState = this.getNextStates(acts, s0, s1, nss);
       }
       else {
-          MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString(), expr.toString()});
+        MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString(), expr.toString()});
       }
+      if (this.callStack != null) this.callStack.pop();
       return resState;
     }
       
@@ -1171,9 +1267,13 @@ public class Tool
           for (int i = alen-1; i > 0; i--) {
             acts1 = acts1.cons(args[i], c, -2);
           }
-          return this.processUnchanged(args[0], acts1, c, s0, s1, nss);
+          TLCState s = this.processUnchanged(args[0], acts1, c, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
-        return this.getNextStates(acts, s0, s1, nss);
+        TLCState s = this.getNextStates(acts, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
 
       if (opcode == 0 && alen == 0) {
@@ -1181,17 +1281,23 @@ public class Tool
         Object val = this.lookup(opNode, c, false);
 
         if (val instanceof OpDefNode) {
-          return this.processUnchanged(((OpDefNode)val).getBody(), acts, c, s0, s1, nss);
+          TLCState s = this.processUnchanged(((OpDefNode)val).getBody(), acts, c, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
         else if (val instanceof LazyValue) {
           LazyValue lv = (LazyValue)val;
-          return this.processUnchanged(lv.expr, acts, lv.con, s0, s1, nss);
+          TLCState s = this.processUnchanged(lv.expr, acts, lv.con, s0, s1, nss);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
         else {
           Assert.fail("In computing next states, TLC found the identifier\n" +
                       opName + " undefined in an UNCHANGED expression at\n" + expr);
         }
-        return this.getNextStates(acts, s0, s1, nss);
+        TLCState s = this.getNextStates(acts, s0, s1, nss);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     }
     
@@ -1200,6 +1306,7 @@ public class Tool
     if (v0.equals(v1)) {
       resState = this.getNextStates(acts, s0, s1, nss);
     }
+    if (this.callStack != null) this.callStack.pop();
     return resState;
   }
 
@@ -1214,6 +1321,7 @@ public class Tool
    */
   public final Value eval(SemanticNode expr, Context c, TLCState s0,
                           TLCState s1, int control) {
+    if (this.callStack != null) this.callStack.push(expr);
     switch (expr.getKind()) {
     /***********************************************************************
     * LabelKind class added by LL on 13 Jun 2007.                          *
@@ -1221,12 +1329,16 @@ public class Tool
     case LabelKind:
       {
         LabelNode expr1 = (LabelNode) expr;
-        return this.eval( expr1.getBody(), c, s0, s1, control) ;
+        Value v = this.eval(expr1.getBody(), c, s0, s1, control) ;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OpApplKind:
       {
         OpApplNode expr1 = (OpApplNode)expr;
-        return this.evalAppl(expr1, c, s0, s1, control);
+        Value v = this.evalAppl(expr1, c, s0, s1, control);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case LetInKind:
       {
@@ -1241,7 +1353,9 @@ public class Tool
             c1 = c1.cons(opDef, rhs);
           }
         }
-        return this.eval(expr1.getBody(), c1, s0, s1, control);
+        Value v = this.eval(expr1.getBody(), c1, s0, s1, control);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case SubstInKind:
       {
@@ -1253,7 +1367,9 @@ public class Tool
           Subst sub = subs[i];
           c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true));
         }
-        return this.eval(expr1.getBody(), c1, s0, s1, control);
+        Value v = this.eval(expr1.getBody(), c1, s0, s1, control);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
 
       // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
@@ -1267,7 +1383,9 @@ public class Tool
             Subst sub = subs[i];
             c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true));
           }
-          return this.eval(expr1.getBody(), c1, s0, s1, control);
+          Value v = this.eval(expr1.getBody(), c1, s0, s1, control);
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
 
 
@@ -1275,11 +1393,15 @@ public class Tool
     case DecimalKind:
     case StringKind:
       {
-        return Value.getValue(expr);
+        Value v = Value.getValue(expr);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case AtNodeKind:
       {
-        return (Value)c.lookup(EXCEPT_AT);
+        Value v = (Value)c.lookup(EXCEPT_AT);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OpArgKind:
       {
@@ -1287,8 +1409,11 @@ public class Tool
         SymbolNode opNode = expr1.getOp();
         Object val = this.lookup(opNode, c, false);
         if (val instanceof OpDefNode) {
-          return setSource(expr, new OpLambdaValue((OpDefNode)val, this, c, s0, s1));
+          Value v = setSource(expr, new OpLambdaValue((OpDefNode)val, this, c, s0, s1));
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
+        if (this.callStack != null) this.callStack.pop();
         return (Value)val;
       }
     default:
@@ -1302,6 +1427,7 @@ public class Tool
 
   public final Value evalAppl(OpApplNode expr, Context c, TLCState s0,
                               TLCState s1, int control) {
+    if (this.callStack != null) this.callStack.push(expr);
     ExprOrOpArgNode[] args = expr.getArgs();
     SymbolNode opNode = expr.getOperator();
     int opcode = BuiltInOPs.getOpCode(opNode.getName());
@@ -1310,7 +1436,6 @@ public class Tool
       // This is a user-defined operator with one exception: it may
       // be substed by a builtin operator. This special case occurs
       // when the lookup returns an OpDef with opcode # 0.
-      if (this.callStack != null) this.callStack.push(expr);
       Object val = this.lookup(opNode, c, s0, EvalControl.isPrimed(control));
 
       // First, unlazy if it is a lazy value. We cannot use the cached
@@ -1373,14 +1498,18 @@ public class Tool
 //                     + "!:' instead.\n" +expr);
         ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode) val ;
         Context c1 = this.getOpContext(opDef, args, c, true);
-        return this.eval(opDef.getBody(), c1, s0, s1, control);
+        Value v = this.eval(opDef.getBody(), c1, s0, s1, control);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
         }
       else {
 		Assert.fail(EC.TLC_CONFIG_UNDEFINED_OR_NO_OPERATOR,
 			new String[] { opNode.getName().toString(), expr.toString() });
 		}
-      if (this.callStack != null) this.callStack.pop();
-      if (opcode == 0) return res;
+      if (opcode == 0) {
+        if (this.callStack != null) this.callStack.pop();
+        return res;
+      }
     }
 
     switch (opcode) {
@@ -1432,7 +1561,10 @@ public class Tool
             if (!(bval instanceof BoolValue)) {
                 Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
             }
-            if (((BoolValue)bval).val) return val;
+            if (((BoolValue)bval).val) {
+              if (this.callStack != null) this.callStack.pop();
+              return val;
+            }
           }
         }
         else {
@@ -1445,7 +1577,10 @@ public class Tool
             if (!(bval instanceof BoolValue)) {
                 Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
             }
-            if (((BoolValue)bval).val) return val;
+            if (((BoolValue)bval).val) {
+              if (this.callStack != null) this.callStack.pop();
+              return val;
+            }
           }
         }
         Assert.fail("Attempted to compute the value of an expression of form\n" +
@@ -1462,8 +1597,12 @@ public class Tool
           if (!(bval instanceof BoolValue)) {
               Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
           }
-          if (((BoolValue)bval).val) return ValTrue;
+          if (((BoolValue)bval).val) {
+            if (this.callStack != null) this.callStack.pop();
+            return ValTrue;
+          }
         }
+        if (this.callStack != null) this.callStack.pop();
         return ValFalse;        
       }
     case OPCODE_bf:     // BoundedForall
@@ -1476,8 +1615,12 @@ public class Tool
           if (!(bval instanceof BoolValue)) {
               Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
           }
-          if (!((BoolValue)bval).val) return ValFalse;
+          if (!((BoolValue)bval).val) {
+            if (this.callStack != null) this.callStack.pop();
+            return ValFalse;
+          }
         }
+        if (this.callStack != null) this.callStack.pop();
         return ValTrue;
       }
     case OPCODE_case:   // Case
@@ -1497,14 +1640,18 @@ public class Tool
                           ") was used as a condition of a CASE. " + pairArgs[0]);
             }
             if (((BoolValue)bval).val) {
-              return this.eval(pairArgs[1], c, s0, s1, control);
+              Value v = this.eval(pairArgs[1], c, s0, s1, control);
+              if (this.callStack != null) this.callStack.pop();
+              return v;
             }
           }
         }
         if (other == null) {
           Assert.fail("Attempted to evaluate a CASE with no conditions true.\n" + expr);
         }
-        return this.eval(other, c, s0, s1, control);
+        Value v = this.eval(other, c, s0, s1, control);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_cp:     // CartesianProd
       {
@@ -1513,36 +1660,42 @@ public class Tool
         for (int i = 0; i < alen; i++) {
           sets[i] = this.eval(args[i], c, s0, s1, control);
         }
-        return setSource(expr, new SetOfTuplesValue(sets));
+        Value v = setSource(expr, new SetOfTuplesValue(sets));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_cl:     // ConjList
       {
         int alen = args.length;
         for (int i = 0; i < alen; i++) {
-          if (this.callStack != null) this.callStack.push(args[i]);
           Value bval = this.eval(args[i], c, s0, s1, control);
           if (!(bval instanceof BoolValue)) {
             Assert.fail("A non-boolean expression (" + bval.getKindString() +
                         ") was used as a formula in a conjunction.\n" + args[i]);
           }
-          if (this.callStack != null) this.callStack.pop();
-          if (!((BoolValue)bval).val) return ValFalse;
+          if (!((BoolValue)bval).val) {
+            if (this.callStack != null) this.callStack.pop();
+            return ValFalse;
+          }
         }
+        if (this.callStack != null) this.callStack.pop();
         return ValTrue;
       }
     case OPCODE_dl:     // DisjList
       {
         int alen = args.length;
         for (int i = 0; i < alen; i++) {
-          if (this.callStack != null) this.callStack.push(args[i]);
           Value bval = this.eval(args[i], c, s0, s1, control);
           if (!(bval instanceof BoolValue)) {
             Assert.fail("A non-boolean expression (" + bval.getKindString() +
                         ") was used as a formula in a disjunction.\n" + args[i]);
           }
-          if (this.callStack != null) this.callStack.pop();
-          if (((BoolValue)bval).val) return ValTrue;
+          if (((BoolValue)bval).val) {
+            if (this.callStack != null) this.callStack.pop();
+            return ValTrue;
+          }
         }
+        if (this.callStack != null) this.callStack.pop();
         return ValFalse;
       }
     case OPCODE_exc:    // Except
@@ -1571,12 +1724,12 @@ public class Tool
             result = result.takeExcept(vex);
           }
         }
+        if (this.callStack != null) this.callStack.pop();
         return result;
       }
     case OPCODE_fa:     // FcnApply
       {
         Value result = null;
-        if (this.callStack != null) this.callStack.push(expr);
         Value fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(control));
         if ((fval instanceof FcnRcdValue) ||
             (fval instanceof FcnLambdaValue)) {
@@ -1625,8 +1778,11 @@ public class Tool
           isFcnRcd = false;
         }
         if (isFcnRcd && !EvalControl.isKeepLazy(control)) {
-          return fval.toFcnRcd();
+          Value v = fval.toFcnRcd();
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
+        if (this.callStack != null) this.callStack.pop();
         return fval;
       }
     case OPCODE_ite:    // IfThenElse
@@ -1637,9 +1793,13 @@ public class Tool
                       ") was used as the condition of an IF.\n" + expr);
         }
         if (((BoolValue)bval).val) {
-          return this.eval(args[1], c, s0, s1, control);
+          Value v = this.eval(args[1], c, s0, s1, control);
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
-        return this.eval(args[2], c, s0, s1, control);
+        Value v = this.eval(args[2], c, s0, s1, control);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_rc:     // RcdConstructor
       {
@@ -1652,7 +1812,9 @@ public class Tool
           names[i] = ((StringValue)Value.getValue(pair[0])).getVal();
           vals[i] = this.eval(pair[1], c, s0, s1, control);
         }
-        return setSource(expr, new RecordValue(names, vals, false));
+        Value v = setSource(expr, new RecordValue(names, vals, false));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_rs:     // RcdSelect
       {
@@ -1664,6 +1826,7 @@ public class Tool
             Assert.fail("Attempted to select nonexistent field " + sval + " from the" +
                         " record\n" + Value.ppr(rval.toString()) + "\n" + expr);
           }
+          if (this.callStack != null) this.callStack.pop();
           return result;
         }
         else {
@@ -1672,7 +1835,9 @@ public class Tool
             Assert.fail("Attempted to select field " + sval + " from a non-record" +
                         " value " + Value.ppr(rval.toString()) + "\n" + expr);
           }
-          return fcn.apply(sval, control);
+          Value v = fcn.apply(sval, control);
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
       }
     case OPCODE_se:     // SetEnumerate
@@ -1682,7 +1847,9 @@ public class Tool
         for (int i = 0; i < alen; i++) {
           vals.addElement(this.eval(args[i], c, s0, s1, control));
         }
-        return setSource(expr, new SetEnumValue(vals, false));
+        Value v = setSource(expr, new SetEnumValue(vals, false));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_soa:    // SetOfAll: {e(x) : x \in S} 
       {
@@ -1695,7 +1862,9 @@ public class Tool
           vals.addElement(val);
           // vals.addElement1(val);
         }
-        return setSource(expr, new SetEnumValue(vals, false));
+        Value v = setSource(expr, new SetEnumValue(vals, false));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_sor:    // SetOfRcds
       {
@@ -1708,13 +1877,17 @@ public class Tool
           names[i] = ((StringValue)Value.getValue(pair[0])).getVal();
           vals[i] = this.eval(pair[1], c, s0, s1, control);
         }
-        return setSource(expr, new SetOfRcdsValue(names, vals, false));
+        Value v = setSource(expr, new SetOfRcdsValue(names, vals, false));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_sof:    // SetOfFcns
       {
         Value lhs = this.eval(args[0], c, s0, s1, control);
         Value rhs = this.eval(args[1], c, s0, s1, control);
-        return setSource(expr, new SetOfFcnsValue(lhs, rhs));
+        Value v = setSource(expr, new SetOfFcnsValue(lhs, rhs));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_sso:    // SubsetOf
       {
@@ -1758,13 +1931,19 @@ public class Tool
               }
             }
           }
-          return setSource(expr, new SetEnumValue(vals, inVal.isNormalized()));
+          Value v = setSource(expr, new SetEnumValue(vals, inVal.isNormalized()));
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
         else if (isTuple) {
-          return setSource(expr, new SetPredValue(bvars, inVal, pred, this, c, s0, s1, control));
+          Value v = setSource(expr, new SetPredValue(bvars, inVal, pred, this, c, s0, s1, control));
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
         else {
-          return setSource(expr, new SetPredValue(bvars[0], inVal, pred, this, c, s0, s1, control));
+          Value v = setSource(expr, new SetPredValue(bvars[0], inVal, pred, this, c, s0, s1, control));
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
       }
     case OPCODE_tup:    // Tuple
@@ -1774,7 +1953,9 @@ public class Tool
         for (int i = 0; i < alen; i++) {
           vals[i] = this.eval(args[i], c, s0, s1, control);
         }
-        return setSource(expr, new TupleValue(vals));
+        Value v = setSource(expr, new TupleValue(vals));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_uc:     // UnboundedChoose
       {
@@ -1804,17 +1985,23 @@ public class Tool
           Assert.fail("Attempted to apply the operator ~ to a non-boolean\n(" +
                       arg.getKindString() + ")\n" + expr);
         }
-        return (((BoolValue)arg).val) ? ValFalse : ValTrue;
+        Value v = (((BoolValue)arg).val) ? ValFalse : ValTrue;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_subset:
       {
         Value arg = this.eval(args[0], c, s0, s1, control);
-        return setSource(expr, new SubsetValue(arg));
+        Value v = setSource(expr, new SubsetValue(arg));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_union:
       {
         Value arg = this.eval(args[0], c, s0, s1, control);
-        return setSource(expr, UnionValue.union(arg));
+        Value v = setSource(expr, UnionValue.union(arg));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_domain:
       {
@@ -1823,20 +2010,26 @@ public class Tool
           Assert.fail("Attempted to apply the operator DOMAIN to a non-function\n(" +
                       arg.getKindString() + ")\n" + expr);
         }
-        return setSource(expr, ((Applicable)arg).getDomain());
+        Value v = setSource(expr, ((Applicable)arg).getDomain());
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_enabled:
       {
         TLCState sfun = TLCStateFun.Empty;
         Context c1 = Context.branch(c);
         sfun = this.enabled(args[0], ActionItemList.Empty, c1, s0, sfun);
-        return (sfun != null) ? ValTrue : ValFalse;
+        Value v = (sfun != null) ? ValTrue : ValFalse;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_eq:
       {
         Value arg1 = this.eval(args[0], c, s0, s1, control);
         Value arg2 = this.eval(args[1], c, s0, s1, control);
-        return (arg1.equals(arg2)) ? ValTrue : ValFalse;
+        Value v = (arg1.equals(arg2)) ? ValTrue : ValFalse;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_land:
       {
@@ -1851,8 +2044,10 @@ public class Tool
             Assert.fail("Attempted to evaluate an expression of form P /\\ Q" +
                         " when Q was\n" + arg2.getKindString() + ".\n" + expr);
           }
+          if (this.callStack != null) this.callStack.pop();
           return arg2;
         }
+        if (this.callStack != null) this.callStack.pop();
         return ValFalse;
       }
     case OPCODE_lor:
@@ -1862,12 +2057,16 @@ public class Tool
           Assert.fail("Attempted to evaluate an expression of form P \\/ Q" +
                       " when P was\n" + arg1.getKindString() + ".\n" + expr);
         }
-        if (((BoolValue)arg1).val) return ValTrue;
+        if (((BoolValue)arg1).val) {
+          if (this.callStack != null) this.callStack.pop();
+          return ValTrue;
+        }
         Value arg2 = this.eval(args[1], c, s0, s1, control);
         if (!(arg2 instanceof BoolValue)) {
           Assert.fail("Attempted to evaluate an expression of form P \\/ Q" +
                       " when Q was\n" + arg2.getKindString() + ".\n" + expr);
         }
+        if (this.callStack != null) this.callStack.pop();
         return arg2;
       }
     case OPCODE_implies:
@@ -1883,8 +2082,10 @@ public class Tool
             Assert.fail("Attempted to evaluate an expression of form P => Q" +
                         " when Q was\n" + arg2.getKindString() + ".\n" + expr);
           }
+          if (this.callStack != null) this.callStack.pop();
           return arg2;
         }
+        if (this.callStack != null) this.callStack.pop();
         return ValTrue;
       }
     case OPCODE_equiv:
@@ -1897,13 +2098,17 @@ public class Tool
         }
         BoolValue bval1 = (BoolValue)arg1;
         BoolValue bval2 = (BoolValue)arg2;
-        return (bval1.val == bval2.val) ? ValTrue : ValFalse;
+        Value v = (bval1.val == bval2.val) ? ValTrue : ValFalse;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_noteq:
       {
         Value arg1 = this.eval(args[0], c, s0, s1, control);
         Value arg2 = this.eval(args[1], c, s0, s1, control);
-        return arg1.equals(arg2) ? ValFalse : ValTrue;
+        Value v = arg1.equals(arg2) ? ValFalse : ValTrue;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_subseteq:
       {
@@ -1913,47 +2118,66 @@ public class Tool
           Assert.fail("Attempted to evaluate an expression of form S \\subseteq T," +
                       " but S was not enumerable.\n" + expr);
         }
-        return ((Enumerable) arg1).isSubsetEq(arg2);
+        Value v = ((Enumerable) arg1).isSubsetEq(arg2);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_in:
       {
         Value arg1 = this.eval(args[0], c, s0, s1, control);
         Value arg2 = this.eval(args[1], c, s0, s1, control);
-        return (arg2.member(arg1)) ? ValTrue : ValFalse;
+        Value v = (arg2.member(arg1)) ? ValTrue : ValFalse;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_notin:
       {
         Value arg1 = this.eval(args[0], c, s0, s1, control);
         Value arg2 = this.eval(args[1], c, s0, s1, control);
-        return (arg2.member(arg1)) ? ValFalse : ValTrue;
+        Value v = (arg2.member(arg1)) ? ValFalse : ValTrue;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_setdiff:
       {
         Value arg1 = this.eval(args[0], c, s0, s1, control);
         Value arg2 = this.eval(args[1], c, s0, s1, control);
         if (arg1 instanceof Reducible) {
-          return setSource(expr, ((Reducible)arg1).diff(arg2));
+          Value v = setSource(expr, ((Reducible)arg1).diff(arg2));
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
-        return setSource(expr, new SetDiffValue(arg1, arg2));
+        Value v = setSource(expr, new SetDiffValue(arg1, arg2));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_cap:
       {
         Value arg1 = this.eval(args[0], c, s0, s1, control);
         Value arg2 = this.eval(args[1], c, s0, s1, control);
         if (arg1 instanceof Reducible) {
-          return setSource(expr, ((Reducible)arg1).cap(arg2));
+          Value v = setSource(expr, ((Reducible)arg1).cap(arg2));
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
         else if (arg2 instanceof Reducible) {
-          return setSource(expr, ((Reducible)arg2).cap(arg1));
+          Value v = setSource(expr, ((Reducible)arg2).cap(arg1));
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
-        return setSource(expr, new SetCapValue(arg1, arg2));
+        Value v = setSource(expr, new SetCapValue(arg1, arg2));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
 
     case OPCODE_nop:
       /*********************************************************************
       * Added by LL on 2 Aug 2007.                                         *
       *********************************************************************/
-      { return eval(args[0], c, s0, s1, control) ;
+      {
+        Value v = eval(args[0], c, s0, s1, control);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
 
     case OPCODE_cup:
@@ -1961,20 +2185,30 @@ public class Tool
         Value arg1 = this.eval(args[0], c, s0, s1, control);
         Value arg2 = this.eval(args[1], c, s0, s1, control);
         if (arg1 instanceof Reducible) {
-          return setSource(expr, ((Reducible)arg1).cup(arg2));
+          Value v = setSource(expr, ((Reducible)arg1).cup(arg2));
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
         else if (arg2 instanceof Reducible) {
-          return setSource(expr, ((Reducible)arg2).cup(arg1));
+          Value v = setSource(expr, ((Reducible)arg2).cup(arg1));
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
-        return setSource(expr, new SetCupValue(arg1, arg2));
+        Value v = setSource(expr, new SetCupValue(arg1, arg2));
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_prime:
       {
         if (EvalControl.isEnabled(control)) {
           // We are now in primed and enabled.
-          return this.eval(args[0], c, s1, null, EvalControl.setPrimed(control));
+          Value v = this.eval(args[0], c, s1, null, EvalControl.setPrimed(control));
+          if (this.callStack != null) this.callStack.pop();
+          return v;
         }
-        return this.eval(args[0], c, s1, null, control);
+        Value v = this.eval(args[0], c, s1, null, control);
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_unchanged:
       {
@@ -1984,7 +2218,9 @@ public class Tool
           control = EvalControl.setPrimed(control);
         }
         Value v1 = this.eval(args[0], c, s1, null, control);
-        return (v0.equals(v1)) ? ValTrue : ValFalse;
+        Value v = (v0.equals(v1)) ? ValTrue : ValFalse;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_aa:     // <A>_e          
       {
@@ -1993,14 +2229,19 @@ public class Tool
           Assert.fail("Attempted to evaluate an expression of form <A>_e," +
                       " but A was not a boolean.\n" + expr);
         }
-        if (!((BoolValue)res).val) return ValFalse;
+        if (!((BoolValue)res).val) {
+          if (this.callStack != null) this.callStack.pop();
+          return ValFalse;
+        }
         Value v0 = this.eval(args[1], c, s0, TLCState.Empty, control);
         if (EvalControl.isEnabled(control)) {
           // We are now in primed and enabled. 
           control = EvalControl.setPrimed(control);
         }
         Value v1 = this.eval(args[1], c, s1, null, control);
-        return v0.equals(v1) ? ValFalse : ValTrue;
+        Value v = v0.equals(v1) ? ValFalse : ValTrue;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_sa:     // [A]_e
       {
@@ -2009,14 +2250,19 @@ public class Tool
           Assert.fail("Attempted to evaluate an expression of form [A]_e," +
                       " but A was not a boolean.\n" + expr);
         }
-        if (((BoolValue)res).val) return ValTrue;
+        if (((BoolValue)res).val) {
+          if (this.callStack != null) this.callStack.pop();
+          return ValTrue;
+        }
         Value v0 = this.eval(args[1], c, s0, TLCState.Empty, control);
         if (EvalControl.isEnabled(control)) {
           // We are now in primed and enabled.
           control = EvalControl.setPrimed(control);
         }
         Value v1 = this.eval(args[1], c, s1, null, control);
-        return (v0.equals(v1)) ? ValTrue : ValFalse;
+        Value v = (v0.equals(v1)) ? ValTrue : ValFalse;
+        if (this.callStack != null) this.callStack.pop();
+        return v;
       }
     case OPCODE_cdot:
       {
@@ -2131,11 +2377,14 @@ public class Tool
    */
   public final TLCState enabled(SemanticNode pred, ActionItemList acts,
                                 Context c, TLCState s0, TLCState s1) {
+    if (this.callStack != null) this.callStack.push(pred);
     switch (pred.getKind()) {
     case OpApplKind:
       {
         OpApplNode pred1 = (OpApplNode)pred;
-        return this.enabledAppl(pred1, acts, c, s0, s1);
+        TLCState s = this.enabledAppl(pred1, acts, c, s0, s1);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     case LetInKind:
       {
@@ -2149,7 +2398,9 @@ public class Tool
             c1 = c1.cons(opDef, rhs);
           }
         }
-        return this.enabled(pred1.getBody(), acts, c1, s0, s1);
+        TLCState s = this.enabled(pred1.getBody(), acts, c1, s0, s1);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     case SubstInKind:
       {
@@ -2161,7 +2412,9 @@ public class Tool
           Subst sub = subs[i];
           c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
         }
-        return this.enabled(pred1.getBody(), acts, c1, s0, s1);
+        TLCState s = this.enabled(pred1.getBody(), acts, c1, s0, s1);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
 
       // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
@@ -2175,7 +2428,9 @@ public class Tool
             Subst sub = subs[i];
             c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
           }
-          return this.enabled(pred1.getBody(), acts, c1, s0, s1);
+          TLCState s = this.enabled(pred1.getBody(), acts, c1, s0, s1);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
 
 
@@ -2185,7 +2440,9 @@ public class Tool
     case LabelKind:
       {
         LabelNode pred1 = (LabelNode)pred;
-        return this.enabled(pred1.getBody(), acts, c, s0, s1);
+        TLCState s = this.enabled(pred1.getBody(), acts, c, s0, s1);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     default:
       {
@@ -2204,16 +2461,16 @@ public class Tool
     Context c = acts.carContext();
     ActionItemList acts1 = acts.cdr();
     if (kind > 0) {
-      if (this.callStack != null) this.callStack.push(acts.carPred());
       TLCState res = this.enabled(pred, acts1, c, s0, s1);
-      if (this.callStack != null) this.callStack.pop();
       return res;
     }
     else if (kind == -1) {
-      return this.enabled(pred, acts1, c, s0, s1);
+      TLCState res = this.enabled(pred, acts1, c, s0, s1);
+      return res;
     }
     if (kind == -2) {
-      return this.enabledUnchanged(pred, acts1, c, s0, s1);
+      TLCState res = this.enabledUnchanged(pred, acts1, c, s0, s1);
+      return res;
     }
 
     Value v1 = this.eval(pred, c, s0, TLCState.Empty, EvalControl.Enabled);
@@ -2221,11 +2478,13 @@ public class Tool
     Value v2 = this.eval(pred, c, s1, null, EvalControl.Primed);
 
     if (v1.equals(v2)) return null;
-    return this.enabled(acts1, s0, s1);
+    TLCState res = this.enabled(acts1, s0, s1);
+    return res;
   }
 
     private final TLCState enabledAppl(OpApplNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1)
     {
+        if (this.callStack != null) this.callStack.push(pred);
         ExprOrOpArgNode[] args = pred.getArgs();
         int alen = args.length;
         SymbolNode opNode = pred.getOperator();
@@ -2246,7 +2505,9 @@ public class Tool
                 {
                     // Context c1 = this.getOpContext(opDef, args, c, false);
                     Context c1 = this.getOpContext(opDef, args, c, true);
-                    return this.enabled(opDef.getBody(), acts, c1, s0, s1);
+                    TLCState s = this.enabled(opDef.getBody(), acts, c1, s0, s1);
+                    if (this.callStack != null) this.callStack.pop();
+                    return s;
                 }
             }
             
@@ -2260,14 +2521,18 @@ public class Tool
             {
                 ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode) val;
                 Context c1 = this.getOpContext(opDef, args, c, true);
-                return this.enabled(opDef.getBody(), acts, c1, s0, s1);
+                TLCState s = this.enabled(opDef.getBody(), acts, c1, s0, s1);
+                if (this.callStack != null) this.callStack.pop();
+                return s;
             }
 
 
             if (val instanceof LazyValue)
             {
                 LazyValue lv = (LazyValue) val;
-                return this.enabled(lv.expr, acts, lv.con, s0, s1);
+                TLCState s = this.enabled(lv.expr, acts, lv.con, s0, s1);
+                if (this.callStack != null) this.callStack.pop();
+                return s;
             }
 
             Object bval = val;
@@ -2302,8 +2567,11 @@ public class Tool
                 }
                 if (((BoolValue) bval).val)
                 {
-                    return this.enabled(acts, s0, s1);
+                    TLCState s = this.enabled(acts, s0, s1);
+                    if (this.callStack != null) this.callStack.pop();
+                    return s;
                 }
+                if (this.callStack != null) this.callStack.pop();
                 return null;
             }
         }
@@ -2312,7 +2580,9 @@ public class Tool
         case OPCODE_aa: // AngleAct <A>_e
         {
             ActionItemList acts1 = acts.cons(args[1], c, -3);
-            return this.enabled(args[0], acts1, c, s0, s1);
+            TLCState s = this.enabled(args[0], acts1, c, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         case OPCODE_be: // BoundedExists
         {
@@ -2322,9 +2592,12 @@ public class Tool
             while ((c1 = Enum.nextElement()) != null)
             {
                 TLCState s2 = this.enabled(body, acts, c1, s0, s1);
-                if (s2 != null)
-                    return s2;
+                if (s2 != null) {
+                  if (this.callStack != null) this.callStack.pop();
+                  return s2;
+                }
             }
+            if (this.callStack != null) this.callStack.pop();
             return null;
         }
         case OPCODE_bf: // BoundedForall
@@ -2334,7 +2607,9 @@ public class Tool
             Context c1 = Enum.nextElement();
             if (c1 == null)
             {
-                return this.enabled(acts, s0, s1);
+                TLCState s = this.enabled(acts, s0, s1);
+                if (this.callStack != null) this.callStack.pop();
+                return s;
             }
             ActionItemList acts1 = acts;
             Context c2;
@@ -2342,7 +2617,9 @@ public class Tool
             {
                 acts1 = acts1.cons(body, c2, -1);
             }
-            return this.enabled(body, acts1, c1, s0, s1);
+            TLCState s = this.enabled(body, acts1, c1, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         case OPCODE_case: // Case
         {
@@ -2364,7 +2641,9 @@ public class Tool
                     }
                     if (((BoolValue) bval).val)
                     {
-                        return this.enabled(pairArgs[1], acts, c, s0, s1);
+                        TLCState s = this.enabled(pairArgs[1], acts, c, s0, s1);
+                        if (this.callStack != null) this.callStack.pop();
+                        return s;
                     }
                 }
             }
@@ -2372,7 +2651,9 @@ public class Tool
             {
                 Assert.fail("In computing ENABLED, TLC encountered a CASE with no" + " conditions true.\n" + pred);
             }
-            return this.enabled(other, acts, c, s0, s1);
+            TLCState s = this.enabled(other, acts, c, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         case OPCODE_cl: // ConjList
         case OPCODE_land: {
@@ -2381,25 +2662,21 @@ public class Tool
             {
                 acts1 = acts1.cons(args[i], c, i);
             }
-            if (this.callStack != null)
-                this.callStack.push(args[0]);
             TLCState res = this.enabled(args[0], acts1, c, s0, s1);
-            if (this.callStack != null)
-                this.callStack.pop();
+            if (this.callStack != null) this.callStack.pop();
             return res;
         }
         case OPCODE_dl: // DisjList
         case OPCODE_lor: {
             for (int i = 0; i < alen; i++)
             {
-                if (this.callStack != null)
-                    this.callStack.push(args[i]);
                 TLCState s2 = this.enabled(args[i], acts, c, s0, s1);
-                if (this.callStack != null)
-                    this.callStack.pop();
-                if (s2 != null)
-                    return s2;
+                if (s2 != null) {
+                  if (this.callStack != null) this.callStack.pop();
+                  return s2;
+                }
             }
+            if (this.callStack != null) this.callStack.pop();
             return null;
         }
         case OPCODE_fa: // FcnApply
@@ -2411,7 +2688,9 @@ public class Tool
                 if (fcn.fcnRcd == null)
                 {
                     Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Enabled);
-                    return this.enabled(fcn.body, acts, c1, s0, s1);
+                    TLCState s = this.enabled(fcn.body, acts, c1, s0, s1);
+                    if (this.callStack != null) this.callStack.pop();
+                    return s;
                 }
                 fval = fcn.fcnRcd;
             }
@@ -2426,14 +2705,18 @@ public class Tool
                             pred.toString() });
 
                 }
-                if (!((BoolValue) bval).val)
-                    return null;
+                if (!((BoolValue) bval).val) {
+                  if (this.callStack != null) this.callStack.pop();
+                  return null;
+                }
             } else
             {
                 Assert.fail("In computing ENABLED, a non-function (" + fval.getKindString()
                         + ") was applied as a function.\n" + pred);
             }
-            return this.enabled(acts, s0, s1);
+            TLCState s = this.enabled(acts, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         case OPCODE_ite: // IfThenElse
         {
@@ -2444,14 +2727,20 @@ public class Tool
                         + ") was used as the guard condition" + " of an IF.\n" + pred);
             }
             int idx = (((BoolValue) guard).val) ? 1 : 2;
-            return this.enabled(args[idx], acts, c, s0, s1);
+            TLCState s = this.enabled(args[idx], acts, c, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         case OPCODE_sa: // SquareAct [A]_e
         {
             TLCState s2 = this.enabled(args[0], acts, c, s0, s1);
-            if (s2 != null)
-                return s2;
-            return this.enabledUnchanged(args[1], acts, c, s0, s1);
+            if (s2 != null) {
+              if (this.callStack != null) this.callStack.pop();
+              return s2;
+            }
+            TLCState s = this.enabledUnchanged(args[1], acts, c, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         case OPCODE_te: // TemporalExists
         case OPCODE_tf: // TemporalForAll
@@ -2496,15 +2785,19 @@ public class Tool
             return null; // make compiler happy
         }
         case OPCODE_unchanged: {
-            return this.enabledUnchanged(args[0], acts, c, s0, s1);
+            TLCState s = this.enabledUnchanged(args[0], acts, c, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         case OPCODE_eq: {
             SymbolNode var = this.getPrimedVar(args[0], c, true);
             if (var == null)
             {
                 Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled);
-                if (!((BoolValue) bval).val)
-                    return null;
+                if (!((BoolValue) bval).val) {
+                  if (this.callStack != null) this.callStack.pop();
+                  return null;
+                }
             } else
             {
                 UniqueString varName = var.getName();
@@ -2513,14 +2806,20 @@ public class Tool
                 if (lval == null)
                 {
                     TLCState s2 = s1.bind(var, rval, pred);
-                    return this.enabled(acts, s0, s2);
+                    TLCState s = this.enabled(acts, s0, s2);
+                    if (this.callStack != null) this.callStack.pop();
+                    return s;
                 } else
                 {
-                    if (!lval.equals(rval))
-                        return null;
+                    if (!lval.equals(rval)) {
+                      if (this.callStack != null) this.callStack.pop();
+                      return null;
+                    }
                 }
             }
-            return this.enabled(acts, s0, s1);
+            TLCState s = this.enabled(acts, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         case OPCODE_implies: {
             Value bval = this.eval(args[0], c, s0, s1, EvalControl.Enabled);
@@ -2531,9 +2830,13 @@ public class Tool
             }
             if (((BoolValue) bval).val)
             {
-                return this.enabled(args[1], acts, c, s0, s1);
+                TLCState s = this.enabled(args[1], acts, c, s0, s1);
+                if (this.callStack != null) this.callStack.pop();
+                return s;
             }
-            return this.enabled(acts, s0, s1);
+            TLCState s = this.enabled(acts, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         case OPCODE_cdot: {
             Assert.fail("The current version of TLC does not support action composition.");
@@ -2563,8 +2866,10 @@ public class Tool
             if (var == null)
             {
                 Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled);
-                if (!((BoolValue) bval).val)
-                    return null;
+                if (!((BoolValue) bval).val) {
+                  if (this.callStack != null) this.callStack.pop();
+                  return null;
+                }
             } else
             {
                 UniqueString varName = var.getName();
@@ -2582,22 +2887,31 @@ public class Tool
                     {
                         TLCState s2 = s1.bind(var, val, pred);
                         s2 = this.enabled(acts, s0, s2);
-                        if (s2 != null)
-                            return s2;
+                        if (s2 != null) {
+                          if (this.callStack != null) this.callStack.pop();
+                          return s2;
+                        }
                     }
+                    if (this.callStack != null) this.callStack.pop();
                     return null;
                 } else
                 {
-                    if (!rval.member(lval))
-                        return null;
+                    if (!rval.member(lval)) {
+                      if (this.callStack != null) this.callStack.pop();
+                      return null;
+                    }
                 }
             }
-            return this.enabled(acts, s0, s1);
+            TLCState s = this.enabled(acts, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         // The following case added by LL on 13 Nov 2009 to handle subexpression names.
         case OPCODE_nop:
         {
-            return this.enabled(args[0], acts, c, s0, s1);
+            TLCState s = this.enabled(args[0], acts, c, s0, s1);
+            if (this.callStack != null) this.callStack.pop();
+            return s;
         }
         
         default: {
@@ -2610,8 +2924,11 @@ public class Tool
             }
             if (((BoolValue) bval).val)
             {
-                return this.enabled(acts, s0, s1);
+                TLCState s = this.enabled(acts, s0, s1);
+                if (this.callStack != null) this.callStack.pop();
+                return s;
             }
+            if (this.callStack != null) this.callStack.pop();
             return null;
         }
         }
@@ -2619,6 +2936,7 @@ public class Tool
 
   private final TLCState enabledUnchanged(SemanticNode expr, ActionItemList acts,
                                           Context c, TLCState s0, TLCState s1) {
+    if (this.callStack != null) this.callStack.push(expr);
     SymbolNode var = this.getVar(expr, c, true);
     if (var != null) {
       // a state variable:
@@ -2627,12 +2945,17 @@ public class Tool
       Value v1 = s1.lookup(varName);
       if (v1 == null) {
         s1 = s1.bind(var, v0, expr);
-        return this.enabled(acts, s0, s1);
+        TLCState s = this.enabled(acts, s0, s1);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
       if (v1.equals(v0)) {
-        return this.enabled(acts, s0, s1);
+        TLCState s = this.enabled(acts, s0, s1);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
       MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString() , expr.toString()});
+      if (this.callStack != null) this.callStack.pop();
       return null;
     }
       
@@ -2651,9 +2974,13 @@ public class Tool
           for (int i = 1; i < alen; i++) {
             acts1 = acts1.cons(args[i], c, -2);
           }
-          return this.enabledUnchanged(args[0], acts1, c, s0, s1);
+          TLCState s = this.enabledUnchanged(args[0], acts1, c, s0, s1);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
-        return this.enabled(acts, s0, s1);      
+        TLCState s = this.enabled(acts, s0, s1);      
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
 
       if (opcode == 0 && alen == 0) {
@@ -2662,23 +2989,34 @@ public class Tool
 
         if (val instanceof LazyValue) {
           LazyValue lv = (LazyValue)val;
-          return this.enabledUnchanged(lv.expr, acts, lv.con, s0, s1);
+          TLCState s = this.enabledUnchanged(lv.expr, acts, lv.con, s0, s1);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
         else if (val instanceof OpDefNode) {
-          return this.enabledUnchanged(((OpDefNode)val).getBody(), acts, c, s0, s1);
+          TLCState s = this.enabledUnchanged(((OpDefNode)val).getBody(), acts, c, s0, s1);
+          if (this.callStack != null) this.callStack.pop();
+          return s;
         }
         else if (val == null) {
           Assert.fail("In computing ENABLED, TLC found the undefined identifier\n" +
                       opName + " in an UNCHANGED expression at\n" + expr);
         }
-        return this.enabled(acts, s0, s1);
+        TLCState s = this.enabled(acts, s0, s1);
+        if (this.callStack != null) this.callStack.pop();
+        return s;
       }
     }
 
     Value v0 = this.eval(expr, c, s0, TLCState.Empty, EvalControl.Enabled);
     Value v1 = this.eval(expr, c, s1, TLCState.Empty, EvalControl.Primed);
-    if (!v0.equals(v1)) return null;
-    return this.enabled(acts, s0, s1);
+    if (!v0.equals(v1)) {
+      if (this.callStack != null) this.callStack.pop();
+      return null;
+    }
+    TLCState s = this.enabled(acts, s0, s1);
+    if (this.callStack != null) this.callStack.pop();
+    return s;
   }
 
   /* This method determines if the action predicate is valid in (s0, s1). */
