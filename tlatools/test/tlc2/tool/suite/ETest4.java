@@ -1,9 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2016 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2016 Microsoft Research. All rights reserved.
  *
  * The MIT License (MIT)
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
@@ -11,8 +11,8 @@
  * so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software. 
- * 
+ * copies or substantial portions of the Software.
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -37,6 +37,11 @@ public class ETest4 extends SuiteETestCase {
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "0", "0", "0"));
-		//assertTrue(recorder.recordedWithStringValues(EC.TLC_NESTED_EXPRESSION, "0. Line 15, column 12 to line 15, column 22 in etest4\n\n"));
+		String s = "0. Line 13, column 9 to line 16, column 51 in etest4\n"
+			+ "1. Line 13, column 12 to line 13, column 16 in etest4\n"
+			+ "2. Line 14, column 12 to line 14, column 77 in etest4\n"
+			+ "3. Line 15, column 12 to line 15, column 26 in etest4\n"
+			+ "4. Line 15, column 12 to line 15, column 22 in etest4\n\n";
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_NESTED_EXPRESSION, s));
 	}
 }
