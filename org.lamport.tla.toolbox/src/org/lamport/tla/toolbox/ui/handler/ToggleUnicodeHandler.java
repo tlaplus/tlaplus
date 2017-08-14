@@ -1,9 +1,11 @@
-package org.lamport.tla.toolbox.editor.basic.handlers;
+package org.lamport.tla.toolbox.ui.handler;
 
 import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 
@@ -19,8 +21,7 @@ public class ToggleUnicodeHandler extends AbstractHandler implements IHandler {
 	/*
 	 * Command ids.
 	 */
-	public static final String ID_TOGGLE_UNICODE = "org.lamport.tla.toolbox.editor.basic.toggleUnicode";
-
+	public static final String ID_TOGGLE_UNICODE = "toolbox.command.module.toggleUnicode";
 	
 	/*
 	 * (non-Javadoc)
@@ -30,11 +31,12 @@ public class ToggleUnicodeHandler extends AbstractHandler implements IHandler {
 	 * ExecutionEvent)
 	 */
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-	
+
 		// final IRegion lineInfo = doc.getLineInformationOfOffset(offset);
-		switch(event.getCommand().getId()) {
+	    final Command command = event.getCommand();
+		switch(command.getId()) {
 		case ID_TOGGLE_UNICODE:
-			TLAUnicodeReplacer.toggleUnicode();
+			TLAUnicodeReplacer.setUnicode(!HandlerUtil.toggleCommandState(command));
 			break;
 		default:
 			Activator.getDefault().logInfo("Unrecognized command.");
@@ -43,13 +45,5 @@ public class ToggleUnicodeHandler extends AbstractHandler implements IHandler {
 
 
 		return null;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
-	 */
-	@Override
-	public boolean isEnabled() {
-		return super.isEnabled();
 	}
 }
