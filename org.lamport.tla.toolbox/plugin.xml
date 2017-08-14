@@ -683,14 +683,16 @@
                   commandId="org.eclipse.ui.edit.copy">
             </command>
             <command
-                  commandId="org.lamport.tla.toolbox.editor.basic.copyAsASCII">
-            </command>
-            <command
                   commandId="org.eclipse.ui.edit.paste">
+            </command>
+<!--
+            <command
+                  commandId="org.lamport.tla.toolbox.editor.basic.copyAsASCII">
             </command>
             <command
                   commandId="org.lamport.tla.toolbox.editor.basic.pasteAsUnicode">
             </command>
+-->
             <separator
                   name="toolbox.edit.separator2"
                   visible="true">

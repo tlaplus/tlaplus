@@ -683,10 +683,12 @@
            </menuContribution>
            <menuContribution
                  locationURI="popup:#TextEditorContext?after=org.lamport.tla.toolbox.editor.basic.unicodeseparator">
+<!--           
               <command
                     commandId="org.lamport.tla.toolbox.editor.basic.copyAsASCII"
                     style="push">
               </command>
+-->         
               <command
                     commandId="org.lamport.tla.toolbox.editor.basic.toggleUnicode"
                     style="push">

@@ -8,7 +8,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.ui.editors.text.TextEditor;
 import org.lamport.tla.toolbox.Activator;
 
 import tla2unicode.Unicode;
@@ -114,21 +113,23 @@ public class TLAUnicodeReplacer {
 	}
 	
 	private void customizeDocumentCommand(IDocument document, DocumentCommand command) {
-		if (!isUnicode()) {
-			replacer.reset();
-			return;
-		}
 		this.doc = document;
 		this.command = command;
 		try {
 			if ((command.length == 0 && command.text != null && command.text.length() == 1)
 					|| (command.length == 1 && (command.text == null || command.text.isEmpty())))
-				handleTyping(command.length, command.offset, command.text);
+				if (isUnicode()) {
+					handleTyping(command.length, command.offset, command.text);
+				} else {
+					replacer.reset();
+				}
 			else {
 				replacer.reset();
 				if (command.text != null && !command.text.isEmpty() // ignore deletion
 						&& (command.offset != 0 || command.length < doc.getLength())) { // ignore full text replacement
-					overwriteCommand(command, command.offset, command.length, Unicode.convertToUnicode(command.text), null);
+					final String txt = !isUnicode() ? Unicode.convertToASCII(command.text)
+							: Unicode.convertToUnicode(command.text);
+					overwriteCommand(command, command.offset, command.length, txt, null);
 				}
 			}
 		} catch (BadLocationException e) {
