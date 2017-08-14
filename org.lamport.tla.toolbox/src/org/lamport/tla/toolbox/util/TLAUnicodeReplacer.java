@@ -20,10 +20,11 @@ import tla2unicode.Unicode;
  */
 public class TLAUnicodeReplacer {
 	public static final String EVENTID_TOGGLE_UNICODE = "TLA/Unicode/toggle";
+	public static final String STATE = "TLAUnicodeReplacerState";
 	
 	// consider using IAutoEditStrategy
 	
-	private static volatile boolean UNICODE_MODE = true;
+	private static volatile boolean UNICODE_MODE = Activator.getDefault().getPreferenceStore().getBoolean(STATE);
 
 	public static String unicode(String text) {
 		return UNICODE_MODE ? Unicode.convertToUnicode(text) : text;
