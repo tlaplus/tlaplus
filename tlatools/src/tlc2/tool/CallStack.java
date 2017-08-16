@@ -16,6 +16,7 @@ public class CallStack {
 
   private SemanticNode[] stack;    // the call stack
   private int index;               // pointer to the empty slot
+  private boolean frozen;
 
   public final void push(SemanticNode expr) {
     if (this.index == this.stack.length) {
@@ -24,8 +25,15 @@ public class CallStack {
     this.stack[this.index++] = expr;
   }
 
-  public final void pop() { this.index--; }
+  public final void pop() { if(!frozen) this.index--; }
 
+  /**
+   * Calling freeze turns all subsequent pop operations into no-ops. 
+   */
+  public void freeze() {
+	  this.frozen = true;
+  }
+  
   public final int size() { return this.index; }
 
   private final void resize() {
@@ -43,12 +51,14 @@ public class CallStack {
      */
     if (this.index > 0)
     {
-      StringBuffer sb = new StringBuffer();
+      final StringBuffer sb = new StringBuffer();
       SemanticNode expr = null;
-      Integer stackDepth = 0;
+      int stackDepth = 0;
       for (int i = 0; i < this.index; i++) {
-        if(expr == this.stack[i])
-          continue;
+        if(expr == this.stack[i]) {
+        	// Skip consecutive identical SemanticNodes.
+        	continue;
+        }
         expr = this.stack[i];
         Location loc = expr.getTreeNode().getLocation();
         sb.append(stackDepth + ". ");
