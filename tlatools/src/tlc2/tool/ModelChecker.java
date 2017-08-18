@@ -365,6 +365,7 @@ public class ModelChecker extends AbstractChecker
         boolean deadLocked = true;
         TLCState succState = null;
         SetOfStates liveNextStates = null;
+        int unseenSuccessorStates = 0;
 
         if (this.checkLiveness)
         {
@@ -440,6 +441,7 @@ public class ModelChecker extends AbstractChecker
                             // checks want to print the trace. 
 							long loc = this.trace.writeState(curState, fp, worker);
 							succState.uid = loc;
+							unseenSuccessorStates++;
 						}
 						// For liveness checking:
                         if (this.checkLiveness)
@@ -629,6 +631,7 @@ public class ModelChecker extends AbstractChecker
 					threadLocal.set(multiplier + 1);
 				}
             }
+            worker.setOutDegree(unseenSuccessorStates);
 			return false;
         } catch (Throwable e)
         {
@@ -838,6 +841,17 @@ public class ModelChecker extends AbstractChecker
         if (success)
         {
 			MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevelForFinalReporting()));
+			
+        	// Aggregate outdegree from statistics maintained by individual workers. 
+        	final BucketStatistics aggOutDegree = new BucketStatistics("State Graph OutDegree");
+        	for (IWorker worker : workers) {
+				aggOutDegree.add(((Worker) worker).getOutDegree());
+			}
+			MP.printMessage(EC.TLC_STATE_GRAPH_OUTDEGREE,
+					new String[] { Integer.toString(aggOutDegree.getMin()),
+							Long.toString(Math.round(aggOutDegree.getMean())),
+							Long.toString(Math.round(aggOutDegree.getPercentile(.95))),
+							Integer.toString(aggOutDegree.getMax()) });
         }
     }
     

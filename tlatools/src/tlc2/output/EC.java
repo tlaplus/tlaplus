@@ -189,6 +189,7 @@ public interface EC
     public static final int TLC_CHECKING_TEMPORAL_PROPS_END = 2267;
     public static final int TLC_SUCCESS = 2193;
     public static final int TLC_SEARCH_DEPTH = 2194;
+    public static final int TLC_STATE_GRAPH_OUTDEGREE = 2268;
     public static final int TLC_CHECKPOINT_START = 2195;
     public static final int TLC_CHECKPOINT_END = 2196;
     public static final int TLC_CHECKPOINT_RECOVER_START = 2197;

@@ -833,9 +833,12 @@ public class MP
                     + "  based on the actual fingerprints:  %2%");
             break;
         case EC.TLC_SEARCH_DEPTH:
-            b.append("The depth of the complete state graph search is %1%.");
+			b.append("The depth of the complete state graph search is %1%.");
             break;
-        case EC.TLC_CHECKPOINT_START:
+        case EC.TLC_STATE_GRAPH_OUTDEGREE:
+			b.append("The average outdegree of the complete state graph is %2% (minimum is %1%, the maximum %4% and the 95th percentile is %3%).");
+            break;
+       case EC.TLC_CHECKPOINT_START:
             b.append("Checkpointing of run %1%");
             break;
         case EC.TLC_CHECKPOINT_END:

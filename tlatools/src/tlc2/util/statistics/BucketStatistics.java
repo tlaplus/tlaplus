@@ -92,4 +92,20 @@ public class BucketStatistics extends AbstractBucketStatistics implements IBucke
 		}
 		return res;
 	}
+
+	/**
+	 * Adds the observations of <code>stat</code> to this {@link BucketStatistics}.
+	 */
+	public void add(final IBucketStatistics stat) {
+		this.observations += stat.getObservations();
+		
+		for (Entry<Integer, Long> entry : stat.getSamples().entrySet()) {
+			final Long l = this.buckets.get(entry.getKey());
+			if (l == null) {
+				this.buckets.put(entry.getKey(), entry.getValue());
+			} else {
+				this.buckets.replace(entry.getKey(), l + entry.getValue());
+			}
+		}
+	}
 }

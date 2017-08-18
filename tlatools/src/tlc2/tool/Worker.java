@@ -10,6 +10,8 @@ import tlc2.output.MP;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
+import tlc2.util.statistics.FixedSizedBucketStatistics;
+import tlc2.util.statistics.IBucketStatistics;
 
 public class Worker extends IdThread implements IWorker {
 	
@@ -18,10 +20,12 @@ public class Worker extends IdThread implements IWorker {
 	 * pretty much eat up all the cycles of a processor running single threaded.
 	 * We expect to get linear speedup with respect to the number of processors.
 	 */
-	private ModelChecker tlc;
-	private IStateQueue squeue;
-	private ObjLongTable astCounts;
+	private final ModelChecker tlc;
+	private final IStateQueue squeue;
+	private final ObjLongTable astCounts;
+	private final IBucketStatistics outDegree;
 	private long statesGenerated;
+	
 
 	// SZ Feb 20, 2009: changed due to super type introduction
 	public Worker(int id, AbstractChecker tlc) {
@@ -31,6 +35,7 @@ public class Worker extends IdThread implements IWorker {
 		this.tlc = (ModelChecker) tlc;
 		this.squeue = this.tlc.theStateQueue;
 		this.astCounts = new ObjLongTable(10);
+		this.outDegree = new FixedSizedBucketStatistics(this.getName(), 32); // maximum outdegree of 32 appears sufficient for now.
 		this.setName("TLCWorkerThread-" + String.format("%03d", id));
 	}
 
@@ -78,5 +83,13 @@ public class Worker extends IdThread implements IWorker {
 	
 	long getStatesGenerated() {
 		return this.statesGenerated;
+	}
+
+	void setOutDegree(final int numOfSuccessors) {
+		this.outDegree.addSample(numOfSuccessors);
+	}
+
+	public IBucketStatistics getOutDegree() {
+		return this.outDegree;
 	}
 }
