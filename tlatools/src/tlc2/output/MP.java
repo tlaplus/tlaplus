@@ -795,13 +795,13 @@ public class MP
             b.append("Finished in %1% at (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_MODE_MC:
-            b.append("Running breadth-first search Model-Checking with %1% worker%2%.");
+            b.append("Running breadth-first search Model-Checking with %1% worker%2% of %3% cores with %10%MB heap and %11%MB offheap memory (%4% %5% %6%, %7% %8% %9%).");
             break;
         case EC.TLC_MODE_MC_DFS:
-            b.append("Running depth-first search Model-Checking with %1% worker%2%.");
+            b.append("Running depth-first search Model-Checking with %1% worker%2% of %3% cores with %10%MB heap and %11%MB offheap memory (%4% %5% %6%, %7% %8% %9%).");
             break;
         case EC.TLC_MODE_SIMU:
-            b.append("Running Random Simulation with seed %1%.");
+            b.append("Running Random Simulation with seed with %1% worker%2% of %3% cores with %10%MB heap and %11%MB offheap memory (%4% %5% %6%, %7% %8% %9%).");
             break;
         case EC.TLC_COMPUTING_INIT:
             b.append("Computing initial states...");

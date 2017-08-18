@@ -40,6 +40,7 @@ import util.FileUtil;
 import util.FilenameToStream;
 import util.MailSender;
 import util.SimpleFilenameToStream;
+import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -772,6 +773,22 @@ public class TLC
             }
             FP64.Init(fpIndex);
 
+            
+    		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
+    		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
+    		final String arch = tlcRuntime.getArchitecture().name();
+    		
+    		final Runtime runtime = Runtime.getRuntime();
+    		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
+    		final String cores = Integer.toString(runtime.availableProcessors());
+
+    		final String vendor = System.getProperty("java.vendor");
+    		final String version = System.getProperty("java.version");
+
+    		final String osName = System.getProperty("os.name");
+    		final String osVersion = System.getProperty("os.version");
+    		final String osArch = System.getProperty("os.arch");
+    		
             // Start checking:
             if (isSimulate)
             {
@@ -785,7 +802,8 @@ public class TLC
                 {
                     rng.setSeed(seed, aril);
                 }
-                MP.printMessage(EC.TLC_MODE_SIMU, String.valueOf(seed));
+				MP.printMessage(EC.TLC_MODE_SIMU, new String[] { String.valueOf(seed), cores, osName, osVersion, osArch, vendor,
+						version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory) });
                 Simulator simulator = new Simulator(mainFile, configFile, null, deadlock, traceDepth, 
                         traceNum, rng, seed, true, resolver, specObj);
                 TLCGlobals.simulator = simulator;
@@ -795,19 +813,20 @@ public class TLC
                 simulator.simulate();
             } else
             {
-                // model checking
-                
-                AbstractChecker mc = null;
+            	final String[] parameters = new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
+            			TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
+            					version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory) };
+
+            	// model checking
+        		AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
                 {
-                	MP.printMessage(EC.TLC_MODE_MC, new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
-                			TLCGlobals.getNumWorkers() == 1 ? "" : "s" });
+					MP.printMessage(EC.TLC_MODE_MC, parameters);
                     mc = new ModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
                     modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
                 } else
                 {
-                	MP.printMessage(EC.TLC_MODE_MC_DFS, new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
-                			TLCGlobals.getNumWorkers() == 1 ? "" : "s" });
+					MP.printMessage(EC.TLC_MODE_MC_DFS, parameters);
                     mc = new DFIDModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, true, resolver, specObj);
                 }
                 TLCGlobals.mainChecker = mc;
