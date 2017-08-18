@@ -27,7 +27,6 @@
 package tlc2.util.statistics;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.InvocationTargetException;
@@ -39,72 +38,28 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
-public class BucketStatisticsTest {
+public class FixedSizedBucketStatisticsTest {
 
 	@SuppressWarnings("rawtypes")
 	@Parameterized.Parameters
 	public static Collection<Class> bucketStatistics() {
 		return Arrays.asList(
-				new Class[] { ConcurrentBucketStatistics.class, BucketStatistics.class });
+				new Class[] { FixedSizedConcurrentBucketStatistics.class, FixedSizedBucketStatistics.class });
 	}
 
 	private final IBucketStatistics bucketStatistic;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public BucketStatisticsTest(Class bucketStatistic) throws InstantiationException, IllegalAccessException,
+	public FixedSizedBucketStatisticsTest(Class bucketStatistic) throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-		this.bucketStatistic = (IBucketStatistics) bucketStatistic.getConstructor(String.class)
-				.newInstance("BucketStatisticsTest");
+		this.bucketStatistic = (IBucketStatistics) bucketStatistic.getConstructor(String.class, int.class)
+				.newInstance("FixedSizedBucketStatisticsTest", 8);
 	}
-
-	@Test
-	public void testInvalidArgument() {
-		try {
-			bucketStatistic.addSample(-1);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail();
-	}
-
-	@Test
-	public void testMean() {
-		assertTrue(Double.compare(-1.0d, bucketStatistic.getMean()) == 0);
-
-		bucketStatistic.addSample(0);
-		assertTrue(Double.compare(0.0d, bucketStatistic.getMean()) == 0);
-
-		bucketStatistic.addSample(1);
-		bucketStatistic.addSample(2);
-		assertTrue(Double.compare(1.0d, bucketStatistic.getMean()) == 0);
-
-		bucketStatistic.addSample(2);
-		bucketStatistic.addSample(2);
-		assertTrue(Double.compare(1.4d, bucketStatistic.getMean()) == 0);
-	}
-
-	@Test
-	public void testMedian() {
-		assertEquals(-1, bucketStatistic.getMedian());
-
-		bucketStatistic.addSample(0);
-		assertEquals(0, bucketStatistic.getMedian());
-
-		bucketStatistic.addSample(1);
-		bucketStatistic.addSample(2);
-		assertEquals(1, bucketStatistic.getMedian());
-
-		bucketStatistic.addSample(2);
-		bucketStatistic.addSample(2);
-		assertEquals(2, bucketStatistic.getMedian());
-	}
-
+	
 	@Test
 	public void testMin() {
 		assertEquals(-1, bucketStatistic.getMin());
 
-		bucketStatistic.addSample(0);
-		bucketStatistic.addSample(0);
 		bucketStatistic.addSample(0);
 		bucketStatistic.addSample(1);
 		bucketStatistic.addSample(1);
@@ -144,44 +99,13 @@ public class BucketStatisticsTest {
 	}
 
 	@Test
-	public void testStandardDeviation() {
-		assertEquals(-1.0, bucketStatistic.getStdDev(), 0);
-
-		bucketStatistic.addSample(0);
-		bucketStatistic.addSample(0);
-		bucketStatistic.addSample(0);
-		bucketStatistic.addSample(1);
-		bucketStatistic.addSample(1);
-		bucketStatistic.addSample(2);
-		bucketStatistic.addSample(2);
-		bucketStatistic.addSample(2);
-		bucketStatistic.addSample(2);
-		bucketStatistic.addSample(3);
-		assertTrue(Double.compare(1.005d, (Math.round(bucketStatistic.getStdDev() * 10000d) / 10000d)) == 0);
-	}
-
-	@Test
-	public void testGetPercentile() {
-		assertEquals(-1.0, bucketStatistic.getPercentile(1), 0);
-
+	public void testInvalidArgument() {
 		try {
-			bucketStatistic.addSample(1); // <- first element
-			bucketStatistic.getPercentile(1.1);
-			bucketStatistic.getPercentile(-0.1);
-		} catch (Exception e) {
-			fail(e.getMessage());
+			bucketStatistic.addSample(-1);
+		} catch (IllegalArgumentException e) {
+			return;
 		}
-
-		bucketStatistic.addSample(1);
-		bucketStatistic.addSample(1);
-		bucketStatistic.addSample(2); // <- 0.5 percentile
-		bucketStatistic.addSample(2);
-		bucketStatistic.addSample(2);
-		bucketStatistic.addSample(3);
-		assertTrue(Double.compare(2.0d, bucketStatistic.getPercentile(0.5d)) == 0);
-		assertTrue(Double.compare(2.0d, bucketStatistic.getPercentile(0.5d)) == 0);
-		assertTrue(Double.compare(2.0d, bucketStatistic.getPercentile(0.75d)) == 0);
-		assertTrue(Double.compare(3.0d, bucketStatistic.getPercentile(0.999d)) == 0);
+		fail();
 	}
 
 	// NaN test
@@ -196,24 +120,12 @@ public class BucketStatisticsTest {
 	}
 
 	@Test
-	public void testToString() {
-		try {
-			// just invoke to check for exceptions
-			bucketStatistic.toString();
-
-			bucketStatistic.addSample(0);
-			bucketStatistic.addSample(0);
-			bucketStatistic.addSample(0);
-			bucketStatistic.addSample(1);
-			bucketStatistic.addSample(1);
-			bucketStatistic.addSample(2);
-			bucketStatistic.addSample(2);
-			bucketStatistic.addSample(2);
-			bucketStatistic.addSample(2);
-			bucketStatistic.addSample(3);
-			bucketStatistic.toString();
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
+	public void testMaximum() {
+		bucketStatistic.addSample(16);
+		bucketStatistic.addSample(16);
+		bucketStatistic.addSample(16);
+		assertEquals(7, bucketStatistic.getMax());
+		assertEquals(7, bucketStatistic.getMedian());
+		assertEquals(3, bucketStatistic.getObservations());
 	}
 }

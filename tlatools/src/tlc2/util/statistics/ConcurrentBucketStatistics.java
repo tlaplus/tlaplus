@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -25,20 +25,22 @@
  ******************************************************************************/
 package tlc2.util.statistics;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
-public class BucketStatistics extends AbstractBucketStatistics implements IBucketStatistics {
+public class ConcurrentBucketStatistics extends AbstractBucketStatistics implements IBucketStatistics {
 
 	/**
 	 * The amount of samples seen by this statistics. It's identical
 	 * to the sum of the value of all buckets.
 	 */
-	private long observations;
-	
+	private final LongAdder observations = new LongAdder();
+
 	/**
 	 * Instead of using an ever-growing list of samples, identical
 	 * samples are counted in a bucket. E.g. the sample 5 is stored
@@ -46,40 +48,48 @@ public class BucketStatistics extends AbstractBucketStatistics implements IBucke
 	 * seen two times.
 	 * The map is thread safe, so are the values.
 	 */
-	private final Map<Integer, Long> buckets;
-
-	public BucketStatistics(String aTitle) {
+	private final ConcurrentNavigableMap<Integer, AtomicLong> buckets = new ConcurrentSkipListMap<Integer, AtomicLong>();
+	
+	ConcurrentBucketStatistics() {
+		super("Concurrent Historgram");
+	}
+	
+	/**
+	 * @see {@link BucketStatistics#BucketStatistics(String, int)}
+	 */
+	public ConcurrentBucketStatistics(final String aTitle) {
 		super(aTitle);
-		this.buckets = new HashMap<Integer, Long>();
 	}
-
-	public BucketStatistics(String aTitle, final String pkg, final String name) {
+	
+	/**
+	 * @see {@link BucketStatistics#BucketStatistics(String, int, String, String)}
+	 */
+	public ConcurrentBucketStatistics(final String aTitle, final String pkg, final String name) {
 		super(aTitle, pkg, name);
-		this.buckets = new HashMap<Integer, Long>();
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#addSample(int)
 	 */
-	public void addSample(int amount) {
+	public void addSample(final int amount) {
 		if (amount < 0) {
 			throw new IllegalArgumentException("Negative amount invalid");
 		}
 		
-		Long l = buckets.get(amount);
-		if(l == null) {
-			buckets.put(amount, 1L);
+		final AtomicLong atomicLong = buckets.get(amount);
+		if(atomicLong == null) {
+			buckets.putIfAbsent(amount, new AtomicLong(1));
 		} else {
-			buckets.replace(amount, ++l);
+			atomicLong.incrementAndGet();
 		}
-		observations++;
+		observations.increment();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.AbstractBucketStatistics#getObservations()
 	 */
 	public long getObservations() {
-		return observations;
+		return observations.sum();
 	}
 
 	/* (non-Javadoc)
@@ -87,8 +97,8 @@ public class BucketStatistics extends AbstractBucketStatistics implements IBucke
 	 */
 	public NavigableMap<Integer, Long> getSamples() {
 		final NavigableMap<Integer, Long> res = new TreeMap<Integer, Long>();
-		for (Entry<Integer, Long> entry : this.buckets.entrySet()) {
-			res.put(entry.getKey(), entry.getValue());
+		for (Entry<Integer, AtomicLong> entry : buckets.entrySet()) {
+			res.put(entry.getKey(), entry.getValue().get());
 		}
 		return res;
 	}

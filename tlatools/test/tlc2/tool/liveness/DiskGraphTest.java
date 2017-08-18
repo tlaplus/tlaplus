@@ -34,15 +34,17 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.junit.Test;
+
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
-import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.FixedSizedBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 
 public class DiskGraphTest {
 
-	private static final IBucketStatistics GRAPH_STATS = new BucketStatistics("Test Dummy", 16);
+	private static final IBucketStatistics GRAPH_STATS = new FixedSizedBucketStatistics("Test Dummy", 16);
 	private static final int NUMBER_OF_SOLUTIONS = 1;
 	private static final int NO_TABLEAU = -1;
 	private static final int NUMBER_OF_ACTIONS = 0;

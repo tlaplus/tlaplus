@@ -1,5 +1,7 @@
 package tlc2.util.statistics;
 
+import java.util.NavigableMap;
+
 /**
  * Keeps statistics about any samples added.
  */
@@ -48,4 +50,5 @@ public interface IBucketStatistics {
 	 */
 	double getPercentile(double quantile);
 
+	NavigableMap<Integer, Long> getSamples();
 }

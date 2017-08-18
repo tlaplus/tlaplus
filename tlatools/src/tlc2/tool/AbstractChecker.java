@@ -17,7 +17,7 @@ import tlc2.util.IStateWriter;
 import tlc2.util.NoopStateWriter;
 import tlc2.util.ObjLongTable;
 import tlc2.util.StateWriter;
-import tlc2.util.statistics.BucketStatistics;
+import tlc2.util.statistics.ConcurrentBucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import tlc2.value.Value;
@@ -139,7 +139,7 @@ public abstract class AbstractChecker implements Cancelable
             report("initializing liveness checking");
 			IBucketStatistics stats = new DummyBucketStatistics();
 			if (LIVENESS_STATS) {
-				stats = new BucketStatistics("Histogram vertex out-degree", LiveCheck.class.getPackage().getName(),
+				stats = new ConcurrentBucketStatistics("Histogram vertex out-degree", LiveCheck.class.getPackage().getName(),
 						"DiskGraphsOutDegree");
 			}
 			if (LIVENESS_TESTING_IMPLEMENTATION) {

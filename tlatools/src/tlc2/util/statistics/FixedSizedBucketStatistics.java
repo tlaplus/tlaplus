@@ -25,13 +25,10 @@
  ******************************************************************************/
 package tlc2.util.statistics;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-public class BucketStatistics extends AbstractBucketStatistics implements IBucketStatistics {
+public class FixedSizedBucketStatistics extends AbstractBucketStatistics implements IBucketStatistics {
 
 	/**
 	 * The amount of samples seen by this statistics. It's identical
@@ -46,16 +43,17 @@ public class BucketStatistics extends AbstractBucketStatistics implements IBucke
 	 * seen two times.
 	 * The map is thread safe, so are the values.
 	 */
-	private final Map<Integer, Long> buckets;
-
-	public BucketStatistics(String aTitle) {
+	private final long[] buckets;
+	
+	/**
+	 * @param aTitle
+	 *            A title for console pretty printing
+	 * @param aMaxmimum
+	 *            see {@link BucketStatistics#maximum}
+	 */
+	public FixedSizedBucketStatistics(final String aTitle, final int aMaxmimum) {
 		super(aTitle);
-		this.buckets = new HashMap<Integer, Long>();
-	}
-
-	public BucketStatistics(String aTitle, final String pkg, final String name) {
-		super(aTitle, pkg, name);
-		this.buckets = new HashMap<Integer, Long>();
+		this.buckets = new long[aMaxmimum];
 	}
 
 	/* (non-Javadoc)
@@ -66,13 +64,12 @@ public class BucketStatistics extends AbstractBucketStatistics implements IBucke
 			throw new IllegalArgumentException("Negative amount invalid");
 		}
 		
-		Long l = buckets.get(amount);
-		if(l == null) {
-			buckets.put(amount, 1L);
-		} else {
-			buckets.replace(amount, ++l);
-		}
-		observations++;
+		// If the amount exceeds the fixed maximum, increment the overflow
+		// bucket. The overflow bucket is the very last bucket. 
+		final int idx = Math.min(this.buckets.length - 1, amount);
+		
+		this.buckets[idx]++;
+		this.observations++;
 	}
 
 	/* (non-Javadoc)
@@ -87,8 +84,11 @@ public class BucketStatistics extends AbstractBucketStatistics implements IBucke
 	 */
 	public NavigableMap<Integer, Long> getSamples() {
 		final NavigableMap<Integer, Long> res = new TreeMap<Integer, Long>();
-		for (Entry<Integer, Long> entry : this.buckets.entrySet()) {
-			res.put(entry.getKey(), entry.getValue());
+		for (int i = 0; i < this.buckets.length; i++) {
+			long value = this.buckets[i];
+			if (value > 0) {
+				res.put(i, value);
+			}
 		}
 		return res;
 	}

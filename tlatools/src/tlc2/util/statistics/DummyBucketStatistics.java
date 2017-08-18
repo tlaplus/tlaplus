@@ -26,6 +26,9 @@
 
 package tlc2.util.statistics;
 
+import java.util.NavigableMap;
+import java.util.TreeMap;
+
 /**
  * Doesn't really do a thing. Can be instantiated multiple times contrary to
  * BucketStatistics which registers itself via JMX.
@@ -86,5 +89,18 @@ public class DummyBucketStatistics implements IBucketStatistics {
 	 */
 	public double getPercentile(double quantile) {
 		return 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#getSamples()
+	 */
+	public NavigableMap<Integer, Long> getSamples() {
+		return new TreeMap<Integer, Long>();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.statistics.IBucketStatistics#addSamples(tlc2.util.statistics.IBucketStatistics)
+	 */
+	public void addSamples(IBucketStatistics stat) {
 	}
 }
