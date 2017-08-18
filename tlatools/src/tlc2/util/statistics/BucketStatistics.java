@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
 import javax.management.NotCompliantMBeanException;
 
@@ -45,7 +46,7 @@ public class BucketStatistics implements IBucketStatistics {
 	 * The amount of samples seen by this statistics. It's identical
 	 * to the sum of the value of all buckets.
 	 */
-	protected final AtomicLong observations = new AtomicLong(0);
+	protected final LongAdder observations = new LongAdder();
 	
 	/**
 	 * Instead of using an ever-growing list of samples, identical
@@ -147,14 +148,14 @@ public class BucketStatistics implements IBucketStatistics {
 		} else {
 			atomicLong.incrementAndGet();
 		}
-		observations.getAndIncrement();
+		observations.increment();
 	}
 	
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getObservations()
 	 */
 	public long getObservations() {
-		return observations.get();
+		return observations.sum();
 	}
 	
 	/* (non-Javadoc)
@@ -165,7 +166,7 @@ public class BucketStatistics implements IBucketStatistics {
 		buf.append("============================%n");
 		buf.append("=" + title + "=%n");
 		buf.append("============================%n");
-		buf.append(String.format("Observations: %d%n", observations.get()));
+		buf.append(String.format("Observations: %d%n", observations.sum()));
 		buf.append(String.format("Min: %d%n", getMin()));
 		buf.append(String.format("Max: %d%n", getMax()));
 		buf.append(String.format("Mean: %.2f%n", getMean()));
@@ -200,7 +201,7 @@ public class BucketStatistics implements IBucketStatistics {
 	 * @see tlc2.util.statistics.IBucketStatistics#getMedian()
 	 */
 	public int getMedian() {
-		long l = observations.get();
+		long l = observations.sum();
 		if (l <= 0) {
 			return -1;
 		}
@@ -232,8 +233,8 @@ public class BucketStatistics implements IBucketStatistics {
 			final int i = next.getKey();
 			sum += value * i;
 		}
-		if (observations.get() > 0) {
-			return (sum / (observations.get() * 1.0d));
+		if (observations.sum() > 0) {
+			return (sum / (observations.sum() * 1.0d));
 		} else {
 			// No mean yet
 			return -1;
@@ -244,7 +245,7 @@ public class BucketStatistics implements IBucketStatistics {
 	 * @see tlc2.util.statistics.IBucketStatistics#getMin()
 	 */
 	public int getMin() {
-		if (observations.get() <= 0) {
+		if (observations.sum() <= 0) {
 			return -1;
 		}
 		return buckets.firstKey();
@@ -254,7 +255,7 @@ public class BucketStatistics implements IBucketStatistics {
 	 * @see tlc2.util.statistics.IBucketStatistics#getMax()
 	 */
 	public int getMax() {
-		if (observations.get() <= 0) {
+		if (observations.sum() <= 0) {
 			return -1;
 		}
 		return buckets.lastKey();
@@ -264,7 +265,7 @@ public class BucketStatistics implements IBucketStatistics {
 	 * @see tlc2.util.statistics.IBucketStatistics#getStdDev()
 	 */
 	public double getStdDev() {
-		final long N = observations.get();
+		final long N = observations.sum();
 		if (N <= 0) {
 			return -1.0d;
 		}
@@ -289,7 +290,7 @@ public class BucketStatistics implements IBucketStatistics {
 		if (Double.isNaN(quantile)) {
 			throw new IllegalArgumentException("NaN");
 		}
-		final long obsv = observations.get();
+		final long obsv = observations.sum();
 		if (obsv <= 0) {
 			return -1.0;
 		}
