@@ -49,10 +49,12 @@ import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.RunNodesException;
 import org.jclouds.compute.RunScriptOnNodesException;
+import org.jclouds.compute.domain.ExecChannel;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.TemplateBuilder;
 import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.io.Payload;
+import org.jclouds.logging.config.ConsoleLoggingModule;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.rest.AuthorizationException;
 import org.jclouds.scriptbuilder.statements.login.AdminAccess;
@@ -65,6 +67,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.io.ByteStreams;
 import com.google.inject.AbstractModule;
 
 /*
@@ -87,6 +90,7 @@ public class CloudDistributedTLCJob extends Job {
 	private final int nodes;
 	private final Properties props;
 	private final CloudTLCInstanceParameters params;
+	private boolean isCLI = false;
 
 	public CloudDistributedTLCJob(String aName, File aModelFolder,
 			int numberOfWorkers, final Properties properties, CloudTLCInstanceParameters params) {
@@ -128,8 +132,8 @@ public class CloudDistributedTLCJob extends Job {
 
 			// Create compute environment in the cloud and inject an ssh
 			// implementation. ssh is our means of communicating with the node.
-			final Iterable<AbstractModule> modules = ImmutableSet
-					.<AbstractModule> of(new SshjSshClientModule(), new SLF4JLoggingModule());
+			final Iterable<AbstractModule> modules = ImmutableSet.<AbstractModule>of(new SshjSshClientModule(),
+					isCLI ? new ConsoleLoggingModule() : new SLF4JLoggingModule());
 
 			final ContextBuilder builder = ContextBuilder
 					.newBuilder(params.getCloudProvider())
@@ -286,139 +290,151 @@ public class CloudDistributedTLCJob extends Job {
 			monitor.subTask("Copying tla2tools.jar to master node");
 			SshClient sshClient = context.utils().sshForNode().apply(master);
 			sshClient.put("/tmp/tla2tools.jar", jarPayLoad);
-			sshClient.disconnect();
 			monitor.worked(10);
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
 			}
 
-			// Run model checker master on master
-			monitor.subTask("Starting TLC model checker process on the master node (in background)");
-			// The predicate will be applied to ALL instances owned by the
-			// cloud account (ie AWS), even the ones in different regions
-			// completely unrelated to TLC.
-			final Predicate<NodeMetadata> isMaster = new Predicate<NodeMetadata>() {
-				private final String masterHostname = master.getHostname();
-				public boolean apply(NodeMetadata nodeMetadata) {
-					// hostname can be null if instance is terminated.
-					final String hostname = nodeMetadata.getHostname();
-					return masterHostname.equals(hostname);
-				};
-			};
-			compute.runScriptOnNodesMatching(
-				isMaster,
-				exec(" cd /mnt/tlc/ && "
-						// Execute TLC (java) process inside screen
-						// and shutdown on TLC's completion. But
-						// detach from screen directly. Name screen 
-						// session "tlc".
-						// (see http://stackoverflow.com/a/10126799)
-						+ "screen -dm -S tlc bash -c \" "
-						// This requires a modified version where all parameters and
-						// all spec modules are stored in files in a model/ folder
-						// inside of the jar.
-						// This is done in anticipation of other cloud providers
-						// where one cannot easily pass in parameters on the command
-						// line because there is no command line.
-						+ "java "
-							+ params.getJavaVMArgs() + " "
-							// Write all tmp files to the ephemeral instance
-							// storage which is expected to have a higher IOPS
-							// compared to non-local storage.
-							+ "-Djava.io.tmpdir=/mnt/tlc/ "
-							// These properties cannot be "backed" into
-							// the payload jar as java itself does not 
-						    // support this.
-							// It might be able to read the properties from 
-							// the config file with 'com.sun.management.config.file=path',
-							// but I haven't tried if the path can point into the jar.
-							+ "-Dcom.sun.management.jmxremote "
-							+ "-Dcom.sun.management.jmxremote.port=5400 "
-							+ "-Dcom.sun.management.jmxremote.ssl=false "
-							+ "-Dcom.sun.management.jmxremote.authenticate=false "
-							// TLC tuning options
-							+ params.getJavaSystemProperties() + " "
-							+ "-jar /tmp/tla2tools.jar " 
-							+ params.getTLCParameters() + " "
-							+ "&& "
-						// Let the machine power down immediately after
-						// finishing model checking to cut costs. However,
-						// do not shut down (hence "&&") when TLC finished
-						// with an error.
-						// It uses "sudo" because the script is explicitly
-						// run as a user. No need to run the TLC process as
-						// root.
-						+ "sudo shutdown -h now"
-						+ "\""), // closing opening '"' of screen/bash -c
-				new TemplateOptions().runAsRoot(false).wrapInInitScript(
-						true).blockOnComplete(false).blockUntilRunning(false));
-			monitor.worked(5);
-			final long tlcStartUp = System.currentTimeMillis();
+			final String tlcMasterCommand = " cd /mnt/tlc/ && "
+					// Execute TLC (java) process inside screen
+					// and shutdown on TLC's completion. But
+					// detach from screen directly. Name screen 
+					// session "tlc".
+					// (see http://stackoverflow.com/a/10126799)
+					+ (isCLI ? "" : "screen -dm -S tlc bash -c \" ")
+					// This requires a modified version where all parameters and
+					// all spec modules are stored in files in a model/ folder
+					// inside of the jar.
+					// This is done in anticipation of other cloud providers
+					// where one cannot easily pass in parameters on the command
+					// line because there is no command line.
+					+ "java "
+						+ params.getJavaVMArgs() + " "
+						// Write all tmp files to the ephemeral instance
+						// storage which is expected to have a higher IOPS
+						// compared to non-local storage.
+						+ "-Djava.io.tmpdir=/mnt/tlc/ "
+						// These properties cannot be "backed" into
+						// the payload jar as java itself does not 
+					    // support this.
+						// It might be able to read the properties from 
+						// the config file with 'com.sun.management.config.file=path',
+						// but I haven't tried if the path can point into the jar.
+						+ "-Dcom.sun.management.jmxremote "
+						+ "-Dcom.sun.management.jmxremote.port=5400 "
+						+ "-Dcom.sun.management.jmxremote.ssl=false "
+						+ "-Dcom.sun.management.jmxremote.authenticate=false "
+						// TLC tuning options
+						+ params.getJavaSystemProperties() + " "
+						+ "-jar /tmp/tla2tools.jar " 
+						+ params.getTLCParameters() + " "
+						+ "&& "
+					// Let the machine power down immediately after
+					// finishing model checking to cut costs. However,
+					// do not shut down (hence "&&") when TLC finished
+					// with an error.
+					// It uses "sudo" because the script is explicitly
+					// run as a user. No need to run the TLC process as
+					// root.
+					+ "sudo shutdown -h " + (isCLI ? "+1" : "now")
+					+ (isCLI ? "" : "\""); // closing opening '"' of screen/bash -c
+			if (isCLI) {
+				monitor.subTask("Starting TLC model checker process");
+				// Execute command via ssh instead of as a script to get access to the TLC
+				// processes' stdout and stderr.
+				final ExecChannel channel = sshClient.execChannel(tlcMasterCommand);
+				// Send remote TLC's stdout to local stdout (this throws a TransportException
+				// unless shutdown is postponed by one minute above).
+				ByteStreams.copy(channel.getOutput(), System.out);
+				sshClient.disconnect();
+				monitor.subTask("TLC model checker process finished");
+			} else {
+				sshClient.disconnect();
 
-			if (nodes > 1) {
-				// copy the tla2tools.jar to the root of the master's webserver
-				// to make it available to workers. However, strip the spec
-				// (*.tla/*.cfg/...) from the jar file to not share the spec
-				// with the world.
-				monitor.subTask("Make TLC code available to all worker node(s)");
-				compute.runScriptOnNodesMatching(
-						isMaster,
-						exec("cp /tmp/tla2tools.jar /var/www/html/tla2tools.jar && "
-								+ "zip -d /var/www/html/tla2tools.jar model/*.tla model/*.cfg model/generated.properties"),
-						new TemplateOptions().runAsRoot(true).wrapInInitScript(
-								false));
-				monitor.worked(10);
-				if (monitor.isCanceled()) {
-					return Status.CANCEL_STATUS;
-				}
-				
+				// Run model checker master on master
+				monitor.subTask("Starting TLC model checker process on the master node (in background)");
 				// The predicate will be applied to ALL instances owned by the
-				// AWS account, even the ones in different regions completely
-				// unrelated to TLC.
-				final Predicate<NodeMetadata> onWorkers = new Predicate<NodeMetadata>() {
-					// Remove the master from the set of our nodes.
-					private final Iterable<? extends NodeMetadata> workers = Iterables.filter(createNodesInGroup, new Predicate<NodeMetadata>() {
-						private final String masterHostname = master.getHostname();
-						public boolean apply(NodeMetadata nodeMetadata) {
-							// nodeMetadata.getHostname is null for terminated hosts.
-							return !masterHostname.equals(nodeMetadata.getHostname());
-						};
-					});
+				// cloud account (ie AWS), even the ones in different regions
+				// completely unrelated to TLC.
+				final Predicate<NodeMetadata> isMaster = new Predicate<NodeMetadata>() {
+					private final String masterHostname = master.getHostname();
 					public boolean apply(NodeMetadata nodeMetadata) {
-						return Iterables.contains(workers, nodeMetadata);
+						// hostname can be null if instance is terminated.
+						final String hostname = nodeMetadata.getHostname();
+						return masterHostname.equals(hostname);
 					};
 				};
+				compute.runScriptOnNodesMatching(isMaster, exec(tlcMasterCommand), new TemplateOptions().runAsRoot(false)
+						.wrapInInitScript(true).blockOnComplete(false).blockUntilRunning(false));
+				monitor.worked(5);
+				final long tlcStartUp = System.currentTimeMillis();
 
-				// see master startup for comments
-				monitor.subTask("Starting TLC workers on the remaining node(s) (in background)");
-				final String hostname = Iterables.getOnlyElement(master.getPrivateAddresses());
-				compute.runScriptOnNodesMatching(
-					onWorkers,
-					exec("cd /mnt/tlc/ && "
-							+ "wget http://" + hostname + "/tla2tools.jar && "
-							+ "screen -dm -S tlc bash -c \" "
-							+ "java "
-								+ params.getJavaWorkerVMArgs() + " "
-								+ "-Djava.io.tmpdir=/mnt/tlc/ "
-								+ "-Dcom.sun.management.jmxremote "
-								+ "-Dcom.sun.management.jmxremote.port=5400 "
-								+ "-Dcom.sun.management.jmxremote.ssl=false "
-								+ "-Dcom.sun.management.jmxremote.authenticate=false "
-								+ params.getJavaWorkerSystemProperties() + " "
-								+ "-cp /mnt/tlc/tla2tools.jar " 
-								+ params.getTLCWorkerParameters() + " "
-								+ hostname + " " // Use host's internal ip due to firewall reasons.
-								+ "&& "
-							// Terminate regardless of TLCWorker process
-							// exit value. E.g. TLCWorker can terminate due
-							// to a NoRouteToHostException when the master
-							// shut down caused by a violation among the
-							// init states.
-							+ "sudo shutdown -h now"
-							+ "\""), 
-					new TemplateOptions().runAsRoot(false).wrapInInitScript(
-							true).blockOnComplete(false).blockUntilRunning(false));
-				monitor.worked(10);
+				if (nodes > 1) {
+					// copy the tla2tools.jar to the root of the master's webserver
+					// to make it available to workers. However, strip the spec
+					// (*.tla/*.cfg/...) from the jar file to not share the spec
+					// with the world.
+					monitor.subTask("Make TLC code available to all worker node(s)");
+					compute.runScriptOnNodesMatching(
+							isMaster,
+							exec("cp /tmp/tla2tools.jar /var/www/html/tla2tools.jar && "
+									+ "zip -d /var/www/html/tla2tools.jar model/*.tla model/*.cfg model/generated.properties"),
+							new TemplateOptions().runAsRoot(true).wrapInInitScript(
+									false));
+					monitor.worked(10);
+					if (monitor.isCanceled()) {
+						return Status.CANCEL_STATUS;
+					}
+					
+					// The predicate will be applied to ALL instances owned by the
+					// AWS account, even the ones in different regions completely
+					// unrelated to TLC.
+					final Predicate<NodeMetadata> onWorkers = new Predicate<NodeMetadata>() {
+						// Remove the master from the set of our nodes.
+						private final Iterable<? extends NodeMetadata> workers = Iterables.filter(createNodesInGroup, new Predicate<NodeMetadata>() {
+							private final String masterHostname = master.getHostname();
+							public boolean apply(NodeMetadata nodeMetadata) {
+								// nodeMetadata.getHostname is null for terminated hosts.
+								return !masterHostname.equals(nodeMetadata.getHostname());
+							};
+						});
+						public boolean apply(NodeMetadata nodeMetadata) {
+							return Iterables.contains(workers, nodeMetadata);
+						};
+					};
+
+					// see master startup for comments
+					monitor.subTask("Starting TLC workers on the remaining node(s) (in background)");
+					final String hostname = Iterables.getOnlyElement(master.getPrivateAddresses());
+					compute.runScriptOnNodesMatching(
+						onWorkers,
+						exec("cd /mnt/tlc/ && "
+								+ "wget http://" + hostname + "/tla2tools.jar && "
+								+ "screen -dm -S tlc bash -c \" "
+								+ "java "
+									+ params.getJavaWorkerVMArgs() + " "
+									+ "-Djava.io.tmpdir=/mnt/tlc/ "
+									+ "-Dcom.sun.management.jmxremote "
+									+ "-Dcom.sun.management.jmxremote.port=5400 "
+									+ "-Dcom.sun.management.jmxremote.ssl=false "
+									+ "-Dcom.sun.management.jmxremote.authenticate=false "
+									+ params.getJavaWorkerSystemProperties() + " "
+									+ "-cp /mnt/tlc/tla2tools.jar " 
+									+ params.getTLCWorkerParameters() + " "
+									+ hostname + " " // Use host's internal ip due to firewall reasons.
+									+ "&& "
+								// Terminate regardless of TLCWorker process
+								// exit value. E.g. TLCWorker can terminate due
+								// to a NoRouteToHostException when the master
+								// shut down caused by a violation among the
+								// init states.
+								+ "sudo shutdown -h now"
+								+ "\""), 
+						new TemplateOptions().runAsRoot(false).wrapInInitScript(
+								true).blockOnComplete(false).blockUntilRunning(false));
+					monitor.worked(10);
+				}
+				
 			}
 
 			// Print runtimes of various work items.
@@ -457,6 +473,10 @@ public class CloudDistributedTLCJob extends Job {
 				context.close();
 			}
 		}
+	}
+	
+	public void setIsCLI(boolean cli) {
+		this.isCLI = cli;
 	}
 
 	private static void destroyNodes(final ComputeServiceContext ctx, final String groupname) {

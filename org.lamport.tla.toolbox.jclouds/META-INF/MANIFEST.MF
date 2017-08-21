@@ -13,11 +13,10 @@ Require-Bundle: org.eclipse.core.runtime,
  jclouds-sshj;bundle-version="1.7.3",
  com.google.guava;bundle-version="15.0.0",
  com.google.inject;bundle-version="3.0.0",
- org.apache.commons.io;bundle-version="2.0.1"
+ org.apache.commons.io;bundle-version="2.0.1",
+ org.lamport.tlatools;bundle-version="1.0.0"
 DynamicImport-Package: *
 Bundle-Activator: org.lamport.tla.toolbox.jcloud.JCloudActivator
 Import-Package: org.jclouds.aws.ec2.reference;version="1.7.3",
  org.jclouds.ec2.reference;version="1.7.3",
- org.lamport.tla.toolbox.tool.tlc.job;resolution:=optional,
- tlc2.tool.distributed,
- tlc2.tool.distributed.fp
+ org.lamport.tla.toolbox.tool.tlc.job;resolution:=optional

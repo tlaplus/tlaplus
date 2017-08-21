@@ -8,6 +8,15 @@
       </factory>
    </extension>
    
+   <extension
+         id="org.lamport.tla.toolbox.jclouds.application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="org.lamport.tla.toolbox.jcloud.Application">
+         </run>
+      </application>
+   </extension>
    
    
 <!--
