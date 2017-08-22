@@ -265,7 +265,8 @@ public class CloudDistributedTLCJob extends Job {
 							+ " && "
 							+ "mkdir -p /mnt/tlc/ && chmod 777 /mnt/tlc/ && "
 							+ "ln -s /mnt/tlc/MC.out /var/www/html/MC.out && "
-							+ "ln -s /mnt/tlc/MC.err /var/www/html/MC.err"),
+							+ "ln -s /mnt/tlc/MC.err /var/www/html/MC.err && "
+							+ "ln -s /mnt/tlc/tlc.jfr /var/www/html/tlc.jfr"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			
 			monitor.worked(10);
@@ -317,6 +318,7 @@ public class CloudDistributedTLCJob extends Job {
 					// line because there is no command line.
 					+ "java "
 						+ params.getJavaVMArgs() + " "
+						+ (isCLI ? params.getFlightRecording() + " " : "")
 						// Write all tmp files to the ephemeral instance
 						// storage which is expected to have a higher IOPS
 						// compared to non-local storage.
@@ -349,6 +351,7 @@ public class CloudDistributedTLCJob extends Job {
 				monitor.subTask("Starting TLC model checker process");
 				// Execute command via ssh instead of as a script to get access to the TLC
 				// processes' stdout and stderr.
+				//TODO Better handle error case.
 				final ExecChannel channel = sshClient.execChannel(tlcMasterCommand);
 				// Send remote TLC's stdout to local stdout (this throws a TransportException
 				// unless shutdown is postponed by one minute above).

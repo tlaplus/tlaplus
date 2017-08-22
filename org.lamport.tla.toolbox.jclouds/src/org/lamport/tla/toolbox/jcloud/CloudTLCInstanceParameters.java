@@ -125,4 +125,12 @@ public abstract class CloudTLCInstanceParameters {
 	public String getOSFilesystemTuning() {
 		return "/bin/true"; // no-op, because concat with && ... && in CDTJ.
 	}
+	
+	public String getFlightRecording() {
+		return "-XX:+UnlockCommercialFeatures "
+				+ "-XX:+FlightRecorder "
+				+ "-XX:+UnlockDiagnosticVMOptions "
+				+ "-XX:+DebugNonSafepoints "
+				+ "-XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/mnt/tlc,dumponexit=true,dumponexitpath=/mnt/tlc/tlc.jfr,maxage=12h";
+	}
 }
