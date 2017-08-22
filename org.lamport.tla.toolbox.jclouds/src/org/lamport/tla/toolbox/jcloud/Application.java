@@ -94,6 +94,7 @@ public class Application implements IApplication {
 		final TLCJobFactory factory = new CloudTLCJobFactory();
 		final CloudDistributedTLCJob job = (CloudDistributedTLCJob) factory.getTLCJob(cloud, new File(modelDirectory), 1, props, tlcParams.toString());
 		job.setIsCLI(true);
+		job.setDoJfr(true);
 		job.run(new MyProgressMonitor(9));
 		
 		return IApplication.EXIT_OK;

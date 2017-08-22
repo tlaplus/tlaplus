@@ -32,9 +32,11 @@ import static org.jclouds.compute.predicates.NodePredicates.inGroup;
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
@@ -91,6 +93,7 @@ public class CloudDistributedTLCJob extends Job {
 	private final Properties props;
 	private final CloudTLCInstanceParameters params;
 	private boolean isCLI = false;
+	private boolean doJfr = false;
 
 	public CloudDistributedTLCJob(String aName, File aModelFolder,
 			int numberOfWorkers, final Properties properties, CloudTLCInstanceParameters params) {
@@ -318,7 +321,7 @@ public class CloudDistributedTLCJob extends Job {
 					// line because there is no command line.
 					+ "java "
 						+ params.getJavaVMArgs() + " "
-						+ (isCLI ? params.getFlightRecording() + " " : "")
+						+ (doJfr ? params.getFlightRecording() + " " : "")
 						// Write all tmp files to the ephemeral instance
 						// storage which is expected to have a higher IOPS
 						// compared to non-local storage.
@@ -345,17 +348,27 @@ public class CloudDistributedTLCJob extends Job {
 					// It uses "sudo" because the script is explicitly
 					// run as a user. No need to run the TLC process as
 					// root.
-					+ "sudo shutdown -h " + (isCLI ? "+1" : "now")
+					+ "sudo shutdown -h " + (isCLI ? "+10" : "now")
 					+ (isCLI ? "" : "\""); // closing opening '"' of screen/bash -c
 			if (isCLI) {
 				monitor.subTask("Starting TLC model checker process");
 				// Execute command via ssh instead of as a script to get access to the TLC
 				// processes' stdout and stderr.
 				//TODO Better handle error case.
-				final ExecChannel channel = sshClient.execChannel(tlcMasterCommand);
+				ExecChannel channel = sshClient.execChannel(tlcMasterCommand);
 				// Send remote TLC's stdout to local stdout (this throws a TransportException
-				// unless shutdown is postponed by one minute above).
+				// unless shutdown is postponed by a few minutes above).
 				ByteStreams.copy(channel.getOutput(), System.out);
+				if (doJfr) {
+					// Get Java Flight Recording from remote machine and save if to a local file in
+					// the current working directory. We call "cat" because sftclient#get fails with
+					// the old net.schmizz.sshj and an update to the newer com.hierynomus seems 
+					// awful lot of work.
+					channel = sshClient.execChannel("cat /mnt/tlc/tlc.jfr");
+					final String cwd = Paths.get(".").toAbsolutePath().normalize().toString() + File.separator;
+					ByteStreams.copy(channel.getOutput(), new FileOutputStream(new File(cwd + "tlc.jfr")));
+				}
+				// Finally close the ssh connection.
 				sshClient.disconnect();
 				monitor.subTask("TLC model checker process finished");
 			} else {
@@ -486,6 +499,10 @@ public class CloudDistributedTLCJob extends Job {
 	
 	public void setIsCLI(boolean cli) {
 		this.isCLI = cli;
+	}
+	
+	public void setDoJfr(boolean doIt) {
+		this.doJfr = doIt;
 	}
 
 	private static void destroyNodes(final ComputeServiceContext ctx, final String groupname) {
