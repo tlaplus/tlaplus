@@ -286,6 +286,7 @@ public class CloudDistributedTLCJob extends Job {
 			// Choose one of the nodes to be the master and create an
 			// identifying predicate.
 			final NodeMetadata master = Iterables.getLast(createNodesInGroup);
+			final String hostname = Iterables.getOnlyElement(master.getPublicAddresses()); // master.getHostname() only returns internal name
 
 			// Copy tlatools.jar to _one_ remote host (do not exhaust upload of
 			// the machine running the toolbox).
@@ -293,7 +294,7 @@ public class CloudDistributedTLCJob extends Job {
 			// available on the master's webserver for the clients to download.
 			// On the other hand this means we are making the spec
 			// world-readable. It is cloud-readable already through the RMI api.
-			monitor.subTask("Copying tla2tools.jar to master node");
+			monitor.subTask("Copying tla2tools.jar to master node at " + hostname);
 			SshClient sshClient = context.utils().sshForNode().apply(master);
 			sshClient.put("/tmp/tla2tools.jar", jarPayLoad);
 			monitor.worked(10);
@@ -411,11 +412,11 @@ public class CloudDistributedTLCJob extends Job {
 
 					// see master startup for comments
 					monitor.subTask("Starting TLC workers on the remaining node(s) (in background)");
-					final String hostname = Iterables.getOnlyElement(master.getPrivateAddresses());
+					final String privateHostname = Iterables.getOnlyElement(master.getPrivateAddresses());
 					compute.runScriptOnNodesMatching(
 						onWorkers,
 						exec("cd /mnt/tlc/ && "
-								+ "wget http://" + hostname + "/tla2tools.jar && "
+								+ "wget http://" + privateHostname + "/tla2tools.jar && "
 								+ "screen -dm -S tlc bash -c \" "
 								+ "java "
 									+ params.getJavaWorkerVMArgs() + " "
@@ -427,7 +428,7 @@ public class CloudDistributedTLCJob extends Job {
 									+ params.getJavaWorkerSystemProperties() + " "
 									+ "-cp /mnt/tlc/tla2tools.jar " 
 									+ params.getTLCWorkerParameters() + " "
-									+ hostname + " " // Use host's internal ip due to firewall reasons.
+									+ privateHostname + " " // Use host's internal ip due to firewall reasons.
 									+ "&& "
 								// Terminate regardless of TLCWorker process
 								// exit value. E.g. TLCWorker can terminate due
@@ -450,7 +451,6 @@ public class CloudDistributedTLCJob extends Job {
 			
 			// Communicate result to user
 			monitor.done();
-			final String hostname = Iterables.getOnlyElement(master.getPublicAddresses()); // master.getHostname() only returns internal name
 			return new CloudStatus(
 					Status.OK,
 					"org.lamport.tla.toolbox.jcloud",
