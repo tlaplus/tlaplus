@@ -200,6 +200,12 @@ public class CloudDistributedTLCJob extends Job {
                             // Don't want dpkg to require user interaction.
 							+ "export DEBIAN_FRONTEND=noninteractive"
 							+ " && "
+							// Oracle Java 8
+							+ "add-apt-repository ppa:webupd8team/java -y && "
+							// Accept license before apt (dpkg) tries to present it to us (which fails due to 'noninteractive' mode below)
+							// see http://stackoverflow.com/a/19391042
+							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections && "
+							+ "echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections && "
 							// Update Ubuntu's package index. The public/remote
 							// package mirrors might have updated. Without
 							// update, we might try to install outdated packages
@@ -238,7 +244,7 @@ public class CloudDistributedTLCJob extends Job {
 							// worker tla2tools.jar (strip spec) and
 							// unattended-upgrades makes sure the instance
 							// is up-to-date security-wise. 
-							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades -y"
+							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades oracle-java8-installer oracle-java8-set-default -y"
 							+ " && "
 							// Delegate file system tuning to cloud specific code.
 							+ params.getOSFilesystemTuning()
