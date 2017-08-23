@@ -49,7 +49,7 @@ import tlc2.output.EC;
 public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCase {
 
 	public CodePlexBug08EWD840FL2FromCheckpointTest() {
-		super("EWD840MC2", "CodePlexBug08", new String[] {"-recover", BASE_DIR + TEST_MODEL + "CodePlexBug08" + File.separator + "checkpoint"});
+		super("EWD840MC2", "CodePlexBug08", new String[] {"-gzip", "-recover", BASE_DIR + TEST_MODEL + "CodePlexBug08" + File.separator + "checkpoint"});
 	}
 	
 	
