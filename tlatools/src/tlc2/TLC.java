@@ -866,8 +866,11 @@ public class TLC
 				}
         	}
 			modelCheckerMXWrapper.unregister();
+			// In tool mode print runtime in milliseconds, in non-tool mode print human
+			// readable runtime (days, hours, minutes, ...).
+			final long runtime = System.currentTimeMillis() - startTime;
 			MP.printMessage(EC.TLC_FINISHED,
-					convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
+					TLCGlobals.tool ? Long.toString(runtime) + "ms" : convertRuntimeToHumanReadable(runtime));
 			MP.flush();
         }
     }
