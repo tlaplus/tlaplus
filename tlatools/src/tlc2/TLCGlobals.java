@@ -154,7 +154,7 @@ public class TLCGlobals
     public static boolean useView = false;
 
     // The flag to control if gzip is applied to Value input/output stream.
-    public static boolean useGZIP = true;
+    public static boolean useGZIP = false;
 
     // The tool id number for TLC2.
     public static int ToolId = FrontEnd.getToolId();
