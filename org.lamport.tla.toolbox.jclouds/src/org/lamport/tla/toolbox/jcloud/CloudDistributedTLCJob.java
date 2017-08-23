@@ -371,6 +371,9 @@ public class CloudDistributedTLCJob extends Job {
 				// Finally close the ssh connection.
 				sshClient.disconnect();
 				monitor.subTask("TLC model checker process finished");
+				// Eagerly destroy the instance after we pulled the tlc.jfr file from it. No
+				// point in waiting for shutdown -h +10 to shutdown the instance.
+				destroyNodes(context, groupNameUUID);
 			} else {
 				sshClient.disconnect();
 
