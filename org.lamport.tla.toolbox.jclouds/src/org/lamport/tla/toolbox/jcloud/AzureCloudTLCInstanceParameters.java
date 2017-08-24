@@ -88,8 +88,8 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	 */
 	@Override
 	public String getImageId() {
-		// azure vm image list |grep "Ubuntu"
-		return "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20170330-en-us-30GB";
+		// azure vm image list eastus canonical (manually lookup image release date from output)
+		return "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20170811-en-us-30GB";
 	}
 
 	/* (non-Javadoc)
