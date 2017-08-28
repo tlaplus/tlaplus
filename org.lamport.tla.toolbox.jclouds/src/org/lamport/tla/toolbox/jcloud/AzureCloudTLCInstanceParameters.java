@@ -84,6 +84,14 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	}
 
 	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getRegion()
+	 */
+	@Override
+	public String getRegion() {
+		return "us-east";
+	}
+
+	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getImageId()
 	 */
 	@Override

@@ -104,6 +104,8 @@ public abstract class CloudTLCInstanceParameters {
 	
 	public abstract String getCloudProvider();
 
+	public abstract String getRegion();
+	
 	public abstract String getImageId();
 
 	public abstract String getHardwareId();

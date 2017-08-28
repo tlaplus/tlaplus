@@ -59,7 +59,8 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		return getRegion() + "/ami-1014206b"; // "xenial,amd64,hvm:instance-store"
 	}
 
-	private String getRegion() {
+	@Override
+	public String getRegion() {
 		return "us-east-1";
 	}
 
