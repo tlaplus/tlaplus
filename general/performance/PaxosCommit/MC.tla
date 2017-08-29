@@ -28,7 +28,7 @@ Permutations(const_145717642420826000) \union Permutations(const_145717642421827
 
 \* CONSTANT definitions @modelParameterConstants:0Ballot
 const_145717642423829000 == 
-{0, 1, 2, 3}
+{0, 1, 2}
 ----
 
 \* CONSTANT definitions @modelParameterConstants:2Majority
