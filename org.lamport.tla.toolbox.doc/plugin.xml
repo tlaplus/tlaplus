@@ -41,6 +41,16 @@
                optional="false">
          </commandParameter>
       </command>
+      <command
+            defaultHandler="org.lamport.tla.toolbox.doc.handler.HelpURLHandler"
+            id="org.lamport.tla.toolbox.doc.url"
+            name="Help located at a URL">
+         <commandParameter
+               id="org.lamport.tla.toolbox.doc.url.name"
+               name="name"
+               optional="false">
+         </commandParameter>
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -72,6 +82,91 @@
                   value="SRC-TN-1997-006A.pdf">
             </parameter>
          </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:toolbox.menu.help?after=toolbox.command.help.tlaplus">
+         <command
+               commandId="org.lamport.tla.toolbox.doc.pdf"
+               label="Specifying Systems"
+               mnemonic="S"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the book &quot;Specifying Systems&quot;">
+            <parameter
+                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  value="book-02-08-08.pdf">
+            </parameter>
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:toolbox.menu.help?before=toolbox.command.about">
+         <command
+               commandId="org.lamport.tla.toolbox.doc.url"
+               label="TLA+ Video Course"
+               mnemonic="V"
+               mode="FORCE_TEXT"
+               style="push">
+            <parameter
+                  name="org.lamport.tla.toolbox.doc.url.name"
+                  value="http://lamport.azurewebsites.net/video/videos.html">
+            </parameter>
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:toolbox.menu.help?before=toolbox.command.about">
+	         <command
+	               commandId="org.lamport.tla.toolbox.doc.url"
+	               label="TLA+ Examples"
+	               mnemonic="V"
+	               mode="FORCE_TEXT"
+	               style="push">
+	            <parameter
+	                  name="org.lamport.tla.toolbox.doc.url.name"
+	                  value="https://github.com/tlaplus/Examples">
+	            </parameter>
+	         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:toolbox.menu.help?before=toolbox.command.about">
+         <menu id="community" label="Community">
+	         <command
+	               commandId="org.lamport.tla.toolbox.doc.url"
+	               label="TLA+ user group"
+	               mnemonic="V"
+	               mode="FORCE_TEXT"
+	               style="push">
+	            <parameter
+	                  name="org.lamport.tla.toolbox.doc.url.name"
+	                  value="https://groups.google.com/forum/#!forum/tlaplus">
+	            </parameter>
+	         </command>
+	         <command
+	               commandId="org.lamport.tla.toolbox.doc.url"
+	               label="TLA+ reddit"
+	               mnemonic="V"
+	               mode="FORCE_TEXT"
+	               style="push">
+	            <parameter
+	                  name="org.lamport.tla.toolbox.doc.url.name"
+	                  value="https://www.reddit.com/r/tlaplus/">
+	            </parameter>
+	         </command>
+	         <command
+	               commandId="org.lamport.tla.toolbox.doc.url"
+	               label="Learn TLA"
+	               mnemonic="V"
+	               mode="FORCE_TEXT"
+	               style="push">
+	            <parameter
+	                  name="org.lamport.tla.toolbox.doc.url.name"
+	                  value="https://learntla.com/">
+	            </parameter>
+	         </command>
+         </menu>
       </menuContribution>
    </extension>
 
