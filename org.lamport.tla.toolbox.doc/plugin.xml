@@ -31,6 +31,16 @@
             id="org.lamport.tla.toolbox.doc.contents"
             name="Table of Contents">
       </command>
+      <command
+            defaultHandler="org.lamport.tla.toolbox.doc.handler.HelpPDFHandler"
+            id="org.lamport.tla.toolbox.doc.pdf"
+            name="Help located in a local PDF">
+         <commandParameter
+               id="org.lamport.tla.toolbox.doc.pdf.name"
+               name="pdf"
+               optional="false">
+         </commandParameter>
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -46,6 +56,22 @@
                   style="push"
                   tooltip="Opens Table of Contents">
             </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:toolbox.menu.help?after=toolbox.command.help.tlaplus">
+         <command
+               commandId="org.lamport.tla.toolbox.doc.pdf"
+               label="The Operators of TLA+"
+               mnemonic="O"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the paper &quot;The Operators of  TLA+&quot;">
+            <parameter
+                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  value="SRC-TN-1997-006A.pdf">
+            </parameter>
+         </command>
       </menuContribution>
    </extension>
 

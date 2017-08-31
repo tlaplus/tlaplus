@@ -633,6 +633,14 @@
                   style="push"
                   tooltip="Opens dynamic help">
             </command>
+            <separator
+                  name="toolbox.command.help.tlaplus"
+                  visible="true">
+            </separator>
+            <separator
+                  name="toolbox.command.about"
+                  visible="true">
+            </separator>
             <command
                   commandId="org.eclipse.ui.help.aboutAction"
                   id="toolbox.menuItem.about"

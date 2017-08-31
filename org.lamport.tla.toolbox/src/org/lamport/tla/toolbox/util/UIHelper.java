@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.util;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,6 +12,9 @@ import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.filesystem.IFileSystem;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
@@ -65,6 +69,7 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -380,6 +385,16 @@ public class UIHelper {
 	
 	public static IEditorPart openEditorUnchecked(String editorId, IFile file, boolean activate) throws PartInitException {
 		return openEditorUnchecked(editorId, new FileEditorInput(file), activate);
+	}
+	
+	public static IEditorPart openEditorUnchecked(String editorId, File file) throws PartInitException {
+		return openEditorUnchecked(editorId, file, true);
+	}
+	
+	public static IEditorPart openEditorUnchecked(String editorId, File file, boolean activate) throws PartInitException {
+		final IFileSystem localFileSystem = EFS.getLocalFileSystem();
+		final IFileStore fromLocalFile = localFileSystem.fromLocalFile(file);
+		return openEditorUnchecked(editorId, new FileStoreEditorInput(fromLocalFile), activate);
 	}
 
 	public static IEditorPart openEditorUnchecked(String editorId, IEditorInput input) throws PartInitException {
