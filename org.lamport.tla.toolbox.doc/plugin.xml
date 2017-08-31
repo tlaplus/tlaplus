@@ -24,5 +24,29 @@
             file="tocsamples.xml">
       </toc>
     </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="org.lamport.tla.toolbox.doc.handler.HelpContentsHandler"
+            id="org.lamport.tla.toolbox.doc.contents"
+            name="Table of Contents">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:toolbox.menu.help?before=toolbox.menuItem.dynamicHelp">
+            <command
+                  commandId="org.lamport.tla.toolbox.doc.contents"
+                  id="toolbox.menuItem.contentsHelp"
+                  label="Table of Contents"
+                  mnemonic="C"
+                  mode="FORCE_TEXT"
+                  style="push"
+                  tooltip="Opens Table of Contents">
+            </command>
+      </menuContribution>
+   </extension>
 
 </plugin>

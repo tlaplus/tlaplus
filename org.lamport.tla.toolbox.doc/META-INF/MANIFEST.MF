@@ -7,3 +7,6 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.4
 Bundle-Vendor: Simon Zambrovski, Leslie Lamport
 Bundle-ActivationPolicy: lazy
 Eclipse-BundleShape: dir
+Require-Bundle: org.lamport.tla.toolbox;bundle-version="1.0.0",
+ org.eclipse.ui;bundle-version="3.107.0",
+ org.eclipse.help.ui;bundle-version="4.0.100"
