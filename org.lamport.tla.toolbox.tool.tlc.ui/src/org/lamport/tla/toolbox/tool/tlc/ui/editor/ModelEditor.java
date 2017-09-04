@@ -735,11 +735,11 @@ public class ModelEditor extends FormEditor
 						 */
 						for (int i = 0; i < getPageCount(); i++) {
 							/*
-							 * The normal form pages (main model page, advanced
-							 * options, results) are not text editors. We leave
-							 * those pages but remove all text editors.
+							 * The normal form pages (main model page, advanced options, results) are remain
+							 * open, all other pages get closed i.e. Saved Module Editor and State Graph
+							 * editor.
 							 */
-							if (pages.get(i) instanceof ITextEditor) {
+							if (!(pages.get(i) instanceof BasicFormPage)) {
 								removePage(i);
 							}
 						}
