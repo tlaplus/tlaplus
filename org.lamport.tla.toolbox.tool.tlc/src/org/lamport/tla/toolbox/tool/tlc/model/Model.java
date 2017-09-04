@@ -31,8 +31,10 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,6 +76,7 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -96,15 +99,11 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
     /**
      * marker on .launch file with boolean attribute modelIsRunning 
      */
-	public static final String TLC_MODEL_IN_USE_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
+	private static final String TLC_MODEL_IN_USE_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
     /**
      * marker on .launch file, binary semantics
      */
     private static final String TLC_CRASHED_MARKER = "org.lamport.tla.toolbox.tlc.crashedModelMarker";
-    /**
-     * model is being run
-     */
-    private static final String MODEL_IS_RUNNING = "modelIsRunning";
     /**
      * model is locked by a user lock
      */
@@ -136,7 +135,38 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	public static Model getByName(final String modelName) {
 		return TLCModelFactory.getByName(modelName);
 	}
+	       
+	/**
+	 * A {@link StateChangeListener} is notified when the running state of the model
+	 * changes. There is no guarantee as to which thread is being used to send the
+	 * notification. A {@link StateChangeListener} has subscribe and unsubscribe
+	 * via {@link Model#add(StateChangeListener)} and {@link Model#remove(StateChangeListener)}.
+	 */
+	public static class StateChangeListener {
 
+		public static class ChangeEvent {
+
+			public enum State {
+				RUNNING, NOT_RUNNING;
+			}
+
+			private final State state;
+
+			private ChangeEvent(State state) {
+				this.state = state;
+			}
+
+			public State getState() {
+				return state;
+			}
+		}
+
+		public void handleChange(ChangeEvent event) {
+			// No-Op
+		}
+	}
+
+	private final Set<StateChangeListener> listeners = new HashSet<StateChangeListener>();
 	private TLCSpec spec;
 	private ILaunchConfiguration launchConfig;
 
@@ -170,6 +200,20 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		this.launchConfig = launchConfig;
 	}
 	
+	public boolean add(StateChangeListener stateChangeListener) {
+		return this.listeners.add(stateChangeListener);
+	}
+
+	public boolean remove(StateChangeListener stateChangeListener) {
+		return this.listeners.remove(stateChangeListener);
+	}
+
+	private void notifyListener(final StateChangeListener.ChangeEvent event) {
+		for (StateChangeListener scl : listeners) {
+			scl.handleChange(event);
+		}
+	}
+		       
 	public TLCSpec getSpec() {
 		if (this.spec == null) {
 			final String launchName = this.launchConfig.getName();
@@ -279,7 +323,6 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	public boolean isRunning() {
-		final boolean marker = isMarkerSet(TLC_MODEL_IN_USE_MARKER, MODEL_IS_RUNNING);
 		final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 		final ILaunch[] launches = launchManager.getLaunches();
 		for (int i = 0; i < launches.length; i++) {
@@ -287,31 +330,20 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			if (launch.getLaunchConfiguration() != null
 					&& launch.getLaunchConfiguration().contentsEqual(this.launchConfig)) {
 				if (!launch.isTerminated()) {
-					if (marker != true) {
-						TLCActivator.logInfo("Model state out-of-sync. Close and reopen spec to sync.");
-					}
 					return true;
 				}
 			}
-		}
-		if (marker != false) {
-			TLCActivator.logInfo("Model state out-of-sync. Close and reopen spec to sync.");
 		}
 		return false;
 	}
 	
 	public void setRunning(boolean isRunning) {
 		if (isRunning) {
-			// Clear the stale/crashed marker. After all, the model is obviously
+			// Clear the crashed marker. After all, the model is obviously
 			// running now.
 			recover();
 		}
-		
-		// There marker is set regardless of the actual isRunning() state
-		// returned by the ILaunchManager above. This is, because the marker
-		// mechanism is used to send "events" to the Toolbox's UI to update the
-		// model editor.
-		setMarker(TLC_MODEL_IN_USE_MARKER, MODEL_IS_RUNNING, isRunning);
+		notifyListener(new StateChangeListener.ChangeEvent(isRunning ? State.RUNNING : State.NOT_RUNNING));
 	}
 
 	public boolean isLocked() {

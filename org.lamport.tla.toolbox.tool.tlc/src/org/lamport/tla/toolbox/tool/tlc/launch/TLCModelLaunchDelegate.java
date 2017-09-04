@@ -13,8 +13,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.Assert;
@@ -30,7 +28,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -231,55 +228,46 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                     final boolean recover = config.getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
                     final IResource[] checkpoints = config.getAdapter(Model.class).getCheckpoints(false);
 
-                    ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
-
                     // delete files
-                    ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
-
-                        public void run(IProgressMonitor monitor) throws CoreException
+                    boolean checkFiles = recover;
+                    monitor.beginTask("Deleting files", members.length);
+                    // delete the members of the target
+                    // directory
+                    for (int i = 0; i < members.length; i++)
+                    {
+                        if (checkFiles)
                         {
-                            boolean checkFiles = recover;
-                            monitor.beginTask("Deleting files", members.length);
-                            // delete the members of the target
-                            // directory
-                            for (int i = 0; i < members.length; i++)
+                            if (checkpoints.length > 0 && checkpoints[0].equals(members[i]))
                             {
-                                if (checkFiles)
-                                {
-                                    if (checkpoints.length > 0 && checkpoints[0].equals(members[i]))
-                                    {
-                                        // we found the recovery
-                                        // directory and didn't delete
-                                        // it
-                                        checkFiles = false;
-                                        continue;
-                                    }
-                                } else
-                                {
-                                    // delete file
-                                    // either non-recovery mode
-                                    // or the recovery directory already
-                                    // skipped
-                                    try
-                                    {
-                                        if (!members[i].getName().equals(ModelHelper.TE_TRACE_SOURCE))
-                                        {
-                                            members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
-                                        }
-                                    } catch (CoreException e)
-                                    {
-                                        // catch the exception if
-                                        // deletion failed, and just
-                                        // ignore this fact
-                                        // FIXME this should be fixed at
-                                        // some later point in time
-                                        TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
-                                    }
-                                }
+                                // we found the recovery
+                                // directory and didn't delete
+                                // it
+                                checkFiles = false;
+                                continue;
                             }
-                            monitor.done();
+                        } else
+                        {
+                            // delete file
+                            // either non-recovery mode
+                            // or the recovery directory already
+                            // skipped
+                            try
+                            {
+                                if (!members[i].getName().equals(ModelHelper.TE_TRACE_SOURCE))
+                                {
+                                    members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                                }
+                            } catch (CoreException e)
+                            {
+                                // catch the exception if
+                                // deletion failed, and just
+                                // ignore this fact
+                                // FIXME this should be fixed at
+                                // some later point in time
+                                TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
+                            }
                         }
-                    }, deleteRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
+                    }
                 }
             } else
             {
@@ -354,29 +342,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 }
             }
 
-            // get the scheduling rule
-            ISchedulingRule fileRule = MultiRule.combine(ResourceHelper.getModifyRule(files), ResourceHelper
-                    .getCreateRule(files));
-
             // create files
-            ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
-                public void run(IProgressMonitor monitor) throws CoreException
-                {
-                    for (int i = 0; i < files.length; i++)
-                    {
-                        if (files[i].exists())
-                        {
-                            files[i].setContents(new ByteArrayInputStream("".getBytes()), IResource.DERIVED
-                                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
-                        } else
-                        {
-                            files[i].create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED
-                                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
-                        }
-                    }
-                }
-
-            }, fileRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
+			for (int i = 0; i < files.length; i++) {
+				if (files[i].exists()) {
+					files[i].setContents(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
+							new SubProgressMonitor(monitor, 1));
+				} else {
+					files[i].create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
+							new SubProgressMonitor(monitor, 1));
+				}
+			}
 
             monitor.worked(STEP);
             monitor.subTask("Creating contents");

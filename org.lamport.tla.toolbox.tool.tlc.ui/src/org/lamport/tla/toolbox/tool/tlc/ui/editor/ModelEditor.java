@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -86,8 +85,22 @@ public class ModelEditor extends FormEditor
      */
     // helper to resolve semantic matches of words
     private SemanticHelper helper;
-    // reacts on model changes
-    private IResourceChangeListener modelFileChangeListener;
+    private final Model.StateChangeListener modelStateListener = new Model.StateChangeListener() {
+		@Override
+		public void handleChange(ChangeEvent event) {
+			UIHelper.runUIAsync(new Runnable() {
+				public void run() {
+					for (int i = 0; i < getPageCount(); i++) {
+						final Object object = pages.get(i);
+						if (object instanceof BasicFormPage) {
+							final BasicFormPage bfp = (BasicFormPage) object;
+							bfp.refresh();
+						}
+					}
+				}
+			});
+		}
+	};
 
     /**
      * This runnable is responsible for the validation of the pages.
@@ -226,59 +239,6 @@ public class ModelEditor extends FormEditor
 		
         model = TLCModelFactory.getBy(finput.getFile());
         
-        /*
-         * Install a resource change listener on the file opened which react
-         * on marker changes
-         */
-        // construct the listener
-		modelFileChangeListener = new IResourceChangeListener() {
-			public void resourceChanged(IResourceChangeEvent event) {
-				// get the marker changes
-				IMarkerDelta[] markerChanges = event.findMarkerDeltas(Model.TLC_MODEL_IN_USE_MARKER, false);
-
-				// usually this list has at most one element
-				for (int i = 0; i < markerChanges.length; i++) {
-					if (getFileEditorInput().getFile().equals(markerChanges[i].getResource())) {
-						UIHelper.runUIAsync(
-								/*
-								 * If the model file is changed, refresh the
-								 * changes in the editor if the model is in use,
-								 * activate the third page
-								 */
-								new Runnable() {
-							public void run() {
-								// update the pages
-								for (int i = 0; i < getPageCount(); i++) {
-									/*
-									 * Note that all pages are not necessarily
-									 * instances of BasicFormPage. Some are read
-									 * only editors showing saved versions of
-									 * modules.
-									 */
-									if (pages.get(i) instanceof BasicFormPage) {
-										BasicFormPage page = (BasicFormPage) pages.get(i);
-										((BasicFormPage) page).refresh();
-									}
-								}
-
-								if (model.isRunning()) {
-									showResultPage();
-								}
-								// evtl. add more graphical sugar here,
-								// like changing the model icon,
-								// changing the editor title (part name)
-							}
-						});
-						// It's sufficient to only update the UI once
-						return;
-					}
-				}
-			}
-		};
-
-        // add to the workspace root
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(modelFileChangeListener, IResourceChangeEvent.POST_CHANGE);
- 
         // setContentDescription(path.toString());
         if (model.isSnapshot()) {
         	final String date = sdf.format(model.getSnapshotTimeStamp());
@@ -313,6 +273,8 @@ public class ModelEditor extends FormEditor
 				addPageChangedListener(pageChangedListener);
 			}
 		});
+		
+		model.add(modelStateListener);
 	}
 
 	/**
@@ -342,7 +304,7 @@ public class ModelEditor extends FormEditor
         // TLCUIActivator.getDefault().logDebug("entering ModelEditor#dispose()");
         // remove the listeners
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(workspaceResourceChangeListener);
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileChangeListener);
+		model.remove(modelStateListener);
 
         super.dispose();
         
@@ -755,7 +717,7 @@ public class ModelEditor extends FormEditor
 						}
 					}
 				}
-			}, monitor);
+			}, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
 		} catch (CoreException e) {
 			TLCUIActivator.getDefault().logError(
 					"Error launching the configuration " + model.getName(), e);
