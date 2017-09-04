@@ -398,7 +398,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
     		snapshot.setMarker(iMarker.getAttributes(), iMarker.getType());
 		}
 		
-    	// Set the snapshot to be locked? Do we want the user to run it again?
+    	// Set the snapshot to be locked? Do we want the user to be able to run it again?
 //    	snapshot.setLocked(true);
 
 		/*
@@ -643,6 +643,17 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	 */
 	public IFile getTLAFile() {
 		return getFile(ModelHelper.FILE_TLA);
+	}
+
+	/**
+	 * Retrieves the TE file that is being used by the trace explorer.
+	 * 
+	 * @param config
+	 *            configuration representing the model
+	 * @return a file handle or <code>null</code>
+	 */
+	public IFile getTEFile() {
+		return getFile(ModelHelper.TE_FILE_TLA);
 	}
 
 	public IFile getOutputLogFile() {

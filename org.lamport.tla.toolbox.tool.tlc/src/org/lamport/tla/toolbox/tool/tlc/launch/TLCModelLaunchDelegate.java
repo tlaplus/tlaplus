@@ -89,10 +89,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
     // Mutex rule for the following jobs to run after each other
     protected MutexRule mutexRule = new MutexRule();
 
-    protected String specName = null;
-    protected String modelName = null;
-    protected String specRootFilename = null;
-
     /**
      * Configuration type
      */
@@ -148,7 +144,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                 IStatus.ERROR,
                                 TLCActivator.PLUGIN_ID,
                                 "The running attribute for "
-                                        + modelName
+                                        + model.getName()
                                         + " has been set to true or that model is locked. "
                                         + "Another TLC is possible running on the same model, has been terminated non-gracefully "
                                         + "or you tried to run TLC on a locked model. Running TLC on a locked model is not possible."));
@@ -158,18 +154,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         try
         {
             monitor.beginTask("Reading model parameters", 1);
-
-            // name of the specification
-            specName = config.getAttribute(SPEC_NAME, EMPTY_STRING);
-
-            // model name
-            modelName = config.getAttribute(MODEL_NAME, EMPTY_STRING);
-
-            // root file name
-            specRootFilename = ToolboxHandle.getRootModule(config.getFile().getProject()).getLocation().toOSString();
-            // specRootFilename = config.getAttribute(SPEC_ROOT_FILE,
-            // EMPTY_STRING);
-
         } finally
         {
             // finish the monitor
@@ -205,25 +189,25 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             monitor.subTask("Creating directories");
 
             // retrieve the project containing the specification
-            IProject project = ResourceHelper.getProject(specName);
+            final IProject project = model.getSpec().getProject();
             if (project == null)
             {
                 // project could not be found
                 throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-                        "Error accessing the spec project " + specName));
+                        "Error accessing the spec project " + model.getSpec().getName()));
             }
 
             // retrieve the root file
-            IFile specRootFile = ResourceHelper.getLinkedFile(project, specRootFilename, false);
+            final IFile specRootFile = model.getSpec().getRootFile();
             if (specRootFile == null)
             {
                 // root module file not found
                 throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-                        "Error accessing the root module " + specRootFilename));
+                        "Error accessing the root module " + model.getSpec().getRootFilename()));
             }
 
             // retrieve the model folder
-            IFolder modelFolder = project.getFolder(modelName);
+            final IFolder modelFolder = model.getFolder();
             IPath targetFolderPath = modelFolder.getProjectRelativePath().addTrailingSeparator();
 
             // create the handles: MC.tla, MC.cfg and MC.out
@@ -316,7 +300,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             if (specRootFileCopy == null)
             {
                 throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error copying "
-                        + specRootFilename + " into " + targetFolderPath.toOSString()));
+                        + model.getSpec().getRootFilename() + " into " + targetFolderPath.toOSString()));
             }
             
             // Copy the spec's root file userModule override if any.
@@ -400,7 +384,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             ModelWriter writer = new ModelWriter();
        
             // add the MODULE beginning and EXTENDS statement
-            writer.addPrimer(ModelHelper.MC_MODEL_NAME, ResourceHelper.getModuleName(specRootFilename));
+            writer.addPrimer(ModelHelper.MC_MODEL_NAME, model.getSpec().getRootModuleName());
 
             // Sets constants to a Vector of the substitutions for the CONSTANT substitutions
             List constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
@@ -578,10 +562,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         monitor.beginTask("Verifying model files", 4);
 
         final Model model = configuration.getAdapter(Model.class);
-        
-        IProject project = ResourceHelper.getProject(specName);
-        IFolder launchDir = project.getFolder(modelName);
-        IFile rootModule = launchDir.getFile(ModelHelper.FILE_TLA);
+        final IFile rootModule = model.getTLAFile();
 
         monitor.worked(1);
         // parse the MC file
@@ -694,22 +675,23 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                     new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Unsupported launch mode " + mode));
         }
 
+        final Model model = config.getAdapter(Model.class);
         // retrieve the project containing the specification
-        IProject project = ResourceHelper.getProject(specName);
+        final IProject project = model.getSpec().getProject();
         if (project == null)
         {
             // project could not be found
             throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-                    "Error accessing the spec project " + specName));
+                    "Error accessing the spec project " + model.getSpec().getName()));
         }
 
         // setup the running flag
         // from this point any termination of the run must reset the
         // flag
-        config.getAdapter(Model.class).setRunning(true);
+        model.setRunning(true);
 
         // set the model to have the original trace shown
-        config.getAdapter(Model.class).setOriginalTraceShown(true);
+        model.setOriginalTraceShown(true);
 
         // number of workers
         int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
@@ -734,17 +716,17 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         // TLC job
         Job job = null;
         if("off".equalsIgnoreCase(cloud)) {
-        	job = new TLCProcessJob(specName, modelName, launch, numberOfWorkers);
+        	job = new TLCProcessJob(model.getSpec().getName(), model.getName(), launch, numberOfWorkers);
             // The TLC job itself does not do any file IO
             job.setRule(mutexRule);
         } else {
         	if ("ad hoc".equalsIgnoreCase(cloud)) {
-        		job = new DistributedTLCJob(specName, modelName, launch, numberOfWorkers);
+        		job = new DistributedTLCJob(model.getSpec().getName(), model.getName(), launch, numberOfWorkers);
                 job.setRule(mutexRule);
         	} else {
         		numberOfWorkers = config.getAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT);
                 //final IProject iproject = ResourceHelper.getProject(specName);
-                final IFolder launchDir = project.getFolder(modelName);
+                final IFolder launchDir = model.getFolder();
                 final File file = launchDir.getRawLocation().makeAbsolute().toFile();
 
 				final BundleContext bundleContext = FrameworkUtil.getBundle(
@@ -764,7 +746,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 					props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
 					// Add model and spec name to properties to make the model
 					// checker run easily identifiable in the result email.
-			        final Model model = config.getAdapter(Model.class);
 					props.put(TLCJobFactory.MODEL_NAME, model.getName());
 					props.put(TLCJobFactory.SPEC_NAME, model.getSpec().getName());
 					if (numberOfWorkers > 1) {
@@ -989,8 +970,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
              * for refreshing the model folder, and schedule that wrapping job
              * to be run later.
              */
-            final IProject project = ResourceHelper.getProject(specName);
-            final IFolder modelFolder = project.getFolder(modelName);
+            final IFolder modelFolder = model.getFolder();
             WorkspaceJob refreshJob = new WorkspaceJob("") {
 
                 public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException
@@ -1039,7 +1019,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 			if (!takeSnapshot || model.isSnapshot()) {
 				return;
 			}
-			refreshJob = new WorkspaceJob("Taking snapshot of " + modelName + "...") {
+			refreshJob = new WorkspaceJob("Taking snapshot of " + model.getName() + "...") {
 				public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
 					monitor.beginTask("Taking snapshot of " + model.getName() + "...", 1);
 					model.snapshot();

@@ -207,6 +207,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
                     }
                 } catch (Exception e)
                 {
+                	e.printStackTrace();
                     // Just ignore the exception and pray.
                 }
             }

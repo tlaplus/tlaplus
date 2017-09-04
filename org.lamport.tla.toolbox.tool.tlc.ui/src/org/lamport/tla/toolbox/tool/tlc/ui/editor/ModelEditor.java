@@ -332,7 +332,7 @@ public class ModelEditor extends FormEditor
 			navigationHistory.markLocation((IEditorPart) event
 					.getSelectedPage());
 		}
-	};;
+	};
 
 	/**
 	 * @see org.eclipse.ui.forms.editor.FormEditor#dispose()

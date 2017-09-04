@@ -345,6 +345,22 @@ public class Spec implements IAdaptable {
         return this.specObj;
     }
 
+	/**
+	 * @return The logical name of the root module. E.g. if the file is named
+	 *         "DieHard.tla", the root module name is "DieHard". The root module
+	 *         name reflects the name declard in the MODULE statement inside the
+	 *         .tla file.
+	 * @see SpecObj#getName()
+	 */
+    public String getRootModuleName() {
+    	// Can't use this.specObj#getName because specObj can be null.
+
+    	// ThefileExtension will be tla. 
+    	final String fileExtension = this.rootFile.getFileExtension();
+    	// Strip off ".tla" from the end of the string.
+    	return this.rootFile.getName().replaceFirst("." + fileExtension + "$", "");
+    }
+
     /**
      * Returns the SpecObj only on valid status
      */

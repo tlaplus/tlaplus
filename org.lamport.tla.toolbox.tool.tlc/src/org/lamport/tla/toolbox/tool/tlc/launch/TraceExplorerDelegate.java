@@ -60,6 +60,7 @@ import org.lamport.tla.toolbox.tool.tlc.job.TraceExplorerJob;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -370,12 +371,12 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
             monitor.subTask("Copying files");
 
             // retrieve the root file
-            IFile specRootFile = ResourceHelper.getLinkedFile(project, specRootFilename, false);
+            final IFile specRootFile = model.getSpec().getRootFile();
             if (specRootFile == null)
             {
                 // root module file not found
                 throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-                        "Error accessing the root module " + specRootFilename));
+                        "Error accessing the root module " + model.getSpec().getRootFilename()));
             }
 
             // copy
@@ -388,7 +389,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
             if (specRootFileCopy == null)
             {
                 throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error copying "
-                        + specRootFilename + " into " + targetFolderPath.toOSString()));
+                        + model.getSpec().getRootFilename() + " into " + targetFolderPath.toOSString()));
             }
 
             ModelHelper.copyExtendedModuleFiles(specRootFile, targetFolderPath, monitor, STEP, project);
@@ -420,7 +421,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         ModelWriter writer = new ModelWriter();
 
         // add extend primer
-        writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(specRootFilename));
+        writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
 
         writeModelInfo(config, writer);
 
@@ -475,9 +476,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     {
         monitor.beginTask("Verifying model files", 4);
 
-        IProject project = ResourceHelper.getProject(specName);
-        IFolder launchDir = project.getFolder(modelName);
-        IFile rootModule = launchDir.getFile(ModelHelper.TE_FILE_TLA);
+    	final Model model = configuration.getAdapter(Model.class);
+    	final IFile rootModule = model.getTEFile();
 
         monitor.worked(1);
         // parse the TE.tla file
@@ -619,7 +619,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writer.addTraceExplorerExpressionInfoComments(traceExpressionData);
 
         // add extend primer
-        writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(specRootFilename));
+        writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
 
         // write constants, model values, new definitions, definition overrides
         writeModelInfo(configuration, writer);
@@ -652,7 +652,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writer.writeFiles(tlaFile, cfgFile, monitor);
 
         // retrieve the model folder
-        IFolder modelFolder = project.getFolder(modelName);
+        IFolder modelFolder = model.getFolder();
         // refresh the model folder
         modelFolder.refreshLocal(IResource.DEPTH_ONE, new SubProgressMonitor(monitor, 100));
 
@@ -675,15 +675,17 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         }
 
         // retrieve the project containing the specification
-        IProject project = ResourceHelper.getProject(specName);
+    	final Model model = configuration.getAdapter(Model.class);
+        final TLCSpec spec = model.getSpec();
+		final IProject project = spec.getProject();
         if (project == null)
         {
             // project could not be found
             throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-                    "Error accessing the spec project " + specName));
+                    "Error accessing the spec project " + spec.getName()));
         }
 
-        TLCJob tlcjob = new TraceExplorerJob(specName, modelName, launch, 1);
+        TLCJob tlcjob = new TraceExplorerJob(spec.getName(), model.getName(), launch, 1);
         tlcjob.setPriority(Job.SHORT);
         tlcjob.setUser(true);
         // The TLC job itself does not do any file IO
