@@ -29,6 +29,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaLabelProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
 
@@ -170,6 +171,7 @@ public class ValidateableTableSectionPart extends SectionPart implements IValida
     {
         // create
         CheckboxTableViewer tableViewer = new CheckboxTableViewer(table);
+        tableViewer.setLabelProvider(new FormulaLabelProvider());
         // represent formulas in the view
         tableViewer.setContentProvider(new FormulaContentProvider());
         // on changed selection change button enablement
