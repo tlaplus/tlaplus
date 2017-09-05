@@ -47,6 +47,7 @@ import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCModelFactory;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
@@ -87,18 +88,21 @@ public class ModelEditor extends FormEditor
     private SemanticHelper helper;
     private final Model.StateChangeListener modelStateListener = new Model.StateChangeListener() {
 		@Override
-		public void handleChange(ChangeEvent event) {
-			UIHelper.runUIAsync(new Runnable() {
-				public void run() {
-					for (int i = 0; i < getPageCount(); i++) {
-						final Object object = pages.get(i);
-						if (object instanceof BasicFormPage) {
-							final BasicFormPage bfp = (BasicFormPage) object;
-							bfp.refresh();
+		public boolean handleChange(ChangeEvent event) {
+			if (event.getState().in(State.NOT_RUNNING, State.RUNNING)) {
+				UIHelper.runUIAsync(new Runnable() {
+					public void run() {
+						for (int i = 0; i < getPageCount(); i++) {
+							final Object object = pages.get(i);
+							if (object instanceof BasicFormPage) {
+								final BasicFormPage bfp = (BasicFormPage) object;
+								bfp.refresh();
+							}
 						}
 					}
-				}
-			});
+				});
+			}
+			return false;
 		}
 	};
 

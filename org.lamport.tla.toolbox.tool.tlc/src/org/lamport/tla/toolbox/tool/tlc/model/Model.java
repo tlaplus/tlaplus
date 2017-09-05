@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,6 +77,7 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -147,26 +149,45 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		public static class ChangeEvent {
 
 			public enum State {
-				RUNNING, NOT_RUNNING;
+				RUNNING, NOT_RUNNING, DELETED;
+				
+				public boolean in(State ... states) {
+					for (State state : states) {
+						if (state == this) {
+							return true;
+						}
+					}
+					return false;
+				}
 			}
 
 			private final State state;
+			private final Model model;
 
-			private ChangeEvent(State state) {
+			private ChangeEvent(Model model, State state) {
+				this.model = model;
 				this.state = state;
 			}
 
 			public State getState() {
 				return state;
 			}
+
+			public Model getModel() {
+				return model;
+			}
 		}
 
-		public void handleChange(ChangeEvent event) {
-			// No-Op
+		/**
+		 * @return true iff the listener should be unsubscribed from receiving future
+		 *         events after it handled the event.
+		 */
+		public boolean handleChange(ChangeEvent event) {
+			return false;
 		}
 	}
 
-	private final Set<StateChangeListener> listeners = new HashSet<StateChangeListener>();
+	private final Set<StateChangeListener> listeners = new CopyOnWriteArraySet<StateChangeListener>();
 	private TLCSpec spec;
 	private ILaunchConfiguration launchConfig;
 
@@ -210,7 +231,10 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 
 	private void notifyListener(final StateChangeListener.ChangeEvent event) {
 		for (StateChangeListener scl : listeners) {
-			scl.handleChange(event);
+			if (scl.handleChange(event)) {
+				// Listener wants to be deregistered as a listener.
+				listeners.remove(scl);
+			}
 		}
 	}
 		       
@@ -343,7 +367,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			// running now.
 			recover();
 		}
-		notifyListener(new StateChangeListener.ChangeEvent(isRunning ? State.RUNNING : State.NOT_RUNNING));
+		notifyListener(new StateChangeListener.ChangeEvent(this, isRunning ? State.RUNNING : State.NOT_RUNNING));
 	}
 
 	public boolean isLocked() {
@@ -611,6 +635,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	public void delete(IProgressMonitor monitor) throws CoreException {
+		notifyListener(new ChangeEvent(this, State.DELETED));
 		
 		final IResource[] members;
 

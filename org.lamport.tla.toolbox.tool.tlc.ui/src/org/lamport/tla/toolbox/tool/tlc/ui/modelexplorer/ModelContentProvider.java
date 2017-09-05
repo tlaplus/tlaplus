@@ -30,12 +30,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.ui.navigator.CommonViewer;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener;
+import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.ui.provider.IGroup;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Provides information about TLC models (launch configurations) in the current
@@ -47,6 +52,28 @@ public class ModelContentProvider implements ITreeContentProvider {
 	private static final Object[] EMPTY_ARRAY = new Object[0];
 	
 	private final Map<Model, Group> reverse = new HashMap<Model, Group>();
+	private final MyStateChangeListener modelChangeListener = new MyStateChangeListener() {
+		@Override
+		public boolean handleChange(final ChangeEvent event) {
+			if (event.getState() == State.DELETED) {
+				UIHelper.runUISync(new Runnable() {
+					@Override
+					public void run() {
+						final Model snapshot = event.getModel();
+						final Model parent = snapshot.getSnapshotFor();
+						// The CommonViewer is stupid in that it accesses an element (snapshot) even
+						// after it has been removed in order to update the viewer's current selection.
+						// Since we have to prevent this access to avoid a null pointer, we explicitly
+						// reset the selection.
+						getViewer().setSelection(new StructuredSelection(parent));
+						// ...still remove the element from the tree.
+						getViewer().remove(parent, new Object[] {snapshot});
+					}
+				});
+			}
+			return true;
+		}
+	};
 	
 	public Object[] getChildren(final Object parentElement) {
 		if (parentElement instanceof Spec) {
@@ -60,6 +87,9 @@ public class ModelContentProvider implements ITreeContentProvider {
 			return ((Group) parentElement).getModels();
 		} else if (parentElement instanceof Model) {
 			final Collection<Model> snapshots = ((Model) parentElement).getSnapshots();
+			for (final Model model : snapshots) {
+				model.add(modelChangeListener);
+			}
 			return snapshots.toArray(new Model[snapshots.size()]);
 		}
 		return EMPTY_ARRAY;
@@ -97,7 +127,20 @@ public class ModelContentProvider implements ITreeContentProvider {
 	}
 
 	public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
-		// nothing to do
+		this.modelChangeListener.setViewer((CommonViewer) viewer);
+	}
+	
+	private static class MyStateChangeListener extends StateChangeListener {
+
+		private CommonViewer viewer;
+
+		public void setViewer(CommonViewer viewer) {
+			this.viewer = viewer;
+		}
+		
+		public CommonViewer getViewer() {
+			return viewer;
+		}
 	}
 
 	public static final class Group implements IGroup {
