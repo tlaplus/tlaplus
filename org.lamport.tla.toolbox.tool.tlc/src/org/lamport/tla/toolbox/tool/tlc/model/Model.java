@@ -26,12 +26,12 @@
 
 package org.lamport.tla.toolbox.tool.tlc.model;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +56,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -470,6 +471,21 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		try {
 			FileUtils.copyDirectory(modelFolder.toFile(), snapshotPath.toFile(),
 					new NotFileFilter(DirectoryFileFilter.DIRECTORY));
+			                       
+			// Rename .dot file name because hasStateGraphDump checks if a .dot file exists
+			// that matches the name of the model.
+			if (hasStateGraphDump()) {
+				final IPath oldDotFile = getSpec().getProject()
+						.getFolder(snapshot.getName() + File.separator + this.getName() + ".dot").getLocation();
+				final IPath newDotFile = getSpec().getProject()
+						.getFolder(snapshot.getName() + File.separator + snapshot.getName() + ".dot").getLocation();
+				FileUtils.moveFile(oldDotFile.toFile(), newDotFile.toFile());
+			}
+			// Refresh the snapshot folder after having copied files without using the
+			// Eclipse resource API. Otherwise, the resource API does not see the files
+			// which e.g. results in an incomplete model deletion or hasStateGraphDump
+			// incorrectly returning false.
+			snapshot.getFolder().refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 		} catch (IOException e) {
 			throw new CoreException(new Status(Status.ERROR, TLCActivator.PLUGIN_ID, e.getMessage(), e));
 		}
@@ -481,7 +497,28 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	 * End of snapshot related methods.
 	 */
 	
-    /**
+	/*
+	 * State Graph dump in dot file format (GraphViz).
+	 */
+
+	private static final String DOT_FILE_EXT = ".dot";
+	
+	public boolean hasStateGraphDump() {
+		final String name = getName().concat(DOT_FILE_EXT);
+		final IFile file = getFolder().getFile(name);
+		return file.exists();
+	}
+
+	public IFile getStateGraphDump() {
+		final String name = getName().concat(DOT_FILE_EXT);
+		return getFolder().getFile(name);
+	}
+
+	/*
+	 * End of state graph dump related methods.
+	 */	
+
+	/**
      * Returns whether the original trace or the trace with trace explorer expressions from the
      * most recent run of the trace explorer for the model should be shown in the TLC error view.
      * 

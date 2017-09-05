@@ -17,7 +17,10 @@ Require-Bundle: org.eclipse.core.runtime,
  org.lamport.tla.toolbox,
  org.eclipse.ui.navigator;bundle-version="3.4.0",
  org.eclipse.core.expressions;bundle-version="3.4.100",
- javax.mail;bundle-version="1.4.0"
+ javax.mail;bundle-version="1.4.0",
+ com.abstratt.content;bundle-version="2.1.201501",
+ com.abstratt.imageviewer;bundle-version="2.1.201501",
+ com.abstratt.graphviz.ui;bundle-version="2.1.201501"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Import-Package: org.lamport.tla.toolbox.editor.basic

@@ -381,7 +381,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getLookupHelper().resetModelNames(this);
 
         // constants in the table
-        List<Assignment> constants = (List<Assignment>) constantTable.getInput();
+        @SuppressWarnings("unchecked")
+		List<Assignment> constants = (List<Assignment>) constantTable.getInput();
         // merge constants with currently defined in the specobj, if any
         if (rootModuleNode != null)
         {

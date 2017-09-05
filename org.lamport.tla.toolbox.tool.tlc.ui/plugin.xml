@@ -771,6 +771,12 @@ Console Facory
             id="toolbox.ui.preferences.TLCPreferencePage"
             name="TLC Model Checker">
       </page>
+      <page
+            category="toolbox.ui.preferences.GeneralPreferencePage"
+            class="com.abstratt.graphviz.ui.GraphVizPreferencePage"
+            id="toolbox.ui.preferences.StateGraphPreferences"
+            name="State Graph">
+      </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">

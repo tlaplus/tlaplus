@@ -67,6 +67,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Button mcOption;
     private Button simulationOption;
     private Button deferLiveness;
+    private Button visualizeStateGraph;
     private Text dfidDepthText;
     private Text simuDepthText;
     private Text simuSeedText;
@@ -192,6 +193,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
         maxSetSize.setSelection(getModel().getAttribute(LAUNCH_MAXSETSIZE, defaultMaxSetSize));
         
+        // visualize state graph
+        visualizeStateGraph.setSelection(getModel().getAttribute(LAUNCH_VISUALIZE_STATEGRAPH, LAUNCH_VISUALIZE_STATEGRAPH_DEFAULT));
+        
         // Extra JVM arguments and system properties
         final String vmArgs = getModel().getAttribute(LAUNCH_JVM_ARGS, LAUNCH_JVM_ARGS_DEFAULT);
         this.extraVMArgumentsText.setText(vmArgs);
@@ -249,6 +253,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // fpBits
         getModel().setAttribute(LAUNCH_MAXSETSIZE, maxSetSize.getSelection());
+
+        // Visualize State Graph
+        getModel().setAttribute(LAUNCH_VISUALIZE_STATEGRAPH, visualizeStateGraph.getSelection());
         
         // definitions
         List<String> definitions = FormHelper.getSerializedInput(definitionsTable);
@@ -779,6 +786,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         dfidOption.addSelectionListener(launchListener);
         mcOption.addSelectionListener(launchListener);
         viewSource.addTextListener(launchListener);
+        visualizeStateGraph.addSelectionListener(launchListener);
         extraTLCParametersText.addModifyListener(launchListener);
         extraVMArgumentsText.addModifyListener(launchListener);
 
@@ -1003,6 +1011,23 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
         		ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
         maxSetSize.setSelection(defaultMaxSetSize);
+        
+        // Visualize State Graph with GraphViz (dot)
+		final String visualizeStateGraphHelp = "Draw the state graph after completion of model checking provided the "
+				+ "state graph is sufficiently small (cannot handle more than a few dozen states and slows down model checking).";
+        Label visualizeStateGraphLabel = toolkit.createLabel(area, "Visualize state graph after completion of model checking:");
+        gd = new GridData();
+        gd.horizontalIndent = 0;
+        visualizeStateGraphLabel.setLayoutData(gd);
+        visualizeStateGraphLabel.setToolTipText(visualizeStateGraphHelp);
+
+        visualizeStateGraph = toolkit.createButton(area, "", SWT.CHECK);
+        gd = new GridData();
+        gd.widthHint = 200;
+        gd.verticalIndent = 20;
+        gd.horizontalIndent = 0;
+        visualizeStateGraph.addFocusListener(focusListener);
+        visualizeStateGraph.setToolTipText(visualizeStateGraphHelp);
     
 		// Extra/Additional VM arguments and system properties
         toolkit.createLabel(area, "JVM arguments:");

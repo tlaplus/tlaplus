@@ -33,6 +33,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.INavigationHistory;
 import org.eclipse.ui.IPartService;
 import org.eclipse.ui.PartInitException;
@@ -56,6 +57,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ResultPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.StateGraphEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ModelEditorPartListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -88,7 +90,7 @@ public class ModelEditor extends FormEditor
     private SemanticHelper helper;
     private final Model.StateChangeListener modelStateListener = new Model.StateChangeListener() {
 		@Override
-		public boolean handleChange(ChangeEvent event) {
+		public boolean handleChange(final ChangeEvent event) {
 			if (event.getState().in(State.NOT_RUNNING, State.RUNNING)) {
 				UIHelper.runUIAsync(new Runnable() {
 					public void run() {
@@ -97,6 +99,12 @@ public class ModelEditor extends FormEditor
 							if (object instanceof BasicFormPage) {
 								final BasicFormPage bfp = (BasicFormPage) object;
 								bfp.refresh();
+							}
+						}
+						if (event.getState().in(State.NOT_RUNNING)) {
+							// Model checking finished, lets open state graph if any.
+							if (event.getModel().hasStateGraphDump()) {
+								ModelEditor.this.addOrUpdateStateGraphEditor(event.getModel().getStateGraphDump());
 							}
 						}
 					}
@@ -526,9 +534,29 @@ public class ModelEditor extends FormEditor
         {
             showResultPage();
         }
+        
+		if (model.hasStateGraphDump()) {
+			addOrUpdateStateGraphEditor(model.getStateGraphDump());
+		}
 
         // TLCUIActivator.getDefault().logDebug("leaving ModelEditor#addPages()");
     }
+
+	public void addOrUpdateStateGraphEditor(IFile stateGraphDotDump) {
+		final IFileEditorInput editorInput = new FileEditorInput(stateGraphDotDump);
+		final IEditorPart[] editors = findEditors(editorInput);
+		if (editors.length == 0) {
+			final IEditorPart editor = new StateGraphEditor();
+			try {
+				addPage(editor, editorInput);
+			} catch (final PartInitException e) {
+				e.printStackTrace();
+			}
+		} else {
+			final StateGraphEditor sge = (StateGraphEditor) editors[0];
+			sge.setFileEditorInput(editorInput);
+		}
+	}
 
     /* --------------------------------------------------------------------- */
     
@@ -1123,7 +1151,9 @@ public class ModelEditor extends FormEditor
 
             }
             // setPageImage(pageIndex, image);
-        }
+		} else if (editor instanceof StateGraphEditor) {
+			setPageText(index, editor.getTitle());
+		}
     }
 
     /**

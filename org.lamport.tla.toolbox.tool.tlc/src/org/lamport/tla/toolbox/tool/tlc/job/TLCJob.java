@@ -224,6 +224,14 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         	arguments.add(String.valueOf(maxSetSize));
         }
         
+        // Visualize state graph
+        final boolean visualizeStateGraph = launch.getLaunchConfiguration().getAttribute(LAUNCH_VISUALIZE_STATEGRAPH, false);
+        if (visualizeStateGraph) {
+        	arguments.add("-dump");
+        	arguments.add("dot");
+        	arguments.add(modelName);
+        }
+      
         arguments.add("-config");
         arguments.add(cfgFile.getName()); // configuration file
 
