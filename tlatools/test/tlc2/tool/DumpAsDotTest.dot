@@ -1,5 +1,4 @@
 strict digraph DiskGraph {
-rankdir=LR;
 609737673425276830 [style = filled] [label="/\\ b = FALSE
 /\\ x = 0"]
 6816998822487979083 [style = filled] [label="/\\ b = TRUE
