@@ -169,7 +169,7 @@ public class Simulator implements Cancelable {
 		theInitStates.deepNormalize();
 
 		// Start progress report thread:
-		ProgressReport report = new ProgressReport();
+		final ProgressReport report = new ProgressReport();
 		report.start();
 
 		// Start simulating:
@@ -301,6 +301,11 @@ public class Simulator implements Cancelable {
 				// LL modified error message on 7 April 2012
 				this.printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", e) }, curState, stateTrace);
 			}
+		} finally {
+			report.isRunning = false;
+			synchronized (report) {
+				report.notify();
+			}
 		}
 	}
 
@@ -426,10 +431,13 @@ public class Simulator implements Cancelable {
 	 * Reports progress information
 	 */
 	final class ProgressReport extends Thread {
+		
+		volatile boolean isRunning = true;
+		
 		public void run() {
 			int count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
 			try {
-				while (true) {
+				while (isRunning) {
 					synchronized (this) {
 						this.wait(TLCGlobals.progressInterval);
 					}
