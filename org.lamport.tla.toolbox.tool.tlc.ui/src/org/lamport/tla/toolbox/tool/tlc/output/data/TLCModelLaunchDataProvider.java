@@ -118,6 +118,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     protected String fingerprintCollisionProbability;
     // coverage items
     protected List<CoverageInformationItem> coverageInfo;
+    // One of the coverage infos indicate zero coverage.
+    protected boolean zeroCoverage = false;
     // progress information
     protected List<StateSpaceInformationItem> progressInformation;
 
@@ -460,6 +462,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     {
                         // only add coverage of the spec files
                         this.coverageInfo.add(item);
+                        if (item.getCount() == 0) {
+                        	this.zeroCoverage = true;
+                        }
                         informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     }
                     break;
@@ -955,6 +960,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         this.coverageInfo = coverageInfo;
     }
 
+    public boolean hasZeroCoverage() {
+    	return this.zeroCoverage;
+    }
+    
     public List<StateSpaceInformationItem> getProgressInformation()
     {
         return progressInformation;

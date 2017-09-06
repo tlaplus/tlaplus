@@ -136,6 +136,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     };
 
 	private IMarker incompleteStateExploration;
+	private IMarker zeroCoverage;
 
     /**
      * Constructor for the page
@@ -226,7 +227,26 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
 	                    break;
 	                case COVERAGE:
-	                    ResultPage.this.coverage.setInput(dataProvider.getCoverageInfo());
+	                	final List<CoverageInformationItem> coverageInfo = dataProvider.getCoverageInfo();
+	                	ResultPage.this.coverage.setInput(coverageInfo);
+						if (dataProvider.isDone() && coverageInfo.size() > 0) {
+							if (dataProvider.hasZeroCoverage()) {
+								if (zeroCoverage == null) {
+									final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
+											"Coverage is zero for at least a one module.", IMarker.SEVERITY_WARNING);
+									marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
+									zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+								}
+							} else if (zeroCoverage != null) {
+								try {
+									zeroCoverage.delete();
+									ResultPage.this.resetMessage(RESULT_PAGE_PROBLEM);
+									zeroCoverage = null;
+								} catch (CoreException e) {
+									TLCUIActivator.getDefault().logError(e.getMessage(), e);
+								}
+							}
+						}
 	                    break;
 	                case PROGRESS:
 	                    ResultPage.this.stateSpace.setInput(dataProvider.getProgressInformation());
@@ -395,6 +415,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 			if (incompleteStateExploration != null) {
 				incompleteStateExploration.delete();
 				incompleteStateExploration = null;
+			}
+			
+			if (zeroCoverage != null) {
+				zeroCoverage.delete();
+				zeroCoverage = null;
 			}
 
 			JFaceResources.getFontRegistry().removeListener(fontChangeListener);
@@ -973,7 +998,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     /**
      * Provides labels for the coverage table 
      */
-    static class CoverageLabelProvider extends LabelProvider implements ITableLabelProvider
+    static class CoverageLabelProvider extends LabelProvider implements ITableLabelProvider, ITableColorProvider
     {
         public final static String[] columnTitles = new String[] { "Module", "Location", "Count" };
         public final static int[] columnWidths = { 80, 200, 80 };
@@ -1025,6 +1050,17 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             return null;
         }
 
+		public Color getForeground(Object element, int columnIndex) {
+			return null; // Use default color
+		}
+
+		public Color getBackground(Object element, int columnIndex) {
+			final CoverageInformationItem cii = (CoverageInformationItem) element;
+			if (cii.getCount() == 0) {
+				return TLCUIActivator.getColor(SWT.COLOR_YELLOW);
+			}
+			return null;
+		}
     }
 
     /**
