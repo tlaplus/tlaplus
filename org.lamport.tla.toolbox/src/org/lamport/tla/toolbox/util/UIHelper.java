@@ -20,6 +20,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.IEclipseContext;
@@ -329,6 +331,26 @@ public class UIHelper {
 	 */
 	public static String getActivePerspectiveId() {
 		return UIHelper.getActivePage().getPerspective().getId();
+	}
+	
+	/**
+	 * @return Returns the {@link IEditorPart} for the given editor id without
+	 *         opening the editor or null if no editor with the given id exists.
+	 *         Contrary to the Eclipse facilities to find and editor, this method
+	 *         does not initialize/render/configure the editor instance. It is left
+	 *         to the callee to properly initialize the editor instance by e.g.
+	 *         adding it to a MultipageEditor.
+	 * @throws CoreException
+	 */
+	public static IEditorPart findEditor(final String editorId) throws CoreException {
+		final IExtensionRegistry registry = Platform.getExtensionRegistry();
+		final IConfigurationElement[] elements = registry.getConfigurationElementsFor(PlatformUI.PLUGIN_ID, "editors");
+		for (IConfigurationElement ice : elements) {
+			if (editorId.equals(ice.getAttribute("id"))) {
+				return (IEditorPart) ice.createExecutableExtension("class");
+			}
+		}
+		return null;
 	}
 
 	/**

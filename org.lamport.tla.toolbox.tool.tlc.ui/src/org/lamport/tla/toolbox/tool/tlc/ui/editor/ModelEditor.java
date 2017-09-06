@@ -1,5 +1,9 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 
 import org.eclipse.core.resources.IFile;
@@ -33,7 +37,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.INavigationHistory;
 import org.eclipse.ui.IPartService;
 import org.eclipse.ui.PartInitException;
@@ -57,7 +60,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ResultPage;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.StateGraphEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ModelEditorPartListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -67,6 +69,8 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import com.abstratt.graphviz.GraphViz;
 
 import tla2sany.semantic.ModuleNode;
 
@@ -541,20 +545,38 @@ public class ModelEditor extends FormEditor
 
         // TLCUIActivator.getDefault().logDebug("leaving ModelEditor#addPages()");
     }
-
+    
 	public void addOrUpdateStateGraphEditor(IFile stateGraphDotDump) {
-		final IFileEditorInput editorInput = new FileEditorInput(stateGraphDotDump);
-		final IEditorPart[] editors = findEditors(editorInput);
-		if (editors.length == 0) {
-			final IEditorPart editor = new StateGraphEditor();
-			try {
-				addPage(editor, editorInput);
-			} catch (final PartInitException e) {
-				e.printStackTrace();
+		try {
+			// Try to get hold of the editor instance without opening it yet. Opening is
+			// triggered by calling addPage.
+			final IEditorPart findEditor = UIHelper.findEditor("de.vonloesch.pdf4eclipse.editors.PDFEditor");
+
+			// Try to create a new (empty) pdf file.
+			final IFile file = model.getFolder().getFile(model.getName() + ".pdf");
+			if (file.exists()) {
+				addPage(findEditor, new FileEditorInput(file));
+				return;
 			}
-		} else {
-			final StateGraphEditor sge = (StateGraphEditor) editors[0];
-			sge.setFileEditorInput(editorInput);
+			byte[] load = new byte[0];
+
+			// Check size and refuse to generate if dot input too large (limit found empirically).
+			final File f = stateGraphDotDump.getLocation().toFile();
+			if (f.length() > 50_000) {
+				load = GraphViz.load(new ByteArrayInputStream(
+						"strict digraph DiskGraph {123 [shape=plaintext] [label=\"State Graph too large to visualize.\nReduce the number of distinct states and rerun TLC.\"]}"
+								.getBytes()),
+						"pdf", 0, 0);
+			} else {
+				load = GraphViz.load(new FileInputStream(stateGraphDotDump.getLocation().toFile()), "pdf", 0, 0);
+			}
+
+			// Write byte[] into IFile file
+			file.create(new ByteArrayInputStream(load), IResource.NONE, null);
+
+			addPage(findEditor, new FileEditorInput(file));
+		} catch (CoreException | FileNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -1151,8 +1173,8 @@ public class ModelEditor extends FormEditor
 
             }
             // setPageImage(pageIndex, image);
-		} else if (editor instanceof StateGraphEditor) {
-			setPageText(index, editor.getTitle());
+		} else if (input instanceof FileEditorInput && "pdf".equals(((FileEditorInput) input).getFile().getFileExtension())) {
+			setPageText(index, "State Graph");
 		}
     }
 
