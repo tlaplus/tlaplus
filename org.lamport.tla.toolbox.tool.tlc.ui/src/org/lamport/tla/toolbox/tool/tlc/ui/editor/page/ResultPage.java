@@ -233,7 +233,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 							if (dataProvider.hasZeroCoverage()) {
 								if (zeroCoverage == null) {
 									final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
-											"Coverage is zero for at least a one module.", IMarker.SEVERITY_WARNING);
+											"Coverage is zero for one or more modules.", IMarker.SEVERITY_WARNING);
 									marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
 									zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 								}
