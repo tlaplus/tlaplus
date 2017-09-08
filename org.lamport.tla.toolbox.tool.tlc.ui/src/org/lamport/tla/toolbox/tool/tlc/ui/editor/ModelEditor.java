@@ -576,7 +576,7 @@ public class ModelEditor extends FormEditor
 
 			addPage(findEditor, new FileEditorInput(file));
 		} catch (CoreException | FileNotFoundException e) {
-			e.printStackTrace();
+            TLCUIActivator.getDefault().logError(e.getMessage(), e);
 		}
 	}
 
