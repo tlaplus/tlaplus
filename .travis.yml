@@ -25,6 +25,8 @@
   - sudo free -m -t
   # Turn OOM killer off to stop it from killing JUnit tests.
   - sudo sysctl vm.overcommit_memory=2
+  # Unset funny _JAVA_OPTIONS which breaks our tests
+  - unset _JAVA_OPTIONS
 
 ## Disable instable UI tests for now. It means we won't need maven and can run ant directly.
 #  # Install Window Manager.
