@@ -61,12 +61,13 @@
                   commandId="org.lamport.tla.toolbox.doc.contents"
                   id="toolbox.menuItem.contentsHelp"
                   label="Table of Contents"
-                  mnemonic="C"
+                  mnemonic="T"
                   mode="FORCE_TEXT"
                   style="push"
                   tooltip="Opens Table of Contents">
             </command>
       </menuContribution>
+      <!-- The Operators of TLA+ -->
       <menuContribution
             allPopups="false"
             locationURI="menu:toolbox.menu.help?after=toolbox.command.help.tlaplus">
@@ -83,6 +84,41 @@
             </parameter>
          </command>
       </menuContribution>
+      <!-- The TLA+ Cheat Sheet: -->
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:toolbox.menu.help?after=toolbox.command.help.tlaplus">
+         <command
+               commandId="org.lamport.tla.toolbox.doc.pdf"
+               label="The TLA+ Cheat Sheet"
+               mnemonic="C"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the paper &quot;Summary of TLA+&quot;">
+            <parameter
+                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  value="summary-standalone.pdf">
+            </parameter>
+         </command>
+      </menuContribution>
+      <!-- C PlusCal Manual -->
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:toolbox.menu.help?after=toolbox.command.help.tlaplus">
+         <command
+               commandId="org.lamport.tla.toolbox.doc.pdf"
+               label="PlusCal User Manual"
+               mnemonic="P"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the paper &quot;A PlusCal User’s Manual - C-Syntax&quot;">
+            <parameter
+                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  value="c-manual.pdf">
+            </parameter>
+         </command>
+      </menuContribution>
+      <!-- Specifying Systems -->
       <menuContribution
             allPopups="false"
             locationURI="menu:toolbox.menu.help?after=toolbox.command.help.tlaplus">
@@ -120,7 +156,7 @@
 	         <command
 	               commandId="org.lamport.tla.toolbox.doc.url"
 	               label="TLA+ Examples"
-	               mnemonic="V"
+	               mnemonic="E"
 	               mode="FORCE_TEXT"
 	               style="push">
 	            <parameter
@@ -132,7 +168,7 @@
       <menuContribution
             allPopups="false"
             locationURI="menu:toolbox.menu.help?before=toolbox.command.about">
-         <menu id="community" label="Community">
+         <menu id="community" label="Community" mnemonic="Y">
 	         <command
 	               commandId="org.lamport.tla.toolbox.doc.url"
 	               label="TLA+ user group"
