@@ -847,11 +847,14 @@ public class ModelChecker extends AbstractChecker
         	for (IWorker worker : workers) {
 				aggOutDegree.add(((Worker) worker).getOutDegree());
 			}
-			MP.printMessage(EC.TLC_STATE_GRAPH_OUTDEGREE,
-					new String[] { Integer.toString(aggOutDegree.getMin()),
-							Long.toString(Math.round(aggOutDegree.getMean())),
-							Long.toString(Math.round(aggOutDegree.getPercentile(.95))),
-							Integer.toString(aggOutDegree.getMax()) });
+        	// Print graph statistics iff data points were actually collected.
+        	if (aggOutDegree.getObservations() > 0) {
+				MP.printMessage(EC.TLC_STATE_GRAPH_OUTDEGREE,
+						new String[] { Integer.toString(aggOutDegree.getMin()),
+								Long.toString(Math.round(aggOutDegree.getMean())),
+								Long.toString(Math.round(aggOutDegree.getPercentile(.95))),
+								Integer.toString(aggOutDegree.getMax()) });
+        	}
         }
     }
     
