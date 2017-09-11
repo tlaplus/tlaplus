@@ -31,6 +31,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.TLC;
 import tlc2.tool.fp.FPSetFactory;
+import tlc2.tool.fp.OffHeapDiskFPSet;
 import util.TLCRuntime;
 
 /**
@@ -101,13 +102,38 @@ public class TLCProcessJob extends TLCJob
             // get max heap size as fraction from model editor
             final double maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, 50) / 100d;
 			final TLCRuntime instance = TLCRuntime.getInstance();
-			final long absolutePhysicalSystemMemory = instance.getAbsolutePhysicalSystemMemory(maxHeapSize);
+			long absolutePhysicalSystemMemory = instance.getAbsolutePhysicalSystemMemory(maxHeapSize);
 
-			// Set class name of FPSet (added by MAK on 07/31/2012)
-			final String clazz = launch.getLaunchConfiguration().getAttribute(LAUNCH_FPSET_IMPL,
-					FPSetFactory.getImplementationDefault());
-			vmArgs.add("-D" + FPSetFactory.IMPL_PROPERTY + "=" + clazz);
-			vmArgs.add(FPSetFactory.getVMArguments(clazz, absolutePhysicalSystemMemory));
+			// Get class name of the user selected FPSet. If it is unset, try and load the
+			// OffHeapDiskFPSet (which might not be supported). In unsupported, revert to
+			// TLC's default set.
+			// If the user happened to select OffHeapDiskFPSet, the -XX:MaxDirectMemorySize
+			// is set by getVMArguments.
+			final String clazz = launch.getLaunchConfiguration().getAttribute(LAUNCH_FPSET_IMPL, (String) null);
+			if (clazz == null || clazz.equals(OffHeapDiskFPSet.class.getName())) {
+				if (OffHeapDiskFPSet.isSupported()) {
+					// ...good, can use lock-free/scalabe fpset, but need to divide assigned memory
+					// into JVM heap and non-heap/off-heap memory. Let's assign 2/3 to the off-heap
+					// FPSet.
+					final long offheapMemory = (long) (absolutePhysicalSystemMemory * 0.6666d);
+					vmArgs.add(FPSetFactory.getVMArguments(OffHeapDiskFPSet.class.getName(), offheapMemory));
+
+					// Rest goes to the heap (state queue/...).
+					vmArgs.add(FPSetFactory.getVMArguments(FPSetFactory.getImplementationDefault(),
+							absolutePhysicalSystemMemory - offheapMemory));
+					
+					vmArgs.add("-D" + FPSetFactory.IMPL_PROPERTY + "=" + OffHeapDiskFPSet.class.getName());
+				} else {
+					// Off-heap fpset couldn't be loaded. Use default fpset and assign all memory to
+					// heap memory.
+					vmArgs.add(FPSetFactory.getVMArguments(FPSetFactory.getImplementationDefault(),
+							absolutePhysicalSystemMemory));
+					vmArgs.add("-D" + FPSetFactory.IMPL_PROPERTY + "=" + FPSetFactory.getImplementationDefault());
+				}
+			} else {
+				vmArgs.add(FPSetFactory.getVMArguments(clazz, absolutePhysicalSystemMemory));
+				vmArgs.add("-D" + FPSetFactory.IMPL_PROPERTY + "=" + clazz);
+			}
 			
             // add remaining VM args
             vmArgs.addAll(getAdditionalVMArgs());

@@ -112,6 +112,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	private static final int PROBE_LIMIT = Integer.getInteger(OffHeapDiskFPSet.class.getName() + ".probeLimit", 1024);
 	static final long EMPTY = 0L;
 	
+
+	/**
+	 * @see LongArray#isSupported()
+	 */
+	public static boolean isSupported() {
+		return LongArray.isSupported();
+	}
+
 	private final transient LongArray array;
 	
 	/**

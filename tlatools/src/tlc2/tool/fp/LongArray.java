@@ -15,6 +15,7 @@ import java.util.concurrent.Future;
 import sun.misc.Unsafe;
 import tlc2.output.EC;
 import util.Assert;
+import util.TLCRuntime;
 
 /**
  * This implementation uses sun.misc.Unsafe instead of a wrapping
@@ -71,6 +72,25 @@ public final class LongArray {
 		}
 	}
 
+	/**
+	 * @return true iff LongArray can be used on the current JVM. It cannot be used
+	 *         if the architecture is not 64 bit and the sun.misc.Unsafe class
+	 *         cannot be loaded (on some JVM implementations, this isn't possible).
+	 */
+	public static boolean isSupported() {
+		if (TLCRuntime.ARCH.x86_64 != TLCRuntime.getInstance().getArchitecture()) {
+			return false;
+		}
+		try {
+			if (getUnsafe() != null) {
+				return true;
+			}
+			return false;
+		} catch (RuntimeException e) {
+			return false;
+		}
+	}
+	
 	/**
 	 * @return An Unsafe object or a {@link RuntimeException} wrapping any {@link Exception}. 
 	 */

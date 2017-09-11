@@ -22,7 +22,7 @@ public class LongArraysTest {
 	
 	@Before
 	public void setup() {
-		Assume.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
+		Assume.assumeTrue(LongArray.isSupported());
 	}
 	
 	@Test
