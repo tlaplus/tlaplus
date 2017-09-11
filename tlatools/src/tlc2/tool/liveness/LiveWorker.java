@@ -492,9 +492,9 @@ public class LiveWorker extends IdThread {
 	 * contains a counterexample, and this method then calls printErrorTrace to
 	 * print an error trace and returns false.
 	 * <p>
-	 * Speaking in words of Manna & Pnueli (Page 422ff), it checks if ¬&#966;
+	 * Speaking in words of Manna & Pnueli (Page 422ff), it checks if ~&#966;
 	 * (which is PEM) is "P-satisfiable" (i.e. is there a computation that
-	 * satisfies &#968;). ¬&#966; (called &#968; by MP) is the negation of the
+	 * satisfies &#968;). ~&#966; (called &#968; by MP) is the negation of the
 	 * liveness formula &#966; which has to be "P-valid" for the liveness
 	 * properties to be valid.
 	 * @throws ExecutionException 
@@ -599,7 +599,7 @@ public class LiveWorker extends IdThread {
 				for (int i = 0; i < aeslen; i++) {
 					// Only ever set AEStateRes[i] to true, but never to false
 					// once it was true. It only matters if one state in com
-					// satisfies PEM's liveness property due to []<>¬p (which is
+					// satisfies PEM's liveness property due to []<>~p (which is
 					// the inversion of <>[]p).
 					// 
 					// It obviously has to check all nodes in the component

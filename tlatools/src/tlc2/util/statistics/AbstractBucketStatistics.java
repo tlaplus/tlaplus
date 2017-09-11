@@ -173,7 +173,7 @@ public abstract class AbstractBucketStatistics implements IBucketStatistics {
 			Entry<Integer, Long> next = iterator.next();
 			double Xi = next.getKey() * 1.0d;
 			double diff = Xi - mean;
-			sum += (diff * diff) * ((next.getValue() * 1.0d)); // diff²
+			sum += (diff * diff) * ((next.getValue() * 1.0d)); // diff^2
 		}
 		double variance = sum / (N * 1.0d);
 		double stdDev = Math.sqrt(variance);

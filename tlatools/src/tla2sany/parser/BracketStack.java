@@ -132,8 +132,8 @@ public class BracketStack implements //LogCategories,
                           Offset is the end column of the token ...\/ ou .../\
                           on utilise - 1 pour comparer au de'but de la partie
                           significative du symbole.
-                          De cette manire, le comportement ne change pas si
-                          on utilise uniquement la forme non prfixe des
+                          De cette manire, le comportement ne change pas si
+                          on utilise uniquement la forme non prafixe des
                          symboles */
   }
 }
