@@ -31,7 +31,6 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE.SharedImages;
 import org.eclipse.ui.navigator.IDescriptionProvider;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
@@ -72,9 +71,9 @@ public class ToolboxLabelProvider extends LabelProvider implements ILabelProvide
 		}
 		if (element instanceof Spec) {
 			if (Activator.getSpecManager().isSpecLoaded((Spec) element)) {
-				return PlatformUI.getWorkbench().getSharedImages().getImage(SharedImages.IMG_OBJ_PROJECT);
+				return Activator.getDefault().getImageRegistry().get(Activator.IMG_SPEC_OPEN);
 			}
-			return PlatformUI.getWorkbench().getSharedImages().getImage(SharedImages.IMG_OBJ_PROJECT_CLOSED);
+			return Activator.getDefault().getImageRegistry().get(Activator.IMG_SPEC_CLOSED);
 		} else if (element instanceof Module) {
 			return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
 		} else if (element instanceof Group) {

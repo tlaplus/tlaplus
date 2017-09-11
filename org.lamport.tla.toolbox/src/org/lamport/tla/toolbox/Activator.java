@@ -11,8 +11,10 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.OutOfBuildSpecModulesGatheringDeltaVisitor;
@@ -29,6 +31,9 @@ public class Activator extends AbstractTLCActivator
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.lamport.tla.toolbox";
+    
+    public static final String IMG_SPEC_OPEN = "img_spec_open";
+    public static final String IMG_SPEC_CLOSED = "img_spec_closed";
 
     // The shared instance
     private static Activator plugin;
@@ -48,6 +53,14 @@ public class Activator extends AbstractTLCActivator
     {
         super.start(context);
         plugin = this;
+     
+		// Eclipse Neon has started to use PNG instead of GIF icons to support display
+		// with high dpi counts. Load two pngs which we used to get from the Eclipse
+		// Foundation but now have to provide ourself.
+		getImageRegistry().put(IMG_SPEC_OPEN, ImageDescriptor.createFromURL(
+				Platform.getBundle(org.lamport.tla.toolbox.Activator.PLUGIN_ID).getEntry("/icons/full/obj16/prj_obj.png")));
+		getImageRegistry().put(IMG_SPEC_CLOSED, ImageDescriptor.createFromURL(
+				Platform.getBundle(org.lamport.tla.toolbox.Activator.PLUGIN_ID).getEntry("/icons/full/obj16/cprj_obj.png")));
         
         // register the listeners
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
