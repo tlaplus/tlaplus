@@ -11,6 +11,7 @@ import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.PartInitException;
+import org.lamport.tla.toolbox.doc.HelpActivator;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.Bundle;
 
@@ -27,17 +28,17 @@ public class HelpPDFHandler extends AbstractHandler implements IHandler {
 					// Manifest
 					"de.vonloesch.pdf4eclipse.editors.PDFEditor", getDocFile("/pdfs/" + pdf), false);
 		} catch (PartInitException e) {
-			e.printStackTrace();
+			HelpActivator.getDefault().logError(e.getMessage(), e);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (URISyntaxException e) {
-			e.printStackTrace();
+			HelpActivator.getDefault().logError(e.getMessage(), e);
 		}
 		return null;
 	}
 
 	private File getDocFile(final String bundleRelativePath) throws IOException, URISyntaxException {
-		final Bundle bundle = Platform.getBundle("org.lamport.tla.toolbox.doc");
+		final Bundle bundle = Platform.getBundle(HelpActivator.PLUGIN_ID);
 		return new File(FileLocator.resolve(bundle.getEntry(bundleRelativePath)).toURI());
 	}
 }
