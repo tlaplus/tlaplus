@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -67,6 +68,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ChangedSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
+import org.lamport.tla.toolbox.ui.view.PDFBrowserEditor;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -548,9 +550,22 @@ public class ModelEditor extends FormEditor
     
 	public void addOrUpdateStateGraphEditor(IFile stateGraphDotDump) {
 		try {
-			// Try to get hold of the editor instance without opening it yet. Opening is
-			// triggered by calling addPage.
-			final IEditorPart findEditor = UIHelper.findEditor("de.vonloesch.pdf4eclipse.editors.PDFEditor");
+			// For historical reasons this preference is found in the tlatex bundle. Thus,
+			// we read the value from there, but don't refer to the corresponding string
+			// constants to not introduce a plugin dependency.
+			// org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator.PLUGIN_ID
+			// org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER
+			final boolean useEmbeddedViewer = Platform.getPreferencesService()
+					.getBoolean("org.lamport.tla.toolbox.tool.tla2tex", "embeddedViewer", false, null);
+			
+			IEditorPart findEditor;
+			if (useEmbeddedViewer) {
+				// Try to get hold of the editor instance without opening it yet. Opening is
+				// triggered by calling addPage.
+				findEditor = UIHelper.findEditor("de.vonloesch.pdf4eclipse.editors.PDFEditor");
+			} else {
+				findEditor = UIHelper.findEditor(PDFBrowserEditor.ID);
+			}
 
 			// Try to create a new (empty) pdf file.
 			final IFile file = model.getFolder().getFile(model.getName() + ".pdf");

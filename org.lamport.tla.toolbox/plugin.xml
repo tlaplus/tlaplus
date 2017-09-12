@@ -131,6 +131,16 @@
             restorable="false">
       </view>
    </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.lamport.tla.toolbox.ui.view.PDFBrowserEditor"
+            extensions="pdf"
+            icon="icons/document-pdf.png"
+            id="org.lamport.tla.toolbox.PDFBrowserEditor"
+            name="PDF Editor">
+      </editor>
+   </extension>
       
 <!--                                   -->
 <!-- Wizards : New Spec                -->
