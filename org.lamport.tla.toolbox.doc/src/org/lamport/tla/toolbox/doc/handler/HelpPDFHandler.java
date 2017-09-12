@@ -18,7 +18,8 @@ import org.osgi.framework.Bundle;
 public class HelpPDFHandler extends AbstractHandler implements IHandler {
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		final String pdf = event.getParameter("org.lamport.tla.toolbox.doc.pdf.name");
+		final String pdf = event.getParameter("org.lamport.tla.toolbox.doc.pdf.file");
+		final String name = event.getParameter("org.lamport.tla.toolbox.doc.pdf.name");
 		try {
 			UIHelper.openEditorUnchecked(
 					// Referencing de.vonloesch...
@@ -26,11 +27,11 @@ public class HelpPDFHandler extends AbstractHandler implements IHandler {
 					// dependency which is not made
 					// explicit in the bundle's
 					// Manifest
-					"de.vonloesch.pdf4eclipse.editors.PDFEditor", getDocFile("/pdfs/" + pdf), false);
+					"de.vonloesch.pdf4eclipse.editors.PDFEditor", getDocFile("/pdfs/" + pdf), name, false);
 		} catch (PartInitException e) {
 			HelpActivator.getDefault().logError(e.getMessage(), e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			HelpActivator.getDefault().logError(e.getMessage(), e);
 		} catch (URISyntaxException e) {
 			HelpActivator.getDefault().logError(e.getMessage(), e);
 		}

@@ -36,8 +36,13 @@
             id="org.lamport.tla.toolbox.doc.pdf"
             name="Help located in a local PDF">
          <commandParameter
-               id="org.lamport.tla.toolbox.doc.pdf.name"
+               id="org.lamport.tla.toolbox.doc.pdf.file"
                name="pdf"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="org.lamport.tla.toolbox.doc.pdf.name"
+               name="name"
                optional="false">
          </commandParameter>
       </command>
@@ -79,8 +84,12 @@
                style="push"
                tooltip="Opens the paper &quot;The Operators of  TLA+&quot;">
             <parameter
-                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  name="org.lamport.tla.toolbox.doc.pdf.file"
                   value="SRC-TN-1997-006A.pdf">
+            </parameter>
+            <parameter
+                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  value="Operators of TLA+">
             </parameter>
          </command>
       </menuContribution>
@@ -96,8 +105,12 @@
                style="push"
                tooltip="Opens the paper &quot;Summary of TLA+&quot;">
             <parameter
-                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  name="org.lamport.tla.toolbox.doc.pdf.file"
                   value="summary-standalone.pdf">
+            </parameter>
+            <parameter
+                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  value="TLA+ Cheat Sheet">
             </parameter>
          </command>
       </menuContribution>
@@ -113,8 +126,12 @@
                style="push"
                tooltip="Opens the paper &quot;A PlusCal User’s Manual - C-Syntax&quot;">
             <parameter
-                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  name="org.lamport.tla.toolbox.doc.pdf.file"
                   value="c-manual.pdf">
+            </parameter>
+            <parameter
+                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  value="PlusCal Manual">
             </parameter>
          </command>
       </menuContribution>
@@ -130,8 +147,12 @@
                style="push"
                tooltip="Opens the book &quot;Specifying Systems&quot;">
             <parameter
-                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  name="org.lamport.tla.toolbox.doc.pdf.file"
                   value="book-02-08-08.pdf">
+            </parameter>
+            <parameter
+                  name="org.lamport.tla.toolbox.doc.pdf.name"
+                  value="Specifying Systems">
             </parameter>
          </command>
       </menuContribution>

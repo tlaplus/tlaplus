@@ -409,16 +409,24 @@ public class UIHelper {
 		return openEditorUnchecked(editorId, new FileEditorInput(file), activate);
 	}
 	
-	public static IEditorPart openEditorUnchecked(String editorId, File file) throws PartInitException {
-		return openEditorUnchecked(editorId, file, true);
+	/**
+	 * @see UIHelper#openEditorUnchecked(String, File, String, boolean)
+	 */
+	public static IEditorPart openEditorUnchecked(String editorId, File file, final String name) throws PartInitException {
+		return openEditorUnchecked(editorId, file, name, true);
 	}
 	
-	public static IEditorPart openEditorUnchecked(String editorId, File file, boolean activate) throws PartInitException {
+	/**
+	 * @param file The file to open
+	 * @param name A human readable name for the input file. If the file name is to be used, pass {@link File#getName()}
+	 * @see UIHelper#openEditorUnchecked(String, IEditorInput, boolean)
+	 */
+	public static IEditorPart openEditorUnchecked(final String editorId, final File file, final String name, final boolean activate) throws PartInitException {
 		final IFileSystem localFileSystem = EFS.getLocalFileSystem();
 		final IFileStore fromLocalFile = localFileSystem.fromLocalFile(file);
-		return openEditorUnchecked(editorId, new FileStoreEditorInput(fromLocalFile), activate);
+		return openEditorUnchecked(editorId, new NamedFileStoreEditorInput(fromLocalFile, name), activate);
 	}
-
+	
 	public static IEditorPart openEditorUnchecked(String editorId, IEditorInput input) throws PartInitException {
 		return openEditorUnchecked(editorId, input, true);
 	}
@@ -1272,6 +1280,21 @@ public class UIHelper {
 			// you do get the current string.
 			statusLineManager.setMessage(null);
 			selectionService.removeSelectionChangedListener(this);
+		}
+	}
+
+	private static class NamedFileStoreEditorInput extends FileStoreEditorInput {
+
+		private final String name;
+
+		public NamedFileStoreEditorInput(final IFileStore fileStore, final String name) {
+			super(fileStore);
+			this.name = name;
+		}
+		
+		@Override
+		public String getName() {
+			return name;
 		}
 	}
 
