@@ -802,8 +802,10 @@ public class TLC
                 {
                     rng.setSeed(seed, aril);
                 }
-				MP.printMessage(EC.TLC_MODE_SIMU, new String[] { String.valueOf(seed), cores, osName, osVersion, osArch, vendor,
-						version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory) });
+				MP.printMessage(EC.TLC_MODE_SIMU,
+						new String[] { String.valueOf(seed), String.valueOf(TLCGlobals.getNumWorkers()),
+								TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
+								version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory) });
                 Simulator simulator = new Simulator(mainFile, configFile, null, deadlock, traceDepth, 
                         traceNum, rng, seed, true, resolver, specObj);
                 TLCGlobals.simulator = simulator;
