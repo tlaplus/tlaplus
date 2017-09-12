@@ -469,9 +469,6 @@ package tla2tex;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import pcal.MappingObject.EndTLAToken;
-import pcal.PCalLocation;
-
 /**
  * @author lamport
  *
@@ -1182,7 +1179,7 @@ public class TokenizeSpec
                             };
                           token = token.substring(0, token.length()-1);
                         } ;
-                        nextChar = reader.getNextChar();
+                        skipNextChar();
                       } ;
                       boolean saved = BuiltInSymbols.CanPrecedeLabel(token) ;
                       TokenOut(Token.BUILTIN) ;

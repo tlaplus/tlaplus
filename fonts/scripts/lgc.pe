@@ -1,0 +1,26 @@
+#!/usr/bin/env fontforge
+
+# script to strip non-LGC glyphs out of the fonts
+
+i = 1
+while ( i < $argc )
+  Open($argv[i], 1)
+
+  Select(0u0530, 0u1cff)        # Armenian through Vedic Extensions
+  SelectMore(0u2c00, 0u2c5f)    # Glagolitic
+  SelectMore(0u2d00, 0u2ddf)    # Georgian Supplement through Ethiopic Extended
+  SelectMore(0u2e80, 0ua63f)    # CJK Radicals through Vai
+  SelectMore(0ua6a0, 0ua6ff)    # Banum
+  SelectMore(0ua800, 0udfff)    # Syloti Nagri through Hangul
+  SelectMore(0uf900, 0ufaff)    # CJK Compatibility Ideographs
+  SelectMore(0ufb07, 0ufe1f)    # Alphabetical Presentation Forms (partial) through Vertical Forms
+  SelectMore(0ufe30, 0uffef)    # CJK Compatibility Forms through Halfwidth and Fullwidth Forms
+  SelectMore(0u10000, 0u1d37f)  # Linear B Syllabary through Counting Rod Numerals
+  SelectMore(0u1ee00, 0u1f02f)  # Arabic Mathematical Alphabetic Symbols through Mahjong Tiles
+  SelectMore(0u1f200, 0u1f2ff)  # Enclosed Ideographic Supplement
+  SelectMore(0u20000, 0ueffff)  # CJK Unified Ideographs Extention B and everything thereafter
+  Clear()
+
+  Save($argv[i])
+  i++
+endloop

@@ -32,7 +32,11 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
+import org.lamport.tla.toolbox.util.TLASourceViewer;
+import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import tla2unicode.Unicode;
 
 /**
  * A view that shows information about interesting
@@ -456,10 +460,11 @@ public class ObligationsView extends ViewPart
                  * obligations difficult to read, so a horizontal scroll
                  * bar is necessary.
                  */
-                SourceViewer viewer = new SourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL);
+                SourceViewer viewer = new TLASourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL);
                 viewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
                 viewer.configure(new ObligationSourceViewerConfiguration());
                 viewer.getControl().setFont(JFaceResources.getTextFont());
+                
                 // add the control to the list of controls to be notified when the
                 // text editor font changes.
                 fontListener.addControl(viewer.getControl());

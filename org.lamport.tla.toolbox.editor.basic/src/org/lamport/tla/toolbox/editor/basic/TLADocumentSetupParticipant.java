@@ -4,7 +4,6 @@ import org.eclipse.core.filebuffers.IDocumentSetupParticipant;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.rules.FastPartitioner;
 
 /**
  * Responsible for document setup
@@ -20,6 +19,8 @@ public class TLADocumentSetupParticipant implements IDocumentSetupParticipant
                                                 // Changed from FastPartitioner by LL on 12 Aug 2012
             extension3.setDocumentPartitioner(TLAPartitionScanner.TLA_PARTITIONING, partitioner);
             partitioner.connect(document);
+            
+    		// new TLAUnicodeReplacer().init(document);
         }
     }
 }

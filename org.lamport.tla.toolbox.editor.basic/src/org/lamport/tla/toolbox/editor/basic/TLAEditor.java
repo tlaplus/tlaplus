@@ -37,6 +37,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
@@ -45,10 +46,15 @@ import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.IUndoManagerExtension;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.AnnotationModelEvent;
+import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.jface.text.source.IAnnotationModelListener;
+import org.eclipse.jface.text.source.IAnnotationModelListenerExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
@@ -71,6 +77,8 @@ import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.editors.text.IEncodingSupport;
+import org.eclipse.ui.editors.text.IStorageDocumentProvider;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
@@ -82,18 +90,26 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
 import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
-import org.lamport.tla.toolbox.editor.basic.proof.TLAProofPosition;
+import org.lamport.tla.toolbox.editor.basic.util.DocumentUndoUtil;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
+import org.lamport.tla.toolbox.editor.basic.util.ProgressMonitorDecorator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
+import org.lamport.tla.toolbox.util.TLAFileDocumentProvider;
+import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.util.TLAtoPCalMarker;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventHandler;
 
 import pcal.PCalLocation;
 import pcal.TLAtoPCalMapping;
+import tla2sany.st.Location;
+import tla2unicode.TLAUnicode;
+import tla2unicode.Unicode;
 
 /**
  * Basic editor for TLA+
@@ -112,7 +128,7 @@ public class TLAEditor extends TextEditor
 	public static final String ID = "org.lamport.tla.toolbox.editor.basic.TLAEditor";
     private IContextService contextService = null;
     private IContextActivation contextActivation = null;
-
+    
     // projection support is required for folding
     private ProjectionSupport projectionSupport;
     // image for root module icon
@@ -125,6 +141,7 @@ public class TLAEditor extends TextEditor
     private ProjectionAnnotationModel annotationModel;
     // proof structure provider
     private TLAProofFoldingStructureProvider proofStructureProvider;
+    
 	// keeps hold of the IUndoableOperations caused by the programmatically
 	// executed doc.replace changes in doSave()
     private final List<IUndoableOperation> lastUndoOperations = new ArrayList<IUndoableOperation>(2);
@@ -147,6 +164,8 @@ public class TLAEditor extends TextEditor
      */
     private IResourceChangeListener moduleFileChangeListener;
 	private IEventBroker service;
+	private final EventHandler eventHandler;
+	
 
     /**
      * Constructor
@@ -155,11 +174,27 @@ public class TLAEditor extends TextEditor
     {
 
         super();
-
+        
         // help id
         setHelpContextId("org.lamport.tla.toolbox.editor.basic.main_editor_window");
+        
+        this.eventHandler = new EventHandler() {
+			@Override
+			public void handleEvent(Event event) {
+				if (event == null)
+					return;
+				final Object value = event.getProperty(IEventBroker.DATA);
+				switch (event.getTopic()) {
+				case TLAUnicodeReplacer.EVENTID_TOGGLE_UNICODE:
+					unicodeToggleHandler((Boolean)value);
+					break;
+				default:		
+				}
+			}
+		};
     }
 
+    
     /**
      * Register the element state listener to react on the changes to the state (saved, dirty:=not saved) 
      */
@@ -173,6 +208,8 @@ public class TLAEditor extends TextEditor
             provider.addElementStateListener(new ElementStateAdapter() {
                 public void elementDirtyStateChanged(Object element, boolean isDirty)
                 {
+                	if (contextService == null)
+                		return;
                     if (isDirty)
                     {
                         contextService.deactivateContext(contextActivation);
@@ -182,9 +219,15 @@ public class TLAEditor extends TextEditor
                     }
                 }
             });
+            ((IStorageDocumentProvider)provider).setEncoding(input, "UTF-8");
         }
     }
 
+    @Override
+    protected void doSetInput(IEditorInput input) throws CoreException {
+    	super.doSetInput(input);
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.eclipse.ui.texteditor.AbstractTextEditor#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
@@ -273,8 +316,27 @@ public class TLAEditor extends TextEditor
 				}
 			}
 		});
+		
+    	setUnicode0(TLAUnicodeReplacer.isUnicode());
     }
 
+    // @Inject
+    private void unicodeToggleHandler(/*@UIEventTopic(TLAUnicodeReplacer.EVENTID_TOGGLE_UNICODE)*/ boolean value) {
+    	final TLAFileDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return;
+		
+		TextSelection selection = (TextSelection) getSelectionProvider().getSelection();
+		final int visible = getSourceViewer().getTopIndex();
+		closeUndo();
+		dp.setUnicode0(getEditorInput(), value);
+		discardUndo(1);
+    	convertUndo(TLAUnicodeReplacer.isUnicode());
+    	getSourceViewer().setTopIndex(visible);
+    	getSelectionProvider().setSelection(dp.converSelection1(getEditorInput(), value, selection));
+		firePropertyChange(PROP_DIRTY);
+    }
+    
 	private IUndoContext getUndoContext() {
 		if (getSourceViewer() instanceof ITextViewerExtension6) {
 			IUndoManager undoManager = ((ITextViewerExtension6) getSourceViewer()).getUndoManager();
@@ -294,6 +356,7 @@ public class TLAEditor extends TextEditor
         // ensure decoration support has been created and configured.
         // @see org.eclipse.ui.texteditor.ExtendedTextEditor#createSourceViewer
         getSourceViewerDecorationSupport(viewer);
+        
         return viewer;
     }
 
@@ -310,9 +373,13 @@ public class TLAEditor extends TextEditor
         projectionSupport.install();
         viewer.doOperation(ProjectionViewer.TOGGLE);
 
+        new TLAUnicodeReplacer().init(viewer);
+        
         // model for adding projections (folds)
         this.annotationModel = viewer.getProjectionAnnotationModel();
-
+//        annotationModel.addAnnotationModel(IChangeRulerColumn.QUICK_DIFF_MODEL_ID, attachment);
+        
+        annotationModel.addAnnotationModelListener(new AnnotationModelListener());
         // this must be instantiated after annotationModel so that it does
         // not call methods that use annotation model when the model is still null
         this.proofStructureProvider = new TLAProofFoldingStructureProvider(this);
@@ -324,6 +391,7 @@ public class TLAEditor extends TextEditor
         // tlapmColoring = new TLAPMColoringOutputListener(this);
         
         service = this.getSite().getService(IEventBroker.class);
+        service.subscribe(TLAUnicodeReplacer.EVENTID_TOGGLE_UNICODE, eventHandler);
     }
 
     /**
@@ -447,9 +515,49 @@ public class TLAEditor extends TextEditor
     {
         final IEditorInput editorInput = this.getEditorInput();
 		IDocument doc = this.getDocumentProvider().getDocument(editorInput);
-        String text = doc.get();
+        
 
-        // Set historyStart to the offset at the start of the
+        addModificationHistory(doc);
+        
+		// Send out a save event through the event bus. There might be parties
+		// interested in this, e.g. to regenerate the pretty printed pdf.
+        // This instanceof check should always evaluate to true.
+        if (editorInput instanceof FileEditorInput) {
+        	final FileEditorInput fei = (FileEditorInput) editorInput;
+        	final IFile spec = fei.getFile();
+        	service.post(SAVE_EVENT, spec);
+        }
+        
+        closeUndo();
+		final TextSelection selection = (TextSelection) getSelectionProvider().getSelection();
+		final int visible = getSourceViewer().getTopIndex();
+        super.doSave(new ProgressMonitorDecorator(progressMonitor) {
+        	public void done() {
+        		UIHelper.runUIAsync(new Runnable() {
+					@Override
+					public void run() {
+						if (TLAUnicodeReplacer.isUnicode())
+							captureUndo(2);
+						getSourceViewer().setTopIndex(visible);
+						getSelectionProvider().setSelection(selection);
+						firePropertyChange(PROP_DIRTY);
+					}
+				});
+        		super.done();
+        	}
+        });
+    }
+    
+    public void doRevertToSaved() {
+    	Thread.dumpStack();
+    	super.doRevertToSaved();
+    	setUnicode(TLAUnicodeReplacer.isUnicode());
+    }
+
+	private void addModificationHistory(IDocument doc) {
+		String text = doc.get();
+		
+		// Set historyStart to the offset at the start of the
         // modification history section, if there is one. And if there is,
         // we add the modification date and user.
         int historyStart = text.indexOf(ResourceHelper.modificationHistory);
@@ -522,42 +630,99 @@ public class TLAEditor extends TextEditor
                 
     			// Save the last one to two (depending on boolean "found")
     			// IUndoableOperations created by the previous two doc.replace(...)
-    			// calls to the empty list of IUndoableOperations. The
-    			// IOperationHistoryListener in init(..) checks this list if the
-    			// currently undone IUndoableOp. is in the list. If yes, it also
-    			// undoes the operation preceding the currently undone one.
+    			// calls to the empty list of IUndoableOperations.
     			//
     			// The above stunt makes sure that a single user triggered undo does
     			// not only undo the programmatically created footer change, but the
     			// actual change made by the user.
-    			lastUndoOperations.clear(); // no need to keep old IUndoableOps created by earlier footer changes
-    			final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport()
-    					.getOperationHistory();
-    			final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(getUndoContext());
-    			if (found) {
-    				lastUndoOperations.add(undoHistory[undoHistory.length - 2]);
-    			}
-    			lastUndoOperations.add(undoHistory[undoHistory.length - 1]);
+    			captureUndo(found ? 2 : 1);
             } catch (BadLocationException e)
             { // TLAEditorActivator.getDefault().logDebug("Exception.");
 
             }
 
         } // end if (historyStart > -1)
-        
-        
-		// Send out a save event through the event bus. There might be parties
-		// interested in this, e.g. to regenerate the pretty printed pdf.
-        // This instanceof check should always evaluate to true.
-        if (editorInput instanceof FileEditorInput) {
-        	final FileEditorInput fei = (FileEditorInput) editorInput;
-        	final IFile spec = fei.getFile();
-        	service.post(SAVE_EVENT, spec);
-        }
-        
-        super.doSave(progressMonitor);
-    }
+	}
 
+	private void captureUndo(int n) {
+		// The IOperationHistoryListener in init(..) checks this list if the
+		// currently undone IUndoableOp. is in the list. If yes, it also
+		// undoes the operation preceding the currently undone one.
+		if (lastUndoOperations.size() > 15)
+			lastUndoOperations.remove(0); // no need to keep old IUndoableOps 
+		final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
+		final IUndoContext undoContext = getUndoContext();
+		if (undoContext == null)
+			return;
+		final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(undoContext);
+		for (int i = Math.max(undoHistory.length - n, 0); i < undoHistory.length; i++)
+			lastUndoOperations.add(undoHistory[i]);
+	}
+	
+	private void closeUndo() {
+		final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
+		operationHistory.closeOperation(true, true, IOperationHistory.EXECUTE);
+	}
+	
+	private void discardUndo(int n) {
+		closeUndo();
+		final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
+		final IUndoContext undoContext = getUndoContext();
+		if (undoContext == null)
+			return;
+		final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(undoContext);
+//		System.err.println("---------------------------------------------");
+//		System.err.println("UUUUU: n = " + n + " undoHistory.length = " + undoHistory.length);
+//		Thread.dumpStack();
+//		for (int i = Math.max(undoHistory.length - 1, 0); i >= 0; i--)
+//			System.err.println("WWWWW: " + i + " " + undoHistory[i]);
+//		System.err.println("((((((((((((((((((((((((");
+		for (int i = Math.max(undoHistory.length - n, 0); i < undoHistory.length; i++) {
+//			System.err.println("UUUUU: " + i + " " + undoHistory[i]);
+			operationHistory.replaceOperation(undoHistory[i], new IUndoableOperation[0]);
+		}
+//		System.err.println("==============================================");
+	}
+	
+	private void convertUndo(boolean toUnicode) {
+    	final TLAFileDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return;
+		final IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
+		final IUndoContext undoContext = getUndoContext();
+		if (undoContext == null)
+			return;
+		final IUndoableOperation[] undoHistory = operationHistory.getUndoHistory(undoContext);
+		
+		for (int i = 0; i < undoHistory.length; i++)
+			convertUndo(toUnicode, undoHistory[i], dp);
+			// operationHistory.replaceOperation(undoHistory[i], new IUndoableOperation[0]);
+	}
+	
+	private IUndoableOperation convertUndo(boolean toUnicode, IUndoableOperation op, TLAFileDocumentProvider dp) {
+		if (DocumentUndoUtil.isCompound(op)) {
+			for (IUndoableOperation op1 : DocumentUndoUtil.getChanges(op))
+				convertUndo(toUnicode, op1, dp);
+		} else {
+			try {
+				final int start = DocumentUndoUtil.getStart(op); 
+				final int end = DocumentUndoUtil.getEnd(op); 
+				final String text = DocumentUndoUtil.getText(op); 
+				final String preservedText = DocumentUndoUtil.getPreservedText(op); 
+				
+				// System.out.println("WWWWW start: " + start + " end: " + end + " text: " + text + " preserved: " + preservedText);
+				DocumentUndoUtil.setStart(op, dp.convertOffset1(getEditorInput(), toUnicode, start));
+				DocumentUndoUtil.setEnd(op, dp.convertOffset1(getEditorInput(), toUnicode, end));
+				
+				DocumentUndoUtil.setText(op, Unicode.convert(toUnicode, text));
+				DocumentUndoUtil.setPreservedText(op, Unicode.convert(toUnicode, preservedText));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return op;
+	}
+	
     /**
      * Update the annotation structure in the editor.
      * 
@@ -574,16 +739,22 @@ public class TLAEditor extends TextEditor
     		return;
     	}
 
+//    	List<Position> ps1 = new ArrayList<>(positions.size());
+//    	for (Position p : positions)
+//    		ps1.add(convertPosition(false, p));
+//    	positions = ps1;
+    	
         Annotation[] annotations = new Annotation[positions.size()];
 
-        // this will hold the new annotations along
+         // this will hold the new annotations along
         // with their corresponding positions
         Map<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
 
         for (int i = 0; i < positions.size(); i++)
         {
             ProjectionAnnotation annotation = new ProjectionAnnotation();
-            newAnnotations.put(annotation, positions.get(i));
+//            newAnnotations.put(annotation, positions.get(i));
+            newAnnotations.put(annotation, convertPosition(false, positions.get(i)));
             annotations[i] = annotation;
         }
         // If this method is called too early, then annotationModel
@@ -602,8 +773,13 @@ public class TLAEditor extends TextEditor
      * @param deletions
      * @param additions
      */
-    public void modifyProjectionAnnotations(Annotation[] deletions, Map<ProjectionAnnotation, TLAProofPosition> additions)
+    public void modifyProjectionAnnotations(Annotation[] deletions, Map<ProjectionAnnotation, ? extends Position> additions)
     {
+    	Map<ProjectionAnnotation, Position> as1 = new HashMap<>(additions.size());
+    	for (Map.Entry<ProjectionAnnotation, ? extends Position> e : additions.entrySet())
+    		as1.put(e.getKey(), convertPosition(false, e.getValue()));
+    	additions = as1;
+    	
         this.annotationModel.modifyAnnotations(deletions, additions, null);
     }
     
@@ -756,6 +932,25 @@ public class TLAEditor extends TextEditor
         {
             return getSelectionProvider();
         }
+        
+        if (IEncodingSupport.class.equals(required)) {
+        	return new IEncodingSupport() {
+				
+				@Override
+				public void setEncoding(String encoding) {
+				}
+				
+				@Override
+				public String getEncoding() {
+					return "UTF-8";
+				}
+				
+				@Override
+				public String getDefaultEncoding() {
+					return "UTF-8";
+				}
+			};
+        }
 
         return super.getAdapter(required);
     }
@@ -766,6 +961,7 @@ public class TLAEditor extends TextEditor
         proofStructureProvider.dispose();
         rootImage.dispose();
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(moduleFileChangeListener);
+        service.unsubscribe(eventHandler);
         super.dispose();
     }
 
@@ -961,5 +1157,88 @@ public class TLAEditor extends TextEditor
             return null;
         }
     }
+    
+    public TLAFileDocumentProvider getDocumentProvider() {
+    	return (TLAFileDocumentProvider) super.getDocumentProvider();
+    }
+    
+    private void setUnicode(final boolean unicode) {
+    	UIHelper.runUIAsync(new Runnable() {
+			@Override
+			public void run() {
+        		setUnicode0(unicode);
+			}
+		});
+    }
+    
+	private void setUnicode0(boolean unicode) {
+		if (TLAUnicodeReplacer.isUnicode())
+			discardUndo(1);
+	}
+    
+    public IDocument getAsciiDocument() {
+    	return getDocumentProvider().getAsciiDocument(getEditorInput());
+    }
+    
+ // screen: is the given location in editor coordinates
+    public Location convertLocation(boolean screen, Location location) {
+		final TLAFileDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return null;
+		return dp.convertLocationIfUnicode(getEditorInput(), screen, location);
+    }
+    
+    public Position convertPosition(boolean screen, Position position) {
+    	final TLAFileDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return null;
+		return dp.convertPositionIfUnicode(getEditorInput(), screen, position);
+    }
+    
+    private class AnnotationModelListener implements IAnnotationModelListener, IAnnotationModelListenerExtension {
+    	private boolean recursive;
+    	
+		@Override
+		public void modelChanged(AnnotationModelEvent event) {
+			if (recursive)
+				return;
+			recursive = true;
+			try {
+//				final AnnotationModel am = (AnnotationModel)event.getAnnotationModel(); 
+//				for (Annotation ann : event.getAddedAnnotations())
+//					am.modifyAnnotationPosition(ann, convertPosition(false, am.getPosition(ann)));
+			} finally {
+				recursive = false;
+			}
+		}
 
+		@Override
+		public void modelChanged(IAnnotationModel model) {
+			throw new AssertionError("Shouldn't be called");	
+		}
+    }
+    
+ // screen: is the given offset in editor coordinates
+    public int convertOffsetIfUnicode(boolean screen, int offset) {
+    	final TLAFileDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return -1;
+		return dp.convertOffsetIfUnicode(getEditorInput(), screen, offset);
+    }
+    
+    public IRegion convertRegionIfUnicode(boolean screen, IRegion region) {
+		final TLAFileDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return null;
+		return dp.convertRegionIfUnicode(getEditorInput(), screen, region);
+    }
+    
+	private void setDirty(boolean dirty) {
+		final IEditorInput editorInput = getEditorInput();
+		final IDocumentProvider dp = getDocumentProvider();
+		if (dp == null)
+			return;
+		((TLAFileDocumentProvider)dp).setDirty(editorInput, dirty);
+    	firePropertyChange(PROP_DIRTY);
+	}
 }

@@ -50,8 +50,14 @@ public class Token
 
     public int column ;
       /*********************************************************************
+      * The string of the token.  This is usually what the user has        *
+      * typed, but it may also be something else.                          *
+      *********************************************************************/
+
+    public int outcolumn = -1 ; // used by unicode converter only
+      /*********************************************************************
       * The column in which the first character of the token appears in    *
-      * the input.                                                         *
+      * the output.                                                        *
       *********************************************************************/
       
     public int type ;
@@ -229,7 +235,7 @@ public class Token
     * tokens created by TokenizeSpec for something like "<42>" or          *
     * "<42>1a." into a single token of type PF_STEP.                       *
     ***********************************************************************/
-    static void FindPfStepTokens(Token[][] toks) {
+    public static void FindPfStepTokens(Token[][] toks) {
       for (int k = 0 ; k < toks.length ; k++) 
         { Token[] input = toks[k] ;
           Vector outputVec = new Vector(input.length) ;
@@ -320,6 +326,8 @@ public class Token
                          + ",\t type |-> "  + typeName
                          + ",\t col |-> "   + column
                          + ",\t width |-> " + getWidth() ;
+        if (outcolumn >= 0)
+        	 {result = result + ",\t outcolumn |-> " + outcolumn;} ;
         if (aboveAlign.line != -1)
              {result = result + ",\t above |-> " + aboveAlign.toString();} ;
         if (belowAlign.line  != -1)

@@ -17,8 +17,10 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 
 import tla2sany.semantic.OpDefNode;
+import tla2unicode.Unicode;
 
 /**
  * Section part for the DefinitionOverride section of the Advanced Options page
@@ -157,6 +159,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         tableViewer.setLabelProvider(new LabelProvider() {
             public String getText(Object element)
             {
+            	final String text;
                 if (element instanceof Assignment)
                 {
                     Assignment assign = (Assignment) element;
@@ -171,9 +174,10 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
                         rightSide = assign.getRight();
                     }
                     Assignment assignNoBang = new Assignment(noBangLabel, assign.getParams(), rightSide);
-                    return assignNoBang.toString();
-                }
-                return super.getText(element);
+                    text = assignNoBang.toString();
+                } else
+                	text = super.getText(element);
+                return Unicode.convert(TLAUnicodeReplacer.isUnicode(), text);
             }
         });
 

@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -74,6 +75,7 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
@@ -93,6 +95,7 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
+import tla2tex.TLA;
 
 /**
  * A Helper for handling the RCP Objects like windows, editors and views
@@ -918,19 +921,6 @@ public class UIHelper {
 									return;
 								}
 							}
-							// we now need to convert the four coordinates of
-							// the location
-							// to an offset and length
-							final IRegion region = AdapterFactory.locationToRegion(document, location);
-							final int offset = region.getOffset();
-							int length = region.getLength();
-
-							// Hack in locationToRegion(...) which adds 1 to the
-							// length, which has already been accounted for by
-							// the jumpToPCal code, hence subtract.
-							if (jumpToPCal) {
-								length = length - 1;
-							}
 
 							// The following code sets editor to an existing
 							// IEditorPart
@@ -991,7 +981,34 @@ public class UIHelper {
 									if (editor instanceof MultiPageEditorPart) {
 										((MultiPageEditorPart) editor).setActiveEditor(textEditor);
 									}
+																		
 									// getActivePage().activate(textEditor);
+									
+									IDocumentProvider dp = textEditor.getDocumentProvider();
+									final IEditorInput element = textEditor.getEditorInput();
+									TLAFileDocumentProvider tdp = null;
+									if (dp instanceof TLAFileDocumentProvider)
+										tdp = (TLAFileDocumentProvider)dp;
+//									else if (textEditor instanceof TLAEditorAndPDFViewer)
+//										tlaEditor = ((TLAEditorAndPDFViewer)textEditor).getTLAEditor();
+
+									// we now need to convert the four coordinates of
+									// the location
+									// to an offset and length
+									IRegion region = AdapterFactory.locationToRegion(tdp.getAsciiDocument(element), location);
+									region = tdp.convertRegionIfUnicode(element, false, region);
+									
+									final int offset = region.getOffset();
+									int length = region.getLength();
+
+									// Hack in locationToRegion(...) which adds 1 to the
+									// length, which has already been accounted for by
+									// the jumpToPCal code, hence subtract.
+									if (jumpToPCal) {
+										length = length - 1;
+									}
+									
+									
 									textEditor.selectAndReveal(offset, length);
 								}
 							}
@@ -1362,5 +1379,10 @@ public class UIHelper {
 			}
 		}
 		return false;
+	}
+	
+	public static IEventBroker getEventBroker() {
+		IWorkbench workbench = Activator.getDefault().getWorkbench();
+		return workbench.getService(IEventBroker.class);
 	}
 }

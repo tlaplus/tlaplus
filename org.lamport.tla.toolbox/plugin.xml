@@ -317,6 +317,36 @@
             id="toolbox.command.module.translate.active"
             name="Translate module">
       </command>
+      <command
+            categoryId="toolbox.command.category.module"
+            description="Toggles between Unicode and ASCII mode."
+            id="toolbox.command.module.toggleUnicode"
+            name="Show Unicode">
+            <state
+              class="org.eclipse.ui.handlers.RegistryToggleState:true"
+              id="org.eclipse.ui.commands.toggleState">
+            </state>
+      </command>
+      <!--
+      <command
+            categoryId="toolbox.command.category.module"
+            description="Convert module in the active editor to Unicode"
+            id="toolbox.command.module.a2u.active"
+            name="Module To Unicode">
+      </command>
+      <command
+            categoryId="toolbox.command.category.module"
+            description="View module in the active editor as ASCII"
+            id="toolbox.command.module.u2a.active"
+            name="Module To ASCII">
+      </command>
+       <command
+            categoryId="toolbox.command.category.module"
+            description="Export current spec to ASCII"
+            id="toolbox.command.module.exportascii.active"
+            name="Module To ASCII">
+      </command>
+      -->
       <!-- Module preferences are disabled -->
       <!-- command
             categoryId="toolbox.command.category.module"
@@ -553,6 +583,57 @@
                </with>
             </visibleWhen>
          </command>
+         <!--
+         <command
+               commandId="toolbox.command.module.a2u.active"
+               id="toolbox.command.module.a2u"
+               label="Module To Unicode">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command
+         <command
+               commandId="toolbox.command.module.u2a.active"
+               id="toolbox.command.module.u2a"
+               label="View module as ASCII">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="toolbox.command.module.exportascii.active"
+               id="toolbox.command.module.exportascii"
+               label="Export As ASCII...">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command>
+         -->
+         
          <!-- disable module properties -->
          <!-- command
                commandId="toolbox.command.module.props"
@@ -609,12 +690,19 @@
                   commandId="org.eclipse.ui.edit.cut">
             </command>
             <command
-                  commandId="org.eclipse.ui.edit.copy"
-                  >
+                  commandId="org.eclipse.ui.edit.copy">
             </command>
             <command
                   commandId="org.eclipse.ui.edit.paste">
             </command>
+<!--
+            <command
+                  commandId="org.lamport.tla.toolbox.editor.basic.copyAsASCII">
+            </command>
+            <command
+                  commandId="org.lamport.tla.toolbox.editor.basic.pasteAsUnicode">
+            </command>
+-->
             <separator
                   name="toolbox.edit.separator2"
                   visible="true">
@@ -856,6 +944,17 @@
                </with>
             </visibleWhen>
          </command>
+         <separator
+            name="separator-id"
+            visible="true">
+         </separator>
+      <command
+            id="toolbox.menu.toggle.unicode"
+            description="Toggles between Unicode and ASCII mode."
+            commandId="toolbox.command.module.toggleUnicode"
+            label="Use Unicode"
+            style="toggle">
+      </command>            
       </menuContribution>
    </extension>
    
@@ -901,6 +1000,22 @@
       <handler
             class="org.lamport.tla.toolbox.ui.handler.ParseModuleHandler"
             commandId="toolbox.command.module.parse.active">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.Module2UnicodeHandler"
+            commandId="toolbox.command.module.a2u.active">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.Module2UnicodeHandler"
+            commandId="toolbox.command.module.u2a.active">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.Module2UnicodeHandler"
+            commandId="toolbox.command.module.exportascii.active">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.ToggleUnicodeHandler"
+            commandId="toolbox.command.module.toggleUnicode">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.AddModuleHandler"

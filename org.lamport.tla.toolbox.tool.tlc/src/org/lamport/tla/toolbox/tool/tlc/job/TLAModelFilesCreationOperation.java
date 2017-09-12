@@ -11,6 +11,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
+import util.FileUtil;
+
 /**
  * Creates the stub for modelecking, extending the specification root module
  * @author Simon Zambrovski
@@ -53,7 +55,7 @@ public class TLAModelFilesCreationOperation implements IWorkspaceRunnable
         IPath cfgPath = this.rootModulePath.removeLastSegments(1).append(tlaModuleName).addFileExtension("cfg");
 
         byte[] content = ResourceHelper.getExtendingModuleContent(tlaModuleName, rootModuleName).append(
-                ResourceHelper.getModuleClosingTag()).toString().getBytes();
+                ResourceHelper.getModuleClosingTag()).toString().getBytes(FileUtil.UTF8);
         
         try
         {

@@ -63,9 +63,11 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.st.Location;
+import tla2unicode.Unicode;
 import tlc2.output.EC;
 import tlc2.output.MP;
 
@@ -533,7 +535,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                             constExprEvalOutputMatcher.end(1));
                     // Sometimes TLC prints a space before or after
                     // the value, so we remove this.
-                    this.constantExprEvalOutput = constExprEvalOutput.trim();
+                    this.constantExprEvalOutput = TLAUnicodeReplacer.unicode(constExprEvalOutput.trim());
                     informPresenter(ITLCModelLaunchDataPresenter.CONST_EXPR_EVAL_OUTPUT);
                     /*
                      * Remove the result of constant expression evaluation plus
@@ -864,15 +866,16 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 		UIHelper.runUIAsync(new Runnable() {
 			public void run() {
 				try {
+					final String msg = TLAUnicodeReplacer.isUnicode() ? Unicode.convertToUnicode(message) : message;
 					DocumentRewriteSession rewriteSession;
 					if (append && !isDefaultLabel(document)) {
 						rewriteSession = document.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
 						// append to existing document (0 length is valid and means message is going to be appended)
-						document.replace(document.getLength(), 0, message + ((message.endsWith(CR)) ? EMPTY : CR));
+						document.replace(document.getLength(), 0, msg + ((msg.endsWith(CR)) ? EMPTY : CR));
 					} else {
 						rewriteSession = document.startRewriteSession(DocumentRewriteSessionType.STRICTLY_SEQUENTIAL);
 						// replace of complete document
-						document.replace(0, document.getLength(), message + ((message.endsWith(CR)) ? EMPTY : CR));
+						document.replace(0, document.getLength(), msg + ((msg.endsWith(CR)) ? EMPTY : CR));
 					}
 					document.stopRewriteSession(rewriteSession);
 				} catch (BadLocationException ignored) {
@@ -880,6 +883,21 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 			}
 		});
 	}
+	
+	public synchronized void convertUnicode() {
+		UIHelper.runUIAsync(new Runnable() {
+			public void run() {
+				convertDocumentText(progressOutput);
+				convertDocumentText(userOutput);
+				if (constantExprEvalOutput != null)
+					constantExprEvalOutput = Unicode.convert(TLAUnicodeReplacer.isUnicode(), constantExprEvalOutput);
+			}});
+	}
+	
+	private static void convertDocumentText(final Document document) {
+		document.set(Unicode.convert(TLAUnicodeReplacer.isUnicode(), document.get()));
+	}
+	
 	
 	/**
 	 * @param document

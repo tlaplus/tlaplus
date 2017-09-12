@@ -9,24 +9,39 @@
 ***************************************************************************/
 package tla2tex;
 
-import java.io.FileWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+import util.FileUtil;
 
 public class OutputFileWriter
- { private FileWriter fileWriter = null ;
+ { private Writer fileWriter = null ;
    private String name = "" ;
 
    public OutputFileWriter(String fileName)
-     /**********************************************************************
-     * Construct an OutputFileWriter from a file name.                     *
-     **********************************************************************/
-    { name = fileName ;
-      try {fileWriter = new FileWriter(fileName) ;}
-      catch (java.io.IOException e)
-       { Debug.ReportError( 
-           "TLATeX cannot open output file " + name + ".\n"
-         + "    Perhaps the file is write-protected");
-       };
-    }
+   /**********************************************************************
+   * Construct an OutputFileWriter from a file name.                     *
+   **********************************************************************/
+  { name = fileName ;
+    try {fileWriter = new OutputStreamWriter(new FileOutputStream(fileName), FileUtil.UTF8) ;}
+    catch (java.io.IOException e)
+     { Debug.ReportError( 
+         "TLATeX cannot open output file " + name + ".\n"
+       + "    Perhaps the file is write-protected");
+     };
+  }
+
+   public OutputFileWriter(OutputStream out, String fileName)
+  { name = fileName ;
+    fileWriter = new OutputStreamWriter(out, FileUtil.UTF8) ;
+  }
+
+   public OutputFileWriter(Writer out, String fileName)
+  { name = fileName ;
+    fileWriter = out ;
+  }
 
    public void putLine(String out)
      /**********************************************************************
@@ -50,6 +65,4 @@ public class OutputFileWriter
          + "    Perhaps there is a file-system problem.");
        };
     }
-
-
  }  // END class
