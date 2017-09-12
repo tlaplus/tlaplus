@@ -122,6 +122,14 @@
             name="Welcome View"
             restorable="true">
       </view>
+      <view
+            allowMultiple="true"
+            class="org.lamport.tla.toolbox.ui.view.PDFBrowser"
+            icon="icons/document-pdf.png"
+            id="org.lamport.tla.toolbox.PDFBrowser"
+            name="PDFBrowser"
+            restorable="false">
+      </view>
    </extension>
       
 <!--                                   -->

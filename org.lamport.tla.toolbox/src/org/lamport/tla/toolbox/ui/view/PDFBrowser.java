@@ -23,7 +23,7 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package org.lamport.tla.toolbox.tool.tla2tex.view;
+package org.lamport.tla.toolbox.ui.view;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
@@ -33,7 +33,7 @@ import org.eclipse.ui.part.ViewPart;
 
 public class PDFBrowser extends ViewPart {
 
-	public static final String ID = "org.lamport.tla.toolbox.tool.tla2tex.PDFBrowser";
+	public static final String ID = "org.lamport.tla.toolbox.PDFBrowser";
 	
 	private Browser browser;
 

@@ -3,7 +3,7 @@ package org.lamport.tla.toolbox.tool.tla2tex.handler;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.lamport.tla.toolbox.tool.tla2tex.view.PDFBrowser;
+import org.lamport.tla.toolbox.ui.view.PDFBrowser;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 public class StandalonePDFViewerRunnable extends AbstractPDFViewerRunnable {
