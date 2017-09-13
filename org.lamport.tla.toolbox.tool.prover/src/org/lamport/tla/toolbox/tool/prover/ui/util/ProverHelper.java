@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -1146,6 +1147,21 @@ public class ProverHelper
      */
     public static IMarker createObligationMarker(int id, Location location)
     {
+    	// Overrides the implementation of refreshFile introduced with Bug 482354 - "SVN
+    	// checkout deadlocks Eclipse" with corresponding commit
+    	// Id742d98403cc546fad4a21d25eb18ab7bef48776 (eclipse git repository).
+    	// Use this implementation to check if the file is in sync before a refresh
+    	// operation is executed.
+        class LegacyFileDocumentProvider extends FileDocumentProvider {
+        	protected void refreshFile(IFile file, IProgressMonitor monitor) throws CoreException {
+        		try {
+        			file.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+        		} catch (OperationCanceledException notExpectedToHappen) {
+        			notExpectedToHappen.printStackTrace();
+        		}
+        	}
+        }
+        
         IResource module = ResourceHelper.getResourceByModuleName(location.source());
         if (module != null && module instanceof IFile && module.exists())
         {
@@ -1156,7 +1172,19 @@ public class ProverHelper
              * the finally block of the following try block to avoid a memory leak.
              */
             FileEditorInput fileEditorInput = new FileEditorInput((IFile) module);
-            FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+			// Fix deadlock introduced with upgrade to Eclipse Oxygen framework/platform.
+			// FileDocumentProvider has changed an no longer checks if the IFile module is
+			// synced. This results in a refresh Job with a lock on the file which deadlocks
+			// because the ProverJob locked the entire workspace (including the file). At
+			// the same time, the ProverJob waits for
+			// org.lamport.tla.toolbox.tool.prover.ui.output.TagBasedTLAPMOutputIncrementalParser.appendText(String)
+			// to finish. Its implementation calls this method. In other words, the
+			// ProverJob locks the workspace and triggers a (workspace) Job to refresh the
+			// module. The refresh Job and the ProverJob deadlock.
+			// Alternatively, it's possible to acquire/create the IDocument in the ProverJob
+			// and pass it to the TagBasedTLAPMOutputIncrementalParser. However, I'm not
+			// sure if this causes problems if a proof spans across multiple files.
+            final FileDocumentProvider fileDocumentProvider = new LegacyFileDocumentProvider();
 
             try
             {
