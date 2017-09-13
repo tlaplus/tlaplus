@@ -24,8 +24,8 @@ public class SimpleTLCState
 
     private static final String COLON = ":";
     private static final String CR = "\n";
-    private static final String STUTTERING = "Stuttering";
-    private static final String BACK_TO_STATE = "Back";
+    private static final String STUTTERING = " Stuttering"; // See tlc2.output.MP
+    private static final String BACK_TO_STATE = " Back to state"; // See tlc2.output.MP
     private static final String AND = "/\\";
     private static final String EQ = " = ";
 
@@ -78,8 +78,8 @@ public class SimpleTLCState
 
         int stateNumber = Integer.parseInt(stateInputString.substring(0, index).trim());
         String label = stateInputString.substring(index + 1, index2);
-        boolean isStuttering = label.indexOf(STUTTERING) != -1;
-        boolean isBackToState = label.indexOf(BACK_TO_STATE) != -1;
+        boolean isStuttering = label.indexOf(STUTTERING) == 0;
+        boolean isBackToState = label.indexOf(BACK_TO_STATE) == 0;
 
         SimpleTLCVariable[] vars = null;
 
