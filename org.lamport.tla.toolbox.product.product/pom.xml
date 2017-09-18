@@ -20,6 +20,8 @@
          org.lamport.tla.toolbox.product.product.product
          product.version. -->
     <product.version>1.5.4</product.version>
+    <!-- Format build timestamp to adhere to the Debian package guidelines -->
+    <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     <product.build>${maven.build.timestamp}</product.build>
     <!-- Do not include non-code project in Sonar reporting. -->
     <sonar.skip>true</sonar.skip>
