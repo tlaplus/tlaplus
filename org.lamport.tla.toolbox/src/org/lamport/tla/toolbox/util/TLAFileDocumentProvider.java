@@ -84,6 +84,13 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	}
 
 	protected FileInfo getFileInfo(Object element)  {
+		if (element instanceof FileInfo) {
+			// Due to missing type information (I'm looking at you Object element in the
+			// Eclipse API), it's possible this method gets invoked with the actual FileInfo
+			// requested as element. In this case, don't try to lookup the FileInfo in the
+			// superclass' fileInfoMap. It returns null anyway.
+			return (FileInfo) element;
+		}
 		return (FileInfo) super.getFileInfo(element);
 	}
 	
@@ -177,11 +184,6 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 			position = convertPositionIfUnicode(info, false, marker, position);
 			return super.updateMarker(document, marker, position);
 		}
-		
-		@Override
-		public Position getMarkerPosition(IMarker marker) {
-			return super.getMarkerPosition(marker);
-		}
 
 		public Position getMarkerPosition(IMarker marker, boolean screen) {
 			Position pos = super.getMarkerPosition(marker);
@@ -190,11 +192,6 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 				pos = convertPosition(info, true, marker, super.getMarkerPosition(marker));
 			}
 			return pos;
-		}
-
-		@Override
-		protected Position createPositionFromMarker(IMarker marker) {
-			return super.createPositionFromMarker(marker);
 		}
     }
     
@@ -327,7 +324,7 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     		int offset = convertOffset(info, screen, position.getOffset());
         	int end = convertOffset(info, screen, position.getOffset() + position.getLength());
         	int length = end - offset;
-//        	if (length < 0)
+//        	if (length <= 0)
 //        		System.out.println("XXXX: " + length + " " + position + " " + offset + " " + end);
     		position = new Position(offset, length);
     		if (deleted)
