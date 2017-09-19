@@ -474,7 +474,7 @@ import java.util.Vector;
  *
  */
 public class TokenizeSpec
-  { private static Hashtable identHashTable  = new Hashtable(1000);
+  { private static Hashtable<String, String> identHashTable  = new Hashtable<String, String>(1000);
       /*********************************************************************
       * A hash table containing all the IDENT and STRING tokens found in   *
       * the spec.  It is used for formatting comments.                     *
@@ -491,7 +491,7 @@ public class TokenizeSpec
       { return null !=  identHashTable.get(str);
       }
 
-    private static Hashtable usedBuiltinHashTable  = new Hashtable(1000);
+    private static Hashtable<String, String> usedBuiltinHashTable  = new Hashtable<String, String>(1000);
       /*********************************************************************
       * A hash table containing all the BUILTIN tokens found in the spec.  *
       * It is used for formatting comments.                                *
@@ -504,7 +504,7 @@ public class TokenizeSpec
       { return null !=  usedBuiltinHashTable.get(str);
       }
 
-    private static Hashtable stringHashTable  = new Hashtable(100);
+    private static Hashtable<String, String> stringHashTable  = new Hashtable<String, String>(100);
       /*********************************************************************
       * A hash table containing all the STRING tokens found in the spec.   *
       * It is used for formatting comments.                                *
@@ -592,13 +592,13 @@ public class TokenizeSpec
       // processing a comment--true if processing an OR (overrun) comment,
       // false if processing a normal comment.  
     
-    private static Vector vspec = null ;
+    private static Vector<Vector<Token>> vspec = null ;
           /*****************************************************************
           * vspec is a vector of vectors in which the TokenizedSpec is     *
           * constructed.  At the end, it is turned into an array.          *
           *****************************************************************/
 
-    private static Vector linev = new Vector(30, 30) ;
+    private static Vector<Token> linev = new Vector<Token>(30, 30) ;
           /*****************************************************************
           * Vector linev contains the tokens found so far on the current   *
           * line.                                                          *
@@ -779,7 +779,7 @@ public class TokenizeSpec
       * whenever a \n character is removed from the input stream.          *
       *********************************************************************/
       { vspec.addElement(linev)    ;
-        linev = new Vector(30, 30) ;
+        linev = new Vector<Token>(30, 30) ;
         col = 0 ;
       } ;
 
@@ -810,8 +810,17 @@ public class TokenizeSpec
     private static Position getNextTokenPosition() {
         return new Position(vspec.size(), linev.size());
     }
-    private static void TokenizingError(String msg) 
-      { Debug.ReportError(
+    private static void TokenizingError(String msg, boolean suppressError) 
+      { 
+    	if (suppressError) {
+			// Instead of throwing a parsing exception, create an error token and continue
+			// with tokenization.
+    		linev.addElement(new Token(token, col, Token.ERROR));
+    		token = "";
+    		gotoStart();
+    		return;
+    	}
+    	Debug.ReportError(
            msg + " `" + token + "' found at\n" + 
           "    line " + (reader.getLineNumber() + 1) + ", column " + 
                (col + 1));
@@ -825,11 +834,11 @@ public class TokenizeSpec
         int n = 0 ;                                                       
         while (n < vspec.size())                                          
           { aspec[n] =                                                     
-               new Token [ ((Vector) vspec.elementAt(n)) . size() ] ;     
+               new Token [ (vspec.elementAt(n)) . size() ] ;     
             int m = 0 ;                                                   
             while (m < aspec[n].length)                                    
               {aspec[n][m] =                                               
-                (Token) ((Vector) vspec.elementAt(n)) . elementAt(m);     
+                (Token) (vspec.elementAt(n)) . elementAt(m);     
                m = m+1;                                                   
               };                                                          
             n = n+1 ;                                                     
@@ -837,11 +846,21 @@ public class TokenizeSpec
         return aspec;
       } ;
 
-    public static Token[][] Tokenize(CharReader charReader, int mode) 
+    public static Token[][] Tokenize(CharReader charReader, int mode) {
+		// MAK 09/19/2017 Added suppressErrors parameter to continue tokenization
+		// despite errors. This functionality is used by the Toolbox's Unicode support
+		// to translate a Unicode spec with errors into its ASCII pendant. Afterwards,
+		// the erroneous (ASCII) spec is regularly parsed with SANY and parsing errors
+		// reported. In case of errors, the return value Token[][] can be incomplete or
+		// entirely bogus. By default, proceedOnError is false/off.
+    	return Tokenize(charReader, mode, false);
+    }
+    
+    public static Token[][] Tokenize(CharReader charReader, int mode, final boolean suppressErrors)
       /*********************************************************************
       * Tokenize the input from the CharReader.                            *
       *********************************************************************/
-      { vspec = new Vector(1000, 1000) ;
+      { vspec = new Vector<Vector<Token>>(1000, 1000) ;
         reader = charReader ;
            /****************************************************************
            * This "exports" the charReader for use by the classes other    *
@@ -983,13 +1002,14 @@ public class TokenizeSpec
                   else if (nextChar == '\t')
                     { if (mode == MODULE) 
                         { Debug.ReportError(
-                            "Input ended before end of module");
+                            "Input ended before end of module", suppressErrors);
+                          skipNextChar();
                         } ;
                       state = DONE ;
                     }
                   else 
                     { addNextChar();
-                      TokenizingError("Illegal lexeme");
+                      TokenizingError("Illegal lexeme", suppressErrors);
                     } ;
                   break;
 
@@ -1133,7 +1153,7 @@ public class TokenizeSpec
                   else if (Misc.IsLetter(nextChar))
                     { addNextChar();
                       if (token.charAt(0) == '\\')
-                       { TokenizingError("Illegal lexeme");
+                       { TokenizingError("Illegal lexeme", suppressErrors);
                        }
                       else
                        { state = ID;
@@ -1158,7 +1178,7 @@ public class TokenizeSpec
                       gotoStart();
                     }
                   else 
-                    { TokenizingError("Illegal lexeme ");
+                    { TokenizingError("Illegal lexeme ", suppressErrors);
                     } ;
                    break;
 
@@ -1175,7 +1195,7 @@ public class TokenizeSpec
                         while (! BuiltInSymbols.IsBuiltInSymbol(token, inPcal))
                         { reader.backspace();
                           if (token.length() == 0)
-                            { TokenizingError("Illegal lexeme");
+                            { TokenizingError("Illegal lexeme", suppressErrors);
                             };
                           token = token.substring(0, token.length()-1);
                         } ;
@@ -1214,7 +1234,7 @@ public class TokenizeSpec
                       state = DASHES ;
                     }
                   else 
-                    { TokenizingError("Illegal lexeme");
+                    { TokenizingError("Illegal lexeme", suppressErrors);
                     }
                   break;
 
@@ -1255,7 +1275,7 @@ public class TokenizeSpec
                       state = EQS ;
                     }
                   else 
-                    { TokenizingError("Illegal lexeme");
+                    { TokenizingError("Illegal lexeme", suppressErrors);
                     }
                   break;
 
@@ -1276,7 +1296,8 @@ public class TokenizeSpec
                       else 
                         { Debug.ReportError(
                            "Extra end-of-module lexeme on line "
-                           + (reader.getLineNumber() + 1));
+                           + (reader.getLineNumber() + 1), suppressErrors);
+                          skipNextChar();
                         }
                     }
                   break;
@@ -1310,7 +1331,13 @@ public class TokenizeSpec
                     }
                   else
                     { addNextChar();
-                      TokenizingError("Illegal character in string");
+                      if (!suppressErrors) {
+						  // Don't reject strings with illegal characters when suppressing errors.
+						  // Instead, return the string token containing the illegal character.
+                    	  // This feature is used by TLAUnicode to get a string token back even
+                    	  // if it contains illegal characters.
+                    	  TokenizingError("Illegal character in string", suppressErrors);
+                      }
                     }
                    break;
 
@@ -1327,7 +1354,7 @@ public class TokenizeSpec
                   else
                     { addNextChar();
                       TokenizingError(
-                          "Illegal character following \\ in string");
+                          "Illegal character following \\ in string", suppressErrors);
                     }
                   break;
 
@@ -1395,7 +1422,8 @@ public class TokenizeSpec
                     }
                   else if (nextChar == '\t')
                     { Debug.ReportError(
-                         "Input ended in the middle of a comment");
+                         "Input ended in the middle of a comment", suppressErrors);
+                      skipNextChar();
                     }
                   else if ((nextChar == '-') && (cdepth == 1)
                              && (mode == MODULE) && !hasPcal) {
@@ -1565,7 +1593,9 @@ public class TokenizeSpec
                   }
                   else if (nextChar == '\t')
                     { Debug.ReportError(
-                         "Input ended in the middle of a multi-line comment");
+                         "Input ended in the middle of a multi-line comment", suppressErrors);
+                      // See tla2unicode.UnicodeToAsciiTest.testRedundantOpenMultiLine()
+                      state = DONE;
                     }
                   else
                     { if (cdepth == 1) {addNextChar();}
@@ -1622,7 +1652,8 @@ public class TokenizeSpec
                     }
                   else if (nextChar == '\t')
                     { Debug.ReportError(
-                         "Input ended before beginning of module");
+                         "Input ended before beginning of module", suppressErrors);
+                      state = DONE;
                     }
                   else
                     { addNextChar();

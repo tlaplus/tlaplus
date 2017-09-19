@@ -106,7 +106,7 @@ public class TLAUnicode {
 		BuiltInSymbols.Initialize(); // Initialize class BuiltInSymbols
 
 		// Read and tokenize the spec.
-		final Token[][] spec = TokenizeSpec.Tokenize(input, TokenizeSpec.MODULE);
+		final Token[][] spec = TokenizeSpec.Tokenize(input, TokenizeSpec.MODULE, true);
 
 		Token.FindPfStepTokens(spec); // Convert proof-step numbers to PF_STEP tokens.
 		// Debug.print2DArray(spec, "tok");
@@ -247,6 +247,7 @@ public class TLAUnicode {
 				case Token.PROLOG:
 				case Token.EPILOG:
 				case Token.PF_STEP:
+				case Token.ERROR:
 					out.append(tok.string);
 					break;
 

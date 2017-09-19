@@ -126,6 +126,13 @@ public class Token
          * This is a  label.  The string contains the label, the following *
          * ":" and perhaps a following "+" or "-".                         *
          ******************************************************************/
+       
+       public static final int ERROR = -1;
+         /******************************************************************
+         * The Token is invalid and represents a syntax error. It is only  *
+         * ever returned if suppressErrors is set in                       * 
+         * tla2tex.TokenizeSpec.Tokenize(CharReader, int, boolean)         *
+         ******************************************************************/
 
     /***********************************************************************
     * The following fields are specific to TLATeX. They are set to         *

@@ -14,7 +14,14 @@ import java.util.Vector;
 import util.ToolIO;
 
 public class Debug
-  { public static void ReportError(String msg)
+  { 
+	public static void ReportError(String msg, boolean suppressError)
+	{
+		if (!suppressError) {
+			ReportError(msg);
+		}
+	}
+	public static void ReportError(String msg)
       /*********************************************************************
       * This method is called to report an error and abort.                *
       *********************************************************************/
