@@ -147,7 +147,7 @@ public final class BuiltInSymbols
       } ;
 
     public static boolean IsStringChar(char ch)
-      { return stringCharTable.containsKey("" + ch) ;
+      { return stringCharTable.containsKey(String.valueOf(ch)) ;
       } ;
 
     public static boolean CanPrecedeLabel(String str) {
@@ -166,7 +166,7 @@ public final class BuiltInSymbols
                   + "0123456789" ;
         int n = 0 ;
         while (n < legalChars.length())
-          { stringCharTable.put("" + legalChars.charAt(n), nullString);
+          { stringCharTable.put(String.valueOf(legalChars.charAt(n)), nullString);
             n = n + 1 ;
           }
       } ;
