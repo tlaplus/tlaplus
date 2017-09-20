@@ -399,7 +399,7 @@ public class ModelWriter
         int position = 0;
         while (it.hasNext())
         {
-            String expression = it.next().getFormula();
+            String expression = Unicode.convertToASCII(it.next().getFormula());
 
             if (expression != null && expression.length() > 0)
             {
