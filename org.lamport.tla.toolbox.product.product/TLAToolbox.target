@@ -48,7 +48,7 @@
 <repository location="http://download.eclipse.org/eclipse/updates/4.7/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="1.1.0.201709072025"/>
+<unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
 <repository location="http://lemmy.github.com/Pdf4Eclipse/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
