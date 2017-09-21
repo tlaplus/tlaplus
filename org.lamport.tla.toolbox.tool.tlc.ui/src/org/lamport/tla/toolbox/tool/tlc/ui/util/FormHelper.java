@@ -5,10 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TabsToSpacesConverter;
-import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -32,10 +29,6 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.util.TLASourceViewer;
-import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
-
-import tla2unicode.Unicode;
 
 /**
  * A utility class containing a bunch of static methods used in the form editor
@@ -194,14 +187,7 @@ public class FormHelper
      */
     public static SourceViewer createOutputViewer(Composite parent, int flags)
     {
-    	SourceViewer sourceViewer = new TLASourceViewer(parent, null, null, false, flags);
-//    	{
-//			@Override
-//			public void setDocument(IDocument document, IAnnotationModel annotationModel, int modelRangeOffset, int modelRangeLength) {
-//				document.set(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, document.get()));
-//				super.setDocument(document, annotationModel, modelRangeOffset, modelRangeLength);
-//			}
-//        };
+        SourceViewer sourceViewer = new SourceViewer(parent, null, null, false, flags);
         SourceViewerConfiguration configuration = new SourceViewerConfiguration();
         sourceViewer.configure(configuration);
         sourceViewer.setTabsToSpacesConverter(getTabToSpacesConverter());
@@ -220,27 +206,7 @@ public class FormHelper
      */
     public static SourceViewer createSourceViewer(Composite parent, int flags)
     {
-        SourceViewer sourceViewer = new TLASourceViewer(parent, null, null, false, flags);
-//        {
-//			@Override
-//			public void setDocument(IDocument document, IAnnotationModel annotationModel, int modelRangeOffset, int modelRangeLength) {
-//				if (document != null)
-//					document.set(Unicode.convert(TLAUnicodeReplacer.UNICODE_MODE, document.get()));
-//				super.setDocument(document, annotationModel, modelRangeOffset, modelRangeLength);
-//			}
-
-//			@Override
-//			public IDocument getDocument() {
-//				if (!TLAUnicodeReplacer.UNICODE_MODE)
-//					return super.getDocument();
-//				else if (super.getDocument() == null)
-//					return null;
-//				else
-//					return new Document(Unicode.convertToASCII(super.getDocument().get()));
-//				
-//			}
-//        };
-        
+        SourceViewer sourceViewer = new SourceViewer(parent, null, null, false, flags);
         SourceViewerConfiguration configuration = new SourceViewerConfiguration();
         sourceViewer.configure(configuration);
         sourceViewer.setTabsToSpacesConverter(getTabToSpacesConverter());
@@ -249,9 +215,6 @@ public class FormHelper
         control.setWordWrap(true);
         control.setFont(TLCUIActivator.getDefault().getCourierFont());
         control.setEditable(true);
-        
-        new TLAUnicodeReplacer().init(sourceViewer);
-        
         return sourceViewer;
     }
 

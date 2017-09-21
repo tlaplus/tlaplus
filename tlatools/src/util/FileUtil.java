@@ -16,7 +16,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
@@ -484,5 +483,8 @@ public class FileUtil
     }
 
 
-    public static final Charset UTF8 = Charset.forName("UTF-8");
+
+
+
+
 }

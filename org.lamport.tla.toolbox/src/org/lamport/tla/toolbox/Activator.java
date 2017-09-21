@@ -20,7 +20,6 @@ import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.OutOfBuildSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
-import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -178,14 +177,10 @@ public class Activator extends AbstractTLCActivator
             }
 
         }, IResourceChangeEvent.POST_CHANGE);
-        
-        Activator.getDefault().getPreferenceStore().setDefault(TLAUnicodeReplacer.STATE, true);
     }
 
     public void stop(BundleContext context) throws Exception
     {
-        getDefault().getPreferenceStore().setValue(TLAUnicodeReplacer.STATE, TLAUnicodeReplacer.isUnicode());
-    	
         // unregister the listeners
     	if (specManager != null)
     		specManager.terminate();

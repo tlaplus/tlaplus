@@ -95,7 +95,6 @@ import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
-import util.FileUtil;
 import util.FilenameToStream;
 import util.UniqueString;
 
@@ -824,7 +823,7 @@ public class ResourceHelper
      */
     public static void replaceContent(IFile file, StringBuffer buffer, IProgressMonitor monitor) throws CoreException
     {
-        ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes(FileUtil.UTF8));
+        ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
         if (file.exists())
         {
             file.setContents(stream, IResource.FORCE, monitor);

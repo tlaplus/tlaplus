@@ -6,28 +6,22 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.compare.MarkerComparator;
-import org.osgi.service.event.EventHandler;
-
-import tla2unicode.Unicode;
 
 /**
  * Shows parse problems
@@ -38,7 +32,6 @@ public class ProblemView extends ViewPart
 {
     public static final String ID = "toolbox.view.ProblemView";
     private ExpandBar bar = null;
-    private EventHandler eventHandler;
 
 	/**
      * Creates the layout and fill it with data 
@@ -49,36 +42,9 @@ public class ProblemView extends ViewPart
         bar.setSpacing(8);
         UIHelper.setHelp(bar, "ProblemView");
         fillData(Activator.getSpecManager().getSpecLoaded());
-        UIHelper.getEventBroker().subscribe(TLAUnicodeReplacer.EVENTID_TOGGLE_UNICODE, getEventHandler());
     }
-    
-	private synchronized EventHandler getEventHandler() {
-		if (eventHandler == null) {
-			this.eventHandler = new EventHandler() {
-				@Override
-				public void handleEvent(org.osgi.service.event.Event event) {
-					if (event == null)
-						return;
-					final Object value = event.getProperty(IEventBroker.DATA);
-					switch (event.getTopic()) {
-					case TLAUnicodeReplacer.EVENTID_TOGGLE_UNICODE:
-						unicodeToggleHandler((Boolean)value);
-						break;
-					default:		
-					}
-				}
-			};
-		}
-		return eventHandler;
-	}
 
-    @Override
-	public void dispose() {
-    	UIHelper.getEventBroker().unsubscribe(eventHandler);
-		super.dispose();
-	}
-
-	/**
+    /**
      * Fill data
      * @param specLoaded
      */
@@ -132,7 +98,7 @@ public class ProblemView extends ViewPart
                     StyledText styledText = new StyledText(problemItem, SWT.INHERIT_DEFAULT);
                     styledText.setEditable(false);
                     styledText.setCursor(styledText.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-                    styledText.setText(Unicode.convert(TLAUnicodeReplacer.isUnicode(), lines[i]));
+                    styledText.setText(lines[i]);
                     styledText.addListener(SWT.MouseDown, listener);
 
                     if (isErrorLine(lines[i], problem))
@@ -159,20 +125,6 @@ public class ProblemView extends ViewPart
         }
         return ;
     }
-	
-    private void unicodeToggleHandler(boolean unicode) {
-		for (Control c1 : bar.getChildren()) {
-			if (c1 instanceof Composite) {
-				Composite problemItem = (Composite)c1;
-				for (Control c2 : problemItem.getChildren()) {
-					if (c2 instanceof StyledText) {
-						StyledText styledText = (StyledText)c2;
-						styledText.setText(Unicode.convert(TLAUnicodeReplacer.isUnicode(), styledText.getText()));
-					}
-				}
-			}
-		}
-	}
 
     /**
      * 

@@ -3,7 +3,6 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
@@ -41,12 +40,10 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
-import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.OpDefNode;
-import tla2unicode.Unicode;
 import tlc2.TLCGlobals;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MultiFPSet;
@@ -120,8 +117,6 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     {
         // definition overrides
         List<String> definitions = getModel().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector<String>());
-        for (ListIterator<String> it = definitions.listIterator(); it.hasNext();)
-        	it.set(Unicode.convert(TLAUnicodeReplacer.isUnicode(), it.next()));
         FormHelper.setSerializedInput(definitionsTable, definitions);
 
         // new definitions

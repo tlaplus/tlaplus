@@ -33,8 +33,6 @@ package tla2tex;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import tla2unicode.Unicode;
-
 public final class BuiltInSymbols
   { 
     /***********************************************************************
@@ -179,11 +177,6 @@ public final class BuiltInSymbols
         }
     }
     private static void add(String tla, String tex, int stype, int atype)
-    { add0(tla, tex, stype, atype);
-      if (Unicode.a2uc(tla) != null)
-    	  add0(Unicode.a2u(tla), tex, stype, atype);} ;
-
-    private static void add0(String tla, String tex, int stype, int atype)
       /*********************************************************************
       * Adds a non-PlusCal entry to the builtInHashTable and               *
       * pcalBuiltInHashTable.                                              *

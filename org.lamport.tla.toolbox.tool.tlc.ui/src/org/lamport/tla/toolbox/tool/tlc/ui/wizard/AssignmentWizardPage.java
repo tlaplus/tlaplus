@@ -24,7 +24,6 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.OpDefNode;
-import tla2unicode.Unicode;
 
 /**
  * @author Simon Zambrovski
@@ -261,7 +260,7 @@ public class AssignmentWizardPage extends WizardPage
     		return;
     	}
     	
-        String rightSide = FormHelper.trimTrailingSpaces(Unicode.convertToASCII(source.getDocument().get()));
+        String rightSide = FormHelper.trimTrailingSpaces(source.getDocument().get());
 
         // if the model value(s) option exist
         if (optionModelValue != null && optionSetModelValues != null)
@@ -333,7 +332,7 @@ public class AssignmentWizardPage extends WizardPage
         {
             return false;
         }
-        String set = FormHelper.trimTrailingSpaces(Unicode.convertToASCII(source.getDocument().get()));
+        String set = FormHelper.trimTrailingSpaces(source.getDocument().get());
         TypedSet parsedSet = TypedSet.parseSet(set);
 
         return (parsedSet.getType() == null);

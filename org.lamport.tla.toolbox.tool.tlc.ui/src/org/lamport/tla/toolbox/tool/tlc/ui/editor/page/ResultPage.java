@@ -177,7 +177,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    ResultPage.this.progressOutput.setDocument(dataProvider.getProgressOutput());
 	                    break;
 	                case CONST_EXPR_EVAL_OUTPUT:
-	                    ResultPage.this.expressionEvalResult.setDocument(new Document(dataProvider.getCalcOutput()));
+	                    ResultPage.this.expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
 	                    break;
 	                case START_TIME:
 	                    final long startTimestamp = dataProvider.getStartTimestamp();

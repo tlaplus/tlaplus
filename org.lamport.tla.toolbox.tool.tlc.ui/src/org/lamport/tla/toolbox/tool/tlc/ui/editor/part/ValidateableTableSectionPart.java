@@ -10,7 +10,6 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
@@ -28,16 +27,12 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaLabelProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
-import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
-
-import tla2unicode.Unicode;
 
 /**
  * Section part with table and add, edit and remove buttons
@@ -203,12 +198,6 @@ public class ValidateableTableSectionPart extends SectionPart implements IValida
                 doCheck();
             }
         });
-        
-//        tableViewer.setLabelProvider(new LabelProvider() {
-//            public String getText(Object element) {
-//                return Unicode.convert(TLAUnicodeReplacer.isUnicode(), super.getText(element));
-//            }
-//        });
 
         return tableViewer;
     }

@@ -23,14 +23,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.util.ResourceHelper;
-import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
-import tla2unicode.Unicode;
 
 /**
  * The handler for the Shows Declarations operation, which pops up a list
@@ -238,10 +236,8 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
 
             for (int i = 0; i < symbols.length; i++)
             {
-            	String name = symbols[i].getName().toString();
-            	name = TLAUnicodeReplacer.isUnicode() ? Unicode.sym2u(name) : Unicode.sym2a(name);
-                list.add(name);
-                list.setData(name, symbols[i]);
+                list.add(symbols[i].getName().toString());
+                list.setData(symbols[i].getName().toString(), symbols[i]);
             }
         }
 

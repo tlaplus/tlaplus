@@ -79,8 +79,6 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
         dr = new DefaultDamagerRepairer(TLAEditorActivator.getDefault().getPCALCodeScanner());
         reconciler.setDamager(dr, TLAPartitionScanner.TLA_PCAL);
         reconciler.setRepairer(dr, TLAPartitionScanner.TLA_PCAL);
-        
-        // new TLAUnicodeReplacer().init(sourceViewer); -- can't be done here, because IAutoEditStrategy are overwritten later
 
         return reconciler;
     }

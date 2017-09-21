@@ -26,6 +26,3 @@ tlatools/states
 screenshots/
 ajcore.*.txt
 tlatools/test-model/CodePlexBug08/checkpoint/
-fonts/tmp
-fonts/build
-fonts/dist

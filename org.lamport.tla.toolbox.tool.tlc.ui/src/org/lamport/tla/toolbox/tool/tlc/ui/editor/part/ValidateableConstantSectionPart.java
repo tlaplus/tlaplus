@@ -6,7 +6,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -19,10 +18,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.AssignmentContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
-import org.lamport.tla.toolbox.util.TLATableViewer;
-import org.lamport.tla.toolbox.util.TLAUnicodeReplacer;
-
-import tla2unicode.Unicode;
 
 /**
  * Section part for the constants 
@@ -102,7 +97,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
     protected TableViewer createTableViewer(Table table)
     {
         // create
-        TableViewer tableViewer = new TLATableViewer(table);
+        TableViewer tableViewer = new TableViewer(table);
         // represent formulas in the view
         tableViewer.setContentProvider(new AssignmentContentProvider());
         // on changed selection change button enablement
@@ -114,11 +109,6 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
                 doEdit();
             }
         });
-//        tableViewer.setLabelProvider(new LabelProvider() {
-//            public String getText(Object element) {
-//                return Unicode.convert(TLAUnicodeReplacer.isUnicode(), super.getText(element));
-//            }
-//        });
 
         return tableViewer;
     }

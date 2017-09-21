@@ -67,8 +67,6 @@ package tla2tex;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import tla2unicode.Unicode;
-
 public final class FormatComments
 { public static void WriteComment(OutputFileWriter writer, 
                                   Vector           vec, 
@@ -364,8 +362,6 @@ public final class FormatComments
     * Adds an entry to the alignTokenHashTable.                             *
     ***********************************************************************/
     { alignTokenHashTable.put(str, nullString);
-      if (Unicode.a2uc(str) != null)
-    	  alignTokenHashTable.put(Unicode.a2uc(str), nullString);
     } ;
 
   private static void InitializeAlignTokenHashtable()

@@ -46,7 +46,6 @@ import org.lamport.tla.toolbox.ui.dialog.InformationDialog;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.LegacyFileDocumentProvider;
 import org.lamport.tla.toolbox.util.ResourceHelper;
-import org.lamport.tla.toolbox.util.TLAFileDocumentProvider;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.LeafProofNode;
@@ -1175,7 +1174,7 @@ public class ProverHelper
             {
 
                 // the marker created
-                Map<String, Object> markerAttributes = new HashMap<String, Object>();
+                Map<String, Integer> markerAttributes = new HashMap<String, Integer>();
                 markerAttributes.put(OBLIGATION_ID, new Integer(id));
                 // markerAttributes.put(OBLIGATION_STATE, new Integer(initialState));
                 // markerAttributes.put(OBLIGATION_LOCATION, locToString(location));
@@ -1189,8 +1188,7 @@ public class ProverHelper
                  */
                 markerAttributes.put(IMarker.CHAR_START, new Integer(obRegion.getOffset()));
                 markerAttributes.put(IMarker.CHAR_END, new Integer(obRegion.getOffset() + obRegion.getLength()));
-                markerAttributes.put(TLAFileDocumentProvider.ATR_SCREEN_COORDINATES, false);
-                
+
                 IMarker marker = module.createMarker(OBLIGATION_MARKER);
                 marker.setAttributes(markerAttributes);
 
@@ -1462,7 +1460,7 @@ public class ProverHelper
 
                     // The current position of the sany marker in the editor
                     // if there is at least one editor open on the module.
-                    Position curPosition = EditorUtil.getMarkerPosition(sanyMarker, false);
+                    Position curPosition = EditorUtil.getMarkerPosition(sanyMarker);
                     // char start and end of the marker to be created
                     int newCharStart;
                     int newCharEnd;
@@ -1729,8 +1727,7 @@ public class ProverHelper
         }
 
         ProverJob proverJob = new ProverJob(((FileEditorInput) editor.getEditorInput()).getFile(),
-                editor.convertOffsetIfUnicode(true, ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset()), 
-                checkStatus, options, true);
+                ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset(), checkStatus, options, true);
 
         proverJob.setUser(true);
         proverJob.schedule();
