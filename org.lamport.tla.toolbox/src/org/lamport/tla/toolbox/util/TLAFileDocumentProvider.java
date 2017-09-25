@@ -18,6 +18,7 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.texteditor.AbstractMarkerAnnotationModel;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
@@ -455,6 +456,13 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     	
     	info.locationConverter = locConverter;
     	info.altDoc = new Document(orig);
+		// Re-Initialize the annotation model (which handles proof obligation markers)
+		// to re-apply the markers. Without re-initialization, obligation markers are lost
+		// when switching from ASCII to Unicode or modifying a Unicode editor with proof
+		// obligation markers (coloring).
+    	// https://github.com/tlaplus/tlaplus/issues/68
+    	((AbstractMarkerAnnotationModel) info.fModel).reinitialize(info.altDoc);
+    	
     	setDirty(info, false);
     	
 //    	captureUndo(1);    	
