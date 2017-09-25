@@ -445,6 +445,11 @@ public class TLAUnicode {
 		}
 		
 		private int convert0(boolean orig, int line, int column) {
+			// Prevent ArrayIndexOutOfBounds if line exceeds size of spec[]. This happens if
+			// a user toggles ascii and unicode mode with the caret located at the
+			// end of the open spec editor (south of the end of module marker "======").
+			line = Math.min(spec.length - 1, line);
+			
 			final boolean from = orig;
 			final boolean to = !orig;
 			
