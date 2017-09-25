@@ -704,21 +704,17 @@ public class TLAEditor extends TextEditor
 			for (IUndoableOperation op1 : DocumentUndoUtil.getChanges(op))
 				convertUndo(toUnicode, op1, dp);
 		} else {
-			try {
-				final int start = DocumentUndoUtil.getStart(op); 
-				final int end = DocumentUndoUtil.getEnd(op); 
-				final String text = DocumentUndoUtil.getText(op); 
-				final String preservedText = DocumentUndoUtil.getPreservedText(op); 
-				
-				// System.out.println("WWWWW start: " + start + " end: " + end + " text: " + text + " preserved: " + preservedText);
-				DocumentUndoUtil.setStart(op, dp.convertOffset1(getEditorInput(), toUnicode, start));
-				DocumentUndoUtil.setEnd(op, dp.convertOffset1(getEditorInput(), toUnicode, end));
-				
-				DocumentUndoUtil.setText(op, Unicode.convert(toUnicode, text));
-				DocumentUndoUtil.setPreservedText(op, Unicode.convert(toUnicode, preservedText));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			final int start = DocumentUndoUtil.getStart(op); 
+			final int end = DocumentUndoUtil.getEnd(op); 
+			final String text = DocumentUndoUtil.getText(op); 
+			final String preservedText = DocumentUndoUtil.getPreservedText(op); 
+			
+			// System.out.println("WWWWW start: " + start + " end: " + end + " text: " + text + " preserved: " + preservedText);
+			DocumentUndoUtil.setStart(op, dp.convertOffset1(getEditorInput(), toUnicode, start));
+			DocumentUndoUtil.setEnd(op, dp.convertOffset1(getEditorInput(), toUnicode, end));
+			
+			DocumentUndoUtil.setText(op, Unicode.convert(toUnicode, text));
+			DocumentUndoUtil.setPreservedText(op, Unicode.convert(toUnicode, preservedText));
 		}
 		return op;
 	}
