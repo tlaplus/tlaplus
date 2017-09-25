@@ -34,8 +34,6 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	
 	// Used to map Unicode token locations to their ASCII location
     
-    private boolean unicode;
-    
 	public TLAFileDocumentProvider()  {
 		super();
 		init();
@@ -441,7 +439,6 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 	
     public void setUnicode0(Object element, boolean unicode) {
     	setUnicode0(getFileInfo(element), unicode);
-    	this.unicode = unicode;
     }
     
 	private void setUnicode0(FileInfo info, boolean unicode) {
