@@ -15,7 +15,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -45,6 +44,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferenceP
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.ui.dialog.InformationDialog;
 import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.LegacyFileDocumentProvider;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAFileDocumentProvider;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -1147,21 +1147,6 @@ public class ProverHelper
      */
     public static IMarker createObligationMarker(int id, Location location)
     {
-    	// Overrides the implementation of refreshFile introduced with Bug 482354 - "SVN
-    	// checkout deadlocks Eclipse" with corresponding commit
-    	// Id742d98403cc546fad4a21d25eb18ab7bef48776 (eclipse git repository).
-    	// Use this implementation to check if the file is in sync before a refresh
-    	// operation is executed.
-        class LegacyFileDocumentProvider extends FileDocumentProvider {
-        	protected void refreshFile(IFile file, IProgressMonitor monitor) throws CoreException {
-        		try {
-        			file.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-        		} catch (OperationCanceledException notExpectedToHappen) {
-        			notExpectedToHappen.printStackTrace();
-        		}
-        	}
-        }
-        
         IResource module = ResourceHelper.getResourceByModuleName(location.source());
         if (module != null && module instanceof IFile && module.exists())
         {

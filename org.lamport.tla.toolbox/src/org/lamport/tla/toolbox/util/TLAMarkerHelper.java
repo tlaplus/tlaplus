@@ -159,7 +159,7 @@ public class TLAMarkerHelper
 								
 								// since we know that the editor uses file based editor representation
 								FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
-								FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+								FileDocumentProvider fileDocumentProvider = new LegacyFileDocumentProvider();
 								try
 								{
 									fileDocumentProvider.connect(fileEditorInput);
