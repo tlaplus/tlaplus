@@ -330,7 +330,11 @@ public class TLAEditor extends TextEditor
 		final int visible = getSourceViewer().getTopIndex();
 		closeUndo();
 		dp.setUnicode0(getEditorInput(), value);
+		// drop the Unicode<>ASCII conversion operation from the history. Otherwise,
+		// undo will revert the conversion and leave the editor and the menu item ("Use
+		// Unicode") in an inconsistent state.
 		discardUndo(1);
+		
     	convertUndo(TLAUnicodeReplacer.isUnicode());
     	getSourceViewer().setTopIndex(visible);
     	getSelectionProvider().setSelection(dp.converSelection1(getEditorInput(), value, selection));
