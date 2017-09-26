@@ -223,6 +223,16 @@ the Toolbox should <a href="#validating">validate the model</a> when it is saved
 The model is automatically saved when you run or validate it, so you will
 probably have no reason to save it explicitly.
 </p>
+
+<h3>Take snapshot of model after completion of model checking</h3>
+<p>
+Re-running a model erases the corresponding model checking results if any. With snapshots
+activate, the Toolbox creates a history of model runs. The history allows one to trace back
+the evolution of the specification and corresponding model.
+</p>
+<p>Snapshots can be deleted in the Spec Explorer as needed.
+</p>
+
 <h3>Maximum JVM Heap Size</h3>
 <p>
 This is the value to which the <em>Maximum JVM heap size</em> parameter
@@ -240,7 +250,7 @@ then the model will remain <A href="about-models.html#locking">locked</A>.
 </p>
 
 
-<h3><A name="maximum-tail-length">Maximum Tail Length of Trace Explorer States</A></h3>
+<h3><A name="maximum-tail-length">Default number of states shown in error traces</A></h3>
 <p>
 
 The maximum number of states of a trace that is displayed in the Trace Explorer when
