@@ -150,6 +150,8 @@ public class TLAUnicode {
 				}
 				
 				//---- Align token ----
+				// TODO origSpace can become negative leading to subsequent exceptions (sorry I
+				// don't remember what triggers it).
 				final int origSpace = tok.column - (item > 0 ? spec[line][item - 1].column + spec[line][item - 1].getWidth() : 0);
 				int space = -1; // How much space to leave before the token
 				if (tok.aboveAlign.line != -1 && tok.type != Token.COMMENT) {

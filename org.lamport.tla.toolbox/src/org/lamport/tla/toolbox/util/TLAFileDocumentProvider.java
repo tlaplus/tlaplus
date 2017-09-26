@@ -18,7 +18,6 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
-import org.eclipse.ui.texteditor.AbstractMarkerAnnotationModel;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
@@ -386,6 +385,12 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 		
 		try {
 //			System.out.println("&&&from: " + offset);
+			// TODO
+			// doc and altDoc represent the Unicode and ASCII spec. However, with TLAPS
+			// proof markers (status coloring) the offsets need not be calcualted when the
+			// Unicode editor is modified. With TLAPS markers present, apply unrelated
+			// editor changes moves the markers. In order to reproduce, doc.set(...) below
+			// has be to be fixed to not remove the markers in the first place.
 			final IDocument fromDoc = screen ? doc : altDoc;
 			final IDocument toDoc = !screen ? doc : altDoc;
 
@@ -453,12 +458,6 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
     	
     	info.locationConverter = locConverter;
     	info.altDoc = new Document(orig);
-		// Re-Initialize the annotation model (which handles proof obligation markers)
-		// to re-apply the markers. Without re-initialization, obligation markers are lost
-		// when switching from ASCII to Unicode or modifying a Unicode editor with proof
-		// obligation markers (coloring).
-    	// https://github.com/tlaplus/tlaplus/issues/68
-    	((AbstractMarkerAnnotationModel) info.fModel).reinitialize(info.altDoc);
     	
     	setDirty(info, false);
     	
@@ -469,6 +468,14 @@ public class TLAFileDocumentProvider extends TextFileDocumentProvider {
 		final String orig = doc.get();
 		final StringWriter out = new StringWriter();
     	final TLAUnicode.TokenPosition locConverter = TLAUnicode.convert(unicode, new StringReader(orig), out);
+    	//TODO:
+		// 1) Calling doc.set(out.toString()) effectively erases TLAPS proof status
+		// coloring/obligation markers because set logically deletes the old document
+		// content and replaces it with out.toString(). Deleting the old content causes
+		// the IDocument's DefaultPositionUpdater to remove all current markers.
+    	// https://github.com/tlaplus/tlaplus/issues/68
+		// 2) Besides any undesired behavior, replacing the full document on each and
+		// every modification can lead to performance problems.
     	doc.set(out.toString());
     	return locConverter;
 	}

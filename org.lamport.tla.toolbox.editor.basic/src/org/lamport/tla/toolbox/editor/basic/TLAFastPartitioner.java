@@ -136,6 +136,7 @@ import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.IDocumentPartitionerExtension;
 import org.eclipse.jface.text.IDocumentPartitionerExtension2;
 import org.eclipse.jface.text.IDocumentPartitionerExtension3;
+import org.eclipse.jface.text.IPositionUpdater;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.Position;
@@ -183,7 +184,7 @@ public class TLAFastPartitioner implements IDocumentPartitioner, IDocumentPartit
     /** The document length before a document change occurred */
     protected int fPreviousDocumentLength;
     /** The position updater used to for the default updating of partitions */
-    protected final DefaultPositionUpdater fPositionUpdater;
+    protected final IPositionUpdater fPositionUpdater;
     
     /** The offset at which the first changed partition starts */
     protected int fStartOffset;

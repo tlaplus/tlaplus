@@ -37,7 +37,6 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
@@ -108,7 +107,6 @@ import org.osgi.service.event.EventHandler;
 import pcal.PCalLocation;
 import pcal.TLAtoPCalMapping;
 import tla2sany.st.Location;
-import tla2unicode.TLAUnicode;
 import tla2unicode.Unicode;
 
 /**
@@ -280,6 +278,7 @@ public class TLAEditor extends TextEditor
             {
                 IMarkerDelta[] markerChanges = event.findMarkerDeltas(EditorUtil.READ_ONLY_MODULE_MARKER, false);
 
+                //TODO Don't refresh the same resource multiple times.
                 for (int i = 0; i < markerChanges.length; i++)
                 {
                     if (markerChanges[i].getResource().equals(((IFileEditorInput) getEditorInput()).getFile()))
@@ -335,6 +334,14 @@ public class TLAEditor extends TextEditor
 		// Unicode") in an inconsistent state.
 		discardUndo(1);
 		
+		//TODO:
+		// Purge complete undo history because convertUndo is buggy. IMO it is
+		// acceptable if the undo history is lost when switching between Unicode and
+		// ASCII. The bug in convertUndo gets triggered by adding/removing lines from
+		// the Unicode editor and switching back to ASCII. One of the offsets in
+		// covertUndo points towards the end of the actual text leading either to an
+		// ArrayIndexOutOfBoundsException or BadLocationException.
+		// https://github.com/tlaplus/tlaplus/issues/72
     	convertUndo(TLAUnicodeReplacer.isUnicode());
     	getSourceViewer().setTopIndex(visible);
     	getSelectionProvider().setSelection(dp.converSelection1(getEditorInput(), value, selection));
