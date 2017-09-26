@@ -928,7 +928,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // label deferred liveness checking
 		final String deferLivenessHelp = "Defer verification of temporal properties (liveness) to the end of model checking"
-				+ " to reduce overall model checking time. Liveness violations will not be found late compared to invariant "
+				+ " to reduce overall model checking time. Liveness violations will be found late compared to invariant "
 				+ "violations. In other words check liveness only once on the complete state space.";
         Label deferLivenessLabel = toolkit.createLabel(area, "Verify temporal properties upon termination only:");
         gd = new GridData();

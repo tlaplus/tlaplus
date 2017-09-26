@@ -234,6 +234,17 @@ Specifying Systems</a></em>.&nbsp;  When run in simulation mode, the only
 statistics TLC reports are for <i>States Found</i>.
 </p>
 
+<h3>Verify temporal properties upon termination only</h3>
+<p>
+Defer the verification of temporal properties (liveness) to the end of model checking.
+<b>This reduces the overall model checking time</b> with the additional side effect that invariant (safety)
+violations will always be found first. In other words, check liveness only after the <em>complete</em>
+state space has been checked for safety violations.
+If unchecked, temporal properties are checked periodically on the <em>incomplete</em>
+state graph. Defering verification of temporal properties is especially useful if it is highly
+likely that the model does not violate its temporal properties (e.g. a smaller instance
+of the model has successfully been verified for liveness violations).
+
 <h3>Fingerprint seed index</h3>
 <p>
 TLC saves only 64-bit fingerprints (hashes) of the reachable states that it finds, not the
