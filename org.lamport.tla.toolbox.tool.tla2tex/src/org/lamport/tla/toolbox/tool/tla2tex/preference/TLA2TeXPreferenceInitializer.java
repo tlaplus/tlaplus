@@ -9,7 +9,6 @@ import org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator;
  * Gives default preferences for TLA2TeX
  * 
  * @author Daniel Ricketts
- * @version $Id$
  */
 public class TLA2TeXPreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -19,6 +18,7 @@ public class TLA2TeXPreferenceInitializer extends AbstractPreferenceInitializer 
 		store.setDefault(ITLA2TeXPreferenceConstants.SHADE_COMMENTS, true);
 		store.setDefault(ITLA2TeXPreferenceConstants.NO_PCAL_SHADE, false);
         store.setDefault(ITLA2TeXPreferenceConstants.NUMBER_LINES, false);
+		store.setDefault(ITLA2TeXPreferenceConstants.DOT_COMMAND, "dot");
 		store.setDefault(ITLA2TeXPreferenceConstants.LATEX_COMMAND, "pdflatex");
 		store.setDefault(ITLA2TeXPreferenceConstants.GRAY_LEVEL, "0.85");
 		if (Platform.getOS().equals(Platform.OS_MACOSX)) {

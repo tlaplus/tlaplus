@@ -42,4 +42,9 @@ public interface ITLA2TeXPreferenceConstants
      * True if embedded viewer is to be used
      */
     public static final String EMBEDDED_VIEWER = "embeddedViewer";
+
+	/**
+	 * Specify the full qualified path to GraphViz's dot executable.
+	 */
+	public static final String DOT_COMMAND = "dotCommand";
 }
