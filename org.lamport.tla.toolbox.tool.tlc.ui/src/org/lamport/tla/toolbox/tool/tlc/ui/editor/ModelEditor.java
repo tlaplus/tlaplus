@@ -1,7 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
@@ -16,11 +15,15 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -34,6 +37,8 @@ import org.eclipse.swt.custom.CTabFolder2Listener;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -49,6 +54,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
@@ -110,7 +116,11 @@ public class ModelEditor extends FormEditor
 						if (event.getState().in(State.NOT_RUNNING)) {
 							// Model checking finished, lets open state graph if any.
 							if (event.getModel().hasStateGraphDump()) {
-								ModelEditor.this.addOrUpdateStateGraphEditor(event.getModel().getStateGraphDump());
+								try {
+									ModelEditor.this.addOrUpdateStateGraphEditor(event.getModel().getStateGraphDump());
+								} catch (CoreException e) {
+									TLCUIActivator.getDefault().logError("Error initializing editor", e);
+								}
 							}
 						}
 					}
@@ -529,72 +539,132 @@ public class ModelEditor extends FormEditor
             // run the validation
             UIHelper.runUIAsync(validateRunable);
 
-        } catch (PartInitException e)
+            
+            ModuleNode rootModule = SemanticHelper.getRootModuleNode();
+            if (rootModule != null && rootModule.getVariableDecls().length == 0
+            		&& rootModule.getConstantDecls().length == 0)
+            {
+            	showResultPage();
+            }
+            
+            if (model.hasStateGraphDump()) {
+            	addOrUpdateStateGraphEditor(model.getStateGraphDump());
+            }
+        } catch (CoreException e)
         {
             TLCUIActivator.getDefault().logError("Error initializing editor", e);
         }
 
-        ModuleNode rootModule = SemanticHelper.getRootModuleNode();
-        if (rootModule != null && rootModule.getVariableDecls().length == 0
-                && rootModule.getConstantDecls().length == 0)
-        {
-            showResultPage();
-        }
-        
-		if (model.hasStateGraphDump()) {
-			addOrUpdateStateGraphEditor(model.getStateGraphDump());
-		}
-
         // TLCUIActivator.getDefault().logDebug("leaving ModelEditor#addPages()");
     }
     
-	public void addOrUpdateStateGraphEditor(IFile stateGraphDotDump) {
-		try {
-			// For historical reasons this preference is found in the tlatex bundle. Thus,
-			// we read the value from there, but don't refer to the corresponding string
-			// constants to not introduce a plugin dependency.
-			// org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator.PLUGIN_ID
-			// org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER
-			final boolean useEmbeddedViewer = Platform.getPreferencesService()
-					.getBoolean("org.lamport.tla.toolbox.tool.tla2tex", "embeddedViewer", false, null);
-			
-			IEditorPart findEditor;
-			if (useEmbeddedViewer) {
-				// Try to get hold of the editor instance without opening it yet. Opening is
-				// triggered by calling addPage.
-				findEditor = UIHelper.findEditor("de.vonloesch.pdf4eclipse.editors.PDFEditor");
-			} else {
-				findEditor = UIHelper.findEditor(PDFBrowserEditor.ID);
-			}
-
-			// Try to create a new (empty) pdf file.
-			final IFile file = model.getFolder().getFile(model.getName() + ".pdf");
-			if (file.exists()) {
-				addPage(findEditor, new FileEditorInput(file));
-				return;
-			}
-			byte[] load = new byte[0];
-
-			// Check size and refuse to generate if dot input too large (limit found empirically).
-			final File f = stateGraphDotDump.getLocation().toFile();
-			if (f.length() > 50_000) {
-				load = GraphViz.load(new ByteArrayInputStream(
-						"strict digraph DiskGraph {123 [shape=plaintext] [label=\"State Graph too large to visualize.\nReduce the number of distinct states and rerun TLC.\"]}"
-								.getBytes()),
-						"pdf", 0, 0);
-			} else {
-				load = GraphViz.load(new FileInputStream(stateGraphDotDump.getLocation().toFile()), "pdf", 0, 0);
-			}
-
-			// Write byte[] into IFile file
-			file.create(new ByteArrayInputStream(load), IResource.NONE, null);
-
-			addPage(findEditor, new FileEditorInput(file));
-		} catch (CoreException | FileNotFoundException e) {
-            TLCUIActivator.getDefault().logError(e.getMessage(), e);
+	public void addOrUpdateStateGraphEditor(final IFile stateGraphDotDump) throws CoreException {
+		// For historical reasons this preference is found in the tlatex bundle. Thus,
+		// we read the value from there, but don't refer to the corresponding string
+		// constants to not introduce a plugin dependency.
+		// org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator.PLUGIN_ID
+		// org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER
+		final boolean useEmbeddedViewer = Platform.getPreferencesService()
+				.getBoolean("org.lamport.tla.toolbox.tool.tla2tex", "embeddedViewer", false, null);
+		
+		final IEditorPart findEditor;
+		if (useEmbeddedViewer) {
+			// Try to get hold of the editor instance without opening it yet. Opening is
+			// triggered by calling addPage.
+			findEditor = UIHelper.findEditor("de.vonloesch.pdf4eclipse.editors.PDFEditor");
+		} else {
+			findEditor = UIHelper.findEditor(PDFBrowserEditor.ID);
 		}
+
+		// Load a previously generated pdf file.
+		final IFile file = model.getFolder().getFile(model.getName() + ".pdf");
+		if (file.exists()) {
+			addPage(findEditor, new FileEditorInput(file));
+			return;
+		}
+
+		// Generating a PDF from the dot file can be a time consuming task. Thus, wrap
+		// the generation inside a background job for processing. When done, the job will join the
+		// main thread and update the UI (create the multipage editor page that renders
+		// the pdf). Errors (IStatus) are handled by the Job framework and trigger a dialog, unless
+		// errors occur inside the UI runnable. There we handle errors manually.
+		final Job j = new WorkspaceJob("Generating State Graph Visualization...") {
+			@Override
+			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+				try {
+					// Generate PDF (this process runs with a timeout of one minute which is why we
+					// don't provide a mechanism to cancel it.
+					final byte[] load = GraphViz.load(new FileInputStream(stateGraphDotDump.getLocation().toFile()),
+							"pdf", 0, 0);
+					// Write byte[] into IFile file
+					file.create(new ByteArrayInputStream(load), IResource.NONE, null);
+					UIHelper.runUISync(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								addPage(findEditor, new FileEditorInput(file));
+							} catch (PartInitException e) {
+								final Shell shell = Display.getDefault().getActiveShell();
+								MessageDialog.openError(shell == null ? new Shell() : shell,
+										"Opening state graph visualization failed.",
+										"Opening state graph visualization failed: " + e.getMessage());
+							} catch (OutOfMemoryError e) {
+								final Shell shell = Display.getDefault().getActiveShell();
+								MessageDialog.openError(shell == null ? new Shell() : shell, "Opening state graph visualization ran out of memory.",
+										"Opening state graph visualization ran out of memory. The state graph is likely too large. "
+										+ "Try using a standalone PDF viewer if the Toolbox is currently set to use the built-in one.");
+							}
+						}
+					});
+				} catch (CoreException e) {
+					// If generation failed to generate a pdf, inform the user by raising a dialog.
+					// Reason of failure can be 1) input too large 2) incorrect dot path 3) ...
+					return shortenStatusMessage(e.getStatus());
+				} catch (FileNotFoundException notExpectedTohappen) {
+					// We don't expect this to happen, because addOrUpdateStateGraphEditor gets
+					// called with a valid file.
+					return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, notExpectedTohappen.getMessage(),
+							notExpectedTohappen);
+				}
+				return Status.OK_STATUS;
+			}
+		};
+		j.setUser(true);
+		j.setPriority(Job.LONG);
+		j.schedule();
 	}
 
+	// Shorten message to 1024 chars in case GraphViz attached the complete dot
+	// input which can be huge.
+	// https://github.com/abstratt/eclipsegraphviz/issues/8
+	private static IStatus shortenStatusMessage(IStatus status) {
+		if (status.isMultiStatus()) {
+			final IStatus[] convertedChildren = new Status[status.getChildren().length];
+			// convert nested status objects.
+			final IStatus[] children = status.getChildren();
+			for (int i = 0; i < children.length; i++) {
+				final IStatus child = children[i];
+				convertedChildren[i] = new Status(child.getSeverity(), child.getPlugin(), child.getCode(),
+						substring(child.getMessage()),
+						child.getException());
+			}
+			return new MultiStatus(status.getPlugin(), status.getCode(), convertedChildren,
+					substring(status.getMessage()),
+					status.getException());
+		} else {
+			return new Status(status.getSeverity(), status.getPlugin(), status.getCode(),
+					substring(status.getMessage()),
+					status.getException());
+		}
+	}
+	
+	private static String substring(String in) {
+		if (in.length() > 1024) {
+			return in.substring(0, 1024) + "... (" + (in.length() - 1024) + " chars omitted)";
+		}
+		return in;
+	}
+	
     /* --------------------------------------------------------------------- */
     
 	public void launchModel(final String mode, final boolean userPased) {
