@@ -61,6 +61,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 		this.path = path;
 	}
 	
+	public ModelCheckerTestCase(String spec, String[] extraArguments) {
+		this(spec, "", extraArguments);
+	}
+	
 	public ModelCheckerTestCase(String spec, String path, String[] extraArguments) {
 		this(spec, path);
 		this.extraArguments  = extraArguments; 

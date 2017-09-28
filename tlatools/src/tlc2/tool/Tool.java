@@ -2808,20 +2808,50 @@ public class Tool
     return ((BoolValue)val).val;
   }
 
-  /* Reconstruct the initial state whose fingerprint is fp. */
-  public final TLCStateInfo getState(long fp) {
-    StateVec initStates = this.getInitStates();
-    for (int i = 0; i < initStates.size(); i++) {
-      TLCState state = initStates.elementAt(i);
-      long nfp = state.fingerPrint();
-      if (fp == nfp) {
-        String info = "<Initial predicate>";
-        final TLCStateInfo tlcStateInfo = new TLCStateInfo(state, info, 1, fp);
-        return tlcStateInfo;
-      }
-    }
-    return null;
-  }
+    /* Reconstruct the initial state whose fingerprint is fp. */
+	public final TLCStateInfo getState(final long fp) {
+		class InitStateSelectorFunctor implements IStateFunctor {
+			private final long fp;
+			public TLCState state;
+			public InitStateSelectorFunctor(long fp) {
+				this.fp = fp;
+			}
+			@Override
+			public Object addElement(TLCState state) {
+				if (state == null) {
+					return null;
+				} else if (this.state != null) {
+					// Always return the first match found. Do not let later matches override
+					// this.state. This is in line with the original implementation that called
+					// getInitStates().
+					return null;
+				} else if (fp == state.fingerPrint()) {
+					this.state = state;
+					// TODO Stop generation of initial states preemptively. E.g. make the caller of
+					// addElement check for a special return value such as this (the functor).
+				}
+				return null;
+			}
+		}
+		// Registry a selector that extract out of the (possibly) large set of initial
+		// states the one identified by fp. The functor pattern has the advantage
+		// compared to this.getInitStates(), that it kind of streams the initial states
+		// to the functor whereas getInitStates() stores _all_ init states in a set
+		// which is traversed afterwards. This is also consistent with
+		// ModelChecker#DoInitFunctor. Using the functor pattern for the processing of
+		// init states in ModelChecker#doInit but calling getInitStates() here results
+		// in a bug during error trace generation when the set of initial states is too
+		// large for getInitStates(). Earlier TLC would have refused to run the model
+		// during ModelChecker#doInit.
+		final InitStateSelectorFunctor functor = new InitStateSelectorFunctor(fp);
+		this.getInitStates(functor);
+		if (functor.state != null) {
+			final String info = "<Initial predicate>";
+			final TLCStateInfo tlcStateInfo = new TLCStateInfo(functor.state, info, 1, fp);
+			return tlcStateInfo;
+		}
+		return null;
+	}
 
   /**
 	 * Reconstruct the next state of state s whose fingerprint is fp.
