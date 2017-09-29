@@ -61,6 +61,7 @@ import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.rest.AuthorizationException;
 import org.jclouds.scriptbuilder.statements.login.AdminAccess;
 import org.jclouds.ssh.SshClient;
+import org.jclouds.ssh.SshException;
 import org.jclouds.sshj.config.SshjSshClientModule;
 import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
@@ -481,7 +482,7 @@ public class CloudDistributedTLCJob extends Job {
 							hostname,
 							props.get("result.mail.address")), null, new URL(
 							"http://" + hostname + "/munin/"));
-		} catch (RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException e) {
+		} catch (RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException|SshException e) {
 			e.printStackTrace();
 			if (context != null) {
 				destroyNodes(context, groupNameUUID);
