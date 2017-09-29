@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
@@ -95,7 +96,11 @@ public class Application implements IApplication {
 		final CloudDistributedTLCJob job = (CloudDistributedTLCJob) factory.getTLCJob(cloud, new File(modelDirectory), 1, props, tlcParams.toString());
 		job.setIsCLI(true);
 		job.setDoJfr(true);
-		job.run(new MyProgressMonitor(9));
+		final IStatus status = job.run(new MyProgressMonitor(9));
+		// Show error message if any such as invalid credentials.
+		if (status.getSeverity() == IStatus.ERROR) {
+			System.err.println(status.getMessage());
+		}
 		
 		return IApplication.EXIT_OK;
 	}
