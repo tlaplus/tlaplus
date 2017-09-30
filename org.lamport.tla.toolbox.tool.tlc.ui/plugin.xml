@@ -67,6 +67,11 @@
                name="modelLaunchName"
                optional="false">
          </commandParameter>
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.open.param.expand.properties"
+               name="expandPropertiesSection"
+               optional="true">
+         </commandParameter>
       </command>
       <command
             categoryId="toolbox.tool.tlc.commands.category"

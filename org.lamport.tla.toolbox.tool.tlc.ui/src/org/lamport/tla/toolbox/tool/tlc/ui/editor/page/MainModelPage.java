@@ -1123,25 +1123,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dm.bindAttribute(MODEL_CORRECTNESS_INVARIANTS, invariantsTable, invariantsPart);
 
         // Properties
-
-        // The following code added by LL on 29 May 2010 to expand the Property section
-        // and reset the MODEL_PROPERTIES_EXPAND property to "" if that property has 
-        // been set to a non-"" value.
-        int propFlags = sectionFlags;
-        try
-        {
-            if (!((String) getModel().getAttribute(MODEL_PROPERTIES_EXPAND, "")).equals("")) {
-               propFlags = propFlags | Section.EXPANDED;
-               getModel().setAttribute(MODEL_PROPERTIES_EXPAND, "");
-            }
-        } catch (CoreException e)
-        {
-            // I don't know why such an exception might occur, but there's no
-            // great harm if it does. LL
-        	e.printStackTrace();
-        }
         ValidateableTableSectionPart propertiesPart = new ValidateableTableSectionPart(toBeCheckedArea, "Properties",
-                "Temporal formulas true for every possible behavior.", toolkit, propFlags, this,
+                "Temporal formulas true for every possible behavior.", toolkit, sectionFlags, this,
                 SEC_WHAT_TO_CHECK_PROPERTIES);
         managedForm.addPart(propertiesPart);
         propertiesTable = propertiesPart.getTableViewer();
@@ -1712,6 +1695,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		stackLayout.topControl = composite;
 		distributedOptions.layout();
     }
+
+	/**
+	 * Expands the properties table.
+	 */
+	public void expandPropertiesSection() {
+		final SectionPart section = getDataBindingManager().getSection(SEC_WHAT_TO_CHECK_PROPERTIES);
+		section.getSection().setExpanded(true);
+	}
 
     /**
      * On a refresh, the checkpoint information is re-read 

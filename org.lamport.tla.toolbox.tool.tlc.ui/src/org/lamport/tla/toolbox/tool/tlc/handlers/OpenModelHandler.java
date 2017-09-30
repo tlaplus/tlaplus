@@ -8,6 +8,7 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -19,6 +20,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class OpenModelHandler extends AbstractHandler implements IConfigurationConstants {
 	public static final String COMMAND_ID = "toolbox.tool.tlc.commands.model.open";
 	public static final String PARAM_MODEL_NAME = "toolbox.tool.tlc.commands.model.open.param";
+	public static final String PARAM_EXPAND_PROPERTIES = "toolbox.tool.tlc.commands.model.open.param.expand.properties";
 
 	public static final String EDITOR_ID = "org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor";
 
@@ -28,7 +30,7 @@ public class OpenModelHandler extends AbstractHandler implements IConfigurationC
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		// The non-qualified model name (no spec prefix)
 		// The ModelHelper associates it implicitly with the current spec
-		final String modelName = event.getParameter((String) PARAM_MODEL_NAME);
+		final String modelName = event.getParameter(PARAM_MODEL_NAME);
 
 		final Model model = ToolboxHandle.getCurrentSpec().getAdapter(TLCSpec.class).getModel(modelName);
 		final IFile launchFile = model.getLaunchConfiguration().getFile();
@@ -38,8 +40,11 @@ public class OpenModelHandler extends AbstractHandler implements IConfigurationC
 					+ " does not exist. Try restarting the Toolbox and if that does not help, delete the model from the Spec Explorer.");
 		}
 		
-		UIHelper.openEditor(EDITOR_ID, launchFile);
-
+		final ModelEditor modelEditor = (ModelEditor) UIHelper.openEditor(EDITOR_ID, launchFile);
+		if ("expand".equals(event.getParameter(PARAM_EXPAND_PROPERTIES))) {
+			modelEditor.expandPropertiesSection();
+		}
+		
 		return null;
 	}
 }
