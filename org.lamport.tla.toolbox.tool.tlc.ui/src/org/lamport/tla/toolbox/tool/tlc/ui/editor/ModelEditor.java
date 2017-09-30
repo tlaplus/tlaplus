@@ -113,6 +113,11 @@ public class ModelEditor extends FormEditor
 								bfp.refresh();
 							}
 						}
+						if (event.getState().in(State.RUNNING)) {
+							// Switch to Result Page (put on top) of model editor stack. A user wants to see
+							// the status of a model run she has just started.
+							ModelEditor.this.showResultPage();
+						}
 						if (event.getState().in(State.NOT_RUNNING)) {
 							// Model checking finished, lets open state graph if any.
 							if (event.getModel().hasStateGraphDump()) {
