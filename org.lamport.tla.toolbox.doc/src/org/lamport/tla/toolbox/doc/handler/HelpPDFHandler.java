@@ -89,6 +89,9 @@ public class HelpPDFHandler extends AbstractHandler implements IHandler {
 
 	private File getDocFile(final String bundleRelativePath) throws IOException, URISyntaxException {
 		final Bundle bundle = Platform.getBundle(HelpActivator.PLUGIN_ID);
-		return new File(FileLocator.resolve(bundle.getEntry(bundleRelativePath)).toURI());
+		// Do not call URL#toURI. The call throws an exception due to invalid chars on macOS
+		// when the Toolbox is installed in (its default location) /Applications/TLA+
+		// Toolbox.app/...
+		return new File(FileLocator.resolve(bundle.getEntry(bundleRelativePath)).getFile());
 	}
 }
