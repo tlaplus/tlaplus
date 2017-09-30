@@ -397,7 +397,7 @@ public class Tool
             Assert.fail("The init state relation is not a boolean expression.\n" + init);
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
 	    if (this.callStack != null) {
 			// Freeze the callStack to ignore subsequent pop operations. This is
 			// necessary to ignore the callStack#pop calls in the finally blocks when the
@@ -718,7 +718,7 @@ public class Tool
             return;
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
 	    throw e;
@@ -791,7 +791,7 @@ public class Tool
           }
         }
     	return s1;
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
 	    throw e;
@@ -1155,7 +1155,7 @@ public class Tool
             return resState;
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -1234,7 +1234,7 @@ public class Tool
           resState = this.getNextStates(acts, s0, s1, nss);
         }
         return resState;
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -1337,7 +1337,7 @@ public class Tool
             return null;     // make compiler happy
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -2137,7 +2137,7 @@ public class Tool
             return null;
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -2255,7 +2255,7 @@ public class Tool
             return null;    // make compiler happy
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -2697,7 +2697,7 @@ public class Tool
             return null;
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -2772,7 +2772,7 @@ public class Tool
           return null;
         }
         return this.enabled(acts, s0, s1);
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
