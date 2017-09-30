@@ -100,6 +100,8 @@ public class Application implements IApplication {
 		// Show error message if any such as invalid credentials.
 		if (status.getSeverity() == IStatus.ERROR) {
 			System.err.println(status.getMessage());
+			// Signal unsuccessful execution.
+			return new Integer(1);
 		}
 		
 		return IApplication.EXIT_OK;
