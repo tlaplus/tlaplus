@@ -100,7 +100,6 @@ public class HelpButton {
     public static class HelpButtonListener extends SelectionAdapter implements
             SelectionListener {
 
-//        String file;
         String url;
         Composite shell;
 
@@ -133,9 +132,7 @@ public class HelpButton {
             	URL fileURL = bundle.getEntry("html/" + fileName);
             	File theFile = null;
             	try {
-            		theFile = new File(FileLocator.resolve(fileURL).toURI());
-            	} catch (URISyntaxException e1) {
-            		e1.printStackTrace();
+            		theFile = new File(FileLocator.resolve(fileURL).getFile());
             	} catch (IOException e1) {
             		e1.printStackTrace();
             	}
