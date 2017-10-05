@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -69,7 +70,8 @@ public class MailSender {
 		}
 				
 		// retry all mx host
-		for (MXRecord mxRecord : mailhosts) {
+		for (int i = 0; i < mailhosts.size(); i++) {
+			final MXRecord mxRecord = mailhosts.get(i);
 			properties.put("mail.smtp.host", mxRecord.hostname);
 			try {
 				final Session session = Session.getDefaultInstance(properties);
@@ -108,9 +110,19 @@ public class MailSender {
 		        Transport.send(msg);
 				return true;
 			} catch (SendFailedException e) {
-				final Exception nested = e.getNextException();
-				if (nested instanceof com.sun.mail.smtp.SMTPAddressFailedException) {
-					throttleRetry("Slowing down due to errors, will continue in 1 minute...");
+				final Exception next = e.getNextException();
+				if (next != null && next.getMessage() != null && next.getMessage().toLowerCase().contains("greylist")
+						&& !properties.containsKey((String) properties.get("mail.smtp.host") + ".greylisted")) {
+					// mark receiver as greylisted to not retry over and over again.
+					properties.put((String) properties.get("mail.smtp.host") + ".greylisted", "true");
+					throttleRetry(String.format(
+							"%s EMail Report: Detected greylisting when sending to %s at %s, will retry in %s minutes...",
+							new Date(), to.getAddress(), mxRecord.hostname, 10L), 10L);
+					i = i - 1;
+				} else {
+					throttleRetry(String.format(
+							"%s EMail Report: Slowing down due to errors when sending to %s at %s, will continue in 1 minute...",
+							new Date(), to.getAddress(), mxRecord.hostname, 1L), 1L);
 				}
 			} catch (AddressException e) {
 				e.printStackTrace();
@@ -121,10 +133,10 @@ public class MailSender {
 		return false;
 	}
 	
-	private static void throttleRetry(final String msg) {
+	private static void throttleRetry(final String msg, long minutes) {
 		try {
 			System.err.println(msg);
-			Thread.sleep(60L * 1000L);
+			Thread.sleep(minutes * 60L * 1000L);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
