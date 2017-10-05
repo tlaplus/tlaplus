@@ -42,18 +42,16 @@ public class MailSender {
 	/**
 	 * @param from "Foo bar <foo@bar.com>"
 	 * @param to An email address _with_ domain part (foo@bar.com)
-	 * @param domain domain part (bar.com). Used to lookup mx records
 	 * @param subject
 	 * @param messages
 	 */
-	private static boolean send(final String from, final String to,
-			final String domain, final String subject, final String body, final File[] files) {
+	private static boolean send(final InternetAddress from, final InternetAddress to, final String subject, final String body, final File[] files) {
 		
 		final Properties properties = System.getProperties();
 		//properties.put("mail.debug", "true");
 		
 		try {
-			final List<MXRecord> mailhosts = getMXForDomain(domain);
+			final List<MXRecord> mailhosts = getMXForDomain(to.getAddress().split("@")[1]);
 				
 			// retry all mx host
 			for (MXRecord mxRecord : mailhosts) {
@@ -61,8 +59,8 @@ public class MailSender {
 				
 				final Session session = Session.getDefaultInstance(properties);
 				final Message msg = new MimeMessage(session);
-				msg.setFrom(new InternetAddress(from));
-				msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+				msg.setFrom(from);
+				msg.addRecipient(Message.RecipientType.TO, to);
 				msg.setSubject(subject);
 				
 				// not sure why the extra body part is needed here
@@ -149,37 +147,42 @@ public class MailSender {
 			return weight.compareTo(o.weight);
 		}
 	}
+	
+	// For testing only.
+	public static void main(String[] args) throws AddressException, FileNotFoundException, UnknownHostException {
+		MailSender mailSender = new MailSender();
+		mailSender.send();
+	}
 
-	// if null, no Mail is going to be send
-	private final String mailto;
 	
 	private String modelName = "unknown model";
 	private String specName = "unknown spec";
 	private File err;
 	private File out;
-	private String from;
-	private String domain;
+	// if null, no Mail is going to be send
+	private InternetAddress[] toAddresses;
+	private InternetAddress from;
 
-	public MailSender() throws FileNotFoundException, UnknownHostException {
+	public MailSender() throws FileNotFoundException, UnknownHostException, AddressException {
 		ModelInJar.loadProperties(); // Reads result.mail.address and so on.
-		mailto = System.getProperty(MAIL_ADDRESS);
+		final String mailto = System.getProperty(MAIL_ADDRESS);
 		if (mailto != null) {
-			domain = mailto.split("@")[1];
+			this.toAddresses = InternetAddress.parse(mailto);
 			
-			from = "TLC - The friendly model checker <"
+			this.from = new InternetAddress("TLC - The friendly model checker <"
 					+ System.getProperty("user.name") + "@"
-					+ InetAddress.getLocalHost().getHostName() + ">";
+					+ InetAddress.getLocalHost().getHostName() + ">");
 			
 			// Record/Log output to later send it by email
 			final String tmpdir = System.getProperty("java.io.tmpdir");
-			out = new File(tmpdir + File.separator + "MC.out");
+			this.out = new File(tmpdir + File.separator + "MC.out");
 			ToolIO.out = new LogPrintStream(out);
-			err = new File(tmpdir + File.separator + "MC.err");
+			this.err = new File(tmpdir + File.separator + "MC.err");
 			ToolIO.err = new LogPrintStream(err);
 		}
 	}
 	
-	public MailSender(String mainFile) throws FileNotFoundException, UnknownHostException {
+	public MailSender(String mainFile) throws FileNotFoundException, UnknownHostException, AddressException {
 		this();
 		setModelName(mainFile);
 	}
@@ -197,15 +200,22 @@ public class MailSender {
 	}
 
 	public boolean send(List<File> files) {
-		if (mailto != null) {
+		if (toAddresses != null) {
 			files.add(0, out);
 			// Only add the err file if there is actually content 
 			if (err.length() != 0L) {
 				files.add(0, err);
 			}
-			// Try sending the mail with the model checking result to the receiver 
-			return send(from, mailto, domain, "Model Checking result for " + modelName + " with spec " + specName,
-					extractBody(out), files.toArray(new File[files.size()]));
+			// Try sending the mail with the model checking result to the receivers. Returns
+			// true if a least one email was delivered successfully.
+			boolean success = false;
+			for (final InternetAddress toAddress : toAddresses) {
+				if (send(from, toAddress, "Model Checking result for " + modelName + " with spec " + specName,
+						extractBody(out), files.toArray(new File[files.size()]))) {
+					success = true;
+				}
+			}
+			return success;
 		} else {
 			// ignore, just signal everything is fine
 			return true;
