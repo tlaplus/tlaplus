@@ -205,6 +205,8 @@ public class CloudDistributedTLCJob extends Job {
                             // Don't want dpkg to require user interaction.
 							+ "export DEBIAN_FRONTEND=noninteractive"
 							+ " && "
+							+ params.getHostnameSetup()
+							+ " && "
 							// Oracle Java 8
 							+ "add-apt-repository ppa:webupd8team/java -y && "
 							// Accept license before apt (dpkg) tries to present it to us (which fails due to 'noninteractive' mode below)

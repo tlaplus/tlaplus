@@ -126,4 +126,12 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		+ "/sbin/mkfs.ext4 -O ^has_journal /dev/md0 && "
 		+ "mount /dev/md0 /mnt";
 	}
+
+	@Override
+	public String getHostnameSetup() {
+		// Lookup public ipv4 hostname and configure /etc/hosts accordingly. Otherwise,
+		// MailSender uses the internal name which increases likelihood of email being
+		// classified/rejected as spam.
+		return "echo \"$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4) $(curl -s http://169.254.169.254/latest/meta-data/public-hostname)\" >> /etc/hosts && hostname $(curl -s http://169.254.169.254/latest/meta-data/public-hostname)";
+	}
 }

@@ -162,4 +162,38 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	public void mungeBuilder(ContextBuilder builder) {
 		builder.endpoint("https://management.core.windows.net/" + getSubscriptionId());
 	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getExtraRepositories()
+	 */
+	@Override
+	public String getExtraRepositories() {
+		return "echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ wheezy main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list && apt-key adv --keyserver packages.microsoft.com --recv-keys 417A0893";
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getExtraPackages()
+	 */
+	@Override
+	public String getExtraPackages() {
+		// https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest#install-on-debianubuntu-with-apt-get
+		// see getExtraRepositories too.
+		return "azure-cli";
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getHostnameSetup()
+	 */
+	@Override
+	public String getHostnameSetup() {
+		// Append ".cloudapp.net" to automatically set hostname and add a mapping from
+		// public ip (obtained via third party service ifconfig.co) to hostname in
+	    // /etc/hosts. Results in FQDN being used my MailSender and thus less likely
+		// to be classified or rejected as spam.
+		// The suffix ".cloudapp.net" is something that might change on the Azure end in
+		// the future. It will then break this statement (suffix can be found in portal).
+		// It would also be nice for Azure to offer a public API to query the hostname
+		// (similar to EC2CloudTLCInstanceParameters#getHostnameSetup.
+		return "hostname \"$(hostname).cloudapp.net\" && echo \"$(curl -s ifconfig.co) $(hostname)\" >> /etc/hosts";
+	}
 }
