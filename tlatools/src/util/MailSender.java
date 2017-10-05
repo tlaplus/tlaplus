@@ -162,6 +162,7 @@ public class MailSender {
 	// if null, no Mail is going to be send
 	private InternetAddress[] toAddresses;
 	private InternetAddress from;
+	private InternetAddress fromAlt;
 
 	public MailSender() throws FileNotFoundException, UnknownHostException, AddressException {
 		ModelInJar.loadProperties(); // Reads result.mail.address and so on.
@@ -170,6 +171,8 @@ public class MailSender {
 			this.toAddresses = InternetAddress.parse(mailto);
 			
 			this.from = new InternetAddress("TLC - The friendly model checker <"
+					+ toAddresses[0].getAddress() + ">");
+			this.fromAlt = new InternetAddress("TLC - The friendly model checker <"
 					+ System.getProperty("user.name") + "@"
 					+ InetAddress.getLocalHost().getHostName() + ">");
 			
@@ -212,6 +215,10 @@ public class MailSender {
 			for (final InternetAddress toAddress : toAddresses) {
 				if (send(from, toAddress, "Model Checking result for " + modelName + " with spec " + specName,
 						extractBody(out), files.toArray(new File[files.size()]))) {
+					success = true;
+				} else if (send(fromAlt, toAddress, "Model Checking result for " + modelName + " with spec " + specName,
+						extractBody(out), files.toArray(new File[files.size()]))) {
+					// Try with alternative from address which some receivers might actually accept.
 					success = true;
 				}
 			}
