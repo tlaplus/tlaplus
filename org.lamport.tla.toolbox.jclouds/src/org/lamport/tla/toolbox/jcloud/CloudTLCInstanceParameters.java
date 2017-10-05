@@ -139,4 +139,12 @@ public abstract class CloudTLCInstanceParameters {
 	public String getHostnameSetup() {
 		return "/bin/true"; // no-op, because concat with && ... && in CDTJ.
 	}
+
+	public String getExtraRepositories() {
+		return "/bin/true"; // no-op, because concat with && ... && in CDTJ.
+	}
+
+	public String getExtraPackages() {
+		return ""; // no-op, because concat with && ... && in CDTJ.
+	}
 }
