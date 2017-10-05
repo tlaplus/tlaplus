@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +46,12 @@ public class MailSender {
 	 */
 	private static boolean send(final InternetAddress from, final InternetAddress to, final String subject, final String body, final File[] files) {
 		
+		// https://javaee.github.io/javamail/docs/api/com/sun/mail/smtp/package-summary.html
 		final Properties properties = System.getProperties();
+		// Prefer email to be delivered encrypted (assumes to lower likelihood of SMTP
+		// rejection or classification as spam too). Falls back to plain text if SMTP
+		// server does not support starttls.
+		properties.put("mail.smtp.starttls.enable", "true");
 		//properties.put("mail.debug", "true");
 		
 		try {
