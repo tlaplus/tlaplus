@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +17,7 @@ import javax.activation.FileDataSource;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
+import javax.mail.SendFailedException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
@@ -105,6 +107,11 @@ public class MailSender {
 				
 		        Transport.send(msg);
 				return true;
+			} catch (SendFailedException e) {
+				final Exception nested = e.getNextException();
+				if (nested instanceof com.sun.mail.smtp.SMTPAddressFailedException) {
+					throttleRetry("Slowing down due to errors, will continue in 1 minute...");
+				}
 			} catch (AddressException e) {
 				e.printStackTrace();
 			} catch (MessagingException e) {
@@ -112,6 +119,15 @@ public class MailSender {
 			}
 		}
 		return false;
+	}
+	
+	private static void throttleRetry(final String msg) {
+		try {
+			System.err.println(msg);
+			Thread.sleep(60L * 1000L);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	private static List<MXRecord> getMXForDomain(String aDomain) throws NamingException {
