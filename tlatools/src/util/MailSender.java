@@ -54,13 +54,22 @@ public class MailSender {
 		properties.put("mail.smtp.starttls.enable", "true");
 		//properties.put("mail.debug", "true");
 		
+		if (!to.getAddress().contains("@")) {
+			// no domain, no MX record to lookup
+			return false;
+		}
+		List<MXRecord> mailhosts;
 		try {
-			final List<MXRecord> mailhosts = getMXForDomain(to.getAddress().split("@")[1]);
+			mailhosts = getMXForDomain(to.getAddress().split("@")[1]);
+		} catch (NamingException e) {
+			e.printStackTrace();
+			return false;
+		}
 				
-			// retry all mx host
-			for (MXRecord mxRecord : mailhosts) {
-				properties.put("mail.smtp.host", mxRecord.hostname);
-				
+		// retry all mx host
+		for (MXRecord mxRecord : mailhosts) {
+			properties.put("mail.smtp.host", mxRecord.hostname);
+			try {
 				final Session session = Session.getDefaultInstance(properties);
 				final Message msg = new MimeMessage(session);
 				msg.setFrom(from);
@@ -69,7 +78,7 @@ public class MailSender {
 				
 				// not sure why the extra body part is needed here
 				MimeBodyPart messageBodyPart = new MimeBodyPart();
-
+	
 				final Multipart multipart = new MimeMultipart();
 				
 				// The main body part. Having a main body appears to have a very
@@ -79,7 +88,7 @@ public class MailSender {
 				messageBodyPart = new MimeBodyPart();
 				messageBodyPart.setContent(body, "text/plain");
 				multipart.addBodyPart(messageBodyPart);
-
+	
 				// attach file(s)
 				for (File file : files) {
 					if (file == null) {
@@ -96,13 +105,11 @@ public class MailSender {
 				
 		        Transport.send(msg);
 				return true;
+			} catch (AddressException e) {
+				e.printStackTrace();
+			} catch (MessagingException e) {
+				e.printStackTrace();
 			}
-		} catch (NamingException e) {
-			e.printStackTrace();
-		} catch (AddressException e) {
-			e.printStackTrace();
-		} catch (MessagingException e) {
-			e.printStackTrace();
 		}
 		return false;
 	}
