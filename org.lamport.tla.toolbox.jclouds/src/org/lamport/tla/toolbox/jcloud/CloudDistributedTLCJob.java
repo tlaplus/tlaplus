@@ -348,6 +348,12 @@ public class CloudDistributedTLCJob extends Job {
 						+ "-jar /tmp/tla2tools.jar " 
 						+ params.getTLCParameters() + " "
 						+ "&& "
+					// Run any cloud specific cleanup tasks.
+					// When CloudDistributedTLCJob runs in synchronous CLI mode (isCLI), it will destroy
+					// the VMs (nodes) via the jclouds API. No need to deallocate nodes
+					// via special logic.
+					+ (isCLI ? "/bin/true" : params.getCloudAPIShutdown())
+					+ " && "
 					// Let the machine power down immediately after
 					// finishing model checking to cut costs. However,
 					// do not shut down (hence "&&") when TLC finished
@@ -461,6 +467,9 @@ public class CloudDistributedTLCJob extends Job {
 								// to a NoRouteToHostException when the master
 								// shut down caused by a violation among the
 								// init states.
+					            // Run any cloud specific cleanup tasks.
+					            + params.getCloudAPIShutdown()
+					            + " && "
 								+ "sudo shutdown -h now"
 								+ "\""), 
 						new TemplateOptions().runAsRoot(false).wrapInInitScript(
