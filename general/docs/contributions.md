@@ -42,3 +42,6 @@ The Toolbox can launch Azure and Amazon EC2 instances to run model checking in t
 
 #### Add support for x1 instances to jclouds (difficulty: easy) (skills: jclouds)
 We raised an [enhancement request for the jclouds toolkit](https://issues.apache.org/jira/browse/JCLOUDS-1339) to add support for Amazon's largest compute instances [(x1e.32xlarge, x1.32xlarge, x1.16xlarge)](https://aws.amazon.com/ec2/instance-types/x1/).
+
+#### Finish Unicode support (difficulty: easy) (skills: Eclipse, SANY)
+A few [outstanding issues](https://github.com/tlaplus/tlaplus/issues?q=is%3Aissue+is%3Aopen+label%3AUnicode) prevent the integration of the Unicode support into the Toolbox. In addition to the open issues, adding unit tests would be welcomed. A [nightly/ci Jenkins build](https://tla.msr-inria.inria.fr/build/job/M-HEAD-pron-unicode-Toolbox.product.standalone/) is available.
