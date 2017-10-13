@@ -141,6 +141,7 @@ public class Vector<E> {
     }
   }
 
+  @Override
   public final String toString() {
     String ret;
     ret = "[ ";

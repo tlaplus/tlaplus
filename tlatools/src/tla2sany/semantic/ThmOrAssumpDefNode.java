@@ -416,6 +416,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * parameter of the definition of op appears within the k-th argument   *
     * of opArg.                                                            *
     ***********************************************************************/
+  @Override
   public final boolean levelCheck(int itr) {
       if (this.levelChecked >= itr) { return this.levelCorrect; }
       this.levelChecked = itr ;
@@ -572,10 +573,12 @@ public class ThmOrAssumpDefNode extends SymbolNode
   /**
    *  The body is the node's only child.
    */
+  @Override
   public SemanticNode[] getChildren() {
     return new SemanticNode[] {this.body};
   }
 
+  @Override
   public final void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
@@ -583,6 +586,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     if(this.body != null) {this.body.walkGraph(semNodesTable) ;} ;
    }
 
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
     String ret =
@@ -656,6 +660,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
   }
 
   /* overrides LevelNode.export and exports a UID reference instad of the full version*/
+  @Override
   public Element export(Document doc, tla2sany.xml.SymbolContext context) {
     // first add symbol to context
     context.put(this, doc);
