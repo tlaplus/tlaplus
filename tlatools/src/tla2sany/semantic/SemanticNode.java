@@ -25,7 +25,7 @@ import util.ToolIO;
  * used to check for equality.
  */
 public abstract class SemanticNode
- implements ASTConstants, ExploreNode, LevelConstants, Comparable, XMLExportable /* interface for exporting into XML */ {
+ implements ASTConstants, ExploreNode, LevelConstants, Comparable<SemanticNode>, XMLExportable /* interface for exporting into XML */ {
 
   private static final Object[] EmptyArr = new Object[0];
 
@@ -176,10 +176,10 @@ public abstract class SemanticNode
    * of walkgraph is to find all reachable nodes in the semantic graph
    * and insert them in a Hashtable for use by the Explorer tool.
    */
-  public void walkGraph(Hashtable semNodesTable) {
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
   }
 
   /**
@@ -211,9 +211,9 @@ public abstract class SemanticNode
    * @param s2
    * @return
    */
-  public int compareTo(Object s) {
+  public int compareTo(SemanticNode s) {
        Location loc1 = this.stn.getLocation();
-       Location loc2 = ((SemanticNode) s).stn.getLocation();
+       Location loc2 = s.stn.getLocation();
        if (loc1.beginLine() < loc2.beginLine())
         {
            return -1;
@@ -242,6 +242,7 @@ public abstract class SemanticNode
 	  }
   }
 
+  @Override
   public String toString() {
 	  TreeNode treeNode = getTreeNode();
 		if (treeNode instanceof SyntaxTreeNode

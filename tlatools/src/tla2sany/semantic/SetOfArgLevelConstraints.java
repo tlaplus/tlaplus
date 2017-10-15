@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-class SetOfArgLevelConstraints extends HashMap implements LevelConstants {
+class SetOfArgLevelConstraints extends HashMap<ParamAndPosition, Integer> implements LevelConstants {
   // Implements a map mapping arg-level parameters (ParamAndPosition)
   // to levels (Integer). An entry <pap,x> means that the argument
   // pap.position of the operator pap.param must have a level >= x.
@@ -23,16 +23,17 @@ class SetOfArgLevelConstraints extends HashMap implements LevelConstants {
    * it with another one for the same parameter if one is there, or
    * ignoring the constraint if it is vacuous.
    */
-  public final Object put(Object pap, Object level) {
-    int newLevel = ((Integer)level).intValue();
-    Object old = this.get(pap);
+  @Override
+  public final Integer put(ParamAndPosition pap, Integer level) {
+    int newLevel = level.intValue();
+    Integer old = this.get(pap);
 
-    int oldLevel = (old == null) ? MinLevel : ((Integer)old).intValue();
+    int oldLevel = (old == null) ? MinLevel : old.intValue();
     super.put(pap, new Integer(Math.max(newLevel, oldLevel)));
     return old;
   }
 
-  public final Object put(SymbolNode param, int position, int level) {
+  public final Integer put(SymbolNode param, int position, int level) {
     ParamAndPosition pap = new ParamAndPosition(param, position);
     return this.put(pap, new Integer(level));
   }
@@ -42,17 +43,19 @@ class SetOfArgLevelConstraints extends HashMap implements LevelConstants {
    * map, in each case "subsuming" it with any constraint already
    * present for the same parameter if one is there.
    */
-  public final void putAll(Map s) {
-    for (Iterator iter = s.keySet().iterator(); iter.hasNext(); ) {
-      Object key = iter.next();
-      put(key, s.get(key));
+  @Override
+  public final void putAll(Map<? extends ParamAndPosition, ? extends Integer> s) {
+    for (Iterator<? extends ParamAndPosition> iter = s.keySet().iterator(); iter.hasNext(); ) {
+    	  ParamAndPosition key = iter.next();
+      this.put(key, s.get(key));
     }
   }
 
+  @Override
   public final String toString() {
     StringBuffer sb = new StringBuffer("{ ");
-    for (Iterator iter = this.keySet().iterator(); iter.hasNext(); ) {
-      Object pap = iter.next();
+    for (Iterator<ParamAndPosition> iter = this.keySet().iterator(); iter.hasNext(); ) {
+      ParamAndPosition pap = iter.next();
       sb.append(pap.toString() + " -> " + this.get(pap));
       if (iter.hasNext()) sb.append(", ");
     }

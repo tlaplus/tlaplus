@@ -21,9 +21,11 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 
 import org.w3c.dom.Document;
@@ -193,7 +195,8 @@ public class APSubstInNode extends LevelNode {
    * to this method can contain a mixture of explicit and implicit
    * substitutions
    */
-  final void addExplicitSubstitute(Context instanceeCtxt, UniqueString lhs,
+  @SuppressWarnings("unused")	// TODO final else block is dead code 
+  final void addExplicitSubstitute(Context instanceCtxt, UniqueString lhs,
                                    TreeNode stn, ExprOrOpArgNode sub) {
     int index;
     for (index = 0; index < this.substs.length; index++) {
@@ -221,7 +224,7 @@ public class APSubstInNode extends LevelNode {
       // the instancee context
 
       // look up the lhs symbol in the instancee context
-      SymbolNode lhsSymbol = instanceeCtxt.getSymbol(lhs);
+      SymbolNode lhsSymbol = instanceCtxt.getSymbol(lhs);
 
       // lhs must be an OpDeclNode; if not just return, as this error
       // will have been earlier, though semantic analysis was allowed
@@ -288,6 +291,7 @@ public class APSubstInNode extends LevelNode {
 //  private SetOfArgLevelConstraints argLevelConstraints;
 //  private HashSet argLevelParams;
 
+  @Override
   public final boolean levelCheck(int itr) {
     if (this.levelChecked >= itr) return this.levelCorrect;
     this.levelChecked = itr ;
@@ -308,7 +312,7 @@ public class APSubstInNode extends LevelNode {
 
     // Calculate the level information
     this.level = this.body.getLevel();
-    HashSet lpSet = this.body.getLevelParams();
+    HashSet<SymbolNode> lpSet = this.body.getLevelParams();
     for (int i = 0; i < this.substs.length; i++) {
       if (lpSet.contains(this.getSubFor(i))) {
 	this.level = Math.max(level, this.getSubWith(i).getLevel());
@@ -316,10 +320,9 @@ public class APSubstInNode extends LevelNode {
     }
 
 //    this.levelParams = new HashSet();
-    Iterator iter = lpSet.iterator();
+    Iterator<SymbolNode> iter = lpSet.iterator();
     while (iter.hasNext()) {
-      Object param = iter.next();
-      this.levelParams.addAll(Subst.paramSet(param, this.substs));
+      this.levelParams.addAll(Subst.paramSet(iter.next(), this.substs));
         /*******************************************************************
         * At this point, levelCheck(itr) has been invoked on              *
         * this.substs[i].getExpr() (which equals this.getSubWith(i)).      *
@@ -331,11 +334,10 @@ public class APSubstInNode extends LevelNode {
     * this.levelParams to compute this.allParams, except using             *
     * Subst.allParamSet instead of Subst.paramSet.                         *
     ***********************************************************************/
-    HashSet apSet = this.body.getAllParams();
+    HashSet<SymbolNode> apSet = this.body.getAllParams();
     iter = apSet.iterator();
     while (iter.hasNext()) {
-      Object param = iter.next();
-      this.allParams.addAll(Subst.allParamSet(param, this.substs));
+      this.allParams.addAll(Subst.allParamSet(iter.next(), this.substs));
         /*******************************************************************
         * At this point, levelCheck(itr) has been invoked on              *
         * this.substs[i].getExpr() (which equals this.getSubWith(i)).      *
@@ -392,6 +394,7 @@ public class APSubstInNode extends LevelNode {
 //           "ArgLevelParams: "      + this.argLevelParams      + "\n" ;
 //  }
 
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
@@ -421,6 +424,7 @@ public class APSubstInNode extends LevelNode {
    * The children of this node are the body and the expressions
    * being substituted for symbols.
    */
+  @Override
   public SemanticNode[] getChildren() {
      SemanticNode[] res = new SemanticNode[this.substs.length + 1];
      res[0] = this.body;
@@ -430,11 +434,12 @@ public class APSubstInNode extends LevelNode {
      return res;
   }
 
-  public final void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
 
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
 
     if (this.substs != null) {
       for (int i = 0; i < this.substs.length; i++) {
@@ -445,7 +450,8 @@ public class APSubstInNode extends LevelNode {
     return;
   }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
       Element sbts = doc.createElement("substs");
       for (int i=0; i<substs.length; i++) {
         sbts.appendChild(substs[i].export(doc, context));
