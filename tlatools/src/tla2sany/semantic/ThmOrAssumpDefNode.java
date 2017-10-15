@@ -27,9 +27,11 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 import util.WrongInvocationException;
 
@@ -417,6 +419,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * parameter of the definition of op appears within the k-th argument   *
     * of opArg.                                                            *
     ***********************************************************************/
+  @Override
   public final boolean levelCheck(int itr) {
       if (this.levelChecked >= itr) { return this.levelCorrect; }
       this.levelChecked = itr ;
@@ -573,17 +576,20 @@ public class ThmOrAssumpDefNode extends SymbolNode
   /**
    *  The body is the node's only child.
    */
+  @Override
   public SemanticNode[] getChildren() {
     return new SemanticNode[] {this.body};
   }
 
-  public final void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
     if(this.body != null) {this.body.walkGraph(semNodesTable) ;} ;
    }
 
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
     String ret =
@@ -657,7 +663,8 @@ public class ThmOrAssumpDefNode extends SymbolNode
   }
 
   /* overrides LevelNode.export and exports a UID reference instad of the full version*/
-  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  public Element export(Document doc, SymbolContext context) {
     // first add symbol to context
     context.put(this, doc);
     Element e = doc.createElement(getNodeRef());

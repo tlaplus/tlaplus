@@ -16,9 +16,11 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 import util.WrongInvocationException;
 
@@ -680,6 +682,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 //  private SetOfArgLevelConstraints argLevelConstraints;
 //  private HashSet argLevelParams;
 
+  @Override
   public final boolean levelCheck(int itr) {
 
     if (levelChecked >= itr) return this.levelCorrect;
@@ -948,6 +951,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     return this.levelCorrect;
   }
 
+  @Override
   public final int getLevel() {
       throw new WrongInvocationException("Internal Error: Should never call ModuleNode.getLevel()");
   }
@@ -1023,6 +1027,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
    * walkGraph, levelDataToString, and toString methods to implement
    * ExploreNode interface
    */
+  @Override
   public final String levelDataToString() {
     return "LevelParams: "         + getLevelParams()         + "\n" +
            "LevelConstraints: "    + getLevelConstraints()    + "\n" +
@@ -1031,6 +1036,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
   }
 
   private SemanticNode[] children = null;
+  @Override
   public SemanticNode[] getChildren() {
       if (children != null) {
           return children;
@@ -1047,7 +1053,8 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       return children;
    }
 
-  public final void walkGraph (Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph (Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
 
     if (semNodesTable.get(uid) != null) return;
@@ -1087,6 +1094,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     }
   }
 
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
@@ -1149,7 +1157,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     return "ModuleNodeRef";
   }
 
-  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
+  protected Element getSymbolElement(Document doc, SymbolContext context) {
     Element ret = doc.createElement("ModuleNode");
     ret.appendChild(appendText(doc, "uniquename", getName().toString()));
 
