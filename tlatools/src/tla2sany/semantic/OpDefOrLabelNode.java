@@ -35,7 +35,7 @@ import util.UniqueString;
 
 interface OpDefOrLabelNode {
 
-public abstract void setLabels(Hashtable ht) ;
+public abstract void setLabels(Hashtable<UniqueString, LabelNode> ht) ;
   /*************************************************************************
   * Set the set of labels to ht.                                           *
   *************************************************************************/
