@@ -4,8 +4,10 @@ package tla2sany.semantic;
 
 import java.util.Hashtable;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 
 import org.w3c.dom.Document;
@@ -101,6 +103,7 @@ public class UseOrHideNode extends LevelNode {
     } // for
   }
 
+  @Override
   public boolean levelCheck(int iter) {
     /***********************************************************************
     * Level checking is performed by level-checking the facts.  Since the  *
@@ -111,10 +114,11 @@ public class UseOrHideNode extends LevelNode {
     return this.levelCheckSubnodes(iter, facts) ;
    }
 
-  public void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
     for (int  i = 0; i < facts.length; i++) {
       facts[i].walkGraph(semNodesTable);
       } ;
@@ -128,6 +132,7 @@ public class UseOrHideNode extends LevelNode {
    * The children are the facts.
    * @see tla2sany.semantic.SemanticNode#getChildren()
    */
+  @Override
   public SemanticNode[] getChildren() {
       if (this.facts == null || this.facts.length == 0) {
           return null;
@@ -139,6 +144,7 @@ public class UseOrHideNode extends LevelNode {
       return res;
    }
 
+  @Override
   public String toString(int depth) {
     if (depth <= 0) return "";
     String ret = "\n*UseOrHideNode:\n"
@@ -155,7 +161,8 @@ public class UseOrHideNode extends LevelNode {
     return ret;
    }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
     //SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
     Element e = doc.createElement("UseOrHideNode");
 

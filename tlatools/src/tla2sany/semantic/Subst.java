@@ -9,7 +9,7 @@ import java.util.Iterator;
 import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
-
+import tla2sany.xml.SymbolContext;
 import tla2sany.xml.XMLExportable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -59,7 +59,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
     return null;
   }
 
-  public static HashSet paramSet(Object param, Subst[] subs) {
+  public static HashSet<SymbolNode> paramSet(SymbolNode param, Subst[] subs) {
     /***********************************************************************
     * If subs[i] is of the form `parm <- expr', then it returns the        *
     * expr.levelParams.  Otherwise, it returns the HashSet containing      *
@@ -76,12 +76,12 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
       return subs[idx].getExpr().getLevelParams();
     }
 
-    HashSet res = new HashSet();
+    HashSet<SymbolNode> res = new HashSet<>();
     res.add(param);
     return res;
   }
 
-  public static HashSet allParamSet(Object param, Subst[] subs) {
+  public static HashSet<SymbolNode> allParamSet(SymbolNode param, Subst[] subs) {
     /***********************************************************************
     * This is exactly like paramSet, except it returns the allParams       *
     * HashSet instead of levelParams.                                      *
@@ -94,7 +94,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
       return subs[idx].getExpr().getAllParams();
     }
 
-    HashSet res = new HashSet();
+    HashSet<SymbolNode> res = new HashSet<>();
     res.add(param);
     return res;
   }
@@ -110,10 +110,10 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
     ***********************************************************************/
     SetOfLevelConstraints res = new SetOfLevelConstraints();
     SetOfLevelConstraints lcSet = body.getLevelConstraints();
-    Iterator iter = lcSet.keySet().iterator();
+    Iterator<SymbolNode> iter = lcSet.keySet().iterator();
     while (iter.hasNext()) {
-      SymbolNode param = (SymbolNode)iter.next();
-      Object plevel = lcSet.get(param);
+      SymbolNode param = iter.next();
+      Integer plevel = lcSet.get(param);
       if (!isConstant) {
 	if (param.getKind() == ConstantDeclKind) {
 	  plevel = Levels[ConstantLevel];
@@ -122,15 +122,15 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
 	  plevel = Levels[VariableLevel];
 	}
       }
-      Iterator iter1 = paramSet(param, subs).iterator();
+      Iterator<SymbolNode> iter1 = paramSet(param, subs).iterator();
       while (iter1.hasNext()) {
 	res.put(iter1.next(), plevel);
       }
     }
-    HashSet alpSet = body.getArgLevelParams();
-    iter = alpSet.iterator();
-    while (iter.hasNext()) {
-      ArgLevelParam alp = (ArgLevelParam)iter.next();
+    HashSet<ArgLevelParam> alpSet = body.getArgLevelParams();
+    Iterator<ArgLevelParam> alpIter = alpSet.iterator();
+    while (alpIter.hasNext()) {
+      ArgLevelParam alp = alpIter.next();
       OpArgNode sub = (OpArgNode)getSub(alp.op, subs);
       if (sub != null &&
 	  sub.getOp() instanceof OpDefNode) {
@@ -145,7 +145,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
           * argument of this method.                                       *
           *****************************************************************/
 	Integer mlevel = new Integer(subDef.getMaxLevel(alp.i));
-	Iterator iter1 = paramSet(alp.param, subs).iterator();
+	Iterator<SymbolNode> iter1 = paramSet(alp.param, subs).iterator();
 	while (iter1.hasNext()) {
 	  res.put(iter1.next(), mlevel);
 	}
@@ -162,10 +162,10 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
     ***********************************************************************/
     SetOfArgLevelConstraints res = new SetOfArgLevelConstraints();
     SetOfArgLevelConstraints alcSet = body.getArgLevelConstraints();
-    Iterator iter = alcSet.keySet().iterator();
+    Iterator<ParamAndPosition> iter = alcSet.keySet().iterator();
     while (iter.hasNext()) {
-      ParamAndPosition pap = (ParamAndPosition)iter.next();
-      Object plevel = alcSet.get(pap);
+      ParamAndPosition pap = iter.next();
+      Integer plevel = alcSet.get(pap);
       ExprOrOpArgNode sub = getSub(pap.param, subs);
       if (sub == null) {
 	res.put(pap, plevel);
@@ -178,10 +178,10 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
 	}
       }
     }
-    HashSet alpSet = body.getArgLevelParams();
-    iter = alpSet.iterator();
-    while (iter.hasNext()) {
-      ArgLevelParam alp = (ArgLevelParam)iter.next();
+    HashSet<ArgLevelParam> alpSet = body.getArgLevelParams();
+    Iterator<ArgLevelParam> alpIter = alpSet.iterator();
+    while (alpIter.hasNext()) {
+      ArgLevelParam alp = alpIter.next();
       ExprOrOpArgNode subParam = getSub(alp.param, subs);
       if (subParam != null) {
 	ExprOrOpArgNode subOp = getSub(alp.op, subs);
@@ -200,16 +200,16 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
     return res;
   }
 
-  public static HashSet getSubALPSet(LevelNode body, Subst[] subs) {
+  public static HashSet<ArgLevelParam> getSubALPSet(LevelNode body, Subst[] subs) {
     /***********************************************************************
     * This should only be called after level checking has been called on   *
     * body and on all subs[i].getExpr().                                   *
     ***********************************************************************/
-    HashSet res = new HashSet();
-    HashSet alpSet = body.getArgLevelParams();
-    Iterator iter = alpSet.iterator();
+    HashSet<ArgLevelParam> res = new HashSet<>();
+    HashSet<ArgLevelParam> alpSet = body.getArgLevelParams();
+    Iterator<ArgLevelParam> iter = alpSet.iterator();
     while (iter.hasNext()) {
-      ArgLevelParam alp = (ArgLevelParam)iter.next();
+      ArgLevelParam alp = iter.next();
       ExprOrOpArgNode sub = getSub(alp.op, subs);
       if (sub == null) {
 	res.add(alp);
@@ -217,9 +217,9 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
       else {
 	SymbolNode subOp = ((OpArgNode)sub).getOp();
 	if (subOp.isParam()) {
-	  Iterator iter1 = paramSet(alp.param, subs).iterator();
+	  Iterator<SymbolNode> iter1 = paramSet(alp.param, subs).iterator();
 	  while (iter1.hasNext()) {
-	    res.add(new ArgLevelParam(subOp, alp.i, (SymbolNode)iter1.next()));
+	    res.add(new ArgLevelParam(subOp, alp.i, iter1.next()));
 	  }
 	}
       }
@@ -229,7 +229,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
 
   public final String levelDataToString() { return "Dummy level string"; }
 
-  public final void walkGraph(Hashtable semNodesTable) {
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     if (op != null) op.walkGraph(semNodesTable);
     if (expr != null) expr.walkGraph(semNodesTable);
   }
@@ -240,7 +240,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
            "\nExpr: " + Strings.indent(2,(expr!=null ? expr.toString(depth-1) : "<null>"));
   }
 
-  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+  public Element export(Document doc, SymbolContext context) {
       Element ret = doc.createElement("Subst");
       ret.appendChild(op.export(doc,context));
       ret.appendChild(expr.export(doc,context));
