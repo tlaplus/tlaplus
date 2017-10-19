@@ -314,7 +314,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * set is unchanged and false is returned.                              *
     ***********************************************************************/
     if (labels == null) {labels = new Hashtable<>(); } ;
-    if (labels.containsKey(odn)) {return false ;} ;
+    if (labels.containsKey(odn.getName())) {return false ;} ;
     labels.put(odn.getName(), odn) ;
     return true;
    }
