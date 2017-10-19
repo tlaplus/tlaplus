@@ -506,11 +506,11 @@ public class Context implements ExploreNode {
     return ctxtEntries;
   }
 
-  public void walkGraph(Hashtable semNodesTable) {
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     UniqueString key;
-    Enumeration  Enum = table.keys();
+    Enumeration<?>  e = table.keys();
 
-    while (Enum.hasMoreElements()) {
+    while (e.hasMoreElements()) {
       /*********************************************************************
       * Bug fix attempted by LL on 19 Apr 2007.                            *
       *                                                                    *
@@ -524,7 +524,7 @@ public class Context implements ExploreNode {
       * getContextEntryStringVector later on.  I decided to stop wasting   *
       * time on this.                                                      *
       *********************************************************************/
-      Object next = Enum.nextElement();
+      Object next = e.nextElement();
       if (next instanceof SymbolTable.ModuleName) {
          key = ((SymbolTable.ModuleName) next).name ;
          System.out.println("Bug in debugging caused by inner module " +

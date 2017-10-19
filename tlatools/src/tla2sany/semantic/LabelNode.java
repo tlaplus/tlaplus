@@ -46,6 +46,7 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 import util.WrongInvocationException;
 
@@ -214,6 +215,7 @@ public class LabelNode extends ExprNode
   /*************************************************************************
   * Level-Checking.                                                        *
   *************************************************************************/
+  @Override
   public final boolean levelCheck(int iter) {
     if (levelChecked >= iter) {return true ;} ;
     levelChecked = iter;
@@ -224,37 +226,43 @@ public class LabelNode extends ExprNode
     return this.body.levelCheck(iter) && retVal ;
   }
 
+  @Override
   public final int getLevel() {
     if (levelChecked == 0)
       {throw new WrongInvocationException("getLevel called for TheoremNode before levelCheck");};
     return this.body.getLevel();
   }
 
-  public final HashSet getLevelParams() {
+  @Override
+  public final HashSet<SymbolNode> getLevelParams() {
     if (levelChecked == 0)
       {throw new WrongInvocationException("getLevelParams called for ThmNode before levelCheck");};
     return this.body.getLevelParams();
   }
 
-  public final HashSet getAllParams() {
+  @Override
+  public final HashSet<SymbolNode> getAllParams() {
     if (levelChecked == 0)
       {throw new WrongInvocationException("getAllParams called for ThmNode before levelCheck");};
     return this.body.getAllParams();
   }
 
+  @Override
   public final SetOfLevelConstraints getLevelConstraints() {
     if (levelChecked == 0)
        {throw new WrongInvocationException("getLevelConstraints called for ThmNode before levelCheck");};
     return this.body.getLevelConstraints();
   }
 
+  @Override
   public final SetOfArgLevelConstraints getArgLevelConstraints() {
     if (levelChecked == 0)
       {throw new WrongInvocationException("getArgLevelConstraints called for ThmNode before levelCheck");};
     return this.body.getArgLevelConstraints();
   }
 
-  public final HashSet getArgLevelParams() {
+  @Override
+  public final HashSet<ArgLevelParam> getArgLevelParams() {
     if (levelChecked == 0)
       {throw new WrongInvocationException("getArgLevelParams called for ThmNode before levelCheck");};
     return this.body.getArgLevelParams();
@@ -266,22 +274,25 @@ public class LabelNode extends ExprNode
    *
    * @see tla2sany.semantic.SemanticNode#getChildren()
    */
+  @Override
   public SemanticNode[] getChildren() {
       return new SemanticNode[] { this.body };
   }
   /*************************************************************************
   * The methods for implementing the ExploreNode interface.                *
   *************************************************************************/
-  public final void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
     if (body != null) body.walkGraph(semNodesTable);
     for (int i = 0 ; i < params.length; i++) {
       params[i].walkGraph(semNodesTable);
      } ;
   }
 
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
     String ret = "\n*LabelNode: " + super.toString(depth);
@@ -319,7 +330,8 @@ public class LabelNode extends ExprNode
     return ret;
   }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
       Element ret = doc.createElement("LabelNode");
       ret.appendChild(appendText(doc,"uniquename",getName().toString()));
       ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));

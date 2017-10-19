@@ -3,9 +3,11 @@ package tla2sany.semantic;
 
 import java.util.Hashtable;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
+import tla2sany.xml.SymbolContext;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -141,6 +143,7 @@ public class NonLeafProofNode extends ProofNode {
   public LevelNode[] getSteps()   {return steps ;}
   public Context     getContext() {return context ;}
 
+  @Override
   public boolean levelCheck(int iter) {
     /***********************************************************************
     * Level check the steps and the instantiated modules coming from       *
@@ -157,6 +160,7 @@ public class NonLeafProofNode extends ProofNode {
    * The children are the steps.
    * @see tla2sany.semantic.SemanticNode#getChildren()
    */
+  @Override
   public SemanticNode[] getChildren() {
       if (this.steps == null || this.steps.length == 0) {
           return null;
@@ -168,10 +172,11 @@ public class NonLeafProofNode extends ProofNode {
       return res;
    }
 
-  public void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
     for (int  i = 0; i < steps.length; i++) {
       steps[i].walkGraph(semNodesTable);
       } ;
@@ -186,6 +191,7 @@ public class NonLeafProofNode extends ProofNode {
       *********************************************************************/
    }
 
+  @Override
   public String toString(int depth) {
     if (depth <= 0) return "";
     String ret = "\n*ProofNode:\n"
@@ -211,7 +217,8 @@ public class NonLeafProofNode extends ProofNode {
     return ret;
    }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
     Element e = doc.createElement("steps");
 
     for (int i=0; i< steps.length; i++) {
