@@ -2,7 +2,7 @@
 package tla2sany.utilities;
 import java.util.Enumeration;
 
-final class VectorEnumeration implements Enumeration {
+final class VectorEnumeration<E> implements Enumeration<E> {
   int index = 0;
   Object data[];
 
@@ -15,9 +15,10 @@ final class VectorEnumeration implements Enumeration {
     return index < data.length;
   }
 
-  public final Object nextElement() {
+  @SuppressWarnings("unchecked")
+  public final E nextElement() {
     if (index < data.length)
-      return data[index++];
+      return (E)data[index++];
     else
       throw new java.util.NoSuchElementException();
   }

@@ -5,11 +5,10 @@ package tla2sany.semantic;
 import java.util.HashSet;
 import java.util.Hashtable;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
-
-import tla2sany.xml.XMLExportable;
-import org.w3c.dom.Attr;
+import tla2sany.xml.SymbolContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -81,6 +80,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
 
   /* Level checking */
   int levelChecked = 0 ;
+  @Override
   public final boolean levelCheck(int iter) {
     if (levelChecked >= iter) {return true ;} ;
     levelChecked = iter;
@@ -103,33 +103,40 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
     return res;
   }
 
+  @Override
   public final int getLevel() {
     return this.assumeExpr.getLevel();
   }
 
-  public final HashSet getLevelParams() {
+  @Override
+  public final HashSet<SymbolNode> getLevelParams() {
     return this.assumeExpr.getLevelParams();
   }
 
-  public final HashSet getAllParams() {
+  @Override
+  public final HashSet<SymbolNode> getAllParams() {
     return this.assumeExpr.getAllParams();
   }
 
+  @Override
   public final SetOfLevelConstraints getLevelConstraints() {
     return this.assumeExpr.getLevelConstraints();
   }
 
+  @Override
   public final SetOfArgLevelConstraints getArgLevelConstraints() {
     return this.assumeExpr.getArgLevelConstraints();
   }
 
-  public final HashSet getArgLevelParams() {
+  @Override
+  public final HashSet<ArgLevelParam> getArgLevelParams() {
     return this.assumeExpr.getArgLevelParams();
   }
 
   /**
    * toString(), levelDataToString(), and walkGraph() methods
    */
+  @Override
   public final String levelDataToString() {
     return "Level: "               + getLevel()               + "\n" +
            "LevelParameters: "     + getLevelParams()         + "\n" +
@@ -143,6 +150,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
    * interface; depth parameter is a bound on the depth of the portion
    * of the tree that is displayed.
    */
+  @Override
   public final String toString (int depth) {
     if (depth <= 0) return "";
     String res =
@@ -165,6 +173,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
    * The assume expression is the node's only child.
    */
 
+  @Override
   public SemanticNode[] getChildren() {
     return new SemanticNode[] {this.assumeExpr};
   }
@@ -174,7 +183,8 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
    * inserts them in the Hashtable semNodesTable for use by the
    * Explorer tool.
    */
-  public final void walkGraph (Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph (Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
 
     if (semNodesTable.get(uid) != null) return;
@@ -185,7 +195,7 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
 
   /* MR: This is the same as SymbolNode.exportDefinition. Exports the actual theorem content, not only a reference.
    */
-  public Element exportDefinition(Document doc, tla2sany.xml.SymbolContext context) {
+  public Element exportDefinition(Document doc, SymbolContext context) {
     if (!context.isTop_level_entry())
       throw new IllegalArgumentException("Exporting theorem ref "+getNodeRef()+" twice!");
     context.resetTop_level_entry();
@@ -226,7 +236,8 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
 //      return getDef().export(doc,context);
 //  }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
     Element e = doc.createElement("AssumeNode");
     if (def != null) {
       //if there is a definition, export it too
@@ -242,7 +253,8 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
   }
 
   /* overrides LevelNode.export and exports a UID reference instad of the full version*/
-  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  public Element export(Document doc, SymbolContext context) {
     // first add symbol to context
     context.put(this, doc);
     Element e = doc.createElement(getNodeRef());

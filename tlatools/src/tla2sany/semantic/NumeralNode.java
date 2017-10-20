@@ -5,7 +5,9 @@ package tla2sany.semantic;
 import java.math.BigInteger;
 import java.util.Hashtable;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
+import tla2sany.xml.SymbolContext;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -70,9 +72,11 @@ public class NumeralNode extends ExprNode {
    * reflects how the value appeared in the input, so it should be
    * "\O7777" if that's what appears in the source.
    */
+  @Override
   public final String toString() { return this.image; }
 
   /* Level Checking */
+  @Override
   public final boolean levelCheck(int iter) {
     levelChecked = iter;
       /*********************************************************************
@@ -107,13 +111,15 @@ public class NumeralNode extends ExprNode {
 //           "ArgLevelParams: "      + this.getArgLevelParams()      + "\n" ;
 //  }
 
-  public final void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
 
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
   }
 
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
@@ -122,7 +128,8 @@ public class NumeralNode extends ExprNode {
 	   "; image: " + image);
   }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
       String v = (bigValue != null) ? bigValue.toString() : (Integer.toString(value));
       Element e = doc.createElement("IntValue");
       Node n = doc.createTextNode(v);
