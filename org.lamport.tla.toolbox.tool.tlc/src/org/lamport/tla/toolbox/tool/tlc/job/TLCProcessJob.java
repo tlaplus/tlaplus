@@ -137,7 +137,14 @@ public class TLCProcessJob extends TLCJob
 			
             // add remaining VM args
             vmArgs.addAll(getAdditionalVMArgs());
-
+            
+            // have the TLC launch pause and wait for contact from a remote debugger before continuing
+            //		should the Toolbox instance have been launched with an appropriate environment variable
+            //		set to any value
+            if (System.getenv("LAUNCH_TLC_IN_DEBUG") != null) {
+	        		vmArgs.add("-Xdebug");
+	        		vmArgs.add("-Xrunjdwp:transport=dt_socket,address=9321,server=y");
+            }
 
             // assemble the config
             VMRunnerConfiguration tlcConfig = new VMRunnerConfiguration(getMainClass().getName(), classPath);
