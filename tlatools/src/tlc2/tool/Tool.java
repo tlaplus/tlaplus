@@ -638,6 +638,8 @@ public class Tool
                 return;
               }
               else {
+            	    ps.registerCoverage(varName, init);
+            	    
                 if (!lval.equals(rval)) {
                   return;
                 }
@@ -674,6 +676,8 @@ public class Tool
                 return;
               }
               else {
+            	    ps.registerCoverage(varName, init);
+            	    
                 if (!rval.member(lval)) {
                   return;
                 }
@@ -1063,8 +1067,12 @@ public class Tool
                 resState.unbind(varName);
                 return resState;
               }
-              else if (!lval.equals(rval)) {
-                return resState;
+              else {
+            	    resState.registerCoverage(varName, pred);
+            	    
+            	    if (!lval.equals(rval)) {
+                  return resState;
+                }
               }
             }
             return this.getNextStates(acts, s0, s1, nss);
@@ -1097,8 +1105,12 @@ public class Tool
                 }
                 return resState;
               }
-              else if (!rval.member(lval)) {
-                return resState;
+              else {
+            	    resState.registerCoverage(varName, pred);
+            	    
+            	    if (!rval.member(lval)) {
+            	    	  return resState;
+                }
               }
             }
             return this.getNextStates(acts, s0, s1, nss);
@@ -1180,12 +1192,17 @@ public class Tool
             resState = this.getNextStates(acts, s0, resState, nss);
             resState.unbind(varName);
           }
-          else if (val0.equals(val1)) {
-            resState = this.getNextStates(acts, s0, s1, nss);
-          }
           else {
-            MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString(), expr.toString()});
+        	    resState.registerCoverage(varName, expr);
+        	    
+        	    if (val0.equals(val1)) {
+              resState = this.getNextStates(acts, s0, s1, nss);
+            }
+        	    else {
+              MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString(), expr.toString()});
+        	    }
           }
+          
           return resState;
         }
 
@@ -2588,6 +2605,10 @@ public class Tool
                 return this.enabled(acts, s0, s2);
               } else
               {
+            	    // Including this for completeness even though we know this isn't a TLCStateMutSource
+            	    //		instance and so will do nothing in the registerCoverage method.
+            	    s1.registerCoverage(varName, pred);
+            	    
                 if (!lval.equals(rval)) {
                   return null;
                 }
@@ -2668,6 +2689,10 @@ public class Tool
                 return null;
               } else
               {
+          	    // Including this for completeness even though we know this isn't a TLCStateMutSource
+          	    //		instance and so will do nothing in the registerCoverage method.
+          	    s1.registerCoverage(varName, pred);
+          	    
                 if (!rval.member(lval)) {
                   return null;
                 }
@@ -2720,6 +2745,10 @@ public class Tool
             s1 = s1.bind(var, v0, expr);
             return this.enabled(acts, s0, s1);
           }
+  	      // Including this for completeness even though we know this isn't a TLCStateMutSource
+  	      //		instance and so will do nothing in the registerCoverage method.
+  	      s1.registerCoverage(varName, expr);
+  	    
           if (v1.equals(v0)) {
             return this.enabled(acts, s0, s1);
           }
