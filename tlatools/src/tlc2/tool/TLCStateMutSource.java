@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
@@ -34,7 +36,9 @@ import util.WrongInvocationException;
 public final class TLCStateMutSource extends TLCState
 implements Cloneable, Serializable {
   private Value[] values;
-  private SemanticNode[] asts;
+  //TODO If it becomes a performance issue to use this collection, 
+  // switch to another which preserves instance singularity.
+  private Set<SemanticNode>[] asts;
   private static Tool mytool = null;
 
   /**
@@ -49,25 +53,45 @@ implements Cloneable, Serializable {
    */
   private static MVPerm[] perms = null;
 
-  private TLCStateMutSource(Value[] vals, SemanticNode[] asts) {
+  private TLCStateMutSource(Value[] vals, Set<SemanticNode>[] asts) {
     this.values = vals;
     this.asts = asts;
   }
 
+  @SuppressWarnings("unchecked")
   public static void init(Tool tool) {
     mytool = tool;
     Value[] vals = new Value[vars.length];
-    SemanticNode[] snodes = new SemanticNode[vars.length];
+    Set<SemanticNode>[] snodes = new HashSet[vars.length];
     Empty = new TLCStateMutSource(vals, snodes);
     viewMap = tool.getViewSpec();
     perms = tool.getSymmetryPerms();
   }
 
+  @Override
+  public synchronized TLCState registerCoverage(UniqueString name, SemanticNode ast) {
+	if (this.asts != null) {
+	  int index = name.getVarLoc();
+	  Set<SemanticNode> hs = this.asts[index];
+	  
+	  if (hs == null) {
+	    hs = new HashSet<>();
+	    this.asts[index] = hs;
+	  }
+	  
+	  hs.add(ast);
+	}
+	
+	return this;
+  }
+  
+  @SuppressWarnings("unchecked")
   public final TLCState createEmpty() {
     int sz = vars.length;
-    return new TLCStateMutSource(new Value[sz], new SemanticNode[sz]);
+    return new TLCStateMutSource(new Value[sz], new HashSet[sz]);
   }
 
+  @Override
   public final boolean equals(Object obj) {
     if (obj instanceof TLCStateMutSource) {
       TLCStateMutSource state = (TLCStateMutSource)obj;
@@ -88,20 +112,29 @@ implements Cloneable, Serializable {
   public final TLCState bind(UniqueString name, Value value, SemanticNode ast) {
     int loc = name.getVarLoc();
     this.values[loc] = value;
-    if (this.asts != null) {
-      this.asts[loc] = ast;
-    }
+    
+    this.registerCoverage(name, ast);
+    
     return this;
   }
 
   public final TLCState bind(SymbolNode id, Value value, SemanticNode expr) {
-    throw new WrongInvocationException("TLCStateMutSource.bind: This is a TLC bug.");
+    throw new WrongInvocationException("TLCStateMutSource.bind(SymbolNode, Value, SemanticNode): This is a TLC bug.");
   }
   
   public final TLCState unbind(UniqueString name) {
     int loc = name.getVarLoc();
+    Set<SemanticNode> hs = this.asts[loc];
+    
     this.values[loc] = null;
-    this.asts[loc] = null;
+	if (this.asts != null) {
+      if (hs != null) {
+    	    hs.clear();
+    		  
+    	    this.asts[loc] = null;
+      }
+    	}
+    
     return this;
   }
   
@@ -115,28 +148,50 @@ implements Cloneable, Serializable {
     return (this.lookup(var) != null);
   }
 
+  @SuppressWarnings("unchecked")
   public final TLCState copy() {
     int len = this.values.length;
     Value[] vals = new Value[len];
-    SemanticNode[] astClone = new SemanticNode[len];
+    Set<SemanticNode>[] astClone = null;
+    
+    if (this.asts != null) {
+    	  astClone = new HashSet[len];
+    }
+    
     for (int i = 0; i < len; i++) {
       vals[i] = this.values[i];
-      astClone[i] = this.asts[i];
+      
+      if ((this.asts != null) && (this.asts[i] != null)) {
+    	    astClone[i] = new HashSet<>();
+    	    astClone[i].addAll(this.asts[i]);
+      }
     }
+    
     return new TLCStateMutSource(vals, astClone);
   }
 
+  @SuppressWarnings("unchecked")
   public final TLCState deepCopy() {
     int len = this.values.length;
     Value[] vals = new Value[len];
-    SemanticNode[] astClone = new SemanticNode[len];
+    Set<SemanticNode>[] astClone = null;
+    
+    if (this.asts != null) {
+    	  astClone = new HashSet[len];
+    }
+    
     for (int i = 0; i < len; i++) {
       Value val = this.values[i];
       if (val != null) {
-	vals[i] = val.deepCopy();
-	astClone[i] = this.asts[i];
+    	    vals[i] = val.deepCopy();
+    	      
+    	    if ((this.asts != null) && (this.asts[i] != null)) {
+    	    	  astClone[i] = new HashSet<>();
+    	    	  astClone[i].addAll(this.asts[i]);
+    	    }
       }
     }
+    
     return new TLCStateMutSource(vals, astClone);
   }
 
@@ -148,7 +203,7 @@ implements Cloneable, Serializable {
     for (int i = 0; i < this.values.length; i++) {
       Value val = this.values[i];
       if (val != null) {
-	val.deepNormalize();
+	    val.deepNormalize();
       }
     }
   }
@@ -230,10 +285,18 @@ implements Cloneable, Serializable {
   }
 
   public final void addCounts(ObjLongTable counts) {
-    for (int i = 0; i < this.asts.length; i++) {
-      counts.add(this.asts[i], 1);
-    }      
-  }
+		if (this.asts != null) {
+			for (int i = 0; i < this.asts.length; i++) {
+				Set<SemanticNode> hs = this.asts[i];
+
+				if (hs != null) {
+					for (SemanticNode sn : hs) {
+						counts.add(sn, 1);
+					}
+				}
+			}
+		}
+	  }
 
   public final boolean allAssigned() {
     int len = this.values.length;    
