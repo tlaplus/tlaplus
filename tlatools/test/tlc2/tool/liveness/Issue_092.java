@@ -34,16 +34,13 @@ import java.util.List;
 
 import org.junit.Test;
 
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
 
 public class Issue_092
         extends ModelCheckerTestCase {
 
     public Issue_092 () {
-        super("Issue_092");
-        
-        TLCGlobals.coverageInterval = 1;
+        super("Issue_092", new String[] {"-coverage", "1"});
     }
 
     @Test
