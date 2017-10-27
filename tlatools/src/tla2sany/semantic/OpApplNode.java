@@ -24,6 +24,7 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 
 import org.w3c.dom.Document;
@@ -398,6 +399,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 //    }
 // }
 
+  @Override
   public final boolean levelCheck(int itr) {
     if (this.levelChecked >= itr) return this.levelCorrect;
     this.levelChecked = itr ;
@@ -492,6 +494,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           if (opd instanceof OpArgNode &&
               ((OpArgNode)opd).getOp() instanceof AnyDefNode) {
             AnyDefNode opdDef = (AnyDefNode)((OpArgNode)opd).getOp();
+            @SuppressWarnings("unused")  // See below comment block
             boolean opdDefLevelCheck = opdDef.levelCheck(itr) ;
               /*************************************************************
               * Need to call opdDef.levelCheck before using its level      *
@@ -599,7 +602,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       * Set allBoundSymbols to a hashset containing all the                *
       * FormalParamNodes of the bound symbols.                             *
       *********************************************************************/
-      HashSet allBoundSymbols = new HashSet() ;
+      HashSet<FormalParamNode> allBoundSymbols = new HashSet<>() ;
       if (this.unboundedBoundSymbols != null) {
         for (int i = 0 ; i < this.unboundedBoundSymbols.length; i++){
           allBoundSymbols.add(this.unboundedBoundSymbols[i]);
@@ -619,9 +622,9 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       * Remove bound identifiers from levelParams, allParams, and          *
       * nonLeibnizParams.                                                  *
       *********************************************************************/
-      Iterator absIter = allBoundSymbols.iterator() ;
+      Iterator<FormalParamNode> absIter = allBoundSymbols.iterator() ;
       while (absIter.hasNext()) {
-        Object nextBoundSymbol = absIter.next() ;
+    	  	FormalParamNode nextBoundSymbol = absIter.next() ;
         this.levelParams.remove(nextBoundSymbol) ;
         this.allParams.remove(nextBoundSymbol) ;
         this.nonLeibnizParams.remove(nextBoundSymbol) ;
@@ -650,9 +653,9 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             ***************************************************************/
             SetOfLevelConstraints lcons =
                this.operands[i].getLevelConstraints() ;
-            Iterator iter = lcons.keySet().iterator();
+            Iterator<SymbolNode> iter = lcons.keySet().iterator();
             while (iter.hasNext()) {
-              SymbolNode param = (SymbolNode) iter.next() ;
+              SymbolNode param = iter.next() ;
               if (! allBoundSymbols.contains(param)) {
                 this.levelConstraints.put(param, lcons.get(param)) ;
                 }
@@ -666,7 +669,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       for (int i = 0; i < this.operands.length; i++) {
         Integer mlevel = new Integer(opDef.getMaxLevel(i));
         if (this.operands[i] != null) {
-          Iterator iter = this.operands[i].getLevelParams().iterator();
+          Iterator<SymbolNode> iter = this.operands[i].getLevelParams().iterator();
           while (iter.hasNext()) {
             this.levelConstraints.put(iter.next(), mlevel);
           }
@@ -696,7 +699,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             for (int k = 0; k < alen; k++) {
               if (opDef.getOpLevelCond(i, j, k)) {
                 Integer mlevel = new Integer(argDef.getMaxLevel(k));
-                Iterator iter = this.operands[j].getLevelParams().iterator();
+                Iterator<SymbolNode> iter = this.operands[j].getLevelParams().iterator();
                 while (iter.hasNext()) {
                   this.levelConstraints.put(iter.next(), mlevel);
                 }
@@ -723,10 +726,10 @@ public class OpApplNode extends ExprNode implements ExploreNode {
            } ; // if (! argDef.isLeibniz)
         } // if (opdi != null && ...)
       } // for i
-      HashSet alpSet = opDef.getArgLevelParams();
-      Iterator iter = alpSet.iterator();
+      HashSet<ArgLevelParam> alpSet = opDef.getArgLevelParams();
+      Iterator<ArgLevelParam> iter = alpSet.iterator();
       while (iter.hasNext()) {
-        ArgLevelParam alp = (ArgLevelParam)iter.next();
+        ArgLevelParam alp = iter.next();
         ExprOrOpArgNode arg = this.getArg(alp.op);
         // LL changed OpDefNode -> AnyDefNode in the following.
         // See comments in AnyDefNode.java.  (It is only in the
@@ -784,7 +787,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       } // for i
       iter = alpSet.iterator();
       while (iter.hasNext()) {
-        ArgLevelParam alp = (ArgLevelParam)iter.next();
+        ArgLevelParam alp = iter.next();
         ExprOrOpArgNode arg = this.getArg(alp.op);
         if (arg != null) {
           arg.levelCheck(itr) ;
@@ -799,7 +802,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       /*********************************************************************
       * Compute this.argLevelParams.                                       *
       *********************************************************************/
-      this.argLevelParams = new HashSet();
+      this.argLevelParams = new HashSet<>();
       for (int i = 0; i < this.operands.length; i++) {
         if (this.operands[i] != null) {
           if (allBoundSymbols.size() == 0) {
@@ -813,9 +816,9 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             * argLevelConstraints the element implied as described above   *
             * if alp.param IS a bound identifier.                          *
             ***************************************************************/
-            Iterator alpiter = this.operands[i].getArgLevelParams().iterator();
-            while (alpiter.hasNext()) {
-              ArgLevelParam alp = (ArgLevelParam) alpiter.next() ;
+            Iterator<ArgLevelParam> alpIter = this.operands[i].getArgLevelParams().iterator();
+            while (alpIter.hasNext()) {
+              ArgLevelParam alp = alpIter.next() ;
               if (!allBoundSymbols.contains(alp.param)) {
                 this.argLevelParams.add(alp) ;
                }
@@ -840,9 +843,9 @@ public class OpApplNode extends ExprNode implements ExploreNode {
               /*************************************************************
               * Need to invoke levelCheck before invoking getLevelParams.  *
               *************************************************************/
-            Iterator iter1 = arg.getLevelParams().iterator();
+            Iterator<SymbolNode> iter1 = arg.getLevelParams().iterator();
             while (iter1.hasNext()) {
-              SymbolNode param = (SymbolNode)iter1.next();
+              SymbolNode param = iter1.next();
               this.argLevelParams.add(new ArgLevelParam(alp.op, alp.i, param));
             }
           }
@@ -869,9 +872,9 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           for (int j = 0; j < this.operands.length; j++) {
             for (int k = 0; k < alen; k++) {
               if (opDef.getOpLevelCond(i, j, k)) {
-                Iterator iter1 = this.operands[j].getLevelParams().iterator();
+                Iterator<SymbolNode> iter1 = this.operands[j].getLevelParams().iterator();
                 while (iter1.hasNext()) {
-                  SymbolNode param = (SymbolNode)iter1.next();
+                  SymbolNode param = iter1.next();
                   this.argLevelParams.add(new ArgLevelParam(opArg, k, param));
                 }
               }
@@ -892,7 +895,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         this.level = Math.max(this.level, this.operands[i].getLevel());
       } // for
 
-      this.levelParams = new HashSet();
+      this.levelParams = new HashSet<>();
       /*********************************************************************
       * We only add this.operator to the levelParams and allParams.        *
       *********************************************************************/
@@ -936,17 +939,17 @@ public class OpApplNode extends ExprNode implements ExploreNode {
            this.operands[i].getArgLevelConstraints());
       }
 
-      this.argLevelParams = new HashSet();
+      this.argLevelParams = new HashSet<>();
       for (int i = 0; i < this.operands.length; i++) {
         /*******************************************************************
         * For every levelParam p of the i-th operand, add to               *
         * argLevelParams an entry asserting that p appears within an i-th  *
         * operand of this.operator.                                        *
         *******************************************************************/
-        HashSet lpSet = this.operands[i].getLevelParams();
-        Iterator iter = lpSet.iterator();
+        HashSet<SymbolNode> lpSet = this.operands[i].getLevelParams();
+        Iterator<SymbolNode> iter = lpSet.iterator();
         while (iter.hasNext()) {
-          SymbolNode param = (SymbolNode)iter.next();
+          SymbolNode param = iter.next();
           this.argLevelParams.add(
              new ArgLevelParam(this.operator, i, param));
          }; // end while
@@ -1097,6 +1100,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 //           "ArgLevelParams: "      + this.argLevelParams      + "\n" ;
 //  }
 
+  @Override
   public SemanticNode[] getChildren() {
       SemanticNode[] res =
          new SemanticNode[this.ranges.length + this.operands.length];
@@ -1114,7 +1118,8 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    * walkGraph finds all reachable nodes in the semantic graph
    * and inserts them in the Hashtable semNodesTable for use by the Explorer tool.
    */
-  public void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
 
@@ -1217,6 +1222,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    * Displays this node as a String, implementing ExploreNode interface; depth
    * parameter is a bound on the depth of the portion of the tree that is displayed.
    */
+  @Override
   public String toString(int depth) {
     if (depth <= 0) return "";
     String sEO = "" ;
@@ -1229,7 +1235,8 @@ public class OpApplNode extends ExprNode implements ExploreNode {
            + toStringBody(depth) + sEO ;
   }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
     Element e = doc.createElement("OpApplNode");
 
     // TL 2014 - A fix for detecting null representing OTHER inside a case (please refrain from using null as a semantical object),
@@ -1243,8 +1250,8 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           // indeed the OTHER case
           if (other.getOperator().getName().toString().equals("$Pair") && other.getArgs()[0] == null) {
             // we pass a flag that tells any future OpApplNode that a null operand in 0 position should be replaced by the string $Other
-            context = new tla2sany.xml.SymbolContext(context);
-            context.setFlag(tla2sany.xml.SymbolContext.OTHER_BUG);
+            context = new SymbolContext(context);
+            context.setFlag(SymbolContext.OTHER_BUG);
           }
        }
 
@@ -1259,7 +1266,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     Element ope = doc.createElement("operands");
     for (int i=0; i< operands.length; i++) {
       // dealing with the $Case OTHER null bug
-      if (i == 0 && operands[0] == null && context.hasFlag(tla2sany.xml.SymbolContext.OTHER_BUG)) {
+      if (i == 0 && operands[0] == null && context.hasFlag(SymbolContext.OTHER_BUG)) {
         ope.appendChild(appendText(doc,"StringNode","$Other"));
       }
       else {

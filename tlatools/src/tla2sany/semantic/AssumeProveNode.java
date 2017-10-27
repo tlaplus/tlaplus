@@ -6,8 +6,10 @@ package tla2sany.semantic;
 
 import java.util.Hashtable;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
+import tla2sany.xml.SymbolContext;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -191,6 +193,7 @@ public class AssumeProveNode extends LevelNode {
   * compute the level-related fields for an OpApplNode.  This seems        *
   * reasonable, but I don't know if it's really correct.  -   LL           *
   *************************************************************************/
+  @Override
   public boolean levelCheck(int iter) {
     /***********************************************************************
     * Return immediately if this this.levelCheck(i) has already been       *
@@ -337,6 +340,7 @@ public class AssumeProveNode extends LevelNode {
   /**
    * The children of this node are the assumes and prove expressions.
    */
+  @Override
   public SemanticNode[] getChildren() {
      SemanticNode[] res = new SemanticNode[this.assumes.length + 1];
      res[assumes.length] = this.prove;
@@ -346,7 +350,8 @@ public class AssumeProveNode extends LevelNode {
      return res;
   }
 
-  public final void walkGraph(Hashtable h) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> h) {
     Integer uid = new Integer(myUID);
     if (h.get(uid) != null) return;
     h.put(uid, this);
@@ -363,6 +368,7 @@ public class AssumeProveNode extends LevelNode {
    * Displays this node as a String, implementing ExploreNode interface; depth
    * parameter is a bound on the depth of the portion of the tree that is displayed.
    */
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
     String assumeStr = "" ;
@@ -385,7 +391,8 @@ public class AssumeProveNode extends LevelNode {
   * End fields and methods implementing the ExplorerNode interface:        *
   *************************************************************************/
 
-  public Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  public Element getLevelElement(Document doc, SymbolContext context) {
     Element e = doc.createElement("AssumeProveNode");
     Element antecedent = doc.createElement("assumes");
     Element succedent = doc.createElement("prove");

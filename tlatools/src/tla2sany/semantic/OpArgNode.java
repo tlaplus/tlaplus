@@ -7,13 +7,14 @@ package tla2sany.semantic;
 
 import java.util.Hashtable;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * This class represents operators of arity > 0 used as arguments to
@@ -66,6 +67,7 @@ public class OpArgNode extends ExprOrOpArgNode {
   public final ModuleNode   getModule()    { return this.mn; }
 
   /* Level check */
+  @Override
   public final boolean levelCheck(int iter) {
     if (levelChecked >= iter) {return this.levelCorrect; } ;
     levelChecked = iter ;
@@ -109,11 +111,12 @@ public class OpArgNode extends ExprOrOpArgNode {
 //           "ArgLevelParams: "      + this.getArgLevelParams()      + "\n" ;
 //  }
 
-  public final void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
 
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
 
     /***********************************************************************
     * Modified on 28 Mar 2007 by LL to walk the operator node of the       *
@@ -126,6 +129,7 @@ public class OpArgNode extends ExprOrOpArgNode {
     if (op != null) {op.walkGraph(semNodesTable) ;} ;
   }
 
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
@@ -135,7 +139,8 @@ public class OpArgNode extends ExprOrOpArgNode {
       "  op: " + (op != null ? "" + ((SemanticNode)op).getUid() : "null" );
   }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
     Element e = doc.createElement("OpArgNode");
     Element n = doc.createElement("argument");
     //Element ope = op.getSymbolElement(doc, context);

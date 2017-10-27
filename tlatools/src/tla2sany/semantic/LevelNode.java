@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import tla2sany.st.TreeNode;
+import tla2sany.xml.SymbolContext;
 import util.WrongInvocationException;
 
 import org.w3c.dom.Document;
@@ -63,10 +64,10 @@ public class LevelNode extends SemanticNode {
 ***************************************************************************/
 public boolean                   levelCorrect        = true ;
 public int                       level               = ConstantLevel ;
-public HashSet                   levelParams         = new HashSet() ;
+public HashSet<SymbolNode>       levelParams         = new HashSet<>() ;
 public SetOfLevelConstraints     levelConstraints    = new SetOfLevelConstraints();
 public SetOfArgLevelConstraints  argLevelConstraints = new SetOfArgLevelConstraints();
-public HashSet                   argLevelParams      = new HashSet() ;
+public HashSet<ArgLevelParam>    argLevelParams      = new HashSet<>() ;
 
 /***************************************************************************
 * The following HashSets are used in computing Leibnizity.                 *
@@ -80,8 +81,8 @@ public HashSet                   argLevelParams      = new HashSet() ;
 * See the file leibniz-checking.txt, appended below, for an explanation    *
 * of Leibnizity and Leibniz checking.                                      *
 ***************************************************************************/
-public HashSet                   allParams           = new HashSet() ;
-public HashSet                   nonLeibnizParams    = new HashSet() ;
+public HashSet<SymbolNode>       allParams           = new HashSet<>() ;
+public HashSet<SymbolNode>       nonLeibnizParams    = new HashSet<>() ;
 
 public int levelChecked   = 0 ;
   /*************************************************************************
@@ -178,11 +179,11 @@ public int levelChecked   = 0 ;
   * instantiated by a temporal formula.  Added by LL on 1 Mar 2009         *
   *************************************************************************/
   static void addTemporalLevelConstraintToConstants(
-                 HashSet params,
+                 HashSet<SymbolNode> params,
                  SetOfLevelConstraints constrs ) {
-      Iterator iter = params.iterator();
+      Iterator<SymbolNode> iter = params.iterator();
       while (iter.hasNext()) {
-        LevelNode node = (LevelNode) iter.next() ;
+        SymbolNode node = iter.next() ;
         if (node.getKind() == ConstantDeclKind) {
           constrs.put(node, Levels[ActionLevel]);
          };
@@ -198,7 +199,7 @@ public int levelChecked   = 0 ;
     return this.level;
   }
 
-  public HashSet getLevelParams(){
+  public HashSet<SymbolNode> getLevelParams(){
     /***********************************************************************
     * Seems to return a HashSet of OpDeclNode objects.  Presumably, these  *
     * are the parameters from the local context that contribute to the     *
@@ -209,7 +210,7 @@ public int levelChecked   = 0 ;
     return this.levelParams;
    }
 
-  public HashSet getAllParams(){
+  public HashSet<SymbolNode> getAllParams(){
     /***********************************************************************
     * Returns a HashSet of OpDeclNode objects, which are the parameters    *
     * from the local context that appear within the object.                *
@@ -219,7 +220,7 @@ public int levelChecked   = 0 ;
     return this.allParams;
    }
 
-  public HashSet getNonLeibnizParams(){
+  public HashSet<SymbolNode> getNonLeibnizParams(){
     /***********************************************************************
     * Returns a HashSet of OpDeclNode objects, which is the subset of      *
     * parameters returned by getAllParams() that appear within a           *
@@ -254,7 +255,7 @@ public int levelChecked   = 0 ;
     return this.argLevelConstraints;
    }
 
-  public HashSet getArgLevelParams(){
+  public HashSet<ArgLevelParam> getArgLevelParams(){
     /***********************************************************************
     * Seems to return a HashSet of ArgLevelParam objects.  (See            *
     * ArgLevelParam.java for an explanation of those objects.)             *
@@ -278,32 +279,32 @@ public int levelChecked   = 0 ;
        "NonLeibnizParams: "    + HashSetToString(this.getNonLeibnizParams()) ;
     }
 
-  public static String HashSetToString(HashSet hs) {
+  public static String HashSetToString(HashSet<SymbolNode> hs) {
     /***********************************************************************
     * Converts a HashSet of SymbolNodes to a printable string.             *
     ***********************************************************************/
     String rval = "{" ;
     boolean first = true ;
-    Iterator iter = hs.iterator();
+    Iterator<SymbolNode> iter = hs.iterator();
     while (iter.hasNext()) {
       if (! first) {rval = rval + ", ";} ;
-      rval = rval + ((SymbolNode) iter.next()).getName() ;
+      rval = rval + iter.next().getName() ;
       first = false ;
      } ;
     rval = rval + "}" ;
     return rval ;
    }
 
-  public static String ALPHashSetToString(HashSet hs) {
+  public static String ALPHashSetToString(HashSet<ArgLevelParam> hs) {
     /***********************************************************************
     * Converts a HashSet of ArgLevelParam objects to a printable string.   *
     ***********************************************************************/
     String rval = "{" ;
     boolean first = true ;
-    Iterator iter = hs.iterator();
+    Iterator<ArgLevelParam> iter = hs.iterator();
     while (iter.hasNext()) {
       if (! first) {rval = rval + ", ";} ;
-      ArgLevelParam alp = (ArgLevelParam) iter.next();
+      ArgLevelParam alp = iter.next();
       rval = rval + "<" + alp.op.getName() + ", " + alp.i + ", " +
                      alp.param.getName() + ">" ;
       first = false;
@@ -322,7 +323,8 @@ public int levelChecked   = 0 ;
     return this.defaultLevelDataToString() ;}
 
 
-  protected Element getSemanticElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getSemanticElement(Document doc, SymbolContext context) {
       // T.L. abstract method used to add data from subclasses
       Element e = getLevelElement(doc, context); //SymbolElement.getLevelElement is not supposed to be called
       try {
@@ -338,7 +340,7 @@ public int levelChecked   = 0 ;
      * T.L. October 2014
      * Abstract method for subclasses of LevelNode to add their information
      * */
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context) {
       throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
     }
 

@@ -27,15 +27,16 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 import util.WrongInvocationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /***************************************************************************
 * This node represents the definition of Foo in                            *
@@ -85,8 +86,8 @@ public class ThmOrAssumpDefNode extends SymbolNode
   * the body that are not within the scope of an inner label or LET        *
   * definition.                                                            *
   *************************************************************************/
-  private Hashtable labels = null ;
-  public Hashtable  getLabelsHT() {
+  private Hashtable<UniqueString, LabelNode> labels = null ;
+  public Hashtable<UniqueString, LabelNode>  getLabelsHT() {
       /***********************************************************************
       * Return the labels field.  Used to "clone" an OpDefNode for module    *
       * instantiation.                                                       *
@@ -292,7 +293,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
   * There doesn't seem to be any easy way to write these methods only      *
   * once.                                                                  *
   *************************************************************************/
-  public void setLabels(Hashtable ht) {labels = ht; }
+  public void setLabels(Hashtable<UniqueString, LabelNode> ht) {labels = ht; }
     /***********************************************************************
     * Sets the set of labels.                                              *
     ***********************************************************************/
@@ -312,8 +313,8 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * as odn, then odn is added to the set and true is return; else the    *
     * set is unchanged and false is returned.                              *
     ***********************************************************************/
-    if (labels == null) {labels = new Hashtable(); } ;
-    if (labels.containsKey(odn)) {return false ;} ;
+    if (labels == null) {labels = new Hashtable<>(); } ;
+    if (labels.containsKey(odn.getName())) {return false ;} ;
     labels.put(odn.getName(), odn) ;
     return true;
    }
@@ -324,12 +325,12 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * `labels'.                                                            *
     ***********************************************************************/
     if (labels == null) {return new LabelNode[0];} ;
-    Vector v = new Vector() ;
-    Enumeration e = labels.elements() ;
+    Vector<LabelNode> v = new Vector<>() ;
+    Enumeration<LabelNode> e = labels.elements() ;
     while (e.hasMoreElements()) { v.addElement(e.nextElement()); } ;
     LabelNode[] retVal = new LabelNode[v.size()] ;
     for (int i = 0 ; i < v.size() ; i++)
-      {retVal[i] = (LabelNode) v.elementAt(i); } ;
+      {retVal[i] = v.elementAt(i); } ;
     return retVal ;
    }
 
@@ -417,6 +418,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * parameter of the definition of op appears within the k-th argument   *
     * of opArg.                                                            *
     ***********************************************************************/
+  @Override
   public final boolean levelCheck(int itr) {
       if (this.levelChecked >= itr) { return this.levelCorrect; }
       this.levelChecked = itr ;
@@ -573,17 +575,20 @@ public class ThmOrAssumpDefNode extends SymbolNode
   /**
    *  The body is the node's only child.
    */
+  @Override
   public SemanticNode[] getChildren() {
     return new SemanticNode[] {this.body};
   }
 
-  public final void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
     if(this.body != null) {this.body.walkGraph(semNodesTable) ;} ;
    }
 
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
     String ret =
@@ -617,9 +622,9 @@ public class ThmOrAssumpDefNode extends SymbolNode
     ***********************************************************************/
     if (labels != null) {
        ret += "\n  Labels: " ;
-       Enumeration list = labels.keys() ;
+       Enumeration<UniqueString> list = labels.keys() ;
        while (list.hasMoreElements()) {
-          ret += ((UniqueString) list.nextElement()).toString() + "  " ;
+          ret += list.nextElement().toString() + "  " ;
          } ;
       }
     else {ret += "\n  Labels: null";};
@@ -657,7 +662,8 @@ public class ThmOrAssumpDefNode extends SymbolNode
   }
 
   /* overrides LevelNode.export and exports a UID reference instad of the full version*/
-  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  public Element export(Document doc, SymbolContext context) {
     // first add symbol to context
     context.put(this, doc);
     Element e = doc.createElement(getNodeRef());

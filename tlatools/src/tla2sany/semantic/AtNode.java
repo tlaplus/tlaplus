@@ -4,7 +4,9 @@ package tla2sany.semantic;
 
 import java.util.Hashtable;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.utilities.Strings;
+import tla2sany.xml.SymbolContext;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,6 +74,7 @@ public class AtNode extends ExprNode {
 //  private SetOfArgLevelConstraints argLevelConstraints;
 //  private HashSet argLevelParams;
 
+  @Override
   public final boolean levelCheck(int iter) {
     if (this.levelChecked >= iter) return true;
     this.levelChecked = iter;
@@ -147,7 +150,8 @@ public class AtNode extends ExprNode {
    * walkGraph finds all reachable nodes in the semantic graph
    * and inserts them in the Hashtable semNodesTable for use by the Explorer tool.
    */
-  public final void walkGraph(Hashtable h) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> h) {
   // Empty because there are no nodes reachable through an AtNode that are not
   // reachable by other paths through the semantic graph.
   } // end walkGraph()
@@ -157,6 +161,7 @@ public class AtNode extends ExprNode {
    * Displays this node as a String, implementing ExploreNode interface; depth
    * parameter is a bound on the depth of the portion of the tree that is displayed.
    */
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
     return "\n*AtNode: " + super.toString(depth) +
@@ -164,7 +169,8 @@ public class AtNode extends ExprNode {
                              "\nExceptComponent: " + exceptComponentRef.getUid());
   }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
     Element e = doc.createElement("AtNode");
     SemanticNode exceptObj = exceptRef.getArgs()[0];
     SemanticNode exceptComponents = exceptComponentRef.getArgs()[0];

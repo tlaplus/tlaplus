@@ -35,11 +35,13 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 import util.WrongInvocationException;
 
@@ -945,6 +947,7 @@ public class OpDefNode extends OpDefOrDeclNode
 //    this.argLevelParams      = EmptySet;
   }
 
+  @Override
   public final boolean levelCheck(int itr) {
     if (   (this.levelChecked >= itr)
         || (    (! inRecursiveSection)
@@ -1144,6 +1147,7 @@ public class OpDefNode extends OpDefOrDeclNode
    * toString, levelDataToString, and walkGraph methods to implement
    * ExploreNode interface
    */
+  @Override
   public final String levelDataToString() {
     if (   (this.getKind() == ModuleInstanceKind)
         || (this.getKind() == NumberedProofStepKind)) {return "";} ;
@@ -1210,6 +1214,7 @@ public class OpDefNode extends OpDefOrDeclNode
    * The body is the node's only child.
    */
 
+  @Override
   public SemanticNode[] getChildren() {
     return new SemanticNode[] {this.body};
   }
@@ -1219,7 +1224,8 @@ public class OpDefNode extends OpDefOrDeclNode
    * and inserts them in the Hashtable semNodesTable for use by
    * the Explorer tool.
    */
-  public final void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
@@ -1237,6 +1243,7 @@ public class OpDefNode extends OpDefOrDeclNode
    * interface; depth parameter is a bound on the depth of the portion
    * of the tree that is displayed.
    */
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
@@ -1323,7 +1330,7 @@ public class OpDefNode extends OpDefOrDeclNode
     }
   }
 
-  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
+  protected Element getSymbolElement(Document doc, SymbolContext context) {
     Element ret = null;
     switch (getKind()) {
       case UserDefinedOpKind:
