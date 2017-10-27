@@ -48,18 +48,25 @@ import tlc2.value.Value;
  * but produces no output. This class effectively associates MC.tla's PrintT with
  * tlc2.module.TLC#PrintT.
  * 
- * The only operator for which this approach obviously does not work is PrintT itself.
- * If the actual specification declares PrintT, evaluating a constant expression will
- * fail. However - contrary to Permutations/SortSeq/... - this is handled gracefully
- * with a proper error message.
- * 
  * @see org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.addConstantExpressionEvaluation(String, String)
  */
 public class MC {
 
 	public static final long serialVersionUID = 20171027L;
 
+	/**
+	 * @see TLC#PrintT(Value)
+	 */
 	public static Value PrintT(Value v1) {
 		return TLC.PrintT(v1);
+	}
+	
+	// For symmetry reasons also support Print (would be confusing if eval
+	// expression support PrintT but not Print).
+	/**
+	 * @see TLC#Print(Value, Value)
+	 */
+	public static Value Print(Value v1, Value v2) {
+		return TLC.Print(v1, v2);
 	}
 }
