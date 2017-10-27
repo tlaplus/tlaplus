@@ -55,7 +55,7 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		// http://cloud-images.ubuntu.com/locator/ec2/
 		// See http://aws.amazon.com/amazon-linux-ami/instance-type-matrix/
 		// for paravirtual vs. hvm
-		return getRegion() + "/ami-84a048fe"; // "xenial,amd64,hvm:instance-store"
+		return getRegion() + "/ami-15e12b6f"; // "us-east-1,xenial,amd64,hvm:instance-store"
 	}
 
 	@Override
