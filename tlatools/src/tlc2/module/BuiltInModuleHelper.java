@@ -58,6 +58,8 @@ public class BuiltInModuleHelper {
 					return true;
 				} else if (clazz == TLC.class && value == TLC.serialVersionUID) {
 					return true;
+				} else if (clazz == MC.class && value == MC.serialVersionUID) {
+					return true;
 				} else if (clazz == TransitiveClosure.class && value == TransitiveClosure.serialVersionUID) {
 					return true;
 				}

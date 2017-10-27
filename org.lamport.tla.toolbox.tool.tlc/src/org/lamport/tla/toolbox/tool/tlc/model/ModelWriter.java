@@ -1115,6 +1115,8 @@ public class ModelWriter
             // value of the constant expression in the TLC output
             tlaBuffer.append(COMMENT).append("Constant expression ASSUME statement ").append(ATTRIBUTE).append(
                     attributeName).append(CR);
+            // @see tlc2.module.MC
+            tlaBuffer.append("LOCAL PrintT(out) == TRUE").append(CR);
             tlaBuffer.append("ASSUME PrintT(").append(BEGIN_TUPLE).append(CONSTANT_EXPRESSION_EVAL_IDENTIFIER).append(
                     COMMA).append(id).append(END_TUPLE).append(")").append(CR);
             tlaBuffer.append(SEP).append(CR).append(CR);
