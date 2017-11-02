@@ -48,5 +48,10 @@ public interface ITLCPreferenceConstants
 	 * Implementation of {@link FPSet} to use during model checking
 	 */
 	public static final String I_TLC_FPSETIMPL_DEFAULT = "fpSetImpl";
-
+	/**
+	 * If set, the Toolbox will open a modal progress dialog to indicate TLC
+	 * startup. A user can opt to subsequently suppress the dialog. This returns the
+	 * old behavior prior to the change in https://bugs.eclipse.org/146205#c10.
+	 */
+	public static final String I_TLC_SHOW_MODAL_PROGRESS = "showModalProgress";
 }
