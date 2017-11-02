@@ -48,5 +48,10 @@ public interface ITLCPreferenceConstants
 	 * Implementation of {@link FPSet} to use during model checking
 	 */
 	public static final String I_TLC_FPSETIMPL_DEFAULT = "fpSetImpl";
+	
+	/**
+	 * Have we re-disabled the user's 'run in background' before?
+	 */
+	public static final String I_TLC_ISSUE_101 = "tlcIssue101";
 
 }
