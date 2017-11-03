@@ -776,7 +776,7 @@ public class ResourceHelper
     {
         StringBuffer buffer = new StringBuffer();
         buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(
-                " ----\n").append("EXTENDS ").append(extendedModuleName).append(", TLC").append("\n\n");
+                " ----\n").append("EXTENDS ").append(extendedModuleName).append("\n\n");
         return buffer;
     }
 

@@ -90,6 +90,14 @@ public class Application implements IApplication {
 		boolean checkDeadlock = false;
 		if (!checkDeadlock) {
 			tlcParams.append("-deadlock");
+        	tlcParams.append(" ");
+		}
+		
+		// https://github.com/tlaplus/tlaplus/issues/92#issuecomment-339989087
+		final int coverage = Integer.getInteger("coverage", 0);
+		if (coverage > 0) {
+			tlcParams.append("-coverage ");
+        	tlcParams.append(String.valueOf(coverage));
 		}
 		
 		final TLCJobFactory factory = new CloudTLCJobFactory();

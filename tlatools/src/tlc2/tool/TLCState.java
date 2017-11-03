@@ -47,10 +47,6 @@ public abstract class TLCState implements Cloneable, Serializable {
     vos.writeLongNat(this.uid);
   }
 
-  public TLCState registerCoverage(UniqueString name, SemanticNode expr) {
-	  return this;
-  }
-  
   public abstract TLCState bind(UniqueString name, Value value, SemanticNode expr);
   public abstract TLCState bind(SymbolNode id, Value value, SemanticNode expr);  
   public abstract TLCState unbind(UniqueString name);
