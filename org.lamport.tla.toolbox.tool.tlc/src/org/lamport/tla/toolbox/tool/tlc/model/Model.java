@@ -29,8 +29,10 @@ package org.lamport.tla.toolbox.tool.tlc.model;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.NotFileFilter;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -72,6 +75,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
@@ -426,7 +430,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	
 	public long getSnapshotTimeStamp() {
 		final int idx = getName().lastIndexOf(SNAP_SHOT) + 10;
-		return Long.valueOf(getName().substring(idx, getName().length()));
+		return Long.valueOf(getName().substring(idx));
 	}
 	
 	public Collection<Model> getSnapshots() {
@@ -447,7 +451,9 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 
 	public Model snapshot() throws CoreException {
 		// Create a copy of the underlying launch configuration.
-		final Model snapshot = copy(getName() + SNAP_SHOT + System.currentTimeMillis());
+	    final String snapshotNamePrefix = this.getName() + SNAP_SHOT;
+		final Model snapshot = copy(snapshotNamePrefix + System.currentTimeMillis());
+		final int snapshotKeepCount = TLCActivator.getDefault().getPreferenceStore().getInt(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT);
 
 		// Snapshot the model's markers as well (e.g. the information about errors, see hasErrors()).
     	final IMarker[] markers = getMarkers();
@@ -469,6 +475,8 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		// states/ directory leftover from TLC which waste quite some space and might
 		// take some time to copy.
 		try {
+		    ArrayList<Model> snapshotModels;
+		    
 			FileUtils.copyDirectory(modelFolder.toFile(), snapshotPath.toFile(),
 					new NotFileFilter(DirectoryFileFilter.DIRECTORY));
 			                       
@@ -481,6 +489,47 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 						.getFolder(snapshot.getName() + File.separator + snapshot.getName() + ".dot").getLocation();
 				FileUtils.moveFile(oldDotFile.toFile(), newDotFile.toFile());
 			}
+			
+			// Now that we've had a successful save, prune any snapshots, starting with the oldest, in order to assure the
+			// cardinality no greater than snapshotKeepCount
+			snapshotModels = new ArrayList<>(this.getSnapshots());
+			if (snapshotModels.size() > snapshotKeepCount) {
+                int pruneCount = snapshotModels.size() - snapshotKeepCount;
+                
+                Collections.sort(snapshotModels, new Comparator<Model>() {
+                    public int compare (final Model model1, final Model model2) {
+                        final String presumedMS1 = model1.getName().substring(snapshotNamePrefix.length());
+                        final String presumedMS2 = model2.getName().substring(snapshotNamePrefix.length());
+                        long ms1 = Long.MAX_VALUE;
+                        long ms2 = Long.MAX_VALUE;
+
+                        try {
+                            ms1 = Long.valueOf(presumedMS1);
+                        }
+                        catch (Exception e) {
+                            TLCActivator.logError("Snapshot directory name is malformed (" + model1.getName() + ")", e);
+                        }
+
+                        try {
+                            ms2 = Long.valueOf(presumedMS2);
+                        }
+                        catch (Exception e) {
+                            TLCActivator.logError("Snapshot directory name is malformed (" + model2.getName() + ")", e);
+                        }
+
+                        return (int)(ms1 - ms2);
+                    }
+                });
+                
+                for (int i = 0; i < pruneCount; i++) {
+                    final Model model = snapshotModels.get(i);
+                    
+                    if (! this.getSpec().deleteModel(model.getName())) {
+                        TLCActivator.logInfo("Failed attempt to delete snapshot model " + model.getName());
+                    }
+                }
+			}
+			
 			// Refresh the snapshot folder after having copied files without using the
 			// Eclipse resource API. Otherwise, the resource API does not see the files
 			// which e.g. results in an incomplete model deletion or hasStateGraphDump
