@@ -42,6 +42,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+
 import org.lamport.tla.toolbox.tool.IParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
@@ -989,8 +990,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
              * suffix to identify it as a snapshot. The model for which it is a snapshot is identified by the
              * prefix of the snapshot's model name.
              */
-			final boolean takeSnapshot = TLCActivator.getDefault().getPreferenceStore()
-					.getBoolean(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE);
+            int snapshotKeepCount = TLCActivator.getDefault().getPreferenceStore().getInt(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT);
+			final boolean takeSnapshot = (snapshotKeepCount > 0);
 			if (!takeSnapshot || model.isSnapshot()) {
 				return;
 			}

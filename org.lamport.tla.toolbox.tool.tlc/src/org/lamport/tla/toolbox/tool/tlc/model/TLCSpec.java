@@ -37,6 +37,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchManager;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 
 /**
@@ -74,8 +75,8 @@ public class TLCSpec extends Spec {
 		final Map<String, Model> res = new HashMap<String, Model>();
 
     	final IPath location = getProject().getLocation();
-		for (int i = 0; i < launchConfigurations.length; i++) {
-			final ILaunchConfiguration aConfiguration = launchConfigurations[i];
+    	
+    	for (final ILaunchConfiguration aConfiguration : launchConfigurations) {
 			if (location.isPrefixOf(aConfiguration.getFile().getLocation())) {
 				final Model model = aConfiguration.getAdapter(Model.class);
 				if (model.getName().matches(regexp) != include) {
@@ -104,6 +105,37 @@ public class TLCSpec extends Spec {
 		final String sanitizedName = Model.sanitizeName(modelName);
 		final Map<String, Model> models = getModels(sanitizedName, true);
 		return models.get(sanitizedName);
+	}
+	
+	public boolean deleteModel(final String modelName) {
+        final String sanitizedName = Model.sanitizeName(modelName);
+        final ILaunchConfiguration[] launchConfigurations = getAllLaunchConfigurations();
+        final IPath location = getProject().getLocation();
+        ILaunchConfiguration launchConfigurationToDelete = null;
+        
+        for (final ILaunchConfiguration aConfiguration : launchConfigurations) {
+            if (location.isPrefixOf(aConfiguration.getFile().getLocation())) {
+                final Model model = aConfiguration.getAdapter(Model.class);
+                if (model.getName().equals(sanitizedName)) {
+                    launchConfigurationToDelete = aConfiguration;
+                    
+                    break;
+                }
+            }
+        }
+        
+        if (launchConfigurationToDelete != null) {
+            try {
+                launchConfigurationToDelete.delete();
+                
+                return true;
+            }
+            catch (CoreException ce) {
+                TLCActivator.logError("Encountered an error attempting to delete model named [" + modelName + "].", ce);
+            }
+        }
+        
+        return false;
 	}
 
 	public void rename(final Spec aNewSpec) {
