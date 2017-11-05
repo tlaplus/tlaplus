@@ -989,9 +989,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
              * suffix to identify it as a snapshot. The model for which it is a snapshot is identified by the
              * prefix of the snapshot's model name.
              */
-			final boolean takeSnapshot = TLCActivator.getDefault().getPreferenceStore()
-					.getBoolean(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE);
-			if (!takeSnapshot || model.isSnapshot()) {
+            final int snapshotKeepCount = TLCActivator.getDefault().getPreferenceStore().getInt(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT);
+			if (!(snapshotKeepCount > 0) || model.isSnapshot()) {
 				return;
 			}
 			refreshJob = new WorkspaceJob("Taking snapshot of " + model.getName() + "...") {

@@ -29,8 +29,10 @@ package org.lamport.tla.toolbox.tool.tlc.model;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -426,7 +428,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	
 	public long getSnapshotTimeStamp() {
 		final int idx = getName().lastIndexOf(SNAP_SHOT) + 10;
-		return Long.valueOf(getName().substring(idx, getName().length()));
+		return Long.valueOf(getName().substring(idx));
 	}
 	
 	public Collection<Model> getSnapshots() {
@@ -481,6 +483,11 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 						.getFolder(snapshot.getName() + File.separator + snapshot.getName() + ".dot").getLocation();
 				FileUtils.moveFile(oldDotFile.toFile(), newDotFile.toFile());
 			}
+			
+			// Now that we've had a successful save, prune any snapshots, starting with the oldest, in order to assure the
+			// cardinality no greater than snapshotKeepCount.
+			pruneOldestSnapshots();
+			
 			// Refresh the snapshot folder after having copied files without using the
 			// Eclipse resource API. Otherwise, the resource API does not see the files
 			// which e.g. results in an incomplete model deletion or hasStateGraphDump
@@ -491,6 +498,26 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		}
         
 		return snapshot;
+	}
+
+	private void pruneOldestSnapshots() throws CoreException {
+		// Sort model by snapshot timestamp and remove oldest ones.
+		final int snapshotKeepCount = TLCActivator.getDefault().getPreferenceStore().getInt(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT);
+		final List<Model> snapshotModels = new ArrayList<>(getSnapshots());
+		if (snapshotModels.size() > snapshotKeepCount) {
+		    final int pruneCount = snapshotModels.size() - snapshotKeepCount;
+		    Collections.sort(snapshotModels, new Comparator<Model>() {
+		        public int compare (final Model model1, final Model model2) {
+		        	final long ts1 = model1.getSnapshotTimeStamp();
+		        	final long ts2 = model2.getSnapshotTimeStamp();
+		        	return Long.compare(ts1, ts2);
+		        }
+		    });
+		    for (int i = 0; i < pruneCount; i++) {
+		        final Model model = snapshotModels.get(i);
+		        model.delete(new NullProgressMonitor());
+		    }
+		}
 	}
 
 	/*

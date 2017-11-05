@@ -28,24 +28,30 @@ public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
      */
     public void initializeDefaultPreferences()
     {
+        final IPreferenceStore uiPreferencesStore = TLCUIActivator.getDefault().getPreferenceStore();
+        final IPreferenceStore tlcPreferencesStore = TLCActivator.getDefault().getPreferenceStore();
 
-        final IPreferenceStore store = TLCUIActivator.getDefault().getPreferenceStore();
-        store.setDefault(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS, 10000);
-        store.setDefault(ITLCPreferenceConstants.I_TLC_POPUP_ERRORS, true);
-        store.setDefault(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY, true);
-        store.setDefault(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE, true);
-        store.setDefault(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT, MAX_HEAP_SIZE_DEFAULT);
-        store.setDefault(ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT, TLCGlobals.setBound);
-        store.setDefault(ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT, 1);
-        store.setDefault(ITLCPreferenceConstants.I_TLC_FPSETIMPL_DEFAULT, FPSetFactory.getImplementationDefault());
-        store.setDefault(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME,
+        tlcPreferencesStore.setDefault(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT, 10);
+
+        // This is so bad.. we store them in parallel because one is needed by plugin relied upon the PreferencePage
+        //      and the other by a plugin which is on the opposite side of the dependency. (TLCModelLaunchDelegate)
+        uiPreferencesStore.setDefault(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT, 10);
+
+        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS, 10000);
+        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_POPUP_ERRORS, true);
+        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY, true);
+        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT, MAX_HEAP_SIZE_DEFAULT);
+        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT, TLCGlobals.setBound);
+        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT, 1);
+        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_FPSETIMPL_DEFAULT, FPSetFactory.getImplementationDefault());
+        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME,
                 IModelConfigurationDefaults.MODEL_AUTO_LOCK_TIME_DEFAULT);
         // store.setDefault(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES, true);
 
 		// By default we want the Toolbox to show a modal progress dialog upon TLC
 		// startup. A user can opt to subsequently suppress the dialog.
 		// This restores the behavior prior to https://bugs.eclipse.org/146205#c10.
-        if (!store.contains(ITLCPreferenceConstants.I_TLC_SHOW_MODAL_PROGRESS)) {
+        if (!uiPreferencesStore.contains(ITLCPreferenceConstants.I_TLC_SHOW_MODAL_PROGRESS)) {
 			final IEclipsePreferences node = InstanceScope.INSTANCE
 					.getNode(WorkbenchPlugin.getDefault().getBundle().getSymbolicName());
 			node.putBoolean(IPreferenceConstants.RUN_IN_BACKGROUND, false);
@@ -55,7 +61,7 @@ public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
 				TLCUIActivator.getDefault().logError("Error trying to flush the workbench plugin preferences store.",
 						e);
 			}
-			store.setValue(ITLCPreferenceConstants.I_TLC_SHOW_MODAL_PROGRESS, true);
+			uiPreferencesStore.setValue(ITLCPreferenceConstants.I_TLC_SHOW_MODAL_PROGRESS, true);
 		}
     }
 }

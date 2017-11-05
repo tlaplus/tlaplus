@@ -33,8 +33,8 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				final IPreferenceStore store = TLCActivator.getDefault().getPreferenceStore();
-				if (TLCActivator.I_TLC_SNAPSHOT_PREFERENCE.equals(event.getProperty())) {
-					store.setValue(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE, (boolean) event.getNewValue());
+				if (TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT.equals(event.getProperty())) {
+					store.setValue(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT, (int)event.getNewValue());
 				}
 			}
 		});
@@ -59,15 +59,21 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
 
         addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY,
                 "&Re-validate model on save", getFieldEditorParent()));
-		addField(new BooleanFieldEditor(TLCActivator.I_TLC_SNAPSHOT_PREFERENCE,
-                "Take &snapshot of model after completion of model checking", getFieldEditorParent()));
+
+        IntegerFieldEditor integerFieldEditor = new IntegerFieldEditor(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT,
+                                                                       "Number of model &snapshots to keep",
+                                                                       getFieldEditorParent());
+        integerFieldEditor.setValidRange(0, Integer.MAX_VALUE);
+        addField(integerFieldEditor);
+        
         // addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES,
         // "&Automatically delete unused data from previous model run", getFieldEditorParent()));
         addField(new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT,
                 "Maximum JVM Heap Size default in % of physical system memory", getFieldEditorParent()));
         addField(new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME, "TLC run auto-lock time (in minutes)",
                 getFieldEditorParent()));
-		IntegerFieldEditor integerFieldEditor = new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS,
+		
+        integerFieldEditor = new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS,
 				"Default number of states shown in error traces", getFieldEditorParent());
 		integerFieldEditor.setValidRange(1, Integer.MAX_VALUE);
 		addField(integerFieldEditor);

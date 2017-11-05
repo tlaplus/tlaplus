@@ -224,13 +224,14 @@ The model is automatically saved when you run or validate it, so you will
 probably have no reason to save it explicitly.
 </p>
 
-<h3>Take snapshot of model after completion of model checking</h3>
+<h3>Number of model snapshots to keep</h3>
 <p>
 Re-running a model erases the corresponding model checking results if any. With snapshots
-activate, the Toolbox creates a history of model runs. The history allows one to trace back
-the evolution of the specification and corresponding model.
+activate, the Toolbox maintains a history of the N most recent model runs. The value N is defined 
+by <samp>Number of model snapshots to keep</samp> where zero disables snapshots completely.
+The history allows one to trace back the evolution of the specification and corresponding model.
 </p>
-<p>Snapshots can be deleted in the Spec Explorer as needed.
+<p>Snapshots can also be deleted in the Spec Explorer as needed.
 </p>
 
 <h3>Maximum JVM Heap Size</h3>
