@@ -458,9 +458,21 @@ public class APSubstInNode extends LevelNode {
       }
       Element bdy = doc.createElement("body");
       bdy.appendChild(body.export(doc,context));
+
+      Element from = doc.createElement("instFrom");
+      Element fromchild = this.instantiatingModule.export(doc, context);
+      from.appendChild(fromchild);
+
+      Element to = doc.createElement("instTo");
+      Element tochild = instantiatedModule.export(doc,context);
+      to.appendChild(tochild);
+
+
       Element ret = doc.createElement("APSubstInNode");
       ret.appendChild(sbts);
       ret.appendChild(bdy);
+      ret.appendChild(from);
+      ret.appendChild(to);
 
       // at the end, we append the context of the symbols used in this node
       //ret.appendChild(context.export(doc));

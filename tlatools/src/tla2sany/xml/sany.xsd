@@ -230,6 +230,20 @@
             </xs:choice>
           </xs:complexType>
         </xs:element>
+        <xs:element name="instFrom">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="ModuleNodeRef"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="instTo">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="ModuleNodeRef"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -251,6 +265,20 @@
           <xs:complexType>
             <xs:sequence>
               <xs:group ref="ExprNode"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="instFrom">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="ModuleNodeRef"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="instTo">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="ModuleNodeRef"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
