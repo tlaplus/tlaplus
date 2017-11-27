@@ -163,20 +163,22 @@ public class Tool
     return this.actions;
   }
 
-
-
   private final void getActions(SemanticNode next, Context con) {
+	  this.getActions(next, con, null);
+  }
+
+  private final void getActions(SemanticNode next, Context con, final UniqueString actionName) {
     switch (next.getKind()) {
     case OpApplKind:
       {
         OpApplNode next1 = (OpApplNode)next;
-        this.getActionsAppl(next1, con);
+        this.getActionsAppl(next1, con, actionName);
         return;
       }
     case LetInKind:
       {
         LetInNode next1 = (LetInNode)next;
-        this.getActions(next1.getBody(), con);
+        this.getActions(next1.getBody(), con, actionName);
         return;
       }
     case SubstInKind:
@@ -184,10 +186,10 @@ public class Tool
         SubstInNode next1 = (SubstInNode)next;
         Subst[] substs = next1.getSubsts();
         if (substs.length == 0) {
-          this.getActions(next1.getBody(), con);
+          this.getActions(next1.getBody(), con, actionName);
         }
         else {
-          Action action = new Action(next1, con);
+          Action action = new Action(next1, con, actionName);
           this.actionVec.addElement(action);
         }
         return;
@@ -199,10 +201,10 @@ public class Tool
           APSubstInNode next1 = (APSubstInNode)next;
           Subst[] substs = next1.getSubsts();
           if (substs.length == 0) {
-            this.getActions(next1.getBody(), con);
+            this.getActions(next1.getBody(), con, actionName);
           }
           else {
-            Action action = new Action(next1, con);
+            Action action = new Action(next1, con, actionName);
             this.actionVec.addElement(action);
           }
           return;
@@ -214,7 +216,7 @@ public class Tool
     case LabelKind:
       {
         LabelNode next1 = (LabelNode)next;
-        this.getActions(next1.getBody(), con);
+        this.getActions(next1.getBody(), con, actionName);
         return;
       }
     default:
@@ -224,7 +226,7 @@ public class Tool
     }
   }
 
-  private final void getActionsAppl(OpApplNode next, Context con) {
+  private final void getActionsAppl(OpApplNode next, Context con, final UniqueString actionName) {
     ExprOrOpArgNode[] args = next.getArgs();
     SymbolNode opNode = next.getOperator();
     int opcode = BuiltInOPs.getOpCode(opNode.getName());
@@ -250,7 +252,7 @@ public class Tool
                 Value aval = this.eval(args[i], con, TLCState.Empty);
                 con1 = con1.cons(formals[i], aval);
               }
-              this.getActions(opDef.getBody(), con1);
+              this.getActions(opDef.getBody(), con1, opDef.getName());
               return;
             }
           }
@@ -258,7 +260,7 @@ public class Tool
         }
       }
       if (opcode == 0) {
-        Action action = new Action(next, con);
+        Action action = new Action(next, con, opNode.getName());
         this.actionVec.addElement(action);
         return;
       }
@@ -273,11 +275,11 @@ public class Tool
             this.contexts(next, con, TLCState.Empty, TLCState.Empty, EvalControl.Clear);
           Context econ;
           while ((econ = Enum.nextElement()) != null) {
-            this.getActions(args[0], econ);
+            this.getActions(args[0], econ, actionName);
           }
         }
         catch (Throwable e) {
-          Action action = new Action(next, con);
+          Action action = new Action(next, con, actionName);
           this.actionVec.removeAll(cnt);
           this.actionVec.addElement(action);
         }
@@ -287,14 +289,14 @@ public class Tool
     case OPCODE_lor:
       {
         for (int i = 0; i < args.length; i++) {
-          this.getActions(args[i], con);
+          this.getActions(args[i], con, actionName);
         }
         return;
       }
     default:
       {
         // We handle all the other builtin operators here.
-        Action action = new Action(next, con);
+        Action action = new Action(next, con, actionName);
         this.actionVec.addElement(action);
         return;
       }

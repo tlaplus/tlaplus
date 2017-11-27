@@ -36,7 +36,7 @@ public final class Location
     private static final String NATURAL = "([0-9]+)";
     private static final String MODULE_ID = "([A-Za-z_0-9]+)";
     private static final String CLOSE_ACTION = ">";
-    private static final String OPEN_ACTION = "<Action ";
+    private static final String OPEN_ACTION = "<[A-Za-z_0-9]+ "; // The regex used to just be "Action" but the most recent TLC prints the name of the action instead of just the location.
 
     private static final UniqueString unknown = UniqueString.uniqueStringOf("--unknown--");
 
