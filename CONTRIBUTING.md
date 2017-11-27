@@ -8,4 +8,4 @@ Except for [TLAPS](https://tla.msr-inria.inria.fr/tlaps/content/Home.html), the 
 Quality Metrics
 ---------------
 
-We collect [quality metrics](https://sonarqube.com/organizations/tlaplus/projects). If you want to help out with the project, the reports indicate several low hanging fruits to pick.
+We collect [quality metrics](https://sonarcloud.io/organizations/tlaplus/projects). If you want to help out with the project, the reports indicate several low hanging fruits to pick.
