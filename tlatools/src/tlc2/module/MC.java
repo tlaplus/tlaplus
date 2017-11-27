@@ -39,25 +39,28 @@ import tlc2.value.Value;
  * in TLC.tla (e.g. "Permutations", "SortSeq", ...).
  * 
  * To resolve this name clash, the Toolbox no longer extends TLC.tla in MC.tla but
- * instead generates a LOCAL declaration of PrintT:
- * "LOCAL PrintT(out) == TRUE
- *  ASSUME PrintT(...)"
+ * instead generates a LOCAL declaration of PrintT its name prefixed with MC:
+ * "LOCAL MCPrintT(out) == TRUE
+ *  ASSUME MCPrintT(...)"
  * 
- * TLC.tla's PrintT is override by the tlc2.module.TLC#PrintT module override.
+ * TLC.tla's PrintT is override by the tlc2.module.TLC#MCPrintT module override.
  * Thus, the LOCAL construct above only resolves the name clash at the SANY level,
- * but produces no output. This class effectively associates MC.tla's PrintT with
+ * but produces no output. This class effectively associates MC.tla's MCPrintT with
  * tlc2.module.TLC#PrintT.
+ * 
+ * The same is done for tlc2.module.TLC#Permutations, required if a constant is declared
+ * to be a symmetry set.
  * 
  * @see org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.addConstantExpressionEvaluation(String, String)
  */
 public class MC {
 
-	public static final long serialVersionUID = 20171027L;
+	public static final long serialVersionUID = 20171127L;
 
 	/**
 	 * @see TLC#PrintT(Value)
 	 */
-	public static Value PrintT(Value v1) {
+	public static Value MCPrintT(Value v1) {
 		return TLC.PrintT(v1);
 	}
 	
@@ -66,7 +69,14 @@ public class MC {
 	/**
 	 * @see TLC#Print(Value, Value)
 	 */
-	public static Value Print(Value v1, Value v2) {
+	public static Value MCPrint(Value v1, Value v2) {
 		return TLC.Print(v1, v2);
+	}
+	
+	/**
+	 * @see TLC#Permutations(Value)
+	 */
+	public static Value MCPermutations(Value s) {
+		return TLC.Permutations(s);
 	}
 }
