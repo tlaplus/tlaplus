@@ -32,10 +32,6 @@ public interface ITLCPreferenceConstants
     
     public static final String I_TLC_MAXSETSIZE_DEFAULT = "maxSetSizeDefault";
     /**
-     * Automatically lock model after TLC exceeds given length of time.
-     */
-    public static final String I_TLC_AUTO_LOCK_MODEL_TIME = "autoLockModelTime";
-    /**
      * font used for text in the error viewer at the top of the TLC error
      * view, the User Output field on the results page, and the Progress
      * Output on the results page.

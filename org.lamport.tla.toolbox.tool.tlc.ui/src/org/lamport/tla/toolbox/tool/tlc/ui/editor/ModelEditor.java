@@ -152,11 +152,11 @@ public class ModelEditor extends FormEditor
 
         public void run()
         {
-            // Re-validate the pages, iff the model is not running
-			// and is not locked. Also check if the model is nulled by now which
+            // Re-validate the pages, iff the model is not running.
+			// Also check if the model is nulled by now which
 			// happens if the ModelEditor disposed before a scheduled run gets
 			// executed.
-            if (model != null && !model.isRunning() && !model.isLocked())
+            if (model != null && !model.isRunning())
             {
                 /*
                  * Note that all pages are not necessarily
@@ -819,16 +819,6 @@ public class ModelEditor extends FormEditor
 						}
 					} else {
 						// launching the config
-						if (mode.equals(TLCModelLaunchDelegate.MODE_MODELCHECK)) {
-							// if model checking, the length of time that
-							// tlc
-							// should run before the model is automatically
-							// locked
-							// must be saved from the preferences
-							int autoLockTime = TLCUIActivator.getDefault().getPreferenceStore()
-									.getInt(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME);
-							model.setAutoLockTime(autoLockTime);
-						}
 						model.launch(mode, new SubProgressMonitor(monitor, 1), true);
 
 						/*

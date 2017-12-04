@@ -7,7 +7,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.internal.IPreferenceConstants;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -44,8 +43,6 @@ public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT, TLCGlobals.setBound);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT, 1);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_FPSETIMPL_DEFAULT, FPSetFactory.getImplementationDefault());
-        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME,
-                IModelConfigurationDefaults.MODEL_AUTO_LOCK_TIME_DEFAULT);
         // store.setDefault(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES, true);
 
 		// By default we want the Toolbox to show a modal progress dialog upon TLC

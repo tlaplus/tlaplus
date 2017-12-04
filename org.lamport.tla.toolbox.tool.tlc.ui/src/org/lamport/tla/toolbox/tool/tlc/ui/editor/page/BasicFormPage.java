@@ -6,12 +6,10 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ListenerList;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
@@ -47,6 +45,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -89,13 +88,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 {
     public static final String CRASHED_TITLE = " ( model checking has crashed )";
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
-    public static final String LOCKED_TITLE = " ( model is locked )";
     private static final String TLC_ERROR_STRING = "TLC Error";
 
     /** 
      * a list of dirty part listeners, which marks parts as dirty on input and cause the re-validation of the input
      */
-    protected ListenerList dirtyPartListeners = new ListenerList();
+    protected ListenerList<DirtyMarkingListener> dirtyPartListeners = new ListenerList<DirtyMarkingListener>();
     /** 
      * the initialization status. Becomes true, after the {@link BasicFormPage#pageInitializationComplete()} method is executed
      */
@@ -257,10 +255,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         toolbarManager.add(new DynamicContributionItem(new GenerateAction()));
         // stop button
         toolbarManager.add(new DynamicContributionItem(new StopAction()));
-        // lock button
-        toolbarManager.add(new DynamicContributionItem(new LockModelAction()));
-        // unlock button
-        toolbarManager.add(new DynamicContributionItem(new UnlockModelAction()));
 
         // refresh the tool-bar
         toolbarManager.update(true);
@@ -280,10 +274,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         headClientTBM.add(new DynamicContributionItem(new GenerateAction()));
         // stop button
         headClientTBM.add(new DynamicContributionItem(new StopAction()));
-        // lock button
-        headClientTBM.add(new DynamicContributionItem(new LockModelAction()));
-        // unlock button
-        headClientTBM.add(new DynamicContributionItem(new UnlockModelAction()));
 
         // refresh the head client toolbar
         headClientTBM.update(true);
@@ -556,8 +546,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
             // refresh the title
             String title = mForm.getForm().getText();
-            int titleIndex = Math.max(Math.max(title.indexOf(RUNNING_TITLE), title.indexOf(CRASHED_TITLE)), title
-                    .indexOf(LOCKED_TITLE));
+            int titleIndex = Math.max(title.indexOf(RUNNING_TITLE), title.indexOf(CRASHED_TITLE));
             // restore the title
             if (titleIndex != -1)
             {
@@ -574,9 +563,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                     mForm.getForm().setText(title + RUNNING_TITLE);
                 }
 
-            } else if (getModel().isLocked())
-            {
-                mForm.getForm().setText(title + LOCKED_TITLE);
             } else
             {
                 // restore the title, only if we need
@@ -596,7 +582,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             }
 
             // refresh enablement status
-            setEnabled(!modelRunning && !getModel().isLocked());
+            setEnabled(!modelRunning);
             mForm.getForm().update();
 
         }
@@ -842,8 +828,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
          */
         public boolean isEnabled()
         {
-            final Model model = getModel();
-			return !model.isRunning() && !model.isLocked();
+            return !getModel().isRunning();
         }
     }
 
@@ -870,7 +855,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
          */
         public boolean isEnabled()
         {
-            return !getModel().isRunning() && !getModel().isLocked();
+            return !getModel().isRunning();
         }
     }
 
@@ -925,64 +910,4 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         }
     }
 
-    class UnlockModelAction extends Action
-    {
-        UnlockModelAction()
-        {
-            super("Unlock model", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID,
-                    "icons/full/owned_monitor_obj.gif"));
-            setDescription("Unlocks the model");
-            setToolTipText("Unlocks the model so that changes are possible.");
-        }
-
-        public void run()
-        {
-        	((ModelEditor) getEditor()).getModel().setLocked(false);
-        }
-
-        public boolean isEnabled()
-        {
-            return !getModel().isRunning() && getModel().isLocked();
-        }
-    }
-    
-    class LockModelAction extends Action
-    {
-        LockModelAction()
-        {
-            super("Lock model", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID,
-                    "icons/full/lockedstate.gif"));
-            setDescription("Locks the model");
-            setToolTipText("Locks the model so that no changes are possible.");
-        }
-
-        public void run()
-        {
-            if (getEditor().isDirty())
-            {
-                // allow the user to save or cancel
-                // it is not allowed to not save and lock the model
-                boolean save = MessageDialog.open(MessageDialog.CONFIRM, UIHelper.getShellProvider().getShell(),
-                        "Model Modified", "The model has been modified. Do you want to save the changes?", SWT.NONE);
-                if (save)
-                {
-                    ModelEditor editor = (ModelEditor) getEditor();
-                    editor.doSave(new NullProgressMonitor());
-                    // The changes may result in an error, but validation
-                    // can only be run on an unlocked model, so the validation
-                    // must be run synchronously before the model is locked.
-                    UIHelper.runUISync(editor.getValidateRunnable());
-                } else
-                {
-                    return;
-                }
-            }
-            getModel().setLocked(true);
-        }
-
-        public boolean isEnabled()
-        {
-            return !getModel().isLocked();
-        }
-    }
 }

@@ -286,119 +286,111 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 
         IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 
-        /*
-         * We want to copy spec files to the model folder only if
-         * the model is not locked. Before copying, the previous spec
-         * files must be deleted.
-         */
-        if (!model.isLocked())
+
+        /******************************************************************
+         * This code deletes all existing files in the model folder except*
+         * for the checkpoint folder, if it exists.                       *
+         ******************************************************************/
+        final IResource[] members = modelFolder.members();
+        // erase everything inside
+        if (members.length == 0)
         {
+            monitor.worked(STEP);
+        } else
+        {
+            // Get the checkpoint folder in order to avoid
+            // deleting that folder.
+            // This ModelHelper method should return an array of
+            // size one because there should only be one checkpoint
+            // folder.
+            final IResource[] checkpoints = model.getCheckpoints(false);
 
-            /******************************************************************
-             * This code deletes all existing files in the model folder except*
-             * for the checkpoint folder, if it exists.                       *
-             ******************************************************************/
-            final IResource[] members = modelFolder.members();
-            // erase everything inside
-            if (members.length == 0)
-            {
-                monitor.worked(STEP);
-            } else
-            {
-                // Get the checkpoint folder in order to avoid
-                // deleting that folder.
-                // This ModelHelper method should return an array of
-                // size one because there should only be one checkpoint
-                // folder.
-                final IResource[] checkpoints = model.getCheckpoints(false);
+            ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
 
-                ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
+            // delete files
+            ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
 
-                // delete files
-                ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+                public void run(IProgressMonitor monitor) throws CoreException
+                {
 
-                    public void run(IProgressMonitor monitor) throws CoreException
+                    monitor.beginTask("Deleting files", members.length);
+                    // delete the members of the target
+                    // directory
+                    for (int i = 0; i < members.length; i++)
                     {
-
-                        monitor.beginTask("Deleting files", members.length);
-                        // delete the members of the target
-                        // directory
-                        for (int i = 0; i < members.length; i++)
+                        try
                         {
-                            try
+                            if ((checkpoints.length > 0 && checkpoints[0].equals(members[i]))
+                                    || members[i].getName().equals(ModelHelper.FILE_CFG)
+                                    || members[i].getName().equals(ModelHelper.FILE_TLA)
+                                    || members[i].getName().equals(ModelHelper.FILE_OUT)
+                                    || members[i].getName().equals(ModelHelper.TE_TRACE_SOURCE)
+									// Iff the model has been run with a module
+									// override, then there is a .class (and
+									// optionally a .java) file in the folder.
+                                    // We must not delete the .class file.
+                                    // The TraceExplorer won't work unless
+                                    // the module overrides also come with a
+                                    // pure TLA+ implementation.
+                                    || members[i].getName().endsWith(".class")
+                                    || members[i].getName().endsWith(".java"))
                             {
-                                if ((checkpoints.length > 0 && checkpoints[0].equals(members[i]))
-                                        || members[i].getName().equals(ModelHelper.FILE_CFG)
-                                        || members[i].getName().equals(ModelHelper.FILE_TLA)
-                                        || members[i].getName().equals(ModelHelper.FILE_OUT)
-                                        || members[i].getName().equals(ModelHelper.TE_TRACE_SOURCE)
-										// Iff the model has been run with a module
-										// override, then there is a .class (and
-										// optionally a .java) file in the folder.
-                                        // We must not delete the .class file.
-                                        // The TraceExplorer won't work unless
-                                        // the module overrides also come with a
-                                        // pure TLA+ implementation.
-                                        || members[i].getName().endsWith(".class")
-                                        || members[i].getName().endsWith(".java"))
-                                {
-                                    // We don't want to delete the checkpoints folder
-                                    // or any of the MC files or the MC_TE.out file.
-                                    continue;
-                                }
-                                members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
-                            } catch (CoreException e)
-                            {
-                                // catch the exception if
-                                // deletion failed, and just
-                                // ignore this fact
-                                // FIXME this should be fixed at
-                                // some later point in time
-                                TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
+                                // We don't want to delete the checkpoints folder
+                                // or any of the MC files or the MC_TE.out file.
+                                continue;
                             }
+                            members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                        } catch (CoreException e)
+                        {
+                            // catch the exception if
+                            // deletion failed, and just
+                            // ignore this fact
+                            // FIXME this should be fixed at
+                            // some later point in time
+                            TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
                         }
-                        monitor.done();
                     }
-                }, deleteRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
-            }
-            /******************************************************************
-             * Finished deleting files.                                       *
-             ******************************************************************/
-
-            /******************************************************************
-             * This code copies all spec module files to the model folder.    *
-             ******************************************************************/
-            monitor.subTask("Copying files");
-
-            // retrieve the root file
-            final IFile specRootFile = model.getSpec().getRootFile();
-            if (specRootFile == null)
-            {
-                // root module file not found
-                throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-                        "Error accessing the root module " + model.getSpec().getRootFilename()));
-            }
-
-            // copy
-            specRootFile.copy(targetFolderPath.append(specRootFile.getProjectRelativePath()), IResource.DERIVED
-                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
-            // find the result
-            IResource specRootFileCopy = modelFolder.findMember(specRootFile.getProjectRelativePath());
-
-            // react if no result
-            if (specRootFileCopy == null)
-            {
-                throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error copying "
-                        + model.getSpec().getRootFilename() + " into " + targetFolderPath.toOSString()));
-            }
-
-            ModelHelper.copyExtendedModuleFiles(specRootFile, targetFolderPath, monitor, STEP, project);
-
-            /******************************************************************
-             * Finished copying files.                                        *
-             ******************************************************************/
-
+                    monitor.done();
+                }
+            }, deleteRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
         }
+        /******************************************************************
+         * Finished deleting files.                                       *
+         ******************************************************************/
+
+        /******************************************************************
+         * This code copies all spec module files to the model folder.    *
+         ******************************************************************/
+        monitor.subTask("Copying files");
+
+        // retrieve the root file
+        final IFile specRootFile = model.getSpec().getRootFile();
+        if (specRootFile == null)
+        {
+            // root module file not found
+            throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                    "Error accessing the root module " + model.getSpec().getRootFilename()));
+        }
+
+        // copy
+        specRootFile.copy(targetFolderPath.append(specRootFile.getProjectRelativePath()), IResource.DERIVED
+                | IResource.FORCE, new SubProgressMonitor(monitor, 1));
+        // find the result
+        IResource specRootFileCopy = modelFolder.findMember(specRootFile.getProjectRelativePath());
+
+        // react if no result
+        if (specRootFileCopy == null)
+        {
+            throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error copying "
+                    + model.getSpec().getRootFilename() + " into " + targetFolderPath.toOSString()));
+        }
+
+        ModelHelper.copyExtendedModuleFiles(specRootFile, targetFolderPath, monitor, STEP, project);
+
+        /******************************************************************
+         * Finished copying files.                                        *
+         ******************************************************************/
+
 
         /***************************************************************************
          * Create the TE.tla, TE.cfg, and TE.out files if they don't exist and set *

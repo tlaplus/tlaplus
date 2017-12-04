@@ -98,19 +98,7 @@ public class StartLaunchHandler extends AbstractHandler {
 				modelEditor.doSaveWithoutValidating(new NullProgressMonitor());
 			}
 
-			// 2) model might be locked
-			if (model.isLocked()) {
-				boolean unlock = MessageDialog
-						.openQuestion(shell, "Unlock model?",
-								"The current model is locked, but has to be unlocked prior to launching. Should the model be unlocked?");
-				if (unlock) {
-					model.setLocked(false);
-				} else {
-					return null;
-				}
-			}
-
-			// 3) model might be stale
+			// 2) model might be stale
 			if (model.isStale()) {
 				boolean unlock = MessageDialog
 						.openQuestion(shell, "Repair model?",

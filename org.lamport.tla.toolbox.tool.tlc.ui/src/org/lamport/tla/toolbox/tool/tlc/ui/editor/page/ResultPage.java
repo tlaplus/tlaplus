@@ -721,7 +721,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 		 * @see org.eclipse.jface.action.Action#isEnabled()
 		 */
 		public boolean isEnabled() {
-			if (getModel().isLocked() || getModel().isRunning()) {
+			if (getModel().isRunning()) {
 				return false;
 			}
 			return super.isEnabled();
@@ -781,7 +781,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             {
                 if (inputElement != null && inputElement instanceof List)
                 {
-                    return ((List) inputElement).toArray(new Object[((List) inputElement).size()]);
+                    return ((List<?>) inputElement).toArray(new Object[((List<?>) inputElement).size()]);
                 }
                 return null;
             }
@@ -844,7 +844,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             {
                 if (inputElement != null && inputElement instanceof List)
                 {
-                    return ((List) inputElement).toArray(new Object[((List) inputElement).size()]);
+                    return ((List<?>) inputElement).toArray(new Object[((List<?>) inputElement).size()]);
                 }
                 return null;
             }
@@ -864,6 +864,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      * 
      * @return
      */
+    @SuppressWarnings("unchecked")  // generics cast
     public StateSpaceInformationItem[] getStateSpaceInformation()
     {
 		List<StateSpaceInformationItem> infoList = (List<StateSpaceInformationItem>) stateSpace.getInput();

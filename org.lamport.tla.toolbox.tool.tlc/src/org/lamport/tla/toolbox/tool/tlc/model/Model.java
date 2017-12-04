@@ -77,9 +77,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
-import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
@@ -102,17 +100,13 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
      */
 	private static final String IS_ORIGINAL_TRACE_SHOWN = "isOriginalTraceShown";
     /**
-     * marker on .launch file with boolean attribute modelIsRunning 
+     * marker on .launch file with boolean attribute modelIsRunning; only used for historic clean-ups as of 1.5.5
      */
 	private static final String TLC_MODEL_IN_USE_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
     /**
      * marker on .launch file, binary semantics
      */
     private static final String TLC_CRASHED_MARKER = "org.lamport.tla.toolbox.tlc.crashedModelMarker";
-    /**
-     * model is locked by a user lock
-     */
-    private static final String MODEL_IS_LOCKED = "modelIsLocked";
     /**
      * marker on .launch file, with boolean attribute isOriginalTraceShown
      */
@@ -312,25 +306,6 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		}
 	}
 
-	public int getAutoLockTime() {
-		try {
-			return this.launchConfig.getAttribute(IConfigurationConstants.LAUNCH_AUTO_LOCK_MODEL_TIME,
-					IModelConfigurationDefaults.MODEL_AUTO_LOCK_TIME_DEFAULT);
-		} catch (CoreException shouldNotHappen) {
-			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
-		}
-		return 0;
-	}
-
-	public void setAutoLockTime(int autoLockTime) {
-		try {
-			this.launchConfig.getWorkingCopy().setAttribute(IConfigurationConstants.LAUNCH_AUTO_LOCK_MODEL_TIME,
-					autoLockTime);
-		} catch (CoreException shouldNotHappen) {
-			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
-		}
-	}
-
 	public String getName() {
 		try {
 			return this.launchConfig.getAttribute(ModelHelper.MODEL_NAME, (String) null);
@@ -371,14 +346,6 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			recover();
 		}
 		notifyListener(new StateChangeListener.ChangeEvent(this, isRunning ? State.RUNNING : State.NOT_RUNNING));
-	}
-
-	public boolean isLocked() {
-		return isMarkerSet(TLC_MODEL_IN_USE_MARKER, MODEL_IS_LOCKED);
-	}
-	
-	public void setLocked(boolean isLocked) {
-		setMarker(TLC_MODEL_IN_USE_MARKER, MODEL_IS_LOCKED, isLocked);
 	}
 
     /**

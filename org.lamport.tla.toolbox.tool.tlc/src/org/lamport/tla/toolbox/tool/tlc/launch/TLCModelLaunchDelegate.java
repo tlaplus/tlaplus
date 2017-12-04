@@ -49,6 +49,7 @@ import org.lamport.tla.toolbox.tool.tlc.job.DistributedTLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
+import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
@@ -127,27 +128,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             return false;
         }
         
-        // check and lock the model
-        final Model model = config.getAdapter(Model.class);
-        synchronized (config)
-        {
-            // read out the running attribute
-            if (/*model.isRunning() || */model.isLocked())
-            {
-                // previous run has not been completed
-                // exit
-                throw new CoreException(
-                        new Status(
-                                IStatus.ERROR,
-                                TLCActivator.PLUGIN_ID,
-                                "The running attribute for "
-                                        + model.getName()
-                                        + " has been set to true or that model is locked. "
-                                        + "Another TLC is possible running on the same model, has been terminated non-gracefully "
-                                        + "or you tried to run TLC on a locked model. Running TLC on a locked model is not possible."));
-            }
-        }
-
         try
         {
             monitor.beginTask("Reading model parameters", 1);
@@ -362,8 +342,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             writer.addPrimer(ModelHelper.MC_MODEL_NAME, model.getSpec().getRootModuleName());
 
             // Sets constants to a Vector of the substitutions for the CONSTANT substitutions
-            List constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
-                    new Vector()));
+            List<Assignment> constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
+                    new Vector<String>()));
 
             // Sets modelValues to a TypedSet object whose value is a String array containing
             // the names of the model values declared on the Advanced model page.
@@ -389,8 +369,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             writer.addConstantsBis(constants, MODEL_PARAMETER_CONSTANTS);
 
             // Sets overrides to the Vector of definition overrides.
-            List overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
-                    new Vector()));
+            List<Assignment> overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
+                    new Vector<String>()));
             
             // For the definition overrides, it adds the definitions to the MC.tla file and the
             // overriding CONSTANT statements to the MC.cfg file.
@@ -474,12 +454,12 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             {
                 // invariants
                 writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
-                        MODEL_CORRECTNESS_INVARIANTS, new Vector()), ModelWriter.INVARIANT_SCHEME), "INVARIANT",
+                        MODEL_CORRECTNESS_INVARIANTS, new Vector<String>()), ModelWriter.INVARIANT_SCHEME), "INVARIANT",
                         MODEL_CORRECTNESS_INVARIANTS);
 
                 // properties
                 writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
-                        MODEL_CORRECTNESS_PROPERTIES, new Vector()), ModelWriter.PROP_SCHEME), "PROPERTY",
+                        MODEL_CORRECTNESS_PROPERTIES, new Vector<String>()), ModelWriter.PROP_SCHEME), "PROPERTY",
                         MODEL_CORRECTNESS_PROPERTIES);
             }
 
@@ -585,7 +565,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
                         // find the error cause and install the error marker on the corresponding
                         // field
-                        Hashtable props = ModelHelper.createMarkerDescription(document, searchAdapter,
+                        Hashtable<String, Object> props = ModelHelper.createMarkerDescription(document, searchAdapter,
                                 message, severity, coordinates);
                         if (props != null)
                         {
@@ -864,7 +844,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 	
 			
 			// TLC models seem to require some clean-up
-			model.setLocked(false);
 			model.setRunning(false);
 			model.recover();
 			
@@ -963,18 +942,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             	Assert.isTrue(event.getJob() instanceof TLCProcessJob);
             	Assert.isNotNull(event.getResult());
             	TLCProcessJob tlcJob = (TLCProcessJob) event.getJob();
-            	if (event.getResult().isOK())
-            	{
-            		int autoLockTime = model.getAutoLockTime();
-            		// auto lock time is in minutes, getTLCStartTime() and getTLCEndTime()
-            		// are in milliseconds
-            		if (tlcJob.getTlcEndTime() - tlcJob.getTlcStartTime() > autoLockTime * 60 * 1000)
-            		{
-            			// length of job execution exceeded a certain length of time
-            			// should lock
-            			model.setLocked(true);
-            		}
-            	}
+
 				if (!Status.CANCEL_STATUS.equals(event.getJob().getResult()) && tlcJob.getExitValue() > 0) {
 					// if TLC crashed with exit value > 0 and the user did *not*
 					// click cancel, mark the job as crashed.
