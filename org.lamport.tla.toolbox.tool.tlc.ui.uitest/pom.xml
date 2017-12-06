@@ -102,7 +102,7 @@
 						<dependency>
 							<type>p2-installable-unit</type>
 							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-							<version>1.1.100.v20140821-1915</version>
+							<version>1.2.0.v20160929-1449</version>
 						</dependency>
 						<dependency>
 							<type>p2-installable-unit</type>
@@ -116,7 +116,7 @@
 						<frameworkExtension>
 							<groupId>p2.osgi.bundle</groupId>
 							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-							<version>1.1.100.v20140821-1915</version>
+							<version>1.2.0.v20160929-1449</version>
 						</frameworkExtension>
 					</frameworkExtensions>
 
