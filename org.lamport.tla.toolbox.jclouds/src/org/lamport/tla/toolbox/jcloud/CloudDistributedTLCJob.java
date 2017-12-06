@@ -290,7 +290,7 @@ public class CloudDistributedTLCJob extends Job {
 					inGroup(groupNameUUID),
 					exec("/usr/bin/unattended-upgrades"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
-							false).blockOnComplete(false).blockUntilRunning(false));
+							false).blockOnComplete(true).blockUntilRunning(true));
 			monitor.worked(5);
 			final long provision = System.currentTimeMillis();
 
