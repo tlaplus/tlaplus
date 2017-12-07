@@ -29,7 +29,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.ui.navigator.CommonViewer;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.lifecycle.ToolboxLifecycleParticipant;
@@ -62,8 +61,7 @@ public class ToolboxExplorerResourceListener extends ToolboxLifecycleParticipant
 				// Afterwards, the users expanded states is preserved.
 				if (event == null && viewer != null) { // viewer might already be disposed which happens when the Toolbox shuts down.
 					final Spec specLoaded = Activator.getSpecManager().getSpecLoaded();
-					viewer.expandToLevel(specLoaded,
-							AbstractTreeViewer.ALL_LEVELS);
+					viewer.expandToLevel(specLoaded, ToolboxExplorer.DEFAULT_EXPAND_LEVEL);
 				}
 			}
 		});

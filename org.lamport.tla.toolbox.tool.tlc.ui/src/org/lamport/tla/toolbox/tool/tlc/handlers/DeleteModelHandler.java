@@ -1,6 +1,12 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
+import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -24,6 +30,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
 
 public class DeleteModelHandler extends AbstractHandler implements IHandler
 {
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
 
     /**
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
@@ -40,11 +47,9 @@ public class DeleteModelHandler extends AbstractHandler implements IHandler
 
         	// 1.) get confirmation from the user to delete all files/models
         	// if user cancels, just return
-        	int amountOfModels = iss.size();
 			boolean userConfirmedDeletion = MessageDialog.openQuestion(
 					UIHelper.getShell(), "Confirm Delete",
-					"Are you sure you want to delete " + amountOfModels
-							+ " model(s)?");
+					getLabel(iss));
 			if(!userConfirmedDeletion) {
 				return null;
 			}
@@ -120,4 +125,64 @@ public class DeleteModelHandler extends AbstractHandler implements IHandler
         }
         return null;
     }
+
+	private String getLabel(final IStructuredSelection iss) {
+		if (iss.size() > 1) {
+			// The selected models.
+			@SuppressWarnings("unchecked")
+			final List<Model> list = (List<Model>) iss.toList();
+			final Predicate<Model> p = Model::isSnapshot;
+			final Set<Model> models = list.stream().filter(p.negate()).collect(Collectors.toSet());
+
+			if (models.isEmpty()) {
+				// Only Snapshots are selected.
+				return String.format("Are you sure you want to delete the %s selected snapshots?", iss.size());
+			} else {
+				// The set of snapshots (either explicitly selected or implicit via parent
+				// model) to be deleted.
+				final Set<Model> allSnapshots = list.stream().map(Model::getSnapshots).flatMap(c -> c.stream())
+						.collect(Collectors.toSet());
+
+				if (models.size() > 1 && allSnapshots.isEmpty()) {
+					return String.format("Are you sure you want to delete the %s selected models?", iss.size());
+				} else {
+					// The set of selected snapshots to be deleted.
+					final Set<Model> selectedSnapshots = list.stream().filter(Model::isSnapshot)
+							.collect(Collectors.toSet());
+
+					if (models.size() == 1) {
+						// 1 Model with its snapshots and selected snapshots.
+						allSnapshots.addAll(selectedSnapshots);
+						return String.format("Are you sure you want to delete the select model '%s' and %s snapshot%s?",
+								models.iterator().next().getName(), allSnapshots.size(),
+								isPlural(allSnapshots));
+					} else {
+						// N models with M snapshots
+						allSnapshots.addAll(selectedSnapshots);
+						return String.format("Are you sure you want to delete %s models and %s snapshot%s?",
+								models.size(), allSnapshots.size(), isPlural(allSnapshots));
+					}
+				}
+			}
+		}
+		return getLabel((Model) iss.getFirstElement());
+	}
+	
+	private String getLabel(Model model) {
+		final Model snapshotFor = model.getSnapshotFor();
+		if (snapshotFor != model) {
+			return String.format("Are you sure you want to delete the snapshot of %s of model '%s'?",
+					sdf.format(model.getSnapshotTimeStamp()), snapshotFor.getName());
+		}
+		final Collection<Model> snapshots = model.getSnapshots();
+		if (!snapshots.isEmpty()) {
+			return String.format("Are you sure you want to delete the model '%s' and its %s snapshot%s?", model.getName(),
+					snapshots.size(), isPlural(snapshots));
+		}
+		return String.format("Are you sure you want to delete the model '%s'?", model.getName());
+	}
+	
+	private static String isPlural(final Collection<?> col) {
+		return col.size() > 1 ? "s" : "";
+	}
 }

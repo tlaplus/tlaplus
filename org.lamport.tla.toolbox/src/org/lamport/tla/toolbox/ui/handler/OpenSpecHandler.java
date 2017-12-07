@@ -8,7 +8,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.Activator;
@@ -81,8 +80,7 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
 		        		// Expand the spec's subitems (modules & models group and their subitems).
 						// getViewer() cannot return null here. After all, this listener
 						// is handling its double-click event.
-		        		ToolboxExplorer.getViewer().expandToLevel(spec, AbstractTreeViewer.ALL_LEVELS);
-
+						ToolboxExplorer.getViewer().expandToLevel(spec, ToolboxExplorer.DEFAULT_EXPAND_LEVEL); 
 						return Status.OK_STATUS;
 					}
 				};

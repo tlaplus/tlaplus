@@ -20,7 +20,7 @@ Require-Bundle: org.eclipse.core.runtime,
  javax.mail;bundle-version="1.4.0",
  com.abstratt.graphviz;bundle-version="2.1.201501",
  com.abstratt.graphviz.ui;bundle-version="2.1.201501"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: org.lamport.tla.toolbox.editor.basic
 Export-Package: org.lamport.tla.toolbox.tool.tlc.output;x-friends:="org.lamport.tla.toolbox.tool.tlc.ui.test",
