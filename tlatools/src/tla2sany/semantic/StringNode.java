@@ -6,6 +6,7 @@ import java.util.Hashtable;
 
 import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 
 import org.w3c.dom.Document;
@@ -47,6 +48,7 @@ public class StringNode extends ExprNode implements ExploreNode {
   public final UniqueString getRep() { return this.value; }
 
   /* Level Checking */
+  @Override
   public final boolean levelCheck(int iter) {
     levelChecked = iter;
       /*********************************************************************
@@ -81,11 +83,12 @@ public class StringNode extends ExprNode implements ExploreNode {
 //           "ArgLevelParams: "      + this.getArgLevelParams()      + "\n" ;
 //  }
 
-  public final void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
 
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
   }
 
   final String PrintVersion(String str) {
@@ -118,6 +121,7 @@ public class StringNode extends ExprNode implements ExploreNode {
     return buf.toString();
    }
 
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
     return "\n*StringNode: " + super.toString(depth)
@@ -125,7 +129,8 @@ public class StringNode extends ExprNode implements ExploreNode {
                              "'" + " Length: " + value.length();
   }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
       Element e = doc.createElement("StringValue");
       Node n = doc.createTextNode(value.toString());
       e.appendChild(n);

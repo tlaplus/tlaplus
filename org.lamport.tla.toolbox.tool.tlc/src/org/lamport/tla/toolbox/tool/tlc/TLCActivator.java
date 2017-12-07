@@ -9,10 +9,16 @@ import org.osgi.framework.BundleContext;
  */
 public class TLCActivator extends AbstractUIPlugin {
 	
+    // TODO This is the only constant used in our Preferences that is not declared in ITLCPreferenceConstants
+    //          because of package dependency issues. We should do something about that because this scattering
+    //          feels meh.
 	/**
-	 * Take a model snapshot when model checking finishes to create a history of model runs. 
+     * This preference is exposed through the Toolbox preference pane and allows the
+     * user to dictate how many snapshots are kept (with the oldest being pruned as
+     * this value is reached or exceeded.)  A value of 0 here means that no snapshot
+     * is taken as part of the pre-launch of TLC.
 	 */
-	public static final String I_TLC_SNAPSHOT_PREFERENCE = "takeModelSnapshot";
+    public static final String I_TLC_SNAPSHOT_KEEP_COUNT = "numberOfSnapshotsToKeep";
 	
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.tlc";
@@ -34,7 +40,6 @@ public class TLCActivator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		plugin.getPreferenceStore().setDefault(I_TLC_SNAPSHOT_PREFERENCE, true);
 	}
 
 	/*

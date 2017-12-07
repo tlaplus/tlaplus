@@ -28,6 +28,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
+import org.lamport.tla.toolbox.util.LegacyFileDocumentProvider;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tlc2.output.EC;
@@ -108,7 +109,12 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
          */
         IFile teFile = getModel().getTraceExplorerTLAFile();
         FileEditorInput teFileEditorInput = new FileEditorInput((IFile) teFile);
-        FileDocumentProvider teFileDocumentProvider = new FileDocumentProvider();
+		// Use LegacyFileDocumentProvider to fix race condition which causes Trace
+		// Explorer Exploration to label the expression as __trace_var_XXXXXXXX instead
+		// of the actual expression. The broken label is accompanied by an exception:
+        // java.lang.IllegalArgumentException: Attempted to beginRule: F/DijkstraMutex/Model_1, 
+        // does not match outer scope rule: org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate$MutexRule@1e6cad2d
+        FileDocumentProvider teFileDocumentProvider = new LegacyFileDocumentProvider();
         try
         {
 

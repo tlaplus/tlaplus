@@ -61,6 +61,6 @@ public class ChooseTableauSymmetryTestA extends ModelCheckerTestCase {
 		expectedTrace.add("arr = (a :> \"ready\" @@ b :> \"busy\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		assertBackToState(3, "<Action line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
+		assertBackToState(3, "<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
 	}
 }

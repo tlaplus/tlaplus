@@ -22,7 +22,11 @@ are scheduled and performed from the
 
 Checking the box at the top of the page enables automatic searching for and notification of available
 updates.&nbsp;  
-The rest of the preference page then allows you can schedule the search and notification.
+<p>
+You can also opt-in to receive experimental features of the TLA Toolbox and TLC. Note though, that 
+experimental features might not work as intended and can lead to bogus behavior. Not for the faint-hearted.</p>
+
+The rest of the preference page then allows you to schedule the search and notification.
 </p>
 <h3>Update schedule</h3>
 <p>You can choose among the following
@@ -30,15 +34,15 @@ schedules for checking for updates:</p>
 <ul>
   <li>No automatic search</li>
   <li>On each startup (default)</li>
-  <li>Every day at a specific time (e.g., 3:00PM) *</li>
-  <li>On a scheduled day of the week at a specific time (e.g., Monday 8:00AM) *</li>
+  <li>Every day at a specific time (e.g., 3:00PM)</li>
+  <li>On a scheduled day of the week at a specific time (e.g., Monday 8:00AM)</li>
 </ul>
 <p>If the Toolbox is not running at the
 scheduled time, the search will be done when the Toolbox is next started. 
 
 </p>
 <h3>Download options</h3>
-<p>If you schedules for updates to be checked, you can choose whether or not
+<p>If you schedule for updates to be checked, you can choose whether or not
   to download (but not install) the new updates before notifying you.
 </p>
 
@@ -48,6 +52,34 @@ scheduled time, the search will be done when the Toolbox is next started.
  
 If you  defer the update, a preference determines if the notification pops up
 again and, if so, when.
+
+<!-- Some content reused from https://help.eclipse.org/oxygen/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2Freference%2Fref-net-preferences.htm -->
+
+<h3>Network Connections</h3>
+If your network environment requires you to setup proxy servers to connect to the internet, you can do so on the
+Network Connections preference page found under <strong>General > Network Connections</strong>.
+
+The <i>Active Provider</i> instructs the Toolbox to use no proxy server (Direct), use the system's proxy server 
+(Native) or the manually defined ones (Manual). 
+
+<ul>
+  <li>Choosing the <i>Direct</i> provider causes all the connections to be opened without the use of a proxy server.</li>
+  <li><i>Native</i> causes settings that were discovered in the operating system to be used (does not work on macOS).</li>
+  <li>Selecting <i>Manual</i> causes settings defined in the <i>Proxy entries</i> table below to be used.</li>
+</ul>
+
+<p>
+When using the Manual provider there are three predefined schemas to set settings for: HTTP, HTTPS and SOCKS.
+Configuration for each schema is displayed in the <i>Proxy entries</i> table. To edit settings for a particular
+schema double-click the entry or select the entry and click Edit... button.
+</p>
+
+<p>
+The <i>Proxy bypass</i> table is only relevant for advanced use cases when different proxies need to be configured
+to access different computers on the internet. Most users can ignore the <i>Proxy bypass</i> table.
+</p>
+
+Please ask your network administrator if the Toolbox fails to access the internet and you do not know what to enter.
 
 <hr>
 <a href="run-update.html">&uarr; Updating the Toolbox</a>

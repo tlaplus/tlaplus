@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -17,6 +18,7 @@ import javax.activation.FileDataSource;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
+import javax.mail.SendFailedException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
@@ -42,32 +44,45 @@ public class MailSender {
 	/**
 	 * @param from "Foo bar <foo@bar.com>"
 	 * @param to An email address _with_ domain part (foo@bar.com)
-	 * @param domain domain part (bar.com). Used to lookup mx records
 	 * @param subject
 	 * @param messages
 	 */
-	private static boolean send(final String from, final String to,
-			final String domain, final String subject, final String body, final File[] files) {
+	private static boolean send(final InternetAddress from, final InternetAddress to, final String subject, final String body, final File[] files) {
 		
+		// https://javaee.github.io/javamail/docs/api/com/sun/mail/smtp/package-summary.html
 		final Properties properties = System.getProperties();
+		// Prefer email to be delivered encrypted (assumes to lower likelihood of SMTP
+		// rejection or classification as spam too). Falls back to plain text if SMTP
+		// server does not support starttls.
+		properties.put("mail.smtp.starttls.enable", "true");
 		//properties.put("mail.debug", "true");
 		
+		if (!to.getAddress().contains("@")) {
+			// no domain, no MX record to lookup
+			return false;
+		}
+		List<MXRecord> mailhosts;
 		try {
-			final List<MXRecord> mailhosts = getMXForDomain(domain);
+			mailhosts = getMXForDomain(to.getAddress().split("@")[1]);
+		} catch (NamingException e) {
+			e.printStackTrace();
+			return false;
+		}
 				
-			// retry all mx host
-			for (MXRecord mxRecord : mailhosts) {
-				properties.put("mail.smtp.host", mxRecord.hostname);
-				
+		// retry all mx host
+		for (int i = 0; i < mailhosts.size(); i++) {
+			final MXRecord mxRecord = mailhosts.get(i);
+			properties.put("mail.smtp.host", mxRecord.hostname);
+			try {
 				final Session session = Session.getDefaultInstance(properties);
 				final Message msg = new MimeMessage(session);
-				msg.setFrom(new InternetAddress(from));
-				msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+				msg.setFrom(from);
+				msg.addRecipient(Message.RecipientType.TO, to);
 				msg.setSubject(subject);
 				
 				// not sure why the extra body part is needed here
 				MimeBodyPart messageBodyPart = new MimeBodyPart();
-
+	
 				final Multipart multipart = new MimeMultipart();
 				
 				// The main body part. Having a main body appears to have a very
@@ -77,7 +92,7 @@ public class MailSender {
 				messageBodyPart = new MimeBodyPart();
 				messageBodyPart.setContent(body, "text/plain");
 				multipart.addBodyPart(messageBodyPart);
-
+	
 				// attach file(s)
 				for (File file : files) {
 					if (file == null) {
@@ -94,15 +109,37 @@ public class MailSender {
 				
 		        Transport.send(msg);
 				return true;
+			} catch (SendFailedException e) {
+				final Exception next = e.getNextException();
+				if (next != null && next.getMessage() != null && next.getMessage().toLowerCase().contains("greylist")
+						&& !properties.containsKey((String) properties.get("mail.smtp.host") + ".greylisted")) {
+					// mark receiver as greylisted to not retry over and over again.
+					properties.put((String) properties.get("mail.smtp.host") + ".greylisted", "true");
+					throttleRetry(String.format(
+							"%s EMail Report: Detected greylisting when sending to %s at %s, will retry in %s minutes...",
+							new Date(), to.getAddress(), mxRecord.hostname, 10L), 10L);
+					i = i - 1;
+				} else {
+					throttleRetry(String.format(
+							"%s EMail Report: Slowing down due to errors when sending to %s at %s, will continue in 1 minute...",
+							new Date(), to.getAddress(), mxRecord.hostname, 1L), 1L);
+				}
+			} catch (AddressException e) {
+				e.printStackTrace();
+			} catch (MessagingException e) {
+				e.printStackTrace();
 			}
-		} catch (NamingException e) {
-			e.printStackTrace();
-		} catch (AddressException e) {
-			e.printStackTrace();
-		} catch (MessagingException e) {
-			e.printStackTrace();
 		}
 		return false;
+	}
+	
+	private static void throttleRetry(final String msg, long minutes) {
+		try {
+			System.err.println(msg);
+			Thread.sleep(minutes * 60L * 1000L);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	private static List<MXRecord> getMXForDomain(String aDomain) throws NamingException {
@@ -149,37 +186,45 @@ public class MailSender {
 			return weight.compareTo(o.weight);
 		}
 	}
+	
+	// For testing only.
+	public static void main(String[] args) throws AddressException, FileNotFoundException, UnknownHostException {
+		MailSender mailSender = new MailSender();
+		mailSender.send();
+	}
 
-	// if null, no Mail is going to be send
-	private final String mailto;
 	
 	private String modelName = "unknown model";
 	private String specName = "unknown spec";
 	private File err;
 	private File out;
-	private String from;
-	private String domain;
+	// if null, no Mail is going to be send
+	private InternetAddress[] toAddresses;
+	private InternetAddress from;
+	private InternetAddress fromAlt;
 
-	public MailSender() throws FileNotFoundException, UnknownHostException {
+	public MailSender() throws FileNotFoundException, UnknownHostException, AddressException {
 		ModelInJar.loadProperties(); // Reads result.mail.address and so on.
-		mailto = System.getProperty(MAIL_ADDRESS);
+		final String mailto = System.getProperty(MAIL_ADDRESS);
 		if (mailto != null) {
-			domain = mailto.split("@")[1];
+			this.toAddresses = InternetAddress.parse(mailto);
 			
-			from = "TLC - The friendly model checker <"
+			this.from = new InternetAddress("TLC - The friendly model checker <"
+					+ toAddresses[0].getAddress() + ">");
+			this.fromAlt = new InternetAddress("TLC - The friendly model checker <"
 					+ System.getProperty("user.name") + "@"
-					+ InetAddress.getLocalHost().getHostName() + ">";
+					+ InetAddress.getLocalHost().getHostName() + ">");
 			
 			// Record/Log output to later send it by email
 			final String tmpdir = System.getProperty("java.io.tmpdir");
-			out = new File(tmpdir + File.separator + "MC.out");
+			this.out = new File(tmpdir + File.separator + "MC.out");
 			ToolIO.out = new LogPrintStream(out);
-			err = new File(tmpdir + File.separator + "MC.err");
+			this.err = new File(tmpdir + File.separator + "MC.err");
 			ToolIO.err = new LogPrintStream(err);
 		}
 	}
 	
-	public MailSender(String mainFile) throws FileNotFoundException, UnknownHostException {
+	public MailSender(String mainFile) throws FileNotFoundException, UnknownHostException, AddressException {
 		this();
 		setModelName(mainFile);
 	}
@@ -197,15 +242,26 @@ public class MailSender {
 	}
 
 	public boolean send(List<File> files) {
-		if (mailto != null) {
+		if (toAddresses != null) {
 			files.add(0, out);
 			// Only add the err file if there is actually content 
 			if (err.length() != 0L) {
 				files.add(0, err);
 			}
-			// Try sending the mail with the model checking result to the receiver 
-			return send(from, mailto, domain, "Model Checking result for " + modelName + " with spec " + specName,
-					extractBody(out), files.toArray(new File[files.size()]));
+			// Try sending the mail with the model checking result to the receivers. Returns
+			// true if a least one email was delivered successfully.
+			boolean success = false;
+			for (final InternetAddress toAddress : toAddresses) {
+				if (send(from, toAddress, "Model Checking result for " + modelName + " with spec " + specName,
+						extractBody(out), files.toArray(new File[files.size()]))) {
+					success = true;
+				} else if (send(fromAlt, toAddress, "Model Checking result for " + modelName + " with spec " + specName,
+						extractBody(out), files.toArray(new File[files.size()]))) {
+					// Try with alternative from address which some receivers might actually accept.
+					success = true;
+				}
+			}
+			return success;
 		} else {
 			// ignore, just signal everything is fine
 			return true;

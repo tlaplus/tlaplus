@@ -59,15 +59,15 @@ public class ModelContentProvider implements ITreeContentProvider {
 				UIHelper.runUISync(new Runnable() {
 					@Override
 					public void run() {
-						final Model snapshot = event.getModel();
-						final Model parent = snapshot.getSnapshotFor();
-						// The CommonViewer is stupid in that it accesses an element (snapshot) even
+						final Model model = event.getModel();
+						final TLCSpec parent = model.getSpec();
+						// The CommonViewer is stupid in that it accesses an element (model) even
 						// after it has been removed in order to update the viewer's current selection.
 						// Since we have to prevent this access to avoid a null pointer, we explicitly
 						// reset the selection.
 						getViewer().setSelection(new StructuredSelection(parent));
 						// ...still remove the element from the tree.
-						getViewer().remove(parent, new Object[] {snapshot});
+						getViewer().remove(parent, new Object[] {model});
 					}
 				});
 			}
@@ -84,7 +84,13 @@ public class ModelContentProvider implements ITreeContentProvider {
 				return new Group[] {new Group((Spec) parentElement, models.toArray(new Model[models.size()]))};
 			}
 		} else if (parentElement instanceof Group) {
-			return ((Group) parentElement).getModels();
+			// Attach the model listener above to each model instance to be notified of
+			// state changes, especially model deletion (see comment above).
+			final Model[] models = ((Group) parentElement).getModels();
+			for (Model model : models) {
+				model.add(modelChangeListener);
+			}
+			return models;
 		} else if (parentElement instanceof Model) {
 			final Collection<Model> snapshots = ((Model) parentElement).getSnapshots();
 			for (final Model model : snapshots) {

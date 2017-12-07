@@ -67,16 +67,6 @@ public class DeleteModelHandler extends AbstractHandler implements IHandler
 											+ ", because it is being model checked.");
 					return null;
 				}
-				if(model.isLocked()) {
-					MessageDialog
-							.openError(
-									UIHelper.getShell(),
-									"Could not delete a model",
-									"Could not delete the model "
-											+ model.getName()
-											+ ", because it is currently locked.");
-					return null;
-				}
 			}
 			
 			// 3.) at this point, we are safe to delete all models (user has

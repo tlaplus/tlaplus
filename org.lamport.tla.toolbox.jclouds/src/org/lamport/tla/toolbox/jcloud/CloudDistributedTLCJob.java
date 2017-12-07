@@ -61,6 +61,7 @@ import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.rest.AuthorizationException;
 import org.jclouds.scriptbuilder.statements.login.AdminAccess;
 import org.jclouds.ssh.SshClient;
+import org.jclouds.ssh.SshException;
 import org.jclouds.sshj.config.SshjSshClientModule;
 import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
@@ -204,12 +205,16 @@ public class CloudDistributedTLCJob extends Job {
                             // Don't want dpkg to require user interaction.
 							+ "export DEBIAN_FRONTEND=noninteractive"
 							+ " && "
+							+ params.getHostnameSetup()
+							+ " && "
 							// Oracle Java 8
 							+ "add-apt-repository ppa:webupd8team/java -y && "
 							// Accept license before apt (dpkg) tries to present it to us (which fails due to 'noninteractive' mode below)
 							// see http://stackoverflow.com/a/19391042
 							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections && "
 							+ "echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections && "
+							+ params.getExtraRepositories()
+							+ " && "
 							// Update Ubuntu's package index. The public/remote
 							// package mirrors might have updated. Without
 							// update, we might try to install outdated packages
@@ -248,7 +253,8 @@ public class CloudDistributedTLCJob extends Job {
 							// worker tla2tools.jar (strip spec) and
 							// unattended-upgrades makes sure the instance
 							// is up-to-date security-wise. 
-							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades oracle-java8-installer oracle-java8-set-default -y"
+							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades oracle-java8-installer oracle-java8-set-default "
+									+ params.getExtraPackages() + " -y"
 							+ " && "
 							// Delegate file system tuning to cloud specific code.
 							+ params.getOSFilesystemTuning()
@@ -284,7 +290,7 @@ public class CloudDistributedTLCJob extends Job {
 					inGroup(groupNameUUID),
 					exec("/usr/bin/unattended-upgrades"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
-							false).blockOnComplete(false).blockUntilRunning(false));
+							false).blockOnComplete(true).blockUntilRunning(true));
 			monitor.worked(5);
 			final long provision = System.currentTimeMillis();
 
@@ -342,6 +348,12 @@ public class CloudDistributedTLCJob extends Job {
 						+ "-jar /tmp/tla2tools.jar " 
 						+ params.getTLCParameters() + " "
 						+ "&& "
+					// Run any cloud specific cleanup tasks.
+					// When CloudDistributedTLCJob runs in synchronous CLI mode (isCLI), it will destroy
+					// the VMs (nodes) via the jclouds API. No need to deallocate nodes
+					// via special logic.
+					+ (isCLI ? "/bin/true" : params.getCloudAPIShutdown())
+					+ " && "
 					// Let the machine power down immediately after
 					// finishing model checking to cut costs. However,
 					// do not shut down (hence "&&") when TLC finished
@@ -455,6 +467,9 @@ public class CloudDistributedTLCJob extends Job {
 								// to a NoRouteToHostException when the master
 								// shut down caused by a violation among the
 								// init states.
+					            // Run any cloud specific cleanup tasks.
+					            + params.getCloudAPIShutdown()
+					            + " && "
 								+ "sudo shutdown -h now"
 								+ "\""), 
 						new TemplateOptions().runAsRoot(false).wrapInInitScript(
@@ -481,7 +496,7 @@ public class CloudDistributedTLCJob extends Job {
 							hostname,
 							props.get("result.mail.address")), null, new URL(
 							"http://" + hostname + "/munin/"));
-		} catch (RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException e) {
+		} catch (RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException|SshException e) {
 			e.printStackTrace();
 			if (context != null) {
 				destroyNodes(context, groupNameUUID);

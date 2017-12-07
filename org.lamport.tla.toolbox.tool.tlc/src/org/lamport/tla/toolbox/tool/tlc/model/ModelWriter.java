@@ -235,6 +235,10 @@ public class ModelWriter
         // symmetry
         if (!symmetrySets.isEmpty())
         {
+            // @see tlc2.module.MC
+            tlaBuffer.append(COMMENT).append("Constant expression helper definition of Permutations for symmetry sets.").append(CR);
+       		tlaBuffer.append("LOCAL MCPermutations(S) == TRUE").append(CR).append(CR);
+       		
             String label = ModelWriter.getValidIdentifier(SYMMETRY_SCHEME);
 
             tlaBuffer.append(COMMENT).append("SYMMETRY definition").append(CR);
@@ -244,7 +248,7 @@ public class ModelWriter
             // symmetric model value sets added
             for (int i = 0; i < symmetrySets.size(); i++)
             {
-                tlaBuffer.append("Permutations(").append(symmetrySets.get(i)).append(")");
+                tlaBuffer.append("MCPermutations(").append(symmetrySets.get(i)).append(")");
                 if (i != symmetrySets.size() - 1)
                 {
                     tlaBuffer.append(" \\union ");
@@ -1086,10 +1090,21 @@ public class ModelWriter
      * @param expression
      * @param attributeName
      */
-    public void addConstantExpressionEvaluation(String expression, String attributeName)
+    public void addConstantExpressionEvaluation(String expression, String attributeName, final boolean definePrintT, final boolean definePrint)
     {
         if (!((expression.trim().length()) == 0))
         {
+            // @see tlc2.module.MC
+            if (definePrintT || definePrint) {
+                tlaBuffer.append(COMMENT).append("Constant expression helper definition of PrintT and Print.").append(CR);
+            	if (definePrintT) {
+            		tlaBuffer.append("LOCAL MCPrintT(out) == TRUE").append(CR);
+            	}
+            	if (definePrint) {
+            		tlaBuffer.append("LOCAL MCPrint(out, val) == val").append(CR);
+            	}
+                tlaBuffer.append(SEP).append(CR).append(CR);
+            }
             /*
              *  Identifier definition
              *  We define an identifier for more sensible error messages
@@ -1117,7 +1132,7 @@ public class ModelWriter
             // value of the constant expression in the TLC output
             tlaBuffer.append(COMMENT).append("Constant expression ASSUME statement ").append(ATTRIBUTE).append(
                     attributeName).append(CR);
-            tlaBuffer.append("ASSUME PrintT(").append(BEGIN_TUPLE).append(CONSTANT_EXPRESSION_EVAL_IDENTIFIER).append(
+            tlaBuffer.append("ASSUME MCPrintT(").append(BEGIN_TUPLE).append(CONSTANT_EXPRESSION_EVAL_IDENTIFIER).append(
                     COMMA).append(id).append(END_TUPLE).append(")").append(CR);
             tlaBuffer.append(SEP).append(CR).append(CR);
         }

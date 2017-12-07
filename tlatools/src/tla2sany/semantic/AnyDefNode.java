@@ -39,14 +39,14 @@ public interface AnyDefNode {
     public boolean getOpLevelCond(int i, int j, int k) ;
     public int getLevel() ;
     public int getWeight(int i) ;
-    public HashSet getLevelParams() ;
-    public HashSet getAllParams() ;
-    public HashSet getNonLeibnizParams() ;
+    public HashSet<SymbolNode> getLevelParams() ;
+    public HashSet<SymbolNode> getAllParams() ;
+    public HashSet<SymbolNode> getNonLeibnizParams() ;
     public int getArity() ;
     public boolean[] getIsLeibnizArg() ;
     public boolean getIsLeibniz() ;
     public SetOfLevelConstraints getLevelConstraints() ;
-    public HashSet getArgLevelParams() ;
+    public HashSet<ArgLevelParam> getArgLevelParams() ;
     public SetOfArgLevelConstraints getArgLevelConstraints() ;
     public FormalParamNode[] getParams() ;
 }

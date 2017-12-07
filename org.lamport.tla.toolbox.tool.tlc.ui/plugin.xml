@@ -67,6 +67,11 @@
                name="modelLaunchName"
                optional="false">
          </commandParameter>
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.open.param.expand.properties"
+               name="expandPropertiesSection"
+               optional="true">
+         </commandParameter>
       </command>
       <command
             categoryId="toolbox.tool.tlc.commands.category"
@@ -770,12 +775,6 @@ Console Facory
             class="org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferencePage"
             id="toolbox.ui.preferences.TLCPreferencePage"
             name="TLC Model Checker">
-      </page>
-      <page
-            category="toolbox.ui.preferences.GeneralPreferencePage"
-            class="com.abstratt.graphviz.ui.GraphVizPreferencePage"
-            id="toolbox.ui.preferences.StateGraphPreferences"
-            name="State Graph">
       </page>
    </extension>
    <extension

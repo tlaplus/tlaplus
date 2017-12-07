@@ -57,6 +57,9 @@ public class TLA2TeXPreferencePage extends FieldEditorPreferencePage implements
 				ITLA2TeXPreferenceConstants.NUMBER_LINES, "&Number lines",
 				getFieldEditorParent()));
 		addField(new StringFieldEditor(
+				ITLA2TeXPreferenceConstants.DOT_COMMAND,
+				"&Specify dot command", getFieldEditorParent()));
+		addField(new StringFieldEditor(
 				ITLA2TeXPreferenceConstants.LATEX_COMMAND,
 				"&Specify pdflatex command", getFieldEditorParent()));
 		addField(new DoubleFieldEditor(ITLA2TeXPreferenceConstants.GRAY_LEVEL,

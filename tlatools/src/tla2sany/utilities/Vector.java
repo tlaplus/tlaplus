@@ -2,7 +2,7 @@
 package tla2sany.utilities;
 import java.util.Enumeration;
 
-public class Vector {
+public class Vector<E> {
   static int defaultSize = 10;
   
   protected Object info[];
@@ -38,7 +38,7 @@ public class Vector {
   }
   */
 
-  public final void addElement( Object obj ) {
+  public final void addElement( E obj ) {
     if (size == capacity) {
       Object next[] = new Object[ capacity + increment ];
       System.arraycopy( info, 0, next, 0, capacity );
@@ -49,19 +49,22 @@ public class Vector {
     size++;
   }
 
-  public final Object firstElement() {
-    return info[0];
+  @SuppressWarnings("unchecked")
+  public final E firstElement() {
+    return (E)info[0];
   }
 
-  public final Object lastElement() {
-    return info[ size-1 ];
+  @SuppressWarnings("unchecked")
+  public final E lastElement() {
+    return (E)info[ size-1 ];
   }
 
-  public final Object elementAt(int i) {
+  @SuppressWarnings("unchecked")
+  public final E elementAt(int i) {
     if (i < 0 || i >= size )
       throw new ArrayIndexOutOfBoundsException();
     else
-      return info[ i ];
+      return (E)info[ i ];
   }
 
   public final void removeAllElements() {
@@ -82,7 +85,7 @@ public class Vector {
     }
   }
 
-  public final void insertElementAt( Object obj, int i ) {
+  public final void insertElementAt( E obj, int i ) {
     if (i < 0 || i >= size )
       throw new ArrayIndexOutOfBoundsException();
     else if (size == capacity) {
@@ -100,25 +103,25 @@ public class Vector {
     size++;
   }
 
-  public final void setElementAt( Object obj, int i ) {
+  public final void setElementAt( E obj, int i ) {
     if (i < 0 || i >= size )
       throw new ArrayIndexOutOfBoundsException();
     else 
       info[ i ] = obj;
   }
 
-  public final boolean contains (Object obj) {
+  public final boolean contains (E obj) {
     for (int i = 0; i < size; i++) {
       if ( info[ i ] == obj ) return true;
     }
     return false; 
   }
 
-  public final Enumeration elements() {
-    return new VectorEnumeration( info, size );
+  public final Enumeration<E> elements() {
+    return new VectorEnumeration<E>( info, size );
   }
 
-  public final void append( Vector v ) {
+  public final void append( Vector<E> v ) {
     if ( v.size + size  > capacity ) {
       Object neo[] = new Object[ capacity + v.capacity ];
       capacity += v.capacity;
@@ -132,12 +135,13 @@ public class Vector {
   // Like the append method above, but elements of v will not be added to THIS Vector 
   // if they are already present at least once; repeated elements already in 
   // THIS Vector, however, will not be removed.
-  public final void appendNoRepeats(Vector v) {
+  public final void appendNoRepeats(Vector<E> v) {
     for (int i = 0; i < v.size(); i++) {
       if ( ! this.contains(v.elementAt(i)) ) this.addElement(v.elementAt(i));
     }
   }
 
+  @Override
   public final String toString() {
     String ret;
     ret = "[ ";

@@ -135,4 +135,20 @@ public abstract class CloudTLCInstanceParameters {
 				+ "-XX:+DebugNonSafepoints "
 				+ "-XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/mnt/tlc,dumponexit=true,dumponexitpath=/mnt/tlc/tlc.jfr,maxage=12h";
 	}
+
+	public String getHostnameSetup() {
+		return "/bin/true"; // no-op, because concat with && ... && in CDTJ.
+	}
+
+	public String getCloudAPIShutdown() {
+		return "/bin/true"; // no-op, because concat with && ... && in CDTJ.
+	}
+
+	public String getExtraRepositories() {
+		return "/bin/true"; // no-op, because concat with && ... && in CDTJ.
+	}
+
+	public String getExtraPackages() {
+		return ""; // no-op, because concat with && ... && in CDTJ.
+	}
 }

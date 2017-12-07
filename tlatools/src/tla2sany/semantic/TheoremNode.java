@@ -15,8 +15,10 @@ package tla2sany.semantic;
 
 import java.util.Hashtable;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
+import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 
 import org.w3c.dom.Document;
@@ -112,7 +114,8 @@ public class TheoremNode extends LevelNode {
   /* (non-Javadoc)
  * @see tla2sany.semantic.LevelNode#levelCheck(int)
  */
-public final boolean levelCheck(int iter) {
+  @Override
+  public final boolean levelCheck(int iter) {
     if (levelChecked >= iter) {return true ;} ;
     levelChecked = iter;
     LevelNode sub[] ;
@@ -318,6 +321,7 @@ public final boolean levelCheck(int iter) {
    * toString, levelDataToString, and walkGraph methods to implement
    * ExploreNode interface
    */
+  @Override
   public final String levelDataToString() {
     return "Level: "               + this.getLevel()               + "\n" +
            "LevelParameters: "     + this.getLevelParams()         + "\n" +
@@ -326,6 +330,7 @@ public final boolean levelCheck(int iter) {
            "ArgLevelParams: "      + this.getArgLevelParams()      + "\n";
   }
 
+  @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
     String res =
@@ -358,6 +363,7 @@ public final boolean levelCheck(int iter) {
    * The children are the statement and the proof (if there is one).
    */
 
+  @Override
   public SemanticNode[] getChildren() {
     if (this.proof == null) {
     return new SemanticNode[] {this.theoremExprOrAssumeProve};
@@ -366,7 +372,8 @@ public final boolean levelCheck(int iter) {
                                this.proof};
   }
 
-  public final void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
@@ -384,7 +391,7 @@ public final boolean levelCheck(int iter) {
 
   /* MR: This is the same as SymbolNode.exportDefinition. Exports the actual theorem content, not only a reference.
    */
-  public Element exportDefinition(Document doc, tla2sany.xml.SymbolContext context) {
+  public Element exportDefinition(Document doc, SymbolContext context) {
     //makes sure that the we are creating an entry in the database
     if (!context.isTop_level_entry())
       throw new IllegalArgumentException("Exporting theorem ref "+getNodeRef()+" twice!");
@@ -440,7 +447,8 @@ public final boolean levelCheck(int iter) {
   }
 
   /* overrides LevelNode.export and exports a UID reference instad of the full version*/
-  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  public Element export(Document doc, SymbolContext context) {
     // first add symbol to context
     context.put(this, doc);
     Element e = doc.createElement(getNodeRef());

@@ -51,12 +51,11 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 
 	@Override
 	public String getImageId() {
-		// Ubuntu 64bit 14.04.4 Trusty paravirtual/instance-store release
-		// https://cloud-images.ubuntu.com/releases/14.04/release/
-		// or http://cloud-images.ubuntu.com/locator/ec2/
+		// Ubuntu 64bit 16.04 Xenial
+		// http://cloud-images.ubuntu.com/locator/ec2/
 		// See http://aws.amazon.com/amazon-linux-ami/instance-type-matrix/
 		// for paravirtual vs. hvm
-		return getRegion() + "/ami-1014206b"; // "xenial,amd64,hvm:instance-store"
+		return getRegion() + "/ami-2931b953"; // "us-east-1,xenial,amd64,hvm:instance-store"
 	}
 
 	@Override
@@ -126,5 +125,13 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		+ "echo \"/dev/md127 /mnt ext4 defaults 0 0\" >> /etc/fstab && "
 		+ "/sbin/mkfs.ext4 -O ^has_journal /dev/md0 && "
 		+ "mount /dev/md0 /mnt";
+	}
+
+	@Override
+	public String getHostnameSetup() {
+		// Lookup public ipv4 hostname and configure /etc/hosts accordingly. Otherwise,
+		// MailSender uses the internal name which increases likelihood of email being
+		// classified/rejected as spam.
+		return "echo \"$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4) $(curl -s http://169.254.169.254/latest/meta-data/public-hostname)\" >> /etc/hosts && hostname $(curl -s http://169.254.169.254/latest/meta-data/public-hostname)";
 	}
 }

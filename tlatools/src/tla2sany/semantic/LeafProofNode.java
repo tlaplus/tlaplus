@@ -3,8 +3,10 @@ package tla2sany.semantic;
 
 import java.util.Hashtable;
 
+import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
+import tla2sany.xml.SymbolContext;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -70,6 +72,7 @@ public class LeafProofNode extends ProofNode {
   public boolean getOmitted() {return omitted ;} ;
   public boolean getOnlyFlag() {return isOnly ;} ;
 
+  @Override
   public boolean levelCheck(int iter) {
     /***********************************************************************
     * Level checking is performed by level-checking the facts.  Since the  *
@@ -84,6 +87,7 @@ public class LeafProofNode extends ProofNode {
    * The children are the facts.
    * @see tla2sany.semantic.SemanticNode#getChildren()
    */
+  @Override
   public SemanticNode[] getChildren() {
       if (this.facts == null || this.facts.length == 0) {
           return null;
@@ -95,10 +99,11 @@ public class LeafProofNode extends ProofNode {
       return res;
    }
 
-  public void walkGraph(Hashtable semNodesTable) {
+  @Override
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(uid, this);
     for (int  i = 0; i < facts.length; i++) {
       facts[i].walkGraph(semNodesTable);
       } ;
@@ -108,6 +113,7 @@ public class LeafProofNode extends ProofNode {
     ***********************************************************************/
    }
 
+  @Override
   public String toString(int depth) {
     if (depth <= 0) return "";
     String ret = "\n*LeafProofNode:\n"
@@ -125,7 +131,8 @@ public class LeafProofNode extends ProofNode {
     return ret;
    }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  @Override
+  protected Element getLevelElement(Document doc, SymbolContext context) {
     Element e;
 
     if (getOmitted()) {

@@ -29,8 +29,10 @@ package org.lamport.tla.toolbox.tool.tlc.model;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -75,9 +77,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
-import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
@@ -100,17 +100,13 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
      */
 	private static final String IS_ORIGINAL_TRACE_SHOWN = "isOriginalTraceShown";
     /**
-     * marker on .launch file with boolean attribute modelIsRunning 
+     * marker on .launch file with boolean attribute modelIsRunning; only used for historic clean-ups as of 1.5.5
      */
 	private static final String TLC_MODEL_IN_USE_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
     /**
      * marker on .launch file, binary semantics
      */
     private static final String TLC_CRASHED_MARKER = "org.lamport.tla.toolbox.tlc.crashedModelMarker";
-    /**
-     * model is locked by a user lock
-     */
-    private static final String MODEL_IS_LOCKED = "modelIsLocked";
     /**
      * marker on .launch file, with boolean attribute isOriginalTraceShown
      */
@@ -310,25 +306,6 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		}
 	}
 
-	public int getAutoLockTime() {
-		try {
-			return this.launchConfig.getAttribute(IConfigurationConstants.LAUNCH_AUTO_LOCK_MODEL_TIME,
-					IModelConfigurationDefaults.MODEL_AUTO_LOCK_TIME_DEFAULT);
-		} catch (CoreException shouldNotHappen) {
-			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
-		}
-		return 0;
-	}
-
-	public void setAutoLockTime(int autoLockTime) {
-		try {
-			this.launchConfig.getWorkingCopy().setAttribute(IConfigurationConstants.LAUNCH_AUTO_LOCK_MODEL_TIME,
-					autoLockTime);
-		} catch (CoreException shouldNotHappen) {
-			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
-		}
-	}
-
 	public String getName() {
 		try {
 			return this.launchConfig.getAttribute(ModelHelper.MODEL_NAME, (String) null);
@@ -369,14 +346,6 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			recover();
 		}
 		notifyListener(new StateChangeListener.ChangeEvent(this, isRunning ? State.RUNNING : State.NOT_RUNNING));
-	}
-
-	public boolean isLocked() {
-		return isMarkerSet(TLC_MODEL_IN_USE_MARKER, MODEL_IS_LOCKED);
-	}
-	
-	public void setLocked(boolean isLocked) {
-		setMarker(TLC_MODEL_IN_USE_MARKER, MODEL_IS_LOCKED, isLocked);
 	}
 
     /**
@@ -426,7 +395,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	
 	public long getSnapshotTimeStamp() {
 		final int idx = getName().lastIndexOf(SNAP_SHOT) + 10;
-		return Long.valueOf(getName().substring(idx, getName().length()));
+		return Long.valueOf(getName().substring(idx));
 	}
 	
 	public Collection<Model> getSnapshots() {
@@ -481,6 +450,11 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 						.getFolder(snapshot.getName() + File.separator + snapshot.getName() + ".dot").getLocation();
 				FileUtils.moveFile(oldDotFile.toFile(), newDotFile.toFile());
 			}
+			
+			// Now that we've had a successful save, prune any snapshots, starting with the oldest, in order to assure the
+			// cardinality no greater than snapshotKeepCount.
+			pruneOldestSnapshots();
+			
 			// Refresh the snapshot folder after having copied files without using the
 			// Eclipse resource API. Otherwise, the resource API does not see the files
 			// which e.g. results in an incomplete model deletion or hasStateGraphDump
@@ -491,6 +465,26 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		}
         
 		return snapshot;
+	}
+
+	private void pruneOldestSnapshots() throws CoreException {
+		// Sort model by snapshot timestamp and remove oldest ones.
+		final int snapshotKeepCount = TLCActivator.getDefault().getPreferenceStore().getInt(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT);
+		final List<Model> snapshotModels = new ArrayList<>(getSnapshots());
+		if (snapshotModels.size() > snapshotKeepCount) {
+		    final int pruneCount = snapshotModels.size() - snapshotKeepCount;
+		    Collections.sort(snapshotModels, new Comparator<Model>() {
+		        public int compare (final Model model1, final Model model2) {
+		        	final long ts1 = model1.getSnapshotTimeStamp();
+		        	final long ts2 = model2.getSnapshotTimeStamp();
+		        	return Long.compare(ts1, ts2);
+		        }
+		    });
+		    for (int i = 0; i < pruneCount; i++) {
+		        final Model model = snapshotModels.get(i);
+		        model.delete(new NullProgressMonitor());
+		    }
+		}
 	}
 
 	/*

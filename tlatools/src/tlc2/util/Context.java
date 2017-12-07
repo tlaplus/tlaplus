@@ -33,9 +33,6 @@ public final class Context {
 	private final Object value;
 	private final Context next;
 
-	public int CNT = 1;
-
-
 	public final static Context Empty = new Context(null, null, null);
 	
 	private final static Context BaseBranch = new Context(null, null, Empty);

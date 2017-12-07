@@ -33,10 +33,4 @@ public interface IModelConfigurationDefaults extends IConfigurationDefaults
      */
     public static final boolean MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT = true;
     
-    /**
-     * Default length of time TLC must run for the model
-     * to be automatically locked when tlc terminates
-     */
-    public static final int MODEL_AUTO_LOCK_TIME_DEFAULT = 15;
-
 }

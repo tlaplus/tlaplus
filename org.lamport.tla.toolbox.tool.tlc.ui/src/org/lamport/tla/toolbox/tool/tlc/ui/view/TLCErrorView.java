@@ -674,7 +674,6 @@ public class TLCErrorView extends ViewPart
      *            a list of {@link TLCError}
      */
     public static void updateErrorView(Model model) {
-    	System.out.println(model);
     	updateErrorView(model, true);
     }
 

@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.handlers;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -269,8 +270,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                         IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_SPEC_CLOSED);
                 if (foundTermination)
                 {
-                    Vector vec = new Vector();
-                    launchCopy.setAttribute(MODEL_PROPERTIES_EXPAND, "set");
+                    Vector<String> vec = new Vector<String>();
                     vec.add((checkTermination ? "1" : "0") + "Termination");
                     // The first character should be 1 or 0 depending
                     // on whether or not the box enabling the property should be checked.
@@ -374,8 +374,12 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             ILaunchConfiguration launchSaved = launchCopy.doSave();
 
             // create parameters for the handler
-            HashMap parameters = new HashMap();
+            final Map<String, String> parameters = new HashMap<String, String>();
             parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelName);
+            
+            if (foundSpec && foundTermination) {
+                parameters.put(OpenModelHandler.PARAM_EXPAND_PROPERTIES, "expand");
+            }
 
             // runs the command and opens the module [should be model?] in the editor
             //

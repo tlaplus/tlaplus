@@ -14,8 +14,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
-import javax.mail.internet.AddressException;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -1123,25 +1121,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dm.bindAttribute(MODEL_CORRECTNESS_INVARIANTS, invariantsTable, invariantsPart);
 
         // Properties
-
-        // The following code added by LL on 29 May 2010 to expand the Property section
-        // and reset the MODEL_PROPERTIES_EXPAND property to "" if that property has 
-        // been set to a non-"" value.
-        int propFlags = sectionFlags;
-        try
-        {
-            if (!((String) getModel().getAttribute(MODEL_PROPERTIES_EXPAND, "")).equals("")) {
-               propFlags = propFlags | Section.EXPANDED;
-               getModel().setAttribute(MODEL_PROPERTIES_EXPAND, "");
-            }
-        } catch (CoreException e)
-        {
-            // I don't know why such an exception might occur, but there's no
-            // great harm if it does. LL
-        	e.printStackTrace();
-        }
         ValidateableTableSectionPart propertiesPart = new ValidateableTableSectionPart(toBeCheckedArea, "Properties",
-                "Temporal formulas true for every possible behavior.", toolkit, propFlags, this,
+                "Temporal formulas true for every possible behavior.", toolkit, sectionFlags, this,
                 SEC_WHAT_TO_CHECK_PROPERTIES);
         managedForm.addPart(propertiesPart);
         propertiesTable = propertiesPart.getTableViewer();
@@ -1589,7 +1570,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
          distributedNodesCountSpinner.setMinimum(1);
          distributedNodesCountSpinner.setMaximum(64); // Haven't really tested this many distributed fpsets
          distributedNodesCountSpinner.setPageIncrement(1);
-		distributedNodesCountSpinner.setToolTipText(
+		 distributedNodesCountSpinner.setToolTipText(
 				"Determines how many compute nodes/VMs will be launched. More VMs means faster results and higher costs.");
          distributedNodesCountSpinner.setSelection(IConfigurationDefaults.LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT);
 
@@ -1601,14 +1582,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         final Composite resultAddress = new Composite(jcloudsOptions, SWT.NONE) ;
         layout = new GridLayout(2, true);
         resultAddress.setLayout(layout);
+		final String resultAddressTooltip = "A list (comma-separated) of one to N email addresses to send the model checking result to.";
+        resultAddress.setToolTipText(resultAddressTooltip);
         
         gd = new GridData();
         gd.horizontalSpan = 2;
         resultAddress.setLayoutData(gd);
         
-		toolkit.createLabel(resultAddress, "Result mailto address:");
+		toolkit.createLabel(resultAddress, "Result mailto addresses:");
 		resultMailAddressText = toolkit.createText(resultAddress, "", SWT.BORDER);
-		resultMailAddressText.setMessage("my-name@my-domain.org"); // hint
+		resultMailAddressText.setMessage("my-name@my-domain.org,alternative-name@alternative-domain.org"); // hint
+		resultMailAddressText.setToolTipText(resultAddressTooltip);
 		resultMailAddressText.addKeyListener(new KeyAdapter() {
 			
 			private final ModelEditor modelEditor = (ModelEditor) getEditor();
@@ -1622,9 +1606,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			public void keyReleased(KeyEvent e) {
 				super.keyReleased(e);
 				try {
-					String text = resultMailAddressText.getText();
-					new javax.mail.internet.InternetAddress(text, true);
-				} catch (AddressException exp) {
+					final String text = resultMailAddressText.getText();
+					javax.mail.internet.InternetAddress.parse(text, true);
+				} catch (javax.mail.internet.AddressException exp) {
 					modelEditor.addErrorMessage("emailAddressInvalid",
 							"Invalid email address", getId(),
 							IMessageProvider.ERROR, resultMailAddressText);
@@ -1712,6 +1696,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		stackLayout.topControl = composite;
 		distributedOptions.layout();
     }
+
+	/**
+	 * Expands the properties table.
+	 */
+	public void expandPropertiesSection() {
+		final SectionPart section = getDataBindingManager().getSection(SEC_WHAT_TO_CHECK_PROPERTIES);
+		section.getSection().setExpanded(true);
+	}
 
     /**
      * On a refresh, the checkpoint information is re-read 

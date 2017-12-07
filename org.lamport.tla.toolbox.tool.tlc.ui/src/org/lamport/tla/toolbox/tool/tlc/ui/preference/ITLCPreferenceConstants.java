@@ -32,10 +32,6 @@ public interface ITLCPreferenceConstants
     
     public static final String I_TLC_MAXSETSIZE_DEFAULT = "maxSetSizeDefault";
     /**
-     * Automatically lock model after TLC exceeds given length of time.
-     */
-    public static final String I_TLC_AUTO_LOCK_MODEL_TIME = "autoLockModelTime";
-    /**
      * font used for text in the error viewer at the top of the TLC error
      * view, the User Output field on the results page, and the Progress
      * Output on the results page.
@@ -48,5 +44,10 @@ public interface ITLCPreferenceConstants
 	 * Implementation of {@link FPSet} to use during model checking
 	 */
 	public static final String I_TLC_FPSETIMPL_DEFAULT = "fpSetImpl";
-
+	/**
+	 * If set, the Toolbox will open a modal progress dialog to indicate TLC
+	 * startup. A user can opt to subsequently suppress the dialog. This returns the
+	 * old behavior prior to the change in https://bugs.eclipse.org/146205#c10.
+	 */
+	public static final String I_TLC_SHOW_MODAL_PROGRESS = "showModalProgress";
 }

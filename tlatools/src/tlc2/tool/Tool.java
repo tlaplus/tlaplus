@@ -163,20 +163,22 @@ public class Tool
     return this.actions;
   }
 
-
-
   private final void getActions(SemanticNode next, Context con) {
+	  this.getActions(next, con, null);
+  }
+
+  private final void getActions(SemanticNode next, Context con, final UniqueString actionName) {
     switch (next.getKind()) {
     case OpApplKind:
       {
         OpApplNode next1 = (OpApplNode)next;
-        this.getActionsAppl(next1, con);
+        this.getActionsAppl(next1, con, actionName);
         return;
       }
     case LetInKind:
       {
         LetInNode next1 = (LetInNode)next;
-        this.getActions(next1.getBody(), con);
+        this.getActions(next1.getBody(), con, actionName);
         return;
       }
     case SubstInKind:
@@ -184,10 +186,10 @@ public class Tool
         SubstInNode next1 = (SubstInNode)next;
         Subst[] substs = next1.getSubsts();
         if (substs.length == 0) {
-          this.getActions(next1.getBody(), con);
+          this.getActions(next1.getBody(), con, actionName);
         }
         else {
-          Action action = new Action(next1, con);
+          Action action = new Action(next1, con, actionName);
           this.actionVec.addElement(action);
         }
         return;
@@ -199,10 +201,10 @@ public class Tool
           APSubstInNode next1 = (APSubstInNode)next;
           Subst[] substs = next1.getSubsts();
           if (substs.length == 0) {
-            this.getActions(next1.getBody(), con);
+            this.getActions(next1.getBody(), con, actionName);
           }
           else {
-            Action action = new Action(next1, con);
+            Action action = new Action(next1, con, actionName);
             this.actionVec.addElement(action);
           }
           return;
@@ -214,7 +216,7 @@ public class Tool
     case LabelKind:
       {
         LabelNode next1 = (LabelNode)next;
-        this.getActions(next1.getBody(), con);
+        this.getActions(next1.getBody(), con, actionName);
         return;
       }
     default:
@@ -224,7 +226,7 @@ public class Tool
     }
   }
 
-  private final void getActionsAppl(OpApplNode next, Context con) {
+  private final void getActionsAppl(OpApplNode next, Context con, final UniqueString actionName) {
     ExprOrOpArgNode[] args = next.getArgs();
     SymbolNode opNode = next.getOperator();
     int opcode = BuiltInOPs.getOpCode(opNode.getName());
@@ -250,7 +252,7 @@ public class Tool
                 Value aval = this.eval(args[i], con, TLCState.Empty);
                 con1 = con1.cons(formals[i], aval);
               }
-              this.getActions(opDef.getBody(), con1);
+              this.getActions(opDef.getBody(), con1, opDef.getName());
               return;
             }
           }
@@ -258,7 +260,7 @@ public class Tool
         }
       }
       if (opcode == 0) {
-        Action action = new Action(next, con);
+        Action action = new Action(next, con, opNode.getName());
         this.actionVec.addElement(action);
         return;
       }
@@ -273,11 +275,11 @@ public class Tool
             this.contexts(next, con, TLCState.Empty, TLCState.Empty, EvalControl.Clear);
           Context econ;
           while ((econ = Enum.nextElement()) != null) {
-            this.getActions(args[0], econ);
+            this.getActions(args[0], econ, actionName);
           }
         }
         catch (Throwable e) {
-          Action action = new Action(next, con);
+          Action action = new Action(next, con, actionName);
           this.actionVec.removeAll(cnt);
           this.actionVec.addElement(action);
         }
@@ -287,14 +289,14 @@ public class Tool
     case OPCODE_lor:
       {
         for (int i = 0; i < args.length; i++) {
-          this.getActions(args[i], con);
+          this.getActions(args[i], con, actionName);
         }
         return;
       }
     default:
       {
         // We handle all the other builtin operators here.
-        Action action = new Action(next, con);
+        Action action = new Action(next, con, actionName);
         this.actionVec.addElement(action);
         return;
       }
@@ -397,7 +399,7 @@ public class Tool
             Assert.fail("The init state relation is not a boolean expression.\n" + init);
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
 	    if (this.callStack != null) {
 			// Freeze the callStack to ignore subsequent pop operations. This is
 			// necessary to ignore the callStack#pop calls in the finally blocks when the
@@ -480,7 +482,49 @@ public class Tool
               Value[] argVals = new Value[alen];
               // evaluate the actuals:
               for (int i = 0; i < alen; i++) {
-                argVals[i] = this.eval(args[i], c, ps);
+					/*
+					 * MAK 12/2017: Effectively disable LazyValues by passing null to this.eval(..).
+					 * This has the same effect as calling LazyValue#setUncachable upon the creation
+					 * of a LV. However, at this stack level, the LV has long been created. It can
+					 * not be set to be uncachable anymore. This changes fixes Github issue 113:
+					 * "TLC fails to find initial states with bounded exists"
+					 * https://github.com/tlaplus/tlaplus/issues/113. The corresponding unit test is
+					 * tlc2.tool.AssignmentInitTest.
+					 * 
+					 * The bug to fix is, that a the use of an LV breaks evaluation of expressions
+					 * such as:
+					 * 
+					 * Op(var) == var \in {0,1} /\ var > 0
+					 * 
+					 * Op2(var) == \E val \in {0,1} : var = val /\ var > 0
+					 * 
+					 * The "var" is represented by an instance of a LazyValue which only gets
+					 * evaluated once. In the two examples above, the LV statically evaluates to "0"
+					 * even when it should evaluate to "1".
+					 * 
+					 * If the init predicate is defined to such that:
+					 * 
+					 * VARIABLE s Init == Op2(s) ...
+					 * 
+					 * TLC won't generate the initial state s=1. Likewise, the following expression
+					 * causes TLC to generate two initial states (s=0 and s=1). Again, because the
+					 * predicate "var < 1" is both times evaluated with "var=0".
+					 * 
+					 * Init(var) == \E val \in 0..1: var = val /\ var < 1
+					 * 
+					 * Unfortunately, this disables LazyValues for _all_ operators. It affects all
+					 * operators such as IF THEN ELSE, Print, ... Disabling LV only for affected
+					 * operators appears impossible at this stack level. We would somehow have to
+					 * pass along the call context. Alternatively, an attempt could be made to call
+					 * LazyValue#setUncachable upon creation of the LV. However, the LV gets created
+					 * before the call stack "sees" the actual operator.
+					 * 
+					 * If similar expressions are evaluated in the context of the next-state
+					 * relation, line ~921 is responsible. It boils down to line 2059 (opcode prime)
+					 * to disable LV by passing null to tlc2.tool.Tool.evalAppl(...) effectively
+					 * disabling LVs.
+					 */
+	                argVals[i] = this.eval(args[i], c, ps, null, EvalControl.Clear);
               }
               // apply the operator:
               bval = opVal.apply(argVals, EvalControl.Clear);
@@ -718,7 +762,7 @@ public class Tool
             return;
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
 	    throw e;
@@ -791,7 +835,7 @@ public class Tool
           }
         }
     	return s1;
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
 	    throw e;
@@ -1155,7 +1199,7 @@ public class Tool
             return resState;
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -1234,7 +1278,7 @@ public class Tool
           resState = this.getNextStates(acts, s0, s1, nss);
         }
         return resState;
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -1337,7 +1381,7 @@ public class Tool
             return null;     // make compiler happy
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -2137,7 +2181,7 @@ public class Tool
             return null;
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -2255,7 +2299,7 @@ public class Tool
             return null;    // make compiler happy
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -2697,7 +2741,7 @@ public class Tool
             return null;
           }
         }
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -2772,7 +2816,7 @@ public class Tool
           return null;
         }
         return this.enabled(acts, s0, s1);
-    } catch (TLCRuntimeException e) {
+    } catch (TLCRuntimeException | EvalException e) {
     	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
     	if (this.callStack != null) { this.callStack.freeze(); }
     	throw e;
@@ -2808,20 +2852,50 @@ public class Tool
     return ((BoolValue)val).val;
   }
 
-  /* Reconstruct the initial state whose fingerprint is fp. */
-  public final TLCStateInfo getState(long fp) {
-    StateVec initStates = this.getInitStates();
-    for (int i = 0; i < initStates.size(); i++) {
-      TLCState state = initStates.elementAt(i);
-      long nfp = state.fingerPrint();
-      if (fp == nfp) {
-        String info = "<Initial predicate>";
-        final TLCStateInfo tlcStateInfo = new TLCStateInfo(state, info, 1, fp);
-        return tlcStateInfo;
-      }
-    }
-    return null;
-  }
+    /* Reconstruct the initial state whose fingerprint is fp. */
+	public final TLCStateInfo getState(final long fp) {
+		class InitStateSelectorFunctor implements IStateFunctor {
+			private final long fp;
+			public TLCState state;
+			public InitStateSelectorFunctor(long fp) {
+				this.fp = fp;
+			}
+			@Override
+			public Object addElement(TLCState state) {
+				if (state == null) {
+					return null;
+				} else if (this.state != null) {
+					// Always return the first match found. Do not let later matches override
+					// this.state. This is in line with the original implementation that called
+					// getInitStates().
+					return null;
+				} else if (fp == state.fingerPrint()) {
+					this.state = state;
+					// TODO Stop generation of initial states preemptively. E.g. make the caller of
+					// addElement check for a special return value such as this (the functor).
+				}
+				return null;
+			}
+		}
+		// Registry a selector that extract out of the (possibly) large set of initial
+		// states the one identified by fp. The functor pattern has the advantage
+		// compared to this.getInitStates(), that it kind of streams the initial states
+		// to the functor whereas getInitStates() stores _all_ init states in a set
+		// which is traversed afterwards. This is also consistent with
+		// ModelChecker#DoInitFunctor. Using the functor pattern for the processing of
+		// init states in ModelChecker#doInit but calling getInitStates() here results
+		// in a bug during error trace generation when the set of initial states is too
+		// large for getInitStates(). Earlier TLC would have refused to run the model
+		// during ModelChecker#doInit.
+		final InitStateSelectorFunctor functor = new InitStateSelectorFunctor(fp);
+		this.getInitStates(functor);
+		if (functor.state != null) {
+			final String info = "<Initial predicate>";
+			final TLCStateInfo tlcStateInfo = new TLCStateInfo(functor.state, info, 1, fp);
+			return tlcStateInfo;
+		}
+		return null;
+	}
 
   /**
 	 * Reconstruct the next state of state s whose fingerprint is fp.

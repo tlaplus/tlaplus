@@ -7,10 +7,8 @@ package tlc2;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -195,7 +193,7 @@ public class TLC
      *                     default: 1000000
      *   
      */
-    public static void main(String[] args) throws UnknownHostException, FileNotFoundException
+    public static void main(String[] args) throws Exception
     {
         TLC tlc = new TLC();
 
