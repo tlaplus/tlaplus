@@ -61,7 +61,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
@@ -666,6 +666,14 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	public void delete(IProgressMonitor monitor) throws CoreException {
+		
+		// First delete the Model's snapshots. If left undelete, they disappear from the
+		// Toolbox have to be deleted manually.
+		final Collection<Model> snapshots = getSnapshots();
+		for (Model model : snapshots) {
+			model.delete(SubMonitor.convert(monitor));
+		}
+		
 		notifyListener(new ChangeEvent(this, State.DELETED));
 		
 		final IResource[] members;
@@ -698,7 +706,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 						try {
 							for (int i = 0; i < members.length; i++) {
 								members[i].delete(IResource.FORCE,
-										new SubProgressMonitor(subMonitor, 1));
+										SubMonitor.convert(subMonitor, 1));
 							}
 						} catch (CoreException e) {
 							TLCActivator.logError("Error deleting a file "
@@ -709,7 +717,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 						subMonitor.done();
 					}
 				}, deleteRule, IWorkspace.AVOID_UPDATE,
-				new SubProgressMonitor(monitor, members.length));
+				SubMonitor.convert(monitor, members.length));
 	}
 	
     /**

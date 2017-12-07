@@ -28,7 +28,6 @@ package org.lamport.tla.toolbox.ui.navigator;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IViewPart;
@@ -49,6 +48,10 @@ public class ToolboxExplorer extends CommonNavigator
 {
     public final static String VIEW_ID = "toolbox.view.ToolboxExplorer";
     public static final String COMMAND_ID = "toolbox.command.cnf.open.delegate";
+    
+	// first level is spec and model group, second level actual specs and models,
+	// third level are model snapshots which we hide by default.
+    public static final int DEFAULT_EXPAND_LEVEL = 2;
     
 	/**
      * Override the method to deliver the root object for the NCE activation
@@ -111,7 +114,7 @@ public class ToolboxExplorer extends CommonNavigator
         if (navigator != null) 
         {
             final CommonViewer commonViewer = navigator.getCommonViewer();
-            commonViewer.setAutoExpandLevel(AbstractTreeViewer.ALL_LEVELS);
+            commonViewer.setAutoExpandLevel(DEFAULT_EXPAND_LEVEL);
 			return commonViewer;
         }
         
