@@ -193,8 +193,23 @@
 
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
-		<jar destfile="${dist.file}">
-			<fileset dir="${class.dir}" includes="**/*" />
+		<jar destfile="${dist.file}" level="9">
+			<fileset dir="${class.dir}" includes="**/*" excludes="
+					**/*.jpg,
+					tlc2/tool/fp/*.tla,
+					pcal/*.tla,
+					META-INF/maven/,
+					src/tla2sany/parser/ParseException.09-09-07,
+					src/tla2sany/parser/TLAplusParser.09-07-02,
+					src/tla2sany/parser/TLAplusParser.11-02-10,
+					src/tla2sany/parser/TLAplusParserConstants.09-07-02,
+					src/tla2sany/parser/TLAplusParserConstants.09-09-07,
+					src/tla2sany/parser/TLAplusParserConstants.11-02-10,
+					src/tla2sany/parser/TLAplusParserTokenManager.09-07-02,
+					src/tla2sany/parser/TLAplusParserTokenManager.09-09-07,
+					src/tla2sany/parser/TLAplusParserTokenManager.11-02-10,
+					src/tla2sany/parser/Token.09-09-07,
+					src/tla2sany/parser/TokenMgrError.09-09-07"/>
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Build-Tag" value="${env.BUILD_TAG}" />
