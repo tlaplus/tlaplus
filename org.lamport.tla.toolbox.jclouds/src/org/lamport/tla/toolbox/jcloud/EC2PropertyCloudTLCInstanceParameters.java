@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2017 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -23,36 +23,45 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-
 package org.lamport.tla.toolbox.jcloud;
 
-import java.io.File;
-import java.util.Properties;
+public class EC2PropertyCloudTLCInstanceParameters extends EC2CloudTLCInstanceParameters {
 
-import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.jobs.Job;
-import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
-
-public class CloudTLCJobFactory implements TLCJobFactory {
-
-	private static final String AZURECOMPUTE = "Azure";
-	private static final String AWS_EC2 = "aws-ec2";
-	private static final String AWS_EC2_VM_PROPERTIES = "aws-ec2-props";
+	public EC2PropertyCloudTLCInstanceParameters(final String tlcParams, int numberOfWorkers) {
+        super(tlcParams.trim(), numberOfWorkers);
+	}
 
 	@Override
-	public Job getTLCJob(String aName, File aModelFolder, int numberOfWorkers, final Properties props, String tlcparams) {
-		Assert.isNotNull(aName);
-		Assert.isLegal(numberOfWorkers > 0);
-		if (AWS_EC2.equals(aName)) {
-			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
-					new EC2CloudTLCInstanceParameters(tlcparams, numberOfWorkers));
-		} else if (AWS_EC2_VM_PROPERTIES.equals(aName)) {
-			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
-					new EC2PropertyCloudTLCInstanceParameters(tlcparams, numberOfWorkers));
-		} else if (AZURECOMPUTE.equals(aName)) {
-			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
-					new AzureCloudTLCInstanceParameters(tlcparams, numberOfWorkers));
+	public String getImageId() {
+		final String imageId = System.getProperty("aws-ec2.image");
+		if (imageId == null) {
+			return super.getImageId();
 		}
-		throw new IllegalArgumentException(aName + " is an unknown cloud");
+		return getRegion() + "/" + imageId;
+	}
+
+	@Override
+	public String getRegion() {
+		return System.getProperty("aws-ec2.region", super.getRegion());
+	}
+
+	@Override
+	public String getHardwareId() {
+		return System.getProperty("aws-ec2.instanceType", super.getHardwareId());
+	}
+
+	@Override
+	public String getOSFilesystemTuning() {
+		return System.getProperty("aws-ec2.tuning", super.getOSFilesystemTuning());
+	}
+
+	@Override
+	public String getJavaVMArgs() {
+		return System.getProperty("aws-ec2.vmargs", super.getJavaVMArgs());
+	}
+
+	@Override
+	public String getTLCParameters() {
+		return System.getProperty("aws-ec2.tlcparams", super.getTLCParameters());
 	}
 }
