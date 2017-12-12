@@ -307,13 +307,16 @@ public class CloudDistributedTLCJob extends Job {
 			// world-readable. It is cloud-readable already through the RMI api.
 			monitor.subTask("Copying tla2tools.jar to master node at " + hostname);
 			SshClient sshClient = context.utils().sshForNode().apply(master);
-			sshClient.put("/tmp/tla2tools.jar", jarPayLoad);
+			sshClient.put("/tmp/tla2tools.pack.gz", jarPayLoad);
 			monitor.worked(10);
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
 			}
 
 			final String tlcMasterCommand = " cd /mnt/tlc/ && "
+					// Decompress tla2tools.pack.gz
+					+ "unpack200 /tmp/tla2tools.pack.gz /tmp/tla2tools.jar"
+					+ " && "
 					// Execute TLC (java) process inside screen
 					// and shutdown on TLC's completion. But
 					// detach from screen directly. Name screen 
