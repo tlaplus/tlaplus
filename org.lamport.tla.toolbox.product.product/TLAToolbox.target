@@ -45,7 +45,7 @@
 <unit id="org.eclipse.equinox.sdk.feature.group" version="3.13.0.v20170531-1133"/>
 <unit id="org.eclipse.core.runtime.feature.feature.group" version="1.2.0.v20170518-1049"/>
 <unit id="org.eclipse.sdk.ide" version="4.7.0.I20170612-0950"/>
-<repository location="http://download.eclipse.org/eclipse/updates/4.7/"/>
+<repository location="http://download.eclipse.org/eclipse/updates/4.7/" id="eclipse"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
