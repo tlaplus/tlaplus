@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.5.4" useFeatures="true" includeLaunchers="true">
+<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.5.4.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.lamport.tla.toolbox.product.standalone/images/splash_small.png"/>
@@ -84,6 +84,10 @@ openFile
    </configurations>
 
    <repositories>
+      <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
+      <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
+      <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
+      <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
       <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
       <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
    </repositories>
