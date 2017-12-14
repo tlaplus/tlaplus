@@ -34,6 +34,8 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         super(composite, title, description, toolkit, flags, page, DataBindingManager.SEC_DEFINITION_OVERRIDE);
     }
 
+    @Override
+    @SuppressWarnings("unchecked")  // Generic casting...
     protected Assignment doEditFormula(Assignment formula)
     {
         // add -> let the user select the definition to override
@@ -49,7 +51,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
             // If I'm wrong, we just set names[] to a zero-length array.
             if ((input != null) && (input instanceof Vector))
             {
-                Vector inputVec = (Vector) input;
+                Vector<Object> inputVec = (Vector<Object>) input;
                 names = new String[inputVec.size()];
                 for (int i = 0; i < names.length; i++)
                 {
@@ -114,7 +116,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         // Create the wizard
         AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(),
                 (Assignment) formula, AssignmentWizard.SHOW_MODEL_VALUE_OPTION,
-                AssignmentWizardPage.DEF_OVERRIDE_WIZARD_ID, "");
+                AssignmentWizardPage.DEF_OVERRIDE_WIZARD_ID);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         wizard.setWizardDialog(dialog);
@@ -134,6 +136,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
     /**
      * create the buttons
      */
+    @Override
     protected void createButtons(Composite sectionArea, FormToolkit toolkit, boolean add, boolean edit, boolean remove)
     {
         doCreateButtons(sectionArea, toolkit, true, true, true);
@@ -143,6 +146,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
      * Overrides the method in ValidateableConstantSectionPart in order
      * to add a label provider for displaying definition overrides properly.
      */
+    @Override
     protected TableViewer createTableViewer(Table table)
     {
         TableViewer tableViewer = super.createTableViewer(table);

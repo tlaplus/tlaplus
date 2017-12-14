@@ -37,8 +37,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
 
         // Create the wizard
         AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(),
-                (Assignment) formula, AssignmentWizard.SHOW_OPTION, AssignmentWizardPage.CONSTANT_WIZARD_ID,
-                AssignmentWizardPage.CONSTANT_TYPING_WIZARD_ID);
+                (Assignment) formula, AssignmentWizard.SHOW_OPTION, AssignmentWizardPage.CONSTANT_WIZARD_ID);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         wizard.setWizardDialog(dialog);
@@ -58,6 +57,8 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
      * Add assignment to the list -- Despite Simon's comments, this is actually called when clicking on ADD 
      * for  Definition Override
      */
+    @Override
+    @SuppressWarnings("unchecked")  // Generic casting...
     protected void doAdd()
     {
         Assignment formula = doEditFormula((Assignment) null);
@@ -65,7 +66,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
         // add a formula
         if (formula != null)
         {
-            Vector input = ((Vector) tableViewer.getInput()); // this seems to be the place to check for duplicate overrides.
+            Vector<Assignment> input = ((Vector<Assignment>) tableViewer.getInput()); // this seems to be the place to check for duplicate overrides.
             input.add(formula);
             tableViewer.setInput(input);
             this.doMakeDirty();
@@ -73,6 +74,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
     }
 
     // This is called when hitting EDIT or double clicking to enter a Constant's value or to change a Definition override.
+    @Override
     protected void doEdit()  
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
@@ -94,6 +96,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
     /**
      * create the viewer
      */
+    @Override
     protected TableViewer createTableViewer(Table table)
     {
         // create
@@ -116,6 +119,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
     /**
      * create the table (no check boxes)
      */
+    @Override
     protected Table createTable(Composite sectionArea, FormToolkit toolkit)
     {
         Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
@@ -127,6 +131,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
     /**
      * Only create the edit button
      */
+    @Override
     protected void createButtons(Composite sectionArea, FormToolkit toolkit, boolean add, boolean edit, boolean remove)
     {
         doCreateButtons(sectionArea, toolkit, false, true, false);

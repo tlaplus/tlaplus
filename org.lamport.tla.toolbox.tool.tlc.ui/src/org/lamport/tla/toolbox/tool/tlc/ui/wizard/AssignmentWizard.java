@@ -7,7 +7,6 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 /**
  * Wizard for editing a constant assignement
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class AssignmentWizard extends Wizard
 {
@@ -31,31 +30,26 @@ public class AssignmentWizard extends Wizard
 
     private Assignment assignment;
     private AssignmentWizardPage assignmentPage;
-    private TypingWizardPage typePage;
-	private WizardDialog WizardDialog;
+	private WizardDialog wizardDialog;
 
     /**
      * Constructs the wizard that assigns values to constants, 
      * I believe it also constructs the wizard that overrides definitions. (LL)
-     * The last argument is meaningful only for the wizard that assigns values
-     * to constants.
      * @param fieldFlags bit mask determining fields that are visible
      * @see {@link AssignmentWizard} constants 
      */
-    public AssignmentWizard(String action, String description, Assignment assignment, int fieldFlags, String helpId,
-            String pageTwoHelpId)
+    public AssignmentWizard(String action, String description, Assignment assignment, int fieldFlags, String helpId)
     {
         super();
         this.assignment = assignment;
-        assignmentPage = new AssignmentWizardPage(action, description, fieldFlags, helpId);
-        typePage = new TypingWizardPage(action, description, pageTwoHelpId);
+        this.assignmentPage = new AssignmentWizardPage(action, description, fieldFlags, helpId);
 
     }
 
+    @Override
     public void addPages()
     {
-        addPage(assignmentPage);
-        addPage(typePage);
+        addPage(this.assignmentPage);
     }
 
     /**
@@ -78,20 +72,16 @@ public class AssignmentWizard extends Wizard
      * text field which calls updateButtons() whenever
      * the input text is modified.
      */
+    @Override
     public boolean canFinish()
     {
-        String inputText = assignmentPage.getInputText();
+        String inputText = this.assignmentPage.getInputText();
         // either on the first page, but no typing of MV set is possible, or on the second page
         // also, if on the first page, there must be an input that is not only white space
         // Modified by LL on 5 Nov 2009 to return true regardless of inputText if the model value
         // option is selected.
-        return (    assignmentPage.isCurrentPage() 
-        		&& !assignmentPage.isTypeInputPossible() 
-        		&& (   (inputText != null && inputText.trim().length() != 0)
-        		     || assignmentPage.modelValueSelected()
-        			)
-        		)
-                || !assignmentPage.isCurrentPage();
+        return ((inputText != null && inputText.trim().length() != 0)
+        		     || this.assignmentPage.modelValueSelected());
     }
 
     /* (non-Javadoc)
@@ -103,10 +93,10 @@ public class AssignmentWizard extends Wizard
     }
 
 	public void setWizardDialog(WizardDialog dialog) {
-		WizardDialog = dialog;
+	    this.wizardDialog = dialog;
 	}
 	
 	public int getWizardDialogReturnCode() {
-		return WizardDialog.getReturnCode();
+		return this.wizardDialog.getReturnCode();
 	}
 }

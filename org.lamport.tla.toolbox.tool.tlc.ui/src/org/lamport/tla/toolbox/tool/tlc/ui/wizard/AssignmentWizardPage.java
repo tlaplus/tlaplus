@@ -2,7 +2,6 @@ package org.lamport.tla.toolbox.tool.tlc.ui.wizard;
 
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -14,6 +13,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -32,18 +32,36 @@ import tla2sany.semantic.OpDefNode;
 public class AssignmentWizardPage extends WizardPage
 {
     public static final String CONSTANT_WIZARD_ID = "constant_assignment_wizard";
-    public static final String CONSTANT_TYPING_WIZARD_ID = "constant_assignment_typing_wizard";
     public static final String DEF_OVERRIDE_WIZARD_ID = "definition_override_wizard";
     private LabeledListComposite paramComposite;
     private SourceViewer source;
-    private Button optionModelValue = null;
     private final int fieldFlags;
     private final String helpId; // The id of the help context for this wizard page
+
+    private Button optionOrdinaryValue;
+
+    private Button optionModelValue = null;
+
     private Button optionSetModelValues;
     private Button flagSymmetricalSet;
-    private Button optionOrdinaryValue;
+    private Combo smvTypeCombo;
+    private Label smvTypeLabel;
+    private Button optionSMVUntyped;
+    
+    // selection adapter reacting to set of value typing radio choice
+    final private SelectionListener typingOptionSelectionAdapter = new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e)
+        {
+//            smvTypeCombo.setEnabled(optionSMVTyped.getSelection());
+        	System.out.println("");
+        }
+    };
+
+    
     // selection adapter reacting on the choice
-    private SelectionListener optionSelectionAdapter = new SelectionAdapter() {
+    final private SelectionListener optionSelectionAdapter = new SelectionAdapter() {
+        @Override
         public void widgetSelected(SelectionEvent e)
         {
             boolean modelValueSelected = optionModelValue.getSelection();
@@ -61,6 +79,8 @@ public class AssignmentWizardPage extends WizardPage
             {
                 boolean modelValueSetSelected = optionSetModelValues.getSelection();
                 flagSymmetricalSet.setEnabled(modelValueSetSelected);
+                smvTypeCombo.setEnabled(modelValueSetSelected);
+                optionSMVUntyped.setEnabled(modelValueSetSelected);
             }
             getContainer().updateButtons();
         }
@@ -133,35 +153,83 @@ public class AssignmentWizardPage extends WizardPage
             // both bits set, make a radio list
             if (fieldFlags == AssignmentWizard.SHOW_OPTION)
             {
+                Composite leftContainer = new Composite(container, SWT.NULL);
+                gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
+                leftContainer.setLayoutData(gd);
+                leftContainer.setLayout(new GridLayout(1, false));
+
                 // ordinary value option
-                optionOrdinaryValue = new Button(container, SWT.RADIO);
+                optionOrdinaryValue = new Button(leftContainer, SWT.RADIO);
                 optionOrdinaryValue.setText("Ordinary assignment");
                 gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
-                gd.horizontalSpan = 2;
                 optionOrdinaryValue.setLayoutData(gd);
 
                 // make a model value
-                optionModelValue = new Button(container, SWT.RADIO);
+                optionModelValue = new Button(leftContainer, SWT.RADIO);
                 optionModelValue.setText("Model value");
 
                 gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
-                gd.horizontalSpan = 2;
                 optionModelValue.setLayoutData(gd);
 
                 // make a set of model values
-                optionSetModelValues = new Button(container, SWT.RADIO);
+                optionSetModelValues = new Button(leftContainer, SWT.RADIO);
                 optionSetModelValues.setText("Set of model values");
                 gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
-                gd.horizontalSpan = 2;
                 optionSetModelValues.setLayoutData(gd);
 
-                // option to make a set symmetrical
-                flagSymmetricalSet = new Button(container, SWT.CHECK);
+                // option to make a set of model values symmetrical
+                flagSymmetricalSet = new Button(leftContainer, SWT.CHECK);
                 flagSymmetricalSet.setText("Symmetry set");
                 gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
-                gd.horizontalSpan = 2;
                 gd.horizontalIndent = 10;
                 flagSymmetricalSet.setLayoutData(gd);
+
+                Composite rightContainer = new Composite(container, SWT.NULL);
+                gd = new GridData(SWT.RIGHT, SWT.TOP, true, false);
+                gd.horizontalIndent = 220;
+                rightContainer.setLayoutData(gd);
+                rightContainer.setLayout(new GridLayout(2, false));
+
+				// Fill to cells with empty labels to align the type selection with the set of
+				// module values button.
+                for (int i = 0; i < 2; i++) {
+                	Label fill = new Label(rightContainer, SWT.NONE);
+                	gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
+                	gd.horizontalSpan = 2;
+                	fill.setLayoutData(gd);
+				}
+
+                // label for type selection
+                smvTypeLabel = new Label(rightContainer, SWT.NONE);
+                smvTypeLabel.setText("Type:");
+                gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
+                gd.horizontalIndent = 10;
+                smvTypeLabel.setLayoutData(gd);
+
+                // type combo box
+                smvTypeCombo = new Combo(rightContainer, SWT.BORDER);
+
+                smvTypeCombo.add("no type");
+                
+                // add letters (assumes A-Z...a-z)
+                for (char i = 'A'; i < 'z'; i++)
+                {
+                    if (Character.isLetter(i))
+                    {
+                        smvTypeCombo.add("" + i);
+                    }
+                }
+                gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
+                smvTypeCombo.setLayoutData(gd);
+                smvTypeCombo.setText("A");
+
+                // untyped set of model values option
+                optionSMVUntyped = new Button(rightContainer, SWT.RADIO);
+                optionSMVUntyped.setText("Leave untyped");
+                optionSMVUntyped.addSelectionListener(typingOptionSelectionAdapter);
+                gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
+                gd.horizontalSpan = 2;
+                optionSMVUntyped.setLayoutData(gd);
 
                 // install listeners
                 optionOrdinaryValue.addSelectionListener(optionSelectionAdapter);
@@ -175,6 +243,8 @@ public class AssignmentWizardPage extends WizardPage
                     if (!getAssignment().isSetOfModelValues())
                     {
                         flagSymmetricalSet.setEnabled(false);
+                        smvTypeCombo.setEnabled(false);
+                        optionSMVUntyped.setEnabled(false);
                         optionModelValue.setSelection(getAssignment().isModelValue());
                         source.getTextWidget().setBackground(container.getBackground());
                         // set of model values
@@ -186,6 +256,8 @@ public class AssignmentWizardPage extends WizardPage
                 } else
                 {
                     flagSymmetricalSet.setEnabled(false);
+                    smvTypeCombo.setEnabled(false);
+                    optionSMVUntyped.setEnabled(false);
                     optionOrdinaryValue.setSelection(true);
                 }
 
@@ -244,13 +316,9 @@ public class AssignmentWizardPage extends WizardPage
         return ((AssignmentWizard) getWizard()).getFormula();
     }
 
-    public boolean finish()
-    {
-        return false;
-    }
-
     // this method sets up the Assignment object when the user
     // clicks Finish or Cancel
+    @Override
     public void dispose()
     {
     	// cancel should not update any model values
@@ -279,6 +347,19 @@ public class AssignmentWizardPage extends WizardPage
                 TypedSet set = TypedSet.parseSet(rightSide);
                 this.getAssignment().setSymmetric(flagSymmetricalSet.getSelection());
                 this.getAssignment().setRight(set.toString());
+                
+//                // evaluate the selected option and change the MVs as appropriate
+//                if (optionSMVTyped.getSelection())
+//                {
+//                    // retrieve the type letter
+//                    String type = smvTypeCombo.getText();
+//                    // parse the set
+//                    set = TypedSet.parseSet(this.getAssignment().getRight());
+//                    // set type
+//                    set.setType(type);
+//                    // set the content back
+//                    this.getAssignment().setRight(set.toString());
+//                }
             } else
             {
                 // ordinary assignment (with no parameters)
@@ -310,37 +391,6 @@ public class AssignmentWizardPage extends WizardPage
             this.getAssignment().setParams(paramComposite.getValues());
         }
         super.dispose();
-    }
-
-    /*
-     * Show the next page ( for typing of model values sets )
-     * @see org.eclipse.jface.wizard.WizardPage#getNextPage()
-     */
-    public IWizardPage getNextPage()
-    {
-        if (isTypeInputPossible())
-        {
-            return super.getNextPage();
-        }
-        return null;
-    }
-
-    protected boolean isTypeInputPossible()
-    {
-        // only a set of model values can be typed
-        if (optionSetModelValues == null || !optionSetModelValues.getSelection())
-        {
-            return false;
-        }
-        String set = FormHelper.trimTrailingSpaces(source.getDocument().get());
-        TypedSet parsedSet = TypedSet.parseSet(set);
-
-        return (parsedSet.getType() == null);
-    }
-
-    public boolean isCurrentPage()
-    {
-        return super.isCurrentPage();
     }
 
     /**
