@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
+   <feature url="features/org.lamport.tla.toolbox.feature.uitest_1.0.0.qualifier.jar" id="org.lamport.tla.toolbox.feature.uitest" version="1.0.0.qualifier">
+      <category name="tychotest.category"/>
+   </feature>
    <feature url="features/org.lamport.tla.toolbox.feature.standalone_1.0.0.qualifier.jar" id="org.lamport.tla.toolbox.feature.standalone" version="1.0.0.qualifier">
       <category name="tychodemo.category"/>
    </feature>
@@ -9,6 +12,11 @@
    <category-def name="tychodemo.category" label="TLA+ Toolbox Category">
       <description>
          TLA+ Toolbox Category
+      </description>
+   </category-def>
+   <category-def name="tychotest.category" label="Test Category - please ignore">
+      <description>
+         Please ignore this category which is only relevant for Toolbox testing!
       </description>
    </category-def>
 </site>
