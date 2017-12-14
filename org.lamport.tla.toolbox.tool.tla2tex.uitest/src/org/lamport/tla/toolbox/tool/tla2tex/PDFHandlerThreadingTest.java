@@ -2,8 +2,6 @@ package org.lamport.tla.toolbox.tool.tla2tex;
 
 import java.io.File;
 
-import junit.framework.Assert;
-
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
@@ -16,15 +14,18 @@ import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
 import org.lamport.tla.toolbox.test.threading.MonitorAdaptor;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
+import org.junit.Assert;
+
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class PDFHandlerThreadingTest {
 	
 	private static SWTWorkbenchBot bot;
 
-	private static final String specA = System
-			.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA");
-	private static final String specB = System
-			.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB");
+	private static final String specA = System.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA",
+			RCPTestSetupHelper.getAbsolutePath("org.lamport.tla.toolbox.uitest",
+					"farsite/DistributedSystemModule.tla"));
+	private static final String specB = System.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB",
+			RCPTestSetupHelper.getAbsolutePath("org.lamport.tla.toolbox.uitest", "DieHard/DieHard.tla"));
 	
 	@BeforeClass
 	public static void beforeClass() throws Exception {

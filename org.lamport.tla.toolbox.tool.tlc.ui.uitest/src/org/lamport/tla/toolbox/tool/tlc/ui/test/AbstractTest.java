@@ -32,9 +32,10 @@ public abstract class AbstractTest {
 	/**
 	 * Full qualified spec name
 	 */
-	protected static final String specA = System
-			.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA");
-
+	protected static String specA = System.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA",
+			RCPTestSetupHelper.getAbsolutePath("org.lamport.tla.toolbox.uitest",
+					"DieHard/DieHard.tla"));
+	
 	/**
 	 * Pre flight checks (run once for each test _class_)
 	 */

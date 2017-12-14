@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
 import org.lamport.tla.toolbox.test.threading.MonitorAdaptor;
 import org.lamport.tla.toolbox.tool.tlc.ui.test.AbstractTest;
 
@@ -28,7 +29,8 @@ import org.lamport.tla.toolbox.tool.tlc.ui.test.AbstractTest;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class HandlerThreadingTest extends AbstractTest {
 
-	private static final String specB = System.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB");
+	private static final String specB = System.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB",
+			RCPTestSetupHelper.getAbsolutePath("org.lamport.tla.toolbox.uitest", "farsite/DistributedSystemModule.tla"));
 
 	@BeforeClass
 	public static void beforeClass() {

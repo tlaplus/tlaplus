@@ -1,6 +1,13 @@
 package org.lamport.tla.toolbox.test;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -16,11 +23,27 @@ import org.eclipse.ui.WorkbenchException;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
+import org.osgi.framework.Bundle;
 
 /**
  * @see http://www.ralfebert.de/articles/swtbot/
  */
 public abstract class RCPTestSetupHelper {
+
+	public static String getAbsolutePath(final String bundle, final String fileInBundle) {
+		final Bundle b = Platform.getBundle(bundle);
+		final URL url = b.getEntry(fileInBundle);
+		try {
+			final URL resolved = FileLocator.resolve(url);
+			final File f = new File(resolved.toURI());
+			return f.getAbsolutePath();
+		} catch (final IOException e) {
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 	public static void beforeClass() {
 		UIThreadRunnable.syncExec(new VoidResult() {
