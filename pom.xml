@@ -126,8 +126,41 @@
 				<version>${tycho-version}</version>
 				<extensions>true</extensions>
 			</plugin>
-            <plugin>
-		        <groupId>org.eclipse.tycho</groupId>
+			<!-- Compress Toolbox plugins -->
+			<plugin>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>tycho-pack200b-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>pack200-pack</id>
+						<goals>
+							<goal>pack</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Then, alter p2-metadata to make the .pack.gz
+			artifact visible from other modules -->
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>p2-metadata</id>
+						<goals>
+							<goal>p2-metadata</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<defaultP2Metadata>false</defaultP2Metadata>
+				</configuration>
+			</plugin>
+			<plugin>
+			<groupId>org.eclipse.tycho</groupId>
 	        	<artifactId>tycho-compiler-plugin</artifactId>
 	        	<version>${tycho-version}</version>
 			    <configuration>
@@ -174,7 +207,7 @@
 			            </execution>
 			         </executions>
 			</plugin>
-    			<plugin>
+			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>
@@ -182,6 +215,10 @@
 					<!-- recommended: use p2-based target platform resolver -->
 					<resolver>p2</resolver>
 					<ignoreTychoRepositories>true</ignoreTychoRepositories>
+					<!-- Include the pack200 artifacts in the p2 repository. This increases 
+						the size of the p2 repository (jars + pack.gz), but reduces the load on the 
+						server hosting the repository as clients download the compressed pack.gz files. -->
+					<includePackedArtifacts>true</includePackedArtifacts>
 					<!-- use existing target platform definition -->
 					<target>
 					 <artifact>
