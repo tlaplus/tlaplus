@@ -445,6 +445,15 @@
             name="TLC Models"
             priority="normal"
             providesSaveables="false">
+         <commonSorter
+         		id="toolbox.content.ModelSnapshotSorter"
+         		class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelSnapshotSorter">
+         	<parentExpression>
+         		<or>
+         			<instanceof value="org.lamport.tla.toolbox.tool.tlc.model.Model" />
+         		</or>
+         	</parentExpression>
+         </commonSorter>
          <possibleChildren>
             <or>
                <instanceof
