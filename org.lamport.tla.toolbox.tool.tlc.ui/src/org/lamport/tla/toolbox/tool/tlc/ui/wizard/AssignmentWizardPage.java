@@ -45,7 +45,6 @@ public class AssignmentWizardPage extends WizardPage
     private Button optionSetModelValues;
     private Button flagSymmetricalSet;
     private Combo smvTypeCombo;
-    private Label smvTypeLabel;
     private Button optionSMVUntyped;
     
     // selection adapter reacting to set of value typing radio choice
@@ -53,8 +52,7 @@ public class AssignmentWizardPage extends WizardPage
         @Override
         public void widgetSelected(SelectionEvent e)
         {
-//            smvTypeCombo.setEnabled(optionSMVTyped.getSelection());
-        	System.out.println("");
+            smvTypeCombo.setEnabled(optionSMVUntyped.getSelection());
         }
     };
 
@@ -184,33 +182,22 @@ public class AssignmentWizardPage extends WizardPage
                 gd.horizontalIndent = 10;
                 flagSymmetricalSet.setLayoutData(gd);
 
-                Composite rightContainer = new Composite(container, SWT.NULL);
-                gd = new GridData(SWT.RIGHT, SWT.TOP, true, false);
-                gd.horizontalIndent = 220;
+                final Composite rightContainer = new Composite(leftContainer, SWT.NONE);
+                gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
                 rightContainer.setLayoutData(gd);
                 rightContainer.setLayout(new GridLayout(2, false));
 
-				// Fill to cells with empty labels to align the type selection with the set of
-				// module values button.
-                for (int i = 0; i < 2; i++) {
-                	Label fill = new Label(rightContainer, SWT.NONE);
-                	gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
-                	gd.horizontalSpan = 2;
-                	fill.setLayoutData(gd);
-				}
-
-                // label for type selection
-                smvTypeLabel = new Label(rightContainer, SWT.NONE);
-                smvTypeLabel.setText("Type:");
+                // untyped set of model values option
+                optionSMVUntyped = new Button(rightContainer, SWT.CHECK);
+                optionSMVUntyped.setText("Type:");
+                optionSMVUntyped.addSelectionListener(typingOptionSelectionAdapter);
                 gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
-                gd.horizontalIndent = 10;
-                smvTypeLabel.setLayoutData(gd);
+                gd.horizontalIndent = 5;
+                optionSMVUntyped.setLayoutData(gd);
 
                 // type combo box
                 smvTypeCombo = new Combo(rightContainer, SWT.BORDER);
 
-                smvTypeCombo.add("no type");
-                
                 // add letters (assumes A-Z...a-z)
                 for (char i = 'A'; i < 'z'; i++)
                 {
@@ -222,14 +209,7 @@ public class AssignmentWizardPage extends WizardPage
                 gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
                 smvTypeCombo.setLayoutData(gd);
                 smvTypeCombo.setText("A");
-
-                // untyped set of model values option
-                optionSMVUntyped = new Button(rightContainer, SWT.RADIO);
-                optionSMVUntyped.setText("Leave untyped");
-                optionSMVUntyped.addSelectionListener(typingOptionSelectionAdapter);
-                gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
-                gd.horizontalSpan = 2;
-                optionSMVUntyped.setLayoutData(gd);
+                smvTypeCombo.setEnabled(false);
 
                 // install listeners
                 optionOrdinaryValue.addSelectionListener(optionSelectionAdapter);
@@ -252,6 +232,15 @@ public class AssignmentWizardPage extends WizardPage
                     {
                         optionSetModelValues.setSelection(getAssignment().isModelValue());
                         flagSymmetricalSet.setSelection(getAssignment().isSymmetricalSet());
+                        
+                        final TypedSet set = TypedSet.parseSet(this.getAssignment().getRight());
+                        final boolean hasType = set.hasType();
+						
+						optionSMVUntyped.setSelection(hasType);
+						if (hasType) {
+							smvTypeCombo.setText(set.getType());
+			                smvTypeCombo.setEnabled(true);
+						}
                     }
                 } else
                 {
@@ -348,18 +337,18 @@ public class AssignmentWizardPage extends WizardPage
                 this.getAssignment().setSymmetric(flagSymmetricalSet.getSelection());
                 this.getAssignment().setRight(set.toString());
                 
-//                // evaluate the selected option and change the MVs as appropriate
-//                if (optionSMVTyped.getSelection())
-//                {
-//                    // retrieve the type letter
-//                    String type = smvTypeCombo.getText();
-//                    // parse the set
-//                    set = TypedSet.parseSet(this.getAssignment().getRight());
-//                    // set type
-//                    set.setType(type);
-//                    // set the content back
-//                    this.getAssignment().setRight(set.toString());
-//                }
+                // evaluate the selected option and change the MVs as appropriate
+                set = TypedSet.parseSet(this.getAssignment().getRight());
+                if (optionSMVUntyped.getSelection())
+                {
+                    // retrieve the type letter
+                    final String type = smvTypeCombo.getText();
+                    set.setType(type);
+                } else {
+                    set.unsetType();
+                }
+                // set the content back
+                this.getAssignment().setRight(set.toString());
             } else
             {
                 // ordinary assignment (with no parameters)

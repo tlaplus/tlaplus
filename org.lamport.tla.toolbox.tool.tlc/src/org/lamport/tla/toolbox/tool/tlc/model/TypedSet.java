@@ -157,6 +157,10 @@ public class TypedSet
     {
         this.type = type;
     }
+    
+    public void unsetType() {
+    	setType(null);
+    }
 
     public String[] getValues()
     {
