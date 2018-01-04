@@ -104,15 +104,15 @@ public class AssignmentWizardPage extends WizardPage
         container.setLayout(layout);
         GridData gd;
 
-        paramComposite = new LabeledListComposite(container, getAssignment().getLabel().substring(
-                getAssignment().getLabel().lastIndexOf("!") + 1), getAssignment().getParams());
+		final Assignment assignment = getAssignment();
+		paramComposite = new LabeledListComposite(container, assignment.getLocalLabel(), assignment.getParams());
         gd = new GridData(SWT.LEFT, SWT.TOP, false, true);
         paramComposite.setLayoutData(gd);
 
         source = FormHelper.createSourceViewer(container, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 
         // set data
-        source.setDocument(new Document(getAssignment().getRight()));
+        source.setDocument(new Document(assignment.getRight()));
         StyledText styledText = source.getTextWidget();
         styledText.addModifyListener(new ModifyListener() {
 
@@ -134,7 +134,7 @@ public class AssignmentWizardPage extends WizardPage
         styledText.setLayoutData(gd);
 
         // display source name and originally defined in module
-        OpDefNode node = ModelHelper.getOpDefNode(getAssignment().getLabel());
+        OpDefNode node = ModelHelper.getOpDefNode(assignment.getLabel());
         if (node != null && node.getSource() != node)
         {
             GridData labelGridData = new GridData();
@@ -217,21 +217,21 @@ public class AssignmentWizardPage extends WizardPage
                 optionSetModelValues.addSelectionListener(optionSelectionAdapter);
 
                 // set the value from the assignment object
-                if (getAssignment().isModelValue())
+                if (assignment.isModelValue())
                 {
                     // single model value
-                    if (!getAssignment().isSetOfModelValues())
+                    if (!assignment.isSetOfModelValues())
                     {
                         flagSymmetricalSet.setEnabled(false);
                         smvTypeCombo.setEnabled(false);
                         optionSMVUntyped.setEnabled(false);
-                        optionModelValue.setSelection(getAssignment().isModelValue());
+                        optionModelValue.setSelection(assignment.isModelValue());
                         source.getTextWidget().setBackground(container.getBackground());
                         // set of model values
                     } else
                     {
-                        optionSetModelValues.setSelection(getAssignment().isModelValue());
-                        flagSymmetricalSet.setSelection(getAssignment().isSymmetricalSet());
+                        optionSetModelValues.setSelection(assignment.isModelValue());
+                        flagSymmetricalSet.setSelection(assignment.isSymmetricalSet());
                         
                         final TypedSet set = TypedSet.parseSet(this.getAssignment().getRight());
                         final boolean hasType = set.hasType();
@@ -272,12 +272,12 @@ public class AssignmentWizardPage extends WizardPage
                 optionModelValue.addSelectionListener(optionSelectionAdapter);
 
                 // set the value from the assignment object
-                if (getAssignment().isModelValue())
+                if (assignment.isModelValue())
                 {
                     // single model value
-                    if (!getAssignment().isSetOfModelValues())
+                    if (!assignment.isSetOfModelValues())
                     {
-                        optionModelValue.setSelection(getAssignment().isModelValue());
+                        optionModelValue.setSelection(assignment.isModelValue());
                         source.getTextWidget().setBackground(container.getBackground());
                         // set of model values
                     }

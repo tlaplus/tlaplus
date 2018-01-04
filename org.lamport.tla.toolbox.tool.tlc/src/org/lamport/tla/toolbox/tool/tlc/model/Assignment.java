@@ -145,6 +145,14 @@ public class Assignment extends Formula
     }
 
     /**
+     * @return "bar" for a assignment "frob!bar"
+     */
+    public String getLocalLabel() {
+		final int beginIndex = label.lastIndexOf("!") + 1;
+		return label.substring(beginIndex);
+    }
+    
+    /**
      * Retrieve the right part
      * @return the right side of the assignment, can be <code>null</code>
      */
