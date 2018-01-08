@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -104,6 +105,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private SourceViewer progressOutput;
     private SourceViewer expressionEvalResult;
     private SourceViewer expressionEvalInput;
+    private long startTimestamp;
     private Text startTimestampText;
     // startTime is provided by the TLCModelLaunchDataProvider's getStartTime()
     // method.
@@ -180,8 +182,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    ResultPage.this.expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
 	                    break;
 	                case START_TIME:
-	                    final long startTimestamp = dataProvider.getStartTimestamp();
-	                    if (startTimestamp < 0) {
+	                    ResultPage.this.startTimestamp = dataProvider.getStartTimestamp();
+	                    if (ResultPage.this.startTimestamp < 0) {
 							// Leave the starttime text empty on a negative
 							// timestamp. A negative one indicates that the
 							// model has never been checked. See Long.MIN_VALUE in
@@ -189,7 +191,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    	ResultPage.this.startTimestampText.setText("");
 	                    	break;
 	                    }
-						ResultPage.this.startTimestampText.setText(new Date(startTimestamp).toString());
+						ResultPage.this.startTimestampText.setText(new Date(ResultPage.this.startTimestamp).toString());
 	                    ResultPage.this.startTime = dataProvider.getStartTime();
 	                    break;
 	                case END_TIME:
@@ -378,6 +380,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     			return;
     		}
     		this.startTimestampText.setText("");
+    		this.startTimestamp = 0;
     		this.startTime = 0;
     		this.finishTimestampText.setText("");
     		this.tlcModeText.setText("");
@@ -787,7 +790,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             }
         });
 
-        this.stateSpace.setLabelProvider(new StateSpaceLabelProvider());
+        this.stateSpace.setLabelProvider(new StateSpaceLabelProvider(this));
         getSite().setSelectionProvider(this.stateSpace);
         return statespaceComposite;
     }
@@ -893,10 +896,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         public final static int COL_DISTINCT = 3;
         public final static int COL_LEFT = 4;
 
-        private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // $NON-NLS-1$
 		private boolean doHighlight = false;
+		private final ResultPage resultPage;
 
-        /* (non-Javadoc)
+        public StateSpaceLabelProvider(ResultPage resultPage) {
+			this.resultPage = resultPage;
+		}
+
+		/* (non-Javadoc)
          * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
          */
         public Image getColumnImage(Object element, int columnIndex)
@@ -934,7 +941,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 StateSpaceInformationItem item = (StateSpaceInformationItem) element;
                 switch (columnIndex) {
                 case COL_TIME:
-                    return sdf.format(item.getTime());
+                    return formatInterval(resultPage.startTimestamp, item.getTime().getTime());
                 case COL_DIAMETER:
                     if (item.getDiameter() >= 0)
                     {
@@ -993,6 +1000,15 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
 		public void unsetHighlightUnexplored() {
 			doHighlight = false;
+		}
+
+		private static String formatInterval(final long firstTS, final long secondTS) {
+			final long interval = secondTS - firstTS;
+			final long hr = TimeUnit.MILLISECONDS.toHours(interval);
+			final long min = TimeUnit.MILLISECONDS.toMinutes(interval - TimeUnit.HOURS.toMillis(hr));
+			final long sec = TimeUnit.MILLISECONDS
+					.toSeconds(interval - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
+			return String.format("%02d:%02d:%02d", hr, min, sec);
 		}
    }
 
