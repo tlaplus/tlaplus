@@ -412,8 +412,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             }
 
             // calculator expression
-			writer.addConstantExpressionEvaluation(model.getEvalExpression(), Model.MODEL_EXPRESSION_EVAL,
-					!ModelHelper.hasOpDefNode("PrintT"), !ModelHelper.hasOpDefNode("Print"));
+           
+            writer.addConstantExpressionEvaluation(model.getEvalExpression(), Model.MODEL_EXPRESSION_EVAL);
 
             switch (specType) {
             case MODEL_BEHAVIOR_TYPE_NO_SPEC:

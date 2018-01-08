@@ -1085,21 +1085,10 @@ public class ModelWriter
      * @param expression
      * @param attributeName
      */
-    public void addConstantExpressionEvaluation(String expression, String attributeName, final boolean definePrintT, final boolean definePrint)
+    public void addConstantExpressionEvaluation(String expression, String attributeName)
     {
         if (!((expression.trim().length()) == 0))
         {
-            // @see tlc2.module.MC
-            if (definePrintT || definePrint) {
-                tlaBuffer.append(COMMENT).append("Constant expression helper definition of PrintT and Print.").append(CR);
-            	if (definePrintT) {
-            		tlaBuffer.append("LOCAL PrintT(out) == TRUE").append(CR);
-            	}
-            	if (definePrint) {
-            		tlaBuffer.append("LOCAL Print(out, val) == val").append(CR);
-            	}
-                tlaBuffer.append(SEP).append(CR).append(CR);
-            }
             /*
              *  Identifier definition
              *  We define an identifier for more sensible error messages
@@ -1126,6 +1115,8 @@ public class ModelWriter
             // value of the constant expression in the TLC output
             tlaBuffer.append(COMMENT).append("Constant expression ASSUME statement ").append(ATTRIBUTE).append(
                     attributeName).append(CR);
+            // @see tlc2.module.MC
+            tlaBuffer.append("LOCAL PrintT(out) == TRUE").append(CR);
             tlaBuffer.append("ASSUME PrintT(").append(BEGIN_TUPLE).append(CONSTANT_EXPRESSION_EVAL_IDENTIFIER).append(
                     COMMA).append(id).append(END_TUPLE).append(")").append(CR);
             tlaBuffer.append(SEP).append(CR).append(CR);

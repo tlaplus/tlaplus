@@ -900,10 +900,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return null;
     }
 
-    public static boolean hasOpDefNode(final String name) {
-    	return getOpDefNode(name) != null;
-    }
-
     /**
      * Checks, whether a model attribute is a list 
      * @param attributeName name of the attribute, see {@link IModelConfigurationConstants}
