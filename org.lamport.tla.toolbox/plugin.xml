@@ -1392,6 +1392,20 @@
       </participant>
    </extension>
    
+   
+<!-- ================================================================================= -->
+<!-- News RSS Feeds - polling interval is in minutes                                   -->
+<!-- ================================================================================= -->
+   <extension
+         point="org.eclipse.recommenders.news.rcp.feed">
+      <feed
+            id="org.lamport.tla.tooblox.rss.feed"
+            name="TLA+ News"
+            uri="https://groups.google.com/forum/feed/tlaplus-announce/msgs/rss_v2_0.xml"
+            pollingInterval="60">
+      </feed>
+   </extension>
+   
    <!--                       -->
    <!-- Specification content -->
    <!--                       -->
