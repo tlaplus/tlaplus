@@ -78,16 +78,15 @@ openFile
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.http.jetty" autoStart="true" startLevel="3" />
       <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+      <plugin id="org.eclipse.update.configurator"/>
       <plugin id="org.lamport.tla.toolbox.jclouds" autoStart="true" startLevel="4" />
       <plugin id="sts" autoStart="true" startLevel="4" />
       <property name="eclipse.buildId" value="1.5.5" />
    </configurations>
 
    <repositories>
-      <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
-      <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
-      <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
-      <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
       <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
       <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
    </repositories>
