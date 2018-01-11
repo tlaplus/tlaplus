@@ -1384,9 +1384,13 @@ public class ParseAlgorithm
          { result.Do = new Vector() ;
            result.Do.addElement(InnerGetWith(depth+1, begLoc)) ;
          };
-       result.setOrigin(new Region(begLoc, 
-           ((AST) result.Do.elementAt(result.Do.size()-1)).getOrigin().getEnd())) ;
-       return result ;
+		try {
+		       result.setOrigin(new Region(begLoc, 
+		               ((AST) result.Do.elementAt(result.Do.size()-1)).getOrigin().getEnd())) ;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new ParseAlgorithmException("Missing body of with statement", result);
+		}
+	       return result ;
      } 
 
    public static AST.Assign GetAssign() throws ParseAlgorithmException
