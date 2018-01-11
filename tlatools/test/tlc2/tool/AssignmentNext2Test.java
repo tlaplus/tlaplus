@@ -33,16 +33,16 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class AssignmentInitTest extends ModelCheckerTestCase {
+public class AssignmentNext2Test extends ModelCheckerTestCase {
 
-	public AssignmentInitTest() {
-		super("AssignmentInit");
+	public AssignmentNext2Test() {
+		super("AssignmentNext2");
 	}
 
 	@Test
 	public void test() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "10", "5", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "2", "0"));
 	}
 }

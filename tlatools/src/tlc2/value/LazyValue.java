@@ -10,13 +10,22 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tla2sany.semantic.SemanticNode;
 import tlc2.util.Context;
 import util.Assert;
 
 public class LazyValue extends Value {
+	/**
+	 * Allow to completely disable LazyValue by passing a VM property/system
+	 * property to the Java VM with "-Dtlc2.value.LazyValue.off=true". This is meant
+	 * for debug purposes only and can be removed at any time. This is not API.
+	 * 
+	 * This property was added 01/12/2018 by Markus Kuppe in the process of fixing a
+	 * bug where TLC generates and incorrect set of states with certain statements.
+	 * More details can be found at https://github.com/tlaplus/tlaplus/issues/113.
+	 */
+	private static final boolean LAZYEVAL_OFF = Boolean.getBoolean(tlc2.value.LazyValue.class.getName() + ".off"); 
   /**
    * The field val is the result of evaluating expr in context con and
    * a pair of states.  If val is null, then the value has not been
@@ -33,6 +42,9 @@ public class LazyValue extends Value {
     this.expr = expr;
     this.con = con;
     this.val = null;
+    if (LAZYEVAL_OFF) {
+    	setUncachable();
+    }
   }
 
   public final void setUncachable() { this.val = ValUndef; }
