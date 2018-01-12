@@ -7,9 +7,12 @@
 package tlc2.tool;
 
 import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -408,7 +411,19 @@ public class ModelChecker extends AbstractChecker
                     	synchronized (this) {
                     		if (this.setErrState(curState, succState, false))
                     		{
-                    			MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT);
+								final Set<OpDeclNode> unassigned = succState.getUnassigned();
+								if (this.actions.length == 1) {
+									MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT,
+											new String[] { unassigned.size() > 1 ? "s are" : " is",
+													unassigned.stream().map(n -> n.getName().toString())
+															.collect(Collectors.joining(", ")) });
+								} else {
+									MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT,
+											new String[] { this.actions[i].getName().toString(),
+													unassigned.size() > 1 ? "s are" : " is",
+													unassigned.stream().map(n -> n.getName().toString())
+															.collect(Collectors.joining(", ")) });
+								}
                     			this.trace.printTrace(curState, succState);
                     			this.theStateQueue.finishAll();
                     			this.notify();

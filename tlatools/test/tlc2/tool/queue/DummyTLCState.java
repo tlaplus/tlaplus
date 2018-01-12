@@ -1,5 +1,9 @@
 package tlc2.tool.queue;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.StateVec;
@@ -97,6 +101,13 @@ public class DummyTLCState extends TLCState {
 	 */
 	public boolean allAssigned() {
 		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.TLCState#getUnassigned()
+	 */
+	public final Set<OpDeclNode> getUnassigned() {
+		return new HashSet<OpDeclNode>();
 	}
 
 	/* (non-Javadoc)

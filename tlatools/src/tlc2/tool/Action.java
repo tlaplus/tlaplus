@@ -40,4 +40,8 @@ public final class Action implements ToolGlobals, Serializable {
 	  }
 	  return "<Action " + pred.getLocation() + ">";
   }
+  
+  public final UniqueString getName() {
+	  return actionName;
+  }
 }

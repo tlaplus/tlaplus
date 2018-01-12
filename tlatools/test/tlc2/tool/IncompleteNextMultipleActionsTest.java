@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -36,10 +36,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class IncompleteNextTest extends ModelCheckerTestCase {
+public class IncompleteNextMultipleActionsTest extends ModelCheckerTestCase {
 
-	public IncompleteNextTest() {
-		super("IncompleteNext", "");
+	public IncompleteNextMultipleActionsTest() {
+		super("IncompleteNextMultipleActions", "");
 	}
 
 	@Test
@@ -53,14 +53,15 @@ public class IncompleteNextTest extends ModelCheckerTestCase {
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(4);
-		expectedTrace.add("/\\ x = 0\n/\\ y = 0");
-		expectedTrace.add("/\\ x = 1\n/\\ y = null");
+		expectedTrace.add("/\\ x = 0\n/\\ y = 0\n/\\ z = 0");
+		expectedTrace.add("/\\ x = 1\n/\\ y = null\n/\\ z = null");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		// Assert TLC indicates unassigned variable
 		assertTrue(recorder.recorded(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT));
 		final List<Object> records = recorder.getRecords(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT);
-		assertEquals(" is", ((String[]) records.get(0))[0]);
-		assertEquals("y", ((String[]) records.get(0))[1]);
+		assertEquals("A1", ((String[]) records.get(0))[0]);
+		assertEquals("s are", ((String[]) records.get(0))[1]);
+		assertEquals("y, z", ((String[]) records.get(0))[2]);
 	}
 }

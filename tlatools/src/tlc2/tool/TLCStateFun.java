@@ -6,7 +6,10 @@
 package tlc2.tool;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.util.Context;
@@ -80,6 +83,8 @@ public final class TLCStateFun extends TLCState {
   }
 
   public final boolean allAssigned() { return true; }  
+  
+  public final Set<OpDeclNode> getUnassigned() { return new HashSet<OpDeclNode>(); }
 
   public final Context addToContext(Context c) {
     Context c1 = c;

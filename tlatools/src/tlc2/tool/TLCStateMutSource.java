@@ -9,7 +9,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
 
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
@@ -242,6 +246,23 @@ implements Cloneable, Serializable {
     }
     return true;
   }
+
+	public final Set<OpDeclNode> getUnassigned() {
+		// Return sorted set (lexicographical).
+		final Set<OpDeclNode> unassignedVars = new TreeSet<OpDeclNode>(new Comparator<OpDeclNode>() {
+			@Override
+			public int compare(OpDeclNode o1, OpDeclNode o2) {
+				return o1.getName().toString().compareTo(o2.getName().toString());
+			}
+		});
+		int len = this.values.length;
+		for (int i = 0; i < len; i++) {
+			if (values[i] == null) {
+				unassignedVars.add(vars[i]);
+			}
+		}
+		return unassignedVars;
+	}
 
   public final void read(ValueInputStream vis) throws IOException {
     super.read(vis);    

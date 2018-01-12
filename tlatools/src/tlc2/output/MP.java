@@ -357,7 +357,15 @@ public class MP
             break;
 
         case EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT:
-            b.append("Successor state is not completely specified by the" + " next-state action.\n");
+			if (parameters.length == 3) {
+				b.append(
+						"Successor state is not completely specified by action %1% of the next-state relation. The following variable%2% not assigned: %3%.\n");
+			} else if (parameters.length == 2) {
+				b.append(
+						"Successor state is not completely specified by the next-state action. The following variable%1% not assigned: %2%.\n");
+			} else {
+				b.append("Successor state is not completely specified by the next-state action.\n");
+			}
             break;
         case EC.TLC_INVARIANT_VIOLATED_BEHAVIOR:
             b.append("Invariant %1% is violated.");

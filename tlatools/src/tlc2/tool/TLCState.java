@@ -7,6 +7,7 @@ package tlc2.tool;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Set;
 
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
@@ -58,6 +59,7 @@ public abstract class TLCState implements Cloneable, Serializable {
   public abstract void deepNormalize();
   public abstract long fingerPrint();
   public abstract boolean allAssigned();
+  public abstract Set<OpDeclNode> getUnassigned();
   public abstract TLCState createEmpty();
 
   /* Returns a string representation of this state.  */
