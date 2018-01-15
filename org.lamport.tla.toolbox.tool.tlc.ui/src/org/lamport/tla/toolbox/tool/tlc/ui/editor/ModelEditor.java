@@ -686,7 +686,7 @@ public class ModelEditor extends FormEditor
 	 * @throws CoreException
 	 */
 	public void launchModel(final String mode, final boolean userPased, final IProgressMonitor monitor) {
-		if (model.isSnapshot()) {
+		if (userPased && model.isSnapshot()) {
 			final boolean launchSnapshot = MessageDialog.openConfirm(getSite().getShell(), "Model is a snapshot",
 					"The model which is about to launch is a snapshot of another model. "
 					+ "Beware that no snapshots of snapshots are taken. "
