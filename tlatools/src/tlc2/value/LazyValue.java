@@ -14,6 +14,7 @@ import tlc2.tool.FingerprintException;
 import tla2sany.semantic.SemanticNode;
 import tlc2.util.Context;
 import util.Assert;
+import util.ToolIO;
 
 public class LazyValue extends Value {
 	/**
@@ -25,7 +26,14 @@ public class LazyValue extends Value {
 	 * bug where TLC generates and incorrect set of states with certain statements.
 	 * More details can be found at https://github.com/tlaplus/tlaplus/issues/113.
 	 */
-	private static final boolean LAZYEVAL_OFF = Boolean.getBoolean(tlc2.value.LazyValue.class.getName() + ".off"); 
+	private static final boolean LAZYEVAL_OFF = Boolean.getBoolean(tlc2.value.LazyValue.class.getName() + ".off");
+	
+	static {
+		// Indicate if LazyValue will be disabled in this TLC run.
+		if (LAZYEVAL_OFF) {
+			ToolIO.out.println("LazyValue is disabled.");
+		}
+	}
   /**
    * The field val is the result of evaluating expr in context con and
    * a pair of states.  If val is null, then the value has not been
