@@ -26,6 +26,9 @@
 package org.lamport.tla.toolbox.jcloud;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -55,7 +58,7 @@ public class Application implements IApplication {
 		final String[] args = (String[]) argObject;
 		final String modelDirectory = args[0];
 		
-		final Properties props = new Properties();
+		final Properties props = initializeFromFile(modelDirectory);
 		props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
 
 		// Optional parameters
@@ -113,6 +116,15 @@ public class Application implements IApplication {
 		}
 		
 		return IApplication.EXIT_OK;
+	}
+
+	private Properties initializeFromFile(final String modelDirectory) throws IOException, FileNotFoundException {
+		final Properties props = new Properties();
+		final File file = new File(modelDirectory + File.separator + "cloud.properties");
+		if (file.exists()) {
+			props.load(new FileInputStream(file));
+		}
+		return props;
 	}
 
 	/* (non-Javadoc)
