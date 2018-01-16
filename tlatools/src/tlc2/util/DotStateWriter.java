@@ -27,8 +27,13 @@
 package tlc2.util;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import tlc2.tool.TLCState;
+import tlc2.tool.TLCStateMut;
+import tlc2.tool.TLCStateMutSource;
+import tlc2.value.Value;
+import util.UniqueString;
 
 /**
  * Writes the given state in dot notation.
@@ -98,8 +103,10 @@ public class DotStateWriter extends StateWriter {
 			this.writer.append(" [style=\"dashed\"]");
 		}
 		if (length > 0) { // omit if no actions
-			this.writer.append(" [label=\"" + actionChecks.toString(from, length, 't', 'f') + "\"]");
+//			this.writer.append(" [label=\"" + actionChecks.toString(from, length, 't', 'f') + "\"]");
 		}
+
+		this.writer.append(" [label=\"y=2\"]");
 		this.writer.append(";\n");
 
 		// If the successor is new, print the state's label. Labels are printed
@@ -107,13 +114,39 @@ public class DotStateWriter extends StateWriter {
 		// the current state. If it would print the label for the current state,
 		// the init state labels would be printed twice.
 		if (successorStateIsNew) {
-			// Write the successor's label
+			// Write the successor's label.
 			this.writer.append(successorsFP);
-			this.writer.append(" [label=\"");
-			this.writer.append(states2dot(successor));
-			this.writer.append("\"]");
+			this.writer.append(" [label=<");
+			String stateStr = stateToDotStr((TLCStateMutSource) state, (TLCStateMutSource) successor);
+			this.writer.append(stateStr);
+			this.writer.append(">]");
 			this.writer.append(";\n");
 		}
+	}
+	
+	protected static String stateToDotStr(TLCStateMutSource state, TLCStateMutSource successor) {
+		HashMap<UniqueString, Value> succValMap = state.getVals();
+		HashMap<UniqueString, Value> currValMap = successor.getVals();
+		
+		StringBuilder sb = new StringBuilder();
+
+		// Generate string representation of state, diff'ing as we go.
+		for(UniqueString key : succValMap.keySet()) {
+			Value currVal = currValMap.get(key);
+			Value succVal = succValMap.get(key);
+			String valString = (key.toString() + " = " + succVal.toString());
+			// If the value in the new state is different from the old state, highlight it.
+			if(!currVal.equals(succVal)) {
+				sb.append("<font color='red'>" + valString + "</font>");
+			} 
+			// Otherwise, don't highlight the value.
+			else {
+				sb.append(valString);
+			}
+			// New line between variables.
+			sb.append("<br/>");
+		}
+		return sb.toString();
 	}
 
 	protected static String states2dot(final TLCState state) {
