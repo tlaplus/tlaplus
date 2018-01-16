@@ -13,6 +13,8 @@ import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
+import tla2sany.semantic.LevelConstants;
+import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
@@ -81,6 +83,7 @@ public class Tool
   private CallStack callStack;    // the call stack.
 
   private Vect actionVec = new Vect(10);
+  private boolean isInit = true;
 
   /**
    * Creates a new tool handle
@@ -310,23 +313,33 @@ public class Tool
    * probably make tools like TLC useless.
    */
   public final StateVec getInitStates() {
-    final StateVec initStates = new StateVec(0);
-    getInitStates(initStates);
-    return initStates;
+	  try {
+		  isInit = true;
+		  final StateVec initStates = new StateVec(0);
+		  getInitStates(initStates);
+		  return initStates;
+	  } finally {
+		  isInit = false;
+	  }
   }
 
   public final void getInitStates(IStateFunctor functor) {
-    Vect init = this.getInitStateSpec();
-    ActionItemList acts = ActionItemList.Empty;
-    for (int i = 1; i < init.size(); i++) {
-      Action elem = (Action)init.elementAt(i);
-      acts = acts.cons(elem.pred, elem.con, -1);
-    }
-    if (init.size() != 0) {
-      Action elem = (Action)init.elementAt(0);
-      TLCState ps = TLCState.Empty.createEmpty();
-      this.getInitStates(elem.pred, acts, elem.con, ps, functor);
-    }
+	  try {
+		  isInit = true;
+		  Vect init = this.getInitStateSpec();
+		  ActionItemList acts = ActionItemList.Empty;
+		  for (int i = 1; i < init.size(); i++) {
+			  Action elem = (Action)init.elementAt(i);
+			  acts = acts.cons(elem.pred, elem.con, -1);
+		  }
+		  if (init.size() != 0) {
+			  Action elem = (Action)init.elementAt(0);
+			  TLCState ps = TLCState.Empty.createEmpty();
+			  this.getInitStates(elem.pred, acts, elem.con, ps, functor);
+		  }
+	  } finally {
+		  isInit = false;
+	  }
   }
 
   /* Create the state specified by pred.  */
@@ -482,49 +495,7 @@ public class Tool
               Value[] argVals = new Value[alen];
               // evaluate the actuals:
               for (int i = 0; i < alen; i++) {
-					/*
-					 * MAK 12/2017: Effectively disable LazyValues by passing null to this.eval(..).
-					 * This has the same effect as calling LazyValue#setUncachable upon the creation
-					 * of a LV. However, at this stack level, the LV has long been created. It can
-					 * not be set to be uncachable anymore. This changes fixes Github issue 113:
-					 * "TLC fails to find initial states with bounded exists"
-					 * https://github.com/tlaplus/tlaplus/issues/113. The corresponding unit test is
-					 * tlc2.tool.AssignmentInitTest.
-					 * 
-					 * The bug to fix is, that a the use of an LV breaks evaluation of expressions
-					 * such as:
-					 * 
-					 * Op(var) == var \in {0,1} /\ var > 0
-					 * 
-					 * Op2(var) == \E val \in {0,1} : var = val /\ var > 0
-					 * 
-					 * The "var" is represented by an instance of a LazyValue which only gets
-					 * evaluated once. In the two examples above, the LV statically evaluates to "0"
-					 * even when it should evaluate to "1".
-					 * 
-					 * If the init predicate is defined to such that:
-					 * 
-					 * VARIABLE s Init == Op2(s) ...
-					 * 
-					 * TLC won't generate the initial state s=1. Likewise, the following expression
-					 * causes TLC to generate two initial states (s=0 and s=1). Again, because the
-					 * predicate "var < 1" is both times evaluated with "var=0".
-					 * 
-					 * Init(var) == \E val \in 0..1: var = val /\ var < 1
-					 * 
-					 * Unfortunately, this disables LazyValues for _all_ operators. It affects all
-					 * operators such as IF THEN ELSE, Print, ... Disabling LV only for affected
-					 * operators appears impossible at this stack level. We would somehow have to
-					 * pass along the call context. Alternatively, an attempt could be made to call
-					 * LazyValue#setUncachable upon creation of the LV. However, the LV gets created
-					 * before the call stack "sees" the actual operator.
-					 * 
-					 * If similar expressions are evaluated in the context of the next-state
-					 * relation, line ~921 is responsible. It boils down to line 2059 (opcode prime)
-					 * to disable LV by passing null to tlc2.tool.Tool.evalAppl(...) effectively
-					 * disabling LVs.
-					 */
-	                argVals[i] = this.eval(args[i], c, ps, null, EvalControl.Clear);
+	                argVals[i] = this.eval(args[i], c, ps);
               }
               // apply the operator:
               bval = opVal.apply(argVals, EvalControl.Clear);
@@ -1406,20 +1377,36 @@ public class Tool
 
           // First, unlazy if it is a lazy value. We cannot use the cached
           // value when s1 == null or isEnabled(control).
-          if (val instanceof LazyValue) {
-            LazyValue lv = (LazyValue)val;
-            if (s1 == null ||
-                lv.val == ValUndef ||
-                EvalControl.isEnabled(control)) {
-              val = this.eval(lv.expr, lv.con, s0, s1, control);
-            }
-            else {
-              if (lv.val == null) {
-                lv.val = this.eval(lv.expr, lv.con, s0, s1, control);
-              }
-              val = lv.val;
-            }
-          }
+			if (val instanceof LazyValue) {
+				final LazyValue lv = (LazyValue) val;
+				if (s1 == null) {
+					val = this.eval(lv.expr, lv.con, s0, null, control);
+				} else if (lv.val == ValUndef || EvalControl.isEnabled(control)) {
+					val = this.eval(lv.expr, lv.con, s0, s1, control);
+				} else {
+					val = lv.val;
+					if (val == null) {
+						final Value res = this.eval(lv.expr, lv.con, s0, s1, control);
+						final int level = ((LevelNode) lv.expr).getLevel();
+						if ((isInit && level <= LevelConstants.ConstantLevel)
+								|| (!isInit && level <= LevelConstants.VariableLevel)) {
+							// This fix has been suggested by Yuan Yu on 01/15/2018:
+							// If init-states are being generated, level has to be <= ConstantLevel for
+							// caching/LazyValue to be allowed. If next-states are being generated, level
+							// has to be <= VariableLevel. This restriction is in place as a fix to 
+							// Github issue 113 (https://github.com/tlaplus/tlaplus/issues/113) - 
+							// TLC generates invalid set of states caused by broken LazyValue evaluation
+							// where TLC can generate invalid sets of init or next-states. The related
+							// tests are AssignmentInit* and AssignmentNext*. 
+							// Without this fix TLC essentially used a stale lv.val when it needed
+							// to re-evaluate res because the actual operands to eval changed.
+							lv.val = res;
+						}
+						val = res;
+					}
+				}
+
+			}
 
           Value res = null;
           if (val instanceof OpDefNode) {

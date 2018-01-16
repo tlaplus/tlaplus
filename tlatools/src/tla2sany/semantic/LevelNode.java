@@ -192,6 +192,10 @@ public int levelChecked   = 0 ;
 /***************************************************************************
 * The checks in the following methods should probably be eliminated after  *
 * SANY2 is debugged.                                                       *
+*  <ul><li>0 for constant                                                  *
+*  <li>1 for non-primed variable                                           *
+*  <li>2 for primed variable                                               *
+*  <li>3 for temporal formula</ul>                                         *
 ***************************************************************************/
   public int getLevel(){
     if (this.levelChecked == 0)
