@@ -106,7 +106,15 @@ public class DotStateWriter extends StateWriter {
 //			this.writer.append(" [label=\"" + actionChecks.toString(from, length, 't', 'f') + "\"]");
 		}
 
-		this.writer.append(" [label=\"y=2\"]");
+		// The edge label.
+		HashMap<UniqueString, Value> diffMap = stateDiff((TLCStateMutSource) state, (TLCStateMutSource) successor);
+		this.writer.append(" [label=\"");
+		for(UniqueString key : diffMap.keySet()) {
+			String valString = (key.toString() + "' = " + diffMap.get(key).toString());
+			this.writer.append(valString);
+			this.writer.append("\n");
+		}
+		this.writer.append("\"]");
 		this.writer.append(";\n");
 
 		// If the successor is new, print the state's label. Labels are printed
@@ -118,25 +126,40 @@ public class DotStateWriter extends StateWriter {
 			this.writer.append(successorsFP);
 			this.writer.append(" [label=<");
 			String stateStr = stateToDotStr((TLCStateMutSource) state, (TLCStateMutSource) successor);
+			System.out.println(stateStr);
 			this.writer.append(stateStr);
 			this.writer.append(">]");
 			this.writer.append(";\n");
 		}
 	}
 	
-	protected static String stateToDotStr(TLCStateMutSource state, TLCStateMutSource successor) {
-		HashMap<UniqueString, Value> succValMap = state.getVals();
-		HashMap<UniqueString, Value> currValMap = successor.getVals();
+	protected static HashMap<UniqueString, Value> stateDiff(TLCStateMutSource state, TLCStateMutSource successor){
+		HashMap<UniqueString, Value> stateVals = state.getVals();
+		HashMap<UniqueString, Value> succStateVals = successor.getVals();
+		HashMap<UniqueString, Value> diffMap = new HashMap<>();
 		
+		for(UniqueString key : stateVals.keySet()) {
+			Value valSucc = succStateVals.get(key);
+			// Check if the value in the new state is different from the old state.
+			if(!stateVals.get(key).equals(valSucc)) {
+				diffMap.put(key, valSucc);
+			}
+		}
+		
+		return diffMap;
+	}
+	
+	protected static String stateToDotStr(TLCStateMutSource state, TLCStateMutSource successor) {		
 		StringBuilder sb = new StringBuilder();
-
+		HashMap<UniqueString, Value> valMap = successor.getVals();
+		HashMap<UniqueString, Value> diffMap = stateDiff(state, successor);
+		
 		// Generate string representation of state, diff'ing as we go.
-		for(UniqueString key : succValMap.keySet()) {
-			Value currVal = currValMap.get(key);
-			Value succVal = succValMap.get(key);
-			String valString = (key.toString() + " = " + succVal.toString());
+		for(UniqueString key : state.getVals().keySet()) {
+			String valString = (key.toString() + " = " + valMap.get(key).toString());
+
 			// If the value in the new state is different from the old state, highlight it.
-			if(!currVal.equals(succVal)) {
+			if(diffMap.containsKey(key)) {
 				sb.append("<font color='red'>" + valString + "</font>");
 			} 
 			// Otherwise, don't highlight the value.
