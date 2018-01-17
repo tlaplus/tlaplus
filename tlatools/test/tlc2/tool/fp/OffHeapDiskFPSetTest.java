@@ -28,10 +28,12 @@ package tlc2.tool.fp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static tlc2.tool.fp.DiskFPSet.MARK_FLUSHED;
 import static tlc2.tool.fp.OffHeapDiskFPSet.EMPTY;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -288,5 +290,41 @@ public class OffHeapDiskFPSetTest {
 	private static long getFingerprint(Random random) {
 		final long fp = (((long) random.nextInt(Integer.MAX_VALUE - 1) + 1) << 32) | (random.nextInt() & 0xffffffffL);
 		return fp;
+	}
+
+	@Test
+	public void testWriteIndex() throws NoSuchFieldException, SecurityException, IllegalArgumentException,
+			IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException {
+		final DummyFPSetConfiguration fpSetConfig = new DummyFPSetConfiguration();
+		fpSetConfig.setMemoryInFingerprintCnt(1);
+
+		final OffHeapDiskFPSet fpSet = new OffHeapDiskFPSet(fpSetConfig);
+		final Method method = OffHeapDiskFPSet.class.getDeclaredMethod("writeIndex",
+				new Class[] { long[].class, java.io.RandomAccessFile.class, long.class });
+		method.setAccessible(true);
+
+		// length of array times NumEntriesPerPage has to exceed Integer.MAX_VALUE
+		final int length = 99999999;
+		assertTrue(length * DiskFPSet.NumEntriesPerPage < 1);
+
+		try {
+			method.invoke(fpSet, new long[length], new DummyRandomAccessFile(File.createTempFile("foo", "bar"), "rw"),
+					Integer.MAX_VALUE);
+		} catch (InvocationTargetException e) {
+			Throwable targetException = e.getTargetException();
+			fail(targetException.getMessage());
+		}
+	}
+
+	private static class DummyRandomAccessFile extends java.io.RandomAccessFile {
+
+		public DummyRandomAccessFile(File file, String mode) throws FileNotFoundException {
+			super(file, mode);
+		}
+
+		@Override
+		public int read() throws IOException {
+			return 0;
+		}
 	}
 }
