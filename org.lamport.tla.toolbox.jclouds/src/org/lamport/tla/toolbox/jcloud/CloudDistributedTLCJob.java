@@ -208,12 +208,6 @@ public class CloudDistributedTLCJob extends Job {
 							+ " && "
 							+ params.getHostnameSetup()
 							+ " && "
-							// Oracle Java 8
-							+ "add-apt-repository ppa:webupd8team/java -y && "
-							// Accept license before apt (dpkg) tries to present it to us (which fails due to 'noninteractive' mode below)
-							// see http://stackoverflow.com/a/19391042
-							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections && "
-							+ "echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections && "
 							+ params.getExtraRepositories()
 							+ " && "
 							// Update Ubuntu's package index. The public/remote
@@ -254,20 +248,11 @@ public class CloudDistributedTLCJob extends Job {
 							// worker tla2tools.jar (strip spec) and
 							// unattended-upgrades makes sure the instance
 							// is up-to-date security-wise. 
-							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades oracle-java8-installer oracle-java8-set-default "
+							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades openjdk-9-jre-headless "
 									+ params.getExtraPackages() + " -y"
 							+ " && "
 							// Delegate file system tuning to cloud specific code.
 							+ params.getOSFilesystemTuning()
-							// Install Oracle Java8. It supports Java Mission
-							// Control, an honest profiler. But first,
-							// automatically accept the Oracle license because
-							// installation will fail otherwise.
-//							+ " && "
-//							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && "
-//							+ "add-apt-repository ppa:webupd8team/java -y && "
-//							+ "apt-get update && "
-//							+ "apt-get --no-install-recommends install oracle-java8-installer oracle-java8-set-default -y"
 							// Create /mnt/tlc and change permission to be world writable
 							// Requires package 'apache2' to be already installed. apache2
 							// creates /var/www/html.
@@ -347,6 +332,9 @@ public class CloudDistributedTLCJob extends Job {
 						+ "-Dcom.sun.management.jmxremote.port=5400 "
 						+ "-Dcom.sun.management.jmxremote.ssl=false "
 						+ "-Dcom.sun.management.jmxremote.authenticate=false "
+						// On Ubuntu 16.04 LTS with OpenJDK 9 (not Oracle!) the management.proeprties
+						// file is in a non-default location.
+						+ "-Dcom.sun.management.config.file=/etc/java-9-openjdk/management/management.properties "
 						// TLC tuning options
 						+ params.getJavaSystemProperties() + " "
 						+ "-jar /tmp/tla2tools.jar " 
