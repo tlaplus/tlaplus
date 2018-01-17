@@ -1132,7 +1132,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 	protected void writeIndex(long[] index, final RandomAccessFile raf, long length) throws IOException {
 		for (int i = 0; i < index.length; i++) {
-			long pos = Math.min(i * NumEntriesPerPage, length);
+			long pos = Math.min(((long) i) * NumEntriesPerPage, length);
 			raf.seek(pos * LongSize);
 			final long value = raf.readLong();
 			index[i] = value;
