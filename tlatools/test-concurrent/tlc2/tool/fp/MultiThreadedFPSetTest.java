@@ -104,6 +104,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		
 		TLCGlobals.setNumWorkers(NUM_THREADS);
 		final FPSet fpSet = getFPSetInitialized(NUM_THREADS);
+		fpSet.incWorkers(NUM_THREADS);
 		final CountDownLatch latch = new CountDownLatch(NUM_THREADS);
 
 		final Constructor<?> constructor = fpgClass.getConstructor(new Class[] { MultiThreadedFPSetTest.class,
