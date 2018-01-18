@@ -34,6 +34,7 @@ import static org.jclouds.scriptbuilder.domain.Statements.exec;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -381,8 +382,13 @@ public class CloudDistributedTLCJob extends Job {
 					// the old net.schmizz.sshj and an update to the newer com.hierynomus seems 
 					// awful lot of work.
 					channel = sshClient.execChannel("cat /mnt/tlc/tlc.jfr");
-					final String cwd = Paths.get(".").toAbsolutePath().normalize().toString() + File.separator;
-					ByteStreams.copy(channel.getOutput(), new FileOutputStream(new File(cwd + "tlc.jfr")));
+					final InputStream output = channel.getOutput();
+					if (output.available() > 0) {
+						final String cwd = Paths.get(".").toAbsolutePath().normalize().toString() + File.separator;
+						ByteStreams.copy(output, new FileOutputStream(new File(cwd + "tlc.jfr")));
+					} else {
+						System.err.println("Received empty Java Flight recording. Not creating tlc.jfr file");
+					}
 				}
 				// Finally close the ssh connection.
 				sshClient.disconnect();
