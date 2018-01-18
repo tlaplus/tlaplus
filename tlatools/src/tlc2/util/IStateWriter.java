@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.util;
 
+import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 
 public interface IStateWriter {
@@ -48,6 +49,8 @@ public interface IStateWriter {
 	void writeState(TLCState state);
 
 	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew);
+	
+	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Action action);
 
 	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visulation);
 	

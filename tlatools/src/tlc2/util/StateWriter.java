@@ -3,6 +3,7 @@ package tlc2.util;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 import util.FileUtil;
 
@@ -57,6 +58,13 @@ public class StateWriter implements IStateWriter
     	}
     }
 
+    public synchronized void writeState(final TLCState state, final TLCState successor, final boolean successorStateIsNew, Action action)
+    {
+    	if (successorStateIsNew) {
+    		this.writeState(state);
+    	}
+    }
+    
     /* (non-Javadoc)
      * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.util.IStateWriter.Visualization)
      */

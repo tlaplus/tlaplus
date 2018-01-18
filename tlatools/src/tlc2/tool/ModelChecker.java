@@ -443,7 +443,7 @@ public class ModelChecker extends AbstractChecker
 						long fp = succState.fingerPrint();
 						seen = this.theFPSet.put(fp);
                         // Write out succState when needed:
-                        this.allStateWriter.writeState(curState, succState, !seen);
+                        this.allStateWriter.writeState(curState, succState, !seen, this.actions[i]);
                         if (!seen)
                         {
 							// Write succState to trace only if it satisfies the
