@@ -24,6 +24,7 @@ package tla2sany.modanalyzer;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
@@ -234,6 +235,16 @@ public class ParseUnit {
         }
 
         // Print user feedback
+		// MAK 01/2018: Always print the absolute path. Useful if e.g. users symlink
+		// common TLA files and want to verify that symlinking worked.
+        Path absoluteResolvedPath;
+		try {
+			absoluteResolvedPath = nis.getAbsoluteResolvedPath();
+		} catch (IOException e1) {
+			// Fall back to to relative path if resolving the path to an absolute one fails.
+			// Chance of failure should be fairly low because existence is checked above.
+			absoluteResolvedPath = nis.sourceFile().toPath();
+		}
         /***********************************************************************
         * This is a bug.  The higher-level parsing methods have a PrintStream  *
         * argument to which such output gets written.  That argument should    *
@@ -244,10 +255,10 @@ public class ParseUnit {
         ***********************************************************************/
         if (ToolIO.getMode() == ToolIO.SYSTEM)
         {
-            ToolIO.out.println("Parsing file " + nis.sourceFile());
+			ToolIO.out.printf("Parsing file %s\n", absoluteResolvedPath);
         } else
         {
-            ToolIO.out.println("Parsing module " + nis.getModuleName() + " in file " + nis.sourceFile());
+            ToolIO.out.printf("Parsing module %s in file %s\n", nis.getModuleName(), absoluteResolvedPath);
         }
 
         boolean parseSuccess; 

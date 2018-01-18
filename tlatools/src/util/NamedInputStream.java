@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 
 // SZ Feb 20, 2009: moved to util and reformatted
 
@@ -64,6 +65,15 @@ public class NamedInputStream extends FileInputStream
     public final File sourceFile()
     {
         return inputFile;
+    }
+    
+    /**
+	 * @return The absolute, resolved path. In case a file is symlinked, resolve the
+	 *         final target (doesn't work for cygwin symlinks but for mklink)
+     * @throws IOException 
+	 */
+    public final Path getAbsoluteResolvedPath() throws IOException {
+		return inputFile.toPath().toRealPath();
     }
 
     public final String toString()
