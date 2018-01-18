@@ -111,6 +111,11 @@ public class Application implements IApplication {
 		// Show error message if any such as invalid credentials.
 		if (status.getSeverity() == IStatus.ERROR) {
 			System.err.println(status.getMessage());
+			final Throwable exception = status.getException();
+			if (exception instanceof CloudDistributedTLCJob.ScriptException) {
+				System.err.printf("\n###############################\n\n%s\n###############################\n",
+						exception.getMessage());
+			}
 			// Signal unsuccessful execution.
 			return new Integer(1);
 		}

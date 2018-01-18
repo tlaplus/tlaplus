@@ -4,7 +4,7 @@ Bundle-Name: JCloud distributed TLC provider
 Bundle-SymbolicName: org.lamport.tla.toolbox.jclouds;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Markus Alexander Kuppe
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime,
  jclouds-core;bundle-version="1.7.3",
  jclouds-compute;bundle-version="1.7.3",
