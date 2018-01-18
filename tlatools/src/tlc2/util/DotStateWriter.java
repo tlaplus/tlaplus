@@ -142,24 +142,31 @@ public class DotStateWriter extends StateWriter {
 	    }
 	    this.writer.append("</tr>");
 
-	    this.writer.append("<tr>");
+//	    this.writer.append("<tr>");
 
 		// Print names of variables that changed in this transition.
-		this.writer.append("<td bgcolor='white'><font color='#222222' point-size='9'>");
+//		this.writer.append("<td bgcolor='white'><font color='#222222' point-size='9'>");
 //		this.writer.append("(");
 		HashMap<UniqueString, Value> diffMap = state.diff(successor);
 		ArrayList<String> changedVars = new ArrayList<>();
 		for(UniqueString key : diffMap.keySet()) {
-//			changedVars.add(key.toString());
-			this.writer.append(key.toString());
-			this.writer.append("<br/>");
+			changedVars.add(key.toString());
+//			this.writer.append(key.toString());
+//			this.writer.append("<br/>");
 
 		}
-//		this.writer.append(String.join(",", changedVars));
+//		this.writer.append(String.join("\n", changedVars));
 //		this.writer.append(")");
-		this.writer.append("</font></td></tr></table>");
+//		this.writer.append("</font>");
+//		this.writer.append("</td>");
+//		this.writer.append("</tr>");
+		this.writer.append("</table>");
 		this.writer.append(">");
 		this.writer.append(" color=\"" + color +"\"]");
+		this.writer.append(" [headlabel=");
+		this.writer.append("\"" + String.join("\n", changedVars) + "\"");
+		this.writer.append(" labeldistance=\"4\" fontcolor=\"#333333\" fontsize=\"9\"]");
+
 		this.writer.append(";\n");
 		
 		// If the successor is new, print the state's label. Labels are printed
