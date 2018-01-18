@@ -27,8 +27,10 @@
 package tlc2.util;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
+import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateMut;
 import tlc2.tool.TLCStateMutSource;
@@ -61,9 +63,9 @@ public class DotStateWriter extends StateWriter {
 		// Marker the state as an initial state by using a filled style.
 		this.writer.append(Long.toString(state.fingerPrint()));
 		this.writer.append(" [style = filled]");
-		this.writer.append(" [label=\"");
-		this.writer.append(states2dot(state));
-		this.writer.append("\"]");
+		this.writer.append(" [label=<");
+		this.writer.append(stateToDotStr(state, state));
+		this.writer.append(">]");
 		this.writer.append("\n");
 	}
 	
@@ -74,25 +76,30 @@ public class DotStateWriter extends StateWriter {
 		writeState(state, successor, successorStateIsNew, Visualization.DEFAULT);
 	}
 	
+    public synchronized void writeState(final TLCState state, final TLCState successor, final boolean successorStateIsNew, Action action)
+    {
+		writeState(state, successor, null, 0, 0, successorStateIsNew, Visualization.DEFAULT, action);
+    }
+	
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
 	public synchronized void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
-		writeState(state, successor, null, 0, 0, successorStateIsNew, visualization);
+		writeState(state, successor, null, 0, 0, successorStateIsNew, visualization, null);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, tlc2.util.BitVector, int, int, boolean)
 	 */
 	public synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew) {
-		writeState(state, successor, actionChecks, from, length, successorStateIsNew, Visualization.DEFAULT);
+		writeState(state, successor, actionChecks, from, length, successorStateIsNew, Visualization.DEFAULT, null);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
 	public synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew,
-			Visualization visualization) {
+			Visualization visualization, Action action) {
 		final String successorsFP = Long.toString(successor.fingerPrint());
 
 		// Write the transition
@@ -100,23 +107,33 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(" -> ");
 		this.writer.append(successorsFP);
 		if (visualization == Visualization.STUTTERING) {
-			this.writer.append(" [style=\"dashed\"]");
+//			this.writer.append(" [style=\"dashed\"]");
 		}
-		if (length > 0) { // omit if no actions
+		
+		// Add the transition edge label. Omit if there are no actions.	
+		if (length > 0) { 
 //			this.writer.append(" [label=\"" + actionChecks.toString(from, length, 't', 'f') + "\"]");
 		}
 
-		// The edge label.
-		HashMap<UniqueString, Value> diffMap = stateDiff((TLCStateMutSource) state, (TLCStateMutSource) successor);
-		this.writer.append(" [label=\"");
+		this.writer.append(" [label=<");
+		this.writer.append("<table border='0' cellborder='0' cellspacing='0'>");
+	    this.writer.append("<tr>");
+	    if(action!=null) {
+			this.writer.append("<td bgcolor='white'><font point-size='12'>" + action.getActionName() + "</font></td>");
+	    }
+		// Print names of variables that changed in this transition.
+		this.writer.append("<td bgcolor='white'><font color='#222222' point-size='12'>");
+		this.writer.append("(");
+		HashMap<UniqueString, Value> diffMap = state.diff(successor);
+		ArrayList<String> changedVars = new ArrayList<>();
 		for(UniqueString key : diffMap.keySet()) {
-			String valString = (key.toString() + "' = " + diffMap.get(key).toString());
-			this.writer.append(valString);
-			this.writer.append("\n");
+			changedVars.add(key.toString());
 		}
-		this.writer.append("\"]");
+		this.writer.append(String.join(",", changedVars));
+		this.writer.append(")</font></td></tr></table>");
+		this.writer.append(">]");
 		this.writer.append(";\n");
-
+		
 		// If the successor is new, print the state's label. Labels are printed
 		// when writeState sees the successor. It does not print the label for
 		// the current state. If it would print the label for the current state,
@@ -125,47 +142,21 @@ public class DotStateWriter extends StateWriter {
 			// Write the successor's label.
 			this.writer.append(successorsFP);
 			this.writer.append(" [label=<");
-			String stateStr = stateToDotStr((TLCStateMutSource) state, (TLCStateMutSource) successor);
-			System.out.println(stateStr);
+			String stateStr = stateToDotStr(state, successor);
 			this.writer.append(stateStr);
 			this.writer.append(">]");
 			this.writer.append(";\n");
 		}
 	}
 	
-	protected static HashMap<UniqueString, Value> stateDiff(TLCStateMutSource state, TLCStateMutSource successor){
-		HashMap<UniqueString, Value> stateVals = state.getVals();
-		HashMap<UniqueString, Value> succStateVals = successor.getVals();
-		HashMap<UniqueString, Value> diffMap = new HashMap<>();
-		
-		for(UniqueString key : stateVals.keySet()) {
-			Value valSucc = succStateVals.get(key);
-			// Check if the value in the new state is different from the old state.
-			if(!stateVals.get(key).equals(valSucc)) {
-				diffMap.put(key, valSucc);
-			}
-		}
-		
-		return diffMap;
-	}
-	
-	protected static String stateToDotStr(TLCStateMutSource state, TLCStateMutSource successor) {		
+	protected static String stateToDotStr(TLCState state, TLCState successor) {		
 		StringBuilder sb = new StringBuilder();
 		HashMap<UniqueString, Value> valMap = successor.getVals();
-		HashMap<UniqueString, Value> diffMap = stateDiff(state, successor);
 		
-		// Generate string representation of state, diff'ing as we go.
+		// Generate a string representation of state.
 		for(UniqueString key : state.getVals().keySet()) {
 			String valString = (key.toString() + " = " + valMap.get(key).toString());
-
-			// If the value in the new state is different from the old state, highlight it.
-			if(diffMap.containsKey(key)) {
-				sb.append("<font color='red'>" + valString + "</font>");
-			} 
-			// Otherwise, don't highlight the value.
-			else {
-				sb.append(valString);
-			}
+			sb.append(valString);
 			// New line between variables.
 			sb.append("<br/>");
 		}
