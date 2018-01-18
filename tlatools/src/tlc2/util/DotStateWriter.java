@@ -72,6 +72,7 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(stateToDotStr(state, state));
 		this.writer.append(">]");
 		this.writer.append("\n");
+		this.writer.append(dotLegend("Legend", new ArrayList<String>()));
 	}
 	
 	/* (non-Javadoc)
@@ -162,7 +163,7 @@ public class DotStateWriter extends StateWriter {
 //		this.writer.append("</tr>");
 		this.writer.append("</table>");
 		this.writer.append(">");
-		this.writer.append(" color=\"" + color +"\"]");
+		this.writer.append(" labeldistance=\"4\" color=\"" + color +"\"]");
 		this.writer.append(" [headlabel=");
 		this.writer.append("\"" + String.join("\n", changedVars) + "\"");
 		this.writer.append(" labeldistance=\"4\" fontcolor=\"" + color + "\" fontsize=\"9\"]");
@@ -182,6 +183,18 @@ public class DotStateWriter extends StateWriter {
 			this.writer.append(">]");
 			this.writer.append(";\n");
 		}
+	}
+	
+	protected static String dotLegend(String name, ArrayList<String> actions) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(String.format("subgraph %s {", name));
+		sb.append("node [ labeljust=\"l\" colorscheme=\"pastel13\" style=filled fillcolor=3 shape=record ]\n");
+        sb.append("label = \"Legend\" style=\"solid\"");
+        sb.append("colorscheme=\"pastel13\"");
+		sb.append("action1 [label=\"Action1\", fillcolor=1] ");
+		sb.append("action2 [label=\"Action2\", fillcolor=2] ");
+		sb.append("}");
+		return sb.toString();
 	}
 	
 	protected static String stateToDotStr(TLCState state, TLCState successor) {		
