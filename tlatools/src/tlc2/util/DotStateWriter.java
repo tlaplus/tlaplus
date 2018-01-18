@@ -28,7 +28,9 @@ package tlc2.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import tlc2.tool.Action;
 import tlc2.tool.TLCState;
@@ -44,6 +46,9 @@ import util.UniqueString;
  */
 public class DotStateWriter extends StateWriter {
 
+	HashSet<String> availableColors = new HashSet<>(Arrays.asList("#6A041D", "#53FF45", "#1E2EDE"));
+	HashMap<String, String> actionToColors = new HashMap<>();
+	
 	public DotStateWriter(final String fname) throws IOException {
 		this(fname, "strict ");
 	}
@@ -101,6 +106,8 @@ public class DotStateWriter extends StateWriter {
 	public synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew,
 			Visualization visualization, Action action) {
 		final String successorsFP = Long.toString(successor.fingerPrint());
+		
+
 
 		// Write the transition
 		this.writer.append(Long.toString(state.fingerPrint()));
@@ -118,20 +125,41 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(" [label=<");
 		this.writer.append("<table border='0' cellborder='0' cellspacing='0'>");
 	    this.writer.append("<tr>");
+	    String color = "black";
 	    if(action!=null) {
-			this.writer.append("<td bgcolor='white'><font point-size='12'>" + action.getActionName() + "</font></td>");
+	    		if(actionToColors.containsKey(action.toString())) {
+	    			color = actionToColors.get(action.toString());
+	    		} else {
+	    			color = availableColors.iterator().next();
+	    			actionToColors.put(action.toString(), color);
+	    			availableColors.remove(color);
+	    		}
+	    		System.out.println(action.toString());
+	    		System.out.println(color);
+	    		this.writer.append("<td bgcolor='white'>");
+			this.writer.append("<font point-size='12'" + " color=\"" + color + "\">" + action.getActionName() + "</font>");
+			this.writer.append("</td>");
 	    }
+	    this.writer.append("</tr>");
+
+	    this.writer.append("<tr>");
+
 		// Print names of variables that changed in this transition.
-		this.writer.append("<td bgcolor='white'><font color='#222222' point-size='12'>");
-		this.writer.append("(");
+		this.writer.append("<td bgcolor='white'><font color='#222222' point-size='9'>");
+//		this.writer.append("(");
 		HashMap<UniqueString, Value> diffMap = state.diff(successor);
 		ArrayList<String> changedVars = new ArrayList<>();
 		for(UniqueString key : diffMap.keySet()) {
-			changedVars.add(key.toString());
+//			changedVars.add(key.toString());
+			this.writer.append(key.toString());
+			this.writer.append("<br/>");
+
 		}
-		this.writer.append(String.join(",", changedVars));
-		this.writer.append(")</font></td></tr></table>");
-		this.writer.append(">]");
+//		this.writer.append(String.join(",", changedVars));
+//		this.writer.append(")");
+		this.writer.append("</font></td></tr></table>");
+		this.writer.append(">");
+		this.writer.append(" color=\"" + color +"\"]");
 		this.writer.append(";\n");
 		
 		// If the successor is new, print the state's label. Labels are printed
