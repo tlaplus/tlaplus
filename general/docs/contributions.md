@@ -27,7 +27,18 @@ The TLC process can be long running. It possibly runs for days, weeks or months.
 
 TLAPS
 -----
-TBD
+#### Automatic expansion of operator definitions (difficulty: moderate) (skills: OCaml)
+
+TLAPS currently relies on the user to indicate which operator definitions should be expanded before calling the back-end provers. Forgetting to expand an operator may make an obligation unprovable, expanding too many operators may result in a search space too big for the back-end to handle. The objective of this work would be to automatically detect which definitions have to be expanded, based on iterative deepening and possibly heuristics on the occurrences of operators in the context. The method could return the list of expanded operators so that it can be inserted in the proof, eschewing the need for repeating the search when the proof is rerun. Doing so requires modifying the proof manager but not the individual back-end interfaces.
+
+#### SMT support for reasoning about regular expressions (difficulty: moderate to high) (skills: OCaml, SMT, TLA+)
+
+Reasoning about TLA+ sequences currently mainly relies on the lemmas provided in the module SequenceTheorems and therefore comes with very little automation. Certain SMT solvers including [Z3](https://sites.google.com/site/z3strsolver/) and [CVC4](https://github.com/CVC4/CVC4) include support for reasoning about strings and regular expressions. Integrating these capabilities in TLAPS would be useful, for example when reasoning about the contents of message channels in distributed algorithms. Doing so will require extending the SMT backend of TLAPS, including its underlying type checker for recognizing regular expressions, represented using custom TLA+ operators.
+
+#### Generate counter-examples for invalid proof obligations (difficulty: moderate to high) (skills: OCaml, TLA+)
+
+Most conjectures that users attempt to prove during proof development are in fact not valid. For example, hypotheses needed to prove a step are not provided to the prover, the invariant may not be strong enough etc. When this is the case, the back-end provers time out but do not provide any useful information to the user. The objective of this work is to connect a model generator such as [Nunchaku](https://github.com/nunchaku-inria/nunchaku) to TLAPS that could provide an explanation to the user why the proof obligation is not valid. The main difficulty will be defining a translation from a useful sublanguage of TLA+ set-theoretic expressions to the input language of Nunchaku, which resembles a functional programming language.
+
 
 TLA Toolbox
 -----------
