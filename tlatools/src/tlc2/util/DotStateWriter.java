@@ -165,7 +165,7 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(" color=\"" + color +"\"]");
 		this.writer.append(" [headlabel=");
 		this.writer.append("\"" + String.join("\n", changedVars) + "\"");
-		this.writer.append(" labeldistance=\"4\" fontcolor=\"#333333\" fontsize=\"9\"]");
+		this.writer.append(" labeldistance=\"4\" fontcolor=\"" + color + "\" fontsize=\"9\"]");
 
 		this.writer.append(";\n");
 		
