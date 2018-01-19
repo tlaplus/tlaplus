@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 import tlc2.tool.Action;
 import tlc2.tool.TLCState;
@@ -46,8 +47,10 @@ import util.UniqueString;
  */
 public class DotStateWriter extends StateWriter {
 
-	HashSet<String> availableColors = new HashSet<>(Arrays.asList("#6A041D", "#53FF45", "#1E2EDE"));
-	HashMap<String, String> actionToColors = new HashMap<>();
+	// Used for assigning unique color identifiers to each action type.
+	Integer colorGen = 1;
+	HashMap<String, Integer> actionToColors = new HashMap<>();
+	static String dotColorScheme = "paired9";
 	
 	public DotStateWriter(final String fname) throws IOException {
 		this(fname, "strict ");
@@ -58,6 +61,12 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(strict + "digraph DiskGraph {\n"); // strict removes redundant edges
 		// Turned off LR because top to bottom provides better results with GraphViz viewer.
 //		this.writer.append("rankdir=LR;\n"); // Left to right rather than top to bottom
+        this.writer.append(String.format("edge [colorscheme=\"%s\"]\n", dotColorScheme));
+        // Spread out state nodes more.
+        this.writer.append("nodesep=0.35;\n");
+//        this.writer.append("ranksep=0.85;\n");
+		this.writer.append("subgraph cluster_graph {\n"); 
+        this.writer.append("color=\"white\";\n"); //no border.
 		this.writer.flush();
 	}
 
@@ -72,7 +81,7 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(stateToDotStr(state, state));
 		this.writer.append(">]");
 		this.writer.append("\n");
-		this.writer.append(dotLegend("Legend", new ArrayList<String>()));
+//		this.writer.append(dotLegend("Legend", new ArrayList<String>()));
 	}
 	
 	/* (non-Javadoc)
@@ -108,8 +117,6 @@ public class DotStateWriter extends StateWriter {
 			Visualization visualization, Action action) {
 		final String successorsFP = Long.toString(successor.fingerPrint());
 		
-
-
 		// Write the transition
 		this.writer.append(Long.toString(state.fingerPrint()));
 		this.writer.append(" -> ");
@@ -126,49 +133,50 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(" [label=<");
 		this.writer.append("<table border='0' cellborder='0' cellspacing='0'>");
 	    this.writer.append("<tr>");
-	    String color = "black";
+	    Integer color = 0;
 	    if(action!=null) {
-	    		if(actionToColors.containsKey(action.toString())) {
-	    			color = actionToColors.get(action.toString());
+	    		String actionName = action.getActionName();
+	    		if(actionToColors.containsKey(actionName)) {
+	    			color = actionToColors.get(actionName);
 	    		} else {
-	    			color = availableColors.iterator().next();
-	    			actionToColors.put(action.toString(), color);
-	    			availableColors.remove(color);
+	    			// Get the next color and use it for this action.
+	    			this.colorGen++;
+	    			color = this.colorGen;
+	    			actionToColors.put(actionName, color);
 	    		}
-	    		System.out.println(action.toString());
-	    		System.out.println(color);
-	    		this.writer.append("<td bgcolor='white'>");
-			this.writer.append("<font point-size='12'" + " color=\"" + color + "\">" + action.getActionName() + "</font>");
+	    		this.writer.append("<td bgcolor='white' color='red'>");
+			this.writer.append("<font point-size='12'" + " color=\"" + color + "\">" + actionName + "</font>");
 			this.writer.append("</td>");
 	    }
 	    this.writer.append("</tr>");
 
-//	    this.writer.append("<tr>");
+	    this.writer.append("<tr>");
 
 		// Print names of variables that changed in this transition.
-//		this.writer.append("<td bgcolor='white'><font color='#222222' point-size='9'>");
+		this.writer.append("<td bgcolor='white'><font color='#222222' point-size='9'>");
 //		this.writer.append("(");
 		HashMap<UniqueString, Value> diffMap = state.diff(successor);
 		ArrayList<String> changedVars = new ArrayList<>();
 		for(UniqueString key : diffMap.keySet()) {
 			changedVars.add(key.toString());
-//			this.writer.append(key.toString());
-//			this.writer.append("<br/>");
+			this.writer.append(key.toString());
+			this.writer.append("<br/>");
 
 		}
 //		this.writer.append(String.join("\n", changedVars));
 //		this.writer.append(")");
-//		this.writer.append("</font>");
-//		this.writer.append("</td>");
-//		this.writer.append("</tr>");
+		this.writer.append("</font>");
+		this.writer.append("</td>");
+		this.writer.append("</tr>");
 		this.writer.append("</table>");
 		this.writer.append(">");
+		
+		
 		this.writer.append(" labeldistance=\"4\" color=\"" + color +"\"]");
-		this.writer.append(" [headlabel=");
-		this.writer.append("\"" + String.join("\n", changedVars) + "\"");
-		this.writer.append(" labeldistance=\"4\" fontcolor=\"" + color + "\" fontsize=\"9\"]");
-
-		this.writer.append(";\n");
+//		this.writer.append(" [headlabel=");
+//		this.writer.append("\"" + String.join("\n", changedVars) + "\"");
+//		this.writer.append(" labeldistance=\"4\" fontcolor=\"" + color + "\" fontsize=\"9\"]");
+//		this.writer.append(";\n");
 		
 		// If the successor is new, print the state's label. Labels are printed
 		// when writeState sees the successor. It does not print the label for
@@ -185,14 +193,23 @@ public class DotStateWriter extends StateWriter {
 		}
 	}
 	
-	protected static String dotLegend(String name, ArrayList<String> actions) {
+	
+	/** 
+	 * Return a DOT string that contains a legend describing the map of actions to their corresponding color.
+	 */
+	protected String dotLegend(String name, Set<String> actions) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("subgraph %s {", name));
-		sb.append("node [ labeljust=\"l\" colorscheme=\"pastel13\" style=filled fillcolor=3 shape=record ]\n");
-        sb.append("label = \"Legend\" style=\"solid\"");
-        sb.append("colorscheme=\"pastel13\"");
-		sb.append("action1 [label=\"Action1\", fillcolor=1] ");
-		sb.append("action2 [label=\"Action2\", fillcolor=2] ");
+		sb.append(String.format("subgraph %s {", "cluster_legend"));
+		sb.append("graph[style=bold];");
+		sb.append(String.format("node [ labeljust=\"l\" colorscheme=\"%s\" style=filled shape=record ]\n", dotColorScheme));
+        sb.append("label = \"Transition Action Legend\" style=\"solid\"\n");
+        sb.append(String.format("colorscheme=\"%s\"\n", dotColorScheme));
+        int i=1;
+        for(String action: actions) {
+        		String str = String.format("%s [label=\"%s\" fillcolor=%d]", action, action, this.actionToColors.get(action));
+    			sb.append(str);
+    			sb.append("\n");
+        }
 		sb.append("}");
 		return sb.toString();
 	}
@@ -220,6 +237,9 @@ public class DotStateWriter extends StateWriter {
 	 * @see tlc2.util.IStateWriter#close()
 	 */
 	public void close() {
+		this.writer.append("}\n"); // closes the main subgraph.
+
+		this.writer.append(dotLegend("DotLegend", this.actionToColors.keySet()));
 		this.writer.append("}");
 		super.close();
 	}
