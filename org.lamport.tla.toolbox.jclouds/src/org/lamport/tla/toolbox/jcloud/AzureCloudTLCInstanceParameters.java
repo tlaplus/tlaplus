@@ -26,6 +26,8 @@
 
 package org.lamport.tla.toolbox.jcloud;
 
+import java.io.File;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -151,6 +153,12 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 							+ "(AZURE_COMPUTE_CREDENTIALS & AZURE_COMPUTE_IDENTITY "
 							+ "and AZURE_COMPUTE_SUBSCRIPTION) are correctly "
 							+ "set up and picked up by the Toolbox.");
+		}
+		// Verify that the identity file exists.
+		final File file = new File(identity);
+		if (!file.exists()) {
+			return new Status(Status.ERROR, "org.lamport.tla.toolbox.jcloud", String.format(
+					"The file %s referenced by the AZURE_COMPUTE_IDENTITY environment variable does not exist.", file));
 		}
 		return Status.OK_STATUS;
 	}
