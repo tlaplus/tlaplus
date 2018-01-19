@@ -61,6 +61,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
+import org.lamport.tla.toolbox.tool.tlc.model.TraceExpressionModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -410,7 +411,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // trace = TLCErrorTraceRegistry.getErrorTraceRegistry().getTrace(config);
         trace = model.getErrorTrace();
 
-        ModelWriter writer = new ModelWriter();
+        final TraceExpressionModelWriter writer = new TraceExpressionModelWriter();
 
         // add extend primer
         writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
@@ -434,14 +435,14 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
          * of each expression. This is done in finalLaunchCheck() using the ParseResult
          * object returned by SANY.
          */
-        traceExpressionData = writer.createAndAddTEVariablesAndDefinitions(ModelHelper.deserializeFormulaList(config
+        traceExpressionData = writer.createAndAddVariablesAndDefinitions(ModelHelper.deserializeFormulaList(config
                 .getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector<String>())),
                 TRACE_EXPLORE_EXPRESSIONS);
 
         // add the initial state predicate and next state action without
         // the trace exploration expressions in order to determine if they parse
         // initNext[0] is the identifier for init, initNext[1] is the identifier for next
-        String[] initNext = writer.addInitNextForTE(trace, null);
+        String[] initNext = writer.addInitNext(trace, null);
         if (initNext != null)
         {
             initId = initNext[0];
@@ -604,11 +605,11 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 
         monitor.subTask("Creating contents");
 
-        ModelWriter writer = new ModelWriter();
+        final TraceExpressionModelWriter writer = new TraceExpressionModelWriter();
 
         // add comments giving information about the level of each expression and
         // which variable corresponds to which expression
-        writer.addTraceExplorerExpressionInfoComments(traceExpressionData);
+        writer.addInfoComments(traceExpressionData);
 
         // add extend primer
         writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
@@ -617,10 +618,10 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writeModelInfo(configuration, writer);
 
         // variables declarations for trace explorer expressions
-        writer.addTEVariablesAndDefinitions(traceExpressionData, TRACE_EXPLORE_EXPRESSIONS, false);
+        writer.addVariablesAndDefinitions(traceExpressionData, TRACE_EXPLORE_EXPRESSIONS, false);
 
         // add init and next
-        writer.addInitNextForTE(trace, traceExpressionData, initId, nextId);
+        writer.addInitNext(trace, traceExpressionData, initId, nextId);
 
         SimpleTLCState finalState = (SimpleTLCState) trace.get(trace.size() - 1);
         boolean isBackToState = finalState.isBackToState();
@@ -630,10 +631,10 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // read the method comments to see the form of the invariant or property
         if (isStuttering)
         {
-            writer.addStutteringPropertyForTraceExplorer((SimpleTLCState) trace.get(trace.size() - 2));
+            writer.addStutteringProperty((SimpleTLCState) trace.get(trace.size() - 2));
         } else if (isBackToState)
         {
-            writer.addBackToStatePropertyForTraceExplorer((SimpleTLCState) trace.get(trace.size() - 2),
+            writer.addBackToStateProperty((SimpleTLCState) trace.get(trace.size() - 2),
                     (SimpleTLCState) trace.get(finalState.getStateNumber() - 1));
         } else
         {
