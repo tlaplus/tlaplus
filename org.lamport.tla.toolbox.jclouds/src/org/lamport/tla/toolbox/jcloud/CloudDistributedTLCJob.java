@@ -292,9 +292,9 @@ public class CloudDistributedTLCJob extends Job {
 			monitor.subTask("Installing security relevant system package upgrades (in background)");
 			execResponse = compute.runScriptOnNodesMatching(
 					inGroup(groupNameUUID),
-					exec("/usr/bin/unattended-upgrades"),
+					exec("screen -dm -S security bash -c \"/usr/bin/unattended-upgrades\""),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
-							false).blockOnComplete(false).blockUntilRunning(false));
+							true).blockOnComplete(false).blockUntilRunning(false));
 			throwExceptionOnErrorResponse(execResponse, "Installing security relevant system package upgrades");
 			monitor.worked(5);
 			final long provision = System.currentTimeMillis();
