@@ -334,7 +334,7 @@ public class CloudDistributedTLCJob extends Job {
 						+ "-Dcom.sun.management.jmxremote.authenticate=false "
 						// On Ubuntu 16.04 LTS with OpenJDK 9 (not Oracle!) the management.proeprties
 						// file is in a non-default location.
-						+ "-Dcom.sun.management.config.file=/etc/java-9-openjdk/management/management.properties "
+						+ "-Dcom.sun.management.config.file=/etc/java-8-openjdk/management/management.properties "
 						// TLC tuning options
 						+ params.getJavaSystemProperties() + " "
 						+ "-jar /tmp/tla2tools.jar " 
