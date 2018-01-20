@@ -248,7 +248,7 @@ public class CloudDistributedTLCJob extends Job {
 							// worker tla2tools.jar (strip spec) and
 							// unattended-upgrades makes sure the instance
 							// is up-to-date security-wise. 
-							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades openjdk-9-jre-headless "
+							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades openjdk-8-jre-headless "
 									+ params.getExtraPackages() + " -y"
 							+ " && "
 							// Delegate file system tuning to cloud specific code.
