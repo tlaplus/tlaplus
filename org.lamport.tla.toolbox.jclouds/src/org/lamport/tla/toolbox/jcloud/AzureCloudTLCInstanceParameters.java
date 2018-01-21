@@ -100,7 +100,7 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	public String getImageId() {
 		// 'azure vm image list eastus canonical' (manually lookup image release date from output)
 		// With azure-cli v2 (based on Python) extract date from 'az vm image list --all --publisher Canonical'.
-		return "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20170919-en-us-30GB";
+		return "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20180112-en-us-30GB";
 	}
 
 	/* (non-Javadoc)
