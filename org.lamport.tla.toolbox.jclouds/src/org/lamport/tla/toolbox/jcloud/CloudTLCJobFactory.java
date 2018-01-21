@@ -43,13 +43,13 @@ public class CloudTLCJobFactory implements TLCJobFactory {
 	public Job getTLCJob(String aName, File aModelFolder, int numberOfWorkers, final Properties props, String tlcparams) {
 		Assert.isNotNull(aName);
 		Assert.isLegal(numberOfWorkers > 0);
-		if (AWS_EC2.equals(aName)) {
+		if (AWS_EC2.equalsIgnoreCase(aName)) {
 			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
 					new EC2CloudTLCInstanceParameters(tlcparams, numberOfWorkers));
-		} else if (AWS_EC2_VM_PROPERTIES.equals(aName)) {
+		} else if (AWS_EC2_VM_PROPERTIES.equalsIgnoreCase(aName)) {
 			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
 					new EC2PropertyCloudTLCInstanceParameters(tlcparams, numberOfWorkers));
-		} else if (AZURECOMPUTE.equals(aName)) {
+		} else if (AZURECOMPUTE.equalsIgnoreCase(aName)) {
 			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
 					new AzureCloudTLCInstanceParameters(tlcparams, numberOfWorkers));
 		}
