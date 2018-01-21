@@ -42,25 +42,30 @@ import tlc2.tool.distributed.fp.TLCWorkerAndFPSet;
 public abstract class CloudTLCInstanceParameters {
 	
 	protected final String tlcParams;
-	protected final int numberOfWorkers;
+	
+	/**
+	 * The number of cloud instances to be used. A value of one means
+	 * non-distributed TLC. For values greater than 1, distributed TLC is launched.
+	 */
+	protected final int numberOfWorkerNodes;
 	
 	public CloudTLCInstanceParameters(String tlcParams) {
 		this(tlcParams, 1);
 	}
 
-	public CloudTLCInstanceParameters(String tlcParams, int numberOfWorkers) {
+	public CloudTLCInstanceParameters(String tlcParams, int numberOfWorkerNodes) {
 		this.tlcParams = tlcParams;
-		this.numberOfWorkers = numberOfWorkers;
+		this.numberOfWorkerNodes = numberOfWorkerNodes;
 	}
 
 	// system properties
 	
 	public String getJavaSystemProperties() {
-		if (numberOfWorkers == 1) {
+		if (numberOfWorkerNodes == 1) {
 			return getJavaWorkerSystemProperties();
 		}
 		//TODO Make this property be read from the generated.properties file
-		return "-Dtlc2.tool.distributed.TLCServer.expectedFPSetCount=" + (numberOfWorkers - 1);
+		return "-Dtlc2.tool.distributed.TLCServer.expectedFPSetCount=" + (numberOfWorkerNodes - 1);
 	}
 
 	public String getJavaWorkerSystemProperties() {
@@ -69,28 +74,33 @@ public abstract class CloudTLCInstanceParameters {
 	}
 	
 	// vm args
+	public abstract String getJavaVMArgs();
 	
-	public String getJavaVMArgs() {
-		if (numberOfWorkers == 1) {
+	protected String getJavaVMArgs(final String extraVMArgs) {
+		if (numberOfWorkerNodes == 1) {
 			return getJavaWorkerVMArgs();
 		}
 		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
-		return "--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions -Xmx56G -Xms56G";
+		return ("--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions " + extraVMArgs).trim();
 	}
+
+	public abstract String getJavaWorkerVMArgs();
 	
-	public String getJavaWorkerVMArgs() {
+	protected String getJavaWorkerVMArgs(final String extraWorkerVMArgs) {
 		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
-		return "--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions -Xmx24G -Xms24G -XX:MaxDirectMemorySize=32g";
+		return ("--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions "
+				+ extraWorkerVMArgs).trim();
 	}
 
 	// tlc parameters
+	public abstract String getTLCParameters();
 	
-	public String getTLCParameters() {
-		if (numberOfWorkers == 1) {
+	protected String getTLCParameters(final int numWorkers) {
+		if (numberOfWorkerNodes == 1) {
 			if (tlcParams.length() > 0) {
-				return "-workers 32 " + tlcParams;
+				return "-workers " + numWorkers + " " + tlcParams;
 			}
-			return "-workers 32";
+			return "-workers " + numWorkers;
 		} else {
 			return "-coverage 0 -checkpoint 0";
 		}

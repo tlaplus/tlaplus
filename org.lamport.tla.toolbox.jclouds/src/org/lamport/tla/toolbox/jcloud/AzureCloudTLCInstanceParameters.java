@@ -46,20 +46,16 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	 */
 	@Override
 	public String getJavaVMArgs() {
-		if (numberOfWorkers == 1) {
-			return getJavaWorkerVMArgs();
-		}
-		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
-		return "--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions -Xmx96G -Xms96G";
+		return System.getProperty("azure.vmargs", super.getJavaVMArgs("-Xmx96G -Xms96G"));
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getJavaWorkerVMArgs()
 	 */
 	@Override
 	public String getJavaWorkerVMArgs() {
-		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
-		return "--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions -Xmx32G -Xms32G -XX:MaxDirectMemorySize=64g";
+		return System.getProperty("azure.vmworkerargs",
+				super.getJavaWorkerVMArgs("-Xmx32G -Xms32G -XX:MaxDirectMemorySize=64g"));
 	}
 	
 	/* (non-Javadoc)
@@ -67,14 +63,7 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	 */
 	@Override
 	public String getTLCParameters() {
-		if (numberOfWorkers == 1) {
-			if (tlcParams.length() > 0) {
-				return "-workers 16 " + tlcParams;
-			}
-			return "-workers 16";
-		} else {
-			return "-coverage 0 -checkpoint 0";
-		}
+		return System.getProperty("azure.tlcparams", super.getTLCParameters(16));
 	}
 
 	/* (non-Javadoc)
@@ -90,7 +79,7 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	 */
 	@Override
 	public String getRegion() {
-		return "us-east";
+		return System.getProperty("azure.region", "us-east");
 	}
 
 	/* (non-Javadoc)
@@ -100,7 +89,7 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	public String getImageId() {
 		// 'azure vm image list eastus canonical' (manually lookup image release date from output)
 		// With azure-cli v2 (based on Python) extract date from 'az vm image list --all --publisher Canonical'.
-		return "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20180112-en-us-30GB";
+		return System.getProperty("azure.image", "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20180112-en-us-30GB");
 	}
 
 	/* (non-Javadoc)
@@ -108,9 +97,8 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	 */
 	@Override
 	public String getHardwareId() {
-		return "STANDARD_D14";
-		// 16 cores
-		// 112GB
+		// STANDARD_D14: 16 cores, 112GB
+		return System.getProperty("azure.instanceType", "STANDARD_D14");
 	}
 
 	/* (non-Javadoc)

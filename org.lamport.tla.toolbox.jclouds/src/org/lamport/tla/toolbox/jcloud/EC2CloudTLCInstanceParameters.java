@@ -50,26 +50,6 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 	}
 
 	@Override
-	public String getImageId() {
-		// Ubuntu 64bit 16.04 Xenial
-		// http://cloud-images.ubuntu.com/locator/ec2/
-		// See http://aws.amazon.com/amazon-linux-ami/instance-type-matrix/
-		// for paravirtual vs. hvm (if instance startup fails with funny errors
-		// such as symlinks failing to be created, you accidentally picked paravirtual.
-		return getRegion() + "/ami-51025a2b"; // "us-east-1,xenial,amd64,hvm:instance-store"
-	}
-
-	@Override
-	public String getRegion() {
-		return "us-east-1";
-	}
-
-	@Override
-	public String getHardwareId() {
-		return "c3.8xlarge";
-	}
-
-	@Override
 	public String getIdentity() {
 		return System.getenv("AWS_ACCESS_KEY_ID");
 	}
@@ -111,11 +91,52 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		properties.setProperty(LocationConstants.PROPERTY_REGIONS, getRegion());
 	}
 
+	@Override
+	public String getHostnameSetup() {
+		// Lookup public ipv4 hostname and configure /etc/hosts accordingly. Otherwise,
+		// MailSender uses the internal name which increases likelihood of email being
+		// classified/rejected as spam.
+		return "echo \"$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4) $(curl -s http://169.254.169.254/latest/meta-data/public-hostname)\" >> /etc/hosts && hostname $(curl -s http://169.254.169.254/latest/meta-data/public-hostname)";
+	}
+	
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getImageId()
+	 */
+	@Override
+	public String getImageId() {
+		// Ubuntu 64bit 16.04 Xenial
+		// http://cloud-images.ubuntu.com/locator/ec2/
+		// See http://aws.amazon.com/amazon-linux-ami/instance-type-matrix/
+		// for paravirtual vs. hvm (if instance startup fails with funny errors
+		// such as symlinks failing to be created, you accidentally picked paravirtual.
+		 // "us-east-1,xenial,amd64,hvm:instance-store"
+		final String imageId = System.getProperty("aws-ec2.image", "ami-51025a2b");
+		return getRegion() + "/" + imageId;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getRegion()
+	 */
+	@Override
+	public String getRegion() {
+		return System.getProperty("aws-ec2.region", "us-east-1");
+	}
+
+	@Override
+	public String getHardwareId() {
+		return System.getProperty("aws-ec2.instanceType", "c3.8xlarge");
+	}
+
 	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getOSFilesystemTuning()
 	 */
 	@Override
 	public String getOSFilesystemTuning() {
+		return System.getProperty("aws-ec2.tuning", getOSFilesystemTuningDefault());
+	}
+	
+	private String getOSFilesystemTuningDefault() {
 		// Create a raid0 out of the two instance store
 		// disks and optimize its fs towards performance
 		// by sacrificing data durability.
@@ -128,11 +149,27 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		+ "mount /dev/md0 /mnt";
 	}
 
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getJavaVMArgs()
+	 */
 	@Override
-	public String getHostnameSetup() {
-		// Lookup public ipv4 hostname and configure /etc/hosts accordingly. Otherwise,
-		// MailSender uses the internal name which increases likelihood of email being
-		// classified/rejected as spam.
-		return "echo \"$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4) $(curl -s http://169.254.169.254/latest/meta-data/public-hostname)\" >> /etc/hosts && hostname $(curl -s http://169.254.169.254/latest/meta-data/public-hostname)";
+	public String getJavaVMArgs() {
+		return System.getProperty("aws-ec2.vmargs", super.getJavaVMArgs("-Xmx56G -Xms56G"));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getTLCParameters()
+	 */
+	@Override
+	public String getTLCParameters() {
+		return System.getProperty("aws-ec2.tlcparams", super.getTLCParameters(32));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getJavaWorkerVMArgs()
+	 */
+	@Override
+	public String getJavaWorkerVMArgs() {
+		return System.getProperty("aws-ec2.vmworkerargs", super.getJavaWorkerVMArgs("-Xmx24G -Xms24G -XX:MaxDirectMemorySize=32g"));
 	}
 }
