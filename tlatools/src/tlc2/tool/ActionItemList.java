@@ -7,17 +7,29 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.util.Context;
 
 public class ActionItemList {
+	/**
+	 * predicate of a conjunction
+	 */
+	public static final int CONJUNCT = 0;
+	/**
+	 * predicate
+	 */
+	public static final int PRED = -1;
+	/**
+	 * UNCHANGED predicate
+	 */
+	public static final int UNCHANGED = -2;
+	/**
+	 * pred' # pred
+	 */
+	public static final int CHANGED = -3;
+	
   /**
    * We assume that this.pred is null iff the list is empty.
-   * The meaning of this.kind is given as follows:
-   *    kind > 0:  pred of a conjunction
-   *    kind = -1: pred
-   *    kind = -2: UNCHANGED pred
-   *    kind = -3: pred' # pred
    */
   public final SemanticNode pred;     // Expression of the action
   public final Context con;           // Context of the action
-  public final int kind;  
+  private final int kind;  
   public final ActionItemList next;
 
   public final static ActionItemList
@@ -36,6 +48,13 @@ public class ActionItemList {
 
   public final Context carContext() { return this.con; }
 
+  /**
+   * The meaning of this.kind is given as follows:
+   *    kind > 0:  pred of a conjunction
+   *    kind = -1: pred
+   *    kind = -2: UNCHANGED pred
+   *    kind = -3: pred' # pred
+   */
   public final int carKind() { return this.kind; }
 
   public final ActionItemList cdr() { return this.next; }

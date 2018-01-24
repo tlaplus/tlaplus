@@ -51,7 +51,7 @@ class LNStateEnabled extends LNState {
 		TLCState sfun = TLCStateFun.Empty;
 		Context c1 = Context.branch(getContext());
 		if (this.subscript != null) {
-			acts = acts.cons(this.subscript, c1, -3);
+			acts = acts.cons(this.subscript, c1, ActionItemList.CHANGED);
 		}
 		sfun = tool.enabled(this.pred, acts, c1, s1, sfun);
 		return sfun != null;

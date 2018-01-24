@@ -330,7 +330,7 @@ public class Tool
 		  ActionItemList acts = ActionItemList.Empty;
 		  for (int i = 1; i < init.size(); i++) {
 			  Action elem = (Action)init.elementAt(i);
-			  acts = acts.cons(elem.pred, elem.con, -1);
+			  acts = acts.cons(elem.pred, elem.con, ActionItemList.PRED);
 		  }
 		  if (init.size() != 0) {
 			  Action elem = (Action)init.elementAt(0);
@@ -557,7 +557,7 @@ public class Tool
               ActionItemList acts1 = acts;
               Context c2;
               while ((c2 = Enum.nextElement()) != null) {
-                acts1 = acts1.cons(body, c2, -1);
+                acts1 = acts1.cons(body, c2, ActionItemList.PRED);
               }
               this.getInitStates(body, acts1, c1, ps, states);
             }
@@ -967,7 +967,7 @@ public class Tool
               ActionItemList acts1 = acts;
               Context c2;
               while ((c2 = Enum.nextElement()) != null) {
-                acts1 = acts1.cons(body, c2, -1);
+                acts1 = acts1.cons(body, c2, ActionItemList.PRED);
               }
               resState = this.getNextStates(body, acts1, c1, s0, s1, nss);
             }
@@ -1002,7 +1002,7 @@ public class Tool
           }
         case OPCODE_aa:     // AngleAct <A>_e
           {
-            ActionItemList acts1 = acts.cons(args[1], c, -3);
+            ActionItemList acts1 = acts.cons(args[1], c, ActionItemList.CHANGED);
             return this.getNextStates(args[0], acts1, c, s0, s1, nss);
           }
         case OPCODE_sa:     // [A]_e
@@ -1217,7 +1217,7 @@ public class Tool
             if (alen != 0) {
               ActionItemList acts1 = acts;
               for (int i = alen-1; i > 0; i--) {
-                acts1 = acts1.cons(args[i], c, -2);
+                acts1 = acts1.cons(args[i], c, ActionItemList.UNCHANGED);
               }
               return this.processUnchanged(args[0], acts1, c, s0, s1, nss);
             }
@@ -2298,19 +2298,19 @@ public class Tool
   private final TLCState enabled(ActionItemList acts, TLCState s0, TLCState s1) {
     if (acts.isEmpty()) return s1;
 
-    int kind = acts.carKind();
+    final int kind = acts.carKind();
     SemanticNode pred = acts.carPred();
     Context c = acts.carContext();
     ActionItemList acts1 = acts.cdr();
-    if (kind > 0) {
+    if (kind > ActionItemList.CONJUNCT) {
       TLCState res = this.enabled(pred, acts1, c, s0, s1);
       return res;
     }
-    else if (kind == -1) {
+    else if (kind == ActionItemList.PRED) {
       TLCState res = this.enabled(pred, acts1, c, s0, s1);
       return res;
     }
-    if (kind == -2) {
+    if (kind == ActionItemList.UNCHANGED) {
       TLCState res = this.enabledUnchanged(pred, acts1, c, s0, s1);
       return res;
     }
@@ -2413,7 +2413,7 @@ public class Tool
         switch (opcode) {
         case OPCODE_aa: // AngleAct <A>_e
           {
-            ActionItemList acts1 = acts.cons(args[1], c, -3);
+            ActionItemList acts1 = acts.cons(args[1], c, ActionItemList.CHANGED);
             return this.enabled(args[0], acts1, c, s0, s1);
           }
         case OPCODE_be: // BoundedExists
@@ -2443,7 +2443,7 @@ public class Tool
             Context c2;
             while ((c2 = Enum.nextElement()) != null)
             {
-              acts1 = acts1.cons(body, c2, -1);
+              acts1 = acts1.cons(body, c2, ActionItemList.PRED);
             }
             return this.enabled(body, acts1, c1, s0, s1);
           }
@@ -2771,7 +2771,7 @@ public class Tool
             if (alen != 0) {
               ActionItemList acts1 = acts;
               for (int i = 1; i < alen; i++) {
-                acts1 = acts1.cons(args[i], c, -2);
+                acts1 = acts1.cons(args[i], c, ActionItemList.UNCHANGED);
               }
               return this.enabledUnchanged(args[0], acts1, c, s0, s1);
             }
