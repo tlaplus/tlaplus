@@ -1268,7 +1268,7 @@ public class Tool
    * current state, and partial next state.
    */
   public final Value eval(SemanticNode expr, Context c, TLCState s0,
-                          TLCState s1, int control) {
+                          TLCState s1, final int control) {
     if (this.callStack != null) this.callStack.push(expr);
     try {
         switch (expr.getKind()) {
@@ -1361,8 +1361,8 @@ public class Tool
     }
   }
 
-  public final Value evalAppl(OpApplNode expr, Context c, TLCState s0,
-                              TLCState s1, int control) {
+  private final Value evalAppl(OpApplNode expr, Context c, TLCState s0,
+                              TLCState s1, final int control) {
     if (this.callStack != null) this.callStack.push(expr);
     try {
         ExprOrOpArgNode[] args = expr.getArgs();
@@ -2054,20 +2054,12 @@ public class Tool
           }
         case OPCODE_prime:
           {
-            if (EvalControl.isEnabled(control)) {
-              // We are now in primed and enabled.
-              return this.eval(args[0], c, s1, null, EvalControl.setPrimed(control));
-            }
-            return this.eval(args[0], c, s1, null, control);
+            return this.eval(args[0], c, s1, null, EvalControl.setPrimedIfEnabled(control));
           }
         case OPCODE_unchanged:
           {
             Value v0 = this.eval(args[0], c, s0, TLCState.Empty, control);
-            if (EvalControl.isEnabled(control)) {
-              // We are now in primed and enabled.
-              control = EvalControl.setPrimed(control);
-            }
-            Value v1 = this.eval(args[0], c, s1, null, control);
+            Value v1 = this.eval(args[0], c, s1, null, EvalControl.setPrimedIfEnabled(control));
             return (v0.equals(v1)) ? ValTrue : ValFalse;
           }
         case OPCODE_aa:     // <A>_e
@@ -2081,11 +2073,7 @@ public class Tool
               return ValFalse;
             }
             Value v0 = this.eval(args[1], c, s0, TLCState.Empty, control);
-            if (EvalControl.isEnabled(control)) {
-              // We are now in primed and enabled.
-              control = EvalControl.setPrimed(control);
-            }
-            Value v1 = this.eval(args[1], c, s1, null, control);
+            Value v1 = this.eval(args[1], c, s1, null, EvalControl.setPrimedIfEnabled(control));
             return v0.equals(v1) ? ValFalse : ValTrue;
           }
         case OPCODE_sa:     // [A]_e
@@ -2099,11 +2087,7 @@ public class Tool
               return ValTrue;
             }
             Value v0 = this.eval(args[1], c, s0, TLCState.Empty, control);
-            if (EvalControl.isEnabled(control)) {
-              // We are now in primed and enabled.
-              control = EvalControl.setPrimed(control);
-            }
-            Value v1 = this.eval(args[1], c, s1, null, control);
+            Value v1 = this.eval(args[1], c, s1, null, EvalControl.setPrimedIfEnabled(control));
             return (v0.equals(v1)) ? ValTrue : ValFalse;
           }
         case OPCODE_cdot:
@@ -2316,7 +2300,9 @@ public class Tool
     }
 
     Value v1 = this.eval(pred, c, s0, TLCState.Empty, EvalControl.Enabled);
-    // We are now in ENABLED and primed state.
+	// We are now in ENABLED and primed state. Second TLCState parameter being null
+	// effectively disables LazyValue in evalAppl (same effect as
+	// EvalControl.setPrimed(EvalControl.Enabled)).
     Value v2 = this.eval(pred, c, s1, null, EvalControl.Primed);
 
     if (v1.equals(v2)) return null;
@@ -2377,7 +2363,7 @@ public class Tool
           {
             if (val instanceof MethodValue)
             {
-              bval = ((MethodValue) val).apply(EmptyArgs, EvalControl.Clear);
+              bval = ((MethodValue) val).apply(EmptyArgs, EvalControl.Clear); // EvalControl.Clear is ignored by MethodValuea#apply
             }
           } else
           {
@@ -2501,13 +2487,13 @@ public class Tool
           }
         case OPCODE_fa: // FcnApply
           {
-            Value fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(EvalControl.Enabled));
+            Value fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(EvalControl.Enabled)); // KeepLazy does not interfere with EvalControl.Enabled in this.evalAppl
             if (fval instanceof FcnLambdaValue)
             {
               FcnLambdaValue fcn = (FcnLambdaValue) fval;
               if (fcn.fcnRcd == null)
               {
-                Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Enabled);
+                Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Enabled); // EvalControl.Enabled passed on to nested this.evalAppl
                 return this.enabled(fcn.body, acts, c1, s0, s1);
               }
               fval = fcn.fcnRcd;
@@ -2516,7 +2502,7 @@ public class Tool
             {
               Applicable fcn = (Applicable) fval;
               Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Enabled);
-              Value bval = fcn.apply(argVal, EvalControl.Enabled);
+              Value bval = fcn.apply(argVal, EvalControl.Enabled); // EvalControl.Enabled not taken into account by any subclass of Applicable
               if (!(bval instanceof BoolValue))
               {
                 Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "ENABLED", "boolean",
@@ -2743,7 +2729,7 @@ public class Tool
     try {
         SymbolNode var = this.getVar(expr, c, true);
         if (var != null) {
-          // a state variable:
+          // a state variable, e.g. UNCHANGED var1
           UniqueString varName = var.getName();
           Value v0 = this.eval(expr, c, s0, s1, EvalControl.Enabled);
           Value v1 = s1.lookup(varName);
@@ -2767,7 +2753,7 @@ public class Tool
           int opcode = BuiltInOPs.getOpCode(opName);
 
           if (opcode == OPCODE_tup) {
-            // a tuple:
+            // a tuple, e.g. UNCHANGED <<var1, var2>>
             if (alen != 0) {
               ActionItemList acts1 = acts;
               for (int i = 1; i < alen; i++) {
@@ -2797,8 +2783,11 @@ public class Tool
           }
         }
 
-        Value v0 = this.eval(expr, c, s0, TLCState.Empty, EvalControl.Enabled);
-        Value v1 = this.eval(expr, c, s1, TLCState.Empty, EvalControl.Primed);
+        final Value v0 = this.eval(expr, c, s0, TLCState.Empty, EvalControl.Enabled);
+		// TODO We are in ENABLED and primed but why pass only primed? This appears to
+		// be the only place where we call eval from the ENABLED scope without passing
+		// EvalControl.Enabled. Thus a cached LazyValue could be used.
+	    final Value v1 = this.eval(expr, c, s1, TLCState.Empty, EvalControl.Primed);
         if (!v0.equals(v1)) {
           return null;
         }
@@ -2962,7 +2951,7 @@ public class Tool
 
   public final Context getFcnContext(FcnLambdaValue fcn, ExprOrOpArgNode[] args,
                                      Context c, TLCState s0, TLCState s1,
-                                     int control) {
+                                     final int control) {
     Context fcon = fcn.con;
     int plen = fcn.params.length();
     FormalParamNode[][] formals = fcn.params.formals;
@@ -3041,7 +3030,7 @@ public class Tool
 
   /* A context enumerator for an operator application. */
   public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
-                                          TLCState s1, int control) {
+                                          TLCState s1, final int control) {
     FormalParamNode[][] formals = appl.getBdedQuantSymbolLists();
     boolean[] isTuples = appl.isBdedQuantATuple();
     ExprNode[] domains = appl.getBdedQuantBounds();
