@@ -148,9 +148,15 @@ public class TokenSpec
             int rightPos = tokenSpecs[i].rightPos;
             tokenSpecs[i].leftPos = leftPos + offsetOfLine;
             tokenSpecs[i].rightPos = rightPos + offsetOfLine;
+
+            String indiceAdjustedToken = tokenSpecs[i].token;
             Location location = EditorUtil.getLocationAt(document, tokenSpecs[i].leftPos, rightPos - leftPos);
-            symbol = EditorUtil.lookupOriginalSymbol(UniqueString.uniqueStringOf(tokenSpecs[i].token), moduleNode,
-                    location, null);
+            
+            if ((indiceAdjustedToken != null) && (indiceAdjustedToken.length() > 1) && (indiceAdjustedToken.charAt(0) == '_')) {
+                indiceAdjustedToken = indiceAdjustedToken.substring(1);
+            }
+            
+            symbol = EditorUtil.lookupOriginalSymbol(UniqueString.uniqueStringOf(indiceAdjustedToken), moduleNode, location, null);
             if (symbol != null)
             {
                 goodIndex = i;

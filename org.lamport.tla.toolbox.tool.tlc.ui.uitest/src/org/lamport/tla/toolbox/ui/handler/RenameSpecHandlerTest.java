@@ -16,13 +16,12 @@ import org.eclipse.swtbot.swt.finder.waits.ICondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.eclipse.ui.IEditorPart;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
@@ -80,7 +79,7 @@ public class RenameSpecHandlerTest extends AbstractTest {
 		SWTBotEditor activeEditor = bot.activeEditor();
 		activeEditor.saveAndClose();
 		
-		checkSpecAndModelExistenceAPI(TEST_SPEC);
+		checkSpecAndModelExistenceAPI(TEST_SPEC, TEST_MODEL);
 	}
 	
 	/**
@@ -103,7 +102,7 @@ public class RenameSpecHandlerTest extends AbstractTest {
 		bot.waitUntil(new SpecEditorOpenCondition(TEST_SPEC));
 
 		// verify (via API)
-		checkSpecAndModelExistenceAPI(TEST_SPEC + "_Copy");
+		checkSpecAndModelExistenceAPI((TEST_SPEC + "_Copy"), TEST_MODEL);
 		
 		// try to find the renamed file (via UI)
 		openSpecExplorer();
@@ -143,16 +142,6 @@ public class RenameSpecHandlerTest extends AbstractTest {
 				}
 			});
 		}
-	}
-
-	// Verify spec and model show expected state (via API!!!)
-	private void checkSpecAndModelExistenceAPI(final String specExpected) {
-		final Spec spec = Activator.getSpecManager().getSpecLoaded();
-		Assert.assertEquals(specExpected, spec.getName());
-		
-		
-		final Model model = spec.getAdapter(TLCSpec.class).getModel(TEST_MODEL);
-		Assert.assertNotNull("Model could not be found", model);
 	}
 	
 	// check if the models have been renamed correctly too (via UI!!!)

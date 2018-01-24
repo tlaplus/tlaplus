@@ -17,7 +17,11 @@ import org.eclipse.ui.PlatformUI;
 import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.Before;
+import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 
 public abstract class AbstractTest {
 
@@ -51,6 +55,7 @@ public abstract class AbstractTest {
 	/**
 	 * Pre flight initialization (run once for each test _case_)
 	 */
+	@SuppressWarnings("unchecked") // Generics in WidgetMatcherFactory.allOf invocation
 	@Before
 	public void setUp() throws Exception {
 		// Force shell activation to counter, no active Shell when running SWTBot tests in Xvfb/Xvnc
@@ -92,4 +97,20 @@ public abstract class AbstractTest {
 		bot.waitUntil(waitForShell);
 		return new SWTBotShell(waitForShell.get(0));
 	}
+
+    /**
+     * Verifies that the spec and model show expected state (via API!!!)
+     * 
+     * @param modelName if null, the model's existence will not be checked
+     */
+    protected void checkSpecAndModelExistenceAPI(final String expectedSpecName, final String modelName) {
+        final Spec spec = Activator.getSpecManager().getSpecLoaded();
+        Assert.assertEquals(expectedSpecName, spec.getName());
+        
+        if (modelName != null) {
+            final Model model = spec.getAdapter(TLCSpec.class).getModel(modelName);
+            Assert.assertNotNull("Model could not be found", model);
+        }
+    }
+
 }

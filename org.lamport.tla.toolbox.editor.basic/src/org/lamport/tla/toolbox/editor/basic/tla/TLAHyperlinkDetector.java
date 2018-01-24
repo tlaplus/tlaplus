@@ -12,27 +12,17 @@ import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
-import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.actions.OpenDeclarationAction;
-import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
-import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
-import org.lamport.tla.toolbox.editor.basic.util.EditorUtil.StringAndLocation;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.ui.handler.OpenModuleHandler;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
-import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.SyntaxTreeNode;
-import tla2sany.parser.TLAplusParserConstants;
-import tla2sany.semantic.Context;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
-import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
-import util.UniqueString;
 
 /**
  * Detects hyperlinks in TLA+ code
@@ -49,10 +39,6 @@ import util.UniqueString;
  */
 public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
 {
-
-    public TLAHyperlinkDetector()
-    {
-    }
 
     /**
      * This method first sets label to the token at the position indicated by the

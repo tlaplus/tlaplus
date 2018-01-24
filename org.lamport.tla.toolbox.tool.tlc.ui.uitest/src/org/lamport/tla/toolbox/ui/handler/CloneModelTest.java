@@ -8,15 +8,11 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.matchers.WithText;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
-import org.junit.Assert;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.tool.tlc.model.Model;
-import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.ui.test.AbstractTest;
 import org.lamport.tla.toolbox.tool.tlc.ui.test.ModelEditorOpenCondition;
 
@@ -65,7 +61,7 @@ public class CloneModelTest extends AbstractTest {
 		SWTBotEditor activeEditor = bot.activeEditor();
 		activeEditor.saveAndClose();
 		
-		checkSpecAndModelExistenceAPI(TEST_SPEC);
+		checkSpecAndModelExistenceAPI(TEST_SPEC, TEST_MODEL);
 	}
 
 	@Test
@@ -79,12 +75,4 @@ public class CloneModelTest extends AbstractTest {
 		bot.waitUntil(new ModelEditorOpenCondition(TEST_MODEL_RENAME));
 	}
 
-	// Verify spec and model show expected state (via API!!!)
-	private void checkSpecAndModelExistenceAPI(final String specExpected) {
-		final Spec spec = Activator.getSpecManager().getSpecLoaded();
-		Assert.assertEquals(specExpected, spec.getName());
-		
-		final Model model = spec.getAdapter(TLCSpec.class).getModel(TEST_MODEL);
-		Assert.assertNotNull("Model could not be found", model);
-	}
 }

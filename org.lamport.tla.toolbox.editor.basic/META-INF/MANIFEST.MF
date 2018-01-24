@@ -20,4 +20,5 @@ Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.e4.core.services.events,
  org.eclipse.ui.forms
 Export-Package: org.lamport.tla.toolbox.editor.basic,
+ org.lamport.tla.toolbox.editor.basic.tla,
  org.lamport.tla.toolbox.editor.basic.util
