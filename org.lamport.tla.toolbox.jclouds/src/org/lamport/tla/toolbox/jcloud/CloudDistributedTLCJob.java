@@ -371,11 +371,12 @@ public class CloudDistributedTLCJob extends Job {
 					// awful lot of work.
 					channel = sshClient.execChannel("cat /mnt/tlc/tlc.jfr");
 					final InputStream output = channel.getOutput();
-					if (output.available() > 0) {
-						final String cwd = Paths.get(".").toAbsolutePath().normalize().toString() + File.separator;
-						ByteStreams.copy(output, new FileOutputStream(new File(cwd + "tlc.jfr")));
-					} else {
+					final String cwd = Paths.get(".").toAbsolutePath().normalize().toString() + File.separator;
+					final File jfr = new File(cwd + "tlc.jfr");
+					ByteStreams.copy(output, new FileOutputStream(jfr));
+					if (jfr.length() == 0) {
 						System.err.println("Received empty Java Flight recording. Not creating tlc.jfr file");
+						jfr.delete();
 					}
 				}
 				// Finally close the ssh connection.
