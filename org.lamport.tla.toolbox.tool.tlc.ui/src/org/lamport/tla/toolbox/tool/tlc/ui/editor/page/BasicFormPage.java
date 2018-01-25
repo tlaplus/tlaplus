@@ -458,7 +458,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     /**
      * Handle the problem markers 
      */
-    public void handleProblemMarkers(boolean switchToErrorPage)
+    private void handleProblemMarkers(boolean switchToErrorPage)
     {
         // delegate to the editor
         ((ModelEditor) getEditor()).handleProblemMarkers(switchToErrorPage);

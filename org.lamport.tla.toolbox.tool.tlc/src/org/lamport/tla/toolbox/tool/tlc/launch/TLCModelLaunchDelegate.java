@@ -523,7 +523,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         // parse the MC file
         IParseResult parseResult = ToolboxHandle.parseModule(rootModule, new SubProgressMonitor(monitor, 1), false,
                 false);
-        Vector<TLAMarkerInformationHolder> detectedErrors = parseResult.getDetectedErrors();
+        final Vector<TLAMarkerInformationHolder> detectedErrors = parseResult.getDetectedErrors();
         boolean status = !AdapterFactory.isProblemStatus(parseResult.getStatus());
 
         monitor.worked(1);

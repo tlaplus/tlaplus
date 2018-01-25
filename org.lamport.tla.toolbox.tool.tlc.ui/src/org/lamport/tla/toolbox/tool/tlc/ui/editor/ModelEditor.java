@@ -127,6 +127,21 @@ public class ModelEditor extends FormEditor
 									TLCUIActivator.getDefault().logError("Error initializing editor", e);
 								}
 							}
+							
+							// MAK 01/2018: Re-validate the page because running the model removes or sets
+							// problem markers (Model#setMarkers) which are presented to the user by
+							// ModelEditor#handleProblemMarkers. If we don't re-validate once a model is
+							// done running, the user visible presentation resulting from an earlier run of
+							// handleProblemMarkers gets stale.
+							// This behavior can be triggered by creating a spec (note commented EXTENDS): 
+							//   \* EXTENDS Integers
+							//   VARIABLE s
+							//   Spec == s = 0 /\ [][s'=s]_s
+							// and a model that defines the invariant (s >= 0). Upon the first launch of
+							// the model, the ModelEditor correctly marks the invariant due to the operator
+							// >= being not defined. Uncommenting EXTENDS, saving the spec and rerunning
+							// the model would incorrectly not remove the marker on the invariant.
+							UIHelper.runUISync(validateRunable);
 						}
 					}
 				});
@@ -820,7 +835,7 @@ public class ModelEditor extends FormEditor
 					} else {
 						// launching the config
 						model.launch(mode, new SubProgressMonitor(monitor, 1), true);
-
+						
 						/*
 						 * Close any tabs in this editor containing read-only
 						 * versions of modules. They will be changed by the
