@@ -83,7 +83,6 @@ public class Tool
   private CallStack callStack;    // the call stack.
 
   private Vect actionVec = new Vect(10);
-  private boolean isInit = true;
 
   /**
    * Creates a new tool handle
@@ -313,32 +312,22 @@ public class Tool
    * probably make tools like TLC useless.
    */
   public final StateVec getInitStates() {
-	  try {
-		  isInit = true;
-		  final StateVec initStates = new StateVec(0);
-		  getInitStates(initStates);
-		  return initStates;
-	  } finally {
-		  isInit = false;
-	  }
+	  final StateVec initStates = new StateVec(0);
+	  getInitStates(initStates);
+	  return initStates;
   }
 
   public final void getInitStates(IStateFunctor functor) {
-	  try {
-		  isInit = true;
-		  Vect init = this.getInitStateSpec();
-		  ActionItemList acts = ActionItemList.Empty;
-		  for (int i = 1; i < init.size(); i++) {
-			  Action elem = (Action)init.elementAt(i);
-			  acts = acts.cons(elem.pred, elem.con, ActionItemList.PRED);
-		  }
-		  if (init.size() != 0) {
-			  Action elem = (Action)init.elementAt(0);
-			  TLCState ps = TLCState.Empty.createEmpty();
-			  this.getInitStates(elem.pred, acts, elem.con, ps, functor);
-		  }
-	  } finally {
-		  isInit = false;
+	  Vect init = this.getInitStateSpec();
+	  ActionItemList acts = ActionItemList.Empty;
+	  for (int i = 1; i < init.size(); i++) {
+		  Action elem = (Action)init.elementAt(i);
+		  acts = acts.cons(elem.pred, elem.con, ActionItemList.PRED);
+	  }
+	  if (init.size() != 0) {
+		  Action elem = (Action)init.elementAt(0);
+		  TLCState ps = TLCState.Empty.createEmpty();
+		  this.getInitStates(elem.pred, acts, elem.con, ps, functor);
 	  }
   }
 
@@ -486,7 +475,7 @@ public class Tool
           Object bval = val;
           if (alen == 0) {
             if (val instanceof MethodValue) {
-              bval = ((MethodValue)val).apply(EmptyArgs, EvalControl.Clear);
+              bval = ((MethodValue)val).apply(EmptyArgs, EvalControl.Init);
             }
           }
           else {
@@ -495,10 +484,10 @@ public class Tool
               Value[] argVals = new Value[alen];
               // evaluate the actuals:
               for (int i = 0; i < alen; i++) {
-	                argVals[i] = this.eval(args[i], c, ps);
+	                argVals[i] = this.eval(args[i], c, ps, TLCState.Empty, EvalControl.Init);
               }
               // apply the operator:
-              bval = opVal.apply(argVals, EvalControl.Clear);
+              bval = opVal.apply(argVals, EvalControl.Init);
             }
           }
 
@@ -538,7 +527,7 @@ public class Tool
         case OPCODE_be:     // BoundedExists
           {
             SemanticNode body = args[0];
-            ContextEnumerator Enum = this.contexts(init, c, ps, TLCState.Empty, EvalControl.Clear);
+            ContextEnumerator Enum = this.contexts(init, c, ps, TLCState.Empty, EvalControl.Init);
             Context c1;
             while ((c1 = Enum.nextElement()) != null) {
               this.getInitStates(body, acts, c1, ps, states);
@@ -548,7 +537,7 @@ public class Tool
         case OPCODE_bf:     // BoundedForall
           {
             SemanticNode body = args[0];
-            ContextEnumerator Enum = this.contexts(init, c, ps, TLCState.Empty, EvalControl.Clear);
+            ContextEnumerator Enum = this.contexts(init, c, ps, TLCState.Empty, EvalControl.Init);
             Context c1 = Enum.nextElement();
             if (c1 == null) {
               this.getInitStates(acts, ps, states);
@@ -565,7 +554,7 @@ public class Tool
           }
         case OPCODE_ite:    // IfThenElse
           {
-            Value guard = this.eval(args[0], c, ps);
+            Value guard = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init);
             if (!(guard instanceof BoolValue)) {
               Assert.fail("In computing initial states, a non-boolean expression (" +
                           guard.getKindString() + ") was used as the condition " +
@@ -585,7 +574,7 @@ public class Tool
                 other = pairArgs[1];
               }
               else {
-                Value bval = this.eval(pairArgs[0], c, ps);
+                Value bval = this.eval(pairArgs[0], c, ps, TLCState.Empty, EvalControl.Init);
                 if (!(bval instanceof BoolValue)) {
                   Assert.fail("In computing initial states, a non-boolean expression (" +
                               bval.getKindString() + ") was used as a guard condition" +
@@ -606,11 +595,11 @@ public class Tool
           }
         case OPCODE_fa:     // FcnApply
           {
-            Value fval = this.eval(args[0], c, ps);
+            Value fval = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init);
             if (fval instanceof FcnLambdaValue) {
               FcnLambdaValue fcn = (FcnLambdaValue)fval;
               if (fcn.fcnRcd == null) {
-                Context c1 = this.getFcnContext(fcn, args, c, ps, TLCState.Empty, EvalControl.Clear);
+                Context c1 = this.getFcnContext(fcn, args, c, ps, TLCState.Empty, EvalControl.Init);
                 this.getInitStates(fcn.body, acts, c1, ps, states);
                 return;
               }
@@ -621,8 +610,8 @@ public class Tool
                           fval.getKindString() + ") was applied as a function.\n" + init);
             }
             Applicable fcn = (Applicable) fval;
-            Value argVal = this.eval(args[1], c, ps);
-            Value bval = fcn.apply(argVal, EvalControl.Clear);
+            Value argVal = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init);
+            Value bval = fcn.apply(argVal, EvalControl.Init);
             if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "initial states", "boolean",
@@ -637,7 +626,7 @@ public class Tool
           {
             SymbolNode var = this.getVar(args[0], c, false);
             if (var == null || var.getName().getVarLoc() < 0) {
-              Value bval = this.eval(init, c, ps);
+              Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init);
               if (!((BoolValue)bval).val) {
                 return;
               }
@@ -645,7 +634,7 @@ public class Tool
             else {
               UniqueString varName = var.getName();
               Value lval = ps.lookup(varName);
-              Value rval = this.eval(args[1], c, ps);
+              Value rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init);
               if (lval == null) {
                 ps = ps.bind(varName, rval, init);
                 this.getInitStates(acts, ps, states);
@@ -665,7 +654,7 @@ public class Tool
           {
             SymbolNode var = this.getVar(args[0], c, false);
             if (var == null || var.getName().getVarLoc() < 0) {
-              Value bval = this.eval(init, c, ps);
+              Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init);
               if (!((BoolValue)bval).val) {
                 return;
               }
@@ -673,7 +662,7 @@ public class Tool
             else {
               UniqueString varName = var.getName();
               Value lval = ps.lookup(varName);
-              Value rval = this.eval(args[1], c, ps);
+              Value rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init);
               if (lval == null) {
                 if (!(rval instanceof Enumerable)) {
                   Assert.fail("In computing initial states, the right side of \\IN" +
@@ -699,7 +688,7 @@ public class Tool
           }
         case OPCODE_implies:
           {
-            Value lval = this.eval(args[0], c, ps);
+            Value lval = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init);
             if (!(lval instanceof BoolValue)) {
               Assert.fail("In computing initial states of a predicate of form" +
                           " P => Q, P was " + lval.getKindString() + "\n." + init);
@@ -721,7 +710,7 @@ public class Tool
         default:
           {
             // For all the other builtin operators, simply evaluate:
-            Value bval = this.eval(init, c, ps);
+            Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init);
             if (!(bval instanceof BoolValue)) {
 
               Assert.fail("In computing initial states, TLC expected a boolean expression," +
@@ -1382,24 +1371,47 @@ public class Tool
 				if (s1 == null) {
 					val = this.eval(lv.expr, lv.con, s0, null, control);
 				} else if (lv.val == ValUndef || EvalControl.isEnabled(control)) {
+					// Never use cached LazyValues in an ENABLED expression. This is why all
+					// this.enabled* methods pass EvalControl.Enabled (the only exclusion being the
+					// call on line line 2789 which passes EvalControl.Primed). This is why we can
+			    	// be sure that ENALBED expressions are not affected by the caching bug tracked
+			    	// in Github issue 113 (see below).
 					val = this.eval(lv.expr, lv.con, s0, s1, control);
 				} else {
 					val = lv.val;
 					if (val == null) {
 						final Value res = this.eval(lv.expr, lv.con, s0, s1, control);
+						// This check has been suggested by Yuan Yu on 01/15/2018:
+						// If init-states are being generated, level has to be <= ConstantLevel for
+						// caching/LazyValue to be allowed. If next-states are being generated, level
+						// has to be <= VariableLevel. This restriction is in place as a fix to 
+						// Github issue 113 (https://github.com/tlaplus/tlaplus/issues/113) - 
+						// TLC can generate invalid sets of init or next-states caused by broken
+						// LazyValue evaluation. The related tests are AssignmentInit* and
+						// AssignmentNext*. Without this fix TLC essentially used a stale lv.val when it
+						// needed to re-evaluate res because the actual operands to eval changed.
+						//
+						// Note that EvalControl.Init is only set in the scope of this.getInitStates*,
+						// but not in the scope of methods such as this.isInModel, this.isGoodState...
+						// which are invoked by DFIDChecker and ModelChecker#doInit and doNext. These
+						// invocation however don't pose a problem with regards to issue 113 though
+						// because they don't generate the set of initial or next states but get passed
+						// fully generated states.
+						//
+						// !EvalControl.isInit(control) means Tool is either processing the spec in
+						// this.process* as part of initialization or that next-states are being
+						// generated. The latter case has to restrict usage of cached LazyValue as
+						// discussed above.
 						final int level = ((LevelNode) lv.expr).getLevel();
-						if ((isInit && level <= LevelConstants.ConstantLevel)
-								|| (!isInit && level <= LevelConstants.VariableLevel)) {
-							// This fix has been suggested by Yuan Yu on 01/15/2018:
-							// If init-states are being generated, level has to be <= ConstantLevel for
-							// caching/LazyValue to be allowed. If next-states are being generated, level
-							// has to be <= VariableLevel. This restriction is in place as a fix to 
-							// Github issue 113 (https://github.com/tlaplus/tlaplus/issues/113) - 
-							// TLC generates invalid set of states caused by broken LazyValue evaluation
-							// where TLC can generate invalid sets of init or next-states. The related
-							// tests are AssignmentInit* and AssignmentNext*. 
-							// Without this fix TLC essentially used a stale lv.val when it needed
-							// to re-evaluate res because the actual operands to eval changed.
+						if ((EvalControl.isInit(control) && level <= LevelConstants.ConstantLevel)
+								|| (!EvalControl.isInit(control) && level <= LevelConstants.VariableLevel)) {
+							// The performance benefits of caching values is generally debatable. The time
+							// it takes TLC to check a reasonable sized model of the PaxosCommit [1] spec is
+							// ~2h with, with limited caching due to the fix for issue 113 or without
+							// caching. There is no measurable performance difference even though the change
+							// for issue 113 reduces the cache hits from ~13 billion to ~4 billion. This was
+							// measured with an instrumented version of TLC.
+							// [1] general/performance/PaxosCommit/  
 							lv.val = res;
 						}
 						val = res;
@@ -2784,10 +2796,18 @@ public class Tool
         }
 
         final Value v0 = this.eval(expr, c, s0, TLCState.Empty, EvalControl.Enabled);
-		// TODO We are in ENABLED and primed but why pass only primed? This appears to
+		// We are in ENABLED and primed but why pass only primed? This appears to
 		// be the only place where we call eval from the ENABLED scope without passing
 		// EvalControl.Enabled. Thus a cached LazyValue could be used.
-	    final Value v1 = this.eval(expr, c, s1, TLCState.Empty, EvalControl.Primed);
+        //
+        // The current scope is a nested UNCHANGED in an ENABLED and evaluation is set
+		// to primed.
+		//
+		// However, SANY does not seem to accept a primed variable inside ENABLED
+		// UNCHANGED .... anyway, thus this.eval(...) is going to throw an EvalException
+		// regardless of EvalControl.Primed or
+		// EvalControl.setPrimed(EvalControl.Enabled).
+		final Value v1 = this.eval(expr, c, s1, TLCState.Empty, EvalControl.Primed);
         if (!v0.equals(v1)) {
           return null;
         }

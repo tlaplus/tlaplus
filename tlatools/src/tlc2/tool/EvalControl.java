@@ -14,13 +14,19 @@ public class EvalControl {
    * 
    * @see tlc2.util.Context.lookup(SymbolNode, boolean)
    */
-  public static final int Primed = 2;
+  public static final int Primed = 1 << 1;
   /**
    * Current evaluation scope is within ENABLED. In the ENABLED scope, caching of
    * LazyValue is disabled.
    */
-  public static final int Enabled = 4;
-
+  public static final int Enabled = 1 << 2;
+  /**
+   * Evaluation in the scope of {@link Tool#getInitStates()} or
+   * {@link Tool#getInitStates(IStateFunctor)}. In other words set during the
+   * generation of initial states.
+   */
+  public static final int Init = 1 << 3;
+  
   public static final int Clear = 0;
   
   private static boolean isSet(final int control, final int constant) {
@@ -60,5 +66,9 @@ public class EvalControl {
 
   public static int setEnabled(int control) {
 	return  control | Enabled;
+  }
+
+  public static boolean isInit(int control) {
+	return isSet(control, Init);
   }
 }
