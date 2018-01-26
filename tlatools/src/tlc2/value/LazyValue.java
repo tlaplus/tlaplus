@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import tlc2.tool.FingerprintException;
 import tla2sany.semantic.SemanticNode;
+import tlc2.tool.FingerprintException;
 import tlc2.util.Context;
 import util.Assert;
 import util.ToolIO;
@@ -44,19 +44,36 @@ public class LazyValue extends Value {
 
   public SemanticNode expr;
   public Context con;
-  public Value val;
+  private Value val;
 
   public LazyValue(SemanticNode expr, Context con) {
+	  this(expr, con, true);
+  }
+
+  public LazyValue(SemanticNode expr, Context con, final boolean cachable) {
     this.expr = expr;
     this.con = con;
     this.val = null;
-    if (LAZYEVAL_OFF) {
-    	setUncachable();
+    // See comment on cachable's meager performance in Tool.java on line 1408.
+    // See other note about a bug that surfaced with LazyValue in Tool.java on line ~1385.
+    if (LAZYEVAL_OFF || !cachable) {
+    	this.val = ValUndef;
     }
   }
 
-  public final void setUncachable() { this.val = ValUndef; }
+  public final boolean isUncachable() { return this.val == ValUndef; }
 
+  public final void setValue(final Value aValue) {
+	  assert !isUncachable();
+	  this.val = aValue;
+  }
+
+  public final Value getValue() {
+	  // cache hit on (this.val != null && !isUncachable)
+      // cache miss on (this.val == null)
+	  return this.val;
+  }
+ 
   public final byte getKind() { return LAZYVALUE; }
 
   public final int compareTo(Object obj) {

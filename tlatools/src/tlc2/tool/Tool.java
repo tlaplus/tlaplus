@@ -465,11 +465,11 @@ public class Tool
 
           if (val instanceof LazyValue) {
             LazyValue lv = (LazyValue)val;
-            if (lv.val == null || lv.val == ValUndef) {
+            if (lv.getValue() == null || lv.isUncachable()) {
               this.getInitStates(lv.expr, acts, lv.con, ps, states);
               return;
             }
-            val = lv.val;
+            val = lv.getValue();
           }
 
           Object bval = val;
@@ -875,10 +875,10 @@ public class Tool
 
           if (val instanceof LazyValue) {
             LazyValue lv = (LazyValue)val;
-            if (lv.val == null || lv.val == ValUndef) {
+            if (lv.getValue() == null || lv.isUncachable()) {
               return this.getNextStates(lv.expr, acts, lv.con, s0, s1, nss);
             }
-            val = lv.val;
+            val = lv.getValue();
           }
 
           Object bval = val;
@@ -1370,39 +1370,91 @@ public class Tool
 				final LazyValue lv = (LazyValue) val;
 				if (s1 == null) {
 					val = this.eval(lv.expr, lv.con, s0, null, control);
-				} else if (lv.val == ValUndef || EvalControl.isEnabled(control)) {
+			    } else if (lv.isUncachable() || EvalControl.isEnabled(control)) {
 					// Never use cached LazyValues in an ENABLED expression. This is why all
 					// this.enabled* methods pass EvalControl.Enabled (the only exclusion being the
-					// call on line line 2789 which passes EvalControl.Primed). This is why we can
+					// call on line line 2799 which passes EvalControl.Primed). This is why we can
 			    	// be sure that ENALBED expressions are not affected by the caching bug tracked
 			    	// in Github issue 113 (see below).
 					val = this.eval(lv.expr, lv.con, s0, s1, control);
 				} else {
-					val = lv.val;
+					val = lv.getValue();
 					if (val == null) {
 						final Value res = this.eval(lv.expr, lv.con, s0, s1, control);
 						// This check has been suggested by Yuan Yu on 01/15/2018:
+						//
 						// If init-states are being generated, level has to be <= ConstantLevel for
 						// caching/LazyValue to be allowed. If next-states are being generated, level
-						// has to be <= VariableLevel. This restriction is in place as a fix to 
-						// Github issue 113 (https://github.com/tlaplus/tlaplus/issues/113) - 
+						// has to be <= VariableLevel. The level indicates if the expression to be
+						// evaluated contains only constants, constants & variables, constants & 
+						// variables and primed variables (thus action) or is a temporal formula.
+						//
+						// This restriction is in place to fix Github issue 113
+						// (https://github.com/tlaplus/tlaplus/issues/113) - 
 						// TLC can generate invalid sets of init or next-states caused by broken
 						// LazyValue evaluation. The related tests are AssignmentInit* and
-						// AssignmentNext*. Without this fix TLC essentially used a stale lv.val when it
-						// needed to re-evaluate res because the actual operands to eval changed.
+						// AssignmentNext*. Without this fix TLC essentially reuses a stale lv.val when
+						// it needs to re-evaluate res because the actual operands to eval changed.
+						// Below is Leslie's formal description of the bug:
+						// 
+						// The possible initial values of some variable  var  are specified by a subformula
+						// 
+						// F(..., var, ...)
+						// 
+						// in the initial predicate, for some operator F such that expanding the
+						// definition of F results in a formula containing more than one occurrence of
+						// var , not all occurring in separate disjuncts of that formula.
+						// 
+						// The possible next values of some variable  var  are specified by a subformula
+						// 
+						// F(..., var', ...)
+						// 
+						// in the next-state relation, for some operator F such that expanding the
+						// definition of F results in a formula containing more than one occurrence of
+						// var' , not all occurring in separate disjuncts of that formula.
+						// 
+						// An example of the first case is an initial predicate  Init  defined as follows:
+						// 
+						// VARIABLES x, ...
+						// F(var) == \/ var \in 0..99 /\ var % 2 = 0
+						//           \/ var = -1
+						// Init == /\ F(x)
+						//         /\ ...
+						// 
+						// The error would not appear if  F  were defined by:
+						// 
+						// F(var) == \/ var \in {i \in 0..99 : i % 2 = 0}
+						//           \/ var = -1
+						// 
+						// or if the definition of  F(x)  were expanded in  Init :
+						// 
+						// Init == /\ \/ x \in 0..99 /\ x % 2 = 0
+						//            \/ x = -1
+						//         /\ ...
+						// 
+						// A similar example holds for case 2 with the same operator F and the
+						// next-state formula
+						// 
+						// Next == /\ F(x')
+						//         /\ ...
+						// 
+						// The workaround is to rewrite the initial predicate or next-state relation so
+						// it is not in the form that can cause the bug. The simplest way to do that is
+						// to expand (in-line) the definition of F in the definition of the initial
+						// predicate or next-state relation.
 						//
 						// Note that EvalControl.Init is only set in the scope of this.getInitStates*,
 						// but not in the scope of methods such as this.isInModel, this.isGoodState...
 						// which are invoked by DFIDChecker and ModelChecker#doInit and doNext. These
-						// invocation however don't pose a problem with regards to issue 113 though
-						// because they don't generate the set of initial or next states but get passed
-						// fully generated states.
+						// invocation however don't pose a problem with regards to issue 113 because
+						// they don't generate the set of initial or next states but get passed fully
+						// generated/final states.
 						//
 						// !EvalControl.isInit(control) means Tool is either processing the spec in
 						// this.process* as part of initialization or that next-states are being
 						// generated. The latter case has to restrict usage of cached LazyValue as
 						// discussed above.
-						final int level = ((LevelNode) lv.expr).getLevel();
+						final int level = ((LevelNode) lv.expr).getLevel(); // cast to LevelNode is safe because LV only subclass of SN.
 						if ((EvalControl.isInit(control) && level <= LevelConstants.ConstantLevel)
 								|| (!EvalControl.isInit(control) && level <= LevelConstants.VariableLevel)) {
 							// The performance benefits of caching values is generally debatable. The time
@@ -1412,7 +1464,7 @@ public class Tool
 							// for issue 113 reduces the cache hits from ~13 billion to ~4 billion. This was
 							// measured with an instrumented version of TLC.
 							// [1] general/performance/PaxosCommit/  
-							lv.val = res;
+							lv.setValue(res);
 						}
 						val = res;
 					}
@@ -2796,17 +2848,33 @@ public class Tool
         }
 
         final Value v0 = this.eval(expr, c, s0, TLCState.Empty, EvalControl.Enabled);
-		// We are in ENABLED and primed but why pass only primed? This appears to
-		// be the only place where we call eval from the ENABLED scope without passing
-		// EvalControl.Enabled. Thus a cached LazyValue could be used.
-        //
+        // We are in ENABLED and primed but why pass only primed? This appears to
+        // be the only place where we call eval from the ENABLED scope without
+        // additionally passing EvalControl.Enabled. Not passing Enabled allows a 
+        // cached LazyValue could be used (see comments above on line 1384).
+        // 
         // The current scope is a nested UNCHANGED in an ENABLED and evaluation is set
-		// to primed.
-		//
-		// However, SANY does not seem to accept a primed variable inside ENABLED
-		// UNCHANGED .... anyway, thus this.eval(...) is going to throw an EvalException
-		// regardless of EvalControl.Primed or
-		// EvalControl.setPrimed(EvalControl.Enabled).
+        // to primed. However, UNCHANGED e equals e' = e , so anything primed in e
+        // becomes double-primed in ENABLED UNCHANGED e. This makes it illegal TLA+
+        // which is rejected by SANY's level checking. A perfectly valid spec - where
+        // e is not primed - but that also causes this code path to be taken is 23 below:
+        // 
+        // -------- MODULE 23 ---------
+        // VARIABLE t
+        // op(var) == var
+        // Next == /\ (ENABLED (UNCHANGED op(t)))
+        //         /\ (t'= t)
+        // Spec == (t = 0) /\ [][Next]_t
+        // ============================
+        // 
+        // However, spec 23 causes the call to this.eval(...) below to throw an
+        // EvalException either with EvalControl.Primed. The exception's message is
+        // "In evaluation, the identifier t is either undefined or not an operator."
+        // indicating that this code path is buggy.
+        // 
+        // If this bug is ever fixed to make TLC accept spec 23, EvalControl.Primed
+        // should likely be rewritten to EvalControl.setPrimed(EvalControl.Enabled)
+        // to disable reusage of LazyValues on line ~1384 above.
 		final Value v1 = this.eval(expr, c, s1, TLCState.Empty, EvalControl.Primed);
         if (!v0.equals(v1)) {
           return null;

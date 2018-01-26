@@ -1747,16 +1747,11 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         return opNode;
     }
 
-    public final Object getVal(ExprOrOpArgNode expr, Context c, boolean cachable)
+    public final Object getVal(ExprOrOpArgNode expr, Context c, final boolean cachable)
     {
         if (expr instanceof ExprNode)
         {
-            LazyValue lval = new LazyValue(expr, c);
-            if (!cachable)
-            {
-                lval.setUncachable();
-            }
-            return lval;
+            return new LazyValue(expr, c, cachable);
         }
         SymbolNode opNode = ((OpArgNode) expr).getOp();
         return this.lookup(opNode, c, false);
