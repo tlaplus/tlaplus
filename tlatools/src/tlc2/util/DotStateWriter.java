@@ -232,7 +232,7 @@ public class DotStateWriter extends StateWriter {
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.format("subgraph %s {", "cluster_legend"));
 		sb.append("graph[style=bold];");
-        sb.append("label = \"Transition Action Legend\" style=\"solid\"\n");
+        sb.append("label = \"State Transition Actions\" style=\"solid\"\n");
         sb.append(String.format("node [ labeljust=\"l\" colorscheme=\"%s\" style=filled shape=record ]\n", dotColorScheme));
         for(String action : actions) {
         		String str = String.format("%s [label=\"%s\" fillcolor=%d]", action, action, this.actionToColors.get(action));
