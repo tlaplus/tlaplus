@@ -61,18 +61,28 @@ public class DotStateWriter extends StateWriter {
 	// A mapping of action names to their assigned color ids.
 	HashMap<String, Integer> actionToColors = new HashMap<>();
 	
-	public DotStateWriter(final String fname) throws IOException {
-		this(fname, "strict ");
+	// Determines whether or not transition edges should be colorized in the state graph.
+	boolean colorize = false;
+		
+	// Determines whether or not transition edges should be labeled with their action names.
+	boolean actionLabels = false;
+	
+	public DotStateWriter(final String fname, final boolean colorize, final boolean actionLabels) throws IOException {
+		this(fname, "strict ", colorize, actionLabels);
 	}
 	
-	public DotStateWriter(final String fname, final String strict) throws IOException {
+	public DotStateWriter(final String fname, final String strict, final boolean colorize, final boolean actionLabels) throws IOException {
 		super(fname);
+		this.colorize = colorize;
+		this.actionLabels = actionLabels;
 		this.writer.append(strict + "digraph DiskGraph {\n"); // strict removes redundant edges
 		// Turned off LR because top to bottom provides better results with GraphViz viewer.
 //		this.writer.append("rankdir=LR;\n"); // Left to right rather than top to bottom
         
-		// Set the color scheme for transition edges.
-		this.writer.append(String.format("edge [colorscheme=\"%s\"]\n", dotColorScheme));
+		// Set the color scheme for transition edges if necessary.
+		if(colorize) {
+			this.writer.append(String.format("edge [colorscheme=\"%s\"]\n", dotColorScheme));	
+		}
         
 		// Spread out state nodes more.
         this.writer.append("nodesep=0.35;\n");
@@ -141,8 +151,11 @@ public class DotStateWriter extends StateWriter {
 //			this.writer.append(" [label=\"" + actionChecks.toString(from, length, 't', 'f') + "\"]");
 		}
 		
-		String transitionLabel = this.dotTransitionLabel(state, successor, action);
-		this.writer.append(transitionLabel);
+		if(action!=null) {
+			String transitionLabel = this.dotTransitionLabel(state, successor, action);
+			this.writer.append(transitionLabel);	
+			this.writer.append(";\n");
+		}
 		
 		// If the successor is new, print the state's label. Labels are printed
 		// when writeState sees the successor. It does not print the label for
@@ -197,31 +210,14 @@ public class DotStateWriter extends StateWriter {
 	 * @return the DOT label for the edge
 	 */
 	protected String dotTransitionLabel(TLCState state, TLCState successor, Action action) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(" [label=<");
-		sb.append("<table border='0'>");
-	    sb.append("<tr>");
-	    Integer color = 0;
-	    if(action!=null) {
-	    		String actionName = action.getActionName();
-	    		if(actionToColors.containsKey(actionName)) {
-	    			color = actionToColors.get(actionName);
-	    		} else {
-	    			// Get the next color and use it for this action.
-	    			this.colorGen = (this.colorGen + 1) % this.colorGenMax;
-	    			color = this.colorGen;
-	    			actionToColors.put(actionName, color);
-	    		}
-	    		sb.append("<td>");
-			sb.append("<font point-size='12'" + " color=\"" + color + "\">" + actionName + "</font>");
-			sb.append("</td>");
-	    }
-	    sb.append("</tr>");
-		sb.append("</table>");
-		sb.append(">");
-		sb.append(" labeldistance=\"4\" color=\"" + color +"\"]");
+	    // Only colorize edges if specified. Default to black otherwise.
+		String color = colorize ? this.getActionColor(action).toString() : "black" ;
 		
-		return sb.toString();
+	    // Only add action label if specified.
+		String actionName = actionLabels ? action.getActionName() : "" ;
+		
+		String labelFmtStr = " [label=\"%s\" color=\"%s\" fontcolor=\"%s\"]";
+		return String.format(labelFmtStr, actionName, color, color);
 	}
 	
 	
@@ -236,11 +232,9 @@ public class DotStateWriter extends StateWriter {
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.format("subgraph %s {", "cluster_legend"));
 		sb.append("graph[style=bold];");
-		sb.append(String.format("node [ labeljust=\"l\" colorscheme=\"%s\" style=filled shape=record ]\n", dotColorScheme));
         sb.append("label = \"Transition Action Legend\" style=\"solid\"\n");
-        sb.append(String.format("colorscheme=\"%s\"\n", dotColorScheme));
-        int i=1;
-        for(String action: actions) {
+        sb.append(String.format("node [ labeljust=\"l\" colorscheme=\"%s\" style=filled shape=record ]\n", dotColorScheme));
+        for(String action : actions) {
         		String str = String.format("%s [label=\"%s\" fillcolor=%d]", action, action, this.actionToColors.get(action));
     			sb.append(str);
     			sb.append("\n");
@@ -273,9 +267,11 @@ public class DotStateWriter extends StateWriter {
 	 */
 	public void close() {
 		this.writer.append("}\n"); // closes the main subgraph.
-
-		this.writer.append(dotLegend("DotLegend", this.actionToColors.keySet()));
-		this.writer.append("}");
+		// We only need the legend if the edges are colored by action.
+		if(colorize) {
+			this.writer.append(dotLegend("DotLegend", this.actionToColors.keySet()));
+			this.writer.append("}");
+		}
 		super.close();
 	}
 }

@@ -248,6 +248,8 @@ public class TLC
     {
 		String dumpFile = null;
 		boolean asDot = false;
+	    boolean colorize = false;
+	    boolean actionLabels = false;
 		
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
@@ -340,8 +342,11 @@ public class TLC
                 index++; // consume "-dump".
                 if (index + 1 < args.length && args[index].equals("dot"))
                 {
+                	final String dotArgs = args[index].toLowerCase();
                 	index++; // consume "dot".
                 	asDot = true;
+                	colorize = dotArgs.contains("colorize");
+                	actionLabels = dotArgs.contains("actionlabels");
 					dumpFile = getDumpFile(args[index++], ".dot");
                 }
                 else if (index < args.length)
@@ -352,6 +357,18 @@ public class TLC
                     printErrorMsg("Error: A file name for dumping states required.");
                     return false;
                 }
+            } else if (args[index].equals("-colorize")) {
+            		// Colorize state transition edges in the DOT state graph. Each action
+            		// gets a unique color.
+                colorize = true;
+                index++;
+
+            } else if (args[index].equals("-actionLabels")) {
+            		// Label transition edges in the state graph with the name of the
+            		// associated action. Can potentially add a large amount of visual clutter for
+            		// large graphs with many actions.
+                actionLabels = true;
+                index++;
             } else if (args[index].equals("-coverage"))
             {
                 index++;
@@ -738,7 +755,7 @@ public class TLC
         	}
         	try {
         		if (asDot) {
-        			this.stateWriter = new DotStateWriter(dumpFile);
+        			this.stateWriter = new DotStateWriter(dumpFile, colorize, actionLabels);
         		} else {
         			this.stateWriter = new StateWriter(dumpFile);
         		}
