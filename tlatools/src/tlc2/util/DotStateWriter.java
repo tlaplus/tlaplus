@@ -70,10 +70,13 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(strict + "digraph DiskGraph {\n"); // strict removes redundant edges
 		// Turned off LR because top to bottom provides better results with GraphViz viewer.
 //		this.writer.append("rankdir=LR;\n"); // Left to right rather than top to bottom
-        this.writer.append(String.format("edge [colorscheme=\"%s\"]\n", dotColorScheme));
-        // Spread out state nodes more.
+        
+		// Set the color scheme for transition edges.
+		this.writer.append(String.format("edge [colorscheme=\"%s\"]\n", dotColorScheme));
+        
+		// Spread out state nodes more.
         this.writer.append("nodesep=0.35;\n");
-//        this.writer.append("ranksep=0.85;\n");
+
 		this.writer.append("subgraph cluster_graph {\n"); 
         this.writer.append("color=\"white\";\n"); //no border.
 		this.writer.flush();
@@ -90,7 +93,6 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(stateToDotStr(state, state));
 		this.writer.append(">]");
 		this.writer.append("\n");
-//		this.writer.append(dotLegend("Legend", new ArrayList<String>()));
 	}
 	
 	/* (non-Javadoc)
