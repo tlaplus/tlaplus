@@ -58,7 +58,9 @@ public class DotStateWriter extends StateWriter {
 	// https://www.graphviz.org/doc/info/colors.html for more details on color schemes.
 	static String dotColorScheme = "paired12";
 	
-	// A mapping of action names to their assigned color ids.
+	// A mapping of action names to their assigned color ids. Since states are fed into a StateWriter
+	// incrementally, one at a time, this table is built up over time, adding new actions as we find
+	// out about them.
 	HashMap<String, Integer> actionToColors = new HashMap<>();
 	
 	// Determines whether or not transition edges should be colorized in the state graph.
