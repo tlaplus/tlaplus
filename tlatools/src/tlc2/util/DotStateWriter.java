@@ -208,7 +208,7 @@ public class DotStateWriter extends StateWriter {
 	    			color = actionToColors.get(actionName);
 	    		} else {
 	    			// Get the next color and use it for this action.
-	    			this.colorGen++;
+	    			this.colorGen = (this.colorGen + 1) % this.colorGenMax;
 	    			color = this.colorGen;
 	    			actionToColors.put(actionName, color);
 	    		}
