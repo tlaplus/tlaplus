@@ -47,10 +47,19 @@ import util.UniqueString;
  */
 public class DotStateWriter extends StateWriter {
 
-	// Used for assigning unique color identifiers to each action type.
+	// Used for assigning unique color identifiers to each action type. Incremented by 1
+	// every time a new color is assigned to an action.
 	Integer colorGen = 1;
-	HashMap<String, Integer> actionToColors = new HashMap<>();
+	
+	// Maximum number of unique colors. Determined by the Graphviz color scheme that is used.
+	Integer colorGenMax = 12;
+	
+	// The Graphviz color scheme that is used for state transition edge colors. See
+	// https://www.graphviz.org/doc/info/colors.html for more details on color schemes.
 	static String dotColorScheme = "paired12";
+	
+	// A mapping of action names to their assigned color ids.
+	HashMap<String, Integer> actionToColors = new HashMap<>();
 	
 	public DotStateWriter(final String fname) throws IOException {
 		this(fname, "strict ");
@@ -149,6 +158,35 @@ public class DotStateWriter extends StateWriter {
 	}
 	
 	/**
+	 * Given an action, returns the associated color identifier for it. The color
+	 * identifier is just an integer suitable for use in a GraphViz color scheme. This
+	 * method updates the (action -> color) mapping if this action has not been seen
+	 * before for this DotStateWriter instance.
+	 * 
+	 * @param action
+	 * @return the color identifier for the given action
+	 */
+	protected Integer getActionColor(Action action) {
+		// Return a default color if the given action is null.
+	    Integer actionColor = 1;
+	    if(action!=null) {
+	    		String actionName = action.getActionName();
+	    		// If this action has been seen before, retrieve its color.
+	    		if(actionToColors.containsKey(actionName)) {
+	    			actionColor = actionToColors.get(actionName);
+	    		} 
+    			// If this action has not been seen yet, get the next available color 
+	    		// and assign it to this action.
+	    		else {
+	    			this.colorGen++;
+	    			actionColor = this.colorGen;
+	    			actionToColors.put(actionName, actionColor);
+	    		}
+	    }
+	    return actionColor;
+	}
+	
+	/**
 	 * Creates a DOT label for an edge representing a state transition. 
 	 * 
 	 * @param state the current state of the transition
@@ -159,7 +197,7 @@ public class DotStateWriter extends StateWriter {
 	protected String dotTransitionLabel(TLCState state, TLCState successor, Action action) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" [label=<");
-		sb.append("<table border='0' cellborder='0' cellspacing='0'>");
+		sb.append("<table border='0'>");
 	    sb.append("<tr>");
 	    Integer color = 0;
 	    if(action!=null) {
@@ -172,7 +210,7 @@ public class DotStateWriter extends StateWriter {
 	    			color = this.colorGen;
 	    			actionToColors.put(actionName, color);
 	    		}
-	    		sb.append("<td bgcolor='white' color='red'>");
+	    		sb.append("<td>");
 			sb.append("<font point-size='12'" + " color=\"" + color + "\">" + actionName + "</font>");
 			sb.append("</td>");
 	    }
