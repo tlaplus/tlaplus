@@ -146,10 +146,16 @@ public class DotStateWriter extends StateWriter {
 			this.writer.append(">]");
 			this.writer.append(";\n");
 		}
-		
-
 	}
 	
+	/**
+	 * Creates a DOT label for an edge representing a state transition. 
+	 * 
+	 * @param state the current state of the transition
+	 * @param successor the next state of the transition
+	 * @param action the action that induced the transition
+	 * @return the DOT label for the edge
+	 */
 	protected String dotTransitionLabel(TLCState state, TLCState successor, Action action) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" [label=<");
@@ -198,8 +204,12 @@ public class DotStateWriter extends StateWriter {
 	}
 	
 	
-	/** 
-	 * Return a DOT string that contains a legend describing the map of actions to their corresponding color.
+	/**
+	 * Creates a DOT legend that maps actions to their corresponding edge color in the state graph.
+	 * 
+	 * @param name the title of the legend
+	 * @param actions the set of action names that will be included in the legend
+	 * @return
 	 */
 	protected String dotLegend(String name, Set<String> actions) {
 		StringBuilder sb = new StringBuilder();
