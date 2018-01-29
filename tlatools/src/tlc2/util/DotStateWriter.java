@@ -50,7 +50,7 @@ public class DotStateWriter extends StateWriter {
 	// Used for assigning unique color identifiers to each action type.
 	Integer colorGen = 1;
 	HashMap<String, Integer> actionToColors = new HashMap<>();
-	static String dotColorScheme = "paired9";
+	static String dotColorScheme = "paired12";
 	
 	public DotStateWriter(final String fname) throws IOException {
 		this(fname, "strict ");
@@ -117,66 +117,21 @@ public class DotStateWriter extends StateWriter {
 			Visualization visualization, Action action) {
 		final String successorsFP = Long.toString(successor.fingerPrint());
 		
-		// Write the transition
+		// Write the transition edge.
 		this.writer.append(Long.toString(state.fingerPrint()));
 		this.writer.append(" -> ");
 		this.writer.append(successorsFP);
 		if (visualization == Visualization.STUTTERING) {
-//			this.writer.append(" [style=\"dashed\"]");
+			this.writer.append(" [style=\"dashed\"]");
 		}
 		
 		// Add the transition edge label. Omit if there are no actions.	
 		if (length > 0) { 
 //			this.writer.append(" [label=\"" + actionChecks.toString(from, length, 't', 'f') + "\"]");
 		}
-
-		this.writer.append(" [label=<");
-		this.writer.append("<table border='0' cellborder='0' cellspacing='0'>");
-	    this.writer.append("<tr>");
-	    Integer color = 0;
-	    if(action!=null) {
-	    		String actionName = action.getActionName();
-	    		if(actionToColors.containsKey(actionName)) {
-	    			color = actionToColors.get(actionName);
-	    		} else {
-	    			// Get the next color and use it for this action.
-	    			this.colorGen++;
-	    			color = this.colorGen;
-	    			actionToColors.put(actionName, color);
-	    		}
-	    		this.writer.append("<td bgcolor='white' color='red'>");
-			this.writer.append("<font point-size='12'" + " color=\"" + color + "\">" + actionName + "</font>");
-			this.writer.append("</td>");
-	    }
-	    this.writer.append("</tr>");
-
-	    this.writer.append("<tr>");
-
-		// Print names of variables that changed in this transition.
-		this.writer.append("<td bgcolor='white'><font color='#222222' point-size='9'>");
-//		this.writer.append("(");
-		HashMap<UniqueString, Value> diffMap = state.diff(successor);
-		ArrayList<String> changedVars = new ArrayList<>();
-		for(UniqueString key : diffMap.keySet()) {
-			changedVars.add(key.toString());
-			this.writer.append(key.toString());
-			this.writer.append("<br/>");
-
-		}
-//		this.writer.append(String.join("\n", changedVars));
-//		this.writer.append(")");
-		this.writer.append("</font>");
-		this.writer.append("</td>");
-		this.writer.append("</tr>");
-		this.writer.append("</table>");
-		this.writer.append(">");
 		
-		
-		this.writer.append(" labeldistance=\"4\" color=\"" + color +"\"]");
-//		this.writer.append(" [headlabel=");
-//		this.writer.append("\"" + String.join("\n", changedVars) + "\"");
-//		this.writer.append(" labeldistance=\"4\" fontcolor=\"" + color + "\" fontsize=\"9\"]");
-//		this.writer.append(";\n");
+		String transitionLabel = this.dotTransitionLabel(state, successor, action);
+		this.writer.append(transitionLabel);
 		
 		// If the successor is new, print the state's label. Labels are printed
 		// when writeState sees the successor. It does not print the label for
@@ -191,6 +146,55 @@ public class DotStateWriter extends StateWriter {
 			this.writer.append(">]");
 			this.writer.append(";\n");
 		}
+		
+
+	}
+	
+	protected String dotTransitionLabel(TLCState state, TLCState successor, Action action) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" [label=<");
+		sb.append("<table border='0' cellborder='0' cellspacing='0'>");
+	    sb.append("<tr>");
+	    Integer color = 0;
+	    if(action!=null) {
+	    		String actionName = action.getActionName();
+	    		if(actionToColors.containsKey(actionName)) {
+	    			color = actionToColors.get(actionName);
+	    		} else {
+	    			// Get the next color and use it for this action.
+	    			this.colorGen++;
+	    			color = this.colorGen;
+	    			actionToColors.put(actionName, color);
+	    		}
+	    		sb.append("<td bgcolor='white' color='red'>");
+			sb.append("<font point-size='12'" + " color=\"" + color + "\">" + actionName + "</font>");
+			sb.append("</td>");
+	    }
+	    sb.append("</tr>");
+
+		// Print names of variables that changed in this transition.
+//	    sb.append("<tr>");
+//		sb.append("<td bgcolor='white'><font color='#222222' point-size='9'>");
+//		sb.append("(");
+//		HashMap<UniqueString, Value> diffMap = state.diff(successor);
+//		ArrayList<String> changedVars = new ArrayList<>();
+//		for(UniqueString key : diffMap.keySet()) {
+//			changedVars.add(key.toString());
+//			sb.append(key.toString());
+//			sb.append("<br/>");
+//		}
+//		sb.append(String.join("\n", changedVars));
+//		sb.append(")");
+//		sb.append("</font>");
+//		sb.append("</td>");
+//		sb.append("</tr>");
+	    
+	    
+		sb.append("</table>");
+		sb.append(">");
+		sb.append(" labeldistance=\"4\" color=\"" + color +"\"]");
+		
+		return sb.toString();
 	}
 	
 	
