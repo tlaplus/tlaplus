@@ -217,25 +217,6 @@ public class DotStateWriter extends StateWriter {
 			sb.append("</td>");
 	    }
 	    sb.append("</tr>");
-
-		// Print names of variables that changed in this transition.
-//	    sb.append("<tr>");
-//		sb.append("<td bgcolor='white'><font color='#222222' point-size='9'>");
-//		sb.append("(");
-//		HashMap<UniqueString, Value> diffMap = state.diff(successor);
-//		ArrayList<String> changedVars = new ArrayList<>();
-//		for(UniqueString key : diffMap.keySet()) {
-//			changedVars.add(key.toString());
-//			sb.append(key.toString());
-//			sb.append("<br/>");
-//		}
-//		sb.append(String.join("\n", changedVars));
-//		sb.append(")");
-//		sb.append("</font>");
-//		sb.append("</td>");
-//		sb.append("</tr>");
-	    
-	    
 		sb.append("</table>");
 		sb.append(">");
 		sb.append(" labeldistance=\"4\" color=\"" + color +"\"]");
