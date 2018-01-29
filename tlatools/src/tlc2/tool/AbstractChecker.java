@@ -80,7 +80,7 @@ public abstract class AbstractChecker implements Cancelable
      * @param resolver
      * @param spec - pre-built specification object (e.G. from calling SANY from the tool previously)
      */
-    public AbstractChecker(String specFile, String configFile, String dumpFile, final boolean asDot, boolean deadlock, String fromChkpt,
+    public AbstractChecker(String specFile, String configFile, String dumpFile, final boolean asDot, final boolean colorize, final boolean actionLabels, boolean deadlock, String fromChkpt,
             boolean preprocess, FilenameToStream resolver, SpecObj spec) throws EvalException, IOException
     {
         this.cancellationFlag = false;
@@ -117,7 +117,7 @@ public abstract class AbstractChecker implements Cancelable
         		dumpFile = dumpFile.replace("${metadir}", this.metadir);
         	}
         	if (asDot) {
-        		this.allStateWriter = new DotStateWriter(dumpFile);
+        		this.allStateWriter = new DotStateWriter(dumpFile, colorize, actionLabels);
         	} else {
         		this.allStateWriter = new StateWriter(dumpFile);
         	}

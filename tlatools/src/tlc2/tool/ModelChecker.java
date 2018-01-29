@@ -75,11 +75,11 @@ public class ModelChecker extends AbstractChecker
      * @param specObj external SpecObj added to enable to work on existing specification 
      * Modified on 6 Apr 2010 by Yuan Yu to add fpMemSize parameter.
      */
-    public ModelChecker(String specFile, String configFile, String dumpFile, final boolean asDot, boolean deadlock, String fromChkpt,
+    public ModelChecker(String specFile, String configFile, String dumpFile, final boolean asDot, final boolean colorize, final boolean actionLabels, boolean deadlock, String fromChkpt,
             FilenameToStream resolver, SpecObj specObj, final FPSetConfiguration fpSetConfig) throws EvalException, IOException
     {
         // call the abstract constructor
-        super(specFile, configFile, dumpFile, asDot, deadlock, fromChkpt, true, resolver, specObj);
+        super(specFile, configFile, dumpFile, asDot, colorize, actionLabels, deadlock, fromChkpt, true, resolver, specObj);
 
         // SZ Feb 20, 2009: this is a selected alternative
         this.theStateQueue = new DiskStateQueue(this.metadir);

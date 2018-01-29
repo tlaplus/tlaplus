@@ -78,6 +78,9 @@ public class TLC
 	 * Off/False by default.
 	 */
     private boolean asDot;
+    private boolean colorize = false;
+    private boolean actionLabels = false;
+
     private String fromChkpt;
 
     private int fpIndex;
@@ -353,6 +356,18 @@ public class TLC
                     printErrorMsg("Error: A file name for dumping states required.");
                     return false;
                 }
+            } else if (args[index].equals("-colorize")) {
+            		// Colorize state transition edges in the DOT state graph. Each action
+            		// gets a unique color.
+                colorize = true;
+                index++;
+
+            } else if (args[index].equals("-actionLabels")) {
+            		// Label transition edges in the state graph with the name of the
+            		// associated action. Can potentially add a large amount of visual clutter for
+            		// large graphs with many actions.
+                actionLabels = true;
+                index++;
             } else if (args[index].equals("-coverage"))
             {
                 index++;
@@ -822,12 +837,12 @@ public class TLC
                 if (TLCGlobals.DFIDMax == -1)
                 {
 					MP.printMessage(EC.TLC_MODE_MC, parameters);
-                    mc = new ModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
+                    mc = new ModelChecker(mainFile, configFile, dumpFile, asDot, colorize, actionLabels, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
                     modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
                 } else
                 {
 					MP.printMessage(EC.TLC_MODE_MC_DFS, parameters);
-                    mc = new DFIDModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, true, resolver, specObj);
+                    mc = new DFIDModelChecker(mainFile, configFile, dumpFile, asDot, colorize, actionLabels, deadlock, fromChkpt, true, resolver, specObj);
                 }
                 TLCGlobals.mainChecker = mc;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
