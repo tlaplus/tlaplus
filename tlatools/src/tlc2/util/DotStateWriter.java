@@ -185,22 +185,22 @@ public class DotStateWriter extends StateWriter {
 	 */
 	protected Integer getActionColor(Action action) {
 		// Return a default color if the given action is null.
-	    Integer actionColor = 1;
-	    if(action!=null) {
-	    		String actionName = action.getActionName();
-	    		// If this action has been seen before, retrieve its color.
-	    		if(actionToColors.containsKey(actionName)) {
-	    			actionColor = actionToColors.get(actionName);
-	    		} 
-    			// If this action has not been seen yet, get the next available color 
-	    		// and assign it to this action.
-	    		else {
-	    			this.colorGen++;
-	    			actionColor = this.colorGen;
-	    			actionToColors.put(actionName, actionColor);
-	    		}
-	    }
-	    return actionColor;
+		Integer actionColor = 1;
+		if (action != null) {
+			String actionName = action.getActionName();
+			// If this action has been seen before, retrieve its color.
+			if (actionToColors.containsKey(actionName)) {
+				actionColor = actionToColors.get(actionName);
+			}
+			// If this action has not been seen yet, get the next available color
+			// and assign it to this action.
+			else {
+				this.colorGen++;
+				actionColor = this.colorGen;
+				actionToColors.put(actionName, actionColor);
+			}
+		}
+		return actionColor;
 	}
 	
 	/**
@@ -234,13 +234,15 @@ public class DotStateWriter extends StateWriter {
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.format("subgraph %s {", "cluster_legend"));
 		sb.append("graph[style=bold];");
-        sb.append("label = \"Next State Actions\" style=\"solid\"\n");
-        sb.append(String.format("node [ labeljust=\"l\" colorscheme=\"%s\" style=filled shape=record ]\n", dotColorScheme));
-        for(String action : actions) {
-        		String str = String.format("%s [label=\"%s\" fillcolor=%d]", action, action, this.actionToColors.get(action));
-    			sb.append(str);
-    			sb.append("\n");
-        }
+		sb.append("label = \"Next State Actions\" style=\"solid\"\n");
+		sb.append(String.format("node [ labeljust=\"l\" colorscheme=\"%s\" style=filled shape=record ]\n",
+				dotColorScheme));
+		for (String action : actions) {
+			String str = String.format("%s [label=\"%s\" fillcolor=%d]", action, action,
+					this.actionToColors.get(action));
+			sb.append(str);
+			sb.append("\n");
+		}
 		sb.append("}");
 		return sb.toString();
 	}
@@ -272,8 +274,8 @@ public class DotStateWriter extends StateWriter {
 		// We only need the legend if the edges are colored by action.
 		if(colorize) {
 			this.writer.append(dotLegend("DotLegend", this.actionToColors.keySet()));
-			this.writer.append("}");
 		}
+		this.writer.append("}");
 		super.close();
 	}
 }
