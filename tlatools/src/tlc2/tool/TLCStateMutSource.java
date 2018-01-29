@@ -12,7 +12,6 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.HashMap;
 
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
@@ -339,16 +338,6 @@ implements Cloneable, Serializable {
       }
     }
     return result.toString();
-  }
-  
-  public HashMap<UniqueString, Value> getVals() {
-	HashMap<UniqueString, Value> valMap = new HashMap<UniqueString, Value>();
-    for(int i=0;i<vars.length;i++) {
-        UniqueString key = vars[i].getName();
-        Value val = this.lookup(key);
-        valMap.put(key, val);
-    }
-    return valMap;
   }
 
 }
