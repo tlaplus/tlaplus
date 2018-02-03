@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.util;
 
+import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 
 public final class NoopStateWriter implements IStateWriter {
@@ -69,6 +70,12 @@ public final class NoopStateWriter implements IStateWriter {
 	 */
 	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int to, boolean successorStateIsNew,
 			Visualization visulation) {
+		// noop
+	}
+
+	@Override
+	public void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Action action) {
+		// TODO Auto-generated method stub
 		// noop
 	}
 }
