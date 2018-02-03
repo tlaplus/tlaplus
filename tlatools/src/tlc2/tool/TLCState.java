@@ -68,7 +68,7 @@ public abstract class TLCState implements Cloneable, Serializable {
    */ 
   public HashMap<UniqueString, Value> getVals() {
 	HashMap<UniqueString, Value> valMap = new HashMap<UniqueString, Value>();
-    for(int i=0;i<vars.length;i++) {
+	for(int i = 0; i < vars.length; i++) {
         UniqueString key = vars[i].getName();
         Value val = this.lookup(key);
         valMap.put(key, val);
