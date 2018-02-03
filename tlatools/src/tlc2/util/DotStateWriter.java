@@ -47,27 +47,37 @@ import util.UniqueString;
  */
 public class DotStateWriter extends StateWriter {
 
-	// Used for assigning unique color identifiers to each action type. Incremented by 1
-	// every time a new color is assigned to an action.
-	Integer colorGen = 1;
-	
-	// Maximum number of unique colors. Determined by the Graphviz color scheme that is used.
-	Integer colorGenMax = 12;
-	
 	// The Graphviz color scheme that is used for state transition edge colors. See
 	// https://www.graphviz.org/doc/info/colors.html for more details on color schemes.
-	static String dotColorScheme = "paired12";
+	static private final String dotColorScheme = "paired12";
 	
-	// A mapping of action names to their assigned color ids. Since states are fed into a StateWriter
-	// incrementally, one at a time, this table is built up over time, adding new actions as we find
-	// out about them.
-	HashMap<String, Integer> actionToColors = new HashMap<>();
+	// Maximum number of unique colors. Determined by the Graphviz color scheme that is used.
+	static private final Integer colorGenMax = 12;
 	
-	// Determines whether or not transition edges should be colorized in the state graph.
-	boolean colorize = false;
-		
-	// Determines whether or not transition edges should be labeled with their action names.
-	boolean actionLabels = false;
+	// If the total number of states in the resulting graph exceeds this count, we
+	// omit action labels no matter what (even if the option was specified as
+	// 'true'). The edge labels add considerable visual clutter for graphs of
+	// non-trivial sizes, and so we aim to not make graphs unreadable. The choice of
+	// this threshold is somewhat arbitrary, but it serves the right purpose i.e.
+	// include edge labels on only the smallest of state graphs.
+	static private final Integer maxNumStatesForActionLabels = 35;
+
+	// A mapping of action names to their assigned color ids. Since states are fed
+	// into a StateWriter incrementally, one at a time, this table is built up over
+	// time, adding new actions as we find out about them.
+	private HashMap<String, Integer> actionToColors = new HashMap<>();
+
+	// Determines whether or not transition edges should be colorized in the state
+	// graph.
+	private boolean colorize = false;
+
+	// Determines whether or not transition edges should be labeled with their
+	// action names.
+	private boolean actionLabels = false;
+
+	// Used for assigning unique color identifiers to each action type. Incremented
+	// by 1 every time a new color is assigned to an action.
+	private Integer colorGen = 1;
 	
 	public DotStateWriter(final String fname, final boolean colorize, final boolean actionLabels) throws IOException {
 		this(fname, "strict ", colorize, actionLabels);
@@ -86,7 +96,7 @@ public class DotStateWriter extends StateWriter {
 			this.writer.append(String.format("edge [colorscheme=\"%s\"]\n", dotColorScheme));	
 		}
         
-		// Spread out state nodes more.
+		// Spread out state nodes a bit more.
         this.writer.append("nodesep=0.35;\n");
 
 		this.writer.append("subgraph cluster_graph {\n"); 
