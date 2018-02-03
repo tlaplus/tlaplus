@@ -111,7 +111,7 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(Long.toString(state.fingerPrint()));
 		this.writer.append(" [style = filled]");
 		this.writer.append(" [label=<");
-		this.writer.append(stateToDotStr(state, state));
+		this.writer.append(stateToDotStr(state));
 		this.writer.append(">]");
 		this.writer.append("\n");
 	}
@@ -173,7 +173,7 @@ public class DotStateWriter extends StateWriter {
 			// Write the successor's label.
 			this.writer.append(successorsFP);
 			this.writer.append(" [label=<");
-			String stateStr = stateToDotStr(state, successor);
+			String stateStr = stateToDotStr(state);
 			this.writer.append(stateStr);
 			this.writer.append(">]");
 			this.writer.append(";\n");
@@ -191,22 +191,23 @@ public class DotStateWriter extends StateWriter {
 	 */
 	protected Integer getActionColor(Action action) {
 		// Return a default color if the given action is null.
-		Integer actionColor = 1;
-		if (action != null) {
+		if(action==null) {
+			return 1;
+		}
+		else {
 			String actionName = action.getActionName();
 			// If this action has been seen before, retrieve its color.
 			if (actionToColors.containsKey(actionName)) {
-				actionColor = actionToColors.get(actionName);
+				return actionToColors.get(actionName);
 			}
 			// If this action has not been seen yet, get the next available color
 			// and assign it to this action.
 			else {
 				this.colorGen++;
-				actionColor = this.colorGen;
-				actionToColors.put(actionName, actionColor);
+				actionToColors.put(actionName, this.colorGen);
+				return this.colorGen;
 			}
 		}
-		return actionColor;
 	}
 	
 	/**
@@ -253,12 +254,15 @@ public class DotStateWriter extends StateWriter {
 		return sb.toString();
 	}
 	
-	protected static String stateToDotStr(TLCState state, TLCState successor) {		
+	/**
+	 * Given a TLC state, generate a string representation suitable for a HTML DOT graph label.
+	 */
+	protected static String stateToDotStr(TLCState state) {		
 		StringBuilder sb = new StringBuilder();
-		HashMap<UniqueString, Value> valMap = successor.getVals();
+		HashMap<UniqueString, Value> valMap = state.getVals();
 		
 		// Generate a string representation of state.
-		for(UniqueString key : state.getVals().keySet()) {
+		for(UniqueString key : valMap.keySet()) {
 			String valString = (key.toString() + " = " + valMap.get(key).toString());
 			sb.append(valString);
 			// New line between variables.
