@@ -76,26 +76,6 @@ public abstract class TLCState implements Cloneable, Serializable {
     return valMap;
   }
   
-  /** 
-   * Returns a map of all variables that are different between this state and 'otherState' along
-   * with their values in 'otherState'.
-   */
-  public HashMap<UniqueString, Value> diff(TLCState otherState){
-		HashMap<UniqueString, Value> stateVals = this.getVals();
-		HashMap<UniqueString, Value> succStateVals = otherState.getVals();
-		HashMap<UniqueString, Value> diffMap = new HashMap<>();
-		
-		for(UniqueString key : stateVals.keySet()) {
-			Value valSucc = succStateVals.get(key);
-			// Check if the value in the new state is different from the old state.
-			if(!stateVals.get(key).equals(valSucc)) {
-				diffMap.put(key, valSucc);
-			}
-		}
-		
-		return diffMap;
-  }
-  
   /* Returns a string representation of this state.  */
   public abstract String toString();
   public abstract String toString(TLCState lastState);
