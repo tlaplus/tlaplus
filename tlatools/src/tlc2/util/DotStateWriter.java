@@ -195,7 +195,7 @@ public class DotStateWriter extends StateWriter {
 			return 1;
 		}
 		else {
-			String actionName = action.getActionName();
+			String actionName = action.getName().toString();
 			// If this action has been seen before, retrieve its color.
 			if (actionToColors.containsKey(actionName)) {
 				return actionToColors.get(actionName);
@@ -223,7 +223,7 @@ public class DotStateWriter extends StateWriter {
 		String color = colorize ? this.getActionColor(action).toString() : "black" ;
 		
 	    // Only add action label if specified.
-		String actionName = actionLabels ? action.getActionName() : "" ;
+		String actionName = actionLabels ? action.getName().toString() : "" ;
 		
 		String labelFmtStr = " [label=\"%s\" color=\"%s\" fontcolor=\"%s\"]";
 		return String.format(labelFmtStr, actionName, color, color);
