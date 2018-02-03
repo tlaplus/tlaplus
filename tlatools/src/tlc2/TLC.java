@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.TimeZone;
@@ -331,15 +332,29 @@ public class TLC
                 }
             } else if (args[index].equals("-dump"))
             {
-            	String suffix = ".dump";
-            	
-                index++;
-                if (index < args.length && args[index].equals("dot"))
-                {
-                    asDot = true;
-                    suffix = ".dot";
-                    index++;
-                }
+				String suffix = ".dump";
+				index++;
+
+				// Check for the dot related sub-arguments as a comma-separated list.
+				// e.g. "dot,colorize,actionlabels". "dot" must be included in this list.
+				if (index < args.length) {
+					List<String> dotArgs = Arrays.asList(args[index].split(","));
+					if (dotArgs.contains("dot")) {
+						asDot = true;
+						suffix = ".dot";
+
+						// Colorize state transition edges in the DOT state graph.
+						colorize = dotArgs.contains("colorize");
+
+						// Label transition edges in the state graph with the name of the
+						// associated action. Can potentially add a large amount of visual clutter for
+						// large graphs with many actions.
+						actionLabels = dotArgs.contains("actionlabels");
+
+						index++;
+					}
+				}
+                
                 if (index < args.length)
                 {
                     dumpFile = args[index];
@@ -356,18 +371,6 @@ public class TLC
                     printErrorMsg("Error: A file name for dumping states required.");
                     return false;
                 }
-            } else if (args[index].equals("-colorize")) {
-            		// Colorize state transition edges in the DOT state graph. Each action
-            		// gets a unique color.
-                colorize = true;
-                index++;
-
-            } else if (args[index].equals("-actionLabels")) {
-            		// Label transition edges in the state graph with the name of the
-            		// associated action. Can potentially add a large amount of visual clutter for
-            		// large graphs with many actions.
-                actionLabels = true;
-                index++;
             } else if (args[index].equals("-coverage"))
             {
                 index++;
