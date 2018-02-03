@@ -100,7 +100,7 @@ public class DotStateWriter extends StateWriter {
         this.writer.append("nodesep=0.35;\n");
 
 		this.writer.append("subgraph cluster_graph {\n"); 
-        this.writer.append("color=\"white\";\n"); //no border.
+        this.writer.append("color=\"white\";\n"); // no border.
 		this.writer.flush();
 	}
 
@@ -158,16 +158,13 @@ public class DotStateWriter extends StateWriter {
 			this.writer.append(" [style=\"dashed\"]");
 		}
 		
-		// Add the transition edge label. Omit if there are no actions.	
-		if (length > 0) { 
-//			this.writer.append(" [label=\"" + actionChecks.toString(from, length, 't', 'f') + "\"]");
-		}
-		
+		// Add the transition edge label.
 		if(action!=null) {
 			String transitionLabel = this.dotTransitionLabel(state, successor, action);
 			this.writer.append(transitionLabel);	
-			this.writer.append(";\n");
 		}
+		
+		this.writer.append(";\n");
 		
 		// If the successor is new, print the state's label. Labels are printed
 		// when writeState sees the successor. It does not print the label for

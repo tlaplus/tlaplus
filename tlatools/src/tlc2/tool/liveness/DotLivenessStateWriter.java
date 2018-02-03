@@ -34,7 +34,7 @@ import tlc2.util.DotStateWriter;
 public class DotLivenessStateWriter extends DotStateWriter implements ILivenessStateWriter {
 	
 	public DotLivenessStateWriter(String fname) throws IOException {
-		super(fname.replace(".dot", "_liveness.dot"), "");
+		super(fname.replace(".dot", "_liveness.dot"), "", false, false);
 	}
 
 	/* (non-Javadoc)
