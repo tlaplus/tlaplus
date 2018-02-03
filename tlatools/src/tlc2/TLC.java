@@ -357,18 +357,6 @@ public class TLC
                     printErrorMsg("Error: A file name for dumping states required.");
                     return false;
                 }
-            } else if (args[index].equals("-colorize")) {
-            		// Colorize state transition edges in the DOT state graph. Each action
-            		// gets a unique color.
-                colorize = true;
-                index++;
-
-            } else if (args[index].equals("-actionLabels")) {
-            		// Label transition edges in the state graph with the name of the
-            		// associated action. Can potentially add a large amount of visual clutter for
-            		// large graphs with many actions.
-                actionLabels = true;
-                index++;
             } else if (args[index].equals("-coverage"))
             {
                 index++;
