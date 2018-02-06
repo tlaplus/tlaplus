@@ -35,7 +35,6 @@ public class Bug267Listener extends TLCModelLaunchDataProvider implements
 		lastDetectedError = null;
 		coverageInfo = new Vector<CoverageInformationItem>();
 		progressInformation = new Vector<StateSpaceInformationItem>();
-		startTime = 0;
 		startTimestamp = Long.MIN_VALUE;
 		finishTimestamp = Long.MIN_VALUE;
 		lastCheckpointTimeStamp = Long.MIN_VALUE;
