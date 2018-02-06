@@ -1097,7 +1097,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			try {
 				FileUtil.replaceFile(tmpFilename, fpFilename);
 			} catch (IOException e) {
-				Assert.fail(EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
+				Assert.fail(EC.SYSTEM_UNABLE_NOT_RENAME_FILE, e);
 			}
 
 			// reopen a BufferedRAF for each thread
