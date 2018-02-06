@@ -109,7 +109,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private Text startTimestampText;
     // startTime is provided by the TLCModelLaunchDataProvider's getStartTime()
     // method.
-    private long startTime = 0;
     private Text finishTimestampText;
     private Text tlcModeText;
     private Text lastCheckpointTimeText;
@@ -192,7 +191,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    	break;
 	                    }
 						ResultPage.this.startTimestampText.setText(new Date(ResultPage.this.startTimestamp).toString());
-	                    ResultPage.this.startTime = dataProvider.getStartTime();
 	                    break;
 	                case END_TIME:
 	                    long finishTimestamp = dataProvider.getFinishTimestamp();
@@ -381,7 +379,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     		}
     		this.startTimestampText.setText("");
     		this.startTimestamp = 0;
-    		this.startTime = 0;
     		this.finishTimestampText.setText("");
     		this.tlcModeText.setText("");
     		this.lastCheckpointTimeText.setText("");
@@ -1223,7 +1220,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                         data[0] = 0;
                         times[0] = 0;
 
-                        long startTime = resultPage.startTime;
+                        long startTime = resultPage.startTimestamp;
                         TLCUIActivator.getDefault().logDebug("first reported time - starttime = "
                                 + (ssInfo[0].getTime().getTime() - startTime));
                         if (startTime > ssInfo[0].getTime().getTime() - 1000)

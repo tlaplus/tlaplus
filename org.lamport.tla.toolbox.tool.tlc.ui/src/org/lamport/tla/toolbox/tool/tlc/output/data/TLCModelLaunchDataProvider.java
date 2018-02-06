@@ -146,23 +146,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     // should be put in the user output widget
     protected boolean isTLCStarted = false;
 
-    /**
-     *  Set to the starting time of the current TLC run.
-     *  Actually, it is set to the time when the TLC Start
-     *  message is processed.  Thus, there is no guarantee
-     *  that this time bears any relation to startTimeStamp.
-     */
-    protected long startTime = 0;
-
     protected int numWorkers = 0;
-
-    /**
-     * @return the startTime
-     */
-    public long getStartTime()
-    {
-        return startTime;
-    }
 
     public TLCModelLaunchDataProvider(Model model)
     {
@@ -190,7 +174,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
         coverageInfo = new Vector<CoverageInformationItem>();
         progressInformation = new Vector<StateSpaceInformationItem>();
-        startTime = 0;
         startTimestamp = Long.MIN_VALUE;
         finishTimestamp = Long.MIN_VALUE;
         tlcMode = "";
@@ -431,7 +414,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_STARTING:
                     isTLCStarted = true;
                     this.startTimestamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
-                    this.startTime = System.currentTimeMillis();
 
                     informPresenter(ITLCModelLaunchDataPresenter.START_TIME);
                     break;
