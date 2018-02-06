@@ -8,6 +8,7 @@ package tlc2.tool;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
+import java.util.HashMap;
 
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
@@ -61,7 +62,20 @@ public abstract class TLCState implements Cloneable, Serializable {
   public abstract boolean allAssigned();
   public abstract Set<OpDeclNode> getUnassigned();
   public abstract TLCState createEmpty();
-
+  
+  /** 
+   * Returns a mapping of variable names to their assigned values in this state.
+   */ 
+  public HashMap<UniqueString, Value> getVals() {
+	HashMap<UniqueString, Value> valMap = new HashMap<UniqueString, Value>();
+	for(int i = 0; i < vars.length; i++) {
+        UniqueString key = vars[i].getName();
+        Value val = this.lookup(key);
+        valMap.put(key, val);
+    }
+    return valMap;
+  }
+  
   /* Returns a string representation of this state.  */
   public abstract String toString();
   public abstract String toString(TLCState lastState);

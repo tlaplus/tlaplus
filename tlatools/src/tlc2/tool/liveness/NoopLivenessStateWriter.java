@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
+import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 import tlc2.util.BitVector;
 
@@ -93,6 +94,12 @@ public class NoopLivenessStateWriter implements ILivenessStateWriter {
 	 */
 	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int to, boolean successorStateIsNew,
 			Visualization visulation) {
+		// noop
+	}
+
+	@Override
+	public void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Action action) {
+		// TODO Auto-generated method stub
 		// noop
 	}
 }

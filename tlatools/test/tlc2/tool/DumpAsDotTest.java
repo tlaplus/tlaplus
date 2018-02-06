@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -43,8 +44,8 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 public class DumpAsDotTest extends ModelCheckerTestCase {
 
 	public DumpAsDotTest() {
-		super("MCa", "CodePlexBug08",
-				new String[] { "-dump", "dot", System.getProperty("java.io.tmpdir") + File.separator + "DumpAsDotTest" });
+		super("MCa", "CodePlexBug08", new String[] { "-dump", "dot,colorize,actionlabels",
+				System.getProperty("java.io.tmpdir") + File.separator + "DumpAsDotTest" });
 	}
 
 	@Test

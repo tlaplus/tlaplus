@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.TimeZone;
@@ -78,6 +79,9 @@ public class TLC
 	 * Off/False by default.
 	 */
     private boolean asDot;
+    private boolean colorize = false;
+    private boolean actionLabels = false;
+
     private String fromChkpt;
 
     private int fpIndex;
@@ -328,15 +332,29 @@ public class TLC
                 }
             } else if (args[index].equals("-dump"))
             {
-            	String suffix = ".dump";
-            	
-                index++;
-                if (index < args.length && args[index].equals("dot"))
-                {
-                    asDot = true;
-                    suffix = ".dot";
-                    index++;
-                }
+				String suffix = ".dump";
+				index++;
+
+				// Check for the dot related sub-arguments as a comma-separated list.
+				// e.g. "dot,colorize,actionlabels". "dot" must be included in this list.
+				if (index < args.length) {
+					List<String> dotArgs = Arrays.asList(args[index].split(","));
+					if (dotArgs.contains("dot")) {
+						asDot = true;
+						suffix = ".dot";
+
+						// Colorize state transition edges in the DOT state graph.
+						colorize = dotArgs.contains("colorize");
+
+						// Label transition edges in the state graph with the name of the
+						// associated action. Can potentially add a large amount of visual clutter for
+						// large graphs with many actions.
+						actionLabels = dotArgs.contains("actionlabels");
+
+						index++;
+					}
+				}
+                
                 if (index < args.length)
                 {
                     dumpFile = args[index];
@@ -822,12 +840,12 @@ public class TLC
                 if (TLCGlobals.DFIDMax == -1)
                 {
 					MP.printMessage(EC.TLC_MODE_MC, parameters);
-                    mc = new ModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
+                    mc = new ModelChecker(mainFile, configFile, dumpFile, asDot, colorize, actionLabels, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
                     modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
                 } else
                 {
 					MP.printMessage(EC.TLC_MODE_MC_DFS, parameters);
-                    mc = new DFIDModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, true, resolver, specObj);
+                    mc = new DFIDModelChecker(mainFile, configFile, dumpFile, asDot, colorize, actionLabels, deadlock, fromChkpt, true, resolver, specObj);
                 }
                 TLCGlobals.mainChecker = mc;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
