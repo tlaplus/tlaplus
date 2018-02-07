@@ -14,15 +14,30 @@ public class StateWriter implements IStateWriter
 {
     protected final PrintWriter writer;
     protected int stateNum;
+	private String fname;
 
     public StateWriter(String fname) throws IOException
     {
-        // SZ Feb 24, 2009: stream creation moved
+        this.fname = fname;
         this.writer = new PrintWriter(FileUtil.newBFOS(fname));
         this.stateNum = 1;
     }
 
     /* (non-Javadoc)
+     * @see tlc2.util.IStateWriter#getDumpFileName()
+     */
+    public String getDumpFileName() {
+    	return this.fname;
+    }
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#isNoop()
+	 */
+	public boolean isNoop() {
+		return false;
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState)
 	 */
     public synchronized void writeState(TLCState state)

@@ -56,4 +56,8 @@ public interface IStateWriter {
 	void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew, Visualization visulation);
 	
 	void close();
+
+	String getDumpFileName();
+
+	boolean isNoop();
 }

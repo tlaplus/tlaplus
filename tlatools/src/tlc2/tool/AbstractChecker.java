@@ -1,5 +1,6 @@
 package tlc2.tool;
 
+import java.io.File;
 import java.io.IOException;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -12,17 +13,13 @@ import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.Liveness;
 import tlc2.tool.liveness.NoOpLiveCheck;
-import tlc2.util.DotStateWriter;
 import tlc2.util.IStateWriter;
-import tlc2.util.NoopStateWriter;
 import tlc2.util.ObjLongTable;
-import tlc2.util.StateWriter;
 import tlc2.util.statistics.ConcurrentBucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import tlc2.value.Value;
 import util.DebugPrinter;
-import util.FileUtil;
 import util.FilenameToStream;
 
 /**
@@ -80,24 +77,21 @@ public abstract class AbstractChecker implements Cancelable
      * @param resolver
      * @param spec - pre-built specification object (e.G. from calling SANY from the tool previously)
      */
-    public AbstractChecker(String specFile, String configFile, String dumpFile, final boolean asDot, boolean deadlock, String fromChkpt,
+    public AbstractChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
             boolean preprocess, FilenameToStream resolver, SpecObj spec) throws EvalException, IOException
     {
         this.cancellationFlag = false;
 
         this.checkDeadlock = deadlock;
 
-        int lastSep = specFile.lastIndexOf(FileUtil.separatorChar);
-        String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep + 1);
-        specFile = specFile.substring(lastSep + 1);
-
-        this.tool = new Tool(specDir, specFile, configFile, resolver);
+        final File f = new File(specFile);
+        this.tool = new Tool(f.isAbsolute() ? f.getParent() : "", specFile, configFile, resolver);
 
         this.specObj = this.tool.init(preprocess, spec);
         this.checkLiveness = !this.tool.livenessIsTrue();
 
         // moved to file utilities
-        this.metadir = FileUtil.makeMetaDir(specDir, fromChkpt);
+        this.metadir = metadir;
         
         this.errState = null;
         this.predErrState = null;
@@ -105,25 +99,8 @@ public abstract class AbstractChecker implements Cancelable
         this.keepCallStack = false;
 
         this.fromChkpt = fromChkpt;
-
-        // Initialize dumpFile:
-        if (dumpFile != null)
-        {
-        	if (dumpFile.startsWith("${metadir}")) {
-				// prefix dumpfile with the known value of this.metadir. There
-				// is no way to determine the actual value of this.metadir
-				// before TLC startup and thus it's impossible to make the
-				// dumpfile end up in the metadir if desired.
-        		dumpFile = dumpFile.replace("${metadir}", this.metadir);
-        	}
-        	if (asDot) {
-        		this.allStateWriter = new DotStateWriter(dumpFile);
-        	} else {
-        		this.allStateWriter = new StateWriter(dumpFile);
-        	}
-        } else {
-        	 this.allStateWriter = new NoopStateWriter();
-        }
+        
+        this.allStateWriter = stateWriter;
 
         this.impliedInits = this.tool.getImpliedInits(); // implied-inits to be checked
         this.invariants = this.tool.getInvariants(); // invariants to be checked
@@ -145,7 +122,7 @@ public abstract class AbstractChecker implements Cancelable
 			if (LIVENESS_TESTING_IMPLEMENTATION) {
 				this.liveCheck = new AddAndCheckLiveCheck(this.tool, this.actions, this.metadir, stats);
 			} else {
-				this.liveCheck = new LiveCheck(this.tool, this.actions, this.metadir, stats, dumpFile);
+				this.liveCheck = new LiveCheck(this.tool, this.actions, this.metadir, stats, stateWriter);
 			}
             report("liveness checking initialized");
         } else {

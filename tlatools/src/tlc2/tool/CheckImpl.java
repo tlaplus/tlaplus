@@ -11,6 +11,7 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.queue.DiskStateQueue;
+import tlc2.util.NoopStateWriter;
 import util.ToolIO;
 
 /**
@@ -30,11 +31,11 @@ public abstract class CheckImpl extends ModelChecker {
    * @param fpMemSize : This parameter added by Yuan Yu on 6 Apr 2010 
    * because same parameter was added to the ModelChecker constructor. 
    */
-  public CheckImpl(String specFile, String configFile, boolean deadlock,
+  public CheckImpl(String specFile, String configFile, String metadir, boolean deadlock,
 		   int depth, String fromChkpt, final FPSetConfiguration fpSetConfig)
   throws IOException {
     // SZ Feb 20, 2009: patched due to changes to ModelCheker
-    super(specFile, configFile, null, false, deadlock, fromChkpt, null, null, fpSetConfig); // no name resolver and no specobj
+    super(specFile, configFile, metadir, new NoopStateWriter(), deadlock, fromChkpt, null, null, fpSetConfig); // no name resolver and no specobj
     this.depth = depth;
     this.curState = null;
     this.coverSet = FPSetFactory.getFPSet();

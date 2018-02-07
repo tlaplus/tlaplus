@@ -22,8 +22,10 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.util.BitVector;
 import tlc2.util.FP64;
-import tlc2.util.SetOfStates;
+import tlc2.util.IStateWriter;
 import tlc2.util.IStateWriter.Visualization;
+import tlc2.util.NoopStateWriter;
+import tlc2.util.SetOfStates;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import util.Assert;
@@ -38,14 +40,18 @@ public class LiveCheck implements ILiveCheck {
 	private final ILiveChecker[] checker;
 	
 	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics) throws IOException {
-		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics, null);
+		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics, new NoopStateWriter());
 	}
 	
-	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics, String dumpFile) throws IOException {
-		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics, dumpFile);
+	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
+		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics, stateWriter);
+	}
+	
+	public LiveCheck(Tool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics) throws IOException {
+		this(tool, acts, solutions, mdir, bucketStatistics, new NoopLivenessStateWriter());
 	}
 
-	public LiveCheck(Tool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics, String dumpFile) throws IOException {
+	public LiveCheck(Tool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
 		myTool = tool;
 		actions = acts;
 		metadir = mdir;
@@ -53,9 +59,9 @@ public class LiveCheck implements ILiveCheck {
 		checker = new ILiveChecker[solutions.length];
 		for (int soln = 0; soln < solutions.length; soln++) {
 			if (!solutions[soln].hasTableau()) {
-				checker[soln] = new LiveChecker(solutions[soln], soln, bucketStatistics, dumpFile == null ? new NoopLivenessStateWriter() : new DotLivenessStateWriter(dumpFile));
+				checker[soln] = new LiveChecker(solutions[soln], soln, bucketStatistics, stateWriter.isNoop() ? new NoopLivenessStateWriter() : new DotLivenessStateWriter(stateWriter));
 			} else {
-				checker[soln] = new TableauLiveChecker(solutions[soln], soln, bucketStatistics, dumpFile == null ? new NoopLivenessStateWriter() : new DotLivenessStateWriter(dumpFile));
+				checker[soln] = new TableauLiveChecker(solutions[soln], soln, bucketStatistics, stateWriter.isNoop() ? new NoopLivenessStateWriter() : new DotLivenessStateWriter(stateWriter));
 			}
 		}
 	}

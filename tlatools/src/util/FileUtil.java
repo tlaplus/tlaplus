@@ -216,6 +216,11 @@ public class FileUtil
      */
     public static String makeMetaDir(String specDir, String fromChkpt)
     {
+    	return makeMetaDir(new Date(), specDir, fromChkpt);
+    }
+    
+    public static String makeMetaDir(Date date, String specDir, String fromChkpt)
+    {
         if (fromChkpt != null)
         {
             return fromChkpt;
@@ -233,7 +238,7 @@ public class FileUtil
         } else {
         	sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
         }
-        metadir += sdf.format(new Date());
+        metadir += sdf.format(date);
         File filedir = new File(metadir);
 
         // ensure the non-existence
@@ -349,27 +354,18 @@ public class FileUtil
      * retrieves a new buffered file output stream
      * @param name
      * @return
+     * @throws FileNotFoundException 
      */
-    public static OutputStream newBFOS(String name)
+    public static OutputStream newBFOS(String name) throws FileNotFoundException
     {
-        File file = new File(name);
-
-        // LL removed file.exists() test on 10 Nov 2012 because
-        // it causes an error when TLC called with -dump option
-        // for a file that doesn't already exist.  Also changed
-        // the error message to something more helpful.
-        if (file != null /* && file.exists() */)
+        try
         {
-            try
-            {
-                FileOutputStream fos = new FileOutputStream(file);
-                return fos;
-            } catch (FileNotFoundException e)
-            {
-                ToolIO.out.println("Error: Unable to write to file " + name);
-            }
+            return new FileOutputStream(new File(name));
+        } catch (FileNotFoundException e)
+        {
+            ToolIO.out.println("Error: Unable to write to file " + name);
+            throw e;
         }
-        return null;
     }
 
     public static BufferedDataInputStream newBdFIS(boolean useGZIP, File file) throws IOException

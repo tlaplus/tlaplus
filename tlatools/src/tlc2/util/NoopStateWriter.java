@@ -71,4 +71,18 @@ public final class NoopStateWriter implements IStateWriter {
 			Visualization visulation) {
 		// noop
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#isNoop()
+	 */
+	public boolean isNoop() {
+		return true;
+	}
+		
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#getDumpFileName()
+	 */
+	public String getDumpFileName() {
+		return "";
+	}
 }

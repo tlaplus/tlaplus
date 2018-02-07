@@ -30,11 +30,12 @@ import java.io.IOException;
 import tlc2.tool.TLCState;
 import tlc2.util.BitVector;
 import tlc2.util.DotStateWriter;
+import tlc2.util.IStateWriter;
 
 public class DotLivenessStateWriter extends DotStateWriter implements ILivenessStateWriter {
 	
-	public DotLivenessStateWriter(String fname) throws IOException {
-		super(fname.replace(".dot", "_liveness.dot"), "");
+	public DotLivenessStateWriter(IStateWriter aStateWriter) throws IOException {
+		super(aStateWriter.getDumpFileName().replace(".dot", "_liveness.dot"), "");
 	}
 
 	/* (non-Javadoc)

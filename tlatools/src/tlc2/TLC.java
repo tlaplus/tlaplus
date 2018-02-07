@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.TimeZone;
@@ -30,8 +31,12 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
+import tlc2.util.DotStateWriter;
 import tlc2.util.FP64;
+import tlc2.util.IStateWriter;
+import tlc2.util.NoopStateWriter;
 import tlc2.util.RandomGenerator;
+import tlc2.util.StateWriter;
 import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
@@ -63,21 +68,24 @@ public class TLC
     private boolean noSeed;
     private long seed;
     private long aril;
+    
+	private long startTime;
 
     private String mainFile;
     private String configFile;
-    private String dumpFile;
+	private String metadir;
     /**
-	 * If true, the dumpFile will be written in dot format to be processed by
-	 * GraphViz.
+	 * If instantiated with a non-Noop* instance, the trace will be written to the
+	 * user provided file (-dump paramter).
 	 * <p>
-	 * Contrary to plain -dump, -dot will also write out transitions from state
-	 * s to s' if s' is already known. Thus, the resulting graph shows all
-	 * successors of s instead of just s's unexplored ones.
+	 * Contrary to plain -dump, -dot will also write out transitions from state s to
+	 * s' if s' is already known. Thus, the resulting graph shows all successors of
+	 * s instead of just s's unexplored ones.
 	 * <p>
-	 * Off/False by default.
+	 * Off (NoopStateWriter) by default.
 	 */
-    private boolean asDot;
+    private IStateWriter stateWriter = new NoopStateWriter();
+
     private String fromChkpt;
 
     private int fpIndex;
@@ -114,8 +122,6 @@ public class TLC
         
         mainFile = null;
         configFile = null;
-        dumpFile = null;
-        asDot = false;
         fromChkpt = null;
         resolver = null;
 
@@ -235,11 +241,14 @@ public class TLC
      * This method handles parameter arguments and prepares the actual call
      * <strong>Note:</strong> This method set ups the static TLCGlobals variables
      * @return status of parsing: true iff parameter check was ok, false otherwise
+     * @throws IOException 
      */
     // SZ Feb 23, 2009: added return status to indicate the error in parsing
-    @SuppressWarnings("deprecation")
 	public boolean handleParameters(String[] args)
     {
+		String dumpFile = null;
+		boolean asDot = false;
+		
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
         int index = 0;
@@ -328,26 +337,16 @@ public class TLC
                 }
             } else if (args[index].equals("-dump"))
             {
-            	String suffix = ".dump";
-            	
-                index++;
-                if (index < args.length && args[index].equals("dot"))
+                index++; // consume "-dump".
+                if (index + 1 < args.length && args[index].equals("dot"))
                 {
-                    asDot = true;
-                    suffix = ".dot";
-                    index++;
+                	index++; // consume "dot".
+                	asDot = true;
+					dumpFile = getDumpFile(args[index++], ".dot");
                 }
-                if (index < args.length)
+                else if (index < args.length)
                 {
-                    dumpFile = args[index];
-					// Require a $suffix file extension unless already given. It
-					// is not clear why this is enforced.
-                    int len = dumpFile.length();
-                    if (!(dumpFile.startsWith(suffix, len - suffix.length())))
-                    {
-                        dumpFile = dumpFile + suffix;
-                    }
-                    index++;
+					dumpFile = getDumpFile(args[index++], ".dump");
                 } else
                 {
                     printErrorMsg("Error: A file name for dumping states required.");
@@ -719,6 +718,35 @@ public class TLC
         {
             configFile = mainFile;
         }
+
+        startTime = System.currentTimeMillis();
+
+        // Check if mainFile is an absolute or relative file system path. If it is
+		// absolute, the parent gets used as TLC's meta directory (where it stores
+		// states...). Otherwise, no meta dir is set causing states etc. to be stored in
+		// the current directory.
+        final File f = new File(mainFile);
+    	metadir = FileUtil.makeMetaDir(new Date(startTime), f.isAbsolute() ? f.getParent() : "", fromChkpt);
+    	
+        if (dumpFile != null) {
+        	if (dumpFile.startsWith("${metadir}")) {
+				// prefix dumpfile with the known value of this.metadir. There
+				// is no way to determine the actual value of this.metadir
+				// before TLC startup and thus it's impossible to make the
+				// dumpfile end up in the metadir if desired.
+        		dumpFile = dumpFile.replace("${metadir}", metadir);
+        	}
+        	try {
+        		if (asDot) {
+        			this.stateWriter = new DotStateWriter(dumpFile);
+        		} else {
+        			this.stateWriter = new StateWriter(dumpFile);
+        		}
+        	} catch (IOException e) {
+				printErrorMsg(String.format("Error: Given file name %s for dumping states invalid.", dumpFile));
+				return false;
+        	}
+        }
         
         if (TLCGlobals.debug) 
         {
@@ -740,14 +768,23 @@ public class TLC
         
         return true;
 	}
-    
-    /**
+
+	/**
+	 * Require a $suffix file extension unless already given. It is not clear why
+	 * this is enforced.
+	 */
+	private static String getDumpFile(String dumpFile, String suffix) {
+		if (dumpFile.endsWith(suffix)) {
+			return dumpFile;
+		}
+		return dumpFile + suffix;
+	}
+
+	/**
      * The processing method
      */
     public void process()
     {
-    	long startTime = System.currentTimeMillis();
-    	
         ToolIO.cleanToolObjects(TLCGlobals.ToolId);
         // UniqueString.initialize();
         
@@ -822,12 +859,12 @@ public class TLC
                 if (TLCGlobals.DFIDMax == -1)
                 {
 					MP.printMessage(EC.TLC_MODE_MC, parameters);
-                    mc = new ModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
+                    mc = new ModelChecker(mainFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
                     modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
                 } else
                 {
 					MP.printMessage(EC.TLC_MODE_MC_DFS, parameters);
-                    mc = new DFIDModelChecker(mainFile, configFile, dumpFile, asDot, deadlock, fromChkpt, true, resolver, specObj);
+					mc = new DFIDModelChecker(mainFile, configFile, metadir, stateWriter, deadlock, fromChkpt, true, resolver, specObj);
                 }
                 TLCGlobals.mainChecker = mc;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
