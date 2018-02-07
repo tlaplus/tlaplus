@@ -110,9 +110,9 @@ public class DotStateWriter extends StateWriter {
 		// Marker the state as an initial state by using a filled style.
 		this.writer.append(Long.toString(state.fingerPrint()));
 		this.writer.append(" [style = filled]");
-		this.writer.append(" [label=<");
-		this.writer.append(state2html(state));
-		this.writer.append(">]");
+		this.writer.append(" [label=\"");
+		this.writer.append(states2dot(state));
+		this.writer.append("\"]");
 		this.writer.append("\n");
 	}
 	
@@ -172,10 +172,9 @@ public class DotStateWriter extends StateWriter {
 		if (successorStateIsNew) {
 			// Write the successor's label.
 			this.writer.append(successorsFP);
-			this.writer.append(" [label=<");
-			String stateStr = state2html(state);
-			this.writer.append(stateStr);
-			this.writer.append(">]");
+			this.writer.append(" [label=\"");
+			this.writer.append(states2dot(successor));
+			this.writer.append("\"]");
 			this.writer.append(";\n");
 		}
 	}
@@ -256,19 +255,20 @@ public class DotStateWriter extends StateWriter {
 	/**
 	 * Given a TLC state, generate a string representation suitable for a HTML DOT graph label.
 	 */
-	protected static String state2html(final TLCState state) {		
-		final StringBuilder sb = new StringBuilder();
-		final Map<UniqueString, Value> valMap = state.getVals();
-
-		// Generate a string representation of state.
-		for (UniqueString key : valMap.keySet()) {
-			final String valString = (key.toString() + " = " + valMap.get(key).toString());
-			sb.append(valString);
-			// New line between variables.
-			sb.append("<br/>");
-		}
-		return sb.toString();
-	}
+	//TODO This cannot handle states with variables such as "active = (0 :> TRUE @@ 1 :> FALSE)". 
+//	protected static String state2html(final TLCState state) {		
+//		final StringBuilder sb = new StringBuilder();
+//		final Map<UniqueString, Value> valMap = state.getVals();
+//
+//		// Generate a string representation of state.
+//		for (UniqueString key : valMap.keySet()) {
+//			final String valString = (key.toString() + " = " + valMap.get(key).toString());
+//			sb.append(valString);
+//			// New line between variables.
+//			sb.append("<br/>");
+//		}
+//		return sb.toString();
+//	}
 
 	protected static String states2dot(final TLCState state) {
 		// Replace "\" with "\\" and """ with "\"".	
