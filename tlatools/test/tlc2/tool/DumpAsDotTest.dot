@@ -3,11 +3,6 @@ edge [colorscheme="paired12"]
 nodesep=0.35;
 subgraph cluster_graph {
 color="white";
-strict digraph DiskGraph {
-edge [colorscheme="paired12"]
-nodesep=0.35;
-subgraph cluster_graph {
-color="white";
 609737673425276830 [style = filled] [label="/\\ b = FALSE
 /\\ x = 0"]
 6816998822487979083 [style = filled] [label="/\\ b = TRUE
@@ -74,11 +69,6 @@ color="white";
 -2066378075513578053 [label="/\\ b = TRUE
 /\\ x = 5"];
 }
-subgraph cluster_legend {graph[style=bold];label = "Next State Actions" style="solid"
-node [ labeljust="l" colorscheme="paired12" style=filled shape=record ]
-A [label="A" fillcolor=3]
-B [label="B" fillcolor=2]
-}}}
 subgraph cluster_legend {graph[style=bold];label = "Next State Actions" style="solid"
 node [ labeljust="l" colorscheme="paired12" style=filled shape=record ]
 A [label="A" fillcolor=3]
