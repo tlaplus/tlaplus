@@ -226,13 +226,14 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         
         // Visualize state graph
         final boolean visualizeStateGraph = launch.getLaunchConfiguration().getAttribute(LAUNCH_VISUALIZE_STATEGRAPH, false);
-        if (visualizeStateGraph && hasSpec) {
+		if (visualizeStateGraph && hasSpec) {
 			// Visualize state graph when requested and a behavior spec is given. A behavior
-			// spec is required for TLC to create states.
-        	arguments.add("-dump");
-        	arguments.add("dot");
-        	arguments.add(modelName);
-        }
+			// spec is required for TLC to create states. Default to always colorize edges and 
+			// add action edge labels.
+			arguments.add("-dump");
+			arguments.add("dot,colorize,actionlabels");
+			arguments.add(modelName);
+		}
       
         arguments.add("-config");
         arguments.add(cfgFile.getName()); // configuration file

@@ -248,6 +248,8 @@ public class TLC
     {
 		String dumpFile = null;
 		boolean asDot = false;
+	    boolean colorize = false;
+	    boolean actionLabels = false;
 		
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
@@ -338,10 +340,13 @@ public class TLC
             } else if (args[index].equals("-dump"))
             {
                 index++; // consume "-dump".
-                if (index + 1 < args.length && args[index].equals("dot"))
+                if (index + 1 < args.length && args[index].startsWith("dot"))
                 {
-                	index++; // consume "dot".
+                	final String dotArgs = args[index].toLowerCase();
+                	index++; // consume "dot...".
                 	asDot = true;
+                	colorize = dotArgs.contains("colorize");
+                	actionLabels = dotArgs.contains("actionlabels");
 					dumpFile = getDumpFile(args[index++], ".dot");
                 }
                 else if (index < args.length)
@@ -738,7 +743,7 @@ public class TLC
         	}
         	try {
         		if (asDot) {
-        			this.stateWriter = new DotStateWriter(dumpFile);
+        			this.stateWriter = new DotStateWriter(dumpFile, colorize, actionLabels);
         		} else {
         			this.stateWriter = new StateWriter(dumpFile);
         		}
