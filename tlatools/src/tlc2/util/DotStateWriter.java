@@ -28,6 +28,7 @@ package tlc2.util;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import tlc2.tool.Action;
@@ -44,31 +45,20 @@ public class DotStateWriter extends StateWriter {
 
 	// The Graphviz color scheme that is used for state transition edge colors. See
 	// https://www.graphviz.org/doc/info/colors.html for more details on color schemes.
-	static private final String dotColorScheme = "paired12";
-	
-	// Maximum number of unique colors. Determined by the Graphviz color scheme that is used.
-	static private final Integer colorGenMax = 12;
-	
-	// If the total number of states in the resulting graph exceeds this count, we
-	// omit action labels no matter what (even if the option was specified as
-	// 'true'). The edge labels add considerable visual clutter for graphs of
-	// non-trivial sizes, and so we aim to not make graphs unreadable. The choice of
-	// this threshold is somewhat arbitrary, but it serves the right purpose i.e.
-	// include edge labels on only the smallest of state graphs.
-	static private final Integer maxNumStatesForActionLabels = 35;
+	private static final String dotColorScheme = "paired12";
 
 	// A mapping of action names to their assigned color ids. Since states are fed
 	// into a StateWriter incrementally, one at a time, this table is built up over
 	// time, adding new actions as we find out about them.
-	private HashMap<String, Integer> actionToColors = new HashMap<>();
+	private final Map<String, Integer> actionToColors = new HashMap<>();
 
 	// Determines whether or not transition edges should be colorized in the state
 	// graph.
-	private boolean colorize = false;
+	private final boolean colorize;
 
 	// Determines whether or not transition edges should be labeled with their
 	// action names.
-	private boolean actionLabels = false;
+	private final boolean actionLabels;
 
 	// Used for assigning unique color identifiers to each action type. Incremented
 	// by 1 every time a new color is assigned to an action.
@@ -78,6 +68,16 @@ public class DotStateWriter extends StateWriter {
 		this(fname, strict, false, false);
 	}
 	
+	/**
+	 * @param fname
+	 * @param colorize
+	 *            Colorize state transition edges in the DOT state graph.
+	 * @param actionLabels
+	 *            Label transition edges in the state graph with the name of the
+	 *            associated action. Can potentially add a large amount of visual
+	 *            clutter for large graphs with many actions.
+	 * @throws IOException
+	 */
 	public DotStateWriter(final String fname, final boolean colorize, final boolean actionLabels) throws IOException {
 		this(fname, "strict ", colorize, actionLabels);
 	}
@@ -111,7 +111,7 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(Long.toString(state.fingerPrint()));
 		this.writer.append(" [style = filled]");
 		this.writer.append(" [label=<");
-		this.writer.append(stateToDotStr(state));
+		this.writer.append(state2html(state));
 		this.writer.append(">]");
 		this.writer.append("\n");
 	}
@@ -173,7 +173,7 @@ public class DotStateWriter extends StateWriter {
 			// Write the successor's label.
 			this.writer.append(successorsFP);
 			this.writer.append(" [label=<");
-			String stateStr = stateToDotStr(state);
+			String stateStr = state2html(state);
 			this.writer.append(stateStr);
 			this.writer.append(">]");
 			this.writer.append(";\n");
@@ -189,12 +189,11 @@ public class DotStateWriter extends StateWriter {
 	 * @param action
 	 * @return the color identifier for the given action
 	 */
-	protected Integer getActionColor(Action action) {
+	protected Integer getActionColor(final Action action) {
 		// Return a default color if the given action is null.
-		if(action==null) {
+		if (action == null) {
 			return 1;
-		}
-		else {
+		} else {
 			String actionName = action.getName().toString();
 			// If this action has been seen before, retrieve its color.
 			if (actionToColors.containsKey(actionName)) {
@@ -218,14 +217,14 @@ public class DotStateWriter extends StateWriter {
 	 * @param action the action that induced the transition
 	 * @return the DOT label for the edge
 	 */
-	protected String dotTransitionLabel(TLCState state, TLCState successor, Action action) {
+	protected String dotTransitionLabel(final TLCState state, final TLCState successor, final Action action) {
 	    // Only colorize edges if specified. Default to black otherwise.
-		String color = colorize ? this.getActionColor(action).toString() : "black" ;
+		final String color = colorize ? this.getActionColor(action).toString() : "black" ;
 		
 	    // Only add action label if specified.
-		String actionName = actionLabels ? action.getName().toString() : "" ;
+		final String actionName = actionLabels ? action.getName().toString() : "" ;
 		
-		String labelFmtStr = " [label=\"%s\" color=\"%s\" fontcolor=\"%s\"]";
+		final String labelFmtStr = " [label=\"%s\" color=\"%s\" fontcolor=\"%s\"]";
 		return String.format(labelFmtStr, actionName, color, color);
 	}
 	
@@ -237,8 +236,8 @@ public class DotStateWriter extends StateWriter {
 	 * @param actions the set of action names that will be included in the legend
 	 * @return
 	 */
-	protected String dotLegend(String name, Set<String> actions) {
-		StringBuilder sb = new StringBuilder();
+	protected String dotLegend(final String name, final Set<String> actions) {
+		final StringBuilder sb = new StringBuilder();
 		sb.append(String.format("subgraph %s {", "cluster_legend"));
 		sb.append("graph[style=bold];");
 		sb.append("label = \"Next State Actions\" style=\"solid\"\n");
@@ -257,13 +256,13 @@ public class DotStateWriter extends StateWriter {
 	/**
 	 * Given a TLC state, generate a string representation suitable for a HTML DOT graph label.
 	 */
-	protected static String stateToDotStr(TLCState state) {		
-		StringBuilder sb = new StringBuilder();
-		HashMap<UniqueString, Value> valMap = state.getVals();
-		
+	protected static String state2html(final TLCState state) {		
+		final StringBuilder sb = new StringBuilder();
+		final Map<UniqueString, Value> valMap = state.getVals();
+
 		// Generate a string representation of state.
-		for(UniqueString key : valMap.keySet()) {
-			String valString = (key.toString() + " = " + valMap.get(key).toString());
+		for (UniqueString key : valMap.keySet()) {
+			final String valString = (key.toString() + " = " + valMap.get(key).toString());
 			sb.append(valString);
 			// New line between variables.
 			sb.append("<br/>");
@@ -282,7 +281,7 @@ public class DotStateWriter extends StateWriter {
 	public void close() {
 		this.writer.append("}\n"); // closes the main subgraph.
 		// We only need the legend if the edges are colored by action.
-		if(colorize) {
+		if (colorize) {
 			this.writer.append(dotLegend("DotLegend", this.actionToColors.keySet()));
 		}
 		this.writer.append("}");

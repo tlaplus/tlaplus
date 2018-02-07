@@ -340,10 +340,10 @@ public class TLC
             } else if (args[index].equals("-dump"))
             {
                 index++; // consume "-dump".
-                if (index + 1 < args.length && args[index].equals("dot"))
+                if (index + 1 < args.length && args[index].startsWith("dot"))
                 {
                 	final String dotArgs = args[index].toLowerCase();
-                	index++; // consume "dot".
+                	index++; // consume "dot...".
                 	asDot = true;
                 	colorize = dotArgs.contains("colorize");
                 	actionLabels = dotArgs.contains("actionlabels");
