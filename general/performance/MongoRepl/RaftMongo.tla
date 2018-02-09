@@ -109,7 +109,7 @@ RollbackCommitted(i) ==
             \* [ P (2), S (), S ()]
             \* [ S (2), S (), P (3)]
             \* [ S (2), S (2), P (3)] !!! the log from term 2 shouldn't be considered as committed.
-\*            /\ LogTerm(me, logIndex) = globalCurrentTerm
+            /\ LogTerm(me, logIndex) = globalCurrentTerm
     IN  \E j \in Server:
         /\ CanRollbackOplog(i, j)
         /\ IsCommitted(i, Len(log[i]))
