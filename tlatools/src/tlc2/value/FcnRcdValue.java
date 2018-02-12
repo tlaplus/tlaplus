@@ -8,16 +8,15 @@ package tlc2.value;
 
 import java.util.Arrays;
 
-import tlc2.tool.ModelChecker;
-import tlc2.tool.FingerprintException;
 import tlc2.tool.EvalControl;
+import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
 
 public class FcnRcdValue extends Value implements Applicable {
-  public Value[] domain;
-  public IntervalValue intv;
-  public Value[] values;
+  public final Value[] domain;
+  public final IntervalValue intv;
+  public final Value[] values;
   private boolean isNorm;
   private int[] indexTbl;  // speed up function application
 
@@ -433,6 +432,18 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
+  /**
+   * Returns the domain of this FunctionRecordValue regardless of its internal
+   * representation as either Value[] or IntervalValue as Value[].
+   */
+  public Value[] getDomainAsValues() {
+	  if (this.intv != null) {
+		  return this.intv.asValues();
+	  } else {
+          return this.domain;		  
+	  }
+  }
+  
   public final int size() {
     try {
       this.normalize();

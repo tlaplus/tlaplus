@@ -7,7 +7,6 @@
 package tlc2.value;
 
 import tla2sany.semantic.SymbolNode;
-import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.output.EC;
 import tlc2.output.MP;

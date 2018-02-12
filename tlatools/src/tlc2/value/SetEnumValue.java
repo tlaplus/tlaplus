@@ -429,6 +429,13 @@ implements Enumerable, Reducible {
       // used only for printing the value, it seems that correcting this should
       // not do any harm.  Therefore, LL added the following if statement
       // on 5 Mar 2012.
+      // Beware:
+      // normalize() mutates a SetEnumValue's state. Thus calling toString() 
+      // on a SetEnumValue mutates its state. By convention, toString methods
+      // generally do not mutate an instance's state (side-effect free) and
+      // and are thus safe to be called. Failing to adhere to this convention
+      // can lead to subtle bugs. E.g. think of a programmer who inspects an
+      // instance with a debugger unconsciously mutating the instance's state.
       if (!this.isNormalized()) {
           this.normalize();
       }

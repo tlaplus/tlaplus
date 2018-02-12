@@ -6,7 +6,6 @@
 
 package tlc2.value;
 
-import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
@@ -106,6 +105,19 @@ implements Enumerable, Reducible {
     }
   }
 
+	/**
+	 * @return Converts this IntervalValue instance into a Value[]. This can be seen
+	 *         as the inverse to the performance optimization that the IntervalValue
+	 *         actually is.
+	 */
+	final Value[] asValues() {
+		final Value[] values = new Value[size()];
+		for (int i = 0; i < size(); i++) {
+			values[i] = IntValue.gen(this.low + i);
+		}
+		return values;
+	}
+  
   /* Return this - val.  */
   public final Value diff(Value val) {
     try {
