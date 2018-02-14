@@ -9,7 +9,6 @@ import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
 
 import tlc2.tool.distributed.fp.FPSetRMI;
@@ -199,7 +198,41 @@ public class FPSetFactoryTest {
 
 		doTestNested(OffHeapDiskFPSet.class, fpSetConfiguration, mFPSet);
 	}
-	
+
+	@Test
+	public void testGetFPSetOffHeapMultiFPSet42() throws RemoteException {
+		System.setProperty(FPSetFactory.IMPL_PROPERTY, OffHeapDiskFPSet.class.getName());
+		
+		final long nonHeapPhysicalMemory = TLCRuntime.getInstance().getNonHeapPhysicalMemory();
+		
+		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
+		assertEquals(nonHeapPhysicalMemory, fpSetConfiguration.getMemoryInBytes());
+		assertEquals(nonHeapPhysicalMemory / FPSet.LongSize, fpSetConfiguration.getMemoryInFingerprintCnt());
+
+		final MultiFPSet mFPSet = (MultiFPSet) doTestGetFPSet(MultiFPSet.class, fpSetConfiguration);
+
+		final FPSetConfiguration multiConfig = mFPSet.getConfiguration();
+		assertEquals(OffHeapDiskFPSet.class.getName(), multiConfig.getImplementation());
+		assertEquals(1, multiConfig.getFpBits());
+		assertEquals(2, multiConfig.getMultiFPSetCnt());
+		assertEquals(nonHeapPhysicalMemory, multiConfig.getMemoryInBytes());
+		assertEquals(nonHeapPhysicalMemory / FPSet.LongSize, multiConfig.getMemoryInFingerprintCnt());
+		
+		final FPSet[] fpSets = mFPSet.getFPSets();
+		assertEquals(2, fpSets.length);
+		
+		for (FPSet fpSet : fpSets) {
+			final OffHeapDiskFPSet offFPset = (OffHeapDiskFPSet) fpSet;
+			final FPSetConfiguration offConfig = offFPset.getConfiguration();
+			assertEquals(OffHeapDiskFPSet.class.getName(), offConfig.getImplementation());
+			assertEquals(1, offConfig.getFpBits());
+			assertEquals(2, offConfig.getMultiFPSetCnt());
+			assertEquals(nonHeapPhysicalMemory / 2L, offConfig.getMemoryInBytes());
+			assertEquals((nonHeapPhysicalMemory / FPSet.LongSize) / 2L, offConfig.getMemoryInFingerprintCnt());
+			assertEquals((offConfig.getMemoryInBytes() / FPSet.LongSize), offConfig.getMemoryInFingerprintCnt());
+		}
+	}
+
 	/* Helper methods */
 	
 	private FPSet doTestGetFPSet(final Class<? extends FPSet> class1, final FPSetConfiguration fpSetConfig) throws RemoteException, NoSuchObjectException {

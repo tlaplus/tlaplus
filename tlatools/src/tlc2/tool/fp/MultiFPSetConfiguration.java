@@ -37,6 +37,10 @@ class MultiFPSetConfiguration extends FPSetConfiguration {
 	 * @see tlc2.tool.fp.FPSetConfiguration#getMemoryInFingerprintCnt()
 	 */
 	public long getMemoryInFingerprintCnt() {
-		return super.getMemoryInFingerprintCnt() / getMultiFPSetCnt();
+		// No need to divide by getMultiFPSetCnt because calls to
+		// super.getMemoryInFingerprintCnt eventually calls getMemoryInBytes above.
+		// Dividing by getMultiFPSetCnt here again will waste half the
+		// available memory.
+		return super.getMemoryInFingerprintCnt();
 	}
 }
