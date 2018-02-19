@@ -15,6 +15,7 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.XMLExportable;
+import tlc2.value.Value;
 import util.ToolIO;
 
 /**
@@ -251,6 +252,10 @@ public abstract class SemanticNode
 		  return stn.getHumanReadableImage();
 	  }
     return this.getLocation().toString();
+  }
+
+  public String toString(final Value aValue) {
+	return Value.ppr(aValue.toString());
   }
 
     /**

@@ -273,25 +273,27 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
   public final String toString() {
     if (TLCGlobals.useView && viewMap != null) {
       Value val = mytool.eval(viewMap, Context.Empty, this);
-      return Value.ppr(val.toString());
+      return viewMap.toString(val);
     }
     StringBuffer result = new StringBuffer();
     int vlen = vars.length;
     if (vlen == 1) {
       UniqueString key = vars[0].getName();
       Value val = this.lookup(key);
-      String val_str = (val == null) ? "null" : Value.ppr(val.toString());
       result.append(key.toString());
-      result.append(" = " + val_str + "\n");
+      result.append(" = ");
+      result.append(Value.ppr(val));
+      result.append("\n");
     }
     else {
       for (int i = 0; i < vlen; i++) {
 	UniqueString key = vars[i].getName();
 	Value val = this.lookup(key);
-	String val_str = (val == null) ? "null" : Value.ppr(val.toString());
 	result.append("/\\ ");
 	result.append(key.toString());
-	result.append(" = " + val_str + "\n");
+    result.append(" = ");
+    result.append(Value.ppr(val));
+    result.append("\n");
       }
     }
     return result.toString();
@@ -308,9 +310,8 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
       Value val = this.lookup(key);
       Value lstateVal = lstate.lookup(key);
       if (!lstateVal.equals(val)) {
-	String val_str = (val == null) ? "null" : Value.ppr(val.toString());
 	result.append(key.toString());
-	result.append(" = " + val_str + "\n");
+	result.append(" = " + Value.ppr(val) + "\n");
       }
     }
     else {
@@ -319,10 +320,9 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 	Value val = this.lookup(key);
 	Value lstateVal = lstate.lookup(key);
 	if (!lstateVal.equals(val)) {
-	  String val_str = (val == null) ? "null" : Value.ppr(val.toString());
 	  result.append("/\\ ");
 	  result.append(key.toString());
-	  result.append(" = " + val_str + "\n");
+	  result.append(" = " + Value.ppr(val) + "\n");
 	}
       }
     }

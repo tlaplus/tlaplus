@@ -9,10 +9,9 @@ package tlc2.value;
 import java.io.Serializable;
 
 import tla2sany.semantic.SemanticNode;
-import tlc2.tool.ModelChecker;
-import tlc2.tool.FingerprintException;
 import tlc2.TLCGlobals;
 import tlc2.pprint.PrettyPrint;
+import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
 
@@ -449,5 +448,11 @@ public abstract class Value implements ValueConstants, Serializable {
 
   public static String ppr(String s) {
     return PrettyPrint.mypp(s, 80) ;
+  }
+  public static String ppr(Value v) {
+	  if (v == null) {
+		  return "null";
+	  }
+	 return PrettyPrint.mypp(v.toString(), 80) ;
   }
 }
