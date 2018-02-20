@@ -35,18 +35,20 @@ public class Bags implements ValueConstants
         return EmptyFcn;
     }
 
-    public static BoolValue IsABag(Value b)
+    public static BoolValue IsABag(final Value b)
     {
-        FcnRcdValue fcn = FcnRcdValue.convert(b);
+        final FcnRcdValue fcn = FcnRcdValue.convert(b);
         if (fcn == null)
         {
-            throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "IsBag",
-                    "a function with a finite domain", Value.ppr(b.toString()) });
+        	// MAK 02/23/2018 Changed to return ValFalse instead of exception when Value is not a bag.
+            //throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "IsBag",
+            //        "a function with a finite domain", Value.ppr(b.toString()) });
+        	return ValFalse;
         }
-        Value[] vals = fcn.values;
+        final Value[] vals = fcn.values;
         for (int i = 0; i < vals.length; i++)
         {
-            if (!(vals[i] instanceof IntValue) || ((IntValue) vals[i]).val < 0)
+            if (!(vals[i] instanceof IntValue) || ((IntValue) vals[i]).val <= 0)
             {
                 return ValFalse;
             }

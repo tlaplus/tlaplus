@@ -1,6 +1,8 @@
 ---------------------------- MODULE BagsTest ----------------------------
 EXTENDS Bags, TLC, Integers
 
+CONSTANT C
+
 strings == {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o"}
 
 s == {"a","b","c"}
@@ -26,18 +28,26 @@ ASSUME(IsABag(f))
 ASSUME(IsABag(g))
 ASSUME(IsABag(h))
 
+ASSUME(IsABag(SetToBag({})))
+
 t == <<0>>
 u == 2 :> -1
-v == <<0>>
+v == <<1,0>>
 w == <<0,1>>
 x == <<0,0,0>>
 y == <<-1,-2,-3>>
 z == <<"a","b","c">>
 
+ASSUME(~IsABag(t))
 ASSUME(~IsABag(u))
+ASSUME(~IsABag(v))
+ASSUME(~IsABag(w))
+ASSUME(~IsABag(x))
 ASSUME(~IsABag(y))
-\*ASSUME(~IsABag(z)) \* With the standard module TLC fails with "Cannot decide if element "a" is element of Nat"
+ASSUME(~IsABag(z)) \* With the standard module TLC fails with "Cannot decide if element "a" is element of Nat"
 
+ASSUME(\A bool \in BOOLEAN : ~IsABag(bool))
+ASSUME(~IsABag(C))	
 
 \* BagCardinality
 ASSUME(BagCardinality(a) = 0)
