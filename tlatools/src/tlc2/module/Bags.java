@@ -237,6 +237,13 @@ public class Bags implements ValueConstants
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagUnion",
                     "a finite enumerable set", Value.ppr(s.toString()) });
         }
+        // MAK 02/20/2018:
+        // Need to normalize s in cases where it is an unnormalized set of identical
+        // bags, such as h == [ i \in 1..3 |-> 1 ] and BagUnion({h, h}). In other
+        // words, let b be a bag, BagUnion({b,b}) = b and not b (+) b. This
+        // unfortunately degrades performance due to sorting s1's elements.
+        s1.normalize();
+
         ValueVec elems = s1.elems;
         int sz = elems.size();
         if (sz == 0) {
