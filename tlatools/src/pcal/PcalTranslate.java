@@ -556,6 +556,10 @@ public class PcalTranslate {
                 result1.removeElementAt(result1.size()-1);
                 result1.addAll(ExplodeCallReturn((AST.CallReturn) last, next));
             }
+            else if (last.getClass().equals(AST.CallGotoObj.getClass())) {
+                result1.removeElementAt(result1.size()-1);
+                result1.addAll(ExplodeCallGoto((AST.CallGoto) last, next));
+            }
             else if (last.getClass().equals(AST.IfObj.getClass())) {
                 AST.If If = (AST.If) last;
                 Vector p1 = CopyAndExplodeLastStmt(If.Then, next);
@@ -1478,5 +1482,19 @@ public class PcalTranslate {
          *********************************************************/
         result.addElement(UpdatePC(peTo.iPC));
         return result;
+    }
+
+    /***********************************************************************
+    * Generate sequence of statements corresponding to call followed by a  *
+    * goto.                                                                *
+    ***********************************************************************/
+    private static Vector ExplodeCallGoto(AST.CallGoto ast, String next) throws PcalTranslateException {
+      AST.Call call = new AST.Call();
+      call.to = ast.to;
+      call.args = ast.args;
+      call.line = ast.line;
+      call.col = ast.col;
+      call.setOrigin(ast.getOrigin());
+      return ExplodeCall(call, ast.after);
     }
 }
