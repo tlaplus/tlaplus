@@ -10,6 +10,8 @@ import tlc2.util.Context;
 import util.UniqueString;
 
 public final class Action implements ToolGlobals, Serializable {
+  public static final UniqueString UNNAMED_ACTION = UniqueString.uniqueStringOf("UnnamedAction");
+
   /* A TLA+ action.   */
 
   /* Fields  */
@@ -19,7 +21,7 @@ public final class Action implements ToolGlobals, Serializable {
 
   /* Constructors */
   public Action(SemanticNode pred, Context con) {
-	  this(pred, con, (UniqueString) null);
+	  this(pred, con, UNNAMED_ACTION);
   }
 
   public Action(SemanticNode pred, Context con, UniqueString actionName) {
@@ -34,13 +36,16 @@ public final class Action implements ToolGlobals, Serializable {
   }
 
   public final String getLocation() {
-	  if (actionName != null && !"".equals(actionName.toString())) {
+	  if (actionName != UNNAMED_ACTION && actionName != null && !"".equals(actionName.toString())) {
 		  // If known, print the action name instead of the generic string "Action".
 	      return "<" + actionName + " " +  pred.getLocation() + ">";
 	  }
 	  return "<Action " + pred.getLocation() + ">";
   }
   
+  /**
+   * @return The name of this action. Can be {@link Action#UNNAMED_ACTION}.
+   */
   public final UniqueString getName() {
 	  return actionName;
   }

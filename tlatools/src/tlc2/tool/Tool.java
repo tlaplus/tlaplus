@@ -166,7 +166,7 @@ public class Tool
   }
 
   private final void getActions(SemanticNode next, Context con) {
-	  this.getActions(next, con, null);
+	  this.getActions(next, con, Action.UNNAMED_ACTION);
   }
 
   private final void getActions(SemanticNode next, Context con, final UniqueString actionName) {
