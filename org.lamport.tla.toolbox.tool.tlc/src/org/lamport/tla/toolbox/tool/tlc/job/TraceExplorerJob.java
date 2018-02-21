@@ -1,7 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
-import java.util.Vector;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.swt.widgets.Display;
@@ -46,28 +44,64 @@ public class TraceExplorerJob extends TLCProcessJob
         });
     }
 
-    /**
-     * We override this method in order to always
-     * make sure that deadlock is always checked.
-     * This method simply removes "-deadlock" from the
-     * array of arguments, if it is present in the super class
-     * implementation of this method.
-     * 
-     * @throws CoreException 
-     */
-    public String[] constructProgramArguments() throws CoreException
-    {
-        Vector args = new Vector();
-        String[] argsFromSuper = super.constructProgramArguments();
-        for (int i = 0; i < argsFromSuper.length; i++)
-        {
-            if (!argsFromSuper[i].equals("-deadlock"))
-            {
-                args.add(argsFromSuper[i]);
-            }
-        }
+	// Veto several TLC command line arguments only relevant for regular model
+	// checking but not for trace exploration. This demonstrates why
+	// TraceExplorerJob shouldn't be a subclass of TLCJob.
+    
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCJob#recover()
+	 */
+	@Override
+	protected boolean recover() throws CoreException {
+		// There is nothing that trace exploration could recover from.
+		return false;
+	}
 
-        return (String[]) args.toArray(new String[args.size()]);
-    }
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCJob#isDepthFirst()
+	 */
+	@Override
+	protected boolean isDepthFirst() throws CoreException {
+		// Always want BFS in trace exploration.
+		return false;
+	}
 
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCJob#runAsModelCheck()
+	 */
+	@Override
+	protected boolean runAsModelCheck() throws CoreException {
+		// We don't want trace exploration to run in simulation mode.
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCJob#checkPoint()
+	 */
+	@Override
+	protected boolean checkPoint() {
+		// Why would the trace explorer create a checkpoint!?!
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCJob#checkDeadlock()
+	 */
+	@Override
+	protected boolean checkDeadlock() throws CoreException {
+		// We override this method in order to always make sure that deadlock is always
+		// checked. This method simply removes "-deadlock" from the array of arguments,
+		// if it is present in the super class implementation of this method.
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCJob#visualizeStateGraph()
+	 */
+	@Override
+	protected boolean visualizeStateGraph() throws CoreException {
+		// Never use an IStateWriter to write out the states created by trace
+		// exploration. A trace is just a txt file with a sequence of states.
+		return false;
+	}
 }
