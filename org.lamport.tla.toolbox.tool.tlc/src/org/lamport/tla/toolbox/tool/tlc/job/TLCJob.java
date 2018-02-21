@@ -229,9 +229,9 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
 		if (visualizeStateGraph && hasSpec) {
 			// Visualize state graph when requested and a behavior spec is given. A behavior
 			// spec is required for TLC to create states. Default to always colorize edges and 
-			// add action edge labels.
+			// not to add action edge labels.
 			arguments.add("-dump");
-			arguments.add("dot,colorize,actionlabels");
+			arguments.add("dot,colorize");
 			arguments.add(modelName);
 		}
       

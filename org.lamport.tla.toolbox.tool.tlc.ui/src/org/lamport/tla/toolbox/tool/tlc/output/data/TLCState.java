@@ -159,8 +159,9 @@ public class TLCState implements IModuleLocatable
             }
         }
 
-        // write the last one
-        if (stateVarString != null)
+		// write the last one (for a viewmap (see page 243 of specifying system)
+		// stateVarString.lenght does not necessarily equal 2)
+        if (stateVarString != null && stateVarString.length >= 2)
         {
             TLCVariable var = new TLCVariable(stateVarString[0], TLCVariableValue.parseValue(stateVarString[1]));
             vars.add(var);
