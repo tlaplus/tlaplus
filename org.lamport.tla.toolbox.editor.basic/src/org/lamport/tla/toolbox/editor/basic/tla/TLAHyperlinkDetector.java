@@ -1,8 +1,12 @@
 package org.lamport.tla.toolbox.editor.basic.tla;
 
+import java.io.File;
+
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -10,9 +14,15 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly;
 import org.lamport.tla.toolbox.editor.basic.actions.OpenDeclarationAction;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -23,6 +33,7 @@ import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.SyntaxTreeConstants;
+import util.FilenameToStream;
 
 /**
  * Detects hyperlinks in TLA+ code
@@ -86,6 +97,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
         {
             return null;
         }
+        
 
         // Set region to the Region of the document described by currentTokenSpec
         // (this ugly re-use of a parameter name is kept from Simon's original
@@ -127,25 +139,40 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 	TLAEditorActivator.getDefault().logDebug(csNode.getAttachedComments()[i]);
                 }
 
-                IResource resource = null;
-                // 
-                if (ToolboxHandle.isUserModule(ResourceHelper.getModuleFileName(csNode.getFilename())))
-                {
-                    // resource
-                    resource = ResourceHelper.getResourceByModuleName(csNode.getFilename());
-                } else
-                {
-                    // TLAEditorActivator.getDefault().logDebug("A StandardModule '" + csNode.getFilename() + "' is requested...");
-                    return null;
-                }
+				IDocumentProvider documentProvider = null;
+				IEditorInput editorInput = null;
+				String editorId = "";
+				//
+				final FilenameToStream resolver = ToolboxHandle.getSpecObj().getResolver();
+				if (ToolboxHandle.isUserModule(ResourceHelper.getModuleFileName(csNode.getFilename()))) {
+					editorId = TLAEditorAndPDFViewer.ID;
+					editorInput = new FileEditorInput(
+							(IFile) ResourceHelper.getResourceByModuleName(csNode.getFilename()));
+					documentProvider = new FileDocumentProvider();
+				} else if (resolver.isStandardModule(csNode.getFilename())) {
+					// No point editing standard modules.
+					editorId = TLAEditorReadOnly.ID;
+
+					// Resolve the file via the FilenameToStream resolver in case a user has
+					// provided its own standard module definition.
+					final File resolved = resolver.resolve(csNode.getFilename(), true);
+
+					// Standard modules live outside the workspace which is why they have to be
+					// opened with EFS and read with a TextFileDocumentProvider.
+					final IFileStore fileStore = EFS.getLocalFileSystem()
+							.getStore(new Path(resolved.getAbsolutePath()));
+					editorInput = new FileStoreEditorInput(fileStore);
+					documentProvider = new TextFileDocumentProvider();
+				} else {
+					// A TLA+ built-in module.
+					return null;
+				}
 
                 // connect to the resource
-                FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
-                FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
                 try
                 {
-                    fileDocumentProvider.connect(fileEditorInput);
-                    document = fileDocumentProvider.getDocument(fileEditorInput);
+                    documentProvider.connect(editorInput);
+                    document = documentProvider.getDocument(editorInput);
                 } finally
                 {
                     /*
@@ -155,7 +182,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                      * Keeping it connected only seems to provide synchronization of
                      * the document with file changes. That is not necessary in this context.
                      */
-                    fileDocumentProvider.disconnect(fileEditorInput);
+                    documentProvider.disconnect(editorInput);
                 }
 
                 try
@@ -164,7 +191,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                     // to get just the symbol from the left-hand side. (Otherwise,
                     // the user can't execute Goto Declaration immediately followed
                     // by Show Uses.)
-                    if (resolvedSymbol instanceof OpDefNode)
+                    if (resolvedSymbol instanceof OpDefNode && csNode.getHeirs().length >= 1)
                     {
                         // Need to pick out the symbol from the left-hand side of
                         // the definition.
@@ -180,7 +207,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                                 csNode = csNode.getHeirs()[1];
                             }
                         }
-                    } else if ((resolvedSymbol instanceof ThmOrAssumpDefNode)
+                    } else if ((resolvedSymbol instanceof ThmOrAssumpDefNode && csNode.getHeirs().length >= 2)
                             && ((csNode.getKind() == SyntaxTreeConstants.N_Theorem) || (csNode.getKind() == SyntaxTreeConstants.N_Assumption)))
                     {
                         csNode = csNode.getHeirs()[1];
@@ -192,7 +219,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                     int startOffset = startLineRegion.getOffset() + csNode.getLocation().beginColumn() - 1;
                     int endOffset = endLineRegion.getOffset() + csNode.getLocation().endColumn();
 
-                    return new IHyperlink[] { new OpenDeclarationAction(resource, new Region(startOffset, endOffset
+                    return new IHyperlink[] { new OpenDeclarationAction(editorId, editorInput, new Region(startOffset, endOffset
                             - startOffset), label, region) };
 
                 } catch (BadLocationException e)

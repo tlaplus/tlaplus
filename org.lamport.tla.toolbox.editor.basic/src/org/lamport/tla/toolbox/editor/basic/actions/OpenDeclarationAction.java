@@ -1,21 +1,13 @@
 package org.lamport.tla.toolbox.editor.basic.actions;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
-import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -29,58 +21,38 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * nested class.
  * 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class OpenDeclarationAction extends Action implements IHyperlink
 {
-    private IResource resource;
-    private IRegion location;
-    private String label;
+    private final IEditorInput editorInput;
+    private final IRegion location;
+    private final String label;
     private final IRegion hyperlinkLocation;
+	private final String editorId;
 
-    /**
-     * Constructs the action
-     * @param targetResource resource to link
-     * @param targetLocation location in the resource
-     * @param hyperlinkLabel label of the hyperlink
-     * @param hyperlinkLocation location of the hyperlink
-     */
-    public OpenDeclarationAction(IResource targetResource, IRegion targetLocation, String hyperlinkLabel,
+    public OpenDeclarationAction(String editorId, IEditorInput editorInput, IRegion targetLocation, String hyperlinkLabel,
             IRegion hyperlinkLocation)
     {
         super();
-        this.resource = targetResource;
+		this.editorId = editorId;
+        this.editorInput = editorInput;
         this.location = targetLocation;
         this.label = hyperlinkLabel;
         this.hyperlinkLocation = hyperlinkLocation;
     }
 
-    /**
-     * Action method  
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#run()
      */
     public void run()
     {
-		TLAEditorActivator
-				.getDefault()
-				.getLog()
-				.log(new Status(IStatus.INFO, TLAEditorActivator.PLUGIN_ID,
-						"Opening " + label + "(" + resource.getName() + " at "
-								+ location + ")"));
         EditorUtil.setReturnFromOpenDecl();
-//        // Find current location and store as a property of the spec for the
-//        // Return from Goto Declaration command.
-//        TLAEditor srcEditor = EditorUtil.getTLAEditorWithFocus();
-//        if (srcEditor != null)
-//        {
-//            Spec spec = ToolboxHandle.getCurrentSpec();
-//            spec.setOpenDeclModuleName(srcEditor.getEditorInput().getName());
-//            spec.setOpenDeclSelection((ITextSelection) srcEditor.getSelectionProvider().getSelection());
-//        }
-
-        TLAEditorAndPDFViewer editor = (TLAEditorAndPDFViewer) UIHelper.openEditor(TLAEditorAndPDFViewer.ID,
-                new FileEditorInput((IFile) resource));
-        editor.getTLAEditor().selectAndReveal(location.getOffset(), location.getLength());
-
+        final IEditorPart editor = UIHelper.openEditor(editorId, editorInput);
+        if (editor instanceof TLAEditorAndPDFViewer) {
+        	((TLAEditorAndPDFViewer) editor).getTLAEditor().selectAndReveal(location.getOffset(), location.getLength());
+        } else if (editor instanceof TLAEditor) {
+        	((TLAEditor) editor).selectAndReveal(location.getOffset(), location.getLength());
+        }
     }
 
     /* (non-Javadoc)
@@ -114,5 +86,4 @@ public class OpenDeclarationAction extends Action implements IHyperlink
     {
         run();
     }
-
 }
