@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import tla2sany.semantic.SemanticNode;
 
@@ -87,7 +88,7 @@ public class ToolIO
      * List of semantic nodes which are used by tools
      * @see ToolIO#registerSemanticNode() 
      */
-    private static List semanticNodes = new LinkedList();
+    private static List<SemanticNode> semanticNodes = new LinkedList<>();
 
     /**
      * The current sequence of messages is messages[0] ...                  
@@ -253,10 +254,10 @@ public class ToolIO
      */
     public static void cleanToolObjects(int toolId)
     {
-        Iterator iter = semanticNodes.iterator();
+        Iterator<SemanticNode> iter = semanticNodes.iterator();
         while(iter.hasNext())
         {
-            SemanticNode node = (SemanticNode) iter.next();
+            SemanticNode node = iter.next();
             node.setToolObject(toolId, null);
         }
     }
@@ -266,7 +267,7 @@ public class ToolIO
      */
     public static void unregisterSemanticNodes()
     {
-        semanticNodes = new LinkedList();
+        semanticNodes = new LinkedList<SemanticNode>();
     }
 
 } // class ToolIO
@@ -282,8 +283,28 @@ class ToolPrintStream extends PrintStream
         ToolIO.out = this;
         ToolIO.err = this;
     }
+    
+    /* (non-Javadoc)
+     * @see java.io.PrintStream#printf(java.lang.String, java.lang.Object[])
+     */
+    @Override
+	public PrintStream printf(String format, Object... args) {
+		// See special logic in println. If super.printf(...) gets used, Toolbox
+		// functionality breaks.
+    	throw new UnsupportedOperationException("use println instead");
+	}
 
-    /**
+	/* (non-Javadoc)
+	 * @see java.io.PrintStream#printf(java.util.Locale, java.lang.String, java.lang.Object[])
+	 */
+	@Override
+	public PrintStream printf(Locale l, String format, Object... args) {
+		// See special logic in println. If super.printf(...) gets used, Toolbox
+		// functionality breaks.
+    	throw new UnsupportedOperationException("use println instead");
+	}
+
+	/**
      * Prints a string in to the ToolIO buffer in a separate line
      * @param str String to be printed
      */

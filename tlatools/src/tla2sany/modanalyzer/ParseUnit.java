@@ -255,10 +255,10 @@ public class ParseUnit {
         ***********************************************************************/
         if (ToolIO.getMode() == ToolIO.SYSTEM)
         {
-			ToolIO.out.printf("Parsing file %s\n", absoluteResolvedPath);
+			ToolIO.out.println(String.format("Parsing file %s\n", absoluteResolvedPath));
         } else
         {
-            ToolIO.out.printf("Parsing module %s in file %s\n", nis.getModuleName(), absoluteResolvedPath);
+            ToolIO.out.println(String.format("Parsing module %s in file %s\n", nis.getModuleName(), absoluteResolvedPath));
         }
 
         boolean parseSuccess; 
