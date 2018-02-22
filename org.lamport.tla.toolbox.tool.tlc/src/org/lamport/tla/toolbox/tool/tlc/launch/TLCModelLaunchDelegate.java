@@ -29,8 +29,10 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
@@ -100,13 +102,24 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
      */
     public static final String MODE_GENERATE = "generate";
 
+	private Launch launch;
+
     /**
      * 1. method called during the launch
      */
     public ILaunch getLaunch(ILaunchConfiguration configuration, String mode) throws CoreException
     {
-        // delegate to the super implementation
-        return super.getLaunch(configuration, mode);
+		// MAK 02/22/2018 changed super.getLaunch(...) - which returned null - to
+		// explicitly create the Launch instance here to get hold of the instance.
+		// Return null here causes
+		// org.eclipse.debug.internal.core.LaunchConfiguration.launch(String,
+		// IProgressMonitor, boolean, boolean) to create the instance but it doesn't
+		// correctly clean up the instance if our finalLaunchCheck below throws an
+		// error. This in turn causes calls to
+		// org.lamport.tla.toolbox.tool.tlc.model.Model.isRunning() to return true even
+		// though finalLaunchCheck threw an exception.
+    	this.launch = new Launch(configuration, mode, null);
+		return launch;
     }
 
     /**
@@ -574,6 +587,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
                     } else
                     {
+                    	// see getLaunch(...) above
+                    	DebugPlugin.getDefault().getLaunchManager().removeLaunch(this.launch);
+                    	
                         // the reported error is not pointing to the MC file.
                         throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
                                 "Fatal error during validation of the model. "
@@ -583,6 +599,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                     }
                 } else
                 {
+                	// see getLaunch(...) above
+                   	DebugPlugin.getDefault().getLaunchManager().removeLaunch(this.launch);
+                   	
                     throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
                             "Fatal error during validation of the model. "
                                     + "SANY discovered an error somewhere else than the MC file. "

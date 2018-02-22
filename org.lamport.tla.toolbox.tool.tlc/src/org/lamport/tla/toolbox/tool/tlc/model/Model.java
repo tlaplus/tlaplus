@@ -1052,13 +1052,9 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		return launch;
 	}
 	
-	public void launch(String mode, IProgressMonitor subProgressMonitor, boolean build) {
-		try {
-			Assert.isTrue(this.workingCopy == null, "Cannot launch dirty model, save first.");
-			this.launch = this.launchConfig.launch(mode, subProgressMonitor, build);
-		} catch (CoreException shouldNotHappen) {
-			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
-		}
+	public void launch(String mode, IProgressMonitor subProgressMonitor, boolean build) throws CoreException {
+		Assert.isTrue(this.workingCopy == null, "Cannot launch dirty model, save first.");
+		this.launch = this.launchConfig.launch(mode, subProgressMonitor, build);
 	}
 
 	public Model save(final IProgressMonitor monitor) {
