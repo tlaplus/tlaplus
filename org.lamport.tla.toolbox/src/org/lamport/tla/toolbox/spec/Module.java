@@ -29,9 +29,9 @@ package org.lamport.tla.toolbox.spec;
 import java.io.File;
 
 import org.eclipse.core.resources.IResource;
-import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 
 import tla2sany.semantic.ModuleNode;
+import tlc2.module.BuiltInModuleHelper;
 
 /**
  * Representation of a module
@@ -128,11 +128,11 @@ public class Module
      * Determines if current module is a standard module <br>
      * TODO Fishy method. improve/unify it
      * 
-     * @return true iff the absolute path of the module contains RCPNameToFileIStream.STANDARD_MODULES value
+     * @return true iff the absolute path of the module contains BuiltInModuleHelper.STANDARD_MODULES value
      */
     public boolean isStandardModule()
     {
-        return (getAbsolutePath().indexOf(RCPNameToFileIStream.STANDARD_MODULES) != -1);
+        return (getAbsolutePath().indexOf(BuiltInModuleHelper.STANDARD_MODULES) != -1);
     }
 
     

@@ -26,9 +26,15 @@
 
 package tlc2.module;
 
+import java.io.File;
 import java.lang.reflect.Field;
 
 public class BuiltInModuleHelper {
+	
+	public static final String BUNDLE_ID = "org.lamport.tlatools";
+
+	public static final String STANDARD_MODULES = "StandardModules";
+	public static final String STANDARD_MODULES_PATH = File.separator + "tla2sany" + File.separator;
 	
 	private BuiltInModuleHelper() {
 		// no instantiation

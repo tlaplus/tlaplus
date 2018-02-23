@@ -7,9 +7,11 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.lamport.tla.toolbox.Activator;
+import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
 
 import tla2sany.semantic.ModuleNode;
+import tlc2.module.BuiltInModuleHelper;
 import util.FilenameToStream;
 import util.ToolIO;
 
@@ -21,9 +23,7 @@ import util.ToolIO;
 public class RCPNameToFileIStream implements FilenameToStream
 {
 
-    // TODO move to generic constant interface
-    public static final String STANDARD_MODULES   = "StandardModules";
-    private Vector             libraryPathEntries = new Vector();
+    private final Vector<String> libraryPathEntries = new Vector<String>();
 
     /**
      * Initialization of the name resolver <br>
@@ -56,22 +56,31 @@ public class RCPNameToFileIStream implements FilenameToStream
     {
         try
         {
-            Enumeration installedInternalModules = Activator.getDefault().getBundle().findEntries(File.separator,
-                    STANDARD_MODULES, true);
-            Vector paths = new Vector();
+        	final Bundle bundle = Platform.getBundle(BuiltInModuleHelper.BUNDLE_ID);
+        	
+			Enumeration<URL> installedInternalModules = bundle
+					.findEntries(BuiltInModuleHelper.STANDARD_MODULES_PATH, BuiltInModuleHelper.STANDARD_MODULES, true);
+			
+			if (installedInternalModules == null) {
+				// Toolbox is running from inside Eclipse (dev mode) and the StandardModules are
+				// found in a slightly different location.
+				installedInternalModules = bundle.findEntries(
+						File.separator + "src" + File.separator + BuiltInModuleHelper.STANDARD_MODULES_PATH,
+						BuiltInModuleHelper.STANDARD_MODULES, true);
+			}
+			
             while (installedInternalModules.hasMoreElements())
             {
-                URL library = (URL) installedInternalModules.nextElement();
+                final URL library = installedInternalModules.nextElement();
                 if (library != null)
                 {
                     // add external (resolved) URL
-                    paths.addElement(FileLocator.resolve(library).getPath());
+                	final String path = FileLocator.resolve(library).getPath();
+                	libraryPathEntries.add(path);
                 }
             }
-            libraryPathEntries.addAll(paths);
         } catch (IOException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
