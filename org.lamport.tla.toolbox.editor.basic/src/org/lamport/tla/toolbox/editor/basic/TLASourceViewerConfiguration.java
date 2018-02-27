@@ -1,7 +1,13 @@
 package org.lamport.tla.toolbox.editor.basic;
 
+import java.lang.reflect.Field;
+
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -15,6 +21,9 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.lamport.tla.toolbox.editor.basic.pcal.PCalHover;
 import org.lamport.tla.toolbox.editor.basic.tla.TLAAnnotationHover;
@@ -130,7 +139,20 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
 		if (TLAPartitionScanner.TLA_PCAL.equals(contentType)) {
 			return new PCalHover();
 		}
-		return null;
+		return new ToolboxHover();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getInformationControlCreator(org.eclipse.jface.text.source.ISourceViewer)
+	 */
+	@Override
+	public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
+		// We want the hover popup to use a monospaced font.
+		return new IInformationControlCreator() {
+			public IInformationControl createInformationControl(final Shell parent) {
+				return new MonospacedDefaultInformationControl(parent);
+			}
+		};
 	}
 
     /**
@@ -168,4 +190,25 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
         return new String[] { "\\*", "" };
     }
 
+    public static class MonospacedDefaultInformationControl extends DefaultInformationControl {
+    	public MonospacedDefaultInformationControl(final Shell parent) {
+    		super(parent, (DefaultInformationControl.IInformationPresenter) null);
+    	}
+
+		@Override
+		protected void createContent(Composite parent) {
+			super.createContent(parent);
+			try {
+				final Field f = DefaultInformationControl.class.getDeclaredField("fText");
+				f.setAccessible(true);
+				final StyledText fText = (StyledText) f.get(this); // IllegalAccessException
+				
+				fText.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+			} catch (NoSuchFieldException e) {
+			} catch (SecurityException e) {
+			} catch (IllegalArgumentException e) {
+			} catch (IllegalAccessException e) {
+			}
+		}
+    }
 }

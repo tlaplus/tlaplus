@@ -81,5 +81,17 @@ public abstract class OpDefOrDeclNode extends SymbolNode {
                              ? originallyDefinedInModule.getName().toString() 
                              : "<null>" );
   }
-  
+
+	public String getComment() {
+		final StringBuffer buf = new StringBuffer();
+		
+		//TODO Support in-line comments found in the standard modules.
+		final String[] preComments = getPreComments();
+		for (String string : preComments) {
+			buf.append(string);
+			buf.append("\n");
+		}
+		
+		return buf.toString().replace("\n$", "").trim();
+	}
 }

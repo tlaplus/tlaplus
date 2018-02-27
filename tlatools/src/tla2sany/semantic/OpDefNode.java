@@ -1318,6 +1318,25 @@ public class OpDefNode extends OpDefOrDeclNode
     return ret;
   }
 
+	@Override
+	public String getHumanReadableImage() {
+		// This ony gets pre-comments (directly in front of the operator definition).
+		// In-line comments - e.g. found in the standard modules - are not pre-comments.
+		final String comment = getComment();
+		
+		final StringBuffer buf = new StringBuffer(comment);
+		buf.append("\n");
+		
+		TreeNode[] ones = getTreeNode().one();
+		for (TreeNode treeNode : ones) {
+			// TODO This omits all whitespaces from the definition and is thus hard to read.
+			// I couldn't figure out a better way to obtain the original image though.
+			buf.append(treeNode.getHumanReadableImage());
+			buf.append(" ");
+		}
+		return buf.toString().trim();
+	}
+  
   protected String getNodeRef() {
     switch (getKind()) {
       case UserDefinedOpKind:

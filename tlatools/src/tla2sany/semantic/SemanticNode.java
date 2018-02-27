@@ -254,6 +254,10 @@ public abstract class SemanticNode
     return this.getLocation().toString();
   }
 
+  public String getHumanReadableImage() {
+	  return getLocation().toString();
+  }
+  
   public String toString(final Value aValue) {
 	return Value.ppr(aValue.toString());
   }

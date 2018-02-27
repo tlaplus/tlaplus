@@ -21,6 +21,7 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
+import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper.WordRegion;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
@@ -30,6 +31,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import pcal.TLAtoPCalMapping;
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.AssumeProveNode;
@@ -446,6 +448,24 @@ public class EditorUtil
         }
         return loc;
     }
+    
+    /**
+     * @see EditorUtil#lookupSymbol(UniqueString, SemanticNode, Location, SymbolNode)
+     */
+ 	public static SymbolNode lookupSymbol(SpecObj specObj, IDocument document, WordRegion region) {
+		final Location location = getLocationAt(document, region.getOffset(), region.getLength());
+		final ModuleNode rootModule = specObj.getExternalModuleTable().getRootModule();
+		return lookupSymbol(UniqueString.uniqueStringOf(region.getWord()), rootModule, location, null);
+	}
+    
+ 	/**
+ 	 * @see EditorUtil#lookupSymbol(UniqueString, SemanticNode, Location, SymbolNode)
+ 	 */
+	public static SymbolNode lookupSymbol(String name, SymbolNode curNode, IDocument document, IRegion region,
+			SymbolNode defaultResult) {
+		final Location location = getLocationAt(document, region.getOffset(), region.getLength());
+		return lookupSymbol(UniqueString.uniqueStringOf(name), curNode, location, defaultResult);
+	}
 
     /**
      * This method is called externally with <code>curNode</code> equal to

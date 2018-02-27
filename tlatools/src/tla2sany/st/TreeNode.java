@@ -20,4 +20,5 @@ public interface TreeNode {
 //  public String[]               getPostComments(); // always returns an array, never null
   public boolean                local();
   public void                   printST(int indentation);
+  public String					getHumanReadableImage();
 }

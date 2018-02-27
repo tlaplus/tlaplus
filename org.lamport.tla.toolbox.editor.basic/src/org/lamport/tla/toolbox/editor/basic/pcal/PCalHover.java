@@ -3,15 +3,11 @@ package org.lamport.tla.toolbox.editor.basic.pcal;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextHover;
-import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Region;
-import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
+import org.eclipse.jface.text.IDocument;
+import org.lamport.tla.toolbox.editor.basic.ToolboxHover;
 import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper.WordRegion;
 
-public class PCalHover implements ITextHover, IPCalReservedWords {
+public class PCalHover extends ToolboxHover implements IPCalReservedWords {
 	
 	private final Map<String, String> keywordHover = new HashMap<String, String>();
 
@@ -42,32 +38,16 @@ public class PCalHover implements ITextHover, IPCalReservedWords {
 		keywordHover.put(":=", ASSIGN_HELP);
 		keywordHover.put("||", MULTI_ASSIGN_HELP);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.text.ITextHover#getHoverInfo(org.eclipse.jface.text.ITextViewer, org.eclipse.jface.text.IRegion)
-	 */
-	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		// Expand the given region to word (token) and get the token. If it can't get
-		// the token, no hover help is provided.
-		final WordRegion wordRegion;
-		try {
-			wordRegion = DocumentHelper.getRegionExpandedBoth(textViewer.getDocument(),
-					hoverRegion.getOffset(), new PCalWordDetector());
-		} catch (BadLocationException ignore) {
-			return null;
-		}
 
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.editor.basic.ToolboxHover#getHoverInfo(org.eclipse.jface.text.IDocument, org.lamport.tla.toolbox.editor.basic.util.DocumentHelper.WordRegion)
+	 */
+	@Override
+	protected String getHoverInfo(final IDocument document, final WordRegion wordRegion) {
 		// Check if word matches any keywords.
 		if (keywordHover.containsKey(wordRegion.getWord())) {
 			return keywordHover.get(wordRegion.getWord());
 		}
 		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.text.ITextHover#getHoverRegion(org.eclipse.jface.text.ITextViewer, int)
-	 */
-	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-		return new Region(offset, 0);
 	}
 }
