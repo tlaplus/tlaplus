@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.editor.basic;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
@@ -15,13 +16,13 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.lamport.tla.toolbox.editor.basic.pcal.PCalHover;
 import org.lamport.tla.toolbox.editor.basic.tla.TLAAnnotationHover;
 import org.lamport.tla.toolbox.editor.basic.tla.TLACompletionProcessor;
 
 /**
  * Configuration of the source viewer for TLA+ editor 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
 {
@@ -120,6 +121,17 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
                 TLAColorProvider.CONTENT_ASSIST_BACKGROUNG));
         return assistant;
     }
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.editors.text.TextSourceViewerConfiguration#getTextHover(org.eclipse.jface.text.source.ISourceViewer, java.lang.String)
+	 */
+	@Override
+	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+		if (TLAPartitionScanner.TLA_PCAL.equals(contentType)) {
+			return new PCalHover();
+		}
+		return null;
+	}
 
     /**
      * Ruler annotation

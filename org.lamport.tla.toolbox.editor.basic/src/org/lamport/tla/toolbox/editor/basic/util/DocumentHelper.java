@@ -15,7 +15,6 @@ import tla2sany.st.Location;
 /**
  * Toolkit for document helper methods
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class DocumentHelper
 {
@@ -109,19 +108,29 @@ public class DocumentHelper
 
         return new Region(documentOffset - charCounter, charCounter + 1);
     }
+    
+    /**
+     * @see DocumentHelper#getRegionExpandedBoth(IDocument, int, IWordDetector)
+     */
+    public static WordRegion getRegionExpandedBoth(IDocument document, int documentOffset) throws BadLocationException
+    {
+    	return getRegionExpandedBoth(document, documentOffset, getDefaultWordDetector());
+    }
 
     /**
      * Combines the effect of backwards and forwards region expansion
      * @param document
      * @param offset
      * @param defaultWordDetector
-     * @return
+     * @return A {@link WordRegion} or null if no region could be found.
+     * @throws BadLocationException 
      */
-    public static IRegion getRegionExpandedBoth(IDocument document, int documentOffset, IWordDetector detector)
+    public static WordRegion getRegionExpandedBoth(IDocument document, int documentOffset, IWordDetector detector) throws BadLocationException
     {
-        IRegion backwards = getRegionExpandedBackwards(document, documentOffset, detector);
-        IRegion forwards = getRegionExpandedForwards(document, documentOffset, detector);
-        return new Region(backwards.getOffset(), backwards.getLength() + forwards.getLength());
+        final IRegion backwards = getRegionExpandedBackwards(document, documentOffset, detector);
+        final IRegion forwards = getRegionExpandedForwards(document, documentOffset, detector);
+        final String word = document.get(backwards.getOffset(), backwards.getLength() + forwards.getLength());
+        return new WordRegion(backwards.getOffset(), backwards.getLength() + forwards.getLength(), word);
     }
 
     /**
@@ -187,6 +196,19 @@ public class DocumentHelper
             // no previous line so do nothing
             return region;
         }
+    }
+    
+    public static class WordRegion extends Region implements IRegion {
 
+		private final String word;
+
+		public WordRegion(int offset, int length, String word) {
+			super(offset, length);
+			this.word = word;
+		}
+		
+		public String getWord() {
+			return word;
+		}
     }
 }

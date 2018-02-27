@@ -67,10 +67,9 @@ public class ExampleEditorAction extends TextEditorAction implements VerifyKeyLi
 
                     // retrieve the region describing the word containing
                     // the caret
-                    IRegion region = DocumentHelper.getRegionExpandedBoth(document, textSelection.getOffset(),
-                            DocumentHelper.getDefaultWordDetector());
                     try
                     {
+                    	IRegion region = DocumentHelper.getRegionExpandedBoth(document, textSelection.getOffset());
 
                         // generate the insertion string
                         String insertionText = " " + document.get(region.getOffset(), region.getLength());

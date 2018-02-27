@@ -16,7 +16,6 @@ import org.eclipse.swt.events.VerifyEvent;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
-import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 
 /**
  * Performs a useless command to illustrate how to get keyboard input
@@ -125,10 +124,9 @@ public class ExampleEditCommandHandler extends AbstractHandler implements Verify
 
                         // retrieve the region describing the word containing
                         // the caret
-                        IRegion region = DocumentHelper.getRegionExpandedBoth(document, textSelection.getOffset(),
-                                DocumentHelper.getDefaultWordDetector());
                         try
                         {
+                        	IRegion region = DocumentHelper.getRegionExpandedBoth(document, textSelection.getOffset());
 
                             // generate the insertion string
                             String insertionText = " " + document.get(region.getOffset(), region.getLength());
@@ -186,7 +184,7 @@ public class ExampleEditCommandHandler extends AbstractHandler implements Verify
      * This is added as a focus listener so that it can uninstall()
      * itself if focus is lost.
      */
-    private void install()
+    public void install()
     {
         editor.getViewer().prependVerifyKeyListener(this);
         editor.getViewer().getTextWidget().addFocusListener(this);
