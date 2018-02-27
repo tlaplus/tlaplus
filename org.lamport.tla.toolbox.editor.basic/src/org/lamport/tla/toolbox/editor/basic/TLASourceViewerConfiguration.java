@@ -25,6 +25,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.lamport.tla.toolbox.editor.basic.pcal.PCalCompletionProcessor;
 import org.lamport.tla.toolbox.editor.basic.pcal.PCalHover;
 import org.lamport.tla.toolbox.editor.basic.tla.TLAAnnotationHover;
 import org.lamport.tla.toolbox.editor.basic.tla.TLACompletionProcessor;
@@ -118,12 +119,17 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
      */
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
     {
-
         ContentAssistant assistant = new ContentAssistant();
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         assistant.setContentAssistProcessor(new TLACompletionProcessor(), IDocument.DEFAULT_CONTENT_TYPE);
+        assistant.setContentAssistProcessor(new PCalCompletionProcessor(), TLAPartitionScanner.TLA_PCAL);
         assistant.enableAutoActivation(true);
         assistant.setAutoActivationDelay(500);
+		assistant.setInformationControlCreator(new IInformationControlCreator() {
+			public IInformationControl createInformationControl(final Shell parent) {
+				return new DefaultInformationControl(parent, (DefaultInformationControl.IInformationPresenter) null);
+			}
+		});
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
         assistant.setContextInformationPopupBackground(TLAEditorActivator.getDefault().getTLAColorProvider().getColor(

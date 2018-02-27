@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.editor.basic.pcal;
 
+import org.lamport.tla.toolbox.editor.basic.tla.ITLAReserveredWords;
+
 /**
  * @author Simon Zambrovski
  * @version $Id$
@@ -11,7 +13,7 @@ public interface IPCalReservedWords {
 	public final static String AWAIT = "await";
 	public final static String BEGIN = "begin";
 	public final static String CALL = "call";
-	public final static String DEFINE = "define";
+	public final static String DEFINE = ITLAReserveredWords.PDEFINE;
 	public final static String DO = "do";
 	public final static String EITHER = "either";
 	public final static String ELSE = "else";
