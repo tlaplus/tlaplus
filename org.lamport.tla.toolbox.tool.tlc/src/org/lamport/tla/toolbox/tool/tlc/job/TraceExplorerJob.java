@@ -91,8 +91,11 @@ public class TraceExplorerJob extends TLCProcessJob
 	protected boolean checkDeadlock() throws CoreException {
 		// We override this method in order to always make sure that deadlock is always
 		// checked. This method simply removes "-deadlock" from the array of arguments,
-		// if it is present in the super class implementation of this method.
-		return false;
+		// if it is present in the super class implementation of this method. The trace
+		// requests deadlock checking - which is turned on when "-deadlock" is NOT set - 
+		// is to always print a counterexample. This counterexample contains the 
+		// evaluated expressions defined in Error-Trace exploration.
+		return true;
 	}
 
 	/* (non-Javadoc)
