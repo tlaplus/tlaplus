@@ -5,6 +5,7 @@ package tlc2.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Random;
 
 /**
  * A 64-bit fingerprint is stored in an instance of the type
@@ -375,6 +376,21 @@ public class FP64 {
 
     public static long getIrredPoly() { return IrredPoly; }
   
+	/**
+	 * Initializes {@link FP64#IrredPoly} with a randomly chosen poly from
+	 * {@link FP64#Polys}.
+	 */
+	public static void InitRnd() {
+		Init(new Random().nextInt(Polys.length));
+	}
+    
+	/**
+	 * Initializes {@link FP64#IrredPoly} the first poly in {@link FP64#Polys}.
+	 */
+    public static void Init() {
+    	Init(0);
+    }
+    
     // Initialization code
     public static void Init(int n) {
       Init(Polys[n]);

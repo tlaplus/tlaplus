@@ -93,6 +93,7 @@ public class TLC
      * The number of traces/behaviors to generate in simulation mode
      */
     public static long traceNum = Long.MAX_VALUE;
+    private String traceFile = null;
     private int traceDepth;
     private FilenameToStream resolver;
     private SpecObj specObj;
@@ -260,6 +261,26 @@ public class TLC
             {
                 isSimulate = true;
                 index++;
+                
+				// Simulation args can be:
+				// file=/path/to/file,num=4711 or num=4711,file=/path/to/file or num=4711 or
+				// file=/path/to/file
+				// "file=..." and "num=..." are only relevant for simulation which is why they
+				// are args to "-simulate".
+				if (index + 1 < args.length && (args[index].contains("file=") || args[index].contains("num="))) {
+					final String[] simArgs = args[index].split(",");
+					index++; // consume simulate args
+					for (String arg : simArgs) {
+						if (arg.startsWith("num=")) {
+							traceNum = Integer.parseInt(arg.replace("num=", ""));
+						} else if (arg.startsWith("file=")) {
+							traceFile = arg.replace("file=", "");
+						}
+					}
+					for (int i = 0; i < simArgs.length; i++) {
+
+					}
+				}
             } else if (args[index].equals("-modelcheck"))
             {
                 isSimulate = false;
@@ -522,7 +543,7 @@ public class TLC
                 if (index < args.length)
                 {
                     try {
-						// Most problems will only show we TLC eventually tries
+						// Most problems will only show when TLC eventually tries
 						// to write to the file.
 						tlc2.module.TLC.OUTPUT = new BufferedWriter(new FileWriter(new File(args[index++])));
         			} catch (IOException e) {
@@ -846,7 +867,7 @@ public class TLC
 						new String[] { String.valueOf(seed), String.valueOf(TLCGlobals.getNumWorkers()),
 								TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
 								version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory) });
-                Simulator simulator = new Simulator(mainFile, configFile, null, deadlock, traceDepth, 
+                Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
                         traceNum, rng, seed, true, resolver, specObj);
                 TLCGlobals.simulator = simulator;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
