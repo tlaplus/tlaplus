@@ -11,6 +11,8 @@ import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalSorter;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -123,11 +125,17 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         assistant.setContentAssistProcessor(new TLACompletionProcessor(), IDocument.DEFAULT_CONTENT_TYPE);
         assistant.setContentAssistProcessor(new PCalCompletionProcessor(), TLAPartitionScanner.TLA_PCAL);
+        assistant.enableColoredLabels(true);
         assistant.enableAutoActivation(true);
         assistant.setAutoActivationDelay(500);
 		assistant.setInformationControlCreator(new IInformationControlCreator() {
 			public IInformationControl createInformationControl(final Shell parent) {
 				return new DefaultInformationControl(parent, (DefaultInformationControl.IInformationPresenter) null);
+			}
+		});
+		assistant.setSorter(new ICompletionProposalSorter() {
+			public int compare(ICompletionProposal p1, ICompletionProposal p2) {
+				return 0;
 			}
 		});
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);

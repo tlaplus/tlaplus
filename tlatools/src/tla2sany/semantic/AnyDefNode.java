@@ -49,4 +49,5 @@ public interface AnyDefNode {
     public HashSet<ArgLevelParam> getArgLevelParams() ;
     public SetOfArgLevelConstraints getArgLevelConstraints() ;
     public FormalParamNode[] getParams() ;
+    public AnyDefNode getSource();
 }

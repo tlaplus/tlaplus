@@ -1,6 +1,32 @@
+/*******************************************************************************
+ * Copyright (c) 2018 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Markus Alexander Kuppe - initial API and implementation
+ ******************************************************************************/
 package org.lamport.tla.toolbox.editor.basic;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -23,10 +49,19 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.lamport.tla.toolbox.editor.basic.tla.ITLAReserveredWords;
 import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
+
+import tla2sany.modanalyzer.SpecObj;
+import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.SymbolMatcher;
+import tla2sany.semantic.SymbolNode;
+import util.UniqueString;
 
 public abstract class ToolboxCompletionProcessor {
 	
     protected final SortedMap<String, List<CompletionProposalTemplate>> proposals = new TreeMap<String, List<CompletionProposalTemplate>>();
+    
+    protected final SymbolMatcher.NameAndTypeMatcher matcher = new SymbolMatcher.NameAndTypeMatcher();
     
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
 		final IDocument document = viewer.getDocument();
@@ -65,6 +100,18 @@ public abstract class ToolboxCompletionProcessor {
 			// and add to result list
 			for (CompletionProposalTemplate template : list) {
 				propositionList.add(template.getProposal(replacementOffset, qualifierLength));
+			}
+		}
+		
+		// Try to find matches among the spec's set of symbols (e.g. operators definitions and declarations).
+		final SpecObj specObj = ToolboxHandle.getSpecObj();
+		if (specObj != null && specObj.getRootModule() != null) { // null if spec hasn't been parsed.
+			final ModuleNode rootModule = specObj.getRootModule();
+
+			final Collection<SymbolNode> symbols = rootModule.getSymbols(matcher.setPrefix(word));
+			for (final SymbolNode symbolNode : symbols) {
+				propositionList.add(new CompletionProposalTemplate(symbolNode.getSignature(), symbolNode.getName(),
+						symbolNode.getHumanReadableImage()).getProposal(replacementOffset, qualifierLength));
 			}
 		}
 	}
@@ -145,6 +192,16 @@ public abstract class ToolboxCompletionProcessor {
 			this.fDisplayString = dipslayString;
 			this.fContextInformation = null;
 			this.fAdditionalProposalInfo = additionalProposalInfo;
+		}
+		
+		public CompletionProposalTemplate(UniqueString replacementString, UniqueString dipslayString,
+				String additionalProposalInfo) {
+			this(replacementString.toString(), dipslayString.toString(), additionalProposalInfo);
+		}
+		
+		public CompletionProposalTemplate(String replacementString, UniqueString dipslayString,
+				String additionalProposalInfo) {
+			this(replacementString, dipslayString.toString(), additionalProposalInfo);
 		}
 		
 		public CompletionProposalTemplate(String replacementString, String dipslayString,

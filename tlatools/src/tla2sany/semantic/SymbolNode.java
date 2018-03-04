@@ -73,6 +73,10 @@ public abstract class SymbolNode extends LevelNode {
     return (this instanceof OpDeclNode ||
 	    this instanceof FormalParamNode);
   }
+  
+  public String getSignature() {
+	  return getName().toString();
+  }
 
   /**
    * Returns true iff this node and otherNode are both OpDefOrDeclNode objects or

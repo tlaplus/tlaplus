@@ -12,20 +12,26 @@
 
 package tla2sany.semantic;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.semantic.Context.Pair;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tla2sany.xml.SymbolContext;
 import util.UniqueString;
 import util.WrongInvocationException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class ModuleNode extends SymbolNode {
 
@@ -1022,6 +1028,23 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     // Otherwise this module is a constant module
     return true;
   }
+  
+	// TODO Change to take an action/operation that is to be executed on matching
+	// symbols. That way, clients don't have to iterate the result set again.
+	public Collection<SymbolNode> getSymbols(final SymbolMatcher symbolMatcher) {
+		final List<SymbolNode> result = new ArrayList<SymbolNode>(); // TreeSet to order result.
+		
+		final Enumeration<Pair> content = this.ctxt.content();
+		while (content.hasMoreElements()) {
+			final SymbolNode aSymbol = content.nextElement().getSymbol();
+			if (symbolMatcher.matches(aSymbol)) {
+				result.add(aSymbol);
+			}
+		}
+		
+		Collections.sort(result);
+		return result;
+	}
 
   /**
    * walkGraph, levelDataToString, and toString methods to implement

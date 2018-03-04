@@ -3,8 +3,9 @@
  */
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
-import java.util.Arrays;
-import java.util.Vector;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -25,8 +26,13 @@ import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.semantic.ASTConstants;
+import tla2sany.semantic.AnyDefNode;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
+import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.SymbolMatcher;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 
@@ -118,6 +124,48 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
 
         // int curSelection; // The currently selected item.
 
+		private final SymbolMatcher.NameAndTypeMatcher matcher = new SymbolMatcher.NameAndTypeMatcher() {
+
+			/* (non-Javadoc)
+			 * @see tla2sany.semantic.SymbolMatcher.NameAndTypeMatcher#matchTypes()
+			 */
+			@Override
+			public Set<Class<? extends SymbolNode>> matchTypes() {
+				final Set<Class<? extends SymbolNode>> set = new HashSet<Class<? extends SymbolNode>>();
+				set.add(OpDefNode.class);
+				set.add(OpDeclNode.class);
+				set.add(ThmOrAssumpDefNode.class);
+				return set;
+			}
+
+			/* (non-Javadoc)
+			 * @see tla2sany.semantic.SymbolMatcher.NameAndTypeMatcher#matches(tla2sany.semantic.SymbolNode)
+			 */
+			@Override
+			public boolean matches(SymbolNode aSymbol) {
+				if (aSymbol instanceof ThmOrAssumpDefNode || aSymbol instanceof OpDefNode) {
+					if (aSymbol.getKind() == ASTConstants.ModuleInstanceKind) {
+						// Do not match INSTANCE symbols, e.g.: "InChan" defined as:
+						// InChan  == INSTANCE Channel WITH ...
+						return false;
+					}
+					if (aSymbol.getKind() == ASTConstants.BuiltInKind) {
+						// Do not match built-in operators.
+						return false;
+					}
+					if (!ResourceHelper.isFromUserModule((SemanticNode) ((AnyDefNode) aSymbol).getSource())) {
+						// Do not match symbols of the Standard Modules such as Sequences, FiniteSets...
+						return false;
+					}
+					if (!showAll && (((AnyDefNode) aSymbol).getSource() != aSymbol)) {
+						// Unless showAll, do not match symbols defined or declared by extended modules. 
+						return false;
+					}
+				}
+				return super.matches(aSymbol);
+			}
+		};
+        
         /**
          * Constructs a new Show Declarations popup with indicated parent and
          * with showAll determining if instantiated definitions should be shown.
@@ -142,8 +190,6 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             {
                 module = ResourceHelper.getModuleNode(editor.getModuleName());
             }
-            System.out.println("Created new popup with showAll = " + showAll);
-
         }
 
         /**
@@ -173,72 +219,21 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
          */
         protected void setList()
         {
-            // Get the list of SymbolNodes to be displayed. They
-            // come from the module's constant decls, variable decls,
-            // opdef nodes, ThmOrAssumpDefNodes.
-
-            String lcFilterPrefix = filterPrefix.toLowerCase();
             list.removeAll();
             // Get the current module.
             if (module == null)
             {
                 return;
             }
-            Vector symVec = new Vector(40);
-            SymbolNode[] syms = module.getConstantDecls();
-            for (int i = 0; i < syms.length; i++)
-            {
-                if (syms[i].getName().toString().toLowerCase().startsWith(lcFilterPrefix))
-                {
-                    symVec.add(syms[i]);
-                }
-            }
-
-            syms = module.getVariableDecls();
-            for (int i = 0; i < syms.length; i++)
-            {
-                if (syms[i].getName().toString().toLowerCase().toLowerCase().startsWith(lcFilterPrefix))
-                {
-                    symVec.add(syms[i]);
-                }
-            }
-
-            OpDefNode[] symsOpD = module.getOpDefs();
-            for (int i = 0; i < symsOpD.length; i++)
-            {
-                if (ResourceHelper.isFromUserModule(symsOpD[i].getSource())
-                        && (showAll || (symsOpD[i].getSource() == symsOpD[i]))
-                        && symsOpD[i].getName().toString().toLowerCase().startsWith(lcFilterPrefix))
-                {
-                    symVec.add(symsOpD[i]);
-                }
-            }
-
-            ThmOrAssumpDefNode[] symsTAD = module.getThmOrAssDefs();
-            for (int i = 0; i < symsTAD.length; i++)
-            {
-                if (ResourceHelper.isFromUserModule(symsTAD[i].getSource())
-                        && (showAll || (symsTAD[i].getSource() == symsTAD[i]))
-                        && symsTAD[i].getName().toString().toLowerCase().startsWith(lcFilterPrefix))
-                {
-                    symVec.add(symsTAD[i]);
-                }
-            }
-
-            SymbolNode[] symbols = new SymbolNode[symVec.size()];
-
-            for (int i = 0; i < symbols.length; i++)
-            {
-                symbols[i] = (SymbolNode) symVec.get(i);
-            }
-
-            Arrays.sort(symbols);
-
-            for (int i = 0; i < symbols.length; i++)
-            {
-                list.add(symbols[i].getName().toString());
-                list.setData(symbols[i].getName().toString(), symbols[i]);
-            }
+            
+            // Get the list of SymbolNodes to be displayed. They
+            // come from the module's constant decls, variable decls,
+            // opdef nodes, ThmOrAssumpDefNodes.
+            final Collection<SymbolNode> symbols = module.getSymbols(matcher.setPrefix(filterPrefix.toLowerCase()));
+            for (SymbolNode symbolNode : symbols) {
+                list.add(symbolNode.getName().toString());
+                list.setData(symbolNode.getName().toString(), symbolNode);
+			}
         }
 
         /**

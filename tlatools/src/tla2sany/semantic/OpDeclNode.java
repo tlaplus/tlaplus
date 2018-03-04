@@ -146,6 +146,16 @@ public class OpDeclNode extends OpDefOrDeclNode {
     semNodesTable.put(uid, this);
   }
 
+	@Override
+	public String getHumanReadableImage() {
+		if (getKind() == 2) {
+			return super.getName().toString() + " CONSTANT";
+		} else if (getKind() == 3) {
+			return super.getName().toString() + " VARIABLE";
+		}
+		return super.getHumanReadableImage();
+	}
+
   @Override
   public final String toString (int depth) {
     if (depth <= 0) return "";

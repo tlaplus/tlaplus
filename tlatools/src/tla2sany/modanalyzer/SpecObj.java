@@ -10,6 +10,7 @@ import java.util.Set;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
+import tla2sany.semantic.ModuleNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
 import util.FileUtil;
@@ -159,6 +160,10 @@ public class SpecObj
     public final String getFileName()
     {
         return primaryFileName;
+    }
+    
+    public final ModuleNode getRootModule() {
+    	return getExternalModuleTable().getRootModule();
     }
 
     /**

@@ -216,7 +216,7 @@ public class Context implements ExploreNode {
    * Returns Enumeration of the elements of the Hashtable "Table",
    * which are pair of the form (Pair link, SymbolNode sn)
    */
-  public Enumeration content() {
+  public Enumeration<Pair> content() {
     return table.elements();
   }
 
