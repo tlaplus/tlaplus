@@ -25,6 +25,7 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.editor.basic;
 
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -70,10 +71,14 @@ public abstract class ToolboxCompletionProcessor {
 
 		final List<ICompletionProposal> propList = new ArrayList<ICompletionProposal>();
 		try {
+			// The zero-based row index of the caret.
+			final int caretRowIndex = document.getLineOfOffset(offset);
+			// The zero-based column index of the caret.
+			final int carretColumnIndex = offset - document.getLineOffset(caretRowIndex);
 			if (selectedRange.y > 0) {
 				// the range is non-empty
 				final String text = document.get(selectedRange.x, selectedRange.y);
-				computeWordProposals(text, offset, propList);
+				computeWordProposals(text, offset, carretColumnIndex, propList);
 			} else {
 				// the range is empty, no selection in the editor
 
@@ -81,7 +86,7 @@ public abstract class ToolboxCompletionProcessor {
 				final IRegion wordRegion = DocumentHelper.getRegionExpandedBackwards(document, offset,
 						DocumentHelper.getDefaultWordDetector());
 				final String word = document.get(wordRegion.getOffset(), wordRegion.getLength());
-				computeWordProposals(word, offset, propList);
+				computeWordProposals(word, offset, carretColumnIndex, propList);
 			}
 		} catch (final BadLocationException ignore) {
 		}
@@ -91,7 +96,7 @@ public abstract class ToolboxCompletionProcessor {
     /**
      * Syntax-based proposal based for word beginning
      */
-	private void computeWordProposals(final String word, final int offset, final List<ICompletionProposal> propositionList) {
+	private void computeWordProposals(final String word, final int offset, final int carretColumnIndex, final List<ICompletionProposal> propositionList) {
 		final int qualifierLength = word.length();
 		final int replacementOffset = offset - qualifierLength;
 
@@ -99,7 +104,7 @@ public abstract class ToolboxCompletionProcessor {
 		for (List<CompletionProposalTemplate> list : filterPrefix(proposals, word).values()) {
 			// and add to result list
 			for (CompletionProposalTemplate template : list) {
-				propositionList.add(template.getProposal(replacementOffset, qualifierLength));
+				propositionList.add(template.getProposal(replacementOffset, carretColumnIndex - qualifierLength, qualifierLength));
 			}
 		}
 		
@@ -111,7 +116,7 @@ public abstract class ToolboxCompletionProcessor {
 			final Collection<SymbolNode> symbols = rootModule.getSymbols(matcher.setPrefix(word));
 			for (final SymbolNode symbolNode : symbols) {
 				propositionList.add(new CompletionProposalTemplate(symbolNode.getSignature(), symbolNode.getName(),
-						symbolNode.getHumanReadableImage()).getProposal(replacementOffset, qualifierLength));
+						symbolNode.getHumanReadableImage()).getProposal(replacementOffset, carretColumnIndex - qualifierLength, qualifierLength));
 			}
 		}
 	}
@@ -119,7 +124,7 @@ public abstract class ToolboxCompletionProcessor {
 	public static SortedMap<String, List<CompletionProposalTemplate>> filterPrefix(SortedMap<String, List<CompletionProposalTemplate>> baseMap, String prefix) {
 		if (prefix.length() > 0) {
 			final char nextLetter = (char) (prefix.charAt(prefix.length() - 1) + 1);
-			String end = prefix.substring(0, prefix.length() - 1) + nextLetter;
+ 			final String end = prefix.substring(0, prefix.length() - 1) + nextLetter;
 			return baseMap.subMap(prefix, end);
 		}
 		return baseMap;
@@ -221,9 +226,11 @@ public abstract class ToolboxCompletionProcessor {
 			this.fDisplayString = null;
 		}
 
-		public ICompletionProposal getProposal(int replacementOffset, int qualifierLength) {
-			return new ToolboxCompletionProposal(fReplacementString, replacementOffset, qualifierLength,
-					fReplacementString.length() - 1, fImage, fDisplayString, fContextInformation,
+		public ICompletionProposal getProposal(final int replacementOffset, final int wordStartColumnIndex, final int qualifierLength) {
+			final String indent = CharBuffer.allocate(wordStartColumnIndex).toString().replace( '\0', ' ' );
+			final String indentedReplacementString = fReplacementString.replace("\n", "\n" + indent);
+			return new ToolboxCompletionProposal(indentedReplacementString, replacementOffset, qualifierLength,
+					indentedReplacementString.length(), fImage, fDisplayString, fContextInformation,
 					fAdditionalProposalInfo);
 		}
 	}
@@ -346,7 +353,7 @@ public abstract class ToolboxCompletionProcessor {
 			final StyledString styledString = new StyledString();
 			styledString.append(getDisplayString());
 			styledString.append(": ");
-			styledString.append(fReplacementString, StyledString.COUNTER_STYLER);
+			styledString.append(fReplacementString.replaceAll("\n[ ]*", " "), StyledString.COUNTER_STYLER);
 			return styledString;
 		}
 	}

@@ -40,31 +40,31 @@ public class PCalCompletionProcessor extends ToolboxCompletionProcessor implemen
 //    	proposals.put(IPCalReservedWords.ALGORITHM, "--algorithm AName {\n}");
     	
 		List<CompletionProposalTemplate> templates = new ArrayList<CompletionProposalTemplate>();
-		templates.add(new CompletionProposalTemplate("process (ProcName \\in {\"p1\",\"p2\"}) { label: skip; }", 
+		templates.add(new CompletionProposalTemplate("process (ProcName \\in S) {\n     label: skip;\n}", 
 				IPCalReservedWords.PROCESS, IPCalReservedWords.PROCESS_HELP));
-		templates.add(new CompletionProposalTemplate("process (ProcName = Id) { label: skip; }",
+		templates.add(new CompletionProposalTemplate("process (ProcName = Id) {\n    label: skip;\n}",
 				IPCalReservedWords.PROCESS, IPCalReservedWords.PROCESS_HELP));
 		proposals.put(IPCalReservedWords.PROCESS, templates);
 
 		templates = new ArrayList<ToolboxCompletionProcessor.CompletionProposalTemplate>();
 		templates.add(
-				new CompletionProposalTemplate("if (TRUE) { skip; };", "if-then", IPCalReservedWords.IFTHENELSE_HELP));
-		templates.add(new CompletionProposalTemplate("if (TRUE) { skip; }; else { skip; };", "if-then-else",
+				new CompletionProposalTemplate("if (TRUE) {\n   skip;\n};", "if-then", IPCalReservedWords.IFTHENELSE_HELP));
+		templates.add(new CompletionProposalTemplate("if (TRUE) {\n   skip;\n} else {\n   skip;\n};", "if-then-else",
 				IPCalReservedWords.IFTHENELSE_HELP));
-		templates.add(new CompletionProposalTemplate("if (TRUE) { skip; }; elseif { skip; };", "if-then-elseif",
+		templates.add(new CompletionProposalTemplate("if (TRUE) {\n   skip;\n} else if (FALSE) {\n   skip;\n} else {\n   skip;\n};", "if-then-elseif",
 				IPCalReservedWords.IFTHENELSE_HELP));
 		proposals.put(IPCalReservedWords.IF, templates);
 
 		proposals.put(IPCalReservedWords.VARIABLE,
 				getSingleProposal("variable x = TRUE;", IPCalReservedWords.VARIABLE, IPCalReservedWords.VARIABLE_HELP));
-		proposals.put(IPCalReservedWords.VARIABLES, getSingleProposal("variables x = TRUE ; y \\in {1,2,3} ; z;",
+		proposals.put(IPCalReservedWords.VARIABLES, getSingleProposal("variables x = TRUE;\n          y \\in {1,2,3};\n          z;",
 				IPCalReservedWords.VARIABLES, IPCalReservedWords.VARIABLE_HELP));
 		proposals.put(IPCalReservedWords.PROCEDURE,
-				getSingleProposal("procedure PName (param1, ..., paramN) { label: skip; }", IPCalReservedWords.PROCEDURE,
+				getSingleProposal("procedure PName (param1, ..., paramN) {\n  label: skip;\n}", IPCalReservedWords.PROCEDURE,
 						IPCalReservedWords.PROCEDURE_HELP));
 		proposals.put(IPCalReservedWords.CALL, getSingleProposal("call PName (expr1, ..., exprN)",
 				IPCalReservedWords.CALL, IPCalReservedWords.PROCEDURE_HELP));
-		proposals.put(IPCalReservedWords.WHILE, getSingleProposal("label: while (TRUE) { skip; };",
+		proposals.put(IPCalReservedWords.WHILE, getSingleProposal("label: while (TRUE) {\n         skip;\n};",
 				IPCalReservedWords.WHILE, IPCalReservedWords.WHILE_HELP));
 		proposals.put(IPCalReservedWords.EITHER, getSingleProposal("either { skip; } or { skip; } or { skip; };",
 				IPCalReservedWords.EITHER, IPCalReservedWords.EITHEROR_HELP));
@@ -74,12 +74,12 @@ public class PCalCompletionProcessor extends ToolboxCompletionProcessor implemen
 				getSingleProposal("goto label;", IPCalReservedWords.GOTO, IPCalReservedWords.GOTO_HELP));
 		proposals.put(IPCalReservedWords.PRINT,
 				getSingleProposal("print \"msg\";", IPCalReservedWords.PRINT, IPCalReservedWords.PRINT_HELP));
-		proposals.put(IPCalReservedWords.WITH, getSingleProposal("with ( i \\in {1,2,3} ) { skip; }",
+		proposals.put(IPCalReservedWords.WITH, getSingleProposal("with ( i \\in S ) {\n  skip;\n}",
 				IPCalReservedWords.WITH, IPCalReservedWords.WITH_HELP));
-		proposals.put(IPCalReservedWords.MACRO, getSingleProposal("macro P(param1, ... , paramN) { skip; }",
+		proposals.put(IPCalReservedWords.MACRO, getSingleProposal("macro P(param1, ... , paramN) {\n     skip;\n}",
 				IPCalReservedWords.MACRO, IPCalReservedWords.MACRO_HELP));
 		proposals.put(IPCalReservedWords.DEFINE,
-				getSingleProposal("define { Op1(param1, ... , paramN) == TRUE Op2(...) == TRUE }",
+				getSingleProposal("define {\n    Op1(param1, ... , paramN) == TRUE\n    Op2(...) == TRUE\n}",
 						IPCalReservedWords.DEFINE, IPCalReservedWords.DEFINE_HELP));
 	}
 	
