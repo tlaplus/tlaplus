@@ -45,9 +45,6 @@ TLA Toolbox
 #### Port Toolbox to e4 (difficulty: easy) (skills: Java, Eclipse)
 [e4](http://www.vogella.com/tutorials/EclipseRCP/article.html) represents the newest programming model for Eclipse RCP applications. e4 provides higher flexibility while simultaneously reducing boilerplate code. The TLA Toolbox has been implemented on top of Eclipse RCP 3.x and thus is more complex than it has to.
 
-#### Package Toolbox for Debian and Fedora based Linux distributions (difficulty: easy) (skills: Eclipse, Linux)
-The current Toolbox installation requires Linux users to download a zip file, to extract it and manually integrate the Toolbox into the System. Packaging the Toolbox for Debian (.deb) and Fedora (.rpm) based Linux distributions would not only simplify the installation procedure, it would also create more visible for TLA+ within the Linux community.
-
 #### Add support for Google Compute to Cloud TLC (difficulty: easy) (skills: jclouds, Linux)
 The Toolbox can launch Azure and Amazon EC2 instances to run model checking in the cloud. The Toolbox interfaces with clouds via the [jclouds](https://jclouds.apache.org/) toolkit. jclouds has support for Google Compute, but https://github.com/tlaplus/tlaplus/blob/master/org.lamport.tla.toolbox.jclouds/src/org/lamport/tla/toolbox/jcloud/CloudDistributedTLCJob.java has to be enhanced to support Google Compute.
 
