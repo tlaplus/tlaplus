@@ -499,7 +499,9 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	
 	public boolean hasStateGraphDump() {
 		final String name = getName().concat(DOT_FILE_EXT);
-		final IFile file = getFolder().getFile(name);
+		// Convert to java.io.File rather than Eclipse's IFile. For the latter
+		// file.exists might return null if Eclipse's internal FS cache is stale.
+		final File file = getFolder().getFile(name).getLocation().toFile();
 		return file.exists();
 	}
 
