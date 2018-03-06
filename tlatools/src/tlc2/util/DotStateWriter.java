@@ -33,8 +33,6 @@ import java.util.Set;
 
 import tlc2.tool.Action;
 import tlc2.tool.TLCState;
-import tlc2.value.Value;
-import util.UniqueString;
 
 /**
  * Writes the given state in dot notation.
@@ -280,8 +278,9 @@ public class DotStateWriter extends StateWriter {
 	 */
 	public void close() {
 		this.writer.append("}\n"); // closes the main subgraph.
-		// We only need the legend if the edges are colored by action.
-		if (colorize) {
+		// We only need the legend if the edges are colored by action and there is more
+		// than a single action.
+		if (colorize && this.actionToColors.size() > 1) {
 			this.writer.append(dotLegend("DotLegend", this.actionToColors.keySet()));
 		}
 		this.writer.append("}");
