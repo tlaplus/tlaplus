@@ -29,12 +29,11 @@ import pcal.Translator;
 /**
  * Runs the PCal translator
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class TranslatorJob extends WorkspaceJob
 {
     private Translator translator;
-    private Vector callParams;
+    private Vector<String> callParams;
     private IResource fileToBuild;
 
     /**
@@ -45,7 +44,7 @@ public class TranslatorJob extends WorkspaceJob
         super("PCal Translation");
         this.translator = new Translator();
         this.fileToBuild = fileToBuild;
-        this.callParams = new Vector();
+        this.callParams = new Vector<String>();
 
         Activator.getDefault().logDebug("Translating " + fileToBuild.getLocation().toOSString());
 
@@ -137,14 +136,14 @@ public class TranslatorJob extends WorkspaceJob
         monitor.worked(1);
         monitor.setTaskName("Analyzing results");
 
-        List errors = translator.getErrorMessages();
+        List<String> errors = translator.getErrorMessages();
 
         if (errors.size() > 0)
         {
             monitor.setTaskName("Installing problem markers");
             for (int i = 0; i < errors.size(); i++)
             {
-                String errorMessage = (String) errors.get(i);
+                String errorMessage = errors.get(i);
 
                 TLAMarkerHelper.installProblemMarker(fileToBuild, fileToBuild.getName(), IMarker.SEVERITY_ERROR,
                         detectLocation(errorMessage), errorMessage, monitor,
@@ -180,7 +179,7 @@ public class TranslatorJob extends WorkspaceJob
         };
     }
 
-    private int[] detectLocation(String message)
+    private static int[] detectLocation(String message)
     {
         String LINE = "line ";
         String COLUMN = ", column ";
@@ -219,5 +218,4 @@ public class TranslatorJob extends WorkspaceJob
         }
         return new int[] { -1, -1, -1, -1 };
     }
-
 }

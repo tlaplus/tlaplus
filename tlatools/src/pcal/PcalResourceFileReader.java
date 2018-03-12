@@ -47,12 +47,12 @@ public class PcalResourceFileReader
        inputReader = new BufferedReader(new InputStreamReader(input)) ;
       };
 
-  public static Vector ResourceFileToStringVector(String fileName) throws PcalResourceFileReaderException
+  public static Vector<String> ResourceFileToStringVector(String fileName) throws PcalResourceFileReaderException
     /***********************************************************************
     * Reads file fileName into a StringVector, a vector in which each      *
     * element is a line of the file.                                       *
     ***********************************************************************/
-    { Vector inputVec = new Vector(100) ;
+    { Vector<String> inputVec = new Vector<String>(100) ;
        PcalResourceFileReader wordFileReader
                      = new PcalResourceFileReader(fileName);
 

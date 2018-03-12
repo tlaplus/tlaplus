@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
-import pcal.MappingObject.Break;
 import pcal.exception.FileToStringVectorException;
 import pcal.exception.ParseAlgorithmException;
 import pcal.exception.PcalResourceFileReaderException;
@@ -18,7 +17,6 @@ import pcal.exception.RemoveNameConflictsException;
 import pcal.exception.StringVectorToFileException;
 import pcal.exception.TLCTranslationException;
 import pcal.exception.UnrecoverableException;
-import tla2tex.Debug;
 import util.ToolIO;
 
 /***************************************************************************
@@ -358,7 +356,7 @@ class trans
         * contents, where inputVec[i] is the string containing the contents  *
         * of line i+1 of the input file.                                     *
         *********************************************************************/
-        Vector inputVec = null;
+        Vector<String> inputVec = null;
         try
         {
             inputVec = fileToStringVector(PcalParams.TLAInputFile + /* (PcalParams.fromPcalFile ? ".pcal" : */".tla" /*)*/);
@@ -374,7 +372,7 @@ class trans
         * which was not always the case in the aborted version 1.31.         *
         *********************************************************************/
         // Vector outputVec = PcalParams.fromPcalFile ? new Vector() : inputVec;
-        Vector outputVec = inputVec;
+        Vector<String> outputVec = inputVec;
 
         /*********************************************************************
         * Set untabInputVec to be the vector of strings obtained from        *
@@ -393,7 +391,7 @@ class trans
         * translator are copied from inputVec, so any tabs the user wants    *
         * are kept.                                                          *
         *********************************************************************/
-        Vector untabInputVec = removeTabs(inputVec);
+        Vector<String> untabInputVec = removeTabs(inputVec);
 
         /**
          *  Look through the file for PlusCal options.  They are put anywhere
@@ -750,7 +748,7 @@ class trans
         * do the translation by calling TLC. Otherwise, call the ordinary    *
         * Translate method.                                                  *
         *********************************************************************/
-        Vector translation = null;
+        Vector<String> translation = null;
         boolean tlcTranslation = PcalParams.SpecOption || PcalParams.MyspecOption || PcalParams.Spec2Option
                 || PcalParams.Myspec2Option;
 
@@ -864,7 +862,7 @@ class trans
         * Write the cfg file, unless the -nocfg option is used.              *
         *********************************************************************/
         File cfgFile = new File(PcalParams.TLAInputFile + ".cfg");
-        Vector cfg = null;
+        Vector<String> cfg = null;
         boolean writeCfg = !PcalParams.Nocfg;
         if (writeCfg && cfgFile.exists())
         {
@@ -889,7 +887,7 @@ class trans
             }
         } else
         {
-            cfg = new Vector();
+            cfg = new Vector<String>();
             cfg.addElement(PcalParams.CfgFileDelimiter);
         }
         ;
@@ -1000,7 +998,8 @@ class trans
      * If run in the system mode, exits the program, in tool mode returns the status
      * @param status
      */
-    private static int exitWithStatus(int status)
+    @SuppressWarnings("unused")
+	private static int exitWithStatus(int status)
     {
         if (ToolIO.getMode() == ToolIO.SYSTEM)
         {
@@ -1015,7 +1014,7 @@ class trans
     /********************** Writing the AST ************************************/
     private static boolean WriteAST(AST ast)
     {
-        Vector astFile = new Vector();
+        Vector<String> astFile = new Vector<String>();
         astFile.addElement("------ MODULE AST -------");
         astFile.addElement("EXTENDS TLC");
         astFile.addElement("fairness == \"" + PcalParams.FairnessOption + "\"");
@@ -1037,7 +1036,7 @@ class trans
 
     /************************* THE TLC TRANSLATION *****************************/
 
-    private static Vector TLCTranslate(AST ast) throws TLCTranslationException
+    private static Vector<String> TLCTranslate(AST ast) throws TLCTranslationException
     /***********************************************************************
     * The result is a translation of the algorithm represented by ast      *
     * obtained by using TLC to execute the definition of Translation(ast)  *
@@ -1079,7 +1078,7 @@ class trans
         {
             try
             {
-                Vector parseFile = PcalResourceFileReader.ResourceFileToStringVector(PcalParams.SpecFile + ".tla");
+                Vector<String> parseFile = PcalResourceFileReader.ResourceFileToStringVector(PcalParams.SpecFile + ".tla");
 
                 WriteStringVectorToFile(parseFile, PcalParams.SpecFile + ".tla");
                 parseFile = PcalResourceFileReader.ResourceFileToStringVector(PcalParams.SpecFile + ".cfg");
@@ -1235,14 +1234,14 @@ class trans
          * Wrap the translated string into approximately 80 character lines *
          *******************************************************************/
         transl = WrapString(transl, 78);
-        Vector result = new Vector();
+        Vector<String> result = new Vector<String>();
         result.addElement(transl);
         return result;
     }
 
     /***************** METHODS FOR READING AND WRITING FILES *****************/
 
-    private static void WriteStringVectorToFile(Vector inputVec, String fileName) throws StringVectorToFileException
+    private static void WriteStringVectorToFile(Vector<String> inputVec, String fileName) throws StringVectorToFileException
     /***********************************************************************
     * Writes the Vector of strings inputVec to file named fileName, with   *
     * each element of inputVec written on a new line.                      *
@@ -1283,13 +1282,13 @@ class trans
 
     }
 
-    private static Vector fileToStringVector(String fileName) throws FileToStringVectorException
+    private static Vector<String> fileToStringVector(String fileName) throws FileToStringVectorException
     /***********************************************************************
     * Reads file fileName into a StringVector, a vector in which each      *
     * element is a line of the file.                                       *
     ***********************************************************************/
     {
-        Vector inputVec = new Vector(100);
+        Vector<String> inputVec = new Vector<String>(100);
         try
         {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
@@ -1813,7 +1812,7 @@ class trans
      */
     private static boolean OutputHelpMessage()
     {
-        Vector helpVec = null;
+        Vector<String> helpVec = null;
         try
         {
             helpVec = PcalResourceFileReader.ResourceFileToStringVector("help.txt");
@@ -1860,7 +1859,7 @@ class trans
         return STATUS_EXIT_WITH_ERRORS;
     }
 
-    private static int findTokenPair(Vector vec, int lineNum, String tok1, String tok2)
+    private static int findTokenPair(Vector<String> vec, int lineNum, String tok1, String tok2)
     /*********************************************************************
     * Returns the number of the first line at or after lineNum in the    *
     * vector of strings vec containing tok1 followed by 1 or more        *
@@ -1870,7 +1869,7 @@ class trans
         int i = lineNum;
         while (i < vec.size())
         {
-            String line = (String) vec.elementAt(i);
+            String line = vec.elementAt(i);
             int col = line.indexOf(tok1);
             int nextcol = col + tok1.length();
             if (col != -1)
@@ -1894,7 +1893,7 @@ class trans
 
     /**************************  RemoveTabs  *********************************/
 
-    public static Vector removeTabs(Vector vec)
+    public static Vector<String> removeTabs(Vector<String> vec)
     {
         /********************************************************************
         * Returns a string vector obtained from the string vector vec by   *
@@ -1905,7 +1904,7 @@ class trans
         * Emacs does when told to remove tabs, which makes it good enough  *
         * for me.                                                          *
          ********************************************************************/
-        Vector newVec = new Vector();
+        Vector<String> newVec = new Vector<String>();
         int i = 0;
         while (i < vec.size())
         {

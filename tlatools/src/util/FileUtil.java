@@ -198,7 +198,7 @@ public class FileUtil
     }
 
 	/**
-	 * Atomically replaced the file targetName with the file sourceName.
+	 * Atomically replaces the file targetName with the file sourceName.
 	 * @param sourceName
 	 * @param targetName
 	 * @throws IOException

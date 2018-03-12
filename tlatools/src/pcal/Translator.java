@@ -8,7 +8,6 @@ import util.ToolIO;
 /**
  * Launcher for the PCal Translator for running out-of-the-tool
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class Translator
 {
@@ -38,10 +37,10 @@ public class Translator
      * Retrieves the errors recorded during the execution
      * @return
      */
-    public List getErrorMessages()
+    public List<String> getErrorMessages()
     {
         String[] messages = ToolIO.getAllMessages();
-        Vector errorMessages = new Vector();
+        Vector<String> errorMessages = new Vector<String>();
         System.out.println("Found " + messages.length + " messages");
         int position;
         String cleanMessage = null;

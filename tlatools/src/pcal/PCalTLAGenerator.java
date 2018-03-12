@@ -64,13 +64,13 @@ public class PCalTLAGenerator
      * Note that this requires RemoveNameConflicts to be called first   *
      * because of the grotty use of the class variable st.              *
      ********************************************************************/
-    public Vector translate() throws RemoveNameConflictsException
+    public Vector<String> translate() throws RemoveNameConflictsException
     {
-        Vector result = new Vector();
+        Vector<String> result = new Vector<String>();
         AST xast = null;  // Set to the exploded AST
 
         for (int i = 0; i < st.disambiguateReport.size(); i++)
-            result.addElement(st.disambiguateReport.elementAt(i));
+            result.addElement((String) st.disambiguateReport.elementAt(i));
         // System.out.println("Before: " + ast.toString());
         // System.out.println("After renaming: " + ast.toString());
         try

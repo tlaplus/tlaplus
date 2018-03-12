@@ -120,10 +120,10 @@ public class PcalTLAGen
      * @return A vector of strings.
      * @throws PcalTLAGenException
      */
-    public Vector generate(AST ast, PcalSymTab symtab, Vector report) throws PcalTLAGenException
+    public Vector<String> generate(AST ast, PcalSymTab symtab, Vector report) throws PcalTLAGenException
     {
         TLAtoPCalMapping map = PcalParams.tlaPcalMapping;
-        mappingVector = new Vector(50);
+        mappingVector = new Vector<String>(50);
         /*
          * Add the reports of renaming to the output.
          */
