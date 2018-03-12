@@ -30,6 +30,14 @@ public abstract class SaveDirtyEditorAbstractHandler extends AbstractHandler {
 			getPrefs().setDefault(this.getClass() + ".dontBother", false);
 			if (getPrefs().getBoolean(this.getClass() + ".dontBother")) {
 				// TODO decouple from ui thread
+				// Use NullProgressMonitor instead of newly created monitor. The
+				// parent ProgressMonitorDialog would need to be properly
+				// initialized first.
+				// @see Bug #256 in general/bugzilla/index.html
+				//
+				// Generally though, saving a resource involves I/O which should be
+				// decoupled from the UI thread in the first place. Properly doing
+				// this, would be from inside a Job which provides a ProgressMonitor
 				activeEditor.doSave(new NullProgressMonitor());
 			} else {
 				final Shell shell = HandlerUtil.getActiveShell(event);
@@ -43,21 +51,19 @@ public abstract class SaveDirtyEditorAbstractHandler extends AbstractHandler {
 				}
 				if (res == MessageDialog.OK || res == MessageDialog.CONFIRM) {
 					// TODO decouple from ui thread
+					// Use NullProgressMonitor instead of newly created monitor. The
+					// parent ProgressMonitorDialog would need to be properly
+					// initialized first.
+					// @see Bug #256 in general/bugzilla/index.html
+					//
+					// Generally though, saving a resource involves I/O which should be
+					// decoupled from the UI thread in the first place. Properly doing
+					// this, would be from inside a Job which provides a ProgressMonitor
 					activeEditor.doSave(new NullProgressMonitor());
 				} else {
 					return false;
 				}
 			}
-
-			// Use NullProgressMonitor instead of newly created monitor. The
-			// parent ProgressMonitorDialog would need to be properly
-			// initialized first.
-			// @see Bug #256 in general/bugzilla/index.html
-			//
-			// Generally though, saving a resource involves I/O which should be
-			// decoupled from the UI thread in the first place. Properly doing
-			// this, would be from inside a Job which provides a ProgressMonitor
-			activeEditor.doSave(new NullProgressMonitor());
 		}
 		return true;
 	}
