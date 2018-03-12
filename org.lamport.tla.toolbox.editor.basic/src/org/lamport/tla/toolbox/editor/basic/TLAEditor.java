@@ -545,6 +545,7 @@ public class TLAEditor extends TextEditor
 
         } // end if (historyStart > -1)
         
+        super.doSave(progressMonitor);
         
 		// Send out a save event through the event bus. There might be parties
 		// interested in this, e.g. to regenerate the pretty printed pdf.
@@ -554,8 +555,6 @@ public class TLAEditor extends TextEditor
         	final IFile spec = fei.getFile();
         	service.post(SAVE_EVENT, spec);
         }
-        
-        super.doSave(progressMonitor);
     }
 
     /**
