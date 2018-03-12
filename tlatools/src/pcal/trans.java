@@ -749,10 +749,7 @@ class trans
         * Translate method.                                                  *
         *********************************************************************/
         Vector<String> translation = null;
-        boolean tlcTranslation = PcalParams.SpecOption || PcalParams.MyspecOption || PcalParams.Spec2Option
-                || PcalParams.Myspec2Option;
-
-        if (tlcTranslation)
+        if (PcalParams.tlcTranslation())
         {
             try
             {
@@ -936,7 +933,7 @@ class trans
             * it to a model value of the same name.                           *
             * (Added 22 Aug 2007 by LL.)                                      *
             ******************************************************************/
-            if (tlcTranslation || ParseAlgorithm.hasDefaultInitialization)
+            if (PcalParams.tlcTranslation() || ParseAlgorithm.hasDefaultInitialization)
             {
                 cfg.add(0, "CONSTANT defaultInitValue = defaultInitValue");
             }

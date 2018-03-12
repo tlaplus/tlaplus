@@ -91,6 +91,11 @@ public final class PcalParams
     * The file name if the -spec option is chosen.                         *
     ***********************************************************************/
 
+    public static boolean tlcTranslation() {
+    	return PcalParams.SpecOption || PcalParams.MyspecOption || PcalParams.Spec2Option
+                || PcalParams.Myspec2Option;
+    }
+    
     public static boolean WriteASTFlag = false ;
     /***********************************************************************
     * True if the -writeAST option is chosen.                              *
