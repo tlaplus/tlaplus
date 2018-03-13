@@ -296,6 +296,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // constants from the model
         List<String> savedConstants = getModel().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector<String>());
         FormHelper.setSerializedInput(constantTable, savedConstants);
+        if (!savedConstants.isEmpty()) {
+        	expandSection(SEC_WHAT_IS_THE_MODEL);
+        }
 
         // recover from the checkpoint
         boolean recover = getModel().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
@@ -342,7 +345,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         // comments/description/notes
         String commentsStr = getModel().getAttribute(MODEL_COMMENTS, EMPTY_STRING);
-       	commentsSource.setDocument(new Document(commentsStr));
+        commentsSource.setDocument(new Document(commentsStr));
+        if (!EMPTY_STRING.equals(commentsStr)) {
+        	expandSection(SEC_COMMENTS);
+        }
     }
 
     public void validatePage(boolean switchToErrorPage)
@@ -965,8 +971,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         twd.colspan = 2;
         top.setLayoutData(twd);
         
-        section = FormHelper.createSectionComposite(top, "Model description", "", toolkit, sectionFlags
-                | Section.EXPANDED, getExpansionListener());
+        section = FormHelper.createSectionComposite(top, "Model description", "", toolkit, sectionFlags, getExpansionListener());
         
         final ValidateableSectionPart commentsPart = new ValidateableSectionPart(section, this, SEC_COMMENTS);
         managedForm.addPart(commentsPart);
@@ -1133,8 +1138,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // Constants
         ValidateableConstantSectionPart constantsPart = new ValidateableConstantSectionPart(right,
-                "What is the model?", "Specify the values of declared constants.", toolkit, sectionFlags
-                        | Section.EXPANDED, this, SEC_WHAT_IS_THE_MODEL);
+				"What is the model?", "Specify the values of declared constants.", toolkit, sectionFlags, this,
+				SEC_WHAT_IS_THE_MODEL);
         managedForm.addPart(constantsPart);
         constantTable = constantsPart.getTableViewer();
         dm.bindAttribute(MODEL_PARAMETER_CONSTANTS, constantTable, constantsPart);
@@ -1696,14 +1701,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		stackLayout.topControl = composite;
 		distributedOptions.layout();
     }
-
-	/**
-	 * Expands the properties table.
-	 */
-	public void expandPropertiesSection() {
-		final SectionPart section = getDataBindingManager().getSection(SEC_WHAT_TO_CHECK_PROPERTIES);
-		section.getSection().setExpanded(true);
-	}
 
     /**
      * On a refresh, the checkpoint information is re-read 

@@ -20,8 +20,9 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class OpenModelHandler extends AbstractHandler implements IConfigurationConstants {
 	public static final String COMMAND_ID = "toolbox.tool.tlc.commands.model.open";
 	public static final String PARAM_MODEL_NAME = "toolbox.tool.tlc.commands.model.open.param";
-	public static final String PARAM_EXPAND_PROPERTIES = "toolbox.tool.tlc.commands.model.open.param.expand.properties";
-
+	public static final String PARAM_EXPAND_SECTIONS = "toolbox.tool.tlc.commands.model.open.param.expand.properties";
+	public static final String PARAM_EXPAND_SECTIONS_DELIM = ",";
+	
 	public static final String EDITOR_ID = "org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor";
 
 	/* (non-Javadoc)
@@ -41,8 +42,9 @@ public class OpenModelHandler extends AbstractHandler implements IConfigurationC
 		}
 		
 		final ModelEditor modelEditor = (ModelEditor) UIHelper.openEditor(EDITOR_ID, launchFile);
-		if ("expand".equals(event.getParameter(PARAM_EXPAND_PROPERTIES))) {
-			modelEditor.expandPropertiesSection();
+		final String expand = event.getParameter(PARAM_EXPAND_SECTIONS);
+		if (expand != null) {
+			modelEditor.expandSections(expand.split(PARAM_EXPAND_SECTIONS_DELIM));
 		}
 		
 		return null;

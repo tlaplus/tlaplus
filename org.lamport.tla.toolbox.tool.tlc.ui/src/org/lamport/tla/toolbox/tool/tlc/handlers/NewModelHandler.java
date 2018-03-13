@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionConstants;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -123,16 +125,16 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         ModuleNode moduleNode = specObject.getExternalModuleTable().getRootModule();
 
         // get the list of constants
-        List constants = ModelHelper.createConstantsList(moduleNode);
+        final List<Assignment> constants = ModelHelper.createConstantsList(moduleNode);
 
         // if defaultInitValue is a constant, initialize it
         // to be a model value. (Should perhaps be changed to do this
         // only if the root module or some extended module has an algorithm?)
-        Iterator iter = constants.iterator();
+        Iterator<Assignment> iter = constants.iterator();
         boolean done = false;
         while ((!done) && iter.hasNext())
         {
-            Assignment assign = (Assignment) iter.next();
+            Assignment assign = iter.next();
             if (assign.getLabel().equals("defaultInitValue") && (assign.getParams().length == 0))
             {
                 assign.setRight("defaultInitValue");
@@ -154,7 +156,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
 
             if (constants.size() == 0)
             {
-                launchCopy.setAttribute(MODEL_PARAMETER_CONSTANTS, (List) null);
+                launchCopy.setAttribute(MODEL_PARAMETER_CONSTANTS, (List<String>) null);
             } else
             {
                 launchCopy.setAttribute(MODEL_PARAMETER_CONSTANTS, ModelHelper.serializeAssignmentList(constants));
@@ -296,7 +298,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             //
             //      Foo == CHOOSE v : v \notin exp  or  Foo == CHOOSE V : ~(v \in exp)
             // 
-            Vector overrides = new Vector();
+            Vector<String> overrides = new Vector<String>();
             for (int i = 0; i < defs.length; i++)
             {
                 OpDefNode node = defs[i];
@@ -377,9 +379,17 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             final Map<String, String> parameters = new HashMap<String, String>();
             parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelName);
             
+            final List<String> expand = new ArrayList<>();
+            expand.add(ISectionConstants.SEC_COMMENTS);
             if (foundSpec && foundTermination) {
-                parameters.put(OpenModelHandler.PARAM_EXPAND_PROPERTIES, "expand");
+            	expand.add(ISectionConstants.SEC_WHAT_TO_CHECK_PROPERTIES);
             }
+            if (!constants.isEmpty()) {
+            	expand.add(ISectionConstants.SEC_WHAT_IS_THE_MODEL);
+            }
+
+			parameters.put(OpenModelHandler.PARAM_EXPAND_SECTIONS,
+					String.join(OpenModelHandler.PARAM_EXPAND_SECTIONS_DELIM, expand));
 
             // runs the command and opens the module [should be model?] in the editor
             //

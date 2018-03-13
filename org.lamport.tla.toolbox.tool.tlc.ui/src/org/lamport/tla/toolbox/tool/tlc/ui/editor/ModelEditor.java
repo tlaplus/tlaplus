@@ -1149,16 +1149,12 @@ public class ModelEditor extends FormEditor
     }
     
 	/**
-	 * Expands the properties section on the main model editor page. 
+	 * Expands the given sections on the model editor pages. 
 	 */
-	public void expandPropertiesSection() {
+	public void expandSections(final String[] sections) {
 		for (int i = 0; i < pagesToAdd.length; i++) {
 			final BasicFormPage basicFormPage = pagesToAdd[i];
-			if (basicFormPage instanceof MainModelPage) {
-				final MainModelPage mainPage = (MainModelPage) basicFormPage;
-				mainPage.expandPropertiesSection();
-				return;
-			}
+			basicFormPage.expandSections(sections);
 		}
 	}
 

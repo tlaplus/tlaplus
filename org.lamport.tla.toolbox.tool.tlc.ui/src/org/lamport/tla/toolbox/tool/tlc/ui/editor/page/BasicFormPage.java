@@ -509,6 +509,15 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         getDataBindingManager().expandSection(sectionId);
     }
 
+	/**
+	 * Expands the given sections.
+	 */
+	public void expandSections(final String[] sections) {
+		for (String section : sections) {
+			expandSection(section);
+		}
+	}
+
     /**
      * Enables or disables the page
      * @param enabled, if true the page controls are enabled, otherwise disabled
