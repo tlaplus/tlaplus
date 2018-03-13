@@ -308,6 +308,17 @@
             name="Decompose Proof">
       </command>
       <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.PCalTranslateAutomaticallyHandler"
+            description="Automatically translate PlusCal to TLA+ on TLA+ editor save."
+            id="toolbox.command.module.translate.automatially"
+            name="Translate PlusCal automatically">
+		   <state
+				class="org.eclipse.ui.handlers.RegistryToggleState:false"
+				id="org.eclipse.ui.commands.toggleState">
+		   </state>
+      </command>
+      <command
             categoryId="toolbox.command.category.module"
             defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.PCalTranslateModuleHandler"
             description="Translates PCal in the active editor"
@@ -635,6 +646,14 @@
               <command
                     commandId="org.lamport.tla.toolbox.editor.basic.gotoMatchingParen"
                     style="push">
+              </command>
+              <separator
+                    name="org.lamport.tla.toolbox.editor.basic.commentseparator"
+                    visible="true">
+              </separator>
+              <command
+                    commandId="toolbox.command.module.translate.automatially"
+                    style="toggle">
               </command>
            </menuContribution>
          

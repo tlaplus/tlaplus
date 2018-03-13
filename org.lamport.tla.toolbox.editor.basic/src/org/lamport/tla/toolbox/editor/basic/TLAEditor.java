@@ -109,6 +109,11 @@ public class TLAEditor extends TextEditor
 	 * saved.
 	 */
 	public static final String SAVE_EVENT = "TLAEditor/save";
+	/**
+	 * The IEventBroker topic identifying the event sent out while the editor is
+	 * being saved.
+	 */
+	public static final String PRE_SAVE_EVENT = "TLAEditor/presave";
 	
 	public static final String ID = "org.lamport.tla.toolbox.editor.basic.TLAEditor";
     private IContextService contextService = null;
@@ -446,6 +451,8 @@ public class TLAEditor extends TextEditor
      */
     public void doSave(IProgressMonitor progressMonitor)
     {
+        service.send(PRE_SAVE_EVENT, this);
+        
         final IEditorInput editorInput = this.getEditorInput();
 		IDocument doc = this.getDocumentProvider().getDocument(editorInput);
         String text = doc.get();
