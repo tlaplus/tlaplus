@@ -307,6 +307,13 @@
             id="org.lamport.tla.toolbox.editor.basic.DecomposeProof"
             name="Decompose Proof">
       </command>
+      <command
+            categoryId="toolbox.command.category.module"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.PCalTranslateModuleHandler"
+            description="Translates PCal in the active editor"
+            id="toolbox.command.module.translate.active"
+            name="Translate module">
+      </command>
 
    </extension>
    <extension

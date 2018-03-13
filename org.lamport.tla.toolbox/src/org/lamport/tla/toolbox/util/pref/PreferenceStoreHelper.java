@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
@@ -130,6 +131,10 @@ public class PreferenceStoreHelper
         ScopedPreferenceStore store = new ScopedPreferenceStore(scope, Activator.PLUGIN_ID /*Activator.getDefault().getBundle().getSymbolicName()*/);
         return store;
     }
+    
+    public static IPreferenceStore getProjectPreferenceStore(Spec spec) {
+    	return getProjectPreferenceStore(spec.getProject());
+    }
 
     /**
      * Retrieves preference store with the workspace scope
@@ -139,5 +144,14 @@ public class PreferenceStoreHelper
     {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         return store;
+    }
+    
+    public static String[] getStringArray(Spec spec, String key, String[] def) {
+    	final IPreferenceStore projectPreferences = getProjectPreferenceStore(spec);
+    	final String string = projectPreferences.getString(key);
+    	if (string == null) {
+    		return def;
+    	}
+    	return string.split(" ");
     }
 }

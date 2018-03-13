@@ -53,7 +53,6 @@ import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.job.NewTLAModuleCreationOperation;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.spec.nature.PCalDetectingBuilder;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
@@ -271,8 +270,7 @@ public class ResourceHelper
                     // check builders and install if missing
                     ICommand[] commands = description.getBuildSpec();
                     boolean tlaBuilderFound = false;
-                    boolean pcalBuilderFound = false;
-                    int numberOfBuildersToInstall = 2;
+                    int numberOfBuildersToInstall = 1;
 
                     for (int i = 0; i < commands.length; ++i)
                     {
@@ -281,13 +279,9 @@ public class ResourceHelper
                         {
                             tlaBuilderFound = true;
                             numberOfBuildersToInstall--;
-                        } else if (builderName.equals(PCalDetectingBuilder.BUILDER_ID))
-                        {
-                            pcalBuilderFound = true;
-                            numberOfBuildersToInstall--;
                         }
 
-                        if (tlaBuilderFound && pcalBuilderFound)
+                        if (tlaBuilderFound)
                         {
                             break;
                         }
@@ -307,12 +301,6 @@ public class ResourceHelper
                             newCommands[position] = command;
                             position++;
                         }
-                        if (!pcalBuilderFound)
-                        {
-                            ICommand command = description.newCommand();
-                            command.setBuilderName(PCalDetectingBuilder.BUILDER_ID);
-                            newCommands[position] = command;
-                        }
                     }
                 } else
                 {
@@ -326,12 +314,9 @@ public class ResourceHelper
                     // set TLA+ Parsing Builder
                     ICommand command = description.newCommand();
                     command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
-                    // set PCal detecting builder
-                    ICommand command2 = description.newCommand();
-                    command2.setBuilderName(PCalDetectingBuilder.BUILDER_ID);
 
                     // setup the builders
-                    description.setBuildSpec(new ICommand[] { command, command2 });
+                    description.setBuildSpec(new ICommand[] { command });
                 }
 
                 // create the project

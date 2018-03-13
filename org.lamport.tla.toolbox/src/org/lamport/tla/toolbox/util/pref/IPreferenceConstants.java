@@ -53,6 +53,4 @@ public interface IPreferenceConstants
     
     /** Resource persistent property for sticking the pcal call params */
     public static final String PCAL_CAL_PARAMS              = "pCalCallParams";
-    /** Session property indicating if the resource has Pcal algorithm */
-    public static final String CONTAINS_PCAL_ALGORITHM      = "hasPcalAlgorithm";
 }

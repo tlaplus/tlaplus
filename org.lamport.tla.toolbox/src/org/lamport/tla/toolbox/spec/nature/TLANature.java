@@ -29,7 +29,7 @@ public class TLANature implements IProjectNature
 
         boolean tlaBuilderFound = false;
         boolean pcalBuilderFound = false;
-        int numberOfBuildersToInstall = 2;
+        int numberOfBuildersToInstall = 1;
         
         
         for (int i = 0; i < commands.length; ++i) {
@@ -38,10 +38,6 @@ public class TLANature implements IProjectNature
             {
                 tlaBuilderFound = true;
                 numberOfBuildersToInstall--;
-            } else if (builderName.equals(PCalDetectingBuilder.BUILDER_ID))
-            {
-               pcalBuilderFound = true;
-               numberOfBuildersToInstall--;
             }
             
             if (tlaBuilderFound && pcalBuilderFound) 
@@ -62,12 +58,6 @@ public class TLANature implements IProjectNature
             newCommands[position] = command;
             position++;
         }
-        if (!pcalBuilderFound) 
-        {
-            ICommand command = desc.newCommand();
-            command.setBuilderName(PCalDetectingBuilder.BUILDER_ID);
-            newCommands[position] = command;
-        }
         
         desc.setBuildSpec(newCommands);
         project.setDescription(desc, null);
@@ -84,7 +74,7 @@ public class TLANature implements IProjectNature
         ICommand[] commands = description.getBuildSpec();
         for (int i = 0; i < commands.length; ++i) {
             String builderName = commands[i].getBuilderName();
-            if (builderName.equals(TLAParsingBuilder.BUILDER_ID) || builderName.equals(PCalDetectingBuilder.BUILDER_ID)) {
+            if (builderName.equals(TLAParsingBuilder.BUILDER_ID)) {
                 ICommand[] newCommands = new ICommand[commands.length - 1];
                 System.arraycopy(commands, 0, newCommands, 0, i);
                 System.arraycopy(commands, i + 1, newCommands, i,

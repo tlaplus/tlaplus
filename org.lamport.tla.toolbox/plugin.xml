@@ -311,12 +311,6 @@
             id="toolbox.command.module.parse.active"
             name="Parse Module">
       </command>
-      <command
-            categoryId="toolbox.command.category.module"
-            description="Translates PCal in the active editor"
-            id="toolbox.command.module.translate.active"
-            name="Translate module">
-      </command>
       <!-- Module preferences are disabled -->
       <!-- command
             categoryId="toolbox.command.category.module"
@@ -895,10 +889,6 @@
             commandId="toolbox.command.spec.open">
       </handler>
       <handler
-            class="org.lamport.tla.toolbox.ui.handler.PCalTranslateModuleHandler"
-            commandId="toolbox.command.module.translate.active">
-      </handler>
-      <handler
             class="org.lamport.tla.toolbox.ui.handler.ParseModuleHandler"
             commandId="toolbox.command.module.parse.active">
       </handler>
@@ -1099,13 +1089,6 @@
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
-            class="org.lamport.tla.toolbox.ui.expression.PCalPropertyTester"
-            id="toolbox.propertyTester.PCALTester"
-            namespace="toolbox.property"
-            properties="hasPCALAlgorithm"
-            type="org.eclipse.jface.viewers.ISelection">
-      </propertyTester>
-      <propertyTester
             class="org.lamport.tla.toolbox.ui.expression.CurrentSpecTester"
             id="toolbox.propertyTester.isCurrentSpec"
             namespace="toolbox.property"
@@ -1245,17 +1228,6 @@
          </run>
       </builder>
    </extension>
-   <extension
-         id="toolbox.builder.PCalAlgorithmSearchingBuilder"
-         name="PCal Algorthim Definition Detecting Builder"
-         point="org.eclipse.core.resources.builders">
-      <builder
-            hasNature="true">
-         <run
-               class="org.lamport.tla.toolbox.spec.nature.PCalDetectingBuilder">
-         </run>
-      </builder>
-   </extension>
    
 <!-- ================================================================================= -->
 <!-- Natures                                                                           -->
@@ -1271,9 +1243,6 @@
       </runtime>
       <builder
             id="toolbox.builder.TLAParserBuilder">
-      </builder>
-      <builder
-            id="toolbox.builder.PCalAlgorithmSearchingBuilder">
       </builder>
    </extension>
 
