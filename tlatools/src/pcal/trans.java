@@ -372,8 +372,216 @@ class trans
         * which was not always the case in the aborted version 1.31.         *
         *********************************************************************/
         // Vector outputVec = PcalParams.fromPcalFile ? new Vector() : inputVec;
-        Vector<String> outputVec = inputVec;
+        final Vector<String> outputVec = runMe(inputVec, mapping);
+        if (outputVec == null) {
+        	return null;
+        }
+        
+        /*********************************************************************
+        * For .tla input:                                                    *
+        * Rename the old file by changing its extension from "tla" to "old". *
+        *********************************************************************/
+        // if (!PcalParams.fromPcalFile)
+        // {
+        File file;
+        try
+        {
+            file = new File(PcalParams.TLAInputFile + ".old");
+            if (file.exists())
+            {
+                file.delete();
+            }
+            ;
+            file = new File(PcalParams.TLAInputFile + ".tla");
+            file.renameTo(new File(PcalParams.TLAInputFile + ".old"));
+        } catch (Exception e)
+        {
+            PcalDebug.reportError("Could not rename input file " + PcalParams.TLAInputFile + ".tla" + " to "
+                    + PcalParams.TLAInputFile + ".old");
+//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+            return null ; // added for testing
+        }
+        ;
+        // }
 
+        /*********************************************************************
+        * Code from aborted version 1.31.                                    *
+        * For .pcal input, set outputSuffixLoc and add the rest of the       *
+        * input file to the output.                                          *
+        *********************************************************************/
+        // if (PcalParams.fromPcalFile)
+        // {
+        // PcalParams.outputSuffixLoc = new IntPair(outputVec.size(), 0);
+        // // if there's stuff in the suffix on the same line with the
+        // // end of the algorithm, write it on a separate line.
+        // IntPair curLoc = new IntPair(PcalParams.inputSuffixLoc.one, PcalParams.inputSuffixLoc.two);
+        // if (curLoc.one < untabInputVec.size())
+        // {
+        // String lastLine = (String) untabInputVec.elementAt(curLoc.one);
+        // if (curLoc.two < lastLine.length())
+        // {
+        // outputVec.addElement(lastLine.substring(curLoc.two));
+        // }
+        // curLoc.one++;
+        // }
+        // // Copy the rest of the input file into the output file.
+        // for (int ii = curLoc.one; ii < untabInputVec.size(); ii++)
+        // {
+        // outputVec.addElement((String) untabInputVec.elementAt(ii));
+        // }
+        // }
+        /*********************************************************************
+        * Write the output file.                                             *
+        *********************************************************************/
+        try
+        {
+            WriteStringVectorToFile(outputVec, PcalParams.TLAInputFile + ".tla");
+        } catch (StringVectorToFileException e)
+        {
+            PcalDebug.reportError(e);
+//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+            return null ; // added for testing
+        }
+
+        PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".tla" + " written.");
+
+        /*********************************************************************
+        * Write the cfg file, unless the -nocfg option is used.              *
+        *********************************************************************/
+        File cfgFile = new File(PcalParams.TLAInputFile + ".cfg");
+        Vector<String> cfg = null;
+        boolean writeCfg = !PcalParams.Nocfg;
+        if (writeCfg && cfgFile.exists())
+        {
+            if (cfgFile.canRead())
+            {
+                try
+                {
+                    cfg = fileToStringVector(PcalParams.TLAInputFile + ".cfg");
+                } catch (FileToStringVectorException e)
+                {
+                    PcalDebug.reportError(e);
+//                    return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+                    return null ; // added for testing
+                }
+            } else
+            {
+                /*************************************************************
+                * cfg file is read-only.                                     *
+                *************************************************************/
+                writeCfg = false;
+                PcalDebug.reportInfo("File " + PcalParams.TLAInputFile + ".cfg is read only, new version not written.");
+            }
+        } else
+        {
+            cfg = new Vector<String>();
+            cfg.addElement(PcalParams.CfgFileDelimiter);
+        }
+        ;
+
+        /*********************************************************************
+        * Delete previously written part of cfg file.                        *
+        *********************************************************************/
+        if (writeCfg)
+        {
+            int j = 0;
+            boolean done = false;
+            while ((!done) && (cfg.size() > j))
+            {
+                if (((String) cfg.elementAt(j)).indexOf(PcalParams.CfgFileDelimiter) == -1)
+                {
+                    j = j + 1;
+                } else
+                {
+                    done = true;
+                }
+            }
+            if (done)
+            {
+                /*************************************************************
+                * Delete all lines before the delimiting comment string.     *
+                *************************************************************/
+                while (j > 0)
+                {
+                    cfg.removeElementAt(0);
+                    j = j - 1;
+                }
+            } else
+            {
+                /*************************************************************
+                * The delimiting comment string written by the translator    *
+                * not found in the cfg file, so presumably the user created  *
+                * the cfg file before running the translator on the input    *
+                * file.  We insert the delimiter.                            *
+                *************************************************************/
+                cfg.add(0, PcalParams.CfgFileDelimiter);
+            }
+            ;
+
+            /******************************************************************
+            * If defaultInitValue is used, add a CONSTANT statement setting   *
+            * it to a model value of the same name.                           *
+            * (Added 22 Aug 2007 by LL.)                                      *
+            ******************************************************************/
+            if (PcalParams.tlcTranslation() || ParseAlgorithm.hasDefaultInitialization)
+            {
+                cfg.add(0, "CONSTANT defaultInitValue = defaultInitValue");
+            }
+            ;
+            /******************************************************************
+            * Insert the `PROPERTY Termination' line if requested.            *
+            ******************************************************************/
+            if (PcalParams.CheckTermination)
+            {
+                cfg.add(0, "PROPERTY Termination");
+            }
+            ;
+
+            /******************************************************************
+            * Insert the SPECIFICATION line if there isn't already one.       *
+            ******************************************************************/
+            j = 0;
+            boolean hasSpec = false;
+            while (j < cfg.size())
+            {
+                String thisLine = (String) cfg.elementAt(j);
+                if ((thisLine.indexOf("SPECIFICATION") != -1)
+                        && ((thisLine.indexOf("\\*") == -1) || (thisLine.indexOf("\\*") > thisLine
+                                .indexOf("SPECIFICATION"))))
+                {
+                    hasSpec = true;
+                }
+                ;
+                j = j + 1;
+            }
+            ;
+            if (hasSpec)
+            {
+                PcalDebug.reportInfo("File " + PcalParams.TLAInputFile
+                        + ".cfg already contains SPECIFICATION statement," + "\n   so new one not written.");
+            } else
+            {
+                cfg.add(0, "SPECIFICATION Spec");
+            }
+            ;
+            try
+            {
+                WriteStringVectorToFile(cfg, PcalParams.TLAInputFile + ".cfg");
+            } catch (StringVectorToFileException e)
+            {
+                PcalDebug.reportError(e);
+//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+                return null ; // added for testing
+            }
+            PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".cfg" + " written.");
+        }
+        ;
+
+//        return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
+        return PcalParams.tlaPcalMapping ; // added for testing
+    } // END main
+
+    public static Vector<String> runMe(final Vector<String> inputVec, final TLAtoPCalMapping mapping) {
         /*********************************************************************
         * Set untabInputVec to be the vector of strings obtained from        *
         * inputVec by replacing tabs with spaces.                            *
@@ -749,6 +957,7 @@ class trans
         * Translate method.                                                  *
         *********************************************************************/
         Vector<String> translation = null;
+
         if (PcalParams.tlcTranslation())
         {
             try
@@ -774,224 +983,23 @@ class trans
         }
         ;
 
-        PcalDebug.reportInfo("Translation completed.");
-// tla-pcal Debugging
-//System.exit(0);
-        /*********************************************************************
-        * For .tla input:                                                    *
-        * Rename the old file by changing its extension from "tla" to "old". *
-        *********************************************************************/
-        // if (!PcalParams.fromPcalFile)
-        // {
-        File file;
-        try
-        {
-            file = new File(PcalParams.TLAInputFile + ".old");
-            if (file.exists())
-            {
-                file.delete();
-            }
-            ;
-            file = new File(PcalParams.TLAInputFile + ".tla");
-            file.renameTo(new File(PcalParams.TLAInputFile + ".old"));
-        } catch (Exception e)
-        {
-            PcalDebug.reportError("Could not rename input file " + PcalParams.TLAInputFile + ".tla" + " to "
-                    + PcalParams.TLAInputFile + ".old");
-//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-            return null ; // added for testing
-        }
-        ;
-        // }
-
         /*********************************************************************
         * Add the translation to outputVec.                                  *
         *********************************************************************/
         int i = 0;
         while (i < translation.size())
         {
-            outputVec.insertElementAt(translation.elementAt(i), i + translationLine + 1);
+            inputVec.insertElementAt(translation.elementAt(i), i + translationLine + 1);
             i = i + 1;
         }
 
-        /*********************************************************************
-        * Code from aborted version 1.31.                                    *
-        * For .pcal input, set outputSuffixLoc and add the rest of the       *
-        * input file to the output.                                          *
-        *********************************************************************/
-        // if (PcalParams.fromPcalFile)
-        // {
-        // PcalParams.outputSuffixLoc = new IntPair(outputVec.size(), 0);
-        // // if there's stuff in the suffix on the same line with the
-        // // end of the algorithm, write it on a separate line.
-        // IntPair curLoc = new IntPair(PcalParams.inputSuffixLoc.one, PcalParams.inputSuffixLoc.two);
-        // if (curLoc.one < untabInputVec.size())
-        // {
-        // String lastLine = (String) untabInputVec.elementAt(curLoc.one);
-        // if (curLoc.two < lastLine.length())
-        // {
-        // outputVec.addElement(lastLine.substring(curLoc.two));
-        // }
-        // curLoc.one++;
-        // }
-        // // Copy the rest of the input file into the output file.
-        // for (int ii = curLoc.one; ii < untabInputVec.size(); ii++)
-        // {
-        // outputVec.addElement((String) untabInputVec.elementAt(ii));
-        // }
-        // }
-        /*********************************************************************
-        * Write the output file.                                             *
-        *********************************************************************/
-        try
-        {
-            WriteStringVectorToFile(outputVec, PcalParams.TLAInputFile + ".tla");
-        } catch (StringVectorToFileException e)
-        {
-            PcalDebug.reportError(e);
-//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-            return null ; // added for testing
-        }
+        PcalDebug.reportInfo("Translation completed.");
+        return inputVec;
+// tla-pcal Debugging
+//System.exit(0);
+	}
 
-        PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".tla" + " written.");
-
-        /*********************************************************************
-        * Write the cfg file, unless the -nocfg option is used.              *
-        *********************************************************************/
-        File cfgFile = new File(PcalParams.TLAInputFile + ".cfg");
-        Vector<String> cfg = null;
-        boolean writeCfg = !PcalParams.Nocfg;
-        if (writeCfg && cfgFile.exists())
-        {
-            if (cfgFile.canRead())
-            {
-                try
-                {
-                    cfg = fileToStringVector(PcalParams.TLAInputFile + ".cfg");
-                } catch (FileToStringVectorException e)
-                {
-                    PcalDebug.reportError(e);
-//                    return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-                    return null ; // added for testing
-                }
-            } else
-            {
-                /*************************************************************
-                * cfg file is read-only.                                     *
-                *************************************************************/
-                writeCfg = false;
-                PcalDebug.reportInfo("File " + PcalParams.TLAInputFile + ".cfg is read only, new version not written.");
-            }
-        } else
-        {
-            cfg = new Vector<String>();
-            cfg.addElement(PcalParams.CfgFileDelimiter);
-        }
-        ;
-
-        /*********************************************************************
-        * Delete previously written part of cfg file.                        *
-        *********************************************************************/
-        if (writeCfg)
-        {
-            i = 0;
-            boolean done = false;
-            while ((!done) && (cfg.size() > i))
-            {
-                if (((String) cfg.elementAt(i)).indexOf(PcalParams.CfgFileDelimiter) == -1)
-                {
-                    i = i + 1;
-                } else
-                {
-                    done = true;
-                }
-            }
-            if (done)
-            {
-                /*************************************************************
-                * Delete all lines before the delimiting comment string.     *
-                *************************************************************/
-                while (i > 0)
-                {
-                    cfg.removeElementAt(0);
-                    i = i - 1;
-                }
-            } else
-            {
-                /*************************************************************
-                * The delimiting comment string written by the translator    *
-                * not found in the cfg file, so presumably the user created  *
-                * the cfg file before running the translator on the input    *
-                * file.  We insert the delimiter.                            *
-                *************************************************************/
-                cfg.add(0, PcalParams.CfgFileDelimiter);
-            }
-            ;
-
-            /******************************************************************
-            * If defaultInitValue is used, add a CONSTANT statement setting   *
-            * it to a model value of the same name.                           *
-            * (Added 22 Aug 2007 by LL.)                                      *
-            ******************************************************************/
-            if (PcalParams.tlcTranslation() || ParseAlgorithm.hasDefaultInitialization)
-            {
-                cfg.add(0, "CONSTANT defaultInitValue = defaultInitValue");
-            }
-            ;
-            /******************************************************************
-            * Insert the `PROPERTY Termination' line if requested.            *
-            ******************************************************************/
-            if (PcalParams.CheckTermination)
-            {
-                cfg.add(0, "PROPERTY Termination");
-            }
-            ;
-
-            /******************************************************************
-            * Insert the SPECIFICATION line if there isn't already one.       *
-            ******************************************************************/
-            i = 0;
-            boolean hasSpec = false;
-            while (i < cfg.size())
-            {
-                String thisLine = (String) cfg.elementAt(i);
-                if ((thisLine.indexOf("SPECIFICATION") != -1)
-                        && ((thisLine.indexOf("\\*") == -1) || (thisLine.indexOf("\\*") > thisLine
-                                .indexOf("SPECIFICATION"))))
-                {
-                    hasSpec = true;
-                }
-                ;
-                i = i + 1;
-            }
-            ;
-            if (hasSpec)
-            {
-                PcalDebug.reportInfo("File " + PcalParams.TLAInputFile
-                        + ".cfg already contains SPECIFICATION statement," + "\n   so new one not written.");
-            } else
-            {
-                cfg.add(0, "SPECIFICATION Spec");
-            }
-            ;
-            try
-            {
-                WriteStringVectorToFile(cfg, PcalParams.TLAInputFile + ".cfg");
-            } catch (StringVectorToFileException e)
-            {
-                PcalDebug.reportError(e);
-//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-                return null ; // added for testing
-            }
-            PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".cfg" + " written.");
-        }
-        ;
-
-//        return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
-        return PcalParams.tlaPcalMapping ; // added for testing
-    } // END main
-
-    /**
+	/**
      * If run in the system mode, exits the program, in tool mode returns the status
      * @param status
      */
