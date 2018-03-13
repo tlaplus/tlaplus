@@ -41,7 +41,8 @@ import util.TLCRuntime;
  */
 public class TLCProcessJob extends TLCJob
 {
-    protected IProcess process = null;
+    public static final int HEAP_SIZE_DEFAULT = 25;
+	protected IProcess process = null;
     private BroadcastStreamListener listener = null;
 
     /**
@@ -100,7 +101,7 @@ public class TLCProcessJob extends TLCJob
             final List<String> vmArgs = new ArrayList<String>();
 
             // get max heap size as fraction from model editor
-            final double maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, 50) / 100d;
+            final double maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, HEAP_SIZE_DEFAULT) / 100d;
 			final TLCRuntime instance = TLCRuntime.getInstance();
 			long absolutePhysicalSystemMemory = instance.getAbsolutePhysicalSystemMemory(maxHeapSize);
 

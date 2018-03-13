@@ -7,6 +7,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.internal.IPreferenceConstants;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -20,7 +21,7 @@ import tlc2.tool.fp.FPSetFactory;
 public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
 {
 
-	public static final int MAX_HEAP_SIZE_DEFAULT = 25;
+	public static final int MAX_HEAP_SIZE_DEFAULT = TLCProcessJob.HEAP_SIZE_DEFAULT;
 
 	/**
      * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
