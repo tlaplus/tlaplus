@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.test;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swtbot.swt.finder.utils.internal.Assert;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
@@ -14,6 +15,7 @@ public class DummyJobChangeListener extends DefaultCondition implements IJobChan
 	private Job job;
 
 	public DummyJobChangeListener(final Model model) {
+		Assert.isNotNull(model);
 		this.model = model;
 	}
 

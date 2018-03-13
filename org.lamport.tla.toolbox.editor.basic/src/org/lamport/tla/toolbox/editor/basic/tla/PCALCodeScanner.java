@@ -37,7 +37,7 @@ public class PCALCodeScanner extends RuleBasedScanner
         IToken other = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_DEFAULT)));
         IToken pcal = new Token(new TextAttribute(provider.getColor(TLAColorProvider.PCAL_KEYWORD)));
         
-        List rules = new ArrayList();
+        List<WordRule> rules = new ArrayList<WordRule>();
 
         // Add generic whitespace rule.
         // rules.add(new WhitespaceRule(DocumentHelper.getDefaultWhitespaceDetector()));
