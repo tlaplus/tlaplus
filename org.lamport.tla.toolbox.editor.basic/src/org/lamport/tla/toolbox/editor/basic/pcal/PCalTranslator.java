@@ -44,7 +44,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.ui.handler.SaveDirtyEditorAbstractHandler;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
@@ -52,13 +51,13 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import pcal.Translator;
 
-public abstract class PCalTranslator extends SaveDirtyEditorAbstractHandler {
+public class PCalTranslator {
 	
-	protected void translate(final TLAEditor tlaEditor, final Shell shell) throws InvocationTargetException, InterruptedException {
+	public void translate(final TLAEditor tlaEditor, final Shell shell) throws InvocationTargetException, InterruptedException {
 		translate(tlaEditor, shell, true);	
 	}
 	
-	protected void translate(final TLAEditor tlaEditor, final Shell shell, final boolean saveEditor) throws InvocationTargetException, InterruptedException {
+	public void translate(final TLAEditor tlaEditor, final Shell shell, final boolean saveEditor) throws InvocationTargetException, InterruptedException {
 		// Running the PlusCal translator takes too long for the UI thread. Thus, the
 		// call to the PlusCal translator call is forked off into a non-UI thread.
 		// However, we use a ProgressMonitorDialog to lock the UI from further

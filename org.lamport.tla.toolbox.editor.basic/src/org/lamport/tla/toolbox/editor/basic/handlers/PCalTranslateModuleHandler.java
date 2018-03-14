@@ -35,13 +35,14 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.editor.basic.pcal.PCalTranslator;
+import org.lamport.tla.toolbox.ui.handler.SaveDirtyEditorAbstractHandler;
 
 /**
  * Triggers the PCal translation of the module
  * 
  * @author Simon Zambrovski
  */
-public class PCalTranslateModuleHandler extends PCalTranslator {
+public class PCalTranslateModuleHandler extends SaveDirtyEditorAbstractHandler {
 
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		if (!saveDirtyEditor(event)) {
@@ -55,7 +56,7 @@ public class PCalTranslateModuleHandler extends PCalTranslator {
 		}
 
 		try {
-			translate(tlaEditor, HandlerUtil.getActiveShell(event));
+			new PCalTranslator().translate(tlaEditor, HandlerUtil.getActiveShell(event));
 		} catch (InvocationTargetException | InterruptedException e) {
 			throw new ExecutionException(e.getMessage(), e);
 		}

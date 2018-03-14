@@ -27,12 +27,16 @@ package org.lamport.tla.toolbox.editor.basic.handlers;
 
 import java.lang.reflect.InvocationTargetException;
 
+import javax.inject.Inject;
+
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.State;
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.handlers.RegistryToggleState;
@@ -43,28 +47,40 @@ import org.osgi.service.event.EventHandler;
 
 public class PCalTranslateAutomaticallyHandler extends PCalTranslator implements EventHandler {
 
-	public PCalTranslateAutomaticallyHandler() {
+	@Inject
+	public void initializeAtStartup(final IWorkbench workbench, final ICommandService commandService) {
+		/*
+		 * Check the UI state of the IHandler/Command which indicates if the user
+		 * enabled automatic PlusCal conversion.
+		 */
+		final Command command = commandService.getCommand("toolbox.command.module.translate.automatially");
+		final State state = command.getState(RegistryToggleState.STATE_ID);
+		if (!((Boolean) state.getValue()).booleanValue()) {
+			return;
+		}
 		// This IHander is stateful even across Toolbox restarts. In other words, if the
-		// user requests automatic PlusCal translation, it will enabled even after a
-		// Toolbox restart. This means we have to register this at the IEventBroker
-		// during Toolbox startup.
+		// user enables automatic PlusCal translation, it will remain enabled even after
+		// a Toolbox restart. This means we have to register this EventHandler at the
+		// IEventBroker during Toolbox startup.
 		// It is vital that we use the Workbench's IEventBroker instance. If e.g. we
 		// would use an IEventBroker from higher up the IEclipseContext hierarchy, the
-		// broker would be disposed when a new spec gets opened but the IHandler's state
+		// broker would be disposed when a new spec gets opened while the IHandler's state
 		// remains enabled.
-		final IEventBroker service = PlatformUI.getWorkbench().getService(IEventBroker.class);
-		service.subscribe(TLAEditor.PRE_SAVE_EVENT, this);
+		workbench.getService(IEventBroker.class).unsubscribe(this);
+		Assert.isTrue(workbench.getService(IEventBroker.class).subscribe(TLAEditor.PRE_SAVE_EVENT, this));
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-	 */
-	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		// Toggle the IHandler's state at the UI level (check mark on/off). The
-		// IEventBroker handler remains subscribed to the event bus but will simply
-		// ignore the events.
-		HandlerUtil.toggleCommandState(event.getCommand());
-		return null;
+	@Execute
+	public void execute(final ExecutionEvent event, final IWorkbench workbench) throws ExecutionException {
+		// Toggle the IHandler's state at the UI level (check mark on/off) and
+		// unsubscribe/subscribe the EventHandler.
+		final IEventBroker eventBroker = workbench.getService(IEventBroker.class);
+		if (HandlerUtil.toggleCommandState(event.getCommand())) {
+			eventBroker.unsubscribe(this);
+		} else {
+			eventBroker.unsubscribe(this);
+			Assert.isTrue(eventBroker.subscribe(TLAEditor.PRE_SAVE_EVENT, this));
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -72,26 +88,11 @@ public class PCalTranslateAutomaticallyHandler extends PCalTranslator implements
 	 */
 	@Override
 	public void handleEvent(final Event event) {
-		if (!isAutomaticEnabled()) {
-			// If the UI state is false, the user doesn't want automatic PlusCal translation.
-			return;
-		}
 		try {
 			final TLAEditor editor = (TLAEditor) event.getProperty(IEventBroker.DATA);
 			translate(editor, editor.getSite().getShell(), false);
 		} catch (InvocationTargetException | InterruptedException e) {
 			throw new RuntimeException(e);
 		}
-	}
-	
-	/*
-	 * Check the UI state of the IHandler/Command which indicates if the user
-	 * enabled automatic PlusCal conversion.
-	 */
-	private static boolean isAutomaticEnabled() {
-		final ICommandService service = PlatformUI.getWorkbench().getService(ICommandService.class);
-		final Command command = service.getCommand("toolbox.command.module.translate.automatially");
-		final State state = command.getState(RegistryToggleState.STATE_ID);
-		return ((Boolean) state.getValue()).booleanValue();
 	}
 }

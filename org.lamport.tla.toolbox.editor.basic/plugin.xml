@@ -309,7 +309,7 @@
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
-            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.PCalTranslateAutomaticallyHandler"
+            defaultHandler="org.lamport.tla.toolbox.util.e4.E4HandlerWrapper:org.lamport.tla.toolbox.editor.basic.handlers.PCalTranslateAutomaticallyHandler"
             description="Automatically translate PlusCal to TLA+ on TLA+ editor save."
             id="toolbox.command.module.translate.automatially"
             name="Translate PlusCal automatically">
