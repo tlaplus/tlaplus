@@ -23,6 +23,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  StandardModules/
+DynamicImport-Package: *
 Export-Package: org.lamport.tla.toolbox,
  org.lamport.tla.toolbox.spec;
   uses:="org.eclipse.core.runtime,
@@ -62,9 +63,12 @@ Export-Package: org.lamport.tla.toolbox,
    org.eclipse.jface.viewers,
    org.eclipse.swt.widgets,
    util",
+ org.lamport.tla.toolbox.util.e4,
  org.lamport.tla.toolbox.util.pref
 Eclipse-BundleShape: dir
 Import-Package: org.eclipse.e4.core.contexts,
+ org.eclipse.e4.core.di,
+ org.eclipse.e4.core.di.annotations,
  org.eclipse.e4.core.services.events,
  org.eclipse.e4.ui.model.application,
  org.eclipse.e4.ui.model.application.ui,
