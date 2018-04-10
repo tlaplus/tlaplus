@@ -236,7 +236,7 @@ public class CloudDistributedTLCJob extends Job {
 							// us to continue development in HEAD. Otherwise,
 							// an old Toolbox would use the newest jmx2munin
 							// which might not be compatible with its CDTLCJob.
-							+ "wget https://github.com/lemmy/jmx2munin/raw/515e9b47f5a71fbfe2eeb517a341448b52fdb226/jmx2munin_1.0_all.deb"
+							+ "wget https://github.com/lemmy/jmx2munin/raw/67f0a1d5c27ced6043f5e368c5329858255f5e14/jmx2munin_1.0_all.deb"
 							+ " && "
 //							+ "wget http://tla.msr-inria.inria.fr/jmx2munin/jmx2munin_1.0_all.deb && "
 							// Install jmx2munin into the system
@@ -278,6 +278,7 @@ public class CloudDistributedTLCJob extends Job {
 							+ " && "
 							+ "mkdir -p /mnt/tlc/ && chmod 777 /mnt/tlc/ && "
 							+ "ln -s /mnt/tlc/MC.out /var/www/html/MC.out && "
+							+ "ln -s /mnt/tlc/MC.out /var/www/html/MC.txt && " // Microsoft IE and Edge fail to show line breaks correctly unless ".txt" extension.
 							+ "ln -s /mnt/tlc/MC.err /var/www/html/MC.err && "
 							+ "ln -s /mnt/tlc/tlc.jfr /var/www/html/tlc.jfr"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
