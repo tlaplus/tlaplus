@@ -1625,7 +1625,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd = new GridData();
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalIndent = 10;
-        gd.widthHint = 200;
+        gd.widthHint = 400;
         resultMailAddressText.setLayoutData(gd);
         resultMailAddressText.addModifyListener(howToRunListener);
         dm.bindAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddressText, howToRunPart);
