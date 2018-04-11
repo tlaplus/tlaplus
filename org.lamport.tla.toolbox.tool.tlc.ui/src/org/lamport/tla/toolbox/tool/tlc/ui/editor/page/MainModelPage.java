@@ -742,6 +742,29 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
         }
 
+		// Verify that the user provided email address is valid and can be used to send
+		// the model checking result to.
+		if (this.distributedCombo.getSelectionIndex() > 1) {
+			final String text = resultMailAddressText.getText();
+			try {
+				javax.mail.internet.InternetAddress.parse(text, true);
+			} catch (javax.mail.internet.AddressException exp) {
+				modelEditor.addErrorMessage("email address invalid",
+						"For Cloud TLC to work please enter a valid email address.", this.getId(),
+						IMessageProvider.ERROR,
+						UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS)));
+				setComplete(false);
+				expandSection(SEC_HOW_TO_RUN);
+			}
+			if ("".equals(text.trim())) {
+				modelEditor.addErrorMessage("email address missing",
+						"For Cloud TLC to work please enter an email address.", this.getId(), IMessageProvider.ERROR,
+						UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS)));
+				setComplete(false);
+				expandSection(SEC_HOW_TO_RUN);
+			}
+		}
+        
         mm.setAutoUpdate(true);
 
         super.validatePage(switchToErrorPage);
