@@ -140,7 +140,9 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 					"Invalid credentials, please check the environment variables "
 							+ "(AZURE_COMPUTE_CREDENTIALS & AZURE_COMPUTE_IDENTITY "
 							+ "and AZURE_COMPUTE_SUBSCRIPTION) are correctly "
-							+ "set up and picked up by the Toolbox.");
+							+ "set up and picked up by the Toolbox."
+							+ "\n\nPlease visit the Toolbox help and read section 4 "
+							+ "of \"Cloud based distributed TLC\" on how to setup authentication.");
 		}
 		// Verify that the identity file exists.
 		final File file = new File(identity);

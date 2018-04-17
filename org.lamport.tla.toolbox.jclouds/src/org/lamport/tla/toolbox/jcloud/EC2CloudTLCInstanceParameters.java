@@ -75,7 +75,9 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		return new Status(Status.ERROR, "org.lamport.tla.toolbox.jcloud",
 				"Invalid credentials, please check the environment variables "
 						+ "(AWS_ACCESS_KEY_ID & AWS_SECRET_ACCESS_KEY) are correctly "
-						+ "set up and picked up by the Toolbox.");
+						+ "set up and picked up by the Toolbox."
+						+ "\n\nPlease visit the Toolbox help and read section 4 "
+						+ "of \"Cloud based distributed TLC\" on how to setup authentication.");
 	}
 
 	/* (non-Javadoc)
