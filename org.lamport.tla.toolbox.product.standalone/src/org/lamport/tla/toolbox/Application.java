@@ -144,6 +144,14 @@ public class Application implements IApplication {
 				return IApplication.EXIT_RESTART;
 			}
 			return IApplication.EXIT_OK;
+		} catch (Exception e) {
+			throw new RuntimeException(e) {
+				@Override
+				public String toString() {
+					return "The Toolbox failed to launch because of an unexpected error. Please try to launch the Toolbox with the \"-clean\" parameter.\n"
+							+ "If \"-clean\" does not fix the problem, please open a bug and attach the .log file.\n\n" + super.toString();
+				}
+			};
 		} finally {
 			display.dispose();
 		}
