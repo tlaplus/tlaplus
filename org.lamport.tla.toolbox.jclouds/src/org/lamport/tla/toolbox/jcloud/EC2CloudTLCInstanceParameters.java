@@ -107,13 +107,13 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 	 */
 	@Override
 	public String getImageId() {
-		// Ubuntu 64bit 16.04 Xenial
+		// Ubuntu 64bit 18.04 Xenial
 		// http://cloud-images.ubuntu.com/locator/ec2/
 		// See http://aws.amazon.com/amazon-linux-ami/instance-type-matrix/
 		// for paravirtual vs. hvm (if instance startup fails with funny errors
 		// such as symlinks failing to be created, you accidentally picked paravirtual.
 		 // "us-east-1,xenial,amd64,hvm:instance-store"
-		final String imageId = System.getProperty("aws-ec2.image", "ami-bbcf61c6");
+		final String imageId = System.getProperty("aws-ec2.image", "ami-2ece7e51");
 		return getRegion() + "/" + imageId;
 	}
 
