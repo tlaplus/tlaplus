@@ -220,7 +220,7 @@ public class MailSender {
 			this.out = new File(tmpdir + File.separator + "MC.out");
 			ToolIO.out = new LogPrintStream(out);
 			this.err = new File(tmpdir + File.separator + "MC.err");
-			ToolIO.err = new LogPrintStream(err);
+			ToolIO.err = new ErrLogPrintStream(err);
 		}
 	}
 	
@@ -305,6 +305,20 @@ public class MailSender {
     	 */
     	public void println(String str) {
     		System.out.println(str);
+    		super.println(str);
+    	}
+    }
+    
+    private static class ErrLogPrintStream extends PrintStream {
+    	public ErrLogPrintStream(File file) throws FileNotFoundException  {
+    		super(new FileOutputStream(file));
+		}
+
+    	/* (non-Javadoc)
+    	 * @see java.io.PrintStream#println(java.lang.String)
+    	 */
+    	public void println(String str) {
+    		System.err.println(str);
     		super.println(str);
     	}
     }
