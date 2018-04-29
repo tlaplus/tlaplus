@@ -236,7 +236,7 @@ public class CloudDistributedTLCJob extends Job {
 							// us to continue development in HEAD. Otherwise,
 							// an old Toolbox would use the newest jmx2munin
 							// which might not be compatible with its CDTLCJob.
-							+ "wget https://github.com/lemmy/jmx2munin/raw/67f0a1d5c27ced6043f5e368c5329858255f5e14/jmx2munin_1.0_all.deb"
+							+ "wget https://github.com/lemmy/jmx2munin/raw/df6ce053a6d178e7a70434ab2f91089acadf0525/jmx2munin_1.0_all.deb"
 							+ " && "
 //							+ "wget http://tla.msr-inria.inria.fr/jmx2munin/jmx2munin_1.0_all.deb && "
 							// Install jmx2munin into the system
