@@ -136,6 +136,7 @@ public class MailSender {
 	private static void throttleRetry(final String msg, long minutes) {
 		try {
 			System.err.println(msg);
+			System.out.println(msg);
 			Thread.sleep(minutes * 60L * 1000L);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
