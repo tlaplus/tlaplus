@@ -885,8 +885,24 @@ public class PcalTLAGen
         boolean hasMultipleVars = false;
         while (i < ast.ass.size())
         {
-            int iFirst = i;
             AST.SingleAssign sF = (AST.SingleAssign) ast.ass.elementAt(i);
+            /*
+             * Added by LL and MK on 16 May 2018:
+             * Report an error if the variable being assigned is not a 
+             * variable declared in the algorithm.
+             */
+            boolean isUnDeclared = true ;
+            int k = 0;
+            while ( isUnDeclared && k < this.vars.size()){ 
+            	if (sF.lhs.var.equals(this.vars.elementAt(k))) {
+            		isUnDeclared = false ;
+            	} ;
+            	k++ ;
+            }
+            if (isUnDeclared) {
+            	throw new PcalTLAGenException("Assignment to undeclared variable " + sF.lhs.var, sF /* ast  */) ;
+            }
+            int iFirst = i; 
             int iLast = i;
             boolean hasAssignmentWithNoSubscript = false;
             boolean lastAssignmentHasNoSubscript = EmptyExpr(sF.lhs.sub);
