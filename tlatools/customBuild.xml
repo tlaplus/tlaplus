@@ -294,6 +294,7 @@
 				<batchtest fork="yes" todir="${test.reports}">
 					<fileset dir="${test.dir}">
 						<include name="**/*Test*.java" />
+						<exclude name="**/PCalTest.java" />
 						<exclude name="**/CommonTestCase.java" />
 						<exclude name="**/ModelCheckerTestCase.java" />
 						<exclude name="**/SuiteTestCase.java" />
@@ -342,6 +343,7 @@
 			<batchtest fork="yes" todir="${test.reports}/onJar">
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
+					<exclude name="**/PCalTest.java" />
 					<exclude name="**/CommonTestCase.java" />
 					<exclude name="**/ModelCheckerTestCase.java" />
 					<exclude name="**/SuiteTestCase.java" />

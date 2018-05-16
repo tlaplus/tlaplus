@@ -11,15 +11,12 @@ import org.junit.Test;
 import tlc2.tool.CommonTestCase;
 import util.ToolIO;
 
-public class CallGotoUnlabeledTest {
+public class CallGotoUnlabeledTest extends PCalTest {
 	
 	// https://groups.google.com/forum/#!topic/tlaplus/6M1oFOtN-5k/discussion
 	
 	@Test
 	public void test() {
-		// Make tool capture the output written to ToolIO.out. Otherwise,
-		// ToolIO#getAllMessages returns an empty array.
-		ToolIO.setMode(ToolIO.TOOL);
 
 		final String fileName = "CallGotoUnlabeledTest.tla";
 		

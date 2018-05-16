@@ -9,14 +9,10 @@ import org.junit.Test;
 import tlc2.tool.CommonTestCase;
 import util.ToolIO;
 
-public class MissingBodyInWithTest {
+public class MissingBodyInWithTest extends PCalTest {
 	
 	@Test
 	public void test() {
-		// Make tool capture the output written to ToolIO.out. Otherwise,
-		// ToolIO#getAllMessages returns an empty array.
-		ToolIO.setMode(ToolIO.TOOL);
-
 		assertNull(trans.runMe(new String[] {"-nocfg", CommonTestCase.BASE_PATH + "MissingBodyInWith.tla"}));
 		
 		final String[] messages = ToolIO.getAllMessages();
