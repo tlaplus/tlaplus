@@ -1140,7 +1140,7 @@ public class MP
      */
     public static String getError(int errorCode, String[] parameters)
     {
-    	recorder.record(errorCode, parameters);
+    	recorder.record(errorCode, (Object[]) parameters);
         return getMessage(ERROR, errorCode, parameters);
     }
 
@@ -1171,7 +1171,7 @@ public class MP
      */
     public static String getMessage(int errorCode, String[] parameters)
     {
-    	recorder.record(errorCode, parameters);
+    	recorder.record(errorCode, (Object[]) parameters);
         return getMessage(NONE, errorCode, parameters);
     }
 
