@@ -356,6 +356,7 @@ public class CloudDistributedTLCJob extends Job {
 						+ params.getJavaSystemProperties() + " "
 						+ "-jar /tmp/tla2tools.jar " 
 						+ params.getTLCParameters() + " "
+						+ (isCLI ? "|& tee /mnt/tlc/MC.out " : "")
 						+ "&& "
 					// Run any cloud specific cleanup tasks.
 					// When CloudDistributedTLCJob runs in synchronous CLI mode (isCLI), it will destroy
