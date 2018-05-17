@@ -646,9 +646,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // to allow the No Spec option to be selected when there are variables.
         if (rootModuleNode != null)
         {
-            if (rootModuleNode.getVariableDecls().length == 0)
+            final Control errorMsgControl = UIHelper.getWidget(getDataBindingManager().getAttributeControl(MODEL_BEHAVIOR_NO_SPEC));
+			final String errorMsgKey = MODEL_BEHAVIOR_NO_SPEC + "ErrorMsgKey";
+			if (rootModuleNode.getVariableDecls().length == 0)
             {
                 setHasVariables(false);
+				modelEditor.addErrorMessage(errorMsgKey,
+						"Automatically set to \"No Behavior Spec\" because spec has no declared variables.", this.getId(),
+						IMessageProvider.INFORMATION, errorMsgControl);
 
                 // set selection to the NO SPEC field
                 if (!noSpecRadio.getSelection())
@@ -661,6 +666,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             } else
             {
                 setHasVariables(true);
+				modelEditor.removeErrorMessage(errorMsgKey, errorMsgControl);
 
                 // if there are variables, the user
                 // may still want to choose no spec
