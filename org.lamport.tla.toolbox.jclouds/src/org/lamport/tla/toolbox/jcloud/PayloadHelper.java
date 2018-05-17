@@ -98,8 +98,9 @@ public class PayloadHelper {
 		try (FileSystem fs = FileSystems.newFileSystem(uri, env)) {
 			/*
 			 * Copy the spec and model into the jar's model/ folder.
+			 * Also copy any module override (.class file) into the jar.
 			 */
-			try (DirectoryStream<Path> modelDirectoryStream = Files.newDirectoryStream(modelPath, "*.{cfg,tla}")) {
+			try (DirectoryStream<Path> modelDirectoryStream = Files.newDirectoryStream(modelPath, "*.{cfg,tla,class}")) {
 				for (final Path file: modelDirectoryStream) {
 		        	final Path to = fs.getPath("/model/" + file.getFileName());
 		        	Files.copy(file, to, StandardCopyOption.REPLACE_EXISTING);
