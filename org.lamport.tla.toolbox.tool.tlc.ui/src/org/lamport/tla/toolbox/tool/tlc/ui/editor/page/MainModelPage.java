@@ -652,7 +652,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
                 setHasVariables(false);
 				modelEditor.addErrorMessage(errorMsgKey,
-						"Automatically set to \"No Behavior Spec\" because spec has no declared variables.", this.getId(),
+						"\"What is the behavior spec?\" automatically set to \"No Behavior Spec\" because spec has no declared variables.", this.getId(),
 						IMessageProvider.INFORMATION, errorMsgControl);
 
                 // set selection to the NO SPEC field
@@ -687,18 +687,43 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // or not.
         // This must occur after the preceeding code in case
         // that code changes the selection.
-        Section whatToCheckSection = dm.getSection(SEC_WHAT_TO_CHECK).getSection();
+        final Section whatToCheckSection = dm.getSection(SEC_WHAT_TO_CHECK).getSection();
+        final Section resultsGeneral = dm.getSection(SEC_GENERAL).getSection();
+		final Section resultsStatistics = dm.getSection(SEC_STATISTICS).getSection();
+		
+		final String hint = " (\"What is the behavior spec?\" above has no behavior spec)";
+		final String hintResults = " (\"What is the behavior spec?\" on \"Model Overview\" page has no behavior spec)";
+		if (noSpecRadio.getSelection()) {
+			whatToCheckSection
+					.setText(!whatToCheckSection.getText().endsWith(hint) ? whatToCheckSection.getText() + hint
+							: whatToCheckSection.getText());
+			whatToCheckSection.setExpanded(false);
+			whatToCheckSection.setEnabled(false);
 
-        if (noSpecRadio.getSelection())
-        {
-            whatToCheckSection.setExpanded(false);
-            whatToCheckSection.setEnabled(false);
+			resultsGeneral
+					.setText(!resultsGeneral.getText().endsWith(hintResults) ? resultsGeneral.getText() + hintResults
+							: resultsGeneral.getText());
+			resultsGeneral.setEnabled(false);
+			resultsGeneral.setExpanded(false);
 
-        } else
-        {
-            whatToCheckSection.setExpanded(true);
-            whatToCheckSection.setEnabled(true);
-        }
+			resultsStatistics.setText(
+					!resultsStatistics.getText().endsWith(hintResults) ? resultsStatistics.getText() + hintResults
+							: resultsStatistics.getText());
+			resultsStatistics.setEnabled(false);
+			resultsStatistics.setExpanded(false);
+		} else {
+			whatToCheckSection.setText(whatToCheckSection.getText().replace(hint, ""));
+			whatToCheckSection.setExpanded(true);
+			whatToCheckSection.setEnabled(true);
+
+			resultsGeneral.setText(resultsGeneral.getText().replace(hintResults, ""));
+			resultsGeneral.setEnabled(true);
+			resultsGeneral.setExpanded(true);
+
+			resultsStatistics.setText(resultsStatistics.getText().replace(hintResults, ""));
+			resultsStatistics.setEnabled(true);
+			resultsStatistics.setExpanded(true);
+		}
 
         // The following code is not needed now because we automatically change
         // the selection to No Spec if there are no variables.

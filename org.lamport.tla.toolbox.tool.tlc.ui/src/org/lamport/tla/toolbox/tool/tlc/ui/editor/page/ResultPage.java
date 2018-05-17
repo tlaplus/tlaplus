@@ -54,6 +54,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -472,6 +473,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         section = FormHelper.createSectionComposite(body, "General", ""
         /* "The current progress of model-checking"*/, toolkit, sectionFlags & ~Section.DESCRIPTION,
                 getExpansionListener());
+        getDataBindingManager().bindSection(new NoReflowSectionPart(section), SEC_GENERAL, getId());
         twd = new TableWrapData(TableWrapData.FILL);
         twd.colspan = 1;
 
@@ -519,6 +521,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         section = FormHelper.createSectionComposite(body, "Statistics", "",
         /*"The current progress of model-checking",*/
         toolkit, (sectionFlags | Section.COMPACT) & ~Section.DESCRIPTION, getExpansionListener());
+        getDataBindingManager().bindSection(new NoReflowSectionPart(section), SEC_STATISTICS, getId());
         twd = new TableWrapData(TableWrapData.FILL);
         twd.colspan = 1;
         section.setLayoutData(twd);
@@ -1120,6 +1123,17 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         }
 
     }
+    
+	private static class NoReflowSectionPart extends SectionPart {
+		public NoReflowSectionPart(Section section) {
+			super(section);
+		}
+
+		@Override
+		protected void expansionStateChanged(boolean expanded) {
+			//Noop
+		}
+	}
 
     /**
      * The run method of this class creates a shell (a window) to display
