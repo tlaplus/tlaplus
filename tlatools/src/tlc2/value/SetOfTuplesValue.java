@@ -302,7 +302,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
           this.sets[0].toString(sb, offset);
         }
         for (int i = 1; i < this.sets.length; i++) {
-          sb.append(" X ");
+          sb.append(" \\X ");
           this.sets[i].toString(sb, offset);
         }
         if (this.sets.length > 0) {
