@@ -31,6 +31,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.TLC;
 import tlc2.tool.fp.FPSetFactory;
+import tlc2.tool.fp.NoopFPSet;
 import tlc2.tool.fp.OffHeapDiskFPSet;
 import util.TLCRuntime;
 
@@ -110,7 +111,13 @@ public class TLCProcessJob extends TLCJob
 			// TLC's default set.
 			// If the user happened to select OffHeapDiskFPSet, the -XX:MaxDirectMemorySize
 			// is set by getVMArguments.
-			final String clazz = launch.getLaunchConfiguration().getAttribute(LAUNCH_FPSET_IMPL, (String) null);
+			String clazz = launch.getLaunchConfiguration().getAttribute(LAUNCH_FPSET_IMPL, (String) null);
+			if (!hasSpec(launch.getLaunchConfiguration())) {
+				// If a spec has no behaviors, TLC won't need a fingerprint set. Thus, use the
+				// NoopFPSet whose initialization cost is next to nothing. Real fpsets on the
+				// other hand - such as OffHeapDiskFPSet - do heavy weight initialization at startup.
+				clazz = NoopFPSet.class.getName();
+			}
 			if (clazz == null || clazz.equals(OffHeapDiskFPSet.class.getName())) {
 				if (OffHeapDiskFPSet.isSupported()) {
 					// ...good, can use lock-free/scalabe fpset, but need to divide assigned memory

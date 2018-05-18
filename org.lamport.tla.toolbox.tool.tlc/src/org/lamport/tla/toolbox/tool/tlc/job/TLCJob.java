@@ -131,8 +131,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         	arguments.add(String.valueOf(CHECKPOINT_INTERVAL));
         }
 
-        boolean hasSpec = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT) != IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_NO_SPEC;
-
+        final boolean hasSpec = hasSpec(config);
         if (hasSpec)
         {
             if (runAsModelCheck())
@@ -297,6 +296,10 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
 
 	protected boolean visualizeStateGraph() throws CoreException {
 		return launch.getLaunchConfiguration().getAttribute(LAUNCH_VISUALIZE_STATEGRAPH, false);
+	}
+	
+	protected boolean hasSpec(final ILaunchConfiguration config) throws CoreException {
+		return config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT) != IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_NO_SPEC;
 	}
 
 	/**
