@@ -65,13 +65,14 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         calculatePositions();
 
         // update the editor
-        Display.getDefault().asyncExec(new Runnable() {
-            public void run()
-            {
-                editor.updateFoldingStructure(positions);
-            }
-        });
-
+        if (editor != null) {
+        	Display.getDefault().asyncExec(new Runnable() {
+        		public void run()
+        		{
+        			editor.updateFoldingStructure(positions);
+        		}
+        	});
+        }
     }
 
     /* (non-Javadoc)

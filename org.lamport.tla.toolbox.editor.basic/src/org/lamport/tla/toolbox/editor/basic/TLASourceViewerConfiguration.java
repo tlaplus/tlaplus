@@ -41,6 +41,11 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
 
     private final TLAEditor editor;
 
+	public TLASourceViewerConfiguration() {
+		super();
+		this.editor = null;
+	}
+
     /**
      * Constructs configuration based on a preference store  
      * @param preferenceStore

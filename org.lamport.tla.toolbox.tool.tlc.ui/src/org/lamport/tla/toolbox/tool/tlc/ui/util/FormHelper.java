@@ -150,9 +150,13 @@ public class FormHelper
      * @param flags
      * @return
      */
-    public static SourceViewer createFormsSourceViewer(FormToolkit toolkit, Composite parent, int flags)
+	public static SourceViewer createFormsSourceViewer(FormToolkit toolkit, Composite parent, int flags) {
+		return createFormsSourceViewer(toolkit, parent, flags, new SourceViewerConfiguration());
+	}
+    
+    public static SourceViewer createFormsSourceViewer(FormToolkit toolkit, Composite parent, int flags, SourceViewerConfiguration config)
     {
-        SourceViewer sourceViewer = createSourceViewer(parent, flags);
+        SourceViewer sourceViewer = createSourceViewer(parent, flags, config);
         sourceViewer.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
 
         sourceViewer.getTextWidget().setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
@@ -204,11 +208,14 @@ public class FormHelper
      * @param flags
      * @return
      */
-    public static SourceViewer createSourceViewer(Composite parent, int flags)
+	public static SourceViewer createSourceViewer(Composite parent, int flags) {
+		return createSourceViewer(parent, flags, new SourceViewerConfiguration());
+	}
+
+    public static SourceViewer createSourceViewer(Composite parent, int flags, SourceViewerConfiguration config)
     {
         SourceViewer sourceViewer = new SourceViewer(parent, null, null, false, flags);
-        SourceViewerConfiguration configuration = new SourceViewerConfiguration();
-        sourceViewer.configure(configuration);
+        sourceViewer.configure(config);
         sourceViewer.setTabsToSpacesConverter(getTabToSpacesConverter());
 
         StyledText control = sourceViewer.getTextWidget();

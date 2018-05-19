@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -68,6 +69,10 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.progress.UIJob;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
+import org.lamport.tla.toolbox.editor.basic.TLAFastPartitioner;
+import org.lamport.tla.toolbox.editor.basic.TLAPartitionScanner;
+import org.lamport.tla.toolbox.editor.basic.TLASourceViewerConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
@@ -365,7 +370,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 		}
 
 		// constant expression
-		expressionEvalInput.setDocument(new Document(getModel().getEvalExpression()));
+		final Document document = new Document(getModel().getEvalExpression());
+		final IDocumentPartitioner partitioner = new TLAFastPartitioner(
+				TLAEditorActivator.getDefault().getTLAPartitionScanner(), TLAPartitionScanner.TLA_PARTITION_TYPES);
+		document.setDocumentPartitioner(TLAPartitionScanner.TLA_PARTITIONING, partitioner);
+		partitioner.connect(document);
+		expressionEvalInput.setDocument(document);
 	}
 
     /**
@@ -560,7 +570,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         expressionComposite.setLayout(gLayout);
 
         toolkit.createLabel(expressionComposite, "Expression: ");
-        expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, expressionFieldFlags);
+		expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, expressionFieldFlags,
+				new TLASourceViewerConfiguration());
 		expressionEvalInput.getTextWidget().addKeyListener(new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -584,7 +595,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 			}
 		});
 		
-
         // We want the value section to get larger as the window
         // gets larger but not the expression section.
         Composite valueComposite = toolkit.createComposite(resultArea);
