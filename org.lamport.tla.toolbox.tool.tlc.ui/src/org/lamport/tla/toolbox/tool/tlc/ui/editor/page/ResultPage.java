@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableColorProvider;
@@ -34,6 +35,8 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -558,6 +561,29 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         toolkit.createLabel(expressionComposite, "Expression: ");
         expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, expressionFieldFlags);
+		expressionEvalInput.getTextWidget().addKeyListener(new KeyListener() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (isUndoKeyPress(e)) {
+					expressionEvalInput.doOperation(ITextOperationTarget.UNDO);
+				} else if (isRedoKeyPress(e)) {
+					expressionEvalInput.doOperation(ITextOperationTarget.REDO);
+				}
+			}
+
+			private boolean isRedoKeyPress(KeyEvent e) {
+				return ((e.stateMask & SWT.CONTROL) > 0) && ((e.keyCode == 'y') || (e.keyCode == 'Y'));
+			}
+
+			private boolean isUndoKeyPress(KeyEvent e) {
+				return ((e.stateMask & SWT.CONTROL) > 0) && ((e.keyCode == 'z') || (e.keyCode =='Z'));
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+		});
+		
 
         // We want the value section to get larger as the window
         // gets larger but not the expression section.
