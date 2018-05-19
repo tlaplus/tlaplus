@@ -572,7 +572,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // this causes the text box to be extremely
         // tall instead of having a scroll bar.
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        gd.minimumWidth = 500;
+        gd.widthHint = 500;
         gd.heightHint = 80;
         expressionEvalResult.getTextWidget().setLayoutData(gd);
         // The expression section should not grab excess horizontal
@@ -618,7 +618,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         Composite outputArea = (Composite) section.getClient();
         outputArea.setLayout(new GridLayout());
         // output viewer
-        userOutput = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags);
+        userOutput = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags | SWT.WRAP);
 
         // We dont want this item to fill excess
         // vertical space because then in some cases
@@ -626,7 +626,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // tall instead of having a scroll bar.
         gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
         gd.heightHint = 300;
-        gd.minimumWidth = 300;
+        gd.widthHint = 300;
         userOutput.getControl().setLayoutData(gd);
         userOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
