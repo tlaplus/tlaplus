@@ -297,6 +297,7 @@
 						<exclude name="**/PCalTest.java" />
 						<exclude name="**/CommonTestCase.java" />
 						<exclude name="**/ModelCheckerTestCase.java" />
+						<exclude name="**/PCalModelCheckerTestCase.java" />
 						<exclude name="**/SuiteTestCase.java" />
 						<exclude name="**/SuiteETestCase.java" />
 						<exclude name="**/DistributedTLCTestCase.java" />
@@ -346,6 +347,7 @@
 					<exclude name="**/PCalTest.java" />
 					<exclude name="**/CommonTestCase.java" />
 					<exclude name="**/ModelCheckerTestCase.java" />
+					<exclude name="**/PCalModelCheckerTestCase.java" />
 					<exclude name="**/SuiteTestCase.java" />
 					<exclude name="**/SuiteETestCase.java" />
 					<exclude name="**/DistributedTLCTestCase.java" />
