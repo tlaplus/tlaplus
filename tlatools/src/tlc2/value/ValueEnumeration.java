@@ -5,6 +5,9 @@
 
 package tlc2.value;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public interface ValueEnumeration {
   /* Reset allows repeated use of this enumerator. */
   public void reset();
@@ -12,4 +15,12 @@ public interface ValueEnumeration {
   /* Return the next element if there is one. Otherwise return null. */
   public Value nextElement();
   
+	default List<Value> all() {
+		final List<Value> values = new ArrayList<Value>();
+		Value elem;
+		while ((elem = nextElement()) != null) {
+			values.add(elem);
+		}
+		return values;
+	}
 }

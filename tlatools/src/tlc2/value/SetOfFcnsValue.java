@@ -6,9 +6,8 @@
 
 package tlc2.value;
 
-import tlc2.tool.ModelChecker;
-import tlc2.tool.FingerprintException;
 import tlc2.TLCGlobals;
+import tlc2.tool.FingerprintException;
 import util.Assert;
 
 public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
@@ -376,4 +375,45 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
 
   }
 
+	@Override
+	public ValueEnumeration elements(final double fraction) {
+		return new SubsetEnumerator(fraction);
+	}
+	
+	class SubsetEnumerator extends EnumerableValue.SubsetEnumerator {
+		private final SetEnumValue domSet;
+		private final SetEnumValue rangeSet;
+		private final int mod;
+
+		SubsetEnumerator(final double fraction) {
+			super(fraction);
+			domSet = SetEnumValue.convert(domain);
+			domSet.normalize();
+
+			rangeSet = SetEnumValue.convert(range);
+
+			mod = range.size();
+		}
+
+		Value elementAt(final int idx) {
+			assert 0 <= idx && idx < size();
+
+			final Value[] range = new Value[domSet.size()];
+
+			for (int i = 0; i < domSet.size(); i++) {
+				final int elementAt = (int) (Math.floor(idx / Math.pow(mod, i)) % mod);
+				range[range.length - 1 - i] = rangeSet.elems.elementAt(elementAt);
+			}
+
+			return new FcnRcdValue(domSet.elems, range, true);
+		}
+
+		@Override
+		public Value nextElement() {
+			if (!hasNext()) {
+				return null;
+			}
+			return elementAt(nextIndex());
+		}
+	}
 }

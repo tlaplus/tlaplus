@@ -26,7 +26,7 @@ public class TLCGlobals
     
     // The bound for set enumeration, used for pretty printing
     public static int enumBound = 2000;
-
+    
     // The bound for the cardinality of a set
     public static int setBound = 1000000;
 
@@ -54,7 +54,7 @@ public class TLCGlobals
 		return !lnCheck.equals("final");
 	}
 
-    public synchronized static void setNumWorkers(int n)
+	public synchronized static void setNumWorkers(int n)
     {
         numWorkers = n;
     }

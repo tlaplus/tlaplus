@@ -203,4 +203,10 @@ public class ValueVec implements Cloneable, Serializable {
     return sb.toString();
   }
 
+	public Value[] toArray() {
+		final Value[] copy = new Value[elementCount];
+		System.arraycopy(elementData, 0, copy, 0, elementCount);
+		return copy;
+	}
+
 }

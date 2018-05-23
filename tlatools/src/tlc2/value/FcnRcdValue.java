@@ -45,6 +45,10 @@ public class FcnRcdValue extends Value implements Applicable {
     this.indexTbl = fcn.indexTbl;
   }
 
+  public FcnRcdValue(ValueVec elems, Value[] values, boolean isNorm) {
+	  this(elems.toArray(), values, isNorm);
+  }
+
   public final byte getKind() { return FCNRCDVALUE; }
 
   /* We create an index only when the domain is not very small. */

@@ -8,9 +8,8 @@ package tlc2.value;
 
 import java.util.BitSet;
 
-import tlc2.tool.ModelChecker;
-import tlc2.tool.FingerprintException;
 import tlc2.output.EC;
+import tlc2.tool.FingerprintException;
 import util.Assert;
 
 public class SubsetValue extends EnumerableValue implements Enumerable {
@@ -319,4 +318,132 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
   }
 
+	@Override
+	public ValueEnumeration elements(final double fraction) {
+		final int sz = this.set.size();
+
+		final int k = calculateK(fraction, sz);
+		
+		// Use probabilistic CTSE if size of input set or k are too large. CoinTossing
+		// can yield duplicates though.
+		if (sz >= 31 || k > (1 << 16)) {
+			return new CoinTossingSubsetEnumerator(k);
+		}
+		return new SubsetEnumerator(fraction);
+	}
+
+	static int calculateK(final double fraction, final int n) {
+		// Handle extreme/bogus input:
+		if (n <= 0) {
+			return 0;
+		} else if (fraction >= 1.0 && n >= 31) {
+			return Integer.MAX_VALUE;
+		} else if (fraction >= 1.0) {
+			return 1 << n; // 2^n
+		} else if (fraction < 0 || fraction <= -0.0) {
+			return 0;
+		}
+		
+		// Calculate k without raising 2^sz which can get very large.
+		int k;
+		try {
+			k = Math.toIntExact((long) Math.ceil(Math.pow(10, (n * Math.log10(2)) + Math.log10(fraction))));
+			//assert k == Math.toIntExact(Math.round(Math.pow(2, n) * fraction));
+		} catch (ArithmeticException e) {
+			k = Integer.MAX_VALUE;
+		}
+		return k;
+		
+		// More readable but slower.
+//		final BigDecimal subsetN = BigDecimal.valueOf(2).pow(n);
+//		return subsetN.multiply(BigDecimal.valueOf(fraction)).intValue();
+	}
+	
+	class SubsetEnumerator extends EnumerableValue.SubsetEnumerator {
+
+		private final ValueVec elems;
+
+		SubsetEnumerator(final double fraction) {
+			super(fraction, 1 << set.size());
+			final SetEnumValue convert = SetEnumValue.convert(set);
+      		convert.normalize();
+      		this.elems = convert.elems;
+		}
+
+		@Override
+		public Value nextElement() {
+			if (!hasNext()) {
+				return null;
+			}
+			int bits = nextIndex();
+			final ValueVec vals = new ValueVec(Integer.bitCount(bits));
+			for (int i = 0; i < this.elems.size(); i++) {
+				// Treat bits as a bitset and add the element of this.elem at current
+				// position i if the LSB of bits happens to be set.
+				if ((bits & 0x1) > 0) {
+					vals.addElement(this.elems.elementAt(i));
+				}
+				// ...right-shift zero-fill bits by one afterwards.
+				bits = bits >>> 1;
+			}
+			return new SetEnumValue(vals, false);
+		}
+	}
+	
+  	private static final double COIN_TOSS_BIAS = Double
+			.valueOf(System.getProperty(SubsetValue.class.getName() + ".cointossbias", ".5d"));
+
+	/*
+	 * LL: I realized that efficiently choosing a random set of k elements in "SUBSET S"
+	 * is simple. Just compute S and randomly choose k elements SS of SUBSET S by
+	 * including each element of S in SS with probability 1/2.  This looks to me as
+	 * if it's completely equivalent to enumerating all the elements of SUBSET S and
+	 * choosing a random subset of those elements--except that if we want to choose
+	 * exactly k elements, then we'll have to throw away duplicates.
+	 */
+	class CoinTossingSubsetEnumerator implements ValueEnumeration {
+
+		private final ValueVec elems;
+		private final int k;
+		private int i;
+
+		public CoinTossingSubsetEnumerator(final int k) {
+			this.i = 0;
+			this.k = k;
+
+			final SetEnumValue convert = SetEnumValue.convert(set);
+      		convert.normalize();
+      		this.elems = convert.elems;
+		}
+
+		// Repeated invocation can yield duplicate elements due to the probabilistic
+		// nature of CoinTossingSubsetEnumerator.
+		public Value nextElement() {
+			if (!hasNext()) {
+				return null;
+			}
+			final ValueVec vals = new ValueVec(elems.size());
+			for (int i = 0; i < elems.size(); i++) {
+				if (EnumerableValue.RANDOM.nextDouble() < COIN_TOSS_BIAS) {
+					vals.addElement(elems.elementAt(i));
+				}
+			}
+			this.i++;
+			vals.sort(true);
+			return new SetEnumValue(vals, false);
+		}
+
+		private boolean hasNext() {
+			return this.i < this.k;
+		}
+
+		@Override
+		public void reset() {
+			this.i = 0;
+		}
+
+		int getK() {
+			return k;
+		}
+	}
 }

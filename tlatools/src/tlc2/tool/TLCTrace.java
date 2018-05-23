@@ -19,6 +19,7 @@ import tlc2.output.MP;
 import tlc2.output.StatePrinter;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
+import tlc2.value.EnumerableValue;
 import util.FileUtil;
 
 public class TLCTrace {
@@ -349,6 +350,13 @@ public class TLCTrace {
 	public synchronized final void printTrace(final TLCState s1, final TLCState s2)
   throws IOException, WorkerException 
   {
+		// Re-Initialize the rng with the seed value recorded and used during the model
+		// checking phase. Otherwise, we won't be able to reconstruct the error trace
+		// because the set of initial states is likely to be different.
+		// This is only necessary though, if TLCGlobals.enumFraction was < 1 during
+		// the generation of inits.
+		EnumerableValue.resetRandom();
+		
 		if (s1.isInitial()) {
 			// Do not recreate the potentially expensive error trace - e.g. when the set of
 			// initial states is huge such as during inductive invariant checking. Instead

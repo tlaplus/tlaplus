@@ -687,7 +687,7 @@ public class Tool
                   Assert.fail("In computing initial states, the right side of \\IN" +
                               " is not enumerable.\n" + init);
                 }
-                ValueEnumeration Enum = ((Enumerable)rval).elements();
+                ValueEnumeration Enum = Enumerable.elements(var.getName(), (Enumerable) rval);
                 Value elem;
                 while ((elem = Enum.nextElement()) != null) {
                   ps.bind(varName, elem, init);

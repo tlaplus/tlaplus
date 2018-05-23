@@ -6,7 +6,6 @@
 
 package tlc2.value;
 
-import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
@@ -25,6 +24,11 @@ implements Enumerable, Reducible {
   public SetEnumValue(ValueVec elems, boolean isNorm) {
     this.elems = elems;
     this.isNorm = isNorm;
+  }
+  
+  public SetEnumValue() {
+    this.elems = new ValueVec(0);
+    this.isNorm = true;
   }
 
   public final byte getKind() { return SETENUMVALUE; }
@@ -485,4 +489,17 @@ implements Enumerable, Reducible {
     }
   }
 
+	@Override
+	public ValueEnumeration elements(final double fraction) {
+		normalize();
+		return new EnumerableValue.SubsetEnumerator(fraction) {
+			@Override
+			public Value nextElement() {
+				if (!hasNext()) {
+					return null;
+				}
+				return elems.elementAt(nextIndex());
+			}
+		};
+	}
 }
