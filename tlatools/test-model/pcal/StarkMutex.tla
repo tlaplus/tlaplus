@@ -48,8 +48,7 @@
 ------------------ MODULE StarkMutex ------------------
 
 EXTENDS Naturals, Sequences
-\*CONSTANT N
-N == 3
+CONSTANT N
 
 -------------------------------------------------------
 

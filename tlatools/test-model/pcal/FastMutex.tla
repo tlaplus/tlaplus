@@ -2,14 +2,13 @@
 
 EXTENDS Naturals
 
-\*CONSTANT N
-N == 2
+CONSTANT N
 
 ASSUME N \in Nat
 
 (**********************
 --algorithm FastMutex
-  variables x = 0 ; y = 0 ; b = [i \in 1..N |-> FALSE] ; 
+  variables x ; y = 0 ; b = [i \in 1..N |-> FALSE] ; 
 process Proc \in 1..N
 variables j = 0 ; failed = FALSE ;
 begin
@@ -46,6 +45,7 @@ end algorithm
 ***********************)
 
 (**************** BEGIN TRANSLATION *******************************)
+CONSTANT defaultInitValue
 VARIABLES x, y, b, pc, j, failed
 
 vars == << x, y, b, pc, j, failed >>
@@ -53,7 +53,7 @@ vars == << x, y, b, pc, j, failed >>
 ProcSet == (1..N)
 
 Init == (* Global variables *)
-        /\ x = 0
+        /\ x = defaultInitValue
         /\ y = 0
         /\ b = [i \in 1..N |-> FALSE]
         (* Process Proc *)

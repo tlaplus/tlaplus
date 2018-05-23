@@ -4,9 +4,7 @@
 
 EXTENDS Naturals, TLC
 
-\*CONSTANT N, M
-N == 2
-M == 2
+CONSTANT N, M
 
 ASSUME (N \in Nat) /\ (M \in Nat)
 

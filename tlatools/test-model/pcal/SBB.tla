@@ -7,15 +7,11 @@ EXTENDS Naturals, Sequences, TLC
 (* The StringBuilder bug.                                                 *)
 (**************************************************************************)
 
-\*CONSTANT Pid        \* set of process ids
-Pid == {"p0","p1"}
-\*NoPid == CHOOSE p : p \notin Pid
-NoPid == "NoPid"
+CONSTANT Pid        \* set of process ids
+NoPid == CHOOSE p : p \notin Pid
 
-\*CONSTANT Buf        \* set of buffers
-Buf == {"b1", "b2", "b3"}
-\*NoBuf == CHOOSE b : b \notin Buf
-NoBuf == "NoBuf"
+CONSTANT Buf        \* set of buffers
+NoBuf == CHOOSE b : b \notin Buf
 
 
 

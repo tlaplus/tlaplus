@@ -1,4 +1,4 @@
------------------------------- MODULE Factorial2 ----------------------------- 
+---------------------------- MODULE Factorial2 --------------------------- 
 EXTENDS Naturals, Sequences, TLC
 
 (***************************************************************************
@@ -8,8 +8,7 @@ Factorial Algorithm with 2 procedures
   variable result = 1;        
   procedure FactProc(arg1 = 0 )    
     variable u = 1 ;
-    begin p1 : print << " recursive call of 1", arg1 >>;
-               if arg1 = 0
+    begin p1 : if arg1 = 0
                  then return;     
                  else result := result * arg1;
                       call FactProc2 ( arg1 - 1 ) ;
@@ -18,8 +17,7 @@ Factorial Algorithm with 2 procedures
     end procedure
   procedure FactProc2(arg2 = 0)    
     variable u2 = 1 ;
-    begin p12 : print << " recursive call of 2", arg2 >>;
-                if arg2 = 0
+    begin p12 : if arg2 = 0
                  then return;     
                  else result := result * arg2;
                       call FactProc ( arg2 - 1 ) ;
@@ -51,7 +49,6 @@ Init == (* Global variables *)
         /\ pc = "a1"
 
 p1 == /\ pc = "p1"
-      /\ PrintT(<< " recursive call of 1", arg1 >>)
       /\ IF arg1 = 0
             THEN /\ pc' = Head(stack).pc
                  /\ u' = Head(stack).u
@@ -79,7 +76,6 @@ b == /\ pc = "b"
 FactProc == p1 \/ b
 
 p12 == /\ pc = "p12"
-       /\ PrintT(<< " recursive call of 2", arg2 >>)
        /\ IF arg2 = 0
              THEN /\ pc' = Head(stack).pc
                   /\ u2' = Head(stack).u2

@@ -28,8 +28,7 @@ end algorithm
 ------------------------ MODULE TreeBarrier ------------------------
 
 EXTENDS Naturals, Sequences
-\*CONSTANT exp
-exp == 2
+CONSTANT exp
 N == 2^exp-1
 
 --------------------------------------------------------------------

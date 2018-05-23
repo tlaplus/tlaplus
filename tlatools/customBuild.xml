@@ -310,6 +310,13 @@
 						<exclude name="**/TestDriver.java" />
 						<exclude name="**/TestDriver2.java" />
 						<exclude name="**/AllTests.java" />
+						<!-- These take too long -->
+						<exclude name="**/MacroQuicksortTest.java" />
+						<exclude name="**/MacroRealQuicksortTest.java" />
+						<exclude name="**/PcalPaxosTest.java" />
+						<exclude name="**/DetlefsTest.java" />
+						<exclude name="**/StarkMutexTest" />
+						<exclude name="**/SimpleMultiProcTest" />
 					</fileset>
 				</batchtest>
 			</junit>
@@ -360,6 +367,13 @@
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
+					<!-- These take too long -->
+					<exclude name="**/MacroQuicksortTest.java" />
+					<exclude name="**/MacroRealQuicksortTest.java" />
+					<exclude name="**/PcalPaxosTest.java" />
+					<exclude name="**/DetlefsTest.java" />
+					<exclude name="**/StarkMutexTest" />
+					<exclude name="**/SimpleMultiProcTest" />
 				</fileset>
 			</batchtest>
 		</junit>

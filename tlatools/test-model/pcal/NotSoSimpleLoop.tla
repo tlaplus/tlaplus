@@ -6,11 +6,11 @@ EXTENDS Naturals, TLC
      begin a : while x < 10                                              
                  do x := x+1 ;                                           
                     skip ;                                               
-                    print x;                                             
+                    assert x \in 1..10
                end while ;                                               
                x := 4*x ;                                                
-               print x ;                                                 
-           b : print 2 * x ;                                             
+               assert x = 40 ;                                                 
+           b : assert 2 * x = 80;                                             
      end algorithm                  *)
 
 					
@@ -27,14 +27,16 @@ a == /\ pc = "a"
      /\ IF x < 10
            THEN /\ x' = x+1
                 /\ TRUE
-                /\ PrintT(x')
+                /\ Assert(x' \in 1..10, 
+                          "Failure of assertion at line 9, column 21.")
                 /\ pc' = "a"
            ELSE /\ x' = 4*x
-                /\ PrintT(x')
+                /\ Assert(x' = 40, 
+                          "Failure of assertion at line 12, column 16.")
                 /\ pc' = "b"
 
 b == /\ pc = "b"
-     /\ PrintT(2 * x)
+     /\ Assert(2 * x = 80, "Failure of assertion at line 13, column 16.")
      /\ pc' = "Done"
      /\ x' = x
 

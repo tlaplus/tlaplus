@@ -95,15 +95,11 @@ end algorithm
 -------------------------------- MODULE SyncCons --------------------------------
 EXTENDS Naturals, FiniteSets, TLC
 
-\*CONSTANTS N, t, Data
-N == 2
-t == 1
-Data == {"d1", "d2"}
+CONSTANTS N, t, Data
 
 ASSUME N > t
 
-\*bot == CHOOSE v: v \notin Data
-bot == "b"
+bot == CHOOSE v: v \notin Data
 
 Proc == 1..N
 

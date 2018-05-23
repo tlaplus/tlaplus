@@ -49,8 +49,7 @@ EXTENDS Naturals, Sequences, TLC
 (*                                                                        *)
 (**************************************************************************)
 
-\*CONSTANT Pid        \* set of process ids
-Pid == {"p0","p1"}
+CONSTANT Pid        \* set of process ids
 
 Attr == { "A", "B" }         \* what are the attributes
 Boolean == { FALSE, TRUE }

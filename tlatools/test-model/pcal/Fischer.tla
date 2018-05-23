@@ -1,11 +1,10 @@
+Plus Cal options (-wf -spec PlusCal2)
 ----------------------------- MODULE Fischer    ----------------------------- 
 EXTENDS Naturals, TLC
-
-\*CONSTANT Delta, Epsilon  \* The timing delays
-\*CONSTANT N   \* The number of synchronizing processes
-Delta == 2
-Epsilon == 3
-N == 3
+\* what's up 
+CONSTANT Delta, Epsilon  \* The timing delays  
+CONSTANT N   \* The number of synchronizing processes
+\* CONSTANT defaultInitValue
 
 ASSUME /\ Print("Testing Fischer's Mutual Exclusion Algorithm", TRUE)
        /\ Print(<<" Number of processes = ", N>>, TRUE)
@@ -38,7 +37,7 @@ Infinity == 9999999
                               timer[self] := Epsilon ;
                           e : when timer[self] = 0 ;
                               timer[self] := Infinity ;
-                     end while ;
+                     end while ; 
                 cs : skip ;  \* critical section
                  f : x := 0 ;
              end while ;

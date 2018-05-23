@@ -1,8 +1,7 @@
 ---------------------------- MODULE QuicksortMacro --------------------------- 
 EXTENDS Naturals, Sequences
 
-\*CONSTANT ArrayLen
-ArrayLen == 3
+CONSTANT ArrayLen
 
 ASSUME ArrayLen \in Nat
 

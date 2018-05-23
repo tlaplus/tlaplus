@@ -8,8 +8,7 @@ EXTENDS Naturals, Sequences, TLC
    (* what about (* nested multi-line *)
        comments? *)
     variable u = 1 ;
-    begin p1 : print << " recursive call ", arg1 >>;
-               if arg1 = 0
+    begin p1 : if arg1 = 0
                  then return;     \* HERE IS A 
                  else result := result * arg1;
                       call FactProc ( arg1 - 1 ) ;
@@ -18,10 +17,7 @@ EXTENDS Naturals, Sequences, TLC
     end procedure
   begin
     a1 : call FactProc( 5 ) ;
-    a2 : if result = 120  then print "Correct";
-                          else print "Error" ;
-         end if;
-         assert result = 120 ;
+    a2 : assert result = 120 ;
   end algorithm
 ***************************************************************************)
 
@@ -39,7 +35,6 @@ Init == (* Global variables *)
         /\ pc = "a1"
 
 p1 == /\ pc = "p1"
-      /\ PrintT(<< " recursive call ", arg1 >>)
       /\ IF arg1 = 0
             THEN /\ pc' = Head(stack).pc
                  /\ u' = Head(stack).u
@@ -66,10 +61,7 @@ a1 == /\ pc = "a1"
       /\ UNCHANGED result
 
 a2 == /\ pc = "a2"
-      /\ IF result = 120
-            THEN /\ PrintT("Correct")
-            ELSE /\ PrintT("Error")
-      /\ Assert(result = 120, "Failure of assertion at line 24, column 10.")
+      /\ Assert(result = 120, "Failure of assertion at line 20, column 10.")
       /\ pc' = "Done"
       /\ UNCHANGED << result, stack, arg1, u >>
 

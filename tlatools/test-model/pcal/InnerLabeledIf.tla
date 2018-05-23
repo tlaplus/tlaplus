@@ -7,13 +7,13 @@ EXTENDS Sequences, Naturals, TLC
     begin a : if (x < 3)
                 then if (x = 1)
                        then skip ; 
-                            b : print << x, "should = 1">> ;
-                       else c : print << x, "should = 2">> ;
+                            b : assert x = 1 
+                       else c : assert x = 2
                      end if ;
                 else if (x = 3)
                        then skip ; 
-                            d : print << x, "should = 3">> ;
-                       else e : print << x, "should = 4">> ;
+                            d : assert x = 3 
+                       else e : assert x = 4 ;
                      end if ;
               end if ;
           f : print("made it to end") ;
@@ -42,22 +42,22 @@ a == /\ pc = "a"
      /\ x' = x
 
 b == /\ pc = "b"
-     /\ PrintT(<< x, "should = 1">>)
+     /\ Assert(x = 1, "Failure of assertion at line 10, column 33.")
      /\ pc' = "f"
      /\ x' = x
 
 c == /\ pc = "c"
-     /\ PrintT(<< x, "should = 2">>)
+     /\ Assert(x = 2, "Failure of assertion at line 11, column 33.")
      /\ pc' = "f"
      /\ x' = x
 
 d == /\ pc = "d"
-     /\ PrintT(<< x, "should = 3">>)
+     /\ Assert(x = 3, "Failure of assertion at line 15, column 33.")
      /\ pc' = "f"
      /\ x' = x
 
 e == /\ pc = "e"
-     /\ PrintT(<< x, "should = 4">>)
+     /\ Assert(x = 4, "Failure of assertion at line 16, column 33.")
      /\ pc' = "f"
      /\ x' = x
 

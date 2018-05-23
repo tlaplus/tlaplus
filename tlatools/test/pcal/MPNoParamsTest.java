@@ -41,10 +41,10 @@ public class MPNoParamsTest extends PCalModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKING_TEMPORAL_PROPS, "complete", "145"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKING_TEMPORAL_PROPS, "complete", "96"));
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "389", "145", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "250", "96", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "13"));
 	}
 }

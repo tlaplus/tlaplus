@@ -1,8 +1,7 @@
 ---------------------------- MODULE RealQuicksort2 -------------------------- 
 EXTENDS Naturals, Sequences, FiniteSets
 
-\*CONSTANT MaxLen
-MaxLen == 3
+CONSTANT MaxLen
 
 ASSUME MaxLen \in Nat
 

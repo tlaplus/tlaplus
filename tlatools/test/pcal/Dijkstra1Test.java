@@ -35,12 +35,13 @@ import tlc2.output.EC;
 public class Dijkstra1Test extends PCalModelCheckerTestCase {
 
 	public Dijkstra1Test() {
-		super("Dijkstra1", "pcal");
+		super("Dijkstra1", "pcal", new String[] {"-wf"});
 	}
 
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "625"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKING_TEMPORAL_PROPS, "complete", "5510"));
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "16775", "5510", "0"));

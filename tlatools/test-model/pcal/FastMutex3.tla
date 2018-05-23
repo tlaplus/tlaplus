@@ -4,8 +4,7 @@
 
 EXTENDS Naturals, TLC
 
-\*CONSTANT N
-N == 2
+CONSTANT N
 
 ASSUME (N \in Nat) 
 

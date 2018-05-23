@@ -14,8 +14,8 @@ EXTENDS Naturals, TLC
   process Proc \in 1..3
   variables A = [i \in 1..5 |-> i] ; x = 0 ;
   begin a : A[1] := A[3] ||  x := 7 || A[3] := A[1] ;
-            print <<"Should equal 3 , 1 : ", A[1], A[3]>> ;
-        b : print <<"Should equal 3 , 1 : ", A[1], A[3]>> ;
+            assert <<3 , 1>> = <<A[1], A[3]>> ;
+        b : assert <<3 , 1>> = <<A[1], A[3]>> ;
   end process
   end algorithm 
 
@@ -37,11 +37,13 @@ a(self) == /\ pc[self] = "a"
            /\ /\ A' = [A EXCEPT ![self][1] = A[self][3],
                                 ![self][3] = A[self][1]]
               /\ x' = [x EXCEPT ![self] = 7]
-           /\ PrintT(<<"Should equal 3 , 1 : ", A'[self][1], A'[self][3]>>)
+           /\ Assert(<<3 , 1>> = <<A'[self][1], A'[self][3]>>, 
+                     "Failure of assertion at line 17, column 13.")
            /\ pc' = [pc EXCEPT ![self] = "b"]
 
 b(self) == /\ pc[self] = "b"
-           /\ PrintT(<<"Should equal 3 , 1 : ", A[self][1], A[self][3]>>)
+           /\ Assert(<<3 , 1>> = <<A[self][1], A[self][3]>>, 
+                     "Failure of assertion at line 18, column 13.")
            /\ pc' = [pc EXCEPT ![self] = "Done"]
            /\ UNCHANGED << A, x >>
 

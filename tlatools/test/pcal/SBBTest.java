@@ -46,41 +46,101 @@ public class SBBTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "55", "37", "15"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "5"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3126", "1617", "328"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "15"));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>();
-		expectedTrace.add("/\\ availablebuffers = {\"b2\", \"b3\"}\n" + 
+		expectedTrace.add("/\\ availablebuffers = {b1, b2, b3}\n" + 
 				"/\\ publishedbuffers = {}\n" + 
-				"/\\ sb = [buf |-> \"b1\", owner |-> \"NoPid\"]\n" + 
-				"/\\ buf = [p0 |-> \"NoBuf\", p1 |-> \"NoBuf\"]\n" + 
-				"/\\ op = [p0 |-> {}, p1 |-> {}]\n" + 
-				"/\\ pc = [p0 |-> \"Loop\", p1 |-> \"Loop\"]");
-		expectedTrace.add("/\\ availablebuffers = {\"b2\", \"b3\"}\n" + 
+				"/\\ sb = [buf |-> b0, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> NoBuf @@ p1 :> NoBuf)\n" + 
+				"/\\ op = (p0 :> {} @@ p1 :> {})\n" + 
+				"/\\ pc = (p0 :> \"Loop\" @@ p1 :> \"Loop\")");
+		expectedTrace.add("/\\ availablebuffers = {b1, b2, b3}\n" + 
 				"/\\ publishedbuffers = {}\n" + 
-				"/\\ sb = [buf |-> \"b1\", owner |-> \"NoPid\"]\n" + 
-				"/\\ buf = [p0 |-> \"b1\", p1 |-> \"NoBuf\"]\n" + 
-				"/\\ op = [p0 |-> \"Modify\", p1 |-> {}]\n" + 
-				"/\\ pc = [p0 |-> \"Modify1\", p1 |-> \"Loop\"]");
-		expectedTrace.add("/\\ availablebuffers = {\"b3\"}\n" + 
+				"/\\ sb = [buf |-> b0, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> b0 @@ p1 :> NoBuf)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> {})\n" + 
+				"/\\ pc = (p0 :> \"Publish1\" @@ p1 :> \"Loop\")");
+		expectedTrace.add("/\\ availablebuffers = {b1, b2, b3}\n" + 
 				"/\\ publishedbuffers = {}\n" + 
-				"/\\ sb = [buf |-> \"b1\", owner |-> \"NoPid\"]\n" + 
-				"/\\ buf = [p0 |-> \"b2\", p1 |-> \"NoBuf\"]\n" + 
-				"/\\ op = [p0 |-> \"Modify\", p1 |-> {}]\n" + 
-				"/\\ pc = [p0 |-> \"Modify2\", p1 |-> \"Loop\"]");
-		expectedTrace.add("/\\ availablebuffers = {\"b3\"}\n" + 
+				"/\\ sb = [buf |-> b0, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> b0 @@ p1 :> NoBuf)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> {})\n" + 
+				"/\\ pc = (p0 :> \"Publish2\" @@ p1 :> \"Loop\")");
+		expectedTrace.add("/\\ availablebuffers = {b1, b2, b3}\n" + 
 				"/\\ publishedbuffers = {}\n" + 
-				"/\\ sb = [buf |-> \"b1\", owner |-> \"NoPid\"]\n" + 
-				"/\\ buf = [p0 |-> \"b2\", p1 |-> \"b1\"]\n" + 
-				"/\\ op = [p0 |-> \"Modify\", p1 |-> \"Modify\"]\n" + 
-				"/\\ pc = [p0 |-> \"Modify2\", p1 |-> \"Modify1\"]");
-		expectedTrace.add("/\\ availablebuffers = {}\n" + 
+				"/\\ sb = [buf |-> b0, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> b0 @@ p1 :> b0)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Publish2\" @@ p1 :> \"Modify1\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
 				"/\\ publishedbuffers = {}\n" + 
-				"/\\ sb = [buf |-> \"b1\", owner |-> \"NoPid\"]\n" + 
-				"/\\ buf = [p0 |-> \"b2\", p1 |-> \"b3\"]\n" + 
-				"/\\ op = [p0 |-> \"Modify\", p1 |-> \"Modify\"]\n" + 
-				"/\\ pc = [p0 |-> \"Modify2\", p1 |-> \"Modify2\"]");
+				"/\\ sb = [buf |-> b0, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> b0 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Publish2\" @@ p1 :> \"Modify2\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
+				"/\\ publishedbuffers = {}\n" + 
+				"/\\ sb = [buf |-> b0, owner |-> p1]\n" + 
+				"/\\ buf = (p0 :> b0 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Publish2\" @@ p1 :> \"Modify3\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
+				"/\\ publishedbuffers = {}\n" + 
+				"/\\ sb = [buf |-> b1, owner |-> p1]\n" + 
+				"/\\ buf = (p0 :> b0 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Publish2\" @@ p1 :> \"Loop\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
+				"/\\ publishedbuffers = {}\n" + 
+				"/\\ sb = [buf |-> b1, owner |-> p1]\n" + 
+				"/\\ buf = (p0 :> b0 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Publish2\" @@ p1 :> \"Modify1\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
+				"/\\ publishedbuffers = {}\n" + 
+				"/\\ sb = [buf |-> b1, owner |-> p1]\n" + 
+				"/\\ buf = (p0 :> b0 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Publish2\" @@ p1 :> \"Modify2\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
+				"/\\ publishedbuffers = {}\n" + 
+				"/\\ sb = [buf |-> b1, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> b0 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Publish3\" @@ p1 :> \"Modify2\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
+				"/\\ publishedbuffers = {b0}\n" + 
+				"/\\ sb = [buf |-> b1, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> b0 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Loop\" @@ p1 :> \"Modify2\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
+				"/\\ publishedbuffers = {b0}\n" + 
+				"/\\ sb = [buf |-> b1, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> b1 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Publish1\" @@ p1 :> \"Modify2\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
+				"/\\ publishedbuffers = {b0}\n" + 
+				"/\\ sb = [buf |-> b1, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> b1 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Publish2\" @@ p1 :> \"Modify2\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
+				"/\\ publishedbuffers = {b0}\n" + 
+				"/\\ sb = [buf |-> b1, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> b1 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Publish3\" @@ p1 :> \"Modify2\")");
+		expectedTrace.add("/\\ availablebuffers = {b2, b3}\n" + 
+				"/\\ publishedbuffers = {b0, b1}\n" + 
+				"/\\ sb = [buf |-> b1, owner |-> NoPid]\n" + 
+				"/\\ buf = (p0 :> b1 @@ p1 :> b1)\n" + 
+				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
+				"/\\ pc = (p0 :> \"Loop\" @@ p1 :> \"Modify2\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 	}
 }

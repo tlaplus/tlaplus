@@ -1,42 +1,42 @@
 ------------------------------ MODULE CallReturn1 --------------------------- 
 EXTENDS Sequences, Naturals, TLC
 
-(*   
-  --algorithm CallReturn1
-    procedure Proc1(arg1 = 0)
-      variable u = 1 ;
+(********
+--algorithm CallReturn1
+    procedure Proc1(arg1)
+      variable u ;
       begin p1 : u := 2 ;
                  call Proc2 ( 2 * u ) ;
-            p2 : when Print ( << u , " = 2 " >> , TRUE ) ;
-                 when Print ( << arg1, " = 4 " >> , TRUE ) ;
+            p2 : assert u = 2;
+                 assert arg1  = 4  ;
                  call Proc2 ( 2 * u + 1 ) ;
                  return ;
       end procedure
     procedure Proc2(arg2 = 0)
       variable v = 42 ;
-      begin q1 : when Print( << v , " = 42 " >> , TRUE ) ;
-                 when Print ( << arg2, " = 4 then 5 " >> , TRUE ) ;
+      begin q1 : assert v = 42;
+                 assert arg2 \in {4, 5} ;
                  call Proc3 ( v + arg2 ) ;
                  return ;
       end procedure
     procedure Proc3(arg3 = 0)
-      begin r1 : when Print( << arg3, " = 46 then 47 " >> , TRUE ) ;
+      begin r1 : assert arg3 \in {46, 47} ;
                  return ;
       end procedure
     begin
       a1 : call Proc1( 4 ) ;
     end algorithm
-
-*)
-					
-(***** BEGIN TRANSLATION ***)
+*****)
+  
+\******** BEGIN TRANSLATION ********
+CONSTANT defaultInitValue
 VARIABLES pc, stack, arg1, u, arg2, v, arg3
 
 vars == << pc, stack, arg1, u, arg2, v, arg3 >>
 
 Init == (* Procedure Proc1 *)
-        /\ arg1 = 0
-        /\ u = 1
+        /\ arg1 = defaultInitValue
+        /\ u = defaultInitValue
         (* Procedure Proc2 *)
         /\ arg2 = 0
         /\ v = 42
@@ -58,8 +58,8 @@ p1 == /\ pc = "p1"
       /\ UNCHANGED << arg1, arg3 >>
 
 p2 == /\ pc = "p2"
-      /\ Print ( << u , " = 2 " >> , TRUE )
-      /\ Print ( << arg1, " = 4 " >> , TRUE )
+      /\ Assert(u = 2, "Failure of assertion at line 10, column 18.")
+      /\ Assert(arg1  = 4, "Failure of assertion at line 11, column 18.")
       /\ /\ arg2' = 2 * u + 1
          /\ stack' = << [ procedure |->  "Proc2",
                           pc        |->  Head(stack).pc,
@@ -74,8 +74,9 @@ p2 == /\ pc = "p2"
 Proc1 == p1 \/ p2
 
 q1 == /\ pc = "q1"
-      /\ Print( << v , " = 42 " >> , TRUE )
-      /\ Print ( << arg2, " = 4 then 5 " >> , TRUE )
+      /\ Assert(v = 42, "Failure of assertion at line 17, column 18.")
+      /\ Assert(arg2 \in {4, 5}, 
+                "Failure of assertion at line 18, column 18.")
       /\ /\ arg3' = v + arg2
          /\ stack' = << [ procedure |->  "Proc3",
                           pc        |->  Head(stack).pc,
@@ -88,7 +89,8 @@ q1 == /\ pc = "q1"
 Proc2 == q1
 
 r1 == /\ pc = "r1"
-      /\ Print( << arg3, " = 46 then 47 " >> , TRUE )
+      /\ Assert(arg3 \in {46, 47}, 
+                "Failure of assertion at line 23, column 18.")
       /\ pc' = Head(stack).pc
       /\ arg3' = Head(stack).arg3
       /\ stack' = Tail(stack)
@@ -103,7 +105,7 @@ a1 == /\ pc = "a1"
                           u         |->  u,
                           arg1      |->  arg1 ] >>
                       \o stack
-      /\ u' = 1
+      /\ u' = defaultInitValue
       /\ pc' = "p1"
       /\ UNCHANGED << arg2, v, arg3 >>
 
@@ -116,5 +118,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-(***** END TRANSLATION ***)
+\******** END TRANSLATION ********
+
+                                        
 =============================================================================

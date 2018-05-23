@@ -7,7 +7,7 @@ EXTENDS Naturals, TLC
      begin a : while x < 10                                              
                  do x := x+1 ;                                           
                     skip ;                                               
-                    print x;                                             
+                    assert x \in 1..10;                                             
                end while ;                                               
      end algorithm                                                         
 *)
@@ -25,7 +25,8 @@ a == /\ pc = "a"
      /\ IF x < 10
            THEN /\ x' = x+1
                 /\ TRUE
-                /\ PrintT(x')
+                /\ Assert(x' \in 1..10, 
+                          "Failure of assertion at line 10, column 21.")
                 /\ pc' = "a"
            ELSE /\ pc' = "Done"
                 /\ x' = x

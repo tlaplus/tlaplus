@@ -1,8 +1,7 @@
 ------------------------------- MODULE Quicksort ----------------------------- 
 EXTENDS Naturals, Sequences, TLC
 
-\*CONSTANT ArrayLen
-ArrayLen == 3
+CONSTANT ArrayLen
 
 ASSUME ArrayLen \in Nat
 
@@ -15,8 +14,8 @@ PermsOf(Arr) ==
 (*   
 --algorithm Quicksort
   variables Ainit \in [1..ArrayLen -> 1..ArrayLen]; A = Ainit;
-            returnVal = 1;
-  procedure Partition(lo = 1, hi = 1)
+            returnVal = 1
+  procedure Partition(lo, hi )
     begin pt1 : with piv \in lo..(hi-1)
                   do returnVal := piv ;
                      with Ap \in
@@ -30,8 +29,8 @@ PermsOf(Arr) ==
                      end with ;
                 end with;
     end procedure
-  procedure  QS(qlo = 1, qhi = 1)
-    variable pivot = 1 ;
+  procedure  QS(qlo, qhi )
+    variable pivot ;
     begin qs1 : if qlo < qhi
                   then       call Partition(qlo, qhi) ;
                        qs2 : pivot := returnVal ;
@@ -49,6 +48,7 @@ PermsOf(Arr) ==
 *)
 					
 (***** BEGIN TRANSLATION ***)
+CONSTANT defaultInitValue
 VARIABLES Ainit, A, returnVal, pc, stack, lo, hi, qlo, qhi, pivot
 
 vars == << Ainit, A, returnVal, pc, stack, lo, hi, qlo, qhi, pivot >>
@@ -58,12 +58,12 @@ Init == (* Global variables *)
         /\ A = Ainit
         /\ returnVal = 1
         (* Procedure Partition *)
-        /\ lo = 1
-        /\ hi = 1
+        /\ lo = defaultInitValue
+        /\ hi = defaultInitValue
         (* Procedure QS *)
-        /\ qlo = 1
-        /\ qhi = 1
-        /\ pivot = 1
+        /\ qlo = defaultInitValue
+        /\ qhi = defaultInitValue
+        /\ pivot = defaultInitValue
         /\ stack = << >>
         /\ pc = "main"
 
@@ -117,14 +117,14 @@ qs3 == /\ pc = "qs3"
                            qlo       |->  qlo,
                            qhi       |->  qhi ] >>
                        \o stack
-       /\ pivot' = 1
+       /\ pivot' = defaultInitValue
        /\ pc' = "qs1"
        /\ UNCHANGED << Ainit, A, returnVal, lo, hi >>
 
 qs4 == /\ pc = "qs4"
        /\ /\ qhi' = qhi
           /\ qlo' = pivot +1
-       /\ pivot' = 1
+       /\ pivot' = defaultInitValue
        /\ pc' = "qs1"
        /\ UNCHANGED << Ainit, A, returnVal, stack, lo, hi >>
 
@@ -139,7 +139,7 @@ main == /\ pc = "main"
                             qlo       |->  qlo,
                             qhi       |->  qhi ] >>
                         \o stack
-        /\ pivot' = 1
+        /\ pivot' = defaultInitValue
         /\ pc' = "qs1"
         /\ UNCHANGED << Ainit, A, returnVal, lo, hi >>
 
@@ -147,7 +147,7 @@ test == /\ pc = "test"
         /\ Assert(    A \in PermsOf(Ainit)
                   /\ \A i, j \in 1..ArrayLen :
                        (i < j) =>  A[i] \leq A[j], 
-                  "Failure of assertion at line 45, column 17.")
+                  "Failure of assertion at line 44, column 17.")
         /\ pc' = "Done"
         /\ UNCHANGED << Ainit, A, returnVal, stack, lo, hi, qlo, qhi, pivot >>
 

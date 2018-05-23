@@ -2,8 +2,7 @@
 
 EXTENDS Naturals
 
-\*CONSTANT N
-N == 2
+CONSTANT N
 
 ASSUME N \in Nat
 
@@ -163,7 +162,6 @@ Liveness == []<> \E i \in 1..N: inCS(i)
 CondLiveness == ([]<> \E i \in 1..N : pc[i] # "ncs") => Liveness
 
 Fairness == \A i \in 1..N : 
-               /\ WF_vars(ncs(i))
                /\ WF_vars(start(i))
                /\ WF_vars(l1(i))
                /\ WF_vars(l2(i))

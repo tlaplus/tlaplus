@@ -3,7 +3,7 @@ EXTENDS Sequences, Naturals, TLC
 
 (*   
 --algorithm MPNoParams
-    variables sum = 0; done = FALSE;
+    variables sum = 0; 
 
     procedure Sum ()
       begin s1: sum := sum + 1;
@@ -11,13 +11,12 @@ EXTENDS Sequences, Naturals, TLC
       end procedure;
     process P1 = 1 
     begin p1 : call Sum();
-          p2 : done := TRUE ;
+          p2 : when sum = 4 ;
     end process 
     process P2 \in 2..4 
      begin
           q1 : call Sum();
-          q2 : when done ;
-               print sum ;
+          q2 : when sum = 4 ;
    end process 
    end algorithm
 
@@ -25,15 +24,14 @@ EXTENDS Sequences, Naturals, TLC
 *)
 					
 (***** BEGIN TRANSLATION ***)
-VARIABLES sum, done, pc, stack
+VARIABLES sum, pc, stack
 
-vars == << sum, done, pc, stack >>
+vars == << sum, pc, stack >>
 
 ProcSet == {1} \cup (2..4)
 
 Init == (* Global variables *)
         /\ sum = 0
-        /\ done = FALSE
         /\ stack = [self \in ProcSet |-> << >>]
         /\ pc = [self \in ProcSet |-> CASE self = 1 -> "p1"
                                         [] self \in 2..4 -> "q1"]
@@ -42,7 +40,6 @@ s1(self) == /\ pc[self] = "s1"
             /\ sum' = sum + 1
             /\ pc' = [pc EXCEPT ![self] = Head(stack[self]).pc]
             /\ stack' = [stack EXCEPT ![self] = Tail(stack[self])]
-            /\ done' = done
 
 Sum(self) == s1(self)
 
@@ -51,10 +48,10 @@ p1 == /\ pc[1] = "p1"
                                             pc        |->  "p2" ] >>
                                         \o stack[1]]
       /\ pc' = [pc EXCEPT ![1] = "s1"]
-      /\ UNCHANGED << sum, done >>
+      /\ sum' = sum
 
 p2 == /\ pc[1] = "p2"
-      /\ done' = TRUE
+      /\ sum = 4
       /\ pc' = [pc EXCEPT ![1] = "Done"]
       /\ UNCHANGED << sum, stack >>
 
@@ -65,13 +62,12 @@ q1(self) == /\ pc[self] = "q1"
                                                      pc        |->  "q2" ] >>
                                                  \o stack[self]]
             /\ pc' = [pc EXCEPT ![self] = "s1"]
-            /\ UNCHANGED << sum, done >>
+            /\ sum' = sum
 
 q2(self) == /\ pc[self] = "q2"
-            /\ done
-            /\ PrintT(sum)
+            /\ sum = 4
             /\ pc' = [pc EXCEPT ![self] = "Done"]
-            /\ UNCHANGED << sum, done, stack >>
+            /\ UNCHANGED << sum, stack >>
 
 P2(self) == q1(self) \/ q2(self)
 

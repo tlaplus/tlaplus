@@ -1,8 +1,7 @@
 ------------------------------- MODULE MergeSort ----------------------------- 
 EXTENDS Naturals, Sequences, TLC
 
-\*CONSTANT ArrayLen
-ArrayLen == 2
+CONSTANT ArrayLen
 
 ASSUME ArrayLen \in Nat
 
@@ -22,8 +21,8 @@ Copied from page 166 of the 2nd edition of Robert Sedgewick's "Algorithms".
 --algorithm Mergesort
   variables a \in UNION {[1..N -> 1..N] : N \in 0..ArrayLen} ;
             b = [x \in DOMAIN a |-> 99]  \* ;
-  procedure mergesort(l = 99, r  = 99)
-    variables i = 99; j = 99 ; k = 99 ; m = 99  \* ; 
+  procedure mergesort(l, r)
+    variables i ; j  ; k ; m \* ; 
     begin l1: if r - l > 0
                 then      m := (r + l) \div 2 ;
                      l2 : call mergesort(l, m) ;
@@ -82,6 +81,7 @@ Copied from page 166 of the 2nd edition of Robert Sedgewick's "Algorithms".
 *)
 					
 (***** BEGIN TRANSLATION ***)
+CONSTANT defaultInitValue
 VARIABLES a, b, pc, stack, l, r, i, j, k, m
 
 vars == << a, b, pc, stack, l, r, i, j, k, m >>
@@ -90,12 +90,12 @@ Init == (* Global variables *)
         /\ a \in UNION {[1..N -> 1..N] : N \in 0..ArrayLen}
         /\ b = [x \in DOMAIN a |-> 99]
         (* Procedure mergesort *)
-        /\ l = 99
-        /\ r = 99
-        /\ i = 99
-        /\ j = 99
-        /\ k = 99
-        /\ m = 99
+        /\ l = defaultInitValue
+        /\ r = defaultInitValue
+        /\ i = defaultInitValue
+        /\ j = defaultInitValue
+        /\ k = defaultInitValue
+        /\ m = defaultInitValue
         /\ stack = << >>
         /\ pc = "main"
 
@@ -119,10 +119,10 @@ l2 == /\ pc = "l2"
                           l         |->  l,
                           r         |->  r ] >>
                       \o stack
-      /\ i' = 99
-      /\ j' = 99
-      /\ k' = 99
-      /\ m' = 99
+      /\ i' = defaultInitValue
+      /\ j' = defaultInitValue
+      /\ k' = defaultInitValue
+      /\ m' = defaultInitValue
       /\ pc' = "l1"
       /\ UNCHANGED << a, b >>
 
@@ -138,10 +138,10 @@ l3 == /\ pc = "l3"
                           l         |->  l,
                           r         |->  r ] >>
                       \o stack
-      /\ i' = 99
-      /\ j' = 99
-      /\ k' = 99
-      /\ m' = 99
+      /\ i' = defaultInitValue
+      /\ j' = defaultInitValue
+      /\ k' = defaultInitValue
+      /\ m' = defaultInitValue
       /\ pc' = "l1"
       /\ UNCHANGED << a, b >>
 
@@ -222,10 +222,10 @@ main == /\ pc = "main"
                             l         |->  l,
                             r         |->  r ] >>
                         \o stack
-        /\ i' = 99
-        /\ j' = 99
-        /\ k' = 99
-        /\ m' = 99
+        /\ i' = defaultInitValue
+        /\ j' = defaultInitValue
+        /\ k' = defaultInitValue
+        /\ m' = defaultInitValue
         /\ pc' = "l1"
         /\ UNCHANGED << a, b >>
 

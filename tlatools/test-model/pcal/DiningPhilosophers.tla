@@ -8,8 +8,7 @@
 
 EXTENDS Naturals
 
-\*CONSTANT N
-N == 4
+CONSTANT N
 
 ASSUME N \in Nat
 

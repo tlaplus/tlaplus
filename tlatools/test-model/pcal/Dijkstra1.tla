@@ -22,9 +22,7 @@ pj:   M[self] := M[self - 1];
 ----------- MODULE Dijkstra1 -----------
 EXTENDS FiniteSets, Naturals
 
-\*CONSTANT K, N
-K == 5
-N == 4
+CONSTANT K, N
 
 ASSUME (K > N) /\ (N > 0) 
 
@@ -65,7 +63,9 @@ Pi(self) == pi(self) \/ pj(self)
 Next == P0
            \/ (\E self \in 1..(N-1): Pi(self))
 
-Spec == Init /\ [][Next]_vars
+Spec == /\ Init /\ [][Next]_vars
+        /\ WF_vars(P0)
+        /\ \A self \in 1..(N-1) : WF_vars(Pi(self))
 
 \* END TRANSLATION
 

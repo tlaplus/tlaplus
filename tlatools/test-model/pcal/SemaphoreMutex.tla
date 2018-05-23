@@ -2,8 +2,7 @@
 
 EXTENDS Naturals
 
-\*CONSTANT N
-N == 3
+CONSTANT N
 
 ASSUME N \in Nat
 
@@ -26,6 +25,7 @@ start : while TRUE
         end while ;
 end process
 end algorithm
+
 
 ***********************)
 

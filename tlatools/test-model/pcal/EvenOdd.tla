@@ -26,8 +26,8 @@ end algorithm
 
 EXTENDS Naturals, Sequences, TLC
 
-\*CONSTANT N
-N == 6
+CONSTANT N
+
 ----------------------------------------------
 
 

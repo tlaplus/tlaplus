@@ -2,8 +2,7 @@
 
 EXTENDS Naturals
 
-\*CONSTANT N
-N == 3
+CONSTANT N
 
 ASSUME N \in Nat
 
