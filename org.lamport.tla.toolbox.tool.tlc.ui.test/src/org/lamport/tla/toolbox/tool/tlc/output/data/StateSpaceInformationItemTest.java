@@ -35,5 +35,53 @@ public class StateSpaceInformationItemTest extends TestCase {
 		assertEquals(658832, parsed.getSpm());
 		assertEquals(9127, parsed.getDistinctSPM());
 	}
+	
+	/**
+	 * Test method for
+	 * {@link org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem#parseInit(java.lang.String)}
+	 * .
+	 */
+	public void testParseInit() {
+		StateSpaceInformationItem parsed = StateSpaceInformationItem
+				.parseInit("Finished computing initial states: 123456789 distinct states generated.");
+		assertEquals(0, parsed.getDiameter());
+		assertEquals(123456789, parsed.getDistinctStates());
+		assertEquals(123456789, parsed.getFoundStates());
+		assertEquals(123456789, parsed.getLeftStates());
+		assertEquals(0, parsed.getSpm());
+		assertEquals(0, parsed.getDistinctSPM());
+	}
+	
+	public void testParseInit2() {
+		StateSpaceInformationItem parsed = StateSpaceInformationItem
+				.parseInit("Finished computing initial states: 1 distinct state generated.");
+		assertEquals(0, parsed.getDiameter());
+		assertEquals(1, parsed.getDistinctStates());
+		assertEquals(1, parsed.getFoundStates());
+		assertEquals(1, parsed.getLeftStates());
+		assertEquals(0, parsed.getSpm());
+		assertEquals(0, parsed.getDistinctSPM());
+	}
 
+	public void testParseInit3() {
+		StateSpaceInformationItem parsed = StateSpaceInformationItem
+				.parseInit("Finished computing initial states: 123456789 states generated, with 123 of them distinct.");
+		assertEquals(0, parsed.getDiameter());
+		assertEquals(123, parsed.getDistinctStates());
+		assertEquals(123456789, parsed.getFoundStates());
+		assertEquals(123, parsed.getLeftStates());
+		assertEquals(0, parsed.getSpm());
+		assertEquals(0, parsed.getDistinctSPM());
+	}
+
+	public void testParseInit4() {
+		StateSpaceInformationItem parsed = StateSpaceInformationItem
+				.parseInit("Finished computing initial states: 2 states generated, with 1 of them distinct.");
+		assertEquals(0, parsed.getDiameter());
+		assertEquals(1, parsed.getDistinctStates());
+		assertEquals(2, parsed.getFoundStates());
+		assertEquals(1, parsed.getLeftStates());
+		assertEquals(0, parsed.getSpm());
+		assertEquals(0, parsed.getDistinctSPM());
+	}
 }

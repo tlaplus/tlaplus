@@ -368,6 +368,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     break;
                 case EC.TLC_INIT_GENERATED1:
                 case EC.TLC_INIT_GENERATED2:
+					if (addOrReplaceProgressInformation(StateSpaceInformationItem.parseInit(outputMessage))) {
+						informPresenter(ITLCModelLaunchDataPresenter.PROGRESS);
+					}
                 case EC.TLC_INIT_GENERATED3:
                 case EC.TLC_INIT_GENERATED4:
                     this.setCurrentStatus(COMPUTING_REACHABLE);

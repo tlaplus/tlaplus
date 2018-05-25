@@ -192,6 +192,7 @@ public class ModelChecker extends AbstractChecker
         }
 
         report("init processed");
+        
         // Finished if there is no next state predicate:
         if (this.actions.length == 0)
         {

@@ -4,6 +4,8 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
@@ -52,8 +54,16 @@ public class StateSpaceInformationItem
 		this.spm = spm;
 		this.distinctSPM = distinctSPM;
 	}
+	
+	private StateSpaceInformationItem(long foundStates, long distinctStates) {
+		this(new Date(), 0, foundStates, distinctStates, distinctStates, 0, 0);
+	}
 
-    /**
+	private StateSpaceInformationItem(long distinctStates) {
+		this(distinctStates, distinctStates);
+	}
+ 	
+   /**
 	 * @return the isMostRecent
 	 */
 	public boolean isMostRecent() {
@@ -183,6 +193,31 @@ public class StateSpaceInformationItem
 		}
 		return null;
 	}
+	
+	public static StateSpaceInformationItem parseInit(final String outputMessage) {
+		// Handles  EC.TLC_INIT_GENERATED1 and EC.TLC_INIT_GENERATED2.-
+		// From MP#getMessage:
+        //   b.append("Finished computing initial states: %1% distinct state%2% generated.");
+        //   b.append("Finished computing initial states: %1% state%2% generated, with %3% of them distinct.");
+
+		Pattern pattern = Pattern.compile("^Finished computing initial states: ([0-9]+) distinct state[s]* generated.$");
+		Matcher matcher = pattern.matcher(outputMessage);
+		if (matcher.find()) {
+			final long distinctStates = Long.parseLong(matcher.group(1));
+			return new StateSpaceInformationItem(distinctStates);
+		}
+
+		pattern = Pattern.compile(
+				"^Finished computing initial states: ([0-9]+) states generated, with ([0-9]+) of them distinct.$");
+		matcher = pattern.matcher(outputMessage);
+		if (matcher.find()) {
+			final long foundStates = Long.parseLong(matcher.group(1));
+			final long distinctStates = Long.parseLong(matcher.group(2));
+			return new StateSpaceInformationItem(foundStates, distinctStates);
+		}
+		return null;
+	}
+	
 	
     /**
      * @param outputMessage
