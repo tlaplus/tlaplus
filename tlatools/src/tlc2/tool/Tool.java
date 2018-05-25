@@ -72,8 +72,6 @@ import util.UniqueString;
  * It's instance serves as a spec handle
  * This is one of two places in TLC, where not all messages are retrieved from the message printer,
  * but constructed just here in the code.
- *
- * @version $Id$
  */
 public class Tool
     extends Spec
@@ -415,15 +413,36 @@ public class Tool
   }
 
   private final void getInitStates(ActionItemList acts, TLCState ps, IStateFunctor states) {
-    if (acts.isEmpty()) {
-      states.addElement(ps.copy());
-    }
-    else {
-      // Assert.check(act.kind > 0 || act.kind == -1);
-      ActionItemList acts1 = acts.cdr();
-      this.getInitStates(acts.carPred(), acts1, acts.carContext(), ps, states);
-    }
-  }
+		if (acts.isEmpty()) {
+			states.addElement(ps.copy());
+			return;
+		} else if (ps.allAssigned()) {
+			// MAK 05/25/2018: If all values of the initial state have already been
+			// assigned, there is no point in further trying to assign values. Instead, all
+			// remaining statements (ActionItemList) can just be evaluated for their boolean
+			// value.
+			// This optimization is especially useful to check inductive invariants which
+			// require TLC to generate a very large set of initial states.
+			while (!acts.isEmpty()) {
+				final Value bval = this.eval(acts.carPred(), acts.carContext(), ps, TLCState.Empty, EvalControl.Init);
+				if (!(bval instanceof BoolValue)) {
+					//TODO Choose more fitting error message.
+					Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING,
+							new String[] { "initial states", "boolean", bval.toString(), acts.pred.toString() });
+				}
+				if (!((BoolValue) bval).val) {
+					return;
+				}
+				// Move on to the next action in the ActionItemList.
+				acts = acts.cdr();
+			}
+			states.addElement(ps.copy());
+			return;
+		}
+		// Assert.check(act.kind > 0 || act.kind == -1);
+		ActionItemList acts1 = acts.cdr();
+		this.getInitStates(acts.carPred(), acts1, acts.carContext(), ps, states);
+	  }
 
   private final void getInitStatesAppl(OpApplNode init, ActionItemList acts,
                                        Context c, TLCState ps, IStateFunctor states) {
