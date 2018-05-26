@@ -342,29 +342,37 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
       }
     }
 
-    public final Value nextElement() {
-      if (this.isDone) return null;
-      Value[] elems = new Value[this.currentElems.length];
-      if (elems.length == 0) {
-        this.isDone = true;
-      }
-      else {
-        for (int i = 0; i < elems.length; i++) {
-          elems[i] = this.currentElems[i];
-        }
-        for (int i = elems.length-1; i >= 0; i--) {
-          this.currentElems[i] = this.enums[i].nextElement();
-          if (this.currentElems[i] != null) break;
-          if (i == 0) {
-            this.isDone = true;
-            break;
-          }
-          this.enums[i].reset();
-          this.currentElems[i] = this.enums[i].nextElement();
-        }
-      }
-      return new FcnRcdValue(this.dom, elems, true);
-    }
+		public final Value nextElement() {
+			if (this.isDone) {
+				return null;
+			}
+			if (this.currentElems.length == 0) {
+				this.isDone = true;
+				return new FcnRcdValue(this.dom, new Value[this.currentElems.length], true);
+			} else {
+				// Take and store a snapshot of currentElems as the element to return for
+				// this invocation of nextElement().
+				final Value[] elems = new Value[this.currentElems.length];
+				System.arraycopy(this.currentElems, 0, elems, 0, this.currentElems.length);
+
+				// Eagerly generate the next element which is going to be returned the upon next
+				// invocation of nextElement().
+				for (int i = this.currentElems.length - 1; i >= 0; i--) {
+					this.currentElems[i] = this.enums[i].nextElement();
+					if (this.currentElems[i] != null) {
+						break;
+					}
+					if (i == 0) {
+						this.isDone = true;
+						break;
+					}
+					this.enums[i].reset();
+					this.currentElems[i] = this.enums[i].nextElement();
+				}
+				
+				return new FcnRcdValue(this.dom, elems, true);
+			}
+		}
 
   }
 
