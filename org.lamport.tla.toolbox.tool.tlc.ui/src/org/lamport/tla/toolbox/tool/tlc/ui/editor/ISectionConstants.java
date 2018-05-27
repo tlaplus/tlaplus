@@ -50,10 +50,11 @@ public interface ISectionConstants
     public final static String SEC_LAUNCHING_SETUP = "__launching_setup";
 
     // sections of the third page
-    public final static String SEC_GENERAL = "__progress";
-    public final static String SEC_OUTPUT = "__output";
-    public static final String SEC_STATISTICS = "__coverage";
-    public static final String SEC_ERRORS = "__errors";
-    public static final String SEC_EXPRESSION = "__expression";
+    public final static String SEC_GENERAL = "__general"; // General Section
+    public final static String SEC_OUTPUT = "__output"; // User output
+    public static final String SEC_STATISTICS = "__coverage"; // Statistics
+    public static final String SEC_ERRORS = "__errors"; 
+    public static final String SEC_PROGRESS = "__progress"; // Progress output
+    public static final String SEC_EXPRESSION = "__expression"; // Eval Constant Expressions
 
 }

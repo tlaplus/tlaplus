@@ -71,7 +71,7 @@ public class DataBindingManager implements ISectionConstants
      * section that is a {@link Composite} but not a {@link Section}
      * to enabled.
      */
-    public void enableSection(String id, boolean enabled)
+    private void enableSection(String id, boolean enabled)
     {
         SectionPart part = sectionParts.get(id);
         if (part == null)
@@ -98,7 +98,7 @@ public class DataBindingManager implements ISectionConstants
      * 
      * @param composite
      */
-    public void enableSectionComposite(Composite composite, boolean enable)
+    private void enableSectionComposite(Composite composite, boolean enable)
     {
         Control[] children = composite.getChildren();
         for (int i = 0; i < children.length; i++)
@@ -154,7 +154,7 @@ public class DataBindingManager implements ISectionConstants
      * @param pageId page id 
      * @return an array with sections or empty array
      */
-    public String[] getSectionsForPage(String pageId)
+    private String[] getSectionsForPage(String pageId)
     {
         Vector<String> sectionIds = sectionsForPage.get(pageId);
         if (sectionIds == null)
