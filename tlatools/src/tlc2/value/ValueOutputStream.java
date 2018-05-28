@@ -251,6 +251,10 @@ public final class ValueOutputStream implements ValueConstants {
     }
   }
 
+  public final void writeShort(short x) throws IOException {
+	  this.dos.writeShort(x);
+  }
+  
   public final void writeInt(int x) throws IOException {
     this.dos.writeInt(x);
   }
@@ -261,6 +265,16 @@ public final class ValueOutputStream implements ValueConstants {
   
   public final void close() throws IOException {
     this.dos.close();
+  }
+  
+  /* Precondition: x is a non-negative short. */
+  public final void writeShortNat(short x) throws IOException {
+    if (x > 0x7f) {
+      this.dos.writeShort((short) -x);
+    }
+    else {
+      this.dos.writeByte((byte)x);
+    }
   }
 
   /* Precondition: x is a non-negative int. */

@@ -149,6 +149,10 @@ public final class ValueInputStream implements ValueConstants {
       }
     }      
   }
+  
+  public final int readShort() throws IOException {
+	    return this.dis.readShort();
+  }
 
   public final int readInt() throws IOException {
     return this.dis.readInt();
@@ -167,6 +171,12 @@ public final class ValueInputStream implements ValueConstants {
     if (res >= 0) return res;
     res = (res << 16) | (this.dis.readShort() & 0xFFFF);
     return -res;
+  }
+  
+  public final short readShortNat() throws IOException {
+	short res = this.dis.readByte();
+	if (res >= 0) return res;
+	return (short) -((res << 8) | (this.dis.readByte() & 0xFF));
   }
   
   public final long readLongNat() throws IOException {

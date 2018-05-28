@@ -349,6 +349,19 @@ public class TLCTrace {
 	public synchronized final void printTrace(final TLCState s1, final TLCState s2)
   throws IOException, WorkerException 
   {
+		if (s1.isInitial()) {
+			// Do not recreate the potentially expensive error trace - e.g. when the set of
+			// initial states is huge such as during inductive invariant checking. Instead
+			// use the two states s1 and s2 directly.
+			MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
+			StatePrinter.printState(new TLCStateInfo(s1));
+			if (s2 != null) {
+				// Create TLCStateInfo instance to include corresponding action in output.
+				StatePrinter.printState(this.tool.getState(s2, s1), s1, 2);
+			}
+			return;
+		}
+
 		MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
 		// Print the prefix leading to s1:
 		long loc1 = s1.uid;

@@ -21,6 +21,7 @@ import util.UniqueString;
 
 public abstract class TLCState implements Cloneable, Serializable {
   public long uid = -1;   // Must be set to a non-negative number
+  public short level = 0;
   
   // Set by subclasses. Cannot set until we know what the variables are.
   public static TLCState Empty = null;
@@ -44,10 +45,13 @@ public abstract class TLCState implements Cloneable, Serializable {
 
   public void read(ValueInputStream vis) throws IOException {
     this.uid = vis.readLongNat();
+    this.level = vis.readShortNat();
+    assert this.level >= 0; // Should never overflow.
   }
   
   public void write(ValueOutputStream vos) throws IOException {
     vos.writeLongNat(this.uid);
+    vos.writeShortNat(this.level);
   }
 
   public abstract TLCState bind(UniqueString name, Value value, SemanticNode expr);
@@ -75,6 +79,10 @@ public abstract class TLCState implements Cloneable, Serializable {
         valMap.put(key, val);
     }
     return valMap;
+  }
+
+  public boolean isInitial() {
+	return this.level == 0;
   }
   
   /* Returns a string representation of this state.  */

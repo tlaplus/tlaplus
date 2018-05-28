@@ -12,6 +12,13 @@ public class TLCStateInfo {
   public Object info;
   public Long fp;
 
+	public TLCStateInfo(TLCState initialState) {
+		this.state = initialState;
+		this.info = "<Initial predicate>";
+		this.stateNumber = 1;
+		this.fp = initialState.fingerPrint();
+	}
+
   public TLCStateInfo(TLCState s, Object info) {
     this.state = s;
     this.info = info;

@@ -324,6 +324,13 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
       // Assert.check(this.read(b) == size);
       return new BigInteger(b);
     }
+    
+    public final int readShortNat() throws IOException {
+        int res = this.readByte();
+        if (res >= 0) return res;
+        res = (res << 16) | (this.readByte() & 0xff);
+        return -res;
+    }
 
   public final int readNat() throws IOException {
     int res = this.readShort();
@@ -387,6 +394,16 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
       byte[] b = bi.toByteArray();
       // Assert.check(b.length <= size);
       this.write(b, 0, size);
+    }
+    
+    /* Precondition: x is a non-negative short. */
+    public final void writeShortNat(int x) throws IOException {
+      if (x <= 0x7f) {
+        this.writeByte((short)x);
+      }
+      else {
+        this.writeShort(-x);
+      }
     }
 
   /* Precondition: x is a non-negative int. */
