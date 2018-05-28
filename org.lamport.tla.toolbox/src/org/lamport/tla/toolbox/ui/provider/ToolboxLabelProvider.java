@@ -61,7 +61,19 @@ public class ToolboxLabelProvider extends LabelProvider implements ILabelProvide
 		return null;
 	}
 
+	// This is at least shown in the Toolbox's status line at the bottom.
 	public String getDescription(final Object element) {
+		if (element instanceof Spec) {
+			final Spec spec = (Spec) element;
+			final IFile root = spec.getRootFile();
+			if (root == null) {
+				return super.getText(element);
+			}
+			return spec.getName() + " [ " + root.getLocation().toFile() + " ]";
+		} else if (element instanceof Module) {
+			final Module module = (Module) element;
+			return module.getModuleName() + " [ " + module.getResource().getLocation().toFile() + " ]";
+		}
 		return super.getText(element);
 	}
 

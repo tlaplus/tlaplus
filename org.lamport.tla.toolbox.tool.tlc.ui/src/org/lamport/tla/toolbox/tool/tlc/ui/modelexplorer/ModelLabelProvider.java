@@ -25,6 +25,7 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 
 import org.eclipse.jface.viewers.LabelProvider;
@@ -95,7 +96,7 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 			final Model model = (Model) element;
 			final String comments = model.getComments();
 			if (comments.equals("")) {
-				return getText(element);
+				return getText(element) + " [ " + model.getTargetDirectory().getLocation().toFile() + File.separator + " ]";
 			}
 			return comments;
 		}
