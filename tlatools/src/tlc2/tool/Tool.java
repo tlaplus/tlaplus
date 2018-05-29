@@ -823,13 +823,11 @@ public class Tool
     }
   }
 
-  private final TLCState getNextStates(ActionItemList acts, TLCState s0, TLCState s1,
-                                       StateVec nss) {
-    TLCState resState = s1;
-
+  private final TLCState getNextStates(final ActionItemList acts, final TLCState s0, final TLCState s1,
+                                       final StateVec nss) {
     if (acts.isEmpty()) {
       nss.addElement(s1);
-      resState = s1.copy();
+      return s1.copy();
     }
     else {
       int kind = acts.carKind();
@@ -837,23 +835,23 @@ public class Tool
       Context c = acts.carContext();
       ActionItemList acts1 = acts.cdr();
       if (kind > 0) {
-        resState = this.getNextStates(pred, acts1, c, s0, s1, nss);
+        return this.getNextStates(pred, acts1, c, s0, s1, nss);
       }
       else if (kind == -1) {
-        resState = this.getNextStates(pred, acts1, c, s0, s1, nss);
+        return this.getNextStates(pred, acts1, c, s0, s1, nss);
       }
       else if (kind == -2) {
-        resState = this.processUnchanged(pred, acts1, c, s0, s1, nss);
+        return this.processUnchanged(pred, acts1, c, s0, s1, nss);
       }
       else {
         Value v1 = this.eval(pred, c, s0);
         Value v2 = this.eval(pred, c, s1);
         if (!v1.equals(v2)) {
-          resState = this.getNextStates(acts1, s0, s1, nss);
+          return this.getNextStates(acts1, s0, s1, nss);
         }
       }
     }
-    return resState;
+    return s1;
   }
 
   private final TLCState getNextStatesAppl(OpApplNode pred, ActionItemList acts, Context c,
