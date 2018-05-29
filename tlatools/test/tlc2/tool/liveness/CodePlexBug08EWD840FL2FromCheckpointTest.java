@@ -93,9 +93,12 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 
 	@Test
 	public void testSpec() {
+		assertTrue(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_START));
+		// Recovery completed. 1032 states examined. 996 states on queue.
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_END, "1028", "1013"));
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "4938", "1566","0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "15961", "1566","0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 	
 		// Assert it has found the temporal violation and also a counter example
