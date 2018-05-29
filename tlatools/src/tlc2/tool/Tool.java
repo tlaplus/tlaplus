@@ -823,32 +823,63 @@ public class Tool
     }
   }
 
-  private final TLCState getNextStates(final ActionItemList acts, final TLCState s0, final TLCState s1,
+  private final TLCState getNextStates(ActionItemList acts, final TLCState s0, final TLCState s1,
                                        final StateVec nss) {
+    int kind = acts.carKind();
     if (acts.isEmpty()) {
       nss.addElement(s1);
       return s1.copy();
-    }
-    else {
-      int kind = acts.carKind();
+    } else if (s1.allAssigned()) {
       SemanticNode pred = acts.carPred();
       Context c = acts.carContext();
-      ActionItemList acts1 = acts.cdr();
-      if (kind > 0) {
-        return this.getNextStates(pred, acts1, c, s0, s1, nss);
-      }
-      else if (kind == -1) {
-        return this.getNextStates(pred, acts1, c, s0, s1, nss);
-      }
-      else if (kind == -2) {
-        return this.processUnchanged(pred, acts1, c, s0, s1, nss);
-      }
-      else {
-        Value v1 = this.eval(pred, c, s0);
-        Value v2 = this.eval(pred, c, s1);
-        if (!v1.equals(v2)) {
-          return this.getNextStates(acts1, s0, s1, nss);
-        }
+      while (!acts.isEmpty()) {
+           if (kind > 0 || kind == -1) {
+               final Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear);
+               if (!(bval instanceof BoolValue)) {
+                       // TODO Choose more fitting error message.
+                       Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING,
+                                       new String[] { "next states", "boolean", bval.toString(), acts.pred.toString() });
+               }
+               if (!((BoolValue) bval).val) {
+                      return s1;
+               }
+           } else if (kind == -2) {
+        	   // Identical to default handling below (line 876). Ignored during this optimization.
+               return this.processUnchanged(pred, acts.cdr(), c, s0, s1, nss);
+           } else {
+               final Value v1 = this.eval(pred, c, s0);
+               final Value v2 = this.eval(pred, c, s1);
+               if (v1.equals(v2)) {
+                   return s1;
+               }
+           }
+           // Move on to the next action in the ActionItemList.
+           acts = acts.cdr();
+           pred = acts.carPred();
+           c = acts.carContext();
+           kind = acts.carKind();
+       }
+       nss.addElement(s1);
+       return s1.copy();
+    }
+
+    SemanticNode pred = acts.carPred();
+    Context c = acts.carContext();
+    ActionItemList acts1 = acts.cdr();
+    if (kind > 0) {
+      return this.getNextStates(pred, acts1, c, s0, s1, nss);
+    }
+    else if (kind == -1) {
+      return this.getNextStates(pred, acts1, c, s0, s1, nss);
+    }
+    else if (kind == -2) {
+      return this.processUnchanged(pred, acts1, c, s0, s1, nss);
+    }
+    else {
+      Value v1 = this.eval(pred, c, s0);
+      Value v2 = this.eval(pred, c, s1);
+      if (!v1.equals(v2)) {
+        return this.getNextStates(acts1, s0, s1, nss);
       }
     }
     return s1;
