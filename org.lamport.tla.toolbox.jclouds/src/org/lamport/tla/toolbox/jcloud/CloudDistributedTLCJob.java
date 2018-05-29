@@ -81,6 +81,7 @@ import com.google.inject.AbstractModule;
  * ====
  * - Reverse PTR records in DNS to make it less likely that emails coming out of the VM are classified as SPAM
  * -- Azure has only support for it in its service API but not in JClouds
+ * --- Also see https://docs.microsoft.com/en-us/azure/dns/dns-reverse-dns-for-azure-services
  * -- AWS just has a form where users can request a PTR record  
  * - Send test mail during instance startup and communicate back to user on failure
  */
