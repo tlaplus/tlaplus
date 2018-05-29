@@ -32,7 +32,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.job.DeleteOutOfSyncJob;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
@@ -114,7 +113,6 @@ public class SpecContentProvider implements ITreeContentProvider {
 	}
 
 	protected Module[] constructModules(Spec spec) {
-		final Vector<IResource> outOfSyncResourcesToDelete = new Vector<IResource>();
 		final Vector<Module> modules = new Vector<Module>();
 		final IResource[] moduleResources = spec.getModuleResources();
 		for (int i = 0; i < moduleResources.length; i++) {
@@ -122,21 +120,9 @@ public class SpecContentProvider implements ITreeContentProvider {
 			if (!ResourceHelper.isModule(moduleResources[i])) {
 				continue;
 			}
-			// skip non-existing files
-			if (!moduleResources[i].isSynchronized(IResource.DEPTH_ZERO)) {
-				outOfSyncResourcesToDelete.add(moduleResources[i]);
-				continue;
-			}
 			final Module module = new Module(moduleResources[i]);
 			modules.add(module);
 		}
-
-		if (outOfSyncResourcesToDelete.size() > 0) {
-			final DeleteOutOfSyncJob job = new DeleteOutOfSyncJob(
-					(IResource[]) outOfSyncResourcesToDelete.toArray(new IResource[outOfSyncResourcesToDelete.size()]));
-			job.schedule(500);
-		}
-
 		return (Module[]) modules.toArray(new Module[modules.size()]);
 	}
 	
