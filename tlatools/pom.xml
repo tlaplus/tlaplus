@@ -110,7 +110,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.7</version>
+                <version>1.11</version>
                 <configuration>
                     <ajdtBuildDefFile>build.ajproperties</ajdtBuildDefFile>
                 </configuration>
