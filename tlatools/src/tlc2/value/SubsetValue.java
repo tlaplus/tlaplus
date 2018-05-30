@@ -272,10 +272,11 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
   final class Enumerator implements ValueEnumeration {
-    ValueVec elems;
+    private ValueVec elems;
     private BitSet descriptor;
 
     public Enumerator() {
+    	//WARNING! Mutates the outer instance!?
       set = SetEnumValue.convert(set);
       set.normalize();
       this.elems = ((SetEnumValue)set).elems;
