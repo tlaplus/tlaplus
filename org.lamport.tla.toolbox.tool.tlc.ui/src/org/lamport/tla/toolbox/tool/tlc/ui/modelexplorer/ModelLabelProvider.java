@@ -96,7 +96,7 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 			final Model model = (Model) element;
 			final String comments = model.getComments();
 			if (comments.equals("")) {
-				return getText(element) + " [ " + model.getTargetDirectory().getLocation().toFile() + File.separator + " ]";
+				return getText(element) + " [ " + model.getFolder().getLocation().toFile() + File.separator + " ]";
 			}
 			return comments;
 		}

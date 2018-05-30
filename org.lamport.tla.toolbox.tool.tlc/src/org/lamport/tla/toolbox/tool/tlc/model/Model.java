@@ -723,11 +723,14 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 	
     /**
-     * Retrieves the working directory for the model
-     * <br>Note, this is a handle operation only, the resource returned may not exist
-     * @param config 
-     * @return the Folder.
-     */
+	 * Retrieves the working directory for the model. Returns null if the model has
+	 * not run yet. In other words, gets created by running TLC.<br>
+	 * Note, this is a handle operation only, the resource returned may not exist
+	 * 
+	 * @param config
+	 * @return the Folder.
+	 * @see Model#getFolder()
+	 */
 	public IFolder getTargetDirectory() {
         return (IFolder) getSpec().getProject().findMember(getName());
 	}
