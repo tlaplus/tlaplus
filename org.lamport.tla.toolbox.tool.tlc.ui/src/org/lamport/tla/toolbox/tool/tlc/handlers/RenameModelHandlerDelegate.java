@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,28 +9,23 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.ICoreRunnable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
-import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
-import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -88,39 +84,38 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
 					}
 				}
                 
-                final Job j = new ToolboxJob("Renaming model...") {
-					/* (non-Javadoc)
-					 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
-					 */
-					protected IStatus run(IProgressMonitor monitor) {
-						try {
-							ResourcesPlugin.getWorkspace().run(new ICoreRunnable() {
-								@Override
-								public void run(IProgressMonitor monitor) throws CoreException {
-									// d) rename
-									final String newModelName = dialog.getValue();
-									model.rename(newModelName, monitor);
+				final WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
+					@Override
+					protected void execute(IProgressMonitor monitor)
+							throws CoreException, InvocationTargetException, InterruptedException {
+						// d) rename
+						final String newModelName = dialog.getValue();
+						model.rename(newModelName, monitor);
 
-									// e) reopen (in UI thread)
-									if (reopenModelEditorAfterRename) {
-										UIHelper.runUIAsync(new Runnable() {
-											public void run() {
-												Map<String, String> parameters = new HashMap<String, String>();
-												parameters.put(OpenModelHandler.PARAM_MODEL_NAME, newModelName);
-												UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
-											}
-										});
-									}
+						// e) reopen (in UI thread)
+						if (reopenModelEditorAfterRename) {
+							UIHelper.runUIAsync(new Runnable() {
+								/*
+								 * (non-Javadoc)
+								 * 
+								 * @see java.lang.Runnable#run()
+								 */
+								public void run() {
+									Map<String, String> parameters = new HashMap<String, String>();
+									parameters.put(OpenModelHandler.PARAM_MODEL_NAME, newModelName);
+									UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
 								}
-							}, ResourcesPlugin.getWorkspace().getRoot(), IWorkspace.AVOID_UPDATE, monitor);
-						} catch (CoreException e) {
-							new Status(IStatus.ERROR, TLCUIActivator.PLUGIN_ID, e.getMessage(), e);
+							});
 						}
-						return Status.OK_STATUS;
 					}
 				};
-				j.schedule();
-            }
+				final IRunnableContext ctxt = new ProgressMonitorDialog(UIHelper.getShell());
+				try {
+					ctxt.run(true, false, operation);
+				} catch (InvocationTargetException | InterruptedException e) {
+					throw new ExecutionException(e.getMessage(), e);
+				}
+             }
         }
         return null;
     }
