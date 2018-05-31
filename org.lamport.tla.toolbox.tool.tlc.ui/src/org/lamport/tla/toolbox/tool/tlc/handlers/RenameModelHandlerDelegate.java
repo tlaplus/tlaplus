@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,12 +68,20 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
                     "Please input the new name of the model", model.getName(), modelNameInputValidator);
             dialog.setBlockOnOpen(true);
             if(dialog.open() == Window.OK) {
-            	// c) close model editor if open
-                final IEditorPart editor = model.getAdapter(ModelEditor.class);
+            	// c1) close model editor if open
+                IEditorPart editor = model.getAdapter(ModelEditor.class);
                 if(editor != null) {
                 	reopenModelEditorAfterRename = true;
                 	UIHelper.getActivePage().closeEditor(editor, true);
                 }
+                // c2) close snapshot model editors 
+                final Collection<Model> snapshots = model.getSnapshots();
+				for (Model snapshot : snapshots) {
+					editor = snapshot.getAdapter(ModelEditor.class);
+					if (editor != null) {
+						UIHelper.getActivePage().closeEditor(editor, true);
+					}
+				}
                 
                 final Job j = new ToolboxJob("Renaming model...") {
 					/* (non-Javadoc)
