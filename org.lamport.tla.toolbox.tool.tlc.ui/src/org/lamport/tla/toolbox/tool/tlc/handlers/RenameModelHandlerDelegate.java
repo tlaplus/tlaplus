@@ -8,7 +8,10 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ICoreRunnable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -90,27 +93,29 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
 					 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
 					 */
 					protected IStatus run(IProgressMonitor monitor) {
-						// d) rename
-						final String newModelName = dialog.getValue();
 						try {
-							model.rename(newModelName, monitor);
+							ResourcesPlugin.getWorkspace().run(new ICoreRunnable() {
+								@Override
+								public void run(IProgressMonitor monitor) throws CoreException {
+									// d) rename
+									final String newModelName = dialog.getValue();
+									model.rename(newModelName, monitor);
+
+									// e) reopen (in UI thread)
+									if (reopenModelEditorAfterRename) {
+										UIHelper.runUIAsync(new Runnable() {
+											public void run() {
+												Map<String, String> parameters = new HashMap<String, String>();
+												parameters.put(OpenModelHandler.PARAM_MODEL_NAME, newModelName);
+												UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
+											}
+										});
+									}
+								}
+							}, ResourcesPlugin.getWorkspace().getRoot(), IWorkspace.AVOID_UPDATE, monitor);
 						} catch (CoreException e) {
 							new Status(IStatus.ERROR, TLCUIActivator.PLUGIN_ID, e.getMessage(), e);
 						}
-
-						// e) reopen (in UI thread)
-			            if (reopenModelEditorAfterRename) {
-				            UIHelper.runUIAsync(new Runnable(){
-								/* (non-Javadoc)
-								 * @see java.lang.Runnable#run()
-								 */
-								public void run() {
-									Map<String, String> parameters = new HashMap<String, String>();
-									parameters.put(OpenModelHandler.PARAM_MODEL_NAME, newModelName);
-									UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
-								}
-				            });
-			            }
 						return Status.OK_STATUS;
 					}
 				};
