@@ -261,13 +261,22 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		}
 	}
 
-	public void rename(String newModelName) {
+	public void rename(String newModelName, IProgressMonitor monitor) throws CoreException {
 		final Collection<Model> snapshots = getSnapshots();
 		
+		// Rename the model directory to the new name.
+		final IFolder modelDir = getTargetDirectory();
+		if (modelDir != null && modelDir.exists()) {
+			final IPath src = modelDir.getFullPath();
+			final String segment = src.lastSegment().replaceFirst(getName(), newModelName);
+			final IPath dst = src.removeLastSegments(1).append(segment);
+			modelDir.move(dst, true, monitor);
+		}
+
 		renameLaunch(getSpec(), sanitizeName(newModelName));
 		
 		for (Model snapshot : snapshots) {
-			snapshot.rename(newModelName + snapshot.getSnapshotSuffix());
+			snapshot.rename(newModelName + snapshot.getSnapshotSuffix(), monitor);
 		}
 	}
 	

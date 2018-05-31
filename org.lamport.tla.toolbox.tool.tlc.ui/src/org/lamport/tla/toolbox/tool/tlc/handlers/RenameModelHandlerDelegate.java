@@ -8,6 +8,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -22,6 +23,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
 import org.lamport.tla.toolbox.util.ToolboxJob;
@@ -90,7 +92,11 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
 					protected IStatus run(IProgressMonitor monitor) {
 						// d) rename
 						final String newModelName = dialog.getValue();
-						model.rename(newModelName);
+						try {
+							model.rename(newModelName, monitor);
+						} catch (CoreException e) {
+							new Status(IStatus.ERROR, TLCUIActivator.PLUGIN_ID, e.getMessage(), e);
+						}
 
 						// e) reopen (in UI thread)
 			            if (reopenModelEditorAfterRename) {
