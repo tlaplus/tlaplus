@@ -29,6 +29,7 @@ package org.lamport.tla.toolbox.tool.tlc.model;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -102,7 +103,7 @@ public class TLCSpec extends Spec {
 
 	public Model getModel(final String modelName) {
 		final String sanitizedName = Model.sanitizeName(modelName);
-		final Map<String, Model> models = getModels(sanitizedName, true);
+		final Map<String, Model> models = getModels(Pattern.quote(sanitizedName), true);
 		return models.get(sanitizedName);
 	}
 

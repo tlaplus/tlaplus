@@ -407,7 +407,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 	
 	public Collection<Model> getSnapshots() {
-		return getSpec().getModels(getName() + SNAPSHOT_REGEXP, true).values();
+		return getSpec().getModels(Pattern.quote(getName()) + SNAPSHOT_REGEXP, true).values();
 	}
 
 	public boolean isSnapshot() {
@@ -415,7 +415,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	public boolean hasSnapshots() {
-		return !getSpec().getModels(getName() + SNAPSHOT_REGEXP, true).isEmpty();
+		return !getSpec().getModels(Pattern.quote(getName()) + SNAPSHOT_REGEXP, true).isEmpty();
 	}
 
 	public Model getSnapshotFor() {
