@@ -268,8 +268,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		final IFolder modelDir = getTargetDirectory();
 		if (modelDir != null && modelDir.exists()) {
 			final IPath src = modelDir.getFullPath();
-			final String segment = src.lastSegment().replaceFirst(getName(), newModelName);
-			final IPath dst = src.removeLastSegments(1).append(segment);
+			final IPath dst = src.removeLastSegments(1).append(newModelName);
 			modelDir.move(dst, true, monitor);
 		}
 
