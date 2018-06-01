@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -411,7 +412,10 @@ public class CloudDistributedTLCJob extends Job {
 			// note this will create a user with the same name as you on the
 			// node. ex. you can connect via ssh public IP
 			templateOptions.runScript(AdminAccess.standard());
-			
+			if (isCLI) {
+				templateOptions.tags(Arrays.asList("CLI"));
+			}
+
             final TemplateBuilder templateBuilder = compute.templateBuilder();
             templateBuilder.options(templateOptions);
             templateBuilder.imageId(params.getImageId());
