@@ -39,6 +39,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -58,11 +59,14 @@ import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.RunNodesException;
 import org.jclouds.compute.RunScriptOnNodesException;
+import org.jclouds.compute.domain.ComputeMetadata;
 import org.jclouds.compute.domain.ExecChannel;
 import org.jclouds.compute.domain.ExecResponse;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.TemplateBuilder;
+import org.jclouds.compute.domain.internal.NodeMetadataImpl;
 import org.jclouds.compute.options.TemplateOptions;
+import org.jclouds.domain.LoginCredentials;
 import org.jclouds.io.Payload;
 import org.jclouds.logging.config.ConsoleLoggingModule;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
@@ -74,11 +78,13 @@ import org.jclouds.sshj.config.SshjSshClientModule;
 import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 
 /*
@@ -97,6 +103,7 @@ public class CloudDistributedTLCJob extends Job {
 	 * associated to this job. If two jobs use the same groupName, they will talk
 	 * to the same set of nodes.
 	 */
+	private final String providerName;
 	private final String groupNameUUID;
 	private final Path modelPath;
 	private final int nodes;
@@ -108,6 +115,7 @@ public class CloudDistributedTLCJob extends Job {
 	public CloudDistributedTLCJob(String aName, File aModelFolder,
 			int numberOfWorkers, final Properties properties, CloudTLCInstanceParameters params) {
 		super(aName);
+		this.providerName = aName;
 		this.nodes = numberOfWorkers;
 		this.params = params;
 		//TODO groupNameUUID is used by some providers (azure) as a hostname/DNS name. Thus, format.
@@ -118,7 +126,7 @@ public class CloudDistributedTLCJob extends Job {
 
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
-		monitor.beginTask("Starting TLC model checker in the cloud", 85 + (nodes > 1 ? 20 : 0));
+		monitor.beginTask("Starting TLC model checker in the cloud", 90 + (nodes > 1 ? 20 : 0));
 		// Validate credentials and fail fast if null or syntactically incorrect
 		if (!params.validateCredentials().equals(Status.OK_STATUS)) {
 			return params.validateCredentials();
@@ -168,9 +176,21 @@ public class CloudDistributedTLCJob extends Job {
 				return Status.CANCEL_STATUS;
 			}
 
-			final Set<? extends NodeMetadata> createNodesInGroup = provisionNodes(compute, monitor);
+			//TODO Support instance reuse with Cloud distributed TLC.
+			monitor.subTask("Looking for resusable nodes to quick-start model checking");
+			final Set<NodeMetadata> createNodesInGroup = nodes > 1 ? new HashSet<>()
+					: findReusableNodes(compute, monitor);
+			monitor.worked(5);
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
+			} else if (createNodesInGroup.isEmpty()) {
+				createNodesInGroup.addAll(provisionNodes(compute, monitor));
+				if (monitor.isCanceled()) {
+					return Status.CANCEL_STATUS;
+				}
+			} else {
+				// skipped provisionNodes(...) which takes 35 steps.
+				monitor.worked(35);
 			}
 
 			// Choose one of the nodes to be the master and create an
@@ -245,7 +265,7 @@ public class CloudDistributedTLCJob extends Job {
 					// It uses "sudo" because the script is explicitly
 					// run as a user. No need to run the TLC process as
 					// root.
-					+ "sudo shutdown -h " + (isCLI ? "+10" : "now")
+					+ "sudo shutdown -h +10"
 					+ (isCLI ? "" : "\""); // closing opening '"' of screen/bash -c
 			if (isCLI) {
 				monitor.subTask("Starting TLC model checker process");
@@ -409,6 +429,52 @@ public class CloudDistributedTLCJob extends Job {
 				context.close();
 			}
 		}
+	}
+
+	private Set<NodeMetadata> findReusableNodes(final ComputeService compute, final IProgressMonitor monitor) throws IOException {
+		// Filter out those nodes which haven't been created by the Toolbox. We can't be
+		// sure if they are reusable or that we are allowed to reuse them. Also, skip
+		// nodes which are CLI nodes. CLI nodes get destroyed by the Toolbox. Lastly, we
+		// are only interested in RUNNING instances.
+		final Set<? extends ComputeMetadata> runningNodes = compute.listNodesDetailsMatching(
+				node -> node.getName() != null && node.getName().startsWith(providerName.toLowerCase())
+						&& !node.getTags().contains("CLI") && node.getStatus() == NodeMetadata.Status.RUNNING);
+
+		// TODO what happens if a node terminates before we tried to runScriptOnNode
+		// below? Does runScriptOnNode throw an exception or does the response indicate
+		// it?
+		
+		for (final ComputeMetadata node : runningNodes) {
+			final String id = node.getId();
+			
+			// busctl call... atomically cancels a scheduled system shutdown OR returns
+			// false if none is scheduled. This is similar to the behavior of init5
+			// shutdown -c which changed with systemd. Thx to user grawity on IRC
+			// (systemd@freenode) for coming up with this.
+			// For more context:
+			// https://askubuntu.com/questions/835222/detect-pending-sheduled-shutdown-ubuntu-server-16-04-1
+			// https://askubuntu.com/questions/838019/shutdownd-service-missing-on-ubuntu-server-16-lts
+			// https://askubuntu.com/questions/994339/check-if-shutdown-schedule-is-active-and-when-it-is
+			try {
+				final ExecResponse response = compute.runScriptOnNode(id,
+						"busctl call --system org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager CancelScheduledShutdown", 
+						TemplateOptions.Builder.overrideLoginCredentials(getLoginForCommandExecution()).runAsRoot(true)
+						.wrapInInitScript(false));
+				if (response.getExitStatus() == 0
+						&& (response.getError() == null || response.getError().isEmpty())
+						&& response.getOutput().indexOf("true") > 0) { // Part of output of busctl call...
+					return new HashSet<>(Arrays.asList(new WrapperNodeMetadata(compute.getNodeMetadata(id), getLoginForCommandExecution())));
+				}
+			} catch (RuntimeException e) {
+				// - NodeMetadata.Status could have changed after we queried the cloud API but
+				// before we connected to the instance, ie the instance terminated/shutdown.
+				// - We might not have valid credentials.
+				//TODO Needs better reporting?!
+				continue;
+			}
+		}
+		
+		return new HashSet<>();
 	}
 
 	private Set<? extends NodeMetadata> provisionNodes(ComputeService compute, IProgressMonitor monitor)
@@ -629,6 +695,37 @@ public class CloudDistributedTLCJob extends Job {
 		@Override
 		public URL getURL() {
 			return url;
+		}
+	}
+
+	/*
+		<nacx> jclouds uses a Credential store to persist node credentials
+		<nacx> if you use the same context after creating a node, the credentials should already be in the credential store
+		<nacx> the default implementation is in-memory and lives per-ćontext
+		<nacx> but you can easily create a persistent credential store and use it
+		<nacx> when creating the context, you can apss your custom credentialstore module
+		<nacx> https://jclouds.apache.org/reference/javadoc/2.1.x/org/jclouds/rest/config/CredentialStoreModule.html
+		<nacx> you can instantiate it providing a Map
+		<nacx> that will hold the credentials.
+		<nacx> It is up to you to persist that map the way you prefer
+	 */
+	
+	//TODO Does this work on Mac and Windows?
+	private static LoginCredentials getLoginForCommandExecution() throws IOException {
+		final String user = System.getProperty("user.name");
+		final String privateKey = Files.toString(new File(System.getProperty("user.home") + "/.ssh/id_rsa"),
+				Charsets.UTF_8);
+		return LoginCredentials.builder().user(user).privateKey(privateKey).build();
+	}
+
+	// TODO Somehow override credentials in wrapped instead of creating wrapper
+	// instance?
+	class WrapperNodeMetadata extends NodeMetadataImpl {
+		public WrapperNodeMetadata(final NodeMetadata m, final LoginCredentials credentials) {
+			super(m.getProviderId(), m.getName(), m.getId(), m.getLocation(), m.getUri(), m.getUserMetadata(),
+					m.getTags(), m.getGroup(), m.getHardware(), m.getImageId(), m.getOperatingSystem(), m.getStatus(),
+					m.getBackendStatus(), m.getLoginPort(), m.getPublicAddresses(), m.getPrivateAddresses(),
+					credentials, m.getHostname());
 		}
 	}
 }
