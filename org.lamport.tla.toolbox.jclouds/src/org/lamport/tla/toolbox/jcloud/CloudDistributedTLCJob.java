@@ -271,7 +271,8 @@ public class CloudDistributedTLCJob extends Job {
 				// Run model checker master on master
 				monitor.subTask("Starting TLC model checker process on the master node (in background)");
 				final ExecResponse response = compute.runScriptOnNode(master.getId(), exec(tlcMasterCommand),
-						new TemplateOptions().runAsRoot(false).wrapInInitScript(true).blockOnComplete(false).blockUntilRunning(false));
+						new TemplateOptions().overrideLoginCredentials(master.getCredentials()).runAsRoot(false)
+								.wrapInInitScript(true).blockOnComplete(false).blockUntilRunning(false));
 				throwExceptionOnErrorResponse(master, response, "Starting TLC model checker process on the master node");
 				monitor.worked(5);
 
