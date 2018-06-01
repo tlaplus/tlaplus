@@ -113,8 +113,6 @@ public class CloudDistributedTLCJob extends Job {
 
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
-		final long startUp = System.currentTimeMillis();
-		
 		monitor.beginTask("Starting TLC model checker in the cloud", 85 + (nodes > 1 ? 20 : 0));
 		// Validate credentials and fail fast if null or syntactically incorrect
 		if (!params.validateCredentials().equals(Status.OK_STATUS)) {
@@ -185,7 +183,6 @@ public class CloudDistributedTLCJob extends Job {
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
 			}
-			final long spinUp = System.currentTimeMillis();
 
 			// Install custom tailored jmx2munin to monitor the TLC process. Can
 			// either monitor standalone tlc2.TLC or TLCServer.
@@ -299,7 +296,6 @@ public class CloudDistributedTLCJob extends Job {
 							true).blockOnComplete(false).blockUntilRunning(false));
 			throwExceptionOnErrorResponse(execResponse, "Installing security relevant system package upgrades");
 			monitor.worked(5);
-			final long provision = System.currentTimeMillis();
 
 			// Choose one of the nodes to be the master and create an
 			// identifying predicate.
@@ -424,7 +420,6 @@ public class CloudDistributedTLCJob extends Job {
 						.wrapInInitScript(true).blockOnComplete(false).blockUntilRunning(false));
 				throwExceptionOnErrorResponse(execResponse, "Starting TLC model checker process on the master node");
 				monitor.worked(5);
-				final long tlcStartUp = System.currentTimeMillis();
 
 				if (nodes > 1) {
 					// copy the tla2tools.jar to the root of the master's webserver
@@ -499,11 +494,6 @@ public class CloudDistributedTLCJob extends Job {
 				
 			}
 
-			// Print runtimes of various work items.
-//			System.out.printf("%s spinUp\n%s provision\n%s start\n%s finish\n", (spinUp - startUp) / 1000,
-//					(provision - spinUp) / 1000, (tlcStartUp - provision) / 1000,
-//					(System.currentTimeMillis() - tlcStartUp) / 1000);
-			
 			// Communicate result to user
 			monitor.done();
 			return new CloudStatus(
