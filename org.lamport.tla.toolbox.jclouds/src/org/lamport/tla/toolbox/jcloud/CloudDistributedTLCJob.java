@@ -155,147 +155,10 @@ public class CloudDistributedTLCJob extends Job {
 				return Status.CANCEL_STATUS;
 			}
 
-			// start a node, but first configure it
-			final TemplateOptions templateOptions = compute.templateOptions();
-			
-			// Open up node's firewall to allow http traffic in. This allows users to 
-			// look at the munin/ stats generated for the OS as well as TLC specifically.
-			// (See below where munin gets installed manually)
-			// This now makes us dependent on EC2 (for now)
-			templateOptions.inboundPorts(22, 80, 443);
-			
-			// note this will create a user with the same name as you on the
-			// node. ex. you can connect via ssh public IP
-			templateOptions.runScript(AdminAccess.standard());
-			
-            final TemplateBuilder templateBuilder = compute.templateBuilder();
-            templateBuilder.options(templateOptions);
-            templateBuilder.imageId(params.getImageId());
-            templateBuilder.hardwareId(params.getHardwareId());
-
-            // Everything configured, now launch node
-			monitor.subTask(String.format("Starting %s %s instance%s in region %s.", nodes > 1 ? nodes : "a",
-					params.getHardwareId(), nodes > 1 ? "s" : "", params.getRegion()));
-			final Set<? extends NodeMetadata> createNodesInGroup;
-			createNodesInGroup = compute.createNodesInGroup(groupNameUUID,
-					nodes, templateBuilder.build());
-			monitor.worked(20);
+			final Set<? extends NodeMetadata> createNodesInGroup = provisionNodes(compute, monitor);
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
 			}
-
-			// Install custom tailored jmx2munin to monitor the TLC process. Can
-			// either monitor standalone tlc2.TLC or TLCServer.
-			monitor.subTask("Provisioning TLC environment on all node(s)");
-			final String email = props.getProperty(TLCJobFactory.MAIL_ADDRESS);
-			Map<? extends NodeMetadata, ExecResponse> execResponse = compute.runScriptOnNodesMatching(
-					inGroup(groupNameUUID),
-					// Creating an entry in /etc/alias that makes sure system email sent
-					// to root ends up at the address given by the user. Note that this
-					// has to be done before postfix gets installed later. postfix
-					// re-generates the aliases file for us.
-					exec(	"echo root: " + email + " >> /etc/aliases"
-							+ " && "
-							// OS tuning parameters for (distributed) TLC:
-							// - Disable hugepage defragmentation (especially important on highmem instances)
-							+ "echo never > /sys/kernel/mm/transparent_hugepage/defrag"
-							+ " && "
-							// - Turn off NUMA balancing
-							+ "echo 0 > /proc/sys/kernel/numa_balancing"
-							+ " && "
-                            // Don't want dpkg to require user interaction.
-							+ "export DEBIAN_FRONTEND=noninteractive"
-							+ " && "
-							+ params.getHostnameSetup()
-							+ " && "
-							// Oracle Java 8
-							+ "add-apt-repository ppa:webupd8team/java -y && "
-							// Accept license before apt (dpkg) tries to present it to us (which fails due to 'noninteractive' mode below)
-							// see http://stackoverflow.com/a/19391042
-							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections && "
-							+ "echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections && "
-							+ params.getExtraRepositories()
-							+ " && "
-							// Update Ubuntu's package index. The public/remote
-							// package mirrors might have updated. Without
-							// update, we might try to install outdated packages
-							// below. This most likely fails with a 404 because
-							// the packages have been purged from the mirrors.
-							+ "apt-get update"
-							+ " && "
-							// Never be prompted for input
-							// Download jmx2munin from the INRIA host
-							// TODO make it part of Toolbox and upload from
-							// there (it's tiny 48kb anyway) instead.
-							// This needs some better build-time integration
-							// between TLA and jmx2munin (probably best to make
-							// jmx2munin a submodule of the TLA git repo).
-							// Download an explicit version (commit) to allow
-							// us to continue development in HEAD. Otherwise,
-							// an old Toolbox would use the newest jmx2munin
-							// which might not be compatible with its CDTLCJob.
-							+ "wget https://github.com/lemmy/jmx2munin/raw/df6ce053a6d178e7a70434ab2f91089acadf0525/jmx2munin_1.0_all.deb"
-							+ " && "
-//							+ "wget http://tla.msr-inria.inria.fr/jmx2munin/jmx2munin_1.0_all.deb && "
-							// Install jmx2munin into the system
-							+ "dpkg -i jmx2munin_1.0_all.deb ; "
-							// Force apt to download and install the
-							// missing dependencies of jmx2munin without
-							// user interaction
-							+ "apt-get install --no-install-recommends -fy"
-							+ " && "
-							// Install all security relevant system packages
-							+ "echo unattended-upgrades unattended-upgrades/enable_auto_updates boolean true | debconf-set-selections"
-							+ " && "
-							// screen is needed to allow us to re-attach
-							// to the TLC process if logged in to the
-							// instance directly (it's probably already
-							// installed). zip is used to prepare the
-							// worker tla2tools.jar (strip spec) and
-							// unattended-upgrades makes sure the instance
-							// is up-to-date security-wise. 
-							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades oracle-java8-installer oracle-java8-set-default "
-									+ params.getExtraPackages() + " -y"
-							+ " && "
-							// Delegate file system tuning to cloud specific code.
-							+ params.getOSFilesystemTuning()
-							// Install Oracle Java8. It supports Java Mission
-							// Control, an honest profiler. But first,
-							// automatically accept the Oracle license because
-							// installation will fail otherwise.
-//							+ " && "
-//							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && "
-//							+ "add-apt-repository ppa:webupd8team/java -y && "
-//							+ "apt-get update && "
-//							+ "apt-get --no-install-recommends install oracle-java8-installer oracle-java8-set-default -y"
-							// Create /mnt/tlc and change permission to be world writable
-							// Requires package 'apache2' to be already installed. apache2
-							// creates /var/www/html.
-							// "/mnt/tlc" is on the ephemeral and thus faster storage of the
-							// instance.
-							+ " && "
-							+ "mkdir -p /mnt/tlc/ && chmod 777 /mnt/tlc/ && "
-							+ "ln -s /mnt/tlc/MC.out /var/www/html/MC.out && "
-							+ "ln -s /mnt/tlc/MC.out /var/www/html/MC.txt && " // Microsoft IE and Edge fail to show line breaks correctly unless ".txt" extension.
-							+ "ln -s /mnt/tlc/MC.err /var/www/html/MC.err && "
-							+ "ln -s /mnt/tlc/tlc.jfr /var/www/html/tlc.jfr"),
-					new TemplateOptions().runAsRoot(true).wrapInInitScript(
-							false));			
-			throwExceptionOnErrorResponse(execResponse, "Provisioning TLC environment on all nodes");
-			monitor.worked(10);
-			if (monitor.isCanceled()) {
-				return Status.CANCEL_STATUS;
-			}
-
-			// Install all security relevant system packages
-			monitor.subTask("Installing security relevant system package upgrades (in background)");
-			execResponse = compute.runScriptOnNodesMatching(
-					inGroup(groupNameUUID),
-					exec("screen -dm -S security bash -c \"/usr/bin/unattended-upgrades\""),
-					new TemplateOptions().runAsRoot(true).wrapInInitScript(
-							true).blockOnComplete(false).blockUntilRunning(false));
-			throwExceptionOnErrorResponse(execResponse, "Installing security relevant system package upgrades");
-			monitor.worked(5);
 
 			// Choose one of the nodes to be the master and create an
 			// identifying predicate.
@@ -416,7 +279,7 @@ public class CloudDistributedTLCJob extends Job {
 						return masterHostname.equals(hostname);
 					};
 				};
-				execResponse = compute.runScriptOnNodesMatching(isMaster, exec(tlcMasterCommand), new TemplateOptions().runAsRoot(false)
+				Map<? extends NodeMetadata, ExecResponse> execResponse = compute.runScriptOnNodesMatching(isMaster, exec(tlcMasterCommand), new TemplateOptions().runAsRoot(false)
 						.wrapInInitScript(true).blockOnComplete(false).blockUntilRunning(false));
 				throwExceptionOnErrorResponse(execResponse, "Starting TLC model checker process on the master node");
 				monitor.worked(5);
@@ -531,6 +394,153 @@ public class CloudDistributedTLCJob extends Job {
 				context.close();
 			}
 		}
+	}
+
+	private Set<? extends NodeMetadata> provisionNodes(ComputeService compute, IProgressMonitor monitor)
+			throws RunNodesException, RunScriptOnNodesException {
+
+			// start a node, but first configure it
+			final TemplateOptions templateOptions = compute.templateOptions();
+			
+			// Open up node's firewall to allow http traffic in. This allows users to 
+			// look at the munin/ stats generated for the OS as well as TLC specifically.
+			// (See below where munin gets installed manually)
+			// This now makes us dependent on EC2 (for now)
+			templateOptions.inboundPorts(22, 80, 443);
+			
+			// note this will create a user with the same name as you on the
+			// node. ex. you can connect via ssh public IP
+			templateOptions.runScript(AdminAccess.standard());
+			
+            final TemplateBuilder templateBuilder = compute.templateBuilder();
+            templateBuilder.options(templateOptions);
+            templateBuilder.imageId(params.getImageId());
+            templateBuilder.hardwareId(params.getHardwareId());
+
+            // Everything configured, now launch node
+			monitor.subTask(String.format("Starting %s %s instance%s in region %s.", nodes > 1 ? nodes : "a",
+					params.getHardwareId(), nodes > 1 ? "s" : "", params.getRegion()));
+			final Set<? extends NodeMetadata> createNodesInGroup = compute.createNodesInGroup(groupNameUUID,
+					nodes, templateBuilder.build());
+			monitor.worked(20);
+			if (monitor.isCanceled()) {
+				return createNodesInGroup;
+			}
+
+			// Install custom tailored jmx2munin to monitor the TLC process. Can
+			// either monitor standalone tlc2.TLC or TLCServer.
+			monitor.subTask("Provisioning TLC environment on all node(s)");
+			final String email = props.getProperty(TLCJobFactory.MAIL_ADDRESS);
+			Map<? extends NodeMetadata, ExecResponse> execResponse = compute.runScriptOnNodesMatching(
+					inGroup(groupNameUUID),
+					// Creating an entry in /etc/alias that makes sure system email sent
+					// to root ends up at the address given by the user. Note that this
+					// has to be done before postfix gets installed later. postfix
+					// re-generates the aliases file for us.
+					exec(	"echo root: " + email + " >> /etc/aliases"
+							+ " && "
+							// OS tuning parameters for (distributed) TLC:
+							// - Disable hugepage defragmentation (especially important on highmem instances)
+							+ "echo never > /sys/kernel/mm/transparent_hugepage/defrag"
+							+ " && "
+							// - Turn off NUMA balancing
+							+ "echo 0 > /proc/sys/kernel/numa_balancing"
+							+ " && "
+                            // Don't want dpkg to require user interaction.
+							+ "export DEBIAN_FRONTEND=noninteractive"
+							+ " && "
+							+ params.getHostnameSetup()
+							+ " && "
+							// Oracle Java 8
+							+ "add-apt-repository ppa:webupd8team/java -y && "
+							// Accept license before apt (dpkg) tries to present it to us (which fails due to 'noninteractive' mode below)
+							// see http://stackoverflow.com/a/19391042
+							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections && "
+							+ "echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections && "
+							+ params.getExtraRepositories()
+							+ " && "
+							// Update Ubuntu's package index. The public/remote
+							// package mirrors might have updated. Without
+							// update, we might try to install outdated packages
+							// below. This most likely fails with a 404 because
+							// the packages have been purged from the mirrors.
+							+ "apt-get update"
+							+ " && "
+							// Never be prompted for input
+							// Download jmx2munin from the INRIA host
+							// TODO make it part of Toolbox and upload from
+							// there (it's tiny 48kb anyway) instead.
+							// This needs some better build-time integration
+							// between TLA and jmx2munin (probably best to make
+							// jmx2munin a submodule of the TLA git repo).
+							// Download an explicit version (commit) to allow
+							// us to continue development in HEAD. Otherwise,
+							// an old Toolbox would use the newest jmx2munin
+							// which might not be compatible with its CDTLCJob.
+							+ "wget https://github.com/lemmy/jmx2munin/raw/df6ce053a6d178e7a70434ab2f91089acadf0525/jmx2munin_1.0_all.deb"
+							+ " && "
+//							+ "wget http://tla.msr-inria.inria.fr/jmx2munin/jmx2munin_1.0_all.deb && "
+							// Install jmx2munin into the system
+							+ "dpkg -i jmx2munin_1.0_all.deb ; "
+							// Force apt to download and install the
+							// missing dependencies of jmx2munin without
+							// user interaction
+							+ "apt-get install --no-install-recommends -fy"
+							+ " && "
+							// Install all security relevant system packages
+							+ "echo unattended-upgrades unattended-upgrades/enable_auto_updates boolean true | debconf-set-selections"
+							+ " && "
+							// screen is needed to allow us to re-attach
+							// to the TLC process if logged in to the
+							// instance directly (it's probably already
+							// installed). zip is used to prepare the
+							// worker tla2tools.jar (strip spec) and
+							// unattended-upgrades makes sure the instance
+							// is up-to-date security-wise. 
+							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades oracle-java8-installer oracle-java8-set-default "
+									+ params.getExtraPackages() + " -y"
+							+ " && "
+							// Delegate file system tuning to cloud specific code.
+							+ params.getOSFilesystemTuning()
+							// Install Oracle Java8. It supports Java Mission
+							// Control, an honest profiler. But first,
+							// automatically accept the Oracle license because
+							// installation will fail otherwise.
+//							+ " && "
+//							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && "
+//							+ "add-apt-repository ppa:webupd8team/java -y && "
+//							+ "apt-get update && "
+//							+ "apt-get --no-install-recommends install oracle-java8-installer oracle-java8-set-default -y"
+							// Create /mnt/tlc and change permission to be world writable
+							// Requires package 'apache2' to be already installed. apache2
+							// creates /var/www/html.
+							// "/mnt/tlc" is on the ephemeral and thus faster storage of the
+							// instance.
+							+ " && "
+							+ "mkdir -p /mnt/tlc/ && chmod 777 /mnt/tlc/ && "
+							+ "ln -s /mnt/tlc/MC.out /var/www/html/MC.out && "
+							+ "ln -s /mnt/tlc/MC.out /var/www/html/MC.txt && " // Microsoft IE and Edge fail to show line breaks correctly unless ".txt" extension.
+							+ "ln -s /mnt/tlc/MC.err /var/www/html/MC.err && "
+							+ "ln -s /mnt/tlc/tlc.jfr /var/www/html/tlc.jfr"),
+					new TemplateOptions().runAsRoot(true).wrapInInitScript(
+							false));			
+			throwExceptionOnErrorResponse(execResponse, "Provisioning TLC environment on all nodes");
+			monitor.worked(10);
+			if (monitor.isCanceled()) {
+				return createNodesInGroup;
+			}
+
+			// Install all security relevant system packages
+			monitor.subTask("Installing security relevant system package upgrades (in background)");
+			execResponse = compute.runScriptOnNodesMatching(
+					inGroup(groupNameUUID),
+					exec("screen -dm -S security bash -c \"/usr/bin/unattended-upgrades\""),
+					new TemplateOptions().runAsRoot(true).wrapInInitScript(
+							true).blockOnComplete(false).blockUntilRunning(false));
+			throwExceptionOnErrorResponse(execResponse, "Installing security relevant system package upgrades");
+			monitor.worked(5);
+			
+			return createNodesInGroup;
 	}
 
 	private void throwExceptionOnErrorResponse(final Map<? extends NodeMetadata, ExecResponse> execResponse, final String step) {
