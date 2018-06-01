@@ -269,29 +269,29 @@ public class CloudDistributedTLCJob extends Job {
 
 				// Run model checker master on master
 				monitor.subTask("Starting TLC model checker process on the master node (in background)");
-				// The predicate will be applied to ALL instances owned by the
-				// cloud account (ie AWS), even the ones in different regions
-				// completely unrelated to TLC.
-				final Predicate<NodeMetadata> isMaster = new Predicate<NodeMetadata>() {
-					private final String masterHostname = master.getHostname();
-					public boolean apply(NodeMetadata nodeMetadata) {
-						// hostname can be null if instance is terminated.
-						final String hostname = nodeMetadata.getHostname();
-						return masterHostname.equals(hostname);
-					};
-				};
-				Map<? extends NodeMetadata, ExecResponse> execResponse = compute.runScriptOnNodesMatching(isMaster, exec(tlcMasterCommand), new TemplateOptions().runAsRoot(false)
-						.wrapInInitScript(true).blockOnComplete(false).blockUntilRunning(false));
-				throwExceptionOnErrorResponse(execResponse, "Starting TLC model checker process on the master node");
+				final ExecResponse response = compute.runScriptOnNode(master.getId(), exec(tlcMasterCommand),
+						new TemplateOptions().runAsRoot(false).wrapInInitScript(true).blockOnComplete(false).blockUntilRunning(false));
+				throwExceptionOnErrorResponse(master, response, "Starting TLC model checker process on the master node");
 				monitor.worked(5);
 
 				if (nodes > 1) {
+					// The predicate will be applied to ALL instances owned by the
+					// cloud account (ie AWS), even the ones in different regions
+					// completely unrelated to TLC.
+					final Predicate<NodeMetadata> isMaster = new Predicate<NodeMetadata>() {
+						private final String masterHostname = master.getHostname();
+						public boolean apply(NodeMetadata nodeMetadata) {
+							// hostname can be null if instance is terminated.
+							final String hostname = nodeMetadata.getHostname();
+							return masterHostname.equals(hostname);
+						};
+					};
 					// copy the tla2tools.jar to the root of the master's webserver
 					// to make it available to workers. However, strip the spec
 					// (*.tla/*.cfg/...) from the jar file to not share the spec
 					// with the world.
 					monitor.subTask("Make TLC code available to all worker node(s)");
-					execResponse = compute.runScriptOnNodesMatching(
+					Map<? extends NodeMetadata, ExecResponse> execResponse = compute.runScriptOnNodesMatching(
 							isMaster,
 							exec("cp /tmp/tla2tools.jar /var/www/html/tla2tools.jar && "
 									+ "zip -d /var/www/html/tla2tools.jar model/*.tla model/*.cfg model/generated.properties"),
@@ -555,6 +555,14 @@ public class CloudDistributedTLCJob extends Job {
 				throw new ScriptException(node, exec, step);
 			}
 		});
+	}
+
+	private void throwExceptionOnErrorResponse(final NodeMetadata node, final ExecResponse execResponse, final String step) {
+			// If the script above failed on any number of nodes for whatever reason, don't
+			// continue but destroy all nodes.
+			if (execResponse.getExitStatus() > 0) {
+				throw new ScriptException(node, execResponse, step);
+			}
 	}
 	
 	public void setIsCLI(boolean cli) {
