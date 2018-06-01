@@ -62,7 +62,6 @@ import org.osgi.framework.FrameworkUtil;
 public class PayloadHelper {
 
 	public static Payload appendModel2Jar(final Path modelPath, String mainClass, Properties properties, IProgressMonitor monitor) throws IOException {
-		monitor.subTask("Tweaking tla2tools.jar to contain the spec & model");
 		
 		/*
 		 * Get the standard tla2tools.jar from the classpath as a blueprint.

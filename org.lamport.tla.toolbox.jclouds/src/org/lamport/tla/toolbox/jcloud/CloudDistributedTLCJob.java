@@ -44,6 +44,10 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -122,10 +126,18 @@ public class CloudDistributedTLCJob extends Job {
 		
 		ComputeServiceContext context = null;
 		try {
-			final Payload jarPayLoad = PayloadHelper
-					.appendModel2Jar(modelPath,
-							props.getProperty(TLCJobFactory.MAIN_CLASS), props,
-							monitor);
+			// Tweak tla2tools in a background thread. It takes a couple of seconds to run
+			// pack200 to shrink the files size but we can lookup or launch a cloud instance
+			// in the meantime.
+			monitor.subTask("Tweaking tla2tools.jar to contain the spec & model (in background)");	
+			final ExecutorService executor = Executors.newSingleThreadExecutor();
+			final Future<Payload> future = executor.submit(() -> {
+				return PayloadHelper
+						.appendModel2Jar(modelPath,
+								props.getProperty(TLCJobFactory.MAIN_CLASS), props,
+								monitor);
+			});
+			executor.shutdown();
 			// User has canceled the job, thus stop it (there will be more
 			// cancelled checks down below).
 			if (monitor.isCanceled()) {
@@ -174,7 +186,7 @@ public class CloudDistributedTLCJob extends Job {
 			// world-readable. It is cloud-readable already through the RMI api.
 			monitor.subTask("Copying tla2tools.jar to master node at " + hostname);
 			SshClient sshClient = context.utils().sshForNode().apply(master);
-			sshClient.put("/tmp/tla2tools.pack.gz", jarPayLoad);
+			sshClient.put("/tmp/tla2tools.pack.gz", future.get());
 			monitor.worked(10);
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
@@ -372,7 +384,7 @@ public class CloudDistributedTLCJob extends Job {
 							hostname,
 							props.get("result.mail.address")), null, new URL(
 							"http://" + hostname + "/munin/"));
-		} catch (RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException|SshException e) {
+		} catch (ExecutionException|InterruptedException|RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException|SshException e) {
 			e.printStackTrace();
 			if (context != null) {
 				destroyNodes(context, groupNameUUID);
