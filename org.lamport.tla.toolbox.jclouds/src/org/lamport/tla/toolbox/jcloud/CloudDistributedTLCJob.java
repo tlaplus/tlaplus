@@ -391,7 +391,14 @@ public class CloudDistributedTLCJob extends Job {
 				}
 				
 			}
-
+			
+			// Get the output from the remote instance and attach the corresponding
+			// InputStream to the CloudStatus. A UI can then read the InputStream and show
+			// the output of the TLC process to a user. The SSH connection automatically
+			// terminates when the TLC process finishes.
+			// https://askubuntu.com/questions/509881/tail-reading-an-entire-file-and-then-following			
+			final ExecChannel execChannel = sshClient.execChannel("tail -q -f -n +1 /mnt/tlc/MC.out --pid $(pgrep -f tla2tools.jar)");
+			
 			// Communicate result to user
 			monitor.done();
 			return new CloudStatus(
@@ -403,7 +410,7 @@ public class CloudDistributedTLCJob extends Job {
 									+ "Expect to receive an email at %s with the model checking result eventually.",
 							hostname,
 							props.get("result.mail.address")), null, new URL(
-							"http://" + hostname + "/munin/"));
+							"http://" + hostname + "/munin/"), execChannel.getOutput());
 		} catch (ExecutionException|InterruptedException|RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException|SshException e) {
 			e.printStackTrace();
 			if (context != null) {
@@ -685,16 +692,23 @@ public class CloudDistributedTLCJob extends Job {
 	class CloudStatus extends Status implements ITLCJobStatus {
 
 		private final URL url;
+		private final InputStream output;
 
 		public CloudStatus(int severity, String pluginId, int code,
-				String message, Throwable exception, URL url) {
+				String message, Throwable exception, URL url, InputStream output) {
 			super(severity, pluginId, code, message, exception);
 			this.url = url;
+			this.output = output;
 		}
 
 		@Override
 		public URL getURL() {
 			return url;
+		}
+
+		@Override
+	    public InputStream getOutput() {
+			return this.output;
 		}
 	}
 
