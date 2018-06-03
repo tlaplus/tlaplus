@@ -146,7 +146,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		public static class ChangeEvent {
 
 			public enum State {
-				RUNNING, NOT_RUNNING, DELETED;
+				RUNNING, NOT_RUNNING, DELETED, REMOTE_RUNNING, REMOTE_NOT_RUNNING;
 				
 				public boolean in(State ... states) {
 					for (State state : states) {
@@ -384,6 +384,17 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		} catch (CoreException shouldNotHappen) {
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 		}
+	}
+
+	private boolean isRunningRemotely = false;
+	
+	public boolean isRunningRemotely() {
+		return this.isRunningRemotely;
+	}
+
+	public void setRunningRemotely(boolean isRunning) {
+		this.isRunningRemotely = isRunning;
+		notifyListener(new StateChangeListener.ChangeEvent(this, isRunning ? State.REMOTE_RUNNING : State.REMOTE_NOT_RUNNING));
 	}
 
 	/*

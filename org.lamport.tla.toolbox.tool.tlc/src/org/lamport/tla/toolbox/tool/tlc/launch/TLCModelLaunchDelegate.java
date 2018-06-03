@@ -997,6 +997,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 					// the remote cloud instance and feed it to the regular Toolbox sinks.
 					final IStatus status = event.getJob().getResult();
 					if (status instanceof ITLCJobStatus) {
+						
+						snapshot.setRunningRemotely(true);
+						
 						final List<IProcessOutputSink> sinks = getProcessOutputSinks(snapshot);
 						// Wrap in a job so that the parent job of which this joblistener is being
 						// called can terminate. Otherwise, the model remains in model checking state.
@@ -1024,6 +1027,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 										return Status.OK_STATUS;
 									}
 									return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, e.getMessage(), e);
+								} finally {
+									snapshot.setRunningRemotely(false);
 								}
 								return Status.OK_STATUS;
 							}

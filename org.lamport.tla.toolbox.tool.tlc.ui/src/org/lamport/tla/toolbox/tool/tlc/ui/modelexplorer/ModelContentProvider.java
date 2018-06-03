@@ -70,6 +70,13 @@ public class ModelContentProvider implements ITreeContentProvider {
 						getViewer().remove(parent, new Object[] {model});
 					}
 				});
+			} else if (event.getState() == State.REMOTE_NOT_RUNNING) {
+				UIHelper.runUISync(new Runnable() {
+					@Override
+					public void run() {
+						getViewer().refresh(event.getModel(), true);			
+					}
+				});
 			}
 			return true;
 		}

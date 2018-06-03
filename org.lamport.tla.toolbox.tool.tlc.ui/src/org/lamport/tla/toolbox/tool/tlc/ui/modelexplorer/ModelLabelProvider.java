@@ -44,6 +44,7 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 	private Image modelImage = TLCUIActivator.getImageDescriptor("/icons/full/choice_sc_obj.gif").createImage();
 	private Image modelNoError = TLCUIActivator.getImageDescriptor("/icons/full/model_no_error.gif").createImage();
 	private Image modelWithError = TLCUIActivator.getImageDescriptor("/icons/full/model_with_error.gif").createImage();
+	private Image modelCloudTLCRunning = TLCUIActivator.getImageDescriptor("/icons/full/model_running_remotely.gif").createImage();
 	
 	/**
 	 * Retrieves model's image
@@ -54,6 +55,9 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 		} else if (element instanceof Model) {
 			final Model model = (Model) element;
 			if (model.isSnapshot()) {
+				if (model.isRunningRemotely()) {
+					return modelCloudTLCRunning;
+				}
 				if (model.hasError()) {
 					return modelWithError;
 				}
