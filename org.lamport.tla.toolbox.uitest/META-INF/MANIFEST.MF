@@ -9,7 +9,7 @@ Import-Package: org.eclipse.core.resources,
  org.osgi.framework;version="1.3.0"
 Require-Bundle: org.eclipse.swt;bundle-version="3.5.0";visibility:=reexport,
  org.eclipse.swtbot.go;bundle-version="2.0.0";visibility:=reexport,
- org.aspectj.runtime;bundle-version="1.6.0";visibility:=reexport,
+ org.aspectj.runtime;bundle-version="1.8.10";visibility:=reexport,
  org.lamport.tla.toolbox;bundle-version="1.0.0";visibility:=reexport,
  org.lamport.tla.toolbox.editor.basic;bundle-version="1.0.0",
  org.apache.log4j;visibility:=reexport,
