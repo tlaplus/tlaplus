@@ -1,1 +1,1 @@
-src.includes = src/org/lamport/tla/toolbox/test/threading/MonitorAspect.aj
+src.includes = src-aj/org/lamport/tla/toolbox/test/threading/MonitorAspect.aj
