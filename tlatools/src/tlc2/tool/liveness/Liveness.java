@@ -183,8 +183,11 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				// Assert.printStack(e);
 				int level = Spec.getLevel(expr, con);
 				if (level > 2) {
-					Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
-					;
+					if (e instanceof Assert.TLCRuntimeException) {
+						Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, new String[] {expr.toString(), e.getMessage()});
+					} else {
+						Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
+					}
 				}
 				return astToLive(tool, expr, con, level);
 			}

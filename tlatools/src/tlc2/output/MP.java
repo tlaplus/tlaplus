@@ -690,7 +690,11 @@ public class MP
             b.append("Implied-temporal checking--satisfiability problem has %1% branches.");
             break;
         case EC.TLC_LIVE_CANNOT_HANDLE_FORMULA:
-            b.append("TLC cannot handle the temporal formula %1%");
+        	if (parameters.length > 1) {
+        		b.append("TLC cannot handle the temporal formula %1%:\n%2%");
+        	} else {
+        		b.append("TLC cannot handle the temporal formula %1%");
+        	}
             break;
         case EC.TLC_LIVE_WRONG_FORMULA_FORMAT:
             b.append("Temporal formulas containing actions must be of forms <>[]A or []<>A.");
