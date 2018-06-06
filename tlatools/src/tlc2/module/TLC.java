@@ -18,6 +18,7 @@ import tlc2.util.IdThread;
 import tlc2.util.RandomGenerator;
 import tlc2.value.Applicable;
 import tlc2.value.BoolValue;
+import tlc2.value.Enumerable;
 import tlc2.value.FcnRcdValue;
 import tlc2.value.IntValue;
 import tlc2.value.IntervalValue;
@@ -468,6 +469,18 @@ public class TLC implements ValueConstants
             return enumVal.elems.elementAt(index);
         }
         }
+    }
+    
+    public static Value RandomSubset(final Value v1, final Value v2) {
+		if (!(v1 instanceof IntValue)) {
+			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
+					new String[] { "first", "RandomSubset", "nonnegative integer", Value.ppr(v1.toString()) });
+		}
+        if (!(v2 instanceof Enumerable)) {
+			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
+					new String[] { "second", "RandomSubset", "a finite set", Value.ppr(v2.toString()) });
+        }
+        return ((Enumerable) v2).getRandomSubset(((IntValue) v1).val);
     }
 
     public static Value Any()

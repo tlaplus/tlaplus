@@ -1,6 +1,7 @@
 ------------------------------- MODULE TLC ----------------------------------
 LOCAL INSTANCE Naturals
 LOCAL INSTANCE Sequences
+LOCAL INSTANCE FiniteSets
 -----------------------------------------------------------------------------
 Print(out, val) == val
 PrintT(out) == TRUE
@@ -33,4 +34,9 @@ Any == CHOOSE x : TRUE
 ToString(v) == (CHOOSE x \in [a : v, b : STRING] : TRUE).b
 
 TLCEval(v) == v
+-----------------------------------------------------------------------------
+RandomSubset(k, S) == TRUE
+
+\* p is a literal representing a probability, e.g. "0.057"
+RandomSubsetSet(k, p, S) == TRUE
 =============================================================================

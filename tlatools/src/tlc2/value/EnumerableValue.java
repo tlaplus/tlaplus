@@ -51,10 +51,17 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
     }
   }
   
-	public ValueEnumeration elements(final double fraction) {
+	@Override
+	public EnumerableValue getRandomSubset(final int kOutOfN) {
+		// By default, convert all EVs into SetEnumValue and delegate to its
+		// getRandomSubset.
+    	return SetEnumValue.convert(this).getRandomSubset(kOutOfN);
+	}
+
+	public ValueEnumeration elements(final int k) {
 		// The generic implementation collects all n elements of the actual Enumerable
 		// into the temporary variable values. The SubSetEnumerator then randomly
-		// returns up to (fraction * n) of elements.
+		// returns up to k elements.
 		// The underlying assuming here is that the size of EnumerableValue (n) is
 		// very small and this method is not called as part of the next-state relation.
 		// If it gets called on larger sets or as part of the next-state relation,
@@ -62,7 +69,7 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 		// IntervalValue and SetEnumValue which return a more efficient subclass
 		// of SubsetEnumerator).
 		final List<Value> values = elements().all();
-		return new SubsetEnumerator(fraction) {
+		return new SubsetEnumerator(k) {
 			@Override
 			public Value nextElement() {
 				if (!hasNext()) {
@@ -71,6 +78,10 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 				return values.get(nextIndex());
 			}
 		};
+  	}
+
+	public ValueEnumeration elements(final double fraction) {
+		return elements((int) Math.min(Math.ceil(fraction * size()), size()));
 	}
 
 	static {
@@ -96,13 +107,19 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 		protected final int k;
 		protected int i;
 
-		public SubsetEnumerator(final double fraction) {
-			this(fraction, size());
+		public SubsetEnumerator(final int k) {
+			this(k, size());	
 		}
 		
-		public SubsetEnumerator(final double fraction, final int n) {
+		public SubsetEnumerator(final double fraction) {
+			this((int) Math.min(Math.ceil(fraction * size()), size()), size());
+		}
+		
+		public SubsetEnumerator(final int k, final int n) {
 			this.n = n;
 			
+			// https://en.wikipedia.org/wiki/Linear_congruential_generator
+			//
 			// x has to be co-prime to n. Since n might or might not be a prime number
 			// - it depends on the actual size of the set - we simply set x to
 			// be a prime number. The prime x has to be larger than n tough, since n is
@@ -114,9 +131,14 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 			assert n < Integer.MAX_VALUE;
 			this.x = n < 191 ? 191L : 1L * Integer.MAX_VALUE;
 
-			this.a = RANDOM.nextInt(n);
 			// k out of n elements in the range 0 <= k <= n.
-			this.k = (int) Math.min(Math.ceil(fraction * n), n);
+			if (n > 0) {
+				this.k = k;
+				this.a = RANDOM.nextInt(n);
+			} else {
+				this.k = 0;
+				this.a = 0; // RANDOM.nextInt(0) causes IllegalArgumentException.
+			}
 		}
 
 		public void reset() {
@@ -132,6 +154,10 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 		 *         {@link Enumerable#size()}.
 		 */
 		public int nextIndex() {
+			if (n <= 0) {
+				i++;
+				return 0;
+			}
 			// long x avoids intermediate overflow, final cast to int safe though because of
 			// mod n.
 			final int index = (int) (((x * i++) + a) % n);

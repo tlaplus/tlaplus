@@ -81,6 +81,16 @@ public class EnumerableValueTest {
 		public int size() {
 			return size;
 		}
+		
+		@Override
+		public ValueEnumeration elements(final int k) {
+			return new EnumerableValue.SubsetEnumerator(k) {
+				@Override
+				public Value nextElement() {
+					return null;
+				}
+			};
+		}
 
 		@Override
 		public ValueEnumeration elements() {

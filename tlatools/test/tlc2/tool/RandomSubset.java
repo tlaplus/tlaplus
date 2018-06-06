@@ -33,7 +33,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.value.EnumerableValue;
@@ -48,11 +47,6 @@ public abstract class RandomSubset extends ModelCheckerTestCase {
 		this.x = x;
 		this.y = y;
 		
-		// Limit the size of the actual sets generated as part of the initial states. If
-		// this doesn't work or breaks, the test will likely timeout before it
-		// completes.
-		System.setProperty(TLCGlobals.class.getName() + ".enumFraction", ".00001d");
-		
 		// Initial seed with a randomly chosen but fixed value for x and y to be
 		// predictable. The two subclasses chose different values to test that different
 		// seeds result in different values.
@@ -65,8 +59,8 @@ public abstract class RandomSubset extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1001"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1002", "1002", "1000"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "2002"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2003", "2003", "2001"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));

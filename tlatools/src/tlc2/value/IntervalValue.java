@@ -258,6 +258,19 @@ implements Enumerable, Reducible {
     }
   }
 
+    @Override
+	public EnumerableValue getRandomSubset(final int kOutOfN) {
+    	final ValueVec vec = new ValueVec(kOutOfN);
+    	
+    	final ValueEnumeration ve = elements(kOutOfN);
+    	
+    	Value v = null;
+    	while ((v = ve.nextElement()) != null) {
+    		vec.addElement(v);
+    	}
+    	return new SetEnumValue(vec, false);
+	}
+
   public final ValueEnumeration elements() {
     try {
       return new Enumerator();
@@ -281,6 +294,19 @@ implements Enumerable, Reducible {
     }
 
   }
+  
+	@Override
+	public ValueEnumeration elements(final int kOutOfN) {
+		return new EnumerableValue.SubsetEnumerator(kOutOfN) {
+			@Override
+			public Value nextElement() {
+				if (!hasNext()) {
+					return null;
+				}
+				return IntValue.gen(low + nextIndex());
+			}
+		};
+	}
 	
 	@Override
 	public ValueEnumeration elements(final double fraction) {

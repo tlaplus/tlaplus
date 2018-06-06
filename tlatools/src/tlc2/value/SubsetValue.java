@@ -363,8 +363,15 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
 		private final ValueVec elems;
 
+		SubsetEnumerator(final int k) {
+			super(k, 1 << set.size());
+			final SetEnumValue convert = SetEnumValue.convert(set);
+      		convert.normalize();
+      		this.elems = convert.elems;
+		}
+		
 		SubsetEnumerator(final double fraction) {
-			super(fraction, 1 << set.size());
+			super(fraction);
 			final SetEnumValue convert = SetEnumValue.convert(set);
       		convert.normalize();
       		this.elems = convert.elems;

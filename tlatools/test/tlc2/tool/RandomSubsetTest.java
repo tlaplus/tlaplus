@@ -37,7 +37,6 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.value.BoolValue;
-import tlc2.value.Enumerable;
 import tlc2.value.IntValue;
 import tlc2.value.Value;
 import util.UniqueString;
@@ -46,9 +45,6 @@ public class RandomSubsetTest extends ModelCheckerTestCase {
 
 	public RandomSubsetTest() {
 		super("RandomSubset");
-
-		Enumerable.EnumFractionConfig.setFractionFor("x", .00001d);
-		Enumerable.EnumFractionConfig.setFractionFor("y", .1d);
 	}
 
 	@Test

@@ -18,6 +18,7 @@ public interface Enumerable {
   public int size();
   public boolean member(Value elem);
   public ValueEnumeration elements();
+  public ValueEnumeration elements(final int k);
   /**
    * Returns a {@link ValueEnumeration} which returns (fraction * n) 
    * {@link Value}s of all {@link Value}s returned by 
@@ -26,6 +27,7 @@ public interface Enumerable {
    * this {@link Enumerable}.
    */
   public ValueEnumeration elements(final double fraction);
+  public EnumerableValue getRandomSubset(final int k);
   public Value isSubsetEq(Value other);
 
 	/**
