@@ -37,7 +37,7 @@ public class Test216 extends SuiteETestCase {
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "28", "7", "0"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "21", "7"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "21", "s", "7"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 	}
 }

@@ -48,7 +48,7 @@ public class MinimalSetOfInitStatesTest extends ModelCheckerTestCase {
 		// IStateFunctor), the number of generated initial states would be 6 with
 		// 4 being distinct. The fix in getInitStates causes TLC to more efficiently
 		// evaluate the init predicate and avoid generating the two duplicates.
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "8", "6"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "8", "s", "6"));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "6", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "0"));
 	}

@@ -18,5 +18,5 @@ Next == b' = /\ (SUBSET (1..23) \subseteq SUBSET (1..42))
 
 Spec == Init /\ [][Next]_<<b>>
 
-Inv == b = TRUE
+Inv == b = TRUE /\ b \in BOOLEAN
 =============================================================================

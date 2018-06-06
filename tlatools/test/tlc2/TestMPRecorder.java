@@ -108,9 +108,8 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 			if (!recordedWithStringValueAt(code, string, i++)) {
 				return false;
 			}
-			return true;
 		}
-		return false;
+		return true;
 	}
 
 	/* (non-Javadoc)
