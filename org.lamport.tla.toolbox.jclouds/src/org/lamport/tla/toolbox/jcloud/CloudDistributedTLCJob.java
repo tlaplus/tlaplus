@@ -391,13 +391,16 @@ public class CloudDistributedTLCJob extends Job {
 				}
 				
 			}
-			
+
 			// Get the output from the remote instance and attach the corresponding
 			// InputStream to the CloudStatus. A UI can then read the InputStream and show
 			// the output of the TLC process to a user. The SSH connection automatically
 			// terminates when the TLC process finishes.
 			// https://askubuntu.com/questions/509881/tail-reading-an-entire-file-and-then-following			
-			final ExecChannel execChannel = sshClient.execChannel("tail -q -f -n +1 /mnt/tlc/MC.out --pid $(pgrep -f tla2tools.jar)");
+			ExecChannel execChannel = null;
+			if (!isCLI) {
+				execChannel = sshClient.execChannel("tail -q -f -n +1 /mnt/tlc/MC.out --pid $(pgrep -f tla2tools.jar)");
+			}
 			
 			// Communicate result to user
 			monitor.done();
