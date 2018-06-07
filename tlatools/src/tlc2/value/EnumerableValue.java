@@ -85,7 +85,7 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 	}
 
 	static {
-		enumFractionSeed = System.currentTimeMillis();		
+		enumFractionSeed = System.currentTimeMillis();
 	}
 		
 	public static long enumFractionSeed; 

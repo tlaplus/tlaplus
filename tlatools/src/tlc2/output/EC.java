@@ -181,6 +181,7 @@ public interface EC
     public static final int TLC_MODE_MC_DFS = 2271;
     public static final int TLC_MODE_SIMU = 2188;
     public static final int TLC_COMPUTING_INIT = 2189;
+	public static final int TLC_COMPUTING_INIT_PROGRESS = 2269;
     public static final int TLC_INIT_GENERATED1 = 2190;
     public static final int TLC_INIT_GENERATED2 = 2191;
     public static final int TLC_INIT_GENERATED3 = 2207;

@@ -129,7 +129,7 @@ public class MP
 
     private static MP instance = null;
 	private static MPRecorder recorder = new MPRecorder();
-    private Set warningHistory;
+    private final Set warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$ 
 	private static final DecimalFormat df = new DecimalFormat("###,###.###");
@@ -801,7 +801,7 @@ public class MP
             
         /*------------------------------------------- */
         case EC.TLC_STARTING:
-            b.append("Starting... (").append(SDF.format(new Date())).append(")");
+            b.append("Starting with random seed %1%... (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_FINISHED:
             b.append("Finished in %1% at (").append(SDF.format(new Date())).append(")");
@@ -817,6 +817,9 @@ public class MP
             break;
         case EC.TLC_COMPUTING_INIT:
             b.append("Computing initial states...");
+            break;
+        case EC.TLC_COMPUTING_INIT_PROGRESS:
+            b.append("Computed %1% initial states...");
             break;
         case EC.TLC_INIT_GENERATED1:
             b.append("Finished computing initial states: %1% distinct state%2% generated.");
@@ -1099,7 +1102,9 @@ public class MP
             // post processing
             switch (messageClass) {
             case WARNING:
-                b.append("\n(Use the -nowarning option to disable this warning.)");
+            	if (instance.warningHistory.isEmpty()) {
+            		b.append("\n(Use the -nowarning option to disable this warning.)");
+            	}
                 break;
             case ERROR:
                 if (TLCGlobals.tool)

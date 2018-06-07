@@ -1022,6 +1022,9 @@ public class ModelChecker extends AbstractChecker
 		 * @see tlc2.tool.IStateFunctor#addElement(tlc2.tool.TLCState)
 		 */
 		public Object addElement(final TLCState curState) {
+			if (Long.bitCount(numberOfInitialStates) == 1 && numberOfInitialStates > 1) {
+				MP.printMessage(EC.TLC_COMPUTING_INIT_PROGRESS, Long.toString(numberOfInitialStates));
+			}
 			numberOfInitialStates++;
 			
 			// getInitStates() does not support aborting init state generation

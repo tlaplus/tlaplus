@@ -9,6 +9,7 @@ package tlc2.value;
 import java.util.BitSet;
 
 import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.FingerprintException;
 import util.Assert;
 
@@ -260,13 +261,23 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	public EnumerableValue getRandomSubsetSet(final int numOfPicks, final double probability) {
 		final CoinTossingSubsetEnumerator enumerator = new CoinTossingSubsetEnumerator(numOfPicks, probability);
 		
+		int sum = 0;
 		final ValueVec vec = new ValueVec(numOfPicks);
 		Value val;
 		while ((val = enumerator.nextElement()) != null) {
+			sum += val.size();
 			vec.addElement(val);
 		}
 		// Remove duplicates right away which also normalizes vec.
 		vec.sort(true);
+		
+		// Tell user how many elements she actually gets. 		
+		final int size = vec.size();
+		if(numOfPicks > size) {
+			final double average = (1d / vec.size()) * sum;
+			MP.printWarning(EC.GENERAL, String.format("Requested RandomSubsetSet of size %s but only generated subset with %s unique elements (average element length is %02.0f).",
+							numOfPicks, vec.size(), average));
+		}
 		
     	return new SetEnumValue(vec, true);
 	}
