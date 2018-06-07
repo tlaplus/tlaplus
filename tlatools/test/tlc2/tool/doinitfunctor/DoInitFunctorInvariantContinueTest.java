@@ -24,29 +24,38 @@
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
 
-package tlc2.tool;
+package tlc2.tool.doinitfunctor;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.util.List;
 
 import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class DoInitFunctorEvalExceptionTest extends ModelCheckerTestCase {
-
-	public DoInitFunctorEvalExceptionTest() {
-		super("DoInitFunctorEvalException", "DoInitFunctor");
+public class DoInitFunctorInvariantContinueTest extends ModelCheckerTestCase {
+	
+	public DoInitFunctorInvariantContinueTest() {
+		super("DoInitFunctorInvariantContinue", "DoInitFunctor", new String[] {"-continue"});
 	}
 
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_STATS));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "21", "11"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INITIAL_STATE,
-				"TLC expected a boolean value, but did not find one. line 15, col 15 to line 15, col 18 of module DoInitFunctorEvalException",
-				"x = 1\n"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_INVARIANT_VIOLATED_INITIAL, "Inv", "x = 1\n"));
+		// Test that TLC - with continuation enabled - continues after finding the first inv violation.
+		final List<Object> records = recorder.getRecords(EC.TLC_INVARIANT_VIOLATED_INITIAL);
+		assertEquals(10, records.size());
+		for (int j = 0; j < records.size(); j++) {
+			final String[] violation = (String[]) records.get(j);
+			assertEquals("Inv", violation[0]);
+			assertEquals("x = " + (j+1) + "\n", violation[1]);
+		}
 	}
 }

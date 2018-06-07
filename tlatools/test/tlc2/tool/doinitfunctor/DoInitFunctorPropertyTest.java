@@ -24,7 +24,7 @@
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
 
-package tlc2.tool;
+package tlc2.tool.doinitfunctor;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -33,18 +33,18 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class DoInitFunctorInvariantContinueTest extends ModelCheckerTestCase {
+public class DoInitFunctorPropertyTest extends ModelCheckerTestCase {
 	
-	public DoInitFunctorInvariantContinueTest() {
-		super("DoInitFunctorInvariant", "DoInitFunctor", new String[] {"-continue"});
+	public DoInitFunctorPropertyTest() {
+		super("DoInitFunctorProperty", "DoInitFunctor");
 	}
 
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "21", "11"));
+		assertFalse(recorder.recorded(EC.TLC_STATS));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INVARIANT_VIOLATED_INITIAL, "NotNine", "x = 9\n"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_PROPERTY_VIOLATED_INITIAL, "NotNine", "x = 9\n"));
 	}
 }

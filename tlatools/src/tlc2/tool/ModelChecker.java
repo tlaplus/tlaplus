@@ -343,7 +343,9 @@ public class ModelChecker extends AbstractChecker
 		// functor will record it.
 		if (functor.errState != null) {
 			this.errState = functor.errState;
-			throw functor.e;
+			if (functor.e != null) {
+				throw functor.e;
+			}
 		}
 		
 		// Return whatever the functor has recorded.
@@ -1053,6 +1055,7 @@ public class ModelChecker extends AbstractChecker
 							MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL,
 									new String[] { tool.getInvNames()[j].toString(), curState.toString() });
 							if (!TLCGlobals.continuation) {
+								this.errState = curState;
 								returnValue = false;
 								return returnValue;
 							}
@@ -1063,6 +1066,7 @@ public class ModelChecker extends AbstractChecker
 							// We get here because of implied-inits violation:
 							MP.printError(EC.TLC_PROPERTY_VIOLATED_INITIAL,
 									new String[] { tool.getImpliedInitNames()[j], curState.toString() });
+							this.errState = curState;
 							returnValue = false;
 							return returnValue;
 						}

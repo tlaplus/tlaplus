@@ -24,8 +24,9 @@
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
 
-package tlc2.tool;
+package tlc2.tool.doinitfunctor;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -45,6 +46,8 @@ public class DoInitFunctorInvariantTest extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.TLC_STATS));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
+		// Test that TLC - with continuation disabled - stops after finding the first inv violation/finds exactly one violation.
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_INVARIANT_VIOLATED_INITIAL, "NotNine", "x = 9\n"));
+		assertEquals(1, recorder.getRecords(EC.TLC_INVARIANT_VIOLATED_INITIAL).size());
 	}
 }

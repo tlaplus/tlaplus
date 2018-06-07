@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -23,20 +23,21 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
+package tlc2.tool.doinitfunctor;
 
-package tlc2.tool;
-
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class DoInitFunctorPropertyTest extends ModelCheckerTestCase {
+public class DoInitFunctorInvariantNoContinueTest extends ModelCheckerTestCase {
 	
-	public DoInitFunctorPropertyTest() {
-		super("DoInitFunctorProperty", "DoInitFunctor");
+	public DoInitFunctorInvariantNoContinueTest() {
+		super("DoInitFunctorInvariantContinue", "DoInitFunctor");
 	}
 
 	@Test
@@ -45,6 +46,8 @@ public class DoInitFunctorPropertyTest extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.TLC_STATS));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_PROPERTY_VIOLATED_INITIAL, "NotNine", "x = 9\n"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_INVARIANT_VIOLATED_INITIAL, "Inv", "x = 1\n"));
+		// Test that TLC - with continuation disabled - stops after finding the first inv violation/finds exactly one violation.
+		assertEquals(1, recorder.getRecords(EC.TLC_INVARIANT_VIOLATED_INITIAL).size());
 	}
 }
